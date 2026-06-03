@@ -14,9 +14,11 @@ class User extends Authenticatable
 
     protected $fillable = [
         'name',
+        'company_id',
         'email',
         'password',
         'role',
+        'is_active',
         'mobile',
         'designation',
         'gender',
@@ -31,6 +33,7 @@ class User extends Authenticatable
         'google_calendar',
         'profile_image',
         'login_allowed',
+        'archived_at',
         'email_notifications',
         // ADD THESE NEW FIELDS:
         'joining_date',
@@ -52,7 +55,9 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_active' => 'boolean',
             'login_allowed' => 'boolean',
+            'archived_at' => 'datetime',
             'email_notifications' => 'boolean',
             // ADD THESE NEW CASTS:
             'joining_date' => 'date',
@@ -68,6 +73,11 @@ class User extends Authenticatable
     public function employeeDetail()
     {
         return $this->hasOne(EmployeeDetail::class);
+    }
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
     }
 
     public function attendances()

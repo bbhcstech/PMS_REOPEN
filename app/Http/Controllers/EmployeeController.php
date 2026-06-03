@@ -51,7 +51,8 @@ class EmployeeController extends Controller
     public function index(Request $request)
     {
         $query = User::with(['employeeDetail.designation', 'employeeDetail.department'])
-            ->where('role', 'employee');
+            ->where('role', 'employee')
+            ->whereNull('archived_at');
 
         if ($request->filled('employee_id')) {
             $query->whereHas('employeeDetail', function ($q) use ($request) {
@@ -86,7 +87,9 @@ class EmployeeController extends Controller
         $employees = $query->orderBy('created_at', 'desc')->paginate(15);
 
         // prepare dropdown list options but exclude notice/probation entries so selects don't show them
-        $employeeDetails = EmployeeDetail::with(['user', 'reportingTo'])->get()
+        $employeeDetails = EmployeeDetail::with(['user', 'reportingTo'])
+            ->whereHas('user', fn ($q) => $q->whereNull('archived_at'))
+            ->get()
             ->filter(function ($d) {
                 $status = $d->status ?? null;
                 $hasNotice = !empty($d->notice_end_date);
@@ -756,14 +759,96 @@ class EmployeeController extends Controller
 
         $user = User::findOrFail($id);
 
-        if ($user->employeeDetail) {
-            $user->employeeDetail->delete();
+        if (($user->role ?? '') !== 'employee') {
+            return redirect()->route('employees.index')
+                ->withErrors(['error' => 'Only employee records can be archived from this section.']);
         }
 
-        $user->delete();
+        if (($user->employeeDetail?->status ?? null) !== 'Inactive') {
+            return redirect()->route('employees.index')
+                ->withErrors(['error' => 'Only inactive employees can be archived. Please mark this employee inactive first.']);
+        }
+
+        $user->forceFill([
+            'archived_at' => now(),
+            'is_active' => false,
+            'login_allowed' => false,
+        ])->save();
 
         return redirect()->route('employees.index')
-            ->with('success', 'Employee deleted.');
+            ->with('success', 'Inactive employee archived successfully.');
+    }
+
+    /**
+     * Show archived employees.
+     */
+    public function archive(Request $request)
+    {
+        $this->ensureAdmin();
+
+        $query = User::with(['employeeDetail.designation', 'employeeDetail.department'])
+            ->where('role', 'employee')
+            ->whereNotNull('archived_at');
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('email', 'like', '%' . $search . '%')
+                    ->orWhereHas('employeeDetail', function ($detailQuery) use ($search) {
+                        $detailQuery->where('employee_id', 'like', '%' . $search . '%');
+                    });
+            });
+        }
+
+        $perPage = (int) $request->input('per_page', 15);
+        $perPage = in_array($perPage, [10, 15, 20, 30, 50, 100], true) ? $perPage : 15;
+
+        $employees = $query->orderByDesc('archived_at')->paginate($perPage)->withQueryString();
+
+        return view('admin.employees.archive', compact('employees'));
+    }
+
+    /**
+     * Restore archived employee.
+     */
+    public function restore($id)
+    {
+        $this->ensureAdmin();
+
+        $employee = User::where('role', 'employee')
+            ->whereNotNull('archived_at')
+            ->findOrFail($id);
+
+        $employee->forceFill([
+            'archived_at' => null,
+        ])->save();
+
+        return redirect()->route('employees.archive')
+            ->with('success', 'Employee restored successfully.');
+    }
+
+    /**
+     * Restore archived employees in bulk.
+     */
+    public function bulkRestore(Request $request): JsonResponse
+    {
+        $this->ensureAdmin();
+
+        $request->validate([
+            'employee_ids' => 'required|array',
+            'employee_ids.*' => 'integer|exists:users,id',
+        ]);
+
+        $restored = User::where('role', 'employee')
+            ->whereNotNull('archived_at')
+            ->whereIn('id', $request->employee_ids)
+            ->update(['archived_at' => null]);
+
+        return response()->json([
+            'message' => $restored . ' employee(s) restored successfully.',
+            'restored' => $restored,
+        ]);
     }
 
     /**
@@ -841,9 +926,29 @@ class EmployeeController extends Controller
                 }
             }
 
-            // delete only employees with no subordinates
-            EmployeeDetail::whereIn('user_id', $allowed)->delete();
-            User::whereIn('id', $allowed)->delete();
+            $inactiveIds = EmployeeDetail::whereIn('user_id', $allowed)
+                ->where('status', 'Inactive')
+                ->pluck('user_id')
+                ->all();
+
+            $activeOrInvalid = array_values(array_diff($allowed, $inactiveIds));
+
+            if (count($activeOrInvalid) > 0) {
+                DB::rollBack();
+                return response()->json([
+                    'message' => 'Only inactive employees can be archived. Please remove active employees from the selection.',
+                    'blocked_ids' => $activeOrInvalid,
+                ], 422);
+            }
+
+            User::whereIn('id', $inactiveIds)
+                ->where('role', 'employee')
+                ->whereNull('archived_at')
+                ->update([
+                    'archived_at' => now(),
+                    'is_active' => false,
+                    'login_allowed' => false,
+                ]);
 
             DB::commit();
 
@@ -854,13 +959,13 @@ class EmployeeController extends Controller
                 ], 409);
             }
 
-            return response()->json(['message' => 'Selected employees deleted successfully']);
+            return response()->json(['message' => 'Selected inactive employees archived successfully']);
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Bulk delete error', ['error' => $e->getMessage()]);
+            Log::error('Bulk employee archive error', ['error' => $e->getMessage()]);
             return response()->json([
-                'message' => 'Error deleting employees',
+                'message' => 'Error archiving employees',
                 'error' => $e->getMessage()
             ], 500);
         }

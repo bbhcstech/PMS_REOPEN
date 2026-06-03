@@ -192,6 +192,47 @@
        color: var(--white-pure);
    }
 
+   .menu-inner .menu-item.active:not(.open) > .menu-link {
+       position: relative;
+       overflow: hidden;
+       animation: sidebarActiveGlow 1.8s ease-in-out infinite;
+   }
+
+   .menu-inner .menu-item.active:not(.open) > .menu-link::after {
+       content: "";
+       position: absolute;
+       right: 12px;
+       top: 50%;
+       width: 8px;
+       height: 8px;
+       border-radius: 999px;
+       background: #ffffff;
+       box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.9);
+       transform: translateY(-50%);
+       animation: sidebarActiveDot 1.25s ease-in-out infinite;
+   }
+
+   @keyframes sidebarActiveGlow {
+       0%, 100% {
+           box-shadow: 0 4px 18px rgba(124, 58, 237, 0.18);
+       }
+       50% {
+           box-shadow: 0 8px 26px rgba(124, 58, 237, 0.38);
+       }
+   }
+
+   @keyframes sidebarActiveDot {
+       0% {
+           box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.9);
+       }
+       70% {
+           box-shadow: 0 0 0 8px rgba(255, 255, 255, 0);
+       }
+       100% {
+           box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+       }
+   }
+
    .menu-inner .menu-item.open > .menu-link {
        background-color: var(--purple-hover);
        color: var(--purple-primary);
@@ -404,6 +445,7 @@
 }
 
 </style>
+<link rel="stylesheet" href="{{ asset('admin/assets/css/pms-refresh.css') }}">
 
 <body>
     @php
@@ -461,11 +503,10 @@
             <!-- Layouts -->
             <li class="menu-item {{ request()->routeIs('employees.*') ||
                       request()->routeIs('designations.*') ||
-                      request()->routeIs('attendance.*') ||
+                      (request()->routeIs('attendance.*') && !request()->routeIs('attendance.report')) ||
                       request()->routeIs('leaves.*') ||
                       request()->routeIs('holidays.*') ||
                       request()->routeIs('awards.*') ||
-                      request()->routeIs('admin.leave.report') ||
                       request()->routeIs('employee.awards')
                       ? 'active open' : '' }}">
 
@@ -478,14 +519,14 @@
 
               <ul class="menu-sub">
                     @if(auth()->user()->role === 'admin')
-                        <li class="menu-item">
+                        <li class="menu-item {{ request()->routeIs('employees.*') ? 'active' : '' }}">
                             <a href="{{ route('employees.index') }}" class="menu-link">
                                 <div class="text-truncate" data-i18n="Without menu">Employee</div>
                             </a>
                         </li>
 
 
-                        <li class="menu-item">
+                        <li class="menu-item {{ request()->routeIs('designations.*') ? 'active' : '' }}">
                             <a href="{{ route('designations.index') }}" class="menu-link">
                                 <div class="text-truncate" data-i18n="Without menu">Designation</div>
                             </a>
@@ -513,7 +554,7 @@
 
 
                      @if(in_array(auth()->user()->role, ['admin', 'employee']))
-                    <li class="menu-item {{ request()->routeIs('attendance.index') ? 'active open' : '' }}">
+                    <li class="menu-item {{ (request()->routeIs('attendance.*') && !request()->routeIs('attendance.report')) ? 'active' : '' }}">
                           <a href="{{ route('attendance.index') }}" class="menu-link">
                             <div class="text-truncate" data-i18n="Without menu">
                               {{ auth()->user()->role == 'admin' ? 'Attendance' : 'My Attendance' }}
@@ -535,7 +576,7 @@
 
 
                 @if(in_array(auth()->user()->role, ['admin', 'employee']))
-                <li class="menu-item {{ request()->routeIs('leaves.index') ? 'active open' : '' }}">
+                <li class="menu-item {{ request()->routeIs('leaves.*') ? 'active' : '' }}">
                 <a href="{{ route('leaves.index') }}" class="menu-link">
                     <div class="text-truncate" data-i18n="Without navbar">My Leaves</div>
                 </a>
@@ -552,7 +593,7 @@
                 @endif -->
 
                 {{-- Employee Holiday View --}}
-                <li class="menu-item {{ request()->routeIs('holidays.calendar') ? 'active open' : '' }}">
+                <li class="menu-item {{ request()->routeIs('holidays.*') ? 'active' : '' }}">
                 <a href="{{ route('holidays.calendar') }}" class="menu-link">
                     <div class="text-truncate">Holiday List</div>
                 </a>
@@ -561,14 +602,14 @@
 
                     @if(auth()->user()->role === 'admin')
                     <!-- Admin sees Appreciation menu -->
-                    <li class="menu-item {{ request()->routeIs('awards.*') ? 'active open' : '' }}">
+                    <li class="menu-item {{ request()->routeIs('awards.*') ? 'active' : '' }}">
                         <a href="{{ route('awards.index') }}" class="menu-link">
                             <div class="text-truncate" data-i18n="Container">Recognition</div>
                         </a>
                     </li>
                     @elseif(auth()->user()->role === 'employee')
                     <!-- Employee also sees Recognition menu but goes to filtered view -->
-                    <li class="menu-item {{ request()->routeIs('awards.index') ? 'active open' : '' }}">
+                    <li class="menu-item {{ request()->routeIs('awards.*') || request()->routeIs('employee.awards') ? 'active' : '' }}">
                         <a href="{{ route('awards.index') }}" class="menu-link">
                             <div class="text-truncate" data-i18n="Container">My Awards</div>
                         </a>
@@ -607,9 +648,10 @@
 
 
             <!-- Work Section -->
-            <li class="menu-item {{ request()->routeIs('clients.') || request()->routeIs('projects.') ||
-                request()->routeIs('tasks.') || request()->routeIs('timelogs.') ||
-                request()->routeIs('admin.contracts.') || request()->routeIs('admin.contract-templates.') ? 'active open' : '' }}">
+            <li class="menu-item {{ request()->routeIs('clients.*') || request()->routeIs('projects.*') ||
+                request()->routeIs('tasks.*') || request()->routeIs('users.tasks.*') ||
+                request()->routeIs('timelogs.*') || request()->routeIs('task-timer.*') ||
+                request()->routeIs('admin.contracts.*') || request()->routeIs('admin.contract-templates.*') ? 'active open' : '' }}">
 
                 <a href="javascript:void(0);" class="menu-link menu-toggle">
                     <i class="menu-icon tf-icons bx bx-store"></i>
@@ -618,7 +660,7 @@
 
                 <ul class="menu-sub">
                     @if(auth()->user()->role === 'admin')
-                        <li class="menu-item {{ request()->routeIs('clients.index') ? 'active open' : '' }}">
+                        <li class="menu-item {{ request()->routeIs('clients.*') ? 'active' : '' }}">
                             <a href="{{ route('clients.index') }}" class="menu-link">
                                 <div class="text-truncate" data-i18n="Landing">Client</div>
                             </a>
@@ -626,21 +668,21 @@
                     @endif
 
                     @if(in_array(auth()->user()->role, ['admin', 'employee']))
-                        <li class="menu-item {{ request()->routeIs('projects.index') ? 'active open' : '' }}">
+                        <li class="menu-item {{ (request()->routeIs('projects.*') && !request()->routeIs('projects.tasks.*') && !request()->routeIs('projects.timelogs.*')) ? 'active' : '' }}">
                             <a href="{{ route('projects.index') }}" class="menu-link">
                                 <div class="text-truncate" data-i18n="Landing">Projects</div>
                             </a>
                         </li>
                     @endif
 
-                    <li class="menu-item {{ request()->routeIs('tasks.index') ? 'active open' : '' }}">
+                    <li class="menu-item {{ request()->routeIs('tasks.*') || request()->routeIs('projects.tasks.*') || request()->routeIs('users.tasks.*') || request()->routeIs('task-timer.*') ? 'active' : '' }}">
                         <a href="{{ route('tasks.index') }}" class="menu-link">
                             <div class="text-truncate" data-i18n="Pricing">Tasks</div>
                         </a>
                     </li>
 
                     @if(in_array(auth()->user()->role, ['admin', 'employee']))
-                        <li class="menu-item">
+                        <li class="menu-item {{ request()->routeIs('timelogs.*') || request()->routeIs('projects.timelogs.*') ? 'active' : '' }}">
                             <a href="{{ route('timelogs.index') }}" class="menu-link">
                                 <div class="text-truncate" data-i18n="Payment">Timesheet</div>
                             </a>
@@ -676,14 +718,14 @@
 
                         <ul class="menu-sub">
                             {{-- Lead Contact --}}
-                            <li class="menu-item {{ request()->routeIs('leads.contacts.*') ? 'active open' : '' }}">
+                            <li class="menu-item {{ request()->routeIs('leads.contacts.*') ? 'active' : '' }}">
                                 <a href="{{ route('leads.contacts.index') }}" class="menu-link">
                                     <div class="text-truncate" data-i18n="Landing">Lead Contact</div>
                                 </a>
                             </li>
 
                             {{-- Deals --}}
-                            <li class="menu-item {{ request()->routeIs('admin.deals.*') ? 'active open' : '' }}">
+                            <li class="menu-item {{ request()->routeIs('admin.deals.*') ? 'active' : '' }}">
                                 <a href="{{ route('admin.deals.index') }}" class="menu-link">
                                     <div class="text-truncate">Deals</div>
                                 </a>
@@ -695,7 +737,7 @@
                 <!-- //ticket section . -->
 
 
-            <li class="menu-item {{ request()->routeIs('tickets.index') ? 'active' : '' }}">
+            <li class="menu-item {{ request()->routeIs('tickets.*') || request()->routeIs('ticket-groups.*') ? 'active' : '' }}">
                   <a href="{{ route('tickets.index') }}" class="menu-link">
                        <i class="menu-icon tf-icons bx bx-receipt"></i>
                       <div class="text-truncate" data-i18n="Dashboard">Ticket</div>
@@ -848,6 +890,12 @@
                             </li>
                         </ul>
                     </li>
+                  </div>
+
+                  <div class="nav-item me-3">
+                      <button type="button" class="theme-toggle-btn pms-theme-toggle" aria-label="Toggle dark mode" title="Toggle theme">
+                          <i class="bx bx-moon theme-toggle-icon"></i>
+                      </button>
                   </div>
 
                   <div class="nav-item me-3">

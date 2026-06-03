@@ -1,5 +1,6 @@
 <!-- //layout//footer.blade.php -->
 
+<link rel="stylesheet" href="{{ asset('admin/assets/css/pms-refresh.css') }}">
 
 <!-- Footer -->
             <footer class="content-footer footer bg-footer-theme">
@@ -115,6 +116,33 @@
         <!-- Add before </body> -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.14.0-beta3/js/bootstrap-select.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+        <script>
+          (function () {
+            var root = document.documentElement;
+            var toggles = document.querySelectorAll('.pms-theme-toggle');
+
+            function applyTheme(theme) {
+              root.setAttribute('data-pms-theme', theme);
+              localStorage.setItem('pms-theme', theme);
+              toggles.forEach(function (button) {
+                var icon = button.querySelector('.theme-toggle-icon');
+                button.setAttribute('aria-label', theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
+                button.setAttribute('title', theme === 'dark' ? 'Light mode' : 'Dark mode');
+                if (icon) {
+                  icon.classList.toggle('bx-sun', theme === 'dark');
+                  icon.classList.toggle('bx-moon', theme !== 'dark');
+                }
+              });
+            }
+
+            applyTheme(localStorage.getItem('pms-theme') || root.getAttribute('data-pms-theme') || 'light');
+            toggles.forEach(function (button) {
+              button.addEventListener('click', function () {
+                applyTheme(root.getAttribute('data-pms-theme') === 'dark' ? 'light' : 'dark');
+              });
+            });
+          })();
+        </script>
         @yield('scripts')
         @yield('js')
         @stack('js')

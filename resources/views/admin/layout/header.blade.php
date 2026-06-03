@@ -17,6 +17,12 @@
     <title>PMS</title>
 
     <meta name="description" content="" />
+    <script>
+      (function () {
+        var theme = localStorage.getItem('pms-theme') || 'light';
+        document.documentElement.setAttribute('data-pms-theme', theme);
+      })();
+    </script>
 
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="{{ asset('admin/assets/img/favicon/favicon.ico')}}" />
@@ -35,6 +41,7 @@
 
     <link rel="stylesheet" href="{{ asset('admin/assets/vendor/css/core.css')}}" />
     <link rel="stylesheet" href="{{ asset('admin/assets/css/demo.css')}}" />
+    <link rel="stylesheet" href="{{ asset('admin/assets/css/pms-refresh.css')}}" />
 
     <!-- Vendors CSS -->
 

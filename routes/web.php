@@ -25,6 +25,7 @@ use App\Http\Controllers\ProjectMilestoneController;
 use App\Http\Controllers\ProjectNoteController;
 use App\Http\Controllers\ProjectUserController;
 use App\Http\Controllers\SubTaskController;
+use App\Http\Controllers\SuperAdminController;
 use App\Http\Controllers\TaskCategoryController;
 use App\Http\Controllers\TaskCommentController;
 use App\Http\Controllers\TaskController;
@@ -43,9 +44,13 @@ use App\Http\Controllers\Admin\Settings\CompanySettingsController;
 use App\Http\Controllers\Admin\Settings\BusinessAddressController;
 use App\Http\Controllers\Admin\Settings\AppSettingController;
 use App\Http\Controllers\Admin\Settings\ProfileSettingController;
+use App\Http\Controllers\Admin\ContractController;
+use App\Http\Controllers\Admin\ContractTemplateController;
 use App\Http\Controllers\Admin\LeadContactController;
 use App\Exports\AttendanceExport;
 use App\Http\Controllers\DealController;
+
+
 
 
 
@@ -282,6 +287,19 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
+Route::middleware(['auth', 'verified'])->prefix('superadmin')->name('superadmin.')->group(function () {
+    Route::get('/', [SuperAdminController::class, 'dashboard'])->name('dashboard');
+    Route::post('/companies', [SuperAdminController::class, 'storeCompany'])->name('companies.store');
+    Route::post('/company-admins', [SuperAdminController::class, 'storeAdmin'])->name('admins.store');
+    Route::get('/company-admins', [SuperAdminController::class, 'companyAdmins'])->name('admins.index');
+    Route::get('/company-admins/export', [SuperAdminController::class, 'exportAdmins'])->name('admins.export');
+    Route::patch('/company-admins/{admin}', [SuperAdminController::class, 'updateAdmin'])->name('admins.update');
+    Route::patch('/company-admins/{admin}/archive', [SuperAdminController::class, 'archiveAdmin'])->name('admins.archive');
+    Route::patch('/company-admins/{admin}/restore', [SuperAdminController::class, 'restoreAdmin'])->name('admins.restore');
+    Route::delete('/company-admins/{admin}', [SuperAdminController::class, 'deleteAdmin'])->name('admins.delete');
+    Route::patch('/companies/{company}/status', [SuperAdminController::class, 'updateCompanyStatus'])->name('companies.status');
+});
+
 // Front Controller (landing)
 // Route::get('/', [FrontendController::class, 'index'])->name('home');
 
@@ -448,6 +466,12 @@ Route::resource('designations', DesignationController::class);
         ->name('employees.bulk.delete');
     Route::post('employees/bulk-update-status', [EmployeeController::class, 'bulkUpdateStatus'])
         ->name('employees.bulkUpdateStatus');
+    Route::get('employees/archive', [EmployeeController::class, 'archive'])
+        ->name('employees.archive');
+    Route::post('employees/archive/bulk-restore', [EmployeeController::class, 'bulkRestore'])
+        ->name('employees.archive.bulkRestore');
+    Route::post('employees/{id}/restore', [EmployeeController::class, 'restore'])
+        ->name('employees.restore');
 
     Route::resource('employees', EmployeeController::class);
     Route::get('employees/{id}', [EmployeeController::class, 'show'])->name('employees.show');
