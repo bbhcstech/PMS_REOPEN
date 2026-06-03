@@ -1,716 +1,1251 @@
+
 @extends('admin.layout.app')
 
+@section('title', 'Create Employee')
+
 @section('content')
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
-<div class="container-fluid mt-4 px-3 px-md-4" style="background: linear-gradient(135deg, #f5e6ff 0%, #e6ccff 100%); padding: 25px; border-radius: 15px;">
-    <!-- Page Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="h4 fw-bold mb-1" style="color: #4a1c6c;">
-                <i class="fas fa-user-plus me-2" style="color: #6a1b9a;"></i>{{ isset($employee) ? 'Edit Employee' : 'Add New Employee' }}
-            </h2>
-            <p class="mb-0" style="color: #5a4a6e;">Fill in the employee details below</p>
+        /* =============================================
+           BRAND DESIGN SYSTEM & VARIABLES
+           ============================================= */
+        :root {
+            /* Core Palette - Matching Listing Page */
+            --primary: #0f744c;
+            --secondary: #188b5e;
+            --accent: #22c55e;
+            --mint: #d1fae5;
+            --text-main: #07130d;
+            --text-muted: #52645a;
+            --bg-base: #f7fbf9;
+            --surface: #ffffff;
+
+            /* Gradients */
+            --grad-cta: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 40%, var(--accent) 80%, var(--mint) 100%);
+            --grad-bg: linear-gradient(135deg, rgba(15, 116, 76, 0.12) 0%, rgba(24, 139, 94, 0.12) 40%, rgba(34, 197, 94, 0.12) 80%, rgba(209, 250, 229, 0.2) 100%);
+            --grad-bg-hover: linear-gradient(135deg, rgba(15, 116, 76, 0.2) 0%, rgba(24, 139, 94, 0.2) 40%, rgba(34, 197, 94, 0.2) 80%, rgba(209, 250, 229, 0.3) 100%);
+
+            /* Glassmorphism */
+            --glass-bg: rgba(255, 255, 255, 0.92);
+            --glass-border: rgba(255, 255, 255, 1);
+            --shadow-soft: 0 10px 30px -10px rgba(15, 116, 76, 0.08);
+            --shadow-hover: 0 20px 40px -12px rgba(15, 116, 76, 0.2);
+
+            /* Motion */
+            --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+            --smooth: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            overflow-x: hidden;
+        }
+
+        /* Ambient Animated Background */
+        .ambient-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -2;
+            overflow: hidden;
+            pointer-events: none;
+            background: var(--bg-base);
+        }
+
+        .ambient-bg::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 100vh;
+            background: var(--grad-bg);
+            filter: blur(60px);
+            opacity: 0.6;
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.25;
+            will-change: transform;
+            animation: floatOrb 20s infinite alternate var(--smooth);
+        }
+
+        .orb-1 {
+            width: 50vw;
+            height: 50vw;
+            background: var(--secondary);
+            top: -20%;
+            right: -10%;
+        }
+
+        .orb-2 {
+            width: 40vw;
+            height: 40vw;
+            background: var(--accent);
+            bottom: -10%;
+            left: -10%;
+            animation-delay: -5s;
+        }
+
+        @keyframes floatOrb {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(-50px, 30px) scale(1.1); }
+        }
+
+        .container-fluid {
+            position: relative;
+            z-index: 5;
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* PAGE HEADER */
+        .page-header-enterprise {
+            background: var(--grad-cta);
+            background-size: 200% 200%;
+            animation: gradientFlow 10s ease infinite;
+            border-radius: 24px;
+            padding: 2rem 2.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 20px 40px -10px rgba(15, 116, 76, 0.25);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .page-header-enterprise::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" opacity="0.05"><circle cx="50" cy="50" r="40" fill="none" stroke="white" stroke-width="2"/></svg>') repeat;
+            opacity: 0.4;
+            animation: slideBg 20s linear infinite;
+        }
+
+        @keyframes gradientFlow {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        @keyframes slideBg {
+            from { background-position: 0 0; }
+            to { background-position: 100px 100px; }
+        }
+
+        .header-title {
+            position: relative;
+            z-index: 2;
+        }
+
+        .header-title h1 {
+            color: white;
+            font-size: 1.8rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .header-title h1 i {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 12px;
+            border-radius: 18px;
+            backdrop-filter: blur(8px);
+        }
+
+        .header-title p {
+            color: rgba(255, 255, 255, 0.9);
+            margin: 0.5rem 0 0;
+            font-size: 0.95rem;
+            font-weight: 400;
+        }
+
+        .btn-header-enterprise {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 0.7rem 1.5rem;
+            border-radius: 14px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            z-index: 2;
+            transition: all 0.4s var(--spring);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-header-enterprise::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(to right, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0));
+            transform: skewX(-25deg);
+            transition: 0.6s;
+            z-index: -1;
+        }
+
+        .btn-header-enterprise:hover::before {
+            left: 200%;
+        }
+
+        .btn-header-enterprise:hover {
+            transform: translateY(-3px) scale(1.02);
+            background: white;
+            color: var(--primary);
+            box-shadow: 0 15px 30px -8px rgba(0, 0, 0, 0.2);
+        }
+
+        /* ALERTS */
+        .alert-custom-err {
+            background: #fef2f2;
+            border-left: 4px solid #dc2626;
+            color: #dc2626;
+            border-radius: 16px;
+            padding: 1.2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .alert-custom-success {
+            background: #d1fae5;
+            border-left: 4px solid #10b981;
+            color: #065f46;
+            border-radius: 16px;
+            padding: 1.2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-soft);
+        }
+
+        /* MAIN CARD */
+        .card-premium {
+            background: var(--surface);
+            border: 1px solid rgba(15, 116, 76, 0.12);
+            border-radius: 24px;
+            box-shadow: var(--shadow-soft);
+            overflow: hidden;
+            transition: all 0.4s var(--spring);
+            margin-bottom: 2rem;
+        }
+
+        .card-premium:hover {
+            box-shadow: var(--shadow-hover);
+        }
+
+        .card-header-premium {
+            background: var(--grad-bg);
+            padding: 1.2rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .card-header-premium h5 {
+            margin: 0;
+            font-weight: 800;
+            color: var(--primary);
+            letter-spacing: -0.5px;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card-body-premium {
+            padding: 2rem;
+        }
+
+        /* FORM ELEMENTS */
+        .section-title {
+            font-size: 1.45rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            line-height: 1.3;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: var(--grad-bg);
+            border: 1px solid rgba(15, 116, 76, 0.12);
+            border-radius: 16px;
+            padding: 1.2rem 2rem;
+            box-shadow: 0 10px 24px -18px rgba(15, 116, 76, 0.45);
+        }
+
+        .section-title i {
+            color: var(--secondary);
+            font-size: 1.55rem;
+        }
+
+        .form-label-premium {
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-label-premium i {
+            color: var(--secondary);
+            font-size: 0.9rem;
+        }
+
+        .mandatory-badge {
+            background: rgba(239, 68, 68, 0.1);
+            color: #dc2626;
+            font-size: 0.65rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            margin-left: auto;
+        }
+
+        .optional-badge {
+            background: rgba(100, 116, 139, 0.1);
+            color: var(--text-muted);
+            font-size: 0.65rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            border: 1px solid rgba(100, 116, 139, 0.2);
+            margin-left: auto;
+        }
+
+        .form-control-premium,
+        .form-select-premium {
+            background: #ffffff;
+            border: 1.5px solid rgba(15, 116, 76, 0.2);
+            border-radius: 14px;
+            padding: 0.7rem 1.2rem;
+            font-size: 0.9rem;
+            width: 100%;
+            transition: all 0.3s;
+            color: var(--text-main);
+            font-weight: 500;
+        }
+
+        .form-control-premium:focus,
+        .form-select-premium:focus {
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 4px rgba(24, 139, 94, 0.15);
+            outline: none;
+            transform: translateY(-2px);
+        }
+
+        .input-group-premium {
+            display: flex;
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1.5px solid rgba(15, 116, 76, 0.2);
+            transition: all 0.3s;
+            background: #fff;
+        }
+
+        .input-group-premium:focus-within {
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 4px rgba(24, 139, 94, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .input-group-premium .country-code-select {
+            border: none;
+            background: transparent;
+            padding-left: 1rem;
+            font-weight: 600;
+            color: var(--primary);
+            max-width: 100px;
+            border-radius: 14px 0 0 14px;
+        }
+
+        .input-group-premium .mobile-input {
+            border: none;
+            background: transparent;
+            border-left: 1.5px solid rgba(15, 116, 76, 0.2);
+            border-radius: 0 14px 14px 0;
+        }
+
+        .input-group-premium .mobile-input:focus {
+            box-shadow: none;
+            transform: none;
+        }
+
+        .invalid-feedback {
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #dc2626;
+            margin-top: 0.4rem;
+        }
+
+        .is-invalid {
+            border-color: #dc2626 !important;
+        }
+
+        /* SWITCH & CHECKBOX */
+        .form-check-input:checked {
+            background-color: var(--secondary);
+            border-color: var(--secondary);
+        }
+
+        .form-switch .form-check-input {
+            width: 2.8rem;
+            height: 1.4rem;
+            cursor: pointer;
+        }
+
+        /* BUTTONS */
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .btn-submit {
+            background: var(--grad-cta);
+            color: white;
+            padding: 0.8rem 2rem;
+            border-radius: 14px;
+            background-size: 200% 200%;
+            font-weight: 700;
+            font-size: 0.95rem;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            cursor: pointer;
+            transition: all 0.3s var(--spring);
+            box-shadow: 0 8px 20px rgba(34, 197, 94, 0.25);
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(34, 197, 94, 0.35);
+            background-position: 100% 50%;
+            color: white;
+        }
+
+        .btn-cancel {
+            background: white;
+            color: var(--text-muted);
+            padding: 0.8rem 2rem;
+            border-radius: 14px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            border: 2px solid rgba(100, 116, 139, 0.2);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+
+        .btn-cancel:hover {
+            background: var(--bg-base);
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        /* ANIMATIONS */
+        .fade-up-stagger > * {
+            opacity: 0;
+            animation: fadeUpItem 0.8s var(--spring) forwards;
+        }
+
+        @keyframes fadeUpItem {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .page-header-enterprise {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 1.5rem;
+            }
+            .action-buttons {
+                flex-direction: column;
+            }
+            .btn-submit, .btn-cancel {
+                justify-content: center;
+            }
+            .container-fluid {
+                padding: 1rem;
+            }
+            .card-body-premium {
+                padding: 1.5rem;
+            }
+        }
+
+        /* MODAL STYLES */
+        .modal-content-premium {
+            border: 1px solid rgba(15, 116, 76, 0.14);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 24px 60px rgba(22, 39, 30, 0.18);
+        }
+
+        .modal-header-premium {
+            background: linear-gradient(135deg, #f1faf5, #ffffff) !important;
+            border-bottom: 1px solid rgba(15, 116, 76, 0.1);
+            padding: 1.2rem 1.5rem;
+        }
+
+        .modal-title-premium {
+            color: var(--primary);
+            font-weight: 800;
+        }
+
+        .btn-modal-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            border-radius: 12px;
+            padding: 0.6rem 1.5rem;
+            font-weight: 600;
+            color: white;
+        }
+
+        /* Dark Mode Support */
+        html[data-pms-theme="dark"] .container-fluid {
+            color: #ffffff;
+        }
+    </style>
+
+    <div class="ambient-bg">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+    </div>
+
+    <div class="container-fluid">
+        <div class="page-header-enterprise fade-up-stagger">
+            <div class="header-title">
+                <h1 style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; font-weight: 800 !important;"><i class="fas fa-user-plus" style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important;"></i> Add New Employee</h1>
+                <p style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; font-weight: 800 !important;">Create employee profile and configuration settings</p>
+            </div>
+            <div>
+                <a href="{{ route('employees.index') }}" class="btn-header-enterprise">
+                    <i class="fas fa-arrow-left"></i>
+                    BACK TO DIRECTORY
+                </a>
+            </div>
         </div>
-        <a href="{{ route('employees.index') }}" class="btn" style="background-color: #f0f0f0; color: #4a4a4a; border: 1px solid #d0d0d0; padding: 8px 20px; border-radius: 8px;">
-            <i class="fas fa-arrow-left me-2"></i>Back to List
-        </a>
-    </div>
 
-    <!-- Success Alert -->
-    @if(session('success'))
-    <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-4" role="alert" style="background-color: #f0ffe6; border-left: 4px solid #28a745; border-radius: 8px;">
-        <i class="fas fa-check-circle me-2" style="color: #28a745;"></i>
-        {{ session('success') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-    @endif
+        @if(session('success'))
+            <div class="alert-custom-success fade-up-stagger" style="animation-delay: 0.05s;">
+                <i class="fas fa-check-circle me-2"></i> {{ session('success') }}
+            </div>
+        @endif
 
-    <!-- Error Alert -->
-    @if ($errors->any())
-    <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-4" role="alert" style="background-color: #fff0f0; border-left: 4px solid #dc3545; border-radius: 8px;">
-        <i class="fas fa-exclamation-triangle me-2" style="color: #dc3545;"></i>
-        <strong style="color: #721c24;">Please fix the following errors:</strong>
-        <ul class="mb-0 mt-2" style="color: #721c24;">
-            @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-    @endif
+        @if ($errors->any())
+            <div class="alert-custom-err fade-up-stagger" style="animation-delay: 0.05s;">
+                <div class="fw-bold mb-2"><i class="fas fa-exclamation-circle me-2"></i>Please fix the following errors:</div>
+                <ul class="mb-0 ps-4">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
 
-    <!-- Main Form Card -->
-    <div class="card border-0 shadow-sm" style="border-radius: 15px; overflow: hidden;">
-        <div class="card-header border-0 py-3" style="background: white; border-bottom: 2px solid #e6d0ff;">
-            <h5 class="mb-0" style="color: #5a2a8c;"><i class="fas fa-id-card me-2" style="color: #6a1b9a;"></i>Employee Information</h5>
-        </div>
+        @php
+            $ed = $employee?->employeeDetail ?? null;
+            function fmtDate($val) {
+                if (!$val) return '';
+                try {
+                    return \Carbon\Carbon::parse($val)->format('Y-m-d');
+                } catch (\Exception $e) {
+                    return $val;
+                }
+            }
+        @endphp
 
-        <form id="employeeForm" action="{{ isset($employee) ? route('employees.update', $employee->id) : route('employees.store') }}" method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
-            @csrf
-            @if(isset($employee))
-                @method('PUT')
-            @endif
+        <div class="card-premium fade-up-stagger" style="animation-delay: 0.1s;">
+            <div class="card-header-premium">
+                <h5><i class="fas fa-sliders-h"></i> Employee Configuration</h5>
+            </div>
 
-            <!-- Hidden fields for new designation/department -->
-            <input type="hidden" name="new_designation" id="new_designation" value="">
-            <input type="hidden" name="new_designation_level" id="new_designation_level" value="">
-            <input type="hidden" name="new_department" id="new_department" value="">
-            <input type="hidden" name="new_sub_department" id="new_sub_department" value="">
+            <div class="card-body-premium">
+                <form id="employeeForm" action="{{ route('employees.store') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
 
-            <div class="card-body" style="background-color: white;">
-                <!-- Account Details Section -->
-                <div class="row mb-4">
-                    <div class="col-12">
-                        <h6 class="fw-bold mb-3 border-bottom pb-2" style="color: #4a1c6c; border-bottom-color: #e6d0ff !important;">
-                            <i class="fas fa-user-circle me-2" style="color: #6a1b9a;"></i>Account Details
-                        </h6>
+                    <!-- Hidden fields for new designation/department -->
+                    <input type="hidden" name="new_designation" id="new_designation" value="">
+                    <input type="hidden" name="new_designation_level" id="new_designation_level" value="">
+                    <input type="hidden" name="new_department" id="new_department" value="">
+                    <input type="hidden" name="new_sub_department" id="new_sub_department" value="">
+
+                    <div class="section-title">
+                        <i class="fas fa-id-card"></i> Account Details
                     </div>
 
-                    <!-- Employee ID -->
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label fw-medium" style="color: #4a1c6c;">Employee ID <span class="text-danger">*</span></label>
-                        @php
-                            $empOption = old('employee_id_option') ?? ((isset($employee) && $employee?->employeeDetail?->employee_id) ? 'custom' : 'auto');
-                        @endphp
-
-                        <div class="mb-2">
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="employee_id_option" id="emp_auto" value="auto" {{ $empOption === 'auto' ? 'checked' : '' }} style="border-color: #b380ff;">
-                                <label class="form-check-label" for="emp_auto" style="color: #4a4a4a;">Auto-generate</label>
+                    <div class="row g-4">
+                        <div class="col-md-4">
+                            <label class="form-label-premium">
+                                <span><i class="fas fa-id-badge"></i> Employee ID</span>
+                                <span class="mandatory-badge">Required</span>
+                            </label>
+                            @php
+                                $empOption = old('employee_id_option') ?? (($ed && $ed->employee_id) ? 'custom' : 'auto');
+                            @endphp
+                            <div class="d-flex flex-wrap gap-3 mb-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="employee_id_option" id="emp_auto" value="auto" {{ $empOption === 'auto' ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="emp_auto">Auto-generate</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="employee_id_option" id="emp_custom" value="custom" {{ $empOption === 'custom' ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="emp_custom">Custom ID</label>
+                                </div>
                             </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="employee_id_option" id="emp_custom" value="custom" {{ $empOption === 'custom' ? 'checked' : '' }} style="border-color: #b380ff;">
-                                <label class="form-check-label" for="emp_custom" style="color: #4a4a4a;">Custom ID</label>
-                            </div>
+                            <input type="text" id="employee_id_input" name="employee_id" class="form-control-premium readonly-like-normal"
+                                   placeholder="e.g. BBH2025001"
+                                   value="{{ old('employee_id') ?? ($nextEmployeeId ?? ($ed->employee_id ?? '')) }}"
+                                   readonly>
+                            @error('employee_id')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
                         </div>
 
-                        <input type="text" id="employee_id_input" name="employee_id" class="form-control"
-                               placeholder="e.g. BBH2025001"
-                               value="{{ old('employee_id') ?? ($employee?->employeeDetail?->employee_id ?? ($nextEmployeeId ?? '')) }}"
-                               @if($empOption === 'auto') readonly @endif
-                               style="border-color: #d0b0ff; border-radius: 8px; padding: 0.6rem 1rem;">
-                        <small class="text-muted">Employee ID will be auto-generated</small>
-                        <div class="invalid-feedback employee-id-error d-none"></div>
-                        @error('employee_id')
-                            <div class="text-danger small mt-1">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <!-- Employee Name -->
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label fw-medium" style="color: #4a1c6c;">Full Name <span class="text-danger">*</span></label>
-                        <input type="text" name="name" class="form-control" required
-                               value="{{ old('name') ?? $employee?->name ?? '' }}"
-                               placeholder="Enter full name"
-                               style="border-color: #d0b0ff; border-radius: 8px; padding: 0.6rem 1rem;">
-                        <div class="invalid-feedback name-error d-none"></div>
-                        @error('name')
-                            <div class="text-danger small mt-1">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <!-- Email -->
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label fw-medium" style="color: #4a1c6c;">Email Address <span class="text-danger">*</span></label>
-                        <input type="email" name="email" class="form-control email-input" required
-                               value="{{ old('email') ?? $employee?->email ?? '' }}"
-                               placeholder="employee@company.com"
-                               style="border-color: #d0b0ff; border-radius: 8px; padding: 0.6rem 1rem;">
-                        <div class="invalid-feedback email-error d-none"></div>
-                        @error('email')
-                            <div class="text-danger small mt-1">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <!-- Password -->
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label fw-medium" style="color: #4a1c6c;">Password</label>
-                        <div class="input-group">
-                            <input type="password" name="password" id="password" class="form-control password-input"
-                                   autocomplete="new-password" minlength="8"
-                                   placeholder="Leave blank for auto-generate"
-                                   style="border-color: #d0b0ff; border-radius: 8px 0 0 8px; padding: 0.6rem 1rem;">
-                            <button type="button" class="btn toggle-password" title="Show/Hide" style="border: 1px solid #d0b0ff; background: white; color: #6a1b9a;">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            <button type="button" class="btn generate-password" title="Generate" style="border: 1px solid #d0b0ff; border-left: none; background: white; color: #6a1b9a; border-radius: 0 8px 8px 0;">
-                                <i class="fas fa-random"></i>
-                            </button>
+                        <div class="col-md-4">
+                            <label class="form-label-premium">
+                                <span><i class="fas fa-user"></i> Employee Name</span>
+                                <span class="mandatory-badge">Required</span>
+                            </label>
+                            <input type="text" name="name" class="form-control-premium" required value="{{ old('name') ?? ($employee?->name ?? '') }}">
+                            @error('name')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
                         </div>
-                        <small class="text-muted">Minimum 8 characters. Leave empty for auto-generation.</small>
-                        <div class="invalid-feedback password-error d-none"></div>
-                        @error('password')
-                            <div class="text-danger small mt-1">{{ $message }}</div>
-                        @enderror
-                    </div>
 
-                    <!-- Designation -->
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label fw-medium" style="color: #4a1c6c;">Designation <span class="text-danger">*</span></label>
-                        @php $selectedDesignation = old('designation_id') ?? ($employee?->employeeDetail?->designation_id ?? null); @endphp
-                        <div class="input-group">
-                            <select name="designation_id" id="designation_id" class="form-select designation-select" required style="border-color: #d0b0ff; border-radius: 8px 0 0 8px; padding: 0.6rem 1rem;">
-                                <option value="">Select Designation</option>
-                                @foreach($designations as $designation)
-                                    <option value="{{ $designation->id }}" {{ $selectedDesignation == $designation->id ? 'selected' : '' }}>
-                                        {{ $designation->name }} @if(!empty($designation->unique_code)) ({{ $designation->unique_code }}) @endif
+                        <div class="col-md-4">
+                            <label class="form-label-premium">
+                                <span><i class="fas fa-envelope"></i> Email</span>
+                                <span class="mandatory-badge">Required</span>
+                            </label>
+                            <input type="email" name="email" class="form-control-premium email-input" required value="{{ old('email') ?? ($employee?->email ?? '') }}">
+                            @error('email')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label-premium">
+                                <span><i class="fas fa-lock"></i> Password</span>
+                                <span class="optional-badge">Optional</span>
+                            </label>
+                            <div class="input-group-premium">
+                                <input type="password" name="password" id="password" class="form-control-premium" autocomplete="off" minlength="8" style="border: none; border-radius: 14px;">
+                                <button type="button" class="btn btn-outline-secondary toggle-password" title="Show/Hide Password" style="border: none; background: transparent;">
+                                    <i class="fa fa-eye"></i>
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary generate-password" title="Generate Random Password" style="border: none; background: transparent;">
+                                    <i class="fa fa-random"></i>
+                                </button>
+                            </div>
+                            <small class="text-muted" style="font-size: 0.7rem;">Leave blank to auto-generate a password. Min 8 characters if setting manually.</small>
+                            @error('password')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label-premium">
+                                <span><i class="fas fa-briefcase"></i> Designation</span>
+                                <span class="mandatory-badge">Required</span>
+                            </label>
+                            @php $selectedDesignation = old('designation_id') ?? ($ed->designation_id ?? null); @endphp
+                            <div class="input-group-premium" style="overflow: visible;">
+                                <select name="designation_id" id="designation_id" class="form-select-premium" required style="flex: 1;">
+                                    <option value="">Select Designation</option>
+                                    @foreach($designations as $designation)
+                                        <option value="{{ $designation->id }}" {{ $selectedDesignation == $designation->id ? 'selected' : '' }}>
+                                            {{ $designation->name }}
+                                            @if(!empty($designation->unique_code))
+                                                ({{ $designation->unique_code }})
+                                            @endif
+                                            @if(!empty($designation->level))
+                                                - Level {{ $designation->level }}
+                                            @endif
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <button type="button" class="btn btn-outline-secondary" id="openDesignationModalBtn" title="Add/Edit Designation" style="border: none; background: var(--grad-bg); padding: 0 1rem;">
+                                    <i class="fas fa-plus-circle"></i>
+                                </button>
+                            </div>
+                            @error('designation_id')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label-premium">
+                                <span><i class="fas fa-building"></i> Department</span>
+                                <span class="mandatory-badge">Required</span>
+                            </label>
+                            <div class="input-group-premium" style="overflow: visible;">
+                                @php $selectedPrt = old('parent_dpt_id') ?? ($ed->parent_dpt_id ?? ''); @endphp
+                                <select name="parent_dpt_id" id="prt_department_id" class="form-select-premium" required style="flex: 1;">
+                                    <option value="">Select</option>
+                                    @foreach($prtdepartments as $dept)
+                                        <option value="{{ $dept->id }}" {{ $selectedPrt == $dept->id ? 'selected' : '' }}>
+                                            {{ $dept->dpt_name }} @if(!empty($dept->dpt_code)) ({{ $dept->dpt_code }}) @endif
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <button type="button" class="btn btn-outline-secondary" id="openPrtModalBtn" title="Add parent department" style="border: none; background: var(--grad-bg); padding: 0 1rem;">
+                                    <i class="fas fa-plus-circle"></i>
+                                </button>
+                            </div>
+                            @error('parent_dpt_id')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label-premium">
+                                <span><i class="fas fa-layer-group"></i> Sub Department</span>
+                                <span class="optional-badge">Optional</span>
+                            </label>
+                            <div class="input-group-premium" style="overflow: visible;">
+                                @php $selectedDpt = old('department_id') ?? ($ed->department_id ?? ''); @endphp
+                                <select name="department_id" id="department_id" class="form-select-premium" data-selected="{{ $selectedDpt }}" style="flex: 1;">
+                                    <option value="">Select</option>
+                                </select>
+                                <button type="button" class="btn btn-outline-secondary" id="openDptModalBtn" title="Add department" style="border: none; background: var(--grad-bg); padding: 0 1rem;">
+                                    <i class="fas fa-plus-circle"></i>
+                                </button>
+                            </div>
+                            @error('department_id')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label-premium">
+                                <span><i class="fas fa-image"></i> Profile Picture</span>
+                                <span class="optional-badge">Optional</span>
+                            </label>
+                            <input type="file" name="profile_picture" class="form-control-premium" id="profile_picture">
+                            @if(!empty($employee?->profile_image))
+                                <small class="text-muted d-block mt-1">Current: <a href="{{ asset($employee->profile_image) }}" target="_blank" style="color: var(--secondary);">view image</a></small>
+                            @endif
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label-premium">
+                                <span><i class="fas fa-globe"></i> Country</span>
+                                <span class="mandatory-badge">Required</span>
+                            </label>
+                            <select name="country" id="country" class="form-select-premium select2">
+                                <option value="">Select Country</option>
+                                @php $selectedCountry = old('country') ?? ($ed->country ?? ($employee?->country ?? 'India')); @endphp
+                                @foreach($countries as $country)
+                                    <option value="{{ $country->name }}" data-flag="{{ $country->flag_url }}" {{ $selectedCountry == $country->name ? 'selected' : '' }}>
+                                        {{ $country->name }}
                                     </option>
                                 @endforeach
                             </select>
-                            <button type="button" class="btn" id="openDesignationModalBtn" style="border: 1px solid #d0b0ff; background: white; color: #6a1b9a; border-radius: 0 8px 8px 0;">
-                                <i class="fas fa-plus"></i>
-                            </button>
+                            @error('country')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
                         </div>
-                        <small class="text-muted">Select existing or add new (will be saved with employee)</small>
-                        <div class="invalid-feedback designation-error d-none"></div>
-                        @error('designation_id')
-                            <div class="text-danger small mt-1">{{ $message }}</div>
-                        @enderror
-                    </div>
 
-                    <!-- Department -->
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label fw-medium" style="color: #4a1c6c;">Department <span class="text-danger">*</span></label>
-                        @php $selectedPrt = old('parent_dpt_id') ?? ($employee?->employeeDetail?->parent_dpt_id ?? ''); @endphp
-                        <div class="input-group">
-                            <select name="parent_dpt_id" id="prt_department_id" class="form-select department-select" required style="border-color: #d0b0ff; border-radius: 8px 0 0 8px; padding: 0.6rem 1rem;">
-                                <option value="">Select Department</option>
-                                @foreach($prtdepartments as $dept)
-                                    <option value="{{ $dept->id }}" {{ $selectedPrt == $dept->id ? 'selected' : '' }}>
-                                        {{ $dept->dpt_name }} @if(!empty($dept->dpt_code)) ({{ $dept->dpt_code }}) @endif
+                        <div class="col-md-4">
+                            <label class="form-label-premium">
+                                <span><i class="fas fa-mobile-alt"></i> Mobile</span>
+                                <span class="mandatory-badge">Required</span>
+                            </label>
+                            <div class="input-group-premium">
+                                <span class="input-group-text" style="background: transparent; border: none; font-weight: 600; color: var(--primary);">+91</span>
+                                <input id="mobile_only_digits" type="text" name="mobile" class="form-control-premium mobile-input" required maxlength="10" placeholder="9876543210"
+                                       value="{{ old('mobile') ?? (($ed?->mobile ?? null) ? preg_replace('/^\+91/', '', $ed->mobile) : preg_replace('/^\+91/', '', ($employee?->mobile ?? ''))) }}" style="border: none;">
+                                <div id="mobile-error" class="invalid-feedback mobile-error d-none"></div>
+                            </div>
+                            <input type="hidden" name="mobile_with_code" id="mobile_with_code" value="{{ old('mobile_with_code') ?? ($ed->mobile ?? $employee?->mobile ?? '') }}">
+                            @error('mobile')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label-premium">
+                                <span><i class="fas fa-venus-mars"></i> Gender</span>
+                                <span class="optional-badge">Optional</span>
+                            </label>
+                            @php $gender = old('gender') ?? ($ed->gender ?? ($employee?->gender ?? '')) @endphp
+                            <select name="gender" class="form-select-premium">
+                                <option value="">Select</option>
+                                <option value="Male" {{ $gender === 'Male' ? 'selected' : '' }}>Male</option>
+                                <option value="Female" {{ $gender === 'Female' ? 'selected' : '' }}>Female</option>
+                                <option value="Other" {{ $gender === 'Other' ? 'selected' : '' }}>Other</option>
+                                <option value="Prefer not to say" {{ $gender === 'Prefer not to say' ? 'selected' : '' }}>Prefer not to say</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label-premium">
+                                <span><i class="fas fa-calendar-check"></i> Joining Date</span>
+                                <span class="mandatory-badge">Required</span>
+                            </label>
+                            <input type="date" required class="form-control-premium joining-date-input" name="joining_date" id="joining_date"
+                                   value="{{ old('joining_date') ?? (isset($ed->joining_date) ? fmtDate($ed->joining_date) : date('Y-m-d')) }}">
+                            <small class="text-muted d-block mt-1" style="font-size: 0.7rem;">Employee joining date</small>
+                            @error('joining_date')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label-premium">
+                                <span><i class="fas fa-birthday-cake"></i> Date of Birth</span>
+                                <span class="mandatory-badge">Required</span>
+                                <span class="text-muted" style="font-size: 0.65rem; margin-left: 0.5rem;">(As per government ID)</span>
+                            </label>
+                            <input type="date" name="dob" id="dob" class="form-control-premium" required
+                                   value="{{ old('dob') ?? fmtDate($ed->dob ?? $employee?->dob ?? '') }}">
+                            @error('dob')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label-premium">
+                                <span><i class="fas fa-user-friends"></i> Reporting To</span>
+                                <span class="optional-badge">Optional</span>
+                            </label>
+                            @php $selectedReporting = old('reporting_to') ?? ($ed->reporting_to ?? ''); @endphp
+                            <select name="reporting_to" class="form-select-premium">
+                                <option value="">Select</option>
+                                @foreach($users as $userItem)
+                                    <option value="{{ $userItem->id }}" {{ (string)$selectedReporting === (string)$userItem->id ? 'selected' : '' }} {{ $employee && $userItem->id == $employee->id ? 'disabled' : '' }}>
+                                        {{ $userItem->name }}
                                     </option>
                                 @endforeach
                             </select>
-                            <button type="button" class="btn" id="openPrtModalBtn" style="border: 1px solid #d0b0ff; background: white; color: #6a1b9a; border-radius: 0 8px 8px 0;">
-                                <i class="fas fa-plus"></i>
-                            </button>
                         </div>
-                        <small class="text-muted">Select existing or add new (will be saved with employee)</small>
-                        <div class="invalid-feedback department-error d-none"></div>
-                        @error('parent_dpt_id')
-                            <div class="text-danger small mt-1">{{ $message }}</div>
-                        @enderror
-                    </div>
 
-                    <!-- Sub Department -->
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label fw-medium" style="color: #4a1c6c;">Sub Department</label>
-                        @php $selectedDpt = old('department_id') ?? ($employee?->employeeDetail?->department_id ?? ''); @endphp
-                        <div class="input-group">
-                            <select name="department_id" id="department_id" class="form-select subdepartment-select" data-selected="{{ $selectedDpt }}" style="border-color: #d0b0ff; border-radius: 8px 0 0 8px; padding: 0.6rem 1rem;">
-                                <option value="">Select Sub Department</option>
+                        <div class="col-md-4">
+                            <label class="form-label-premium">
+                                <span><i class="fas fa-language"></i> Change Language</span>
+                                <span class="optional-badge">Optional</span>
+                            </label>
+                            <select name="language" id="language" class="form-select-premium select2">
+                                @php $lang = old('language') ?? ($ed->language ?? ($employee?->language ?? 'en')); @endphp
+                                <option value="en" data-flag="https://flagcdn.com/w20/gb.png" {{ $lang === 'en' ? 'selected' : '' }}>English</option>
+                                <option value="bn" data-flag="https://flagcdn.com/w20/bd.png" {{ $lang === 'bn' ? 'selected' : '' }}>Bengali</option>
+                                <option value="hi" data-flag="https://flagcdn.com/w20/in.png" {{ $lang === 'hi' ? 'selected' : '' }}>Hindi</option>
+                                <option value="fr" data-flag="https://flagcdn.com/w20/fr.png" {{ $lang === 'fr' ? 'selected' : '' }}>French</option>
+                                <option value="de" data-flag="https://flagcdn.com/w20/de.png" {{ $lang === 'de' ? 'selected' : '' }}>German</option>
                             </select>
-                            <button type="button" class="btn" id="openDptModalBtn" style="border: 1px solid #d0b0ff; background: white; color: #6a1b9a; border-radius: 0 8px 8px 0;">
-                                <i class="fas fa-plus"></i>
-                            </button>
                         </div>
-                        <small class="text-muted">Select existing or add new (will be saved with employee)</small>
+
+                        <div class="col-md-4">
+                            <label class="form-label-premium">
+                                <span><i class="fas fa-user-tag"></i> User Role</span>
+                                <span class="mandatory-badge">Required</span>
+                            </label>
+                            @php $role = old('user_role') ?? ($employee?->role ?? 'employee') @endphp
+                            <select name="user_role" class="form-select-premium select-picker" required>
+                                <option value="">Select Role</option>
+                                <option value="employee" {{ $role === 'employee' ? 'selected' : '' }}>Employee</option>
+                                <option value="admin" {{ $role === 'admin' ? 'selected' : '' }}>Admin</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label-premium">
+                                <span><i class="fas fa-map-marker-alt"></i> Address</span>
+                                <span class="optional-badge">Optional</span>
+                            </label>
+                            <textarea name="address" class="form-control-premium" rows="2">{{ old('address') ?? ($ed->address ?? $employee?->address ?? '') }}</textarea>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label-premium">
+                                <span><i class="fas fa-info-circle"></i> About</span>
+                                <span class="optional-badge">Optional</span>
+                            </label>
+                            <textarea name="about" class="form-control-premium" rows="2">{{ old('about') ?? ($ed->about ?? $employee?->about ?? '') }}</textarea>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label-premium">
+                                <span><i class="fas fa-lock"></i> Login Allowed?</span>
+                            </label>
+                            @php $loginAllowed = (string) (old('login_allowed') ?? (string)($ed->login_allowed ?? $employee?->login_allowed ?? '1')); @endphp
+                            <select name="login_allowed" class="form-select-premium">
+                                <option value="1" {{ $loginAllowed === '1' ? 'selected' : '' }}>Yes</option>
+                                <option value="0" {{ $loginAllowed === '0' ? 'selected' : '' }}>No</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label-premium">
+                                <span><i class="fas fa-bell"></i> Email Notifications?</span>
+                            </label>
+                            @php $emailNotif = (string) (old('email_notifications') ?? (string)($ed->email_notifications ?? $employee?->email_notifications ?? '1')); @endphp
+                            <select name="email_notifications" class="form-select-premium">
+                                <option value="1" {{ $emailNotif === '1' ? 'selected' : '' }}>Yes</option>
+                                <option value="0" {{ $emailNotif === '0' ? 'selected' : '' }}>No</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label-premium">
+                                <span><i class="fas fa-code"></i> Skills</span>
+                                <span class="optional-badge">Optional</span>
+                            </label>
+                            <textarea name="skills" class="form-control-premium" rows="2" placeholder="Comma separated skills (e.g., Laravel, Vue.js, React)">{{ old('skills') ?? ($ed->skills ?? $employee?->skills ?? '') }}</textarea>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label-premium">
+                                <span><i class="fas fa-clock"></i> Employment Type</span>
+                                <span class="optional-badge">Optional</span>
+                            </label>
+                            @php $employmentType = old('employment_type') ?? ($ed->employment_type ?? $employee?->employment_type ?? '') @endphp
+                            <select name="employment_type" id="employment_type" class="form-select-premium select-picker">
+                                <option value="">Select</option>
+                                <option value="full_time" {{ $employmentType === 'full_time' ? 'selected' : '' }}>Full Time</option>
+                                <option value="part_time" {{ $employmentType === 'part_time' ? 'selected' : '' }}>Part Time</option>
+                                <option value="on_contract" {{ $employmentType === 'on_contract' ? 'selected' : '' }}>On Contract</option>
+                                <option value="internship" {{ $employmentType === 'internship' ? 'selected' : '' }}>Internship</option>
+                                <option value="trainee" {{ $employmentType === 'trainee' ? 'selected' : '' }}>Trainee</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label-premium">
+                                <span><i class="fas fa-heart"></i> Marital Status</span>
+                                <span class="optional-badge">Optional</span>
+                            </label>
+                            @php $marital = old('marital_status') ?? ($ed->marital_status ?? $employee?->marital_status ?? '') @endphp
+                            <select name="marital_status" id="marital_status" class="form-select-premium select-picker">
+                                <option value="">Select</option>
+                                <option value="single" {{ $marital === 'single' ? 'selected' : '' }}>Single</option>
+                                <option value="married" {{ $marital === 'married' ? 'selected' : '' }}>Married</option>
+                                <option value="widower" {{ $marital === 'widower' ? 'selected' : '' }}>Widower</option>
+                                <option value="widow" {{ $marital === 'widow' ? 'selected' : '' }}>Widow</option>
+                                <option value="separate" {{ $marital === 'separate' ? 'selected' : '' }}>Separate</option>
+                                <option value="divorced" {{ $marital === 'divorced' ? 'selected' : '' }}>Divorced</option>
+                                <option value="engaged" {{ $marital === 'engaged' ? 'selected' : '' }}>Engaged</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label-premium">
+                                <span><i class="fas fa-building"></i> Business Address</span>
+                                <span class="mandatory-badge">Required</span>
+                            </label>
+                            <textarea name="business_address" class="form-control-premium" required rows="2">{{ old('business_address') ?? ($ed->business_address ?? $employee?->business_address ?? 'Kolkata') }}</textarea>
+                            @error('business_address')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label-premium">
+                                <span><i class="fas fa-toggle-on"></i> Status</span>
+                                <span class="mandatory-badge">Required</span>
+                            </label>
+                            @php $status = old('status') ?? ($ed->status ?? 'Active') @endphp
+                            <div class="d-flex gap-4 mt-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="status" id="status-active" value="Active" {{ $status === 'Active' ? 'checked' : '' }} onchange="toggleExitDate()">
+                                    <label class="form-check-label" for="status-active">Active</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="status" id="status-inactive" value="Inactive" {{ $status === 'Inactive' ? 'checked' : '' }} onchange="toggleExitDate()">
+                                    <label class="form-check-label" for="status-inactive">Inactive</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4" id="exit-date-container" style="display: {{ $status === 'Inactive' ? 'block' : 'none' }};">
+                            <label class="form-label-premium">
+                                <span><i class="fas fa-calendar-times"></i> Exit Date</span>
+                                <span class="optional-badge">Optional</span>
+                            </label>
+                            <input type="date" name="exit_date" id="exit_date" class="form-control-premium" value="{{ old('exit_date') ?? fmtDate($ed->exit_date ?? '') }}">
+                        </div>
                     </div>
 
-                    <!-- Profile Picture -->
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label fw-medium" style="color: #4a1c6c;">Profile Picture</label>
-                        <input type="file" name="profile_picture" class="form-control profile-input" accept="image/*" style="border-color: #d0b0ff; border-radius: 8px; padding: 0.6rem 1rem;">
-                        <small class="text-muted d-block mt-2">
-                            <i class="fas fa-info-circle me-1" style="color: #6a1b9a;"></i>
-                            Allowed formats: JPG, JPEG, PNG, GIF, WEBP, SVG
-                        </small>
-                        <small class="text-muted d-block mb-2">
-                            <i class="fas fa-file-archive me-1" style="color: #6a1b9a;"></i>
-                            Maximum file size: 2MB
-                        </small>
+                    <div class="action-buttons">
+                        <a href="{{ route('employees.index') }}" class="btn-cancel">
+                            <i class="fas fa-times"></i> Discard
+                        </a>
+                        <button type="submit" class="btn-submit" id="submitBtn">
+                            <i class="fas fa-save"></i> Create Employee
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
-                        @if(isset($employee) && $employee?->profile_image)
-                            <div class="mt-2 border rounded p-2" style="background: #f9f5ff; border-color: #e6d0ff !important;">
-                                <div class="d-flex align-items-center">
-                                    <img src="{{ asset($employee->profile_image) }}" alt="Current Profile" class="rounded-circle me-3" width="60" height="60">
-                                    <div>
-                                        <small class="d-block fw-medium" style="color: #4a1c6c;">Current profile picture</small>
-                                        <small class="d-block text-muted">Will be replaced if you upload a new one</small>
-                                    </div>
+    {{-- Modals: Parent Department, Department, Designation --}}
+    <div class="modal fade" id="prtModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <form id="addPrtDptForm">@csrf
+                <div class="modal-content modal-content-premium">
+                    <div class="modal-header modal-header-premium">
+                        <h5 class="modal-title modal-title-premium"><i class="fas fa-building me-2"></i> Manage Parent Department</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body" style="padding: 1.5rem;">
+                        <table class="table table-bordered mb-4">
+                            <thead class="table-light">
+                                <tr><th>#</th><th>Parent Department Name</th><th width="120">Action</th></tr>
+                            </thead>
+                            <tbody id="prt-dpt-list">
+                                @foreach($prtdepartments as $index => $prt)
+                                    <tr id="prt-row-{{ $prt->id }}">
+                                        <td>{{ $index + 1 }}</td>
+                                        <td>{{ $prt->dpt_name }}</td>
+                                        <td>
+                                            <button type="button" class="btn btn-sm btn-danger delete-prt" data-id="{{ $prt->id }}">Delete</button>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold" style="color: var(--primary);">Parent Department Name <sup class="text-danger">*</sup></label>
+                            <input type="text" name="dpt_name" id="prt_dpt_name" class="form-control-premium" required>
+                            <div id="prt-group-error" class="text-danger d-none mt-2"></div>
+                        </div>
+                    </div>
+                    <div class="modal-footer" style="border-top: 1px solid rgba(0,0,0,0.05);">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn-modal-primary">Save Department</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal fade" id="dptModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <form id="addDptForm">@csrf
+                <div class="modal-content modal-content-premium">
+                    <div class="modal-header modal-header-premium">
+                        <h5 class="modal-title modal-title-premium"><i class="fas fa-layer-group me-2"></i> Manage Department</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body" style="padding: 1.5rem;">
+                        <table class="table table-bordered mb-4">
+                            <thead class="table-light">
+                                <tr><th>#</th><th>Parent Department Name</th><th>Department Name</th><th width="120">Action</th></tr>
+                            </thead>
+                            <tbody id="dpt-list">
+                                @foreach($departments as $index => $dpt)
+                                    <tr id="dpt-row-{{ $dpt->id }}">
+                                        <td>{{ $index + 1 }}</td>
+                                        <td>{{ $dpt->parent?->dpt_name ?? 'N/A' }}</td>
+                                        <td>{{ $dpt->dpt_name }}</td>
+                                        <td>
+                                            <button type="button" class="btn btn-sm btn-danger delete-dpt" data-id="{{ $dpt->id }}">Delete</button>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold" style="color: var(--primary);">Parent Department (optional)</label>
+                            <select name="parent_dpt_id" id="dpt_parent_select" class="form-select-premium">
+                                <option value="">None</option>
+                                @foreach($prtdepartments as $pd)
+                                    <option value="{{ $pd->id }}">{{ $pd->dpt_name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold" style="color: var(--primary);">Department Name <sup class="text-danger">*</sup></label>
+                            <input type="text" name="dpt_name" id="dpt_name" class="form-control-premium" required>
+                            <div id="dpt-group-error" class="text-danger d-none mt-2"></div>
+                        </div>
+                    </div>
+                    <div class="modal-footer" style="border-top: 1px solid rgba(0,0,0,0.05);">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn-modal-primary">Save Department</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal fade" id="designationModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <form id="addDesignationForm">@csrf
+                <div class="modal-content modal-content-premium">
+                    <div class="modal-header modal-header-premium">
+                        <h5 class="modal-title modal-title-premium"><i class="fas fa-briefcase me-2"></i> Manage Designations</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body" style="padding: 1.5rem;">
+                        @if($designations->isNotEmpty())
+                            <div class="mb-3">
+                                <label class="form-label fw-bold" style="color: var(--primary);">Existing Designations</label>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered mb-3">
+                                        <thead class="table-light">
+                                            <tr><th>Name</th><th>Level</th><th width="100">Actions</th></tr>
+                                        </thead>
+                                        <tbody id="designation-list">
+                                            @foreach($designations as $des)
+                                                <tr id="des-row-{{ $des->id }}">
+                                                    <td>{{ $des->name }}</td>
+                                                    <td>{{ $des->level ?? 'Not Set' }}</td>
+                                                    <td>
+                                                        <button type="button" class="btn btn-sm btn-warning edit-designation"
+                                                                data-id="{{ $des->id }}"
+                                                                data-name="{{ $des->name }}"
+                                                                data-level="{{ $des->level ?? '' }}"
+                                                                title="Edit">
+                                                            <i class="fas fa-edit"></i>
+                                                        </button>
+                                                        <button type="button" class="btn btn-sm btn-danger delete-designation" data-id="{{ $des->id }}" title="Delete">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
                         @endif
-                    </div>
 
-                    <!-- Country -->
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label fw-medium" style="color: #4a1c6c;">Country <span class="text-danger">*</span></label>
-                        <select name="country" id="country" class="form-select select2 country-select" style="border-color: #d0b0ff; border-radius: 8px; padding: 0.6rem 1rem;">
-                            <option value="">Select Country</option>
-                            @php $selectedCountry = old('country') ?? ($employee?->country ?? 'India'); @endphp
-                            @foreach($countries as $country)
-                                <option value="{{ $country->name }}" data-flag="{{ $country->flag_url }}" {{ $selectedCountry == $country->name ? 'selected' : '' }}>
-                                    {{ $country->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                        <div class="invalid-feedback country-error d-none"></div>
-                        @error('country')
-                            <div class="text-danger small mt-1">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <!-- Mobile -->
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label fw-medium" style="color: #4a1c6c;">Mobile Number <span class="text-danger">*</span></label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light" style="border-color: #d0b0ff; color: #4a1c6c;">+91</span>
-                            <input id="mobile_only_digits" type="text" name="mobile" class="form-control mobile-input" required
-                                   maxlength="10" placeholder="9876543210"
-                                   value="{{ old('mobile') ?? ($employee?->mobile ? preg_replace('/^\+91/', '', $employee->mobile) : '') }}"
-                                   @if(isset($employee)) data-current-id="{{ $employee->id }}" @endif
-                                   style="border-color: #d0b0ff; border-radius: 0 8px 8px 0; padding: 0.6rem 1rem;">
-                        </div>
-                        <small class="text-muted">Enter 10-digit mobile number without 0 or +91</small>
-                        <div id="mobile-error" class="invalid-feedback mobile-error d-none"></div>
-                        <input type="hidden" name="mobile_with_code" id="mobile_with_code" value="{{ old('mobile_with_code') ?? ($employee?->mobile ?? '') }}">
-                        @error('mobile')
-                            <div class="text-danger small mt-1">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <!-- Gender -->
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label fw-medium" style="color: #4a1c6c;">Gender</label>
-                        @php $gender = old('gender') ?? ($employee?->gender ?? '') @endphp
-                        <select name="gender" class="form-select gender-select" style="border-color: #d0b0ff; border-radius: 8px; padding: 0.6rem 1rem;">
-                            <option value="">Select Gender</option>
-                            <option value="Male" {{ $gender === 'Male' ? 'selected' : '' }}>Male</option>
-                            <option value="Female" {{ $gender === 'Female' ? 'selected' : '' }}>Female</option>
-                            <option value="Other" {{ $gender === 'Other' ? 'selected' : '' }}>Other</option>
-                            <option value="Prefer not to say" {{ $gender === 'Prefer not to say' ? 'selected' : '' }}>Prefer not to say</option>
-                        </select>
-                        @error('gender')
-                            <div class="text-danger small mt-1">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <!-- Joining Date -->
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label fw-medium" style="color: #4a1c6c;">Joining Date <span class="text-danger">*</span></label>
-                        <input type="date" required class="form-control joining-date-input" name="joining_date" id="joining_date"
-                               value="{{ old('joining_date') ?? ($employee?->employeeDetail?->joining_date?->format('Y-m-d') ?? date('Y-m-d')) }}"
-                               style="border-color: #d0b0ff; border-radius: 8px; padding: 0.6rem 1rem;">
-                        <small class="text-muted d-block mt-1">Joining date can be any date (past, present, or future)</small>
-                        <div class="invalid-feedback joining-date-error d-none"></div>
-                        @error('joining_date')
-                            <div class="text-danger small mt-1">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <!-- Date of Birth -->
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label fw-medium" style="color: #4a1c6c;">Date of Birth <span class="text-danger">*</span></label>
-                        <input type="date" name="dob" id="dob" class="form-control dob-input" required
-                               value="{{ old('dob') ?? ($employee?->dob ?? '') }}"
-                               style="border-color: #d0b0ff; border-radius: 8px; padding: 0.6rem 1rem;">
-                        <small class="text-muted">As per government ID</small>
-                        <div class="invalid-feedback dob-error d-none"></div>
-                        @error('dob')
-                            <div class="text-danger small mt-1">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <!-- Reporting To -->
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label fw-medium" style="color: #4a1c6c;">Reporting To</label>
-                        @php $selectedReporting = old('reporting_to') ?? ($employee?->employeeDetail?->reporting_to ?? ''); @endphp
-                        <select name="reporting_to" class="form-select reporting-select" style="border-color: #d0b0ff; border-radius: 8px; padding: 0.6rem 1rem;">
-                            <option value="">Select Reporting Manager</option>
-                            @foreach($users as $user)
-                                <option value="{{ $user->id }}" {{ $selectedReporting == $user->id ? 'selected' : '' }}>
-                                    {{ $user->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('reporting_to')
-                            <div class="text-danger small mt-1">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <!-- Language -->
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label fw-medium" style="color: #4a1c6c;">Language</label>
-                        <div class="input-group">
-                            <input type="text" class="form-control" value="English" readonly style="border-color: #d0b0ff; background: #f9f5ff; border-radius: 8px; padding: 0.6rem 1rem;">
-                            <span class="input-group-text" style="border-color: #d0b0ff; background: #f9f5ff; color: #4a1c6c;"><i class="fas fa-globe"></i></span>
-                        </div>
-                        <input type="hidden" name="language" value="en">
-                    </div>
-
-                    <!-- User Role -->
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label fw-medium" style="color: #4a1c6c;">User Role <span class="text-danger">*</span></label>
-                        @php $role = old('user_role') ?? ($employee?->role ?? '') @endphp
-                        <select name="user_role" class="form-select role-select" required style="border-color: #d0b0ff; border-radius: 8px; padding: 0.6rem 1rem;">
-                            <option value="">Select Role</option>
-                            <option value="employee" {{ $role === 'employee' ? 'selected' : '' }}>Employee</option>
-                            <option value="admin" {{ $role === 'admin' ? 'selected' : '' }}>Admin</option>
-                        </select>
-                        <div class="invalid-feedback role-error d-none"></div>
-                        @error('user_role')
-                            <div class="text-danger small mt-1">{{ $message }}</div>
-                        @enderror
-                    </div>
-                </div>
-
-                <!-- Additional Information Section -->
-                <div class="row mb-4">
-                    <div class="col-12">
-                        <h6 class="fw-bold mb-3 border-bottom pb-2" style="color: #4a1c6c; border-bottom-color: #e6d0ff !important;">
-                            <i class="fas fa-info-circle me-2" style="color: #6a1b9a;"></i>Additional Information
-                        </h6>
-                    </div>
-
-                    <!-- Address -->
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label fw-medium" style="color: #4a1c6c;">Address</label>
-                        <textarea name="address" class="form-control address-input" rows="3" placeholder="Enter complete address"
-                                  style="border-color: #d0b0ff; border-radius: 8px; padding: 0.6rem 1rem;">{{ old('address') ?? ($employee?->address ?? '') }}</textarea>
-                        @error('address')
-                            <div class="text-danger small mt-1">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <!-- About -->
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label fw-medium" style="color: #4a1c6c;">About</label>
-                        <textarea name="about" class="form-control about-input" rows="3" placeholder="About the employee"
-                                  style="border-color: #d0b0ff; border-radius: 8px; padding: 0.6rem 1rem;">{{ old('about') ?? ($employee?->about ?? '') }}</textarea>
-                        @error('about')
-                            <div class="text-danger small mt-1">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <!-- Login Allowed -->
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label fw-medium" style="color: #4a1c6c;">Allow Login? <span class="text-danger">*</span></label>
-                        @php $loginAllowed = old('login_allowed') ?? ($employee?->login_allowed ?? '1'); @endphp
-                        <select name="login_allowed" class="form-select login-allowed-select" required style="border-color: #d0b0ff; border-radius: 8px; padding: 0.6rem 1rem;">
-                            <option value="1" {{ $loginAllowed == '1' ? 'selected' : '' }}>Yes - Can login to system</option>
-                            <option value="0" {{ $loginAllowed == '0' ? 'selected' : '' }}>No - Cannot login</option>
-                        </select>
-                        <small class="text-muted">Employee can only login if this is "Yes" AND Status is "Active"</small>
-                        <div class="invalid-feedback login-allowed-error d-none"></div>
-                        @error('login_allowed')
-                            <div class="text-danger small mt-1">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <!-- Email Notifications -->
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label fw-medium" style="color: #4a1c6c;">Email Notifications?</label>
-                        @php $emailNotif = old('email_notifications') ?? ($employee?->email_notifications ?? '1'); @endphp
-                        <select name="email_notifications" class="form-select email-notif-select" style="border-color: #d0b0ff; border-radius: 8px; padding: 0.6rem 1rem;">
-                            <option value="1" {{ $emailNotif == '1' ? 'selected' : '' }}>Yes - Receive emails</option>
-                            <option value="0" {{ $emailNotif == '0' ? 'selected' : '' }}>No - No emails</option>
-                        </select>
-                        @error('email_notifications')
-                            <div class="text-danger small mt-1">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <!-- Skills -->
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label fw-medium" style="color: #4a1c6c;">Skills</label>
-                        <textarea name="skills" class="form-control skills-input" rows="3" placeholder="e.g. PHP, Laravel, JavaScript"
-                                  style="border-color: #d0b0ff; border-radius: 8px; padding: 0.6rem 1rem;">{{ old('skills') ?? ($employee?->skills ?? '') }}</textarea>
-                        @error('skills')
-                            <div class="text-danger small mt-1">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <!-- Employment Type -->
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label fw-medium" style="color: #4a1c6c;">Employment Type <span class="text-danger">*</span></label>
-                        @php $employmentType = old('employment_type') ?? ($employee?->employment_type ?? '') @endphp
-                        <select name="employment_type" id="employment_type" class="form-select employment-type-select" required style="border-color: #d0b0ff; border-radius: 8px; padding: 0.6rem 1rem;">
-                            <option value="">Select Type</option>
-                            <option value="full_time" {{ $employmentType === 'full_time' ? 'selected' : '' }}>Full Time</option>
-                            <option value="part_time" {{ $employmentType === 'part_time' ? 'selected' : '' }}>Part Time</option>
-                            <option value="on_contract" {{ $employmentType === 'on_contract' ? 'selected' : '' }}>On Contract</option>
-                            <option value="internship" {{ $employmentType === 'internship' ? 'selected' : '' }}>Internship</option>
-                            <option value="trainee" {{ $employmentType === 'trainee' ? 'selected' : '' }}>Trainee</option>
-                        </select>
-                        <div class="invalid-feedback employment-type-error d-none"></div>
-                        @error('employment_type')
-                            <div class="text-danger small mt-1">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <!-- Marital Status -->
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label fw-medium" style="color: #4a1c6c;">Marital Status</label>
-                        @php $marital = old('marital_status') ?? ($employee?->marital_status ?? '') @endphp
-                        <select name="marital_status" id="marital_status" class="form-select marital-status-select" style="border-color: #d0b0ff; border-radius: 8px; padding: 0.6rem 1rem;">
-                            <option value="">Select Status</option>
-                            <option value="single" {{ $marital === 'single' ? 'selected' : '' }}>Single</option>
-                            <option value="married" {{ $marital === 'married' ? 'selected' : '' }}>Married</option>
-                            <option value="widower" {{ $marital === 'widower' ? 'selected' : '' }}>Widower</option>
-                            <option value="widow" {{ $marital === 'widow' ? 'selected' : '' }}>Widow</option>
-                            <option value="separate" {{ $marital === 'separate' ? 'selected' : '' }}>Separate</option>
-                            <option value="divorced" {{ $marital === 'divorced' ? 'selected' : '' }}>Divorced</option>
-                            <option value="engaged" {{ $marital === 'engaged' ? 'selected' : '' }}>Engaged</option>
-                        </select>
-                        @error('marital_status')
-                            <div class="text-danger small mt-1">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <!-- Business Address -->
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label fw-medium" style="color: #4a1c6c;">Business Address <span class="text-danger">*</span></label>
-                        <textarea name="business_address" class="form-control business-address-input" required
-                                  style="border-color: #d0b0ff; border-radius: 8px; padding: 0.6rem 1rem;">{{ old('business_address') ?? ($employee?->employeeDetail?->business_address ?? 'Kolkata') }}</textarea>
-                        <div class="invalid-feedback business-address-error d-none"></div>
-                        @error('business_address')
-                            <div class="text-danger small mt-1">{{ $message }}</div>
-                        @enderror
-                    </div>
-                </div>
-
-                <!-- Status Section -->
-                <div class="row">
-                    <div class="col-12">
-                        <h6 class="fw-bold mb-3 border-bottom pb-2" style="color: #4a1c6c; border-bottom-color: #e6d0ff !important;">
-                            <i class="fas fa-user-check me-2" style="color: #6a1b9a;"></i>Employment Status
-                        </h6>
-                    </div>
-
-                    <!-- Status -->
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label fw-medium" style="color: #4a1c6c;">Employment Status <span class="text-danger">*</span></label>
-                        @php $status = old('status') ?? ($employee?->employeeDetail?->status ?? 'Active') @endphp
-                        <div class="d-flex gap-3 status-radio-group">
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="status" id="status-active" value="Active" {{ $status === 'Active' ? 'checked' : '' }} onchange="toggleExitDate()" style="border-color: #b380ff;">
-                                <label class="form-check-label fw-medium" for="status-active" style="color: #2e7d32;">
-                                    <i class="fas fa-circle-check me-1" style="color: #2e7d32;"></i>Active
-                                </label>
+                        <div class="border-top pt-3">
+                            <h6 class="fw-bold" style="color: var(--primary);">Add New Designation</h6>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold" style="color: var(--primary);">Designation Name <sup class="text-danger">*</sup></label>
+                                <input type="text" name="name" id="designationName" class="form-control-premium" required>
+                                <div class="text-danger mt-2 d-none" id="designation-error"></div>
                             </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="status" id="status-inactive" value="Inactive" {{ $status === 'Inactive' ? 'checked' : '' }} onchange="toggleExitDate()" style="border-color: #b380ff;">
-                                <label class="form-check-label fw-medium" for="status-inactive" style="color: #c62828;">
-                                    <i class="fas fa-circle-xmark me-1" style="color: #c62828;"></i>Inactive
-                                </label>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold" style="color: var(--primary);">Designation Level <span class="text-danger">*</span></label>
+                                <input type="number" min="0" max="6" name="level" class="form-control-premium" id="designationLevel" placeholder="Enter level (0-6)" required>
+                                <small class="text-muted">Level range: 0-6 (e.g., 0=Intern, 1=Associate, 2=Sr. Associate, etc.)</small>
                             </div>
                         </div>
-                        <small class="text-muted">Employee can only login if this is "Active" AND Login Allowed is "Yes"</small>
-                        <div class="invalid-feedback status-error d-none"></div>
-                        @error('status')
-                            <div class="text-danger small mt-1">{{ $message }}</div>
-                        @enderror
-                    </div>
 
-                    <!-- Exit Date (Conditional) -->
-                    <div class="col-md-4 mb-3" id="exit-date-container" style="display: {{ $status === 'Inactive' ? 'block' : 'none' }};">
-                        <label class="form-label fw-medium" style="color: #4a1c6c;">Exit Date</label>
-                        <input type="date" name="exit_date" id="exit_date" class="form-control exit-date-input"
-                               value="{{ old('exit_date') ?? ($employee?->employeeDetail?->exit_date ?? '') }}"
-                               style="border-color: #d0b0ff; border-radius: 8px; padding: 0.6rem 1rem;">
-                        <small class="text-muted d-block mt-2">
-                            <i class="fas fa-clock me-1" style="color: #6a1b9a;"></i>
-                            Employee can login UP TO this date. Login will be blocked AFTER this date.
-                        </small>
-                        <div class="invalid-feedback exit-date-error d-none"></div>
-                        @error('exit_date')
-                            <div class="text-danger small mt-1">{{ $message }}</div>
-                        @enderror
+                        <input type="hidden" id="edit_designation_id" value="">
+                        <input type="hidden" name="status" value="Active">
+                    </div>
+                    <div class="modal-footer" style="border-top: 1px solid rgba(0,0,0,0.05);">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn-modal-primary" id="saveDesignationBtn">Add Designation</button>
                     </div>
                 </div>
-            </div>
-
-            <!-- Form Footer -->
-            <div class="card-footer border-0 py-3" style="background: white; border-top: 2px solid #e6d0ff;">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <small class="text-muted">
-                            <i class="fas fa-info-circle me-1" style="color: #6a1b9a;"></i>
-                            Fields marked with <span class="text-danger">*</span> are required
-                        </small>
-                    </div>
-                    <div class="d-flex gap-2">
-                        <a href="{{ route('employees.index') }}" class="btn px-4" style="background-color: #f0f0f0; color: #4a4a4a; border: 1px solid #d0d0d0; border-radius: 8px; padding: 0.6rem 1.5rem;">
-                            <i class="fas fa-times me-2"></i>Cancel
-                        </a>
-                        <button type="submit" class="btn px-4" style="background: linear-gradient(135deg, #8a2be2 0%, #6a1b9a 100%); color: white; border: none; border-radius: 8px; padding: 0.6rem 1.5rem; font-weight: 500; box-shadow: 0 2px 5px rgba(106, 27, 154, 0.3);">
-                            <i class="fas fa-save me-2"></i>{{ isset($employee) ? 'Update Employee' : 'Save Employee' }}
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Modals -->
-<div class="modal fade" id="designationModal" tabindex="-1" aria-labelledby="designationModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content" style="border-radius: 12px; overflow: hidden;">
-            <div class="modal-header" style="background: linear-gradient(135deg, #f5e6ff 0%, #e6ccff 100%); border-bottom: 1px solid #d0b0ff;">
-                <h5 class="modal-title" id="designationModalLabel" style="color: #4a1c6c;">Add New Designation</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="mb-3">
-                    <label class="form-label fw-medium" style="color: #4a1c6c;">Designation Name <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" id="designationName" placeholder="Enter designation name" required style="border-color: #d0b0ff; border-radius: 8px;">
-                </div>
-                <div class="mb-3">
-                    <label class="form-label fw-medium" style="color: #4a1c6c;">Designation Level <span class="text-danger">*</span></label>
-                    <input type="number" min="0" max="6" class="form-control" id="designationLevel" placeholder="Enter level (0-6)" required style="border-color: #d0b0ff; border-radius: 8px;">
-                    <small class="text-muted">Level range: 0-6 (e.g., 0=Intern, 1=Associate, 2=Sr. Associate, etc.)</small>
-                </div>
-                <div class="invalid-feedback" id="designation-error"></div>
-            </div>
-            <div class="modal-footer" style="border-top: 1px solid #e6d0ff;">
-                <button type="button" class="btn" data-bs-dismiss="modal" style="background-color: #f0f0f0; color: #4a4a4a; border: 1px solid #d0d0d0; border-radius: 8px;">Cancel</button>
-                <button type="button" class="btn" id="saveDesignationBtn" style="background: linear-gradient(135deg, #8a2be2 0%, #6a1b9a 100%); color: white; border: none; border-radius: 8px;">Add Designation</button>
-            </div>
+            </form>
         </div>
     </div>
-</div>
-
-<div class="modal fade" id="prtModal" tabindex="-1" aria-labelledby="prtModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content" style="border-radius: 12px; overflow: hidden;">
-            <div class="modal-header" style="background: linear-gradient(135deg, #f5e6ff 0%, #e6ccff 100%); border-bottom: 1px solid #d0b0ff;">
-                <h5 class="modal-title" id="prtModalLabel" style="color: #4a1c6c;">Add New Department</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="mb-3">
-                    <label class="form-label fw-medium" style="color: #4a1c6c;">Department Name <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" id="prt_dpt_name" placeholder="Enter department name" required style="border-color: #d0b0ff; border-radius: 8px;">
-                    <div class="invalid-feedback" id="prt-group-error"></div>
-                </div>
-            </div>
-            <div class="modal-footer" style="border-top: 1px solid #e6d0ff;">
-                <button type="button" class="btn" data-bs-dismiss="modal" style="background-color: #f0f0f0; color: #4a4a4a; border: 1px solid #d0d0d0; border-radius: 8px;">Cancel</button>
-                <button type="button" class="btn" id="savePrtDepartmentBtn" style="background: linear-gradient(135deg, #8a2be2 0%, #6a1b9a 100%); color: white; border: none; border-radius: 8px;">Add Department</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="dptModal" tabindex="-1" aria-labelledby="dptModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content" style="border-radius: 12px; overflow: hidden;">
-            <div class="modal-header" style="background: linear-gradient(135deg, #f5e6ff 0%, #e6ccff 100%); border-bottom: 1px solid #d0b0ff;">
-                <h5 class="modal-title" id="dptModalLabel" style="color: #4a1c6c;">Add New Sub Department</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="mb-3">
-                    <label class="form-label fw-medium" style="color: #4a1c6c;">Parent Department</label>
-                    <select id="dpt_parent_select" class="form-select" style="border-color: #d0b0ff; border-radius: 8px;">
-                        <option value="">None</option>
-                        @foreach($prtdepartments as $pd)
-                            <option value="{{ $pd->id }}">{{ $pd->dpt_name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label fw-medium" style="color: #4a1c6c;">Sub Department Name <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" id="dpt_name" placeholder="Enter sub department name" required style="border-color: #d0b0ff; border-radius: 8px;">
-                    <div class="invalid-feedback" id="dpt-group-error"></div>
-                </div>
-            </div>
-            <div class="modal-footer" style="border-top: 1px solid #e6d0ff;">
-                <button type="button" class="btn" data-bs-dismiss="modal" style="background-color: #f0f0f0; color: #4a4a4a; border: 1px solid #d0d0d0; border-radius: 8px;">Cancel</button>
-                <button type="button" class="btn" id="saveSubDepartmentBtn" style="background: linear-gradient(135deg, #8a2be2 0%, #6a1b9a 100%); color: white; border: none; border-radius: 8px;">Add Sub Department</button>
-            </div>
-        </div>
-    </div>
-</div>
-
 @endsection
 
 @push('styles')
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
-
 <style>
-    .card {
-        border-radius: 12px;
-        border: 1px solid #e0e0e0;
-        box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+    input[disabled], input[readonly] {
+        background-color: #fff !important;
+        opacity: 1 !important;
+        color: #212529 !important;
     }
-
-    .card-header {
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-        border-bottom: 1px solid #dee2e6;
+    input.readonly-like-normal {
+        border-color: #d1d5db;
+        box-shadow: none;
     }
-
-    .form-label {
-        color: #495057;
-        font-weight: 500;
-        margin-bottom: 0.5rem;
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
     }
-
-    .form-control, .form-select {
-        border-radius: 8px;
-        border: 1px solid #ced4da;
-        padding: 0.75rem 1rem;
-        transition: all 0.3s ease;
-    }
-
-    .form-control:focus, .form-select:focus {
-        border-color: #b380ff !important;
-        box-shadow: 0 0 0 0.25rem rgba(138, 43, 226, 0.15) !important;
-    }
-
-    .input-group-text {
-        background-color: #f8f9fa;
-        border-color: #ced4da;
-    }
-
-    .form-check-input:checked {
-        background-color: #8a2be2;
-        border-color: #8a2be2;
-    }
-
-    .is-invalid {
-        border-color: #dc3545 !important;
-    }
-
-    h6.fw-bold {
-        position: relative;
-        padding-left: 1.5rem;
-    }
-
-    h6.fw-bold::before {
-        content: '';
-        position: absolute;
-        left: 0;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 8px;
-        height: 20px;
-        background: linear-gradient(135deg, #8a2be2 0%, #b380ff 100%);
-        border-radius: 4px;
-    }
-
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(-10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    .alert {
-        animation: fadeIn 0.3s ease;
-    }
-
     .select2-container--bootstrap-5 .select2-selection {
-        border-color: #d0b0ff !important;
-        border-radius: 8px !important;
+        border-radius: 14px !important;
+        border-color: rgba(15, 116, 76, 0.2) !important;
+        min-height: 44px;
     }
-
-    .select2-container--bootstrap-5.select2-container--focus .select2-selection,
-    .select2-container--bootstrap-5.select2-container--open .select2-selection {
-        border-color: #b380ff !important;
-        box-shadow: 0 0 0 0.25rem rgba(138, 43, 226, 0.15) !important;
+    .input-group-premium .invalid-feedback {
+        flex: 0 0 100%;
+        width: 100%;
+        padding-left: 1rem;
+    }
+    .modal-body {
+        overflow-x: auto;
+    }
+    @media (max-width: 576px) {
+        .page-header-enterprise {
+            border-radius: 18px;
+        }
+        .header-title h1 {
+            font-size: 1.35rem;
+            line-height: 1.25;
+        }
+        .card-header-premium,
+        .card-body-premium {
+            padding: 1rem;
+        }
+        .input-group-premium {
+            flex-wrap: wrap;
+        }
+        .input-group-premium .form-select-premium,
+        .input-group-premium .form-control-premium {
+            min-width: 0;
+        }
+        .input-group-premium > .btn {
+            min-height: 44px;
+        }
+        .modal-dialog {
+            margin: 0.75rem;
+        }
+        .table {
+            min-width: 520px;
+        }
     }
 </style>
 @endpush
@@ -719,118 +1254,186 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-$(document).ready(function() {
-    // Initialize Select2
-    $('.select2').select2({
-        theme: "bootstrap-5",
-        width: '100%'
-    });
+const $el = id => document.getElementById(id);
 
-    // Clear all error messages on input
-    $('input, select, textarea').on('input change', function() {
-        $(this).removeClass('is-invalid');
-        $(this).next('.invalid-feedback').addClass('d-none').removeClass('d-block');
+function toggleExitDate() {
+    const isInactive = $el('status-inactive') && $el('status-inactive').checked;
+    const container = $el('exit-date-container');
+    if (container) container.style.display = isInactive ? 'block' : 'none';
+}
 
-        if ($(this).is(':radio')) {
-            const name = $(this).attr('name');
-            $(`input[name="${name}"]`).removeClass('is-invalid');
-            $(`.${name}-error`).addClass('d-none').removeClass('d-block');
-        }
+document.addEventListener('DOMContentLoaded', function () {
+    toggleExitDate();
 
-        if ($(this).attr('id') === 'mobile_only_digits') {
-            $('#mobile-error').addClass('d-none').removeClass('d-block');
-        }
-    });
-
-    // Toggle exit date based on status
-    function toggleExitDate() {
-        const isInactive = $('#status-inactive').is(':checked');
-        $('#exit-date-container').toggle(isInactive);
-        if (isInactive) {
-            $('#exit_date').prop('required', true);
-        } else {
-            $('#exit_date').prop('required', false).val('');
-        }
+    const empInput = $el('employee_id_input');
+    if (empInput) {
+        empInput.classList.add('readonly-like-normal');
     }
 
-    toggleExitDate();
-    $('input[name="status"]').change(toggleExitDate);
-
-    // Employee ID auto/custom logic
     function updateEmpInputState() {
-        const isCustom = $('#emp_custom').is(':checked');
-        const nextId = '{{ $nextEmployeeId ?? "" }}';
+        const customRadio = $el('emp_custom');
+        const autoRadio = $el('emp_auto');
+        if (!empInput || !customRadio || !autoRadio) return;
 
-        if (isCustom) {
-            $('#employee_id_input').prop('readonly', false).prop('required', true);
-        } else {
-            $('#employee_id_input').prop('readonly', true).prop('required', false);
-            if (nextId && !$('#employee_id_input').val()) {
-                $('#employee_id_input').val(nextId);
-            }
+        const isCustom = customRadio.checked;
+        empInput.readOnly = !isCustom;
+        empInput.required = isCustom;
+
+        if (!isCustom && !empInput.value) {
+            empInput.value = '{{ $nextEmployeeId ?? "" }}';
         }
     }
 
     updateEmpInputState();
-    $('input[name="employee_id_option"]').change(updateEmpInputState);
-
-    // Password visibility toggle
-    $('.toggle-password').click(function() {
-        const passwordField = $('#password');
-        const icon = $(this).find('i');
-        if (passwordField.attr('type') === 'password') {
-            passwordField.attr('type', 'text');
-            icon.removeClass('fa-eye').addClass('fa-eye-slash');
-        } else {
-            passwordField.attr('type', 'password');
-            icon.removeClass('fa-eye-slash').addClass('fa-eye');
-        }
+    document.querySelectorAll('input[name="employee_id_option"]').forEach(radio => {
+        radio.addEventListener('change', updateEmpInputState);
     });
 
-    // Generate random password
-    $('.generate-password').click(function() {
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
-        let password = '';
-        for (let i = 0; i < 12; i++) {
-            password += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        $('#password').val(password);
-        Swal.fire({
-            icon: 'success',
-            title: 'Password Generated',
-            text: 'A strong password has been generated',
-            timer: 1500,
-            showConfirmButton: false
+    document.querySelectorAll('.toggle-password').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const passwordField = $el('password');
+            const icon = this.querySelector('i');
+            if (!passwordField) return;
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                passwordField.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
         });
     });
 
-    // Mobile number validation
-    $('#mobile_only_digits').on('input', function(e) {
-        let value = $(this).val().replace(/\D/g, '').slice(0, 10);
-        if (value.length > 0 && value[0] === '0') {
-            value = value.replace(/^0+/, '');
-        }
-        $(this).val(value);
-        $('#mobile-error').addClass('d-none').removeClass('d-block').text('');
-        $(this).removeClass('error valid is-invalid');
+    document.querySelectorAll('.generate-password').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const passwordField = $el('password');
+            if (!passwordField) return;
+            const randomPassword = Math.random().toString(36).slice(-10) + '!A1';
+            passwordField.value = randomPassword;
+        });
     });
 
-    // Check mobile uniqueness on blur
+    const desBtn = $el('openDesignationModalBtn');
+    if (desBtn) desBtn.addEventListener('click', function () {
+        $('#addDesignationForm')[0].reset();
+        $('#edit_designation_id').val('');
+        $('#saveDesignationBtn').text('Add Designation');
+        $('#designation-error').addClass('d-none').text('');
+        const modal = new bootstrap.Modal($el('designationModal'));
+        modal.show();
+    });
+
+    const prtBtn = $el('openPrtModalBtn');
+    if (prtBtn) prtBtn.addEventListener('click', function () {
+        const modal = new bootstrap.Modal($el('prtModal'));
+        modal.show();
+    });
+
+    const dptBtn = $el('openDptModalBtn');
+    if (dptBtn) dptBtn.addEventListener('click', function () {
+        const modal = new bootstrap.Modal($el('dptModal'));
+        modal.show();
+    });
+
+    const mobileOnly = $el('mobile_only_digits');
+    if (mobileOnly) {
+        mobileOnly.addEventListener('input', function () {
+            let v = this.value.replace(/\D/g, '').slice(0, 10);
+            if (v.length > 0 && v[0] === '0') v = v.replace(/^0+/, '');
+            this.value = v;
+            const mobileError = $el('mobile-error');
+            if (mobileError) mobileError.classList.add('d-none');
+            this.classList.remove('is-invalid');
+        });
+    }
+
+    const form = document.getElementById('employeeForm');
+    if (form) {
+        form.addEventListener('submit', function (e) {
+            const dobEl = $el('dob');
+            if (dobEl && !dobEl.value) {
+                e.preventDefault();
+                dobEl.focus();
+                alert('Please provide Date of Birth (DOB). It is required.');
+                return false;
+            }
+
+            const mobileEl = $el('mobile_only_digits');
+            if (mobileEl) {
+                if (mobileEl.classList.contains('is-invalid')) {
+                    e.preventDefault();
+                    mobileEl.focus();
+                    alert(($el('mobile-error') && $el('mobile-error').textContent) || 'Please fix the mobile number before submitting.');
+                    return false;
+                }
+
+                const m = mobileEl.value.trim();
+                if (!/^[1-9]\d{9}$/.test(m)) {
+                    e.preventDefault();
+                    mobileEl.focus();
+                    alert('Please enter a valid 10-digit mobile number (no leading 0).');
+                    return false;
+                }
+                const hidden = $el('mobile_with_code');
+                if (hidden) hidden.value = '+91' + m;
+            }
+
+            const exitDateEl = $el('exit_date');
+            if ($el('status-inactive') && $el('status-inactive').checked && exitDateEl && !exitDateEl.value) {
+                e.preventDefault();
+                exitDateEl.focus();
+                alert('Please provide Exit Date when status is Inactive.');
+                return false;
+            }
+        });
+    }
+});
+</script>
+
+<script>
+$(document).ready(function() {
+    // Load sub-departments when parent department changes
+    function loadSubDepartments(parentId, selectedId = null) {
+        const $sub = $('#department_id');
+        $sub.empty().append('<option value="">Select</option>');
+        if (!parentId) return;
+
+        let url = '{{ route("employees.sub-departments", ":id") }}';
+        url = url.replace(':id', parentId);
+
+        $.get(url)
+         .done(function (data) {
+            if (!Array.isArray(data)) return;
+            data.forEach(function (dept) {
+                const isSelected = selectedId && parseInt(selectedId) === parseInt(dept.id);
+                let text = dept.dpt_name;
+                if (dept.dpt_code) text += ' (' + dept.dpt_code + ')';
+                $sub.append($('<option>', { value: dept.id, text: text, selected: isSelected }));
+            });
+         })
+         .fail(function () { console.error('Failed to load sub-departments'); });
+    }
+
+    const initialParent = $('#prt_department_id').val();
+    const selectedSub   = $('#department_id').data('selected');
+
+    if (initialParent) loadSubDepartments(initialParent, selectedSub);
+
+    $('#prt_department_id').on('change', function () {
+        loadSubDepartments($(this).val(), null);
+    });
+
     let mobileCheckAjax = null;
     $('#mobile_only_digits').on('blur', function() {
         const value = $(this).val().trim();
-        const employeeId = $(this).data('current-id') || null;
+        $('#mobile-error').addClass('d-none').text('');
+        $(this).removeClass('is-invalid');
 
-        $('#mobile-error').addClass('d-none').removeClass('d-block').text('');
-        $(this).removeClass('error valid is-invalid');
-
-        if (value.length === 0) {
-            $(this).removeClass('error valid is-invalid');
-            return;
-        }
+        if (!value) return;
 
         if (!/^[1-9]\d{9}$/.test(value)) {
             $(this).addClass('is-invalid');
@@ -839,372 +1442,284 @@ $(document).ready(function() {
         }
 
         $('#mobile_with_code').val('+91' + value);
-        $(this).addClass('valid').removeClass('is-invalid');
 
-        if (mobileCheckAjax) {
-            mobileCheckAjax.abort();
-        }
+        if (mobileCheckAjax) mobileCheckAjax.abort();
 
         mobileCheckAjax = $.ajax({
             url: '{{ route("employees.check-mobile") }}',
             method: 'POST',
             data: {
                 mobile: value,
-                employee_id: employeeId,
                 _token: '{{ csrf_token() }}'
             },
             success: function(response) {
                 if (response.exists) {
-                    $('#mobile_only_digits').addClass('is-invalid').removeClass('valid');
+                    $('#mobile_only_digits').addClass('is-invalid');
                     $('#mobile-error').text('This mobile number is already registered').removeClass('d-none').addClass('d-block');
-                } else {
-                    $('#mobile_only_digits').removeClass('is-invalid').addClass('valid');
-                    $('#mobile-error').addClass('d-none').removeClass('d-block').text('');
                 }
             },
-            error: function(xhr, status, error) {
-                if (status !== 'abort') {
-                    console.error('Mobile check error:', error);
-                    $('#mobile_only_digits').removeClass('is-invalid');
-                    $('#mobile-error').addClass('d-none').removeClass('d-block').text('');
+            error: function(xhr, status) {
+                if (status !== 'abort') console.error('Mobile check failed');
+            }
+        });
+    });
+
+    $('.email-input').on('blur', function() {
+        const email = $(this).val().trim();
+        if (!email) return;
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            $(this).addClass('is-invalid');
+        } else {
+            $(this).removeClass('is-invalid');
+        }
+    });
+
+    // Handle parent department form submission
+    $('#addPrtDptForm').on('submit', function(e) {
+        e.preventDefault();
+        const $form = $(this);
+        const data = $form.serialize();
+        $.ajax({
+            url: '{{ route('parent-departments.store') }}',
+            method: 'POST',
+            data: data,
+            success: function(res) {
+                if (res.status === 'success' && res.dpt) {
+                    $('#prt_department_id').append(`<option value="${res.dpt.id}" selected>${res.dpt.dpt_name}</option>`);
+                    $('#prt-dpt-list').append(`<tr id="prt-row-${res.dpt.id}"><td>#</td><td>${res.dpt.dpt_name}</td><td><button type="button" class="btn btn-sm btn-danger delete-prt" data-id="${res.dpt.id}">Delete</button></td></tr>`);
+                    $form[0].reset();
+                    $('#prtModal').modal('hide');
+                } else {
+                    $('#prt-group-error').removeClass('d-none').text(res.message || 'Something went wrong.');
+                }
+            },
+            error: function(xhr) {
+                const msg = xhr.responseJSON?.message || (xhr.responseJSON?.errors ? Object.values(xhr.responseJSON.errors).flat().join(' ') : 'Error occurred.');
+                $('#prt-group-error').removeClass('d-none').text(msg);
+            }
+        });
+    });
+
+    // Delete parent department
+    $(document).on('click', '.delete-prt', function () {
+        const id = $(this).data('id');
+        if (!confirm('Are you sure you want to delete this parent department?')) return;
+        $.ajax({
+            url: `{{ url('parent-departments') }}/${id}`,
+            method: 'POST',
+            data: { _method: 'DELETE', _token: '{{ csrf_token() }}' },
+            success: function(res) {
+                if (res.status === 'success') {
+                    $(`#prt-row-${id}`).remove();
+                    $(`#prt_department_id option[value="${id}"]`).remove();
                 }
             }
         });
     });
 
-    // Email validation
-    $('.email-input').on('blur', function() {
-        const email = $(this).val().trim();
-        if (email) {
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(email)) {
-                $(this).addClass('is-invalid');
-                $(this).next('.email-error').text('Please enter a valid email address').removeClass('d-none').addClass('d-block');
-            } else {
-                $(this).removeClass('is-invalid');
-                $(this).next('.email-error').addClass('d-none').removeClass('d-block');
+    // Handle department form submission
+    $('#addDptForm').on('submit', function(e) {
+        e.preventDefault();
+        const data = $(this).serialize();
+        $.ajax({
+            url: '{{ route('departments.store') }}',
+            method: 'POST',
+            data: data,
+            success: function(res) {
+                if (res.status === 'success' && res.dpt) {
+                    const currentParent = $('#prt_department_id').val();
+                    loadSubDepartments(currentParent, res.dpt.id);
+                    $('#dpt-list').append(`<tr id="dpt-row-${res.dpt.id}"><td>#</td><td>${res.dpt.parent_name ? res.dpt.parent_name : 'N/A'}</td><td>${res.dpt.dpt_name}</td><td><button type="button" class="btn btn-sm btn-danger delete-dpt" data-id="${res.dpt.id}">Delete</button></td></tr>`);
+                    $('#addDptForm')[0].reset();
+                    $('#dptModal').modal('hide');
+                    Swal.fire({ icon: 'success', title: 'Added', text: 'Department added successfully', timer: 1400, showConfirmButton: false });
+                } else {
+                    $('#dpt-group-error').removeClass('d-none').text(res.message || 'Error occurred.');
+                }
+            },
+            error: function(xhr) {
+                const msg = xhr.responseJSON?.message || (xhr.responseJSON?.errors ? Object.values(xhr.responseJSON.errors).flat().join(' ') : 'Error occurred.');
+                $('#dpt-group-error').removeClass('d-none').text(msg);
             }
-        }
+        });
     });
 
-    // Password validation
-    $('.password-input').on('blur', function() {
-        const password = $(this).val().trim();
-        if (password && password.length > 0) {
-            if (password.length < 8) {
-                $(this).addClass('is-invalid');
-                $(this).next('.password-error').removeClass('d-none').addClass('d-block');
-            } else {
-                $(this).removeClass('is-invalid');
-                $(this).next('.password-error').addClass('d-none').removeClass('d-block');
+    // Delete department
+    $(document).on('click', '.delete-dpt', function () {
+        const id = $(this).data('id');
+        if (!confirm('Are you sure you want to delete this department?')) return;
+        $.ajax({
+            url: `{{ url('departments') }}/${id}`,
+            method: 'POST',
+            data: { _method: 'DELETE', _token: '{{ csrf_token() }}' },
+            success: function(res) {
+                if (res.status === 'success') {
+                    $(`#dpt-row-${id}`).remove();
+                    $(`#department_id option[value="${id}"]`).remove();
+                }
             }
-        }
+        });
     });
 
-    // Date of Birth validation (must be past)
-    $('.dob-input').on('blur', function() {
-        const dob = $(this).val();
-        if (dob) {
-            const dobDate = new Date(dob);
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
+    // Edit designation button click
+    $(document).on('click', '.edit-designation', function () {
+        const id = $(this).data('id');
+        const name = $(this).data('name');
+        const level = $(this).data('level') || '';
 
-            if (dobDate >= today) {
-                $(this).addClass('is-invalid');
-                $(this).next('.dob-error').text('Date of birth must be in the past').removeClass('d-none').addClass('d-block');
-            } else {
-                $(this).removeClass('is-invalid');
-                $(this).next('.dob-error').addClass('d-none').removeClass('d-block');
+        $('#designationName').val(name);
+        $('#designationLevel').val(level);
+        $('#edit_designation_id').val(id);
+        $('#saveDesignationBtn').text('Update Designation');
+        $('#designation-error').addClass('d-none').text('');
+    });
+
+    // Delete designation
+    $(document).on('click', '.delete-designation', function () {
+        const id = $(this).data('id');
+        if (!confirm('Are you sure you want to delete this designation? This may affect existing employees.')) return;
+
+        $.ajax({
+            url: `{{ url('designations') }}/${id}`,
+            method: 'POST',
+            data: { _method: 'DELETE', _token: '{{ csrf_token() }}' },
+            success: function(res) {
+                if (res.status === 'success') {
+                    $(`#des-row-${id}`).remove();
+                    $(`#designation_id option[value="${id}"]`).remove();
+                    Swal.fire({ icon: 'success', title: 'Deleted', text: 'Designation deleted successfully', timer: 1400, showConfirmButton: false });
+                } else {
+                    Swal.fire({ icon: 'error', title: 'Error', text: res.message || 'Failed to delete designation' });
+                }
+            },
+            error: function() {
+                Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to delete designation. Please try again.' });
             }
-        }
+        });
     });
 
-    // Joining Date validation - Allow past, present, and future dates
-    $('.joining-date-input').on('blur', function() {
-        const joiningDate = $(this).val();
-        if (joiningDate) {
-            $(this).removeClass('is-invalid');
-            $(this).next('.joining-date-error').addClass('d-none').removeClass('d-block');
-        }
-    });
+    // Handle designation form submission (Add/Edit)
+    $('#addDesignationForm').on('submit', function (e) {
+        e.preventDefault();
+        const $btn = $('#saveDesignationBtn');
+        const name = $('#designationName').val().trim();
+        const level = $('#designationLevel').val();
+        const editId = $('#edit_designation_id').val();
+        const token = '{{ csrf_token() }}';
+        const isEditMode = editId !== '';
 
-    // Exit date validation
-    $('.exit-date-input').on('blur', function() {
-        const exitDate = $(this).val();
-        if (exitDate) {
-            const exit = new Date(exitDate);
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
+        $('#designation-error').addClass('d-none').text('');
 
-            if (exit < today) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Exit Date in Past',
-                    text: 'Employee will not be able to login as exit date has already passed.',
-                    timer: 3000,
-                    showConfirmButton: false
-                });
-            }
-        }
-    });
-
-    // Load sub-departments when parent department changes
-    $('#prt_department_id').change(function() {
-        const parentId = $(this).val();
-        const selectedSub = $('#department_id').data('selected');
-
-        if (!parentId) {
-            $('#department_id').html('<option value="">Select Sub Department</option>');
+        if (!name) {
+            $('#designation-error').removeClass('d-none').text('Please enter a designation name.');
             return;
+        }
+
+        if (level === '' || level === null) {
+            $('#designation-error').removeClass('d-none').text('Please enter a level between 0-6.');
+            return;
+        }
+
+        const levelNum = parseInt(level);
+        if (isNaN(levelNum) || levelNum < 0 || levelNum > 6) {
+            $('#designation-error').removeClass('d-none').text('Level must be a whole number between 0-6.');
+            return;
+        }
+
+        $btn.prop('disabled', true);
+
+        let url, method, data;
+        if (isEditMode) {
+            url = `{{ url('designations') }}/${editId}`;
+            method = 'POST';
+            data = { _token: token, _method: 'PUT', name: name, level: levelNum, status: 'Active' };
+        } else {
+            url = '{{ route('designations.ajax.store') }}';
+            method = 'POST';
+            data = { _token: token, name: name, level: levelNum, status: 'Active' };
         }
 
         $.ajax({
-            url: '{{ route("employees.sub-departments", ":id") }}'.replace(':id', parentId),
-            method: 'GET',
-            success: function(data) {
-                let options = '<option value="">Select Sub Department</option>';
-                data.forEach(function(dept) {
-                    const isSelected = selectedSub && parseInt(selectedSub) === parseInt(dept.id);
-                    let text = dept.dpt_name;
-                    if (dept.dpt_code) {
-                        text += ' (' + dept.dpt_code + ')';
+            url: url,
+            method: method,
+            data: data,
+            success: function (res) {
+                if (res.designation && res.designation.id) {
+                    let label = res.designation.name;
+                    if (res.designation.unique_code) label += ` (${res.designation.unique_code})`;
+                    if (res.designation.level !== null) label += ` - Level ${res.designation.level}`;
+
+                    if (isEditMode) {
+                        $(`#des-row-${res.designation.id} td:first`).text(res.designation.name);
+                        $(`#des-row-${res.designation.id} td:nth-child(2)`).text(res.designation.level !== null ? res.designation.level : 'Not Set');
+                        $(`#des-row-${res.designation.id} .edit-designation`).data('name', res.designation.name).data('level', res.designation.level !== null ? res.designation.level : '');
+                        const $option = $(`#designation_id option[value="${res.designation.id}"]`);
+                        if ($option.length) $option.text(label);
+                        Swal.fire({ icon: 'success', title: 'Updated', text: 'Designation updated successfully', timer: 1400, showConfirmButton: false });
+                    } else {
+                        const newRow = `<tr id="des-row-${res.designation.id}"><td>${res.designation.name}</td><td>${res.designation.level !== null ? res.designation.level : 'Not Set'}</td><td><button type="button" class="btn btn-sm btn-warning edit-designation" data-id="${res.designation.id}" data-name="${res.designation.name}" data-level="${res.designation.level !== null ? res.designation.level : ''}" title="Edit"><i class="fas fa-edit"></i></button> <button type="button" class="btn btn-sm btn-danger delete-designation" data-id="${res.designation.id}" title="Delete"><i class="fas fa-trash"></i></button></td></tr>`;
+                        $('#designation-list').append(newRow);
+                        $('#designation_id').append(`<option value="${res.designation.id}">${label}</option>`);
+                        Swal.fire({ icon: 'success', title: 'Created', text: 'Designation created successfully', timer: 1400, showConfirmButton: false });
                     }
-                    options += `<option value="${dept.id}" ${isSelected ? 'selected' : ''}>${text}</option>`;
-                });
-                $('#department_id').html(options);
+
+                    $('#addDesignationForm')[0].reset();
+                    $('#edit_designation_id').val('');
+                    $('#saveDesignationBtn').text('Add Designation');
+                    if (!isEditMode) $('#designationModal').modal('hide');
+                } else {
+                    $('#designation-error').removeClass('d-none').text(res.message || 'Operation completed but unexpected response.');
+                }
+            },
+            error: function (xhr) {
+                let msg = 'Something went wrong';
+                if (xhr.responseJSON?.message) {
+                    msg = xhr.responseJSON.message;
+                    if (msg.toLowerCase().includes('duplicate') || msg.toLowerCase().includes('already exists')) {
+                        msg = 'This designation name already exists. Please choose a different name.';
+                    }
+                } else if (xhr.responseJSON?.errors) {
+                    msg = Object.values(xhr.responseJSON.errors).flat().join(' ');
+                }
+                $('#designation-error').removeClass('d-none').text(msg);
+            },
+            complete: function () {
+                $btn.prop('disabled', false);
             }
         });
     });
 
-    if ($('#prt_department_id').val()) {
-        $('#prt_department_id').trigger('change');
+    // Initialize Select2 for country and language
+    function formatCountry(state) {
+        if (!state.id) return state.text;
+        let flag = $(state.element).data("flag");
+        if (flag) {
+            return $('<span><img src="' + flag + '" width="20" class="me-2"/> ' + state.text + '</span>');
+        }
+        return state.text;
     }
 
-    // Modal open handlers
-    $('#openDesignationModalBtn').click(function() {
-        $('#designationName').val('');
-        $('#designationLevel').val('');
-        $('#designationModal').modal('show');
-    });
-
-    $('#openPrtModalBtn').click(function() {
-        $('#prt_dpt_name').val('');
-        $('#prtModal').modal('show');
-    });
-
-    $('#openDptModalBtn').click(function() {
-        $('#dpt_name').val('');
-        $('#dpt_parent_select').val('');
-        $('#dptModal').modal('show');
-    });
-
-    // Save new designation with level
-    $('#saveDesignationBtn').click(function() {
-        let name = $('#designationName').val().trim();
-        let level = $('#designationLevel').val().trim();
-
-        if (!name) {
-            $('#designationName').addClass('is-invalid');
-            $('#designation-error').text('Designation name is required').show();
-            return;
-        }
-
-        if (!level || level < 0 || level > 6) {
-            $('#designationLevel').addClass('is-invalid');
-            $('#designation-error').text('Please enter a valid level between 0-6').show();
-            return;
-        }
-
-        $('#new_designation').val(name);
-        $('#new_designation_level').val(level);
-
-        $('#designation_id').append(
-            `<option value="new" selected>${name} (Level ${level}) (New)</option>`
-        );
-
-        $('#designationModal').modal('hide');
-        $('#designationName').val('');
-        $('#designationLevel').val('');
-    });
-
-    // Save new department
-    $('#savePrtDepartmentBtn').click(function() {
-        const deptName = $('#prt_dpt_name').val().trim();
-
-        if (!deptName) {
-            $('#prt_dpt_name').addClass('is-invalid');
-            $('#prt-group-error').text('Department name is required').show();
-            return;
-        }
-
-        $('#new_department').val(deptName);
-        $('#prt_department_id').append(
-            `<option value="new" selected>${deptName} (New)</option>`
-        );
-
-        $('#prtModal').modal('hide');
-        $('#prt_dpt_name').val('');
-    });
-
-    // Save new sub department
-    $('#saveSubDepartmentBtn').click(function() {
-        const subDeptName = $('#dpt_name').val().trim();
-
-        if (!subDeptName) {
-            $('#dpt_name').addClass('is-invalid');
-            $('#dpt-group-error').text('Sub department name is required').show();
-            return;
-        }
-
-        $('#new_sub_department').val(subDeptName);
-        $('#department_id').append(
-            `<option value="new" selected>${subDeptName} (New)</option>`
-        );
-
-        $('#dptModal').modal('hide');
-        $('#dpt_name').val('');
-    });
-
-    // Form validation before submission
-    $('#employeeForm').submit(function(e) {
-        let isValid = true;
-        let firstError = null;
-
-        $(this).find('.is-invalid').removeClass('is-invalid');
-        $(this).find('.invalid-feedback').addClass('d-none').removeClass('d-block');
-
-        $(this).find('[required]').each(function() {
-            if ($(this).is(':hidden')) return;
-
-            let value = $(this).val();
-            let isRadio = $(this).is(':radio');
-            let isCheckbox = $(this).is(':checkbox');
-
-            if (isRadio || isCheckbox) {
-                const name = $(this).attr('name');
-                const isChecked = $(`input[name="${name}"]:checked`).length > 0;
-                if (!isChecked) {
-                    $(`input[name="${name}"]`).first().addClass('is-invalid');
-                    $(`.${name}-error`).removeClass('d-none').addClass('d-block');
-                    isValid = false;
-                    if (!firstError) firstError = $(`input[name="${name}"]`).first();
-                }
-            } else if ($(this).is('select')) {
-                if (!value || value === '') {
-                    $(this).addClass('is-invalid');
-                    $(this).next(`.${$(this).attr('class').split(' ').find(c => c.includes('-select'))}-error`).removeClass('d-none').addClass('d-block');
-                    isValid = false;
-                    if (!firstError) firstError = $(this);
-                }
-            } else {
-                if (!value || value.toString().trim() === '') {
-                    $(this).addClass('is-invalid');
-                    $(this).next(`.${$(this).attr('class').split(' ').find(c => c.includes('-input'))}-error`).removeClass('d-none').addClass('d-block');
-                    isValid = false;
-                    if (!firstError) firstError = $(this);
-                }
-            }
+    if ($('#country').length) {
+        $('#country').select2({
+            theme: "bootstrap-5",
+            templateResult: formatCountry,
+            templateSelection: formatCountry,
+            placeholder: "Select Country",
+            allowClear: true
         });
+    }
 
-        // Validate email format if provided
-        const email = $('input[name="email"]').val().trim();
-        if (email) {
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(email)) {
-                $('input[name="email"]').addClass('is-invalid');
-                $('.email-error').text('Please enter a valid email address').removeClass('d-none').addClass('d-block');
-                isValid = false;
-                if (!firstError) firstError = $('input[name="email"]');
-            }
-        }
-
-        // Validate mobile format if provided
-        const mobile = $('#mobile_only_digits').val().trim();
-        if (mobile) {
-            if (!/^[1-9]\d{9}$/.test(mobile)) {
-                $('#mobile_only_digits').addClass('is-invalid');
-                $('#mobile-error').text('Please enter a valid 10-digit mobile number').removeClass('d-none').addClass('d-block');
-                isValid = false;
-                if (!firstError) firstError = $('#mobile_only_digits');
-            }
-        }
-
-        // Validate password if provided
-        const password = $('#password').val();
-        if (password && password.length > 0) {
-            if (password.length < 8) {
-                $('#password').addClass('is-invalid');
-                $('.password-error').removeClass('d-none').addClass('d-block');
-                isValid = false;
-                if (!firstError) firstError = $('#password');
-            }
-        }
-
-        // Validate date of birth
-        const dob = $('#dob').val();
-        if (dob) {
-            const dobDate = new Date(dob);
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-
-            if (dobDate >= today) {
-                $('#dob').addClass('is-invalid');
-                $('.dob-error').text('Date of birth must be in the past').removeClass('d-none').addClass('d-block');
-                isValid = false;
-                if (!firstError) firstError = $('#dob');
-            }
-        }
-
-        // Joining date validation - just check if not empty
-        const joiningDate = $('#joining_date').val();
-        if (!joiningDate) {
-            $('#joining_date').addClass('is-invalid');
-            $('.joining-date-error').text('Joining date is required').removeClass('d-none').addClass('d-block');
-            isValid = false;
-            if (!firstError) firstError = $('#joining_date');
-        }
-
-        // Validate exit date if status is inactive
-        if ($('#status-inactive').is(':checked')) {
-            const exitDate = $('#exit_date').val();
-            if (!exitDate) {
-                $('#exit_date').addClass('is-invalid');
-                $('.exit-date-error').text('Exit date is required for inactive status').removeClass('d-none').addClass('d-block');
-                isValid = false;
-                if (!firstError) firstError = $('#exit_date');
-            }
-        }
-
-        if (!isValid) {
-            e.preventDefault();
-            if (firstError) {
-                $('html, body').animate({
-                    scrollTop: firstError.offset().top - 100
-                }, 500);
-                firstError.focus();
-            }
-            Swal.fire({
-                icon: 'error',
-                title: 'Validation Error',
-                text: 'Please fix all errors before submitting',
-            });
-            return false;
-        }
-
-        if (mobile && /^[1-9]\d{9}$/.test(mobile)) {
-            $('#mobile_with_code').val('+91' + mobile);
-        }
-
-        $(this).find('button[type="submit"]').prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Saving...');
-
-        return true;
-    });
-
-    // Handle modal close - clear validation
-    $('.modal').on('hidden.bs.modal', function() {
-        $(this).find('.is-invalid').removeClass('is-invalid');
-        $(this).find('.invalid-feedback').remove();
-    });
+    if ($('#language').length) {
+        $('#language').select2({
+            theme: "bootstrap-5",
+            templateResult: formatCountry,
+            templateSelection: formatCountry,
+            placeholder: "Select Language",
+            allowClear: true
+        });
+    }
 });
 </script>
 @endpush

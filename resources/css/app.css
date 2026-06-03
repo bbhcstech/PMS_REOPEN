@@ -1,3 +1,263 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+:root {
+    --pms-bg: #ecefec;
+    --pms-surface: #ffffff;
+    --pms-surface-soft: #f7f8f6;
+    --pms-text: #050706;
+    --pms-muted: #778078;
+    --pms-border: rgba(17, 42, 30, 0.1);
+    --pms-primary: #0f744c;
+    --pms-primary-strong: #094c32;
+    --pms-primary-soft: #e4f3eb;
+    --pms-shadow: 0 24px 56px rgba(22, 39, 30, 0.11);
+    --pms-shadow-soft: 0 12px 30px rgba(22, 39, 30, 0.07);
+}
+
+html[data-pms-theme="dark"] {
+    color-scheme: dark;
+    --pms-bg: #07110d;
+    --pms-surface: #102119;
+    --pms-surface-soft: #183026;
+    --pms-text: #ffffff;
+    --pms-muted: #d9f1e4;
+    --pms-border: rgba(225, 255, 240, 0.18);
+    --pms-primary: #40d48c;
+    --pms-primary-strong: #7af0b5;
+    --pms-primary-soft: #173c2b;
+    --pms-shadow: 0 22px 54px rgba(0, 0, 0, 0.34);
+    --pms-shadow-soft: 0 12px 30px rgba(0, 0, 0, 0.24);
+}
+
+.pms-tailwind-shell,
+.pms-tailwind-shell > .min-h-screen {
+    background:
+        radial-gradient(circle at top left, rgba(15, 116, 76, 0.09), transparent 28rem),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.78), transparent 24rem),
+        var(--pms-bg) !important;
+    color: var(--pms-text) !important;
+}
+
+.pms-tailwind-shell nav,
+.pms-tailwind-shell header,
+.pms-tailwind-shell section,
+.pms-tailwind-shell .bg-white,
+.pms-tailwind-shell .bg-gray-50,
+.pms-tailwind-shell .bg-gray-100,
+.pms-tailwind-shell .bg-slate-50,
+.pms-tailwind-shell .bg-slate-100,
+.pms-tailwind-shell .dark\:bg-gray-800 {
+    border-color: var(--pms-border) !important;
+    background-color: var(--pms-surface) !important;
+    color: var(--pms-text) !important;
+}
+
+.pms-tailwind-shell header,
+.pms-tailwind-shell nav {
+    box-shadow: var(--pms-shadow-soft);
+}
+
+.pms-tailwind-shell .text-gray-900,
+.pms-tailwind-shell .text-slate-900,
+.pms-tailwind-shell .text-gray-800,
+.pms-tailwind-shell .text-slate-800,
+.pms-tailwind-shell .text-gray-700,
+.pms-tailwind-shell .text-slate-700,
+.pms-tailwind-shell .text-black {
+    color: var(--pms-text) !important;
+}
+
+.pms-tailwind-shell .text-gray-500,
+.pms-tailwind-shell .text-slate-500,
+.pms-tailwind-shell .text-gray-600,
+.pms-tailwind-shell .text-slate-600,
+.pms-tailwind-shell .text-gray-400,
+.pms-tailwind-shell .text-slate-400 {
+    color: var(--pms-muted) !important;
+}
+
+html[data-pms-theme="dark"] .pms-tailwind-shell p,
+html[data-pms-theme="dark"] .pms-tailwind-shell span,
+html[data-pms-theme="dark"] .pms-tailwind-shell label,
+html[data-pms-theme="dark"] .pms-tailwind-shell td,
+html[data-pms-theme="dark"] .pms-tailwind-shell th,
+html[data-pms-theme="dark"] .pms-tailwind-shell li,
+html[data-pms-theme="dark"] .pms-tailwind-shell a:not([class*="bg-"]) {
+    color: var(--pms-text) !important;
+}
+
+html[data-pms-theme="dark"] .pms-tailwind-shell small,
+html[data-pms-theme="dark"] .pms-tailwind-shell .text-sm {
+    color: var(--pms-muted);
+}
+
+.pms-tailwind-theme-toggle {
+    display: inline-flex;
+    min-width: 2.5rem;
+    height: 2.5rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border: 1px solid var(--pms-border);
+    border-radius: 999px;
+    background: var(--pms-surface-soft);
+    color: var(--pms-primary);
+    padding: 0 0.7rem;
+    font-weight: 700;
+    transition: transform 0.18s ease, background 0.18s ease, color 0.18s ease;
+}
+
+.pms-tailwind-theme-toggle:hover {
+    transform: translateY(-1px);
+    background: var(--pms-primary);
+    color: #ffffff;
+}
+
+.pms-super-sidebar {
+    margin: 1.25rem 0 1.25rem 1.25rem;
+    height: calc(100vh - 2.5rem);
+    border: 1px solid var(--pms-border);
+    border-radius: 20px;
+    background: var(--pms-surface) !important;
+    color: var(--pms-text) !important;
+    box-shadow: var(--pms-shadow);
+}
+
+.pms-super-sidebar a {
+    color: var(--pms-muted) !important;
+    border-radius: 12px;
+}
+
+.pms-super-sidebar a:hover,
+.pms-super-sidebar a.bg-white\/15 {
+    background: linear-gradient(135deg, var(--pms-primary-strong), var(--pms-primary)) !important;
+    color: #ffffff !important;
+}
+
+.pms-super-sidebar .border-white\/10 {
+    border-color: var(--pms-border) !important;
+}
+
+.pms-super-sidebar .text-cyan-200,
+.pms-super-sidebar .text-indigo-50 {
+    color: inherit !important;
+}
+
+.pms-super-topbar {
+    margin: 1.25rem 1.5rem 0;
+    border: 1px solid var(--pms-border) !important;
+    border-radius: 20px;
+    background: color-mix(in srgb, var(--pms-surface) 94%, transparent) !important;
+    box-shadow: var(--pms-shadow-soft);
+}
+
+.pms-tailwind-shell main > div,
+.pms-tailwind-shell main section,
+.pms-tailwind-shell main .rounded-lg,
+.pms-tailwind-shell main .rounded-xl,
+.pms-tailwind-shell main .rounded-2xl {
+    border-color: var(--pms-border) !important;
+}
+
+.pms-tailwind-shell main .rounded-lg,
+.pms-tailwind-shell main .rounded-xl,
+.pms-tailwind-shell main .rounded-2xl,
+.pms-tailwind-shell main table,
+.pms-tailwind-shell form,
+.pms-tailwind-shell input,
+.pms-tailwind-shell select,
+.pms-tailwind-shell textarea {
+    color: var(--pms-text) !important;
+}
+
+.pms-tailwind-shell main .rounded-lg,
+.pms-tailwind-shell main .rounded-xl,
+.pms-tailwind-shell main .rounded-2xl {
+    background-color: var(--pms-surface) !important;
+    box-shadow: var(--pms-shadow-soft);
+}
+
+.pms-tailwind-shell input,
+.pms-tailwind-shell select,
+.pms-tailwind-shell textarea {
+    border-color: var(--pms-border) !important;
+    border-radius: 12px !important;
+    background: var(--pms-surface-soft) !important;
+}
+
+.pms-tailwind-shell button,
+.pms-tailwind-shell a {
+    letter-spacing: 0;
+}
+
+.pms-tailwind-shell .bg-blue-600,
+.pms-tailwind-shell .bg-indigo-600,
+.pms-tailwind-shell .bg-cyan-500 {
+    background: linear-gradient(135deg, var(--pms-primary-strong), var(--pms-primary)) !important;
+    color: #ffffff !important;
+}
+
+.pms-tailwind-shell .text-blue-600,
+.pms-tailwind-shell .text-indigo-600,
+.pms-tailwind-shell .text-cyan-600 {
+    color: var(--pms-primary) !important;
+}
+
+.pms-tailwind-shell .rounded-lg,
+.pms-tailwind-shell .rounded-xl,
+.pms-tailwind-shell .rounded-2xl {
+    border-radius: 18px !important;
+}
+
+.pms-tailwind-shell h1,
+.pms-tailwind-shell h2,
+.pms-tailwind-shell h3,
+.pms-tailwind-shell h4,
+.pms-tailwind-shell h5,
+.pms-tailwind-shell h6 {
+    color: var(--pms-text) !important;
+    font-weight: 850 !important;
+    letter-spacing: -0.03em;
+}
+
+html[data-pms-theme="dark"] .pms-tailwind-shell *,
+html[data-pms-theme="dark"] .pms-tailwind-shell .text-gray-900,
+html[data-pms-theme="dark"] .pms-tailwind-shell .text-slate-900,
+html[data-pms-theme="dark"] .pms-tailwind-shell .text-gray-800,
+html[data-pms-theme="dark"] .pms-tailwind-shell .text-slate-800 {
+    color: #ffffff;
+}
+
+html[data-pms-theme="dark"] .pms-tailwind-shell .text-gray-500,
+html[data-pms-theme="dark"] .pms-tailwind-shell .text-slate-500,
+html[data-pms-theme="dark"] .pms-tailwind-shell .text-gray-600,
+html[data-pms-theme="dark"] .pms-tailwind-shell .text-slate-600,
+html[data-pms-theme="dark"] .pms-tailwind-shell small {
+    color: #d9f1e4 !important;
+}
+
+.pms-tailwind-shell .border-gray-200,
+.pms-tailwind-shell .border-slate-200,
+.pms-tailwind-shell .dark\:border-gray-700 {
+    border-color: var(--pms-border) !important;
+}
+
+.pms-guest-card {
+    border: 1px solid var(--pms-border);
+    border-radius: 16px !important;
+    background: var(--pms-surface) !important;
+    color: var(--pms-text) !important;
+    box-shadow: var(--pms-shadow);
+}
+
+@media (max-width: 1023px) {
+    .pms-super-sidebar {
+        margin: 0;
+        height: 100vh;
+        border-radius: 0;
+    }
+
+    .pms-super-topbar {
+        margin: 0.75rem;
+    }
+}

@@ -6,6 +6,11 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
         <title>{{ config('app.name', 'Laravel') }}</title>
+        <script>
+            (function () {
+                document.documentElement.setAttribute('data-pms-theme', localStorage.getItem('pms-theme') || 'light');
+            })();
+        </script>
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
@@ -14,7 +19,7 @@
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="font-sans antialiased">
+    <body class="pms-tailwind-shell font-sans antialiased">
         <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
             @include('layouts.navigation')
 
@@ -32,5 +37,33 @@
                 {{ $slot }}
             </main>
         </div>
+        <script>
+            (function () {
+                var root = document.documentElement;
+                var buttons = document.querySelectorAll('.pms-tailwind-theme-toggle');
+
+                function applyTheme(theme) {
+                    root.setAttribute('data-pms-theme', theme);
+                    localStorage.setItem('pms-theme', theme);
+                    buttons.forEach(function (button) {
+                        var moon = button.querySelector('.pms-tailwind-theme-moon');
+                        var sun = button.querySelector('.pms-tailwind-theme-sun');
+                        button.setAttribute('aria-label', theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
+                        button.setAttribute('title', theme === 'dark' ? 'Light mode' : 'Dark mode');
+                        if (moon && sun) {
+                            moon.classList.toggle('hidden', theme === 'dark');
+                            sun.classList.toggle('hidden', theme !== 'dark');
+                        }
+                    });
+                }
+
+                applyTheme(localStorage.getItem('pms-theme') || root.getAttribute('data-pms-theme') || 'light');
+                buttons.forEach(function (button) {
+                    button.addEventListener('click', function () {
+                        applyTheme(root.getAttribute('data-pms-theme') === 'dark' ? 'light' : 'dark');
+                    });
+                });
+            })();
+        </script>
     </body>
 </html>

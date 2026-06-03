@@ -103,7 +103,7 @@
     });
 
     // Navbar Mobile Menu Close on Click
-    $('.navbar-nav .nav-link').on('click', function() {
+    $('.navbar-nav .nav-link').not('.dropdown-toggle').on('click', function() {
         if ($('.navbar-collapse').hasClass('show')) {
             $('.navbar-toggler').click();
         }

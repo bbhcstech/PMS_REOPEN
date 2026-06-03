@@ -1208,34 +1208,208 @@
             <li class="nav-item" role="presentation">
                 <a class="nav-link fw-bold py-3 {{ request('tab') === 'project' ? 'active' : '' }}"
                    href="{{ route('dashboard', ['tab' => 'project']) }}">
-                   <i class="bx bx-pie-chart-alt-2"></i> Overview
+                   <svg class="dashboard-tab-svg" viewBox="0 0 24 24" aria-hidden="true">
+                       <path d="M11 3a9 9 0 1 0 9 9h-9V3Z" />
+                       <path d="M13 3v7h7a7 7 0 0 0-7-7Z" />
+                   </svg>
+                   Overview
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link fw-bold py-3 {{ Route::currentRouteName() === 'dashproject' ? 'active' : '' }}"
                    href="{{ route('dashproject') }}">
-                   <i class="bx bx-briefcase"></i> Projects
+                   <svg class="dashboard-tab-svg" viewBox="0 0 24 24" aria-hidden="true">
+                       <path d="M9 6V5a3 3 0 0 1 3-3h1a3 3 0 0 1 3 3v1h3a2 2 0 0 1 2 2v3.5A20.5 20.5 0 0 1 12 14a20.5 20.5 0 0 1-9-2.5V8a2 2 0 0 1 2-2h4Zm2 0h3V5a1 1 0 0 0-1-1h-1a1 1 0 0 0-1 1v1Z" />
+                       <path d="M3 14a22.6 22.6 0 0 0 18 0v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4Z" />
+                   </svg>
+                   Projects
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link fw-bold py-3 {{ Route::currentRouteName() === 'dashboard.client' ? 'active' : '' }}"
                    href="{{ route('dashboard.client') }}">
-                   <i class="bx bx-user"></i> Clients
+                   <svg class="dashboard-tab-svg" viewBox="0 0 24 24" aria-hidden="true">
+                       <path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Z" />
+                       <path d="M3 21a9 9 0 0 1 18 0H3Z" />
+                   </svg>
+                   Clients
                 </a>
             </li>
             <li class="nav-item" role="presentation">
                 <a class="nav-link fw-bold py-3 {{ Route::currentRouteName() === 'hr.dashboard' ? 'active' : '' }}"
                    href="{{ route('hr.dashboard') }}">
-                   <i class="bx bx-group"></i> HR
+                   <svg class="dashboard-tab-svg" viewBox="0 0 24 24" aria-hidden="true">
+                       <path d="M9 11a4 4 0 1 0-4-4 4 4 0 0 0 4 4Z" />
+                       <path d="M17 11a3.5 3.5 0 1 0-3.5-3.5A3.5 3.5 0 0 0 17 11Z" />
+                       <path d="M2 21a7 7 0 0 1 14 0H2Z" />
+                       <path d="M14.5 21H22a5.5 5.5 0 0 0-7.2-5.2A8.9 8.9 0 0 1 14.5 21Z" />
+                   </svg>
+                   HR
                 </a>
             </li>
             <li class="nav-item" role="presentation">
                 <a class="nav-link fw-bold py-3 {{ Route::currentRouteName() === 'dashboard.ticket' ? 'active' : '' }}"
                    href="{{ route('dashboard.ticket') }}">
-                   <i class="bx bx-support"></i> Tickets
+                   <svg class="dashboard-tab-svg" viewBox="0 0 24 24" aria-hidden="true">
+                       <path d="M4 5a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3H9l-5 4v-4a3 3 0 0 1-3-3V5Z" />
+                       <path d="M8 7h8v2H8V7Zm0 4h5v2H8v-2Z" fill="#fff" opacity=".9" />
+                   </svg>
+                   Tickets
                 </a>
             </li>
         </ul>
+
+        @php
+            $dashboardTotalEmployees = $totalEmployees ?? 0;
+            $dashboardPresentCount = $presentCount ?? 0;
+            $dashboardTotalClient = $totalClient ?? 0;
+            $dashboardTotalProject = $totalProject ?? 0;
+            $dashboardPendingTask = $pendingTask ?? 0;
+            $dashboardUnresolvedTicket = $unresolvedTicket ?? 0;
+            $dashboardLateCount = $lateCount ?? 0;
+            $dashboardAbsentCount = $absentCount ?? max($dashboardTotalEmployees - $dashboardPresentCount, 0);
+            $dashboardAttendancePercent = $dashboardTotalEmployees > 0 ? round(($dashboardPresentCount / $dashboardTotalEmployees) * 100) : 0;
+            $dashboardTaskScale = max($dashboardPendingTask, $dashboardUnresolvedTicket, $dashboardTotalProject, $dashboardTotalClient, 1);
+            $featureLinks = [
+                ['label' => 'Employees', 'hint' => 'Team directory', 'icon' => 'bx-group', 'route' => 'employees.index', 'value' => $dashboardTotalEmployees],
+                ['label' => 'Attendance', 'hint' => 'Today and reports', 'icon' => 'bx-calendar-check', 'route' => 'attendance.index', 'value' => $dashboardPresentCount],
+                ['label' => 'Leaves', 'hint' => 'Requests and policy', 'icon' => 'bx-calendar-minus', 'route' => 'leaves.index', 'value' => optional($pendingLeaves ?? collect())->count()],
+                ['label' => 'Projects', 'hint' => 'Active work', 'icon' => 'bx-briefcase-alt-2', 'route' => 'projects.index', 'value' => $dashboardTotalProject],
+                ['label' => 'Tasks', 'hint' => 'Pending actions', 'icon' => 'bx-task', 'route' => 'tasks.index', 'value' => $dashboardPendingTask],
+                ['label' => 'Timesheet', 'hint' => 'Work logs', 'icon' => 'bx-time-five', 'route' => 'timelogs.index', 'value' => 'Log'],
+                ['label' => 'Tickets', 'hint' => 'Support queue', 'icon' => 'bx-support', 'route' => 'tickets.index', 'value' => $dashboardUnresolvedTicket],
+                ['label' => 'Clients', 'hint' => 'Client records', 'icon' => 'bx-user-circle', 'route' => 'clients.index', 'value' => $dashboardTotalClient],
+                ['label' => 'Leads', 'hint' => 'Contacts pipeline', 'icon' => 'bx-target-lock', 'route' => 'leads.contacts.index', 'value' => 'CRM'],
+                ['label' => 'Deals', 'hint' => 'Sales stages', 'icon' => 'bx-trending-up', 'route' => 'admin.deals.index', 'value' => 'Deal'],
+                ['label' => 'Holidays', 'hint' => 'Calendar view', 'icon' => 'bx-calendar-star', 'route' => 'holidays.calendar', 'value' => 'Cal'],
+                ['label' => 'Reports', 'hint' => 'Attendance report', 'icon' => 'bx-bar-chart-alt-2', 'route' => 'attendance.report', 'value' => 'View'],
+            ];
+        @endphp
+
+        <section class="industry-dashboard-shell">
+            <div class="industry-hero-card">
+                <div class="industry-hero-copy">
+                    <span class="industry-eyebrow">Workspace overview</span>
+                    <h1>Dashboard</h1>
+                    <p>Plan work, track teams, review support, and jump into every PMS feature from one clean command center.</p>
+                    <div class="industry-actions">
+                        @if(Route::has('projects.create'))
+                            <a href="{{ route('projects.create') }}" class="industry-btn industry-btn-primary">
+                                <i class="bx bx-plus"></i> Add Project
+                            </a>
+                        @endif
+                        @if(Route::has('tasks.create'))
+                            <a href="{{ route('tasks.create') }}" class="industry-btn industry-btn-light">
+                                <i class="bx bx-task"></i> New Task
+                            </a>
+                        @endif
+                    </div>
+                </div>
+                <div class="industry-hero-visual">
+                    <img src="{{ asset('admin/assets/img/illustrations/dashboard-ui-preview.png') }}" alt="Dashboard overview">
+                </div>
+            </div>
+
+            <div class="industry-overview-grid">
+                <a href="{{ Route::has('projects.index') ? route('projects.index') : '#' }}" class="industry-metric-card is-primary">
+                    <span>Total Projects</span>
+                    <strong>{{ $dashboardTotalProject }}</strong>
+                    <small><i class="bx bx-up-arrow-alt"></i> Open project workspace</small>
+                    <i class="bx bx-right-arrow-alt industry-arrow"></i>
+                </a>
+                <a href="{{ Route::has('tasks.index') ? route('tasks.index') : '#' }}" class="industry-metric-card">
+                    <span>Pending Tasks</span>
+                    <strong>{{ $dashboardPendingTask }}</strong>
+                    <small>Task queue</small>
+                    <i class="bx bx-right-arrow-alt industry-arrow"></i>
+                </a>
+                <a href="{{ Route::has('tickets.index') ? route('tickets.index') : '#' }}" class="industry-metric-card">
+                    <span>Open Tickets</span>
+                    <strong>{{ $dashboardUnresolvedTicket }}</strong>
+                    <small>Support needs attention</small>
+                    <i class="bx bx-right-arrow-alt industry-arrow"></i>
+                </a>
+                <a href="{{ Route::has('attendance.report') ? route('attendance.report') : '#' }}" class="industry-metric-card">
+                    <span>Attendance</span>
+                    <strong>{{ $dashboardAttendancePercent }}%</strong>
+                    <small>{{ $dashboardPresentCount }} present today</small>
+                    <i class="bx bx-right-arrow-alt industry-arrow"></i>
+                </a>
+            </div>
+
+            <div class="industry-main-grid">
+                <div class="industry-panel industry-analytics-card">
+                    <div class="industry-panel-head">
+                        <div>
+                            <h3>Work Analytics</h3>
+                            <p>Quick health snapshot across core modules.</p>
+                        </div>
+                        <a href="{{ Route::has('attendance.report') ? route('attendance.report') : '#' }}">View Report</a>
+                    </div>
+                    <div class="industry-bars" aria-label="Dashboard analytics chart">
+                        <div class="industry-bar" style="--bar: {{ max(18, min(100, round(($dashboardTotalProject / $dashboardTaskScale) * 100))) }}%">
+                            <span></span><label>Projects</label>
+                        </div>
+                        <div class="industry-bar" style="--bar: {{ max(18, min(100, round(($dashboardPendingTask / $dashboardTaskScale) * 100))) }}%">
+                            <span></span><label>Tasks</label>
+                        </div>
+                        <div class="industry-bar" style="--bar: {{ max(18, min(100, round(($dashboardUnresolvedTicket / $dashboardTaskScale) * 100))) }}%">
+                            <span></span><label>Tickets</label>
+                        </div>
+                        <div class="industry-bar" style="--bar: {{ max(18, min(100, round(($dashboardTotalClient / $dashboardTaskScale) * 100))) }}%">
+                            <span></span><label>Clients</label>
+                        </div>
+                        <div class="industry-bar is-muted" style="--bar: {{ max(18, min(100, $dashboardAttendancePercent)) }}%">
+                            <span></span><label>Attendance</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="industry-panel industry-attendance-card">
+                    <div class="industry-panel-head">
+                        <div>
+                            <h3>Team Presence</h3>
+                            <p>Today attendance summary.</p>
+                        </div>
+                        <a href="{{ Route::has('attendance.index') ? route('attendance.index') : '#' }}">Open</a>
+                    </div>
+                    <div class="industry-gauge" style="--value-deg: {{ round($dashboardAttendancePercent * 1.8) }}deg">
+                        <div>
+                            <strong>{{ $dashboardAttendancePercent }}%</strong>
+                            <span>Present</span>
+                        </div>
+                    </div>
+                    <div class="industry-presence-row">
+                        <span><b>{{ $dashboardPresentCount }}</b> Present</span>
+                        <span><b>{{ $dashboardLateCount }}</b> Late</span>
+                        <span><b>{{ $dashboardAbsentCount }}</b> Absent</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="industry-panel industry-feature-panel">
+                <div class="industry-panel-head">
+                    <div>
+                        <h3>Feature Shortcuts</h3>
+                        <p>Every core module is one click away.</p>
+                    </div>
+                </div>
+                <div class="industry-feature-grid">
+                    @foreach($featureLinks as $feature)
+                        @if(Route::has($feature['route']))
+                            <a href="{{ route($feature['route']) }}" class="industry-feature-card">
+                                <span class="industry-feature-icon"><i class="bx {{ $feature['icon'] }}"></i></span>
+                                <span class="industry-feature-copy">
+                                    <strong>{{ $feature['label'] }}</strong>
+                                    <small>{{ $feature['hint'] }}</small>
+                                </span>
+                                <em>{{ $feature['value'] }}</em>
+                            </a>
+                        @endif
+                    @endforeach
+                </div>
+            </div>
+        </section>
 
         <!-- Welcome Section -->
         <div class="welcome-section">
@@ -1263,7 +1437,7 @@
                     </div>
                     <div class="col-lg-5">
                         <div class="welcome-illustration">
-                            <img src="{{ asset('admin/assets/img/illustrations/man-with-laptop.png')}}" class="img-fluid" alt="Dashboard Illustration"/>
+                            <img src="{{ asset('admin/assets/img/illustrations/dashboard-ui-preview.png')}}" class="img-fluid" alt="Dashboard preview"/>
                         </div>
                     </div>
                 </div>
@@ -1426,7 +1600,7 @@
                 <div class="content-card">
                     <div class="card-header">
                         <div class="card-title">
-                            <i class="bx bx-support"></i>
+                            <i class="bx bx-message-square-dots"></i>
                             Open Tickets
                         </div>
                         <a href="{{ route('tickets.index', ['status' => 'open']) }}" class="card-action">
@@ -1466,7 +1640,7 @@
                 <div class="content-card">
                     <div class="card-header">
                         <div class="card-title">
-                            <i class="bx bx-task"></i>
+                            <i class="bx bx-list-check"></i>
                             Pending Tasks
                         </div>
                         <a href="{{ route('tasks.index', ['exclude_completed' => true]) }}" class="card-action">
@@ -1502,7 +1676,7 @@
                 <div class="content-card">
                     <div class="card-header">
                         <div class="card-title">
-                            <i class="bx bx-time-five"></i>
+                            <i class="bx bx-pulse"></i>
                             Recent Activities
                         </div>
                         <a href="#" class="card-action">

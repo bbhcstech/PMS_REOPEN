@@ -27,7 +27,7 @@
               </div>
               <div class="col-sm-5 text-center">
                 <img
-                  src="{{ asset('admin/assets/img/illustrations/man-with-laptop.png') }}"
+                  src="{{ asset('admin/assets/img/illustrations/dashboard-ui-preview.png') }}"
                   class="img-fluid"
                   style="max-height:180px"
                   alt="Dashboard Illustration">
