@@ -168,6 +168,39 @@
        font-weight: 800 !important;
    }
 
+   .app-brand-logo.demo {
+       width: 42px;
+       height: 42px;
+       border-radius: 14px;
+       overflow: hidden;
+       display: inline-flex;
+       align-items: center;
+       justify-content: center;
+       flex: 0 0 auto;
+       box-shadow: 0 10px 22px rgba(5, 105, 255, 0.18);
+   }
+
+   .app-brand-logo.demo img {
+       width: 100%;
+       height: 100%;
+       object-fit: cover;
+       display: block;
+   }
+
+   .app-brand-text.demo {
+       max-width: 132px;
+       overflow: hidden;
+       text-overflow: ellipsis;
+       white-space: nowrap;
+       font-size: 1.08rem !important;
+       line-height: 1.1;
+       letter-spacing: 0 !important;
+       background: linear-gradient(135deg, #0569ff, #13d5e7 50%, #8f25ff);
+       -webkit-background-clip: text;
+       background-clip: text;
+       color: transparent !important;
+   }
+
    .menu-inner .menu-item .menu-link {
        color: var(--text-dark);
        transition: all 0.2s ease;
@@ -472,12 +505,9 @@
           <div class="app-brand demo">
             <a href="index.html" class="app-brand-link">
               <span class="app-brand-logo demo">
-                <span class="text-primary">
-                  <!-- SVG omitted for brevity in editor, keep original in your file -->
-                  <svg width="25" viewBox="0 0 25 42" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"> ... </svg>
-                </span>
+                <img src="{{ asset('logo.png') }}" alt="Bitroxia logo">
               </span>
-              <span class="app-brand-text demo menu-text fw-bold ms-2">PMS</span>
+              <span class="app-brand-text demo menu-text fw-bold ms-2">Bitroxia</span>
             </a>
 
             <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto">

@@ -4,10 +4,10 @@
         <!-- Logo -->
         <a class="navbar-brand" href="{{ url('/') }}">
             <div class="brand-logo">
-                <span class="brand-icon">
-                    <i class="fas fa-cube"></i>
+                <span class="brand-icon" aria-hidden="true">
+                    <img src="{{ asset('logo.png') }}" alt="">
                 </span>
-                <span class="brand-text">BBH<span class="text-purple">PMS</span></span>
+                <span class="brand-text">BITRO<span class="text-purple">XIA</span></span>
             </div>
         </a>
 
@@ -220,7 +220,7 @@
                         <i class="fas fa-lock"></i> Login
                     </a>
                     <a href="{{ route('register') }}" class="btn btn-purple btn-glow">
-                        Get Started <i class="fas fa-arrow-right"></i>
+                        Start Free <i class="fas fa-arrow-right"></i>
                     </a>
                 @endauth
             </div>

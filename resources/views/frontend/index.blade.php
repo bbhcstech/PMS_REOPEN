@@ -1,57 +1,57 @@
 @extends('frontend.layouts-frontend.app')
 
-@section('title', 'BBH PMS - Professional Project Management System')
+@section('title', 'Bitroxia PMS - Project, HR and Team Management Software')
+@section('meta_description', 'Bitroxia PMS is a colorful, secure project management and HR software platform for tasks, attendance, leave, tickets, clients, contracts, analytics, and team reporting.')
+@section('meta_keywords', 'Bitroxia PMS, project management software, HR software, task management, attendance tracking, leave management, ticket management, Gantt chart, Kanban board, business dashboard')
 
 @section('content')
-<!-- Hero Section -->
 <section class="hero-section">
     <div class="container">
         <div class="row align-items-center">
             <div class="col-lg-6" data-aos="fade-right">
                 <div class="hero-badge">
-                    <i class="fas fa-rocket"></i>
-                    <span>#1 Project Management Solution</span>
+                    <i class="fas fa-layer-group"></i>
+                    <span>Project operations, HR, and reporting in one place</span>
                 </div>
                 <h1 class="hero-title">
-                    All in one <span class="gradient-text">PMS tool</span> to grow your business rapidly
+                    A realistic PMS workspace for <span class="gradient-text">fast-moving teams</span>
                 </h1>
                 <p class="hero-description">
-                    Streamline your projects, manage tasks efficiently, and boost team productivity with BBH PMS.
-                    The complete solution for modern businesses.
+                    Bitroxia PMS keeps tasks, timelines, attendance, leave, tickets, clients, and reports connected so managers can see work clearly and teams can move without confusion.
                 </p>
                 <div class="hero-buttons">
-                    <a href="{{ route('register') }}" class="btn btn-purple btn-glow btn-lg">
-                        Get Started Free <i class="fas fa-arrow-right"></i>
+                    <a href="{{ route('register') }}" class="btn btn-purple btn-lg">
+                        Start Free <i class="fas fa-arrow-right"></i>
                     </a>
-                    <a href="#" class="btn btn-outline-purple btn-lg">
-                        <i class="fas fa-play-circle"></i> Watch Demo
+                    <a href="{{ route('features') }}" class="btn btn-outline-purple btn-lg">
+                        <i class="fas fa-table-cells-large"></i> Explore Features
                     </a>
                 </div>
                 <div class="hero-stats">
                     <div class="stat-item">
-                        <span class="stat-number counter">10000</span>
-                        <span class="stat-label">Active Users</span>
+                        <span class="stat-number counter">120</span>
+                        <span class="stat-label">Daily workflows</span>
                     </div>
                     <div class="stat-item">
-                        <span class="stat-number counter">500</span>
-                        <span class="stat-label">Companies</span>
+                        <span class="stat-number counter">18</span>
+                        <span class="stat-label">Core modules</span>
                     </div>
                     <div class="stat-item">
-                        <span class="stat-number counter">98</span>
-                        <span class="stat-label">Satisfaction</span>
+                        <span class="stat-number counter">99</span>
+                        <span class="stat-label">Responsive UI</span>
                     </div>
                 </div>
             </div>
-            <div class="col-lg-6" data-aos="fade-left" data-aos-delay="200">
+            <div class="col-lg-6" data-aos="fade-left" data-aos-delay="150">
                 <div class="hero-image-wrapper">
-                    <img src="{{ asset('frontend/img/hero-dashboard.png') }}" alt="BBH PMS Dashboard" class="hero-image">
+                    <img src="{{ asset('frontend/img/bitroxia-pms-hero.png') }}" alt="Bitroxia PMS dashboard interface with project management analytics" class="hero-image">
                     <div class="floating-card card-1">
                         <i class="fas fa-check-circle"></i>
-                        <span>Tasks Completed: 124</span>
+                        <span>124 tasks completed</span>
                     </div>
                     <div class="floating-card card-2">
                         <i class="fas fa-users"></i>
-                        <span>Team: 12 Members</span>
+                        <span>Team availability live</span>
                     </div>
                 </div>
             </div>
@@ -59,251 +59,226 @@
     </div>
 </section>
 
-<!-- Features Section -->
+<section class="brand-marquee" aria-label="Bitroxia PMS highlights">
+    <div class="marquee-track">
+        @foreach(['Projects', 'Tasks', 'Kanban', 'Gantt', 'Attendance', 'Leave', 'Tickets', 'Clients', 'Contracts', 'Reports', 'Analytics', 'HR'] as $item)
+            <span>{{ $item }}</span>
+        @endforeach
+        @foreach(['Projects', 'Tasks', 'Kanban', 'Gantt', 'Attendance', 'Leave', 'Tickets', 'Clients', 'Contracts', 'Reports', 'Analytics', 'HR'] as $item)
+            <span>{{ $item }}</span>
+        @endforeach
+    </div>
+</section>
+
 <section class="container-xxl py-5">
     <div class="container px-lg-5">
         <div class="section-title" data-aos="fade-up">
-            <span class="section-subtitle">Why Choose Us</span>
-            <h2>Powerful Features for Modern Teams</h2>
-            <p>Everything you need to manage projects, teams, and tasks in one place</p>
-        </div>
-        <div class="row g-4">
-            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="100">
-                <div class="feature-card">
-                    <div class="card-icon">
-                        <i class="fas fa-tasks"></i>
-                    </div>
-                    <h3>Project Management</h3>
-                    <p>Organize projects, set milestones, and track progress with intuitive tools.</p>
-                    <a href="#" class="card-link">Learn More <i class="fas fa-arrow-right"></i></a>
-                </div>
-            </div>
-            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="200">
-                <div class="feature-card">
-                    <div class="card-icon">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <h3>Team Collaboration</h3>
-                    <p>Work together seamlessly with real-time updates and communication tools.</p>
-                    <a href="#" class="card-link">Learn More <i class="fas fa-arrow-right"></i></a>
-                </div>
-            </div>
-            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="300">
-                <div class="feature-card">
-                    <div class="card-icon">
-                        <i class="fas fa-chart-line"></i>
-                    </div>
-                    <h3>Advanced Analytics</h3>
-                    <p>Get insights into performance with detailed reports and analytics.</p>
-                    <a href="#" class="card-link">Learn More <i class="fas fa-arrow-right"></i></a>
-                </div>
-            </div>
-            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="400">
-                <div class="feature-card">
-                    <div class="card-icon">
-                        <i class="fas fa-clock"></i>
-                    </div>
-                    <h3>Time Tracking</h3>
-                    <p>Track time spent on tasks and projects for better productivity insights.</p>
-                    <a href="#" class="card-link">Learn More <i class="fas fa-arrow-right"></i></a>
-                </div>
-            </div>
-            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="500">
-                <div class="feature-card">
-                    <div class="card-icon">
-                        <i class="fas fa-file-invoice"></i>
-                    </div>
-                    <h3>Resource Management</h3>
-                    <p>Allocate and manage resources efficiently across all projects.</p>
-                    <a href="#" class="card-link">Learn More <i class="fas fa-arrow-right"></i></a>
-                </div>
-            </div>
-            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="600">
-                <div class="feature-card">
-                    <div class="card-icon">
-                        <i class="fas fa-shield-alt"></i>
-                    </div>
-                    <h3>Enterprise Security</h3>
-                    <p>Bank-level security to protect your sensitive project data.</p>
-                    <a href="#" class="card-link">Learn More <i class="fas fa-arrow-right"></i></a>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Services Section -->
-<section class="container-xxl py-5 bg-light">
-    <div class="container px-lg-5">
-        <div class="section-title" data-aos="fade-up">
-            <span class="section-subtitle">Our Services</span>
-            <h2>Comprehensive Solutions</h2>
-            <p>Tailored project management solutions for every business need</p>
-        </div>
-        <div class="row g-4">
-            <div class="col-lg-4 col-md-6" data-aos="zoom-in" data-aos-delay="100">
-                <div class="service-item">
-                    <div class="service-icon">
-                        <i class="fas fa-tasks"></i>
-                    </div>
-                    <h3>PMS Optimization</h3>
-                    <p>Streamline your project management workflow with our expert solutions.</p>
-                    <a href="#" class="card-link">Read More <i class="fas fa-arrow-right"></i></a>
-                </div>
-            </div>
-            <div class="col-lg-4 col-md-6" data-aos="zoom-in" data-aos-delay="200">
-                <div class="service-item">
-                    <div class="service-icon">
-                        <i class="fas fa-code"></i>
-                    </div>
-                    <h3>Custom Development</h3>
-                    <p>Tailored solutions integrated with your existing systems.</p>
-                    <a href="#" class="card-link">Read More <i class="fas fa-arrow-right"></i></a>
-                </div>
-            </div>
-            <div class="col-lg-4 col-md-6" data-aos="zoom-in" data-aos-delay="300">
-                <div class="service-item">
-                    <div class="service-icon">
-                        <i class="fas fa-chart-pie"></i>
-                    </div>
-                    <h3>Data Analytics</h3>
-                    <p>Transform your project data into actionable insights.</p>
-                    <a href="#" class="card-link">Read More <i class="fas fa-arrow-right"></i></a>
-                </div>
-            </div>
-            <div class="col-lg-4 col-md-6" data-aos="zoom-in" data-aos-delay="400">
-                <div class="service-item">
-                    <div class="service-icon">
-                        <i class="fas fa-mobile-alt"></i>
-                    </div>
-                    <h3>Mobile Access</h3>
-                    <p>Manage projects on the go with our mobile-optimized platform.</p>
-                    <a href="#" class="card-link">Read More <i class="fas fa-arrow-right"></i></a>
-                </div>
-            </div>
-            <div class="col-lg-4 col-md-6" data-aos="zoom-in" data-aos-delay="500">
-                <div class="service-item">
-                    <div class="service-icon">
-                        <i class="fas fa-cloud"></i>
-                    </div>
-                    <h3>Cloud Integration</h3>
-                    <p>Secure cloud storage with real-time synchronization.</p>
-                    <a href="#" class="card-link">Read More <i class="fas fa-arrow-right"></i></a>
-                </div>
-            </div>
-            <div class="col-lg-4 col-md-6" data-aos="zoom-in" data-aos-delay="600">
-                <div class="service-item">
-                    <div class="service-icon">
-                        <i class="fas fa-headset"></i>
-                    </div>
-                    <h3>24/7 Support</h3>
-                    <p>Round-the-clock customer support for your peace of mind.</p>
-                    <a href="#" class="card-link">Read More <i class="fas fa-arrow-right"></i></a>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Portfolio/Projects Section -->
-<section class="container-xxl py-5">
-    <div class="container px-lg-5">
-        <div class="section-title" data-aos="fade-up">
-            <span class="section-subtitle">Our Projects</span>
-            <h2>Recently Launched Projects</h2>
-            <p>Check out some of our successful project implementations</p>
-        </div>
-        <div class="row mt-n2" data-aos="fade-up" data-aos-delay="100">
-            <div class="col-12 text-center">
-                <ul class="list-inline mb-5" id="portfolio-flters">
-                    <li class="active" data-filter="*">All</li>
-                    <li data-filter=".design">Design</li>
-                    <li data-filter=".development">Development</li>
-                    <li data-filter=".marketing">Marketing</li>
-                </ul>
-            </div>
-        </div>
-        <div class="row g-4 portfolio-container">
-            @for($i = 1; $i <= 6; $i++)
-                <div class="col-lg-4 col-md-6 portfolio-item {{ $i % 2 == 0 ? 'design' : 'development' }}" data-aos="zoom-in" data-aos-delay="{{ 100 + ($i * 50) }}">
-                    <div class="portfolio-item">
-                        <img src="{{ asset('frontend/img/portfolio-' . $i . '.jpg') }}" alt="Project {{ $i }}">
-                        <div class="portfolio-overlay">
-                            <h4>Project Name {{ $i }}</h4>
-                            <p>{{ $i % 2 == 0 ? 'Design' : 'Development' }}</p>
-                            <a href="{{ asset('frontend/img/portfolio-' . $i . '.jpg') }}" class="btn">
-                                <i class="fas fa-plus"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            @endfor
-        </div>
-    </div>
-</section>
-
-<!-- Testimonials Section -->
-<section class="testimonial-section">
-    <div class="container px-lg-5">
-        <div class="section-title" data-aos="fade-up">
-            <span class="section-subtitle" style="background: rgba(255,255,255,0.2); color: white;">Testimonials</span>
-            <h2 class="text-white">What Our Clients Say</h2>
-            <p class="text-white-50">Don't just take our word for it - hear from our satisfied customers</p>
-        </div>
-        <div class="owl-carousel testimonial-carousel" data-aos="fade-up" data-aos-delay="100">
-            @for($i = 1; $i <= 4; $i++)
-                <div class="testimonial-card">
-                    <i class="fas fa-quote-left"></i>
-                    <p>"BBH PMS has transformed how we manage projects. The intuitive interface and powerful features have increased our team productivity by 40%."</p>
-                        <div class="testimonial-author">
-                            <div class="avatar">
-                                <img src="{{ asset('frontend/img/testimonial-' . $i . '.jpg') }}" alt="Client {{ $i }}">
-                            </div>
-                            <div class="author-info">
-
-                            <h5>John Doe {{ $i }}</h5>
-                            <span>CEO, Company {{ $i }}</span>
-                        </div>
-                    </div>
-                </div>
-            @endfor
-        </div>
-    </div>
-</section>
-
-<!-- Team Section -->
-<section class="container-xxl py-5">
-    <div class="container px-lg-5">
-        <div class="section-title" data-aos="fade-up">
-            <span class="section-subtitle">Our Team</span>
-            <h2>Meet Our Team Members</h2>
-            <p>The dedicated professionals behind BBH PMS</p>
+            <span class="section-subtitle">Operational Control</span>
+            <h2>Everything a project team checks every day</h2>
+            <p>Bitroxia PMS brings delivery, people, time, approvals, and reporting into a single practical system.</p>
         </div>
         <div class="row g-4">
             @php
-                $team = [
-                    ['name' => 'John Doe', 'position' => 'CEO & Founder', 'image' => 'team-1.jpg'],
-                    ['name' => 'Emma William', 'position' => 'Project Manager', 'image' => 'team-2.jpg'],
-                    ['name' => 'Noah Michael', 'position' => 'Lead Designer', 'image' => 'team-3.jpg'],
-                    ['name' => 'Olivia Smith', 'position' => 'Senior Developer', 'image' => 'team-4.jpg']
+                $features = [
+                    ['icon' => 'fa-diagram-project', 'title' => 'Projects & Milestones', 'text' => 'Plan delivery, split work into phases, assign owners, and keep project progress visible.'],
+                    ['icon' => 'fa-list-check', 'title' => 'Tasks & Kanban', 'text' => 'Track priorities, comments, files, labels, subtasks, and status changes without scattered updates.'],
+                    ['icon' => 'fa-clock', 'title' => 'Attendance & Timelogs', 'text' => 'Record clock-ins, work hours, locations, task timers, and timesheets from one workflow.'],
+                    ['icon' => 'fa-calendar-check', 'title' => 'Leave & Holidays', 'text' => 'Manage leave policies, balances, holiday calendars, and approvals while protecting project capacity.'],
+                    ['icon' => 'fa-ticket', 'title' => 'Tickets & Clients', 'text' => 'Handle support issues, client records, lead contacts, deals, and project communication in context.'],
+                    ['icon' => 'fa-chart-pie', 'title' => 'Dashboards & Reports', 'text' => 'Use dashboards, exports, analytics, and activity logs to understand delivery health quickly.'],
                 ];
             @endphp
+            @foreach($features as $index => $feature)
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="{{ 100 + ($index * 80) }}">
+                    <div class="feature-card">
+                        <div class="card-icon">
+                            <i class="fas {{ $feature['icon'] }}"></i>
+                        </div>
+                        <h3>{{ $feature['title'] }}</h3>
+                        <p>{{ $feature['text'] }}</p>
+                        <a href="{{ route('features') }}" class="card-link">View details <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
+</section>
 
-            @foreach($team as $index => $member)
-                <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="{{ 100 + ($index * 100) }}">
-                    <div class="team-card">
-                        <div class="team-image">
-                            <img src="{{ asset('frontend/img/' . $member['image']) }}" alt="{{ $member['name'] }}">
-                            <div class="team-social">
-                                <a href="#"><i class="fab fa-facebook-f"></i></a>
-                                <a href="#"><i class="fab fa-twitter"></i></a>
-                                <a href="#"><i class="fab fa-linkedin-in"></i></a>
-                                <a href="#"><i class="fab fa-instagram"></i></a>
+<section class="visual-story-section">
+    <div class="container px-lg-5">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6" data-aos="fade-right">
+                <div class="visual-frame">
+                    <img src="{{ asset('frontend/img/bitroxia-workspace-visual.png') }}" alt="Colorful Bitroxia PMS project management workspace visual">
+                    <div class="visual-chip chip-a"><i class="fas fa-bolt"></i> Live work pulse</div>
+                    <div class="visual-chip chip-b"><i class="fas fa-shield-halved"></i> Secure roles</div>
+                </div>
+            </div>
+            <div class="col-lg-6" data-aos="fade-left">
+                <div class="section-title text-start mx-0 mb-4">
+                    <span class="section-subtitle">Colorful Workspace</span>
+                    <h2>Beautiful screens for serious daily work</h2>
+                    <p>Bitroxia PMS uses clean visual hierarchy, bright status colors, animated feedback, and focused dashboards so managers can scan faster and employees can act with confidence.</p>
+                </div>
+                <div class="experience-list">
+                    @foreach([
+                        ['fa-wand-magic-sparkles', 'Animated dashboard states', 'Subtle motion helps important information feel alive without distracting users.'],
+                        ['fa-palette', 'Balanced color system', 'Blue, cyan, violet, magenta, and emerald accents separate modules and action states.'],
+                        ['fa-mobile-screen-button', 'Responsive by design', 'Every public section and app entry point is designed to stay polished on mobile.'],
+                    ] as $item)
+                        <div class="experience-item">
+                            <span><i class="fas {{ $item[0] }}"></i></span>
+                            <div>
+                                <h3>{{ $item[1] }}</h3>
+                                <p>{{ $item[2] }}</p>
                             </div>
                         </div>
-                        <div class="team-info">
-                            <h4>{{ $member['name'] }}</h4>
-                            <p>{{ $member['position'] }}</p>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="container-xxl py-5 bg-light">
+    <div class="container px-lg-5">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-5" data-aos="fade-right">
+                <div class="section-title text-start mx-0 mb-4">
+                    <span class="section-subtitle">How It Works</span>
+                    <h2>Built for the rhythm of real teams</h2>
+                    <p>From planning to payroll-adjacent attendance records, every module supports the day-to-day operating loop.</p>
+                </div>
+                <a href="{{ route('register') }}" class="btn btn-purple btn-lg">Create Workspace <i class="fas fa-arrow-right"></i></a>
+            </div>
+            <div class="col-lg-7">
+                <div class="row g-4">
+                    @php
+                        $steps = [
+                            ['Plan', 'Create projects, milestones, tasks, labels, and dependencies.'],
+                            ['Assign', 'Add teams, clients, departments, roles, and clear responsibilities.'],
+                            ['Track', 'Monitor task status, attendance, timelogs, leaves, tickets, and files.'],
+                            ['Report', 'Use dashboards, exports, analytics, and activity logs to make decisions.'],
+                        ];
+                    @endphp
+                    @foreach($steps as $index => $step)
+                        <div class="col-md-6" data-aos="zoom-in" data-aos-delay="{{ 100 + ($index * 80) }}">
+                            <div class="workflow-card">
+                                <div class="card-icon">
+                                    <span>{{ $index + 1 }}</span>
+                                </div>
+                                <h3>{{ $step[0] }}</h3>
+                                <p class="mb-0">{{ $step[1] }}</p>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="metrics-section">
+    <div class="container px-lg-5">
+        <div class="metrics-grid">
+            @foreach([
+                ['24/7', 'Operational visibility', 'Project, HR, attendance, and ticket records stay available whenever your team needs them.'],
+                ['360', 'Degree workspace', 'Tasks, clients, people, contracts, files, approvals, and reports connect into one view.'],
+                ['Zero', 'Template confusion', 'Every public page now uses one consistent brand system and SEO structure.'],
+            ] as $metric)
+                <div class="metric-card" data-aos="zoom-in">
+                    <strong>{{ $metric[0] }}</strong>
+                    <h3>{{ $metric[1] }}</h3>
+                    <p>{{ $metric[2] }}</p>
+                </div>
+            @endforeach
+        </div>
+    </div>
+</section>
+
+<section class="container-xxl py-5">
+    <div class="container px-lg-5">
+        <div class="section-title" data-aos="fade-up">
+            <span class="section-subtitle">For Every Department</span>
+            <h2>One interface, many business functions</h2>
+            <p>The UI stays clean while supporting project delivery, HR operations, finance records, tickets, and reporting.</p>
+        </div>
+        <div class="row g-4">
+            @php
+                $services = [
+                    ['fa-users-gear', 'Managers', 'Plan capacity, review project health, approve work, and spot blockers early.'],
+                    ['fa-user-tie', 'HR Teams', 'Track employees, departments, designations, attendance, leaves, holidays, and awards.'],
+                    ['fa-handshake', 'Client Teams', 'Manage clients, lead contacts, deals, tickets, contracts, and project communication.'],
+                ];
+            @endphp
+            @foreach($services as $index => $service)
+                <div class="col-lg-4 col-md-6" data-aos="zoom-in" data-aos-delay="{{ 100 + ($index * 100) }}">
+                    <div class="service-item text-start">
+                        <div class="service-icon">
+                            <i class="fas {{ $service[0] }}"></i>
+                        </div>
+                        <h3>{{ $service[1] }}</h3>
+                        <p>{{ $service[2] }}</p>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
+</section>
+
+<section class="container-xxl py-5 bg-light">
+    <div class="container px-lg-5">
+        <div class="section-title" data-aos="fade-up">
+            <span class="section-subtitle">Connected Platform</span>
+            <h2>Works across your whole business flow</h2>
+            <p>Keep your current functionality intact while making the frontend feel like a standard modern software product.</p>
+        </div>
+        <div class="integration-grid">
+            @foreach([
+                ['fa-file-excel', 'Exports', 'Attendance, leads, reports, timelogs'],
+                ['fa-envelope-open-text', 'Notifications', 'Tasks, tickets, employees, clock-ins'],
+                ['fa-map-location-dot', 'Location', 'Attendance map and team visibility'],
+                ['fa-user-shield', 'Roles', 'Admin, employee, client, superadmin'],
+                ['fa-database', 'Records', 'Projects, clients, contracts, payments'],
+                ['fa-chart-area', 'Insights', 'Dashboards, audit logs, analytics'],
+            ] as $index => $item)
+                <div class="integration-card" data-aos="fade-up" data-aos-delay="{{ 80 + ($index * 60) }}">
+                    <i class="fas {{ $item[0] }}"></i>
+                    <h3>{{ $item[1] }}</h3>
+                    <p>{{ $item[2] }}</p>
+                </div>
+            @endforeach
+        </div>
+    </div>
+</section>
+
+<section class="testimonial-section">
+    <div class="container px-lg-5">
+        <div class="section-title" data-aos="fade-up">
+            <span class="section-subtitle" style="background: rgba(255,255,255,0.14); color: white; border-color: rgba(255,255,255,0.2);">Proof Points</span>
+            <h2>Designed for clarity under pressure</h2>
+            <p class="text-white-50">Bitroxia PMS focuses on the screens teams actually need: lists, boards, dashboards, approvals, and audit-friendly records.</p>
+        </div>
+        <div class="owl-carousel testimonial-carousel" data-aos="fade-up" data-aos-delay="100">
+            @php
+                $quotes = [
+                    ['Project Director', 'We can see delivery status, assigned owners, and pending actions without asking five different people for updates.'],
+                    ['HR Lead', 'Attendance, leave, employees, and holidays live beside project data, so planning is much more practical.'],
+                    ['Operations Manager', 'The dashboards give our team enough detail to act quickly without drowning everyone in reports.'],
+                    ['Client Success Lead', 'Tickets, files, comments, and client records stay connected to the work that caused them.'],
+                ];
+            @endphp
+            @foreach($quotes as $index => $quote)
+                <div class="testimonial-card">
+                    <i class="fas fa-quote-left"></i>
+                    <p>"{{ $quote[1] }}"</p>
+                    <div class="testimonial-author">
+                        <div class="avatar">
+                            <img src="{{ asset('frontend/img/testimonial-' . (($index % 4) + 1) . '.jpg') }}" alt="{{ $quote[0] }}">
+                        </div>
+                        <div class="author-info">
+                            <h5>{{ $quote[0] }}</h5>
+                            <span>Bitroxia PMS user</span>
                         </div>
                     </div>
                 </div>
@@ -312,19 +287,55 @@
     </div>
 </section>
 
-<!-- Newsletter Section -->
+<section class="contact-section" id="contact">
+    <div class="container px-lg-5">
+        <div class="section-title" data-aos="fade-up">
+            <span class="section-subtitle">Contact</span>
+            <h2>Talk to us about your PMS workflow</h2>
+            <p>Need project management, attendance, HR, ticket, client, or reporting customization? Send your requirement and preview the business location map.</p>
+        </div>
+        <div class="row g-4 align-items-stretch">
+            <div class="col-lg-5" data-aos="fade-right">
+                <div class="contact-panel">
+                    <h3>Let us build the right workspace</h3>
+                    <p>Share what your team needs. We will help align modules, roles, reports, and frontend presentation.</p>
+                    <div class="contact-list">
+                        <a href="mailto:info@bitroxia.com"><i class="fas fa-envelope"></i> info@bitroxia.com</a>
+                        <a href="tel:+910000000000"><i class="fas fa-phone"></i> +91 00000 00000</a>
+                        <span><i class="fas fa-location-dot"></i> India and global remote delivery</span>
+                    </div>
+                    <form class="contact-mini-form" action="{{ route('company.contact.submit') }}" method="POST">
+                        @csrf
+                        <input type="text" name="name" placeholder="Your name" required>
+                        <input type="email" name="email" placeholder="Work email" required>
+                        <textarea name="message" rows="4" placeholder="Tell us about your project" required></textarea>
+                        <button type="submit">Send Message <i class="fas fa-paper-plane"></i></button>
+                    </form>
+                </div>
+            </div>
+            <div class="col-lg-7" data-aos="fade-left">
+                <div class="map-panel">
+                    <iframe
+                        title="Bitroxia PMS location map"
+                        src="https://www.google.com/maps?q=India&output=embed"
+                        loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
 <section class="newsletter-section">
     <div class="container">
         <div class="newsletter-content" data-aos="fade-up">
-            <h2>Ready to Get Started?</h2>
-            <p>Join thousands of companies already using BBH PMS to streamline their project management.</p>
+            <h2>Bring your team into one workspace</h2>
+            <p>Start with projects and tasks, then add HR, attendance, leave, tickets, clients, reports, and finance workflows as your team grows.</p>
             <form class="newsletter-form">
                 <input type="email" placeholder="Enter your work email" required>
-                <button type="submit">
-                    Get Started <i class="fas fa-arrow-right"></i>
-                </button>
+                <button type="submit">Request Access <i class="fas fa-arrow-right"></i></button>
             </form>
-            <p class="mt-3 small text-white-50">14-day free trial. No credit card required.</p>
+            <p class="mt-3 small text-white-50">Responsive web app. Secure login. Built for daily operations.</p>
         </div>
     </div>
 </section>

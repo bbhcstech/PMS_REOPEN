@@ -1417,7 +1417,7 @@
                 <div class="row g-0">
                     <div class="col-lg-7">
                         <div class="welcome-content">
-                            <h1 class="welcome-title">Welcome to PMS Dashboard</h1>
+                            <h1 class="welcome-title">Welcome to Bitroxia Dashboard</h1>
                             <p class="welcome-text">Manage your projects, team, and clients efficiently with our comprehensive dashboard. Track progress, monitor performance, and make data-driven decisions.</p>
                             <div class="welcome-badges">
                                 <div class="welcome-badge">

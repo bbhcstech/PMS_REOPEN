@@ -5,7 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>@yield('title', 'BBH PMS - Professional Project Management System')</title>
+    @php
+        $siteName = 'Bitroxia PMS';
+        $seoTitle = trim($__env->yieldContent('title', 'Bitroxia PMS - Project, HR and Team Management Software'));
+        $seoDescription = trim($__env->yieldContent('meta_description', 'Bitroxia PMS helps teams plan projects, manage tasks, track attendance, handle leave, and report progress from one secure workspace.'));
+        $seoKeywords = trim($__env->yieldContent('meta_keywords', 'project management software, PMS, task management, HR management, attendance tracking, leave management, team collaboration'));
+        $canonicalUrl = url()->current();
+        $logoUrl = asset('logo.png');
+        $heroImageUrl = asset('frontend/img/bitroxia-pms-hero.png');
+    @endphp
+
+    <title>{{ $seoTitle }}</title>
+    <meta name="description" content="{{ $seoDescription }}">
+    <meta name="keywords" content="{{ $seoKeywords }}">
+    <meta name="author" content="{{ $siteName }}">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="{{ $canonicalUrl }}">
+    <link rel="icon" type="image/png" href="{{ $logoUrl }}">
+    <link rel="apple-touch-icon" href="{{ $logoUrl }}">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="{{ $siteName }}">
+    <meta property="og:title" content="{{ $seoTitle }}">
+    <meta property="og:description" content="{{ $seoDescription }}">
+    <meta property="og:url" content="{{ $canonicalUrl }}">
+    <meta property="og:image" content="{{ $heroImageUrl }}">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ $seoTitle }}">
+    <meta name="twitter:description" content="{{ $seoDescription }}">
+    <meta name="twitter:image" content="{{ $heroImageUrl }}">
 
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -28,6 +55,44 @@
 
     <!-- Custom CSS -->
     <link href="{{ asset('frontend/css/bbh-pms.css') }}" rel="stylesheet">
+
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "SoftwareApplication",
+            "name": "Bitroxia PMS",
+            "applicationCategory": "BusinessApplication",
+            "operatingSystem": "Web",
+            "description": @json($seoDescription),
+            "url": @json(url('/')),
+            "image": @json($heroImageUrl),
+            "offers": {
+                "@type": "Offer",
+                "price": "0",
+                "priceCurrency": "USD"
+            },
+            "featureList": [
+                "Project management",
+                "Task management",
+                "Attendance tracking",
+                "Leave management",
+                "Ticket management",
+                "Client management",
+                "Reports and analytics"
+            ]
+        }
+    </script>
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "name": "Bitroxia PMS",
+            "url": @json(url('/')),
+            "logo": @json($logoUrl),
+            "email": "info@bitroxia.com",
+            "areaServed": "Worldwide"
+        }
+    </script>
 
     @stack('styles')
 </head>
