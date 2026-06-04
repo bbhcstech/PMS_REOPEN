@@ -1,13 +1,15 @@
 (function($) {
     "use strict";
 
-    // Initialize AOS
-    AOS.init({
-        duration: 1000,
-        once: true,
-        offset: 100,
-        easing: 'ease-in-out'
-    });
+    // Initialize scroll animation
+    if (typeof AOS !== 'undefined') {
+        AOS.init({
+            duration: 850,
+            once: true,
+            offset: 80,
+            easing: 'ease-out-cubic'
+        });
+    }
 
     // Preloader
     $(window).on('load', function() {
@@ -34,33 +36,37 @@
     });
 
     // Counter Up
-    $('.stat-number').counterUp({
-        delay: 10,
-        time: 2000
-    });
+    if ($.fn.counterUp) {
+        $('.stat-number').counterUp({
+            delay: 10,
+            time: 1800
+        });
+    }
 
     // Testimonials Carousel
-    $('.testimonial-carousel').owlCarousel({
-        loop: true,
-        margin: 30,
-        nav: false,
-        dots: true,
-        autoplay: true,
-        autoplayTimeout: 5000,
-        autoplayHoverPause: true,
-        smartSpeed: 1000,
-        responsive: {
-            0: {
-                items: 1
-            },
-            768: {
-                items: 2
-            },
-            992: {
-                items: 3
+    if ($.fn.owlCarousel) {
+        $('.testimonial-carousel').owlCarousel({
+            loop: true,
+            margin: 30,
+            nav: false,
+            dots: true,
+            autoplay: true,
+            autoplayTimeout: 5000,
+            autoplayHoverPause: true,
+            smartSpeed: 900,
+            responsive: {
+                0: {
+                    items: 1
+                },
+                768: {
+                    items: 2
+                },
+                992: {
+                    items: 3
+                }
             }
-        }
-    });
+        });
+    }
 
     // Portfolio Isotope
     var $portfolioContainer = $('.portfolio-container');
@@ -81,16 +87,18 @@
     }
 
     // Magnific Popup for Portfolio
-    $('.portfolio-overlay .btn').magnificPopup({
-        type: 'image',
-        gallery: {
-            enabled: true
-        },
-        zoom: {
-            enabled: true,
-            duration: 300
-        }
-    });
+    if ($.fn.magnificPopup) {
+        $('.portfolio-overlay .btn').magnificPopup({
+            type: 'image',
+            gallery: {
+                enabled: true
+            },
+            zoom: {
+                enabled: true,
+                duration: 300
+            }
+        });
+    }
 
     // Smooth Scroll for Anchor Links
     $('a[href*="#"]').on('click', function(e) {
@@ -169,10 +177,20 @@
         );
     }
 
-    // Parallax Effect
-    $(window).scroll(function() {
+    // Premium motion layer
+    $(window).on('scroll', function() {
         var scroll = $(window).scrollTop();
-        $('.hero-section').css('background-position-y', scroll * 0.5 + 'px');
+        $('.hero-section, .page-hero').css('background-position-y', scroll * 0.18 + 'px');
+        $('.hero-image').css('filter', 'saturate(' + Math.max(1, 1.08 - scroll / 5000) + ')');
+    });
+
+    $('.btn-purple, .btn-outline-purple').on('mousemove', function(e) {
+        var rect = this.getBoundingClientRect();
+        var x = e.clientX - rect.left - rect.width / 2;
+        var y = e.clientY - rect.top - rect.height / 2;
+        $(this).css('transform', 'translate(' + (x * 0.03) + 'px,' + (y * 0.05) + 'px)');
+    }).on('mouseleave', function() {
+        $(this).css('transform', '');
     });
 
     // Typed Effect for Hero Title (Optional)

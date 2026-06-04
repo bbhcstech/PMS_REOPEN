@@ -4,8 +4,11 @@
         <div class="row g-5">
             <div class="col-lg-4 col-md-6">
                 <div class="footer-widget">
-                    <h4>About BBH PMS</h4>
-                    <p class="text-white-50 mb-4">The complete project management solution for modern businesses. Streamline your workflow, boost productivity, and achieve more with our comprehensive platform.</p>
+                    <div class="footer-brand">
+                        <img src="{{ asset('logo.png') }}" alt="Bitroxia PMS logo">
+                        <h4 class="mb-0">Bitroxia PMS</h4>
+                    </div>
+                    <p class="text-white-50 mb-4">A practical project, HR, attendance, and reporting workspace for teams that need clear ownership and faster delivery.</p>
                     <div class="social-links">
                         <a href="#"><i class="fab fa-facebook-f"></i></a>
                         <a href="#"><i class="fab fa-twitter"></i></a>
@@ -46,9 +49,9 @@
                 <div class="footer-widget">
                     <h4>Contact Info</h4>
                     <div class="footer-contact">
-                        <p><i class="fas fa-map-marker-alt"></i> 123 Business Avenue, New York, NY 10001</p>
-                        <p><i class="fas fa-phone-alt"></i> +1 (555) 123-4567</p>
-                        <p><i class="fas fa-envelope"></i> info@bbhpms.com</p>
+                        <p><i class="fas fa-map-marker-alt"></i> India and global remote delivery</p>
+                        <p><i class="fas fa-phone-alt"></i> Available for business teams</p>
+                        <p><i class="fas fa-envelope"></i> info@bitroxia.com</p>
                     </div>
                 </div>
             </div>
@@ -58,7 +61,7 @@
             <div class="row align-items-center">
                 <div class="col-md-6">
                     <div class="copyright">
-                        &copy; {{ date('Y') }} <a href="#">BBH PMS</a>. All Rights Reserved.
+                        &copy; {{ date('Y') }} <a href="#">Bitroxia PMS</a>. All Rights Reserved.
                     </div>
                 </div>
                 <div class="col-md-6">
