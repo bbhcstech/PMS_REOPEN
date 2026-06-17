@@ -2,6 +2,14 @@
 
 @section('settings-content')
 
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h5 class="mb-1">Profile Settings</h5>
+        <p class="text-muted mb-0">Manage profile fields and requirements.</p>
+    </div>
+    <a href="{{ route('dashboard') }}" class="btn-close" aria-label="Close profile settings"></a>
+</div>
+
 <form method="POST" action="{{ route('admin.settings.profile.update') }}">
     @csrf
     @method('PUT')
@@ -83,10 +91,15 @@
     </div>
 
     {{-- Action Buttons --}}
-    <div class="mt-5 pt-4 border-top d-flex justify-content-between">
-        <button type="submit" class="btn btn-primary px-4">
-            <i class="bi bi-save me-2"></i>Save Profile Settings
-        </button>
+    <div class="mt-5 pt-4 border-top d-flex justify-content-between flex-wrap gap-2">
+        <div class="d-flex gap-2">
+            <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary px-4">
+                Cancel
+            </a>
+            <button type="submit" class="btn btn-primary px-4">
+                <i class="bi bi-save me-2"></i>Save Profile Settings
+            </button>
+        </div>
 
         <button type="button"
                 class="btn btn-outline-success"

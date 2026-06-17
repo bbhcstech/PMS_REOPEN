@@ -376,9 +376,63 @@
        background-color: var(--purple-hover);
    }
 
+   .notification-bell.has-unread i {
+       color: #7C3AED !important;
+       animation: pmsBellShake 1.15s ease-in-out infinite;
+       transform-origin: top center;
+   }
+
+   .notification-item-unread {
+       background: linear-gradient(90deg, rgba(124, 58, 237, 0.12), rgba(255, 255, 255, 0.98));
+       border-left: 4px solid #7C3AED;
+   }
+
+   .notification-item-read {
+       background: #fff;
+       opacity: 0.72;
+   }
+
+   .notification-unread-dot {
+       width: 8px;
+       height: 8px;
+       border-radius: 50%;
+       background: #7C3AED;
+       box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.12);
+       flex: 0 0 8px;
+       margin-top: 6px;
+   }
+
+   @keyframes pmsBellShake {
+       0%, 100% { transform: rotate(0); }
+       15% { transform: rotate(12deg); }
+       30% { transform: rotate(-10deg); }
+       45% { transform: rotate(7deg); }
+       60% { transform: rotate(-5deg); }
+       75% { transform: rotate(2deg); }
+   }
+
    /* Avatar border */
    .avatar-online img {
+       width: 40px;
+       height: 40px;
+       min-width: 40px;
+       min-height: 40px;
+       max-width: 40px;
+       max-height: 40px;
        border: 2px solid var(--purple-primary);
+       border-radius: 50% !important;
+       object-fit: cover;
+       object-position: center;
+       display: block;
+   }
+
+   .navbar-profile-avatar {
+       width: 40px !important;
+       height: 40px !important;
+       aspect-ratio: 1 / 1;
+       border-radius: 50% !important;
+       object-fit: cover;
+       object-position: center;
    }
 
    /* Timer Icon */
@@ -499,6 +553,53 @@
     box-shadow: 0 6px 14px rgba(239, 68, 68, 0.28);
 }
 
+.sidebar-notification-badge {
+    margin-left: auto;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 999px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 1;
+    color: #fff;
+    background: #7C3AED;
+    box-shadow: 0 6px 14px rgba(124, 58, 237, 0.18);
+}
+
+.sidebar-notification-badge.is-visible {
+    display: inline-flex;
+}
+
+.sidebar-notification-badge.type-new { background: #2563eb; }
+.sidebar-notification-badge.type-pending { background: #f59e0b; }
+.sidebar-notification-badge.type-issue { background: #ef4444; }
+.sidebar-notification-badge.type-warning { background: #d97706; }
+.sidebar-notification-badge.type-unread { background: #7C3AED; }
+
+.menu-link.sidebar-has-important {
+    position: relative;
+}
+
+.menu-link.sidebar-has-important::before {
+    content: "";
+    position: absolute;
+    inset: 7px 8px 7px auto;
+    width: 3px;
+    border-radius: 999px;
+    background: currentColor;
+    opacity: 0.55;
+    animation: sidebarBadgeGlow 1.65s ease-in-out infinite;
+}
+
+@keyframes sidebarBadgeGlow {
+    0%, 100% { opacity: 0.35; box-shadow: 0 0 0 rgba(124, 58, 237, 0); }
+    50% { opacity: 0.9; box-shadow: 0 0 12px rgba(124, 58, 237, 0.45); }
+}
+
 .sticky-note-dock {
     position: fixed;
     right: 22px;
@@ -614,6 +715,8 @@
     use App\Models\Project;
     use App\Models\Task;
     use App\Models\TaskTimer;
+    use App\Models\Ticket;
+    use App\Services\SidebarNotificationService;
 
     $projects = Project::all();
     $tasks = Task::all();
@@ -628,6 +731,80 @@
         ->whereNull('completed_at')
         ->latest()
         ->get();
+
+    $canCreateWorkItems = in_array(strtolower((string) auth()->user()?->role), ['admin', 'hr', 'manager'], true);
+    $isEmployeeUser = strtolower((string) auth()->user()?->role) === 'employee';
+    $navbarNotifications = auth()->user()->notifications()->latest()->take(8)->get();
+    $navbarUnreadCount = auth()->user()->unreadNotifications()->count();
+    $sidebarNotificationItems = SidebarNotificationService::forUser(auth()->user());
+    $assignedWorkProjects = collect();
+    $assignedWorkTasks = collect();
+    $assignedWorkTickets = collect();
+    $timerProjects = $projects;
+    $timerTasks = $tasks;
+
+    if ($isEmployeeUser) {
+        $assignedWorkProjects = Project::withCount(['tasks' => function ($query) use ($userId) {
+                $query->where(function ($taskQuery) use ($userId) {
+                    $taskQuery->whereHas('assignees', function ($assignees) use ($userId) {
+                        $assignees->where('users.id', $userId);
+                    })->orWhereRaw('FIND_IN_SET(?, assigned_to)', [$userId]);
+                });
+            }])
+            ->where(function ($query) use ($userId) {
+                $query->whereHas('users', function ($members) use ($userId) {
+                    $members->where('users.id', $userId);
+                })->orWhereHas('tasks', function ($taskQuery) use ($userId) {
+                    $taskQuery->whereHas('assignees', function ($assignees) use ($userId) {
+                        $assignees->where('users.id', $userId);
+                    })->orWhereRaw('FIND_IN_SET(?, assigned_to)', [$userId]);
+                });
+            })
+            ->latest()
+            ->take(5)
+            ->get();
+
+        $assignedWorkTasks = Task::with('project')
+            ->where(function ($taskQuery) use ($userId) {
+                $taskQuery->whereHas('assignees', function ($assignees) use ($userId) {
+                    $assignees->where('users.id', $userId);
+                })->orWhereRaw('FIND_IN_SET(?, assigned_to)', [$userId]);
+            })
+            ->latest()
+            ->take(5)
+            ->get();
+
+        $assignedWorkTickets = Ticket::with('project')
+            ->where(function ($ticketQuery) use ($userId) {
+                $ticketQuery->where('agent_id', $userId)
+                    ->orWhere('requester_id', $userId);
+            })
+            ->whereNotIn('status', ['resolved', 'closed'])
+            ->latest()
+            ->take(5)
+            ->get();
+
+        $timerProjects = Project::where(function ($query) use ($userId) {
+                $query->whereHas('users', function ($members) use ($userId) {
+                    $members->where('users.id', $userId);
+                })->orWhereHas('tasks', function ($taskQuery) use ($userId) {
+                    $taskQuery->whereHas('assignees', function ($assignees) use ($userId) {
+                        $assignees->where('users.id', $userId);
+                    })->orWhereRaw('FIND_IN_SET(?, assigned_to)', [$userId]);
+                });
+            })
+            ->orderBy('name')
+            ->get();
+
+        $timerTasks = Task::with('project')
+            ->where(function ($taskQuery) use ($userId) {
+                $taskQuery->whereHas('assignees', function ($assignees) use ($userId) {
+                    $assignees->where('users.id', $userId);
+                })->orWhereRaw('FIND_IN_SET(?, assigned_to)', [$userId]);
+            })
+            ->latest()
+            ->get();
+    }
     @endphp
 
     <!-- Layout wrapper -->
@@ -656,7 +833,7 @@
           <ul class="menu-inner py-1">
 
             <li class="menu-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-              <a href="{{ route('dashboard') }}" class="menu-link">
+              <a href="{{ route('dashboard') }}" class="menu-link" data-sidebar-key="notifications">
                   <i class="menu-icon tf-icons bx bx-home-smile"></i>
                   <div class="text-truncate" data-i18n="Dashboard">Dashboard</div>
               </a>
@@ -674,7 +851,7 @@
                       request()->routeIs('employee.awards')
                       ? 'active open' : '' }}">
 
-              <a href="javascript:void(0);" class="menu-link menu-toggle">
+              <a href="javascript:void(0);" class="menu-link menu-toggle" data-sidebar-key="hr">
                 <i class="menu-icon tf-icons bx bx-layout"></i>
                 <div class="text-truncate" data-i18n="Layouts">HR</div>
               </a>
@@ -684,7 +861,7 @@
               <ul class="menu-sub">
                     @if(auth()->user()->role === 'admin')
                         <li class="menu-item {{ request()->routeIs('employees.*') ? 'active' : '' }}">
-                            <a href="{{ route('employees.index') }}" class="menu-link">
+                            <a href="{{ route('employees.index') }}" class="menu-link" data-sidebar-key="employees">
                                 <div class="text-truncate" data-i18n="Without menu">Employee</div>
                             </a>
                         </li>
@@ -719,7 +896,7 @@
 
                      @if(in_array(auth()->user()->role, ['admin', 'employee']))
                     <li class="menu-item {{ (request()->routeIs('attendance.*') && !request()->routeIs('attendance.report')) ? 'active' : '' }}">
-                          <a href="{{ route('attendance.index') }}" class="menu-link">
+                          <a href="{{ route('attendance.index') }}" class="menu-link" data-sidebar-key="attendance">
                             <div class="text-truncate" data-i18n="Without menu">
                               {{ auth()->user()->role == 'admin' ? 'Attendance' : 'My Attendance' }}
                             </div>
@@ -741,7 +918,7 @@
 
                 @if(in_array(auth()->user()->role, ['admin', 'employee']))
                 <li class="menu-item {{ request()->routeIs('leaves.*') ? 'active' : '' }}">
-                <a href="{{ route('leaves.index') }}" class="menu-link">
+                <a href="{{ route('leaves.index') }}" class="menu-link" data-sidebar-key="leaves">
                     <div class="text-truncate" data-i18n="Without navbar">My Leaves</div>
                 </a>
                 </li>
@@ -758,7 +935,7 @@
 
                 {{-- Employee Holiday View --}}
                 <li class="menu-item {{ request()->routeIs('holidays.*') ? 'active' : '' }}">
-                <a href="{{ route('holidays.calendar') }}" class="menu-link">
+                <a href="{{ route('holidays.calendar') }}" class="menu-link" data-sidebar-key="holidays">
                     <div class="text-truncate">Holiday List</div>
                 </a>
                 </li>
@@ -787,7 +964,7 @@
 
              <!-- Reports Section -->
             <li class="menu-item {{ request()->routeIs('attendance.report') || request()->routeIs('admin.leave.report') ? 'active open' : '' }}">
-              <a href="javascript:void(0);" class="menu-link menu-toggle">
+              <a href="javascript:void(0);" class="menu-link menu-toggle" data-sidebar-key="reports">
                 <i class="menu-icon tf-icons bx bx-bar-chart-alt"></i>
                 <div class="text-truncate" data-i18n="Layouts">Reports</div>
               </a>
@@ -817,7 +994,7 @@
                 request()->routeIs('timelogs.*') || request()->routeIs('task-timer.*') ||
                 request()->routeIs('admin.contracts.*') || request()->routeIs('admin.contract-templates.*') ? 'active open' : '' }}">
 
-                <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <a href="javascript:void(0);" class="menu-link menu-toggle" data-sidebar-key="work">
                     <i class="menu-icon tf-icons bx bx-store"></i>
                     <div class="text-truncate" data-i18n="Front Pages">Work</div>
                 </a>
@@ -825,7 +1002,7 @@
                 <ul class="menu-sub">
                     @if(auth()->user()->role === 'admin')
                         <li class="menu-item {{ request()->routeIs('clients.*') ? 'active' : '' }}">
-                            <a href="{{ route('clients.index') }}" class="menu-link">
+                            <a href="{{ route('clients.index') }}" class="menu-link" data-sidebar-key="clients">
                                 <div class="text-truncate" data-i18n="Landing">Client</div>
                             </a>
                         </li>
@@ -833,21 +1010,21 @@
 
                     @if(in_array(auth()->user()->role, ['admin', 'employee']))
                         <li class="menu-item {{ (request()->routeIs('projects.*') && !request()->routeIs('projects.tasks.*') && !request()->routeIs('projects.timelogs.*')) ? 'active' : '' }}">
-                            <a href="{{ route('projects.index') }}" class="menu-link">
+                            <a href="{{ route('projects.index') }}" class="menu-link" data-sidebar-key="projects">
                                 <div class="text-truncate" data-i18n="Landing">Projects</div>
                             </a>
                         </li>
                     @endif
 
                     <li class="menu-item {{ request()->routeIs('tasks.*') || request()->routeIs('projects.tasks.*') || request()->routeIs('users.tasks.*') || request()->routeIs('task-timer.*') ? 'active' : '' }}">
-                        <a href="{{ route('tasks.index') }}" class="menu-link">
+                        <a href="{{ route('tasks.index') }}" class="menu-link" data-sidebar-key="tasks">
                             <div class="text-truncate" data-i18n="Pricing">Tasks</div>
                         </a>
                     </li>
 
                     @if(in_array(auth()->user()->role, ['admin', 'employee']))
                         <li class="menu-item {{ request()->routeIs('timelogs.*') || request()->routeIs('projects.timelogs.*') ? 'active' : '' }}">
-                            <a href="{{ route('timelogs.index') }}" class="menu-link">
+                            <a href="{{ route('timelogs.index') }}" class="menu-link" data-sidebar-key="timelogs">
                                 <div class="text-truncate" data-i18n="Payment">Timesheet</div>
                             </a>
                         </li>
@@ -902,7 +1079,7 @@
 
 
             <li class="menu-item {{ request()->routeIs('tickets.*') || request()->routeIs('ticket-groups.*') ? 'active' : '' }}">
-                  <a href="{{ route('tickets.index') }}" class="menu-link">
+                  <a href="{{ route('tickets.index') }}" class="menu-link" data-sidebar-key="tickets">
                        <i class="menu-icon tf-icons bx bx-receipt"></i>
                       <div class="text-truncate" data-i18n="Dashboard">Ticket</div>
                   </a>
@@ -966,6 +1143,65 @@
 
         </aside>
         <!-- / Menu -->
+
+        <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            let sidebarNotificationItems = @json($sidebarNotificationItems);
+
+            function shortCount(count) {
+                count = Number(count || 0);
+                return count > 99 ? '99+' : String(count);
+            }
+
+            function ensureBadge(link) {
+                let badge = link.querySelector('.sidebar-notification-badge');
+                if (!badge) {
+                    badge = document.createElement('span');
+                    badge.className = 'sidebar-notification-badge';
+                    link.appendChild(badge);
+                }
+                return badge;
+            }
+
+            function renderSidebarNotifications(items) {
+                document.querySelectorAll('[data-sidebar-key]').forEach(function (link) {
+                    const key = link.getAttribute('data-sidebar-key');
+                    const item = items[key] || { count: 0, type: 'new', important: false };
+                    const count = Number(item.count || 0);
+                    const badge = ensureBadge(link);
+
+                    badge.className = 'sidebar-notification-badge type-' + (item.type || 'new');
+                    link.classList.toggle('sidebar-has-important', Boolean(item.important) && count > 0);
+
+                    if (count > 0) {
+                        badge.textContent = shortCount(count);
+                        badge.title = count + ' ' + (item.type || 'update') + ' update' + (count === 1 ? '' : 's');
+                        badge.classList.add('is-visible');
+                        link.setAttribute('data-sidebar-count', String(count));
+                    } else {
+                        badge.textContent = '';
+                        badge.classList.remove('is-visible');
+                        link.removeAttribute('data-sidebar-count');
+                    }
+                });
+            }
+
+            function fetchSidebarNotifications() {
+                fetch('{{ route('notifications.sidebar') }}', {
+                    headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    sidebarNotificationItems = data.items || {};
+                    renderSidebarNotifications(sidebarNotificationItems);
+                })
+                .catch(() => {});
+            }
+
+            renderSidebarNotifications(sidebarNotificationItems);
+            setInterval(fetchSidebarNotifications, 45000);
+        });
+        </script>
 
         <!-- Layout container -->
         <div class="layout-page">
@@ -1037,6 +1273,7 @@
                       @endif
                   </div>
 
+                  @if($canCreateWorkItems)
                   <div class="nav-item me-3">
                       <li class="nav-item dropdown" data-bs-toggle="tooltip" data-bs-placement="top" title="Create new">
                         <a class="d-block header-icon-box" href="#" id="createNewDropdown" role="button"
@@ -1058,6 +1295,82 @@
                         </ul>
                     </li>
                   </div>
+                  @elseif($isEmployeeUser)
+                  <div class="nav-item me-3">
+                      <li class="nav-item dropdown" data-bs-toggle="tooltip" data-bs-placement="top" title="Assigned work">
+                        <a class="d-block header-icon-box sticky-note-trigger" href="#" id="assignedWorkDropdown" role="button"
+                           data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bx bx-plus-circle icon-md text-dark"></i>
+                            @php $assignedWorkCount = $assignedWorkProjects->count() + $assignedWorkTasks->count() + $assignedWorkTickets->count(); @endphp
+                            @if($assignedWorkCount)
+                              <span class="sticky-note-count">{{ $assignedWorkCount }}</span>
+                            @endif
+                        </a>
+
+                        <ul class="dropdown-menu dropdown-menu-end p-0" aria-labelledby="assignedWorkDropdown" style="width: 380px; max-height: 520px; overflow-y: auto;">
+                            <li class="px-3 py-2 border-bottom bg-white">
+                                <p class="mb-0 fw-bold">Assigned Work</p>
+                                <small class="text-muted">Projects, tasks, and tickets assigned to you</small>
+                            </li>
+
+                            <li class="dropdown-header text-uppercase fw-bold">Projects</li>
+                            @forelse($assignedWorkProjects as $projectItem)
+                                <li>
+                                    <a class="dropdown-item py-2" href="{{ route('projects.show', $projectItem->id) }}">
+                                        <div class="fw-semibold text-truncate">{{ $projectItem->name }}</div>
+                                        <small class="text-muted">{{ ucfirst($projectItem->status ?? 'active') }} · {{ $projectItem->tasks_count }} assigned task{{ $projectItem->tasks_count === 1 ? '' : 's' }}</small>
+                                    </a>
+                                </li>
+                            @empty
+                                <li><span class="dropdown-item-text text-muted small">No assigned projects.</span></li>
+                            @endforelse
+
+                            <li><hr class="dropdown-divider my-1"></li>
+                            <li class="dropdown-header text-uppercase fw-bold">Tasks</li>
+                            @forelse($assignedWorkTasks as $taskItem)
+                                <li>
+                                    <a class="dropdown-item py-2" href="{{ route('tasks.show', $taskItem->id) }}">
+                                        <div class="fw-semibold text-truncate">{{ $taskItem->title }}</div>
+                                        <small class="text-muted">{{ $taskItem->project?->name ?? 'No project' }} · {{ $taskItem->status ?? 'To Do' }}</small>
+                                    </a>
+                                </li>
+                            @empty
+                                <li><span class="dropdown-item-text text-muted small">No assigned tasks.</span></li>
+                            @endforelse
+
+                            <li><hr class="dropdown-divider my-1"></li>
+                            <li class="dropdown-header text-uppercase fw-bold">Tickets</li>
+                            @forelse($assignedWorkTickets as $ticketItem)
+                                <li class="px-3 py-2">
+                                    <div class="d-flex justify-content-between gap-2">
+                                        <a class="text-dark text-decoration-none flex-grow-1" href="{{ route('tickets.show', $ticketItem->id) }}">
+                                            <div class="fw-semibold text-truncate">#{{ $ticketItem->id }} {{ $ticketItem->subject }}</div>
+                                            <small class="text-muted">{{ $ticketItem->project?->name ?? 'No project' }} · {{ ucfirst($ticketItem->status) }}</small>
+                                        </a>
+                                    </div>
+                                    <div class="d-flex gap-1 mt-2">
+                                        <form method="POST" action="{{ route('tickets.change-status') }}" class="d-inline">
+                                            @csrf
+                                            <input type="hidden" name="ticketId" value="{{ $ticketItem->id }}">
+                                            <input type="hidden" name="status" value="pending">
+                                            <button type="submit" class="btn btn-sm btn-outline-primary py-1 px-2">Start Progress</button>
+                                        </form>
+                                        <form method="POST" action="{{ route('tickets.change-status') }}" class="d-inline">
+                                            @csrf
+                                            <input type="hidden" name="ticketId" value="{{ $ticketItem->id }}">
+                                            <input type="hidden" name="status" value="resolved">
+                                            <button type="submit" class="btn btn-sm btn-outline-success py-1 px-2">End</button>
+                                        </form>
+                                        <a href="{{ route('tickets.show', $ticketItem->id) }}" class="btn btn-sm btn-outline-secondary py-1 px-2">Details</a>
+                                    </div>
+                                </li>
+                            @empty
+                                <li><span class="dropdown-item-text text-muted small">No active tickets.</span></li>
+                            @endforelse
+                        </ul>
+                    </li>
+                  </div>
+                  @endif
 
                   <div class="nav-item me-3">
                       <button type="button" class="theme-toggle-btn pms-theme-toggle" aria-label="Toggle dark mode" title="Toggle theme">
@@ -1067,44 +1380,66 @@
 
                   <div class="nav-item me-3">
                        <li class="nav-item dropdown" title="New notifications">
-                        <a class="nav-link header-icon-box" href="#" id="navbarDropdown"
+                        <a class="nav-link header-icon-box notification-bell {{ $navbarUnreadCount > 0 ? 'has-unread' : '' }}" href="#" id="navbarDropdown"
                            role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fa fa-bell f-16 text-dark-grey"></i>
-                            @if(auth()->user()->unreadNotifications->count() > 0)
-                                <span class="badge bg-danger">{{ auth()->user()->unreadNotifications->count() }}</span>
+                            @if($navbarUnreadCount > 0)
+                                <span class="badge bg-danger" id="navbarNotificationCount">{{ $navbarUnreadCount }}</span>
                             @endif
                         </a>
 
                             <ul class="dropdown-menu dropdown-menu-end notification-dropdown border-0 shadow-lg py-0"
-                                aria-labelledby="navbarDropdown" style="width: 300px;">
+                                aria-labelledby="navbarDropdown" style="width: 360px; max-height: 520px; overflow-y: auto;">
 
-                                <li class="px-3 py-2 border-bottom bg-white">
-                                    <p class="mb-0 fw-bold">New notifications</p>
+                                <li class="px-3 py-2 border-bottom bg-white d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <p class="mb-0 fw-bold">Notifications</p>
+                                        <small class="text-muted">{{ $navbarUnreadCount }} unread</small>
+                                    </div>
+                                    <form method="POST" action="{{ route('notifications.readAll') }}">
+                                        @csrf
+                                        <button type="submit" class="btn btn-sm btn-link p-0">Mark all read</button>
+                                    </form>
                                 </li>
 
-                           @forelse(auth()->user()->unreadNotifications as $notification)
+                           @forelse($navbarNotifications as $notification)
                             @php
                                 $data = $notification->data ?? [];
                                 $type = class_basename($notification->type); // e.g. TaskAssignedNotification
+                                $isUnread = is_null($notification->read_at);
 
                                 if ($taskId = data_get($data, 'task_id')) {
                                     $link = route('tasks.show', $taskId);
                                 } elseif ($ticketId = data_get($data, 'ticket_id')) {
                                     $link = route('tickets.show', $ticketId);
+                                } elseif ($projectId = data_get($data, 'project_id')) {
+                                    $link = route('projects.show', $projectId);
+                                } elseif ($employeeId = data_get($data, 'employee_id')) {
+                                    $link = route('employees.show', $employeeId);
                                 } else {
-                                    $link = '#';
+                                    $link = data_get($data, 'url', '#');
                                 }
                             @endphp
 
-    <li class="px-3 py-2 border-bottom">
-        <a href="{{ $link }}" class="text-dark d-block">
-            <strong>{{ data_get($data, 'title', $type) }}</strong>
-            <div class="small">{{ data_get($data, 'message', '') }}</div>
-        </a>
+    <li class="px-3 py-2 border-bottom {{ $isUnread ? 'notification-item-unread' : 'notification-item-read' }}">
+        <div class="d-flex gap-2">
+            @if($isUnread)
+                <span class="notification-unread-dot"></span>
+            @endif
+            <form method="POST" action="{{ route('notifications.read', $notification->id) }}" class="flex-grow-1">
+                @csrf
+                <input type="hidden" name="redirect_url" value="{{ $link }}">
+                <button type="submit" class="btn p-0 text-start w-100">
+                    <strong>{{ data_get($data, 'title', $type) }}</strong>
+                    <div class="small text-muted">{{ data_get($data, 'message', '') }}</div>
+                    <div class="small text-muted">{{ $notification->created_at->diffForHumans() }}</div>
+                </button>
+            </form>
+        </div>
     </li>
 @empty
     <li class="px-3 py-2">
-        <span class="text-muted">No new notifications</span>
+        <span class="text-muted">No notifications</span>
     </li>
 @endforelse
 
@@ -1136,7 +1471,7 @@
                     <div class="d-flex align-items-center">
                       <div class="avatar avatar-online me-2">
                         <img src="{{ $user && $user->profile_image ? asset($user->profile_image) : asset('admin/assets/img/avatars/1.png') }}"
-                             alt class="w-px-40 h-auto rounded-circle" />
+                             alt="Profile" class="navbar-profile-avatar rounded-circle" />
                       </div>
 
                       <div class="d-none d-md-block text-start">
@@ -1159,7 +1494,7 @@
                         <div class="d-flex">
                           <div class="flex-shrink-0 me-3">
                             <div class="avatar avatar-online">
-                             <img src="{{ $user && $user->profile_image ? asset($user->profile_image) : asset('admin/assets/img/avatars/1.png') }}" alt  class="w-px-40 h-auto rounded-circle" />
+                             <img src="{{ $user && $user->profile_image ? asset($user->profile_image) : asset('admin/assets/img/avatars/1.png') }}" alt="Profile" class="navbar-profile-avatar rounded-circle" />
 
                             </div>
                           </div>
@@ -1205,6 +1540,94 @@
               </ul>
             </div>
           </nav>
+
+          <script>
+          document.addEventListener('DOMContentLoaded', function () {
+              const bell = document.getElementById('navbarDropdown');
+              let soundReady = false;
+              let previousUnread = Number(localStorage.getItem('pms_unread_notifications') || '{{ $navbarUnreadCount }}');
+
+              function armNotificationSound() {
+                  soundReady = true;
+                  document.removeEventListener('click', armNotificationSound);
+                  document.removeEventListener('keydown', armNotificationSound);
+              }
+
+              document.addEventListener('click', armNotificationSound);
+              document.addEventListener('keydown', armNotificationSound);
+
+              function playNotificationSound() {
+                  if (!soundReady) return;
+
+                  try {
+                      const AudioContext = window.AudioContext || window.webkitAudioContext;
+                      if (!AudioContext) return;
+
+                      const ctx = new AudioContext();
+                      const gain = ctx.createGain();
+                      gain.gain.value = 0.06;
+                      gain.connect(ctx.destination);
+
+                      [880, 1174].forEach(function (frequency, index) {
+                          const osc = ctx.createOscillator();
+                          osc.type = 'sine';
+                          osc.frequency.value = frequency;
+                          osc.connect(gain);
+                          osc.start(ctx.currentTime + index * 0.12);
+                          osc.stop(ctx.currentTime + index * 0.12 + 0.11);
+                      });
+
+                      setTimeout(function () { ctx.close(); }, 500);
+                  } catch (error) {
+                      console.debug('Notification sound skipped', error);
+                  }
+              }
+
+              function updateBell(count) {
+                  if (!bell) return;
+
+                  let badge = document.getElementById('navbarNotificationCount');
+                  if (count > 0) {
+                      bell.classList.add('has-unread');
+                      if (!badge) {
+                          badge = document.createElement('span');
+                          badge.id = 'navbarNotificationCount';
+                          badge.className = 'badge bg-danger';
+                          bell.appendChild(badge);
+                      }
+                      badge.textContent = count;
+                  } else {
+                      bell.classList.remove('has-unread');
+                      if (badge) badge.remove();
+                  }
+              }
+
+              function checkNotifications() {
+                  fetch('{{ route('notifications.unreadCount') }}', {
+                      headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                  })
+                  .then(response => response.json())
+                  .then(data => {
+                      const count = Number(data.count || 0);
+                      if (count > previousUnread) {
+                          playNotificationSound();
+                          if (bell) {
+                              bell.classList.remove('has-unread');
+                              void bell.offsetWidth;
+                              bell.classList.add('has-unread');
+                          }
+                      }
+                      previousUnread = count;
+                      localStorage.setItem('pms_unread_notifications', String(count));
+                      updateBell(count);
+                  })
+                  .catch(() => {});
+              }
+
+              updateBell(previousUnread);
+              setInterval(checkNotifications, 30000);
+          });
+          </script>
 
           <!-- Search Modal -->
           <div class="modal fade" id="searchModal" tabindex="-1" aria-labelledby="searchModalLabel" aria-hidden="true">
@@ -1335,9 +1758,9 @@
                   <div class="modal-body">
                     <div class="mb-3">
                       <label class="form-label">Project <sup class="text-danger">*</sup></label>
-                      <select name="project_id" class="form-select" required>
+                      <select name="project_id" id="timer_project_id" class="form-select" required>
                         <option value="">Select Project</option>
-                        @foreach($projects as $project)
+                        @foreach($timerProjects as $project)
                           <option value="{{ $project->id }}">{{ $project->name }}</option>
                         @endforeach
                       </select>
@@ -1347,12 +1770,24 @@
                       <label class="form-label">Task <sup class="text-danger">*</sup></label>
                       <select name="task_id" id="task_id" class="form-select">
                         <option value="">Select Task</option>
-                        @foreach($tasks as $task)
-                          <option value="{{ $task->id }}">{{ $task->title }}</option>
+                        @foreach($timerTasks as $task)
+                          <option value="{{ $task->id }}" data-project-id="{{ $task->project_id }}">{{ $task->title }}</option>
                         @endforeach
                       </select>
                     </div>
 
+                    <div class="mb-3">
+                      <label class="form-label">Project Update</label>
+                      <select name="project_status" class="form-select">
+                        <option value="">No Change</option>
+                        <option value="not started">Start</option>
+                        <option value="in progress">In Process</option>
+                        <option value="on hold">End Up</option>
+                        <option value="completed">End</option>
+                      </select>
+                    </div>
+
+                    @if($canCreateWorkItems)
                     <div class="form-check mb-3">
                       <input class="form-check-input" type="checkbox" id="create_task" name="create_task" value="1">
                       <label class="form-check-label" for="create_task">Create New Task</label>
@@ -1362,6 +1797,7 @@
                       <label class="form-label">New Task Name</label>
                       <input type="text" name="new_task_name" class="form-control">
                     </div>
+                    @endif
 
                     <div class="mb-3">
                       <label class="form-label">Memo <sup class="text-danger">*</sup></label>
@@ -1436,6 +1872,16 @@
                       <label class="form-label">Memo *</label>
                       <textarea name="memo" class="form-control" rows="3" required></textarea>
                     </div>
+                    <div class="mb-3">
+                      <label class="form-label">Project Update</label>
+                      <select name="project_status" class="form-select">
+                        <option value="">No Change</option>
+                        <option value="not started">Start</option>
+                        <option value="in progress">In Process</option>
+                        <option value="on hold">End Up</option>
+                        <option value="completed">End</option>
+                      </select>
+                    </div>
                   </div>
                   <div class="modal-footer">
                     <button class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
@@ -1448,21 +1894,40 @@
           @endif
 
           <script>
-          document.getElementById('create_task').addEventListener('change', function() {
-              let newTaskDiv = document.getElementById('newTaskDiv');
-              let taskSelect = document.getElementById('task_id');
-              if (this.checked) {
-                  newTaskDiv.style.display = 'block';   // Show new task input
-                  taskSelect.disabled = true;            // Disable existing task dropdown
-                  taskSelect.required = false;           // Remove required
-                  newTaskDiv.querySelector('input').required = true; // Make new task input required
-              } else {
-                  newTaskDiv.style.display = 'none';
-                  taskSelect.disabled = false;
-                  taskSelect.required = true;
-                  newTaskDiv.querySelector('input').required = false;
-              }
-          });
+          const createTaskCheckbox = document.getElementById('create_task');
+          if (createTaskCheckbox) {
+              createTaskCheckbox.addEventListener('change', function() {
+                  let newTaskDiv = document.getElementById('newTaskDiv');
+                  let taskSelect = document.getElementById('task_id');
+                  if (this.checked) {
+                      newTaskDiv.style.display = 'block';   // Show new task input
+                      taskSelect.disabled = true;            // Disable existing task dropdown
+                      taskSelect.required = false;           // Remove required
+                      newTaskDiv.querySelector('input').required = true; // Make new task input required
+                  } else {
+                      newTaskDiv.style.display = 'none';
+                      taskSelect.disabled = false;
+                      taskSelect.required = true;
+                      newTaskDiv.querySelector('input').required = false;
+                  }
+              });
+          }
+
+          const timerProjectSelect = document.getElementById('timer_project_id');
+          const timerTaskSelect = document.getElementById('task_id');
+          if (timerProjectSelect && timerTaskSelect) {
+              const taskOptions = Array.from(timerTaskSelect.querySelectorAll('option[data-project-id]'));
+              const filterTimerTasks = function () {
+                  const selectedProjectId = timerProjectSelect.value;
+                  timerTaskSelect.value = '';
+                  taskOptions.forEach(function(option) {
+                      option.hidden = selectedProjectId !== '' && option.dataset.projectId !== selectedProjectId;
+                  });
+              };
+
+              timerProjectSelect.addEventListener('change', filterTimerTasks);
+              filterTimerTasks();
+          }
 
           document.addEventListener("DOMContentLoaded", function () {
               const elapsedSpan = document.getElementById("activeTimerElapsed");

@@ -22,6 +22,7 @@ use App\Models\Department;
 use App\Models\Designation;
 use App\Models\StickyNote;
 use App\Models\User;
+use App\Services\SystemNotificationService;
 use Carbon\Carbon;
 
 
@@ -74,24 +75,30 @@ class DashboardController extends Controller
 
     private function applyOrganizationAttendanceRules(Attendance $attendance): Attendance
     {
+        $setting = $this->attendancePolicy();
         $attendance->append(['total_seconds', 'clock_in_datetime', 'clock_out_datetime']);
 
         $clockIn = $attendance->clock_in_datetime;
         $seconds = (int) ($attendance->total_seconds ?? 0);
+        $lateTime = Carbon::parse($attendance->date->format('Y-m-d') . ' ' . $setting->late_time);
+        $isLate = $clockIn && $clockIn->gt($lateTime);
+        $hasCompletedShift = $attendance->clock_in && $attendance->clock_out;
+        $dayOffSeconds = (int) $setting->day_off_threshold_minutes * 60;
+        $halfDaySeconds = (int) $setting->half_day_threshold_minutes * 60;
 
-        if ($clockIn && $clockIn->format('H:i:s') > '22:00:00') {
+        if ($hasCompletedShift && $seconds < $dayOffSeconds) {
+            $attendance->status = 'day_off';
+            $attendance->late = $isLate ? 'yes' : 'no';
+            $attendance->half_day = 'no';
+        } elseif ($hasCompletedShift && $seconds < $halfDaySeconds) {
+            $attendance->status = 'half_day';
+            $attendance->late = $isLate ? 'yes' : 'no';
+            $attendance->half_day = 'yes';
+        } elseif ($isLate) {
             $attendance->status = 'late';
             $attendance->late = 'yes';
             $attendance->half_day = 'no';
-        } elseif ($attendance->clock_in && $attendance->clock_out && $seconds < 4 * 3600) {
-            $attendance->status = 'day_off';
-            $attendance->late = 'no';
-            $attendance->half_day = 'no';
-        } elseif ($attendance->clock_in && $attendance->clock_out && $seconds < 7 * 3600) {
-            $attendance->status = 'half_day';
-            $attendance->late = 'no';
-            $attendance->half_day = 'yes';
-        } elseif ($attendance->clock_in) {
+        } elseif ($clockIn) {
             $attendance->status = 'present';
             $attendance->late = 'no';
             $attendance->half_day = 'no';
@@ -102,6 +109,37 @@ class DashboardController extends Controller
         return $attendance;
     }
 
+    private function attendancePolicy(): AttendanceSetting
+    {
+        $setting = AttendanceSetting::firstOrCreate([], [
+            'office_start_time' => '09:30:00',
+            'late_time' => '09:30:00',
+            'half_day_threshold_minutes' => 510,
+            'day_off_threshold_minutes' => 270,
+        ]);
+
+        $updates = [];
+        if (! $setting->office_start_time) {
+            $updates['office_start_time'] = '09:30:00';
+        }
+        if (! $setting->late_time) {
+            $updates['late_time'] = '09:30:00';
+        }
+        if (! $setting->half_day_threshold_minutes) {
+            $updates['half_day_threshold_minutes'] = 510;
+        }
+        if (! $setting->day_off_threshold_minutes) {
+            $updates['day_off_threshold_minutes'] = 270;
+        }
+
+        if ($updates) {
+            $setting->forceFill($updates)->save();
+            $setting->refresh();
+        }
+
+        return $setting;
+    }
+
  public function timersstore(Request $request)
 {
     // Check if creating a new task
@@ -109,14 +147,20 @@ class DashboardController extends Controller
 
     // Validation
     $request->validate([
-        'project_id' => 'nullable|exists:projects,id',
+        'project_id' => 'required|exists:projects,id',
         'task_id'    => $createNewTask ? 'nullable' : 'required|exists:tasks,id',
         'new_task_name' => $createNewTask ? 'required|string|max:255' : 'nullable',
         'memo'       => 'required|string',
+        'project_status' => 'nullable|in:not started,in progress,on hold,completed',
     ]);
+
+    $project = Project::findOrFail($request->project_id);
+    abort_unless($this->canUseTimerProject($project), 403);
 
     // If creating a new task, save it first
     if ($createNewTask) {
+        abort_unless($this->canCreateWorkItems(), 403);
+
         $task = new Task();
         $task->title = $request->new_task_name;
         $task->project_id = $request->project_id;
@@ -124,6 +168,9 @@ class DashboardController extends Controller
         $task->save();
         $taskId = $task->id;
     } else {
+        $task = Task::findOrFail($request->task_id);
+        abort_unless((int) $task->project_id === (int) $project->id && $this->canUseTimerTask($task), 403);
+
         $taskId = $request->task_id;
     }
 
@@ -136,6 +183,17 @@ class DashboardController extends Controller
     $timer->start_time = now(); // current timestamp
     $timer->memo = $request->memo;
     $timer->save();
+
+    $this->updateProjectStatusForTimer($project, $request->project_status);
+
+    if (strtolower((string) auth()->user()?->role) === 'employee') {
+        SystemNotificationService::notifyAdmins(
+            'Timer Started',
+            auth()->user()->name . ' started timer for ' . $project->name,
+            route('timelogs.index'),
+            ['project_id' => $project->id, 'task_id' => $taskId, 'type' => 'timer_started', 'icon' => 'fa-clock']
+        );
+    }
 
     return redirect()->back()->with('success', 'Timer started successfully!');
 }
@@ -162,7 +220,7 @@ public function notestore(Request $request)
 
 public function stickyNoteComplete(StickyNote $stickyNote)
 {
-    abort_if($stickyNote->user_id !== auth()->id(), 403);
+    abort_unless($this->canManageStickyNote($stickyNote), 403);
 
     $stickyNote->forceFill(['completed_at' => now()])->save();
 
@@ -171,11 +229,110 @@ public function stickyNoteComplete(StickyNote $stickyNote)
 
 public function stickyNoteDestroy(StickyNote $stickyNote)
 {
-    abort_if($stickyNote->user_id !== auth()->id(), 403);
+    abort_unless($this->canManageStickyNote($stickyNote), 403);
 
     $stickyNote->delete();
 
     return redirect()->back()->with('success', 'Sticky note deleted.');
+}
+
+private function canManageStickyNote(StickyNote $stickyNote): bool
+{
+    $user = auth()->user();
+
+    if (! $user) {
+        return false;
+    }
+
+    if ((int) $stickyNote->user_id === (int) $user->id) {
+        return true;
+    }
+
+    if (! in_array(strtolower((string) $user->role), ['admin', 'hr'], true)) {
+        return false;
+    }
+
+    if (! $stickyNote->company_id || ! $user->company_id) {
+        return true;
+    }
+
+    return (int) $stickyNote->company_id === (int) $user->company_id;
+}
+
+private function canCreateWorkItems(): bool
+{
+    return in_array(strtolower((string) auth()->user()?->role), ['admin', 'hr', 'manager'], true);
+}
+
+private function canUseTimerProject(Project $project): bool
+{
+    $user = auth()->user();
+
+    if (! $user) {
+        return false;
+    }
+
+    if ($this->canCreateWorkItems()) {
+        return true;
+    }
+
+    if (strtolower((string) $user->role) !== 'employee') {
+        return false;
+    }
+
+    return $project->users()->where('users.id', $user->id)->exists()
+        || Task::where('project_id', $project->id)
+            ->where(function ($query) use ($user) {
+                $query->whereHas('assignees', function ($assignees) use ($user) {
+                    $assignees->where('users.id', $user->id);
+                })->orWhereRaw('FIND_IN_SET(?, assigned_to)', [$user->id]);
+            })
+            ->exists();
+}
+
+private function canUseTimerTask(Task $task): bool
+{
+    $user = auth()->user();
+
+    if (! $user) {
+        return false;
+    }
+
+    if ($this->canCreateWorkItems()) {
+        return true;
+    }
+
+    if (strtolower((string) $user->role) !== 'employee') {
+        return false;
+    }
+
+    return $task->assignees()->where('users.id', $user->id)->exists()
+        || collect(explode(',', (string) $task->assigned_to))
+            ->map(fn ($id) => (int) trim($id))
+            ->contains((int) $user->id);
+}
+
+private function updateProjectStatusForTimer(Project $project, ?string $status): void
+{
+    if (! $status) {
+        return;
+    }
+
+    if (! in_array($status, ['not started', 'in progress', 'on hold', 'completed'], true)) {
+        return;
+    }
+
+    if ($project->status === $status) {
+        return;
+    }
+
+    $project->forceFill(['status' => $status])->save();
+
+    UserActivity::create([
+        'company_id' => auth()->user()->company_id ?? null,
+        'user_id' => auth()->id(),
+        'activity' => 'Changed project status from timer: ' . $project->name . ' -> ' . $status,
+    ]);
 }
 
     public function index()
@@ -277,6 +434,7 @@ public function stickyNoteDestroy(StickyNote $stickyNote)
             $attendance = \App\Models\Attendance::where('user_id', $user->id)
                 ->where('date', $today)
                 ->first();
+            $attendancePolicy = $this->attendancePolicy();
 
 
             // Fetch week data
@@ -403,7 +561,7 @@ public function stickyNoteDestroy(StickyNote $stickyNote)
 
             $projects = Project::all();
             $tasks = Task::all();
-            return view('employee-dashboard', compact('user','projects', 'tasks', 'attendance', 'weeklyLogs','openTasksCount', 'projectsCount', 'openTicketsCount','appreciations',
+            return view('employee-dashboard', compact('user','projects', 'tasks', 'attendance', 'attendancePolicy', 'weeklyLogs','openTasksCount', 'projectsCount', 'openTicketsCount','appreciations',
             'birthdaysToday','todaysJoinings','workAnniversaries','onLeaveToday','pendingTasksCount','overdueTasksCount','totalProjects','inProgressCount','overdueCount','myTasks','myTickets','showEmployeeWelcome'));
         }
 

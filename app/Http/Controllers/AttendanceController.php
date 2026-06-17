@@ -19,6 +19,7 @@ use Carbon\CarbonPeriod;
 use Maatwebsite\Excel\Facades\Excel;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Notifications\ClockInNotification;
+use App\Services\SystemNotificationService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
@@ -1735,6 +1736,16 @@ class AttendanceController extends Controller
             'status'   => $request->status,
         ]);
         $attendance = $this->applyOrganizationAttendanceRules($attendance);
+
+        if ($attendance->user) {
+            SystemNotificationService::notifyUser(
+                $attendance->user,
+                'Attendance Updated',
+                'Your attendance for ' . Carbon::parse($attendance->date)->format('d M Y') . ' was updated by ' . Auth::user()->name . '.',
+                route('attendance.index'),
+                ['employee_id' => $attendance->user_id, 'type' => 'attendance_updated', 'icon' => 'fa-calendar-check']
+            );
+        }
 
         return response()->json(['success' => true, 'message' => 'Attendance updated successfully.']);
     }

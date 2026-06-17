@@ -1,13 +1,8 @@
-{{-- Use dynamic layout based on user type --}}
-@if(auth()->check() && auth()->user()->is_admin)
-    @extends('admin.layout.app')
-@else
-    @extends('employee.layout.app')
-@endif
+@extends('admin.layout.app')
 
 @section('content')
 <div class="container mt-4">
-    <h4>{{ (auth()->check() && auth()->user()->is_admin) ? 'All Notifications' : 'My Notifications' }}</h4>
+    <h4>My Notifications</h4>
 
     <div class="d-flex gap-2 mb-3">
         <button id="markAllBtn" class="btn btn-sm btn-success">Mark All as Read</button>
@@ -38,7 +33,7 @@
                     }
                 @endphp
 
-                <li class="list-group-item d-flex justify-content-between align-items-start {{ $isUnread ? 'fw-bold' : '' }}">
+                <li class="list-group-item d-flex justify-content-between align-items-start {{ $isUnread ? 'fw-bold border-start border-4 border-primary bg-primary bg-opacity-10' : 'opacity-75' }}">
                     <div class="d-flex gap-3 align-items-start">
                         <div style="width:46px; flex:0 0 46px;">
                             <i class="fa fa-bell fa-lg text-secondary"></i>

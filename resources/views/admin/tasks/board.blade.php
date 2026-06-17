@@ -88,7 +88,7 @@
                     <div class="card shadow">
                         <div class="card-header d-flex justify-content-between align-items-center">
                             <strong>{{ $status }}</strong>
-                            @if($status !== 'Waiting for Approval')
+                            @if($status !== 'Waiting for Approval' && in_array(strtolower((string) auth()->user()?->role), ['admin', 'hr', 'manager'], true))
                                <!--<button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addTaskModal" onclick="setTaskStatus('{{ $status }}')">Add Task</button>-->
                                <a href="{{ route('tasks.create') }}?project_id={{ $project->id }}" class="btn btn-primary">Add Task</a>
                             @endif
@@ -135,6 +135,7 @@
         </div>
     </div>
 
+    @if(in_array(strtolower((string) auth()->user()?->role), ['admin', 'hr', 'manager'], true))
     {{-- Add Task Modal --}}
     <div class="modal fade" id="addTaskModal" tabindex="-1" aria-labelledby="addTaskModalLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -213,6 +214,7 @@
             </div>
         </div>
     </div>
+    @endif
 </main>
 
 

@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 use App\Models\Task;
 use App\Models\TaskTimer;
+use App\Models\Project;
+use App\Models\UserActivity;
+use App\Services\SystemNotificationService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -57,6 +60,7 @@ public function stop(Request $request, Task $task)
     
     $request->validate([
         'memo' => 'required|string|max:500',
+        'project_status' => 'nullable|in:not started,in progress,on hold,completed',
     ]);
     $timer = TaskTimer::where('id', $request->timer_id)
         ->where('user_id', auth()->id())
@@ -77,11 +81,22 @@ public function stop(Request $request, Task $task)
 
         $timer->end_time = $end;
         $timer->memo = $request->memo;
-        $timer->project_id = $request->project_id;
-        $timer->start_date = $request->start_date;
-        $timer->end_date = $request->end_date;
+        $timer->project_id = $request->project_id ?? $timer->project_id ?? $task->project_id;
+        $timer->start_date = $request->start_date ?? $start->toDateString();
+        $timer->end_date = $request->end_date ?? $end->toDateString();
         $timer->total_hours = $total_hours_decimal;
         $timer->save();
+
+        $this->updateProjectStatusForTimer($timer->project, $request->project_status);
+
+        if (strtolower((string) auth()->user()?->role) === 'employee') {
+            SystemNotificationService::notifyAdmins(
+                'Timer Logged',
+                auth()->user()->name . ' logged ' . $total_hours_decimal . ' hour(s) for ' . ($timer->project?->name ?? 'a project'),
+                route('timelogs.show', $timer->id),
+                ['project_id' => $timer->project_id, 'task_id' => $timer->task_id, 'type' => 'timer_stopped', 'icon' => 'fa-clock']
+            );
+        }
     }
 
     return back()->with('success', 'Timer stopped and logged.');
@@ -96,6 +111,7 @@ public function globalstop(Request $request, Task $task)
         'project_id' => 'nullable|exists:projects,id',
         'start_date' => 'nullable|date',
         'end_date'   => 'nullable|date',
+        'project_status' => 'nullable|in:not started,in progress,on hold,completed',
     ]);
 
     $timer = TaskTimer::where('id', $request->timer_id)
@@ -118,9 +134,43 @@ public function globalstop(Request $request, Task $task)
             'end_date'    => $request->end_date ?? $end->toDateString(),
             'total_hours' => $total_hours_decimal,
         ]);
+
+        $this->updateProjectStatusForTimer($timer->project, $request->project_status);
+
+        if (strtolower((string) auth()->user()?->role) === 'employee') {
+            SystemNotificationService::notifyAdmins(
+                'Timer Logged',
+                auth()->user()->name . ' logged ' . $total_hours_decimal . ' hour(s) for ' . ($timer->project?->name ?? 'a project'),
+                route('timelogs.show', $timer->id),
+                ['project_id' => $timer->project_id, 'task_id' => $timer->task_id, 'type' => 'timer_stopped', 'icon' => 'fa-clock']
+            );
+        }
     }
 
     return back()->with('success', 'Timer stopped and logged.');
+}
+
+private function updateProjectStatusForTimer(?Project $project, ?string $status): void
+{
+    if (! $project || ! $status) {
+        return;
+    }
+
+    if (! in_array($status, ['not started', 'in progress', 'on hold', 'completed'], true)) {
+        return;
+    }
+
+    if ($project->status === $status) {
+        return;
+    }
+
+    $project->forceFill(['status' => $status])->save();
+
+    UserActivity::create([
+        'company_id' => auth()->user()->company_id ?? null,
+        'user_id' => auth()->id(),
+        'activity' => 'Changed project status from timer: ' . $project->name . ' -> ' . $status,
+    ]);
 }
 
 
