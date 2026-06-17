@@ -27,6 +27,80 @@ use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
+    private const OFFICE_LATITUDE = 22.49682;
+    private const OFFICE_LONGITUDE = 88.39462;
+    private const OFFICE_RADIUS_METERS = 10;
+    private const OFFICE_ADDRESS = '11 Hospital Link Road, Satavisha Building, Kolkata, West Bengal 700075';
+
+    private function distanceInMeters(float $lat1, float $lon1, float $lat2, float $lon2): float
+    {
+        $earthRadius = 6371000;
+        $latFrom = deg2rad($lat1);
+        $latTo = deg2rad($lat2);
+        $latDelta = deg2rad($lat2 - $lat1);
+        $lonDelta = deg2rad($lon2 - $lon1);
+
+        $a = sin($latDelta / 2) * sin($latDelta / 2)
+            + cos($latFrom) * cos($latTo) * sin($lonDelta / 2) * sin($lonDelta / 2);
+
+        return $earthRadius * (2 * atan2(sqrt($a), sqrt(1 - $a)));
+    }
+
+    private function storeClockInPhoto(string $selfieData, int $userId, string $today): ?string
+    {
+        if (! preg_match('/^data:image\/(png|jpe?g);base64,/', $selfieData)) {
+            return null;
+        }
+
+        $imageData = preg_replace('/^data:image\/(png|jpe?g);base64,/', '', $selfieData);
+        $decoded = base64_decode($imageData, true);
+
+        if ($decoded === false) {
+            return null;
+        }
+
+        $directory = public_path('admin/uploads/attendance-selfies');
+        if (! is_dir($directory)) {
+            mkdir($directory, 0755, true);
+        }
+
+        $fileName = 'clock-in-' . $userId . '-' . $today . '-' . time() . '.jpg';
+        $absolutePath = $directory . DIRECTORY_SEPARATOR . $fileName;
+
+        return file_put_contents($absolutePath, $decoded) !== false
+            ? 'admin/uploads/attendance-selfies/' . $fileName
+            : null;
+    }
+
+    private function applyOrganizationAttendanceRules(Attendance $attendance): Attendance
+    {
+        $attendance->append(['total_seconds', 'clock_in_datetime', 'clock_out_datetime']);
+
+        $clockIn = $attendance->clock_in_datetime;
+        $seconds = (int) ($attendance->total_seconds ?? 0);
+
+        if ($clockIn && $clockIn->format('H:i:s') > '22:00:00') {
+            $attendance->status = 'late';
+            $attendance->late = 'yes';
+            $attendance->half_day = 'no';
+        } elseif ($attendance->clock_in && $attendance->clock_out && $seconds < 4 * 3600) {
+            $attendance->status = 'day_off';
+            $attendance->late = 'no';
+            $attendance->half_day = 'no';
+        } elseif ($attendance->clock_in && $attendance->clock_out && $seconds < 7 * 3600) {
+            $attendance->status = 'half_day';
+            $attendance->late = 'no';
+            $attendance->half_day = 'yes';
+        } elseif ($attendance->clock_in) {
+            $attendance->status = 'present';
+            $attendance->late = 'no';
+            $attendance->half_day = 'no';
+        }
+
+        $attendance->save();
+
+        return $attendance;
+    }
 
  public function timersstore(Request $request)
 {
@@ -72,17 +146,36 @@ class DashboardController extends Controller
 public function notestore(Request $request)
 {
     $request->validate([
-        'note_text' => 'required|string',
+        'note_text' => 'required|string|max:1000',
         'colour' => 'required|in:blue,yellow,red,gray,purple,green',
     ]);
+
     StickyNote::create([
-        'company_id' => auth()->user()->company_id,
+        'company_id' => auth()->user()->company_id ?? null,
         'user_id' => auth()->id(),
         'note_text' => $request->note_text,
         'colour' => $request->colour,
     ]);
 
     return redirect()->back()->with('success', 'Note added successfully!');
+}
+
+public function stickyNoteComplete(StickyNote $stickyNote)
+{
+    abort_if($stickyNote->user_id !== auth()->id(), 403);
+
+    $stickyNote->forceFill(['completed_at' => now()])->save();
+
+    return redirect()->back()->with('success', 'Sticky note completed.');
+}
+
+public function stickyNoteDestroy(StickyNote $stickyNote)
+{
+    abort_if($stickyNote->user_id !== auth()->id(), 403);
+
+    $stickyNote->delete();
+
+    return redirect()->back()->with('success', 'Sticky note deleted.');
 }
 
     public function index()
@@ -174,8 +267,12 @@ public function notestore(Request $request)
 
         // ✅ Employee logic
         if (auth()->user()->role == 'employee') {
-            $user = Auth::user();
+            $user = Auth::user()->loadMissing(['employeeDetail.designation', 'employeeDetail.department']);
             $today = now()->toDateString();
+
+            $showEmployeeWelcome = ! Attendance::where('user_id', $user->id)
+                ->whereNotNull('clock_in')
+                ->exists();
 
             $attendance = \App\Models\Attendance::where('user_id', $user->id)
                 ->where('date', $today)
@@ -307,7 +404,7 @@ public function notestore(Request $request)
             $projects = Project::all();
             $tasks = Task::all();
             return view('employee-dashboard', compact('user','projects', 'tasks', 'attendance', 'weeklyLogs','openTasksCount', 'projectsCount', 'openTicketsCount','appreciations',
-            'birthdaysToday','todaysJoinings','workAnniversaries','onLeaveToday','pendingTasksCount','overdueTasksCount','totalProjects','inProgressCount','overdueCount','myTasks','myTickets'));
+            'birthdaysToday','todaysJoinings','workAnniversaries','onLeaveToday','pendingTasksCount','overdueTasksCount','totalProjects','inProgressCount','overdueCount','myTasks','myTickets','showEmployeeWelcome'));
         }
 
         abort(403);
@@ -432,11 +529,36 @@ public function notestore(Request $request)
 
 
 
-   public function clockIn()
+   public function clockIn(Request $request)
 {
+    $validated = $request->validate([
+        'clock_in_latitude' => ['required', 'numeric', 'between:-90,90'],
+        'clock_in_longitude' => ['required', 'numeric', 'between:-180,180'],
+        'clock_in_accuracy' => ['nullable', 'numeric', 'min:0'],
+        'clock_in_address' => ['nullable', 'string', 'max:255'],
+        'clock_in_selfie' => ['required', 'string'],
+    ], [
+        'clock_in_latitude.required' => 'Please share your current location before clocking in.',
+        'clock_in_longitude.required' => 'Please share your current location before clocking in.',
+        'clock_in_selfie.required' => 'Please capture your photo before clocking in.',
+    ]);
+
     $now = now(); // automatically in IST if app timezone is set
     $today = $now->toDateString();
     $userId = auth()->id();
+
+    $distance = $this->distanceInMeters(
+        self::OFFICE_LATITUDE,
+        self::OFFICE_LONGITUDE,
+        (float) $validated['clock_in_latitude'],
+        (float) $validated['clock_in_longitude']
+    );
+
+    if ($distance > self::OFFICE_RADIUS_METERS) {
+        return back()
+            ->withInput()
+            ->with('error', 'Clock in allowed only within ' . self::OFFICE_RADIUS_METERS . ' meters of ' . self::OFFICE_ADDRESS . '. Your current distance is ' . round($distance, 1) . ' meters.');
+    }
 
     $existing = Attendance::where('user_id', $userId)
         ->where('date', $today)
@@ -446,22 +568,54 @@ public function notestore(Request $request)
         return back()->with('error', 'You have already clocked in today.');
     }
 
-    $setting = \App\Models\AttendanceSetting::first();
-    $clockInTime = $now->format('H:i');
-    $status = 'present';
+    $photoPath = $this->storeClockInPhoto($validated['clock_in_selfie'], $userId, $today);
 
-    if ($setting && $clockInTime > $setting->late_time) {
-        $status = 'late';
+    if (! $photoPath) {
+        return back()
+            ->withInput()
+            ->with('error', 'Photo capture failed. Please retake your photo and try again.');
     }
 
-    Attendance::create([
+    $clockInTime = $now->format('H:i');
+
+    $attendance = Attendance::create([
         'user_id'  => $userId,
         'date'     => $today,
         'clock_in' => $clockInTime,
-        'status'   => $status,
+        'status'   => 'present',
+        'location' => self::OFFICE_ADDRESS,
+        'latitude' => $validated['clock_in_latitude'],
+        'longitude' => $validated['clock_in_longitude'],
+        'clock_in_latitude' => $validated['clock_in_latitude'],
+        'clock_in_longitude' => $validated['clock_in_longitude'],
+        'clock_in_address' => $validated['clock_in_address'] ?? self::OFFICE_ADDRESS,
+        'clock_in_photo' => $photoPath,
+        'work_from_type' => 'office',
     ]);
+    $this->applyOrganizationAttendanceRules($attendance);
+
+    $request->user()?->forceFill(['employee_welcome_seen_at' => now()])->save();
 
     return back()->with('success', 'Clocked in at ' . $now->format('h:i A'));
+}
+
+   public function markEmployeeWelcomeSeen(Request $request)
+{
+    $user = Auth::user();
+
+    if (! $user || $user->role !== 'employee') {
+        return response()->json(['success' => false], 403);
+    }
+
+    $hasClockedIn = Attendance::where('user_id', $user->id)
+        ->whereNotNull('clock_in')
+        ->exists();
+
+    if ($hasClockedIn && ! $user->employee_welcome_seen_at) {
+        $user->forceFill(['employee_welcome_seen_at' => now()])->save();
+    }
+
+    return response()->json(['success' => true]);
 }
 
 
@@ -486,6 +640,7 @@ public function notestore(Request $request)
     $attendance->update([
         'clock_out' => $now->format('H:i')
     ]);
+    $this->applyOrganizationAttendanceRules($attendance->fresh());
 
     return back()->with('success', 'Clocked out at ' . $now->format('h:i A'));
 }

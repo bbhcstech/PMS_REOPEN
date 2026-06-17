@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('title');
             $table->date('date');
             $table->string('type')->default('holiday'); // holiday or weekend
+            $table->timestamp('archived_at')->nullable();
             $table->timestamps();
         });
     }

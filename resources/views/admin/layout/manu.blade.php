@@ -477,6 +477,135 @@
     font-weight: 650 !important;
 }
 
+.sticky-note-trigger {
+    position: relative;
+}
+
+.sticky-note-count {
+    position: absolute;
+    top: -8px;
+    right: -10px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: #ef4444;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 14px rgba(239, 68, 68, 0.28);
+}
+
+.sticky-note-dock {
+    position: fixed;
+    right: 22px;
+    bottom: 22px;
+    z-index: 1025;
+    width: min(340px, calc(100vw - 32px));
+    display: grid;
+    gap: 12px;
+    pointer-events: none;
+}
+
+.sticky-note-card {
+    pointer-events: auto;
+    position: relative;
+    padding: 16px 16px 14px;
+    border-radius: 8px 8px 18px 8px;
+    color: #243029;
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.16);
+    transform-origin: top left;
+    animation: stickyFloatIn 0.55s ease both, stickySway 4.5s ease-in-out infinite;
+    overflow: hidden;
+}
+
+.sticky-note-card::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    height: 10px;
+    background: rgba(255, 255, 255, 0.38);
+}
+
+.sticky-note-card:nth-child(2n) {
+    animation-delay: 0.08s, 0.2s;
+    transform: rotate(1deg);
+}
+
+.sticky-note-card:nth-child(3n) {
+    animation-delay: 0.14s, 0.35s;
+    transform: rotate(-1deg);
+}
+
+.sticky-note-card.yellow { background: linear-gradient(135deg, #fff7ad, #fde68a); }
+.sticky-note-card.blue { background: linear-gradient(135deg, #bfdbfe, #93c5fd); }
+.sticky-note-card.red { background: linear-gradient(135deg, #fecaca, #fca5a5); }
+.sticky-note-card.gray { background: linear-gradient(135deg, #f1f5f9, #cbd5e1); }
+.sticky-note-card.purple { background: linear-gradient(135deg, #ddd6fe, #c4b5fd); }
+.sticky-note-card.green { background: linear-gradient(135deg, #bbf7d0, #86efac); }
+
+.sticky-note-card p {
+    margin: 0 0 10px;
+    font-size: 0.94rem;
+    font-weight: 650;
+    line-height: 1.35;
+    white-space: pre-line;
+}
+
+.sticky-note-meta {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: rgba(31, 41, 55, 0.62);
+}
+
+.sticky-note-actions {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    display: flex;
+    gap: 4px;
+}
+
+.sticky-note-actions button {
+    width: 26px;
+    height: 26px;
+    border: 0;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.58);
+    color: #1f2937;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sticky-notes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 14px;
+}
+
+@keyframes stickyFloatIn {
+    from { opacity: 0; transform: translateY(18px) rotate(-2deg) scale(0.96); }
+    to { opacity: 1; transform: translateY(0) rotate(var(--note-tilt, 0deg)) scale(1); }
+}
+
+@keyframes stickySway {
+    0%, 100% { translate: 0 0; }
+    50% { translate: 0 -4px; }
+}
+
+@media (max-width: 768px) {
+    .sticky-note-dock {
+        left: 12px;
+        right: 12px;
+        bottom: 12px;
+        width: auto;
+    }
+}
+
 </style>
 <link rel="stylesheet" href="{{ asset('admin/assets/css/pms-refresh.css') }}">
 
@@ -494,6 +623,11 @@
         ->latest()
         ->with('task.project')
         ->first();
+
+    $stickyNotes = \App\Models\StickyNote::where('user_id', auth()->id())
+        ->whereNull('completed_at')
+        ->latest()
+        ->get();
     @endphp
 
     <!-- Layout wrapper -->
@@ -876,8 +1010,11 @@
 
                   <!-- Sticky Note Icon -->
                   <div class="nav-item me-3">
-                      <a href="javascript:void(0);" class="d-block header-icon-box" data-bs-toggle="modal" data-bs-target="#addNoteModal" title="Sticky Note">
+                      <a href="javascript:void(0);" class="d-block header-icon-box sticky-note-trigger" data-bs-toggle="modal" data-bs-target="#addNoteModal" title="Sticky Notes">
                           <i class="bx bx-note icon-md text-dark"></i>
+                          @if($stickyNotes->count())
+                            <span class="sticky-note-count">{{ $stickyNotes->count() }}</span>
+                          @endif
                       </a>
                   </div>
 
@@ -985,6 +1122,8 @@
                 @php
                   use App\Models\User;
                   $user = auth()->user();
+                  $employeeDesignation = $user?->employeeDetail?->designation?->name ?? $user?->designation ?? 'Employee';
+                  $employeeDepartment = $user?->employeeDetail?->department?->dpt_name ?? null;
                 @endphp
 
                 <!-- User -->
@@ -1002,7 +1141,14 @@
 
                       <div class="d-none d-md-block text-start">
                         <h6 class="mb-0 text-truncate" style="font-size: 14px;">{{ $user->name }}</h6>
-                        <small class="text-muted">{{ ucfirst($user->designation ?? 'Employee' ) }}</small>
+                        <small class="text-muted d-block text-truncate" style="max-width: 180px;">
+                          {{ $employeeDesignation }}
+                        </small>
+                        @if($user?->role === 'employee' && $employeeDepartment)
+                          <small class="text-muted d-block text-truncate" style="max-width: 180px;">
+                            {{ $employeeDepartment }}
+                          </small>
+                        @endif
                       </div>
                     </div>
                   </a>
@@ -1020,7 +1166,10 @@
 
                           <div class="flex-grow-1">
                               <h6 class="mb-0">{{ $user->name }}</h6>
-                              <small class="text-body-secondary">{{ ucfirst($user->designation ?? 'Employee' ) }} ({{ ucfirst($user->role) }})</small>
+                              <small class="text-body-secondary d-block">{{ $employeeDesignation }} ({{ ucfirst($user->role) }})</small>
+                              @if($user?->role === 'employee' && $employeeDepartment)
+                                <small class="text-body-secondary d-block">Department: {{ $employeeDepartment }}</small>
+                              @endif
                           </div>
 
                         </div>
@@ -1092,7 +1241,7 @@
             <div class="modal-dialog modal-lg modal-dialog-centered">
               <div class="modal-content">
                 <div class="modal-header">
-                  <h5 class="modal-title" id="addNoteModalLabel">Sticky Notes</h5>
+                  <h5 class="modal-title" id="addNoteModalLabel">Today Sticky Notes</h5>
                   <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -1101,15 +1250,15 @@
                   <form action="{{ route('sticky_notes.store') }}" method="POST" class="mb-4">
                     @csrf
                     <div class="mb-3">
-                        <label for="note_text" class="form-label">Note Details</label>
-                        <textarea name="note_text" id="note_text" class="form-control" rows="3" placeholder="Write your note..." required></textarea>
+                        <label for="note_text" class="form-label">What do you want to do today?</label>
+                        <textarea name="note_text" id="note_text" class="form-control" rows="3" maxlength="1000" placeholder="Write a quick reminder for your own screen..." required></textarea>
                     </div>
 
                     <div class="mb-3">
-                        <label for="colour" class="form-label">Color Code</label>
+                        <label for="colour" class="form-label">Note Color</label>
                         <select name="colour" id="colour" class="form-select" required>
-                            <option value="blue">Blue</option>
                             <option value="yellow">Yellow</option>
+                            <option value="blue">Blue</option>
                             <option value="red">Red</option>
                             <option value="gray">Gray</option>
                             <option value="purple">Purple</option>
@@ -1126,30 +1275,52 @@
                   <hr>
 
                   <!-- Existing Notes -->
-                  <h6>Your Notes</h6>
-                  <div class="sticky-notes-list">
-                    @php
-                        $notes = \App\Models\StickyNote::where('user_id', auth()->id())->orderBy('created_at', 'desc')->get();
-                    @endphp
-
-                    @if($notes->count() > 0)
-                      <div class="list-group">
-                        @foreach($notes as $note)
-                          <div class="list-group-item mb-2" style="border-left: 5px solid {{ $note->colour }};">
-                            <p class="mb-1">{{ $note->note_text }}</p>
-                            <small class="text-muted">{{ $note->created_at->format('d M Y, h:i A') }}</small>
-                          </div>
-                        @endforeach
+                  <h6>Your Active Notes</h6>
+                  <div class="sticky-notes-grid">
+                    @forelse($stickyNotes as $note)
+                      <div class="sticky-note-card {{ $note->colour }}">
+                        <div class="sticky-note-actions">
+                          <form method="POST" action="{{ route('sticky_notes.complete', $note) }}">
+                            @csrf
+                            @method('PATCH')
+                            <button type="submit" title="Mark done"><i class="bx bx-check"></i></button>
+                          </form>
+                          <form method="POST" action="{{ route('sticky_notes.destroy', $note) }}" onsubmit="return confirm('Delete this sticky note?');">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" title="Delete"><i class="bx bx-x"></i></button>
+                          </form>
+                        </div>
+                        <p>{{ $note->note_text }}</p>
+                        <span class="sticky-note-meta">{{ $note->created_at->format('d M Y, h:i A') }}</span>
                       </div>
-                    @else
+                    @empty
                       <p class="text-center text-muted">- No record found -</p>
-                    @endif
+                    @endforelse
                   </div>
 
                 </div>
               </div>
             </div>
           </div>
+
+          @if($stickyNotes->isNotEmpty())
+            <div class="sticky-note-dock" aria-label="Your sticky notes">
+              @foreach($stickyNotes->take(4) as $note)
+                <div class="sticky-note-card {{ $note->colour }}">
+                  <div class="sticky-note-actions">
+                    <form method="POST" action="{{ route('sticky_notes.complete', $note) }}">
+                      @csrf
+                      @method('PATCH')
+                      <button type="submit" title="Mark done"><i class="bx bx-check"></i></button>
+                    </form>
+                  </div>
+                  <p>{{ $note->note_text }}</p>
+                  <span class="sticky-note-meta">{{ $note->created_at->format('h:i A') }}</span>
+                </div>
+              @endforeach
+            </div>
+          @endif
 
           {{-- ================= START TIMER MODAL ================= --}}
           <div class="modal fade" id="startTimerModal" tabindex="-1">
@@ -1303,7 +1474,7 @@
                       const h = Math.floor(diff / 3600);
                       const m = Math.floor((diff % 3600) / 60);
                       const s = diff % 60;
-                      if (elapsedSpan) elapsedSpan.innerText = ${h}h ${m}m ${s}s;
+                      if (elapsedSpan) elapsedSpan.innerText = `${h}h ${m}m ${s}s`;
                   }, 1000);
               @endif
           });
@@ -1327,7 +1498,7 @@
                       const h = Math.floor(diff / 3600);
                       const m = Math.floor((diff % 3600) / 60);
                       const s = diff % 60;
-                      if (totalTimeEl) totalTimeEl.innerText = ${h}h ${m}m ${s}s;
+                      if (totalTimeEl) totalTimeEl.innerText = `${h}h ${m}m ${s}s`;
                   });
               }
           });

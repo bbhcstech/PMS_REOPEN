@@ -17,6 +17,13 @@ class Attendance extends Model
         'location',
         'latitude',
         'longitude',
+        'clock_in_latitude',
+        'clock_in_longitude',
+        'clock_in_address',
+        'clock_in_photo',
+        'clock_out_latitude',
+        'clock_out_longitude',
+        'clock_out_address',
         'date',
         'status',
         'clock_in',
@@ -26,7 +33,8 @@ class Attendance extends Model
         'half_day',
         'half_day_type',
         'work_from_type',
-        'overwrite_attendance'
+        'overwrite_attendance',
+        'archived_at'
     ];
 
     protected $casts = [
@@ -38,6 +46,11 @@ class Attendance extends Model
         'clock_out' => 'string',
         'latitude' => 'float',
         'longitude' => 'float',
+        'clock_in_latitude' => 'float',
+        'clock_in_longitude' => 'float',
+        'clock_out_latitude' => 'float',
+        'clock_out_longitude' => 'float',
+        'archived_at' => 'datetime',
     ];
 
     protected $appends = [

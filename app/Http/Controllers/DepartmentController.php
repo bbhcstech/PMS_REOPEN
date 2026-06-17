@@ -7,6 +7,7 @@ use App\Models\ParentDepartment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class DepartmentController extends Controller
 {
@@ -15,9 +16,14 @@ class DepartmentController extends Controller
      */
     public function index()
     {
-       $departments = Department::with('parent')->latest()->get();
+       $departments = Department::with('parent')
+           ->withCount('employeeDetails')
+           ->whereNull('archived_at')
+           ->latest()
+           ->get();
+       $archivedCount = Department::whereNotNull('archived_at')->count();
 
-        return view('admin.departments.index', compact('departments'));
+        return view('admin.departments.index', compact('departments', 'archivedCount'));
     }
 
     /**
@@ -29,6 +35,17 @@ class DepartmentController extends Controller
         $nextCode = $this->generateNextCodePreview();
 
         return view('admin.departments.create', compact('parentDepartments', 'nextCode'));
+    }
+
+    /**
+     * Display the specified sub department.
+     */
+    public function show(Department $department)
+    {
+        $department->load(['parent', 'addedBy', 'updatedBy'])
+            ->loadCount('employeeDetails');
+
+        return view('admin.departments.show', compact('department'));
     }
 
     /**
@@ -58,9 +75,22 @@ class DepartmentController extends Controller
      */
     public function store(Request $request)
     {
+        $request->merge([
+            'code_generation_mode' => $request->input('code_generation_mode', 'auto'),
+            'dpt_code' => trim((string) $request->input('dpt_code', '')),
+        ]);
+
         $request->validate([
             'dpt_name' => 'required|string|max:255',
             'parent_dpt_id' => 'nullable|exists:parent_departments,id',
+            'code_generation_mode' => ['required', Rule::in(['auto', 'custom'])],
+            'dpt_code' => [
+                'required_if:code_generation_mode,custom',
+                'nullable',
+                'string',
+                'max:50',
+                Rule::unique('departments', 'dpt_code'),
+            ],
         ]);
 
         $prefix = 'SUB-';  // SAME prefix for preview + save
@@ -69,27 +99,31 @@ class DepartmentController extends Controller
 
         try {
 
-            // Lock row for concurrency safety
-            $last = Department::where('dpt_code', 'like', $prefix . '%')
-                ->orderBy('id', 'desc')
-                ->lockForUpdate()
-                ->first();
-
-            if ($last && preg_match('/(\d+)$/', $last->dpt_code, $m)) {
-                $nextNumber = (int)$m[1] + 1;
+            if ($request->code_generation_mode === 'custom') {
+                $generatedCode = trim((string) $request->dpt_code);
             } else {
-                $nextNumber = 1;
-            }
+                // Lock row for concurrency safety
+                $last = Department::where('dpt_code', 'like', $prefix . '%')
+                    ->orderBy('id', 'desc')
+                    ->lockForUpdate()
+                    ->first();
 
-            $pad = $nextNumber > 99 ? 3 : 2;
+                if ($last && preg_match('/(\d+)$/', $last->dpt_code, $m)) {
+                    $nextNumber = (int)$m[1] + 1;
+                } else {
+                    $nextNumber = 1;
+                }
 
-            $generatedCode = $prefix . str_pad($nextNumber, $pad, '0', STR_PAD_LEFT);
+                $pad = $nextNumber > 99 ? 3 : 2;
 
-            // EXTRA CHECK If duplicate somehow exists
-            while (Department::where('dpt_code', $generatedCode)->exists()) {
-                $nextNumber++;
-                $pad = $nextNumber > 99 ? 3 : $pad;
                 $generatedCode = $prefix . str_pad($nextNumber, $pad, '0', STR_PAD_LEFT);
+
+                // EXTRA CHECK If duplicate somehow exists
+                while (Department::where('dpt_code', $generatedCode)->exists()) {
+                    $nextNumber++;
+                    $pad = $nextNumber > 99 ? 3 : $pad;
+                    $generatedCode = $prefix . str_pad($nextNumber, $pad, '0', STR_PAD_LEFT);
+                }
             }
 
             Department::create([
@@ -128,12 +162,23 @@ class DepartmentController extends Controller
      */
     public function update(Request $request, Department $department)
     {
+        $request->merge([
+            'dpt_code' => trim((string) $request->input('dpt_code', $department->dpt_code)),
+        ]);
+
         $request->validate([
+            'dpt_code' => [
+                'required',
+                'string',
+                'max:50',
+                Rule::unique('departments', 'dpt_code')->ignore($department->id),
+            ],
             'dpt_name' => 'required|string|max:255',
             'parent_dpt_id' => 'required|exists:parent_departments,id',
         ]);
 
         $department->update([
+            'dpt_code'        => $request->dpt_code,
             'dpt_name'        => $request->dpt_name,
             'parent_dpt_id'   => $request->parent_dpt_id,
             'last_updated_by' => Auth::id(),
@@ -152,7 +197,7 @@ class DepartmentController extends Controller
         try {
             // RULE: cannot delete if any employees exist under this department
             if ($department->employeeDetails()->exists()) {
-                $message = 'Sub Department cannot be deleted because Employees are tagged under it.';
+                $message = 'Sub Department cannot be archived because Employees are tagged under it.';
 
                 if ($request->ajax() || $request->wantsJson()) {
                     return response()->json([
@@ -164,37 +209,85 @@ class DepartmentController extends Controller
                 return back()->withErrors($message);
             }
 
-            $department->delete();
+            $department->forceFill([
+                'archived_at' => now(),
+                'last_updated_by' => Auth::id(),
+            ])->save();
 
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'status'  => 'success',
-                    'message' => 'Department deleted successfully',
+                    'message' => 'Sub Department archived successfully',
                 ]);
             }
 
             return redirect()
                 ->route('departments.index')
-                ->with('success', 'Department deleted successfully');
+                ->with('success', 'Sub Department archived successfully');
 
         } catch (\Throwable $e) {
 
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'status'  => 'error',
-                    'message' => 'Delete failed.',
+                    'message' => 'Archive failed.',
                     'error'   => $e->getMessage(),
                 ], 500);
             }
 
-            return back()->withErrors('Delete failed: ' . $e->getMessage());
+            return back()->withErrors('Archive failed: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Show archived sub departments.
+     */
+    public function archive(Request $request)
+    {
+        $perPage = (int) $request->input('per_page', 10);
+        $perPage = in_array($perPage, [10, 20, 30, 40, 50, 100], true) ? $perPage : 10;
+
+        $query = Department::with('parent')
+            ->withCount('employeeDetails')
+            ->whereNotNull('archived_at');
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('dpt_name', 'like', '%' . $search . '%')
+                    ->orWhere('dpt_code', 'like', '%' . $search . '%')
+                    ->orWhereHas('parent', function ($parentQuery) use ($search) {
+                        $parentQuery->where('dpt_name', 'like', '%' . $search . '%')
+                            ->orWhere('dpt_code', 'like', '%' . $search . '%');
+                    });
+            });
+        }
+
+        $departments = $query->orderByDesc('archived_at')->paginate($perPage)->withQueryString();
+
+        return view('admin.departments.archive', compact('departments'));
+    }
+
+    /**
+     * Restore an archived sub department.
+     */
+    public function restore($id)
+    {
+        $department = Department::whereNotNull('archived_at')->findOrFail($id);
+
+        $department->forceFill([
+            'archived_at' => null,
+            'last_updated_by' => Auth::id(),
+        ])->save();
+
+        return redirect()->route('departments.archive')
+            ->with('success', 'Sub Department restored successfully.');
     }
 
 
     /**
-     * Bulk Delete Departments
-     * Must respect: cannot delete departments that have employees.
+     * Bulk archive departments.
+     * Must respect: cannot archive departments that have employees.
      */
     public function bulkDestroy(Request $request)
     {
@@ -216,10 +309,14 @@ class DepartmentController extends Controller
 
             return $request->wantsJson()
                 ? response()->json(['status' => 'error', 'message' => $msg], 422)
-                : back()->withErrors('No departments selected for deletion.');
+                : back()->withErrors('No departments selected for archive.');
         }
 
-        $foundIds = Department::whereIn('id', $ids)->pluck('id')->map(fn($v) => (int)$v)->toArray();
+        $foundIds = Department::whereNull('archived_at')
+            ->whereIn('id', $ids)
+            ->pluck('id')
+            ->map(fn($v) => (int)$v)
+            ->toArray();
 
         $missing = array_values(array_diff($ids, $foundIds));
         if (!empty($missing)) {
@@ -235,19 +332,23 @@ class DepartmentController extends Controller
         try {
             // Load with count of employees
             $departments = Department::withCount('employeeDetails')
+                ->whereNull('archived_at')
                 ->whereIn('id', $foundIds)
                 ->get();
 
             // Blocked: have employees
             $blocked   = $departments->where('employee_details_count', '>', 0);
-            // Deletable: no employees
+            // Archivable: no employees
             $deletable = $departments->where('employee_details_count', 0);
 
             $deletableIds = $deletable->pluck('id')->all();
 
             $deleted = 0;
             if (!empty($deletableIds)) {
-                $deleted = Department::whereIn('id', $deletableIds)->delete();
+                $deleted = Department::whereIn('id', $deletableIds)->update([
+                    'archived_at' => now(),
+                    'last_updated_by' => Auth::id(),
+                ]);
             }
 
             DB::commit();
@@ -255,10 +356,10 @@ class DepartmentController extends Controller
             $blockedCount = $blocked->count();
 
             $messageParts   = [];
-            $messageParts[] = "$deleted item(s) deleted.";
+            $messageParts[] = "$deleted item(s) archived.";
             if ($blockedCount > 0) {
                 $blockedList   = $blocked->pluck('dpt_name')->implode(', ');
-                $messageParts[] = "$blockedCount item(s) were not deleted because Employees are tagged under them: $blockedList";
+                $messageParts[] = "$blockedCount item(s) were not archived because Employees are tagged under them: $blockedList";
             }
             $finalMessage = implode(' ', $messageParts);
 
@@ -281,10 +382,10 @@ class DepartmentController extends Controller
             return $request->wantsJson()
                 ? response()->json([
                     'status'  => 'error',
-                    'message' => 'Bulk delete failed.',
+                    'message' => 'Bulk archive failed.',
                     'error'   => $e->getMessage()
                 ], 500)
-                : back()->withErrors('Bulk delete failed: ' . $e->getMessage());
+                : back()->withErrors('Bulk archive failed: ' . $e->getMessage());
         }
     }
 }

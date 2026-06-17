@@ -4,4 +4,5 @@
     @yield('content')
 </main>
 
+@include('admin.layout.toasts')
 @include('admin.layout.footer')

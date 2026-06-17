@@ -105,8 +105,9 @@
         .container-fluid {
             position: relative;
             z-index: 5;
-            padding: 2rem;
-            max-width: 1400px;
+            width: 100%;
+            padding: 2.75rem 3rem;
+            max-width: 1680px;
             margin: 0 auto;
         }
 
@@ -259,7 +260,8 @@
 
         .card-header-premium {
             background: var(--grad-bg);
-            padding: 1.2rem 2rem;
+            padding: 1.75rem 2.75rem;
+            min-height: 82px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -278,7 +280,7 @@
         }
 
         .card-body-premium {
-            padding: 2rem;
+            padding: 3rem 2.75rem;
         }
 
         /* FORM ELEMENTS */
@@ -385,7 +387,8 @@
             padding-left: 1rem;
             font-weight: 600;
             color: var(--primary);
-            max-width: 100px;
+            max-width: 160px;
+            min-width: 145px;
             border-radius: 14px 0 0 14px;
         }
 
@@ -515,6 +518,20 @@
             .card-body-premium {
                 padding: 1.5rem;
             }
+            .card-header-premium {
+                min-height: auto;
+                padding: 1.25rem 1.5rem;
+            }
+        }
+
+        @media (min-width: 769px) and (max-width: 1199.98px) {
+            .container-fluid {
+                padding: 2rem 1.5rem;
+            }
+
+            .card-body-premium {
+                padding: 2.25rem 2rem;
+            }
         }
 
         /* MODAL STYLES */
@@ -609,10 +626,10 @@
                     @csrf
 
                     <!-- Hidden fields for new designation/department -->
-                    <input type="hidden" name="new_designation" id="new_designation" value="">
-                    <input type="hidden" name="new_designation_level" id="new_designation_level" value="">
-                    <input type="hidden" name="new_department" id="new_department" value="">
-                    <input type="hidden" name="new_sub_department" id="new_sub_department" value="">
+                    <input type="hidden" name="new_designation" id="new_designation" value="{{ old('new_designation') }}">
+                    <input type="hidden" name="new_designation_level" id="new_designation_level" value="{{ old('new_designation_level') }}">
+                    <input type="hidden" name="new_department" id="new_department" value="{{ old('new_department') }}">
+                    <input type="hidden" name="new_sub_department" id="new_sub_department" value="{{ old('new_sub_department') }}">
 
                     <div class="section-title">
                         <i class="fas fa-id-card"></i> Account Details
@@ -697,6 +714,9 @@
                             <div class="input-group-premium" style="overflow: visible;">
                                 <select name="designation_id" id="designation_id" class="form-select-premium" required style="flex: 1;">
                                     <option value="">Select Designation</option>
+                                    @if(old('designation_id') === 'new' && old('new_designation'))
+                                        <option value="new" selected>{{ old('new_designation') }} - Level {{ old('new_designation_level') }} (New, pending employee save)</option>
+                                    @endif
                                     @foreach($designations as $designation)
                                         <option value="{{ $designation->id }}" {{ $selectedDesignation == $designation->id ? 'selected' : '' }}>
                                             {{ $designation->name }}
@@ -727,6 +747,9 @@
                                 @php $selectedPrt = old('parent_dpt_id') ?? ($ed->parent_dpt_id ?? ''); @endphp
                                 <select name="parent_dpt_id" id="prt_department_id" class="form-select-premium" required style="flex: 1;">
                                     <option value="">Select</option>
+                                    @if(old('parent_dpt_id') === 'new' && old('new_department'))
+                                        <option value="new" selected>{{ old('new_department') }} (New, pending employee save)</option>
+                                    @endif
                                     @foreach($prtdepartments as $dept)
                                         <option value="{{ $dept->id }}" {{ $selectedPrt == $dept->id ? 'selected' : '' }}>
                                             {{ $dept->dpt_name }} @if(!empty($dept->dpt_code)) ({{ $dept->dpt_code }}) @endif
@@ -751,6 +774,9 @@
                                 @php $selectedDpt = old('department_id') ?? ($ed->department_id ?? ''); @endphp
                                 <select name="department_id" id="department_id" class="form-select-premium" data-selected="{{ $selectedDpt }}" style="flex: 1;">
                                     <option value="">Select</option>
+                                    @if(old('department_id') === 'new' && old('new_sub_department'))
+                                        <option value="new" selected>{{ old('new_sub_department') }} (New, pending employee save)</option>
+                                    @endif
                                 </select>
                                 <button type="button" class="btn btn-outline-secondary" id="openDptModalBtn" title="Add department" style="border: none; background: var(--grad-bg); padding: 0 1rem;">
                                     <i class="fas fa-plus-circle"></i>
@@ -764,12 +790,16 @@
                         <div class="col-md-4">
                             <label class="form-label-premium">
                                 <span><i class="fas fa-image"></i> Profile Picture</span>
-                                <span class="optional-badge">Optional</span>
+                                <span class="mandatory-badge">Required</span>
                             </label>
-                            <input type="file" name="profile_picture" class="form-control-premium" id="profile_picture">
+                            <input type="file" name="profile_picture" class="form-control-premium" id="profile_picture" accept=".jpeg,.jpg,.png,image/jpeg,image/png" required>
+                            <small class="text-muted d-block mt-1" style="font-size: 0.7rem;">Supported formats: JPEG, PNG, JPG. Max size: 2 MB.</small>
                             @if(!empty($employee?->profile_image))
                                 <small class="text-muted d-block mt-1">Current: <a href="{{ asset($employee->profile_image) }}" target="_blank" style="color: var(--secondary);">view image</a></small>
                             @endif
+                            @error('profile_picture')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         <div class="col-md-4">
@@ -781,7 +811,11 @@
                                 <option value="">Select Country</option>
                                 @php $selectedCountry = old('country') ?? ($ed->country ?? ($employee?->country ?? 'India')); @endphp
                                 @foreach($countries as $country)
-                                    <option value="{{ $country->name }}" data-flag="{{ $country->flag_url }}" {{ $selectedCountry == $country->name ? 'selected' : '' }}>
+                                    @php
+                                        $countryMeta = \App\Support\CountryPhone::meta($country->name);
+                                        $countryFlag = $country->flag_url ?? 'https://flagcdn.com/w20/' . $countryMeta['iso'] . '.png';
+                                    @endphp
+                                    <option value="{{ $country->name }}" data-flag="{{ $countryFlag }}" data-dial-code="{{ $countryMeta['dial_code'] }}" {{ $selectedCountry == $country->name ? 'selected' : '' }}>
                                         {{ $country->name }}
                                     </option>
                                 @endforeach
@@ -797,12 +831,31 @@
                                 <span class="mandatory-badge">Required</span>
                             </label>
                             <div class="input-group-premium">
-                                <span class="input-group-text" style="background: transparent; border: none; font-weight: 600; color: var(--primary);">+91</span>
+                                @php
+                                    $selectedMobileCode = old('mobile_country_code') ?? '+91';
+                                    $mobileValue = old('mobile') ?? (($ed?->mobile ?? null) ? preg_replace('/^\+91/', '', $ed->mobile) : preg_replace('/^\+91/', '', ($employee?->mobile ?? '')));
+                                @endphp
+                                <select name="mobile_country_code" id="mobile_country_code" class="country-code-select" required>
+                                    @foreach($countries as $country)
+                                        @php
+                                            $phoneMeta = \App\Support\CountryPhone::meta($country->name);
+                                            $phoneFlag = $country->flag_url ?? 'https://flagcdn.com/w20/' . $phoneMeta['iso'] . '.png';
+                                            $phoneLabel = $country->name . ' (' . $phoneMeta['dial_code'] . ')';
+                                        @endphp
+                                        <option value="{{ $phoneMeta['dial_code'] }}" data-country="{{ $country->name }}" data-flag="{{ $phoneFlag }}" {{ $selectedMobileCode === $phoneMeta['dial_code'] && $selectedCountry === $country->name ? 'selected' : '' }}>
+                                            {{ $phoneLabel }}
+                                        </option>
+                                    @endforeach
+                                </select>
                                 <input id="mobile_only_digits" type="text" name="mobile" class="form-control-premium mobile-input" required maxlength="10" placeholder="9876543210"
-                                       value="{{ old('mobile') ?? (($ed?->mobile ?? null) ? preg_replace('/^\+91/', '', $ed->mobile) : preg_replace('/^\+91/', '', ($employee?->mobile ?? ''))) }}" style="border: none;">
+                                       value="{{ $mobileValue }}" style="border: none;">
                                 <div id="mobile-error" class="invalid-feedback mobile-error d-none"></div>
                             </div>
+                            <small class="text-muted d-block mt-1" style="font-size: 0.7rem;">Select the country code and enter a 10-digit phone number.</small>
                             <input type="hidden" name="mobile_with_code" id="mobile_with_code" value="{{ old('mobile_with_code') ?? ($ed->mobile ?? $employee?->mobile ?? '') }}">
+                            @error('mobile_country_code')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
                             @error('mobile')
                                 <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
@@ -851,11 +904,23 @@
 
                         <div class="col-md-4">
                             <label class="form-label-premium">
+                                <span><i class="fas fa-id-card"></i> Government ID Card</span>
+                                <span class="mandatory-badge">Required</span>
+                            </label>
+                            <input type="file" name="government_id_card" class="form-control-premium" id="government_id_card" accept=".jpeg,.jpg,.png,image/jpeg,image/png" required>
+                            <small class="text-muted d-block mt-1" style="font-size: 0.7rem;">Upload a clear, straight, full-frame government ID photo without glare or shadows. Supported formats: JPEG, PNG, JPG. DOB on the ID must match the DOB above.</small>
+                            @error('government_id_card')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label-premium">
                                 <span><i class="fas fa-user-friends"></i> Reporting To</span>
-                                <span class="optional-badge">Optional</span>
+                                <span class="mandatory-badge">Required</span>
                             </label>
                             @php $selectedReporting = old('reporting_to') ?? ($ed->reporting_to ?? ''); @endphp
-                            <select name="reporting_to" class="form-select-premium">
+                            <select name="reporting_to" class="form-select-premium" required>
                                 <option value="">Select</option>
                                 @foreach($users as $userItem)
                                     <option value="{{ $userItem->id }}" {{ (string)$selectedReporting === (string)$userItem->id ? 'selected' : '' }} {{ $employee && $userItem->id == $employee->id ? 'disabled' : '' }}>
@@ -863,6 +928,9 @@
                                     </option>
                                 @endforeach
                             </select>
+                            @error('reporting_to')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         <div class="col-md-4">
@@ -877,19 +945,6 @@
                                 <option value="hi" data-flag="https://flagcdn.com/w20/in.png" {{ $lang === 'hi' ? 'selected' : '' }}>Hindi</option>
                                 <option value="fr" data-flag="https://flagcdn.com/w20/fr.png" {{ $lang === 'fr' ? 'selected' : '' }}>French</option>
                                 <option value="de" data-flag="https://flagcdn.com/w20/de.png" {{ $lang === 'de' ? 'selected' : '' }}>German</option>
-                            </select>
-                        </div>
-
-                        <div class="col-md-4">
-                            <label class="form-label-premium">
-                                <span><i class="fas fa-user-tag"></i> User Role</span>
-                                <span class="mandatory-badge">Required</span>
-                            </label>
-                            @php $role = old('user_role') ?? ($employee?->role ?? 'employee') @endphp
-                            <select name="user_role" class="form-select-premium select-picker" required>
-                                <option value="">Select Role</option>
-                                <option value="employee" {{ $role === 'employee' ? 'selected' : '' }}>Employee</option>
-                                <option value="admin" {{ $role === 'admin' ? 'selected' : '' }}>Admin</option>
                             </select>
                         </div>
 
@@ -942,10 +997,10 @@
                         <div class="col-md-4">
                             <label class="form-label-premium">
                                 <span><i class="fas fa-clock"></i> Employment Type</span>
-                                <span class="optional-badge">Optional</span>
+                                <span class="mandatory-badge">Required</span>
                             </label>
                             @php $employmentType = old('employment_type') ?? ($ed->employment_type ?? $employee?->employment_type ?? '') @endphp
-                            <select name="employment_type" id="employment_type" class="form-select-premium select-picker">
+                            <select name="employment_type" id="employment_type" class="form-select-premium select-picker" required>
                                 <option value="">Select</option>
                                 <option value="full_time" {{ $employmentType === 'full_time' ? 'selected' : '' }}>Full Time</option>
                                 <option value="part_time" {{ $employmentType === 'part_time' ? 'selected' : '' }}>Part Time</option>
@@ -953,6 +1008,9 @@
                                 <option value="internship" {{ $employmentType === 'internship' ? 'selected' : '' }}>Internship</option>
                                 <option value="trainee" {{ $employmentType === 'trainee' ? 'selected' : '' }}>Trainee</option>
                             </select>
+                            @error('employment_type')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         <div class="col-md-4">
@@ -1024,35 +1082,20 @@
         </div>
     </div>
 
-    {{-- Modals: Parent Department, Department, Designation --}}
+    {{-- Modals: Add Department, Sub Department, Designation --}}
     <div class="modal fade" id="prtModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <form id="addPrtDptForm">@csrf
                 <div class="modal-content modal-content-premium">
                     <div class="modal-header modal-header-premium">
-                        <h5 class="modal-title modal-title-premium"><i class="fas fa-building me-2"></i> Manage Parent Department</h5>
+                        <h5 class="modal-title modal-title-premium"><i class="fas fa-building me-2"></i> Add Department</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body" style="padding: 1.5rem;">
-                        <table class="table table-bordered mb-4">
-                            <thead class="table-light">
-                                <tr><th>#</th><th>Parent Department Name</th><th width="120">Action</th></tr>
-                            </thead>
-                            <tbody id="prt-dpt-list">
-                                @foreach($prtdepartments as $index => $prt)
-                                    <tr id="prt-row-{{ $prt->id }}">
-                                        <td>{{ $index + 1 }}</td>
-                                        <td>{{ $prt->dpt_name }}</td>
-                                        <td>
-                                            <button type="button" class="btn btn-sm btn-danger delete-prt" data-id="{{ $prt->id }}">Delete</button>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                        <p class="modal-helper-text">Add a new department for this employee. It will be saved to the Department master only after the employee is created successfully.</p>
 
                         <div class="mb-3">
-                            <label class="form-label fw-bold" style="color: var(--primary);">Parent Department Name <sup class="text-danger">*</sup></label>
+                            <label class="form-label fw-bold" style="color: var(--primary);">Department Name <sup class="text-danger">*</sup></label>
                             <input type="text" name="dpt_name" id="prt_dpt_name" class="form-control-premium" required>
                             <div id="prt-group-error" class="text-danger d-none mt-2"></div>
                         </div>
@@ -1071,32 +1114,16 @@
             <form id="addDptForm">@csrf
                 <div class="modal-content modal-content-premium">
                     <div class="modal-header modal-header-premium">
-                        <h5 class="modal-title modal-title-premium"><i class="fas fa-layer-group me-2"></i> Manage Department</h5>
+                        <h5 class="modal-title modal-title-premium"><i class="fas fa-layer-group me-2"></i> Add Sub Department</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body" style="padding: 1.5rem;">
-                        <table class="table table-bordered mb-4">
-                            <thead class="table-light">
-                                <tr><th>#</th><th>Parent Department Name</th><th>Department Name</th><th width="120">Action</th></tr>
-                            </thead>
-                            <tbody id="dpt-list">
-                                @foreach($departments as $index => $dpt)
-                                    <tr id="dpt-row-{{ $dpt->id }}">
-                                        <td>{{ $index + 1 }}</td>
-                                        <td>{{ $dpt->parent?->dpt_name ?? 'N/A' }}</td>
-                                        <td>{{ $dpt->dpt_name }}</td>
-                                        <td>
-                                            <button type="button" class="btn btn-sm btn-danger delete-dpt" data-id="{{ $dpt->id }}">Delete</button>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                        <p class="modal-helper-text">Add a sub department for this employee. It will be saved only with a successful employee creation.</p>
 
                         <div class="mb-3">
-                            <label class="form-label fw-bold" style="color: var(--primary);">Parent Department (optional)</label>
+                            <label class="form-label fw-bold" style="color: var(--primary);">Department <sup class="text-danger">*</sup></label>
                             <select name="parent_dpt_id" id="dpt_parent_select" class="form-select-premium">
-                                <option value="">None</option>
+                                <option value="">Select Department</option>
                                 @foreach($prtdepartments as $pd)
                                     <option value="{{ $pd->id }}">{{ $pd->dpt_name }}</option>
                                 @endforeach
@@ -1104,7 +1131,7 @@
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label fw-bold" style="color: var(--primary);">Department Name <sup class="text-danger">*</sup></label>
+                            <label class="form-label fw-bold" style="color: var(--primary);">Sub Department Name <sup class="text-danger">*</sup></label>
                             <input type="text" name="dpt_name" id="dpt_name" class="form-control-premium" required>
                             <div id="dpt-group-error" class="text-danger d-none mt-2"></div>
                         </div>
@@ -1123,45 +1150,12 @@
             <form id="addDesignationForm">@csrf
                 <div class="modal-content modal-content-premium">
                     <div class="modal-header modal-header-premium">
-                        <h5 class="modal-title modal-title-premium"><i class="fas fa-briefcase me-2"></i> Manage Designations</h5>
+                        <h5 class="modal-title modal-title-premium"><i class="fas fa-briefcase me-2"></i> Add Designation</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body" style="padding: 1.5rem;">
-                        @if($designations->isNotEmpty())
-                            <div class="mb-3">
-                                <label class="form-label fw-bold" style="color: var(--primary);">Existing Designations</label>
-                                <div class="table-responsive">
-                                    <table class="table table-bordered mb-3">
-                                        <thead class="table-light">
-                                            <tr><th>Name</th><th>Level</th><th width="100">Actions</th></tr>
-                                        </thead>
-                                        <tbody id="designation-list">
-                                            @foreach($designations as $des)
-                                                <tr id="des-row-{{ $des->id }}">
-                                                    <td>{{ $des->name }}</td>
-                                                    <td>{{ $des->level ?? 'Not Set' }}</td>
-                                                    <td>
-                                                        <button type="button" class="btn btn-sm btn-warning edit-designation"
-                                                                data-id="{{ $des->id }}"
-                                                                data-name="{{ $des->name }}"
-                                                                data-level="{{ $des->level ?? '' }}"
-                                                                title="Edit">
-                                                            <i class="fas fa-edit"></i>
-                                                        </button>
-                                                        <button type="button" class="btn btn-sm btn-danger delete-designation" data-id="{{ $des->id }}" title="Delete">
-                                                            <i class="fas fa-trash"></i>
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        @endif
-
-                        <div class="border-top pt-3">
-                            <h6 class="fw-bold" style="color: var(--primary);">Add New Designation</h6>
+                        <p class="modal-helper-text">New designations are staged here and saved to the Designation master only after employee creation succeeds.</p>
+                        <div>
                             <div class="mb-3">
                                 <label class="form-label fw-bold" style="color: var(--primary);">Designation Name <sup class="text-danger">*</sup></label>
                                 <input type="text" name="name" id="designationName" class="form-control-premium" required>
@@ -1175,7 +1169,6 @@
                             </div>
                         </div>
 
-                        <input type="hidden" id="edit_designation_id" value="">
                         <input type="hidden" name="status" value="Active">
                     </div>
                     <div class="modal-footer" style="border-top: 1px solid rgba(0,0,0,0.05);">
@@ -1217,6 +1210,24 @@
     }
     .modal-body {
         overflow-x: auto;
+    }
+    .pending-option-note {
+        align-items: center;
+        background: #ecfdf5;
+        border: 1px solid rgba(16, 185, 129, 0.28);
+        border-radius: 12px;
+        color: #065f46;
+        display: flex;
+        font-size: 0.82rem;
+        font-weight: 600;
+        gap: 0.55rem;
+        margin-top: 0.75rem;
+        padding: 0.75rem 0.9rem;
+    }
+    .modal-helper-text {
+        color: #64748b;
+        font-size: 0.82rem;
+        margin-bottom: 1rem;
     }
     @media (max-width: 576px) {
         .page-header-enterprise {
@@ -1320,7 +1331,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const desBtn = $el('openDesignationModalBtn');
     if (desBtn) desBtn.addEventListener('click', function () {
         $('#addDesignationForm')[0].reset();
-        $('#edit_designation_id').val('');
         $('#saveDesignationBtn').text('Add Designation');
         $('#designation-error').addClass('d-none').text('');
         const modal = new bootstrap.Modal($el('designationModal'));
@@ -1335,6 +1345,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const dptBtn = $el('openDptModalBtn');
     if (dptBtn) dptBtn.addEventListener('click', function () {
+        const currentParent = $('#prt_department_id').val();
+        const currentParentText = $('#prt_department_id option:selected').text();
+        if (currentParent === 'new' && !$('#dpt_parent_select option[value="new"]').length) {
+            $('#dpt_parent_select').prepend($('<option>', {
+                value: 'new',
+                text: currentParentText
+            }));
+        }
+        if (currentParent) {
+            $('#dpt_parent_select').val(currentParent);
+        }
+        $('#dpt-group-error').addClass('d-none').text('');
         const modal = new bootstrap.Modal($el('dptModal'));
         modal.show();
     });
@@ -1345,6 +1367,7 @@ document.addEventListener('DOMContentLoaded', function () {
             let v = this.value.replace(/\D/g, '').slice(0, 10);
             if (v.length > 0 && v[0] === '0') v = v.replace(/^0+/, '');
             this.value = v;
+            if (typeof syncMobileHidden === 'function') syncMobileHidden();
             const mobileError = $el('mobile-error');
             if (mobileError) mobileError.classList.add('d-none');
             this.classList.remove('is-invalid');
@@ -1379,7 +1402,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     return false;
                 }
                 const hidden = $el('mobile_with_code');
-                if (hidden) hidden.value = '+91' + m;
+                const countryCode = $('#mobile_country_code').val() || '+91';
+                if (hidden) hidden.value = countryCode + m;
             }
 
             const exitDateEl = $el('exit_date');
@@ -1387,6 +1411,27 @@ document.addEventListener('DOMContentLoaded', function () {
                 e.preventDefault();
                 exitDateEl.focus();
                 alert('Please provide Exit Date when status is Inactive.');
+                return false;
+            }
+
+            if ($('#designation_id').val() === 'new' && (!$('#new_designation').val().trim() || $('#new_designation_level').val() === '')) {
+                e.preventDefault();
+                $('#openDesignationModalBtn').focus();
+                alert('Please add a designation name and level.');
+                return false;
+            }
+
+            if ($('#prt_department_id').val() === 'new' && !$('#new_department').val().trim()) {
+                e.preventDefault();
+                $('#openPrtModalBtn').focus();
+                alert('Please add a department name.');
+                return false;
+            }
+
+            if ($('#department_id').val() === 'new' && !$('#new_sub_department').val().trim()) {
+                e.preventDefault();
+                $('#openDptModalBtn').focus();
+                alert('Please add a sub department name.');
                 return false;
             }
         });
@@ -1400,7 +1445,15 @@ $(document).ready(function() {
     function loadSubDepartments(parentId, selectedId = null) {
         const $sub = $('#department_id');
         $sub.empty().append('<option value="">Select</option>');
+        if (selectedId === 'new' && $('#new_sub_department').val()) {
+            $sub.append($('<option>', {
+                value: 'new',
+                text: $('#new_sub_department').val() + ' (New, pending employee save)',
+                selected: true
+            }));
+        }
         if (!parentId) return;
+        if (parentId === 'new') return;
 
         let url = '{{ route("employees.sub-departments", ":id") }}';
         url = url.replace(':id', parentId);
@@ -1416,6 +1469,26 @@ $(document).ready(function() {
             });
          })
          .fail(function () { console.error('Failed to load sub-departments'); });
+    }
+
+    function escapeHtml(value) {
+        return String(value).replace(/[&<>"']/g, function (char) {
+            return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char];
+        });
+    }
+
+    function setPendingOption($select, value, label) {
+        $select.find('option[value="' + value + '"]').remove();
+        $select.append($('<option>', {
+            value: value,
+            text: label + ' (New, pending employee save)',
+            selected: true
+        }));
+        $select.trigger('change');
+    }
+
+    function pendingNote(text) {
+        return '<div class="pending-option-note"><i class="fas fa-clock"></i><span>' + escapeHtml(text) + '</span></div>';
     }
 
     const initialParent = $('#prt_department_id').val();
@@ -1441,7 +1514,8 @@ $(document).ready(function() {
             return;
         }
 
-        $('#mobile_with_code').val('+91' + value);
+        const selectedCountryCode = $('#mobile_country_code').val() || '+91';
+        $('#mobile_with_code').val(selectedCountryCode + value);
 
         if (mobileCheckAjax) mobileCheckAjax.abort();
 
@@ -1450,6 +1524,7 @@ $(document).ready(function() {
             method: 'POST',
             data: {
                 mobile: value,
+                mobile_country_code: selectedCountryCode,
                 _token: '{{ csrf_token() }}'
             },
             success: function(response) {
@@ -1480,135 +1555,66 @@ $(document).ready(function() {
     $('#addPrtDptForm').on('submit', function(e) {
         e.preventDefault();
         const $form = $(this);
-        const data = $form.serialize();
-        $.ajax({
-            url: '{{ route('parent-departments.store') }}',
-            method: 'POST',
-            data: data,
-            success: function(res) {
-                if (res.status === 'success' && res.dpt) {
-                    $('#prt_department_id').append(`<option value="${res.dpt.id}" selected>${res.dpt.dpt_name}</option>`);
-                    $('#prt-dpt-list').append(`<tr id="prt-row-${res.dpt.id}"><td>#</td><td>${res.dpt.dpt_name}</td><td><button type="button" class="btn btn-sm btn-danger delete-prt" data-id="${res.dpt.id}">Delete</button></td></tr>`);
-                    $form[0].reset();
-                    $('#prtModal').modal('hide');
-                } else {
-                    $('#prt-group-error').removeClass('d-none').text(res.message || 'Something went wrong.');
-                }
-            },
-            error: function(xhr) {
-                const msg = xhr.responseJSON?.message || (xhr.responseJSON?.errors ? Object.values(xhr.responseJSON.errors).flat().join(' ') : 'Error occurred.');
-                $('#prt-group-error').removeClass('d-none').text(msg);
-            }
-        });
-    });
+        const name = $('#prt_dpt_name').val().trim();
+        $('#prt-group-error').addClass('d-none').text('');
 
-    // Delete parent department
-    $(document).on('click', '.delete-prt', function () {
-        const id = $(this).data('id');
-        if (!confirm('Are you sure you want to delete this parent department?')) return;
-        $.ajax({
-            url: `{{ url('parent-departments') }}/${id}`,
-            method: 'POST',
-            data: { _method: 'DELETE', _token: '{{ csrf_token() }}' },
-            success: function(res) {
-                if (res.status === 'success') {
-                    $(`#prt-row-${id}`).remove();
-                    $(`#prt_department_id option[value="${id}"]`).remove();
-                }
-            }
-        });
+        if (!name) {
+            $('#prt-group-error').removeClass('d-none').text('Please enter a department name.');
+            return;
+        }
+
+        $('#new_department').val(name);
+        $('#new_sub_department').val('');
+        setPendingOption($('#prt_department_id'), 'new', name);
+        $('#department_id').empty().append('<option value="">Select</option>');
+
+        $('#prtModal .pending-option-note').remove();
+        $('#prtModal .modal-body').append(pendingNote('This department will be created only after the employee is saved successfully.'));
+
+        $form[0].reset();
+        $('#prtModal').modal('hide');
+        Swal.fire({ icon: 'success', title: 'Added to employee form', text: 'Department is pending until employee creation succeeds.', timer: 1700, showConfirmButton: false });
     });
 
     // Handle department form submission
     $('#addDptForm').on('submit', function(e) {
         e.preventDefault();
-        const data = $(this).serialize();
-        $.ajax({
-            url: '{{ route('departments.store') }}',
-            method: 'POST',
-            data: data,
-            success: function(res) {
-                if (res.status === 'success' && res.dpt) {
-                    const currentParent = $('#prt_department_id').val();
-                    loadSubDepartments(currentParent, res.dpt.id);
-                    $('#dpt-list').append(`<tr id="dpt-row-${res.dpt.id}"><td>#</td><td>${res.dpt.parent_name ? res.dpt.parent_name : 'N/A'}</td><td>${res.dpt.dpt_name}</td><td><button type="button" class="btn btn-sm btn-danger delete-dpt" data-id="${res.dpt.id}">Delete</button></td></tr>`);
-                    $('#addDptForm')[0].reset();
-                    $('#dptModal').modal('hide');
-                    Swal.fire({ icon: 'success', title: 'Added', text: 'Department added successfully', timer: 1400, showConfirmButton: false });
-                } else {
-                    $('#dpt-group-error').removeClass('d-none').text(res.message || 'Error occurred.');
-                }
-            },
-            error: function(xhr) {
-                const msg = xhr.responseJSON?.message || (xhr.responseJSON?.errors ? Object.values(xhr.responseJSON.errors).flat().join(' ') : 'Error occurred.');
-                $('#dpt-group-error').removeClass('d-none').text(msg);
-            }
-        });
+        const $form = $(this);
+        const parentId = $('#dpt_parent_select').val();
+        const parentLabel = $('#dpt_parent_select option:selected').text().trim();
+        const name = $('#dpt_name').val().trim();
+        $('#dpt-group-error').addClass('d-none').text('');
+
+        if (!parentId) {
+            $('#dpt-group-error').removeClass('d-none').text('Please select a department.');
+            return;
+        }
+
+        if (!name) {
+            $('#dpt-group-error').removeClass('d-none').text('Please enter a sub department name.');
+            return;
+        }
+
+        $('#prt_department_id').val(parentId);
+        if (parentId === 'new') {
+            $('#new_department').val(parentLabel.replace(' (New, pending employee save)', ''));
+        }
+        $('#new_sub_department').val(name);
+        setPendingOption($('#department_id'), 'new', name);
+
+        $('#dptModal .pending-option-note').remove();
+        $('#dptModal .modal-body').append(pendingNote('This sub department will be created only after the employee is saved successfully.'));
+
+        $form[0].reset();
+        $('#dptModal').modal('hide');
+        Swal.fire({ icon: 'success', title: 'Added to employee form', text: 'Sub department is pending until employee creation succeeds.', timer: 1700, showConfirmButton: false });
     });
 
-    // Delete department
-    $(document).on('click', '.delete-dpt', function () {
-        const id = $(this).data('id');
-        if (!confirm('Are you sure you want to delete this department?')) return;
-        $.ajax({
-            url: `{{ url('departments') }}/${id}`,
-            method: 'POST',
-            data: { _method: 'DELETE', _token: '{{ csrf_token() }}' },
-            success: function(res) {
-                if (res.status === 'success') {
-                    $(`#dpt-row-${id}`).remove();
-                    $(`#department_id option[value="${id}"]`).remove();
-                }
-            }
-        });
-    });
-
-    // Edit designation button click
-    $(document).on('click', '.edit-designation', function () {
-        const id = $(this).data('id');
-        const name = $(this).data('name');
-        const level = $(this).data('level') || '';
-
-        $('#designationName').val(name);
-        $('#designationLevel').val(level);
-        $('#edit_designation_id').val(id);
-        $('#saveDesignationBtn').text('Update Designation');
-        $('#designation-error').addClass('d-none').text('');
-    });
-
-    // Delete designation
-    $(document).on('click', '.delete-designation', function () {
-        const id = $(this).data('id');
-        if (!confirm('Are you sure you want to delete this designation? This may affect existing employees.')) return;
-
-        $.ajax({
-            url: `{{ url('designations') }}/${id}`,
-            method: 'POST',
-            data: { _method: 'DELETE', _token: '{{ csrf_token() }}' },
-            success: function(res) {
-                if (res.status === 'success') {
-                    $(`#des-row-${id}`).remove();
-                    $(`#designation_id option[value="${id}"]`).remove();
-                    Swal.fire({ icon: 'success', title: 'Deleted', text: 'Designation deleted successfully', timer: 1400, showConfirmButton: false });
-                } else {
-                    Swal.fire({ icon: 'error', title: 'Error', text: res.message || 'Failed to delete designation' });
-                }
-            },
-            error: function() {
-                Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to delete designation. Please try again.' });
-            }
-        });
-    });
-
-    // Handle designation form submission (Add/Edit)
+    // Handle designation form submission
     $('#addDesignationForm').on('submit', function (e) {
         e.preventDefault();
-        const $btn = $('#saveDesignationBtn');
         const name = $('#designationName').val().trim();
         const level = $('#designationLevel').val();
-        const editId = $('#edit_designation_id').val();
-        const token = '{{ csrf_token() }}';
-        const isEditMode = editId !== '';
 
         $('#designation-error').addClass('d-none').text('');
 
@@ -1628,67 +1634,16 @@ $(document).ready(function() {
             return;
         }
 
-        $btn.prop('disabled', true);
+        $('#new_designation').val(name);
+        $('#new_designation_level').val(levelNum);
+        setPendingOption($('#designation_id'), 'new', name + ' - Level ' + levelNum);
 
-        let url, method, data;
-        if (isEditMode) {
-            url = `{{ url('designations') }}/${editId}`;
-            method = 'POST';
-            data = { _token: token, _method: 'PUT', name: name, level: levelNum, status: 'Active' };
-        } else {
-            url = '{{ route('designations.ajax.store') }}';
-            method = 'POST';
-            data = { _token: token, name: name, level: levelNum, status: 'Active' };
-        }
+        $('#designationModal .pending-option-note').remove();
+        $('#designationModal .modal-body').append(pendingNote('This designation will be created only after the employee is saved successfully.'));
 
-        $.ajax({
-            url: url,
-            method: method,
-            data: data,
-            success: function (res) {
-                if (res.designation && res.designation.id) {
-                    let label = res.designation.name;
-                    if (res.designation.unique_code) label += ` (${res.designation.unique_code})`;
-                    if (res.designation.level !== null) label += ` - Level ${res.designation.level}`;
-
-                    if (isEditMode) {
-                        $(`#des-row-${res.designation.id} td:first`).text(res.designation.name);
-                        $(`#des-row-${res.designation.id} td:nth-child(2)`).text(res.designation.level !== null ? res.designation.level : 'Not Set');
-                        $(`#des-row-${res.designation.id} .edit-designation`).data('name', res.designation.name).data('level', res.designation.level !== null ? res.designation.level : '');
-                        const $option = $(`#designation_id option[value="${res.designation.id}"]`);
-                        if ($option.length) $option.text(label);
-                        Swal.fire({ icon: 'success', title: 'Updated', text: 'Designation updated successfully', timer: 1400, showConfirmButton: false });
-                    } else {
-                        const newRow = `<tr id="des-row-${res.designation.id}"><td>${res.designation.name}</td><td>${res.designation.level !== null ? res.designation.level : 'Not Set'}</td><td><button type="button" class="btn btn-sm btn-warning edit-designation" data-id="${res.designation.id}" data-name="${res.designation.name}" data-level="${res.designation.level !== null ? res.designation.level : ''}" title="Edit"><i class="fas fa-edit"></i></button> <button type="button" class="btn btn-sm btn-danger delete-designation" data-id="${res.designation.id}" title="Delete"><i class="fas fa-trash"></i></button></td></tr>`;
-                        $('#designation-list').append(newRow);
-                        $('#designation_id').append(`<option value="${res.designation.id}">${label}</option>`);
-                        Swal.fire({ icon: 'success', title: 'Created', text: 'Designation created successfully', timer: 1400, showConfirmButton: false });
-                    }
-
-                    $('#addDesignationForm')[0].reset();
-                    $('#edit_designation_id').val('');
-                    $('#saveDesignationBtn').text('Add Designation');
-                    if (!isEditMode) $('#designationModal').modal('hide');
-                } else {
-                    $('#designation-error').removeClass('d-none').text(res.message || 'Operation completed but unexpected response.');
-                }
-            },
-            error: function (xhr) {
-                let msg = 'Something went wrong';
-                if (xhr.responseJSON?.message) {
-                    msg = xhr.responseJSON.message;
-                    if (msg.toLowerCase().includes('duplicate') || msg.toLowerCase().includes('already exists')) {
-                        msg = 'This designation name already exists. Please choose a different name.';
-                    }
-                } else if (xhr.responseJSON?.errors) {
-                    msg = Object.values(xhr.responseJSON.errors).flat().join(' ');
-                }
-                $('#designation-error').removeClass('d-none').text(msg);
-            },
-            complete: function () {
-                $btn.prop('disabled', false);
-            }
-        });
+        $('#addDesignationForm')[0].reset();
+        $('#designationModal').modal('hide');
+        Swal.fire({ icon: 'success', title: 'Added to employee form', text: 'Designation is pending until employee creation succeeds.', timer: 1700, showConfirmButton: false });
     });
 
     // Initialize Select2 for country and language
@@ -1701,6 +1656,24 @@ $(document).ready(function() {
         return state.text;
     }
 
+    function formatMobileCode(state) {
+        if (!state.id) return state.text;
+        const flag = $(state.element).data("flag");
+        const country = $(state.element).data("country");
+        const code = state.id;
+        const label = country ? country + ' ' + code : state.text;
+        if (flag) {
+            return $('<span><img src="' + flag + '" width="20" class="me-2"/> ' + label + '</span>');
+        }
+        return label;
+    }
+
+    function syncMobileHidden() {
+        const code = $('#mobile_country_code').val() || '+91';
+        const mobile = $('#mobile_only_digits').val() || '';
+        $('#mobile_with_code').val(mobile ? code + mobile : '');
+    }
+
     if ($('#country').length) {
         $('#country').select2({
             theme: "bootstrap-5",
@@ -1708,6 +1681,28 @@ $(document).ready(function() {
             templateSelection: formatCountry,
             placeholder: "Select Country",
             allowClear: true
+        });
+
+        $('#country').on('change', function () {
+            const countryName = $(this).val();
+            const selected = $('#mobile_country_code option').filter(function () {
+                return $(this).data('country') === countryName;
+            }).first();
+            if (selected.length) {
+                $('#mobile_country_code').val(selected.val()).trigger('change');
+            }
+        });
+    }
+
+    if ($('#mobile_country_code').length) {
+        $('#mobile_country_code').select2({
+            theme: "bootstrap-5",
+            templateResult: formatMobileCode,
+            templateSelection: formatMobileCode,
+            width: '145px'
+        }).on('change', function () {
+            syncMobileHidden();
+            $('#mobile_only_digits').trigger('blur');
         });
     }
 

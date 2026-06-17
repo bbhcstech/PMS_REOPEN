@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Designation;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\Database\QueryException;
 
@@ -16,14 +18,16 @@ class DesignationController extends Controller
 
         // FIX 1: Order by level to ensure proper display
         $designations = Designation::with(['addedBy', 'updatedBy'])
+            ->whereNull('archived_at')
             ->orderBy('level', 'asc')  // ADD THIS LINE
             ->orderBy('name', 'asc')   // ADD THIS LINE
             ->paginate($perPage);
 
         // Get unique levels count
-        $levelsCount = Designation::distinct('level')->count('level');
+        $levelsCount = Designation::whereNull('archived_at')->distinct('level')->count('level');
+        $archivedCount = Designation::whereNotNull('archived_at')->count();
 
-        return view('admin.designations.index', compact('designations', 'levelsCount'));
+        return view('admin.designations.index', compact('designations', 'levelsCount', 'archivedCount'));
     }
 
     public function show(Designation $designation)
@@ -55,29 +59,58 @@ class DesignationController extends Controller
 
     public function create()
     {
-        $designations = Designation::get();
-        return view('admin.designations.create', compact('designations'));
+        $designations = Designation::whereNull('archived_at')->get();
+        $nextCode = $this->generateNextCodePreview();
+        return view('admin.designations.create', compact('designations', 'nextCode'));
+    }
+
+    public function nextCode()
+    {
+        return response()->json(['next_code' => $this->generateNextCodePreview()]);
+    }
+
+    private function generateNextCodePreview()
+    {
+        $nextId = ((int) Designation::max('id')) + 1;
+
+        return 'DGN-' . str_pad($nextId, 4, '0', STR_PAD_LEFT);
     }
 
     public function store(Request $request)
     {
+        $request->merge([
+            'code_generation_mode' => $request->input('code_generation_mode', 'auto'),
+            'unique_code' => trim((string) $request->input('unique_code', '')),
+        ]);
+
         $request->validate([
             'name'      => ['required','string','max:255', Rule::unique('designations','name')],
             'parent_id' => ['nullable','exists:designations,id'],
-            'level'     => ['required','integer','min:0','max:6']
+            'level'     => ['required','integer','min:0','max:6'],
+            'code_generation_mode' => ['required', Rule::in(['auto', 'custom'])],
+            'unique_code' => [
+                'required_if:code_generation_mode,custom',
+                'nullable',
+                'string',
+                'max:255',
+                Rule::unique('designations', 'unique_code'),
+            ],
         ]);
 
         try {
-            $designation = Designation::create([
+            $designationData = [
                 'name'        => $request->name,
                 'parent_id'   => $request->parent_id ?: null,
                 'level'       => $request->level,
                 'added_by'    => Auth::id(),
                 'updated_by'  => Auth::id(),  // FIX 2: Changed from 'last_updated_by' to 'updated_by'
-            ]);
+            ];
 
-            $designation->unique_code = 'DGN-' . str_pad($designation->id, 4, '0', STR_PAD_LEFT);
-            $designation->saveQuietly();
+            if ($request->code_generation_mode === 'custom') {
+                $designationData['unique_code'] = $request->unique_code;
+            }
+
+            $designation = Designation::create($designationData);
 
             if ($request->ajax()) {
                 return response()->json([
@@ -111,7 +144,9 @@ class DesignationController extends Controller
 
     public function edit(Designation $designation)
     {
-        $designations = Designation::get();
+        $designations = Designation::whereNull('archived_at')
+            ->whereKeyNot($designation->id)
+            ->get();
         return view('admin.designations.create', compact('designation', 'designations'));
     }
 
@@ -210,14 +245,67 @@ class DesignationController extends Controller
 
     public function destroy(Designation $designation)
     {
-        if ($designation->employeeDetails()->count() > 0) {
-            return back()->with('error', 'Designation cannot be deleted because Employees are tagged under it.');
+        return $this->archiveDesignation($designation);
+    }
+
+    public function archiveDesignation(Designation $designation)
+    {
+        if ($designation->archived_at) {
+            return redirect()->route('designations.index')
+                ->with('error', 'Designation is already archived.');
         }
 
-        $designation->delete();
+        DB::transaction(function () use ($designation) {
+            Designation::where('parent_id', $designation->id)->update([
+                'parent_id' => $designation->parent_id,
+                'last_updated_by' => Auth::id(),
+            ]);
+
+            $designation->forceFill([
+                'archived_at' => now(),
+                'last_updated_by' => Auth::id(),
+            ])->save();
+        });
 
         return redirect()->route('designations.index')
-            ->with('success', 'Designation deleted successfully.');
+            ->with('success', 'Designation archived successfully.');
+    }
+
+    public function archive(Request $request)
+    {
+        $perPage = (int) $request->input('per_page', 10);
+        $perPage = in_array($perPage, [10, 20, 30, 40, 50, 100], true) ? $perPage : 10;
+
+        $query = Designation::with(['addedBy', 'updatedBy', 'parent'])
+            ->whereNotNull('archived_at');
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('unique_code', 'like', '%' . $search . '%')
+                    ->orWhereHas('parent', function ($parentQuery) use ($search) {
+                        $parentQuery->where('name', 'like', '%' . $search . '%');
+                    });
+            });
+        }
+
+        $designations = $query->orderByDesc('archived_at')->paginate($perPage)->withQueryString();
+
+        return view('admin.designations.archive', compact('designations'));
+    }
+
+    public function restore($id)
+    {
+        $designation = Designation::whereNotNull('archived_at')->findOrFail($id);
+
+        $designation->forceFill([
+            'archived_at' => null,
+            'last_updated_by' => Auth::id(),
+        ])->save();
+
+        return redirect()->route('designations.archive')
+            ->with('success', 'Designation restored successfully.');
     }
 
         public function bulkDelete(Request $request)
@@ -292,36 +380,102 @@ class DesignationController extends Controller
 
             return back();
         }
+    public function bulkArchive(Request $request)
+    {
+        $ids = $request->input('ids', []);
+
+        if (empty($ids) || !is_array($ids)) {
+            return back()->with('error', 'No designations selected.');
+        }
+
+        $designations = Designation::whereNull('archived_at')
+            ->whereIn('id', $ids)
+            ->get();
+
+        if ($designations->isEmpty()) {
+            return back()->with('error', 'No active designations found for archive.');
+        }
+
+        DB::transaction(function () use ($designations) {
+            foreach ($designations as $designation) {
+                Designation::where('parent_id', $designation->id)->update([
+                    'parent_id' => $designation->parent_id,
+                    'last_updated_by' => Auth::id(),
+                ]);
+
+                $designation->forceFill([
+                    'archived_at' => now(),
+                    'last_updated_by' => Auth::id(),
+                ])->save();
+            }
+        });
+
+        return redirect()->route('designations.index')
+            ->with('success', $designations->count() . ' designation(s) archived successfully.');
+    }
+
     public function hierarchy()
     {
-        $designations = Designation::orderBy('order', 'asc')->get();
-        return view('admin.designations.hierarchy', compact('designations'));
+        $designations = Designation::with('children')
+            ->whereNull('archived_at')
+            ->orderBy('order', 'asc')
+            ->orderBy('name', 'asc')
+            ->get();
+        $chartPoints = $this->employeeHierarchyPoints();
+
+        return view('admin.designations.hierarchy', compact('designations', 'chartPoints'));
+    }
+
+    public function chartData()
+    {
+        return response()->json(['points' => $this->employeeHierarchyPoints()]);
+    }
+
+    private function employeeHierarchyPoints()
+    {
+        $employees = User::with(['employeeDetail.designation'])
+            ->where('role', 'employee')
+            ->whereNull('archived_at')
+            ->whereDoesntHave('employeeDetail', function ($query) {
+                $query->whereIn('status', ['notice', 'probation'])
+                    ->orWhereNotNull('notice_end_date')
+                    ->orWhereNotNull('probation_end_date');
+            })
+            ->orderBy('name')
+            ->get();
+
+        $employeeIds = $employees->pluck('id')->map(fn ($id) => (int) $id)->all();
+
+        return $employees->map(function (User $employee) use ($employeeIds) {
+            $reportingTo = (int) ($employee->employeeDetail?->reporting_to ?? 0);
+            $designation = $employee->employeeDetail?->designation?->name ?? 'No designation';
+
+            return [
+                'id' => 'employee-' . $employee->id,
+                'parent' => in_array($reportingTo, $employeeIds, true) ? 'employee-' . $reportingTo : null,
+                'name' => $employee->name,
+                'level' => $designation,
+            ];
+        })->values();
     }
 
     public function saveHierarchy(Request $request)
     {
-        if (!is_array($request->hierarchy)) {
-            return response()->json(['message' => 'Invalid hierarchy format'], 422);
-        }
+        $validated = $request->validate([
+            'hierarchy' => ['required', 'array'],
+            'hierarchy.*.id' => ['required', 'integer', 'exists:designations,id'],
+            'hierarchy.*.parent_id' => ['nullable', 'integer', 'exists:designations,id'],
+            'hierarchy.*.order' => ['required', 'integer', 'min:0'],
+        ]);
 
-        $this->updateHierarchy($request->hierarchy, null);
+        foreach ($validated['hierarchy'] as $item) {
+            Designation::whereKey($item['id'])->update([
+                'parent_id' => $item['parent_id'],
+                'order' => $item['order'],
+                'last_updated_by' => Auth::id(),
+            ]);
+        }
 
         return response()->json(['message' => 'Hierarchy saved successfully!']);
-    }
-
-    private function updateHierarchy(array $items, $parentId = null)
-    {
-        foreach ($items as $index => $item) {
-            Designation::where('id', $item['id'])
-                ->update([
-                    'parent_id'  => $parentId,
-                    'sort_order' => $index,
-                    'updated_by' => Auth::id(),  // FIX 7: Consistency
-                ]);
-
-            if (!empty($item['children'])) {
-                $this->updateHierarchy($item['children'], $item['id']);
-            }
-        }
     }
 }

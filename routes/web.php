@@ -405,10 +405,13 @@ Route::middleware('auth')->group(function () {
     */
 
     Route::post('/sticky-notes', [DashboardController::class, 'notestore'])->name('sticky_notes.store');
+    Route::patch('/sticky-notes/{stickyNote}/complete', [DashboardController::class, 'stickyNoteComplete'])->name('sticky_notes.complete');
+    Route::delete('/sticky-notes/{stickyNote}', [DashboardController::class, 'stickyNoteDestroy'])->name('sticky_notes.destroy');
     Route::post('/timers/store', [DashboardController::class, 'timersstore'])->name('dashboard-timers.store');
 
     Route::post('/dashboard/clock-in', [DashboardController::class, 'clockIn'])->name('dashboard.clockin');
     Route::post('/dashboard/clock-out', [DashboardController::class, 'clockOut'])->name('dashboard.clockout');
+    Route::post('/dashboard/employee-welcome-seen', [DashboardController::class, 'markEmployeeWelcomeSeen'])->name('dashboard.employeeWelcomeSeen');
 
     Route::get('/search', [DashboardController::class, 'globalSearch'])->name('dashboard.search');
 
@@ -431,8 +434,18 @@ Route::middleware('auth')->group(function () {
     // Designation hierarchy
     Route::get('designations/designation-hierarchy', [DesignationController::class, 'hierarchy'])
         ->name('designations.hierarchy');
+    Route::get('designations/chart-data', [DesignationController::class, 'chartData'])
+        ->name('designations.chart-data');
     Route::post('designations/save-hierarchy', [DesignationController::class, 'saveHierarchy'])
         ->name('designations.save-hierarchy');
+    Route::get('designations/archive', [DesignationController::class, 'archive'])
+        ->name('designations.archive');
+    Route::post('designations/bulk-archive', [DesignationController::class, 'bulkArchive'])
+        ->name('designations.bulk-archive');
+    Route::post('designations/{designation}/archive', [DesignationController::class, 'archiveDesignation'])
+        ->name('designations.archive.action');
+    Route::post('designations/{id}/restore', [DesignationController::class, 'restore'])
+        ->name('designations.restore');
 
     // Bulk delete designations
 Route::post('designations/bulk-delete', [DesignationController::class, 'bulkDelete'])
@@ -449,11 +462,19 @@ Route::resource('designations', DesignationController::class);
     Route::resource('designations', DesignationController::class);
 
     // Parent departments
+    Route::get('parent-departments/archive', [ParentDepartmentController::class, 'archive'])
+        ->name('parent-departments.archive');
+    Route::post('parent-departments/{id}/restore', [ParentDepartmentController::class, 'restore'])
+        ->name('parent-departments.restore');
     Route::post('parent-departments/bulk-delete', [ParentDepartmentController::class, 'bulkDestroy'])
         ->name('parent-departments.bulk-delete');
     Route::resource('parent-departments', ParentDepartmentController::class);
 
     // Departments
+    Route::get('departments/archive', [DepartmentController::class, 'archive'])
+        ->name('departments.archive');
+    Route::post('departments/{id}/restore', [DepartmentController::class, 'restore'])
+        ->name('departments.restore');
     Route::post('departments/bulk-delete', [DepartmentController::class, 'bulkDestroy'])
         ->name('departments.bulk-delete');
     Route::resource('departments', DepartmentController::class);
@@ -548,6 +569,10 @@ Route::resource('designations', DesignationController::class);
     // Old single-user report
     Route::get('/attendance-report', [AttendanceController::class, 'attendanceReport'])->name('attendance.report');
 
+    // Archive
+    Route::get('/attendance/archive', [AttendanceController::class, 'archive'])->name('attendance.archive');
+    Route::post('/attendance/{id}/restore', [AttendanceController::class, 'restore'])->name('attendance.restore');
+
     // Exports (keep your URL & names exactly SAME)
     Route::get('/attendance-export-excel', [AttendanceController::class, 'exportExcel'])->name('attendance.export.excel');
     Route::get('/attendance-export-pdf',   [AttendanceController::class, 'exportPdf'])->name('attendance.export.pdf');
@@ -555,6 +580,7 @@ Route::resource('designations', DesignationController::class);
     // Edit
     Route::get('attendance/edit', [AttendanceController::class, 'edit'])->name('attendance.edit');
     Route::put('attendance/{attendance}', [AttendanceController::class, 'update'])->name('attendance.update');
+    Route::post('/attendance/month/archive', [AttendanceController::class, 'archiveMonth'])->name('attendance.month.archive');
 
     // Map view
     Route::get('/attendance/today/map', [AttendanceController::class, 'todayAttendanceByMap'])->name('attendance.today.map');
@@ -576,15 +602,22 @@ Route::resource('designations', DesignationController::class);
         ->name('leaves.bulk-delete');
     Route::post('/leaves/bulk-action', [LeaveController::class, 'bulkAction'])
         ->name('leaves.bulkAction');
+    Route::post('/leaves/bulk-archive', [LeaveController::class, 'bulkArchive'])
+        ->name('leaves.bulk-archive');
+    Route::post('/leaves/archive-all', [LeaveController::class, 'archiveAll'])
+        ->name('leaves.archive-all');
     Route::post('/leaves/update-paid-status', [LeaveController::class, 'updatePaidStatus'])
         ->name('leaves.updatePaidStatus');
 
     Route::get('leaves/calendar', [LeaveController::class, 'calendar'])->name('leaves.calendar');
     Route::get('/leaves/calendar/data', [LeaveController::class, 'calendarData'])->name('leaves.calendar.data');
+    Route::get('/leaves/archive/list', [LeaveController::class, 'archive'])->name('leaves.archive');
+    Route::post('/leaves/archive/{id}/restore', [LeaveController::class, 'restore'])->name('leaves.restore');
 
     Route::get('/leaves', [LeaveController::class, 'index'])->name('leaves.index');
     Route::get('/leaves/create', [LeaveController::class, 'create'])->name('leaves.create');
     Route::post('/leaves/store', [LeaveController::class, 'store'])->name('leaves.store');
+    Route::post('/leaves/{leave}/archive', [LeaveController::class, 'archiveLeave'])->name('leaves.archive.action');
     Route::delete('/leaves/{id}', [LeaveController::class, 'destroy'])->name('leaves.destroy');
     Route::get('leaves/{leave}/edit', [LeaveController::class, 'edit'])->name('leaves.edit');
     Route::put('leaves/{leave}', [LeaveController::class, 'update'])->name('leaves.update');
@@ -604,6 +637,14 @@ Route::resource('designations', DesignationController::class);
 */
 
 Route::post('/holidays/bulk-action', [HolidayController::class, 'bulkAction'])->name('holiday.bulkAction');
+Route::get('/holidays/export/list', [HolidayController::class, 'export'])->name('holidays.export');
+Route::get('/holidays/import/sample', [HolidayController::class, 'sample'])->name('holidays.sample');
+Route::post('/holidays/import/excel', [HolidayController::class, 'importExcel'])->name('holidays.import.excel');
+Route::post('/holidays/import/image', [HolidayController::class, 'importImage'])->name('holidays.import.image');
+Route::get('/holidays/archive/list', [HolidayController::class, 'archive'])->name('holidays.archive');
+Route::post('/holidays/bulk-archive', [HolidayController::class, 'bulkArchive'])->name('holidays.bulk-archive');
+Route::post('/holidays/{holiday}/archive', [HolidayController::class, 'archiveHoliday'])->name('holidays.archive.action');
+Route::post('/holidays/archive/{id}/restore', [HolidayController::class, 'restore'])->name('holidays.restore');
 Route::resource('holidays', HolidayController::class)->except(['show']);
 
 Route::get('employee-holidays', [HolidayController::class, 'employeeView'])->name('employee.holidays');

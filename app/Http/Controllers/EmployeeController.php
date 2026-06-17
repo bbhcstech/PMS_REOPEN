@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use Symfony\Component\Process\Process;
 
 class EmployeeController extends Controller
 {
@@ -42,6 +43,201 @@ class EmployeeController extends Controller
     private function hasSubordinates(int $userId): bool
     {
         return EmployeeDetail::where('reporting_to', $userId)->exists();
+    }
+
+    private function verifyGovernmentIdDob(string $imagePath, string $providedDob): array
+    {
+        $ocrText = $this->readTextFromImage($imagePath);
+
+        if ($ocrText === null || trim($ocrText) === '') {
+            return [
+                'ok' => false,
+                'message' => 'Could not read DOB from the government ID image. Please upload a clear JPEG, PNG, or JPG image with visible DOB.',
+            ];
+        }
+
+        $providedDate = Carbon::parse($providedDob)->format('Y-m-d');
+        $detectedDates = $this->extractDatesFromText($ocrText);
+
+        if (empty($detectedDates)) {
+            return [
+                'ok' => false,
+                'message' => 'No valid DOB was found in the government ID image. Please upload an ID image where DOB is clearly visible.',
+            ];
+        }
+
+        if (! in_array($providedDate, $detectedDates, true)) {
+            return [
+                'ok' => false,
+                'message' => 'DOB mismatch. The DOB found on the government ID does not match the provided DOB.',
+            ];
+        }
+
+        return ['ok' => true, 'message' => 'DOB matched.'];
+    }
+
+    private function readTextFromImage(string $imagePath): ?string
+    {
+        $binary = config('services.ocr.tesseract_binary', 'tesseract');
+        $variants = $this->createOcrImageVariants($imagePath);
+        $generatedVariants = array_filter($variants, fn ($path) => $path !== $imagePath);
+        $results = [];
+        $errors = [];
+
+        try {
+            foreach ($variants as $variant) {
+                foreach ([6, 11] as $pageSegmentationMode) {
+                    $process = new Process([
+                        $binary,
+                        $variant,
+                        'stdout',
+                        '-l',
+                        'eng',
+                        '--oem',
+                        '1',
+                        '--psm',
+                        (string) $pageSegmentationMode,
+                    ]);
+                    $process->setTimeout(30);
+                    $process->run();
+
+                    if ($process->isSuccessful() && trim($process->getOutput()) !== '') {
+                        $results[] = $process->getOutput();
+                    } else {
+                        $errors[] = trim($process->getErrorOutput() ?: $process->getOutput());
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            $errors[] = $e->getMessage();
+        } finally {
+            foreach ($generatedVariants as $variant) {
+                @unlink($variant);
+            }
+        }
+
+        if (empty($results)) {
+            Log::warning('Government ID OCR failed', [
+                'errors' => array_values(array_filter($errors)),
+            ]);
+
+            return null;
+        }
+
+        return implode("\n", array_unique($results));
+    }
+
+    private function createOcrImageVariants(string $imagePath): array
+    {
+        if (! function_exists('imagecreatefromstring')) {
+            return [$imagePath];
+        }
+
+        $imageInfo = @getimagesize($imagePath);
+        if (! $imageInfo || ($imageInfo[0] * $imageInfo[1]) > 40000000) {
+            return [$imagePath];
+        }
+
+        $source = @imagecreatefromstring(file_get_contents($imagePath));
+        if (! $source) {
+            return [$imagePath];
+        }
+
+        $width = imagesx($source);
+        $height = imagesy($source);
+        $scale = max(1, min(3, 2400 / max($width, $height)));
+        $scanWidth = (int) round($width * $scale);
+        $scanHeight = (int) round($height * $scale);
+        $scan = imagecreatetruecolor($scanWidth, $scanHeight);
+        imagecopyresampled($scan, $source, 0, 0, 0, 0, $scanWidth, $scanHeight, $width, $height);
+        imagedestroy($source);
+
+        imagefilter($scan, IMG_FILTER_GRAYSCALE);
+        imagefilter($scan, IMG_FILTER_CONTRAST, -35);
+        imageconvolution($scan, [
+            [-1, -1, -1],
+            [-1, 9, -1],
+            [-1, -1, -1],
+        ], 1, 0);
+
+        $enhancedPath = tempnam(sys_get_temp_dir(), 'government-id-ocr-');
+        if ($enhancedPath === false || ! imagepng($scan, $enhancedPath)) {
+            imagedestroy($scan);
+            return [$imagePath];
+        }
+
+        $threshold = imagecreatetruecolor($scanWidth, $scanHeight);
+        imagecopy($threshold, $scan, 0, 0, 0, 0, $scanWidth, $scanHeight);
+        imagefilter($threshold, IMG_FILTER_CONTRAST, -75);
+        imagefilter($threshold, IMG_FILTER_BRIGHTNESS, 10);
+
+        $thresholdPath = tempnam(sys_get_temp_dir(), 'government-id-ocr-');
+        if ($thresholdPath === false || ! imagepng($threshold, $thresholdPath)) {
+            $thresholdPath = null;
+        }
+
+        imagedestroy($threshold);
+        imagedestroy($scan);
+
+        return array_values(array_filter([$imagePath, $enhancedPath, $thresholdPath]));
+    }
+
+    private function extractDatesFromText(string $text): array
+    {
+        $text = preg_replace('/(?<=\d)[Oo](?=\d)|(?<=\d)[Oo](?=[\/.\-])|(?<=[\/.\-])[Oo](?=\d)/', '0', $text);
+        $text = preg_replace('/(?<=\d)[Il](?=\d)|(?<=\d)[Il](?=[\/.\-])|(?<=[\/.\-])[Il](?=\d)/', '1', $text);
+        $dates = [];
+        $patterns = [
+            '/\b(\d{1,2})\s*[\/\-.]\s*(\d{1,2})\s*[\/\-.]\s*(\d{4})\b/',
+            '/\b(\d{4})\s*[\/\-.]\s*(\d{1,2})\s*[\/\-.]\s*(\d{1,2})\b/',
+            '/\b(\d{1,2})\s+(Jan|January|Feb|February|Mar|March|Apr|April|May|Jun|June|Jul|July|Aug|August|Sep|Sept|September|Oct|October|Nov|November|Dec|December)\s+(\d{4})\b/i',
+            '/\b(Jan|January|Feb|February|Mar|March|Apr|April|May|Jun|June|Jul|July|Aug|August|Sep|Sept|September|Oct|October|Nov|November|Dec|December)\s+(\d{1,2}),?\s+(\d{4})\b/i',
+        ];
+
+        foreach ($patterns as $pattern) {
+            if (! preg_match_all($pattern, $text, $matches, PREG_SET_ORDER)) {
+                continue;
+            }
+
+            foreach ($matches as $match) {
+                $date = $this->normalizeDetectedDate($match);
+                if ($date) {
+                    $dates[] = $date;
+                }
+            }
+        }
+
+        return array_values(array_unique($dates));
+    }
+
+    private function normalizeDetectedDate(array $match): ?string
+    {
+        $raw = preg_replace('/\s*([\/.\-])\s*/', '$1', trim($match[0]));
+        $formats = [
+            'd/m/Y', 'd-m-Y', 'd.m.Y',
+            'm/d/Y', 'm-d-Y', 'm.d.Y',
+            'Y/m/d', 'Y-m-d', 'Y.m.d',
+            'd M Y', 'd F Y',
+            'M d Y', 'F d Y',
+            'M d, Y', 'F d, Y',
+        ];
+
+        foreach ($formats as $format) {
+            try {
+                $date = Carbon::createFromFormat($format, $raw);
+                if ($date && $date->format($format) !== false) {
+                    return $date->format('Y-m-d');
+                }
+            } catch (\Throwable $e) {
+                continue;
+            }
+        }
+
+        try {
+            return Carbon::parse($raw)->format('Y-m-d');
+        } catch (\Throwable $e) {
+            return null;
+        }
     }
 
     /**
@@ -147,11 +343,12 @@ class EmployeeController extends Controller
 
         $request->validate([
             'mobile' => 'required|string|regex:/^[1-9]\d{9}$/',
+            'mobile_country_code' => 'nullable|string|regex:/^\+\d{1,4}$/',
             'employee_id' => 'nullable|integer|exists:users,id'
         ]);
 
         $mobile = $request->mobile;
-        $mobileWithCode = '+91' . $mobile;
+        $mobileWithCode = ($request->mobile_country_code ?: '+91') . $mobile;
         $currentId = $request->employee_id;
 
         $query = User::where('mobile', $mobileWithCode);
@@ -215,14 +412,26 @@ class EmployeeController extends Controller
         $validationRules = [
             'name'              => 'required|string',
             'email'             => 'required|email|unique:users,email',
-            'mobile'            => 'required|regex:/^[1-9]\d{9}$/|unique:users,mobile',
+            'mobile_country_code' => 'required|string|regex:/^\+\d{1,4}$/',
+            'mobile'            => 'required|regex:/^[1-9]\d{9}$/',
             'joining_date'      => 'required|date',
+            'reporting_to'      => 'required|integer|exists:users,id',
             'business_address'  => 'required|string',
             'status'            => 'required|in:Active,Inactive',
             'login_allowed'     => 'required|in:0,1',
+            'employment_type'   => 'required|in:full_time,part_time,on_contract,internship,trainee',
             'password'          => 'nullable|string|min:8',
-            'profile_picture'   => 'nullable|image|max:2048',
+            'profile_picture'   => 'required|image|mimes:jpeg,png,jpg|max:2048',
+            'government_id_card' => 'required|image|mimes:jpeg,png,jpg|max:4096',
+            'designation_id'    => 'required',
+            'parent_dpt_id'     => 'required',
+            'department_id'     => 'nullable',
+            'new_designation'   => 'required_if:designation_id,new|nullable|string|max:191',
+            'new_designation_level' => 'required_if:designation_id,new|nullable|integer|min:0|max:6',
+            'new_department'    => 'required_if:parent_dpt_id,new|nullable|string|max:191',
+            'new_sub_department' => 'required_if:department_id,new|nullable|string|max:191',
 
+            'dob'                => 'required|date',
             'probation_end_date' => 'nullable|date',
             'notice_start_date'  => 'nullable|date',
             'notice_end_date'    => 'nullable|date',
@@ -232,12 +441,45 @@ class EmployeeController extends Controller
         if ($request->isMethod('PUT') || $request->isMethod('PATCH')) {
             $userId = $request->route('employee');
             $validationRules['email'] = 'required|email|unique:users,email,' . $userId;
-            $validationRules['mobile'] = 'required|regex:/^[1-9]\d{9}$/|unique:users,mobile,' . $userId;
+            $validationRules['mobile'] = 'required|regex:/^[1-9]\d{9}$/';
         }
 
         $request->validate($validationRules);
 
+        $mobileWithCodeForValidation = $request->mobile_country_code . $request->mobile;
+        $mobileQuery = User::where('mobile', $mobileWithCodeForValidation);
+        if ($request->isMethod('PUT') || $request->isMethod('PATCH')) {
+            $mobileQuery->where('id', '!=', $request->route('employee'));
+        }
+        if ($mobileQuery->exists()) {
+            return back()->withErrors(['mobile' => 'This mobile number is already registered.'])->withInput();
+        }
+
+        if ($request->designation_id !== 'new' && ! Designation::whereKey($request->designation_id)->exists()) {
+            return back()->withErrors(['designation_id' => 'Please select a valid designation.'])->withInput();
+        }
+
+        if ($request->parent_dpt_id !== 'new' && ! ParentDepartment::whereKey($request->parent_dpt_id)->exists()) {
+            return back()->withErrors(['parent_dpt_id' => 'Please select a valid department.'])->withInput();
+        }
+
+        if ($request->filled('department_id') && $request->department_id !== 'new' && ! Department::whereKey($request->department_id)->exists()) {
+            return back()->withErrors(['department_id' => 'Please select a valid sub department.'])->withInput();
+        }
+
+        $governmentIdDobCheck = $this->verifyGovernmentIdDob(
+            $request->file('government_id_card')->getRealPath(),
+            $request->dob
+        );
+
+        if (! $governmentIdDobCheck['ok']) {
+            return back()
+                ->withErrors(['government_id_card' => $governmentIdDobCheck['message']])
+                ->withInput();
+        }
+
         $profileImagePath = null;
+        $governmentIdCardPath = null;
 
         if ($request->hasFile('profile_picture')) {
             $image = $request->file('profile_picture');
@@ -246,22 +488,32 @@ class EmployeeController extends Controller
             $profileImagePath = 'admin/uploads/profile-images/' . $fileName;
         }
 
+        if ($request->hasFile('government_id_card')) {
+            $image = $request->file('government_id_card');
+            $fileName = time() . '-government-id-' . $image->getClientOriginalName();
+            $governmentIdDirectory = public_path('admin/uploads/government-id-cards');
+            if (! is_dir($governmentIdDirectory)) {
+                mkdir($governmentIdDirectory, 0755, true);
+            }
+            $image->move($governmentIdDirectory, $fileName);
+            $governmentIdCardPath = 'admin/uploads/government-id-cards/' . $fileName;
+        }
+
         // generate a plain temporary password (if request provided use it, else random)
         $plainPassword = $request->filled('password') ? $request->password : Str::random(12);
         $passwordHash = Hash::make($plainPassword);
 
         DB::beginTransaction();
         try {
-            // Format mobile number with +91 prefix
-            $mobileWithCode = '+91' . $request->mobile;
+            $mobileWithCode = $request->mobile_country_code . $request->mobile;
 
             // Create user
             $user = User::create([
                 'name'          => $request->name,
                 'email'         => $request->email,
-                'mobile'        => $mobileWithCode, // Store with +91 prefix
+                'mobile'        => $mobileWithCode,
                 'password'      => $passwordHash,
-                'role'          => $request->user_role ?? 'employee',
+                'role'          => 'employee',
                 'profile_image' => $profileImagePath,
                 'login_allowed' => $request->login_allowed ?? 1,
                 'email_notifications' => $request->email_notifications ?? 1,
@@ -271,7 +523,7 @@ class EmployeeController extends Controller
             $employeeData = $request->only([
                 'designation_id', 'parent_dpt_id', 'department_id', 'employee_id',
                 'salutation', 'country', 'gender', 'joining_date', 'dob', 'reporting_to',
-                'language', 'user_role', 'address', 'about',
+                'language', 'address', 'about',
                 'hourly_rate', 'slack_member_id', 'skills',
                 'probation_end_date', 'notice_start_date', 'notice_end_date',
                 'employment_type', 'marital_status', 'business_address', 'status', 'exit_date'
@@ -280,6 +532,7 @@ class EmployeeController extends Controller
             // Add mobile without prefix for employee detail
             $employeeData['mobile'] = $request->mobile;
             $employeeData['user_id'] = $user->id;
+            $employeeData['government_id_card'] = $governmentIdCardPath;
 
             // ================================================
             // FIXED: Handle new designation with firstOrCreate - WITH LEVEL
@@ -1102,11 +1355,12 @@ class EmployeeController extends Controller
     {
         $this->ensureAdmin();
 
-        $data = $request->only(['name', 'parent_id', 'status']);
+        $data = $request->only(['name', 'parent_id', 'level', 'status']);
 
         $validator = \Validator::make($data, [
             'name'      => 'required|string|max:191|unique:designations,name',
             'parent_id' => 'nullable|exists:designations,id',
+            'level'     => 'required|integer|min:0|max:6',
             'status'    => 'nullable|in:Active,Inactive'
         ]);
 
@@ -1122,6 +1376,7 @@ class EmployeeController extends Controller
             $designation = \App\Models\Designation::create([
                 'name' => $data['name'],
                 'parent_id' => $data['parent_id'] ?? null,
+                'level' => $data['level'],
                 'status' => $data['status'] ?? 'Active',
                 'added_by' => auth()->id()
             ]);

@@ -17,7 +17,12 @@ class Designation extends Model
         'added_by',
         'last_updated_by',
         'status',
-        'level'              // Added this line
+        'level',              // Added this line
+        'archived_at',
+    ];
+
+    protected $casts = [
+        'archived_at' => 'datetime',
     ];
 
     protected static function boot()
@@ -56,6 +61,6 @@ class Designation extends Model
 
     public function children()
     {
-        return $this->hasMany(Designation::class, 'parent_id');
+        return $this->hasMany(Designation::class, 'parent_id')->whereNull('archived_at');
     }
 }

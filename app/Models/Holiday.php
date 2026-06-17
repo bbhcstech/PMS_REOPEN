@@ -21,11 +21,17 @@ class Holiday extends Model
         'department_id_json',
         'designation_id_json',
         'employment_type_json',
-        'notification_sent'
+        'notification_sent',
+        'archived_at'
         
     ];
 
     protected $dates = ['date'];
+
+    protected $casts = [
+        'date' => 'date',
+        'archived_at' => 'datetime',
+    ];
     
     public function group()
 {
