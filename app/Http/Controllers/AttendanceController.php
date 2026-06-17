@@ -131,6 +131,89 @@ class AttendanceController extends Controller
         return $result;
     }
 
+    private function applyOrganizationAttendanceRules(Attendance $attendance): Attendance
+    {
+        $setting = $this->attendancePolicy();
+        $attendance->append(['total_seconds', 'clock_in_datetime', 'clock_out_datetime']);
+
+        $clockIn = $attendance->clock_in_datetime;
+        $seconds = (int) ($attendance->total_seconds ?? 0);
+        $lateTime = Carbon::parse($attendance->date->format('Y-m-d') . ' ' . $setting->late_time);
+        $isLate = $clockIn && $clockIn->gt($lateTime);
+        $hasCompletedShift = $attendance->clock_in && $attendance->clock_out;
+        $dayOffSeconds = (int) $setting->day_off_threshold_minutes * 60;
+        $halfDaySeconds = (int) $setting->half_day_threshold_minutes * 60;
+
+        if ($hasCompletedShift && $seconds < $dayOffSeconds) {
+            $attendance->status = 'day_off';
+            $attendance->late = $isLate ? 'yes' : 'no';
+            $attendance->half_day = 'no';
+        } elseif ($hasCompletedShift && $seconds < $halfDaySeconds) {
+            $attendance->status = 'half_day';
+            $attendance->late = $isLate ? 'yes' : 'no';
+            $attendance->half_day = 'yes';
+        } elseif ($isLate) {
+            $attendance->status = 'late';
+            $attendance->late = 'yes';
+            $attendance->half_day = 'no';
+        } elseif ($clockIn) {
+            $attendance->status = 'present';
+            $attendance->late = 'no';
+            $attendance->half_day = 'no';
+        }
+
+        $attendance->save();
+
+        return $attendance;
+    }
+
+    private function attendancePolicy(): AttendanceSetting
+    {
+        $setting = AttendanceSetting::firstOrCreate([], [
+            'office_start_time' => '09:30:00',
+            'late_time' => '09:30:00',
+            'half_day_threshold_minutes' => 510,
+            'day_off_threshold_minutes' => 270,
+        ]);
+
+        $updates = [];
+        if (! $setting->office_start_time) {
+            $updates['office_start_time'] = '09:30:00';
+        }
+        if (! $setting->late_time) {
+            $updates['late_time'] = '09:30:00';
+        }
+        if (! $setting->half_day_threshold_minutes) {
+            $updates['half_day_threshold_minutes'] = 510;
+        }
+        if (! $setting->day_off_threshold_minutes) {
+            $updates['day_off_threshold_minutes'] = 270;
+        }
+
+        if ($updates) {
+            $setting->forceFill($updates)->save();
+            $setting->refresh();
+        }
+
+        return $setting;
+    }
+
+    public function syncAttendancePolicyRules(): int
+    {
+        $updated = 0;
+
+        Attendance::whereNull('archived_at')
+            ->whereNotNull('clock_in')
+            ->chunkById(100, function ($attendances) use (&$updated) {
+                foreach ($attendances as $attendance) {
+                    $this->applyOrganizationAttendanceRules($attendance);
+                    $updated++;
+                }
+            });
+
+        return $updated;
+    }
+
     /**
      * Export Multi PDF - ADMIN ONLY
      */
@@ -244,8 +327,11 @@ class AttendanceController extends Controller
             abort(403, 'Unauthorized access');
         }
 
-        $month = (int) ($request->month ?? now()->month);
-        $year = (int) ($request->year ?? now()->year);
+        $month = (int) ($request->filled('month') ? $request->month : now()->month);
+        $year = (int) ($request->filled('year') ? $request->year : now()->year);
+        $userId = $request->input('user_id');
+        $departmentId = $request->input('department_id');
+        $designationId = $request->input('designation_id');
         $daysInMonth = Carbon::createFromDate($year, $month)->daysInMonth;
 
         $startDate = Carbon::create($year, $month, 1);
@@ -263,9 +349,29 @@ class AttendanceController extends Controller
 
         // Step 2: load users and attendances based on role
         if ($user->role === 'admin') {
-            $users = User::where('role', 'employee')->get();
+            $usersQuery = User::with('employeeDetail')->where('role', 'employee');
 
-            $attendances = Attendance::whereMonth('date', $month)
+            if ($userId) {
+                $usersQuery->where('id', (int) $userId);
+            }
+
+            if ($departmentId) {
+                $usersQuery->whereHas('employeeDetail', function ($q) use ($departmentId) {
+                    $q->where('department_id', $departmentId);
+                });
+            }
+
+            if ($designationId) {
+                $usersQuery->whereHas('employeeDetail', function ($q) use ($designationId) {
+                    $q->where('designation_id', $designationId);
+                });
+            }
+
+            $users = $usersQuery->orderBy('name')->get();
+
+            $attendances = Attendance::whereIn('user_id', $users->pluck('id'))
+                ->whereNull('archived_at')
+                ->whereMonth('date', $month)
                 ->whereYear('date', $year)
                 ->get();
         } else {
@@ -273,6 +379,7 @@ class AttendanceController extends Controller
             $users = collect([$user]);
 
             $attendances = Attendance::where('user_id', $user->id)
+                ->whereNull('archived_at')
                 ->whereMonth('date', $month)
                 ->whereYear('date', $year)
                 ->get();
@@ -333,6 +440,7 @@ class AttendanceController extends Controller
         // Only admin gets these data
         $departments = $user->role == 'admin' ? Department::get() : collect();
         $designations = $user->role == 'admin' ? Designation::all() : collect();
+        $archivedCount = $user->role == 'admin' ? Attendance::whereNotNull('archived_at')->count() : 0;
 
         // calculate period totals for the displayed period and users
         $periodTotals = $this->calculatePeriodTotals($users, $attendanceMap, $startDate, $endDate);
@@ -345,7 +453,8 @@ class AttendanceController extends Controller
             'year',
             'departments',
             'designations',
-            'periodTotals'
+            'periodTotals',
+            'archivedCount'
         ));
     }
 
@@ -389,7 +498,7 @@ class AttendanceController extends Controller
                 ->with('error', 'You do not have permission to access settings.');
         }
 
-        $setting = AttendanceSetting::firstOrCreate([], ['office_start_time' => '10:00', 'late_time' => '10:15']);
+        $setting = $this->attendancePolicy();
         return view('attendance.settings', compact('setting'));
     }
 
@@ -408,10 +517,23 @@ class AttendanceController extends Controller
         $data = $request->validate([
             'office_start_time' => 'required|date_format:H:i',
             'late_time' => 'required|date_format:H:i',
+            'half_day_threshold_minutes' => 'nullable|integer|min:1|max:1440',
+            'day_off_threshold_minutes' => 'nullable|integer|min:1|max:1440',
         ]);
 
+        $data['half_day_threshold_minutes'] = $data['half_day_threshold_minutes'] ?? 510;
+        $data['day_off_threshold_minutes'] = $data['day_off_threshold_minutes'] ?? 270;
+
+        if ($data['day_off_threshold_minutes'] >= $data['half_day_threshold_minutes']) {
+            return back()->withErrors([
+                'day_off_threshold_minutes' => 'Day off threshold must be lower than half day threshold.',
+            ])->withInput();
+        }
+
         AttendanceSetting::updateOrCreate([], $data);
-        return back()->with('success', 'Settings updated');
+        $updated = $this->syncAttendancePolicyRules();
+
+        return back()->with('success', 'Settings updated and ' . $updated . ' attendance record(s) recalculated.');
     }
 
     /**
@@ -425,8 +547,8 @@ class AttendanceController extends Controller
             abort(403, 'Unauthorized');
         }
 
-        $month = (int) ($request->input('month', now()->month));
-        $year  = (int) ($request->input('year', now()->year));
+        $month = (int) ($request->filled('month') ? $request->input('month') : now()->month);
+        $year  = (int) ($request->filled('year') ? $request->input('year') : now()->year);
         $userId = $request->input('user_id');
         $department_id = $request->input('department_id');
         $designation_id = $request->input('designation_id');
@@ -484,12 +606,21 @@ class AttendanceController extends Controller
                 'year'
             ))->render();
 
-            return response()->json(['html' => $html]);
+            return response()->json([
+                'html' => $html,
+                'meta' => [
+                    'totalEmployees' => $users->count(),
+                    'monthName' => Carbon::createFromDate($year, $month, 1)->format('F'),
+                    'year' => $year,
+                    'daysInMonth' => $daysInMonth,
+                ],
+            ]);
         }
 
         $userIds = $users->pluck('id')->toArray();
 
         $attendances = Attendance::whereIn('user_id', $userIds)
+            ->whereNull('archived_at')
             ->whereMonth('date', $month)
             ->whereYear('date', $year)
             ->get();
@@ -500,11 +631,7 @@ class AttendanceController extends Controller
         $attendanceMap = [];
         foreach ($attendances as $att) {
             $dateKey = Carbon::parse($att->date)->format('Y-m-d');
-            // support multiple punches per day: store collection
-            if (! isset($attendanceMap[$att->user_id][$dateKey])) {
-                $attendanceMap[$att->user_id][$dateKey] = collect();
-            }
-            $attendanceMap[$att->user_id][$dateKey]->push($att);
+            $attendanceMap[$att->user_id][$dateKey] = $att;
         }
 
         // merge approved leaves
@@ -558,7 +685,15 @@ class AttendanceController extends Controller
             'periodTotals'
         ))->render();
 
-        return response()->json(['html' => $html]);
+        return response()->json([
+            'html' => $html,
+            'meta' => [
+                'totalEmployees' => $users->count(),
+                'monthName' => Carbon::createFromDate($year, $month, 1)->format('F'),
+                'year' => $year,
+                'daysInMonth' => $daysInMonth,
+            ],
+        ]);
     }
 
     /**
@@ -593,7 +728,13 @@ class AttendanceController extends Controller
         $year = is_numeric($yearRaw) ? (int)$yearRaw : (int) now()->year;
 
         // pick users list
-        $users = User::where('role', 'employee')->get();
+        $employeeOptions = User::where('role', 'employee')->orderBy('name')->get();
+        $users = User::where('role', 'employee')
+            ->when($userId, function ($query) use ($userId) {
+                return $query->where('id', (int) $userId);
+            })
+            ->orderBy('name')
+            ->get();
 
         // Build a query that will find attendances matching either:
         // - month/year of clock_in (preferred) OR
@@ -654,8 +795,9 @@ class AttendanceController extends Controller
         $endDate = $startDate->copy()->endOfMonth();
 
         $periodTotals = $this->calculatePeriodTotals($users, $attendanceMap, $startDate, $endDate);
+        $archivedCount = Attendance::whereNotNull('archived_at')->count();
 
-        return view('admin.attendance.by-hour', compact('attendances', 'users', 'month', 'year', 'attendanceMap', 'daysInMonth', 'periodTotals', 'dayTotals'));
+        return view('admin.attendance.by-hour', compact('attendances', 'users', 'employeeOptions', 'month', 'year', 'attendanceMap', 'daysInMonth', 'periodTotals', 'dayTotals', 'archivedCount'));
     }
 
     /**
@@ -705,9 +847,6 @@ class AttendanceController extends Controller
                 if (!preg_match('/^(?:[01]\d|2[0-3]):[0-5]\d$/', $value)) {
                     $fail('Clock Out must be in HH:MM format (00–23 hours, 00–59 minutes).');
                 }
-                if ($request->clock_in && $value && $value <= $request->clock_in) {
-                    $fail('Clock Out must be after Clock In.');
-                }
             }],
         ]);
 
@@ -749,6 +888,7 @@ class AttendanceController extends Controller
                             'clock_out'      => $clockOutVal,
                         ]
                     );
+                    $record = $this->applyOrganizationAttendanceRules($record);
 
                     // prepare a Carbon instance for the notification (combine date + time)
                     $record->clocked_at = $this->buildDateTimeFromDateAndTime($record->date, $record->clock_in) ?? Carbon::now();
@@ -797,6 +937,7 @@ class AttendanceController extends Controller
                         'clock_out'      => $clockOutVal,
                     ]
                 );
+                $record = $this->applyOrganizationAttendanceRules($record);
 
                 // prepare a Carbon instance for the notification
                 $record->clocked_at = $this->buildDateTimeFromDateAndTime($record->date, $record->clock_in) ?? Carbon::now();
@@ -995,12 +1136,15 @@ class AttendanceController extends Controller
         $userId = $request->input('user_id');
 
         $users = User::where('role', 'employee')
+            ->with('employeeDetail.designation')
             ->when($userId, function ($q) use ($userId) {
                 return $q->where('id', (int) $userId);
             })
+            ->orderBy('name')
             ->get();
 
         $attendances = Attendance::query()
+            ->whereNull('archived_at')
             ->when($userId, function ($query) use ($userId) {
                 return $query->where('user_id', (int) $userId);
             })
@@ -1009,15 +1153,17 @@ class AttendanceController extends Controller
             ->with('user')
             ->get();
 
-        // append computed accessors
-        $attendances->each->append(['total_seconds','total_duration','clock_in_datetime','clock_out_datetime']);
+        $attendances->each(function ($attendance) {
+            $this->applyOrganizationAttendanceRules($attendance);
+            $attendance->append(['total_seconds', 'total_duration', 'clock_in_datetime', 'clock_out_datetime']);
+        });
 
         $attendanceMap = [];
         foreach ($attendances as $attendance) {
             $dateKey = Carbon::parse($attendance->date)->format('Y-m-d');
             if (! isset($attendanceMap[$attendance->user_id])) $attendanceMap[$attendance->user_id] = [];
-            if (! isset($attendanceMap[$attendance->user_id][$dateKey])) $attendanceMap[$attendance->user_id][$dateKey] = collect();
-            $attendanceMap[$attendance->user_id][$dateKey]->push($attendance);
+            if (! isset($attendanceMap[$attendance->user_id][$dateKey])) $attendanceMap[$attendance->user_id][$dateKey] = null;
+            $attendanceMap[$attendance->user_id][$dateKey] = $attendance;
         }
 
         $daysInMonth = Carbon::createFromDate($year, $month, 1)->daysInMonth;
@@ -1025,19 +1171,48 @@ class AttendanceController extends Controller
         // ensure each date key exists for each user
         $startDate = Carbon::createFromDate($year, $month, 1);
         $endDate = $startDate->copy()->endOfMonth();
+
+        $holidays = Holiday::whereBetween('date', [$startDate, $endDate])
+            ->get()
+            ->mapWithKeys(function ($holiday) {
+                return [
+                    Carbon::parse($holiday->date)->format('Y-m-d') => $holiday->occassion ?? $holiday->title ?? 'Holiday',
+                ];
+            })
+            ->toArray();
+
+        $leaves = Leave::whereIn('user_id', $users->pluck('id'))
+            ->whereMonth('date', $month)
+            ->whereYear('date', $year)
+            ->where('status', 'approved')
+            ->get();
+
+        foreach ($leaves as $leave) {
+            $dateKey = Carbon::parse($leave->date)->format('Y-m-d');
+            $attendanceMap[$leave->user_id][$dateKey] = (object)[
+                'status' => 'leave',
+                'leave_type' => $leave->type ?? null,
+                'duration' => $leave->duration ?? null,
+                'reason' => $leave->reason ?? null,
+            ];
+        }
+
         foreach ($users as $u) {
             for ($d = $startDate->copy(); $d->lte($endDate); $d->addDay()) {
                 $dateKey = $d->format('Y-m-d');
                 if (! isset($attendanceMap[$u->id][$dateKey])) {
-                    $attendanceMap[$u->id][$dateKey] = null;
+                    $attendanceMap[$u->id][$dateKey] = array_key_exists($dateKey, $holidays)
+                        ? (object)['status' => 'holiday', 'occassion' => $holidays[$dateKey]]
+                        : (object)['status' => 'absent'];
                 }
             }
         }
 
         $periodTotals = $this->calculatePeriodTotals($users, $attendanceMap, $startDate, $endDate);
+        $archivedCount = Attendance::whereNotNull('archived_at')->count();
 
         return view('admin.attendance.by_member', compact(
-            'month', 'year', 'userId', 'users', 'attendanceMap', 'daysInMonth', 'periodTotals'
+            'month', 'year', 'userId', 'users', 'attendanceMap', 'daysInMonth', 'periodTotals', 'archivedCount'
         ));
     }
 
@@ -1104,6 +1279,7 @@ class AttendanceController extends Controller
                 'user' => $user ? [
                     'id'     => $user->id,
                     'name'   => $user->name,
+                    'employee_id' => $empDetail?->employee_id,
                     'avatar' => $user->profile_image_url ?? ($user->profile_image ?? null),
                     'email'  => $user->email,
                 ] : null,
@@ -1141,15 +1317,18 @@ class AttendanceController extends Controller
             return !empty($a['user']) && $a['has_location_data'];
         })->values();
 
-        $employees = $debugData->pluck('user')->filter()->unique('id')->values();
         $departments = $debugData->pluck('department')->filter()->unique('id')->values();
 
-        if ($employees->isEmpty()) {
-            $employees = User::where('role', 'employee')
-                ->select('id', 'name')
-                ->get()
-                ->map(fn($u) => ['id' => $u->id, 'name' => $u->name]);
-        }
+        $employees = User::where('role', 'employee')
+            ->with(['employeeDetail.designation'])
+            ->orderBy('name')
+            ->get()
+            ->map(fn($u) => [
+                'id' => $u->id,
+                'name' => $u->name,
+                'employee_id' => $u->employeeDetail?->employee_id,
+                'designation' => $u->employeeDetail?->designation?->name,
+            ]);
 
         if ($departments->isEmpty()) {
             $departments = Department::query();
@@ -1204,6 +1383,8 @@ class AttendanceController extends Controller
                 ->orderBy('clock_in', 'asc')
                 ->get();
 
+            $selectedEmployee = User::with(['employeeDetail.designation', 'employeeDetail.department'])->find($requestedUserId);
+
             $attendanceData = $attendances->map(function ($record) {
                 // Calculate total hours
                 $totalHours = null;
@@ -1243,6 +1424,12 @@ class AttendanceController extends Controller
             return response()->json([
                 'success' => true,
                 'attendance' => $attendanceData,
+                'employee' => $selectedEmployee ? [
+                    'id' => $selectedEmployee->id,
+                    'name' => $selectedEmployee->name,
+                    'employee_id' => $selectedEmployee->employeeDetail?->employee_id,
+                    'designation' => $selectedEmployee->employeeDetail?->designation?->name,
+                ] : null,
                 'date' => Carbon::parse($date)->format('F d, Y'),
             ]);
 
@@ -1537,7 +1724,7 @@ class AttendanceController extends Controller
 
         $request->validate([
             'clock_in'  => 'nullable|date_format:H:i',
-            'clock_out' => 'nullable|date_format:H:i|after:clock_in',
+            'clock_out' => 'nullable|date_format:H:i',
             'status'    => 'required|string'
         ]);
 
@@ -1547,8 +1734,101 @@ class AttendanceController extends Controller
             'clock_out'=> $request->clock_out ? Carbon::createFromFormat('H:i', $request->clock_out)->format('H:i:s') : null,
             'status'   => $request->status,
         ]);
+        $attendance = $this->applyOrganizationAttendanceRules($attendance);
 
         return response()->json(['success' => true, 'message' => 'Attendance updated successfully.']);
+    }
+
+    /**
+     * Archive one employee's attendance records for a selected month - ADMIN ONLY
+     */
+    public function archiveMonth(Request $request)
+    {
+        $user = Auth::user();
+
+        if ($user->role !== 'admin') {
+            return response()->json([
+                'success' => false,
+                'message' => 'You do not have permission to archive attendance.'
+            ], 403);
+        }
+
+        $data = $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'month' => 'required|integer|min:1|max:12',
+            'year' => 'required|integer|min:2000|max:2100',
+        ]);
+
+        $archived = Attendance::where('user_id', $data['user_id'])
+            ->whereNull('archived_at')
+            ->whereMonth('date', $data['month'])
+            ->whereYear('date', $data['year'])
+            ->update(['archived_at' => now()]);
+
+        return response()->json([
+            'success' => true,
+            'message' => $archived > 0
+                ? 'Monthly attendance records archived successfully.'
+                : 'No active attendance records were found for this employee and month.',
+            'archived' => $archived,
+        ]);
+    }
+
+    /**
+     * Archived attendance records - ADMIN ONLY
+     */
+    public function archive(Request $request)
+    {
+        $user = Auth::user();
+
+        if ($user->role !== 'admin') {
+            return redirect()->route('attendance.index')
+                ->with('error', 'You do not have permission to view archived attendance.');
+        }
+
+        $perPage = (int) $request->input('per_page', 10);
+        $perPage = in_array($perPage, [10, 20, 30, 40, 50, 100], true) ? $perPage : 10;
+
+        $query = Attendance::with('user.employeeDetail.designation')
+            ->whereNotNull('archived_at');
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('status', 'like', '%' . $search . '%')
+                    ->orWhereDate('date', $search)
+                    ->orWhereHas('user', function ($userQuery) use ($search) {
+                        $userQuery->where('name', 'like', '%' . $search . '%')
+                            ->orWhere('email', 'like', '%' . $search . '%');
+                    });
+            });
+        }
+
+        $attendances = $query->orderByDesc('archived_at')->paginate($perPage)->withQueryString();
+
+        return view('admin.attendance.archive', compact('attendances'));
+    }
+
+    /**
+     * Restore archived attendance - ADMIN ONLY
+     */
+    public function restore($id)
+    {
+        $user = Auth::user();
+
+        if ($user->role !== 'admin') {
+            return redirect()->route('attendance.index')
+                ->with('error', 'You do not have permission to restore attendance.');
+        }
+
+        $attendance = Attendance::whereNotNull('archived_at')->findOrFail($id);
+
+        $attendance->forceFill([
+            'archived_at' => null,
+        ])->save();
+
+        return redirect()->route('attendance.archive')
+            ->with('success', 'Attendance record restored successfully.');
     }
 
     /**
@@ -1626,8 +1906,8 @@ class AttendanceController extends Controller
                 // set clock_in if not already set
                 if (empty($attendance->clock_in)) {
                     $attendance->clock_in = now()->format('H:i:s');
-                    $attendance->status = 'present';
                     $attendance->save();
+                    $attendance = $this->applyOrganizationAttendanceRules($attendance);
                 } else {
                     // leave existing clock_in intact; you can uncomment to overwrite
                     // $attendance->clock_in = now()->format('H:i:s'); $attendance->save();

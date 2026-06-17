@@ -2,802 +2,651 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreLeaveRequest;
 use App\Models\Leave;
-use App\Models\LeavePolicy;
 use App\Models\LeaveBalance;
-use Carbon\Carbon;
+use App\Models\LeaveType;
 use App\Models\User;
+use App\Services\LeaveService;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 class LeaveController extends Controller
 {
-    // Get current fiscal year
-    private function getCurrentFiscalYear()
+    public function __construct(private LeaveService $leaveService)
     {
-        $currentMonth = date('m');
-        $currentYear = date('Y');
-
-        // Assuming fiscal year starts in April (04)
-        if ($currentMonth >= 4) {
-            return $currentYear . '-' . ($currentYear + 1);
-        } else {
-            return ($currentYear - 1) . '-' . $currentYear;
-        }
-    }
-
-    // Get fiscal year dates
-    private function getFiscalYearDates()
-    {
-        $currentMonth = date('m');
-        $currentYear = date('Y');
-
-        if ($currentMonth >= 4) {
-            // April to March next year
-            return [
-                'start' => Carbon::create($currentYear, 4, 1)->startOfDay(),
-                'end' => Carbon::create($currentYear + 1, 3, 31)->endOfDay()
-            ];
-        } else {
-            // April previous year to March current year
-            return [
-                'start' => Carbon::create($currentYear - 1, 4, 1)->startOfDay(),
-                'end' => Carbon::create($currentYear, 3, 31)->endOfDay()
-            ];
-        }
-    }
-
-    // Calculate pro-rated leaves for an employee
-    private function calculateProRatedLeaves($employee, $annualLeaves = 18)
-    {
-        if (!$employee->joining_date) {
-            return $annualLeaves;
-        }
-
-        $joinDate = Carbon::parse($employee->joining_date);
-        $fiscalDates = $this->getFiscalYearDates();
-        $fiscalStart = $fiscalDates['start'];
-        $fiscalEnd = $fiscalDates['end'];
-
-        // If employee joined after fiscal year started
-        if ($joinDate->gt($fiscalStart)) {
-            // Calculate months remaining in fiscal year
-            $monthsRemaining = $joinDate->diffInMonths($fiscalEnd);
-
-            if ($monthsRemaining > 0) {
-                // Pro-rate calculation
-                $proRatedLeaves = floor(($annualLeaves / 12) * $monthsRemaining);
-                return max(1, $proRatedLeaves); // Minimum 1 leave
-            }
-            return 0;
-        }
-
-        // Employee joined before fiscal year started, gets full leaves
-        return $annualLeaves;
-    }
-
-    // Initialize or update employee leave balance
-    private function initializeEmployeeLeaveBalance($employee, $policy)
-    {
-        $annualLeaves = $policy->annual_leaves ?? 18;
-
-        // Calculate pro-rated leaves if enabled
-        if ($policy->pro_rate_enabled) {
-            $allocatedLeaves = $this->calculateProRatedLeaves($employee, $annualLeaves);
-        } else {
-            $allocatedLeaves = $annualLeaves;
-        }
-
-        // Update employee record
-        $employee->update([
-            'annual_leave_balance' => $allocatedLeaves,
-            'remaining_leaves' => $allocatedLeaves,
-            'leaves_taken_this_year' => 0,
-            'last_leave_reset' => now(),
-        ]);
-
-        // Create or update leave balance record for current year
-        $currentYear = date('Y');
-        LeaveBalance::updateOrCreate(
-            [
-                'user_id' => $employee->id,
-                'year' => $currentYear
-            ],
-            [
-                'allocated_leaves' => $allocatedLeaves,
-                'remaining_leaves' => $allocatedLeaves,
-                'used_leaves' => 0,
-                'total_amount' => $allocatedLeaves * ($policy->leave_monetary_value ?? 0)
-            ]
-        );
-    }
-
-    // Update leave balance when leave is approved
-    private function updateLeaveBalanceOnApproval($leave)
-    {
-        $employee = $leave->user;
-        $policy = LeavePolicy::first();
-
-        if (!$employee) return;
-
-        // Calculate days taken
-        $daysTaken = 1;
-        if ($leave->duration === 'multiple' && $leave->start_date && $leave->end_date) {
-            $start = Carbon::parse($leave->start_date);
-            $end = Carbon::parse($leave->end_date);
-            $daysTaken = $start->diffInDays($end) + 1;
-        } elseif ($leave->duration === 'half_day') {
-            $daysTaken = 0.5;
-        }
-
-        // Check if employee has enough leaves
-        if ($employee->remaining_leaves >= $daysTaken) {
-            // Deduct from paid leaves
-            $employee->decrement('remaining_leaves', $daysTaken);
-            $employee->increment('leaves_taken_this_year', $daysTaken);
-            $leave->update(['paid' => 1]);
-        } else {
-            // Mark as unpaid leave
-            $leave->update(['paid' => 0]);
-        }
-
-        // Update leave balance record for current year
-        $currentYear = date('Y');
-        $balance = LeaveBalance::where('user_id', $employee->id)
-            ->where('year', $currentYear)
-            ->first();
-
-        if ($balance) {
-            $balance->update([
-                'used_leaves' => $employee->leaves_taken_this_year,
-                'remaining_leaves' => $employee->remaining_leaves
-            ]);
-        }
     }
 
     public function index(Request $request)
     {
-        // Get or create leave policy
-        $policy = LeavePolicy::first();
-        if (!$policy) {
-            $policy = LeavePolicy::create([
-                'annual_leaves' => 18,
-                'pro_rate_enabled' => true,
-                'fiscal_year_start' => date('Y') . '-04-01',
-                'fiscal_year_end' => (date('Y') + 1) . '-03-31',
-                'allow_carry_forward' => false,
-                'leave_monetary_value' => 0
-            ]);
+        $this->leaveService->ensureDefaultTypes();
+        $policy = $this->leaveService->policy();
+        $leaveTypes = $this->leaveService->leaveTypes();
+        $isAdmin = $this->isAdmin();
+        $employees = $isAdmin ? $this->employeeQuery()->get() : User::where('id', Auth::id())->get();
+        $perPage = (int) $request->input('per_page', 20);
+        $perPage = in_array($perPage, [10, 20, 30, 50, 100], true) ? $perPage : 20;
+
+        foreach ($employees as $employee) {
+            $this->leaveService->ensureBalance($employee);
         }
 
-        // Get all leaves with filters
-        $leaves = Leave::with('user');
-
-        // If user is not admin, only show their own
-        if (Auth::user()->role !== 'admin') {
-            $leaves->where('user_id', Auth::id());
+        if (! $isAdmin) {
+            $this->leaveService->ensureBalance(Auth::user());
         }
 
-        // Apply filters
-        if ($request->filled('employee')) {
-            $leaves->where('user_id', $request->employee);
+        $query = Leave::with(['user.employeeDetail.department', 'leaveType', 'approver', 'rejector'])
+            ->whereNull('archived_at');
+
+        if (! $isAdmin) {
+            $query->where('user_id', Auth::id());
         }
 
-        if ($request->filled('leave_type')) {
-            $leaves->where('type', $request->leave_type);
+        if ($isAdmin && $request->filled('employee')) {
+            $query->where('user_id', $request->employee);
         }
-
+        if ($request->filled('leave_type_id')) {
+            $query->where('leave_type_id', $request->leave_type_id);
+        }
         if ($request->filled('status')) {
-            $leaves->where('status', $request->status);
+            $query->where('status', $request->status);
+        }
+        if ($request->filled('from')) {
+            $query->whereDate('start_date', '>=', $request->from);
+        }
+        if ($request->filled('to')) {
+            $query->whereDate('end_date', '<=', $request->to);
         }
 
-        // Duration filter
-        if ($request->filled('duration')) {
-            $duration = $request->duration;
+        $leaves = $query->latest()->paginate($perPage)->withQueryString();
+        $allLeaves = (clone $query)->get();
 
-            if (str_contains($duration, 'to')) {
-                [$start, $end] = preg_split('/\s*to\s*/', $duration);
-                try {
-                    $startDate = Carbon::parse(trim($start))->startOfDay();
-                    $endDate = Carbon::parse(trim($end))->endOfDay();
+        $balances = LeaveBalance::with('user')
+            ->whereIn('user_id', $isAdmin ? $employees->pluck('id') : [Auth::id()])
+            ->latest('year_start')
+            ->get()
+            ->unique('user_id')
+            ->keyBy('user_id');
 
-                    $leaves->where(function ($q) use ($startDate, $endDate) {
-                        $q->whereBetween('start_date', [$startDate, $endDate])
-                          ->orWhereBetween('end_date', [$startDate, $endDate])
-                          ->orWhereBetween('date', [$startDate, $endDate]);
-                    });
-                } catch (\Exception $e) {
-                    // Invalid format
-                }
-            } else {
-                switch ($duration) {
-                    case 'Today':
-                        $startDate = Carbon::today();
-                        $endDate = Carbon::today()->endOfDay();
-                        break;
-                    case 'Last 30 Days':
-                        $startDate = Carbon::now()->subDays(29)->startOfDay();
-                        $endDate = Carbon::now()->endOfDay();
-                        break;
-                    case 'This Month':
-                        $startDate = Carbon::now()->startOfMonth();
-                        $endDate = Carbon::now()->endOfMonth();
-                        break;
-                    case 'Last Month':
-                        $startDate = Carbon::now()->subMonth()->startOfMonth();
-                        $endDate = Carbon::now()->subMonth()->endOfMonth();
-                        break;
-                    case 'Last 90 Days':
-                        $startDate = Carbon::now()->subDays(89)->startOfDay();
-                        $endDate = Carbon::now()->endOfDay();
-                        break;
-                    case 'Last 6 Months':
-                        $startDate = Carbon::now()->subMonths(6)->startOfMonth();
-                        $endDate = Carbon::now()->endOfDay();
-                        break;
-                    case 'Last 1 Year':
-                        $startDate = Carbon::now()->subYear()->startOfMonth();
-                        $endDate = Carbon::now()->endOfDay();
-                        break;
-                    default:
-                        $startDate = null;
-                        $endDate = null;
-                }
+        $stats = [
+            'total' => $allLeaves->count(),
+            'pending' => $allLeaves->where('status', 'pending')->count(),
+            'approved' => $allLeaves->where('status', 'approved')->count(),
+            'rejected' => $allLeaves->where('status', 'rejected')->count(),
+            'unpaid' => $allLeaves->where('is_unpaid', true)->count(),
+        ];
 
-                if ($startDate && $endDate) {
-                    $leaves->where(function ($q) use ($startDate, $endDate) {
-                        $q->whereBetween('start_date', [$startDate, $endDate])
-                          ->orWhereBetween('end_date', [$startDate, $endDate])
-                          ->orWhereBetween('date', [$startDate, $endDate]);
-                    });
-                }
-            }
-        }
-
-        $leaves = $leaves->latest()->get();
-
-        // Get employee data for filters
-        $employee_data = [];
-        if (Auth::user()->role === 'admin') {
-            $employee_data = User::where('role', 'employee')->orderBy('name')->get();
-
-            // Initialize leave balances for employees if not already done
-            foreach ($employee_data as $employee) {
-                if (!$employee->last_leave_reset) {
-                    $this->initializeEmployeeLeaveBalance($employee, $policy);
-                }
-            }
-        }
-
-        // Calculate employee leave summaries for admin
-        $employee_summaries = [];
-        if (Auth::user()->role === 'admin') {
-            foreach ($employee_data as $employee) {
-                $employee_summaries[$employee->id] = [
-                    'allocated' => $employee->annual_leave_balance,
-                    'taken' => $employee->leaves_taken_this_year,
-                    'remaining' => $employee->remaining_leaves,
-                    'percentage' => $employee->annual_leave_balance > 0
-                        ? round(($employee->leaves_taken_this_year / $employee->annual_leave_balance) * 100, 2)
-                        : 0,
-                    'monetary_value' => $employee->remaining_leaves * ($policy->leave_monetary_value ?? 0),
-                ];
-            }
-        }
-
-        // Get current user's leave summary for employee view
-        $user_leave_summary = null;
-        if (Auth::user()->role === 'employee') {
-            $user = Auth::user();
-
-            // Initialize leave balance if not already done
-            if (!$user->last_leave_reset) {
-                $this->initializeEmployeeLeaveBalance($user, $policy);
-                $user->refresh(); // Refresh to get updated values
-            }
-
-            $user_leave_summary = [
-                'allocated' => $user->annual_leave_balance,
-                'taken' => $user->leaves_taken_this_year,
-                'remaining' => $user->remaining_leaves,
-                'percentage' => $user->annual_leave_balance > 0
-                    ? round(($user->leaves_taken_this_year / $user->annual_leave_balance) * 100, 2)
-                    : 0,
-                'monetary_value' => $user->remaining_leaves * ($policy->leave_monetary_value ?? 0),
-            ];
-        }
+        $archivedCount = $isAdmin ? Leave::whereNotNull('archived_at')->count() : 0;
+        $policyNotice = $this->leaveService->policyNotice($policy);
 
         return view('admin.leaves.index', compact(
-            'leaves',
-            'employee_data',
             'policy',
-            'employee_summaries',
-            'user_leave_summary'
+            'leaveTypes',
+            'isAdmin',
+            'employees',
+            'leaves',
+            'balances',
+            'stats',
+            'archivedCount',
+            'perPage',
+            'policyNotice'
         ));
     }
 
-    // NEW: Update leave policy
-    public function updatePolicy(Request $request)
-    {
-        $validated = $request->validate([
-            'annual_leaves' => 'required|integer|min:1',
-            'pro_rate_enabled' => 'boolean',
-            'fiscal_year_start' => 'required|date',
-            'fiscal_year_end' => 'required|date|after:fiscal_year_start',
-            'allow_carry_forward' => 'boolean',
-            'max_carry_forward' => 'nullable|integer|min:0',
-            'leave_monetary_value' => 'nullable|numeric|min:0',
-        ]);
-
-        $policy = LeavePolicy::first();
-        if ($policy) {
-            $policy->update($validated);
-        } else {
-            LeavePolicy::create($validated);
-        }
-
-        // Recalculate all employee leaves if pro-rate or annual leaves changed
-        if (isset($validated['annual_leaves']) || isset($validated['pro_rate_enabled'])) {
-            $employees = User::where('role', 'employee')->get();
-            foreach ($employees as $employee) {
-                $this->initializeEmployeeLeaveBalance($employee, $policy);
-            }
-        }
-
-        return redirect()->route('leaves.index')->with('success', 'Leave policy updated successfully.');
-    }
-
-    // NEW: Reset employee leaves (admin can manually reset)
-    public function resetEmployeeLeaves(Request $request, $id)
-    {
-        $employee = User::findOrFail($id);
-        $policy = LeavePolicy::first();
-
-        $this->initializeEmployeeLeaveBalance($employee, $policy);
-
-        return back()->with('success', 'Leave balance reset for ' . $employee->name);
-    }
-
-    // NEW: Update leave status with automatic paid/unpaid logic
-    public function updateStatus(Request $request, Leave $leave)
-    {
-        $oldStatus = $leave->status;
-        $newStatus = $request->status;
-
-        $leave->update(['status' => $newStatus]);
-
-        // If status changed to approved, update leave balance
-        if ($oldStatus !== 'approved' && $newStatus === 'approved') {
-            $this->updateLeaveBalanceOnApproval($leave);
-        }
-
-        // If status changed from approved to something else, refund leaves
-        if ($oldStatus === 'approved' && $newStatus !== 'approved' && $leave->paid == 1) {
-            $employee = $leave->user;
-
-            // Calculate days to refund
-            $daysToRefund = 1;
-            if ($leave->duration === 'multiple' && $leave->start_date && $leave->end_date) {
-                $start = Carbon::parse($leave->start_date);
-                $end = Carbon::parse($leave->end_date);
-                $daysToRefund = $start->diffInDays($end) + 1;
-            } elseif ($leave->duration === 'half_day') {
-                $daysToRefund = 0.5;
-            }
-
-            // Refund leaves
-            $employee->increment('remaining_leaves', $daysToRefund);
-            $employee->decrement('leaves_taken_this_year', $daysToRefund);
-
-            // Update leave balance record
-            $currentYear = date('Y');
-            $balance = LeaveBalance::where('user_id', $employee->id)
-                ->where('year', $currentYear)
-                ->first();
-
-            if ($balance) {
-                $balance->update([
-                    'used_leaves' => $employee->leaves_taken_this_year,
-                    'remaining_leaves' => $employee->remaining_leaves
-                ]);
-            }
-
-            $leave->update(['paid' => 0]);
-        }
-
-        return back()->with('success', 'Leave status updated.');
-    }
-
-    // NEW: Export leave data
-    public function export(Request $request)
-    {
-        $type = $request->type ?? 'excel';
-
-        $query = Leave::with('user');
-
-        // Apply filters if any
-        if ($request->filled('employee')) {
-            $query->where('user_id', $request->employee);
-        }
-
-        if ($request->filled('from') && $request->filled('to')) {
-            $query->whereBetween('start_date', [$request->from, $request->to])
-                  ->orWhereBetween('end_date', [$request->from, $request->to])
-                  ->orWhereBetween('date', [$request->from, $request->to]);
-        }
-
-        $leaves = $query->get();
-
-        if ($type === 'pdf') {
-            // PDF export logic
-            // You'll need to install a PDF package like barryvdh/laravel-dompdf
-            return response()->streamDownload(function () use ($leaves) {
-                echo view('admin.leaves.exports.pdf', compact('leaves'))->render();
-            }, 'leaves-report-' . date('Y-m-d') . '.pdf');
-        } else {
-            // Excel export logic
-            // You'll need to install a package like maatwebsite/excel
-            return response()->streamDownload(function () use ($leaves) {
-                echo view('admin.leaves.exports.excel', compact('leaves'))->render();
-            }, 'leaves-report-' . date('Y-m-d') . '.xlsx');
-        }
-    }
-
-    // NEW: Yearly reset of leaves (to be called via scheduled command)
-    public function yearlyReset()
-    {
-        $employees = User::where('role', 'employee')->get();
-        $policy = LeavePolicy::first();
-
-        foreach ($employees as $employee) {
-            // Calculate carry forward if enabled
-            $carryForward = 0;
-            if ($policy->allow_carry_forward && $employee->remaining_leaves > 0) {
-                $carryForward = min($employee->remaining_leaves, $policy->max_carry_forward ?? 0);
-            }
-
-            // Store old year's balance
-            $previousYear = date('Y') - 1;
-            LeaveBalance::updateOrCreate(
-                [
-                    'user_id' => $employee->id,
-                    'year' => $previousYear
-                ],
-                [
-                    'allocated_leaves' => $employee->annual_leave_balance,
-                    'used_leaves' => $employee->leaves_taken_this_year,
-                    'remaining_leaves' => $employee->remaining_leaves,
-                    'carried_forward' => $carryForward,
-                    'total_amount' => $employee->remaining_leaves * ($policy->leave_monetary_value ?? 0)
-                ]
-            );
-
-            // Calculate new year's leaves
-            $newAnnualLeaves = $policy->annual_leaves + $carryForward;
-
-            // Update employee with new year's leaves
-            $employee->update([
-                'annual_leave_balance' => $newAnnualLeaves,
-                'remaining_leaves' => $newAnnualLeaves,
-                'leaves_taken_this_year' => 0,
-                'carry_forward_leaves' => $carryForward,
-                'last_leave_reset' => now(),
-            ]);
-
-            // Create new year's balance record
-            LeaveBalance::updateOrCreate(
-                [
-                    'user_id' => $employee->id,
-                    'year' => date('Y')
-                ],
-                [
-                    'allocated_leaves' => $newAnnualLeaves,
-                    'remaining_leaves' => $newAnnualLeaves,
-                    'used_leaves' => 0,
-                    'carried_forward' => $carryForward,
-                    'total_amount' => $newAnnualLeaves * ($policy->leave_monetary_value ?? 0)
-                ]
-            );
-        }
-
-        return response()->json(['message' => 'Yearly leave reset completed successfully.']);
-    }
-
-    // Keep all your existing methods below - they will work as before
     public function create()
     {
-         $users = \App\Models\User::where('role', 'employee')->get();
-        return view('admin.leaves.create', compact('users'));
+        $this->leaveService->ensureDefaultTypes();
+        $policy = $this->leaveService->policy();
+        $leaveTypes = $this->leaveService->leaveTypes();
+        $users = $this->employeeQuery()->get();
+        $selectedUser = $this->isAdmin() ? null : Auth::user();
+        $balance = $selectedUser ? $this->leaveService->ensureBalance($selectedUser) : null;
+        $policyNotice = $this->leaveService->policyNotice($policy);
+
+        return view('admin.leaves.create', compact('policy', 'leaveTypes', 'users', 'selectedUser', 'balance', 'policyNotice'));
     }
 
-    public function store(Request $request)
+    public function store(StoreLeaveRequest $request)
     {
-        $request->validate([
-            'type' => 'required|string',
-            'duration' => 'required|string',
-            'reason' => 'required|string',
-            'files' => 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx|max:2048',
-            'status' => 'nullable|string',
-            'date' => 'required_unless:duration,multiple|date|nullable',
-            'start_date' => 'required_if:duration,multiple|date|nullable',
-            'end_date' => 'required_if:duration,multiple|date|after_or_equal:start_date|nullable',
-            'user_id' => auth()->user()->role === 'admin' ? 'required|exists:users,id' : '',
-        ]);
+        $this->leaveService->ensureDefaultTypes();
+        $actor = Auth::user();
+        $employee = $this->isAdmin() && $request->filled('user_id')
+            ? User::findOrFail($request->user_id)
+            : $actor;
 
-        $userId = auth()->user()->role === 'admin' ? $request->user_id : auth()->id();
+        $type = LeaveType::findOrFail($request->leave_type_id);
+        $data = $request->validated();
+        $data['emergency_flag'] = $request->boolean('emergency_flag');
+        $data['half_day_flag'] = $request->boolean('half_day_flag');
+        $data['status'] = $this->isAdmin() ? ($request->status ?: 'pending') : 'pending';
 
-        $profileImagePath = null;
-
-        // Handle file upload
-        if ($request->hasFile('files')) {
-            $image = $request->file('files');
-            $imageName = time() . '-' . $image->getClientOriginalName();
-            $image->move(public_path('admin/uploads/leave-file'), $imageName);
-            $profileImagePath = 'admin/uploads/leave-file/' . $imageName;
+        if ($request->hasFile('attachment')) {
+            $file = $request->file('attachment');
+            $name = time() . '-' . preg_replace('/[^A-Za-z0-9_.-]/', '-', $file->getClientOriginalName());
+            $file->move(public_path('admin/uploads/leave-file'), $name);
+            $data['attachment'] = 'admin/uploads/leave-file/' . $name;
         }
 
-        // Check if employee has enough leaves (for employee requests)
-        if (auth()->user()->role === 'employee') {
-            $user = Auth::user();
-            $daysRequested = 1;
+        $errors = $this->leaveService->validateRequest(
+            $employee,
+            $type,
+            Carbon::parse($data['start_date']),
+            Carbon::parse($data['end_date']),
+            $data
+        );
 
-            if ($request->duration === 'multiple') {
-                $start = Carbon::parse($request->start_date);
-                $end = Carbon::parse($request->end_date);
-                $daysRequested = $start->diffInDays($end) + 1;
-            } elseif ($request->duration === 'half_day') {
-                $daysRequested = 0.5;
-            }
-
-            if ($user->remaining_leaves < $daysRequested) {
-                return back()->with('error', 'You don\'t have enough leaves remaining. This will be marked as unpaid leave.');
-            }
+        if ($errors) {
+            return back()->withErrors($errors)->withInput();
         }
 
-        Leave::create([
-            'user_id' => $userId,
-            'type' => $request->type,
-            'duration'=> $request->duration,
-            'date' => $request->date,
-            'start_date' => $request->start_date,
-            'end_date' => $request->end_date,
-            'files'=> $profileImagePath,
-            'reason' => $request->reason,
-        ]);
+        $this->leaveService->createLeave($employee, $type, $data, $actor);
 
-        return redirect()->route('leaves.index')->with('success', 'Leave applied successfully.');
+        return redirect()->route('leaves.index')->with('success', 'Leave request submitted successfully.');
     }
 
-    // All other existing methods remain exactly the same
+    public function show(Leave $leave)
+    {
+        $this->authorizeLeaveAccess($leave);
+        $leave->load(['user.employeeDetail.department', 'leaveType', 'approvals.user', 'approver', 'rejector']);
+
+        return view('admin.leaves.show', compact('leave'));
+    }
+
     public function edit(Leave $leave)
     {
-        $users = User::all();
-        return view('admin.leaves.edit', compact('leave', 'users'));
+        $this->authorizeLeaveAccess($leave);
+        $policy = $this->leaveService->policy();
+        $leaveTypes = $this->leaveService->leaveTypes();
+        $users = $this->employeeQuery()->get();
+
+        return view('admin.leaves.create', [
+            'policy' => $policy,
+            'leaveTypes' => $leaveTypes,
+            'users' => $users,
+            'selectedUser' => $leave->user,
+            'balance' => $leave->user ? $this->leaveService->ensureBalance($leave->user) : null,
+            'policyNotice' => $this->leaveService->policyNotice($policy),
+            'leave' => $leave,
+        ]);
     }
 
-    public function update(Request $request, Leave $leave)
+    public function update(StoreLeaveRequest $request, Leave $leave)
     {
-        $request->validate([
-            'type' => 'required|string',
-            'duration' => 'required|string',
-            'reason' => 'required|string',
-            'files' => 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx|max:2048',
-            'status' => 'nullable|string',
-            'date' => 'required_unless:duration,multiple|date|nullable',
-            'start_date' => 'required_if:duration,multiple|date|nullable',
-            'end_date' => 'required_if:duration,multiple|date|after_or_equal:start_date|nullable',
-            'user_id' => auth()->user()->role === 'admin' ? 'required|exists:users,id' : '',
-        ]);
+        $this->authorizeLeaveAccess($leave);
+        abort_if($leave->status === 'approved' && ! $this->isAdmin(), 403);
 
-        $userId = auth()->user()->role === 'admin' ? $request->user_id : auth()->id();
+        $employee = $this->isAdmin() && $request->filled('user_id') ? User::findOrFail($request->user_id) : $leave->user;
+        $type = LeaveType::findOrFail($request->leave_type_id);
+        $data = $request->validated();
+        $data['emergency_flag'] = $request->boolean('emergency_flag');
+        $data['half_day_flag'] = $request->boolean('half_day_flag');
 
-        $profileImagePath = $leave->files;
-        if ($request->hasFile('files')) {
-            $file = $request->file('files');
-            $fileName = time() . '-' . $file->getClientOriginalName();
-            $file->move(public_path('admin/uploads/leave-file'), $fileName);
-            $profileImagePath = 'admin/uploads/leave-file/' . $fileName;
+        if ($request->hasFile('attachment')) {
+            $file = $request->file('attachment');
+            $name = time() . '-' . preg_replace('/[^A-Za-z0-9_.-]/', '-', $file->getClientOriginalName());
+            $file->move(public_path('admin/uploads/leave-file'), $name);
+            $data['attachment'] = 'admin/uploads/leave-file/' . $name;
         }
+
+        $start = Carbon::parse($data['start_date']);
+        $end = Carbon::parse($data['end_date']);
 
         $leave->update([
-            'user_id' => $userId,
-            'type' => $request->type,
-            'duration' => $request->duration,
-            'date' => $request->date,
-            'start_date' => $request->start_date,
-            'end_date' => $request->end_date,
-            'reason' => $request->reason,
-            'files' => $profileImagePath,
+            'user_id' => $employee->id,
+            'leave_type_id' => $type->id,
+            'type' => match ($type->code) {
+                'SL' => 'sick',
+                'CL' => 'casual',
+                'ML' => 'maternity',
+                'UL' => 'leave-without-pay',
+                default => strtolower($type->code),
+            },
+            'start_date' => $start->toDateString(),
+            'end_date' => $end->toDateString(),
+            'date' => $start->toDateString(),
+            'total_days' => $this->leaveService->calculateDays($start, $end, $data['half_day_flag']),
+            'reason' => $data['reason'],
+            'attachment' => $data['attachment'] ?? $leave->attachment,
+            'files' => $data['attachment'] ?? $leave->files,
+            'apology_note' => $data['apology_note'] ?? null,
+            'emergency_flag' => $data['emergency_flag'],
+            'half_day_flag' => $data['half_day_flag'],
+            'contact_during_leave' => $data['contact_during_leave'] ?? null,
         ]);
 
-        return redirect()->route('leaves.index')->with('success', 'Leave updated successfully.');
+        $this->leaveService->syncBalanceCounters($employee);
+
+        return redirect()->route('leaves.index')->with('success', 'Leave request updated successfully.');
     }
 
-    public function leaveReport(Request $request)
+    public function updateStatus(Request $request, Leave $leave)
     {
-        $users = User::where('role', 'employee')->get();
+        $this->ensureAdmin();
+        $request->validate([
+            'status' => ['required', 'in:approved,rejected,pending,unpaid'],
+            'note' => ['nullable', 'string', 'max:2000'],
+            'rejection_reason' => ['nullable', 'string', 'max:2000'],
+        ]);
 
-        $query = Leave::with('user');
-
-        if ($request->user_id) {
-            $query->where('user_id', $request->user_id);
+        if ($request->status === 'approved') {
+            $this->leaveService->approve($leave, Auth::user(), $request->note);
+        } elseif ($request->status === 'unpaid') {
+            $this->leaveService->approve($leave, Auth::user(), $request->note, true);
+        } elseif ($request->status === 'rejected') {
+            $this->leaveService->reject($leave, Auth::user(), $request->rejection_reason ?: $request->note ?: 'Rejected by HR/Admin.');
+        } else {
+            $leave->update(['status' => 'pending', 'approval_status' => 'pending']);
         }
 
-        if ($request->type) {
-            $query->where('type', $request->type);
+        return back()->with('success', 'Leave request status updated.');
+    }
+
+    public function updatePolicy(Request $request)
+    {
+        $this->ensureAdmin();
+        $data = $request->validate([
+            'annual_leaves' => ['required', 'numeric', 'min:0'],
+            'sick_leave_limit' => ['required', 'numeric', 'min:0'],
+            'casual_leave_limit' => ['required', 'numeric', 'min:0'],
+            'maternity_leave_limit' => ['required', 'numeric', 'min:0'],
+            'casual_advance_days' => ['required', 'integer', 'min:0', 'max:60'],
+            'casual_manual_review_days' => ['required', 'integer', 'min:0', 'max:30'],
+            'auto_approve_casual_leave' => ['nullable'],
+            'hr_approval_required' => ['nullable'],
+            'allow_sick_apology' => ['nullable'],
+            'allow_carry_forward' => ['nullable'],
+            'max_carry_forward' => ['nullable', 'integer', 'min:0'],
+            'unpaid_leave_handling' => ['required', 'in:unpaid_leave,absent'],
+            'maternity_is_paid' => ['nullable'],
+            'maternity_requires_document' => ['nullable'],
+            'leave_monetary_value' => ['nullable', 'numeric', 'min:0'],
+        ]);
+
+        foreach (['auto_approve_casual_leave', 'hr_approval_required', 'allow_sick_apology', 'allow_carry_forward', 'maternity_is_paid', 'maternity_requires_document'] as $field) {
+            $data[$field] = $request->boolean($field);
         }
 
-        if ($request->from && $request->to) {
-            $query->whereBetween('start_date', [$request->from, $request->to]);
-        }
+        $data['leave_year_start_month'] = 4;
+        $data['leave_year_end_month'] = 3;
+        $data['fiscal_year_start'] = now()->month >= 4 ? now()->year . '-04-01' : (now()->year - 1) . '-04-01';
+        $data['fiscal_year_end'] = now()->month >= 4 ? (now()->year + 1) . '-03-31' : now()->year . '-03-31';
 
-        $leaves = $query->latest()->get();
+        $this->leaveService->updatePolicy($data, Auth::user());
 
-        $summary = [
-            'total' => $leaves->count(),
-            'approved' => $leaves->where('status', 'approved')->count(),
-            'pending' => $leaves->where('status', 'pending')->count(),
-            'rejected' => $leaves->where('status', 'rejected')->count(),
-        ];
+        return back()->with('success', 'Leave policy updated and employee balances recalculated successfully.');
+    }
 
-        return view('admin.leaves.report', compact('users', 'leaves', 'summary'));
+    public function resetEmployeeLeaves($id)
+    {
+        $this->ensureAdmin();
+        $employee = User::findOrFail($id);
+        $balance = $this->leaveService->ensureBalance($employee);
+        $policy = $this->leaveService->policy();
+        $balance->forceFill([
+            'allocated_leaves' => $policy->annual_leaves,
+            'remaining_leaves' => $policy->annual_leaves,
+            'used_leaves' => 0,
+            'sick_used' => 0,
+            'casual_used' => 0,
+            'maternity_used' => 0,
+            'unpaid_used' => 0,
+            'absent_count' => 0,
+        ])->save();
+        $this->leaveService->syncBalanceCounters($employee, $balance);
+
+        return back()->with('success', 'Leave balance reset for ' . $employee->name . '.');
+    }
+
+    public function updatePaidStatus(Request $request)
+    {
+        $this->ensureAdmin();
+        $request->validate(['leave_id' => 'required|exists:leaves,id', 'paid' => 'required|boolean']);
+        $leave = Leave::findOrFail($request->leave_id);
+        $totalDays = (float) ($leave->total_days ?: 1);
+        $leave->update([
+            'is_paid' => $request->boolean('paid'),
+            'is_unpaid' => ! $request->boolean('paid'),
+            'paid' => $request->boolean('paid'),
+            'paid_days' => $request->boolean('paid') ? $totalDays : 0,
+            'unpaid_days' => $request->boolean('paid') ? 0 : $totalDays,
+            'payroll_deduction_flag' => ! $request->boolean('paid'),
+        ]);
+
+        $this->leaveService->syncBalanceCounters($leave->user);
+
+        return response()->json(['success' => true, 'message' => 'Paid status updated.']);
     }
 
     public function destroy($id)
     {
         $leave = Leave::findOrFail($id);
-
-        // If approved paid leave, refund the leaves
-        if ($leave->status === 'approved' && $leave->paid == 1) {
-            $employee = $leave->user;
-
-            // Calculate days to refund
-            $daysToRefund = 1;
-            if ($leave->duration === 'multiple' && $leave->start_date && $leave->end_date) {
-                $start = Carbon::parse($leave->start_date);
-                $end = Carbon::parse($leave->end_date);
-                $daysToRefund = $start->diffInDays($end) + 1;
-            } elseif ($leave->duration === 'half_day') {
-                $daysToRefund = 0.5;
-            }
-
-            // Refund leaves
-            $employee->increment('remaining_leaves', $daysToRefund);
-            $employee->decrement('leaves_taken_this_year', $daysToRefund);
-        }
-
-        // Delete uploaded file if exists
-        if ($leave->files && file_exists(public_path($leave->files))) {
-            unlink(public_path($leave->files));
-        }
-
+        $this->authorizeLeaveAccess($leave);
+        abort_if(! $this->isAdmin() && $leave->status !== 'pending', 403);
+        $user = $leave->user;
         $leave->delete();
+        if ($user) {
+            $this->leaveService->syncBalanceCounters($user);
+        }
 
-        return redirect()->back()->with('success', 'Leave deleted successfully.');
+        return back()->with('success', 'Leave request deleted successfully.');
     }
 
-    public function show($id)
+    public function archive(Request $request)
     {
-        $leave = Leave::with('user')->findOrFail($id);
-        return view('admin.leaves.show', compact('leave'));
+        $this->ensureAdmin();
+
+        $query = Leave::with(['user.employeeDetail.department', 'leaveType'])
+            ->whereNotNull('archived_at');
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('reason', 'like', '%' . $search . '%')
+                    ->orWhere('status', 'like', '%' . $search . '%')
+                    ->orWhereHas('user', fn ($userQuery) => $userQuery->where('name', 'like', '%' . $search . '%'))
+                    ->orWhereHas('leaveType', fn ($typeQuery) => $typeQuery->where('name', 'like', '%' . $search . '%'));
+            });
+        }
+
+        $leaves = $query->orderByDesc('archived_at')->paginate(20)->withQueryString();
+
+        return view('admin.leaves.archive', compact('leaves'));
     }
 
-    public function updatePaidStatus(Request $request)
+    public function archiveLeave(Leave $leave)
     {
+        $this->ensureAdmin();
+
+        if ($leave->archived_at) {
+            return back()->with('success', 'Leave request is already archived.');
+        }
+
+        $leave->forceFill(['archived_at' => now()])->save();
+
+        return back()->with('success', 'Leave request archived successfully.');
+    }
+
+    public function bulkArchive(Request $request)
+    {
+        $this->ensureAdmin();
+
         $request->validate([
-            'leave_id' => 'required|exists:leaves,id',
-            'paid' => 'required|in:0,1',
+            'ids' => ['required', 'array'],
+            'ids.*' => ['integer', 'exists:leaves,id'],
         ]);
 
-        $leave = Leave::findOrFail($request->leave_id);
-        $leave->paid = $request->paid;
-        $leave->save();
+        $count = Leave::whereIn('id', $request->ids)
+            ->whereNull('archived_at')
+            ->update(['archived_at' => now()]);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Leave status updated successfully!',
-            'paid_status' => $leave->paid == 1 ? 'Paid' : 'Unpaid'
-        ]);
+        return response()->json(['message' => $count . ' leave request(s) archived successfully.']);
     }
 
-    public function calendar()
+    public function archiveAll()
     {
-        if (auth()->user()->role === 'admin') {
-            $employee_data = User::orderBy('name')->get();
-        } else {
-            $employee_data = User::where('id', auth()->id())->get();
-        }
+        $this->ensureAdmin();
 
-        return view('admin.leaves.calendar', compact('employee_data'));
+        $count = Leave::whereNull('archived_at')->update(['archived_at' => now()]);
+
+        return back()->with('success', $count . ' leave request(s) archived successfully.');
     }
 
-    public function calendarData(Request $request)
+    public function restore($id)
     {
-        $query = Leave::with('user');
+        $this->ensureAdmin();
 
-        if (auth()->user()->role !== 'admin') {
-            $query->where('user_id', auth()->id());
-        }
+        $leave = Leave::whereNotNull('archived_at')->findOrFail($id);
+        $leave->forceFill(['archived_at' => null])->save();
 
-        if ($request->employee) {
-            $query->where('user_id', $request->employee);
-        }
-        if ($request->leave_type) {
-            $query->where('type', $request->leave_type);
-        }
-        if ($request->status) {
-            $query->where('status', $request->status);
-        }
-
-        $leaves = $query->get()->map(function ($leave) {
-            $status = strtolower($leave->status);
-
-            $start = $leave->start_date ?? $leave->date ?? now()->format('Y-m-d');
-            $end   = $leave->end_date ?? $leave->date ?? now()->format('Y-m-d');
-
-            $end = date('Y-m-d', strtotime($end . ' +1 day'));
-
-            return [
-                'title' => $leave->user ? $leave->user->name . ' - ' . ucfirst($status) : 'Unknown',
-                'start' => $start,
-                'end' => $end,
-                'color' => $status === 'approved' ? '#28a745'
-                          : ($status === 'rejected' ? '#dc3545' : '#ffc107'),
-            ];
-        });
-
-        return response()->json($leaves);
+        return back()->with('success', 'Leave request restored successfully.');
     }
 
     public function bulkAction(Request $request)
     {
-        $ids = $request->ids;
-        $action = $request->action;
+        $this->ensureAdmin();
+        $request->validate([
+            'ids' => ['required', 'array'],
+            'ids.*' => ['integer', 'exists:leaves,id'],
+            'action' => ['required', 'in:delete,change_status,archive'],
+            'status' => ['nullable', 'in:approved,rejected,pending,unpaid'],
+        ]);
 
-        if (!$ids || count($ids) === 0) {
-            return response()->json(['message' => 'No leaves selected'], 400);
-        }
+        $leaves = Leave::whereIn('id', $request->ids)->get();
 
-        if ($action === 'delete') {
-            Leave::whereIn('id', $ids)->delete();
-            return response()->json(['message' => 'Selected leaves deleted successfully!']);
-        }
-
-        if ($action === 'change_status') {
-            $status = $request->status;
-            if (!$status) {
-                return response()->json(['message' => 'Please select a status'], 400);
+        foreach ($leaves as $leave) {
+            if ($request->action === 'archive') {
+                $leave->forceFill(['archived_at' => now()])->save();
+                continue;
             }
-            Leave::whereIn('id', $ids)->update(['status' => $status]);
-            return response()->json(['message' => "Selected leaves updated to {$status}"]);
+
+            if ($request->action === 'delete') {
+                $leave->delete();
+                continue;
+            }
+
+            if ($request->status === 'approved') {
+                $this->leaveService->approve($leave, Auth::user(), 'Bulk approved');
+            } elseif ($request->status === 'unpaid') {
+                $this->leaveService->approve($leave, Auth::user(), 'Bulk converted to unpaid', true);
+            } elseif ($request->status === 'rejected') {
+                $this->leaveService->reject($leave, Auth::user(), 'Bulk rejected');
+            } else {
+                $leave->update(['status' => 'pending', 'approval_status' => 'pending']);
+            }
         }
 
-        return response()->json(['message' => 'No action performed']);
+        return response()->json(['message' => 'Bulk action completed successfully.']);
     }
 
     public function bulkDelete(Request $request)
     {
+        $request->merge(['action' => 'delete']);
+        return $this->bulkAction($request);
+    }
+
+    public function export(Request $request)
+    {
+        $this->ensureAdmin();
+
         $request->validate([
-            'ids' => 'required|array',
+            'type' => ['nullable', 'in:copy,excel,csv,pdf,print'],
+            'employee' => ['nullable', 'integer', 'exists:users,id'],
+            'leave_type_id' => ['nullable', 'integer', 'exists:leave_types,id'],
+            'status' => ['nullable', 'in:pending,approved,rejected'],
+            'from' => ['nullable', 'date'],
+            'to' => ['nullable', 'date'],
         ]);
 
-        $ids = $request->ids;
+        $query = Leave::with(['user', 'leaveType'])->whereNull('archived_at');
+        if ($request->filled('employee')) {
+            $query->where('user_id', $request->employee);
+        }
+        if ($request->filled('leave_type_id')) {
+            $query->where('leave_type_id', $request->leave_type_id);
+        }
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+        if ($request->filled('from')) {
+            $query->whereDate('start_date', '>=', $request->from);
+        }
+        if ($request->filled('to')) {
+            $query->whereDate('end_date', '<=', $request->to);
+        }
+        $leaves = (clone $query)->latest()->get();
+        $this->syncLeavePayrollForUsers($leaves);
+        $leaves = $query->latest()->get();
+        $type = $request->input('type', 'csv');
+        $filenameDate = now()->format('Y-m-d');
 
-        // Delete related files
-        $leaves = Leave::whereIn('id', $ids)->get();
-
-        foreach ($leaves as $leave) {
-            if ($leave->files && file_exists(public_path($leave->files))) {
-                unlink(public_path($leave->files));
-            }
+        if ($type === 'pdf') {
+            return Pdf::loadView('admin.leaves.exports.pdf', compact('leaves'))
+                ->download('leave-report-' . $filenameDate . '.pdf');
         }
 
-        Leave::whereIn('id', $ids)->delete();
+        if ($type === 'print') {
+            return view('admin.leaves.exports.print', compact('leaves'));
+        }
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Selected leaves deleted successfully!'
-        ]);
+        $headers = ['Employee', 'Type', 'Start Date', 'End Date', 'Days', 'Paid Days', 'Unpaid Days', 'Status', 'Payment', 'Reason'];
+
+        if ($type === 'copy') {
+            $lines = [$this->exportLine($headers, "\t")];
+            foreach ($leaves as $leave) {
+                $lines[] = $this->exportLine($this->leaveExportRow($leave), "\t");
+            }
+
+            return response(implode("\n", $lines), 200, [
+                'Content-Type' => 'text/plain; charset=UTF-8',
+            ]);
+        }
+
+        if ($type === 'excel') {
+            return response()->stream(function () use ($leaves, $headers) {
+                $out = fopen('php://output', 'w');
+                fputcsv($out, $headers, "\t");
+                foreach ($leaves as $leave) {
+                    fputcsv($out, $this->leaveExportRow($leave), "\t");
+                }
+                fclose($out);
+            }, 200, [
+                'Content-Type' => 'application/vnd.ms-excel; charset=UTF-8',
+                'Content-Disposition' => 'attachment; filename=leave-report-' . $filenameDate . '.xls',
+            ]);
+        }
+
+        $responseHeaders = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename=leave-report-' . $filenameDate . '.csv',
+        ];
+
+        return response()->stream(function () use ($leaves, $headers) {
+            $out = fopen('php://output', 'w');
+            fputcsv($out, $headers);
+            foreach ($leaves as $leave) {
+                fputcsv($out, $this->leaveExportRow($leave));
+            }
+            fclose($out);
+        }, 200, $responseHeaders);
+    }
+
+    public function leaveReport(Request $request)
+    {
+        return $this->index($request);
+    }
+
+    public function calendar()
+    {
+        $this->leaveService->ensureDefaultTypes();
+        $isAdmin = $this->isAdmin();
+        $employee_data = $isAdmin ? $this->employeeQuery()->get() : User::where('id', Auth::id())->get();
+        $leaveTypes = $this->leaveService->leaveTypes();
+
+        return view('admin.leaves.calendar', compact('employee_data', 'leaveTypes', 'isAdmin'));
+    }
+
+    public function calendarData(Request $request)
+    {
+        $query = Leave::with(['user', 'leaveType'])->whereNull('archived_at');
+        if (! $this->isAdmin()) {
+            $query->where('user_id', Auth::id());
+        }
+        if ($this->isAdmin() && $request->filled('employee')) {
+            $query->where('user_id', $request->employee);
+        }
+        if ($request->filled('leave_type')) {
+            $query->where('leave_type_id', $request->leave_type);
+        }
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+        if ($request->filled('start')) {
+            $query->whereDate('end_date', '>=', Carbon::parse($request->start)->toDateString());
+        }
+        if ($request->filled('end')) {
+            $query->whereDate('start_date', '<=', Carbon::parse($request->end)->toDateString());
+        }
+
+        $leaves = $query->get();
+        $this->syncLeavePayrollForUsers($leaves);
+        $leaves = $query->get();
+
+        return response()->json($leaves->map(function (Leave $leave) {
+            return [
+                'title' => ($leave->user?->name ?? 'Employee') . ' - ' . $leave->type_label,
+                'start' => optional($leave->start_date)->toDateString(),
+                'end' => $leave->end_date ? $leave->end_date->copy()->addDay()->toDateString() : null,
+                'color' => match ($leave->status) {
+                    'approved' => $leave->is_unpaid ? '#f97316' : '#10b981',
+                    'rejected' => '#ef4444',
+                    default => '#f59e0b',
+                },
+                'extendedProps' => [
+                    'employee' => $leave->user?->name ?? 'Employee',
+                    'status' => $leave->status,
+                    'type' => $leave->type_label,
+                    'duration' => $leave->half_day_flag ? 'Half Day' : ($leave->duration ?: 'Full Day'),
+                    'reason' => $leave->reason,
+                    'payment' => $leave->is_unpaid ? 'Unpaid' : 'Paid',
+                    'editUrl' => route('leaves.edit', $leave->id),
+                    'showUrl' => route('leaves.show', $leave->id),
+                ],
+            ];
+        }));
+    }
+
+    private function isAdmin(): bool
+    {
+        return in_array(strtolower((string) Auth::user()?->role), ['admin', 'hr'], true);
+    }
+
+    private function ensureAdmin(): void
+    {
+        abort_if(! $this->isAdmin(), 403);
+    }
+
+    private function employeeQuery()
+    {
+        return User::with('employeeDetail.department')
+            ->where('role', 'employee')
+            ->orderBy('name');
+    }
+
+    private function authorizeLeaveAccess(Leave $leave): void
+    {
+        abort_if(! $this->isAdmin() && $leave->user_id !== Auth::id(), 403);
+    }
+
+    private function leaveExportRow(Leave $leave): array
+    {
+        return [
+            $leave->user?->name ?? 'N/A',
+            $leave->type_label,
+            optional($leave->start_date)->format('Y-m-d'),
+            optional($leave->end_date)->format('Y-m-d'),
+            (string) $leave->total_days,
+            (string) ($leave->paid_days ?? 0),
+            (string) ($leave->unpaid_days ?? 0),
+            ucfirst($leave->status),
+            $leave->is_unpaid ? 'Unpaid' : 'Paid',
+            (string) $leave->reason,
+        ];
+    }
+
+    private function exportLine(array $columns, string $delimiter): string
+    {
+        return implode($delimiter, array_map(fn ($value) => str_replace(["\r", "\n", "\t"], ' ', (string) $value), $columns));
+    }
+
+    private function syncLeavePayrollForUsers($leaves): void
+    {
+        $leaves->filter(fn (Leave $leave) => $leave->user && $leave->start_date)
+            ->groupBy(fn (Leave $leave) => $leave->user_id . ':' . $leave->start_date->format('Y-m-d'))
+            ->each(function ($group) {
+                $leave = $group->first();
+                $this->leaveService->ensureBalance($leave->user, $leave->start_date);
+            });
     }
 }

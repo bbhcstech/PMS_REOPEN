@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Validation\Rule;
 
 class ParentDepartmentController extends Controller
 {
@@ -15,13 +16,17 @@ class ParentDepartmentController extends Controller
      */
     public function index(Request $request)
     {
-        $departments = ParentDepartment::orderBy('id', 'desc')->get();
+        $departments = ParentDepartment::withCount(['departments', 'employees'])
+            ->whereNull('archived_at')
+            ->orderBy('id', 'desc')
+            ->get();
+        $archivedCount = ParentDepartment::whereNotNull('archived_at')->count();
 
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json(['data' => $departments]);
         }
 
-        return view('admin.parent_departments.index', compact('departments'));
+        return view('admin.parent_departments.index', compact('departments', 'archivedCount'));
     }
 
     /**
@@ -32,6 +37,17 @@ class ParentDepartmentController extends Controller
     {
         $nextCode = $this->computeNextCode();
         return view('admin.parent_departments.create', compact('nextCode'));
+    }
+
+    /**
+     * Display the specified parent department.
+     */
+    public function show(ParentDepartment $parentDepartment)
+    {
+        $parentDepartment->load(['addedBy', 'updatedBy'])
+            ->loadCount(['departments', 'employees']);
+
+        return view('admin.parent_departments.show', compact('parentDepartment'));
     }
 
     /**
@@ -48,8 +64,21 @@ class ParentDepartmentController extends Controller
      */
     public function store(Request $request)
     {
+        $request->merge([
+            'code_generation_mode' => $request->input('code_generation_mode', 'auto'),
+            'dpt_code' => trim((string) $request->input('dpt_code', '')),
+        ]);
+
         $request->validate([
             'dpt_name' => 'required|string|max:255',
+            'code_generation_mode' => ['required', Rule::in(['auto', 'custom'])],
+            'dpt_code' => [
+                'required_if:code_generation_mode,custom',
+                'nullable',
+                'string',
+                'max:50',
+                Rule::unique('parent_departments', 'dpt_code'),
+            ],
         ]);
 
         $prefix = 'DEP-';
@@ -57,14 +86,18 @@ class ParentDepartmentController extends Controller
 
         DB::beginTransaction();
         try {
-            // compute numeric max safely within transaction to avoid race conditions
-            $max = ParentDepartment::where('dpt_code', 'like', $prefix . '%')
-                ->selectRaw('COALESCE(MAX(CAST(SUBSTRING(dpt_code, ?) AS UNSIGNED)), 0) as mx', [strlen($prefix) + 1])
-                ->lockForUpdate()
-                ->value('mx');
+            if ($request->code_generation_mode === 'custom') {
+                $generatedCode = trim((string) $request->dpt_code);
+            } else {
+                // compute numeric max safely within transaction to avoid race conditions
+                $max = ParentDepartment::where('dpt_code', 'like', $prefix . '%')
+                    ->selectRaw('COALESCE(MAX(CAST(SUBSTRING(dpt_code, ?) AS UNSIGNED)), 0) as mx', [strlen($prefix) + 1])
+                    ->lockForUpdate()
+                    ->value('mx');
 
-            $nextNumber = ((int) $max) + 1;
-            $generatedCode = $prefix . str_pad($nextNumber, $pad, '0', STR_PAD_LEFT);
+                $nextNumber = ((int) $max) + 1;
+                $generatedCode = $prefix . str_pad($nextNumber, $pad, '0', STR_PAD_LEFT);
+            }
 
             // create in parent_departments table via model
             $dpt = ParentDepartment::create([
@@ -107,12 +140,23 @@ class ParentDepartmentController extends Controller
      */
     public function update(Request $request, ParentDepartment $parentDepartment)
     {
+        $request->merge([
+            'dpt_code' => trim((string) $request->input('dpt_code', $parentDepartment->dpt_code)),
+        ]);
+
         $request->validate([
             'dpt_name' => 'required|string|max:255',
+            'dpt_code' => [
+                'required',
+                'string',
+                'max:50',
+                Rule::unique('parent_departments', 'dpt_code')->ignore($parentDepartment->id),
+            ],
         ]);
 
         try {
             $parentDepartment->update([
+                'dpt_code' => $request->dpt_code,
                 'dpt_name' => $request->dpt_name,
                 'last_updated_by' => Auth::id(),
             ]);
@@ -186,59 +230,68 @@ class ParentDepartmentController extends Controller
     public function destroy(Request $request, ParentDepartment $parentDepartment)
 {
     try {
-        // Check if department has sub-departments
-        if ($parentDepartment->departments()->exists()) {
-            $message = 'This department cannot be deleted because it has sub-departments linked to it.';
-
-            if ($request->wantsJson() || $request->ajax()) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => $message
-                ], 422);
-            }
-
-            return back()->with('error', $message);
-        }
-
-        // Check if department has employees
-        if ($parentDepartment->employees()->exists()) {
-            $message = 'This department cannot be deleted because it is tagged with employees.';
-
-            if ($request->wantsJson() || $request->ajax()) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => $message
-                ], 422);
-            }
-
-            return back()->with('error', $message);
-        }
-
-        $parentDepartment->delete();
+        $parentDepartment->forceFill([
+            'archived_at' => now(),
+            'last_updated_by' => Auth::id(),
+        ])->save();
 
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
                 'status' => 'success',
-                'message' => 'Department deleted successfully.',
+                'message' => 'Department archived successfully.',
                 'deleted_id' => $parentDepartment->id
             ]);
         }
 
         return redirect()->route('parent-departments.index')
-            ->with('success', 'Department deleted successfully.');
+            ->with('success', 'Department archived successfully.');
     } catch (\Throwable $e) {
-        logger()->error('ParentDepartment delete error: ' . $e->getMessage());
+        logger()->error('ParentDepartment archive error: ' . $e->getMessage());
 
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Delete failed: ' . $e->getMessage()
+                'message' => 'Archive failed: ' . $e->getMessage()
             ], 500);
         }
 
-        return back()->with('error', 'Delete failed: ' . $e->getMessage());
+        return back()->with('error', 'Archive failed: ' . $e->getMessage());
     }
 }
+
+    public function archive(Request $request)
+    {
+        $perPage = (int) $request->input('per_page', 10);
+        $perPage = in_array($perPage, [10, 20, 30, 40, 50, 100], true) ? $perPage : 10;
+
+        $query = ParentDepartment::withCount(['departments', 'employees'])
+            ->whereNotNull('archived_at');
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('dpt_name', 'like', '%' . $search . '%')
+                    ->orWhere('dpt_code', 'like', '%' . $search . '%');
+            });
+        }
+
+        $departments = $query->orderByDesc('archived_at')->paginate($perPage)->withQueryString();
+
+        return view('admin.parent_departments.archive', compact('departments'));
+    }
+
+    public function restore($id)
+    {
+        $department = ParentDepartment::whereNotNull('archived_at')->findOrFail($id);
+
+        $department->forceFill([
+            'archived_at' => null,
+            'last_updated_by' => Auth::id(),
+        ])->save();
+
+        return redirect()->route('parent-departments.archive')
+            ->with('success', 'Parent department restored successfully.');
+    }
 
     /**
      * Bulk delete multiple ParentDepartment records.
@@ -261,7 +314,7 @@ class ParentDepartmentController extends Controller
         }, $ids)));
 
         if (empty($ids)) {
-            $msg = 'No departments selected for deletion.';
+            $msg = 'No departments selected for archive.';
             return $request->wantsJson() || $request->ajax()
                 ? response()->json(['status' => 'error', 'message' => $msg], 422)
                 : back()->with('error', $msg);
@@ -270,6 +323,7 @@ class ParentDepartmentController extends Controller
         DB::beginTransaction();
         try {
             $parents = ParentDepartment::withCount(['departments', 'employees'])
+                ->whereNull('archived_at')
                 ->whereIn('id', $ids)
                 ->get();
 
@@ -284,27 +338,27 @@ class ParentDepartmentController extends Controller
                     : back()->with('error', $msg);
             }
 
-            $blockedBySubDepartments = $parents->where('departments_count', '>', 0);
-            $blockedByEmployees = $parents->where('employees_count', '>', 0);
-            $deletable = $parents->where('departments_count', 0)->where('employees_count', 0);
-
-            $deletableIds = $deletable->pluck('id')->all();
-
+            $deletableIds = $parents->pluck('id')->all();
             $deletedCount = 0;
             if (!empty($deletableIds)) {
-                $deletedCount = ParentDepartment::whereIn('id', $deletableIds)->delete();
+                $deletedCount = ParentDepartment::whereIn('id', $deletableIds)->update([
+                    'archived_at' => now(),
+                    'last_updated_by' => Auth::id(),
+                ]);
             }
 
             DB::commit();
 
-            $blockedSubCount = $blockedBySubDepartments->count();
-            $blockedEmpCount = $blockedByEmployees->count();
+            $blockedBySubDepartments = collect();
+            $blockedByEmployees = collect();
+            $blockedSubCount = 0;
+            $blockedEmpCount = 0;
             $totalBlocked = $blockedSubCount + $blockedEmpCount;
 
             $messageParts = [];
 
             if ($deletedCount > 0) {
-                $messageParts[] = "{$deletedCount} department(s) deleted successfully.";
+                $messageParts[] = "{$deletedCount} department(s) archived successfully.";
             }
 
             if ($blockedSubCount > 0) {
@@ -340,11 +394,11 @@ class ParentDepartmentController extends Controller
                 : redirect()->route('parent-departments.index')->with($status, $finalMessage);
         } catch (\Throwable $e) {
             DB::rollBack();
-            logger()->error('ParentDepartment bulk destroy error: ' . $e->getMessage(), ['exception' => $e]);
+            logger()->error('ParentDepartment bulk archive error: ' . $e->getMessage(), ['exception' => $e]);
 
             return $request->wantsJson() || $request->ajax()
-                ? response()->json(['status' => 'error', 'message' => 'Bulk delete failed.', 'error' => $e->getMessage()], 500)
-                : back()->with('error', 'Bulk delete failed: ' . $e->getMessage());
+                ? response()->json(['status' => 'error', 'message' => 'Bulk archive failed.', 'error' => $e->getMessage()], 500)
+                : back()->with('error', 'Bulk archive failed: ' . $e->getMessage());
         }
     }
 

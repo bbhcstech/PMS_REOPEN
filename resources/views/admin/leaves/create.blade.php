@@ -1,408 +1,218 @@
 @extends('admin.layout.app')
 
-@section('title', 'Apply Leave')
+@php
+    $isEdit = isset($leave);
+    $isAdmin = auth()->user()->role === 'admin';
+    $oldStartDate = old('start_date', $isEdit ? optional($leave->start_date)->format('Y-m-d') : '');
+    $oldEndDate = old('end_date', $isEdit ? optional($leave->end_date)->format('Y-m-d') : '');
+@endphp
+
+@section('title', $isEdit ? 'Edit Leave Request' : 'Apply Leave')
 
 @section('content')
-<div class="container-fluid py-4">
-    <!-- Header -->
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4">
-        <div>
-            <h1 class="h3 mb-2">Apply for Leave</h1>
-            <p class="text-muted mb-0">Submit a new leave request for review</p>
-        </div>
-        <div class="mt-3 mt-md-0">
-            <a href="{{ route('leaves.index') }}" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left me-2"></i>Back to Leaves
-            </a>
-        </div>
-    </div>
+<div class="leave-form-page">
+    <div class="leave-breadcrumb"><i class="fas fa-calendar-plus"></i> Dashboard / Leaves / {{ $isEdit ? 'Edit' : 'Apply' }}</div>
 
-    <!-- Error Alert -->
-    @if ($errors->any())
-    <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
-        <div class="d-flex align-items-center">
-            <i class="bi bi-exclamation-triangle-fill me-3 fs-4"></i>
+    <section class="leave-form-hero">
+        <div>
+            <h1>{{ $isEdit ? 'Edit Leave Request' : 'Apply for Leave' }}</h1>
+            <p>Submit leave requests with policy-aware validation for SL, CL, Maternity, and unpaid leave.</p>
+        </div>
+        <a href="{{ route('leaves.index') }}" class="btn btn-light"><i class="fas fa-arrow-left"></i> Back to Leaves</a>
+    </section>
+
+    @if($errors->any())
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle"></i>
             <div>
-                <h5 class="alert-heading mb-2">Please fix the following errors:</h5>
-                <ul class="mb-0 ps-3">
-                    @foreach ($errors->all() as $error)
+                <strong>Please fix these issues:</strong>
+                <ul class="mb-0 mt-1 ps-3">
+                    @foreach($errors->all() as $error)
                         <li>{{ $error }}</li>
                     @endforeach
                 </ul>
             </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
     @endif
 
-    <!-- Form Card -->
-    <div class="card shadow-sm border-0">
-        <div class="card-header bg-transparent py-3">
-            <h5 class="card-title mb-0"><i class="bi bi-calendar-plus me-2"></i>Leave Application Form</h5>
-        </div>
-        <div class="card-body">
-            <form method="POST" action="{{ route('leaves.store') }}" enctype="multipart/form-data" id="leaveForm">
-                @csrf
+    <section class="policy-notice">
+        <i class="fas fa-info-circle"></i>
+        <p>{{ $policyNotice }}</p>
+    </section>
 
-                <div class="row">
-                    <!-- Employee Selection -->
-                    @if(auth()->user()->role === 'admin')
-                    <div class="col-lg-4 col-md-6 mb-4">
-                        <label for="user_id" class="form-label">
-                            Employee <span class="text-danger">*</span>
-                            <i class="bi bi-info-circle text-muted ms-1"
-                               data-bs-toggle="tooltip"
-                               title="Select employee for whom leave is being applied"></i>
-                        </label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-person"></i></span>
-                            <select name="user_id" class="form-select" required>
-                                <option value="">-- Select Employee --</option>
-                                @foreach($users as $user)
-                                    <option value="{{ $user->id }}" {{ old('user_id') == $user->id ? 'selected' : '' }}>
-                                        {{ $user->name }} ({{ $user->designation ?? 'N/A' }})
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <small class="text-muted">Select the employee requesting leave</small>
-                    </div>
-                    @else
-                    <div class="col-lg-4 col-md-6 mb-4">
-                        <label class="form-label">Employee</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-person"></i></span>
-                            <input type="text" class="form-control bg-light"
-                                   value="{{ auth()->user()->name }} ({{ auth()->user()->designation ?? 'N/A' }})"
-                                   readonly>
-                            <input type="hidden" name="user_id" value="{{ auth()->id() }}">
-                        </div>
-                        <small class="text-muted">Your employee information</small>
-                    </div>
-                    @endif
+    @if($balance)
+        <section class="balance-strip">
+            <div><span>Total</span><strong>{{ $balance->allocated_leaves }}</strong></div>
+            <div><span>Remaining</span><strong>{{ $balance->remaining_leaves }}</strong></div>
+            <div><span>SL Left</span><strong>{{ $balance->sick_allocated - $balance->sick_used }}</strong></div>
+            <div><span>CL Left</span><strong>{{ $balance->casual_allocated - $balance->casual_used }}</strong></div>
+            <div><span>ML Left</span><strong>{{ $balance->maternity_allocated - $balance->maternity_used }}</strong></div>
+        </section>
+    @endif
 
-                    <!-- Leave Type -->
-                    <div class="col-lg-4 col-md-6 mb-4">
-                        <label for="type" class="form-label">
-                            Leave Type <span class="text-danger">*</span>
-                        </label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-tag"></i></span>
-                            <select name="type" class="form-select" required>
-                                <option value="">-- Select Type --</option>
-                                <option value="sick" {{ old('type') == 'sick' ? 'selected' : '' }}>Sick Leave</option>
-                                <option value="casual" {{ old('type') == 'casual' ? 'selected' : '' }}>Casual Leave</option>
-                                <option value="leave-without-pay" {{ old('type') == 'leave-without-pay' ? 'selected' : '' }}>Leave Without Pay</option>
-                            </select>
-                        </div>
-                        <small class="text-muted">Select the type of leave you're applying for</small>
-                    </div>
+    <section class="form-card">
+        <form method="POST" action="{{ $isEdit ? route('leaves.update', $leave->id) : route('leaves.store') }}" enctype="multipart/form-data" id="leaveForm">
+            @csrf
+            @if($isEdit)
+                @method('PUT')
+            @endif
 
-                    <!-- Status (Admin Only) -->
-                    @if(auth()->user()->role === 'admin')
-                    <div class="col-lg-4 col-md-6 mb-4">
-                        <label for="status" class="form-label">Status</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-check-circle"></i></span>
-                            <select name="status" class="form-select" required>
-                                <option value="pending" {{ old('status') == 'pending' ? 'selected' : '' }}>Pending</option>
-                                <option value="approved" {{ old('status') == 'approved' ? 'selected' : '' }}>Approved</option>
-                            </select>
-                        </div>
-                        <small class="text-muted">Set initial leave status</small>
-                    </div>
-                    @endif
-
-                    <!-- Duration Selection -->
-                    <div class="col-lg-4 col-md-6 mb-4">
-                        <label for="duration" class="form-label">
-                            Duration <span class="text-danger">*</span>
-                        </label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-clock"></i></span>
-                            <select name="duration" id="duration" class="form-select" required
-                                    onchange="toggleDateFields(this.value)">
-                                <option value="">-- Select Duration --</option>
-                                <option value="full-day" {{ old('duration') == 'full-day' ? 'selected' : '' }}>Full Day</option>
-                                <option value="multiple" {{ old('duration') == 'multiple' ? 'selected' : '' }}>Multiple Days</option>
-                                <option value="first-half" {{ old('duration') == 'first-half' ? 'selected' : '' }}>First Half</option>
-                                <option value="second-half" {{ old('duration') == 'second-half' ? 'selected' : '' }}>Second Half</option>
-                            </select>
-                        </div>
-                        <small class="text-muted">Select the duration of your leave</small>
-                    </div>
-
-                    <!-- Single Date Field -->
-                    <div class="col-lg-4 col-md-6 mb-4" id="single-date">
-                        <label for="date" class="form-label">
-                            Date <span class="text-danger">*</span>
-                        </label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-calendar-date"></i></span>
-                            <input type="date" name="date" id="date" class="form-control"
-                                   value="{{ old('date') }}"
-                                   min="{{ date('Y-m-d') }}">
-                        </div>
-                        <small class="text-muted">Select the leave date</small>
-                    </div>
-
-                    <!-- Multi Date Fields (Hidden by Default) -->
-                    <div class="col-lg-8 col-md-12 mb-4 d-none" id="multi-date">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="start_date" class="form-label">Start Date <span class="text-danger">*</span></label>
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="bi bi-calendar-plus"></i></span>
-                                    <input type="date" name="start_date" id="start_date" class="form-control"
-                                           value="{{ old('start_date') }}"
-                                           min="{{ date('Y-m-d') }}">
-                                </div>
-                                <small class="text-muted">First day of leave</small>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="end_date" class="form-label">End Date <span class="text-danger">*</span></label>
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="bi bi-calendar-minus"></i></span>
-                                    <input type="date" name="end_date" id="end_date" class="form-control"
-                                           value="{{ old('end_date') }}"
-                                           min="{{ date('Y-m-d') }}">
-                                </div>
-                                <small class="text-muted">Last day of leave</small>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Reason for Absence -->
-                    <div class="col-lg-8 col-md-12 mb-4">
-                        <label for="reason" class="form-label">
-                            Reason for Absence <span class="text-danger">*</span>
-                        </label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-chat-left-text"></i></span>
-                            <textarea name="reason" id="reason" class="form-control" rows="3"
-                                      placeholder="Please provide details for your leave request..."
-                                      required>{{ old('reason') }}</textarea>
-                        </div>
-                        <small class="text-muted">Provide a brief description for your leave</small>
-                    </div>
-
-                    <!-- File Attachment -->
-                    <div class="col-lg-4 col-md-6 mb-4">
-                        <label for="files" class="form-label">
-                            Attachment
-                            <i class="bi bi-info-circle text-muted ms-1"
-                               data-bs-toggle="tooltip"
-                               title="Optional: Upload supporting documents (medical certificate, etc.)"></i>
-                        </label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-paperclip"></i></span>
-                            <input type="file" name="files" id="files" class="form-control"
-                                   accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
-                        </div>
-                        <small class="text-muted">Supported formats: PDF, DOC, JPG, PNG (Max: 5MB)</small>
-                    </div>
-                </div>
-
-                <!-- Form Buttons -->
-                <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+            <div class="form-grid">
+                @if($isAdmin)
                     <div>
-                        <span class="text-muted small">All fields marked with <span class="text-danger">*</span> are required</span>
+                        <label>Employee <span>*</span></label>
+                        <select name="user_id" class="form-control" required>
+                            <option value="">Select Employee</option>
+                            @foreach($users as $user)
+                                <option value="{{ $user->id }}" {{ (int) old('user_id', $selectedUser?->id ?? $leave->user_id ?? '') === $user->id ? 'selected' : '' }}>{{ $user->name }}</option>
+                            @endforeach
+                        </select>
                     </div>
-                    <div class="d-flex gap-2">
-                        <button type="reset" class="btn btn-outline-secondary">
-                            <i class="bi bi-arrow-clockwise me-2"></i>Reset
-                        </button>
-                        <a href="{{ route('leaves.index') }}" class="btn btn-outline-danger">
-                            <i class="bi bi-x-circle me-2"></i>Cancel
-                        </a>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-send-check me-2"></i>Submit Leave Request
-                        </button>
+                @else
+                    <div>
+                        <label>Employee</label>
+                        <input type="text" class="form-control" value="{{ auth()->user()->name }}" readonly>
                     </div>
-                </div>
-            </form>
-        </div>
-    </div>
+                @endif
 
-    <!-- Help Card -->
-    <div class="card shadow-sm border-0 mt-4">
-        <div class="card-header bg-light py-3">
-            <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>Guidelines</h6>
-        </div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <h6 class="text-primary mb-2"><i class="bi bi-clock-history me-2"></i>Leave Types</h6>
-                    <ul class="list-unstyled mb-0">
-                        <li class="mb-1"><strong>Sick Leave:</strong> For medical reasons with supporting documents</li>
-                        <li class="mb-1"><strong>Casual Leave:</strong> For personal reasons requiring prior approval</li>
-                        <li><strong>Leave Without Pay:</strong> Unpaid leave for extended absence</li>
-                    </ul>
+                <div>
+                    <label>Leave Type <span>*</span></label>
+                    <select name="leave_type_id" id="leaveType" class="form-control" required>
+                        <option value="">Select Type</option>
+                        @foreach($leaveTypes as $type)
+                            <option value="{{ $type->id }}" data-code="{{ $type->code }}" data-document="{{ $type->requires_document ? 1 : 0 }}" {{ (int) old('leave_type_id', $leave->leave_type_id ?? '') === $type->id ? 'selected' : '' }}>
+                                {{ $type->name }} {{ $type->annual_limit > 0 ? '(' . $type->annual_limit . ')' : '' }}
+                            </option>
+                        @endforeach
+                    </select>
                 </div>
-                <div class="col-md-6">
-                    <h6 class="text-primary mb-2"><i class="bi bi-lightbulb me-2"></i>Tips</h6>
-                    <ul class="list-unstyled mb-0">
-                        <li class="mb-1">Submit leave requests at least 2 days in advance</li>
-                        <li class="mb-1">Attach supporting documents for sick leave</li>
-                        <li>Check your leave balance before applying</li>
-                    </ul>
+
+                @if($isAdmin)
+                    <div>
+                        <label>Initial Status</label>
+                        <select name="status" class="form-control">
+                            @foreach(['pending','approved'] as $status)
+                                <option value="{{ $status }}" {{ old('status', $leave->status ?? 'pending') === $status ? 'selected' : '' }}>{{ ucfirst($status) }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                @endif
+
+                <div>
+                    <label>Start Date <span>*</span></label>
+                    <input type="date" name="start_date" id="startDate" class="form-control" value="{{ $oldStartDate }}" required>
+                </div>
+                <div>
+                    <label>End Date <span>*</span></label>
+                    <input type="date" name="end_date" id="endDate" class="form-control" value="{{ $oldEndDate }}" required>
+                </div>
+                <div>
+                    <label>Total Days</label>
+                    <input type="text" id="totalDays" class="form-control" value="{{ old('total_days', $leave->total_days ?? '1') }}" readonly>
+                </div>
+                <div>
+                    <label>Contact During Leave</label>
+                    <input type="text" name="contact_during_leave" class="form-control" value="{{ old('contact_during_leave', $leave->contact_during_leave ?? '') }}" placeholder="Phone/email for urgent contact">
+                </div>
+                <div>
+                    <label>Attachment</label>
+                    <input type="file" name="attachment" id="attachment" class="form-control" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                    @if($isEdit && $leave->attachment_path)
+                        <small><a href="{{ asset($leave->attachment_path) }}" target="_blank">Current attachment</a></small>
+                    @endif
                 </div>
             </div>
-        </div>
-    </div>
+
+            <div class="check-row">
+                <label><input type="checkbox" name="half_day_flag" id="halfDay" value="1" {{ old('half_day_flag', $leave->half_day_flag ?? false) ? 'checked' : '' }}> Half-day leave</label>
+                <label><input type="checkbox" name="emergency_flag" value="1" {{ old('emergency_flag', $leave->emergency_flag ?? false) ? 'checked' : '' }}> Emergency request</label>
+            </div>
+
+            <div class="form-grid two">
+                <div>
+                    <label>Reason <span>*</span></label>
+                    <textarea name="reason" class="form-control" rows="5" required>{{ old('reason', $leave->reason ?? '') }}</textarea>
+                </div>
+                <div>
+                    <label>Apology / Regularization Note</label>
+                    <textarea name="apology_note" class="form-control" rows="5" placeholder="Required for past Sick Leave when policy allows">{{ old('apology_note', $leave->apology_note ?? '') }}</textarea>
+                </div>
+            </div>
+
+            @if($isAdmin)
+                <div>
+                    <label>Admin Note</label>
+                    <textarea name="admin_note" class="form-control" rows="3">{{ old('admin_note', $leave->admin_note ?? '') }}</textarea>
+                </div>
+            @endif
+
+            <div class="form-actions">
+                <a href="{{ route('leaves.index') }}" class="btn btn-secondary"><i class="fas fa-times"></i> Cancel</a>
+                <button class="btn btn-primary"><i class="fas fa-paper-plane"></i> {{ $isEdit ? 'Update Leave' : 'Submit Request' }}</button>
+            </div>
+        </form>
+    </section>
 </div>
 
-@push('css')
 <style>
-    .form-label {
-        font-weight: 500;
-        margin-bottom: 0.5rem;
-    }
-    .input-group-text {
-        background-color: #f8f9fa;
-        border-color: #dee2e6;
-    }
-    .form-control:focus, .form-select:focus {
-        border-color: #86b7fe;
-        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
-    }
-    .card {
-        border-radius: 0.5rem;
-    }
-    .card-header {
-        border-bottom: 1px solid rgba(0,0,0,.125);
-    }
-    .btn {
-        padding: 0.5rem 1rem;
-        font-weight: 500;
-    }
-    .bg-light {
-        background-color: #f8f9fa !important;
-    }
-    small.text-muted {
-        font-size: 0.85rem;
-    }
+    .leave-form-page { padding: 30px 35px; min-height: 100vh; background: linear-gradient(135deg, #f0f9f4, #f7fbff); color: #102119; }
+    .leave-breadcrumb, .leave-form-hero, .policy-notice, .balance-strip, .form-card { border: 1px solid rgba(16,185,129,.12); background: rgba(255,255,255,.96); box-shadow: 0 16px 36px -20px rgba(15,23,42,.22); }
+    .leave-breadcrumb { display: inline-flex; gap: 8px; align-items: center; padding: 12px 18px; border-radius: 14px; color: #0f744c; font-weight: 900; margin-bottom: 22px; }
+    .leave-form-hero { display: flex; justify-content: space-between; gap: 18px; align-items: center; padding: 28px; border-radius: 24px; margin-bottom: 20px; }
+    .leave-form-hero h1 { margin: 0 0 6px; font-size: 34px; font-weight: 900; }
+    .leave-form-hero p, .policy-notice p { margin: 0; color: #667085; font-weight: 650; }
+    .leave-form-page .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border-radius: 12px; min-height: 44px; font-weight: 900; border: 0; }
+    .leave-form-page .btn-primary { background: linear-gradient(145deg, #34d399, #059669); color: #fff; }
+    .leave-form-page .btn-light, .leave-form-page .btn-secondary { background: #f0f9f4; color: #0f744c; border: 1px solid rgba(16,185,129,.18); }
+    .policy-notice { display: flex; gap: 12px; padding: 16px; border-radius: 18px; margin-bottom: 20px; }
+    .policy-notice i { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 12px; background: #dbeafe; color: #2563eb; flex: 0 0 auto; }
+    .balance-strip { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; padding: 18px; border-radius: 18px; margin-bottom: 20px; }
+    .balance-strip div { padding: 12px; border-radius: 14px; background: #f8fafc; }
+    .balance-strip span { display: block; color: #667085; font-size: .75rem; text-transform: uppercase; font-weight: 900; }
+    .balance-strip strong { font-size: 26px; font-weight: 900; color: #0a2e1f; }
+    .form-card { border-radius: 24px; padding: 24px; }
+    .form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 16px; }
+    .form-grid.two { grid-template-columns: 1fr 1fr; }
+    .leave-form-page label { display: block; color: #667085; text-transform: uppercase; font-size: .76rem; font-weight: 900; margin-bottom: 6px; }
+    .leave-form-page label span { color: #dc2626; }
+    .leave-form-page .form-control { min-height: 46px; border-radius: 12px; border: 1px solid #dbe7e1; font-weight: 650; }
+    .check-row { display: flex; gap: 16px; flex-wrap: wrap; margin: 6px 0 18px; }
+    .check-row label { display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; border: 1px solid #dbe7e1; border-radius: 12px; text-transform: none; font-size: .9rem; color: #172033; cursor: pointer; }
+    .form-actions { display: flex; justify-content: flex-end; gap: 12px; padding-top: 18px; margin-top: 18px; border-top: 1px solid rgba(16,185,129,.1); }
+    @media (max-width: 992px) { .leave-form-page { padding: 18px; } .leave-form-hero { flex-direction: column; align-items: flex-start; } .form-grid, .form-grid.two, .balance-strip { grid-template-columns: 1fr; } }
 </style>
-@endpush
 
 @push('js')
 <script>
-// Initialize tooltips
-document.addEventListener('DOMContentLoaded', function() {
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
-    });
-});
+document.addEventListener('DOMContentLoaded', function () {
+    const start = document.getElementById('startDate');
+    const end = document.getElementById('endDate');
+    const half = document.getElementById('halfDay');
+    const total = document.getElementById('totalDays');
+    const type = document.getElementById('leaveType');
+    const attachment = document.getElementById('attachment');
 
-function toggleDateFields(value) {
-    const singleDate = document.getElementById('single-date');
-    const multiDate = document.getElementById('multi-date');
-    const dateInput = document.getElementById('date');
-    const startDateInput = document.getElementById('start_date');
-    const endDateInput = document.getElementById('end_date');
-
-    // Clear all date inputs
-    if (dateInput) dateInput.value = '';
-    if (startDateInput) startDateInput.value = '';
-    if (endDateInput) endDateInput.value = '';
-
-    if (value === 'multiple') {
-        singleDate.classList.add('d-none');
-        multiDate.classList.remove('d-none');
-
-        // Expand multi-date to full width
-        singleDate.classList.remove('col-lg-4', 'col-md-6');
-        multiDate.classList.add('col-lg-8', 'col-md-12');
-    } else {
-        singleDate.classList.remove('d-none');
-        multiDate.classList.add('d-none');
-
-        // Reset widths
-        singleDate.classList.add('col-lg-4', 'col-md-6');
-        multiDate.classList.remove('col-lg-8', 'col-md-12');
-    }
-}
-
-// Set minimum dates to today
-document.addEventListener('DOMContentLoaded', function() {
-    const today = new Date().toISOString().split('T')[0];
-
-    // Set min dates for all date inputs
-    const dateInputs = document.querySelectorAll('input[type="date"]');
-    dateInputs.forEach(input => {
-        input.min = today;
-    });
-
-    // Initialize date fields based on saved value
-    const durationSelect = document.getElementById('duration');
-    if (durationSelect && durationSelect.value) {
-        toggleDateFields(durationSelect.value);
+    function calculateDays() {
+        if (!start.value) return;
+        if (!end.value || end.value < start.value) end.value = start.value;
+        const s = new Date(start.value + 'T00:00:00');
+        const e = new Date(end.value + 'T00:00:00');
+        const diff = Math.floor((e - s) / 86400000) + 1;
+        total.value = half.checked ? '0.5' : String(Math.max(1, diff));
+        end.min = start.value;
     }
 
-    // End date validation
-    const startDateInput = document.getElementById('start_date');
-    const endDateInput = document.getElementById('end_date');
-
-    if (startDateInput && endDateInput) {
-        startDateInput.addEventListener('change', function() {
-            if (this.value) {
-                endDateInput.min = this.value;
-                if (endDateInput.value && endDateInput.value < this.value) {
-                    endDateInput.value = this.value;
-                }
-            }
-        });
+    function syncDocumentRequired() {
+        const option = type.options[type.selectedIndex];
+        attachment.required = option && option.dataset.document === '1';
     }
 
-    // Form validation
-    const form = document.getElementById('leaveForm');
-    if (form) {
-        form.addEventListener('submit', function(e) {
-            const duration = document.getElementById('duration').value;
-            let isValid = true;
-
-            if (duration === 'multiple') {
-                const startDate = document.getElementById('start_date').value;
-                const endDate = document.getElementById('end_date').value;
-
-                if (!startDate || !endDate) {
-                    alert('Please select both start and end dates for multiple days leave.');
-                    isValid = false;
-                } else if (startDate > endDate) {
-                    alert('End date cannot be earlier than start date.');
-                    isValid = false;
-                }
-            } else {
-                const singleDate = document.getElementById('date').value;
-                if (!singleDate) {
-                    alert('Please select a date for your leave.');
-                    isValid = false;
-                }
-            }
-
-            if (!isValid) {
-                e.preventDefault();
-            }
-        });
-    }
-});
-
-// Auto-set end date based on start date for better UX
-document.addEventListener('DOMContentLoaded', function() {
-    const startDateInput = document.getElementById('start_date');
-    const endDateInput = document.getElementById('end_date');
-
-    if (startDateInput && endDateInput) {
-        startDateInput.addEventListener('change', function() {
-            if (this.value && !endDateInput.value) {
-                // Auto-set end date to same as start date if not set
-                endDateInput.value = this.value;
-            }
-        });
-    }
+    [start, end, half].forEach(el => el && el.addEventListener('change', calculateDays));
+    type && type.addEventListener('change', syncDocumentRequired);
+    calculateDays();
+    syncDocumentRequired();
 });
 </script>
 @endpush
-
 @endsection

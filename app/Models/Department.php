@@ -11,7 +11,12 @@ class Department extends Model
         'dpt_code',
         'parent_dpt_id',
         'added_by',
-        'last_updated_by'
+        'last_updated_by',
+        'archived_at',
+    ];
+
+    protected $casts = [
+        'archived_at' => 'datetime',
     ];
 
     // Parent department (if any)
@@ -30,5 +35,15 @@ class Department extends Model
     public function employeeDetails()
     {
         return $this->hasMany(EmployeeDetail::class, 'department_id');
+    }
+
+    public function addedBy()
+    {
+        return $this->belongsTo(User::class, 'added_by');
+    }
+
+    public function updatedBy()
+    {
+        return $this->belongsTo(User::class, 'last_updated_by');
     }
 }

@@ -35,6 +35,7 @@ class User extends Authenticatable
         'login_allowed',
         'archived_at',
         'email_notifications',
+        'employee_welcome_seen_at',
         // ADD THESE NEW FIELDS:
         'joining_date',
         'annual_leave_balance',
@@ -59,6 +60,7 @@ class User extends Authenticatable
             'login_allowed' => 'boolean',
             'archived_at' => 'datetime',
             'email_notifications' => 'boolean',
+            'employee_welcome_seen_at' => 'datetime',
             // ADD THESE NEW CASTS:
             'joining_date' => 'date',
             'last_leave_reset' => 'date',
@@ -101,6 +103,11 @@ class User extends Authenticatable
     public function leaveBalances()
     {
         return $this->hasMany(\App\Models\LeaveBalance::class);
+    }
+
+    public function leaveRequests()
+    {
+        return $this->hasMany(\App\Models\Leave::class, 'user_id');
     }
 
     public function currentYearBalance()

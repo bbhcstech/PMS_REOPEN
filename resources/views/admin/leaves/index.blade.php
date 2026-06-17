@@ -1,1276 +1,2436 @@
 @extends('admin.layout.app')
 
-@section('title', 'Leaves')
+@section('title', $isAdmin ? 'Leave Management' : 'My Leaves')
 
 @section('content')
 
-@php
-    // Quick fix: Fetch employee data if not passed from controller
-    if (!isset($employee_data) && auth()->user()->role === 'admin') {
-        $employee_data = \App\Models\User::orderBy('name')->get();
-    }
-@endphp
-<div class="container-fluid py-4">
-    <!-- Header -->
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4">
-        <div>
-            <h1 class="h3 mb-2 fw-bold text-dark">
-                @if(auth()->user()->role === 'admin')
-                    Leave Management
-                @else
-                    My Leaves
-                @endif
-            </h1>
-            <p class="text-muted mb-0">
-                @if(auth()->user()->role === 'admin')
-                    Manage employee leave requests and approvals
-                @else
-                    View and manage your leave requests
-                @endif
-            </p>
-        </div>
-        <div class="mt-3 mt-md-0">
-            @if(auth()->user()->role === 'admin' || auth()->user()->role === 'employee')
-                <a href="{{ route('leaves.create') }}" class="btn btn-primary px-4">
-                    <i class="bi bi-plus-circle me-2"></i>New Leave Request
-                </a>
-                @if(auth()->user()->role === 'admin')
-                <!-- Export Button -->
-                <button type="button" class="btn btn-success px-4 ms-2" data-bs-toggle="modal" data-bs-target="#exportModal">
-                    <i class="bi bi-download me-2"></i>Export
-                </button>
-                @endif
-            @endif
-        </div>
+<div class="leave-page">
+    <!-- Breadcrumb -->
+    <div class="leave-breadcrumb">
+        <i class="fas fa-calendar-check"></i> Dashboard / {{ $isAdmin ? 'Leave Management' : 'My Leaves' }}
     </div>
 
-    <!-- Success Alert -->
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show d-flex align-items-center mb-4" role="alert">
-            <i class="bi bi-check-circle-fill me-2"></i>
-            <div class="flex-grow-1">{{ session('success') }}</div>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    <!-- Header Card -->
+    <section class="leave-hero">
+        <div class="leave-hero-main">
+            <div class="leave-hero-icon"><i class="fas fa-user-clock"></i></div>
+            <div>
+                <h1>{{ $isAdmin ? 'Leave Management' : 'My Leave Dashboard' }}</h1>
+                <p>{{ $isAdmin ? 'Manage policy, balances, approvals, unpaid leaves, and employee leave history.' : 'Apply for leave, track approvals, and monitor your April-March balance.' }}</p>
+            </div>
         </div>
-    @endif
-
-    <!-- ===================== EMPLOYEE LEAVE SUMMARY ===================== -->
-    @if(auth()->user()->role === 'employee' && isset($user_leave_summary))
-    <div class="row mb-4">
-        <div class="col-md-12">
-            <div class="card border">
-                <div class="card-header bg-transparent py-3">
-                    <h5 class="card-title mb-0"><i class="bi bi-calendar-check me-2"></i>Your Leave Summary - {{ date('Y') }}</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <!-- Allocated Leaves -->
-                        <div class="col-md-3 mb-3">
-                            <div class="text-center p-3 border rounded bg-primary bg-opacity-10">
-                                <h2 class="text-primary mb-1">{{ $user_leave_summary['allocated'] }}</h2>
-                                <p class="small text-muted mb-0">Total Allocated Leaves</p>
-                                @if(auth()->user()->joining_date)
-                                <small class="text-muted">(Joined: {{ date('d M, Y', strtotime(auth()->user()->joining_date)) }})</small>
-                                @endif
-                            </div>
-                        </div>
-
-                        <!-- Leaves Taken -->
-                        <div class="col-md-3 mb-3">
-                            <div class="text-center p-3 border rounded
-                                @if($user_leave_summary['percentage'] >= 90) bg-danger bg-opacity-10
-                                @elseif($user_leave_summary['percentage'] >= 75) bg-warning bg-opacity-10
-                                @else bg-success bg-opacity-10 @endif">
-                                <h2 class="@if($user_leave_summary['percentage'] >= 90) text-danger
-                                          @elseif($user_leave_summary['percentage'] >= 75) text-warning
-                                          @else text-success @endif mb-1">
-                                    {{ $user_leave_summary['taken'] }}
-                                </h2>
-                                <p class="small text-muted mb-0">Leaves Taken</p>
-                                <div class="progress mt-2" style="height: 6px;">
-                                    <div class="progress-bar @if($user_leave_summary['percentage'] >= 90) bg-danger
-                                           @elseif($user_leave_summary['percentage'] >= 75) bg-warning
-                                           @else bg-success @endif"
-                                         style="width: {{ $user_leave_summary['percentage'] }}%">
-                                    </div>
-                                </div>
-                                <small class="text-muted">{{ round($user_leave_summary['percentage'], 1) }}% Utilized</small>
-                            </div>
-                        </div>
-
-                        <!-- Remaining Leaves -->
-                        <div class="col-md-3 mb-3">
-                            <div class="text-center p-3 border rounded bg-info bg-opacity-10">
-                                <h2 class="text-info mb-1">{{ $user_leave_summary['remaining'] }}</h2>
-                                <p class="small text-muted mb-0">Leaves Remaining</p>
-                                @if($user_leave_summary['remaining'] <= 0)
-                                <small class="text-danger">Next leaves will be unpaid</small>
-                                @elseif($user_leave_summary['remaining'] <= 3)
-                                <small class="text-warning">Only {{ $user_leave_summary['remaining'] }} leaves left</small>
-                                @endif
-                            </div>
-                        </div>
-
-                        <!-- Monetary Value -->
-                        <div class="col-md-3 mb-3">
-                            <div class="text-center p-3 border rounded bg-success bg-opacity-10">
-                                <h2 class="text-success mb-1">
-                                    ₹{{ number_format($user_leave_summary['monetary_value'], 0) }}
-                                </h2>
-                                <p class="small text-muted mb-0">Monetary Value</p>
-                                <small class="text-muted">@ ₹{{ number_format($policy->leave_monetary_value ?? 0, 0) }}/leave</small>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Warning for low leaves -->
-                    @if($user_leave_summary['remaining'] <= 0)
-                    <div class="alert alert-warning mt-3 mb-0">
-                        <i class="bi bi-exclamation-triangle me-2"></i>
-                        You have no paid leaves remaining. Any new leave requests will be marked as unpaid.
-                    </div>
-                    @elseif($user_leave_summary['remaining'] <= 3)
-                    <div class="alert alert-info mt-3 mb-0">
-                        <i class="bi bi-info-circle me-2"></i>
-                        You have only {{ $user_leave_summary['remaining'] }} paid leave(s) remaining.
-                    </div>
+        <div class="leave-hero-actions">
+            <a href="{{ route('leaves.create') }}" class="btn btn-primary"><i class="fas fa-plus-circle"></i> Apply Leave</a>
+            <a href="{{ route('leaves.calendar') }}" class="btn btn-light"><i class="fas fa-calendar-alt"></i> Calendar</a>
+            @if($isAdmin)
+                <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#policyModal"><i class="fas fa-sliders-h"></i> Policy</button>
+                <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#exportModal"><i class="fas fa-download"></i> Export</button>
+                <a href="{{ route('leaves.archive') }}" class="btn btn-light">
+                    <i class="fas fa-box-archive"></i> Archived
+                    @if(($archivedCount ?? 0) > 0)
+                        <span class="archive-count-badge">{{ $archivedCount }}</span>
                     @endif
-                </div>
-            </div>
-        </div>
-    </div>
-    @endif
-
-    <!-- ===================== ADMIN VIEW ===================== -->
-    @if(auth()->user()->role === 'admin')
-        <!-- Company Leave Policy Card -->
-        <div class="card border mb-4">
-            <div class="card-header bg-transparent py-3 d-flex justify-content-between align-items-center">
-                <h5 class="card-title mb-0"><i class="bi bi-building me-2"></i>Company Leave Policy</h5>
-                <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#policyModal">
-                    <i class="bi bi-pencil me-1"></i>Edit Policy
-                </button>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-3">
-                        <div class="text-center p-3 border rounded">
-                            <h3 class="text-primary mb-1">{{ $policy->annual_leaves ?? 18 }}</h3>
-                            <p class="small text-muted mb-0">Annual Leaves</p>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="text-center p-3 border rounded">
-                            <h3 class="mb-1">{{ $policy->pro_rate_enabled ? 'Yes' : 'No' }}</h3>
-                            <p class="small text-muted mb-0">Pro-rate Enabled</p>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="text-center p-3 border rounded">
-                            <h3 class="mb-1">{{ $policy->allow_carry_forward ? 'Yes' : 'No' }}</h3>
-                            <p class="small text-muted mb-0">Carry Forward</p>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="text-center p-3 border rounded">
-                            <h3 class="mb-1">₹{{ number_format($policy->leave_monetary_value ?? 0, 0) }}</h3>
-                            <p class="small text-muted mb-0">Value per Leave</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="row mt-3">
-                    <div class="col-md-6">
-                        <small class="text-muted">Fiscal Year:
-                            {{ date('d M, Y', strtotime($policy->fiscal_year_start ?? date('Y-04-01'))) }} -
-                            {{ date('d M, Y', strtotime($policy->fiscal_year_end ?? date('Y-03-31'))) }}
-                        </small>
-                    </div>
-                    <div class="col-md-6 text-end">
-                        <small class="text-muted">Max Carry Forward: {{ $policy->max_carry_forward ?? 'Not allowed' }} leaves</small>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Employee Leave Summary Table -->
-        <div class="card border mb-4">
-            <div class="card-header bg-transparent py-3">
-                <h5 class="card-title mb-0"><i class="bi bi-people me-2"></i>Employee Leave Summary</h5>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0">
-                        <thead>
-                            <tr class="border-bottom">
-                                <th class="py-3 fw-semibold text-dark">Employee</th>
-                                <th class="py-3 fw-semibold text-dark">Joining Date</th>
-                                <th class="py-3 fw-semibold text-dark">Allocated</th>
-                                <th class="py-3 fw-semibold text-dark">Taken</th>
-                                <th class="py-3 fw-semibold text-dark">Remaining</th>
-                                <th class="py-3 fw-semibold text-dark">Utilization</th>
-                                <th class="py-3 fw-semibold text-dark">Monetary Value</th>
-                                <th class="py-3 fw-semibold text-dark text-end">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($employee_data as $employee)
-                            @if($employee->role === 'employee')
-                            <tr>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <div class="flex-shrink-0">
-                                            <div class="rounded-circle bg-light border d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-                                                <i class="bi bi-person text-muted"></i>
-                                            </div>
-                                        </div>
-                                        <div class="flex-grow-1 ms-2">
-                                            <div class="fw-medium">{{ $employee->name }}</div>
-                                            <div class="small text-muted">{{ $employee->designation ?? 'N/A' }}</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    {{ $employee->joining_date ? date('d M, Y', strtotime($employee->joining_date)) : 'Not set' }}
-                                </td>
-                                <td>
-                                    <span class="badge bg-primary bg-opacity-10 text-primary border">
-                                        {{ $employee_summaries[$employee->id]['allocated'] ?? 0 }}
-                                    </span>
-                                </td>
-                                <td>
-                                    <span class="badge
-                                        @if(($employee_summaries[$employee->id]['percentage'] ?? 0) >= 90) bg-danger bg-opacity-10 text-danger
-                                        @elseif(($employee_summaries[$employee->id]['percentage'] ?? 0) >= 75) bg-warning bg-opacity-10 text-warning
-                                        @else bg-success bg-opacity-10 text-success @endif border">
-                                        {{ $employee_summaries[$employee->id]['taken'] ?? 0 }}
-                                    </span>
-                                </td>
-                                <td>
-                                    <span class="badge
-                                        @if(($employee_summaries[$employee->id]['remaining'] ?? 0) <= 0) bg-danger bg-opacity-10 text-danger
-                                        @elseif(($employee_summaries[$employee->id]['remaining'] ?? 0) <= 3) bg-warning bg-opacity-10 text-warning
-                                        @else bg-success bg-opacity-10 text-success @endif border">
-                                        {{ $employee_summaries[$employee->id]['remaining'] ?? 0 }}
-                                    </span>
-                                </td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <div class="progress flex-grow-1" style="height: 6px;">
-                                            <div class="progress-bar
-                                                @if(($employee_summaries[$employee->id]['percentage'] ?? 0) >= 90) bg-danger
-                                                @elseif(($employee_summaries[$employee->id]['percentage'] ?? 0) >= 75) bg-warning
-                                                @else bg-success @endif"
-                                                style="width: {{ $employee_summaries[$employee->id]['percentage'] ?? 0 }}%">
-                                            </div>
-                                        </div>
-                                        <span class="small text-muted ms-2">
-                                            {{ round($employee_summaries[$employee->id]['percentage'] ?? 0, 1) }}%
-                                        </span>
-                                    </div>
-                                </td>
-                                <td>
-                                    <span class="text-success fw-medium">
-                                        ₹{{ number_format($employee_summaries[$employee->id]['monetary_value'] ?? 0, 0) }}
-                                    </span>
-                                </td>
-                                <td class="text-end">
-                                    <form action="{{ route('leaves.reset-employee-leaves', $employee->id) }}" method="POST" class="d-inline">
-                                        @csrf
-                                        <button type="submit" class="btn btn-sm btn-outline-secondary"
-                                                onclick="return confirm('Reset leave balance for {{ $employee->name }}?')">
-                                            <i class="bi bi-arrow-clockwise"></i> Reset
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                            @endif
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- Filters Card -->
-        <div class="card border mb-4">
-            <div class="card-body p-4">
-                <h6 class="mb-3 fw-semibold text-dark">Filters</h6>
-                <form method="GET" action="{{ route('leaves.index') }}" class="row g-3">
-                    <!-- Duration Filter -->
-                    <div class="col-lg-4 col-md-6">
-                        <label for="duration" class="form-label small text-muted mb-1">Date Range</label>
-                        <div class="input-group input-group-sm">
-                            <span class="input-group-text bg-white border-end-0">
-                                <i class="bi bi-calendar text-muted"></i>
-                            </span>
-                            <input type="text"
-                                   name="duration"
-                                   id="duration"
-                                   class="form-control border-start-0"
-                                   value="{{ request('duration') }}"
-                                   placeholder="Select date range"
-                                   autocomplete="off">
-                        </div>
-                    </div>
-
-                    <!-- Action Buttons -->
-                    <div class="col-lg-8 col-md-12 d-flex align-items-end gap-2">
-                        <button type="submit" class="btn btn-primary btn-sm px-3">
-                            <i class="bi bi-funnel me-1"></i>Apply Filters
-                        </button>
-                        <a href="{{ route('leaves.index') }}" class="btn btn-outline-secondary btn-sm px-3">
-                            <i class="bi bi-x-circle me-1"></i>Clear
-                        </a>
-                    </div>
+                </a>
+                <form method="POST" action="{{ route('leaves.archive-all') }}" class="d-inline" onsubmit="return confirm('Archive all active leave requests? They can be restored later.');">
+                    @csrf
+                    <button class="btn btn-light"><i class="fas fa-boxes-packing"></i> Archive All</button>
                 </form>
-            </div>
-        </div>
-
-        <!-- Filters Card -->
-        <div class="card shadow-sm border-0 mb-4">
-            <div class="card-header bg-transparent py-3">
-                <h5 class="card-title mb-0"><i class="bi bi-funnel me-2"></i>Filter Employee</h5>
-            </div>
-            <div class="card-body">
-                <form method="GET" action="{{ route('leaves.index') }}" class="row g-3">
-                    <!-- Employee Filter -->
-                    <div class="col-lg-3 col-md-6">
-                        <label for="employee" class="form-label">
-                            Employee
-                            <i class="bi bi-info-circle text-muted ms-1"
-                               data-bs-toggle="tooltip"
-                               title="Filter by specific employee"></i>
-                        </label>
-                        <select id="employee" name="employee" class="form-select select2">
-                            <option value="">All Employees</option>
-                            @foreach($employee_data as $employee)
-                                <option value="{{ $employee->id }}"
-                                        {{ request('employee') == $employee->id ? 'selected' : '' }}>
-                                    {{ $employee->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <!-- Leave Type Filter -->
-                    <div class="col-lg-3 col-md-6">
-                        <label for="leave_type" class="form-label">
-                            Leave Type
-                        </label>
-                        <select id="leave_type" name="leave_type" class="form-select">
-                            <option value="">All Types</option>
-                            <option value="casual" {{ request('leave_type') == 'casual' ? 'selected' : '' }}>Casual Leave</option>
-                            <option value="sick" {{ request('leave_type') == 'sick' ? 'selected' : '' }}>Sick Leave</option>
-                            <option value="leave_without_pay" {{ request('leave_type') == 'leave_without_pay' ? 'selected' : '' }}>Leave Without Pay</option>
-                            <option value="half_day" {{ request('leave_type') == 'half_day' ? 'selected' : '' }}>Half Day</option>
-                        </select>
-                    </div>
-
-                    <!-- Status Filter -->
-                    <div class="col-lg-3 col-md-6">
-                        <label for="status" class="form-label">
-                            Status
-                        </label>
-                        <select id="status" name="status" class="form-select">
-                            <option value="">All Statuses</option>
-                            <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Approved</option>
-                            <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
-                            <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Rejected</option>
-                        </select>
-                    </div>
-
-                    <!-- Action Buttons -->
-                    <div class="col-lg-3 col-md-6 d-flex align-items-end">
-                        <div class="d-flex gap-2 w-100">
-                            <button type="submit" class="btn btn-primary flex-fill">
-                                <i class="bi bi-filter me-2"></i>Apply Filters
-                            </button>
-                            <a href="{{ route('leaves.index') }}" class="btn btn-outline-secondary">
-                                <i class="bi bi-x-circle"></i>
-                            </a>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- Controls Card -->
-        <div class="card border mb-4">
-            <div class="card-body py-3">
-                <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3">
-                    <!-- Bulk Actions -->
-                    <div class="d-flex flex-wrap align-items-center gap-2">
-                        <div class="form-check me-3 mb-0">
-                            <input class="form-check-input" type="checkbox" id="select-all">
-                            <label class="form-check-label small text-muted" for="select-all">Select All</label>
-                        </div>
-
-                        <div class="d-flex align-items-center gap-2">
-                            <select id="bulk-action" class="form-select form-select-sm w-auto" disabled style="display: none; width: 140px;">
-                                <option value="">Bulk Actions</option>
-                                <option value="none">No Action</option>
-                                <option value="change_status">Change Status</option>
-                                <option value="delete">Delete Selected</option>
-                            </select>
-
-                            <select id="status-dropdown" class="form-select form-select-sm w-auto" style="display: none; width: 120px;" disabled>
-                                <option value="">Select Status</option>
-                                <option value="approved">Approved</option>
-                                <option value="pending">Pending</option>
-                                <option value="rejected">Rejected</option>
-                            </select>
-
-                            <button id="apply-action" class="btn btn-primary btn-sm ms-2" style="display: none;">
-                                Apply
-                            </button>
-
-                            <button id="bulkDeleteBtn" class="btn btn-outline-danger btn-sm ms-2" disabled>
-                                <i class="bi bi-trash me-1"></i>Delete
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- View Toggle Buttons -->
-                    <div class="d-flex align-items-center gap-1">
-                        <span class="small text-muted me-2">View:</span>
-                        <div class="btn-group btn-group-sm" role="group">
-                            <a href="{{ route('leaves.index') }}"
-                               class="btn btn-outline-secondary {{ request()->routeIs('leaves.index') ? 'active' : '' }} px-3">
-                                Table
-                            </a>
-                            <a href="{{ route('leaves.calendar') }}"
-                               class="btn btn-outline-secondary {{ request()->routeIs('leaves.calendar') ? 'active' : '' }} px-3">
-                                Calendar
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    @endif
-
-    <!-- ===================== EMPLOYEE SIMPLE VIEW ===================== -->
-    @if(auth()->user()->role === 'employee')
-        <div class="row mb-4">
-            <div class="col-md-4">
-                <div class="card border">
-                    <div class="card-body py-3">
-                        <div class="d-flex align-items-center">
-                            <div class="bg-warning bg-opacity-10 rounded-circle p-2 me-3">
-                                <i class="bi bi-clock-history text-warning"></i>
-                            </div>
-                            <div>
-                                <h6 class="mb-0 fw-semibold">{{ $leaves->where('status', 'pending')->count() }}</h6>
-                                <p class="small text-muted mb-0">Pending</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card border">
-                    <div class="card-body py-3">
-                        <div class="d-flex align-items-center">
-                            <div class="bg-success bg-opacity-10 rounded-circle p-2 me-3">
-                                <i class="bi bi-check-circle text-success"></i>
-                            </div>
-                            <div>
-                                <h6 class="mb-0 fw-semibold">{{ $leaves->where('status', 'approved')->count() }}</h6>
-                                <p class="small text-muted mb-0">Approved</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card border">
-                    <div class="card-body py-3">
-                        <div class="d-flex align-items-center">
-                            <div class="bg-danger bg-opacity-10 rounded-circle p-2 me-3">
-                                <i class="bi bi-x-circle text-danger"></i>
-                            </div>
-                            <div>
-                                <h6 class="mb-0 fw-semibold">{{ $leaves->where('status', 'rejected')->count() }}</h6>
-                                <p class="small text-muted mb-0">Rejected</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    @endif
-
-    <!-- Leaves Table -->
-    <div class="card border">
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table id="leaveTable" class="table table-hover mb-0">
-                    <thead>
-                        <tr class="border-bottom">
-                            @if(auth()->user()->role === 'admin')
-                                <th width="40" class="ps-4">
-                                    <input type="checkbox" id="select-all-main">
-                                </th>
-                            @endif
-                            @if(auth()->user()->role === 'admin')
-                                <th class="py-3 fw-semibold text-dark">Employee</th>
-                            @endif
-                            <th class="py-3 fw-semibold text-dark">Leave Date</th>
-                            <th class="py-3 fw-semibold text-dark">Duration</th>
-                            <th class="py-3 fw-semibold text-dark">Status</th>
-                            <th class="py-3 fw-semibold text-dark">Type</th>
-                            <th class="py-3 fw-semibold text-dark">Paid Status</th>
-                            <th class="text-end pe-4 py-3 fw-semibold text-dark">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($leaves as $leave)
-                            <tr class="border-bottom">
-                                @if(auth()->user()->role === 'admin')
-                                    <td class="ps-4">
-                                        <input type="checkbox" class="leave-checkbox" value="{{ $leave->id }}">
-                                    </td>
-                                @endif
-
-                                @if(auth()->user()->role === 'admin')
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <div class="flex-shrink-0">
-                                                <div class="rounded-circle bg-light border d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-                                                    <i class="bi bi-person text-muted"></i>
-                                                </div>
-                                            </div>
-                                            <div class="flex-grow-1 ms-2">
-                                                <div class="fw-medium">{{ $leave->user?->name ?? 'N/A' }}</div>
-                                                <div class="small text-muted">
-                                                    Leaves: {{ $leave->user?->remaining_leaves ?? 0 }} remaining
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                @endif
-
-                                <td>
-                                    @if($leave->start_date && $leave->end_date)
-                                        <div class="text-dark">{{ $leave->start_date }} to {{ $leave->end_date }}</div>
-                                        <div class="small text-muted">
-                                            {{ \Carbon\Carbon::parse($leave->start_date)->diffInDays(\Carbon\Carbon::parse($leave->end_date)) + 1 }} days
-                                        </div>
-                                    @else
-                                        <div class="text-dark">{{ $leave->date }}</div>
-                                        <div class="small text-muted">1 day</div>
-                                    @endif
-                                </td>
-                                <td>
-                                    <span class="badge bg-light text-dark border">
-                                        {{ ucfirst($leave->duration) }}
-                                    </span>
-                                </td>
-                                <td>
-                                    @php
-                                        $statusColors = [
-                                            'approved' => ['bg' => 'success', 'class' => 'text-success'],
-                                            'pending' => ['bg' => 'warning', 'class' => 'text-warning'],
-                                            'rejected' => ['bg' => 'danger', 'class' => 'text-danger']
-                                        ];
-                                        $status = $statusColors[$leave->status] ?? ['bg' => 'secondary', 'class' => 'text-secondary'];
-                                    @endphp
-                                    <span class="badge bg-{{ $status['bg'] }} bg-opacity-10 {{ $status['class'] }} border border-{{ $status['bg'] }} border-opacity-25">
-                                        {{ ucfirst($leave->status) }}
-                                    </span>
-                                </td>
-                                <td>
-                                    <span class="text-dark">{{ ucfirst($leave->type) }}</span>
-                                </td>
-                                <td>
-                                    @if(auth()->user()->role === 'employee')
-                                        @if($leave->paid == 0)
-                                            <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25">Unpaid</span>
-                                        @elseif($leave->paid == 1)
-                                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">Paid</span>
-                                        @endif
-                                    @else
-                                        <!-- Admin sees dropdown -->
-                                        <select class="form-select form-select-sm change-paid-status"
-                                                data-leave-id="{{ $leave->id }}"
-                                                style="width: 100px;">
-                                            <option value="0" {{ $leave->paid == 0 ? 'selected' : '' }}>Unpaid</option>
-                                            <option value="1" {{ $leave->paid == 1 ? 'selected' : '' }}>Paid</option>
-                                        </select>
-                                    @endif
-                                </td>
-                                <td class="text-end pe-4">
-                                    <div class="dropdown">
-                                        <button class="btn btn-sm btn-light border"
-                                                type="button"
-                                                data-bs-toggle="dropdown"
-                                                aria-expanded="false">
-                                            <i class="bi bi-three-dots"></i>
-                                        </button>
-                                        <ul class="dropdown-menu dropdown-menu-end shadow-sm border">
-                                            <li>
-                                                <a class="dropdown-item" href="{{ route('leaves.show', $leave->id) }}">
-                                                    <i class="bi bi-eye text-muted me-2"></i>View Details
-                                                </a>
-                                            </li>
-
-                                            @if(auth()->user()->role == 'admin')
-                                                <!-- Admin actions -->
-                                                @if($leave->status !== 'approved')
-                                                <li>
-                                                    <form action="{{ route('leaves.updateStatus', $leave->id) }}" method="POST">
-                                                        @csrf
-                                                        @method('PATCH')
-                                                        <input type="hidden" name="status" value="approved">
-                                                        <button type="submit" class="dropdown-item">
-                                                            <i class="bi bi-check-circle text-success me-2"></i>Approve
-                                                        </button>
-                                                    </form>
-                                                </li>
-                                                @endif
-
-                                                @if($leave->status !== 'rejected')
-                                                <li>
-                                                    <form action="{{ route('leaves.updateStatus', $leave->id) }}" method="POST">
-                                                        @csrf
-                                                        @method('PATCH')
-                                                        <input type="hidden" name="status" value="rejected">
-                                                        <button type="submit" class="dropdown-item">
-                                                            <i class="bi bi-x-circle text-danger me-2"></i>Reject
-                                                        </button>
-                                                    </form>
-                                                </li>
-                                                @endif
-
-                                                @if($leave->status !== 'rejected')
-                                                <li>
-                                                    <a class="dropdown-item" href="{{ route('leaves.edit', $leave->id) }}">
-                                                        <i class="bi bi-pencil text-primary me-2"></i>Edit
-                                                    </a>
-                                                </li>
-                                                @endif
-
-                                                <li><hr class="dropdown-divider"></li>
-
-                                                <li>
-                                                    <form action="{{ route('leaves.destroy', $leave->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this leave?');">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit" class="dropdown-item text-danger">
-                                                            <i class="bi bi-trash me-2"></i>Delete
-                                                        </button>
-                                                    </form>
-                                                </li>
-                                            @else
-                                                <!-- Employee actions - only view and cancel pending leaves -->
-                                                @if($leave->status === 'pending')
-                                                <li>
-                                                    <form action="{{ route('leaves.destroy', $leave->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to cancel this leave request?');">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit" class="dropdown-item text-danger">
-                                                            <i class="bi bi-x-circle me-2"></i>Cancel Request
-                                                        </button>
-                                                    </form>
-                                                </li>
-                                                @endif
-                                            @endif
-                                        </ul>
-                                    </div>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- Results Info -->
-    <div class="d-flex justify-content-between align-items-center mt-3">
-        <div class="text-muted small" id="dt-custom-info">
-            @if(auth()->user()->role === 'admin')
-                Showing {{ $leaves->count() }} records
-            @else
-                You have {{ $leaves->count() }} leave request(s)
             @endif
         </div>
-    </div>
+    </section>
+
+    <!-- Flash Messages -->
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle"></i>
+            <span>{{ session('success') }}</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
+    @if($errors->any())
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle"></i>
+            <div>
+                <strong>Please fix these issues:</strong>
+                <ul class="mb-0 mt-1 ps-3">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
+    <!-- Policy Notice -->
+    <section class="policy-notice">
+        <div class="notice-icon"><i class="fas fa-info-circle"></i></div>
+        <p>{{ $policyNotice }}</p>
+    </section>
+
+    <!-- Stats Cards -->
+    <section class="leave-stats">
+        <div class="stat-card">
+            <span>Total Requests</span>
+            <strong>{{ $stats['total'] }}</strong>
+            <i class="fas fa-list-check"></i>
+        </div>
+        <div class="stat-card pending">
+            <span>Pending</span>
+            <strong>{{ $stats['pending'] }}</strong>
+            <i class="fas fa-hourglass-half"></i>
+        </div>
+        <div class="stat-card approved">
+            <span>Approved</span>
+            <strong>{{ $stats['approved'] }}</strong>
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="stat-card rejected">
+            <span>Rejected</span>
+            <strong>{{ $stats['rejected'] }}</strong>
+            <i class="fas fa-times-circle"></i>
+        </div>
+        <div class="stat-card unpaid">
+            <span>Unpaid</span>
+            <strong>{{ $stats['unpaid'] }}</strong>
+            <i class="fas fa-wallet"></i>
+        </div>
+    </section>
+
+    <!-- Balance Cards -->
+    <section class="balance-grid">
+        @forelse($balances as $balance)
+            <article class="balance-card">
+                <div class="balance-head">
+                    <div>
+                        <h3>{{ $isAdmin ? ($balance->user?->name ?? 'Employee') : 'Your Balance' }}</h3>
+                        <p>{{ $balance->leave_year ?: $balance->year }}</p>
+                    </div>
+                    <span>{{ $balance->remaining_leaves }} left</span>
+                </div>
+                <div class="balance-meter"><span style="width: {{ $balance->allocated_leaves > 0 ? min(100, ($balance->used_leaves / $balance->allocated_leaves) * 100) : 0 }}%"></span></div>
+                <div class="balance-pills">
+                    <span>SL {{ $balance->sick_allocated - $balance->sick_used }}/{{ $balance->sick_allocated }}</span>
+                    <span>CL {{ $balance->casual_allocated - $balance->casual_used }}/{{ $balance->casual_allocated }}</span>
+                    <span>ML {{ $balance->maternity_allocated - $balance->maternity_used }}/{{ $balance->maternity_allocated }}</span>
+                    <span>Unpaid {{ $balance->unpaid_used }}</span>
+                </div>
+                @if($isAdmin)
+                    <form method="POST" action="{{ route('leaves.reset-employee-leaves', $balance->user_id) }}" onsubmit="return confirm('Reset leave balance for {{ $balance->user?->name }}?');">
+                        @csrf
+                        <button class="btn btn-sm btn-outline-secondary"><i class="fas fa-rotate"></i> Reset Balance</button>
+                    </form>
+                @endif
+            </article>
+        @empty
+            <article class="balance-card">
+                <div class="balance-head">
+                    <div>
+                        <h3>No Balance Yet</h3>
+                        <p>Open or create leave requests to initialize balances.</p>
+                    </div>
+                </div>
+            </article>
+        @endforelse
+    </section>
+
+    <!-- Filter Panel -->
+    <section class="filter-panel">
+        <form method="GET" action="{{ route('leaves.index') }}" class="filter-grid">
+            <input type="hidden" name="per_page" value="{{ $perPage ?? request('per_page', 20) }}">
+            @if($isAdmin)
+                <div>
+                    <label>Employee</label>
+                    <select name="employee" class="form-control">
+                        <option value="">All Employees</option>
+                        @foreach($employees as $employee)
+                            <option value="{{ $employee->id }}" {{ request('employee') == $employee->id ? 'selected' : '' }}>{{ $employee->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            @endif
+            <div>
+                <label>Leave Type</label>
+                <select name="leave_type_id" class="form-control">
+                    <option value="">All Types</option>
+                    @foreach($leaveTypes as $type)
+                        <option value="{{ $type->id }}" {{ request('leave_type_id') == $type->id ? 'selected' : '' }}>{{ $type->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div>
+                <label>Status</label>
+                <select name="status" class="form-control">
+                    <option value="">All Status</option>
+                    @foreach(['pending','approved','rejected'] as $status)
+                        <option value="{{ $status }}" {{ request('status') === $status ? 'selected' : '' }}>{{ ucfirst($status) }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div>
+                <label>From</label>
+                <input type="date" name="from" class="form-control" value="{{ request('from') }}">
+            </div>
+            <div>
+                <label>To</label>
+                <input type="date" name="to" class="form-control" value="{{ request('to') }}">
+            </div>
+            <div class="filter-actions">
+                <button class="btn btn-primary"><i class="fas fa-filter"></i> Filter</button>
+                <a href="{{ route('leaves.index') }}" class="btn btn-secondary"><i class="fas fa-redo"></i> Reset</a>
+            </div>
+        </form>
+    </section>
+
+    <!-- Table Card -->
+    <section class="table-card">
+        <div class="table-head">
+            <div>
+                <h2>Leave Requests</h2>
+                <p>Approve, reject, convert to unpaid leave, and audit each request.</p>
+            </div>
+            @if($isAdmin)
+                <div class="table-tools">
+                    <form method="GET" action="{{ route('leaves.index') }}" class="entry-tools">
+                        @foreach(request()->except(['page', 'per_page']) as $key => $value)
+                            @if(is_array($value))
+                                @foreach($value as $item)
+                                    <input type="hidden" name="{{ $key }}[]" value="{{ $item }}">
+                                @endforeach
+                            @else
+                                <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                            @endif
+                        @endforeach
+                        <label for="per-page-select">Show</label>
+                        <select id="per-page-select" name="per_page" class="form-control form-control-sm" onchange="this.form.submit()">
+                            @foreach([10, 20, 30, 50, 100] as $size)
+                                <option value="{{ $size }}" {{ ($perPage ?? 20) == $size ? 'selected' : '' }}>{{ $size }}</option>
+                            @endforeach
+                        </select>
+                        <span>entries</span>
+                    </form>
+                    <div class="bulk-tools">
+                        <select id="bulk-action" class="form-control form-control-sm">
+                            <option value="">Bulk Action</option>
+                            <option value="archive">Archive Selected</option>
+                            <option value="change_status">Change Status</option>
+                            <option value="delete">Delete</option>
+                        </select>
+                        <select id="status-dropdown" class="form-control form-control-sm" style="display:none">
+                            <option value="">Status</option>
+                            <option value="approved">Approved</option>
+                            <option value="rejected">Rejected</option>
+                            <option value="unpaid">Convert to Unpaid</option>
+                            <option value="pending">Pending</option>
+                        </select>
+                        <button type="button" id="apply-action" class="btn btn-sm btn-primary">Apply</button>
+                    </div>
+                </div>
+            @endif
+        </div>
+        <div class="table-responsive">
+            <table class="table leave-table" id="leaveTable">
+                <thead>
+                    <tr>
+                        @if($isAdmin)<th width="44"><input type="checkbox" id="select-all" class="form-check-input"></th>@endif
+                        <th>Employee</th>
+                        <th>Type</th>
+                        <th>Dates</th>
+                        <th>Days</th>
+                        <th>Payment</th>
+                        <th>Status</th>
+                        <th>Reason</th>
+                        <th class="text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($leaves as $leave)
+                        @php
+                            $statusClass = ['pending' => 'warning', 'approved' => 'success', 'rejected' => 'danger'][$leave->status] ?? 'secondary';
+                            $currentStatusValue = $leave->is_unpaid ? 'unpaid' : $leave->status;
+                            $statusSelectClass = $currentStatusValue === 'unpaid' ? 'unpaid' : $statusClass;
+                        @endphp
+                        <tr>
+                            @if($isAdmin)<td><input type="checkbox" class="form-check-input leave-checkbox" value="{{ $leave->id }}"></td>@endif
+                            <td>
+                                <strong>{{ $leave->user?->name ?? 'N/A' }}</strong>
+                                <small>{{ $leave->user?->employeeDetail?->department?->dpt_name ?? $leave->user?->designation ?? 'Employee' }}</small>
+                            </td>
+                            <td><span class="type-badge">{{ $leave->type_label }}</span></td>
+                            <td>
+                                <strong>{{ optional($leave->start_date)->format('d M Y') }}</strong>
+                                <small>{{ optional($leave->end_date)->format('d M Y') }}</small>
+                            </td>
+                            <td>{{ number_format((float) $leave->total_days, 1) }}</td>
+                            <td>
+                                @php
+                                    $paidDays = (float) ($leave->paid_days ?? 0);
+                                    $unpaidDays = (float) ($leave->unpaid_days ?? 0);
+                                @endphp
+                                <span class="pay-badge {{ $unpaidDays > 0 ? 'unpaid' : 'paid' }}">
+                                    @if($paidDays > 0 && $unpaidDays > 0)
+                                        Partial Unpaid
+                                    @else
+                                        {{ $unpaidDays > 0 ? 'Unpaid' : 'Paid' }}
+                                    @endif
+                                </span>
+                                @if($paidDays > 0 || $unpaidDays > 0)
+                                    <small>{{ number_format($paidDays, 1) }} paid / {{ number_format($unpaidDays, 1) }} unpaid</small>
+                                @endif
+                            </td>
+                            <td>
+                                @if($isAdmin)
+                                    <form method="POST" action="{{ route('leaves.updateStatus', $leave->id) }}" class="status-change-form">
+                                        @csrf
+                                        @method('PATCH')
+                                        <select name="status"
+                                                class="form-control form-control-sm status-select {{ $statusSelectClass }}"
+                                                data-original-status="{{ $currentStatusValue }}"
+                                                aria-label="Change leave status">
+                                            <option value="pending" {{ $currentStatusValue === 'pending' ? 'selected' : '' }}>Pending</option>
+                                            <option value="approved" {{ $currentStatusValue === 'approved' ? 'selected' : '' }}>Approved</option>
+                                            <option value="rejected" {{ $currentStatusValue === 'rejected' ? 'selected' : '' }}>Rejected</option>
+                                            <option value="unpaid" {{ $currentStatusValue === 'unpaid' ? 'selected' : '' }}>Unpaid</option>
+                                        </select>
+                                    </form>
+                                @else
+                                    <span class="status-badge {{ $statusClass }}">{{ ucfirst($leave->status) }}</span>
+                                @endif
+                            </td>
+                            <td class="reason-cell">{{ \Illuminate\Support\Str::limit($leave->reason, 58) }}</td>
+                            <td class="text-end">
+                                <div class="action-row">
+                                    <a href="{{ route('leaves.show', $leave->id) }}" class="btn btn-sm btn-light" title="View"><i class="fas fa-eye"></i></a>
+                                    @if($leave->status === 'pending' || $isAdmin)
+                                        <a href="{{ route('leaves.edit', $leave->id) }}" class="btn btn-sm btn-light" title="Edit"><i class="fas fa-pen"></i></a>
+                                    @endif
+                                    @if($isAdmin)
+                                        <form method="POST" action="{{ route('leaves.updateStatus', $leave->id) }}" class="d-inline">
+                                            @csrf
+                                            @method('PATCH')
+                                            <input type="hidden" name="status" value="approved">
+                                            <button class="btn btn-sm btn-success" title="Approve"><i class="fas fa-check"></i></button>
+                                        </form>
+                                        <form method="POST" action="{{ route('leaves.updateStatus', $leave->id) }}" class="d-inline">
+                                            @csrf
+                                            @method('PATCH')
+                                            <input type="hidden" name="status" value="unpaid">
+                                        <button class="btn btn-sm btn-warning" title="Unpaid"><i class="fas fa-wallet"></i></button>
+                                    </form>
+                                    <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal{{ $leave->id }}" title="Reject"><i class="fas fa-times"></i></button>
+                                        <form method="POST" action="{{ route('leaves.archive.action', $leave->id) }}" class="d-inline" onsubmit="return confirm('Archive this leave request? It can be restored later.');">
+                                            @csrf
+                                            <button class="btn btn-sm btn-secondary" title="Archive"><i class="fas fa-box-archive"></i></button>
+                                        </form>
+                                    @endif
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="{{ $isAdmin ? 9 : 8 }}" class="text-center py-5">
+                                <div class="empty-state"><i class="fas fa-calendar-times"></i><h3>No leave requests found</h3></div>
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+        <div class="pagination-wrap">{{ $leaves->links() }}</div>
+    </section>
 </div>
 
-<!-- Leave Policy Modal -->
-<div class="modal fade" id="policyModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
+<!-- Reject Modals -->
+@foreach($leaves as $leave)
+<div class="modal fade" id="rejectModal{{ $leave->id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <form class="modal-content" method="POST" action="{{ route('leaves.updateStatus', $leave->id) }}">
+            @csrf
+            @method('PATCH')
+            <input type="hidden" name="status" value="rejected">
             <div class="modal-header">
-                <h5 class="modal-title"><i class="bi bi-gear me-2"></i>Edit Leave Policy</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="modal-title">Reject Leave</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form method="POST" action="{{ route('leaves.update-policy') }}">
-                @csrf
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Annual Leaves Per Employee</label>
-                            <input type="number" name="annual_leaves" class="form-control"
-                                   value="{{ $policy->annual_leaves ?? 18 }}" required min="1">
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Monetary Value per Leave (₹)</label>
-                            <input type="number" step="0.01" name="leave_monetary_value"
-                                   class="form-control" value="{{ $policy->leave_monetary_value ?? 0 }}">
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Fiscal Year Start</label>
-                            <input type="date" name="fiscal_year_start" class="form-control"
-                                   value="{{ $policy->fiscal_year_start ?? date('Y-04-01') }}" required>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Fiscal Year End</label>
-                            <input type="date" name="fiscal_year_end" class="form-control"
-                                   value="{{ $policy->fiscal_year_end ?? date('Y-03-31') }}" required>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" name="pro_rate_enabled"
-                                       value="1" {{ $policy->pro_rate_enabled ? 'checked' : '' }}>
-                                <label class="form-check-label">Enable Pro-rate Calculation</label>
-                            </div>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" name="allow_carry_forward"
-                                       value="1" {{ $policy->allow_carry_forward ? 'checked' : '' }}>
-                                <label class="form-check-label">Allow Leave Carry Forward</label>
-                            </div>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Max Carry Forward (leaves)</label>
-                            <input type="number" name="max_carry_forward" class="form-control"
-                                   value="{{ $policy->max_carry_forward ?? '' }}" placeholder="Leave empty for unlimited">
-                        </div>
-                    </div>
+            <div class="modal-body">
+                <label class="form-label">Rejection Reason</label>
+                <textarea name="rejection_reason" class="form-control" rows="4" required></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button class="btn btn-danger">Reject</button>
+            </div>
+        </form>
+    </div>
+</div>
+@endforeach
+
+<!-- Policy Modal -->
+@if($isAdmin)
+<div class="modal fade" id="policyModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <form class="modal-content" method="POST" action="{{ route('leaves.update-policy') }}">
+            @csrf
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-sliders-h me-2"></i>Leave Policy Configuration</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="policy-grid">
+                    <div><label>Annual Leaves</label><input type="number" step="0.5" name="annual_leaves" class="form-control" value="{{ $policy->annual_leaves }}" required></div>
+                    <div><label>Sick Leave Limit</label><input type="number" step="0.5" name="sick_leave_limit" class="form-control" value="{{ $policy->sick_leave_limit }}" required></div>
+                    <div><label>Casual Leave Limit</label><input type="number" step="0.5" name="casual_leave_limit" class="form-control" value="{{ $policy->casual_leave_limit }}" required></div>
+                    <div><label>Maternity Leave Limit</label><input type="number" step="0.5" name="maternity_leave_limit" class="form-control" value="{{ $policy->maternity_leave_limit }}" required></div>
+                    <div><label>CL Advance Days</label><input type="number" name="casual_advance_days" class="form-control" value="{{ $policy->casual_advance_days }}" required></div>
+                    <div><label>Manual Review Days</label><input type="number" name="casual_manual_review_days" class="form-control" value="{{ $policy->casual_manual_review_days }}" required></div>
+                    <div><label>Max Carry Forward</label><input type="number" name="max_carry_forward" class="form-control" value="{{ $policy->max_carry_forward }}"></div>
+                    <div><label>Leave Value</label><input type="number" step="0.01" name="leave_monetary_value" class="form-control" value="{{ $policy->leave_monetary_value }}"></div>
+                    <div><label>Unpaid Handling</label><select name="unpaid_leave_handling" class="form-control"><option value="unpaid_leave" {{ $policy->unpaid_leave_handling === 'unpaid_leave' ? 'selected' : '' }}>Unpaid Leave</option><option value="absent" {{ $policy->unpaid_leave_handling === 'absent' ? 'selected' : '' }}>Absent</option></select></div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save Policy</button>
+                <div class="switch-grid">
+                    @foreach([
+                        'auto_approve_casual_leave' => 'Auto approve eligible Casual Leave',
+                        'hr_approval_required' => 'HR approval mandatory',
+                        'allow_sick_apology' => 'Allow Sick Leave apology',
+                        'allow_carry_forward' => 'Allow carry forward',
+                        'maternity_is_paid' => 'Maternity leave is paid',
+                        'maternity_requires_document' => 'Maternity document required',
+                    ] as $field => $label)
+                        <label class="switch-line">
+                            <input type="checkbox" name="{{ $field }}" value="1" {{ $policy->{$field} ? 'checked' : '' }}>
+                            <span>{{ $label }}</span>
+                        </label>
+                    @endforeach
                 </div>
-            </form>
-        </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button class="btn btn-primary">Save Policy</button>
+            </div>
+        </form>
     </div>
 </div>
 
 <!-- Export Modal -->
 <div class="modal fade" id="exportModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <form class="modal-content export-modal" id="leaveExportForm" method="GET" action="{{ route('leaves.export') }}">
             <div class="modal-header">
-                <h5 class="modal-title"><i class="bi bi-download me-2"></i>Export Leaves Data</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div>
+                    <h5 class="modal-title"><i class="fas fa-download me-2"></i>Export Leave Report</h5>
+                    <p class="export-subtitle">Export all active leave requests, or narrow the report with filters.</p>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form method="GET" action="{{ route('leaves.export') }}" target="_blank">
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">Export Format</label>
-                        <select name="type" class="form-select" required>
-                            <option value="excel">Excel (.xlsx)</option>
-                            <option value="pdf">PDF (.pdf)</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Date Range (Optional)</label>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <input type="date" name="from" class="form-control" placeholder="From Date">
+            <div class="modal-body">
+                <div class="export-layout">
+                    <section class="export-filters">
+                        <h6>Report Filters</h6>
+                        <div class="export-filter-grid">
+                            <div>
+                                <label class="form-label">Employee</label>
+                                <select name="employee" class="form-control">
+                                    <option value="">All Employees</option>
+                                    @foreach($employees as $employee)
+                                        <option value="{{ $employee->id }}">{{ $employee->name }}</option>
+                                    @endforeach
+                                </select>
                             </div>
-                            <div class="col-md-6">
-                                <input type="date" name="to" class="form-control" placeholder="To Date">
+                            <div>
+                                <label class="form-label">Leave Type</label>
+                                <select name="leave_type_id" class="form-control">
+                                    <option value="">All Types</option>
+                                    @foreach($leaveTypes as $type)
+                                        <option value="{{ $type->id }}">{{ $type->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div>
+                                <label class="form-label">Status</label>
+                                <select name="status" class="form-control">
+                                    <option value="">All Statuses</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="approved">Approved</option>
+                                    <option value="rejected">Rejected</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="form-label">From</label>
+                                <input type="date" name="from" class="form-control">
+                            </div>
+                            <div>
+                                <label class="form-label">To</label>
+                                <input type="date" name="to" class="form-control">
                             </div>
                         </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Employee (Optional)</label>
-                        <select name="employee" class="form-select">
-                            <option value="">All Employees</option>
-                            @foreach($employee_data as $employee)
-                                <option value="{{ $employee->id }}">{{ $employee->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Export</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+                    </section>
 
-<!-- Multiple Leaves Modal -->
-@foreach($leaves as $leave)
-@if($leave->duration === 'multiple')
-<div class="modal fade" id="leaveModal{{ $leave->id }}" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content border">
-            <div class="modal-header border-bottom">
-                <h5 class="modal-title">
-                    <i class="bi bi-calendar-week me-2"></i>
-                    Leave Details - {{ $leave->user?->name ?? 'Unknown User' }}
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th class="ps-3">Date</th>
-                                <th>Day</th>
-                                <th>Type</th>
-                                <th>Paid</th>
-                                <th>Status</th>
-                                @if(auth()->user()->role === 'admin')
-                                    <th class="text-end pe-3">Action</th>
-                                @endif
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @php
-                                $start = \Carbon\Carbon::parse($leave->start_date);
-                                $end = \Carbon\Carbon::parse($leave->end_date);
-                            @endphp
-
-                            @for ($date = $start; $date->lte($end); $date->addDay())
-                                <tr>
-                                    <td class="ps-3">{{ $date->format('d-m-Y') }}</td>
-                                    <td>{{ $date->format('l') }}</td>
-                                    <td>
-                                        <span class="text-dark">{{ ucfirst($leave->type) }}</span>
-                                    </td>
-                                    <td>
-                                        @if($leave->paid == 1)
-                                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">Paid</span>
-                                        @else
-                                            <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25">Unpaid</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-{{ $statusColors[$leave->status] ?? 'secondary' }} bg-opacity-10 text-{{ $statusColors[$leave->status] ?? 'secondary' }} border border-{{ $statusColors[$leave->status] ?? 'secondary' }} border-opacity-25">
-                                            {{ ucfirst($leave->status) }}
-                                        </span>
-                                    </td>
-                                    @if(auth()->user()->role === 'admin')
-                                    <td class="text-end pe-3">
-                                        <form action="{{ route('leaves.destroy', $leave->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this leave?');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-outline-danger">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </form>
-                                    </td>
-                                    @endif
-                                </tr>
-                            @endfor
-                        </tbody>
-                    </table>
+                    <section class="export-actions-panel">
+                        <h6>Export Format</h6>
+                        <div class="export-action-grid">
+                            <button type="button" class="export-tile copy" id="copyLeaveExport">
+                                <i class="fas fa-copy"></i>
+                                <span>Copy</span>
+                                <small>Clipboard text</small>
+                            </button>
+                            <button class="export-tile excel" name="type" value="excel">
+                                <i class="fas fa-file-excel"></i>
+                                <span>Excel</span>
+                                <small>.xls file</small>
+                            </button>
+                            <button class="export-tile csv" name="type" value="csv">
+                                <i class="fas fa-file-csv"></i>
+                                <span>CSV</span>
+                                <small>Spreadsheet CSV</small>
+                            </button>
+                            <button class="export-tile pdf" name="type" value="pdf">
+                                <i class="fas fa-file-pdf"></i>
+                                <span>PDF</span>
+                                <small>Download report</small>
+                            </button>
+                            <button class="export-tile print" name="type" value="print" formtarget="_blank">
+                                <i class="fas fa-print"></i>
+                                <span>Print</span>
+                                <small>Printable view</small>
+                            </button>
+                        </div>
+                    </section>
                 </div>
+                <div class="export-copy-status" id="exportCopyStatus" aria-live="polite"></div>
             </div>
-        </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </form>
     </div>
 </div>
 @endif
-@endforeach
 
-@push('css')
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css">
 <style>
-    .card {
-        border-color: #e0e0e0;
+    /* ===== PREMIUM LEAVE PAGE STYLES - LARGER TEXT & BRIGHTER ICONS ===== */
+    .leave-page {
+        padding: 30px 35px;
+        min-height: 100vh;
+        background: linear-gradient(135deg, #f0f9f4 0%, #e6f3ec 50%, #f4fbf7 100%);
+        color: #0a2e1f;
+        position: relative;
     }
-    .table th {
-        font-weight: 600;
-        font-size: 0.875rem;
-        color: #495057;
-        background-color: #f8f9fa;
+
+    .leave-page::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(circle at 0% 0%, rgba(16, 185, 129, 0.03) 0%, transparent 50%),
+                    radial-gradient(circle at 100% 100%, rgba(52, 211, 153, 0.03) 0%, transparent 50%);
+        pointer-events: none;
     }
-    .table td {
-        vertical-align: middle;
-        padding: 1rem 0.75rem;
+
+    /* Breadcrumb */
+    .leave-breadcrumb {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 16px 26px;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(16, 185, 129, 0.15);
+        color: #0f744c;
+        font-weight: 700;
+        font-size: 1.1rem;
+        margin-bottom: 28px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+        position: relative;
+        z-index: 1;
+        animation: fadeDown 0.4s ease;
     }
-    .badge {
-        font-size: 0.75rem;
+
+    .leave-breadcrumb i {
+        color: #34d399;
+        font-size: 1.3rem;
+        filter: drop-shadow(0 0 2px rgba(52, 211, 153, 0.2));
+    }
+
+    @keyframes fadeDown {
+        from { opacity: 0; transform: translateY(-16px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes scaleIn {
+        from { opacity: 0; transform: scale(0.96); }
+        to { opacity: 1; transform: scale(1); }
+    }
+
+    /* Header Card */
+    .leave-hero {
+        background: rgba(255, 255, 255, 0.96);
+        backdrop-filter: blur(8px);
+        border-radius: 28px;
+        padding: 32px 36px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        box-shadow: 0 20px 40px -12px rgba(16, 185, 129, 0.12);
+        border: 1px solid rgba(16, 185, 129, 0.12);
+        margin-bottom: 28px;
+        transition: all 0.3s ease;
+        position: relative;
+        z-index: 1;
+        animation: fadeDown 0.5s ease;
+    }
+
+    .leave-hero:hover {
+        box-shadow: 0 24px 48px -16px rgba(16, 185, 129, 0.18);
+        border-color: rgba(16, 185, 129, 0.2);
+        transform: translateY(-2px);
+    }
+
+    .leave-hero-main {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+    }
+
+    .leave-hero-icon {
+        width: 80px;
+        height: 80px;
+        display: grid;
+        place-items: center;
+        border-radius: 24px;
+        color: #fff;
+        font-size: 38px;
+        background: linear-gradient(145deg, #34d399, #059669);
+        box-shadow: 0 12px 24px -8px rgba(5, 150, 105, 0.35);
+        transition: all 0.3s ease;
+        filter: brightness(1.1);
+    }
+
+    .leave-hero:hover .leave-hero-icon {
+        transform: scale(1.03);
+    }
+
+    .leave-hero h1 {
+        margin: 0 0 6px;
+        font-size: 38px;
+        font-weight: 800;
+        color: #0a2e1f;
+        letter-spacing: -0.5px;
+    }
+
+    .leave-hero p {
+        margin: 0;
+        color: #5a6e63;
         font-weight: 500;
-        padding: 0.25rem 0.5rem;
+        font-size: 1.1rem;
     }
-    .dropdown-menu {
-        min-width: 180px;
-        border-color: #e0e0e0;
+
+    .leave-hero-actions {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        align-items: center;
     }
-    .form-select-sm {
-        padding: 0.25rem 0.5rem;
-        font-size: 0.875rem;
+
+    /* Buttons */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        border-radius: 14px;
+        font-weight: 700;
+        border: 0;
+        min-height: 50px;
+        padding: 0 28px;
+        font-size: 1.05rem;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        text-decoration: none;
     }
-    .daterangepicker {
-        z-index: 1055 !important;
-        font-family: inherit;
+
+    .btn i {
+        font-size: 1.15rem;
+        filter: brightness(1.1);
     }
-    .table-hover tbody tr:hover {
-        background-color: #f8f9fa;
+
+    .archive-count-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 22px;
+        height: 22px;
+        margin-left: 2px;
+        padding: 0 7px;
+        border-radius: 999px;
+        background: #ffedd5;
+        color: #c2410c;
+        font-size: 0.78rem;
+        font-weight: 800;
     }
-    .btn-group .btn.active {
-        background-color: #0d6efd;
-        border-color: #0d6efd;
-        color: white;
+
+    .btn-primary {
+        background: linear-gradient(145deg, #34d399, #059669);
+        color: #fff;
+        box-shadow: 0 8px 20px -6px rgba(5, 150, 105, 0.35);
     }
-    .border-bottom {
-        border-bottom-color: #e0e0e0 !important;
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 28px -8px rgba(5, 150, 105, 0.45);
     }
-    .input-group-sm > .form-control,
-    .input-group-sm > .form-select {
-        padding: 0.25rem 0.5rem;
-        font-size: 0.875rem;
+
+    .btn-light {
+        background: #f0f9f4;
+        color: #0f744c;
+        border: 1px solid rgba(16, 185, 129, 0.18);
+        font-weight: 700;
     }
-    .bg-opacity-10 {
-        --bs-bg-opacity: 0.1;
+
+    .btn-light:hover {
+        background: #e6f3ec;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px -8px rgba(16, 185, 129, 0.25);
+        border-color: #34d399;
     }
-    .border-opacity-25 {
-        --bs-border-opacity: 0.25;
+
+    .btn-secondary {
+        background: #f3f4f6;
+        color: #374151;
+        border: 1px solid #e5e7eb;
+        font-weight: 700;
     }
-    .form-check-input:checked {
-        background-color: #0d6efd;
-        border-color: #0d6efd;
+
+    .btn-secondary:hover {
+        background: #e5e7eb;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
     }
-    .text-dark {
-        color: #212529 !important;
+
+    .btn-success {
+        background: linear-gradient(145deg, #34d399, #059669);
+        color: #fff;
+        min-height: 40px;
+        padding: 0 16px;
+        font-size: 0.95rem;
+        border-radius: 12px;
     }
-    .fw-semibold {
-        font-weight: 600 !important;
+
+    .btn-success:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
     }
-    .fw-medium {
-        font-weight: 500 !important;
+
+    .btn-warning {
+        background: linear-gradient(145deg, #fbbf24, #f59e0b);
+        color: #fff;
+        min-height: 40px;
+        padding: 0 16px;
+        font-size: 0.95rem;
+        border-radius: 12px;
     }
-    /* New styles for leave summary */
-    .progress {
-        background-color: #e9ecef;
+
+    .btn-warning:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
     }
-    .progress-bar {
+
+    .btn-danger {
+        background: linear-gradient(145deg, #ef4444, #dc2626);
+        color: #fff;
+        min-height: 40px;
+        padding: 0 16px;
+        font-size: 0.95rem;
+        border-radius: 12px;
+    }
+
+    .btn-danger:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+    }
+
+    .btn-sm {
+        min-height: 38px;
+        padding: 0 16px;
+        font-size: 0.9rem;
+        border-radius: 10px;
+    }
+
+    /* Alerts */
+    .alert {
+        border-radius: 18px;
+        border: none;
+        padding: 18px 24px;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        animation: fadeDown 0.4s ease;
+        position: relative;
+        z-index: 1;
+        border-left: 5px solid;
+        font-size: 1.05rem;
+    }
+
+    .alert-success {
+        background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+        color: #065f46;
+        border-left-color: #10b981;
+    }
+
+    .alert-danger {
+        background: linear-gradient(135deg, #fef2f2, #fee2e2);
+        color: #991b1b;
+        border-left-color: #ef4444;
+    }
+
+    .alert i {
+        font-size: 1.4rem;
+        margin-top: 2px;
+        filter: brightness(1.1);
+    }
+
+    .alert ul {
+        margin-bottom: 0;
+        font-size: 1rem;
+    }
+
+    /* Policy Notice */
+    .policy-notice {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        padding: 20px 26px;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.92);
+        border: 1px solid rgba(16, 185, 129, 0.12);
+        margin-bottom: 24px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+        position: relative;
+        z-index: 1;
+        animation: fadeUp 0.5s ease;
+    }
+
+    .notice-icon {
+        width: 48px;
+        height: 48px;
+        display: grid;
+        place-items: center;
+        border-radius: 14px;
+        background: #dbeafe;
+        color: #2563eb;
+        flex: 0 0 auto;
+        font-size: 1.4rem;
+        filter: brightness(1.1);
+    }
+
+    .policy-notice p {
+        margin: 0;
+        color: #475569;
+        font-weight: 500;
+        font-size: 1.05rem;
+    }
+
+    /* Stats Cards */
+    .leave-stats {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 18px;
+        margin-bottom: 24px;
+        position: relative;
+        z-index: 1;
+        animation: fadeUp 0.55s ease;
+    }
+
+    .stat-card {
+        position: relative;
+        padding: 24px 22px;
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.95);
+        border: 1px solid rgba(16, 185, 129, 0.1);
+        overflow: hidden;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 35px -12px rgba(16, 185, 129, 0.15);
+        border-color: rgba(16, 185, 129, 0.2);
+    }
+
+    .stat-card::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+    }
+
+    .stat-card:nth-child(1)::after { background: linear-gradient(90deg, #34d399, #059669); }
+    .stat-card:nth-child(2)::after { background: linear-gradient(90deg, #f59e0b, #d97706); }
+    .stat-card:nth-child(3)::after { background: linear-gradient(90deg, #10b981, #059669); }
+    .stat-card:nth-child(4)::after { background: linear-gradient(90deg, #ef4444, #dc2626); }
+    .stat-card:nth-child(5)::after { background: linear-gradient(90deg, #8b5cf6, #7c3aed); }
+
+    .stat-card:hover::after {
+        transform: scaleX(1);
+    }
+
+    .stat-card span {
+        display: block;
+        color: #6b7280;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+    }
+
+    .stat-card strong {
+        display: block;
+        font-size: 38px;
+        font-weight: 800;
+        color: #0a2e1f;
+        line-height: 1.2;
+        margin-top: 4px;
+    }
+
+    .stat-card i {
+        position: absolute;
+        right: 18px;
+        bottom: 14px;
+        color: rgba(16, 185, 129, 0.12);
+        font-size: 42px;
+        filter: brightness(1.2);
+    }
+
+    /* Balance Grid */
+    .balance-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 18px;
+        margin-bottom: 24px;
+        position: relative;
+        z-index: 1;
+        animation: fadeUp 0.6s ease;
+    }
+
+    .balance-card {
+        padding: 24px 26px;
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.95);
+        border: 1px solid rgba(16, 185, 129, 0.1);
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+    }
+
+    .balance-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 30px -10px rgba(16, 185, 129, 0.12);
+        border-color: rgba(16, 185, 129, 0.18);
+    }
+
+    .balance-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    .balance-head h3 {
+        margin: 0;
+        font-size: 1.3rem;
+        font-weight: 800;
+        color: #0a2e1f;
+    }
+
+    .balance-head p {
+        margin: 4px 0 0;
+        color: #8ba198;
+        font-size: 0.95rem;
+        font-weight: 500;
+    }
+
+    .balance-head span {
+        padding: 8px 18px;
+        border-radius: 999px;
+        color: #047857;
+        background: #d1fae5;
+        font-weight: 800;
+        font-size: 1rem;
+        white-space: nowrap;
+    }
+
+    .balance-meter {
+        height: 10px;
+        border-radius: 999px;
+        background: #e5e7eb;
+        overflow: hidden;
+        margin-bottom: 16px;
+    }
+
+    .balance-meter span {
+        display: block;
+        height: 100%;
+        background: linear-gradient(90deg, #34d399, #059669);
+        border-radius: 999px;
         transition: width 0.6s ease;
     }
+
+    .balance-pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 14px;
+    }
+
+    .balance-pills span {
+        display: inline-flex;
+        padding: 8px 16px;
+        border-radius: 999px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        background: #f0f9f4;
+        color: #0f744c;
+        border: 1px solid rgba(16, 185, 129, 0.08);
+    }
+
+    /* Filter Panel */
+    .filter-panel {
+        border-radius: 22px;
+        background: rgba(255, 255, 255, 0.95);
+        border: 1px solid rgba(16, 185, 129, 0.1);
+        padding: 24px 28px;
+        margin-bottom: 24px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+        position: relative;
+        z-index: 1;
+        animation: fadeUp 0.65s ease;
+    }
+
+    .filter-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 18px;
+        align-items: end;
+    }
+
+    .leave-page label {
+        font-size: 0.85rem;
+        color: #6b7280;
+        text-transform: uppercase;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        margin-bottom: 6px;
+        display: block;
+    }
+
+    .leave-page .form-control {
+        min-height: 48px;
+        border-radius: 12px;
+        border: 1.5px solid #e2e8f0;
+        font-weight: 500;
+        font-size: 1rem;
+        color: #0a2e1f;
+        background: #ffffff;
+        transition: all 0.2s ease;
+        padding: 10px 16px;
+        width: 100%;
+    }
+
+    .leave-page .form-control:focus {
+        border-color: #34d399;
+        box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.08);
+        outline: none;
+    }
+
+    .filter-actions {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .filter-actions .btn {
+        min-height: 48px;
+        padding: 0 24px;
+        font-size: 1rem;
+    }
+
+    /* Table Card */
+    .table-card {
+        border-radius: 24px;
+        background: rgba(255, 255, 255, 0.95);
+        border: 1px solid rgba(16, 185, 129, 0.1);
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+        position: relative;
+        z-index: 1;
+        animation: fadeUp 0.7s ease;
+    }
+
+    .table-card:hover {
+        box-shadow: 0 8px 30px rgba(16, 185, 129, 0.06);
+    }
+
+    .table-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 22px 28px;
+        background: linear-gradient(135deg, #fafefb, #f0f9f4);
+        border-bottom: 1px solid rgba(16, 185, 129, 0.08);
+    }
+
+    .table-head h2 {
+        margin: 0;
+        font-size: 1.35rem;
+        font-weight: 700;
+        color: #0a2e1f;
+    }
+
+    .table-head p {
+        margin: 4px 0 0;
+        color: #8ba198;
+        font-size: 0.95rem;
+        font-weight: 500;
+    }
+
+    .table-tools {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 14px;
+        flex-wrap: wrap;
+    }
+
+    .entry-tools {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        border: 1px solid rgba(16, 185, 129, 0.12);
+        border-radius: 12px;
+        background: #ffffff;
+        color: #475569;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .entry-tools label {
+        margin: 0;
+        color: #475569;
+        font-size: 0.82rem;
+        letter-spacing: 0.04em;
+    }
+
+    .entry-tools span {
+        font-size: 0.9rem;
+    }
+
+    .entry-tools .form-control {
+        width: 82px;
+        min-height: 36px;
+        padding: 4px 28px 4px 10px;
+        border-radius: 9px;
+        font-weight: 800;
+    }
+
+    .bulk-tools {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .bulk-tools .form-control {
+        min-height: 40px;
+        padding: 6px 14px;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 10px;
+        font-size: 0.95rem;
+        font-weight: 500;
+        color: #0a2e1f;
+        background: #ffffff;
+        transition: all 0.2s ease;
+        width: 180px;
+    }
+
+    .bulk-tools .form-control:focus {
+        border-color: #34d399;
+        box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.08);
+        outline: none;
+    }
+
+    /* Table Styling */
+    .leave-table {
+        margin: 0;
+        font-size: 1rem;
+        border-collapse: separate;
+        border-spacing: 0 4px;
+    }
+
+    .leave-table thead th {
+        padding: 16px 18px;
+        background: #f8fafc !important;
+        color: #5a6e63;
+        font-size: 0.85rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        border-bottom: 2px solid #e2e8f0;
+        white-space: nowrap;
+    }
+
+    .leave-table thead th i {
+        filter: brightness(1.2);
+        color: #34d399;
+    }
+
+    .leave-table tbody td {
+        padding: 16px 18px;
+        background: white;
+        border-top: 1px solid rgba(16, 185, 129, 0.06);
+        border-bottom: 1px solid rgba(16, 185, 129, 0.06);
+        vertical-align: middle;
+        color: #1e293b;
+        font-weight: 500;
+        font-size: 1rem;
+    }
+
+    .leave-table tbody td:first-child {
+        border-left: 1px solid rgba(16, 185, 129, 0.06);
+        border-radius: 12px 0 0 12px;
+    }
+
+    .leave-table tbody td:last-child {
+        border-right: 1px solid rgba(16, 185, 129, 0.06);
+        border-radius: 0 12px 12px 0;
+    }
+
+    .leave-table tbody tr {
+        transition: all 0.2s ease;
+    }
+
+    .leave-table tbody tr:hover td {
+        background: #fafefb;
+        border-color: rgba(16, 185, 129, 0.12);
+    }
+
+    .leave-table td strong {
+        display: block;
+        font-size: 1.05rem;
+        color: #0a2e1f;
+        font-weight: 700;
+    }
+
+    .leave-table td small {
+        display: block;
+        color: #8ba198;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+
+    .leave-table td .type-badge {
+        display: inline-flex;
+        padding: 8px 16px;
+        border-radius: 999px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        background: #ecfdf5;
+        color: #047857;
+        border: 1px solid rgba(16, 185, 129, 0.1);
+    }
+
+    .leave-table td .pay-badge {
+        display: inline-flex;
+        padding: 8px 16px;
+        border-radius: 999px;
+        font-weight: 700;
+        font-size: 0.88rem;
+        border: 1px solid transparent;
+    }
+
+    .leave-table td .pay-badge.paid {
+        background: #d1fae5;
+        color: #047857;
+        border-color: rgba(16, 185, 129, 0.1);
+    }
+
+    .leave-table td .pay-badge.unpaid {
+        background: #ffedd5;
+        color: #c2410c;
+        border-color: rgba(194, 65, 12, 0.1);
+    }
+
+    .leave-table td .status-badge {
+        display: inline-flex;
+        padding: 8px 16px;
+        border-radius: 999px;
+        font-weight: 700;
+        font-size: 0.88rem;
+        border: 1px solid transparent;
+    }
+
+    .leave-table td .status-badge.warning {
+        background: #fef3c7;
+        color: #b45309;
+        border-color: rgba(180, 83, 9, 0.1);
+    }
+
+    .leave-table td .status-badge.success {
+        background: #d1fae5;
+        color: #047857;
+        border-color: rgba(16, 185, 129, 0.1);
+    }
+
+    .leave-table td .status-badge.danger {
+        background: #fee2e2;
+        color: #b91c1c;
+        border-color: rgba(185, 28, 28, 0.1);
+    }
+
+    .leave-table td .status-change-form {
+        margin: 0;
+        min-width: 132px;
+    }
+
+    .leave-table td .status-select {
+        min-height: 36px;
+        border-radius: 999px;
+        border: 1px solid transparent;
+        font-size: 0.86rem;
+        font-weight: 700;
+        cursor: pointer;
+        padding: 6px 34px 6px 14px;
+    }
+
+    .leave-table td .status-select.warning {
+        background-color: #fef3c7;
+        color: #b45309;
+        border-color: rgba(180, 83, 9, 0.1);
+    }
+
+    .leave-table td .status-select.success {
+        background-color: #d1fae5;
+        color: #047857;
+        border-color: rgba(16, 185, 129, 0.1);
+    }
+
+    .leave-table td .status-select.danger {
+        background-color: #fee2e2;
+        color: #b91c1c;
+        border-color: rgba(185, 28, 28, 0.1);
+    }
+
+    .leave-table td .status-select.unpaid {
+        background-color: #ffedd5;
+        color: #c2410c;
+        border-color: rgba(194, 65, 12, 0.1);
+    }
+
+    .leave-table td .status-select.secondary {
+        background-color: #f1f5f9;
+        color: #475569;
+        border-color: rgba(71, 85, 105, 0.1);
+    }
+
+    .leave-table td .reason-cell {
+        max-width: 280px;
+        color: #475467;
+        font-size: 0.95rem;
+        font-weight: 500;
+    }
+
+    /* Action Row */
+    .action-row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+    }
+
+    .action-row .btn {
+        min-height: 36px;
+        padding: 0 12px;
+        font-size: 0.88rem;
+        border-radius: 10px;
+        font-weight: 600;
+    }
+
+    .action-row .btn i {
+        font-size: 0.95rem;
+        filter: brightness(1.1);
+    }
+
+    .action-row .btn-light {
+        background: #f3f4f6;
+        color: #374151;
+        border: 1px solid #e5e7eb;
+    }
+
+    .action-row .btn-light:hover {
+        background: #e5e7eb;
+        transform: translateY(-1px);
+    }
+
+    /* Checkboxes */
+    .form-check-input {
+        width: 20px;
+        height: 20px;
+        border: 2px solid #d1d9e6;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .form-check-input:checked {
+        background-color: #059669;
+        border-color: #059669;
+        box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.15);
+    }
+
+    /* Pagination */
+    .pagination-wrap {
+        padding: 18px 28px;
+        background: #fafefb;
+        border-top: 1px solid rgba(16, 185, 129, 0.08);
+    }
+
+    .pagination-wrap .pagination {
+        margin: 0;
+        display: flex;
+        gap: 6px;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+    }
+
+    .pagination-wrap .page-item .page-link {
+        border-radius: 10px;
+        border: 1px solid #e2e8f0;
+        color: #475569;
+        font-weight: 600;
+        font-size: 1rem;
+        padding: 10px 18px;
+        background: #ffffff;
+        transition: all 0.2s ease;
+    }
+
+    .pagination-wrap .page-item.active .page-link {
+        background: linear-gradient(145deg, #34d399, #059669);
+        border-color: #059669;
+        color: white;
+        box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);
+    }
+
+    .pagination-wrap .page-item .page-link:hover:not(.active) {
+        background: #f1f5f9;
+        border-color: #cbd5e1;
+        transform: translateY(-1px);
+    }
+
+    /* Empty State */
+    .empty-state {
+        padding: 40px 20px;
+        text-align: center;
+    }
+
+    .empty-state i {
+        font-size: 52px;
+        color: #a7f3d0;
+        margin-bottom: 16px;
+        display: block;
+        filter: brightness(1.1);
+    }
+
+    .empty-state h3 {
+        color: #0f744c;
+        font-weight: 700;
+        font-size: 1.3rem;
+        margin: 0;
+    }
+
+    /* Switch Grid */
+    .switch-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 12px;
+        margin-top: 20px;
+    }
+
+    .switch-line {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 14px 18px;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        text-transform: none;
+        font-size: 1rem;
+        font-weight: 500;
+        color: #172033;
+        background: #fafbfc;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .switch-line:hover {
+        background: #f1f5f9;
+        border-color: #cbd5e1;
+    }
+
+    .switch-line input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        accent-color: #059669;
+        cursor: pointer;
+        flex-shrink: 0;
+    }
+
+    /* Policy Grid */
+    .policy-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 18px;
+    }
+
+    .policy-grid label {
+        font-size: 0.85rem;
+        color: #6b7280;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        display: block;
+        margin-bottom: 4px;
+    }
+
+    .policy-grid .form-control {
+        min-height: 46px;
+        border-radius: 12px;
+        border: 1.5px solid #e2e8f0;
+        font-weight: 500;
+        font-size: 1rem;
+        color: #0a2e1f;
+        background: #ffffff;
+        transition: all 0.2s ease;
+        padding: 10px 16px;
+        width: 100%;
+    }
+
+    .policy-grid .form-control:focus {
+        border-color: #34d399;
+        box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.08);
+        outline: none;
+    }
+
+    /* Modal */
+    .modal-content {
+        border-radius: 24px;
+        border: none;
+        box-shadow: 0 24px 48px rgba(0, 0, 0, 0.12);
+        overflow: hidden;
+    }
+
+    .modal-header {
+        padding: 22px 28px;
+        background: linear-gradient(135deg, #fafefb, #f0f9f4);
+        border-bottom: 1px solid rgba(16, 185, 129, 0.08);
+    }
+
+    .modal-header .modal-title {
+        font-weight: 700;
+        color: #0a2e1f;
+        font-size: 1.25rem;
+    }
+
+    .modal-header .modal-title i {
+        filter: brightness(1.1);
+    }
+
+    .modal-body {
+        padding: 28px;
+    }
+
+    .modal-body .form-label {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+    }
+
+    .modal-body .form-control {
+        min-height: 46px;
+        border-radius: 12px;
+        border: 1.5px solid #e2e8f0;
+        font-weight: 500;
+        font-size: 1rem;
+        color: #0a2e1f;
+        background: #ffffff;
+        transition: all 0.2s ease;
+        padding: 10px 16px;
+        width: 100%;
+    }
+
+    .modal-body .form-control:focus {
+        border-color: #34d399;
+        box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.08);
+        outline: none;
+    }
+
+    .modal-footer {
+        padding: 18px 28px;
+        border-top: 1px solid rgba(16, 185, 129, 0.08);
+        gap: 12px;
+    }
+
+    .modal-footer .btn {
+        min-height: 48px;
+        padding: 0 28px;
+        font-size: 1rem;
+    }
+
+    .export-modal .modal-header {
+        align-items: flex-start;
+    }
+
+    .export-subtitle {
+        margin: 6px 0 0;
+        color: #64748b;
+        font-size: 0.94rem;
+        font-weight: 500;
+        text-transform: none;
+        letter-spacing: 0;
+    }
+
+    .export-layout {
+        display: grid;
+        grid-template-columns: minmax(280px, 1fr) minmax(320px, 0.9fr);
+        gap: 22px;
+    }
+
+    .export-filters,
+    .export-actions-panel {
+        border: 1px solid rgba(16, 185, 129, 0.1);
+        border-radius: 18px;
+        background: #fbfefc;
+        padding: 20px;
+    }
+
+    .export-filters h6,
+    .export-actions-panel h6 {
+        margin: 0 0 16px;
+        color: #0a2e1f;
+        font-weight: 800;
+        font-size: 1rem;
+    }
+
+    .export-filter-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+
+    .export-filter-grid > div:first-child {
+        grid-column: 1 / -1;
+    }
+
+    .export-action-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+    }
+
+    .export-tile {
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        background: #ffffff;
+        min-height: 116px;
+        padding: 16px;
+        text-align: left;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.2s ease;
+        color: #172033;
+    }
+
+    .export-tile:hover {
+        transform: translateY(-2px);
+        border-color: #34d399;
+        box-shadow: 0 14px 28px rgba(15, 23, 42, 0.08);
+    }
+
+    .export-tile i {
+        width: 42px;
+        height: 42px;
+        border-radius: 14px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .export-tile span {
+        font-size: 1.02rem;
+        font-weight: 800;
+    }
+
+    .export-tile small {
+        color: #64748b;
+        font-weight: 600;
+    }
+
+    .export-tile.copy i {
+        background: #e0f2fe;
+        color: #0369a1;
+    }
+
+    .export-tile.excel i {
+        background: #d1fae5;
+        color: #047857;
+    }
+
+    .export-tile.csv i {
+        background: #fef3c7;
+        color: #b45309;
+    }
+
+    .export-tile.pdf i {
+        background: #fee2e2;
+        color: #b91c1c;
+    }
+
+    .export-tile.print i {
+        background: #ede9fe;
+        color: #6d28d9;
+    }
+
+    .export-copy-status {
+        min-height: 22px;
+        margin-top: 16px;
+        color: #047857;
+        font-weight: 700;
+    }
+
+    /* Responsive */
+    @media (max-width: 1200px) {
+        .leave-stats {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    @media (max-width: 992px) {
+        .leave-page {
+            padding: 20px 25px;
+        }
+
+        .leave-hero {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .leave-hero-actions {
+            width: 100%;
+            justify-content: flex-start;
+        }
+
+        .leave-stats {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .filter-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .leave-page {
+            padding: 16px;
+        }
+
+        .leave-hero {
+            padding: 20px;
+        }
+
+        .leave-hero-icon {
+            width: 60px;
+            height: 60px;
+            font-size: 28px;
+        }
+
+        .leave-hero h1 {
+            font-size: 28px;
+        }
+
+        .leave-hero p {
+            font-size: 0.95rem;
+        }
+
+        .leave-stats {
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .stat-card {
+            padding: 16px;
+        }
+
+        .stat-card strong {
+            font-size: 30px;
+        }
+
+        .stat-card i {
+            font-size: 30px;
+            right: 12px;
+            bottom: 10px;
+        }
+
+        .balance-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .filter-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .filter-actions {
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .filter-actions .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .table-head {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .table-tools,
+        .bulk-tools {
+            width: 100%;
+        }
+
+        .entry-tools {
+            width: 100%;
+            justify-content: space-between;
+        }
+
+        .bulk-tools .form-control {
+            width: 100%;
+        }
+
+        .leave-table tbody td {
+            padding: 12px 14px;
+            font-size: 0.9rem;
+        }
+
+        .leave-table thead th {
+            padding: 12px 14px;
+            font-size: 0.8rem;
+        }
+
+        .policy-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .export-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .switch-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .btn {
+            font-size: 0.95rem;
+            min-height: 44px;
+            padding: 0 20px;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .leave-page {
+            padding: 12px;
+        }
+
+        .leave-hero {
+            padding: 16px;
+            border-radius: 20px;
+        }
+
+        .leave-hero-icon {
+            width: 50px;
+            height: 50px;
+            font-size: 22px;
+            border-radius: 18px;
+        }
+
+        .leave-hero h1 {
+            font-size: 24px;
+        }
+
+        .leave-hero p {
+            font-size: 0.85rem;
+        }
+
+        .leave-stats {
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .stat-card {
+            padding: 14px;
+        }
+
+        .stat-card strong {
+            font-size: 24px;
+        }
+
+        .stat-card span {
+            font-size: 0.75rem;
+        }
+
+        .stat-card i {
+            font-size: 24px;
+            right: 10px;
+            bottom: 8px;
+        }
+
+        .table-card {
+            border-radius: 20px;
+        }
+
+        .table-head {
+            padding: 14px 16px;
+        }
+
+        .table-head h2 {
+            font-size: 1.1rem;
+        }
+
+        .leave-table tbody td {
+            padding: 10px 12px;
+            font-size: 0.85rem;
+        }
+
+        .leave-table td strong {
+            font-size: 0.9rem;
+        }
+
+        .leave-table td small {
+            font-size: 0.75rem;
+        }
+
+        .action-row .btn {
+            min-height: 32px;
+            padding: 0 10px;
+            font-size: 0.8rem;
+        }
+
+        .policy-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .export-filter-grid,
+        .export-action-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .pagination-wrap {
+            padding: 12px 16px;
+        }
+
+        .pagination-wrap .page-item .page-link {
+            font-size: 0.85rem;
+            padding: 8px 14px;
+        }
+
+        .modal-body {
+            padding: 16px;
+        }
+
+        .modal-header .modal-title {
+            font-size: 1.1rem;
+        }
+
+        .btn {
+            font-size: 0.85rem;
+            min-height: 40px;
+            padding: 0 16px;
+        }
+    }
 </style>
-@endpush
+
+<style>
+    /* Dark mode support */
+    html[data-pms-theme="dark"] .leave-page {
+        background: linear-gradient(135deg, #07130d, #102119);
+    }
+
+    html[data-pms-theme="dark"] .leave-breadcrumb {
+        background: rgba(16, 33, 25, 0.85);
+        border-color: rgba(122, 240, 181, 0.15);
+        color: #d9f1e4;
+    }
+
+    html[data-pms-theme="dark"] .leave-breadcrumb i {
+        color: #34d399;
+    }
+
+    html[data-pms-theme="dark"] .leave-hero {
+        background: rgba(16, 33, 25, 0.95);
+        border-color: rgba(122, 240, 181, 0.12);
+    }
+
+    html[data-pms-theme="dark"] .leave-hero h1 {
+        color: #d9f1e4;
+    }
+
+    html[data-pms-theme="dark"] .leave-hero p {
+        color: #8ba198;
+    }
+
+    html[data-pms-theme="dark"] .btn-light {
+        background: #183026;
+        color: #d9f1e4;
+        border-color: rgba(122, 240, 181, 0.15);
+    }
+
+    html[data-pms-theme="dark"] .btn-light:hover {
+        background: #1f3d30;
+        border-color: #34d399;
+    }
+
+    html[data-pms-theme="dark"] .policy-notice {
+        background: rgba(16, 33, 25, 0.85);
+        border-color: rgba(122, 240, 181, 0.12);
+    }
+
+    html[data-pms-theme="dark"] .policy-notice p {
+        color: #8ba198;
+    }
+
+    html[data-pms-theme="dark"] .stat-card {
+        background: #0d1b14;
+        border-color: rgba(122, 240, 181, 0.08);
+    }
+
+    html[data-pms-theme="dark"] .stat-card strong {
+        color: #d9f1e4;
+    }
+
+    html[data-pms-theme="dark"] .balance-card {
+        background: #0d1b14;
+        border-color: rgba(122, 240, 181, 0.08);
+    }
+
+    html[data-pms-theme="dark"] .balance-head h3 {
+        color: #d9f1e4;
+    }
+
+    html[data-pms-theme="dark"] .balance-head p {
+        color: #8ba198;
+    }
+
+    html[data-pms-theme="dark"] .balance-head span {
+        background: #183026;
+        color: #34d399;
+    }
+
+    html[data-pms-theme="dark"] .balance-pills span {
+        background: #183026;
+        color: #34d399;
+        border-color: rgba(122, 240, 181, 0.12);
+    }
+
+    html[data-pms-theme="dark"] .filter-panel {
+        background: #0d1b14;
+        border-color: rgba(122, 240, 181, 0.08);
+    }
+
+    html[data-pms-theme="dark"] .leave-page .form-control {
+        background: #102119;
+        border-color: rgba(122, 240, 181, 0.15);
+        color: #d9f1e4;
+    }
+
+    html[data-pms-theme="dark"] .leave-page .form-control:focus {
+        border-color: #34d399;
+        box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.08);
+    }
+
+    html[data-pms-theme="dark"] .leave-page label {
+        color: #8ba198;
+    }
+
+    html[data-pms-theme="dark"] .table-card {
+        background: #102119;
+        border-color: rgba(122, 240, 181, 0.08);
+    }
+
+    html[data-pms-theme="dark"] .table-head {
+        background: #0d1b14;
+        border-color: rgba(122, 240, 181, 0.06);
+    }
+
+    html[data-pms-theme="dark"] .table-head h2 {
+        color: #d9f1e4;
+    }
+
+    html[data-pms-theme="dark"] .table-head p {
+        color: #8ba198;
+    }
+
+    html[data-pms-theme="dark"] .entry-tools {
+        background: #0d1b14;
+        border-color: rgba(122, 240, 181, 0.12);
+        color: #8ba198;
+    }
+
+    html[data-pms-theme="dark"] .entry-tools label {
+        color: #8ba198;
+    }
+
+    html[data-pms-theme="dark"] .leave-table thead th {
+        background: #0d1b14 !important;
+        color: #8ba198 !important;
+        border-color: rgba(122, 240, 181, 0.08);
+    }
+
+    html[data-pms-theme="dark"] .leave-table tbody td {
+        background: #0d1b14;
+        border-color: rgba(122, 240, 181, 0.06);
+        color: #d9f1e4;
+    }
+
+    html[data-pms-theme="dark"] .leave-table tbody tr:hover td {
+        background: #102119;
+        border-color: rgba(122, 240, 181, 0.12);
+    }
+
+    html[data-pms-theme="dark"] .leave-table td strong {
+        color: #d9f1e4;
+    }
+
+    html[data-pms-theme="dark"] .leave-table td .type-badge {
+        background: #183026;
+        color: #34d399;
+    }
+
+    html[data-pms-theme="dark"] .leave-table td .pay-badge.paid {
+        background: #183026;
+        color: #34d399;
+    }
+
+    html[data-pms-theme="dark"] .leave-table td .pay-badge.unpaid {
+        background: #1a1a0d;
+        color: #fbbf24;
+    }
+
+    html[data-pms-theme="dark"] .leave-table td .status-badge.warning {
+        background: #1a1a0d;
+        color: #fbbf24;
+    }
+
+    html[data-pms-theme="dark"] .leave-table td .status-badge.success {
+        background: #183026;
+        color: #34d399;
+    }
+
+    html[data-pms-theme="dark"] .leave-table td .status-badge.danger {
+        background: #1a0d0d;
+        color: #fca5a5;
+    }
+
+    html[data-pms-theme="dark"] .leave-table td .status-select.warning {
+        background: #1a1a0d;
+        color: #fbbf24;
+    }
+
+    html[data-pms-theme="dark"] .leave-table td .status-select.success {
+        background: #183026;
+        color: #34d399;
+    }
+
+    html[data-pms-theme="dark"] .leave-table td .status-select.danger {
+        background: #1a0d0d;
+        color: #fca5a5;
+    }
+
+    html[data-pms-theme="dark"] .leave-table td .status-select.unpaid {
+        background: #1a1a0d;
+        color: #fbbf24;
+    }
+
+    html[data-pms-theme="dark"] .leave-table td .status-select.secondary {
+        background: #183026;
+        color: #8ba198;
+    }
+
+    html[data-pms-theme="dark"] .leave-table td .reason-cell {
+        color: #8ba198;
+    }
+
+    html[data-pms-theme="dark"] .action-row .btn-light {
+        background: #0d1b14;
+        border-color: rgba(122, 240, 181, 0.1);
+        color: #8ba198;
+    }
+
+    html[data-pms-theme="dark"] .action-row .btn-light:hover {
+        background: #183026;
+        border-color: #34d399;
+        color: #d9f1e4;
+    }
+
+    html[data-pms-theme="dark"] .pagination-wrap {
+        background: #0d1b14;
+        border-color: rgba(122, 240, 181, 0.06);
+    }
+
+    html[data-pms-theme="dark"] .pagination-wrap .page-item .page-link {
+        background: #0d1b14;
+        border-color: rgba(122, 240, 181, 0.12);
+        color: #8ba198;
+    }
+
+    html[data-pms-theme="dark"] .pagination-wrap .page-item.active .page-link {
+        background: linear-gradient(145deg, #34d399, #059669);
+        border-color: #059669;
+        color: white;
+    }
+
+    html[data-pms-theme="dark"] .pagination-wrap .page-item .page-link:hover:not(.active) {
+        background: #183026;
+        border-color: #34d399;
+        color: #d9f1e4;
+    }
+
+    html[data-pms-theme="dark"] .btn-secondary {
+        background: #183026;
+        color: #d9f1e4;
+        border-color: rgba(122, 240, 181, 0.15);
+    }
+
+    html[data-pms-theme="dark"] .btn-secondary:hover {
+        background: #1f3d30;
+    }
+
+    html[data-pms-theme="dark"] .modal-content {
+        background: #102119;
+    }
+
+    html[data-pms-theme="dark"] .modal-header {
+        background: #0d1b14;
+        border-color: rgba(122, 240, 181, 0.06);
+    }
+
+    html[data-pms-theme="dark"] .modal-header .modal-title {
+        color: #d9f1e4;
+    }
+
+    html[data-pms-theme="dark"] .modal-body .form-control {
+        background: #102119;
+        border-color: rgba(122, 240, 181, 0.15);
+        color: #d9f1e4;
+    }
+
+    html[data-pms-theme="dark"] .modal-body .form-control:focus {
+        border-color: #34d399;
+        box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.08);
+    }
+
+    html[data-pms-theme="dark"] .modal-body label {
+        color: #8ba198;
+    }
+
+    html[data-pms-theme="dark"] .modal-footer {
+        border-color: rgba(122, 240, 181, 0.06);
+    }
+
+    html[data-pms-theme="dark"] .export-subtitle,
+    html[data-pms-theme="dark"] .export-tile small {
+        color: #8ba198;
+    }
+
+    html[data-pms-theme="dark"] .export-filters,
+    html[data-pms-theme="dark"] .export-actions-panel {
+        background: #0d1b14;
+        border-color: rgba(122, 240, 181, 0.12);
+    }
+
+    html[data-pms-theme="dark"] .export-filters h6,
+    html[data-pms-theme="dark"] .export-actions-panel h6,
+    html[data-pms-theme="dark"] .export-tile {
+        color: #d9f1e4;
+    }
+
+    html[data-pms-theme="dark"] .export-tile {
+        background: #102119;
+        border-color: rgba(122, 240, 181, 0.12);
+    }
+
+    html[data-pms-theme="dark"] .export-tile:hover {
+        border-color: #34d399;
+        box-shadow: 0 14px 28px rgba(0, 0, 0, 0.2);
+    }
+
+    html[data-pms-theme="dark"] .export-copy-status {
+        color: #34d399;
+    }
+
+    html[data-pms-theme="dark"] .switch-line {
+        background: #0d1b14;
+        border-color: rgba(122, 240, 181, 0.12);
+        color: #d9f1e4;
+    }
+
+    html[data-pms-theme="dark"] .switch-line:hover {
+        background: #102119;
+        border-color: #34d399;
+    }
+
+    html[data-pms-theme="dark"] .policy-grid .form-control {
+        background: #102119;
+        border-color: rgba(122, 240, 181, 0.15);
+        color: #d9f1e4;
+    }
+
+    html[data-pms-theme="dark"] .policy-grid .form-control:focus {
+        border-color: #34d399;
+        box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.08);
+    }
+
+    html[data-pms-theme="dark"] .policy-grid label {
+        color: #8ba198;
+    }
+
+    html[data-pms-theme="dark"] .bulk-tools .form-control {
+        background: #0d1b14;
+        border-color: rgba(122, 240, 181, 0.12);
+        color: #d9f1e4;
+    }
+
+    html[data-pms-theme="dark"] .bulk-tools .form-control:focus {
+        border-color: #34d399;
+        box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.08);
+    }
+
+    html[data-pms-theme="dark"] .empty-state h3 {
+        color: #34d399;
+    }
+
+    html[data-pms-theme="dark"] .empty-state i {
+        color: #183026;
+    }
+
+    html[data-pms-theme="dark"] .alert-danger {
+        background: #1a0d0d;
+        color: #fca5a5;
+        border-left-color: #ef4444;
+    }
+
+    html[data-pms-theme="dark"] .alert-success {
+        background: #0d1b14;
+        color: #34d399;
+        border-left-color: #34d399;
+    }
+</style>
 
 @push('js')
-<script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
-
-@if(auth()->user()->role === 'admin')
+@if($isAdmin)
 <script>
 $(function () {
-    const predefinedRanges = {
-        'Today': [moment(), moment()],
-        'Last 7 Days': [moment().subtract(6, 'days'), moment()],
-        'Last 30 Days': [moment().subtract(29, 'days'), moment()],
-        'This Month': [moment().startOf('month'), moment().endOf('month')],
-        'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
-    };
-
-    $('#duration').daterangepicker({
-        autoUpdateInput: false,
-        showDropdowns: true,
-        opens: 'left',
-        locale: {
-            format: 'YYYY-MM-DD',
-            cancelLabel: 'Clear'
-        },
-        ranges: predefinedRanges
+    $('#bulk-action').on('change', function () {
+        $('#status-dropdown').toggle(this.value === 'change_status');
     });
-
-    $('#duration').on('apply.daterangepicker', function (ev, picker) {
-        $(this).val(
-            picker.startDate.format('YYYY-MM-DD') + ' to ' + picker.endDate.format('YYYY-MM-DD')
-        );
+    $('#select-all').on('change', function () {
+        $('.leave-checkbox').prop('checked', this.checked);
     });
-
-    $('#duration').on('cancel.daterangepicker', function () {
-        $(this).val('');
-    });
-});
-</script>
-@endif
-
-@if(auth()->user()->role === 'admin')
-<script>
-$(document).on('change', '.change-paid-status', function () {
-    let leaveId = $(this).data('leave-id');
-    let status = $(this).val();
-
-    $.ajax({
-        url: "{{ route('leaves.updatePaidStatus') }}",
-        type: "POST",
-        data: {
-            _token: "{{ csrf_token() }}",
-            leave_id: leaveId,
-            paid: status
-        },
-        success: function (response) {
-            if (response.success) {
-                // Update the visual feedback
-                $(this).closest('td').find('.badge').remove();
-                var badgeClass = status == 1 ? 'success' : 'danger';
-                var badgeText = status == 1 ? 'Paid' : 'Unpaid';
-                $(this).after(`<span class="badge bg-${badgeClass} bg-opacity-10 text-${badgeClass} border border-${badgeClass} border-opacity-25 ms-2">${badgeText}</span>`);
-
-                // Show success toast/alert
-                showAlert('Status updated successfully!', 'success');
-            } else {
-                showAlert('Failed to update status!', 'danger');
-            }
-        }.bind(this),
-        error: function () {
-            showAlert('An error occurred!', 'danger');
-        }
-    });
-});
-</script>
-@endif
-
-<script>
-function showAlert(message, type) {
-    var alertHtml = `<div class="alert alert-${type} alert-dismissible fade show" role="alert">
-        <i class="bi ${type === 'success' ? 'bi-check-circle' : 'bi-exclamation-circle'} me-2"></i>
-        ${message}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>`;
-
-    $('.container-fluid').prepend(alertHtml);
-
-    // Auto remove after 3 seconds
-    setTimeout(() => {
-        $('.alert').alert('close');
-    }, 3000);
-}
-</script>
-
-@if(auth()->user()->role === 'admin')
-<script>
-$(document).ready(function () {
-    // FIX: Prevent DataTables reinitialization error
-    if ($.fn.DataTable.isDataTable('#leaveTable')) {
-        $('#leaveTable').DataTable().clear().destroy();
-        $('#leaveTable').removeAttr('style');
-    }
-
-    // Initialize DataTable for leaves table
-    var table = $('#leaveTable').DataTable({
-        dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>tip',
-        responsive: true,
-        pageLength: 10,
-        lengthMenu: [10, 25, 50, 100],
-        language: {
-            search: "",
-            searchPlaceholder: "Search leaves...",
-            lengthMenu: "_MENU_ records per page",
-            info: "Showing _START_ to _END_ of _TOTAL_ entries",
-            infoEmpty: "Showing 0 to 0 of 0 entries",
-            infoFiltered: "(filtered from _MAX_ total entries)"
-        },
-        columnDefs: [
-            { orderable: false, targets: [0, 7] }
-        ],
-        order: [[2, 'desc']],
-        destroy: true,
-        retrieve: true
-    });
-
-    // Update custom info
-    function updateCustomInfo() {
-        var info = table.page.info();
-        var start = (info.recordsDisplay === 0) ? 0 : info.start + 1;
-        var end = info.end;
-        var total = info.recordsDisplay;
-        $('#dt-custom-info').text('Showing ' + start + ' to ' + end + ' of ' + total + ' entries');
-    }
-    updateCustomInfo();
-    table.on('draw', updateCustomInfo);
-
-    // Initialize tooltips
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
-    });
-
-    // Select all functionality
-    $('#select-all, #select-all-main').on('change', function () {
-        var checked = $(this).prop('checked');
-        $('.leave-checkbox').prop('checked', checked).trigger('change');
-    });
-
-    // Toggle bulk actions based on checkbox selection
-    function toggleBulkAction() {
-        let anyChecked = $('.leave-checkbox:checked').length > 0;
-
-        if (anyChecked) {
-            $('#bulk-action, #bulk-action-main').show().prop('disabled', false);
-            $('#apply-action').show();
-            $('#bulkDeleteBtn').prop('disabled', false);
-        } else {
-            $('#bulk-action, #bulk-action-main').hide().prop('disabled', true).val('');
-            $('#status-dropdown').hide().prop('disabled', true).val('');
-            $('#apply-action').hide();
-            $('#bulkDeleteBtn').prop('disabled', true);
-        }
-    }
-
-    // When row checkboxes change
-    $(document).on('change', '.leave-checkbox', function () {
-        // Toggle bulk actions
-        toggleBulkAction();
-
-        // Sync the select-all checkbox
-        var totalCheckboxes = $('.leave-checkbox').length;
-        var checkedCount = $('.leave-checkbox:checked').length;
-        $('#select-all, #select-all-main').prop('checked', totalCheckboxes === checkedCount);
-    });
-
-    // Bulk action dropdown change
-    $(document).on('change', '#bulk-action', function () {
-        if ($(this).val() === 'change_status') {
-            $('#status-dropdown').show().prop('disabled', false);
-        } else {
-            $('#status-dropdown').hide().prop('disabled', true).val('');
-        }
-    });
-
-    // Apply bulk action
-    $('#apply-action').on('click', function () {
-        let action = $('#bulk-action').val();
-        let status = $('#status-dropdown').val();
-        let selected = $('.leave-checkbox:checked').map(function () {
-            return $(this).val();
-        }).get();
-
-        if (selected.length === 0) {
-            showAlert('Please select at least one leave.', 'warning');
+    $('.status-select').on('change', function () {
+        const select = this;
+        const label = select.options[select.selectedIndex].text;
+        if (!confirm('Change this leave status to ' + label + '?')) {
+            select.value = select.dataset.originalStatus;
             return;
         }
-
-        if (action === '') {
-            showAlert('Please select an action.', 'warning');
-            return;
-        }
-
-        if (action === 'change_status' && !status) {
-            showAlert('Please select a status.', 'warning');
-            return;
-        }
-
-        let confirmMessage = action === 'delete'
-            ? `Are you sure you want to delete ${selected.length} selected leave(s)? This action cannot be undone.`
-            : `Are you sure you want to update status for ${selected.length} selected leave(s)?`;
-
-        if (!confirm(confirmMessage)) return;
-
-        // Disable button during processing
-        $(this).prop('disabled', true).html('<i class="bi bi-hourglass-split me-1"></i>Processing...');
-
-        $.ajax({
-            url: "{{ route('leaves.bulkAction') }}",
-            type: "POST",
-            data: {
-                _token: "{{ csrf_token() }}",
-                action: action,
-                status: status,
-                ids: selected
-            },
-            success: function (response) {
-                showAlert(response.message, 'success');
-                setTimeout(() => location.reload(), 1500);
-            },
-            error: function (xhr) {
-                var msg = xhr.responseJSON?.message || 'An error occurred';
-                showAlert(msg, 'danger');
-                $('#apply-action').prop('disabled', false).html('<i class="bi bi-check-lg me-1"></i>Apply');
-            }
-        });
+        select.form.submit();
     });
+    $('#copyLeaveExport').on('click', function () {
+        const button = $(this);
+        const status = $('#exportCopyStatus');
+        const query = $('#leaveExportForm').serialize() + '&type=copy';
 
-    // Bulk delete
-    $('#bulkDeleteBtn').on('click', function (e) {
-        e.preventDefault();
+        button.prop('disabled', true);
+        status.text('Preparing clipboard data...');
 
-        var selected = $('.leave-checkbox:checked').map(function () { return $(this).val(); }).get();
+        $.get('{{ route("leaves.export") }}?' + query)
+            .done(function (text) {
+                const fallbackCopy = function () {
+                    const textarea = $('<textarea>').val(text).appendTo('body').select();
+                    document.execCommand('copy');
+                    textarea.remove();
+                    status.text('Leave report copied to clipboard.');
+                };
 
-        if (selected.length === 0) {
-            showAlert('Please select at least one leave.', 'warning');
-            return;
-        }
-
-        if (!confirm(`Are you sure you want to delete ${selected.length} selected leave(s)? This action cannot be undone.`)) {
-            return;
-        }
-
-        // Disable button during processing
-        $(this).prop('disabled', true).html('<i class="bi bi-hourglass-split me-1"></i>Deleting...');
-
-        $.ajax({
-            url: "{{ route('leaves.bulk-delete') }}",
-            method: 'POST',
-            data: {
-                _token: "{{ csrf_token() }}",
-                ids: selected
-            },
-            success: function (res) {
-                if (res.success ?? true) {
-                    showAlert(res.message ?? 'Deleted successfully', 'success');
-                    // Remove rows from DataTable
-                    table.rows( $('.leave-checkbox:checked').closest('tr') ).remove().draw();
-                    toggleBulkAction();
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(text)
+                        .then(function () {
+                            status.text('Leave report copied to clipboard.');
+                        })
+                        .catch(fallbackCopy);
                 } else {
-                    showAlert(res.message || 'Something went wrong', 'danger');
+                    fallbackCopy();
                 }
-                $('#bulkDeleteBtn').prop('disabled', false).html('<i class="bi bi-trash me-1"></i>Delete');
-            },
-            error: function (xhr) {
-                var msg = 'Error: ' + (xhr.responseJSON?.message || xhr.statusText);
-                showAlert(msg, 'danger');
-                $('#bulkDeleteBtn').prop('disabled', false).html('<i class="bi bi-trash me-1"></i>Delete');
-            }
-        });
+            })
+            .fail(function () {
+                status.text('Unable to copy leave report.');
+            })
+            .always(function () {
+                button.prop('disabled', false);
+            });
     });
-
-    // Initial toggle
-    toggleBulkAction();
-});
-</script>
-@else
-<!-- Simple JavaScript for Employee View -->
-<script>
-$(document).ready(function () {
-    // Initialize simple table for employees (no DataTables)
-    $('#leaveTable').addClass('table-striped');
-
-    // Simple search functionality for employees
-    $('input[type="search"]').on('keyup', function() {
-        var value = $(this).val().toLowerCase();
-        $('#leaveTable tbody tr').filter(function() {
-            $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+    $('#apply-action').on('click', function () {
+        const ids = $('.leave-checkbox:checked').map(function () { return this.value; }).get();
+        const action = $('#bulk-action').val();
+        const status = $('#status-dropdown').val();
+        if (!ids.length || !action) { alert('Select leave requests and an action.'); return; }
+        if (action === 'change_status' && !status) { alert('Select status.'); return; }
+        if (!confirm('Apply this bulk action?')) return;
+        $.post('{{ route("leaves.bulkAction") }}', {
+            _token: '{{ csrf_token() }}',
+            ids: ids,
+            action: action,
+            status: status
+        }).done(function (response) {
+            alert(response.message || 'Updated');
+            location.reload();
+        }).fail(function () {
+            alert('Unable to apply bulk action.');
         });
     });
 });
 </script>
 @endif
-
-<!-- Initialize Select2 for dropdowns -->
-<script>
-$(document).ready(function() {
-    $('.select2').select2({
-        placeholder: "Select an employee",
-        allowClear: true
-    });
-});
-</script>
-</script>
 @endpush
 
 @endsection

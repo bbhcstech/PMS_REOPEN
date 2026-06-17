@@ -40,14 +40,17 @@
                                 <span class="input-group-text"><i class="fas fa-user"></i></span>
                                 <select id="employeeSearch" class="form-select shadow-sm">
                                     <option value="">-- Select Employee --</option>
-                                    @foreach($employees as $emp)
-                                        <option value="{{ $emp['id'] }}"
-                                                data-name="{{ $emp['name'] }}"
-                                                data-designation="{{ $emp['designation'] ?? '' }}">
-                                            {{ $emp['name'] }} @if(isset($emp['designation'])) - {{ $emp['designation'] }} @endif
-                                        </option>
-                                    @endforeach
-                                </select>
+                                     @foreach($employees as $emp)
+                                         <option value="{{ $emp['id'] }}"
+                                                 data-name="{{ $emp['name'] }}"
+                                                 data-employee-id="{{ $emp['employee_id'] ?? '' }}"
+                                                 data-designation="{{ $emp['designation'] ?? '' }}">
+                                             {{ $emp['name'] }}
+                                             @if(!empty($emp['employee_id'])) ({{ $emp['employee_id'] }}) @endif
+                                             @if(isset($emp['designation'])) - {{ $emp['designation'] }} @endif
+                                         </option>
+                                     @endforeach
+                                 </select>
                             </div>
                         </div>
 
@@ -55,7 +58,7 @@
                             <label for="dateRange" class="form-label small fw-semibold text-muted">Date</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
-                                <input type="date" id="dateRange" class="form-control shadow-sm" value="{{ date('Y-m-d') }}">
+                                <input type="date" id="dateRange" class="form-control shadow-sm" value="{{ $date ?? date('Y-m-d') }}">
                             </div>
                         </div>
 
@@ -81,12 +84,16 @@
                                     </div>
                                 </div>
                                 <div>
-                                    <h4 class="mb-1 fw-bold" id="employeeName"></h4>
-                                    <p class="mb-1 text-muted" id="employeeDesignation"></p>
-                                    <div class="d-flex gap-3 mt-2">
+                                     <h4 class="mb-1 fw-bold" id="employeeName"></h4>
+                                     <p class="mb-1 text-muted" id="employeeDesignation"></p>
+                                     <div class="d-flex gap-3 mt-2">
                                         <small class="text-muted">
-                                            <i class="fas fa-calendar-day me-1"></i>
-                                            Date: <span id="selectedDateRange"></span>
+                                            <i class="fas fa-id-card me-1"></i>
+                                            Employee ID: <span id="employeeCode">-</span>
+                                        </small>
+                                         <small class="text-muted">
+                                             <i class="fas fa-calendar-day me-1"></i>
+                                             Date: <span id="selectedDateRange"></span>
                                         </small>
                                         <small class="text-muted">
                                             <i class="fas fa-history me-1"></i>
@@ -98,12 +105,15 @@
                         </div>
                         <div class="col-md-4 text-end">
                             <div class="d-flex justify-content-end gap-2">
-                                <button class="btn btn-outline-info btn-sm" onclick="showAllOnMap()">
-                                    <i class="fas fa-map me-1"></i> Show All on Map
+                                 <button class="btn btn-outline-info btn-sm" onclick="showAllOnMap()">
+                                     <i class="fas fa-map me-1"></i> Show All on Map
+                                 </button>
+                                <button class="btn btn-outline-success btn-sm" onclick="downloadMapScreenshot()">
+                                    <i class="fas fa-camera me-1"></i> Screenshot
                                 </button>
-                            </div>
-                        </div>
-                    </div>
+                             </div>
+                         </div>
+                     </div>
                 </div>
             </div>
 
@@ -379,6 +389,7 @@
 @push('scripts')
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
 <script>
 // Global variables
@@ -387,6 +398,7 @@ let mapMarkers = [];
 let mapPolylines = [];
 let currentEmployeeId = null;
 let currentEmployeeData = null;
+let currentEmployeeMeta = null;
 
 document.addEventListener('DOMContentLoaded', function () {
     // Don't initialize map here, wait until needed
@@ -483,7 +495,8 @@ function searchEmployee() {
 
         if (data.success && data.attendance && data.attendance.length > 0) {
             currentEmployeeData = data;
-            displayEmployeeInfo(selectedOption, data.attendance.length, selectedDate);
+            currentEmployeeMeta = data.employee || null;
+            displayEmployeeInfo(selectedOption, data.attendance.length, selectedDate, currentEmployeeMeta);
             displayMap(data.attendance);
             displayDetails(data.attendance);
 
@@ -497,7 +510,8 @@ function searchEmployee() {
             document.getElementById('noResults').style.display = 'block';
 
             // Still show basic employee info
-            displayEmployeeInfo(selectedOption, 0, selectedDate);
+            currentEmployeeMeta = data.employee || null;
+            displayEmployeeInfo(selectedOption, 0, selectedDate, currentEmployeeMeta);
 
             // Clear map and tables
             clearMap();
@@ -514,9 +528,10 @@ function searchEmployee() {
 }
 
 // Display employee information
-function displayEmployeeInfo(option, recordCount, date) {
-    const employeeName = option.getAttribute('data-name');
-    const designation = option.getAttribute('data-designation');
+function displayEmployeeInfo(option, recordCount, date, employeeMeta = null) {
+    const employeeName = employeeMeta?.name || option.getAttribute('data-name');
+    const employeeId = employeeMeta?.employee_id || option.getAttribute('data-employee-id') || '-';
+    const designation = employeeMeta?.designation || option.getAttribute('data-designation');
     const avatar = document.getElementById('employeeAvatar');
 
     // Set avatar initial
@@ -524,6 +539,7 @@ function displayEmployeeInfo(option, recordCount, date) {
 
     // Set employee info
     document.getElementById('employeeName').textContent = employeeName;
+    document.getElementById('employeeCode').textContent = employeeId;
     document.getElementById('employeeDesignation').textContent = designation || 'N/A';
     document.getElementById('selectedDateRange').textContent = formatDate(date);
     document.getElementById('totalRecords').textContent = recordCount;
@@ -548,6 +564,8 @@ function displayMap(attendanceData) {
 
     const locations = [];
     let hasValidLocations = false;
+    let firstClockInMarker = null;
+    let firstClockInLocation = null;
 
     // Process each attendance record
     attendanceData.forEach((record, index) => {
@@ -594,6 +612,13 @@ function displayMap(attendanceData) {
                                 style="font-size: 11px; padding: 2px 8px;">
                             <i class="fas fa-eye me-1"></i> View Day Details
                         </button>
+                        <a class="btn btn-sm btn-outline-success"
+                           href="https://www.google.com/maps?q=${clockInLat},${clockInLng}"
+                           target="_blank"
+                           rel="noopener"
+                           style="font-size: 11px; padding: 2px 8px; margin-left: 4px;">
+                            <i class="fas fa-map-location-dot me-1"></i> Google Map
+                        </a>
                     </div>
                 </div>
             `;
@@ -601,6 +626,10 @@ function displayMap(attendanceData) {
             clockInMarker.bindPopup(popupContent);
             mapMarkers.push(clockInMarker);
             locations.push([clockInLat, clockInLng]);
+            if (!firstClockInMarker) {
+                firstClockInMarker = clockInMarker;
+                firstClockInLocation = [clockInLat, clockInLng];
+            }
             hasValidLocations = true;
         }
 
@@ -643,6 +672,13 @@ function displayMap(attendanceData) {
                                 style="font-size: 11px; padding: 2px 8px;">
                             <i class="fas fa-eye me-1"></i> View Day Details
                         </button>
+                        <a class="btn btn-sm btn-outline-success"
+                           href="https://www.google.com/maps?q=${clockOutLat},${clockOutLng}"
+                           target="_blank"
+                           rel="noopener"
+                           style="font-size: 11px; padding: 2px 8px; margin-left: 4px;">
+                            <i class="fas fa-map-location-dot me-1"></i> Google Map
+                        </a>
                     </div>
                 </div>
             `;
@@ -676,8 +712,13 @@ function displayMap(attendanceData) {
     if (hasValidLocations && locations.length > 0) {
         setTimeout(() => {
             if (employeeMap) {
-                const bounds = L.latLngBounds(locations);
-                employeeMap.fitBounds(bounds.pad(0.2));
+                if (firstClockInLocation) {
+                    employeeMap.setView(firstClockInLocation, 18);
+                    firstClockInMarker?.openPopup();
+                } else {
+                    const bounds = L.latLngBounds(locations);
+                    employeeMap.fitBounds(bounds.pad(0.2));
+                }
                 employeeMap.invalidateSize();
                 console.log('Map fitted to bounds with', locations.length, 'locations');
             }
@@ -824,6 +865,41 @@ function showAllOnMap() {
             }
         }, 300);
     }
+}
+
+function downloadMapScreenshot() {
+    const mapElement = document.getElementById('locationMap');
+    if (!mapElement || !employeeMap) {
+        alert('Please search an employee first to load the map.');
+        return;
+    }
+
+    if (typeof html2canvas === 'undefined') {
+        alert('Screenshot tool is still loading. Please try again in a moment.');
+        return;
+    }
+
+    employeeMap.invalidateSize();
+    const selectedDate = document.getElementById('dateRange')?.value || 'attendance-location';
+    const employeeLabel = (currentEmployeeMeta?.employee_id || document.getElementById('employeeName')?.textContent || 'employee')
+        .toString()
+        .replace(/[^a-z0-9_-]+/gi, '-')
+        .replace(/^-|-$/g, '');
+
+    html2canvas(mapElement, {
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        scale: 2
+    }).then(canvas => {
+        const link = document.createElement('a');
+        link.download = `${employeeLabel}-${selectedDate}-clock-in-location.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+    }).catch(error => {
+        console.error('Screenshot failed:', error);
+        alert('Unable to capture the map screenshot. Please try again after the map tiles finish loading.');
+    });
 }
 
 // View day timeline

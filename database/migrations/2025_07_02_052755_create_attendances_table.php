@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->date('date'); // Required for grid & month view
-            $table->enum('status', ['present', 'absent', 'holiday', 'late', 'half_day', 'leave'])->default('absent');
+            $table->enum('status', ['present', 'absent', 'holiday', 'late', 'half_day', 'leave', 'day_off'])->default('absent');
 
             $table->time('clock_in')->nullable();  // e.g., 09:58
             $table->time('clock_out')->nullable(); // e.g., 18:02
