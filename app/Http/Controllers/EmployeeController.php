@@ -18,6 +18,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
+use App\Services\SystemNotificationService;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -653,6 +654,13 @@ class EmployeeController extends Controller
 
             DB::commit();
 
+            SystemNotificationService::notifyAdmins(
+                'Employee Added',
+                auth()->user()->name . ' added employee ' . $user->name . '.',
+                route('employees.show', $user->id),
+                ['employee_id' => $user->id, 'type' => 'employee_created', 'icon' => 'fa-user-plus']
+            );
+
             return redirect()->route('employees.index')
                 ->with('success', 'Employee added successfully and notified.');
         } catch (\Exception $e) {
@@ -985,6 +993,14 @@ class EmployeeController extends Controller
             $detail->save();
 
             DB::commit();
+
+            SystemNotificationService::notifyUser(
+                $user,
+                'Profile Updated',
+                'Your employee profile was updated by ' . auth()->user()->name . '.',
+                route('employees.show', $user->id),
+                ['employee_id' => $user->id, 'type' => 'employee_updated', 'icon' => 'fa-user-pen']
+            );
 
             return redirect()->route('employees.index')
                 ->with('success', 'Employee updated successfully.');

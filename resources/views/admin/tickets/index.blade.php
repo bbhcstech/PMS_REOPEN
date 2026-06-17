@@ -105,7 +105,9 @@
     <!-- Top row: create + bulk action -->
     <div class="d-flex mb-2 justify-content-between align-items-center">
         <!-- Left side: Create Ticket -->
+        @if(in_array(strtolower((string) auth()->user()?->role), ['admin', 'hr', 'manager'], true))
         <a href="{{ route('tickets.create') }}" class="btn btn-primary">Create Ticket</a>
+        @endif
 
         <!-- Right side: Bulk action (hidden by default) -->
         <div class="d-flex" id="bulk-action-div" style="display:none;">

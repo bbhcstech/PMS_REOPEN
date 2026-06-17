@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Notifications\NotifyAdminToEmployees;
 use App\Notifications\NotifyEmployeeToAdmins;
+use App\Services\SidebarNotificationService;
+use Illuminate\Notifications\DatabaseNotification;
 
 class NotificationController extends Controller
 {
@@ -21,7 +23,7 @@ class NotificationController extends Controller
             ->paginate(15);
 
         // 🔥 CHANGE THIS: Use ONE view file instead of two
-        return view('notifications.index', compact('notifications'));
+        return view('admin.notifications.index', compact('notifications'));
     }
 
 
@@ -36,6 +38,11 @@ class NotificationController extends Controller
             $notification->markAsRead();
         }
 
+        if (! request()->expectsJson() && ! request()->ajax()) {
+            $url = request('redirect_url') ?: ($notification?->data['url'] ?? null);
+            return $url ? redirect($url) : back();
+        }
+
         return response()->json(['status' => 'ok']);
     }
 
@@ -46,7 +53,44 @@ class NotificationController extends Controller
     {
         auth()->user()->unreadNotifications->markAsRead();
 
+        if (! request()->expectsJson() && ! request()->ajax()) {
+            return back()->with('success', 'All notifications marked as read.');
+        }
+
         return response()->json(['status' => 'ok']);
+    }
+
+    public function unreadCount()
+    {
+        return response()->json([
+            'count' => auth()->user()->unreadNotifications()->count(),
+        ]);
+    }
+
+    public function latest()
+    {
+        $notifications = auth()->user()->notifications()
+            ->latest()
+            ->take(8)
+            ->get()
+            ->map(fn (DatabaseNotification $notification) => [
+                'id' => $notification->id,
+                'read_at' => $notification->read_at,
+                'created_at' => optional($notification->created_at)->diffForHumans(),
+                'data' => $notification->data,
+            ]);
+
+        return response()->json([
+            'count' => auth()->user()->unreadNotifications()->count(),
+            'notifications' => $notifications,
+        ]);
+    }
+
+    public function sidebar()
+    {
+        return response()->json([
+            'items' => SidebarNotificationService::forUser(auth()->user()),
+        ]);
     }
 
     /**

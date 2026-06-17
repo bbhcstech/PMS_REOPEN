@@ -8,6 +8,7 @@ use App\Imports\HolidaysImport;
 use App\Models\Holiday;
 use App\Models\Department;
 use App\Models\Designation;
+use App\Services\SystemNotificationService;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -90,6 +91,13 @@ class HolidayController extends Controller
                 Holiday::create($holidayData);
             }
         }
+
+        SystemNotificationService::notifyEmployees(
+            'Holiday Calendar Updated',
+            'Holiday(s) have been added or updated by ' . auth()->user()->name . '.',
+            route('holidays.calendar'),
+            ['type' => 'holiday_updated', 'icon' => 'fa-umbrella-beach']
+        );
 
         return redirect()->route('holidays.index')->with('success', 'Holiday(s) added successfully');
     }
@@ -208,6 +216,13 @@ class HolidayController extends Controller
         Holiday::where('group_id', $groupId)
                ->whereNotIn('id', $updatedIds)
                ->delete();
+
+        SystemNotificationService::notifyEmployees(
+            'Holiday Calendar Updated',
+            'Holiday(s) have been updated by ' . auth()->user()->name . '.',
+            route('holidays.calendar'),
+            ['type' => 'holiday_updated', 'icon' => 'fa-umbrella-beach']
+        );
 
         return redirect()->route('holidays.index')->with('success', 'Holiday(s) updated successfully');
     }

@@ -8,6 +8,7 @@ use App\Models\LeaveBalance;
 use App\Models\LeaveType;
 use App\Models\User;
 use App\Services\LeaveService;
+use App\Services\SystemNotificationService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -141,7 +142,24 @@ class LeaveController extends Controller
             return back()->withErrors($errors)->withInput();
         }
 
-        $this->leaveService->createLeave($employee, $type, $data, $actor);
+        $leave = $this->leaveService->createLeave($employee, $type, $data, $actor);
+
+        if (! $this->isAdmin()) {
+            SystemNotificationService::notifyAdmins(
+                'New Leave Request',
+                $employee->name . ' requested ' . $type->name . ' from ' . $data['start_date'] . ' to ' . $data['end_date'],
+                route('leaves.show', $leave->id),
+                ['employee_id' => $employee->id, 'entity_type' => Leave::class, 'entity_id' => $leave->id, 'type' => 'leave_requested', 'icon' => 'fa-calendar-days']
+            );
+        } else {
+            SystemNotificationService::notifyUser(
+                $employee,
+                'Leave Added',
+                'A leave request was added for you by ' . $actor->name,
+                route('leaves.show', $leave->id),
+                ['employee_id' => $employee->id, 'entity_type' => Leave::class, 'entity_id' => $leave->id, 'type' => 'leave_added', 'icon' => 'fa-calendar-days']
+            );
+        }
 
         return redirect()->route('leaves.index')->with('success', 'Leave request submitted successfully.');
     }
@@ -240,6 +258,16 @@ class LeaveController extends Controller
             $leave->update(['status' => 'pending', 'approval_status' => 'pending']);
         }
 
+        if ($leave->user) {
+            SystemNotificationService::notifyUser(
+                $leave->user,
+                'Leave ' . ucfirst($leave->status),
+                'Your leave request has been marked ' . ucfirst($leave->status) . '.',
+                route('leaves.show', $leave->id),
+                ['employee_id' => $leave->user_id, 'entity_type' => Leave::class, 'entity_id' => $leave->id, 'type' => 'leave_status_updated', 'icon' => 'fa-calendar-check']
+            );
+        }
+
         return back()->with('success', 'Leave request status updated.');
     }
 
@@ -274,6 +302,13 @@ class LeaveController extends Controller
         $data['fiscal_year_end'] = now()->month >= 4 ? (now()->year + 1) . '-03-31' : now()->year . '-03-31';
 
         $this->leaveService->updatePolicy($data, Auth::user());
+
+        SystemNotificationService::notifyEmployees(
+            'Leave Policy Updated',
+            'Leave policy has been updated by ' . Auth::user()->name . '.',
+            route('leaves.index'),
+            ['type' => 'leave_policy_updated', 'icon' => 'fa-file-contract']
+        );
 
         return back()->with('success', 'Leave policy updated and employee balances recalculated successfully.');
     }
@@ -326,6 +361,14 @@ class LeaveController extends Controller
         abort_if(! $this->isAdmin() && $leave->status !== 'pending', 403);
         $user = $leave->user;
         $leave->delete();
+        if (! $this->isAdmin()) {
+            SystemNotificationService::notifyAdmins(
+                'Leave Request Deleted',
+                Auth::user()->name . ' deleted a leave request.',
+                route('leaves.index'),
+                ['employee_id' => Auth::id(), 'type' => 'leave_deleted', 'icon' => 'fa-trash']
+            );
+        }
         if ($user) {
             $this->leaveService->syncBalanceCounters($user);
         }

@@ -58,10 +58,12 @@
             <div class="d-flex justify-content-between align-items-center mb-3">
             <!-- Left side buttons -->
             <div>
+                @if(in_array(strtolower((string) auth()->user()?->role), ['admin', 'hr', 'manager'], true))
                 <a href="{{ route('tasks.create') }}" 
                    class="btn btn-primary mr-2">
                     <i class="bi bi-plus-lg"></i> Add Task
                 </a>
+                @endif
         
                 <button type="button" 
                         class="btn btn-secondary mr-2" 

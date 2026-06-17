@@ -17,8 +17,10 @@ class TimeLogController extends Controller
     {
         $query = TaskTimer::with(['project', 'task', 'user']);
 
-        // Admin sees all, employee sees only own logs
-        if (auth()->user()->role !== 'admin') {
+        $canReviewTimeLogs = in_array(strtolower((string) auth()->user()?->role), ['admin', 'hr', 'manager'], true);
+
+        // Admin/HR/manager see all, employee sees only own logs
+        if (! $canReviewTimeLogs) {
             $query->where('user_id', auth()->id());
         }
 
@@ -47,7 +49,7 @@ class TimeLogController extends Controller
         $logs = $query->latest()->get();
 
         // Dropdown employees list
-        if (auth()->user()->role === 'admin') {
+        if ($canReviewTimeLogs) {
             $employees = User::where('role', 'employee')->orderBy('name')->get();
         } else {
             $employees = User::where('id', auth()->id())->get();

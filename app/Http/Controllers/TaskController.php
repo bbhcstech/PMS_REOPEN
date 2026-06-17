@@ -15,6 +15,7 @@ use App\Models\ProjectMilestone;
 use App\Models\TaskNote;
 use App\Notifications\TaskAssignedNotification;
 use App\Models\UserActivity;
+use App\Services\SystemNotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB; // Add this line to import DB facade
@@ -29,6 +30,11 @@ public function index(Request $request, Project $project = null)
 {
     $query = Task::with(['project', 'assignees', 'subTasks.assignee', 'timers'])
         ->whereNull('parent_id');
+    $user = auth()->user();
+
+    if ($user && strtolower((string) $user->role) === 'employee') {
+        $this->applyEmployeeTaskScope($query, $user);
+    }
 
     // Filter by project
     if ($project) {
@@ -89,6 +95,8 @@ public function getAssignedToUsersAttribute()
 }
 public function create(Request $request)
 {
+    abort_unless($this->canCreateWorkItems(), 403);
+
     $duplicateTask = null;
     $assignedUserIds = [];
 
@@ -178,6 +186,8 @@ public function create(Request $request)
 
  public function store(Request $request)
 {
+   abort_unless($this->canCreateWorkItems(), 403);
+
    // return $request->all();
     $request->validate([
         'task_short_code'  => 'required|string|max:255',
@@ -281,7 +291,7 @@ public function create(Request $request)
     foreach ($request->assigned_to as $userId) {
         $user = User::find($userId);
         if ($user) {
-            $user->notify(new TaskAssignedNotification($task));
+            $user->notify(new TaskAssignedNotification($task, auth()->user(), 'employee'));
         }
     }
 }
@@ -444,7 +454,7 @@ public function update(Request $request, Task $task)
     foreach ($request->assigned_to as $userId) {
         $user = User::find($userId);
         if ($user) {
-            $user->notify(new TaskAssignedNotification($task));
+            $user->notify(new TaskAssignedNotification($task, auth()->user(), 'employee'));
         }
     }
 }
@@ -504,8 +514,13 @@ public function getTasksByProject($projectId)
 public function taskBoard(Project $project)
 {
     $tasks = Task::with(['assignee']) // no nesting needed
-                 ->where('project_id', $project->id)
-                 ->get(); // get all tasks (main, sub, sub-sub)
+                 ->where('project_id', $project->id);
+
+    if (strtolower((string) auth()->user()?->role) === 'employee') {
+        $this->applyEmployeeTaskScope($tasks, auth()->user());
+    }
+
+    $tasks = $tasks->get(); // get all tasks (main, sub, sub-sub)
 
     $users = User::all();
 
@@ -557,6 +572,15 @@ public function updateStatus(Request $request, Task $task)
     }
 
     $task->save();
+
+    if (strtolower((string) auth()->user()?->role) === 'employee') {
+        SystemNotificationService::notifyAdmins(
+            'Task Status Updated',
+            auth()->user()->name . ' changed task "' . $task->title . '" to ' . $task->status,
+            route('tasks.show', $task->id),
+            ['task_id' => $task->id, 'project_id' => $task->project_id, 'type' => 'task_status_updated', 'icon' => 'fa-tasks']
+        );
+    }
 
     return response()->json(['success' => true]);
 }
@@ -725,6 +749,10 @@ public function calendarView(Request $request)
 {
     $query = Task::with(['project', 'assignee']);
 
+    if (strtolower((string) auth()->user()?->role) === 'employee') {
+        $this->applyEmployeeTaskScope($query, auth()->user());
+    }
+
     // ✅ Status filter
     if ($request->filled('status') && $request->status !== 'all') {
         if ($request->status === 'not finished') {
@@ -763,9 +791,14 @@ public function calendarView(Request $request)
 public function userTaskBoard(User $user, Request $request)
 {
     $query = Task::with(['assignee']);
+    $currentUser = auth()->user();
 
     // Filter by assigned user
     // $query->where('assigned_to', $user->id);
+    if ($currentUser && strtolower((string) $currentUser->role) === 'employee') {
+        $user = $currentUser;
+        $this->applyEmployeeTaskScope($query, $currentUser);
+    }
 
     // Optional filters
     if ($request->filled('search')) {
@@ -864,7 +897,18 @@ public function bulkDelete(Request $request)
     return back()->with('success', 'Selected tasks deleted successfully.');
 }
 
+private function canCreateWorkItems(): bool
+{
+    return in_array(strtolower((string) auth()->user()?->role), ['admin', 'hr', 'manager'], true);
+}
 
-
+private function applyEmployeeTaskScope($query, User $user): void
+{
+    $query->where(function ($employeeTasks) use ($user) {
+        $employeeTasks->whereHas('assignees', function ($assignees) use ($user) {
+            $assignees->where('users.id', $user->id);
+        })->orWhereRaw('FIND_IN_SET(?, assigned_to)', [$user->id]);
+    });
+}
 
 }

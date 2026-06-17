@@ -11,6 +11,7 @@ use App\Models\TicketGroup;
 use App\Models\Reply;
 use App\Models\TicketActivity;
 use App\Notifications\TicketCreatedNotification;
+use App\Services\SystemNotificationService;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -25,6 +26,14 @@ class TicketController extends Controller
         $projects = Project::all();
 
         $tickets = Ticket::query();
+        $user = auth()->user();
+
+        if ($user && strtolower((string) $user->role) === 'employee') {
+            $tickets->where(function ($employeeTickets) use ($user) {
+                $employeeTickets->where('agent_id', $user->id)
+                    ->orWhere('requester_id', $user->id);
+            });
+        }
 
         if ($request->filled('duration')) {
             $duration = $request->duration;
@@ -90,6 +99,8 @@ class TicketController extends Controller
 
     public function create()
     {
+        abort_unless($this->canCreateWorkItems(), 403);
+
         $agents = User::where('role', 'employee')->get();
         $projects = Project::all();
         $clients = User::where('role', 'client')->get();
@@ -101,6 +112,8 @@ class TicketController extends Controller
 
    public function store(Request $request)
 {
+    abort_unless($this->canCreateWorkItems(), 403);
+
     $request->validate([
         'requester_type' => 'required|in:client,employee',
         'requester_name' => 'required|exists:users,id',
@@ -301,8 +314,38 @@ class TicketController extends Controller
         ]);
 
         $ticket = Ticket::findOrFail($request->ticketId);
+        $user = auth()->user();
+
+        if ($user && strtolower((string) $user->role) === 'employee') {
+            abort_unless(
+                (int) $ticket->agent_id === (int) $user->id || (int) $ticket->requester_id === (int) $user->id,
+                403
+            );
+        }
+
         $ticket->status = $request->status;
         $ticket->save();
+
+        if ($user && strtolower((string) $user->role) === 'employee') {
+            SystemNotificationService::notifyAdmins(
+                'Ticket Updated',
+                $user->name . ' changed ticket #' . $ticket->id . ' to ' . ucfirst($ticket->status),
+                route('tickets.show', $ticket->id),
+                ['ticket_id' => $ticket->id, 'project_id' => $ticket->project_id, 'type' => 'ticket_status_updated', 'icon' => 'fa-ticket']
+            );
+        } elseif ($ticket->agent_id || $ticket->requester_id) {
+            SystemNotificationService::notifyUser(
+                array_filter([$ticket->agent_id, $ticket->requester_id]),
+                'Ticket Status Updated',
+                'Ticket #' . $ticket->id . ' is now ' . ucfirst($ticket->status),
+                route('tickets.show', $ticket->id),
+                ['ticket_id' => $ticket->id, 'project_id' => $ticket->project_id, 'type' => 'ticket_status_updated', 'icon' => 'fa-ticket']
+            );
+        }
+
+        if (! $request->expectsJson() && ! $request->ajax()) {
+            return back()->with('success', 'Ticket status updated.');
+        }
 
         return response()->json(['status' => 'success', 'message' => 'Status updated']);
     }
@@ -439,5 +482,10 @@ class TicketController extends Controller
             'status'  => 'success',
             'message' => 'Tickets deleted successfully',
         ]);
+    }
+
+    private function canCreateWorkItems(): bool
+    {
+        return in_array(strtolower((string) auth()->user()?->role), ['admin', 'hr', 'manager'], true);
     }
 }

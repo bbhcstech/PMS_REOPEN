@@ -107,9 +107,11 @@
         <div class="d-flex justify-content-between align-items-center mb-3">
             {{-- Left side buttons --}}
             <div>
+                @if(in_array(strtolower((string) auth()->user()?->role), ['admin', 'hr', 'manager'], true))
                 <a href="{{ route('tasks.create') }}" class="btn btn-primary mr-2">
                     <i class="bi bi-plus-lg"></i> Add Task
                 </a>
+                @endif
 
                 <button type="button" class="btn btn-secondary mr-2" id="filter-my-task">
                     <i class="bi bi-person"></i> My Tasks
@@ -350,7 +352,9 @@
                             <ul class="dropdown-menu dropdown-menu-end">
                                 <li><a class="dropdown-item" href="{{ route('tasks.show', $task->id) }}"> <i class="bi bi-eye"></i> View </a></li>
                                 <li><a class="dropdown-item" href="{{ route('tasks.edit', $task->id) }}"><i class="bi bi-pencil-square"></i> Edit</a></li>
+                                @if(in_array(strtolower((string) auth()->user()?->role), ['admin', 'hr', 'manager'], true))
                                 <li><a class="dropdown-item" href="{{ route('tasks.create') }}?duplicate_id={{ $task->id }}"><i class="bi bi-files"></i> Duplicate</a></li>
+                                @endif
                                 <li>
                                     <form action="{{ route('tasks.destroy', $task->id) }}" method="POST">
                                         @csrf @method('DELETE')

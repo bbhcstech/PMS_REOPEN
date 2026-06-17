@@ -42,6 +42,10 @@
           <div class="col-xl-8">
 
             <div class="card">
+              <div class="card-header d-flex align-items-center justify-content-between">
+                <span class="fw-semibold">Profile</span>
+                <a href="{{ route('dashboard') }}" class="btn-close" aria-label="Close profile"></a>
+              </div>
               <div class="card-body pt-3">
                 <!-- Bordered Tabs -->
                 <ul class="nav nav-tabs nav-tabs-bordered">

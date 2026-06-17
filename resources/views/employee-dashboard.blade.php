@@ -79,6 +79,25 @@
     $officeLongitude = 88.39462;
     $officeRadiusMeters = 10;
     $officeAddress = '11 Hospital Link Road, Satavisha Building, Kolkata, West Bengal 700075';
+    $attendancePolicy = $attendancePolicy ?? null;
+    $lateTime = $attendancePolicy?->late_time ?? '09:30:00';
+    $halfDayMinutes = (int) ($attendancePolicy?->half_day_threshold_minutes ?? 510);
+    $dayOffMinutes = (int) ($attendancePolicy?->day_off_threshold_minutes ?? 270);
+    $formatPolicyTime = function ($time) {
+        try {
+            return Carbon::parse($time)->format('h:i A');
+        } catch (\Throwable $e) {
+            return '09:30 AM';
+        }
+    };
+    $formatPolicyDuration = function (int $minutes) {
+        $hours = intdiv($minutes, 60);
+        $mins = $minutes % 60;
+        return $mins > 0 ? $hours . ':' . str_pad((string) $mins, 2, '0', STR_PAD_LEFT) . ' h' : $hours . ' h';
+    };
+    $lateTimeLabel = $formatPolicyTime($lateTime);
+    $halfDayLabel = $formatPolicyDuration($halfDayMinutes);
+    $dayOffLabel = $formatPolicyDuration($dayOffMinutes);
 @endphp
 
 <style>
@@ -751,8 +770,13 @@
     .employee-avatar {
         width: 112px;
         height: 112px;
-        border-radius: 20px;
+        min-width: 112px;
+        min-height: 112px;
+        max-width: 112px;
+        max-height: 112px;
+        border-radius: 50%;
         object-fit: cover;
+        object-position: center;
         border: 4px solid #fff;
         box-shadow: 0 16px 28px rgba(23, 32, 51, 0.16);
     }
@@ -939,6 +963,10 @@
         .employee-avatar {
             width: 96px;
             height: 96px;
+            min-width: 96px;
+            min-height: 96px;
+            max-width: 96px;
+            max-height: 96px;
         }
 
         .employee-profile-meta {
@@ -1001,7 +1029,7 @@
                     </div>
                     <div class="welcome-policy-item">
                         <strong><i class="bx bx-time-five me-1"></i> Attendance Timing</strong>
-                        <span>Clock-in after 10:00 PM is marked late. Below 7 hours is half day, and below 4 hours is day off.</span>
+                        <span>Clock-in after {{ $lateTimeLabel }} is marked late. Working time below {{ $halfDayLabel }} is half day, and below {{ $dayOffLabel }} is day off.</span>
                     </div>
                 </div>
             </div>
@@ -1305,13 +1333,13 @@
                 </div>
                 <div class="row g-3">
                     <div class="col-lg-3 col-md-6">
-                        <div class="employee-rule"><i class="bx bx-time-five text-warning fs-3"></i><span>Clock-in after <strong>10:00 PM</strong> is marked as <strong>Late</strong>.</span></div>
+                        <div class="employee-rule"><i class="bx bx-time-five text-warning fs-3"></i><span>Clock-in after <strong>{{ $lateTimeLabel }}</strong> is marked as <strong>Late</strong>.</span></div>
                     </div>
                     <div class="col-lg-3 col-md-6">
-                        <div class="employee-rule"><i class="bx bx-star text-primary fs-3"></i><span>Working time below <strong>7 hours</strong> is marked as <strong>Half Day</strong>.</span></div>
+                        <div class="employee-rule"><i class="bx bx-star text-primary fs-3"></i><span>Working time below <strong>{{ $halfDayLabel }}</strong> is marked as <strong>Half Day</strong>.</span></div>
                     </div>
                     <div class="col-lg-3 col-md-6">
-                        <div class="employee-rule"><i class="bx bx-calendar-x text-danger fs-3"></i><span>Working time below <strong>4 hours</strong> is marked as <strong>Day Off</strong>.</span></div>
+                        <div class="employee-rule"><i class="bx bx-calendar-x text-danger fs-3"></i><span>Working time below <strong>{{ $dayOffLabel }}</strong> is marked as <strong>Day Off</strong>.</span></div>
                     </div>
                     <div class="col-lg-3 col-md-6">
                         <div class="employee-rule"><i class="bx bx-plane-alt text-info fs-3"></i><span>Approved leave is shown automatically from the leave table.</span></div>

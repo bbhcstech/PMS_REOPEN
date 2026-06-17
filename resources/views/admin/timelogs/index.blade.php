@@ -2,6 +2,7 @@
 
 @section('content')
 <div class="container">
+    @php $canReviewTimeLogs = in_array(strtolower((string) auth()->user()?->role), ['admin', 'hr', 'manager'], true); @endphp
     <br>
 
     @if($project)
@@ -45,13 +46,13 @@
         <div class="col-md-3">
             <label class="form-label">Employee</label>
             <select name="user_id" class="form-select select2">
-                @if(auth()->user()->role === 'admin')
+                @if($canReviewTimeLogs)
                     <option value="">All</option>
                 @endif
 
                 @foreach($employees as $emp)
                     <option value="{{ $emp->id }}"
-                        @if(auth()->user()->role !== 'admin')
+                        @if(! $canReviewTimeLogs)
                             selected
                         @elseif(request('user_id') == $emp->id)
                             selected

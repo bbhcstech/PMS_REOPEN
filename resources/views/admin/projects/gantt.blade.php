@@ -75,8 +75,9 @@
     &nbsp;
     &nbsp;
     <div class="d-flex justify-content-between align-items-center mb-3">
-            
+            @if(in_array(strtolower((string) auth()->user()?->role), ['admin', 'hr', 'manager'], true))
                 <a href="{{ route('tasks.create') }}" class="btn btn-primary">Add Task</a>
+            @endif
             </div>
     <!-- Top Timeline Header -->
     <div class="bg-light p-3 border rounded mb-3 shadow-sm">
