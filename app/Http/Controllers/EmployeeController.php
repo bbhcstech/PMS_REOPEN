@@ -7,6 +7,7 @@ use App\Notifications\EmployeeCreatedNotification;
 use App\Models\User;
 use App\Models\EmployeeDetail;
 use App\Models\Designation;
+use App\Models\GovernmentIdVerification;
 use App\Models\ParentDepartment;
 use App\Models\Department;
 use App\Models\Country;
@@ -19,10 +20,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use App\Services\SystemNotificationService;
+use App\Services\GovernmentIdDobVerifier;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
-use Symfony\Component\Process\Process;
 
 class EmployeeController extends Controller
 {
@@ -44,201 +45,6 @@ class EmployeeController extends Controller
     private function hasSubordinates(int $userId): bool
     {
         return EmployeeDetail::where('reporting_to', $userId)->exists();
-    }
-
-    private function verifyGovernmentIdDob(string $imagePath, string $providedDob): array
-    {
-        $ocrText = $this->readTextFromImage($imagePath);
-
-        if ($ocrText === null || trim($ocrText) === '') {
-            return [
-                'ok' => false,
-                'message' => 'Could not read DOB from the government ID image. Please upload a clear JPEG, PNG, or JPG image with visible DOB.',
-            ];
-        }
-
-        $providedDate = Carbon::parse($providedDob)->format('Y-m-d');
-        $detectedDates = $this->extractDatesFromText($ocrText);
-
-        if (empty($detectedDates)) {
-            return [
-                'ok' => false,
-                'message' => 'No valid DOB was found in the government ID image. Please upload an ID image where DOB is clearly visible.',
-            ];
-        }
-
-        if (! in_array($providedDate, $detectedDates, true)) {
-            return [
-                'ok' => false,
-                'message' => 'DOB mismatch. The DOB found on the government ID does not match the provided DOB.',
-            ];
-        }
-
-        return ['ok' => true, 'message' => 'DOB matched.'];
-    }
-
-    private function readTextFromImage(string $imagePath): ?string
-    {
-        $binary = config('services.ocr.tesseract_binary', 'tesseract');
-        $variants = $this->createOcrImageVariants($imagePath);
-        $generatedVariants = array_filter($variants, fn ($path) => $path !== $imagePath);
-        $results = [];
-        $errors = [];
-
-        try {
-            foreach ($variants as $variant) {
-                foreach ([6, 11] as $pageSegmentationMode) {
-                    $process = new Process([
-                        $binary,
-                        $variant,
-                        'stdout',
-                        '-l',
-                        'eng',
-                        '--oem',
-                        '1',
-                        '--psm',
-                        (string) $pageSegmentationMode,
-                    ]);
-                    $process->setTimeout(30);
-                    $process->run();
-
-                    if ($process->isSuccessful() && trim($process->getOutput()) !== '') {
-                        $results[] = $process->getOutput();
-                    } else {
-                        $errors[] = trim($process->getErrorOutput() ?: $process->getOutput());
-                    }
-                }
-            }
-        } catch (\Throwable $e) {
-            $errors[] = $e->getMessage();
-        } finally {
-            foreach ($generatedVariants as $variant) {
-                @unlink($variant);
-            }
-        }
-
-        if (empty($results)) {
-            Log::warning('Government ID OCR failed', [
-                'errors' => array_values(array_filter($errors)),
-            ]);
-
-            return null;
-        }
-
-        return implode("\n", array_unique($results));
-    }
-
-    private function createOcrImageVariants(string $imagePath): array
-    {
-        if (! function_exists('imagecreatefromstring')) {
-            return [$imagePath];
-        }
-
-        $imageInfo = @getimagesize($imagePath);
-        if (! $imageInfo || ($imageInfo[0] * $imageInfo[1]) > 40000000) {
-            return [$imagePath];
-        }
-
-        $source = @imagecreatefromstring(file_get_contents($imagePath));
-        if (! $source) {
-            return [$imagePath];
-        }
-
-        $width = imagesx($source);
-        $height = imagesy($source);
-        $scale = max(1, min(3, 2400 / max($width, $height)));
-        $scanWidth = (int) round($width * $scale);
-        $scanHeight = (int) round($height * $scale);
-        $scan = imagecreatetruecolor($scanWidth, $scanHeight);
-        imagecopyresampled($scan, $source, 0, 0, 0, 0, $scanWidth, $scanHeight, $width, $height);
-        imagedestroy($source);
-
-        imagefilter($scan, IMG_FILTER_GRAYSCALE);
-        imagefilter($scan, IMG_FILTER_CONTRAST, -35);
-        imageconvolution($scan, [
-            [-1, -1, -1],
-            [-1, 9, -1],
-            [-1, -1, -1],
-        ], 1, 0);
-
-        $enhancedPath = tempnam(sys_get_temp_dir(), 'government-id-ocr-');
-        if ($enhancedPath === false || ! imagepng($scan, $enhancedPath)) {
-            imagedestroy($scan);
-            return [$imagePath];
-        }
-
-        $threshold = imagecreatetruecolor($scanWidth, $scanHeight);
-        imagecopy($threshold, $scan, 0, 0, 0, 0, $scanWidth, $scanHeight);
-        imagefilter($threshold, IMG_FILTER_CONTRAST, -75);
-        imagefilter($threshold, IMG_FILTER_BRIGHTNESS, 10);
-
-        $thresholdPath = tempnam(sys_get_temp_dir(), 'government-id-ocr-');
-        if ($thresholdPath === false || ! imagepng($threshold, $thresholdPath)) {
-            $thresholdPath = null;
-        }
-
-        imagedestroy($threshold);
-        imagedestroy($scan);
-
-        return array_values(array_filter([$imagePath, $enhancedPath, $thresholdPath]));
-    }
-
-    private function extractDatesFromText(string $text): array
-    {
-        $text = preg_replace('/(?<=\d)[Oo](?=\d)|(?<=\d)[Oo](?=[\/.\-])|(?<=[\/.\-])[Oo](?=\d)/', '0', $text);
-        $text = preg_replace('/(?<=\d)[Il](?=\d)|(?<=\d)[Il](?=[\/.\-])|(?<=[\/.\-])[Il](?=\d)/', '1', $text);
-        $dates = [];
-        $patterns = [
-            '/\b(\d{1,2})\s*[\/\-.]\s*(\d{1,2})\s*[\/\-.]\s*(\d{4})\b/',
-            '/\b(\d{4})\s*[\/\-.]\s*(\d{1,2})\s*[\/\-.]\s*(\d{1,2})\b/',
-            '/\b(\d{1,2})\s+(Jan|January|Feb|February|Mar|March|Apr|April|May|Jun|June|Jul|July|Aug|August|Sep|Sept|September|Oct|October|Nov|November|Dec|December)\s+(\d{4})\b/i',
-            '/\b(Jan|January|Feb|February|Mar|March|Apr|April|May|Jun|June|Jul|July|Aug|August|Sep|Sept|September|Oct|October|Nov|November|Dec|December)\s+(\d{1,2}),?\s+(\d{4})\b/i',
-        ];
-
-        foreach ($patterns as $pattern) {
-            if (! preg_match_all($pattern, $text, $matches, PREG_SET_ORDER)) {
-                continue;
-            }
-
-            foreach ($matches as $match) {
-                $date = $this->normalizeDetectedDate($match);
-                if ($date) {
-                    $dates[] = $date;
-                }
-            }
-        }
-
-        return array_values(array_unique($dates));
-    }
-
-    private function normalizeDetectedDate(array $match): ?string
-    {
-        $raw = preg_replace('/\s*([\/.\-])\s*/', '$1', trim($match[0]));
-        $formats = [
-            'd/m/Y', 'd-m-Y', 'd.m.Y',
-            'm/d/Y', 'm-d-Y', 'm.d.Y',
-            'Y/m/d', 'Y-m-d', 'Y.m.d',
-            'd M Y', 'd F Y',
-            'M d Y', 'F d Y',
-            'M d, Y', 'F d, Y',
-        ];
-
-        foreach ($formats as $format) {
-            try {
-                $date = Carbon::createFromFormat($format, $raw);
-                if ($date && $date->format($format) !== false) {
-                    return $date->format('Y-m-d');
-                }
-            } catch (\Throwable $e) {
-                continue;
-            }
-        }
-
-        try {
-            return Carbon::parse($raw)->format('Y-m-d');
-        } catch (\Throwable $e) {
-            return null;
-        }
     }
 
     /**
@@ -378,7 +184,7 @@ class EmployeeController extends Controller
     /**
      * Store a new employee.
      */
-    public function store(Request $request)
+    public function store(Request $request, GovernmentIdDobVerifier $governmentIdDobVerifier)
     {
         $this->ensureAdmin();
 
@@ -468,24 +274,18 @@ class EmployeeController extends Controller
             return back()->withErrors(['department_id' => 'Please select a valid sub department.'])->withInput();
         }
 
-        $governmentIdDobCheck = $this->verifyGovernmentIdDob(
-            $request->file('government_id_card')->getRealPath(),
-            $request->dob
-        );
-
-        if (! $governmentIdDobCheck['ok']) {
-            return back()
-                ->withErrors(['government_id_card' => $governmentIdDobCheck['message']])
-                ->withInput();
-        }
-
         $profileImagePath = null;
         $governmentIdCardPath = null;
+        $governmentIdVerification = null;
 
         if ($request->hasFile('profile_picture')) {
             $image = $request->file('profile_picture');
             $fileName = time() . '-' . $image->getClientOriginalName();
-            $image->move(public_path('admin/uploads/profile-images'), $fileName);
+            $profileImageDirectory = public_path('admin/uploads/profile-images');
+            if (! is_dir($profileImageDirectory)) {
+                mkdir($profileImageDirectory, 0755, true);
+            }
+            $image->move($profileImageDirectory, $fileName);
             $profileImagePath = 'admin/uploads/profile-images/' . $fileName;
         }
 
@@ -498,6 +298,11 @@ class EmployeeController extends Controller
             }
             $image->move($governmentIdDirectory, $fileName);
             $governmentIdCardPath = 'admin/uploads/government-id-cards/' . $fileName;
+
+            $governmentIdVerification = $governmentIdDobVerifier->verify(
+                public_path($governmentIdCardPath),
+                $request->dob
+            );
         }
 
         // generate a plain temporary password (if request provided use it, else random)
@@ -534,6 +339,7 @@ class EmployeeController extends Controller
             $employeeData['mobile'] = $request->mobile;
             $employeeData['user_id'] = $user->id;
             $employeeData['government_id_card'] = $governmentIdCardPath;
+            $employeeData['government_id_verification_status'] = $governmentIdVerification['status'] ?? null;
 
             // ================================================
             // FIXED: Handle new designation with firstOrCreate - WITH LEVEL
@@ -618,7 +424,7 @@ class EmployeeController extends Controller
             do {
                 $employeeData['employee_id'] = $this->computeNextEmployeeIdWithLock();
                 try {
-                    EmployeeDetail::create($employeeData);
+                    $detail = EmployeeDetail::create($employeeData);
                     $created = true;
                 } catch (\Illuminate\Database\QueryException $qe) {
                     $tries++;
@@ -634,6 +440,21 @@ class EmployeeController extends Controller
                     usleep(100000); // 100ms backoff
                 }
             } while (! $created);
+
+            if ($governmentIdVerification && $governmentIdCardPath) {
+                GovernmentIdVerification::create([
+                    'user_id' => $user->id,
+                    'employee_detail_id' => $detail?->id,
+                    'submitted_dob' => $request->dob,
+                    'image_path' => $governmentIdCardPath,
+                    'ocr_text' => $governmentIdVerification['ocr_text'],
+                    'ocr_detected_dob' => $governmentIdVerification['detected_dob'],
+                    'verification_status' => $governmentIdVerification['status'],
+                    'ocr_message' => $governmentIdVerification['message'],
+                    'ocr_errors' => $governmentIdVerification['errors'],
+                    'reviewed_at' => $governmentIdVerification['approved'] ? now() : null,
+                ]);
+            }
 
             // Send email to employee immediately (synchronous) so mail goes to employee account now
             try {

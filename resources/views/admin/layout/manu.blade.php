@@ -1131,6 +1131,14 @@
                         </li>
                     @endif
 
+                        @if(Route::has('admin.government-id-verifications.index'))
+                        <li class="menu-item">
+                            <a href="{{ route('admin.government-id-verifications.index') }}" class="menu-link">
+                                <div>ID Verifications</div>
+                            </a>
+                        </li>
+                    @endif
+
 
 
 

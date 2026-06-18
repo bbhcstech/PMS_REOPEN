@@ -12,6 +12,7 @@ use App\Http\Controllers\DesignationController;
 use App\Http\Controllers\DiscussionController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\ExpenseController;
+use App\Http\Controllers\Admin\GovernmentIdVerificationController;
 // use App\Http\Controllers\Frontend\FrontendController;
 use App\Http\Controllers\FrontendUIController;
 use App\Http\Controllers\HolidayController;
@@ -993,6 +994,10 @@ Route::post('/{deal}/add-follow-up', [DealController::class, 'addFollowUp'])->na
 
 // Admin Contracts Routes
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('government-id-verifications', [GovernmentIdVerificationController::class, 'index'])->name('government-id-verifications.index');
+    Route::patch('government-id-verifications/{verification}/approve', [GovernmentIdVerificationController::class, 'approve'])->name('government-id-verifications.approve');
+    Route::patch('government-id-verifications/{verification}/reject', [GovernmentIdVerificationController::class, 'reject'])->name('government-id-verifications.reject');
+
     // Contracts
     Route::get('contracts/export', [ContractController::class, 'export'])->name('contracts.export');
     Route::post('contracts/{contract}/update-status', [ContractController::class, 'updateStatus'])->name('contracts.update-status');
