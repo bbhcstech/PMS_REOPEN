@@ -94,20 +94,21 @@ class ProfileController extends Controller
             );
         }
 
-        // Update user data (excluding password fields)
-        $user->name = $request->name;
-        $user->email = $request->email;
+        // Update only fields submitted by the profile form.
+        if ($request->has('name')) {
+            $user->name = $request->name;
+        }
+        if ($request->has('email')) {
+            $user->email = $request->email;
+        }
         if ($isEmployeeProfile && $request->has('designation')) {
             $user->designation = $request->designation;
         }
-        $user->mobile = $request->mobile;
-        $user->gender = $request->gender;
-        $user->dob = $request->dob;
-        $user->marital_status = $request->marital_status;
-        $user->address = $request->address;
-        $user->about = $request->about;
-        $user->country = $request->country;
-        $user->language = $request->language;
+        foreach (['mobile', 'gender', 'dob', 'marital_status', 'address', 'about', 'country', 'language'] as $field) {
+            if ($request->has($field)) {
+                $user->{$field} = $request->input($field);
+            }
+        }
         if ($isEmployeeProfile && $request->has('slack_id')) {
             $user->slack_id = $request->slack_id;
         }
@@ -117,8 +118,12 @@ class ProfileController extends Controller
         if ($governmentIdVerification && ! $employeeDetail) {
             $user->government_id_verification_status = $governmentIdVerification['status'];
         }
-        $user->email_notify = $request->email_notify;
-        $user->google_calendar = $request->google_calendar;
+        if ($request->has('email_notify')) {
+            $user->email_notify = $request->boolean('email_notify');
+        }
+        if ($request->has('google_calendar')) {
+            $user->google_calendar = $request->boolean('google_calendar');
+        }
 
         // Reset email verification if email changed
         if ($user->isDirty('email')) {
@@ -128,16 +133,16 @@ class ProfileController extends Controller
         $user->save();
 
         if ($employeeDetail) {
-            $employeeDetail->fill([
-                'mobile' => $request->mobile,
-                'gender' => $request->gender,
-                'dob' => $request->dob,
-                'marital_status' => $request->marital_status,
-                'address' => $request->address,
-                'about' => $request->about,
-                'country' => $request->country,
-                'language' => $request->language,
-            ]);
+            $employeeDetailPayload = [];
+            foreach (['mobile', 'gender', 'dob', 'marital_status', 'address', 'about', 'country', 'language'] as $field) {
+                if ($request->has($field)) {
+                    $employeeDetailPayload[$field] = $request->input($field);
+                }
+            }
+
+            if ($employeeDetailPayload) {
+                $employeeDetail->fill($employeeDetailPayload);
+            }
 
             if ($isEmployeeProfile && $request->has('slack_id')) {
                 $employeeDetail->slack_member_id = $request->slack_id;

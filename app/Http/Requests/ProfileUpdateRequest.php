@@ -20,17 +20,22 @@ class ProfileUpdateRequest extends FormRequest
         $user = $this->user();
         $currentDob = $user?->dob ?? $user?->employeeDetail?->dob;
         $dobChanged = $this->filled('dob') && $this->normalizeDate($this->input('dob')) !== $this->normalizeDate($currentDob);
+        $emailRules = [
+            'sometimes',
+            'required',
+            'string',
+            'lowercase',
+            'email',
+            'max:255',
+        ];
+
+        if ($this->filled('email') && strtolower(trim((string) $this->input('email'))) !== strtolower(trim((string) $user?->email))) {
+            $emailRules[] = Rule::unique('users', 'email')->ignore($user?->getKey());
+        }
 
         return [
-            'name' => ['required', 'string', 'max:255'],
-            'email' => [
-                'required',
-                'string',
-                'lowercase',
-                'email',
-                'max:255',
-                Rule::unique(User::class)->ignore($user?->id),
-            ],
+            'name' => ['sometimes', 'required', 'string', 'max:255'],
+            'email' => $emailRules,
             'password' => ['nullable', 'string', 'min:8'],
             'designation' => ['nullable', 'string', 'max:255'],
             'mobile' => ['nullable', 'string', 'max:20'],
@@ -57,6 +62,15 @@ class ProfileUpdateRequest extends FormRequest
                 'max:4096',
             ],
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        if ($this->has('email')) {
+            $this->merge([
+                'email' => strtolower(trim((string) $this->input('email'))),
+            ]);
+        }
     }
 
     private function normalizeDate($date): ?string

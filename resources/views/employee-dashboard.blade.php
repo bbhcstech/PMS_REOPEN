@@ -330,6 +330,37 @@
         font-size: 1.05rem;
     }
 
+    .clock-location-note,
+    .clock-policy-warning {
+        margin-top: 12px;
+        padding: 11px 12px;
+        border-radius: 12px;
+        font-weight: 800;
+        line-height: 1.35;
+    }
+
+    .clock-location-note {
+        background: rgba(255, 255, 255, 0.16);
+        border: 1px solid rgba(255, 255, 255, 0.28);
+        color: #fff;
+    }
+
+    .clock-location-note span {
+        display: block;
+        margin-bottom: 3px;
+        font-size: 0.76rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        opacity: 0.82;
+    }
+
+    .clock-policy-warning {
+        background: #fee2e2;
+        border: 1px solid #fca5a5;
+        color: #991b1b;
+        box-shadow: 0 10px 24px rgba(153, 27, 27, 0.18);
+    }
+
     .clock-camera-modal {
         position: fixed;
         inset: 0;
@@ -1017,11 +1048,11 @@
                 <div class="welcome-policy-grid">
                     <div class="welcome-policy-item">
                         <strong><i class="bx bx-map-pin me-1"></i> Location Required</strong>
-                        <span>Clock in is allowed only after sharing your current location from the office area.</span>
+                        <span>Clock in is allowed after sharing your current location.</span>
                     </div>
                     <div class="welcome-policy-item">
                         <strong><i class="bx bx-current-location me-1"></i> Office Radius</strong>
-                        <span>You must be within 10 meters of 11 Hospital Link Road, Satavisha Building, Kolkata, West Bengal 700075.</span>
+                        <span>Your distance from 11 Hospital Link Road, Satavisha Building, Kolkata, West Bengal 700075 will be recorded.</span>
                     </div>
                     <div class="welcome-policy-item">
                         <strong><i class="bx bx-camera me-1"></i> Photo Capture</strong>
@@ -1077,14 +1108,14 @@
                                     <input type="hidden" name="clock_in_latitude" id="clockInLatitude">
                                     <input type="hidden" name="clock_in_longitude" id="clockInLongitude">
                                     <input type="hidden" name="clock_in_accuracy" id="clockInAccuracy">
-                                    <input type="hidden" name="clock_in_address" id="clockInAddress" value="{{ $officeAddress }}">
+                                    <input type="hidden" name="clock_in_address" id="clockInAddress">
                                     <input type="hidden" name="clock_in_selfie" id="clockInSelfie">
                                     <button class="employee-action-btn is-in" type="submit" id="employeeClockInButton">
                                         <i class="bx bx-log-in-circle"></i> Clock In
                                     </button>
                                 </form>
                                 <div class="clock-requirements" id="clockRequirementStatus">
-                                    <div class="clock-status-line"><i class="bx bx-map-pin"></i><span>Share current location within {{ $officeRadiusMeters }} meters of office.</span></div>
+                                    <div class="clock-status-line"><i class="bx bx-map-pin"></i><span>Share current location to save your clock-in place.</span></div>
                                     <div class="clock-status-line"><i class="bx bx-camera"></i><span>Capture photo to complete clock in.</span></div>
                                 </div>
                             @else
@@ -1095,6 +1126,28 @@
                                 <div class="clock-selfie-card">
                                     @if($attendance->clock_in_photo)
                                         <img src="{{ asset($attendance->clock_in_photo) }}" alt="Clock in photo">
+                                    @endif
+                                    @php
+                                        $clockInLocationText = $attendance->clock_in_address
+                                            ?: $attendance->location
+                                            ?: (
+                                                $attendance->clock_in_latitude && $attendance->clock_in_longitude
+                                                    ? 'Current location: ' . $attendance->clock_in_latitude . ', ' . $attendance->clock_in_longitude
+                                                    : null
+                                            );
+                                        $clockedInOutsideOffice = strtolower((string) $attendance->work_from_type) === 'field';
+                                    @endphp
+                                    @if($clockInLocationText)
+                                        <div class="clock-location-note">
+                                            <span>Clock-in location</span>
+                                            {{ $clockInLocationText }}
+                                        </div>
+                                    @endif
+                                    @if($clockedInOutsideOffice)
+                                        <div class="clock-policy-warning">
+                                            <i class="bx bx-error-circle me-1"></i>
+                                            You did not clock in from the organization area. This may affect your appraisal later. Please maintain the office policy properly.
+                                        </div>
                                     @endif
                                     <div class="clock-live-grid">
                                         <div class="clock-live-box">
@@ -1638,10 +1691,12 @@
             };
 
             const markWelcomeSeen = () => {
-                fetch(welcomeOverlay.dataset.seenUrl, {
+                return fetch(welcomeOverlay.dataset.seenUrl, {
                     method: 'POST',
+                    credentials: 'same-origin',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Accept': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
                     },
                     body: JSON.stringify({})
@@ -1798,15 +1853,9 @@
                     latitudeInput.value = currentLat.toFixed(8);
                     longitudeInput.value = currentLng.toFixed(8);
                     accuracyInput.value = Math.round(position.coords.accuracy || 0);
-                    addressInput.value = officeLocation.address;
+                    addressInput.value = `Current location: ${currentLat.toFixed(8)}, ${currentLng.toFixed(8)} (${distance.toFixed(1)}m from office)`;
 
-                    if (distance > officeLocation.radius) {
-                        setClockStatus(`Clock in blocked. You are ${distance.toFixed(1)} meters away from office. Limit is ${officeLocation.radius} meters.`, 'error');
-                        clockInButton.disabled = false;
-                        return;
-                    }
-
-                    setClockStatus(`Location matched within ${distance.toFixed(1)} meters. Opening camera...`, 'success');
+                    setClockStatus(`You are ${distance.toFixed(1)} meters from office. Opening camera...`, 'success');
                     await openCamera();
                 } catch (error) {
                     setClockStatus(error.message || 'Please allow current location and camera permission to clock in.', 'error');

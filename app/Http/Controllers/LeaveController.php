@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreLeaveRequest;
 use App\Models\Leave;
+use App\Models\LeaveApologyLetter;
 use App\Models\LeaveBalance;
 use App\Models\LeaveType;
 use App\Models\User;
@@ -167,9 +168,229 @@ class LeaveController extends Controller
     public function show(Leave $leave)
     {
         $this->authorizeLeaveAccess($leave);
-        $leave->load(['user.employeeDetail.department', 'leaveType', 'approvals.user', 'approver', 'rejector']);
+        $leave->load(['user.employeeDetail.department', 'leaveType', 'approvals.user', 'approver', 'rejector', 'apologyLetters.user']);
 
         return view('admin.leaves.show', compact('leave'));
+    }
+
+    public function apologyLetters(Request $request)
+    {
+        $isAdmin = $this->isAdmin();
+        $query = LeaveApologyLetter::with(['user.employeeDetail.department', 'leave.leaveType'])
+            ->whereNull('archived_at')
+            ->latest();
+
+        if (! $isAdmin) {
+            $query->where('user_id', Auth::id());
+        }
+
+        if ($isAdmin && $request->filled('employee')) {
+            $query->where('user_id', $request->employee);
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $letters = $query->paginate(15)->withQueryString();
+        $employees = $isAdmin ? $this->employeeQuery()->get() : collect();
+
+        $archivedCount = $this->apologyLetterAccessQuery()
+            ->whereNotNull('archived_at')
+            ->count();
+
+        return view('admin.leaves.apology-letters.index', compact('letters', 'employees', 'isAdmin', 'archivedCount'));
+    }
+
+    public function createApologyLetter(Request $request)
+    {
+        $leave = null;
+        if ($request->filled('leave_id')) {
+            $leave = Leave::findOrFail($request->leave_id);
+            $this->authorizeLeaveAccess($leave);
+        }
+
+        $leaves = Leave::with('leaveType')
+            ->where('user_id', Auth::id())
+            ->latest()
+            ->limit(50)
+            ->get();
+
+        $sample = $this->apologyLetterSample(Auth::user(), $leave);
+
+        return view('admin.leaves.apology-letters.create', compact('leave', 'leaves', 'sample'));
+    }
+
+    public function storeApologyLetter(Request $request)
+    {
+        $data = $request->validate([
+            'leave_id' => ['nullable', 'integer', 'exists:leaves,id'],
+            'subject' => ['required', 'string', 'max:255'],
+            'body' => ['required', 'string', 'max:5000'],
+            'recipient_email' => ['nullable', 'email', 'max:255'],
+        ]);
+
+        if (! empty($data['leave_id'])) {
+            $leave = Leave::findOrFail($data['leave_id']);
+            $this->authorizeLeaveAccess($leave);
+        }
+
+        $letter = LeaveApologyLetter::create([
+            'user_id' => Auth::id(),
+            'leave_id' => $data['leave_id'] ?? null,
+            'subject' => $data['subject'],
+            'body' => $data['body'],
+            'recipient_email' => $data['recipient_email'] ?? null,
+            'status' => 'submitted',
+        ]);
+
+        SystemNotificationService::notifyAdmins(
+            'New Leave Apology Letter',
+            Auth::user()->name . ' submitted an apology letter for HR review.',
+            route('leaves.apology-letters.show', $letter->id),
+            ['employee_id' => Auth::id(), 'entity_type' => LeaveApologyLetter::class, 'entity_id' => $letter->id, 'type' => 'leave_apology_letter', 'icon' => 'fa-envelope-open-text']
+        );
+
+        return redirect()->route('leaves.apology-letters.index')->with('success', 'Apology letter sent to HR successfully.');
+    }
+
+    public function showApologyLetter(LeaveApologyLetter $letter)
+    {
+        abort_if(! $this->isAdmin() && $letter->user_id !== Auth::id(), 403);
+        $letter->load(['user.employeeDetail.department', 'leave.leaveType', 'reviewer']);
+
+        return view('admin.leaves.apology-letters.show', compact('letter'));
+    }
+
+    public function reviewApologyLetter(Request $request, LeaveApologyLetter $letter)
+    {
+        $this->ensureAdmin();
+        $data = $request->validate([
+            'status' => ['required', 'in:reviewed,archived'],
+            'admin_note' => ['nullable', 'string', 'max:2000'],
+        ]);
+
+        $updates = [
+            'status' => $data['status'],
+            'admin_note' => $data['admin_note'] ?? null,
+            'reviewed_by' => Auth::id(),
+            'reviewed_at' => now(),
+        ];
+
+        if ($data['status'] === 'archived') {
+            $updates['archived_at'] = now();
+        }
+
+        $letter->update($updates);
+
+        return back()->with('success', 'Apology letter updated successfully.');
+    }
+
+    public function archiveApologyLetters(Request $request)
+    {
+        $data = $request->validate([
+            'ids' => ['required', 'array'],
+            'ids.*' => ['integer', 'exists:leave_apology_letters,id'],
+        ]);
+
+        $count = $this->apologyLetterAccessQuery()
+            ->whereIn('id', $data['ids'])
+            ->whereNull('archived_at')
+            ->update(['archived_at' => now()]);
+
+        return back()->with('success', $count . ' apology letter(s) archived successfully.');
+    }
+
+    public function archiveApologyLetter(LeaveApologyLetter $letter)
+    {
+        $this->authorizeApologyLetterAccess($letter);
+
+        if ($letter->archived_at) {
+            return back()->with('success', 'Apology letter is already archived.');
+        }
+
+        $letter->forceFill(['archived_at' => now()])->save();
+
+        return back()->with('success', 'Apology letter archived successfully.');
+    }
+
+    public function archivedApologyLetters(Request $request)
+    {
+        $isAdmin = $this->isAdmin();
+        $query = $this->apologyLetterAccessQuery()
+            ->with(['user.employeeDetail.department', 'leave.leaveType'])
+            ->whereNotNull('archived_at');
+
+        if ($isAdmin && $request->filled('employee')) {
+            $query->where('user_id', $request->employee);
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('subject', 'like', '%' . $search . '%')
+                    ->orWhere('body', 'like', '%' . $search . '%')
+                    ->orWhereHas('user', fn ($userQuery) => $userQuery->where('name', 'like', '%' . $search . '%'));
+            });
+        }
+
+        $letters = $query->orderByDesc('archived_at')->paginate(15)->withQueryString();
+        $employees = $isAdmin ? $this->employeeQuery()->get() : collect();
+
+        return view('admin.leaves.apology-letters.archive', compact('letters', 'employees', 'isAdmin'));
+    }
+
+    public function restoreApologyLetters(Request $request)
+    {
+        $data = $request->validate([
+            'ids' => ['required', 'array'],
+            'ids.*' => ['integer', 'exists:leave_apology_letters,id'],
+        ]);
+
+        $letters = $this->apologyLetterAccessQuery()
+            ->whereIn('id', $data['ids'])
+            ->whereNotNull('archived_at')
+            ->get();
+
+        $letters->each(function (LeaveApologyLetter $letter) {
+            $letter->forceFill([
+                'status' => $letter->status === 'archived' ? 'reviewed' : $letter->status,
+                'archived_at' => null,
+            ])->save();
+        });
+
+        $count = $letters->count();
+
+        return back()->with('success', $count . ' apology letter(s) restored successfully.');
+    }
+
+    public function restoreApologyLetter(LeaveApologyLetter $letter)
+    {
+        $this->authorizeApologyLetterAccess($letter);
+
+        if (! $letter->archived_at) {
+            return back()->with('success', 'Apology letter is already active.');
+        }
+
+        $letter->forceFill([
+            'status' => $letter->status === 'archived' ? 'reviewed' : $letter->status,
+            'archived_at' => null,
+        ])->save();
+
+        return back()->with('success', 'Apology letter restored successfully.');
+    }
+
+    public function downloadApologySample(Request $request)
+    {
+        $leave = $request->filled('leave_id') ? Leave::find($request->leave_id) : null;
+        if ($leave) {
+            $this->authorizeLeaveAccess($leave);
+        }
+
+        return response($this->apologyLetterSample(Auth::user(), $leave), 200, [
+            'Content-Type' => 'text/plain; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename=leave-apology-letter-sample.txt',
+        ]);
     }
 
     public function edit(Leave $leave)
@@ -678,6 +899,33 @@ class LeaveController extends Controller
         ];
     }
 
+    private function apologyLetterSample(?User $user, ?Leave $leave = null): string
+    {
+        $employeeName = $user?->name ?: '[Employee Name]';
+        $leaveType = $leave?->type_label ?: '[Leave Type]';
+        $startDate = $leave?->start_date?->format('d M Y') ?: '[Start Date]';
+        $endDate = $leave?->end_date?->format('d M Y') ?: '[End Date]';
+        $today = now()->format('d M Y');
+
+        return <<<TEXT
+Subject: Apology Letter Regarding {$leaveType} Leave
+
+Dear HR Team,
+
+I sincerely apologize for the inconvenience caused due to my leave from {$startDate} to {$endDate}. I understand that my absence may have affected work planning and team coordination.
+
+The reason for my leave was [briefly explain the reason]. I assure you that I will take the necessary steps to avoid similar inconvenience in the future and will coordinate my pending responsibilities promptly.
+
+I kindly request you to consider this apology and accept my explanation.
+
+Thank you for your understanding.
+
+Sincerely,
+{$employeeName}
+Date: {$today}
+TEXT;
+    }
+
     private function exportLine(array $columns, string $delimiter): string
     {
         return implode($delimiter, array_map(fn ($value) => str_replace(["\r", "\n", "\t"], ' ', (string) $value), $columns));
@@ -691,5 +939,21 @@ class LeaveController extends Controller
                 $leave = $group->first();
                 $this->leaveService->ensureBalance($leave->user, $leave->start_date);
             });
+    }
+
+    private function apologyLetterAccessQuery()
+    {
+        $query = LeaveApologyLetter::query();
+
+        if (! $this->isAdmin()) {
+            $query->where('user_id', Auth::id());
+        }
+
+        return $query;
+    }
+
+    private function authorizeApologyLetterAccess(LeaveApologyLetter $letter): void
+    {
+        abort_if(! $this->isAdmin() && $letter->user_id !== Auth::id(), 403);
     }
 }

@@ -6,6 +6,7 @@ use App\Http\Controllers\AwardController;
 use App\Http\Controllers\ClientCategoryController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\ClientSubCategoryController;
+use App\Http\Controllers\CollaboratingCompanyController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\DesignationController;
@@ -395,6 +396,7 @@ Route::middleware('auth')->group(function () {
     */
 
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.all');
+    Route::get('/notifications/{id}/open', [NotificationController::class, 'open'])->name('notifications.open');
     Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.readAll');
     Route::post('/notifications/clear-all', [NotificationController::class, 'clearAll'])->name('notifications.clearAll');
@@ -619,6 +621,17 @@ Route::resource('designations', DesignationController::class);
     Route::post('/leaves/archive/{id}/restore', [LeaveController::class, 'restore'])->name('leaves.restore');
 
     Route::get('/leaves', [LeaveController::class, 'index'])->name('leaves.index');
+    Route::get('/leaves/apology-letters', [LeaveController::class, 'apologyLetters'])->name('leaves.apology-letters.index');
+    Route::get('/leaves/apology-letters/create', [LeaveController::class, 'createApologyLetter'])->name('leaves.apology-letters.create');
+    Route::post('/leaves/apology-letters', [LeaveController::class, 'storeApologyLetter'])->name('leaves.apology-letters.store');
+    Route::get('/leaves/apology-letters/sample/download', [LeaveController::class, 'downloadApologySample'])->name('leaves.apology-letters.sample.download');
+    Route::get('/leaves/apology-letters/archive/list', [LeaveController::class, 'archivedApologyLetters'])->name('leaves.apology-letters.archive');
+    Route::post('/leaves/apology-letters/bulk-archive', [LeaveController::class, 'archiveApologyLetters'])->name('leaves.apology-letters.bulk-archive');
+    Route::post('/leaves/apology-letters/bulk-restore', [LeaveController::class, 'restoreApologyLetters'])->name('leaves.apology-letters.bulk-restore');
+    Route::post('/leaves/apology-letters/{letter}/archive', [LeaveController::class, 'archiveApologyLetter'])->name('leaves.apology-letters.archive.action');
+    Route::post('/leaves/apology-letters/{letter}/restore', [LeaveController::class, 'restoreApologyLetter'])->name('leaves.apology-letters.restore');
+    Route::get('/leaves/apology-letters/{letter}', [LeaveController::class, 'showApologyLetter'])->name('leaves.apology-letters.show');
+    Route::patch('/leaves/apology-letters/{letter}/review', [LeaveController::class, 'reviewApologyLetter'])->name('leaves.apology-letters.review');
     Route::get('/leaves/create', [LeaveController::class, 'create'])->name('leaves.create');
     Route::post('/leaves/store', [LeaveController::class, 'store'])->name('leaves.store');
     Route::post('/leaves/{leave}/archive', [LeaveController::class, 'archiveLeave'])->name('leaves.archive.action');
@@ -725,6 +738,7 @@ Route::get('/my-awards', [AwardController::class, 'myAwards'])->name('awards.my-
 
     Route::resource('clients', ClientController::class);
     Route::get('/clients/{client}', [ClientController::class, 'show'])->name('clients.show');
+    Route::resource('collaborating-companies', CollaboratingCompanyController::class);
 
     // client categories
     Route::resource('client-categories', ClientCategoryController::class)->only(['store', 'index']);

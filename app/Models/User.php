@@ -94,6 +94,11 @@ class User extends Authenticatable
         return $this->hasMany(Leave::class, 'user_id');
     }
 
+    public function leaveApologyLetters()
+    {
+        return $this->hasMany(LeaveApologyLetter::class);
+    }
+
     public function projects()
     {
         return $this->belongsToMany(\App\Models\Project::class, 'project_user', 'user_id', 'project_id')
