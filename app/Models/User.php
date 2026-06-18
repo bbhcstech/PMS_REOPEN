@@ -24,6 +24,7 @@ class User extends Authenticatable
         'gender',
         'dob',
         'government_id_card',
+        'government_id_verification_status',
         'marital_status',
         'address',
         'about',
