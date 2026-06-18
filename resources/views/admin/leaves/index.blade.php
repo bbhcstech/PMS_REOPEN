@@ -21,8 +21,12 @@
         </div>
         <div class="leave-hero-actions">
             <a href="{{ route('leaves.create') }}" class="btn btn-primary"><i class="fas fa-plus-circle"></i> Apply Leave</a>
+            @if(! $isAdmin)
+                <a href="{{ route('leaves.apology-letters.create') }}" class="btn btn-light"><i class="fas fa-envelope-open-text"></i> Write Apology Letter</a>
+            @endif
             <a href="{{ route('leaves.calendar') }}" class="btn btn-light"><i class="fas fa-calendar-alt"></i> Calendar</a>
             @if($isAdmin)
+                <a href="{{ route('leaves.apology-letters.index') }}" class="btn btn-light"><i class="fas fa-envelope-open-text"></i> Apology Letters</a>
                 <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#policyModal"><i class="fas fa-sliders-h"></i> Policy</button>
                 <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#exportModal"><i class="fas fa-download"></i> Export</button>
                 <a href="{{ route('leaves.archive') }}" class="btn btn-light">
@@ -302,6 +306,9 @@
                             <td class="text-end">
                                 <div class="action-row">
                                     <a href="{{ route('leaves.show', $leave->id) }}" class="btn btn-sm btn-light" title="View"><i class="fas fa-eye"></i></a>
+                                    @if(! $isAdmin)
+                                        <a href="{{ route('leaves.apology-letters.create', ['leave_id' => $leave->id]) }}" class="btn btn-sm btn-light" title="Write Apology Letter"><i class="fas fa-envelope-open-text"></i></a>
+                                    @endif
                                     @if($leave->status === 'pending' || $isAdmin)
                                         <a href="{{ route('leaves.edit', $leave->id) }}" class="btn btn-sm btn-light" title="Edit"><i class="fas fa-pen"></i></a>
                                     @endif

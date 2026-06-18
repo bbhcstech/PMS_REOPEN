@@ -427,9 +427,7 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
             $user = Auth::user()->loadMissing(['employeeDetail.designation', 'employeeDetail.department']);
             $today = now()->toDateString();
 
-            $showEmployeeWelcome = ! Attendance::where('user_id', $user->id)
-                ->whereNotNull('clock_in')
-                ->exists();
+            $showEmployeeWelcome = ! $user->employee_welcome_seen_at;
 
             $attendance = \App\Models\Attendance::where('user_id', $user->id)
                 ->where('date', $today)
@@ -712,12 +710,6 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
         (float) $validated['clock_in_longitude']
     );
 
-    if ($distance > self::OFFICE_RADIUS_METERS) {
-        return back()
-            ->withInput()
-            ->with('error', 'Clock in allowed only within ' . self::OFFICE_RADIUS_METERS . ' meters of ' . self::OFFICE_ADDRESS . '. Your current distance is ' . round($distance, 1) . ' meters.');
-    }
-
     $existing = Attendance::where('user_id', $userId)
         ->where('date', $today)
         ->first();
@@ -735,26 +727,33 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
     }
 
     $clockInTime = $now->format('H:i');
+    $currentLocationLabel = trim((string) ($validated['clock_in_address'] ?? ''));
+
+    if ($currentLocationLabel === '') {
+        $currentLocationLabel = 'Current location: '
+            . $validated['clock_in_latitude']
+            . ', '
+            . $validated['clock_in_longitude']
+            . ' (' . round($distance, 1) . 'm from office)';
+    }
 
     $attendance = Attendance::create([
         'user_id'  => $userId,
         'date'     => $today,
         'clock_in' => $clockInTime,
         'status'   => 'present',
-        'location' => self::OFFICE_ADDRESS,
+        'location' => $currentLocationLabel,
         'latitude' => $validated['clock_in_latitude'],
         'longitude' => $validated['clock_in_longitude'],
         'clock_in_latitude' => $validated['clock_in_latitude'],
         'clock_in_longitude' => $validated['clock_in_longitude'],
-        'clock_in_address' => $validated['clock_in_address'] ?? self::OFFICE_ADDRESS,
+        'clock_in_address' => $currentLocationLabel,
         'clock_in_photo' => $photoPath,
-        'work_from_type' => 'office',
+        'work_from_type' => $distance <= self::OFFICE_RADIUS_METERS ? 'office' : 'field',
     ]);
     $this->applyOrganizationAttendanceRules($attendance);
 
-    $request->user()?->forceFill(['employee_welcome_seen_at' => now()])->save();
-
-    return back()->with('success', 'Clocked in at ' . $now->format('h:i A'));
+    return back()->with('success', 'Clocked in at ' . $now->format('h:i A') . '. Current location saved.');
 }
 
    public function markEmployeeWelcomeSeen(Request $request)
@@ -765,11 +764,7 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
         return response()->json(['success' => false], 403);
     }
 
-    $hasClockedIn = Attendance::where('user_id', $user->id)
-        ->whereNotNull('clock_in')
-        ->exists();
-
-    if ($hasClockedIn && ! $user->employee_welcome_seen_at) {
+    if (! $user->employee_welcome_seen_at) {
         $user->forceFill(['employee_welcome_seen_at' => now()])->save();
     }
 

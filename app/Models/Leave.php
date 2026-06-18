@@ -76,6 +76,11 @@ class Leave extends Model
         return $this->hasMany(LeaveApproval::class);
     }
 
+    public function apologyLetters()
+    {
+        return $this->hasMany(LeaveApologyLetter::class);
+    }
+
     public function approver()
     {
         return $this->belongsTo(User::class, 'approved_by');

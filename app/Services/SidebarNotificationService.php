@@ -53,11 +53,22 @@ class SidebarNotificationService
             $items['tickets'] = self::item($openTickets, 'pending', true);
             $items['holidays'] = self::item(self::upcomingHolidayCount(), 'new');
         } else {
+            $today = Carbon::today();
             $assignedTasks = Task::where(function ($query) use ($user) {
                     $query->whereHas('assignees', function ($assignees) use ($user) {
                         $assignees->where('users.id', $user->id);
                     })->orWhereRaw('FIND_IN_SET(?, assigned_to)', [$user->id]);
                 })
+                ->whereNotIn('status', ['Completed', 'completed'])
+                ->count();
+
+            $overdueTasks = Task::where(function ($query) use ($user) {
+                    $query->whereHas('assignees', function ($assignees) use ($user) {
+                        $assignees->where('users.id', $user->id);
+                    })->orWhereRaw('FIND_IN_SET(?, assigned_to)', [$user->id]);
+                })
+                ->whereNotNull('due_date')
+                ->whereDate('due_date', '<', $today)
                 ->whereNotIn('status', ['Completed', 'completed'])
                 ->count();
 
@@ -81,6 +92,11 @@ class SidebarNotificationService
                 ->whereNull('end_time')
                 ->count();
 
+            $todayAttendanceCount = Attendance::where('user_id', $user->id)
+                ->whereDate('date', $today)
+                ->whereNotNull('clock_in')
+                ->count();
+
             $assignedProjects = Project::where(function ($query) use ($user) {
                     $query->whereHas('users', function ($members) use ($user) {
                         $members->where('users.id', $user->id);
@@ -93,8 +109,9 @@ class SidebarNotificationService
                 ->whereNotIn('status', ['completed'])
                 ->count();
 
+            $items['attendance'] = self::item($todayAttendanceCount > 0 ? 0 : 1, 'warning', $todayAttendanceCount === 0);
             $items['projects'] = self::item($assignedProjects, 'new');
-            $items['tasks'] = self::item($assignedTasks, 'pending', true);
+            $items['tasks'] = self::item($assignedTasks, $overdueTasks > 0 ? 'issue' : 'pending', $overdueTasks > 0);
             $items['tickets'] = self::item($activeTickets, 'pending', true);
             $items['leaves'] = self::item($myPendingLeaves + $myRejectedLeaves, $myRejectedLeaves > 0 ? 'issue' : 'pending', $myRejectedLeaves > 0);
             $items['timelogs'] = self::item($myOpenTimers, 'warning', true);

@@ -39,6 +39,21 @@
                 <p>{{ $leave->rejection_reason }}</p>
             @endif
         </section>
+
+        <section class="detail-card">
+            <h2>Apology Letters</h2>
+            @forelse($leave->apologyLetters as $letter)
+                <div class="approval-row">
+                    <div>
+                        <strong>{{ $letter->subject }}</strong>
+                        <small>{{ $letter->created_at?->format('d M Y h:i A') }} - {{ ucfirst($letter->status) }}</small>
+                    </div>
+                    <a href="{{ route('leaves.apology-letters.show', $letter->id) }}" class="btn btn-light btn-sm">Open</a>
+                </div>
+            @empty
+                <p>No apology letter submitted for this leave.</p>
+            @endforelse
+        </section>
     </div>
 
     <section class="detail-card mt-3">

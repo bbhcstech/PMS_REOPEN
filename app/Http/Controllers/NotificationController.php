@@ -46,6 +46,14 @@ class NotificationController extends Controller
         return response()->json(['status' => 'ok']);
     }
 
+    public function open($id)
+    {
+        $notification = auth()->user()->notifications()->where('id', $id)->firstOrFail();
+        $notification->markAsRead();
+
+        return redirect($this->notificationUrl($notification));
+    }
+
     /**
      * Mark all notifications as read
      */
@@ -212,5 +220,32 @@ class NotificationController extends Controller
         }
 
         return response()->json(['status' => 'ok']);
+    }
+
+    private function notificationUrl(DatabaseNotification $notification): string
+    {
+        $data = $notification->data ?? [];
+
+        if ($taskId = data_get($data, 'task_id')) {
+            return route('tasks.show', $taskId);
+        }
+
+        if ($ticketId = data_get($data, 'ticket_id')) {
+            return route('tickets.show', $ticketId);
+        }
+
+        if ($projectId = data_get($data, 'project_id')) {
+            return route('projects.show', $projectId);
+        }
+
+        if ($employeeId = data_get($data, 'employee_id')) {
+            return route('employees.show', $employeeId);
+        }
+
+        if ($url = data_get($data, 'url')) {
+            return $url;
+        }
+
+        return route('notifications.all');
     }
 }

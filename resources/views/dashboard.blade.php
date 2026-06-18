@@ -1060,6 +1060,10 @@
             padding: 1.25rem;
         }
 
+        #dashboardTabs {
+            display: none !important;
+        }
+
         .stats-grid {
             grid-template-columns: repeat(2, 1fr);
             gap: 1rem;
@@ -1099,10 +1103,6 @@
 
         .stats-grid {
             grid-template-columns: 1fr;
-        }
-
-        #dashboardTabs {
-            padding: 0.375rem;
         }
 
         .nav-pills .nav-link {

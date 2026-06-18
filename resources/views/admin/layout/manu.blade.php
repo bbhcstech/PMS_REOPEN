@@ -580,6 +580,155 @@
 .sidebar-notification-badge.type-warning { background: #d97706; }
 .sidebar-notification-badge.type-unread { background: #7C3AED; }
 
+.notification-bell {
+    position: relative;
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8fafc;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
+}
+
+.notification-bell:hover {
+    background: #eef2ff;
+    box-shadow: 0 12px 30px rgba(79, 70, 229, 0.16);
+    transform: translateY(-1px);
+}
+
+.notification-bell.has-unread {
+    color: #4f46e5;
+    animation: notificationBellPulse 1.8s ease-in-out infinite;
+}
+
+.notification-bell .badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    min-width: 20px;
+    height: 20px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 900;
+    border: 2px solid #fff;
+}
+
+.notification-dropdown {
+    width: min(430px, calc(100vw - 24px)) !important;
+    max-height: 560px;
+    overflow: hidden;
+    border-radius: 18px;
+}
+
+.notification-dropdown-head {
+    padding: 16px 18px;
+    background: linear-gradient(135deg, #f8fafc, #eef2ff);
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.notification-dropdown-body {
+    max-height: 410px;
+    overflow-y: auto;
+    padding: 8px;
+}
+
+.notification-card-link {
+    display: grid;
+    grid-template-columns: 44px 1fr auto;
+    gap: 12px;
+    align-items: start;
+    padding: 12px;
+    border-radius: 14px;
+    text-decoration: none;
+    color: inherit;
+    border: 1px solid transparent;
+    transition: background .16s ease, border-color .16s ease, transform .16s ease;
+}
+
+.notification-card-link:hover {
+    background: #f8fafc;
+    border-color: rgba(79, 70, 229, 0.14);
+    transform: translateY(-1px);
+    color: inherit;
+}
+
+.notification-card-link.is-unread {
+    background: #eef2ff;
+    border-color: rgba(79, 70, 229, 0.18);
+}
+
+.notification-avatar-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 17px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    box-shadow: 0 10px 22px rgba(99, 102, 241, 0.24);
+}
+
+.notification-avatar-icon.color-warning { background: linear-gradient(135deg, #f59e0b, #f97316); }
+.notification-avatar-icon.color-success { background: linear-gradient(135deg, #10b981, #059669); }
+.notification-avatar-icon.color-danger { background: linear-gradient(135deg, #ef4444, #dc2626); }
+.notification-avatar-icon.color-info { background: linear-gradient(135deg, #06b6d4, #2563eb); }
+
+.notification-title {
+    display: block;
+    font-size: 14px;
+    font-weight: 900;
+    line-height: 1.25;
+    margin-bottom: 4px;
+}
+
+.notification-message {
+    display: block;
+    font-size: 12px;
+    color: #64748b;
+    line-height: 1.35;
+    margin-bottom: 6px;
+}
+
+.notification-time {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    color: #94a3b8;
+    font-weight: 800;
+}
+
+.notification-unread-dot {
+    width: 9px;
+    height: 9px;
+    margin-top: 17px;
+    border-radius: 50%;
+    background: #4f46e5;
+    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.12);
+}
+
+.notification-dropdown-foot {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 12px 16px;
+    border-top: 1px solid rgba(15, 23, 42, 0.08);
+    background: #fff;
+}
+
+@keyframes notificationBellPulse {
+    0%, 100% { box-shadow: 0 0 0 rgba(79, 70, 229, 0); }
+    50% { box-shadow: 0 0 0 8px rgba(79, 70, 229, 0.08); }
+}
+
 .menu-link.sidebar-has-important {
     position: relative;
 }
@@ -593,6 +742,10 @@
     background: currentColor;
     opacity: 0.55;
     animation: sidebarBadgeGlow 1.65s ease-in-out infinite;
+}
+
+.menu-item.sidebar-has-important-item > .menu-link {
+    background: rgba(245, 158, 11, 0.08);
 }
 
 @keyframes sidebarBadgeGlow {
@@ -734,6 +887,7 @@
 
     $canCreateWorkItems = in_array(strtolower((string) auth()->user()?->role), ['admin', 'hr', 'manager'], true);
     $isEmployeeUser = strtolower((string) auth()->user()?->role) === 'employee';
+    $userId = auth()->id();
     $navbarNotifications = auth()->user()->notifications()->latest()->take(8)->get();
     $navbarUnreadCount = auth()->user()->unreadNotifications()->count();
     $sidebarNotificationItems = SidebarNotificationService::forUser(auth()->user());
@@ -814,7 +968,7 @@
 
         <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
           <div class="app-brand demo">
-            <a href="index.html" class="app-brand-link">
+            <a href="{{ route('dashboard') }}" class="app-brand-link">
               <span class="app-brand-logo demo">
                 <img src="{{ asset('logo.png') }}" alt="Bitroxia logo">
               </span>
@@ -833,9 +987,16 @@
           <ul class="menu-inner py-1">
 
             <li class="menu-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-              <a href="{{ route('dashboard') }}" class="menu-link" data-sidebar-key="notifications">
+              <a href="{{ route('dashboard') }}" class="menu-link">
                   <i class="menu-icon tf-icons bx bx-home-smile"></i>
                   <div class="text-truncate" data-i18n="Dashboard">Dashboard</div>
+              </a>
+            </li>
+
+            <li class="menu-item {{ request()->routeIs('notifications.*') ? 'active' : '' }}">
+              <a href="{{ route('notifications.all') }}" class="menu-link" data-sidebar-key="notifications">
+                  <i class="menu-icon tf-icons bx bx-bell"></i>
+                  <div class="text-truncate" data-i18n="Notifications">Notifications</div>
               </a>
             </li>
 
@@ -963,6 +1124,7 @@
 
 
              <!-- Reports Section -->
+            @if(auth()->user()->role === 'admin')
             <li class="menu-item {{ request()->routeIs('attendance.report') || request()->routeIs('admin.leave.report') ? 'active open' : '' }}">
               <a href="javascript:void(0);" class="menu-link menu-toggle" data-sidebar-key="reports">
                 <i class="menu-icon tf-icons bx bx-bar-chart-alt"></i>
@@ -970,7 +1132,6 @@
               </a>
 
               <ul class="menu-sub">
-                @if(auth()->user()->role === 'admin')
                   <li class="menu-item {{ request()->routeIs('attendance.report') ? 'active' : '' }}">
                     <a href="{{ route('attendance.report') }}" class="menu-link">
                       <div class="text-truncate">Attendance Report</div>
@@ -982,14 +1143,14 @@
                       <div class="text-truncate">Leaves Report</div>
                     </a>
                   </li>
-                @endif
               </ul>
             </li>
+            @endif
 
 
 
             <!-- Work Section -->
-            <li class="menu-item {{ request()->routeIs('clients.*') || request()->routeIs('projects.*') ||
+            <li class="menu-item {{ request()->routeIs('clients.*') || request()->routeIs('collaborating-companies.*') || request()->routeIs('projects.*') ||
                 request()->routeIs('tasks.*') || request()->routeIs('users.tasks.*') ||
                 request()->routeIs('timelogs.*') || request()->routeIs('task-timer.*') ||
                 request()->routeIs('admin.contracts.*') || request()->routeIs('admin.contract-templates.*') ? 'active open' : '' }}">
@@ -1004,6 +1165,14 @@
                         <li class="menu-item {{ request()->routeIs('clients.*') ? 'active' : '' }}">
                             <a href="{{ route('clients.index') }}" class="menu-link" data-sidebar-key="clients">
                                 <div class="text-truncate" data-i18n="Landing">Client</div>
+                            </a>
+                        </li>
+                    @endif
+
+                    @if(in_array(auth()->user()->role, ['admin', 'employee']))
+                        <li class="menu-item {{ request()->routeIs('collaborating-companies.*') ? 'active' : '' }}">
+                            <a href="{{ route('collaborating-companies.index') }}" class="menu-link">
+                                <div class="text-truncate">Collaborating Companies</div>
                             </a>
                         </li>
                     @endif
@@ -1154,7 +1323,7 @@
 
         <script>
         document.addEventListener('DOMContentLoaded', function () {
-            let sidebarNotificationItems = @json($sidebarNotificationItems);
+            let sidebarNotificationItems = @json($sidebarNotificationItems ?? []);
 
             function shortCount(count) {
                 count = Number(count || 0);
@@ -1177,9 +1346,13 @@
                     const item = items[key] || { count: 0, type: 'new', important: false };
                     const count = Number(item.count || 0);
                     const badge = ensureBadge(link);
+                    const menuItem = link.closest('.menu-item');
 
                     badge.className = 'sidebar-notification-badge type-' + (item.type || 'new');
                     link.classList.toggle('sidebar-has-important', Boolean(item.important) && count > 0);
+                    if (menuItem) {
+                        menuItem.classList.toggle('sidebar-has-important-item', Boolean(item.important) && count > 0);
+                    }
 
                     if (count > 0) {
                         badge.textContent = shortCount(count);
@@ -1196,9 +1369,10 @@
 
             function fetchSidebarNotifications() {
                 fetch('{{ route('notifications.sidebar') }}', {
+                    credentials: 'same-origin',
                     headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
                 })
-                .then(response => response.json())
+                .then(response => response.ok ? response.json() : Promise.reject(response))
                 .then(data => {
                     sidebarNotificationItems = data.items || {};
                     renderSidebarNotifications(sidebarNotificationItems);
@@ -1207,7 +1381,52 @@
             }
 
             renderSidebarNotifications(sidebarNotificationItems);
+            setTimeout(fetchSidebarNotifications, 1200);
             setInterval(fetchSidebarNotifications, 45000);
+        });
+        </script>
+
+        <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const root = document.documentElement;
+            const body = document.body;
+
+            function closeMobileMenu() {
+                root.classList.remove('layout-menu-expanded');
+                body.classList.remove('layout-menu-expanded');
+            }
+
+            function toggleMobileMenu(event) {
+                if (window.innerWidth >= 1200) {
+                    return;
+                }
+
+                event.preventDefault();
+                event.stopPropagation();
+                event.stopImmediatePropagation();
+                root.classList.toggle('layout-menu-expanded');
+                body.classList.toggle('layout-menu-expanded');
+            }
+
+            document.querySelectorAll('.layout-menu-toggle').forEach(function (toggle) {
+                toggle.addEventListener('click', toggleMobileMenu);
+            });
+
+            document.querySelector('.layout-overlay')?.addEventListener('click', closeMobileMenu);
+
+            document.querySelectorAll('#layout-menu .menu-link[href]:not([href="javascript:void(0);"])').forEach(function (link) {
+                link.addEventListener('click', function () {
+                    if (window.innerWidth < 1200) {
+                        closeMobileMenu();
+                    }
+                });
+            });
+
+            window.addEventListener('resize', function () {
+                if (window.innerWidth >= 1200) {
+                    closeMobileMenu();
+                }
+            });
         });
         </script>
 
@@ -1397,24 +1616,29 @@
                         </a>
 
                             <ul class="dropdown-menu dropdown-menu-end notification-dropdown border-0 shadow-lg py-0"
-                                aria-labelledby="navbarDropdown" style="width: 360px; max-height: 520px; overflow-y: auto;">
+                                aria-labelledby="navbarDropdown">
 
-                                <li class="px-3 py-2 border-bottom bg-white d-flex align-items-center justify-content-between">
+                                <li class="notification-dropdown-head d-flex align-items-center justify-content-between">
                                     <div>
                                         <p class="mb-0 fw-bold">Notifications</p>
-                                        <small class="text-muted">{{ $navbarUnreadCount }} unread</small>
+                                        <small class="text-muted" id="navbarNotificationUnreadText">{{ $navbarUnreadCount }} unread</small>
                                     </div>
                                     <form method="POST" action="{{ route('notifications.readAll') }}">
                                         @csrf
-                                        <button type="submit" class="btn btn-sm btn-link p-0">Mark all read</button>
+                                        <button type="submit" class="btn btn-sm btn-outline-primary rounded-pill px-3">Mark all read</button>
                                     </form>
                                 </li>
 
+                                <li class="notification-dropdown-body">
                            @forelse($navbarNotifications as $notification)
                             @php
                                 $data = $notification->data ?? [];
                                 $type = class_basename($notification->type); // e.g. TaskAssignedNotification
                                 $isUnread = is_null($notification->read_at);
+                                $icon = data_get($data, 'icon', 'fa-bell');
+                                $color = data_get($data, 'color', 'info');
+                                $title = data_get($data, 'title', $type);
+                                $message = data_get($data, 'message', '');
 
                                 if ($taskId = data_get($data, 'task_id')) {
                                     $link = route('tasks.show', $taskId);
@@ -1429,31 +1653,33 @@
                                 }
                             @endphp
 
-    <li class="px-3 py-2 border-bottom {{ $isUnread ? 'notification-item-unread' : 'notification-item-read' }}">
-        <div class="d-flex gap-2">
-            @if($isUnread)
-                <span class="notification-unread-dot"></span>
+    <a href="{{ route('notifications.open', $notification->id) }}"
+       class="notification-card-link {{ $isUnread ? 'is-unread' : '' }}">
+        <span class="notification-avatar-icon color-{{ $color }}">
+            <i class="fas {{ $icon }}"></i>
+        </span>
+        <span>
+            <span class="notification-title">{{ $title }}</span>
+            @if($message)
+                <span class="notification-message">{{ \Illuminate\Support\Str::limit($message, 92) }}</span>
             @endif
-            <form method="POST" action="{{ route('notifications.read', $notification->id) }}" class="flex-grow-1">
-                @csrf
-                <input type="hidden" name="redirect_url" value="{{ $link }}">
-                <button type="submit" class="btn p-0 text-start w-100">
-                    <strong>{{ data_get($data, 'title', $type) }}</strong>
-                    <div class="small text-muted">{{ data_get($data, 'message', '') }}</div>
-                    <div class="small text-muted">{{ $notification->created_at->diffForHumans() }}</div>
-                </button>
-            </form>
-        </div>
-    </li>
+            <span class="notification-time"><i class="fas fa-clock"></i>{{ $notification->created_at->diffForHumans() }}</span>
+        </span>
+        @if($isUnread)
+            <span class="notification-unread-dot"></span>
+        @endif
+    </a>
 @empty
-    <li class="px-3 py-2">
-        <span class="text-muted">No notifications</span>
-    </li>
+    <div class="px-3 py-5 text-center text-muted">
+        <i class="fas fa-bell-slash fa-2x mb-2 d-block"></i>
+        <span>No notifications yet</span>
+    </div>
 @endforelse
+                                </li>
 
 
-                                <li class="px-3 py-2 text-center">
-                                    <a href="{{ route('notifications.all') }}" class="text-primary">View All</a>
+                                <li class="notification-dropdown-foot">
+                                    <a href="{{ route('notifications.all') }}" class="btn btn-sm btn-primary rounded-pill flex-grow-1">View all</a>
                                 </li>
                             </ul>
                         </li>
@@ -1552,21 +1778,49 @@
           <script>
           document.addEventListener('DOMContentLoaded', function () {
               const bell = document.getElementById('navbarDropdown');
+              const unreadText = document.getElementById('navbarNotificationUnreadText');
               let soundReady = false;
               let previousUnread = Number(localStorage.getItem('pms_unread_notifications') || '{{ $navbarUnreadCount }}');
+              const notificationSoundUrl = @json(asset('sound/notification sound.mp3'));
+              let notificationAudio = new Audio(notificationSoundUrl);
+              notificationAudio.preload = 'auto';
+              notificationAudio.volume = 0.75;
 
               function armNotificationSound() {
                   soundReady = true;
+                  notificationAudio.play()
+                      .then(() => {
+                          notificationAudio.pause();
+                          notificationAudio.currentTime = 0;
+                      })
+                      .catch(() => {});
                   document.removeEventListener('click', armNotificationSound);
                   document.removeEventListener('keydown', armNotificationSound);
+                  document.removeEventListener('touchstart', armNotificationSound);
+                  document.removeEventListener('pointerdown', armNotificationSound);
               }
 
-              document.addEventListener('click', armNotificationSound);
-              document.addEventListener('keydown', armNotificationSound);
+              document.addEventListener('click', armNotificationSound, { once: true });
+              document.addEventListener('keydown', armNotificationSound, { once: true });
+              document.addEventListener('touchstart', armNotificationSound, { once: true, passive: true });
+              document.addEventListener('pointerdown', armNotificationSound, { once: true });
 
               function playNotificationSound() {
-                  if (!soundReady) return;
+                  if (!soundReady) {
+                      return;
+                  }
 
+                  if (notificationAudio) {
+                      notificationAudio.currentTime = 0;
+                      notificationAudio.play()
+                          .catch(() => playGeneratedNotificationTone());
+                      return;
+                  }
+
+                  playGeneratedNotificationTone();
+              }
+
+              function playGeneratedNotificationTone() {
                   try {
                       const AudioContext = window.AudioContext || window.webkitAudioContext;
                       if (!AudioContext) return;
@@ -1608,6 +1862,10 @@
                       bell.classList.remove('has-unread');
                       if (badge) badge.remove();
                   }
+
+                  if (unreadText) {
+                      unreadText.textContent = count + ' unread';
+                  }
               }
 
               function checkNotifications() {
@@ -1633,6 +1891,11 @@
               }
 
               updateBell(previousUnread);
+              if (previousUnread > 0 && !sessionStorage.getItem('pms_notification_sound_seen')) {
+                  sessionStorage.setItem('pms_notification_sound_seen', '1');
+                  setTimeout(playNotificationSound, 900);
+              }
+              setTimeout(checkNotifications, 1500);
               setInterval(checkNotifications, 30000);
           });
           </script>

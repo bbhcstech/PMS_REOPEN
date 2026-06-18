@@ -635,8 +635,11 @@ class EmployeeController extends Controller
         $user = User::findOrFail($id);
         $detail = $user->employeeDetail;
 
-        // build unique rules (ignore current user/detail if present)
-        $emailUniqueRule = 'required|email|unique:users,email,' . $user->id;
+        // Only check email uniqueness when the email is actually being changed.
+        $emailUniqueRule = 'required|email';
+        if (strtolower(trim((string) $request->email)) !== strtolower(trim((string) $user->email))) {
+            $emailUniqueRule .= '|unique:users,email,' . $user->id;
+        }
         $mobileUniqueRule = 'required|regex:/^[1-9]\d{9}$/|unique:users,mobile,' . $user->id;
         $employeeIdRule = 'required|string';
         if ($detail) {
