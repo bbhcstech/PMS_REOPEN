@@ -1,11 +1,14 @@
 <!-- Premium Navbar -->
+@php
+    $logoUrl = $logoUrl ?? asset('logo.png') . '?v=' . (file_exists(public_path('logo.png')) ? filemtime(public_path('logo.png')) : time());
+@endphp
 <nav class="bbh-navbar navbar navbar-expand-lg" id="bbhNavbar">
     <div class="container">
         <!-- Logo -->
         <a class="navbar-brand" href="{{ url('/') }}">
             <div class="brand-logo">
                 <span class="brand-icon" aria-hidden="true">
-                    <img src="{{ asset('logo.png') }}" alt="">
+                    <img src="{{ $logoUrl }}" alt="">
                 </span>
                 <span class="brand-text">BITRO<span class="text-purple">XIA</span></span>
             </div>
@@ -111,22 +114,53 @@
                     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                         Solutions <i class="fas fa-chevron-down ms-1"></i>
                     </a>
-                    <div class="dropdown-menu">
-                        <a class="dropdown-item" href="{{ route('solutions.enterprise') }}">
-                            <i class="fas fa-building"></i> For Enterprises
-                        </a>
-                        <a class="dropdown-item" href="{{ route('solutions.startups') }}">
-                            <i class="fas fa-rocket"></i> For Startups
-                        </a>
-                        <a class="dropdown-item" href="{{ route('solutions.hr') }}">
-                            <i class="fas fa-users"></i> For HR Teams
-                        </a>
-                        <a class="dropdown-item" href="{{ route('solutions.developers') }}">
-                            <i class="fas fa-code"></i> For Developers
-                        </a>
-                        <a class="dropdown-item" href="{{ route('solutions.remote') }}">
-                            <i class="fas fa-home"></i> For Remote Teams
-                        </a>
+                    <div class="dropdown-menu mega-menu">
+                        <div class="mega-menu-grid">
+                            <div class="mega-menu-col">
+                                <h6 class="dropdown-header">Business Teams</h6>
+                                <a class="dropdown-item" href="{{ route('solutions.enterprise') }}">
+                                    <i class="fas fa-building"></i>
+                                    <div>
+                                        <span>For Enterprises</span>
+                                        <small>Scale governance and teams</small>
+                                    </div>
+                                </a>
+                                <a class="dropdown-item" href="{{ route('solutions.startups') }}">
+                                    <i class="fas fa-rocket"></i>
+                                    <div>
+                                        <span>For Startups</span>
+                                        <small>Move fast with one workspace</small>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="mega-menu-col">
+                                <h6 class="dropdown-header">Operations</h6>
+                                <a class="dropdown-item" href="{{ route('solutions.hr') }}">
+                                    <i class="fas fa-users"></i>
+                                    <div>
+                                        <span>For HR Teams</span>
+                                        <small>People, attendance, and leave</small>
+                                    </div>
+                                </a>
+                                <a class="dropdown-item" href="{{ route('solutions.remote') }}">
+                                    <i class="fas fa-home"></i>
+                                    <div>
+                                        <span>For Remote Teams</span>
+                                        <small>Coordinate distributed work</small>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="mega-menu-col">
+                                <h6 class="dropdown-header">Delivery</h6>
+                                <a class="dropdown-item" href="{{ route('solutions.developers') }}">
+                                    <i class="fas fa-code"></i>
+                                    <div>
+                                        <span>For Developers</span>
+                                        <small>Tasks, boards, and delivery flow</small>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </li>
 
@@ -145,22 +179,53 @@
                     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                         Resources <i class="fas fa-chevron-down ms-1"></i>
                     </a>
-                    <div class="dropdown-menu">
-                        <a class="dropdown-item" href="{{ route('resources.blog') }}">
-                            <i class="fas fa-blog"></i> Blog
-                        </a>
-                        <a class="dropdown-item" href="{{ route('resources.docs') }}">
-                            <i class="fas fa-book"></i> Documentation
-                        </a>
-                        <a class="dropdown-item" href="{{ route('resources.api') }}">
-                            <i class="fas fa-code-branch"></i> API
-                        </a>
-                        <a class="dropdown-item" href="{{ route('resources.help') }}">
-                            <i class="fas fa-question-circle"></i> Help Center
-                        </a>
-                        <a class="dropdown-item" href="{{ route('resources.faq') }}">
-                            <i class="fas fa-comments"></i> FAQ
-                        </a>
+                    <div class="dropdown-menu mega-menu">
+                        <div class="mega-menu-grid">
+                            <div class="mega-menu-col">
+                                <h6 class="dropdown-header">Learn</h6>
+                                <a class="dropdown-item" href="{{ route('resources.blog') }}">
+                                    <i class="fas fa-blog"></i>
+                                    <div>
+                                        <span>Blog</span>
+                                        <small>Product and workflow updates</small>
+                                    </div>
+                                </a>
+                                <a class="dropdown-item" href="{{ route('resources.faq') }}">
+                                    <i class="fas fa-comments"></i>
+                                    <div>
+                                        <span>FAQ</span>
+                                        <small>Common questions answered</small>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="mega-menu-col">
+                                <h6 class="dropdown-header">Support</h6>
+                                <a class="dropdown-item" href="{{ route('resources.docs') }}">
+                                    <i class="fas fa-book"></i>
+                                    <div>
+                                        <span>Documentation</span>
+                                        <small>Guides and setup help</small>
+                                    </div>
+                                </a>
+                                <a class="dropdown-item" href="{{ route('resources.help') }}">
+                                    <i class="fas fa-question-circle"></i>
+                                    <div>
+                                        <span>Help Center</span>
+                                        <small>Find help for your team</small>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="mega-menu-col">
+                                <h6 class="dropdown-header">Developers</h6>
+                                <a class="dropdown-item" href="{{ route('resources.api') }}">
+                                    <i class="fas fa-code-branch"></i>
+                                    <div>
+                                        <span>API</span>
+                                        <small>Connect external systems</small>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </li>
 
@@ -169,23 +234,53 @@
                     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                         Company <i class="fas fa-chevron-down ms-1"></i>
                     </a>
-                    <div class="dropdown-menu">
-                        <a class="dropdown-item" href="{{ route('company.about') }}">
-                            <i class="fas fa-info-circle"></i> About Us
-                        </a>
-                        <a class="dropdown-item" href="{{ route('company.careers') }}">
-                            <i class="fas fa-briefcase"></i> Careers
-                        </a>
-                        <a class="dropdown-item" href="{{ route('company.contact') }}">
-                            <i class="fas fa-envelope"></i> Contact
-                        </a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="{{ route('company.privacy') }}">
-                            <i class="fas fa-shield-alt"></i> Privacy Policy
-                        </a>
-                        <a class="dropdown-item" href="{{ route('company.terms') }}">
-                            <i class="fas fa-file-contract"></i> Terms
-                        </a>
+                    <div class="dropdown-menu mega-menu">
+                        <div class="mega-menu-grid">
+                            <div class="mega-menu-col">
+                                <h6 class="dropdown-header">Bitroxia</h6>
+                                <a class="dropdown-item" href="{{ route('company.about') }}">
+                                    <i class="fas fa-info-circle"></i>
+                                    <div>
+                                        <span>About Us</span>
+                                        <small>Who we are and what we build</small>
+                                    </div>
+                                </a>
+                                <a class="dropdown-item" href="{{ route('company.careers') }}">
+                                    <i class="fas fa-briefcase"></i>
+                                    <div>
+                                        <span>Careers</span>
+                                        <small>Join the team behind PMS</small>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="mega-menu-col">
+                                <h6 class="dropdown-header">Contact</h6>
+                                <a class="dropdown-item" href="{{ route('company.contact') }}">
+                                    <i class="fas fa-envelope"></i>
+                                    <div>
+                                        <span>Contact</span>
+                                        <small>Talk to us about your needs</small>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="mega-menu-col">
+                                <h6 class="dropdown-header">Legal</h6>
+                                <a class="dropdown-item" href="{{ route('company.privacy') }}">
+                                    <i class="fas fa-shield-alt"></i>
+                                    <div>
+                                        <span>Privacy Policy</span>
+                                        <small>How data is handled</small>
+                                    </div>
+                                </a>
+                                <a class="dropdown-item" href="{{ route('company.terms') }}">
+                                    <i class="fas fa-file-contract"></i>
+                                    <div>
+                                        <span>Terms</span>
+                                        <small>Usage terms and policies</small>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </li>
             </ul>
@@ -216,11 +311,8 @@
                         </ul>
                     </div>
                 @else
-                    <a href="{{ route('login') }}" class="btn btn-outline-purple">
-                        <i class="fas fa-lock"></i> Login
-                    </a>
-                    <a href="{{ route('register') }}" class="btn btn-purple btn-glow">
-                        Start Free <i class="fas fa-arrow-right"></i>
+                    <a href="{{ route('login') }}" class="btn btn-purple btn-glow">
+                        Get Started <i class="fas fa-arrow-right"></i>
                     </a>
                 @endauth
             </div>

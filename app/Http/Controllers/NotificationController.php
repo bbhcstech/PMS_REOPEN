@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Notifications\NotifyAdminToEmployees;
 use App\Notifications\NotifyEmployeeToAdmins;
+use App\Services\NotificationUrlResolver;
 use App\Services\SidebarNotificationService;
 use Illuminate\Notifications\DatabaseNotification;
 
@@ -39,7 +40,7 @@ class NotificationController extends Controller
         }
 
         if (! request()->expectsJson() && ! request()->ajax()) {
-            $url = request('redirect_url') ?: ($notification?->data['url'] ?? null);
+            $url = request('redirect_url') ?: ($notification ? NotificationUrlResolver::resolve($notification) : null);
             return $url ? redirect($url) : back();
         }
 
@@ -51,7 +52,7 @@ class NotificationController extends Controller
         $notification = auth()->user()->notifications()->where('id', $id)->firstOrFail();
         $notification->markAsRead();
 
-        return redirect($this->notificationUrl($notification));
+        return redirect(NotificationUrlResolver::resolve($notification));
     }
 
     /**
@@ -66,6 +67,26 @@ class NotificationController extends Controller
         }
 
         return response()->json(['status' => 'ok']);
+    }
+
+    public function markSectionAsRead(string $section)
+    {
+        $section = strtolower($section);
+        $marked = 0;
+
+        foreach (auth()->user()->unreadNotifications as $notification) {
+            if ($this->notificationBelongsToSection($notification, $section)) {
+                $notification->markAsRead();
+                $marked++;
+            }
+        }
+
+        return response()->json([
+            'status' => 'ok',
+            'marked' => $marked,
+            'count' => auth()->user()->unreadNotifications()->count(),
+            'items' => SidebarNotificationService::forUser(auth()->user()),
+        ]);
     }
 
     public function unreadCount()
@@ -86,6 +107,8 @@ class NotificationController extends Controller
                 'read_at' => $notification->read_at,
                 'created_at' => optional($notification->created_at)->diffForHumans(),
                 'data' => $notification->data,
+                'open_url' => route('notifications.open', $notification->id),
+                'target_url' => NotificationUrlResolver::resolve($notification),
             ]);
 
         return response()->json([
@@ -222,30 +245,70 @@ class NotificationController extends Controller
         return response()->json(['status' => 'ok']);
     }
 
-    private function notificationUrl(DatabaseNotification $notification): string
+    private function notificationBelongsToSection(DatabaseNotification $notification, string $section): bool
     {
+        if ($section === 'notifications') {
+            return true;
+        }
+
         $data = $notification->data ?? [];
+        $type = strtolower((string) data_get($data, 'type', ''));
+        $url = strtolower((string) data_get($data, 'url', ''));
 
-        if ($taskId = data_get($data, 'task_id')) {
-            return route('tasks.show', $taskId);
+        $aggregateMap = [
+            'hr' => ['employees', 'attendance', 'leaves', 'holidays'],
+            'work' => ['projects', 'tasks', 'timelogs', 'tickets', 'clients'],
+            'reports' => ['attendance', 'leaves', 'timelogs'],
+        ];
+
+        if (isset($aggregateMap[$section])) {
+            foreach ($aggregateMap[$section] as $childSection) {
+                if ($this->notificationBelongsToSection($notification, $childSection)) {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
-        if ($ticketId = data_get($data, 'ticket_id')) {
-            return route('tickets.show', $ticketId);
+        $idKeys = [
+            'employees' => ['employee_id', 'user_id'],
+            'attendance' => ['attendance_id', 'record_id'],
+            'leaves' => ['leave_id', 'apology_letter_id', 'leave_apology_letter_id'],
+            'holidays' => ['holiday_id'],
+            'projects' => ['project_id'],
+            'tasks' => ['task_id'],
+            'timelogs' => ['timelog_id', 'timer_id'],
+            'tickets' => ['ticket_id'],
+            'clients' => ['client_id'],
+        ];
+
+        foreach ($idKeys[$section] ?? [] as $key) {
+            if (data_get($data, $key)) {
+                return true;
+            }
         }
 
-        if ($projectId = data_get($data, 'project_id')) {
-            return route('projects.show', $projectId);
+        $keywords = [
+            'employees' => ['employee', 'profile', 'user'],
+            'attendance' => ['attendance', 'clock_in', 'clockin', 'clock-out'],
+            'leaves' => ['leave', 'apology'],
+            'holidays' => ['holiday'],
+            'projects' => ['project'],
+            'tasks' => ['task'],
+            'timelogs' => ['timelog', 'timer', 'timesheet'],
+            'tickets' => ['ticket'],
+            'clients' => ['client'],
+            'reports' => ['report'],
+        ];
+
+        foreach ($keywords[$section] ?? [] as $needle) {
+            if (str_contains($type, $needle) || str_contains($url, $needle)) {
+                return true;
+            }
         }
 
-        if ($employeeId = data_get($data, 'employee_id')) {
-            return route('employees.show', $employeeId);
-        }
-
-        if ($url = data_get($data, 'url')) {
-            return $url;
-        }
-
-        return route('notifications.all');
+        return false;
     }
+
 }

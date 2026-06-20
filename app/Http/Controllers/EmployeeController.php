@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Notification;
 use App\Notifications\EmployeeCreatedNotification;
 use App\Models\User;
+use App\Models\Company;
 use App\Models\EmployeeDetail;
 use App\Models\Designation;
 use App\Models\GovernmentIdVerification;
@@ -23,17 +24,18 @@ use App\Services\SystemNotificationService;
 use App\Services\GovernmentIdDobVerifier;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
 use Carbon\Carbon;
 
 class EmployeeController extends Controller
 {
     /**
-     * Simple role guard for admin-only methods.
+     * Simple role guard for employee-management methods.
      */
     protected function ensureAdmin()
     {
         $user = auth()->user();
-        if (! $user || ($user->role ?? '') !== 'admin') {
+        if (! $user || ! in_array(($user->role ?? ''), ['admin', 'hr'], true)) {
             abort(403, 'Unauthorized');
         }
     }
@@ -53,9 +55,24 @@ class EmployeeController extends Controller
      */
     public function index(Request $request)
     {
-        $query = User::with(['employeeDetail.designation', 'employeeDetail.department'])
+        $viewer = auth()->user();
+        $selectedCompanyId = $request->integer('company_id') ?: null;
+
+        $query = User::with(['company', 'employeeDetail.designation', 'employeeDetail.department'])
             ->where('role', 'employee')
             ->whereNull('archived_at');
+
+        if ($viewer && $viewer->normalizedRole() !== 'admin' && $viewer->company_id) {
+            $query->where('users.company_id', $viewer->company_id);
+        }
+
+        if ($viewer && $viewer->normalizedRole() === 'admin' && $selectedCompanyId) {
+            $query->where('users.company_id', $selectedCompanyId);
+        }
+
+        if ($viewer && $viewer->normalizedRole() !== 'admin') {
+            $query->whereIn('users.id', $viewer->visibleEmployeeIds());
+        }
 
         if ($request->filled('employee_id')) {
             $query->whereHas('employeeDetail', function ($q) use ($request) {
@@ -87,11 +104,40 @@ class EmployeeController extends Controller
         );
 
         // FIXED: Changed from get() to paginate() for pagination to work
-        $employees = $query->orderBy('created_at', 'desc')->paginate(15);
+        $employees = $query->orderBy('created_at', 'desc')->paginate(15)->appends($request->query());
+
+        $companies = Company::where('status', 'active')
+            ->orderBy('name')
+            ->get();
+
+        $companyStats = $companies->map(function (Company $company) {
+            return [
+                'company' => $company,
+                'employees' => User::where('role', 'employee')
+                    ->whereNull('archived_at')
+                    ->where('company_id', $company->id)
+                    ->count(),
+                'active' => User::where('role', 'employee')
+                    ->whereNull('archived_at')
+                    ->where('company_id', $company->id)
+                    ->whereHas('employeeDetail', fn ($detail) => $detail->where('status', 'Active'))
+                    ->count(),
+            ];
+        });
 
         // prepare dropdown list options but exclude notice/probation entries so selects don't show them
         $employeeDetails = EmployeeDetail::with(['user', 'reportingTo'])
-            ->whereHas('user', fn ($q) => $q->whereNull('archived_at'))
+            ->whereHas('user', function ($q) use ($viewer, $selectedCompanyId) {
+                $q->whereNull('archived_at');
+
+                if ($viewer && $viewer->normalizedRole() !== 'admin' && $viewer->company_id) {
+                    $q->where('company_id', $viewer->company_id);
+                }
+
+                if ($viewer && $viewer->normalizedRole() === 'admin' && $selectedCompanyId) {
+                    $q->where('company_id', $selectedCompanyId);
+                }
+            })
             ->get()
             ->filter(function ($d) {
                 $status = $d->status ?? null;
@@ -105,8 +151,15 @@ class EmployeeController extends Controller
 
         return view('admin.employees.index', [
             'employees' => $employees,
-            'designations' => Designation::orderBy('name')->get(),
-            'employee_data' => User::all(),
+            'companies' => $companies,
+            'companyStats' => $companyStats,
+            'selectedCompanyId' => $selectedCompanyId,
+            'designations' => Designation::when($selectedCompanyId && Schema::hasColumn('designations', 'company_id'), fn ($query) => $query->where(function ($q) use ($selectedCompanyId) {
+                    $q->where('company_id', $selectedCompanyId)->orWhereNull('company_id');
+                }))
+                ->orderBy('name')
+                ->get(),
+            'employee_data' => User::with('company')->get(),
             'employeeDetails' => $employeeDetails,
             'breadcrumb' => [
                 ['title' => 'Dashboard', 'url' => route('dashboard')],
@@ -126,6 +179,7 @@ class EmployeeController extends Controller
         $nextEmployeeId = $this->computeNextEmployeeIdWithLock();
 
         return view('admin.employees.create', [
+            'companies'        => Company::where('status', 'active')->orderBy('name')->get(),
             'designations'    => Designation::orderBy('name')->get(),
             'departments'     => Department::with('parent')->orderBy('dpt_name')->get(),
             'prtdepartments'  => ParentDepartment::orderBy('dpt_name')->get(),
@@ -175,10 +229,12 @@ class EmployeeController extends Controller
     /**
      * AJAX endpoint: return next employee id (json)
      */
-    public function nextId()
+    public function nextId(Request $request)
     {
         $this->ensureAdmin(); // keep same guard as other endpoints
-        return response()->json(['next' => $this->computeNextEmployeeIdWithLock()]);
+        $companyId = $request->integer('company_id') ?: null;
+
+        return response()->json(['next' => $this->computeNextEmployeeIdWithLock($companyId)]);
     }
 
     /**
@@ -218,6 +274,7 @@ class EmployeeController extends Controller
         // Prepare validation rules
         $validationRules = [
             'name'              => 'required|string',
+            'company_id'        => 'required|exists:companies,id',
             'email'             => 'required|email|unique:users,email',
             'mobile_country_code' => 'required|string|regex:/^\+\d{1,4}$/',
             'mobile'            => 'required|regex:/^[1-9]\d{9}$/',
@@ -242,6 +299,13 @@ class EmployeeController extends Controller
             'probation_end_date' => 'nullable|date',
             'notice_start_date'  => 'nullable|date',
             'notice_end_date'    => 'nullable|date',
+            'directory_about'    => 'nullable|string|max:3000',
+            'linkedin_url'       => 'nullable|url|max:255',
+            'portfolio_url'      => 'nullable|url|max:255',
+            'facebook_url'       => 'nullable|url|max:255',
+            'instagram_url'      => 'nullable|url|max:255',
+            'x_url'              => 'nullable|url|max:255',
+            'cv_file'            => 'nullable|file|mimes:pdf,doc,docx|max:4096',
         ];
 
         // If editing, adjust unique rules
@@ -276,6 +340,7 @@ class EmployeeController extends Controller
 
         $profileImagePath = null;
         $governmentIdCardPath = null;
+        $cvPath = null;
         $governmentIdVerification = null;
 
         if ($request->hasFile('profile_picture')) {
@@ -305,6 +370,8 @@ class EmployeeController extends Controller
             );
         }
 
+        $cvPath = $this->storeEmployeeCv($request);
+
         // generate a plain temporary password (if request provided use it, else random)
         $plainPassword = $request->filled('password') ? $request->password : Str::random(12);
         $passwordHash = Hash::make($plainPassword);
@@ -316,6 +383,7 @@ class EmployeeController extends Controller
             // Create user
             $user = User::create([
                 'name'          => $request->name,
+                'company_id'    => $request->company_id,
                 'email'         => $request->email,
                 'mobile'        => $mobileWithCode,
                 'password'      => $passwordHash,
@@ -329,8 +397,9 @@ class EmployeeController extends Controller
             $employeeData = $request->only([
                 'designation_id', 'parent_dpt_id', 'department_id', 'employee_id',
                 'salutation', 'country', 'gender', 'joining_date', 'dob', 'reporting_to',
-                'language', 'address', 'about',
+                'language', 'address', 'about', 'directory_about',
                 'hourly_rate', 'slack_member_id', 'skills',
+                'linkedin_url', 'portfolio_url', 'facebook_url', 'instagram_url', 'x_url',
                 'probation_end_date', 'notice_start_date', 'notice_end_date',
                 'employment_type', 'marital_status', 'business_address', 'status', 'exit_date'
             ]);
@@ -338,16 +407,24 @@ class EmployeeController extends Controller
             // Add mobile without prefix for employee detail
             $employeeData['mobile'] = $request->mobile;
             $employeeData['user_id'] = $user->id;
+            if (Schema::hasColumn('employee_details', 'company_id')) {
+                $employeeData['company_id'] = $request->company_id;
+            }
             $employeeData['government_id_card'] = $governmentIdCardPath;
             $employeeData['government_id_verification_status'] = $governmentIdVerification['status'] ?? null;
+            $employeeData['cv_path'] = $cvPath;
 
             // ================================================
             // FIXED: Handle new designation with firstOrCreate - WITH LEVEL
             // ================================================
             if ($request->designation_id === 'new' && $request->filled('new_designation')) {
                 $designation = Designation::firstOrCreate(
-                    ['name' => trim($request->new_designation)],
+                    array_filter([
+                        'name' => trim($request->new_designation),
+                        'company_id' => Schema::hasColumn('designations', 'company_id') ? $request->company_id : null,
+                    ], fn ($value) => ! is_null($value)),
                     [
+                        'company_id' => Schema::hasColumn('designations', 'company_id') ? $request->company_id : null,
                         'level' => $request->new_designation_level ?? 0, // ADDED LEVEL FIELD
                         'status' => 'Active',
                         'added_by' => auth()->id(),
@@ -364,8 +441,12 @@ class EmployeeController extends Controller
             // ================================================
             if ($request->parent_dpt_id === 'new' && $request->filled('new_department')) {
                 $department = ParentDepartment::firstOrCreate(
-                    ['dpt_name' => trim($request->new_department)],
+                    array_filter([
+                        'dpt_name' => trim($request->new_department),
+                        'company_id' => Schema::hasColumn('parent_departments', 'company_id') ? $request->company_id : null,
+                    ], fn ($value) => ! is_null($value)),
                     [
+                        'company_id' => Schema::hasColumn('parent_departments', 'company_id') ? $request->company_id : null,
                         'dpt_code' => $this->generateNextParentDepartmentCode(),
                         'status' => 'Active'
                     ]
@@ -382,9 +463,11 @@ class EmployeeController extends Controller
                 $subDepartment = Department::firstOrCreate(
                     [
                         'dpt_name' => trim($request->new_sub_department),
-                        'parent_dpt_id' => $employeeData['parent_dpt_id']
+                        'parent_dpt_id' => $employeeData['parent_dpt_id'],
+                        'company_id' => Schema::hasColumn('departments', 'company_id') ? $request->company_id : null,
                     ],
                     [
+                        'company_id' => Schema::hasColumn('departments', 'company_id') ? $request->company_id : null,
                         'dpt_code' => $this->generateNextSubDepartmentCode(),
                         'status' => 'Active'
                     ]
@@ -422,7 +505,7 @@ class EmployeeController extends Controller
             $tries = 0;
             $created = false;
             do {
-                $employeeData['employee_id'] = $this->computeNextEmployeeIdWithLock();
+                $employeeData['employee_id'] = $this->computeNextEmployeeIdWithLock((int) $request->company_id);
                 try {
                     $detail = EmployeeDetail::create($employeeData);
                     $created = true;
@@ -502,6 +585,10 @@ class EmployeeController extends Controller
 
         return view('admin.employees.edit', [
             'employee' => $employee,
+            'companies' => Company::where('status', 'active')
+                ->orWhere('id', $employee->company_id)
+                ->orderBy('name')
+                ->get(),
             'designations' => Designation::orderBy('name')->get(),
             'departments' => Department::all(),
             'users' => User::where('role', 'employee')
@@ -651,6 +738,7 @@ class EmployeeController extends Controller
         $request->validate([
             'employee_id'      => $employeeIdRule,
             'name'             => 'required|string',
+            'company_id'       => 'required|exists:companies,id',
             'email'            => $emailUniqueRule,
             'mobile'           => $mobileUniqueRule,
             'business_address' => 'required|string',
@@ -662,6 +750,13 @@ class EmployeeController extends Controller
             'notice_start_date'  => 'nullable|date',
             'notice_end_date'    => 'nullable|date',
             'reporting_to'       => 'nullable|integer|exists:users,id',
+            'directory_about'    => 'nullable|string|max:3000',
+            'linkedin_url'       => 'nullable|url|max:255',
+            'portfolio_url'      => 'nullable|url|max:255',
+            'facebook_url'       => 'nullable|url|max:255',
+            'instagram_url'      => 'nullable|url|max:255',
+            'x_url'              => 'nullable|url|max:255',
+            'cv_file'            => 'nullable|file|mimes:pdf,doc,docx|max:4096',
         ]);
 
         // Small helper: check if $potentialAncestorId is an ancestor (manager chain) of $startUserId
@@ -713,6 +808,7 @@ class EmployeeController extends Controller
 
             // update user
             $user->name = $request->name;
+            $user->company_id = $request->company_id;
             $user->email = $request->email;
             $user->mobile = $mobileWithCode; // Store with +91 prefix
             $user->login_allowed = $request->login_allowed ?? 1;
@@ -732,14 +828,18 @@ class EmployeeController extends Controller
             $data = $request->only([
                 'designation_id', 'parent_dpt_id', 'department_id', 'employee_id',
                 'salutation', 'country', 'gender', 'joining_date', 'dob', 'reporting_to',
-                'language', 'user_role', 'address', 'about',
+                'language', 'user_role', 'address', 'about', 'directory_about',
                 'hourly_rate', 'slack_member_id', 'skills',
+                'linkedin_url', 'portfolio_url', 'facebook_url', 'instagram_url', 'x_url',
                 'probation_end_date', 'notice_start_date', 'notice_end_date',
                 'employment_type', 'marital_status', 'business_address', 'status', 'exit_date'
             ]);
 
             // Add mobile without prefix for employee detail
             $data['mobile'] = $request->mobile;
+            if (Schema::hasColumn('employee_details', 'company_id')) {
+                $data['company_id'] = $request->company_id;
+            }
 
             // normalize: empty department -> null
             if (empty($data['department_id'])) {
@@ -749,8 +849,12 @@ class EmployeeController extends Controller
             // FIXED: Handle new designation with level
             if ($request->designation_id === 'new' && $request->filled('new_designation')) {
                 $designation = Designation::firstOrCreate(
-                    ['name' => trim($request->new_designation)],
+                    array_filter([
+                        'name' => trim($request->new_designation),
+                        'company_id' => Schema::hasColumn('designations', 'company_id') ? $request->company_id : null,
+                    ], fn ($value) => ! is_null($value)),
                     [
+                        'company_id' => Schema::hasColumn('designations', 'company_id') ? $request->company_id : null,
                         'level' => $request->new_designation_level ?? 0, // ADDED LEVEL FIELD
                         'status' => 'Active',
                         'added_by' => auth()->id(),
@@ -763,8 +867,12 @@ class EmployeeController extends Controller
             // FIXED: Handle new department with firstOrCreate
             if ($request->parent_dpt_id === 'new' && $request->filled('new_department')) {
                 $department = ParentDepartment::firstOrCreate(
-                    ['dpt_name' => trim($request->new_department)],
+                    array_filter([
+                        'dpt_name' => trim($request->new_department),
+                        'company_id' => Schema::hasColumn('parent_departments', 'company_id') ? $request->company_id : null,
+                    ], fn ($value) => ! is_null($value)),
                     [
+                        'company_id' => Schema::hasColumn('parent_departments', 'company_id') ? $request->company_id : null,
                         'dpt_code' => $this->generateNextParentDepartmentCode(),
                         'status' => 'Active'
                     ]
@@ -777,9 +885,11 @@ class EmployeeController extends Controller
                 $subDepartment = Department::firstOrCreate(
                     [
                         'dpt_name' => trim($request->new_sub_department),
-                        'parent_dpt_id' => $data['parent_dpt_id']
+                        'parent_dpt_id' => $data['parent_dpt_id'],
+                        'company_id' => Schema::hasColumn('departments', 'company_id') ? $request->company_id : null,
                     ],
                     [
+                        'company_id' => Schema::hasColumn('departments', 'company_id') ? $request->company_id : null,
                         'dpt_code' => $this->generateNextSubDepartmentCode(),
                         'status' => 'Active'
                     ]
@@ -809,7 +919,12 @@ class EmployeeController extends Controller
 
             // If employee_id is empty for some reason, compute a new one (keeps parity with create/store)
             if (empty($data['employee_id'])) {
-                $data['employee_id'] = $this->computeNextEmployeeIdWithLock();
+                $data['employee_id'] = $this->computeNextEmployeeIdWithLock((int) $request->company_id);
+            }
+
+            $newCvPath = $this->storeEmployeeCv($request, $detail->cv_path);
+            if ($newCvPath) {
+                $data['cv_path'] = $newCvPath;
             }
 
             // mass-assign allowed fields then save
@@ -1385,28 +1500,29 @@ class EmployeeController extends Controller
     /**
      * Compute next employee ID.
      */
-    private function computeNextEmployeeIdWithLock(): string
+    private function computeNextEmployeeIdWithLock(?int $companyId = null): string
     {
-        $prefix = 'BBH';
-        $year = date('Y');
-        $digits = 3;
+        $company = $companyId ? Company::find($companyId) : app(\App\Services\CompanyContext::class)->current();
+        $prefix = $company?->employee_id_prefix ?: 'BBH-EMP';
+        $digits = 4;
 
-        $like = $prefix . $year . '%';
+        $like = $prefix . '-%';
 
-        return DB::transaction(function () use ($like, $prefix, $year, $digits) {
+        return DB::transaction(function () use ($like, $prefix, $digits, $companyId) {
             $last = DB::table('employee_details')
                 ->where('employee_id', 'LIKE', $like)
+                ->when($companyId && Schema::hasColumn('employee_details', 'company_id'), fn ($query) => $query->where('company_id', $companyId))
                 ->orderBy('id', 'desc')
                 ->lockForUpdate()
                 ->first();
 
-            if ($last && preg_match('/(\d{3})$/', $last->employee_id, $m)) {
+            if ($last && preg_match('/(\d+)$/', $last->employee_id, $m)) {
                 $nextNumber = intval($m[1]) + 1;
             } else {
                 $nextNumber = 1;
             }
 
-            return $prefix . $year . str_pad($nextNumber, $digits, '0', STR_PAD_LEFT);
+            return $prefix . '-' . str_pad($nextNumber, $digits, '0', STR_PAD_LEFT);
         }, 5); // retry up to 5 times on deadlock
     }
 
@@ -1479,6 +1595,29 @@ class EmployeeController extends Controller
 
             return $generatedCode;
         }, 5); // retry up to 5 times on deadlock
+    }
+
+    private function storeEmployeeCv(Request $request, ?string $oldPath = null): ?string
+    {
+        if (! $request->hasFile('cv_file')) {
+            return null;
+        }
+
+        $file = $request->file('cv_file');
+        $directory = public_path('admin/uploads/employee-cvs');
+
+        if (! is_dir($directory)) {
+            mkdir($directory, 0755, true);
+        }
+
+        $filename = uniqid('cv_', true) . '.' . $file->getClientOriginalExtension();
+        $file->move($directory, $filename);
+
+        if ($oldPath && file_exists(public_path($oldPath))) {
+            @unlink(public_path($oldPath));
+        }
+
+        return 'admin/uploads/employee-cvs/' . $filename;
     }
 
     /**

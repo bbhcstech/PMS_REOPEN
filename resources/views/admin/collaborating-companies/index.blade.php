@@ -47,8 +47,14 @@
         @forelse($companies as $company)
             @php $links = $company->social_links ?? []; @endphp
             <article class="partner-card">
+                <a href="{{ route('collaborating-companies.show', $company) }}" class="partner-card-image" aria-label="View {{ $company->name }}">
+                    @if($company->image_path)
+                        <img src="{{ asset($company->image_path) }}" alt="{{ $company->name }}">
+                    @else
+                        <span>{{ strtoupper(mb_substr($company->name, 0, 1)) }}</span>
+                    @endif
+                </a>
                 <div class="partner-card-head">
-                    <div class="partner-avatar">{{ strtoupper(mb_substr($company->name, 0, 1)) }}</div>
                     <div>
                         <h2>{{ $company->name }}</h2>
                         <p>{{ $company->industry ?: 'Industry not specified' }}</p>
@@ -61,12 +67,22 @@
                         <span><i class="fas fa-calendar"></i>{{ $company->started_on->format('d M Y') }}</span>
                     @endif
                 </div>
+                @if($company->contact_email || $company->contact_phone)
+                    <div class="partner-contact-links">
+                        @if($company->contact_email)
+                            <a href="mailto:{{ $company->contact_email }}"><i class="fas fa-envelope"></i>{{ $company->contact_email }}</a>
+                        @endif
+                        @if($company->contact_phone)
+                            <a href="tel:{{ preg_replace('/\s+/', '', $company->contact_phone) }}"><i class="fas fa-phone"></i>{{ $company->contact_phone }}</a>
+                        @endif
+                    </div>
+                @endif
                 <p class="partner-description">{{ \Illuminate\Support\Str::limit($company->description ?: $company->services ?: 'No company details added yet.', 170) }}</p>
                 <div class="partner-socials">
                     @foreach(['website' => 'globe', 'linkedin' => 'linkedin', 'facebook' => 'facebook', 'instagram' => 'instagram', 'x' => 'x-twitter', 'youtube' => 'youtube'] as $key => $icon)
                         @php $url = $key === 'website' ? $company->website : ($links[$key] ?? null); @endphp
                         @if($url)
-                            <a href="{{ $url }}" target="_blank" rel="noopener" title="{{ ucfirst($key) }}"><i class="fab fa-{{ $icon }}"></i></a>
+                            <a href="{{ $url }}" target="_blank" rel="noopener" title="{{ ucfirst($key) }}"><i class="{{ $key === 'website' ? 'fas' : 'fab' }} fa-{{ $icon }}"></i></a>
                         @endif
                     @endforeach
                 </div>

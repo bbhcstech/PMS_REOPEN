@@ -14,6 +14,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
 
 class LeaveController extends Controller
 {
@@ -27,6 +28,7 @@ class LeaveController extends Controller
         $policy = $this->leaveService->policy();
         $leaveTypes = $this->leaveService->leaveTypes();
         $isAdmin = $this->isAdmin();
+        $companyId = $this->selectedCompanyId($request);
         $employees = $isAdmin ? $this->employeeQuery()->get() : User::where('id', Auth::id())->get();
         $perPage = (int) $request->input('per_page', 20);
         $perPage = in_array($perPage, [10, 20, 30, 50, 100], true) ? $perPage : 20;
@@ -44,6 +46,8 @@ class LeaveController extends Controller
 
         if (! $isAdmin) {
             $query->where('user_id', Auth::id());
+        } elseif ($companyId) {
+            $query->whereHas('user', fn ($userQuery) => $userQuery->where('company_id', $companyId));
         }
 
         if ($isAdmin && $request->filled('employee')) {
@@ -120,6 +124,9 @@ class LeaveController extends Controller
 
         $type = LeaveType::findOrFail($request->leave_type_id);
         $data = $request->validated();
+        if (Schema::hasColumn('leaves', 'company_id')) {
+            $data['company_id'] = $employee->company_id;
+        }
         $data['emergency_flag'] = $request->boolean('emergency_flag');
         $data['half_day_flag'] = $request->boolean('half_day_flag');
         $data['status'] = $this->isAdmin() ? ($request->status ?: 'pending') : 'pending';
@@ -182,6 +189,8 @@ class LeaveController extends Controller
 
         if (! $isAdmin) {
             $query->where('user_id', Auth::id());
+        } elseif ($companyId = $this->selectedCompanyId($request)) {
+            $query->whereHas('user', fn ($userQuery) => $userQuery->where('company_id', $companyId));
         }
 
         if ($isAdmin && $request->filled('employee')) {
@@ -321,6 +330,10 @@ class LeaveController extends Controller
             ->with(['user.employeeDetail.department', 'leave.leaveType'])
             ->whereNotNull('archived_at');
 
+        if ($isAdmin && $companyId = $this->selectedCompanyId($request)) {
+            $query->whereHas('user', fn ($userQuery) => $userQuery->where('company_id', $companyId));
+        }
+
         if ($isAdmin && $request->filled('employee')) {
             $query->where('user_id', $request->employee);
         }
@@ -432,7 +445,7 @@ class LeaveController extends Controller
         $start = Carbon::parse($data['start_date']);
         $end = Carbon::parse($data['end_date']);
 
-        $leave->update([
+        $leaveUpdates = [
             'user_id' => $employee->id,
             'leave_type_id' => $type->id,
             'type' => match ($type->code) {
@@ -453,7 +466,13 @@ class LeaveController extends Controller
             'emergency_flag' => $data['emergency_flag'],
             'half_day_flag' => $data['half_day_flag'],
             'contact_during_leave' => $data['contact_during_leave'] ?? null,
-        ]);
+        ];
+
+        if (Schema::hasColumn('leaves', 'company_id')) {
+            $leaveUpdates['company_id'] = $employee->company_id;
+        }
+
+        $leave->update($leaveUpdates);
 
         $this->leaveService->syncBalanceCounters($employee);
 
@@ -604,6 +623,10 @@ class LeaveController extends Controller
         $query = Leave::with(['user.employeeDetail.department', 'leaveType'])
             ->whereNotNull('archived_at');
 
+        if ($companyId = $this->selectedCompanyId($request)) {
+            $query->whereHas('user', fn ($userQuery) => $userQuery->where('company_id', $companyId));
+        }
+
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -724,6 +747,9 @@ class LeaveController extends Controller
         ]);
 
         $query = Leave::with(['user', 'leaveType'])->whereNull('archived_at');
+        if ($companyId = $this->selectedCompanyId($request)) {
+            $query->whereHas('user', fn ($userQuery) => $userQuery->where('company_id', $companyId));
+        }
         if ($request->filled('employee')) {
             $query->where('user_id', $request->employee);
         }
@@ -816,6 +842,8 @@ class LeaveController extends Controller
         $query = Leave::with(['user', 'leaveType'])->whereNull('archived_at');
         if (! $this->isAdmin()) {
             $query->where('user_id', Auth::id());
+        } elseif ($companyId = $this->selectedCompanyId($request)) {
+            $query->whereHas('user', fn ($userQuery) => $userQuery->where('company_id', $companyId));
         }
         if ($this->isAdmin() && $request->filled('employee')) {
             $query->where('user_id', $request->employee);
@@ -873,9 +901,21 @@ class LeaveController extends Controller
 
     private function employeeQuery()
     {
+        $companyId = $this->selectedCompanyId(request());
+
         return User::with('employeeDetail.department')
             ->where('role', 'employee')
+            ->when($companyId, fn ($query) => $query->where('company_id', $companyId))
             ->orderBy('name');
+    }
+
+    private function selectedCompanyId(Request $request): ?int
+    {
+        if (! $this->isAdmin()) {
+            return Auth::user()?->company_id;
+        }
+
+        return $request->integer('company_id') ?: null;
     }
 
     private function authorizeLeaveAccess(Leave $leave): void

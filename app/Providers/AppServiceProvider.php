@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Services\CompanyContext;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -11,7 +12,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        require_once app_path('Support/helpers.php');
+
+        $this->app->scoped(CompanyContext::class, fn () => new CompanyContext());
     }
 
     /**
@@ -19,6 +22,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        view()->composer('*', function ($view) {
+            $view->with('currentCompany', app(CompanyContext::class)->current());
+        });
     }
 }

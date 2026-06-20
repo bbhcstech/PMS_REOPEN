@@ -861,7 +861,13 @@
 }
 
 </style>
-<link rel="stylesheet" href="{{ asset('admin/assets/css/pms-refresh.css') }}">
+@php
+    $adminRefreshVersion = file_exists(public_path('admin/assets/css/pms-refresh.css')) ? filemtime(public_path('admin/assets/css/pms-refresh.css')) : time();
+    $logoVersion = file_exists(public_path('logo.png')) ? filemtime(public_path('logo.png')) : time();
+    $brandLogo = $currentCompany?->logo ? asset($currentCompany->logo) : asset('logo.png') . '?v=' . $logoVersion;
+    $brandName = $currentCompany?->brand_name ?? 'Bitroxia';
+@endphp
+<link rel="stylesheet" href="{{ asset('admin/assets/css/pms-refresh.css') }}?v={{ $adminRefreshVersion }}">
 
 <body>
     @php
@@ -886,6 +892,8 @@
         ->get();
 
     $canCreateWorkItems = in_array(strtolower((string) auth()->user()?->role), ['admin', 'hr', 'manager'], true);
+    $canSeeModule = fn (string $slug) => auth()->user()?->canViewModule($slug) ?? false;
+    $canAnyModule = fn (array $slugs) => collect($slugs)->contains(fn ($slug) => $canSeeModule($slug));
     $isEmployeeUser = strtolower((string) auth()->user()?->role) === 'employee';
     $userId = auth()->id();
     $navbarNotifications = auth()->user()->notifications()->latest()->take(8)->get();
@@ -970,9 +978,9 @@
           <div class="app-brand demo">
             <a href="{{ route('dashboard') }}" class="app-brand-link">
               <span class="app-brand-logo demo">
-                <img src="{{ asset('logo.png') }}" alt="Bitroxia logo">
+                <img src="{{ $brandLogo }}" alt="{{ $brandName }} logo">
               </span>
-              <span class="app-brand-text demo menu-text fw-bold ms-2">Bitroxia</span>
+              <span class="app-brand-text demo menu-text fw-bold ms-2">{{ $brandName }}</span>
             </a>
 
             <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto">
@@ -986,23 +994,37 @@
 
           <ul class="menu-inner py-1">
 
+            @if($canSeeModule('dashboard'))
             <li class="menu-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
               <a href="{{ route('dashboard') }}" class="menu-link">
                   <i class="menu-icon tf-icons bx bx-home-smile"></i>
                   <div class="text-truncate" data-i18n="Dashboard">Dashboard</div>
               </a>
             </li>
+            @endif
 
+            @if($canSeeModule('notifications'))
             <li class="menu-item {{ request()->routeIs('notifications.*') ? 'active' : '' }}">
               <a href="{{ route('notifications.all') }}" class="menu-link" data-sidebar-key="notifications">
                   <i class="menu-icon tf-icons bx bx-bell"></i>
                   <div class="text-truncate" data-i18n="Notifications">Notifications</div>
               </a>
             </li>
+            @endif
+
+            @if($canSeeModule('organization'))
+            <li class="menu-item {{ request()->routeIs('organization.*') ? 'active' : '' }}">
+              <a href="{{ route('organization.index') }}" class="menu-link" data-sidebar-key="organization">
+                  <i class="menu-icon tf-icons bx bx-sitemap"></i>
+                  <div class="text-truncate">Organization</div>
+              </a>
+            </li>
+            @endif
 
 
 
             <!-- Layouts -->
+            @if($canAnyModule(['employees', 'designations', 'departments', 'attendance', 'leaves', 'holidays', 'awards']))
             <li class="menu-item {{ request()->routeIs('employees.*') ||
                       request()->routeIs('designations.*') ||
                       (request()->routeIs('attendance.*') && !request()->routeIs('attendance.report')) ||
@@ -1020,14 +1042,15 @@
 
 
               <ul class="menu-sub">
-                    @if(auth()->user()->role === 'admin')
+                    @if($canSeeModule('employees'))
                         <li class="menu-item {{ request()->routeIs('employees.*') ? 'active' : '' }}">
                             <a href="{{ route('employees.index') }}" class="menu-link" data-sidebar-key="employees">
                                 <div class="text-truncate" data-i18n="Without menu">Employee</div>
                             </a>
                         </li>
+                    @endif
 
-
+                    @if($canSeeModule('designations'))
                         <li class="menu-item {{ request()->routeIs('designations.*') ? 'active' : '' }}">
                             <a href="{{ route('designations.index') }}" class="menu-link">
                                 <div class="text-truncate" data-i18n="Without menu">Designation</div>
@@ -1035,6 +1058,7 @@
                         </li>
 
  <!-- Department with Submenu -->
+                  @if($canSeeModule('departments'))
                   <li class="menu-item {{ request()->routeIs('parent-departments.*') || request()->routeIs('departments.*') ? 'active open' : '' }}">
                     <a href="javascript:void(0);" class="menu-link menu-toggle">
                       <div class="text-truncate">Department</div>
@@ -1052,10 +1076,11 @@
                       </li>
                     </ul>
                   </li>
+                  @endif
                 @endif
 
 
-                     @if(in_array(auth()->user()->role, ['admin', 'employee']))
+                     @if($canSeeModule('attendance'))
                     <li class="menu-item {{ (request()->routeIs('attendance.*') && !request()->routeIs('attendance.report')) ? 'active' : '' }}">
                           <a href="{{ route('attendance.index') }}" class="menu-link" data-sidebar-key="attendance">
                             <div class="text-truncate" data-i18n="Without menu">
@@ -1077,7 +1102,7 @@
 
 
 
-                @if(in_array(auth()->user()->role, ['admin', 'employee']))
+                @if($canSeeModule('leaves'))
                 <li class="menu-item {{ request()->routeIs('leaves.*') ? 'active' : '' }}">
                 <a href="{{ route('leaves.index') }}" class="menu-link" data-sidebar-key="leaves">
                     <div class="text-truncate" data-i18n="Without navbar">My Leaves</div>
@@ -1095,21 +1120,23 @@
                 @endif -->
 
                 {{-- Employee Holiday View --}}
+                @if($canSeeModule('holidays'))
                 <li class="menu-item {{ request()->routeIs('holidays.*') ? 'active' : '' }}">
                 <a href="{{ route('holidays.calendar') }}" class="menu-link" data-sidebar-key="holidays">
                     <div class="text-truncate">Holiday List</div>
                 </a>
                 </li>
+                @endif
 
 
-                    @if(auth()->user()->role === 'admin')
+                    @if($canSeeModule('awards') && auth()->user()->role === 'admin')
                     <!-- Admin sees Appreciation menu -->
                     <li class="menu-item {{ request()->routeIs('awards.*') ? 'active' : '' }}">
                         <a href="{{ route('awards.index') }}" class="menu-link">
                             <div class="text-truncate" data-i18n="Container">Recognition</div>
                         </a>
                     </li>
-                    @elseif(auth()->user()->role === 'employee')
+                    @elseif($canSeeModule('awards') && auth()->user()->role === 'employee')
                     <!-- Employee also sees Recognition menu but goes to filtered view -->
                     <li class="menu-item {{ request()->routeIs('awards.*') || request()->routeIs('employee.awards') ? 'active' : '' }}">
                         <a href="{{ route('awards.index') }}" class="menu-link">
@@ -1120,11 +1147,12 @@
 
               </ul>
             </li>
+            @endif
 
 
 
              <!-- Reports Section -->
-            @if(auth()->user()->role === 'admin')
+            @if($canSeeModule('reports'))
             <li class="menu-item {{ request()->routeIs('attendance.report') || request()->routeIs('admin.leave.report') ? 'active open' : '' }}">
               <a href="javascript:void(0);" class="menu-link menu-toggle" data-sidebar-key="reports">
                 <i class="menu-icon tf-icons bx bx-bar-chart-alt"></i>
@@ -1150,7 +1178,26 @@
 
 
             <!-- Work Section -->
-            <li class="menu-item {{ request()->routeIs('clients.*') || request()->routeIs('collaborating-companies.*') || request()->routeIs('projects.*') ||
+            @if($canSeeModule('collaborating-companies'))
+            <li class="menu-item {{ request()->routeIs('collaborating-companies.*') ? 'active' : '' }}">
+                <a href="{{ route('collaborating-companies.index') }}" class="menu-link" data-sidebar-key="collaborating-companies">
+                    <i class="menu-icon tf-icons bx bx-buildings"></i>
+                    <div class="text-truncate">Collaborating Companies</div>
+                </a>
+            </li>
+            @endif
+
+            @if($canSeeModule('clients'))
+            <li class="menu-item {{ request()->routeIs('clients.*') ? 'active' : '' }}">
+                <a href="{{ route('clients.index') }}" class="menu-link" data-sidebar-key="clients">
+                    <i class="menu-icon tf-icons bx bx-user-voice"></i>
+                    <div class="text-truncate">Client</div>
+                </a>
+            </li>
+            @endif
+
+            @if($canAnyModule(['projects', 'tasks', 'timelogs']))
+            <li class="menu-item {{ request()->routeIs('projects.*') ||
                 request()->routeIs('tasks.*') || request()->routeIs('users.tasks.*') ||
                 request()->routeIs('timelogs.*') || request()->routeIs('task-timer.*') ||
                 request()->routeIs('admin.contracts.*') || request()->routeIs('admin.contract-templates.*') ? 'active open' : '' }}">
@@ -1161,23 +1208,7 @@
                 </a>
 
                 <ul class="menu-sub">
-                    @if(auth()->user()->role === 'admin')
-                        <li class="menu-item {{ request()->routeIs('clients.*') ? 'active' : '' }}">
-                            <a href="{{ route('clients.index') }}" class="menu-link" data-sidebar-key="clients">
-                                <div class="text-truncate" data-i18n="Landing">Client</div>
-                            </a>
-                        </li>
-                    @endif
-
-                    @if(in_array(auth()->user()->role, ['admin', 'employee']))
-                        <li class="menu-item {{ request()->routeIs('collaborating-companies.*') ? 'active' : '' }}">
-                            <a href="{{ route('collaborating-companies.index') }}" class="menu-link">
-                                <div class="text-truncate">Collaborating Companies</div>
-                            </a>
-                        </li>
-                    @endif
-
-                    @if(in_array(auth()->user()->role, ['admin', 'employee']))
+                    @if($canSeeModule('projects'))
                         <li class="menu-item {{ (request()->routeIs('projects.*') && !request()->routeIs('projects.tasks.*') && !request()->routeIs('projects.timelogs.*')) ? 'active' : '' }}">
                             <a href="{{ route('projects.index') }}" class="menu-link" data-sidebar-key="projects">
                                 <div class="text-truncate" data-i18n="Landing">Projects</div>
@@ -1185,13 +1216,15 @@
                         </li>
                     @endif
 
+                    @if($canSeeModule('tasks'))
                     <li class="menu-item {{ request()->routeIs('tasks.*') || request()->routeIs('projects.tasks.*') || request()->routeIs('users.tasks.*') || request()->routeIs('task-timer.*') ? 'active' : '' }}">
                         <a href="{{ route('tasks.index') }}" class="menu-link" data-sidebar-key="tasks">
                             <div class="text-truncate" data-i18n="Pricing">Tasks</div>
                         </a>
                     </li>
+                    @endif
 
-                    @if(in_array(auth()->user()->role, ['admin', 'employee']))
+                    @if($canSeeModule('timelogs'))
                         <li class="menu-item {{ request()->routeIs('timelogs.*') || request()->routeIs('projects.timelogs.*') ? 'active' : '' }}">
                             <a href="{{ route('timelogs.index') }}" class="menu-link" data-sidebar-key="timelogs">
                                 <div class="text-truncate" data-i18n="Payment">Timesheet</div>
@@ -1216,10 +1249,103 @@
                     @endif
                 </ul>
             </li>
+            @endif
+
+            @if($canAnyModule(['payroll', 'payroll-architectures', 'payslips', 'salary-structures', 'payroll-policies', 'payroll-cycles', 'tax-rules', 'bonus-rules', 'deduction-rules', 'overtime-rules', 'payroll-reports', 'payroll-audit-logs', 'payroll-settings', 'payroll-import-export', 'payroll-archive', 'formula-builder']))
+            <li class="menu-item {{ request()->routeIs('payroll.*') ? 'active open' : '' }}">
+                <a href="javascript:void(0);" class="menu-link menu-toggle" data-sidebar-key="payroll">
+                    <i class="menu-icon tf-icons bx bx-wallet"></i>
+                    <div class="text-truncate">Payroll</div>
+                </a>
+
+                <ul class="menu-sub">
+                    @if($canSeeModule('payroll'))
+                        <li class="menu-item {{ request()->routeIs('payroll.index') ? 'active' : '' }}">
+                            <a href="{{ route('payroll.index') }}" class="menu-link"><div>Payroll</div></a>
+                        </li>
+                    @endif
+                    @if($canSeeModule('payroll-architectures'))
+                        <li class="menu-item {{ request()->routeIs('payroll.architectures.*') ? 'active' : '' }}">
+                            <a href="{{ route('payroll.architectures.index') }}" class="menu-link"><div>Payroll Architectures</div></a>
+                        </li>
+                    @endif
+                    @if($canSeeModule('payslips'))
+                        <li class="menu-item {{ request()->routeIs('payroll.payslips.*') ? 'active' : '' }}">
+                            <a href="{{ route('payroll.payslips.index') }}" class="menu-link"><div>Payslips</div></a>
+                        </li>
+                    @endif
+                    @if($canSeeModule('salary-structures'))
+                        <li class="menu-item {{ request()->routeIs('payroll.salary-structures.*') ? 'active' : '' }}">
+                            <a href="{{ route('payroll.salary-structures.index') }}" class="menu-link"><div>Salary Structures</div></a>
+                        </li>
+                    @endif
+                    @if($canSeeModule('payroll-cycles'))
+                        <li class="menu-item {{ request()->routeIs('payroll.cycles.*') ? 'active' : '' }}">
+                            <a href="{{ route('payroll.cycles.index') }}" class="menu-link"><div>Payroll Cycles</div></a>
+                        </li>
+                    @endif
+                    @if($canSeeModule('payroll-policies'))
+                        <li class="menu-item {{ request()->routeIs('payroll.policies.*') ? 'active' : '' }}">
+                            <a href="{{ route('payroll.policies.index') }}" class="menu-link"><div>Payroll Policies</div></a>
+                        </li>
+                    @endif
+                    @if($canSeeModule('deduction-rules'))
+                        <li class="menu-item {{ request()->routeIs('payroll.deduction-rules.*') ? 'active' : '' }}">
+                            <a href="{{ route('payroll.deduction-rules.index') }}" class="menu-link"><div>Deduction Rules</div></a>
+                        </li>
+                    @endif
+                    @if($canSeeModule('bonus-rules'))
+                        <li class="menu-item {{ request()->routeIs('payroll.bonus-rules.*') ? 'active' : '' }}">
+                            <a href="{{ route('payroll.bonus-rules.index') }}" class="menu-link"><div>Bonus Rules</div></a>
+                        </li>
+                    @endif
+                    @if($canSeeModule('tax-rules'))
+                        <li class="menu-item {{ request()->routeIs('payroll.tax-rules.*') ? 'active' : '' }}">
+                            <a href="{{ route('payroll.tax-rules.index') }}" class="menu-link"><div>Tax Rules</div></a>
+                        </li>
+                    @endif
+                    @if($canSeeModule('overtime-rules'))
+                        <li class="menu-item {{ request()->routeIs('payroll.overtime-rules.*') ? 'active' : '' }}">
+                            <a href="{{ route('payroll.overtime-rules.index') }}" class="menu-link"><div>Overtime Rules</div></a>
+                        </li>
+                    @endif
+                    @if($canSeeModule('formula-builder'))
+                        <li class="menu-item {{ request()->routeIs('payroll.formula-builder.*') ? 'active' : '' }}">
+                            <a href="{{ route('payroll.formula-builder.index') }}" class="menu-link"><div>Formula Builder</div></a>
+                        </li>
+                    @endif
+                    @if($canSeeModule('payroll-reports'))
+                        <li class="menu-item {{ request()->routeIs('payroll.reports.*') ? 'active' : '' }}">
+                            <a href="{{ route('payroll.reports.index') }}" class="menu-link"><div>Payroll Reports</div></a>
+                        </li>
+                    @endif
+                    @if($canSeeModule('payroll-import-export'))
+                        <li class="menu-item {{ request()->routeIs('payroll.import-export.*') ? 'active' : '' }}">
+                            <a href="{{ route('payroll.import-export.index') }}" class="menu-link"><div>Import Export</div></a>
+                        </li>
+                    @endif
+                    @if($canSeeModule('payroll-archive'))
+                        <li class="menu-item {{ request()->routeIs('payroll.archive.*') ? 'active' : '' }}">
+                            <a href="{{ route('payroll.archive.index') }}" class="menu-link"><div>Payroll Archive</div></a>
+                        </li>
+                    @endif
+                    @if($canSeeModule('payroll-audit-logs'))
+                        <li class="menu-item {{ request()->routeIs('payroll.audit-logs.*') ? 'active' : '' }}">
+                            <a href="{{ route('payroll.audit-logs.index') }}" class="menu-link"><div>Audit Logs</div></a>
+                        </li>
+                    @endif
+                    @if($canSeeModule('payroll-settings'))
+                        <li class="menu-item {{ request()->routeIs('payroll.settings.*') ? 'active' : '' }}">
+                            <a href="{{ route('payroll.settings.index') }}" class="menu-link"><div>Payroll Settings</div></a>
+                        </li>
+                    @endif
+                </ul>
+            </li>
+            @endif
 
 <!--    //leads section -->
 
-                   @if(auth()->user()->role === 'admin')
+                   @if($canSeeModule('leads'))
                     <li class="menu-item has-sub {{ request()->routeIs('leads.*') || request()->routeIs('admin.deals.*') ? 'active open' : '' }}">
                         <a href="javascript:void(0);" class="menu-link menu-toggle">
                             <i class="menu-icon tf-icons bx bx-target-lock"></i>
@@ -1247,12 +1373,42 @@
                 <!-- //ticket section . -->
 
 
+            @if($canSeeModule('tickets'))
             <li class="menu-item {{ request()->routeIs('tickets.*') || request()->routeIs('ticket-groups.*') ? 'active' : '' }}">
                   <a href="{{ route('tickets.index') }}" class="menu-link" data-sidebar-key="tickets">
                        <i class="menu-icon tf-icons bx bx-receipt"></i>
                       <div class="text-truncate" data-i18n="Dashboard">Ticket</div>
                   </a>
               </li>
+            @endif
+
+            @if($canSeeModule('settings'))
+                <li class="menu-item {{ request()->routeIs('settings.*') || request()->routeIs('admin.settings.*') || request()->routeIs('admin.modules.*') || request()->routeIs('admin.role-permissions.*') || request()->routeIs('admin.role-accounts.*') ? 'active open' : '' }}">
+                    <a href="javascript:void(0);" class="menu-link menu-toggle">
+                        <i class="menu-icon tf-icons bx bx-cog"></i>
+                        <div class="text-truncate" data-i18n="Settings">Settings</div>
+                    </a>
+                    <ul class="menu-sub">
+                        @if(Route::has('admin.companies.index') && auth()->user()->role === 'admin')
+                            <li class="menu-item {{ request()->routeIs('admin.companies.*') ? 'active' : '' }}"><a href="{{ route('admin.companies.index') }}" class="menu-link"><div>Company Management</div></a></li>
+                        @endif
+                        @if(Route::has('settings.company'))
+                            <li class="menu-item {{ request()->routeIs('settings.company') ? 'active' : '' }}"><a href="{{ route('settings.company') }}" class="menu-link"><div>Company Settings</div></a></li>
+                        @endif
+                        @if(Route::has('admin.settings.app'))
+                            <li class="menu-item"><a href="{{ route('admin.settings.app', ['page' => 'app']) }}" class="menu-link"><div>App Settings</div></a></li>
+                        @endif
+                        @if(Route::has('admin.settings.terms-policy'))
+                            <li class="menu-item {{ request()->routeIs('admin.settings.terms-policy*') ? 'active' : '' }}"><a href="{{ route('admin.settings.terms-policy') }}" class="menu-link"><div>Terms &amp; Policy</div></a></li>
+                        @endif
+                        <li class="menu-item {{ request()->routeIs('admin.modules.*') ? 'active' : '' }}"><a href="{{ route('admin.modules.index') }}" class="menu-link"><div>Module Management</div></a></li>
+                        <li class="menu-item {{ request()->routeIs('admin.role-permissions.*') ? 'active' : '' }}"><a href="{{ route('admin.role-permissions.index') }}" class="menu-link"><div>Role & Permission</div></a></li>
+                        <li class="menu-item {{ request()->routeIs('admin.role-accounts.*') && request()->route('role') === 'hr' ? 'active' : '' }}"><a href="{{ route('admin.role-accounts.index', 'hr') }}" class="menu-link"><div>HR Management</div></a></li>
+                        <li class="menu-item {{ request()->routeIs('admin.role-accounts.*') && request()->route('role') === 'manager' ? 'active' : '' }}"><a href="{{ route('admin.role-accounts.index', 'manager') }}" class="menu-link"><div>Manager Management</div></a></li>
+                    </ul>
+                </li>
+            @endif
+          </ul>
 
 
 
@@ -1324,10 +1480,35 @@
         <script>
         document.addEventListener('DOMContentLoaded', function () {
             let sidebarNotificationItems = @json($sidebarNotificationItems ?? []);
+            const sectionReadUrlTemplate = @json(route('notifications.section.read', ['section' => '__SECTION__']));
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+            const seenStorageKey = 'pms_sidebar_seen_{{ auth()->id() }}';
+            let sidebarSeenCounts = {};
+
+            try {
+                sidebarSeenCounts = JSON.parse(localStorage.getItem(seenStorageKey) || '{}') || {};
+            } catch (error) {
+                sidebarSeenCounts = {};
+            }
 
             function shortCount(count) {
                 count = Number(count || 0);
                 return count > 99 ? '99+' : String(count);
+            }
+
+            function saveSidebarSeenCounts() {
+                localStorage.setItem(seenStorageKey, JSON.stringify(sidebarSeenCounts));
+            }
+
+            function currentSidebarKey() {
+                const activeLink = document.querySelector('.menu-item.active > [data-sidebar-key], .menu-item.active [data-sidebar-key]');
+                return activeLink ? activeLink.getAttribute('data-sidebar-key') : null;
+            }
+
+            function visibleCountForKey(key, item) {
+                const count = Number(item.count || 0);
+                const seenCount = Number(sidebarSeenCounts[key] || 0);
+                return Math.max(0, count - seenCount);
             }
 
             function ensureBadge(link) {
@@ -1344,7 +1525,7 @@
                 document.querySelectorAll('[data-sidebar-key]').forEach(function (link) {
                     const key = link.getAttribute('data-sidebar-key');
                     const item = items[key] || { count: 0, type: 'new', important: false };
-                    const count = Number(item.count || 0);
+                    const count = visibleCountForKey(key, item);
                     const badge = ensureBadge(link);
                     const menuItem = link.closest('.menu-item');
 
@@ -1367,6 +1548,46 @@
                 });
             }
 
+            function markSidebarKeySeen(key, items) {
+                if (!key || !items[key]) {
+                    return;
+                }
+
+                sidebarSeenCounts[key] = Number(items[key].count || 0);
+                saveSidebarSeenCounts();
+                renderSidebarNotifications(items);
+            }
+
+            function markCurrentSectionRead() {
+                const key = currentSidebarKey();
+                if (!key) {
+                    return;
+                }
+
+                markSidebarKeySeen(key, sidebarNotificationItems);
+
+                fetch(sectionReadUrlTemplate.replace('__SECTION__', encodeURIComponent(key)), {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({})
+                })
+                .then(response => response.ok ? response.json() : Promise.reject(response))
+                .then(data => {
+                    sidebarNotificationItems = data.items || sidebarNotificationItems;
+                    markSidebarKeySeen(key, sidebarNotificationItems);
+                    if (window.pmsUpdateNotificationBell) {
+                        window.pmsUpdateNotificationBell(Number(data.count || 0));
+                    }
+                })
+                .catch(() => {});
+            }
+
             function fetchSidebarNotifications() {
                 fetch('{{ route('notifications.sidebar') }}', {
                     credentials: 'same-origin',
@@ -1381,6 +1602,7 @@
             }
 
             renderSidebarNotifications(sidebarNotificationItems);
+            setTimeout(markCurrentSectionRead, 600);
             setTimeout(fetchSidebarNotifications, 1200);
             setInterval(fetchSidebarNotifications, 45000);
         });
@@ -1391,7 +1613,13 @@
             const root = document.documentElement;
             const body = document.body;
 
-            function closeMobileMenu() {
+            function closeMobileMenu(event) {
+                if (event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    event.stopImmediatePropagation();
+                }
+
                 root.classList.remove('layout-menu-expanded');
                 body.classList.remove('layout-menu-expanded');
             }
@@ -1408,11 +1636,13 @@
                 body.classList.toggle('layout-menu-expanded');
             }
 
-            document.querySelectorAll('.layout-menu-toggle').forEach(function (toggle) {
+            document.querySelectorAll('.layout-page .layout-menu-toggle').forEach(function (toggle) {
                 toggle.addEventListener('click', toggleMobileMenu);
             });
 
-            document.querySelector('.layout-overlay')?.addEventListener('click', closeMobileMenu);
+            document.querySelectorAll('#layout-menu > .app-brand .layout-menu-toggle, .layout-overlay').forEach(function (closeControl) {
+                closeControl.addEventListener('click', closeMobileMenu);
+            });
 
             document.querySelectorAll('#layout-menu .menu-link[href]:not([href="javascript:void(0);"])').forEach(function (link) {
                 link.addEventListener('click', function () {
@@ -1442,6 +1672,13 @@
                 <i class="icon-base bx bx-menu icon-md"></i>
               </a>
             </div>
+
+            <a href="{{ route('dashboard') }}" class="mobile-navbar-brand d-xl-none" aria-label="{{ $brandName }} dashboard">
+              <span class="mobile-navbar-logo">
+                <img src="{{ $brandLogo }}" alt="">
+              </span>
+              <span class="mobile-navbar-text">{{ $brandName }}</span>
+            </a>
 
             <div class="navbar-nav-right d-flex align-items-center justify-content-end" id="navbar-collapse">
 
@@ -1780,6 +2017,7 @@
               const bell = document.getElementById('navbarDropdown');
               const unreadText = document.getElementById('navbarNotificationUnreadText');
               let soundReady = false;
+              let pendingNotificationSound = false;
               let previousUnread = Number(localStorage.getItem('pms_unread_notifications') || '{{ $navbarUnreadCount }}');
               const notificationSoundUrl = @json(asset('sound/notification sound.mp3'));
               let notificationAudio = new Audio(notificationSoundUrl);
@@ -1792,8 +2030,17 @@
                       .then(() => {
                           notificationAudio.pause();
                           notificationAudio.currentTime = 0;
+                          if (pendingNotificationSound) {
+                              pendingNotificationSound = false;
+                              setTimeout(playNotificationSound, 80);
+                          }
                       })
-                      .catch(() => {});
+                      .catch(() => {
+                          if (pendingNotificationSound) {
+                              pendingNotificationSound = false;
+                              setTimeout(playGeneratedNotificationTone, 80);
+                          }
+                      });
                   document.removeEventListener('click', armNotificationSound);
                   document.removeEventListener('keydown', armNotificationSound);
                   document.removeEventListener('touchstart', armNotificationSound);
@@ -1807,6 +2054,7 @@
 
               function playNotificationSound() {
                   if (!soundReady) {
+                      pendingNotificationSound = true;
                       return;
                   }
 
@@ -1866,7 +2114,12 @@
                   if (unreadText) {
                       unreadText.textContent = count + ' unread';
                   }
+
+                  previousUnread = count;
+                  localStorage.setItem('pms_unread_notifications', String(count));
               }
+
+              window.pmsUpdateNotificationBell = updateBell;
 
               function checkNotifications() {
                   fetch('{{ route('notifications.unreadCount') }}', {
@@ -1883,8 +2136,6 @@
                               bell.classList.add('has-unread');
                           }
                       }
-                      previousUnread = count;
-                      localStorage.setItem('pms_unread_notifications', String(count));
                       updateBell(count);
                   })
                   .catch(() => {});
@@ -1896,7 +2147,7 @@
                   setTimeout(playNotificationSound, 900);
               }
               setTimeout(checkNotifications, 1500);
-              setInterval(checkNotifications, 30000);
+              setInterval(checkNotifications, 15000);
           });
           </script>
 
@@ -2242,4 +2493,7 @@
           </script>
 
     <!-- / Navbar -->
-</body>
+
+          <!-- Content wrapper -->
+          <div class="content-wrapper">
+            <div class="container-xxl flex-grow-1 container-p-y">

@@ -33,8 +33,18 @@ class Task extends Model
         'category_id',
         'parent_id',
         'is_completed',
+        'is_pinned',
         'status',
+        'progress',
+        'remarks',
+        'created_by',
         'completed_on'
+    ];
+
+    protected $casts = [
+        'is_completed' => 'boolean',
+        'is_pinned' => 'boolean',
+        'completed_on' => 'datetime',
     ];
 
    // Relationships
@@ -88,7 +98,24 @@ class Task extends Model
    
     public function assignees()
         {
-            return $this->belongsToMany(User::class, 'assigned_task_user', 'task_id', 'user_id');
+            return $this->belongsToMany(User::class, 'assigned_task_user', 'task_id', 'user_id')
+                ->withPivot(['assigned_by', 'assigned_at'])
+                ->withTimestamps();
+    }
+
+    public function createdBy()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function updates()
+    {
+        return $this->hasMany(TaskUpdate::class);
+    }
+
+    public function latestUpdate()
+    {
+        return $this->hasOne(TaskUpdate::class)->latestOfMany();
     }
 
   public function activeTimer()

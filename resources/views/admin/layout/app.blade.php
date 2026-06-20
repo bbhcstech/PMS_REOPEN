@@ -1,8 +1,8 @@
 @include('admin.layout.header')
 @include('admin.layout.manu')
-<main>
-    @yield('content')
-</main>
+
+@yield('content')
 
 @include('admin.layout.toasts')
 @include('admin.layout.footer')
+

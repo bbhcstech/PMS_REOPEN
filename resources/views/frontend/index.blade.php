@@ -20,8 +20,8 @@
                     Bitroxia PMS keeps tasks, timelines, attendance, leave, tickets, clients, and reports connected so managers can see work clearly and teams can move without confusion.
                 </p>
                 <div class="hero-buttons">
-                    <a href="{{ route('register') }}" class="btn btn-purple btn-lg">
-                        Start Free <i class="fas fa-arrow-right"></i>
+                    <a href="{{ route('login') }}" class="btn btn-purple btn-lg">
+                        Login <i class="fas fa-arrow-right"></i>
                     </a>
                     <a href="{{ route('features') }}" class="btn btn-outline-purple btn-lg">
                         <i class="fas fa-table-cells-large"></i> Explore Features
@@ -149,7 +149,7 @@
                     <h2>Built for the rhythm of real teams</h2>
                     <p>From planning to payroll-adjacent attendance records, every module supports the day-to-day operating loop.</p>
                 </div>
-                <a href="{{ route('register') }}" class="btn btn-purple btn-lg">Create Workspace <i class="fas fa-arrow-right"></i></a>
+                <a href="{{ route('login') }}" class="btn btn-purple btn-lg">Login <i class="fas fa-arrow-right"></i></a>
             </div>
             <div class="col-lg-7">
                 <div class="row g-4">

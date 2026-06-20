@@ -1,11 +1,14 @@
 <!-- Footer -->
+@php
+    $logoUrl = $logoUrl ?? asset('logo.png') . '?v=' . (file_exists(public_path('logo.png')) ? filemtime(public_path('logo.png')) : time());
+@endphp
 <footer class="bbh-footer">
     <div class="container">
         <div class="row g-5">
             <div class="col-lg-4 col-md-6">
                 <div class="footer-widget">
                     <div class="footer-brand">
-                        <img src="{{ asset('logo.png') }}" alt="Bitroxia PMS logo">
+                        <img src="{{ $logoUrl }}" alt="Bitroxia PMS logo">
                         <h4 class="mb-0">Bitroxia PMS</h4>
                     </div>
                     <p class="text-white-50 mb-4">A practical project, HR, attendance, and reporting workspace for teams that need clear ownership and faster delivery.</p>

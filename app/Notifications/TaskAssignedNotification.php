@@ -14,10 +14,10 @@ class TaskAssignedNotification extends Notification implements ShouldQueue
     protected $assignedBy;
     protected $notifyTo;
 
-    public function __construct($task, $assignedBy, $notifyTo = 'employee')
+    public function __construct($task, $assignedBy = null, $notifyTo = 'employee')
     {
         $this->task = $task;
-        $this->assignedBy = $assignedBy;
+        $this->assignedBy = $assignedBy ?? auth()->user();
         $this->notifyTo = $notifyTo;
     }
 
@@ -32,11 +32,11 @@ class TaskAssignedNotification extends Notification implements ShouldQueue
             return [
                 'type' => 'task_assigned',
                 'title' => 'New Task Assigned',
-                'message' => 'Task "' . $this->task->title . '" assigned to you by ' . $this->assignedBy->name,
+                'message' => 'Task "' . $this->task->title . '" assigned to you by ' . ($this->assignedBy->name ?? 'System'),
                 'task_id' => $this->task->id,
-                'assigned_by' => $this->assignedBy->name,
-                'assigned_by_id' => $this->assignedBy->id,
-                'url' => url('/employee/tasks/' . $this->task->id),
+                'assigned_by' => $this->assignedBy->name ?? 'System',
+                'assigned_by_id' => $this->assignedBy->id ?? null,
+                'url' => route('tasks.show', $this->task->id),
                 'icon' => 'fa-tasks',
                 'color' => 'primary',
                 'for' => 'employee',
@@ -49,7 +49,7 @@ class TaskAssignedNotification extends Notification implements ShouldQueue
                 'task_id' => $this->task->id,
                 'assigned_to' => $this->task->assignedTo->name ?? 'Employee',
                 'assigned_to_id' => $this->task->assigned_to,
-                'url' => url('/admin/tasks/' . $this->task->id),
+                'url' => route('tasks.show', $this->task->id),
                 'icon' => 'fa-tasks',
                 'color' => 'info',
                 'for' => 'admin',

@@ -14,6 +14,8 @@ class ProjectUserController extends Controller
     public function index($projectId)
     {
         $project = Project::with('users')->findOrFail($projectId);
+        $this->authorizeProjectAccess($project);
+
         $members = $project->users()->withPivot('hourly_rate', 'role')->get();
 
         return view('admin.projects.members.index', compact('project', 'members'));
@@ -22,6 +24,8 @@ class ProjectUserController extends Controller
     // Add new member form
     public function create($projectId)
     {
+        abort_unless(auth()->user()?->role === 'admin', 403);
+
         $project = Project::findOrFail($projectId);
         $users = User::all();
 
@@ -31,6 +35,8 @@ class ProjectUserController extends Controller
     // Store new member
     public function store(Request $request, $projectId)
     {
+        abort_unless(auth()->user()?->role === 'admin', 403);
+
         $request->validate([
             'user_id' => 'required|exists:users,id',
             'hourly_rate' => 'nullable|numeric',
@@ -50,9 +56,31 @@ class ProjectUserController extends Controller
     // Remove member
     public function destroy($projectId, $userId)
     {
+        abort_unless(auth()->user()?->role === 'admin', 403);
+
         $project = Project::findOrFail($projectId);
         $project->users()->detach($userId);
 
         return redirect()->route('project-members.index', $projectId)->with('success', 'Member removed.');
+    }
+
+    private function authorizeProjectAccess(Project $project): void
+    {
+        $user = auth()->user();
+
+        if (! $user) {
+            abort(403);
+        }
+
+        if ($user->role === 'admin') {
+            return;
+        }
+
+        if ($user->role === 'employee') {
+            abort_unless($project->users->contains('id', $user->id), 403);
+            return;
+        }
+
+        abort(403);
     }
 }

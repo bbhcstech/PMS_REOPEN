@@ -19,6 +19,12 @@
         </div>
     </section>
 
+    @if($company->image_path)
+        <section class="partner-show-image">
+            <img src="{{ asset($company->image_path) }}" alt="{{ $company->name }}">
+        </section>
+    @endif
+
     <section class="partner-detail-grid">
         <article class="partner-detail-card">
             <h2>Company Details</h2>
@@ -28,8 +34,20 @@
                 <dt>Collaboration</dt><dd>{{ $company->collaboration_type ?: 'Not specified' }}</dd>
                 <dt>Started On</dt><dd>{{ $company->started_on?->format('d M Y') ?? 'Not specified' }}</dd>
                 <dt>Contact</dt><dd>{{ $company->contact_person ?: 'Not specified' }}</dd>
-                <dt>Email</dt><dd>{{ $company->contact_email ?: 'Not specified' }}</dd>
-                <dt>Phone</dt><dd>{{ $company->contact_phone ?: 'Not specified' }}</dd>
+                <dt>Email</dt><dd>
+                    @if($company->contact_email)
+                        <a href="mailto:{{ $company->contact_email }}" class="partner-text-link">{{ $company->contact_email }}</a>
+                    @else
+                        Not specified
+                    @endif
+                </dd>
+                <dt>Phone</dt><dd>
+                    @if($company->contact_phone)
+                        <a href="tel:{{ preg_replace('/\s+/', '', $company->contact_phone) }}" class="partner-text-link">{{ $company->contact_phone }}</a>
+                    @else
+                        Not specified
+                    @endif
+                </dd>
             </dl>
         </article>
 

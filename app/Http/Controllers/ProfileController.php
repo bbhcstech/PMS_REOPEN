@@ -26,12 +26,10 @@ class ProfileController extends Controller
             ->orderBy('name')
             ->get();
 
-        if (auth()->user()->role == 'admin' || auth()->user()->role == 'employee' || auth()->user()->role == 'client') {
-            return view('profile.edit', [
-                'user' => $request->user(),
-                'designations' => $designations // Pass designations to view
-            ]);
-        }
+        return view('profile.edit', [
+            'user' => $request->user(),
+            'designations' => $designations // Pass designations to view
+        ]);
     }
 
     /**

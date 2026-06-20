@@ -21,7 +21,7 @@
         </div>
     @endif
 
-    <form method="POST" action="{{ $mode === 'edit' ? route('collaborating-companies.update', $company) : route('collaborating-companies.store') }}" class="partner-form-card">
+    <form method="POST" action="{{ $mode === 'edit' ? route('collaborating-companies.update', $company) : route('collaborating-companies.store') }}" class="partner-form-card" enctype="multipart/form-data">
         @csrf
         @if($mode === 'edit')
             @method('PUT')
@@ -33,6 +33,17 @@
                 <input type="text" name="name" class="form-control" value="{{ old('name', $company->name) }}" required>
                 @error('name')<small class="text-danger">{{ $message }}</small>@enderror
             </div>
+            <div>
+                <label>Company Image</label>
+                <input type="file" name="company_image" class="form-control" accept="image/png,image/jpeg,image/webp">
+                @error('company_image')<small class="text-danger">{{ $message }}</small>@enderror
+            </div>
+            @if($company->image_path)
+                <div class="full">
+                    <label>Current Image</label>
+                    <img src="{{ asset($company->image_path) }}" alt="{{ $company->name }}" class="partner-form-preview">
+                </div>
+            @endif
             <div>
                 <label>Industry</label>
                 <input type="text" name="industry" class="form-control" value="{{ old('industry', $company->industry) }}" placeholder="IT, Marketing, Finance">

@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(SuperAdminSeeder::class);
         $this->call(SubscriptionCatalogSeeder::class);
+        $this->call(EnterpriseCompanySeeder::class);
 
         // User::factory(10)->create();
 
@@ -28,6 +29,8 @@ class DatabaseSeeder extends Seeder
         //  CALL SETTINGS SEEDER
         $this->call([
             ProfileSettingSeeder::class,
+            RoleManagementSeeder::class,
+            PayrollModuleSeeder::class,
         ]);
     }
 }

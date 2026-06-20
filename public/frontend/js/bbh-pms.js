@@ -117,6 +117,76 @@
         }
     });
 
+    // Mobile navbar accordion: feature groups stay closed until clicked.
+    var $mainNavbar = $('#mainNavbar');
+
+    function isMobileNavbar() {
+        return window.innerWidth <= 991;
+    }
+
+    function closeMobileFeatureMenus() {
+        var $dropdowns = $mainNavbar.find('.dropdown');
+        $dropdowns.find('> .dropdown-menu').removeClass('show').removeAttr('style');
+        $dropdowns.find('> .dropdown-toggle').attr('aria-expanded', 'false');
+    }
+
+    $mainNavbar.on('show.bs.collapse hidden.bs.collapse', function() {
+        closeMobileFeatureMenus();
+    });
+
+    $mainNavbar.on('shown.bs.collapse', function() {
+        if (isMobileNavbar()) {
+            $('body').addClass('frontend-menu-open');
+        }
+    });
+
+    $mainNavbar.on('hide.bs.collapse hidden.bs.collapse', function() {
+        $('body').removeClass('frontend-menu-open');
+    });
+
+    $(document).on('click', function(event) {
+        if (!isMobileNavbar() || !$mainNavbar.hasClass('show')) {
+            return;
+        }
+
+        var clickedInsideNavbar = $(event.target).closest('#bbhNavbar').length > 0;
+        if (!clickedInsideNavbar) {
+            bootstrap.Collapse.getOrCreateInstance($mainNavbar[0]).hide();
+        }
+    });
+
+    $(document).on('keydown', function(event) {
+        if (event.key === 'Escape' && $mainNavbar.hasClass('show')) {
+            bootstrap.Collapse.getOrCreateInstance($mainNavbar[0]).hide();
+        }
+    });
+
+    $mainNavbar.on('show.bs.dropdown', '.dropdown', function() {
+        if (!isMobileNavbar()) {
+            return;
+        }
+
+        $(this)
+            .siblings('.dropdown')
+            .find('> .dropdown-menu')
+            .removeClass('show')
+            .removeAttr('style');
+
+        $(this)
+            .siblings('.dropdown')
+            .find('> .dropdown-toggle')
+            .attr('aria-expanded', 'false');
+    });
+
+    $(window).on('resize', function() {
+        if (isMobileNavbar()) {
+            closeMobileFeatureMenus();
+        } else {
+            $('body').removeClass('frontend-menu-open');
+            $mainNavbar.find('.dropdown-menu').removeAttr('style');
+        }
+    });
+
     // Add Active Class to Current Nav Item
     var currentLocation = window.location.pathname;
     $('.navbar-nav .nav-link').each(function() {

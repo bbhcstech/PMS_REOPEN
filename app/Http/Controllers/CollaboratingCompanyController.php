@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CollaboratingCompany;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
 
 class CollaboratingCompanyController extends Controller
 {
@@ -54,7 +55,10 @@ class CollaboratingCompanyController extends Controller
     {
         $this->ensureAdmin();
 
-        CollaboratingCompany::create($this->validatedData($request));
+        $data = $this->validatedData($request);
+        $data['image_path'] = $this->storeCompanyImage($request);
+
+        CollaboratingCompany::create($data);
 
         return redirect()->route('collaborating-companies.index')
             ->with('success', 'Collaborating company added successfully.');
@@ -85,7 +89,14 @@ class CollaboratingCompanyController extends Controller
     public function update(Request $request, CollaboratingCompany $collaboratingCompany)
     {
         $this->ensureAdmin();
-        $collaboratingCompany->update($this->validatedData($request));
+        $data = $this->validatedData($request);
+        $imagePath = $this->storeCompanyImage($request, $collaboratingCompany->image_path);
+
+        if ($imagePath) {
+            $data['image_path'] = $imagePath;
+        }
+
+        $collaboratingCompany->update($data);
 
         return redirect()->route('collaborating-companies.index')
             ->with('success', 'Collaborating company updated successfully.');
@@ -94,6 +105,7 @@ class CollaboratingCompanyController extends Controller
     public function destroy(CollaboratingCompany $collaboratingCompany)
     {
         $this->ensureAdmin();
+        $this->deleteCompanyImage($collaboratingCompany->image_path);
         $collaboratingCompany->delete();
 
         return redirect()->route('collaborating-companies.index')
@@ -104,6 +116,7 @@ class CollaboratingCompanyController extends Controller
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
+            'company_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'industry' => ['nullable', 'string', 'max:255'],
             'collaboration_type' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:3000'],
@@ -122,10 +135,46 @@ class CollaboratingCompanyController extends Controller
             'social_links.youtube' => ['nullable', 'url', 'max:255'],
         ]);
 
+        unset($data['company_image']);
+
         $socialLinks = array_filter($data['social_links'] ?? [], fn ($value) => filled($value));
         $data['social_links'] = $socialLinks ?: null;
 
         return $data;
+    }
+
+    private function storeCompanyImage(Request $request, ?string $oldPath = null): ?string
+    {
+        if (! $request->hasFile('company_image')) {
+            return null;
+        }
+
+        $file = $request->file('company_image');
+        $directory = public_path('uploads/collaborating-companies');
+
+        if (! File::exists($directory)) {
+            File::makeDirectory($directory, 0755, true);
+        }
+
+        $filename = uniqid('company_', true) . '.' . $file->getClientOriginalExtension();
+        $file->move($directory, $filename);
+
+        $this->deleteCompanyImage($oldPath);
+
+        return 'uploads/collaborating-companies/' . $filename;
+    }
+
+    private function deleteCompanyImage(?string $path): void
+    {
+        if (! $path) {
+            return;
+        }
+
+        $fullPath = public_path($path);
+
+        if (File::exists($fullPath)) {
+            File::delete($fullPath);
+        }
     }
 
     private function isAdmin(): bool

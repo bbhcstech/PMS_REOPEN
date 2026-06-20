@@ -16,6 +16,7 @@ use App\Models\Task;
 use App\Models\ProjectActivity;
 use App\Models\UserActivity;
 use App\Models\ProjectCategory;
+use App\Models\ProjectUpdate;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Log;
@@ -29,14 +30,49 @@ class ProjectController extends Controller
 {
    public function index(Request $request)
 {
-    $query = Project::with(['client', 'users.employeeDetail'])->whereNull('deleted_at');
+    $query = Project::with(['client', 'users.employeeDetail', 'latestUpdate.employee'])->withCount('tasks')->whereNull('deleted_at');
+    $viewer = auth()->user();
+    $isEmployee = $viewer?->role === 'employee';
+
+    if ($isEmployee) {
+        $query->whereHas('users', fn ($user) => $user->where('users.id', auth()->id()));
+    } elseif ($viewer && $viewer->normalizedRole() !== 'admin') {
+        $visibleUserIds = $viewer->visibleEmployeeIds()->push($viewer->id)->unique()->values();
+        $query->whereHas('users', fn ($user) => $user->whereIn('users.id', $visibleUserIds));
+    }
 
     if ($request->filled('search')) {
-        $query->where('name', 'like', '%' . $request->search . '%');
+        $search = trim((string) $request->search);
+        $query->where(function ($q) use ($search) {
+            $q->where('name', 'like', '%' . $search . '%')
+                ->orWhere('project_code', 'like', '%' . $search . '%')
+                ->orWhereHas('client', function ($client) use ($search) {
+                    $client->where('name', 'like', '%' . $search . '%')
+                        ->orWhere('company_name', 'like', '%' . $search . '%');
+                });
+        });
     }
 
     if ($request->filled('status')) {
         $query->where('status', $request->status);
+    }
+
+    if ($request->filled('priority')) {
+        $query->where('priority', $request->priority);
+    }
+
+    if (! $isEmployee && $request->filled('employee_id')) {
+        $query->whereHas('users', fn ($user) => $user->where('users.id', $request->employee_id));
+    }
+
+    if ($request->filled('deadline_state') && $request->deadline_state === 'delayed') {
+        $query->whereNotNull('deadline')
+            ->whereDate('deadline', '<', Carbon::today())
+            ->whereNotIn('status', ['completed']);
+    }
+
+    if (! $isEmployee && $request->filled('client_id')) {
+        $query->where('client_id', $request->client_id);
     }
 
     if ($request->filled('start_date')) {
@@ -59,10 +95,10 @@ class ProjectController extends Controller
     $projects = $query->orderBy('created_at', 'desc')->get();
 
     // ensure the users collection used for filters/UI also includes employeeDetail
-    $users = User::with('employeeDetail')->select('id','name')->get();
+    $users = User::with('employeeDetail')->select('id','name')->where('role', 'employee')->orderBy('name')->get();
 
     $departments = Department::with('parent')->latest()->get();
-    $clients = Client::all();
+    $clients = $isEmployee ? collect() : Client::all();
 
     return view('admin.projects.index', compact('projects','users','departments','clients'));
 }
@@ -70,9 +106,13 @@ class ProjectController extends Controller
 
 public function create()
 {
+    abort_unless(auth()->user()?->role === 'admin', 403);
+
     $clients        = Client::all();
 $users = User::select('users.id', 'users.name', 'employee_details.employee_id')
     ->join('employee_details', 'employee_details.user_id', '=', 'users.id')
+    ->where('users.role', 'employee')
+    ->orderBy('users.name')
     ->get();
 
 
@@ -93,7 +133,7 @@ $users = User::select('users.id', 'users.name', 'employee_details.employee_id')
     $fyEnd   = $fyStart + 1;
 
     $fyString = substr($fyStart, -2) . '-' . substr($fyEnd, -2);
-    $prefix   = 'Xink' . $fyString . '/';
+    $prefix   = 'bit' . $fyString . '/';
 
     $last = DB::table('projects')
         ->where('project_code', 'like', $prefix.'%')
@@ -129,17 +169,24 @@ $users = User::select('users.id', 'users.name', 'employee_details.employee_id')
 
 public function store(Request $request)
 {
+    abort_unless(auth()->user()?->role === 'admin', 403);
+
     Log::info('Project Request:', $request->all());
 
     $rules = [
         'name' => 'required|string|max:255',
         'start_date' => 'nullable|date',
         'without_deadline' => 'nullable',
-        'employee_ids'   => 'sometimes|array',
+        'employee_ids'   => 'required|array|min:1',
         'employee_ids.*' => 'integer|exists:users,id',
+        'department_ids'   => 'required|array|min:1',
+        'department_ids.*' => 'integer|exists:departments,id',
         'currency_id' => 'nullable|integer',
         'project_budget' => 'nullable|numeric',
         'hours_allocated' => 'nullable|numeric',
+        'priority' => 'nullable|in:low,medium,high,critical',
+        'completion_percent' => 'nullable|integer|min:0|max:100',
+        'remarks' => 'nullable|string|max:3000',
     ];
 
     if (!$request->boolean('without_deadline')) {
@@ -167,7 +214,7 @@ public function store(Request $request)
             $fyEnd = $fyStart + 1;
             $fyString = substr($fyStart, -2) . '-' . substr($fyEnd, -2);
 
-            $prefix = 'Xink' . $fyString . '/';
+            $prefix = 'bit' . $fyString . '/';
             $like = $prefix . '%';
 
             $last = DB::table('projects')
@@ -193,11 +240,14 @@ public function store(Request $request)
     try {
         $project = Project::create([
             'client_id' => $request->client_id,
+            'created_by' => auth()->id(),
             'name' => $request->name,
             'project_code' => $projectCode,
             'category_id' => $request->category_id,
-            'department_id' => $request->department_id,
+            'department_id' => collect($request->input('department_ids', []))->first() ?: $request->input('department_id'),
             'notes' => $request->notes,
+            'remarks' => $request->remarks,
+            'priority' => $request->input('priority', 'medium'),
             'public_gantt_chart' => $request->has('public_gantt_chart') ? 1 : 0,
             'public_taskboard' => $request->has('public_taskboard') ? 1 : 0,
             'client_access' => $request->has('client_access') ? 1 : 0,
@@ -210,6 +260,7 @@ public function store(Request $request)
             'currency_id' => $request->currency_id,
             'project_budget' => $request->project_budget,
             'hours_allocated' => $request->hours_allocated,
+            'completion_percent' => (int) $request->input('completion_percent', 0),
             'enable_miroboard' => $request->has('enable_miroboard') ? 1 : 0,
             'allow_client_notification' => $request->has('allow_client_notification') ? 1 : 0,
             'manual_timelog' => $request->has('manual_timelog') ? 1 : 0,
@@ -241,10 +292,14 @@ public function store(Request $request)
         ]);
 
         // sync members from form (employee_ids)
-        $project->users()->sync($request->input('employee_ids', []));
+        $this->syncProjectAssignments($project, $request->input('employee_ids', []));
+        if ($request->has('department_ids')) {
+            $project->departments()->sync($request->input('department_ids', []));
+        }
 
         // load users for log verification
-        $project->load('users');
+        $project->load(['users', 'departments']);
+        $this->recordProjectUpdate($project, $project->status, (int) ($project->completion_percent ?? 0), $project->remarks, auth()->id());
         Log::info('Project created with users:', ['project' => $project->toArray(), 'users' => $project->users->pluck('id','name')->toArray()]);
 
         return redirect()->route('projects.index')->with('success', 'Project created successfully.');
@@ -261,12 +316,16 @@ public function store(Request $request)
 
 public function edit($id)
 {
+    abort_unless(auth()->user()?->role === 'admin', 403);
+
     $project = Project::with('users')->findOrFail($id);
 
     $clients        = Client::all();
     // eager-load employeeDetail to avoid N+1
     $users = User::select('users.id', 'users.name', 'employee_details.employee_id')
     ->join('employee_details', 'employee_details.user_id', '=', 'users.id')
+    ->where('users.role', 'employee')
+    ->orderBy('users.name')
     ->get();
 
     $categories     = ProjectCategory::all();
@@ -295,6 +354,8 @@ public function edit($id)
 
  public function update(Request $request, $id)
 {
+    abort_unless(auth()->user()?->role === 'admin', 403);
+
     Log::info('Project Update Request:', $request->all());
 
     $project = Project::findOrFail($id);
@@ -308,9 +369,14 @@ public function edit($id)
         'without_deadline'=> 'nullable',
         'employee_ids'    => 'sometimes|array',
         'employee_ids.*'  => 'integer|exists:users,id',
+        'department_ids'   => 'sometimes|array|min:1',
+        'department_ids.*' => 'integer|exists:departments,id',
         'currency_id'     => 'nullable|integer',
         'project_budget'  => 'nullable|numeric',
         'hours_allocated' => 'nullable|numeric',
+        'priority'        => 'nullable|in:low,medium,high,critical',
+        'completion_percent' => 'nullable|integer|min:0|max:100',
+        'remarks'         => 'nullable|string|max:3000',
     ];
 
     if (! $request->boolean('without_deadline')) {
@@ -330,8 +396,10 @@ public function edit($id)
             'name' => $validated['name'],
             'project_code' => $validated['project_code'] ?? $project->project_code,
             'category_id' => $request->input('category_id'),
-            'department_id' => $request->input('department_id'),
+            'department_id' => collect($request->input('department_ids', []))->first() ?: $request->input('department_id'),
             'notes' => $request->input('notes'),
+            'remarks' => $request->input('remarks'),
+            'priority' => $request->input('priority', $project->priority ?? 'medium'),
             'public_gantt_chart' => $request->has('public_gantt_chart') ? 1 : 0,
             'public_taskboard' => $request->has('public_taskboard') ? 1 : 0,
             'client_access' => $request->has('client_access') ? 1 : 0,
@@ -344,6 +412,7 @@ public function edit($id)
             'currency_id' => $request->input('currency_id'),
             'project_budget' => $request->input('project_budget'),
             'hours_allocated' => $request->input('hours_allocated'),
+            'completion_percent' => (int) $request->input('completion_percent', $project->completion_percent ?? 0),
             'enable_miroboard' => $request->has('enable_miroboard') ? 1 : 0,
             'allow_client_notification' => $request->has('allow_client_notification') ? 1 : 0,
             'manual_timelog' => $request->has('manual_timelog') ? 1 : 0,
@@ -382,10 +451,15 @@ public function edit($id)
 
         // Sync only if employee_ids present in request. This avoids unintentional clearing.
         if ($request->has('employee_ids')) {
-            $project->users()->sync($request->input('employee_ids', []));
+            $this->syncProjectAssignments($project, $request->input('employee_ids', []));
         }
 
-        $project->load('users');
+        if ($request->has('department_ids')) {
+            $project->departments()->sync($request->input('department_ids', []));
+        }
+
+        $project->load(['users', 'departments']);
+        $this->recordProjectUpdate($project, $project->status, (int) ($project->completion_percent ?? 0), $project->remarks, auth()->id());
 
         Log::info('Project updated with users:', [
             'project' => $project->toArray(),
@@ -405,24 +479,32 @@ public function edit($id)
 
     public function destroy($id)
     {
+        abort_unless(auth()->user()?->role === 'admin', 403);
         Project::destroy($id);
         return redirect()->route('projects.index')->with('success', 'Project deleted successfully.');
     }
 
     public function show($id)
     {
-        $project = Project::with(['client', 'users'])->findOrFail($id);
+        $project = Project::with(['client', 'users.employeeDetail'])->findOrFail($id);
+        $this->authorizeProjectAccess($project);
+
         return view('admin.projects.show', compact('project'));
     }
 
     public function ganttChart($projectId)
     {
         $project = Project::with('tasks')->findOrFail($projectId);
+        $this->authorizeProjectAccess($project);
+
         return view('admin.projects.gantt', compact('project'));
     }
 
     public function getGanttTasks($projectId)
     {
+        $project = Project::findOrFail($projectId);
+        $this->authorizeProjectAccess($project);
+
         $tasks = Task::where('project_id', $projectId)
             ->whereNotNull('start_date')
             ->whereNotNull('due_date')
@@ -537,6 +619,8 @@ public function clientstore(Request $request)
 
     public function duplicate(Request $request, $id)
     {
+        abort_unless(auth()->user()?->role === 'admin', 403);
+
         $request->validate([
             'project_name' => 'required|string|max:255',
             'start_date'   => 'required|date',
@@ -556,10 +640,10 @@ public function clientstore(Request $request)
         $newProject->client_id = $request->client_id;
         $newProject->public    = $request->boolean('public');
 
-        // Generate shortcode inline and save within a transaction to avoid collisions
+        // Generate project code inline and save within a transaction to avoid collisions.
         $newProject = DB::transaction(function () use ($newProject) {
 
-            $prefix = 'Xink';
+            $prefix = 'bit';
             $now = now();
             $y = (int) $now->format('Y');
             $m = (int) $now->format('n');
@@ -576,10 +660,10 @@ public function clientstore(Request $request)
             $like = $prefix . $fy . '/%';
 
             $last = DB::table('projects')
-                ->where('shortcode', 'like', $like)
+                ->where('project_code', 'like', $like)
                 ->lockForUpdate()
                 ->orderBy('id', 'desc')
-                ->value('shortcode');
+                ->value('project_code');
 
             $lastNum = 0;
             if ($last && preg_match('/\/(\d{4})$/', $last, $m)) {
@@ -587,10 +671,10 @@ public function clientstore(Request $request)
             }
 
             $next = str_pad($lastNum + 1, 4, '0', STR_PAD_LEFT);
-            $shortcode = $prefix . $fy . '/' . $next;
+            if (empty($newProject->project_code) || Project::where('project_code', $newProject->project_code)->exists()) {
+                $newProject->project_code = $prefix . $fy . '/' . $next;
+            }
 
-            // set shortcode and save
-            $newProject->shortcode = $shortcode;
             $newProject->save();
 
             return $newProject;
@@ -646,6 +730,8 @@ public function clientstore(Request $request)
     public function publicGantt($projectId)
     {
         $project = Project::with('tasks')->findOrFail($projectId);
+        $this->authorizeProjectAccess($project);
+
         return view('admin.projects.gantt-public', compact('project'));
     }
 
@@ -712,6 +798,8 @@ public function clientstore(Request $request)
 
   public function bulkStatus(Request $request)
 {
+    abort_unless(auth()->user()?->role === 'admin', 403);
+
     $request->validate([
         'ids' => 'required|array',
         'ids.*' => 'integer|exists:projects,id',
@@ -729,6 +817,7 @@ public function clientstore(Request $request)
             $old = $project->status;
             $project->status = $status;
             $project->save();
+            $this->recordProjectUpdate($project, $status, (int) ($project->completion_percent ?? 0), $project->remarks, auth()->id());
 
             ProjectActivity::create([
                 'project_id' => $project->id,
@@ -771,15 +860,18 @@ public function toggleStatus(Request $request, $id)
 
     // canonical DB enum values (exact)
     $allowed = [
+        'pending',
         'not started',
         'in progress',
         'on hold',
         'completed',
+        'delayed',
     ];
 
     // map incoming variants to canonical DB enum values
     $map = [
         // not started
+        'pending' => 'pending',
         'not started' => 'not started',
         'notstarted'  => 'not started',
         'not-started' => 'not started',
@@ -802,6 +894,8 @@ public function toggleStatus(Request $request, $id)
         'complete'  => 'completed',
         'finished'  => 'completed',
         'done'      => 'completed',
+        'delayed'   => 'delayed',
+        'delay'     => 'delayed',
 
         // canceled/cancelled -> map to on hold (DB has no cancelled/canceled)
         'canceled'  => 'on hold',
@@ -835,7 +929,9 @@ public function toggleStatus(Request $request, $id)
 
     DB::beginTransaction();
     try {
-        $project = Project::findOrFail($id);
+        $project = Project::with('users:id')->findOrFail($id);
+        $this->authorizeProjectAccess($project);
+
         $oldStatus = $project->status;
 
         if ($oldStatus === $status) {
@@ -849,6 +945,7 @@ public function toggleStatus(Request $request, $id)
 
         $project->status = $status;
         $project->save();
+        $this->recordProjectUpdate($project, $status, (int) ($project->completion_percent ?? 0), $project->remarks, auth()->id());
 
         // explicit activity logging to avoid mass assignment issues
         $pa = new ProjectActivity();
@@ -883,10 +980,50 @@ public function toggleStatus(Request $request, $id)
     }
 }
 
+public function storeUpdate(Request $request, Project $project)
+{
+    $this->authorizeProjectAccess($project);
+
+    $user = auth()->user();
+    $isEmployee = strtolower((string) $user?->role) === 'employee';
+
+    if ($isEmployee) {
+        $project->loadMissing('users:id');
+        abort_unless($project->users->contains('id', $user->id), 403);
+    } else {
+        abort_unless($user && $user->role === 'admin', 403);
+    }
+
+    $validated = $request->validate([
+        'status' => ['required', Rule::in(['pending', 'not started', 'in progress', 'on hold', 'completed', 'delayed'])],
+        'progress' => ['required', 'integer', 'min:0', 'max:100'],
+        'remarks' => ['nullable', 'string', 'max:3000'],
+    ]);
+
+    DB::transaction(function () use ($project, $validated, $user) {
+        $project->forceFill([
+            'status' => $validated['status'],
+            'completion_percent' => $validated['progress'],
+            'remarks' => $validated['remarks'] ?? $project->remarks,
+        ])->save();
+
+        $this->recordProjectUpdate($project, $validated['status'], (int) $validated['progress'], $validated['remarks'] ?? null, $user->id);
+
+        ProjectActivity::create([
+            'project_id' => $project->id,
+            'activity' => $user->name . ' updated project status to ' . $validated['status'] . ' with ' . $validated['progress'] . '% progress.',
+        ]);
+    });
+
+    return back()->with('success', 'Project update saved successfully.');
+}
+
 
 
 public function bulkDelete(Request $request)
 {
+    abort_unless(auth()->user()?->role === 'admin', 403);
+
     $ids = $request->input('ids', []);
 
     if (empty($ids)) {
@@ -902,6 +1039,124 @@ public function bulkDelete(Request $request)
         'success' => true,
         'deleted' => $deletedCount,
     ]);
+}
+
+private function authorizeProjectAccess(Project $project): void
+{
+    $user = auth()->user();
+
+    if (! $user) {
+        abort(403);
+    }
+
+    if ($user->role === 'admin') {
+        return;
+    }
+
+    if ($user->role === 'employee') {
+        $project->loadMissing('users:id');
+        abort_unless($project->users->contains('id', $user->id), 403);
+        return;
+    }
+
+    abort(403);
+}
+
+private function syncProjectAssignments(Project $project, array $employeeIds): void
+{
+    $sync = [];
+
+    foreach (collect($employeeIds)->filter()->unique() as $employeeId) {
+        $sync[$employeeId] = [
+            'assigned_by' => auth()->id(),
+            'assigned_at' => now(),
+            'role' => 'Project Member',
+        ];
+    }
+
+    $project->users()->sync($sync);
+}
+
+private function recordProjectUpdate(Project $project, ?string $status, int $progress, ?string $remarks, ?int $updatedBy): void
+{
+    ProjectUpdate::create([
+        'project_id' => $project->id,
+        'employee_id' => auth()->user()?->role === 'employee' ? auth()->id() : null,
+        'status' => $status,
+        'progress' => max(0, min(100, $progress)),
+        'remarks' => $remarks,
+        'updated_by' => $updatedBy,
+    ]);
+}
+
+public function import(Request $request)
+{
+    abort_unless(auth()->user()?->role === 'admin', 403);
+
+    $request->validate([
+        'project_import' => ['required', 'file', 'mimes:csv,txt', 'max:4096'],
+    ]);
+
+    $handle = fopen($request->file('project_import')->getRealPath(), 'r');
+    if (! $handle) {
+        return back()->withErrors(['project_import' => 'Unable to read the uploaded CSV file.']);
+    }
+
+    $header = fgetcsv($handle);
+    if (! $header) {
+        fclose($handle);
+        return back()->withErrors(['project_import' => 'CSV file is empty.']);
+    }
+
+    $columns = array_map(fn ($value) => strtolower(trim((string) $value)), $header);
+    $created = 0;
+    $allowedStatuses = ['not started', 'in progress', 'on hold', 'completed'];
+
+    DB::beginTransaction();
+    try {
+        while (($row = fgetcsv($handle)) !== false) {
+            $data = array_combine($columns, array_pad($row, count($columns), null));
+            $name = trim((string) ($data['name'] ?? $data['project name'] ?? ''));
+
+            if ($name === '') {
+                continue;
+            }
+
+            $status = strtolower(trim((string) ($data['status'] ?? 'not started')));
+            if (! in_array($status, $allowedStatuses, true)) {
+                $status = 'not started';
+            }
+
+            $projectCode = trim((string) ($data['project_code'] ?? $data['code'] ?? ''));
+            if ($projectCode !== '' && Project::where('project_code', $projectCode)->exists()) {
+                $projectCode = null;
+            }
+
+            Project::create([
+                'name' => $name,
+                'project_code' => $projectCode ?: null,
+                'client_id' => filled($data['client_id'] ?? null) ? (int) $data['client_id'] : null,
+                'description' => $data['description'] ?? null,
+                'start_date' => filled($data['start_date'] ?? null) ? $data['start_date'] : null,
+                'deadline' => filled($data['deadline'] ?? null) ? $data['deadline'] : null,
+                'status' => $status,
+                'completion_percent' => max(0, min(100, (int) ($data['completion_percent'] ?? $data['progress'] ?? 0))),
+            ]);
+
+            $created++;
+        }
+
+        fclose($handle);
+        DB::commit();
+
+        return redirect()->route('projects.index')->with('success', $created . ' project(s) imported successfully.');
+    } catch (\Throwable $e) {
+        fclose($handle);
+        DB::rollBack();
+        Log::error('Project import failed: ' . $e->getMessage());
+
+        return back()->withErrors(['project_import' => 'Project import failed. Please check the CSV format.']);
+    }
 }
 
 

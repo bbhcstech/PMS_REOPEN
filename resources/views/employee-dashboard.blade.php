@@ -10,6 +10,7 @@
     $clockInLabel = $attendance && $attendance->clock_in ? Carbon::parse($attendance->clock_in)->format('h:i A') : 'Not Clocked In';
     $clockOutLabel = $attendance && $attendance->clock_out ? Carbon::parse($attendance->clock_out)->format('h:i A') : 'Pending';
     $todayStatus = $attendance && $attendance->status ? str_replace('_', ' ', ucfirst($attendance->status)) : 'No Entry';
+    $workedDurationLabel = $attendance && $attendance->clock_in && $attendance->clock_out ? $attendance->total_duration : '00:00:00';
 
     $weekDays = collect(CarbonPeriod::create(now()->startOfWeek(), now()->endOfWeek()));
     $weeklyLabels = [];
@@ -28,15 +29,7 @@
         $hours = 0;
 
         if ($entry && $entry->clock_in && $entry->clock_out) {
-            try {
-                $in = Carbon::parse($entry->clock_in);
-                $out = Carbon::parse($entry->clock_out);
-                if ($out->greaterThan($in)) {
-                    $hours = round($in->diffInMinutes($out) / 60, 1);
-                }
-            } catch (\Throwable $e) {
-                $hours = 0;
-            }
+            $hours = round(((int) ($entry->total_seconds ?? 0)) / 3600, 1);
         }
 
         $weeklyHours[] = $hours;
@@ -265,18 +258,20 @@
         gap: 8px;
         border-radius: 12px;
         padding: 11px 16px;
-        color: #064e3b;
-        background: #d1fae5;
+        color: #fff !important;
+        -webkit-text-fill-color: #fff !important;
+        background: rgba(18, 166, 106, 0.92);
+        border: 1px solid rgba(255, 255, 255, 0.42);
+        box-shadow: 0 14px 30px rgba(18, 166, 106, 0.28);
         font-weight: 800;
     }
 
     .clock-requirements {
         margin-top: 12px;
         max-width: 360px;
-        padding: 12px;
-        border-radius: 14px;
-        background: rgba(255, 255, 255, 0.16);
-        border: 1px solid rgba(255, 255, 255, 0.3);
+        padding: 0;
+        background: transparent;
+        border: 0;
         color: #fff;
         font-size: 0.92rem;
         font-weight: 800;
@@ -287,13 +282,19 @@
         align-items: center;
         gap: 8px;
         margin-bottom: 6px;
+        color: #fff;
+    }
+
+    .clock-status-line.is-error {
+        color: #ff3b3b !important;
+        -webkit-text-fill-color: #ff3b3b !important;
     }
 
     .clock-status-line:last-child {
         margin-bottom: 0;
     }
 
-    .clock-selfie-card {
+    .clock-attendance-card {
         margin-top: 14px;
         width: min(360px, 100%);
         padding: 12px;
@@ -303,7 +304,7 @@
         color: #fff;
     }
 
-    .clock-selfie-card img {
+    .clock-attendance-card img {
         width: 100%;
         max-height: 220px;
         object-fit: cover;
@@ -330,8 +331,7 @@
         font-size: 1.05rem;
     }
 
-    .clock-location-note,
-    .clock-policy-warning {
+    .clock-location-note {
         margin-top: 12px;
         padding: 11px 12px;
         border-radius: 12px;
@@ -354,11 +354,13 @@
         opacity: 0.82;
     }
 
-    .clock-policy-warning {
-        background: #fee2e2;
-        border: 1px solid #fca5a5;
-        color: #991b1b;
-        box-shadow: 0 10px 24px rgba(153, 27, 27, 0.18);
+    .clock-policy-warning-text {
+        margin: 10px 0 0;
+        color: #ff2d2d !important;
+        -webkit-text-fill-color: #ff2d2d !important;
+        font-weight: 900;
+        line-height: 1.35;
+        text-shadow: none;
     }
 
     .clock-camera-modal {
@@ -1032,7 +1034,7 @@
 
             <div class="employee-welcome-stage">
                 <img src="{{ asset('logos/Bengal IT Hub_05.png') }}" alt="Bengal IT Hub" class="employee-welcome-logo">
-                <h2 class="employee-welcome-title">Welcome to our Bengal IT Hub, {{ $user->name }}</h2>
+                <h2 class="employee-welcome-title">{{ $currentCompany?->greeting_message ?: 'Welcome to' }} {{ $currentCompany?->display_name ?? 'our company' }}, {{ $user->name }}</h2>
                 <p class="employee-welcome-message">
                     We are delighted to have you with us. Wishing you a confident start, meaningful growth, strong teamwork, and a successful journey with our organization.
                 </p>
@@ -1123,8 +1125,8 @@
                             @endif
 
                             @if($attendance && $attendance->clock_in)
-                                <div class="clock-selfie-card">
-                                    @if($attendance->clock_in_photo)
+                                <div class="clock-attendance-card">
+                                    @if($attendance->clock_in_photo && !$attendance->clock_out)
                                         <img src="{{ asset($attendance->clock_in_photo) }}" alt="Clock in photo">
                                     @endif
                                     @php
@@ -1144,10 +1146,10 @@
                                         </div>
                                     @endif
                                     @if($clockedInOutsideOffice)
-                                        <div class="clock-policy-warning">
+                                        <p class="clock-policy-warning-text">
                                             <i class="bx bx-error-circle me-1"></i>
                                             You did not clock in from the organization area. This may affect your appraisal later. Please maintain the office policy properly.
-                                        </div>
+                                        </p>
                                     @endif
                                     <div class="clock-live-grid">
                                         <div class="clock-live-box">
@@ -1155,8 +1157,13 @@
                                             <strong id="employeeIstClock">{{ now()->format('h:i:s A') }}</strong>
                                         </div>
                                         <div class="clock-live-box">
-                                            <span>Working Time</span>
-                                            <strong id="employeeWorkTimer" data-clock-in="{{ \Carbon\Carbon::parse($attendance->date->format('Y-m-d') . ' ' . $attendance->clock_in)->toIso8601String() }}">00:00:00</strong>
+                                            <span>{{ $attendance->clock_out ? 'Worked Time' : 'Working Time' }}</span>
+                                            <strong
+                                                id="employeeWorkTimer"
+                                                data-clock-in="{{ \Carbon\Carbon::parse($attendance->date->format('Y-m-d') . ' ' . $attendance->clock_in)->toIso8601String() }}"
+                                                data-clock-out="{{ $attendance->clock_out ? \Carbon\Carbon::parse($attendance->date->format('Y-m-d') . ' ' . $attendance->clock_out)->toIso8601String() : '' }}"
+                                                data-fixed-duration="{{ $attendance->clock_out ? $workedDurationLabel : '' }}"
+                                            >{{ $attendance->clock_out ? $workedDurationLabel : '00:00:00' }}</strong>
                                         </div>
                                     </div>
                                 </div>
@@ -1769,7 +1776,8 @@
             }
 
             const icon = type === 'success' ? 'bx-check-circle' : (type === 'error' ? 'bx-error-circle' : 'bx-info-circle');
-            requirementStatus.innerHTML = `<div class="clock-status-line"><i class="bx ${icon}"></i><span>${message}</span></div>`;
+            const className = type === 'error' ? 'clock-status-line is-error' : 'clock-status-line';
+            requirementStatus.innerHTML = `<div class="${className}"><i class="bx ${icon}"></i><span>${message}</span></div>`;
         };
 
         const distanceInMeters = (lat1, lng1, lat2, lng2) => {
@@ -1834,6 +1842,47 @@
             });
         });
 
+        const compactAddress = address => {
+            if (!address || typeof address !== 'object') {
+                return '';
+            }
+
+            const parts = [
+                address.road,
+                address.neighbourhood || address.suburb || address.quarter,
+                address.city || address.town || address.village || address.municipality,
+                address.county || address.state_district,
+                address.state,
+                address.postcode
+            ];
+
+            return [...new Set(parts.filter(Boolean))]
+                .join(', ')
+                .slice(0, 180);
+        };
+
+        const reverseGeocodeLocation = async (lat, lng) => {
+            const url = new URL('https://nominatim.openstreetmap.org/reverse');
+            url.searchParams.set('format', 'jsonv2');
+            url.searchParams.set('lat', lat);
+            url.searchParams.set('lon', lng);
+            url.searchParams.set('zoom', '18');
+            url.searchParams.set('addressdetails', '1');
+
+            const response = await fetch(url.toString(), {
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Location name lookup failed.');
+            }
+
+            const data = await response.json();
+            return compactAddress(data.address) || (data.display_name || '').slice(0, 180);
+        };
+
         if (clockInForm) {
             clockInForm.addEventListener('submit', async event => {
                 if (canSubmitClockIn) {
@@ -1849,13 +1898,24 @@
                     const currentLat = position.coords.latitude;
                     const currentLng = position.coords.longitude;
                     const distance = distanceInMeters(officeLocation.lat, officeLocation.lng, currentLat, currentLng);
+                    const coordinateLabel = `${currentLat.toFixed(8)}, ${currentLng.toFixed(8)} (${distance.toFixed(1)}m from office)`;
 
                     latitudeInput.value = currentLat.toFixed(8);
                     longitudeInput.value = currentLng.toFixed(8);
                     accuracyInput.value = Math.round(position.coords.accuracy || 0);
-                    addressInput.value = `Current location: ${currentLat.toFixed(8)}, ${currentLng.toFixed(8)} (${distance.toFixed(1)}m from office)`;
 
-                    setClockStatus(`You are ${distance.toFixed(1)} meters from office. Opening camera...`, 'success');
+                    setClockStatus('Finding exact location name...', 'info');
+                    try {
+                        const placeName = await reverseGeocodeLocation(currentLat, currentLng);
+                        addressInput.value = placeName
+                            ? `${placeName} | ${coordinateLabel}`
+                            : `Current location: ${coordinateLabel}`;
+                        setClockStatus(`${placeName || 'Location captured'} detected. Opening camera...`, 'success');
+                    } catch (lookupError) {
+                        addressInput.value = `Current location: ${coordinateLabel}`;
+                        setClockStatus(`Location captured. Opening camera...`, 'success');
+                    }
+
                     await openCamera();
                 } catch (error) {
                     setClockStatus(error.message || 'Please allow current location and camera permission to clock in.', 'error');
@@ -1929,8 +1989,17 @@
             }
 
             if (workTimer && workTimer.dataset.clockIn) {
+                if (workTimer.dataset.fixedDuration) {
+                    workTimer.textContent = workTimer.dataset.fixedDuration;
+                    return;
+                }
+
                 const started = new Date(workTimer.dataset.clockIn);
-                const diffSeconds = Math.max(0, Math.floor((now - started) / 1000));
+                const ended = workTimer.dataset.clockOut ? new Date(workTimer.dataset.clockOut) : now;
+                if (workTimer.dataset.clockOut && ended < started) {
+                    ended.setDate(ended.getDate() + 1);
+                }
+                const diffSeconds = Math.max(0, Math.floor((ended - started) / 1000));
                 const hours = String(Math.floor(diffSeconds / 3600)).padStart(2, '0');
                 const minutes = String(Math.floor((diffSeconds % 3600) / 60)).padStart(2, '0');
                 const seconds = String(diffSeconds % 60).padStart(2, '0');
@@ -1940,6 +2009,35 @@
 
         updateClockWidgets();
         setInterval(updateClockWidgets, 1000);
+
+        const scheduleMidnightRefresh = () => {
+            const now = new Date();
+            const midnight = new Date(now);
+            midnight.setHours(24, 0, 3, 0);
+            setTimeout(() => window.location.reload(), Math.max(1000, midnight - now));
+        };
+
+        scheduleMidnightRefresh();
+
+        const loadedDateKey = new Intl.DateTimeFormat('en-CA', {
+            timeZone: 'Asia/Kolkata',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        }).format(new Date());
+
+        setInterval(() => {
+            const currentDateKey = new Intl.DateTimeFormat('en-CA', {
+                timeZone: 'Asia/Kolkata',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            }).format(new Date());
+
+            if (currentDateKey !== loadedDateKey) {
+                window.location.reload();
+            }
+        }, 60000);
 
         if (typeof ApexCharts === 'undefined') {
             return;

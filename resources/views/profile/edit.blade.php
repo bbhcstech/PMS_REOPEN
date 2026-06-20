@@ -4,6 +4,10 @@
 
 @section('content')
 
+@php
+  $logoVersion = file_exists(public_path('logo.png')) ? filemtime(public_path('logo.png')) : time();
+@endphp
+
   <main id="main" class="main">
     <div class="container mt-4">
 
@@ -16,13 +20,13 @@
           @if(Auth::user()->role === 'admin')
 
           <a href="{{route('dashboard')}}" class="logo d-flex align-items-center">
-            <img src="admin/assets/img/logo.png" alt="">
+            <img src="{{ asset('logo.png') }}?v={{ $logoVersion }}" alt="">
             <span class="d-none d-lg-block">Micro Poem Admin</span>
           </a>
           @elseif(Auth::user()->role === 'manager')
 
           <a href="{{route('manager.dashboard')}}" class="logo d-flex align-items-center">
-            <img src="admin/assets/img/logo.png" alt="">
+            <img src="{{ asset('logo.png') }}?v={{ $logoVersion }}" alt="">
             <span class="d-none d-lg-block">Micro Poem Manager</span>
           </a>
 

@@ -11,6 +11,7 @@ class Designation extends Model
 
     protected $fillable = [
         'order',             // DB column name
+        'company_id',
         'name',
         'parent_id',
         'unique_code',
