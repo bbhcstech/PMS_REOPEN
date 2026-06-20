@@ -150,12 +150,11 @@
                                         <tr>
                                             <td class="text-muted text-start">Assigned To</td>
                                             <td class="text-start">
-                                                @if($task->assignee)
-                                                    <img src="{{ $task->assignee->avatar ?? '/default.png' }}" class="rounded-circle" width="24" height="24" alt="">
-                                                    <span class="ms-1">{{ $task->assignee->name }}</span>
-                                                @else
-                                                    --
-                                                @endif
+                                                @forelse($task->assignees as $assignee)
+                                                    <span class="badge bg-light text-dark border me-1 mb-1">{{ $assignee->name }}</span>
+                                                @empty
+                                                    {{ $task->assignee?->name ?? '--' }}
+                                                @endforelse
                                             </td>
                                         </tr>
                                         <tr>
@@ -308,6 +307,51 @@
 
                             <p class="mb-1 small text-muted">Hours Logged</p>
                             <p class="fw-semibold">{{ $task->total_logged_formatted ?? '0h 0m 0s' }}</p> {{-- Replace if dynamic --}}
+
+                            <hr>
+                            <form id="taskStatusUpdateForm" data-task-id="{{ $task->id }}">
+                                @csrf
+                                <div class="mb-3">
+                                    <label class="form-label small text-muted">Status</label>
+                                    <select name="status" class="form-select status-dropdown" data-task-id="{{ $task->id }}">
+                                        @foreach(['To Do', 'Doing', 'Incomplete', 'Completed'] as $status)
+                                            <option value="{{ $status }}" @selected($task->status === $status)>{{ $status }}</option>
+                                        @endforeach
+                                        @if($task->status === 'Waiting for Approval')
+                                            <option value="Waiting for Approval" selected>Waiting for Approval</option>
+                                        @endif
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small text-muted">Progress (%)</label>
+                                    <input type="number" name="progress" class="form-control" min="0" max="100" value="{{ (int) ($task->progress ?? 0) }}">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small text-muted">Work Remarks</label>
+                                    <textarea name="remarks" class="form-control" rows="3" maxlength="2000">{{ $task->remarks }}</textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">Update Work</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="card shadow-sm mt-3">
+                        <div class="card-body">
+                            <h6 class="fw-bold">Latest Updates</h6>
+                            @forelse($task->updates->take(5) as $update)
+                                <div class="border-bottom py-2">
+                                    <div class="d-flex justify-content-between">
+                                        <strong>{{ $update->user?->name ?? 'System' }}</strong>
+                                        <small class="text-muted">{{ $update->created_at->format('d-m-Y h:i A') }}</small>
+                                    </div>
+                                    <small class="text-muted">{{ $update->status ?? '--' }} / {{ (int) $update->progress }}%</small>
+                                    @if($update->remarks)
+                                        <p class="mb-0 small">{{ $update->remarks }}</p>
+                                    @endif
+                                </div>
+                            @empty
+                                <p class="text-muted small mb-0">No task updates yet.</p>
+                            @endforelse
                         </div>
                     </div>
                 </div>
@@ -429,6 +473,38 @@
   });
   
   $(document).ready(function () {
+    $('#taskStatusUpdateForm').on('submit', function (event) {
+        event.preventDefault();
+
+        const form = $(this);
+        const taskId = form.data('task-id');
+
+        $.ajax({
+            url: "{{ url('/tasks') }}/" + taskId + "/update-status",
+            type: "POST",
+            data: form.serialize(),
+            success: function (response) {
+                if (response.success) {
+                    const badge = $('.card-body .badge').first();
+                    const status = response.status;
+                    const colorMap = {
+                        'Incomplete': 'danger',
+                        'Completed': 'success',
+                        'To Do': 'secondary',
+                        'Doing': 'info',
+                        'Waiting for Approval': 'dark'
+                    };
+                    badge.removeClass().addClass('badge bg-' + (colorMap[status] || 'secondary')).text(status);
+                    alert('Task update saved.');
+                    location.reload();
+                }
+            },
+            error: function (xhr) {
+                alert(xhr.responseJSON?.message || 'Task update failed.');
+            }
+        });
+    });
+
     $('.status-dropdown').each(function () {
         $(this).data('prev', $(this).val());
     });

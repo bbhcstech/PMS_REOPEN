@@ -1,0 +1,22 @@
+CREATE TABLE IF NOT EXISTS `collaborating_companies` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `image_path` varchar(255) DEFAULT NULL,
+  `industry` varchar(255) DEFAULT NULL,
+  `collaboration_type` varchar(255) DEFAULT NULL,
+  `description` text,
+  `services` text,
+  `contact_person` varchar(255) DEFAULT NULL,
+  `contact_email` varchar(255) DEFAULT NULL,
+  `contact_phone` varchar(255) DEFAULT NULL,
+  `website` varchar(255) DEFAULT NULL,
+  `social_links` json DEFAULT NULL,
+  `status` varchar(255) NOT NULL DEFAULT 'active',
+  `started_on` date DEFAULT NULL,
+  `notes` text,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `collaborating_companies_name_index` (`name`),
+  KEY `collaborating_companies_status_index` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

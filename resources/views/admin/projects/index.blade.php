@@ -1,1038 +1,2123 @@
 @extends('admin.layout.app')
 
+@section('title', 'Projects')
+
 @section('content')
-<main id="main" class="main">
-    <div class="container">
-      &nbsp;
-      <h4>Projects</h4>
-       &nbsp;
+@php
+    $isAdmin = auth()->user()?->role === 'admin';
+    $isEmployee = auth()->user()?->role === 'employee';
+    $statusOptions = [
+        'pending' => 'Pending',
+        'not started' => 'Not Started',
+        'in progress' => 'In Progress',
+        'on hold' => 'On Hold',
+        'completed' => 'Completed',
+        'delayed' => 'Delayed',
+    ];
+    $priorityOptions = [
+        'low' => 'Low',
+        'medium' => 'Medium',
+        'high' => 'High',
+        'critical' => 'Critical',
+    ];
+    $progressOptions = [
+        '0-20' => '0% - 20%',
+        '21-40' => '21% - 40%',
+        '41-60' => '41% - 60%',
+        '61-80' => '61% - 80%',
+        '81-99' => '81% - 99%',
+        '100-100' => '100%',
+    ];
+@endphp
 
-        {{-- CSRF meta for ajax/fetch --}}
-        <meta name="csrf-token" content="{{ csrf_token() }}">
+<main class="projects-page">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <!-- Search/Filter Form -->
-        <form method="GET" action="{{ route('projects.index') }}" class="row g-3 align-items-end mb-4">
-
-            <div class="col-md-2">
-                <label for="start_date" class="form-label">Start Date</label>
-                <input type="date" name="start_date" id="start_date" class="form-control" value="{{ request('start_date') }}">
-            </div>
-
-            <div class="col-md-2">
-                <label for="end_date" class="form-label">End Date</label>
-                <input type="date" name="end_date" id="end_date" class="form-control" value="{{ request('end_date') }}">
-            </div>
-
-            <div class="col-md-2">
-                <label for="status" class="form-label">Status</label>
-                <select name="status" id="status" class="form-select">
-                    <option value="">All Status</option>
-                    <option value="in progress" {{ request('status') == 'in progress' ? 'selected' : '' }}>In Progress</option>
-                    <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Completed</option>
-                </select>
-            </div>
-
-           <div class="col-md-3">
-                <label for="progress" class="form-label">Progress</label>
-                <select class="form-select select2" multiple name="progress[]" id="progress" data-live-search="true" data-size="8">
-                    <option value="0-20" {{ in_array('0-20', request('progress', [])) ? 'selected' : '' }}>0% - 20%</option>
-                    <option value="21-40" {{ in_array('21-40', request('progress', [])) ? 'selected' : '' }}>21% - 40%</option>
-                    <option value="41-60" {{ in_array('41-60', request('progress', [])) ? 'selected' : '' }}>41% - 60%</option>
-                    <option value="61-80" {{ in_array('61-80', request('progress', [])) ? 'selected' : '' }}>61% - 80%</option>
-                    <option value="81-99" {{ in_array('81-99', request('progress', [])) ? 'selected' : '' }}>81% - 99%</option>
-                    <option value="100-100" {{ in_array('100-100', request('progress', [])) ? 'selected' : '' }}>100%</option>
-                </select>
-            </div>
-
-            <div class="col-md-3">
-                <label for="search" class="form-label">Project Name</label>
-                <input type="text" name="search" id="search" class="form-control" placeholder="Search project..." value="{{ request('search') }}">
-            </div>
-
-            <div class="col-md-3 d-flex align-items-end">
-                <button type="submit" class="btn btn-primary me-2">Filter</button>
-                <a href="{{ route('projects.index') }}" class="btn btn-secondary">Reset</a>
-            </div>
-        </form>
-
-&nbsp;
-      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
-
-    <!-- Left: Add Project Button (only for admin) -->
-    @if(auth()->user()->role === 'admin')
-        <div class="mb-2">
-            <a href="{{ route('projects.create') }}" class="btn btn-primary">
-                <i class="bi bi-plus-circle me-1"></i> Add Project
-            </a>
-        </div>
-    @else
-        <div></div> <!-- Empty div to maintain spacing for employee -->
-    @endif
-
-    <!-- Right: Icon Buttons (always right-aligned for employee & admin) -->
-    <div class="btn-group mb-2 ms-auto" role="group">
-
-         <div class="d-flex align-items-center mb-3">
-            <div class="btn-group align-items-center" role="group">
-                <!-- Bulk status select (values match DB enum) -->
-                <select id="bulkProjectStatus" class="form-select form-select-sm" disabled>
-                    <option value="">Change Status</option>
-                    <option value="not started">Not Started</option>
-                    <option value="in progress">In Progress</option>
-                    <option value="on hold">On Hold</option>
-                    <option value="completed">Completed</option>
-                </select>
-
-                <!-- Apply button -->
-                <button id="applyBulkProjectStatus" class="btn btn-primary btn-sm ms-2" disabled>Apply</button>
-            </div>
-        </div>
-
-        &nbsp;
-        <!-- Projects -->
-        <a href="{{ route('projects.index') }}" class="btn btn-secondary f-14 btn-active projects"
-           data-bs-toggle="tooltip" data-bs-placement="top" title="Projects">
-           <i class="bi bi-list-ul"></i>
-        </a>
-
-        @if(auth()->user()->role === 'admin')
-        <!-- Archive -->
-        <a href="{{ route('projects.archive') }}" class="btn btn-secondary f-14"
-           data-bs-toggle="tooltip" data-bs-placement="top" title="Archive">
-           <i class="bi bi-archive"></i>
-        </a>
-        @endif
-
-        <!-- Calendar -->
-        <a href="{{ route('projects.calendar') }}" class="btn btn-secondary f-14"
-           data-bs-toggle="tooltip" data-bs-placement="top" title="Calendar">
-           <i class="bi bi-calendar"></i>
-        </a>
-
-        <!-- Pinned -->
-        <a href="javascript:;" class="btn btn-secondary f-14 show-pinned"
-           data-bs-toggle="tooltip" data-bs-placement="top" title="Pinned">
-           <i class="bi bi-pin-angle"></i>
-        </a>
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+        <i class="fas fa-folder-open"></i>
+        <span>Dashboard / <strong>Projects</strong></span>
     </div>
 
-</div>
-
-        @if(session('success'))
-            <div class="alert alert-success">{{ session('success') }}</div>
-        @endif
-
-         <table id="projectTable" class="table table-bordered table-striped">
-            <thead>
-                <tr>
-                     <th><input type="checkbox" id="selectAllProjects"></th>
-                    <th>Code</th>
-                    <th>Project</th>
-                    <th>Client</th>
-                    <th>Members</th>
-                    <th style="white-space: nowrap;">Start Date</th>
-                    <th>Deadline</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($projects as $project)
-                <tr data-project-id="{{ $project->id }}">
-                    <td><input type="checkbox" class="project-checkbox" value="{{ $project->id }}"></td>
-                    <td>{{ $project->project_code }}</td>
-                    <td>{{ $project->name }}</td>
-                    <td style="white-space: nowrap;">{{ optional($project->client)->name ?? '-' }}</td>
-                   <td style="white-space: nowrap;" >
-    @foreach($project->users as $user)
-        <span class="badge bg-primary me-1">
-            {{ $user->name }}
-            @if(!empty($user->employeeDetail->employee_id))
-                ({{ $user->employeeDetail->employee_id }})
+    <!-- Header Card -->
+    <div class="header-card">
+        <div class="header-left">
+            <div class="header-icon">
+                <i class="fas fa-project-diagram"></i>
+            </div>
+            <div>
+                <h1>Projects</h1>
+                <p>Manage and track all your projects across the organization</p>
+            </div>
+        </div>
+        <div class="header-actions">
+            <button type="button" class="btn-icon" data-project-search-focus title="Search">
+                <i class="fas fa-search"></i>
+            </button>
+            <a href="{{ route('projects.index') }}" class="btn-icon active" title="List View" aria-label="List View">
+                <i class="fas fa-list-ul"></i>
+            </a>
+            <a href="{{ route('projects.calendar') }}" class="btn-icon" title="Calendar">
+                <i class="fas fa-calendar-alt"></i>
+            </a>
+            @if($isAdmin)
+                <a href="{{ route('projects.archive') }}" class="btn-icon" title="Archive">
+                    <i class="fas fa-archive"></i>
+                </a>
             @endif
-        </span>
-    @endforeach
-</td>
+        </div>
+    </div>
 
-                    <td style="white-space: nowrap;">{{ $project->start_date }}</td>
-                    <td style="white-space: nowrap;">{{ $project->deadline ? $project->deadline : 'No deadline' }}</td>
+    @if(session('success'))
+        <div class="alert alert-success">{{ session('success') }}</div>
+    @endif
 
-                    <td style="white-space: nowrap;" class="status-cell">
-                        @if(auth()->user()->role === 'admin')
-                            <select class="form-select form-select-sm project-status-select" data-project-id="{{ $project->id }}">
-                                <option value="not started" {{ $project->status === 'not started' ? 'selected' : '' }}>Not Started</option>
-                                <option value="in progress" {{ $project->status === 'in progress' ? 'selected' : '' }}>In Progress</option>
-                                <option value="on hold" {{ $project->status === 'on hold' ? 'selected' : '' }}>On Hold</option>
-                                <option value="completed" {{ $project->status === 'completed' ? 'selected' : '' }}>Completed</option>
-                            </select>
-                        @else
-                            {{ ucfirst($project->status) }}
+    @if($errors->any())
+        <div class="alert alert-danger">Please fix the requested project details and try again.</div>
+    @endif
+
+    <!-- Filter Panel -->
+    <div class="filter-panel">
+        <form method="GET" action="{{ route('projects.index') }}" class="filter-grid">
+            <div class="filter-group">
+                <label><i class="fas fa-calendar-plus"></i> Start Date</label>
+                <input type="date" name="start_date" class="form-control" value="{{ request('start_date') }}">
+            </div>
+            <div class="filter-group">
+                <label><i class="fas fa-calendar-check"></i> End Date</label>
+                <input type="date" name="end_date" class="form-control" value="{{ request('end_date') }}">
+            </div>
+            <div class="filter-group">
+                <label><i class="fas fa-circle"></i> Status</label>
+                <select name="status" class="form-select">
+                    <option value="">All Statuses</option>
+                    @foreach($statusOptions as $value => $label)
+                        <option value="{{ $value }}" @selected(request('status') === $value)>{{ $label }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="filter-group">
+                <label><i class="fas fa-bolt"></i> Priority</label>
+                <select name="priority" class="form-select">
+                    <option value="">All Priorities</option>
+                    @foreach($priorityOptions as $value => $label)
+                        <option value="{{ $value }}" @selected(request('priority') === $value)>{{ $label }}</option>
+                    @endforeach
+                </select>
+            </div>
+            @if($isAdmin)
+                <div class="filter-group">
+                    <label><i class="fas fa-user-check"></i> Employee</label>
+                    <select name="employee_id" class="form-select">
+                        <option value="">All Employees</option>
+                        @foreach($users as $user)
+                            <option value="{{ $user->id }}" @selected((string) request('employee_id') === (string) $user->id)>{{ $user->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            @endif
+            <div class="filter-group">
+                <label><i class="fas fa-calendar-xmark"></i> Deadline</label>
+                <select name="deadline_state" class="form-select">
+                    <option value="">Any Deadline</option>
+                    <option value="delayed" @selected(request('deadline_state') === 'delayed')>Delayed / Overdue</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label><i class="fas fa-chart-line"></i> Progress</label>
+                <select name="progress[]" class="form-select" multiple>
+                    @foreach($progressOptions as $value => $label)
+                        <option value="{{ $value }}" @selected(in_array($value, request('progress', []), true))>{{ $label }}</option>
+                    @endforeach
+                </select>
+            </div>
+            @if($isAdmin)
+                <div class="filter-group">
+                    <label><i class="fas fa-building"></i> Client</label>
+                    <select name="client_id" class="form-select">
+                        <option value="">All Clients</option>
+                        @foreach($clients as $client)
+                            <option value="{{ $client->id }}" @selected((string) request('client_id') === (string) $client->id)>{{ $client->name ?? $client->company_name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            @endif
+            <div class="filter-group search-group">
+                <label><i class="fas fa-search"></i> Search</label>
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" name="search" id="projectSearchInput" class="form-control" value="{{ request('search') }}" placeholder="Search projects...">
+                </div>
+            </div>
+            <div class="filter-actions">
+                <button class="btn btn-primary"><i class="fas fa-filter"></i> Apply Filters</button>
+                <a href="{{ route('projects.index') }}" class="btn btn-outline"><i class="fas fa-undo"></i> Reset</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+        <div class="toolbar-left">
+            @if($isAdmin)
+                <a href="{{ route('projects.create') }}" class="btn btn-primary">
+                    <i class="fas fa-plus-circle"></i> Add Project
+                </a>
+                <button type="button" class="btn btn-outline" data-bs-toggle="modal" data-bs-target="#projectTemplateModal">
+                    <i class="fas fa-copy"></i> Project Template
+                </button>
+                <button type="button" class="btn btn-outline" data-bs-toggle="modal" data-bs-target="#projectImportModal">
+                    <i class="fas fa-file-import"></i> Import
+                </button>
+            @endif
+            <button type="button" id="exportProjectsCsv" class="btn btn-outline">
+                <i class="fas fa-file-export"></i> Export
+            </button>
+        </div>
+
+        <div class="toolbar-right">
+            @if($isAdmin)
+                <select id="bulkProjectStatus" class="form-select-sm" disabled>
+                    <option value="">Change Status</option>
+                    @foreach($statusOptions as $value => $label)
+                        <option value="{{ $value }}">{{ $label }}</option>
+                    @endforeach
+                </select>
+                <button id="applyBulkProjectStatus" class="btn btn-sm btn-primary" disabled>Apply</button>
+                <button id="bulkDeleteProjects" class="btn btn-sm btn-danger" disabled>
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            @endif
+            <div class="view-toggle">
+                <a href="{{ route('projects.index') }}" class="view-btn active" title="List View">
+                    <i class="fas fa-list-ul"></i>
+                </a>
+                <a href="{{ route('projects.calendar') }}" class="view-btn" title="Calendar View">
+                    <i class="fas fa-calendar-alt"></i>
+                </a>
+                <button type="button" class="view-btn show-pinned" title="Pinned Projects">
+                    <i class="fas fa-thumbtack"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-card">
+        <div class="table-header">
+            <div class="table-title">
+                <div class="table-title-icon">
+                    <i class="fas fa-list"></i>
+                </div>
+                <div>
+                    <h4>Project List</h4>
+                    <span class="muted">{{ $projects->count() }} projects found</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            <table id="projectTable" class="project-table">
+                <thead>
+                    <tr>
+                        @if($isAdmin)
+                            <th class="check-cell">
+                                <input type="checkbox" id="selectAllProjects">
+                            </th>
                         @endif
-                    </td>
-
-                    <td>
-                        <div class="dropdown">
-                            <button class="btn btn-sm btn-light" type="button" id="dropdownMenuButton{{ $project->id }}" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-three-dots-vertical"></i>
-                            </button>
-
-                            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton{{ $project->id }}">
-                                <!-- View -->
-                                <li>
-                                    <a class="dropdown-item" href="{{ route('projects.show', $project->id) }}">
-                                        <i class="bi bi-eye me-2"></i> View
-                                    </a>
-                                </li>
-
-                                @if(auth()->user()->role === 'admin')
-                                <!-- Edit -->
-                                <li>
-                                    <a class="dropdown-item" href="{{ route('projects.edit', $project->id) }}">
-                                        <i class="bi bi-pencil-square me-2"></i> Edit
-                                    </a>
-                                </li>
-
-                                <!-- Duplicate -->
-                                <li>
-                                    <button class="dropdown-item" type="button"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#duplicateProjectModal{{ $project->id }}">
-                                        <i class="bi bi-files me-2"></i> Duplicate
-                                    </button>
-                                </li>
-
-                                <!-- Gantt Chart -->
-                                <li>
-                                    <a class="dropdown-item" href="{{ route('projects.gantt', $project->id) }}">
-                                        <i class="bi bi-diagram-3 me-2"></i> Gantt Chart
-                                    </a>
-                                </li>
-
-                                <li>
-                                    <a class="dropdown-item" href="{{ route('projects.public-gantt', $project->id) }}">
-                                        <i class="bi bi-diagram-3 me-2"></i>Public Gantt Chart
-                                    </a>
-                                </li>
-
-                                <!-- Public Task Board -->
-                                <li>
-                                    <a class="dropdown-item" href="{{ route('projects.tasks.board', $project->id) }}">
-                                        <i class="bi bi-kanban me-2"></i> Public Task Board
-                                    </a>
-                                </li>
-
-                                <li>
-                                    <form action="{{ route('projects.archive.action', $project->id) }}" method="POST" onsubmit="return confirmArchive();" class="d-inline-block w-100">
-                                        @csrf
-                                        <button type="submit" class="dropdown-item text-warning">
-                                            <i class="bi bi-archive me-2"></i> Archive
-                                        </button>
-                                    </form>
-                                </li>
-
-                                <!-- Delete -->
-                                <li>
-                                    <form action="{{ route('projects.destroy', $project->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this project?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button class="dropdown-item text-danger" type="submit">
-                                            <i class="bi bi-trash me-2"></i> Delete
-                                        </button>
-                                    </form>
-                                </li>
+                        <th><i class="fas fa-code"></i> Code</th>
+                        <th><i class="fas fa-tag"></i> Project Name</th>
+                        <th><i class="fas fa-users"></i> Members</th>
+                        <th><i class="fas fa-calendar-plus"></i> Start Date</th>
+                        <th><i class="fas fa-calendar-times"></i> Deadline</th>
+                        @if($isAdmin)
+                            <th><i class="fas fa-building"></i> Client</th>
+                        @endif
+                        <th><i class="fas fa-bolt"></i> Priority</th>
+                        <th><i class="fas fa-circle"></i> Status</th>
+                        <th><i class="fas fa-chart-simple"></i> Progress</th>
+                        <th><i class="fas fa-comment-dots"></i> Latest Update</th>
+                        <th class="action-cell"><i class="fas fa-cog"></i></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($projects as $project)
+                        @php
+                            $progress = (int) ($project->completion_percent ?? 0);
+                            $status = $project->status ?: 'pending';
+                            $statusClass = str_replace(' ', '-', strtolower($status));
+                            $isOverdue = $project->deadline && \Carbon\Carbon::parse($project->deadline)->isPast() && $status !== 'completed';
+                            $priority = $project->priority ?: 'medium';
+                        @endphp
+                        <tr data-project-id="{{ $project->id }}">
+                            @if($isAdmin)
+                                <td class="check-cell">
+                                    <input type="checkbox" class="project-checkbox" value="{{ $project->id }}">
+                                </td>
+                            @endif
+                            <td>
+                                <div class="code-cell">
+                                    <span class="code-badge">{{ $project->project_code ?: 'PRJ-' . str_pad($project->id, 4, '0', STR_PAD_LEFT) }}</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="name-cell">
+                                    <a href="{{ route('projects.show', $project) }}" class="project-name">{{ $project->name }}</a>
+                                    <span class="sub-text">{{ $project->tasks_count ?? $project->tasks?->count() ?? 0 }} task(s)</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="members-cell">
+                                    @forelse($project->users->take(4) as $member)
+                                        <div class="avatar" title="{{ $member->name }}">
+                                            @if($member->profile_image)
+                                                <img src="{{ asset($member->profile_image) }}" alt="{{ $member->name }}">
+                                            @else
+                                                {{ strtoupper(mb_substr($member->name, 0, 1)) }}
+                                            @endif
+                                        </div>
+                                    @empty
+                                        <span class="empty-text">No members</span>
+                                    @endforelse
+                                    @if($project->users->count() > 4)
+                                        <div class="avatar more">+{{ $project->users->count() - 4 }}</div>
+                                    @endif
+                                </div>
+                            </td>
+                            <td>
+                                <div class="date-cell">
+                                    <i class="fas fa-calendar-alt"></i>
+                                    {{ $project->start_date ? \Carbon\Carbon::parse($project->start_date)->format('M d, Y') : '-' }}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="date-cell {{ $isOverdue ? 'overdue' : '' }}">
+                                    <i class="fas fa-calendar-times"></i>
+                                    {{ $project->deadline ? \Carbon\Carbon::parse($project->deadline)->format('M d, Y') : '--' }}
+                                    @if($isOverdue)
+                                        <span class="overdue-badge">Overdue</span>
+                                    @endif
+                                </div>
+                            </td>
+                            @if($isAdmin)
+                                <td>
+                                    <div class="client-cell">
+                                        <div class="client-avatar">
+                                            {{ strtoupper(mb_substr(optional($project->client)->name ?? optional($project->client)->company_name ?? 'C', 0, 1)) }}
+                                        </div>
+                                        <div>
+                                            <div class="client-name">{{ optional($project->client)->name ?? 'No Client' }}</div>
+                                            <small>{{ optional($project->client)->company_name ?? '' }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                            @endif
+                            <td>
+                                <span class="priority-pill {{ $priority }}">{{ $priorityOptions[$priority] ?? ucfirst($priority) }}</span>
+                            </td>
+                            <td>
+                                @if($isAdmin || $isEmployee)
+                                    <select class="status-select status-{{ $statusClass }}" data-project-id="{{ $project->id }}">
+                                        @foreach($statusOptions as $value => $label)
+                                            <option value="{{ $value }}" @selected($status === $value)>{{ $label }}</option>
+                                        @endforeach
+                                    </select>
+                                @else
+                                    <span class="status-pill {{ $statusClass }}">{{ $statusOptions[$status] ?? ucfirst($status) }}</span>
                                 @endif
-                            </ul>
+                            </td>
+                            <td>
+                                <div class="progress-cell">
+                                    <div class="progress-bar">
+                                        <div style="width: {{ max(0, min(100, $progress)) }}%"></div>
+                                    </div>
+                                    <span class="progress-text">{{ $progress }}%</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="latest-update-cell">
+                                    @if($project->latestUpdate)
+                                        <strong>{{ $project->latestUpdate->employee?->name ?? 'Admin' }}</strong>
+                                        <span>{{ $project->latestUpdate->remarks ? \Illuminate\Support\Str::limit($project->latestUpdate->remarks, 42) : 'Updated progress/status' }}</span>
+                                    @elseif($project->remarks)
+                                        <strong>Remarks</strong>
+                                        <span>{{ \Illuminate\Support\Str::limit($project->remarks, 42) }}</span>
+                                    @else
+                                        <span class="empty-text">No updates</span>
+                                    @endif
+                                </div>
+                            </td>
+                            <td class="action-cell">
+                                <div class="dropdown project-action-dropdown">
+                                    <button class="action-btn" type="button" data-bs-toggle="dropdown" data-bs-boundary="viewport" data-bs-display="dynamic" aria-expanded="false">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li><h6 class="dropdown-header">{{ \Illuminate\Support\Str::limit($project->name, 28) }}</h6></li>
+                                        <li><a class="dropdown-item" href="{{ route('projects.show', $project) }}"><i class="fas fa-eye"></i> View</a></li>
+                                        @if($isEmployee)
+                                            <li><a class="dropdown-item" href="{{ route('projects.gantt', $project) }}"><i class="fas fa-chart-bar"></i> Gantt Chart</a></li>
+                                            <li><a class="dropdown-item" href="{{ route('projects.tasks.board', $project) }}"><i class="fas fa-columns"></i> Task Board</a></li>
+                                        @endif
+                                        @if($isAdmin)
+                                            <li><a class="dropdown-item" href="{{ route('projects.edit', $project) }}"><i class="fas fa-pen"></i> Edit</a></li>
+                                            <li><button class="dropdown-item" type="button" data-bs-toggle="modal" data-bs-target="#duplicateProjectModal{{ $project->id }}"><i class="fas fa-copy"></i> Duplicate</button></li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li><a class="dropdown-item" href="{{ route('projects.gantt', $project) }}"><i class="fas fa-chart-bar"></i> Gantt Chart</a></li>
+                                            <li><a class="dropdown-item" href="{{ route('projects.public-gantt', $project) }}" target="_blank"><i class="fas fa-external-link-alt"></i> Public Gantt</a></li>
+                                            <li><button class="dropdown-item" type="button" data-copy-url="{{ route('projects.public-gantt', $project) }}"><i class="fas fa-link"></i> Copy Gantt Link</button></li>
+                                            <li><a class="dropdown-item" href="{{ route('projects.tasks.board', $project) }}" target="_blank"><i class="fas fa-columns"></i> Public Task Board</a></li>
+                                            <li><button class="dropdown-item" type="button" data-copy-url="{{ route('projects.tasks.board', $project) }}"><i class="fas fa-link"></i> Copy Board Link</button></li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li>
+                                                <form action="{{ route('projects.archive.action', $project) }}" method="POST" data-confirm-submit="Archive this project?">
+                                                    @csrf
+                                                    <button class="dropdown-item text-warning" type="submit"><i class="fas fa-archive"></i> Archive</button>
+                                                </form>
+                                            </li>
+                                            <li>
+                                                <form action="{{ route('projects.destroy', $project) }}" method="POST" data-confirm-submit="Delete this project permanently?">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button class="dropdown-item text-danger" type="submit"><i class="fas fa-trash-alt"></i> Delete</button>
+                                                </form>
+                                            </li>
+                                        @endif
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="{{ $isAdmin ? 12 : 10 }}">
+                                <div class="empty-state">
+                                    <i class="fas fa-project-diagram"></i>
+                                    <h5>{{ $isEmployee ? 'No assigned projects found' : 'No projects found' }}</h5>
+                                    <p>{{ $isEmployee ? 'Only projects assigned to you will appear here.' : 'Try changing the filters or create the first project.' }}</p>
+                                </div>
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Table Footer -->
+        <div class="table-footer">
+            <div class="footer-info">
+                <i class="fas fa-info-circle"></i>
+                Showing {{ $projects->count() }} project(s)
+            </div>
+            <div class="footer-status">
+                <span class="status-dot"></span>
+                <span>Last updated: {{ now()->format('M d, Y h:i A') }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Duplicate Modals -->
+    @foreach($projects as $project)
+        @if($isAdmin)
+            <div class="modal fade" id="duplicateProjectModal{{ $project->id }}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title"><i class="fas fa-copy text-primary me-2"></i>Duplicate Project</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
-                    </td>
-
-                </tr>
-
-                <!-- Duplicate Project Modal -->
-               <div class="modal fade" id="duplicateProjectModal{{ $project->id }}" tabindex="-1" aria-labelledby="duplicateProjectLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-lg modal-dialog-centered">
-                        <div class="modal-content">
-
-                            <!-- Header -->
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="duplicateProjectLabel">Copy Project</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-
-                            <!-- Body -->
+                        <form method="POST" action="{{ route('projects.duplicate', $project) }}">
+                            @csrf
                             <div class="modal-body">
-                                <form method="POST" action="{{ route('projects.duplicate', $project->id) }}">
-                                    @csrf
-
-                                    <!-- Hidden input for project -->
-                                    <input type="hidden" name="duplicateProjectID" value="{{ $project->id }}">
-
-                                    <div class="row">
-                                        <!-- Options -->
-                                        <div class="col-md-12 mb-2">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" name="task" id="task{{ $project->id }}">
-                                                <label class="form-check-label" for="task{{ $project->id }}">Tasks</label>
-                                            </div>
-
-                                            <div class="ms-4 mt-2 d-none" id="taskOptions{{ $project->id }}">
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" name="sub_task" id="subTask{{ $project->id }}">
-                                                    <label class="form-check-label" for="subTask{{ $project->id }}">Copy Sub Tasks</label>
-                                                </div>
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" name="same_assignee" id="sameAssignee{{ $project->id }}">
-                                                    <label class="form-check-label" for="sameAssignee{{ $project->id }}">Keep Same Assignees</label>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Milestones -->
-                                        <div class="col-md-12 mb-2">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" name="milestone" id="milestone{{ $project->id }}">
-                                                <label class="form-check-label" for="milestone{{ $project->id }}">Milestones</label>
-                                            </div>
-                                        </div>
-
-                                        <!-- Files -->
-                                        <div class="col-md-12 mb-2">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" name="file" id="file{{ $project->id }}">
-                                                <label class="form-check-label" for="file{{ $project->id }}">Files</label>
-                                            </div>
-                                        </div>
-
-                                        <!-- Timesheet -->
-                                        <div class="col-md-12 mb-2">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" name="note" id="timesheet{{ $project->id }}">
-                                                <label class="form-check-label" for="timesheet{{ $project->id }}">Timesheet</label>
-                                            </div>
-                                        </div>
-
-                                        <!-- Notes -->
-                                        <div class="col-md-12 mb-2">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" name="note" id="note{{ $project->id }}">
-                                                <label class="form-check-label" for="note{{ $project->id }}">Notes</label>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                     <div class="row mt-3">
-                                        <div class="col-md-12 mb-2">
-                                       <label for="project_code{{ $project->id }}">Short Code</label>
-
-                                         <input type="text" class="form-control" name="project_code" id="project_code{{ $project->id }}" value="{{ $project->project_code}} Copy">
-
-                                        </div>
-                                    </div>
-
-                                    <!-- Project Info -->
-                                    <div class="row mt-3">
-                                        <div class="col-md-12 mb-2">
-                                            <label for="project_name{{ $project->id }}">Project Name <span class="text-danger">*</span></label>
-                                            <input type="text" class="form-control" name="project_name" id="project_name{{ $project->id }}" value="{{ $project->name }} Copy">
-                                        </div>
-
-                                    </div>
-
-                                  <div class="row">
-                                    <!-- Start Date -->
-                                    <div class="col-md-4 mb-3">
-                                        <label>Start Date <sup class="text-danger">*</sup></label>
-                                        <input type="date"
-                                               name="start_date"
-                                               class="form-control"
-                                              value="{{ old('start_date', $project->start_date ? \Carbon\Carbon::parse($project->start_date)->format('Y-m-d') : '') }}"
-                                               required>
-                                    </div>
-
-                                    <!-- Deadline -->
-                                    <div class="col-md-4 mb-3 deadline-wrapper">
-                                        <label>Deadline <sup class="text-danger">*</sup></label>
-                                        <input type="date"
-                                               name="deadline"
-                                               class="form-control"
-                                               id="deadline_input"
-                                              value="{{ old('deadline', $project->deadline ? \Carbon\Carbon::parse($project->deadline)->format('Y-m-d') : '') }}"
-                                               {{ is_null($project->deadline) ? 'disabled' : '' }}>
-                                    </div>
-
-                                    <!-- No Deadline -->
-                                    <div class="col-md-4 mb-3 d-flex align-items-center">
-                                        <div class="form-check mt-4">
-                                            <input class="form-check-input"
-                                                   type="checkbox"
-                                                   name="without_deadline"
-                                                   id="without_deadline"
-                                                   {{ is_null($project->deadline) ? 'checked' : '' }}>
-                                            <label class="form-check-label" for="without_deadline">
-                                                No deadline for this project
-                                            </label>
-                                        </div>
-                                    </div>
+                                <div class="copy-options">
+                                    <label><input type="checkbox" name="task"> <i class="fas fa-tasks"></i> Tasks</label>
+                                    <label><input type="checkbox" name="sub_task"> <i class="fas fa-list"></i> Sub Tasks</label>
+                                    <label><input type="checkbox" name="same_assignee"> <i class="fas fa-user-check"></i> Same Assignees</label>
+                                    <label><input type="checkbox" name="milestone"> <i class="fas fa-flag-checkered"></i> Milestones</label>
+                                    <label><input type="checkbox" name="file"> <i class="fas fa-file"></i> Files</label>
                                 </div>
-
-                               <div class="row">
-                                <!-- Public Project -->
-                                <div class="col-md-12 mb-3">
-                                    <div class="form-group">
-                                        <div class="d-flex mt-2">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" name="public" id="is_public" value="1">
-                                                <label class="form-check-label text-dark-grey pl-2 mr-4 cursor-pointer pt-1 text-wrap" for="is_public">
-                                                    Create Public Project
-                                                </label>
-                                            </div>
-                                        </div>
+                                <div class="row g-3 mt-2">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Project Name <span class="text-danger">*</span></label>
+                                        <input type="text" name="project_name" class="form-control" value="{{ $project->name }} Copy" required>
                                     </div>
-                                </div>
-                            </div>
-
-                            <div class="row">
-                                <!-- Department -->
-                           <div class="mt-3">
-                                <label>Department <sup class="text-danger">*</sup></label>
-
-                          <select class="form-select form-select-sm select2"
-        name="user_id[]"
-        id="selectEmployee{{ $project->id }}"
-        multiple
-        required>
-    @foreach($users as $employee)
-        <option value="{{ $employee->id }}">
-            {{ $employee->name }}
-            @if(!empty($employee->employeeDetail->employee_id))
-                ({{ $employee->employeeDetail->employee_id }})
-            @endif
-        </option>
-    @endforeach
-</select>
-
-                            </div>
-
-                                <!-- Members -->
-                                  <div class="mt-3">
-                                        <label for="selectEmployee{{ $project->id }}">Add Project Members <span class="text-danger">*</span></label>
-                                        <select class="form-select form-select-sm select2"
-                                                name="user_id[]"
-                                                id="selectEmployee{{ $project->id }}"
-                                                multiple
-                                                required>
-                                            @foreach($users as $employee)
-                                                <option value="{{ $employee->id }}">{{ $employee->name }}</option>
-                                            @endforeach
-                                        </select>
-                                        <div class="invalid-feedback">
-                                            Please select at least one member.
-                                        </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Short Code</label>
+                                        <input type="text" name="project_code" class="form-control" value="{{ $project->project_code }} Copy">
                                     </div>
-
-                            </div>
-
-                                   <!-- Client -->
-                                 <div class="mt-3">
-                                    <label>Client <sup class="text-danger">*</sup></label>
-                                    <div class="input-group">
-                                        <select name="client_id" id="client_id" class="form-select form-select-sm select2"  required>
-                                            <option value="">Select</option>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Start Date</label>
+                                        <input type="date" name="start_date" class="form-control" value="{{ $project->start_date ? \Carbon\Carbon::parse($project->start_date)->format('Y-m-d') : now()->format('Y-m-d') }}" required>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Deadline</label>
+                                        <input type="date" name="deadline" class="form-control" value="{{ $project->deadline ? \Carbon\Carbon::parse($project->deadline)->format('Y-m-d') : '' }}">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Client</label>
+                                        <select name="client_id" class="form-select">
                                             @foreach($clients as $client)
-                                                <option value="{{ $client->id }}">{{ $client->name }}</option>
+                                                <option value="{{ $client->id }}" @selected($project->client_id === $client->id)>{{ $client->name ?? $client->company_name }}</option>
                                             @endforeach
                                         </select>
-
+                                    </div>
+                                    <div class="col-md-12">
+                                        <label class="form-label">Members</label>
+                                        <select name="user_id[]" class="form-select" multiple>
+                                            @foreach($users as $user)
+                                                <option value="{{ $user->id }}" @selected($project->users->contains('id', $user->id))>{{ $user->name }}{{ $user->employeeDetail?->employee_id ? ' (' . $user->employeeDetail->employee_id . ')' : '' }}</option>
+                                            @endforeach
+                                        </select>
                                     </div>
                                 </div>
-
-                                    <!-- Submit -->
-                                    <div class="mt-4 text-end">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                        <button type="submit" class="btn btn-primary">Duplicate Project</button>
-                                    </div>
-                                </form>
                             </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-outline" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-primary"><i class="fas fa-copy"></i> Duplicate</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        @endif
+    @endforeach
 
+    <!-- Template Modal -->
+    @if($isAdmin)
+        <div class="modal fade" id="projectTemplateModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title"><i class="fas fa-copy text-primary me-2"></i>Project Templates</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="template-list">
+                            @forelse($projects as $project)
+                                <div class="template-item">
+                                    <div>
+                                        <strong>{{ $project->name }}</strong>
+                                        <span>{{ $project->project_code ?: 'No code' }} / {{ $project->users->count() }} member(s)</span>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-primary" data-template-project="{{ $project->id }}">Use Template</button>
+                                </div>
+                            @empty
+                                <div class="empty-state">
+                                    <i class="fas fa-copy"></i>
+                                    <h5>No project templates available</h5>
+                                    <p>Create a project first, then duplicate it as a template.</p>
+                                </div>
+                            @endforelse
                         </div>
                     </div>
                 </div>
-                @endforeach
-            </tbody>
-        </table>
+            </div>
+        </div>
 
+        <!-- Import Modal -->
+        <div class="modal fade" id="projectImportModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-md modal-dialog-centered">
+                <div class="modal-content">
+                    <form method="POST" action="{{ route('projects.import') }}" enctype="multipart/form-data">
+                        @csrf
+                        <div class="modal-header">
+                            <h5 class="modal-title"><i class="fas fa-file-import text-primary me-2"></i>Import Projects</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label class="form-label">CSV File <span class="text-danger">*</span></label>
+                                <input type="file" name="project_import" class="form-control" accept=".csv,text/csv" required>
+                                <p class="import-note">Supported columns: name, project_code, client_id, start_date, deadline, status, progress, description.</p>
+                                @error('project_import')<small class="text-danger">{{ $message }}</small>@enderror
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline" data-bs-dismiss="modal">Cancel</button>
+                            <button class="btn btn-primary"><i class="fas fa-file-import"></i> Import</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+        <div class="status-item">
+            <i class="fas fa-project-diagram text-primary"></i>
+            <span>{{ $projects->count() }}</span> Total Projects
+        </div>
+        <div class="status-item">
+            <i class="fas fa-check-circle text-success"></i>
+            <span>{{ $projects->where('status', 'completed')->count() }}</span> Completed
+        </div>
+        <div class="status-item">
+            <i class="fas fa-spinner text-primary"></i>
+            <span>{{ $projects->where('status', 'in progress')->count() }}</span> In Progress
+        </div>
+        <div class="status-item">
+            <i class="fas fa-clock text-warning"></i>
+            <span>{{ $projects->whereIn('status', ['pending', 'not started'])->count() }}</span> Pending
+        </div>
+        <div class="status-item">
+            <i class="fas fa-triangle-exclamation text-danger"></i>
+            <span>{{ $projects->filter(fn($p) => $p->status === 'delayed' || ($p->deadline && \Carbon\Carbon::parse($p->deadline)->isPast() && $p->status !== 'completed'))->count() }}</span> Delayed
+        </div>
+        @if($isAdmin)
+            <div class="status-item">
+                <i class="fas fa-user-check text-primary"></i>
+                <span>{{ $projects->flatMap(fn($project) => $project->users->pluck('id'))->unique()->count() }}</span> Employees Assigned
+            </div>
+        @endif
     </div>
-
 </main>
 
-@push('js')
-<!-- jQuery (required for Select2) -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-<!-- Select2 JS -->
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-
-<!-- SweetAlert2 JS (for toasts / alerts) -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-<!-- DataTables CSS -->
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
-<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css">
-
-<!-- DataTables JS -->
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
-
-<!-- JSZip & pdfmake for Excel/PDF export -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
-
-<script>
-$(function () {
-    const predefinedRanges = {
-        'Today': [moment(), moment()],
-        'Last 30 Days': [moment().subtract(29, 'days'), moment()],
-        'This Month': [moment().startOf('month'), moment().endOf('month')],
-        'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
-        'Last 90 Days': [moment().subtract(89, 'days'), moment()],
-        'Last 6 Months': [moment().subtract(6, 'months').startOf('month'), moment()],
-        'Last 1 Year': [moment().subtract(1, 'year').startOf('month'), moment()],
-        'Custom Range': []
-    };
-
-    $('#duration').daterangepicker({
-        autoUpdateInput: false,
-        showDropdowns: true,
-        opens: 'left',
-        locale: {
-            format: 'YYYY-MM-DD',
-            cancelLabel: 'Clear'
-        },
-        ranges: predefinedRanges
-    });
-
-    $('#duration').on('apply.daterangepicker', function (ev, picker) {
-        if (picker.chosenLabel === 'Custom Range') {
-            $(this).val(picker.startDate.format('YYYY-MM-DD') + ' to ' + picker.endDate.format('YYYY-MM-DD'));
-        } else {
-            $(this).val(picker.chosenLabel);
-        }
-    });
-
-    $('#duration').on('cancel.daterangepicker', function () {
-        $(this).val('');
-    });
-});
-</script>
-
-<script>
-$(document).ready(function () {
-    var table = $('#projectTable').DataTable({
-        dom: 'Bfrtip', // Buttons, filter input, table, pagination
-        buttons: [
-            {
-                extend: 'copy',
-                text: 'Copy',
-                exportOptions: {
-                    columns: ':not(:first-child):not(:last-child)' // exclude first & last columns
-                }
-            },
-            {
-                extend: 'csv',
-                text: 'CSV',
-                exportOptions: {
-                    columns: ':not(:first-child):not(:last-child)'
-                }
-            },
-            {
-                extend: 'excel',
-                text: 'Excel',
-                exportOptions: {
-                    columns: ':not(:first-child):not(:last-child)'
-                }
-            },
-            {
-                extend: 'pdf',
-                text: 'PDF',
-                exportOptions: {
-                    columns: ':not(:first-child):not(:last-child)'
-                }
-            },
-            {
-                extend: 'print',
-                text: 'Print',
-                exportOptions: {
-                    columns: ':not(:first-child):not(:last-child)'
-                }
-            }
-        ],
-        responsive: true,
-        pageLength: 10,
-        lengthMenu: [10, 25, 50, 100],
-        language: {
-            search: "_INPUT_",
-            searchPlaceholder: "Search projects..."
-        }
-    });
-
-    // Insert Bulk Delete directly under "Showing X to Y of Z entries"
-    if (!$('#bulkDeleteContainer').length) {
-        var info = $('#projectTable_wrapper .dataTables_info');
-
-        $('<div id="bulkDeleteContainer" class="dt-bulk-delete mt-2">' +
-            '<button id="bulkDeleteProjects" class="btn btn-danger btn-sm" disabled>Bulk Delete</button>' +
-          '</div>').insertAfter(info);
-    }
-});
-</script>
-
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    document.querySelectorAll('[id^="task"]').forEach(taskCheckbox => {
-        taskCheckbox.addEventListener("change", function () {
-            const projectId = this.id.replace("task", "");
-            const taskOptions = document.getElementById("taskOptions" + projectId);
-            if (this.checked) {
-                taskOptions.classList.remove("d-none");
-            } else {
-                taskOptions.classList.add("d-none");
-            }
-        });
-    });
-});
-</script>
-
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    document.querySelectorAll("form").forEach(form => {
-        form.addEventListener("submit", function (e) {
-            const select = form.querySelector("select[multiple][required]");
-            if (select && select.selectedOptions.length === 0) {
-                e.preventDefault();
-                select.classList.add("is-invalid");
-            } else if (select) {
-                select.classList.remove("is-invalid");
-            }
-        });
-    });
-});
-</script>
-
-<script>
-$(document).ready(function () {
-    $('.select2').each(function () {
-        let modalId = $(this).closest('.modal').attr('id');
-        $(this).select2({
-            dropdownParent: modalId ? $('#' + modalId) : $(document.body),
-            placeholder: "Select members",
-            allowClear: true,
-            width: '100%'
-        });
-    });
-});
-</script>
-
-<script>
-function confirmArchive() {
-    return confirm('Are you sure? Do you want to archive this project?');
-}
-</script>
-
-<!-- Tooltip Initialization (Bootstrap 5) -->
-<script>
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-      return new bootstrap.Tooltip(tooltipTriggerEl)
-    })
-</script>
-
-<script>
-$(document).ready(function () {
-    // Initialize select2
-    $('#departmentSelect').select2({
-        placeholder: "Select Departments",
-        width: '100%',
-        dropdownCssClass: "custom-select2-dropdown"
-    });
-
-    // Add custom Select All / Deselect All
-    $('#departmentSelect').on('select2:open', function () {
-        if (!$('.select2-dropdown .select-all-btns').length) {
-            $('.select2-dropdown').prepend(`
-                <div class="select-all-btns d-flex justify-content-between px-2 py-1">
-                    <a href="javascript:void(0)" id="selectAllDept" class="text-primary small">Select All</a>
-                    <a href="javascript:void(0)" id="deselectAllDept" class="text-secondary small">Deselect All</a>
-                </div>
-            `);
-
-            // Select All
-            $('#selectAllDept').on('click', function () {
-                let allOptions = $('#departmentSelect option').map(function () {
-                    return $(this).val();
-                }).get();
-                $('#departmentSelect').val(allOptions).trigger('change');
-            });
-
-            // Deselect All
-            $('#deselectAllDept').on('click', function () {
-                $('#departmentSelect').val(null).trigger('change');
-            });
-        }
-    });
-});
-</script>
-
-<script>
-$(document).ready(function() {
-    let pinnedVisible = true; // Track current state
-
-    $('.show-pinned').click(function() {
-        if (pinnedVisible) {
-            // Hide all project rows
-            $('#projectTable tbody tr').hide();
-        } else {
-            // Show all project rows
-            $('#projectTable tbody tr').show();
-        }
-        pinnedVisible = !pinnedVisible; // Toggle state
-        // redraw DataTable to keep internal state consistent
-        if ($.fn.dataTable && $.fn.dataTable.isDataTable('#projectTable')) {
-            $('#projectTable').DataTable().draw(false);
-        }
-    });
-});
-</script>
-
-<!-- FINAL: Fixed Select All toggle + row sync + bulk control enabling -->
-<script>
-$(document).ready(function () {
-  // Helper: all project checkboxes currently in DOM
-  function allRowCheckboxes() {
-    return $('input.project-checkbox');
-  }
-
-  // Helper: whether any checkbox is unchecked
-  function anyUnchecked() {
-    return allRowCheckboxes().filter(':not(:checked)').length > 0;
-  }
-
-  // Update header state (checked / indeterminate)
-  function refreshHeaderState() {
-    var $all = allRowCheckboxes();
-    var $checked = $all.filter(':checked');
-    var header = $('#selectAllProjects');
-
-    if ($all.length === 0) {
-      header.prop('checked', false).prop('indeterminate', false);
-      return;
-    }
-
-    if ($checked.length === 0) {
-      header.prop('checked', false).prop('indeterminate', false);
-    } else if ($checked.length === $all.length) {
-      header.prop('checked', true).prop('indeterminate', false);
-    } else {
-      header.prop('checked', false).prop('indeterminate', true);
-    }
-  }
-
-  // Update bulk controls (enable when at least one is checked)
-  function refreshBulkControls() {
-    var any = allRowCheckboxes().filter(':checked').length > 0;
-    $('#bulkProjectStatus, #applyBulkProjectStatus, #bulkDeleteProjects').prop('disabled', !any);
-  }
-
-  // Header click: if any row is unchecked -> select ALL, else -> unselect ALL
-  $('#selectAllProjects').off('change.fixedSel').on('change.fixedSel', function () {
-    var shouldCheck = anyUnchecked(); // true => select all, false => unselect all
-    allRowCheckboxes().each(function () {
-      $(this).prop('checked', shouldCheck).trigger('change.fixedSel');
-    });
-    // After changing, refresh visuals
-    refreshHeaderState();
-    refreshBulkControls();
-  });
-
-  // When any row checkbox changes, update header and bulk controls
-  $('#projectTable').off('change.row').on('change.row', 'input.project-checkbox', function () {
-    refreshHeaderState();
-    refreshBulkControls();
-  });
-
-  // If DataTable redraws, ensure header and bulk controls are refreshed
-  if ($.fn.dataTable && $.fn.dataTable.isDataTable('#projectTable')) {
-    $('#projectTable').DataTable().on('draw', function () {
-      // refresh states after redraw
-      refreshHeaderState();
-      refreshBulkControls();
-    });
-  }
-
-  // Initial sync on load
-  refreshHeaderState();
-  refreshBulkControls();
-});
-</script>
-
-<script>
-$(document).ready(function () {
-    // Setup CSRF header globally for all jQuery AJAX requests
-    $.ajaxSetup({
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        }
-    });
-});
-</script>
-
-<script>
-$(document).ready(function () {
-    // Apply bulk status
-    $('#applyBulkProjectStatus').on('click', function () {
-        var ids = $('input.project-checkbox:checked').map(function () {
-            return $(this).val();
-        }).get();
-
-        let status = $('#bulkProjectStatus').val();
-
-        if (!status) {
-            alert('Please select a status.');
-            return;
-        }
-        if (!ids.length) {
-            alert('Please select projects first.');
-            return;
-        }
-
-        // disable controls while processing
-        $('#applyBulkProjectStatus').prop('disabled', true).text('Applying...');
-        $('#bulkProjectStatus').prop('disabled', true);
-
-        $.ajax({
-            url: "{{ route('projects.bulk-status') }}",
-            type: "POST",
-            dataType: "json",
-            data: {
-                ids: ids,
-                status: status
-            },
-            success: function (response) {
-                if (response.success) {
-                    // update only affected rows
-                    ids.forEach(function(id) {
-                        const $row = $('tr[data-project-id="' + id + '"]');
-                        const $select = $row.find('.project-status-select');
-                        if ($select.length) {
-                            $select.val(status);
-                        } else {
-                            $row.find('.status-cell').text(status);
-                        }
-                        $row.find('.project-checkbox').prop('checked', false);
-                    });
-
-                    $('#bulkProjectStatus').val('');
-                    $('#applyBulkProjectStatus').prop('disabled', true).text('Apply');
-                    $('#bulkProjectStatus').prop('disabled', true);
-                    $('#selectAllProjects').prop('checked', false).prop('indeterminate', false);
-
-                    Swal.fire({ icon: 'success', title: 'Updated', text: 'Projects updated successfully', timer: 1400, showConfirmButton: false });
-
-                    if ($.fn.dataTable && $.fn.dataTable.isDataTable('#projectTable')) {
-                        $('#projectTable').DataTable().draw(false);
-                    }
-                } else {
-                    Swal.fire({ icon: 'error', title: 'Error', text: response.message || 'Something went wrong.' });
-                    $('#applyBulkProjectStatus').prop('disabled', false).text('Apply');
-                    $('#bulkProjectStatus').prop('disabled', false);
-                }
-            },
-            error: function (xhr) {
-                let title = 'Server error';
-                let msg = 'Please try again.';
-                try {
-                    title = 'HTTP ' + xhr.status;
-                    if (xhr.responseJSON) {
-                        msg = xhr.responseJSON.message || msg;
-                        if (xhr.responseJSON.errors) {
-                            msg += ' — ' + Object.values(xhr.responseJSON.errors).flat().join(' | ');
-                        }
-                    } else if (xhr.responseText) {
-                        msg = xhr.responseText;
-                    }
-                } catch (e) {}
-                Swal.fire({ icon: 'error', title: title, text: msg });
-                $('#applyBulkProjectStatus').prop('disabled', false).text('Apply');
-                $('#bulkProjectStatus').prop('disabled', false);
-            }
-        });
-    });
-});
-</script>
-
 <style>
-.custom-select2-dropdown .select-all-btns {
-    border-bottom: 1px solid #eee;
-    background: #f9f9f9;
-}
-.custom-select2-dropdown .select-all-btns a {
-    cursor: pointer;
-    text-decoration: none;
-}
-.custom-select2-dropdown .select-all-btns a:hover {
-    text-decoration: underline;
-}
+    /* ===== PREMIUM PROJECTS PAGE - ENLARGED TEXT ===== */
+    .projects-page {
+        padding: 30px 0;
+        min-height: 100vh;
+        background: linear-gradient(145deg, #f7fbf9, #eef7f2);
+        color: #07130d;
+    }
 
-/* make Bulk Delete appear on its own line under info */
-.dataTables_wrapper .dt-bulk-delete {
-    clear: both;      /* clears the info & paginate floats */
-    text-align: left;
-}
+    /* Breadcrumb */
+    .breadcrumb {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(10px);
+        padding: 16px 26px;
+        border-radius: 18px;
+        border: 1px solid rgba(15, 116, 76, .12);
+        margin-bottom: 28px;
+        color: #0f744c;
+        font-weight: 600;
+        font-size: 1.05rem;
+    }
+
+    .breadcrumb i {
+        margin-right: 12px;
+        color: #34d399;
+        font-size: 1.1rem;
+    }
+
+    .breadcrumb strong {
+        color: #07130d;
+    }
+
+    /* Header Card */
+    .header-card {
+        background: #ffffff;
+        border-radius: 24px;
+        padding: 30px 36px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 24px;
+        box-shadow: 0 18px 45px rgba(15, 116, 76, .09);
+        border: 1px solid rgba(15, 116, 76, .12);
+        margin-bottom: 28px;
+    }
+
+    .header-left {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+    }
+
+    .header-icon {
+        width: 70px;
+        height: 70px;
+        background: linear-gradient(145deg, #34d399, #10b981);
+        color: white;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 32px;
+        box-shadow: 0 10px 25px rgba(16, 185, 129, .2);
+    }
+
+    .header-card h1 {
+        font-size: 34px;
+        font-weight: 700;
+        margin-bottom: 6px;
+        color: #07130d;
+    }
+
+    .header-card p {
+        color: #52645a;
+        font-size: 17px;
+        margin: 0;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 12px;
+    }
+
+    .btn-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        border: 1px solid rgba(15, 116, 76, .15);
+        background: #ffffff;
+        color: #0f744c;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        font-size: 1.2rem;
+    }
+
+    .btn-icon:hover {
+        background: #edf8f2;
+        border-color: #34d399;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(15, 116, 76, .1);
+    }
+
+    /* Alerts */
+    .alert {
+        border-radius: 16px;
+        padding: 18px 24px;
+        margin-bottom: 22px;
+        border: none;
+        font-weight: 600;
+        font-size: 1rem;
+    }
+
+    .alert-success {
+        background: #ecfdf5;
+        color: #065f46;
+        border-left: 4px solid #10b981;
+    }
+
+    .alert-danger {
+        background: #fef2f2;
+        color: #991b1b;
+        border-left: 4px solid #ef4444;
+    }
+
+    /* Filter Panel */
+    .filter-panel {
+        background: white;
+        border-radius: 20px;
+        border: 1px solid rgba(15, 116, 76, .12);
+        padding: 24px 28px;
+        margin-bottom: 22px;
+        box-shadow: 0 8px 25px rgba(15, 116, 76, .04);
+    }
+
+    .filter-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 16px;
+        align-items: end;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .filter-group label {
+        font-size: 0.85rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #5a6e63;
+    }
+
+    .filter-group label i {
+        margin-right: 6px;
+        color: #34d399;
+        font-size: 0.9rem;
+    }
+
+    .form-control, .form-select {
+        border-radius: 12px;
+        border: 1px solid rgba(15, 116, 76, .18);
+        padding: 12px 16px;
+        font-weight: 500;
+        font-size: 1rem;
+        min-height: 48px;
+        transition: all 0.2s ease;
+        background: #fafefb;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #34d399;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, .1);
+    }
+
+    select[multiple].form-select {
+        min-height: 48px;
+        max-height: 90px;
+        font-size: 0.95rem;
+    }
+
+    .search-group {
+        grid-column: span 1;
+    }
+
+    .search-box {
+        position: relative;
+    }
+
+    .search-box i {
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #0f744c;
+        font-size: 1.1rem;
+    }
+
+    .search-box .form-control {
+        padding-left: 44px;
+        font-size: 1rem;
+    }
+
+    .filter-actions {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+    }
+
+    /* Buttons */
+    .btn {
+        border: none;
+        padding: 12px 24px;
+        border-radius: 14px;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        transition: all 0.25s ease;
+        text-decoration: none;
+        min-height: 48px;
+    }
+
+    .btn-primary {
+        background: linear-gradient(145deg, #34d399, #10b981);
+        color: white;
+        box-shadow: 0 8px 20px rgba(16, 185, 129, .25);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 28px rgba(16, 185, 129, .35);
+    }
+
+    .btn-outline {
+        background: transparent;
+        border: 1px solid rgba(15, 116, 76, .2);
+        color: #0f744c;
+    }
+
+    .btn-outline:hover {
+        background: #edf8f2;
+        border-color: #34d399;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(15, 116, 76, .1);
+    }
+
+    .btn-danger {
+        background: #dc2626;
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background: #b91c1c;
+        transform: translateY(-2px);
+    }
+
+    .btn-sm {
+        padding: 8px 16px;
+        min-height: 38px;
+        font-size: 0.9rem;
+    }
+
+    .form-select-sm {
+        padding: 8px 14px;
+        min-height: 38px;
+        font-size: 0.9rem;
+        border-radius: 10px;
+    }
+
+    /* Toolbar */
+    .toolbar {
+        background: white;
+        border-radius: 20px;
+        border: 1px solid rgba(15, 116, 76, .12);
+        padding: 18px 26px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-bottom: 22px;
+        box-shadow: 0 8px 25px rgba(15, 116, 76, .04);
+    }
+
+    .toolbar-left, .toolbar-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .view-toggle {
+        display: flex;
+        gap: 4px;
+        background: #f0f9f4;
+        padding: 4px;
+        border-radius: 12px;
+    }
+
+    .view-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        border: none;
+        background: transparent;
+        color: #5a6e63;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        font-size: 1.1rem;
+    }
+
+    .view-btn:hover {
+        background: #d1fae5;
+        color: #0f744c;
+    }
+
+    .view-btn.active {
+        background: #0f744c;
+        color: white;
+    }
+
+    /* Table Card */
+    .table-card {
+        background: white;
+        border-radius: 24px;
+        border: 1px solid rgba(15, 116, 76, .12);
+        box-shadow: 0 18px 45px rgba(15, 116, 76, .08);
+        overflow: hidden;
+    }
+
+    .table-header {
+        padding: 22px 28px;
+        background: linear-gradient(135deg, #ffffff, #f5fbf7);
+        border-bottom: 1px solid rgba(15, 116, 76, .1);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .table-title {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .table-title-icon {
+        width: 48px;
+        height: 48px;
+        background: #e7f5ee;
+        color: #0f744c;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+    }
+
+    .table-title h4 {
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin: 0;
+        color: #07130d;
+    }
+
+    .table-title .muted {
+        font-size: 0.95rem;
+        color: #8ba198;
+        display: block;
+        margin-top: 2px;
+    }
+
+    /* Table */
+    .table-wrapper {
+        overflow-x: auto;
+        padding: 0 18px 18px 18px;
+    }
+
+    .project-table {
+        width: 100%;
+        min-width: 1200px;
+        border-collapse: separate;
+        border-spacing: 0 12px;
+    }
+
+    .project-table thead th {
+        text-align: left;
+        padding: 16px 18px;
+        color: #5a6e63;
+        font-size: 0.85rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        background: transparent;
+        border-bottom: 2px solid rgba(15, 116, 76, .1);
+        white-space: nowrap;
+    }
+
+    .project-table thead th i {
+        margin-right: 8px;
+        color: #34d399;
+        font-size: 0.9rem;
+    }
+
+    .project-table tbody td {
+        background: #ffffff;
+        padding: 16px 18px;
+        border-top: 1px solid rgba(15, 116, 76, .06);
+        border-bottom: 1px solid rgba(15, 116, 76, .06);
+        vertical-align: middle;
+        transition: all 0.2s ease;
+        font-size: 0.95rem;
+    }
+
+    .project-table tbody td:first-child {
+        border-left: 1px solid rgba(15, 116, 76, .06);
+        border-radius: 14px 0 0 14px;
+    }
+
+    .project-table tbody td:last-child {
+        border-right: 1px solid rgba(15, 116, 76, .06);
+        border-radius: 0 14px 14px 0;
+    }
+
+    .project-table tbody tr:hover td {
+        background: #fafefb;
+        border-color: rgba(15, 116, 76, .12);
+    }
+
+    .check-cell {
+        width: 48px;
+        text-align: center;
+    }
+
+    .action-cell {
+        width: 64px;
+        text-align: center;
+    }
+
+    .form-check-input {
+        width: 20px;
+        height: 20px;
+        border-radius: 5px;
+        border: 2px solid #a7f3d0;
+        cursor: pointer;
+    }
+
+    .form-check-input:checked {
+        background-color: #0f744c;
+        border-color: #0f744c;
+    }
+
+    /* Code Cell */
+    .code-badge {
+        display: inline-block;
+        padding: 6px 16px;
+        background: #e7f5ee;
+        color: #0f744c;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 700;
+    }
+
+    /* Name Cell */
+    .name-cell {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .project-name {
+        color: #07130d;
+        font-weight: 700;
+        font-size: 1rem;
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+
+    .project-name:hover {
+        color: #0f744c;
+    }
+
+    .sub-text {
+        font-size: 0.85rem;
+        color: #8ba198;
+        margin-top: 3px;
+    }
+
+    /* Members Cell */
+    .members-cell {
+        display: flex;
+        align-items: center;
+    }
+
+    .avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border: 2px solid #ffffff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: #d1fae5;
+        color: #0f744c;
+        font-weight: 700;
+        font-size: 0.85rem;
+        margin-left: -6px;
+        overflow: hidden;
+    }
+
+    .avatar:first-child {
+        margin-left: 0;
+    }
+
+    .avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .avatar.more {
+        background: #0f744c;
+        color: white;
+        font-size: 0.8rem;
+    }
+
+    .empty-text {
+        color: #8ba198;
+        font-size: 0.9rem;
+    }
+
+    /* Date Cell */
+    .date-cell {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.95rem;
+        color: #5a6e63;
+    }
+
+    .date-cell i {
+        color: #0f744c;
+        font-size: 0.9rem;
+    }
+
+    .date-cell.overdue {
+        color: #dc2626;
+    }
+
+    .overdue-badge {
+        display: inline-block;
+        padding: 3px 10px;
+        background: #fee2e2;
+        color: #dc2626;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        margin-left: 6px;
+    }
+
+    /* Client Cell */
+    .client-cell {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .client-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #d1fae5;
+        color: #0f744c;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.9rem;
+    }
+
+    .client-name {
+        font-weight: 600;
+        color: #07130d;
+        font-size: 0.95rem;
+    }
+
+    .client-cell small {
+        font-size: 0.8rem;
+        color: #8ba198;
+        display: block;
+    }
+
+    /* Status Select */
+    .status-select {
+        padding: 8px 14px;
+        border-radius: 20px;
+        border: 1px solid rgba(15, 116, 76, .2);
+        font-weight: 600;
+        font-size: 0.85rem;
+        min-width: 140px;
+        background: #fafefb;
+        cursor: pointer;
+        transition: all 0.2s;
+        min-height: 40px;
+    }
+
+    .status-select:focus {
+        border-color: #34d399;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, .1);
+    }
+
+    .status-pill {
+        display: inline-block;
+        padding: 8px 18px;
+        border-radius: 30px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: white;
+    }
+
+    .status-pill.not-started { background: #64748b; }
+    .status-pill.pending { background: #f59e0b; }
+    .status-pill.in-progress { background: #3b82f6; }
+    .status-pill.on-hold { background: #f59e0b; }
+    .status-pill.completed { background: #10b981; }
+    .status-pill.delayed { background: #dc2626; }
+
+    .priority-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 7px 12px;
+        border-radius: 999px;
+        font-size: 0.82rem;
+        font-weight: 800;
+        text-transform: capitalize;
+    }
+
+    .priority-pill.low { background: #dbeafe; color: #1d4ed8; }
+    .priority-pill.medium { background: #fef3c7; color: #92400e; }
+    .priority-pill.high { background: #fed7aa; color: #c2410c; }
+    .priority-pill.critical { background: #fee2e2; color: #b91c1c; }
+
+    .latest-update-cell {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        max-width: 210px;
+    }
+
+    .latest-update-cell strong {
+        color: #07130d;
+        font-size: 0.9rem;
+    }
+
+    .latest-update-cell span {
+        color: #8ba198;
+        font-size: 0.85rem;
+    }
+
+    /* Progress Cell */
+    .progress-cell {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .progress-bar {
+        flex: 1;
+        height: 8px;
+        border-radius: 999px;
+        background: #e5e7eb;
+        overflow: hidden;
+        min-width: 90px;
+    }
+
+    .progress-bar div {
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, #34d399, #10b981);
+        transition: width 0.6s ease;
+    }
+
+    .progress-text {
+        font-weight: 700;
+        font-size: 0.9rem;
+        color: #07130d;
+        min-width: 44px;
+    }
+
+    /* Action Button */
+    .action-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        border: none;
+        background: #f0f9f4;
+        color: #0f744c;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        font-size: 1.1rem;
+    }
+
+    .action-btn:hover {
+        background: #d1fae5;
+        transform: scale(1.05);
+    }
+
+    /* Dropdown */
+    .dropdown-menu {
+        background: white;
+        border: 1px solid rgba(15, 116, 76, .15);
+        border-radius: 16px;
+        padding: 8px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+        min-width: 240px;
+    }
+
+    .dropdown-header {
+        color: #07130d;
+        font-weight: 700;
+        font-size: 0.95rem;
+        padding: 10px 14px 12px;
+        border-bottom: 1px solid rgba(15, 116, 76, .08);
+    }
+
+    .dropdown-item {
+        padding: 10px 16px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 0.95rem;
+        color: #374151;
+        text-decoration: none;
+        transition: all 0.2s;
+        cursor: pointer;
+        border: none;
+        background: none;
+        width: 100%;
+    }
+
+    .dropdown-item i {
+        width: 20px;
+        color: #5a6e63;
+        font-size: 1rem;
+    }
+
+    .dropdown-item:hover {
+        background: #ecfdf5;
+        color: #059669;
+    }
+
+    .dropdown-item.text-danger:hover {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+    .dropdown-item.text-warning:hover {
+        background: #fef3c7;
+        color: #d97706;
+    }
+
+    /* Table Footer */
+    .table-footer {
+        padding: 18px 28px;
+        background: #fafefb;
+        border-top: 1px solid rgba(15, 116, 76, .08);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 14px;
+    }
+
+    .footer-info {
+        font-size: 0.95rem;
+        color: #5a6e63;
+    }
+
+    .footer-info i {
+        color: #0f744c;
+        margin-right: 8px;
+        font-size: 1rem;
+    }
+
+    .footer-status {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 0.9rem;
+        color: #8ba198;
+    }
+
+    .status-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #10b981;
+        animation: pulse-dot 2s infinite;
+    }
+
+    @keyframes pulse-dot {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.3; }
+    }
+
+    /* Status Bar */
+    .status-bar {
+        margin-top: 28px;
+        background: white;
+        border-radius: 20px;
+        padding: 18px 28px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+        border: 1px solid rgba(15, 116, 76, .1);
+        box-shadow: 0 8px 25px rgba(15, 116, 76, .04);
+    }
+
+    .status-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.95rem;
+        color: #5a6e63;
+    }
+
+    .status-item i {
+        font-size: 1.1rem;
+    }
+
+    .status-item span {
+        font-weight: 700;
+        color: #07130d;
+        margin-right: 4px;
+        font-size: 1.05rem;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        color: #a7f3d0;
+        margin-bottom: 18px;
+    }
+
+    .empty-state h5 {
+        color: #0f744c;
+        font-weight: 700;
+        font-size: 1.3rem;
+        margin-bottom: 10px;
+    }
+
+    .empty-state p {
+        color: #8ba198;
+        font-size: 1rem;
+    }
+
+    /* Modal */
+    .modal-content {
+        border-radius: 20px;
+        border: 1px solid rgba(15, 116, 76, .12);
+        overflow: hidden;
+    }
+
+    .modal-header {
+        background: linear-gradient(135deg, #ffffff, #f5fbf7);
+        border-bottom: 1px solid rgba(15, 116, 76, .1);
+        padding: 22px 28px;
+    }
+
+    .modal-header .modal-title {
+        font-weight: 700;
+        font-size: 1.2rem;
+        color: #07130d;
+    }
+
+    .modal-body {
+        padding: 28px;
+    }
+
+    .modal-footer {
+        background: #fafefb;
+        border-top: 1px solid rgba(15, 116, 76, .08);
+        padding: 18px 28px;
+    }
+
+    .copy-options {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+    }
+
+    .copy-options label {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 18px;
+        border-radius: 12px;
+        background: #f0f9f4;
+        border: 1px solid rgba(15, 116, 76, .1);
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .copy-options label:hover {
+        background: #d1fae5;
+        border-color: #34d399;
+    }
+
+    .copy-options label i {
+        color: #0f744c;
+        font-size: 1rem;
+    }
+
+    .template-list {
+        display: grid;
+        gap: 12px;
+    }
+
+    .template-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 20px;
+        border-radius: 14px;
+        background: #f0f9f4;
+        border: 1px solid rgba(15, 116, 76, .08);
+        transition: all 0.2s;
+    }
+
+    .template-item:hover {
+        background: #d1fae5;
+        border-color: #34d399;
+    }
+
+    .template-item strong {
+        display: block;
+        color: #07130d;
+        font-weight: 700;
+        font-size: 1rem;
+    }
+
+    .template-item span {
+        font-size: 0.9rem;
+        color: #8ba198;
+    }
+
+    .import-note {
+        font-size: 0.9rem;
+        color: #8ba198;
+        margin-top: 10px;
+    }
+
+    .form-label {
+        font-weight: 600;
+        font-size: 0.95rem;
+        color: #07130d;
+        margin-bottom: 6px;
+    }
+
+    /* Responsive */
+    @media (max-width: 1400px) {
+        .filter-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+        .filter-actions {
+            grid-column: 1 / -1;
+            display: flex;
+            gap: 12px;
+        }
+    }
+
+    @media (max-width: 992px) {
+        .header-card {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .filter-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+        .filter-actions {
+            grid-column: 1 / -1;
+        }
+        .search-group {
+            grid-column: 1 / -1;
+        }
+        .table-title h4 {
+            font-size: 1.1rem;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .projects-page {
+            padding: 16px 0;
+        }
+        .filter-grid {
+            grid-template-columns: 1fr;
+        }
+        .toolbar {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .toolbar-left, .toolbar-right {
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .view-toggle {
+            width: 100%;
+            justify-content: center;
+        }
+        .status-bar {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .table-wrapper {
+            padding: 0 10px 10px 10px;
+        }
+        .header-actions {
+            width: 100%;
+            justify-content: flex-start;
+        }
+        .header-card h1 {
+            font-size: 26px;
+        }
+        .header-card p {
+            font-size: 15px;
+        }
+        .filter-group label {
+            font-size: 0.8rem;
+        }
+        .project-table thead th {
+            font-size: 0.75rem;
+            padding: 12px 12px;
+        }
+        .project-table tbody td {
+            font-size: 0.85rem;
+            padding: 12px 12px;
+        }
+    }
+
+    /* Final project filter/action polish: aligned buttons, no cramped controls. */
+    .projects-page .filter-panel {
+        overflow: visible !important;
+    }
+
+    .projects-page .filter-grid {
+        align-items: end !important;
+        grid-template-columns: repeat(4, minmax(180px, 1fr)) !important;
+        gap: 1rem !important;
+    }
+
+    .projects-page .filter-group,
+    .projects-page .search-group,
+    .projects-page .filter-actions {
+        min-width: 0;
+    }
+
+    .projects-page .filter-group label {
+        align-items: center;
+        display: inline-flex;
+        gap: 0.45rem;
+        line-height: 1.2;
+        min-height: 20px;
+    }
+
+    .projects-page .filter-group .form-control,
+    .projects-page .filter-group .form-select,
+    .projects-page .search-box {
+        min-height: 46px;
+        width: 100%;
+    }
+
+    .projects-page .filter-actions {
+        align-items: end;
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(120px, 1fr));
+        gap: 0.7rem;
+    }
+
+    .projects-page .filter-actions .btn {
+        border-radius: 14px !important;
+        justify-content: center;
+        min-height: 46px;
+        width: 100%;
+        white-space: nowrap;
+    }
+
+    .projects-page .filter-actions .btn-outline {
+        background: #fff !important;
+        border: 1px solid rgba(15, 116, 76, 0.18) !important;
+        color: #0f744c !important;
+    }
+
+    .projects-page .stat-card h3,
+    .projects-page .stat-card span,
+    .projects-page .status-bar span,
+    .projects-page .project-count,
+    .projects-page .progress-text {
+        max-width: 100%;
+        min-width: 0;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+
+    .projects-page .stat-card h3 {
+        font-size: clamp(1.35rem, 2vw, 1.85rem) !important;
+        line-height: 1.05;
+    }
+
+    @media (max-width: 1399.98px) {
+        .projects-page .filter-grid {
+            grid-template-columns: repeat(3, minmax(180px, 1fr)) !important;
+        }
+    }
+
+    @media (max-width: 991.98px) {
+        .projects-page .filter-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        }
+    }
+
+    @media (max-width: 575.98px) {
+        .projects-page .filter-grid {
+            grid-template-columns: 1fr !important;
+        }
+
+        .projects-page .filter-actions {
+            grid-template-columns: 1fr !important;
+        }
+
+        .projects-page .filter-actions .btn {
+            white-space: normal;
+        }
+    }
+
+    /* Final view button polish: list/calendar icons stay aligned and readable. */
+    .projects-page .header-actions {
+        align-items: center;
+        display: flex;
+        gap: 0.65rem;
+    }
+
+    .projects-page .header-actions .btn-icon,
+    .projects-page .view-toggle .view-btn {
+        align-items: center !important;
+        aspect-ratio: 1 / 1;
+        border: 1px solid rgba(15, 116, 76, 0.14) !important;
+        display: inline-flex !important;
+        flex: 0 0 auto;
+        height: 44px !important;
+        justify-content: center !important;
+        line-height: 1 !important;
+        min-height: 44px !important;
+        padding: 0 !important;
+        text-decoration: none !important;
+        width: 44px !important;
+    }
+
+    .projects-page .header-actions .btn-icon i,
+    .projects-page .view-toggle .view-btn i {
+        display: block;
+        font-size: 1rem;
+        line-height: 1;
+        margin: 0 !important;
+    }
+
+    .projects-page .header-actions .btn-icon.active,
+    .projects-page .view-toggle .view-btn.active {
+        background: linear-gradient(145deg, #0f744c, #10b981) !important;
+        border-color: transparent !important;
+        color: #fff !important;
+        box-shadow: 0 10px 22px rgba(16, 185, 129, 0.22);
+    }
+
+    .projects-page .view-toggle {
+        align-items: center;
+        border: 1px solid rgba(15, 116, 76, 0.1);
+        display: inline-flex !important;
+        flex: 0 0 auto;
+        padding: 4px !important;
+    }
+
+    @media (max-width: 575.98px) {
+        .projects-page .header-actions {
+            justify-content: flex-start !important;
+            width: 100%;
+        }
+
+        .projects-page .toolbar-right {
+            align-items: stretch;
+            justify-content: flex-start !important;
+        }
+
+        .projects-page .view-toggle {
+            justify-content: flex-start !important;
+            width: auto !important;
+        }
+    }
+
+    /* Final row action dropdown fix: three-dot menus must escape table/card clipping. */
+    .projects-page .table-card,
+    .projects-page .table-wrapper,
+    .projects-page .project-table,
+    .projects-page .project-table tbody,
+    .projects-page .project-table tr,
+    .projects-page .project-table td.action-cell,
+    .projects-page .project-action-dropdown {
+        overflow: visible !important;
+    }
+
+    .projects-page .table-card {
+        position: relative;
+        z-index: 1;
+    }
+
+    .projects-page .table-wrapper {
+        overflow-x: auto !important;
+        overflow-y: visible !important;
+        padding-bottom: 140px;
+    }
+
+    .projects-page .project-action-dropdown .dropdown-menu {
+        border: 1px solid rgba(15, 116, 76, 0.14) !important;
+        border-radius: 14px !important;
+        box-shadow: 0 22px 55px rgba(15, 23, 42, 0.18) !important;
+        max-height: min(70vh, 520px);
+        min-width: 240px;
+        overflow-y: auto;
+        padding: 8px !important;
+        z-index: 2090 !important;
+    }
+
+    body > .project-floating-action-menu {
+        border: 1px solid rgba(15, 116, 76, 0.14) !important;
+        border-radius: 14px !important;
+        box-shadow: 0 22px 55px rgba(15, 23, 42, 0.2) !important;
+        max-height: min(70vh, 520px);
+        min-width: 240px;
+        overflow-y: auto;
+        padding: 8px !important;
+        z-index: 3000 !important;
+    }
+
+    .projects-page .project-action-dropdown .dropdown-menu.show {
+        display: block !important;
+    }
+
+    .projects-page .project-action-dropdown .dropdown-item {
+        align-items: center;
+        border-radius: 10px;
+        display: flex;
+        gap: 0.65rem;
+        min-height: 38px;
+        white-space: normal;
+    }
+
+    .projects-page .project-action-dropdown .dropdown-item i {
+        flex: 0 0 18px;
+        margin: 0 !important;
+        text-align: center;
+    }
 </style>
 
-<!-- NEW: AJAX handler for single-row status change -->
 <script>
-$(document).ready(function () {
-    $(document).on('change', '.project-status-select', function () {
-        const $select = $(this);
-        const projectId = $select.data('project-id');
-        const newStatus = $select.val();
+document.addEventListener('DOMContentLoaded', function () {
+    const csrf = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    const selectAll = document.getElementById('selectAllProjects');
+    const checkboxes = () => Array.from(document.querySelectorAll('.project-checkbox'));
+    const bulkStatus = document.getElementById('bulkProjectStatus');
+    const bulkApply = document.getElementById('applyBulkProjectStatus');
+    const bulkDelete = document.getElementById('bulkDeleteProjects');
 
-        $select.prop('disabled', true);
+    function selectedIds() {
+        return checkboxes().filter(box => box.checked).map(box => box.value);
+    }
 
-        $.ajax({
-            url: "{{ url('admin/projects') }}/" + projectId + "/status",
-            type: "POST",
-            dataType: "json",
-            data: { _method: 'PATCH', status: newStatus },
-            success: function (res) {
-                if (res.success) {
-                    if (res.status) {
-                        $select.val(res.status);
-                    } else {
-                        $select.val(newStatus);
-                    }
+    function refreshBulkControls() {
+        const selected = selectedIds();
+        if (bulkStatus) bulkStatus.disabled = selected.length === 0;
+        if (bulkApply) bulkApply.disabled = selected.length === 0;
+        if (bulkDelete) bulkDelete.disabled = selected.length === 0;
 
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Status updated',
-                        text: res.message || 'Project status updated successfully',
-                        timer: 1600,
-                        showConfirmButton: false
-                    });
-                } else {
-                    Swal.fire({ icon: 'error', title: 'Error', text: res.message || 'Failed to update status' });
-                }
-            },
-            error: function (xhr) {
-                let title = 'Server error';
-                let msg = 'Please try again.';
-                try {
-                    title = 'HTTP ' + xhr.status;
-                    if (xhr.responseJSON) {
-                        msg = xhr.responseJSON.message || msg;
-                        if (xhr.responseJSON.errors) {
-                            msg += ' — ' + Object.values(xhr.responseJSON.errors).flat().join(' | ');
-                        }
-                    } else if (xhr.responseText) {
-                        msg = xhr.responseText;
-                    }
-                } catch (e) {}
-                Swal.fire({ icon: 'error', title: title, text: msg });
-            },
-            complete: function () {
-                $select.prop('disabled', false);
-                if ($.fn.dataTable && $.fn.dataTable.isDataTable('#projectTable')) {
-                    $('#projectTable').DataTable().draw(false);
-                }
+        if (!selectAll) return;
+        const all = checkboxes();
+        selectAll.checked = all.length > 0 && selected.length === all.length;
+        selectAll.indeterminate = selected.length > 0 && selected.length < all.length;
+    }
+
+    if (selectAll) {
+        selectAll.addEventListener('change', function () {
+            checkboxes().forEach(box => box.checked = selectAll.checked);
+            refreshBulkControls();
+        });
+    }
+
+    document.addEventListener('change', function (event) {
+        if (event.target.classList.contains('project-checkbox')) {
+            refreshBulkControls();
+        }
+    });
+
+    document.querySelectorAll('.status-select').forEach(select => {
+        select.addEventListener('change', function () {
+            const projectId = this.dataset.projectId;
+            const status = this.value;
+            this.disabled = true;
+
+            fetch("{{ url('admin/projects') }}/" + projectId + "/status", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrf
+                },
+                body: JSON.stringify({_method: 'PATCH', status})
+            })
+            .then(response => response.json().then(data => ({ok: response.ok, data})))
+            .then(({ok, data}) => {
+                if (!ok || !data.success) throw new Error(data.message || 'Status update failed.');
+            })
+            .catch(error => alert(error.message))
+            .finally(() => this.disabled = false);
+        });
+    });
+
+    if (bulkApply) {
+        bulkApply.addEventListener('click', function () {
+            const ids = selectedIds();
+            const status = bulkStatus.value;
+            if (!ids.length || !status) {
+                alert('Select projects and choose a status.');
+                return;
+            }
+
+            bulkApply.disabled = true;
+            fetch("{{ route('projects.bulk-status') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrf
+                },
+                body: JSON.stringify({ids, status})
+            })
+            .then(response => response.json().then(data => ({ok: response.ok, data})))
+            .then(({ok, data}) => {
+                if (!ok || !data.success) throw new Error(data.message || 'Bulk status update failed.');
+                window.location.reload();
+            })
+            .catch(error => {
+                alert(error.message);
+                refreshBulkControls();
+            });
+        });
+    }
+
+    if (bulkDelete) {
+        bulkDelete.addEventListener('click', function () {
+            const ids = selectedIds();
+            if (!ids.length) return;
+            if (!confirm('Delete selected projects permanently?')) return;
+
+            bulkDelete.disabled = true;
+            fetch("{{ route('projects.bulk-delete') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrf
+                },
+                body: JSON.stringify({ids})
+            })
+            .then(response => response.json().then(data => ({ok: response.ok, data})))
+            .then(({ok, data}) => {
+                if (!ok || !data.success) throw new Error(data.message || 'Bulk delete failed.');
+                ids.forEach(id => document.querySelector('tr[data-project-id="' + id + '"]')?.remove());
+                refreshBulkControls();
+            })
+            .catch(error => {
+                alert(error.message);
+                refreshBulkControls();
+            });
+        });
+    }
+
+    document.querySelectorAll('[data-confirm-submit]').forEach(form => {
+        form.addEventListener('submit', function (event) {
+            if (!confirm(this.dataset.confirmSubmit || 'Are you sure?')) {
+                event.preventDefault();
             }
         });
     });
-});
-</script>
 
-<!-- NEW: Bulk Delete AJAX handler -->
-<script>
-$(document).ready(function () {
-    $(document).on('click', '#bulkDeleteProjects', function () {
-        var ids = $('input.project-checkbox:checked').map(function () {
-            return $(this).val();
-        }).get();
+    document.querySelectorAll('[data-copy-url]').forEach(button => {
+        button.addEventListener('click', function () {
+            const url = this.dataset.copyUrl;
+            const oldText = this.innerHTML;
 
-        if (!ids.length) {
-            alert('Please select at least one project.');
-            return;
-        }
+            function done() {
+                button.innerHTML = '<i class="fas fa-check"></i> Copied';
+                setTimeout(() => button.innerHTML = oldText, 1400);
+            }
 
-        if (!confirm('Are you sure you want to delete the selected projects?')) {
-            return;
-        }
-
-        $('#bulkDeleteProjects').prop('disabled', true).text('Deleting...');
-
-        $.ajax({
-            url: "{{ route('projects.bulk-delete') }}",
-            type: "POST",
-            dataType: "json",
-            data: { ids: ids },
-            success: function (res) {
-                if (res.success) {
-                    if ($.fn.dataTable && $.fn.dataTable.isDataTable('#projectTable')) {
-                        var dt = $('#projectTable').DataTable();
-                        ids.forEach(function (id) {
-                            var $row = $('tr[data-project-id="' + id + '"]');
-                            dt.row($row).remove();
-                        });
-                        dt.draw(false);
-                    } else {
-                        ids.forEach(function (id) {
-                            $('tr[data-project-id="' + id + '"]').remove();
-                        });
-                    }
-
-                    $('#selectAllProjects').prop('checked', false).prop('indeterminate', false);
-                    $('#bulkProjectStatus, #applyBulkProjectStatus, #bulkDeleteProjects')
-                        .prop('disabled', true).text('Bulk Delete');
-
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Deleted',
-                        text: res.deleted + ' project(s) deleted successfully.',
-                        timer: 1600,
-                        showConfirmButton: false
-                    });
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: res.message || 'Bulk delete failed.'
-                    });
-                    $('#bulkDeleteProjects').prop('disabled', false).text('Bulk Delete');
-                }
-            },
-            error: function (xhr) {
-                let title = 'Server error';
-                let msg = 'Please try again.';
-                try {
-                    title = 'HTTP ' + xhr.status;
-                    if (xhr.responseJSON) {
-                        msg = xhr.responseJSON.message || msg;
-                        if (xhr.responseJSON.errors) {
-                            msg += ' — ' + Object.values(xhr.responseJSON.errors).flat().join(' | ');
-                        }
-                    } else if (xhr.responseText) {
-                        msg = xhr.responseText;
-                    }
-                } catch (e) {}
-                Swal.fire({ icon: 'error', title: title, text: msg });
-                $('#bulkDeleteProjects').prop('disabled', false).text('Bulk Delete');
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(url).then(done).catch(() => prompt('Copy this link:', url));
+            } else {
+                prompt('Copy this link:', url);
             }
         });
     });
+
+    document.getElementById('exportProjectsCsv')?.addEventListener('click', function () {
+        const rows = Array.from(document.querySelectorAll('#projectTable tbody tr')).filter(row => row.querySelectorAll('td').length > 1);
+        const csv = [['Code', 'Project Name', 'Start Date', 'Deadline', 'Client', 'Priority', 'Status', 'Progress', 'Latest Update']];
+
+        rows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+            const offset = {{ $isAdmin ? 1 : 0 }};
+            csv.push([
+                cells[offset]?.innerText.trim() || '',
+                cells[offset + 1]?.querySelector('.project-name')?.innerText.trim() || '',
+                cells[offset + 3]?.innerText.trim() || '',
+                cells[offset + 4]?.innerText.trim().replace(/Overdue/g, '').trim() || '',
+                {{ $isAdmin ? "cells[offset + 5]?.innerText.trim().replace(/\\n+/g, ' ').replace(/No Client/g, '') || ''" : "''" }},
+                cells[{{ $isAdmin ? 'offset + 6' : 'offset + 5' }}]?.innerText.trim() || '',
+                cells[{{ $isAdmin ? 'offset + 7' : 'offset + 6' }}]?.innerText.trim() || '',
+                cells[{{ $isAdmin ? 'offset + 8' : 'offset + 7' }}]?.innerText.trim() || '',
+                cells[{{ $isAdmin ? 'offset + 9' : 'offset + 8' }}]?.innerText.trim().replace(/\n+/g, ' ') || ''
+            ]);
+        });
+
+        const blob = new Blob([csv.map(cols => cols.map(col => '"' + String(col).replace(/"/g, '""') + '"').join(',')).join('\n')], {type: 'text/csv;charset=utf-8;'});
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'projects.csv';
+        link.click();
+        URL.revokeObjectURL(link.href);
+    });
+
+    document.querySelector('[data-project-search-focus]')?.addEventListener('click', function () {
+        document.getElementById('projectSearchInput')?.focus();
+    });
+
+    document.querySelector('.show-pinned')?.addEventListener('click', function () {
+        alert('Pinned projects view is ready for a pin data field. No pinned project flag exists yet.');
+    });
+
+    document.querySelectorAll('.project-action-dropdown').forEach(dropdown => {
+        const button = dropdown.querySelector('[data-bs-toggle="dropdown"]');
+        const menu = dropdown.querySelector('.dropdown-menu');
+
+        if (!button || !menu) return;
+
+        let originalParent = null;
+        let originalNextSibling = null;
+
+        function positionFloatingMenu() {
+            const rect = button.getBoundingClientRect();
+            const menuWidth = Math.max(menu.offsetWidth || 240, 240);
+            const viewportGap = 12;
+            const left = Math.max(viewportGap, Math.min(window.innerWidth - menuWidth - viewportGap, rect.right - menuWidth));
+            const opensUp = rect.bottom + menu.offsetHeight + viewportGap > window.innerHeight;
+            const top = opensUp
+                ? Math.max(viewportGap, rect.top - menu.offsetHeight - 8)
+                : Math.min(window.innerHeight - viewportGap, rect.bottom + 8);
+
+            menu.style.left = left + 'px';
+            menu.style.top = top + 'px';
+        }
+
+        dropdown.addEventListener('show.bs.dropdown', function () {
+            originalParent = menu.parentNode;
+            originalNextSibling = menu.nextSibling;
+        });
+
+        dropdown.addEventListener('shown.bs.dropdown', function () {
+            document.body.appendChild(menu);
+            menu.classList.add('project-floating-action-menu');
+            menu.style.position = 'fixed';
+            menu.style.right = 'auto';
+            menu.style.bottom = 'auto';
+            menu.style.transform = 'none';
+            positionFloatingMenu();
+        });
+
+        dropdown.addEventListener('hide.bs.dropdown', function () {
+            menu.classList.remove('project-floating-action-menu');
+            menu.removeAttribute('style');
+
+            if (originalParent) {
+                originalParent.insertBefore(menu, originalNextSibling);
+            }
+        });
+
+        window.addEventListener('resize', function () {
+            if (menu.classList.contains('show') && menu.classList.contains('project-floating-action-menu')) {
+                positionFloatingMenu();
+            }
+        });
+
+        window.addEventListener('scroll', function () {
+            if (menu.classList.contains('show') && menu.classList.contains('project-floating-action-menu')) {
+                positionFloatingMenu();
+            }
+        }, true);
+    });
+
+    document.querySelectorAll('[data-template-project]').forEach(button => {
+        button.addEventListener('click', function () {
+            const projectId = this.dataset.templateProject;
+            const templateModal = bootstrap.Modal.getInstance(document.getElementById('projectTemplateModal'));
+            templateModal?.hide();
+
+            setTimeout(() => {
+                const duplicateModal = document.getElementById('duplicateProjectModal' + projectId);
+                if (duplicateModal) {
+                    bootstrap.Modal.getOrCreateInstance(duplicateModal).show();
+                }
+            }, 250);
+        });
+    });
+
+    refreshBulkControls();
 });
 </script>
-
-@endpush
-
 @endsection

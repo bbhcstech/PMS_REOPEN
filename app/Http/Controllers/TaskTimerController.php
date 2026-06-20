@@ -14,11 +14,15 @@ class TaskTimerController extends Controller
    // Start Timer
 public function start(Task $task)
 {
+    $this->authorizeTimerTask($task);
+
     TaskTimer::where('user_id', auth()->id())->whereNull('end_time')->update(['end_time' => now()]);
 
     TaskTimer::create([
         'task_id' => $task->id,
+        'project_id' => $task->project_id,
         'user_id' => auth()->id(),
+        'start_date' => now()->toDateString(),
         'start_time' => now()
     ]);
 
@@ -28,6 +32,8 @@ public function start(Task $task)
 // Pause Timer
 public function pause(Task $task)
 {
+    $this->authorizeTimerTask($task);
+
     TaskTimer::where('task_id', $task->id)
         ->where('user_id', auth()->id())
         ->whereNull('end_time')
@@ -39,6 +45,8 @@ public function pause(Task $task)
 // Resume Timer
 public function resume(Task $task)
 {
+    $this->authorizeTimerTask($task);
+
     $timer = TaskTimer::where('task_id', $task->id)
         ->where('user_id', auth()->id())
         ->whereNull('end_time')
@@ -57,6 +65,7 @@ public function resume(Task $task)
 // Stop Timer
 public function stop(Request $request, Task $task)
 {
+    $this->authorizeTimerTask($task);
     
     $request->validate([
         'memo' => 'required|string|max:500',
@@ -171,6 +180,21 @@ private function updateProjectStatusForTimer(?Project $project, ?string $status)
         'user_id' => auth()->id(),
         'activity' => 'Changed project status from timer: ' . $project->name . ' -> ' . $status,
     ]);
+}
+
+private function authorizeTimerTask(Task $task): void
+{
+    if (in_array(strtolower((string) auth()->user()?->role), ['admin', 'hr', 'manager'], true)) {
+        return;
+    }
+
+    $userId = (string) auth()->id();
+
+    abort_unless(
+        $task->assignees()->where('users.id', auth()->id())->exists()
+        || collect(explode(',', (string) $task->assigned_to))->contains($userId),
+        403
+    );
 }
 
 

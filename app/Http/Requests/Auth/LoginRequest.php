@@ -31,6 +31,14 @@ class LoginRequest extends FormRequest
         return [
             'email' => ['required', 'string', 'email'],
             'password' => ['required', 'string'],
+            'terms_accepted' => ['accepted'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'terms_accepted.accepted' => 'Please accept the Terms & Conditions before logging in.',
         ];
     }
 

@@ -8,10 +8,11 @@ use Carbon\Carbon;
 class EmployeeDetail extends Model
 {
     protected $fillable = [
-        'user_id', 'designation_id', 'parent_dpt_id', 'department_id', 'employee_id',
+        'user_id', 'company_id', 'designation_id', 'parent_dpt_id', 'department_id', 'employee_id',
         'salutation', 'country', 'mobile', 'gender', 'joining_date', 'dob', 'government_id_card', 'government_id_verification_status', 'reporting_to',
-        'language', 'user_role', 'address', 'about', 'login_allowed',
+        'language', 'user_role', 'address', 'about', 'directory_about', 'login_allowed',
         'email_notifications', 'hourly_rate', 'slack_member_id', 'skills',
+        'linkedin_url', 'portfolio_url', 'facebook_url', 'instagram_url', 'x_url', 'cv_path',
         'probation_end_date', 'notice_start_date', 'notice_end_date',
         'employment_type', 'marital_status', 'business_address', 'status', 'exit_date'
     ];

@@ -2,6 +2,7 @@
 
 @section('title', $page['title'] . ' - Bitroxia PMS')
 @section('meta_description', $page['description'])
+@section('meta_keywords', 'Bitroxia PMS ' . $page['title'] . ', ' . $page['eyebrow'] . ', project management software, HR management software, attendance tracking, leave management, business dashboard')
 
 @section('content')
 <section class="page-hero">
@@ -13,7 +14,7 @@
         <h1>{{ $page['heading'] }}</h1>
         <p>{{ $page['description'] }}</p>
         <div class="hero-buttons mt-4">
-            <a href="{{ route('register') }}" class="btn btn-purple btn-lg">Start Free <i class="fas fa-arrow-right"></i></a>
+            <a href="{{ route('login') }}" class="btn btn-purple btn-lg">Login <i class="fas fa-arrow-right"></i></a>
             <a href="{{ route('features') }}" class="btn btn-outline-purple btn-lg">View Features</a>
         </div>
     </div>
@@ -46,10 +47,31 @@
                                     <li>{{ $item }}</li>
                                 @endforeach
                             </ul>
-                            <a href="{{ route('register') }}" class="btn {{ $index === 1 ? 'btn-purple' : 'btn-outline-purple' }} w-100">Choose Plan</a>
+                            <a href="{{ route('login') }}" class="btn {{ $index === 1 ? 'btn-purple' : 'btn-outline-purple' }} w-100">Login</a>
                         </div>
                     </div>
                 @endforeach
+            </div>
+        </div>
+    </section>
+@elseif(($page['type'] ?? null) === 'legal')
+    <section class="container-xxl py-5">
+        <div class="container px-lg-5">
+            <div class="row justify-content-center">
+                <div class="col-lg-9">
+                    <div class="page-panel">
+                        <div class="card-icon">
+                            <i class="fas fa-file-contract"></i>
+                        </div>
+                        <h2>{{ $page['title'] }}</h2>
+                        @if(!empty($page['effective_date']))
+                            <p class="text-muted mb-4">Effective date: {{ \Carbon\Carbon::parse($page['effective_date'])->format('d M Y') }}</p>
+                        @endif
+                        <div class="legal-content">
+                            {!! nl2br(e($page['legal_content'] ?? 'Terms will be updated soon.')) !!}
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
@@ -154,7 +176,7 @@
         <div class="newsletter-content" data-aos="fade-up">
             <h2>Ready to make work easier to manage?</h2>
             <p>Start using Bitroxia PMS for project delivery, HR operations, attendance, tickets, clients, and reporting.</p>
-            <a href="{{ route('register') }}" class="btn btn-purple btn-lg">Create Workspace <i class="fas fa-arrow-right"></i></a>
+            <a href="{{ route('login') }}" class="btn btn-purple btn-lg">Login <i class="fas fa-arrow-right"></i></a>
         </div>
     </div>
 </section>

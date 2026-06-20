@@ -38,6 +38,9 @@ class User extends Authenticatable
         'archived_at',
         'email_notifications',
         'employee_welcome_seen_at',
+        'reports_to_id',
+        'manager_id',
+        'hr_id',
         // ADD THESE NEW FIELDS:
         'joining_date',
         'annual_leave_balance',
@@ -72,6 +75,113 @@ class User extends Authenticatable
             'leave_amount' => 'decimal:2',
             'carry_forward_leaves' => 'integer',
         ];
+    }
+
+    public function manager()
+    {
+        return $this->belongsTo(User::class, 'manager_id');
+    }
+
+    public function hr()
+    {
+        return $this->belongsTo(User::class, 'hr_id');
+    }
+
+    public function reportsTo()
+    {
+        return $this->belongsTo(User::class, 'reports_to_id');
+    }
+
+    public function directReports()
+    {
+        return $this->hasMany(User::class, 'reports_to_id');
+    }
+
+    public function rolePermissions()
+    {
+        return $this->hasMany(RolePermission::class, 'role', 'role');
+    }
+
+    public function normalizedRole(): string
+    {
+        return strtolower((string) $this->role);
+    }
+
+    public function hasModulePermission(string $moduleSlug, string $permission = 'view'): bool
+    {
+        if ($this->normalizedRole() === 'admin') {
+            return true;
+        }
+
+        $column = 'can_' . $permission;
+        if (! in_array($column, ['can_view', 'can_create', 'can_edit', 'can_delete', 'can_approve', 'can_export', 'can_assign'], true)) {
+            return false;
+        }
+
+        return RolePermission::query()
+            ->where('role', $this->normalizedRole())
+            ->where($column, true)
+            ->whereHas('module', function ($query) use ($moduleSlug) {
+                $query->where('slug', $moduleSlug)->where('is_active', true);
+            })
+            ->exists();
+    }
+
+    public function canViewModule(string $moduleSlug): bool
+    {
+        return $this->hasModulePermission($moduleSlug, 'view');
+    }
+
+    public function visibleEmployeeIds()
+    {
+        $role = $this->normalizedRole();
+
+        if ($role === 'admin') {
+            return User::where('role', 'employee')
+                ->when($this->company_id, fn ($query) => $query->where('company_id', $this->company_id))
+                ->pluck('id');
+        }
+
+        if ($role === 'employee') {
+            return collect([$this->id]);
+        }
+
+        if ($role === 'hr') {
+            return User::where('role', 'employee')
+                ->when($this->company_id, fn ($query) => $query->where('company_id', $this->company_id))
+                ->where(function ($query) {
+                    $query->where('hr_id', $this->id)
+                        ->orWhere('reports_to_id', $this->id)
+                        ->orWhereHas('employeeDetail', fn ($detail) => $detail->where('reporting_to', $this->id));
+                })
+                ->pluck('id');
+        }
+
+        if ($role === 'manager') {
+            $hrIds = User::where('role', 'hr')
+                ->when($this->company_id, fn ($query) => $query->where('company_id', $this->company_id))
+                ->where(function ($query) {
+                    $query->where('manager_id', $this->id)->orWhere('reports_to_id', $this->id);
+                })
+                ->pluck('id');
+
+            return User::where('role', 'employee')
+                ->when($this->company_id, fn ($query) => $query->where('company_id', $this->company_id))
+                ->where(function ($query) use ($hrIds) {
+                    $query->where('manager_id', $this->id)
+                        ->orWhere('reports_to_id', $this->id)
+                        ->orWhereHas('employeeDetail', fn ($detail) => $detail->where('reporting_to', $this->id));
+
+                    if ($hrIds->isNotEmpty()) {
+                        $query->orWhereIn('hr_id', $hrIds)
+                            ->orWhereIn('reports_to_id', $hrIds)
+                            ->orWhereHas('employeeDetail', fn ($detail) => $detail->whereIn('reporting_to', $hrIds));
+                    }
+                })
+                ->pluck('id');
+        }
+
+        return collect();
     }
 
     public function employeeDetail()

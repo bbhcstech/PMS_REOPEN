@@ -8,6 +8,7 @@ class Department extends Model
 {
     protected $fillable = [
         'dpt_name',
+        'company_id',
         'dpt_code',
         'parent_dpt_id',
         'added_by',
@@ -35,6 +36,12 @@ class Department extends Model
     public function employeeDetails()
     {
         return $this->hasMany(EmployeeDetail::class, 'department_id');
+    }
+
+    public function projects()
+    {
+        return $this->belongsToMany(Project::class, 'department_project', 'department_id', 'project_id')
+            ->withTimestamps();
     }
 
     public function addedBy()

@@ -11,7 +11,10 @@
         $seoDescription = trim($__env->yieldContent('meta_description', 'Bitroxia PMS helps teams plan projects, manage tasks, track attendance, handle leave, and report progress from one secure workspace.'));
         $seoKeywords = trim($__env->yieldContent('meta_keywords', 'project management software, PMS, task management, HR management, attendance tracking, leave management, team collaboration'));
         $canonicalUrl = url()->current();
-        $logoUrl = asset('logo.png');
+        $logoVersion = file_exists(public_path('logo.png')) ? filemtime(public_path('logo.png')) : time();
+        $frontendCssVersion = file_exists(public_path('frontend/css/bbh-pms.css')) ? filemtime(public_path('frontend/css/bbh-pms.css')) : time();
+        $frontendJsVersion = file_exists(public_path('frontend/js/bbh-pms.js')) ? filemtime(public_path('frontend/js/bbh-pms.js')) : time();
+        $logoUrl = asset('logo.png') . '?v=' . $logoVersion;
         $heroImageUrl = asset('frontend/img/bitroxia-pms-hero.png');
     @endphp
 
@@ -19,20 +22,26 @@
     <meta name="description" content="{{ $seoDescription }}">
     <meta name="keywords" content="{{ $seoKeywords }}">
     <meta name="author" content="{{ $siteName }}">
-    <meta name="robots" content="index, follow">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <meta name="theme-color" content="#1268ff">
+    <meta name="application-name" content="{{ $siteName }}">
     <link rel="canonical" href="{{ $canonicalUrl }}">
     <link rel="icon" type="image/png" href="{{ $logoUrl }}">
     <link rel="apple-touch-icon" href="{{ $logoUrl }}">
+    <meta property="og:locale" content="en_US">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="{{ $siteName }}">
     <meta property="og:title" content="{{ $seoTitle }}">
     <meta property="og:description" content="{{ $seoDescription }}">
     <meta property="og:url" content="{{ $canonicalUrl }}">
     <meta property="og:image" content="{{ $heroImageUrl }}">
+    <meta property="og:image:secure_url" content="{{ $heroImageUrl }}">
+    <meta property="og:image:alt" content="{{ $siteName }} project management and HR dashboard preview">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="{{ $seoTitle }}">
     <meta name="twitter:description" content="{{ $seoDescription }}">
     <meta name="twitter:image" content="{{ $heroImageUrl }}">
+    <meta name="twitter:image:alt" content="{{ $siteName }} project management and HR dashboard preview">
 
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -54,7 +63,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/magnific-popup.min.css">
 
     <!-- Custom CSS -->
-    <link href="{{ asset('frontend/css/bbh-pms.css') }}" rel="stylesheet">
+    <link href="{{ asset('frontend/css/bbh-pms.css') }}?v={{ $frontendCssVersion }}" rel="stylesheet">
 
     <script type="application/ld+json">
         {
@@ -91,6 +100,23 @@
             "logo": @json($logoUrl),
             "email": "info@bitroxia.com",
             "areaServed": "Worldwide"
+        }
+    </script>
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "name": @json($siteName),
+            "url": @json(url('/')),
+            "description": @json($seoDescription),
+            "publisher": {
+                "@type": "Organization",
+                "name": @json($siteName),
+                "logo": {
+                    "@type": "ImageObject",
+                    "url": @json($logoUrl)
+                }
+            }
         }
     </script>
 
@@ -134,7 +160,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Counter-Up/1.0.0/jquery.counterup.min.js"></script>
 
     <!-- Custom JS -->
-    <script src="{{ asset('frontend/js/bbh-pms.js') }}"></script>
+    <script src="{{ asset('frontend/js/bbh-pms.js') }}?v={{ $frontendJsVersion }}"></script>
 
     @stack('scripts')
 </body>

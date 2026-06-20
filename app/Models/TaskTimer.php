@@ -6,7 +6,16 @@ use Illuminate\Database\Eloquent\Model;
 
 class TaskTimer extends Model
 {
-   protected $fillable = ['task_id', 'user_id','project_id','start_date', 'start_time', 'end_time','end_date','pause_time','memo','total_hours','status'];
+   protected $fillable = ['task_id', 'user_id','project_id','start_date', 'start_time', 'end_time','end_date','pause_time','memo','remarks','total_hours','status'];
+
+   protected $casts = [
+       'start_date' => 'date',
+       'end_date' => 'date',
+       'start_time' => 'datetime',
+       'end_time' => 'datetime',
+       'pause_time' => 'datetime',
+       'total_hours' => 'decimal:2',
+   ];
 
     public function task()
     {

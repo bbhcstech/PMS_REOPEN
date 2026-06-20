@@ -8,6 +8,7 @@ class CollaboratingCompany extends Model
 {
     protected $fillable = [
         'name',
+        'image_path',
         'industry',
         'collaboration_type',
         'description',

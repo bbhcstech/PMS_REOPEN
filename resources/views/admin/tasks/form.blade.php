@@ -98,8 +98,7 @@
             <div class="row">
                          <div class="col-md-9">
             
-                               <select name="assigned_to[]" multiple class="form-select select2" required>
-                            <option value="">Nothing selected</option>
+                               <select name="assigned_to[]" class="form-select select2" multiple required>
                             @foreach($users as $user)
                                 <option value="{{ $user->id }}"
                                     {{ (collect(old('assigned_to', $assignedUserIds))->contains($user->id)) ? 'selected' : '' }}>
@@ -107,6 +106,7 @@
                                 </option>
                             @endforeach
                         </select>
+                        <small class="form-text text-muted">Select one or more employees for this task.</small>
                         
                         </div>
                             <div class="col-md-3 d-flex align-items-start">
@@ -166,9 +166,9 @@
 
     <div class="col-md-2">
         <label>Status</label>
-        <select name="board_column_id" class="form-control select-picker">
-            @foreach(['1'=>'Incomplete','2'=>'To Do','3'=>'Doing','4'=>'Completed','5'=>'Waiting Approval'] as $key => $status)
-                <option value="{{ $key }}" {{ old('board_column_id', $task->board_column_id ?? '') == $key ? 'selected' : '' }}>{{ $status }}</option>
+        <select name="status" class="form-control select-picker">
+            @foreach(['Incomplete', 'To Do', 'Doing', 'Completed', 'Waiting for Approval'] as $status)
+                <option value="{{ $status }}" {{ old('status', $task->status ?? 'To Do') === $status ? 'selected' : '' }}>{{ $status }}</option>
             @endforeach
         </select>
     </div>
@@ -180,6 +180,17 @@
                 <option value="{{ $key }}" {{ old('priority', $task->priority ?? 'medium') == $key ? 'selected' : '' }}>{{ $label }}</option>
             @endforeach
         </select>
+    </div>
+</div>
+
+<div class="row mb-3">
+    <div class="col-md-3">
+        <label>Progress (%)</label>
+        <input type="number" name="progress" class="form-control" min="0" max="100" value="{{ old('progress', $task->progress ?? 0) }}">
+    </div>
+    <div class="col-md-9">
+        <label>Remarks</label>
+        <textarea name="remarks" class="form-control" rows="2" maxlength="2000">{{ old('remarks', $task->remarks ?? '') }}</textarea>
     </div>
 </div>
 

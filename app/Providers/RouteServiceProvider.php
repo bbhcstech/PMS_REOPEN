@@ -26,6 +26,7 @@ class RouteServiceProvider extends ServiceProvider
 
         // Register the RoleMiddleware globally or for specific routes
         Route::aliasMiddleware('role', \App\Http\Middleware\RoleMiddleware::class);
+        Route::aliasMiddleware('module.access', \App\Http\Middleware\EnsureModuleAccess::class);
      
    
         

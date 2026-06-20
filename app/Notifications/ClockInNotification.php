@@ -42,9 +42,7 @@ class ClockInNotification extends Notification
             'record_id' => $this->record->id,
             'user_id' => $this->record->user_id,
             'clocked_at' => $clockedAt,
-            'url' => $this->notifyTo === 'admin'
-                ? url('/admin/attendance')
-                : url('/employee/attendance'),
+            'url' => route('attendance.index'),
             'icon' => 'fa-clock',
             'color' => 'success',
             'for' => $this->notifyTo,

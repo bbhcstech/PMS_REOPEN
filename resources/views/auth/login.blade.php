@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
-    <title>Login - Bitroxia</title>
+    <title>{{ $loginTitle ?? 'Login' }} - Bitroxia</title>
     <meta name="description" content="Bitroxia PMS login" />
 
     <link rel="icon" type="image/x-icon" href="../assets/img/favicon/favicon.ico" />
@@ -26,6 +26,7 @@
             --brand-blue: #0569ff;
             --brand-cyan: #13d5e7;
             --brand-purple: #8f25ff;
+            --brand-rose: #ff4da6;
             --ink: #101427;
             --muted: #697083;
             --line: rgba(16, 20, 39, 0.1);
@@ -41,9 +42,10 @@
             min-height: 100vh;
             font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
             background:
-                radial-gradient(circle at 18% 18%, rgba(19, 213, 231, 0.22), transparent 30%),
-                radial-gradient(circle at 88% 16%, rgba(143, 37, 255, 0.16), transparent 28%),
-                linear-gradient(135deg, #a9b2c1 0%, #929baa 100%);
+                radial-gradient(circle at 15% 16%, rgba(19, 213, 231, 0.28), transparent 31%),
+                radial-gradient(circle at 88% 12%, rgba(143, 37, 255, 0.22), transparent 28%),
+                radial-gradient(circle at 70% 90%, rgba(255, 77, 166, 0.14), transparent 30%),
+                linear-gradient(135deg, #eef5ff 0%, #c9d8ee 48%, #aeb8cc 100%);
             color: var(--ink);
             display: flex;
             align-items: center;
@@ -72,6 +74,12 @@
             50% { box-shadow: 0 20px 42px rgba(19, 213, 231, 0.32); }
         }
 
+        @keyframes haloSweep {
+            0% { transform: translate3d(-18%, -12%, 0) rotate(0deg); opacity: 0.5; }
+            50% { transform: translate3d(8%, 5%, 0) rotate(12deg); opacity: 0.8; }
+            100% { transform: translate3d(-18%, -12%, 0) rotate(0deg); opacity: 0.5; }
+        }
+
         .auth-shell {
             width: min(1120px, 100%);
             min-height: 720px;
@@ -96,6 +104,20 @@
             height: 58%;
             border-radius: 30px;
             background: linear-gradient(145deg, rgba(19, 213, 231, 0.08), rgba(143, 37, 255, 0.05));
+            pointer-events: none;
+        }
+
+        .auth-shell::after {
+            content: "";
+            position: absolute;
+            width: 420px;
+            height: 420px;
+            right: 26%;
+            bottom: -220px;
+            border-radius: 50%;
+            background: conic-gradient(from 90deg, rgba(5,105,255,.18), rgba(19,213,231,.18), rgba(143,37,255,.16), rgba(255,77,166,.12), rgba(5,105,255,.18));
+            filter: blur(26px);
+            animation: haloSweep 10s ease-in-out infinite;
             pointer-events: none;
         }
 
@@ -181,12 +203,19 @@
             position: relative;
             display: flex;
             align-items: center;
+            width: 100%;
         }
 
         .input-icon {
             position: absolute;
             left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
             width: 22px;
+            height: 22px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             text-align: center;
             color: #9aa3b5;
             font-size: 1.08rem;
@@ -210,6 +239,14 @@
             transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
         }
 
+        .input-wrapper > .form-control {
+            box-sizing: border-box;
+            flex: 1 1 auto;
+            min-width: 0;
+            padding-left: 66px !important;
+            padding-right: 56px !important;
+        }
+
         .form-control:focus {
             border-color: rgba(5, 105, 255, 0.42);
             background: #fff;
@@ -226,6 +263,11 @@
 
         #email.form-control {
             padding-left: 72px !important;
+        }
+
+        #password.form-control {
+            padding-left: 66px !important;
+            padding-right: 62px !important;
         }
 
         .password-toggle {
@@ -302,6 +344,26 @@
             white-space: nowrap;
         }
 
+        .terms-check {
+            align-items: flex-start;
+            margin: -6px 0 20px;
+        }
+
+        .terms-check .form-check-input {
+            margin-top: 2px;
+        }
+
+        .terms-check .form-check-label {
+            line-height: 1.45;
+        }
+
+        .terms-link {
+            color: var(--brand-blue);
+            font-weight: 800;
+            text-decoration: underline;
+            text-underline-offset: 2px;
+        }
+
         .btn-pms {
             width: 100%;
             min-height: 50px;
@@ -357,6 +419,17 @@
             text-underline-offset: 2px;
         }
 
+        .access-note {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: #5f687a;
+            font-size: 0.82rem;
+            font-weight: 700;
+        }
+
         .alert {
             border: 0;
             border-radius: 18px;
@@ -408,6 +481,32 @@
                 radial-gradient(circle at 72% 20%, rgba(19, 213, 231, 0.24), transparent 26%);
             z-index: 1;
             pointer-events: none;
+        }
+
+        .visual-copy {
+            position: absolute;
+            left: 34px;
+            right: 34px;
+            bottom: 34px;
+            z-index: 4;
+            color: #fff;
+            text-shadow: 0 10px 28px rgba(4, 8, 28, 0.36);
+        }
+
+        .visual-copy h2 {
+            margin: 0 0 8px;
+            font-size: clamp(1.65rem, 3vw, 2.55rem);
+            line-height: 1.05;
+            font-weight: 800;
+            letter-spacing: 0;
+        }
+
+        .visual-copy p {
+            max-width: 420px;
+            margin: 0;
+            color: rgba(255,255,255,.84);
+            font-size: .95rem;
+            font-weight: 600;
         }
 
         .visual-panel img {
@@ -630,15 +729,18 @@
     </style>
 </head>
 <body>
+    @php
+        $logoVersion = file_exists(public_path('logo.png')) ? filemtime(public_path('logo.png')) : time();
+    @endphp
     <main class="auth-shell">
         <section class="auth-form-panel">
             <a href="{{ route('login') }}" class="brand-pill" aria-label="Bitroxia">
-                <img src="{{ asset('logo.png') }}" alt="Bitroxia logo" />
+                <img src="{{ asset('logo.png') }}?v={{ $logoVersion }}" alt="Bitroxia logo" />
                 <span>Bitroxia</span>
             </a>
 
             <div class="form-wrap">
-                <h1 class="auth-title">Welcome back</h1>
+                <h1 class="auth-title">{{ $loginTitle ?? 'Welcome back' }}</h1>
                 <p class="auth-subtitle">Sign in to continue your workspace</p>
 
                 @if(session('success'))
@@ -725,19 +827,31 @@
                         <a href="auth-forgot-password-basic.html" class="forgot-link">Forgot?</a>
                     </div>
 
+                    <div class="form-check terms-check">
+                        <input class="form-check-input" type="checkbox" id="terms_accepted" name="terms_accepted" value="1" required @checked(old('terms_accepted'))>
+                        <label class="form-check-label" for="terms_accepted">
+                            I agree to the
+                            <a href="{{ route('company.terms') }}" class="terms-link" target="_blank" rel="noopener">Terms &amp; Conditions</a>
+                            of the organization.
+                        </label>
+                    </div>
+                    @if ($errors->has('terms_accepted'))
+                        <div class="field-error">{{ $errors->first('terms_accepted') }}</div>
+                    @endif
+
                     <button type="submit" class="btn-pms">Submit</button>
                 </form>
             </div>
 
             <div class="auth-footer">
-                <span>Need an account? <a href="{{ route('register') }}">Sign up</a></span>
-                <a href="javascript:void(0);">Terms &amp; Conditions</a>
+                <span class="access-note"><i class="bx bx-shield-quarter"></i> Accounts are created by Admin or HR</span>
+                <a href="{{ route('company.terms') }}" target="_blank" rel="noopener">Terms &amp; Conditions</a>
             </div>
         </section>
 
         <section class="visual-panel">
-            <a href="{{ route('register') }}" class="close-link" aria-label="Create account">
-                <i class="bx bx-x"></i>
+            <a href="{{ route('home') }}" class="close-link" aria-label="Back to home">
+                <i class="bx bx-home-alt"></i>
             </a>
             <img src="{{ asset('register_login.jpeg') }}" alt="" />
 
@@ -772,6 +886,11 @@
                     <img src="{{ asset('frontend/img/testimonial-4.jpg') }}" alt="" />
                 </div>
             </div>
+
+            <!-- <div class="visual-copy">
+                <h2>Run projects, people, and payroll from one calm workspace.</h2>
+                <p>Secure access for Admin, HR, Managers, and Employees with every module right where the team expects it.</p>
+            </div> -->
         </section>
     </main>
 

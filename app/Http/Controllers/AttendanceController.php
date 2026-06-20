@@ -14,6 +14,7 @@ use App\Models\Leave;
 use App\Models\CompanyAddress;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Maatwebsite\Excel\Facades\Excel;
@@ -324,7 +325,7 @@ class AttendanceController extends Controller
         $user = Auth::user();
 
         // Check if user has access
-        if (!in_array($user->role, ['admin', 'employee'])) {
+        if (!in_array($user->role, ['admin', 'manager', 'hr', 'employee'])) {
             abort(403, 'Unauthorized access');
         }
 
@@ -333,6 +334,7 @@ class AttendanceController extends Controller
         $userId = $request->input('user_id');
         $departmentId = $request->input('department_id');
         $designationId = $request->input('designation_id');
+        $companyId = $request->integer('company_id') ?: null;
         $daysInMonth = Carbon::createFromDate($year, $month)->daysInMonth;
 
         $startDate = Carbon::create($year, $month, 1);
@@ -351,6 +353,10 @@ class AttendanceController extends Controller
         // Step 2: load users and attendances based on role
         if ($user->role === 'admin') {
             $usersQuery = User::with('employeeDetail')->where('role', 'employee');
+
+            if ($companyId) {
+                $usersQuery->where('company_id', $companyId);
+            }
 
             if ($userId) {
                 $usersQuery->where('id', (int) $userId);
@@ -375,6 +381,21 @@ class AttendanceController extends Controller
                 ->whereMonth('date', $month)
                 ->whereYear('date', $year)
                 ->get();
+        } elseif (in_array($user->role, ['manager', 'hr'], true)) {
+            $usersQuery = User::with('employeeDetail')
+                ->where('role', 'employee')
+                ->whereIn('id', $user->visibleEmployeeIds());
+
+            if ($userId) {
+                $usersQuery->where('id', (int) $userId);
+            }
+
+            $users = $usersQuery->orderBy('name')->get();
+            $attendances = Attendance::whereIn('user_id', $users->pluck('id'))
+                ->whereNull('archived_at')
+                ->whereMonth('date', $month)
+                ->whereYear('date', $year)
+                ->get();
         } else {
             // Employee can only see their own data
             $users = collect([$user]);
@@ -392,6 +413,7 @@ class AttendanceController extends Controller
         $leaves = Leave::whereMonth('date', $month)
             ->whereYear('date', $year)
             ->where('status', 'approved')
+            ->whereIn('user_id', $users->pluck('id'))
             ->get();
 
         // Step 3: initialize attendanceMap and mark holidays
@@ -478,9 +500,18 @@ class AttendanceController extends Controller
             'clock_in' => 'nullable|date_format:H:i',
         ]);
 
+        $attendanceEmployee = User::find($data['user_id']);
+        $attendancePayload = [
+            'status' => $data['status'],
+            'clock_in' => $data['clock_in'] ? Carbon::createFromFormat('H:i', $data['clock_in'])->format('H:i:s') : null,
+        ];
+        if (Schema::hasColumn('attendances', 'company_id')) {
+            $attendancePayload['company_id'] = $attendanceEmployee?->company_id;
+        }
+
         Attendance::updateOrCreate(
             ['user_id' => $data['user_id'], 'date' => $data['date']],
-            ['status' => $data['status'], 'clock_in' => $data['clock_in'] ? Carbon::createFromFormat('H:i', $data['clock_in'])->format('H:i:s') : null]
+            $attendancePayload
         );
 
         return back()->with('success', 'Attendance updated');
@@ -871,23 +902,29 @@ class AttendanceController extends Controller
                     $clockInVal = $request->clock_in ? Carbon::createFromFormat('H:i', $request->clock_in)->format('H:i:s') : null;
                     $clockOutVal = $request->clock_out ? Carbon::createFromFormat('H:i', $request->clock_out)->format('H:i:s') : null;
 
+                    $employeeForAttendance = User::find($userId);
+                    $attendancePayload = [
+                        'department_id'  => $request->department_id,
+                        'status'         => $request->status,
+                        'working_from'   => $request->working_from,
+                        'location_id'    => $request->location_id,
+                        'work_from_type' => $request->work_from_type,
+                        'late'           => ($request->late == 'yes') ? 'yes' : 'no',
+                        'half_day'       => ($request->half_day == 'yes') ? 'yes' : 'no',
+                        'half_day_type'  => ($request->half_day == 'yes') ? $request->half_day_duration : null,
+                        'clock_in'       => $clockInVal,
+                        'clock_out'      => $clockOutVal,
+                    ];
+                    if (Schema::hasColumn('attendances', 'company_id')) {
+                        $attendancePayload['company_id'] = $employeeForAttendance?->company_id;
+                    }
+
                     $record = Attendance::updateOrCreate(
                         [
                             'user_id' => $userId,
                             'date'    => $date->toDateString(),
                         ],
-                        [
-                            'department_id'  => $request->department_id,
-                            'status'         => $request->status,
-                            'working_from'   => $request->working_from,
-                            'location_id'    => $request->location_id,
-                            'work_from_type' => $request->work_from_type,
-                            'late'           => ($request->late == 'yes') ? 'yes' : 'no',
-                            'half_day'       => ($request->half_day == 'yes') ? 'yes' : 'no',
-                            'half_day_type'  => ($request->half_day == 'yes') ? $request->half_day_duration : null,
-                            'clock_in'       => $clockInVal,
-                            'clock_out'      => $clockOutVal,
-                        ]
+                        $attendancePayload
                     );
                     $record = $this->applyOrganizationAttendanceRules($record);
 
@@ -920,23 +957,29 @@ class AttendanceController extends Controller
                 $clockInVal = $request->clock_in ? Carbon::createFromFormat('H:i', $request->clock_in)->format('H:i:s') : null;
                 $clockOutVal = $request->clock_out ? Carbon::createFromFormat('H:i', $request->clock_out)->format('H:i:s') : null;
 
+                $employeeForAttendance = User::find($userId);
+                $attendancePayload = [
+                    'department_id'  => $request->department_id,
+                    'status'         => $request->status,
+                    'working_from'   => $request->working_from,
+                    'location_id'    => $request->location_id,
+                    'work_from_type' => $request->work_from_type,
+                    'late'           => ($request->late == 'yes') ? 'yes' : 'no',
+                    'half_day'       => ($request->half_day == 'yes') ? 'yes' : 'no',
+                    'half_day_type'  => ($request->half_day == 'yes') ? $request->half_day_duration : null,
+                    'clock_in'       => $clockInVal,
+                    'clock_out'      => $clockOutVal,
+                ];
+                if (Schema::hasColumn('attendances', 'company_id')) {
+                    $attendancePayload['company_id'] = $employeeForAttendance?->company_id;
+                }
+
                 $record = Attendance::updateOrCreate(
                     [
                         'user_id' => $userId,
                         'date'    => $request->date,
                     ],
-                    [
-                        'department_id'  => $request->department_id,
-                        'status'         => $request->status,
-                        'working_from'   => $request->working_from,
-                        'location_id'    => $request->location_id,
-                        'work_from_type' => $request->work_from_type,
-                        'late'           => ($request->late == 'yes') ? 'yes' : 'no',
-                        'half_day'       => ($request->half_day == 'yes') ? 'yes' : 'no',
-                        'half_day_type'  => ($request->half_day == 'yes') ? $request->half_day_duration : null,
-                        'clock_in'       => $clockInVal,
-                        'clock_out'      => $clockOutVal,
-                    ]
+                    $attendancePayload
                 );
                 $record = $this->applyOrganizationAttendanceRules($record);
 
@@ -1907,11 +1950,12 @@ class AttendanceController extends Controller
                 // find or create today's attendance row
                 $attendance = Attendance::firstOrCreate(
                     ['user_id' => $user->id, 'date' => $today],
-                    [
+                    array_filter([
+                        'company_id' => Schema::hasColumn('attendances', 'company_id') ? $user->company_id : null,
                         'status' => 'present',
                         'working_from' => 'office',
                         'work_from_type' => 'other'
-                    ]
+                    ], fn ($value) => ! is_null($value))
                 );
 
                 // set clock_in if not already set

@@ -11,6 +11,7 @@ class ParentDepartment extends Model
 
     protected $fillable = [
         'dpt_name',
+        'company_id',
         'dpt_code',
         'added_by',
         'last_updated_by',

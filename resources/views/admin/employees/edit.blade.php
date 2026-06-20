@@ -46,6 +46,37 @@
             overflow-x: hidden;
         }
 
+        .directory-profile-box {
+            border: 1px solid rgba(15, 116, 76, .14);
+            background: rgba(255, 255, 255, .94);
+            border-radius: 14px;
+            padding: 18px;
+            box-shadow: 0 14px 34px rgba(15, 116, 76, .08);
+        }
+
+        .directory-profile-head {
+            display: flex;
+            justify-content: space-between;
+            gap: 14px;
+            margin-bottom: 14px;
+        }
+
+        .directory-profile-head span {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--primary);
+            font-weight: 900;
+            text-transform: uppercase;
+            font-size: .78rem;
+        }
+
+        .directory-profile-head p {
+            margin: 5px 0 0;
+            color: var(--text-muted);
+            font-weight: 700;
+        }
+
         /* Ambient Animated Background */
         .ambient-bg {
             position: fixed;
@@ -380,6 +411,43 @@
             transform: translateY(-2px);
         }
 
+        .input-group-premium .form-control-premium {
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+
+        .password-input-group .form-control-premium {
+            border: none;
+            border-radius: 14px 0 0 14px;
+            box-shadow: none;
+            transform: none;
+        }
+
+        .password-input-group .form-control-premium:focus {
+            box-shadow: none;
+            transform: none;
+        }
+
+        .password-input-group .btn {
+            align-items: center;
+            border: none;
+            border-left: 1px solid rgba(15, 116, 76, 0.12);
+            border-radius: 0;
+            color: var(--primary);
+            display: inline-flex;
+            flex: 0 0 44px;
+            justify-content: center;
+            min-width: 44px;
+            padding: 0;
+        }
+
+        .password-input-group .btn:hover,
+        .password-input-group .btn:focus {
+            background: rgba(15, 116, 76, 0.08);
+            color: var(--primary);
+            box-shadow: none;
+        }
+
         .input-group-premium .country-code-select {
             border: none;
             background: transparent;
@@ -652,6 +720,25 @@
 
                         <div class="col-md-4">
                             <label class="form-label-premium">
+                                <span><i class="fas fa-building"></i> Company</span>
+                                <span class="mandatory-badge">Required</span>
+                            </label>
+                            @php $selectedCompany = old('company_id') ?? $employee->company_id; @endphp
+                            <select name="company_id" id="company_id" class="form-select-premium" required>
+                                <option value="">Select Company</option>
+                                @foreach($companies as $company)
+                                    <option value="{{ $company->id }}" {{ (string) $selectedCompany === (string) $company->id ? 'selected' : '' }}>
+                                        {{ $company->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('company_id')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label-premium">
                                 <span><i class="fas fa-user"></i> Employee Name</span>
                                 <span class="mandatory-badge">Required</span>
                             </label>
@@ -677,12 +764,12 @@
                                 <span><i class="fas fa-lock"></i> Password</span>
                                 <span class="optional-badge">Optional</span>
                             </label>
-                            <div class="input-group-premium">
-                                <input type="password" name="password" id="password" class="form-control-premium" autocomplete="off" minlength="8" style="border: none; border-radius: 14px;">
-                                <button type="button" class="btn btn-outline-secondary toggle-password" title="Show/Hide Password" style="border: none; background: transparent;">
+                            <div class="input-group-premium password-input-group">
+                                <input type="password" name="password" id="password" class="form-control-premium" autocomplete="off" minlength="8">
+                                <button type="button" class="btn btn-outline-secondary toggle-password" title="Show/Hide Password">
                                     <i class="fa fa-eye"></i>
                                 </button>
-                                <button type="button" class="btn btn-outline-secondary generate-password" title="Generate Random Password" style="border: none; background: transparent;">
+                                <button type="button" class="btn btn-outline-secondary generate-password" title="Generate Random Password">
                                     <i class="fa fa-random"></i>
                                 </button>
                             </div>
@@ -940,6 +1027,60 @@
                                 <span class="optional-badge">Optional</span>
                             </label>
                             <textarea name="skills" class="form-control-premium" rows="2" placeholder="Comma separated skills (e.g., Laravel, Vue.js, React)">{{ old('skills') ?? ($ed->skills ?? $employee->skills ?? '') }}</textarea>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="directory-profile-box">
+                                <div class="directory-profile-head">
+                                    <div>
+                                        <span><i class="fas fa-address-card"></i> Directory Profile</span>
+                                        <p>Optional public-facing details shown in the Organization section.</p>
+                                    </div>
+                                </div>
+                                <div class="row g-3">
+                                    <div class="col-md-12">
+                                        <label class="form-label-premium">
+                                            <span><i class="fas fa-pen"></i> Public About / HR Rewrite</span>
+                                            <span class="optional-badge">Optional</span>
+                                        </label>
+                                        <textarea name="directory_about" class="form-control-premium" rows="3" placeholder="Write a short professional profile for this employee.">{{ old('directory_about') ?? ($ed->directory_about ?? '') }}</textarea>
+                                        @error('directory_about')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label-premium"><span><i class="fab fa-linkedin"></i> LinkedIn</span><span class="optional-badge">Optional</span></label>
+                                        <input type="url" name="linkedin_url" class="form-control-premium" value="{{ old('linkedin_url') ?? ($ed->linkedin_url ?? '') }}" placeholder="https://linkedin.com/in/name">
+                                        @error('linkedin_url')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label-premium"><span><i class="fas fa-globe"></i> Portfolio</span><span class="optional-badge">Optional</span></label>
+                                        <input type="url" name="portfolio_url" class="form-control-premium" value="{{ old('portfolio_url') ?? ($ed->portfolio_url ?? '') }}" placeholder="https://portfolio.example">
+                                        @error('portfolio_url')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label-premium"><span><i class="fas fa-file-lines"></i> CV / Resume</span><span class="optional-badge">Optional</span></label>
+                                        <input type="file" name="cv_file" class="form-control-premium" accept=".pdf,.doc,.docx,application/pdf">
+                                        @if($ed?->cv_path)
+                                            <small class="text-muted d-block mt-1">Current: <a href="{{ asset($ed->cv_path) }}" target="_blank" style="color: var(--secondary);">view CV</a></small>
+                                        @endif
+                                        @error('cv_file')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label-premium"><span><i class="fab fa-facebook"></i> Facebook</span><span class="optional-badge">Optional</span></label>
+                                        <input type="url" name="facebook_url" class="form-control-premium" value="{{ old('facebook_url') ?? ($ed->facebook_url ?? '') }}" placeholder="https://facebook.com/name">
+                                        @error('facebook_url')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label-premium"><span><i class="fab fa-instagram"></i> Instagram</span><span class="optional-badge">Optional</span></label>
+                                        <input type="url" name="instagram_url" class="form-control-premium" value="{{ old('instagram_url') ?? ($ed->instagram_url ?? '') }}" placeholder="https://instagram.com/name">
+                                        @error('instagram_url')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label-premium"><span><i class="fab fa-x-twitter"></i> X / Twitter</span><span class="optional-badge">Optional</span></label>
+                                        <input type="url" name="x_url" class="form-control-premium" value="{{ old('x_url') ?? ($ed->x_url ?? '') }}" placeholder="https://x.com/name">
+                                        @error('x_url')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="col-md-4">

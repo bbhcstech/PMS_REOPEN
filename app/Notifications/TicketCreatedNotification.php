@@ -12,7 +12,7 @@ class TicketCreatedNotification extends Notification
 
     public $ticket;
 
-    public function __construct($ticket)
+    public function __construct($ticket, $createdBy = null, $notifyTo = null)
     {
         $this->ticket = $ticket;
     }
@@ -30,7 +30,9 @@ class TicketCreatedNotification extends Notification
             'ticket_id' => $this->ticket->id,
             'title' => 'New Ticket Assigned',
             'message' => 'A new ticket has been assigned to you: ' . $this->ticket->subject,
-            'url' => url('/admin/tickets/' . $this->ticket->id),
+            'url' => route('tickets.show', $this->ticket->id),
+            'icon' => 'fa-ticket',
+            'color' => 'info',
             'created_by' => auth()->id(),
         ];
     }
@@ -39,7 +41,7 @@ class TicketCreatedNotification extends Notification
 public function toMail($notifiable)
 {
     $ticket = $this->ticket;
-    $ticketUrl = url('/admin/tickets/' . $ticket->id);
+    $ticketUrl = route('tickets.show', $ticket->id);
 
     return (new MailMessage)
         ->markdown('emails.default') // <--- your custom layout here

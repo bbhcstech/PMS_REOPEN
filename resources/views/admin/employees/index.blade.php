@@ -148,6 +148,49 @@
         </div>
     </div>
 
+    @if(auth()->user()?->normalizedRole() === 'admin')
+    {{-- Company Selector - SaaS company workspace filter --}}
+    <div class="company-switcher-grid !grid !grid-cols-1 !gap-3 sm:!grid-cols-2 lg:!grid-cols-3 2xl:!grid-cols-6 !mb-5">
+        <a href="{{ route('employees.index', request()->except(['company_id', 'page'])) }}"
+           class="company-switch-card {{ empty($selectedCompanyId) ? 'active' : '' }}">
+            <span class="company-switch-icon"><i class="fas fa-layer-group"></i></span>
+            <span class="company-switch-meta">
+                <strong>All Companies</strong>
+                <small>{{ $companyStats->sum('employees') }} employees</small>
+            </span>
+        </a>
+        @foreach($companyStats as $stat)
+            @php
+                $company = $stat['company'];
+                $companyQuery = array_merge(request()->except('page'), ['company_id' => $company->id]);
+            @endphp
+            <a href="{{ route('employees.index', $companyQuery) }}"
+               class="company-switch-card {{ (string) $selectedCompanyId === (string) $company->id ? 'active' : '' }}">
+                <span class="company-switch-icon">
+                    @if($company->logo)
+                        <img src="{{ asset($company->logo) }}" alt="{{ $company->name }}">
+                    @else
+                        {{ strtoupper(substr($company->short_name ?: $company->company_code ?: $company->name, 0, 2)) }}
+                    @endif
+                </span>
+                <span class="company-switch-meta">
+                    <strong>{{ $company->name }}</strong>
+                    <small>{{ $stat['employees'] }} employees • {{ $stat['active'] }} active</small>
+                </span>
+            </a>
+        @endforeach
+    </div>
+    @if($selectedCompanyId)
+        <div class="company-module-rail !mb-5">
+            <span>Company workspace</span>
+            <a href="{{ route('attendance.index', ['company_id' => $selectedCompanyId]) }}"><i class="fas fa-calendar-check"></i> Attendance</a>
+            <a href="{{ route('leaves.index', ['company_id' => $selectedCompanyId]) }}"><i class="fas fa-calendar-days"></i> Leaves</a>
+            <a href="{{ route('payroll.index', ['company_id' => $selectedCompanyId]) }}"><i class="fas fa-wallet"></i> Payroll</a>
+            <a href="{{ route('payroll.payslips.index', ['company_id' => $selectedCompanyId]) }}"><i class="fas fa-file-invoice-dollar"></i> Payslips</a>
+        </div>
+    @endif
+    @endif
+
     {{-- Invite Modal - FUNCTIONALITY UNCHANGED --}}
     <div class="modal fade" id="inviteModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -341,6 +384,9 @@
         <div class="filter-body employee-filter-body !p-4 sm:!p-5">
             <form method="GET" action="{{ route('employees.index') }}" class="filter-form">
                 <div class="filter-grid employee-filter-grid !grid !grid-cols-1 !gap-4 sm:!grid-cols-2 xl:!grid-cols-4">
+                    @if($selectedCompanyId)
+                        <input type="hidden" name="company_id" value="{{ $selectedCompanyId }}">
+                    @endif
                     <!-- Employee ID -->
                     <div class="filter-item employee-filter-field">
                         <label class="filter-label">
@@ -431,7 +477,7 @@
         </div>
 
         <div class="table-responsive !w-full !overflow-x-auto">
-            <table id="employeeTable" class="table table-hover align-middle mb-0 employee-list-table !min-w-[1080px] md:!min-w-full">
+            <table id="employeeTable" class="table table-hover align-middle mb-0 employee-list-table !min-w-[1200px] md:!min-w-full">
                 <thead>
                     <tr>
                         <th width="50">
@@ -441,6 +487,7 @@
                         </th>
                         <th width="140">Emp ID</th>
                         <th>Employee Name</th>
+                        <th width="190">Company</th>
                         <th width="200">Email</th>
                         <th width="220">Role & Reporting</th>
                         <th width="120">Status</th>
@@ -450,7 +497,7 @@
                 <tbody>
                     @if($visibleEmployees->isEmpty())
                         <tr>
-                            <td colspan="7" class="text-center py-5">
+                            <td colspan="8" class="text-center py-5">
                                 <div class="empty-state">
                                     <i class="fas fa-users fa-4x text-muted mb-3"></i>
                                     <h5 class="text-muted">No Employees Found</h5>
@@ -473,6 +520,7 @@
                                            data-employee-id="{{ $employee->employeeDetail?->employee_id ?? '-' }}"
                                            data-name="{{ htmlspecialchars($employee->name, ENT_QUOTES, 'UTF-8') }}"
                                            data-email="{{ $employee->email ?? '-' }}"
+                                           data-company="{{ htmlspecialchars($employee->company?->name ?? 'Unassigned', ENT_QUOTES, 'UTF-8') }}"
                                            data-designation="{{ htmlspecialchars($employee->employeeDetail?->designation?->name ?? '-', ENT_QUOTES, 'UTF-8') }}"
                                            data-reporting-to="{{ htmlspecialchars($employee->employeeDetail?->reportingTo?->name ?? 'N/A', ENT_QUOTES, 'UTF-8') }}"
                                            data-status="{{ $employee->employeeDetail?->status === 'Active' ? 'Active' : ($employee->employeeDetail?->status === 'Inactive' ? 'Inactive' : 'N/A') }}">
@@ -524,6 +572,18 @@
                                         </div>
                                     </div>
                                 </div>
+                            </td>
+                            <td>
+                                <span class="employee-company-chip">
+                                    <span class="employee-company-logo">
+                                        @if($employee->company?->logo)
+                                            <img src="{{ asset($employee->company->logo) }}" alt="{{ $employee->company->name }}">
+                                        @else
+                                            {{ strtoupper(substr($employee->company?->short_name ?: $employee->company?->company_code ?: $employee->company?->name ?: 'NA', 0, 2)) }}
+                                        @endif
+                                    </span>
+                                    <span>{{ $employee->company?->name ?? 'Unassigned' }}</span>
+                                </span>
                             </td>
                             <td>
                                 <div class="email-wrapper">
@@ -1502,6 +1562,148 @@
         border-radius: 100px;
         font-size: 0.7rem;
         font-weight: 600;
+    }
+
+    .company-switcher-grid {
+        margin-top: 18px;
+    }
+
+    .company-switch-card {
+        align-items: center;
+        background: rgba(255, 255, 255, 0.96);
+        border: 1px solid rgba(15, 116, 76, 0.12);
+        border-radius: 18px;
+        box-shadow: 0 14px 34px rgba(15, 116, 76, 0.08);
+        color: #07130d;
+        display: flex;
+        gap: 12px;
+        min-height: 86px;
+        padding: 14px;
+        text-decoration: none;
+        transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+    }
+
+    .company-switch-card:hover {
+        border-color: rgba(15, 116, 76, 0.28);
+        box-shadow: 0 20px 42px rgba(15, 116, 76, 0.14);
+        color: #07130d;
+        transform: translateY(-2px);
+    }
+
+    .company-switch-card.active {
+        background: linear-gradient(135deg, #ecfdf5, #ffffff);
+        border-color: rgba(15, 116, 76, 0.42);
+        box-shadow: 0 22px 46px rgba(15, 116, 76, 0.16);
+    }
+
+    .company-switch-icon,
+    .employee-company-logo {
+        align-items: center;
+        background: linear-gradient(135deg, #0f744c, #22c55e);
+        border-radius: 14px;
+        color: #ffffff;
+        display: inline-flex;
+        flex: 0 0 auto;
+        font-weight: 900;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    .company-switch-icon {
+        height: 48px;
+        width: 48px;
+    }
+
+    .company-switch-icon img,
+    .employee-company-logo img {
+        height: 100%;
+        object-fit: cover;
+        width: 100%;
+    }
+
+    .company-switch-meta {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+    }
+
+    .company-switch-meta strong {
+        color: #07130d;
+        font-size: .9rem;
+        line-height: 1.2;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .company-switch-meta small {
+        color: #52645a;
+        font-size: .76rem;
+        font-weight: 700;
+        margin-top: 4px;
+    }
+
+    .employee-company-chip {
+        align-items: center;
+        display: inline-flex;
+        gap: 8px;
+        max-width: 180px;
+        min-width: 0;
+    }
+
+    .employee-company-chip > span:last-child {
+        color: #07130d;
+        font-size: .82rem;
+        font-weight: 800;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .employee-company-logo {
+        height: 32px;
+        width: 32px;
+        font-size: .72rem;
+    }
+
+    .company-module-rail {
+        align-items: center;
+        background: rgba(255, 255, 255, 0.96);
+        border: 1px solid rgba(15, 116, 76, 0.12);
+        border-radius: 16px;
+        box-shadow: 0 14px 34px rgba(15, 116, 76, 0.08);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        padding: 12px 14px;
+    }
+
+    .company-module-rail span {
+        color: #52645a;
+        font-size: .82rem;
+        font-weight: 900;
+        margin-right: 4px;
+        text-transform: uppercase;
+    }
+
+    .company-module-rail a {
+        align-items: center;
+        background: #f4faf6;
+        border: 1px solid rgba(15, 116, 76, 0.12);
+        border-radius: 12px;
+        color: #0f744c;
+        display: inline-flex;
+        font-size: .84rem;
+        font-weight: 900;
+        gap: 7px;
+        min-height: 38px;
+        padding: 8px 12px;
+        text-decoration: none;
+    }
+
+    .company-module-rail a:hover {
+        background: #ecfdf5;
+        color: #0f744c;
     }
 
     .badge.bg-primary {
@@ -2675,7 +2877,7 @@
             border-collapse: separate !important;
             border-spacing: 0 8px !important;
             width: max-content !important;
-            min-width: 1080px !important;
+            min-width: 1200px !important;
         }
 
         .employee-dashboard .employee-list-table thead tr,
@@ -2724,6 +2926,15 @@
 
         .employee-dashboard .employee-list-table thead th:nth-child(4),
         .employee-dashboard .employee-list-table tbody td:nth-child(4) {
+            width: 190px !important;
+            min-width: 190px !important;
+            max-width: 190px !important;
+            padding-left: 10px !important;
+            padding-right: 10px !important;
+        }
+
+        .employee-dashboard .employee-list-table thead th:nth-child(5),
+        .employee-dashboard .employee-list-table tbody td:nth-child(5) {
             width: 210px !important;
             min-width: 210px !important;
             max-width: 210px !important;
@@ -2827,6 +3038,7 @@ $(document).ready(function () {
                     employee_id: $(this).data('employee-id') || '-',
                     name: cleanHTML($(this).data('name')) || '-',
                     email: $(this).data('email') || '-',
+                    company: cleanHTML($(this).data('company')) || '-',
                     designation: cleanHTML($(this).data('designation')) || '-',
                     reporting_to: cleanHTML($(this).data('reporting-to')) || 'N/A',
                     status: $(this).data('status') || 'N/A'
@@ -2857,7 +3069,7 @@ $(document).ready(function () {
     // Export functions
     function getDataForExport(exportAll = false) {
         const data = [];
-        const headers = ['Employee ID', 'Name', 'Email', 'Designation', 'Reporting To', 'Status'];
+        const headers = ['Employee ID', 'Name', 'Email', 'Company', 'Designation', 'Reporting To', 'Status'];
         data.push(headers);
 
         if (exportAll) {
@@ -2866,6 +3078,7 @@ $(document).ready(function () {
                     $(this).data('employee-id') || '-',
                     cleanHTML($(this).data('name')) || '-',
                     $(this).data('email') || '-',
+                    cleanHTML($(this).data('company')) || '-',
                     cleanHTML($(this).data('designation')) || '-',
                     cleanHTML($(this).data('reporting-to')) || 'N/A',
                     $(this).data('status') || 'N/A'
@@ -2877,6 +3090,7 @@ $(document).ready(function () {
                     emp.data.employee_id,
                     emp.data.name,
                     emp.data.email,
+                    emp.data.company,
                     emp.data.designation,
                     emp.data.reporting_to,
                     emp.data.status
@@ -3038,11 +3252,9 @@ $(document).ready(function () {
 
     // Generate invite link
     $('#createLinkBtn').on('click', function() {
-        const token = Math.random().toString(36).substring(2, 15);
-        const domainRestricted = $('#domainEmail').is(':checked');
-        const link = `{{ url('/') }}/register?invitation=${token}&restrict=${domainRestricted}`;
-        $('#linkContainer').show();
-        $('#inviteLink').val(link);
+        $('#linkContainer').hide();
+        $('#inviteLink').val('');
+        alert('Public registration is disabled. Please create employee accounts from the employee management form.');
     });
 
     // Copy link

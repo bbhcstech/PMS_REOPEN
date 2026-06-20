@@ -1,952 +1,1220 @@
 @extends('admin.layout.app')
 
+@section('title', 'Create Project')
+
 @section('content')
-<main id="main" class="main">
-    <div class="container">
-        <br>
-        <h5>Create Project</h5>
-        
-         @if ($errors->any())
+<div class="create-project-page">
+    <div class="container-fluid px-4">
+
+        <!-- Breadcrumb -->
+        <div class="breadcrumb">
+            <i class="fas fa-plus-circle"></i>
+            <span>Dashboard / Projects / <strong>Create Project</strong></span>
+        </div>
+
+        <!-- Header Card -->
+        <div class="header-card">
+            <div class="header-left">
+                <div class="header-icon">
+                    <i class="fas fa-project-diagram"></i>
+                </div>
+                <div>
+                    <h1>Create New Project</h1>
+                    <p>Fill in the details to create a new project</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <a href="{{ route('projects.index') }}" class="btn btn-outline">
+                    <i class="fas fa-arrow-left"></i> Back to Projects
+                </a>
+            </div>
+        </div>
+
+        <!-- Error Messages -->
+        @if ($errors->any())
         <div class="alert alert-danger">
-            <ul class="mb-0">
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
-
-       <form action="{{ route('projects.store') }}" method="POST" enctype="multipart/form-data">
-    @csrf
-
-    <div class="row g-3">
-        
-        <!-- SHORTCODE: Auto or Manual choice -->
-        <div class="col-md-6">
-            <label>Short Code <sup class="text-danger">*</sup></label>
-
-            <div class="mb-2 d-flex gap-3">
-                <div class="form-check">
-                    <input class="form-check-input" type="radio" name="shortcode_option_radio" id="shortcode_auto" value="auto" checked>
-                    <label class="form-check-label" for="shortcode_auto">Auto-generate</label>
-                </div>
-
-                <!--<div class="form-check">-->
-                <!--    <input class="form-check-input" type="radio" name="shortcode_option_radio" id="shortcode_manual_opt" value="manual">-->
-                <!--    <label class="form-check-label" for="shortcode_manual_opt">Enter manually</label>-->
-                <!--</div>-->
-            </div>
-
-            <!-- Hidden field that will ALWAYS be submitted (sync'd by JS) -->
-            <input type="hidden" name="shortcode_option" id="shortcode_option" value="auto">
-
-            <!-- Informational display for auto -->
-           <input type="text"
-       id="shortcode_display"
-       class="form-control mb-2"
-       value="{{ $nextProjectCode ?? 'Will be generated automatically' }}"
-       readonly>
-
-
-            <!-- Manual input (hidden by default) -->
-            <input type="text" name="shortcode_manual" id="shortcode_manual" class="form-control d-none" placeholder="Enter shortcode e.g. Xink25-26/0001" value="{{ old('shortcode_manual') }}">
-
-            <!--<small class="form-text text-muted">Choose Auto to have the system generate the next code, or Manual to enter your own unique code.</small>-->
-
-            @error('shortcode_manual')
-                <div class="text-danger mt-1">{{ $message }}</div>
-            @enderror
-        </div>
-
-        <div class="col-md-6">
-            <label>Project Name <sup class="text-danger">*</sup></label>
-            <input type="text" name="name" class="form-control" required value="{{ old('name') }}">
-        </div>
-        
-        
-        <div class="col-md-4">
-            <label>Start Date <sup class="text-danger">*</sup></label>
-            <input type="date" name="start_date" class="form-control" required value="{{ old('start_date') }}">
-        </div>
-
-        <div class="col-md-4">
-            {{-- CHANGED: give the star an id so we can hide/show it --}}
-            <label>Deadline <sup class="text-danger" id="deadline_required">*</sup></label>
-            <input type="date" name="deadline" class="form-control" id="deadline_input" value="{{ old('deadline') }}">
-        </div>
-        
-        <div class="col-md-4 d-flex align-items-center pt-4">
-            <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="without_deadline" id="without_deadline" {{ old('without_deadline') ? 'checked' : '' }}>
-                    
-                   
-                    <label class="form-check-label" for="without_deadline">
-                        No deadline for this project
-                    </label>
-                </div>
-
-        </div>
-        
-        <div class="col-md-4">
-            <label>Project Category <sup class="text-danger">*</sup></label>
-            <div class="input-group">
-                <select name="category_id" id="project_category_id" class="form-control" required>
-                    <option value="">Select</option>
-                    @foreach($categories as $cat)
-                        <option value="{{ $cat->id }}" {{ old('category_id') == $cat->id ? 'selected' : '' }}>{{ $cat->category_name }}</option>
-                    @endforeach
-                </select>
-                <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#catModal">
-                    Add
-                </button>
-            </div>
-        </div>
-        
-
-
-        
-        <div class="col-md-4">
-    <label>Parent Department <sup class="text-danger">*</sup></label>
-    <select name="parent_dpt_id" id="parent_dpt_id" class="form-control" required>
-        <option value="">Select</option>
-        @foreach($prtdepartments as $prt)
-            <option value="{{ $prt->id }}">{{ $prt->dpt_name }}</option>
-        @endforeach
-    </select>
-</div>
-
-<div class="col-md-4">
-    <label>Department <sup class="text-danger"></sup></label>
-    <select name="department_id" id="department_id" class="form-control" >
-        <option value="">Select parent department first</option>
-    </select>
-</div>
-
-        
-       <div class="col-md-4">
-        {{-- CHANGED: make client mandatory visually --}}
-        <label>Client <sup class="text-danger">*</sup></label>
-        <div class="input-group">
-            {{-- CHANGED: add required attribute --}}
-            <select name="client_id" id="client_id" class="form-control" required>
-                <option value="">Select</option>
-                @foreach($clients as $client)
-                    <option value="{{ $client->id }}" {{ old('client_id') == $client->id ? 'selected' : '' }}>{{ $client->name }}</option>
-                @endforeach
-            </select>
-            <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#clientModal">
-                Add
-            </button>
-        </div>
-    </div>
-
-
-        <div class="col-md-6">
-            <label>Project Summary</label>
-            <textarea name="description" class="form-control">{{ old('description') }}</textarea>
-        </div>
-
-
-      
-        
-        <div class="col-md-6">
-            <label>Notes</label>
-            <textarea name="notes" class="form-control">{{ old('notes') }}</textarea>
-        </div>
-        
-        
-        <div class="row">
-
-    <!-- Public Gantt Chart -->
-    <div class="col-md-12 col-lg-4">
-        <div class="form-group my-3">
-            <label class="f-14 text-dark-grey mb-12 w-100 mt-3">Public Gantt Chart</label>
-            <div class="d-flex">
-                <div class="form-check-inline custom-control custom-radio mt-2 mr-3">
-                    <input type="radio" value="enable" class="custom-control-input" 
-                           id="public_gantt_chart-yes" name="public_gantt_chart" 
-                           {{ old('public_gantt_chart', 'enable') == 'enable' ? 'checked' : '' }}>
-                    <label class="custom-control-label pt-1 cursor-pointer" for="public_gantt_chart-yes">Enable</label>
-                </div>
-                <div class="form-check-inline custom-control custom-radio mt-2 mr-3">
-                    <input type="radio" value="disable" class="custom-control-input" 
-                           id="public_gantt_chart-no" name="public_gantt_chart" 
-                           {{ old('public_gantt_chart') == 'disable' ? 'checked' : '' }}>
-                    <label class="custom-control-label pt-1 cursor-pointer" for="public_gantt_chart-no">Disable</label>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Public Task Board -->
-    <div class="col-md-12 col-lg-4">
-        <div class="form-group my-3">
-            <label class="f-14 text-dark-grey mb-12 w-100 mt-3">Public Task Board</label>
-            <div class="d-flex">
-                <div class="form-check-inline custom-control custom-radio mt-2 mr-3">
-                    <input type="radio" value="enable" class="custom-control-input" 
-                           id="public_taskboard-yes" name="public_taskboard"
-                           {{ old('public_taskboard', 'enable') == 'enable' ? 'checked' : '' }}>
-                    <label class="custom-control-label pt-1 cursor-pointer" for="public_taskboard-yes">Enable</label>
-                </div>
-                <div class="form-check-inline custom-control custom-radio mt-2 mr-3">
-                    <input type="radio" value="disable" class="custom-control-input" 
-                           id="public_taskboard-no" name="public_taskboard"
-                           {{ old('public_taskboard') == 'disable' ? 'checked' : '' }}>
-                    <label class="custom-control-label pt-1 cursor-pointer" for="public_taskboard-no">Disable</label>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Task Approval Required -->
-    <div class="col-md-12 col-lg-4">
-        <div class="form-group my-3">
-            <label class="f-14 text-dark-grey mb-12 w-100 mt-3">Task needs approval by Admin/Project Admin</label>
-            <div class="d-flex">
-                <div class="form-check-inline custom-control custom-radio mt-2 mr-3">
-                    <input type="radio" value="1" class="custom-control-input" 
-                           id="need_approval_by_admin-yes" name="need_approval_by_admin"
-                           {{ old('need_approval_by_admin') == '1' ? 'checked' : '' }}>
-                    <label class="custom-control-label pt-1 cursor-pointer" for="need_approval_by_admin-yes">Enable</label>
-                </div>
-                <div class="form-check-inline custom-control custom-radio mt-2 mr-3">
-                    <input type="radio" value="0" class="custom-control-input" 
-                           id="need_approval_by_admin-no" name="need_approval_by_admin"
-                           {{ old('need_approval_by_admin', '0') == '0' ? 'checked' : '' }}>
-                    <label class="custom-control-label pt-1 cursor-pointer" for="need_approval_by_admin-no">Disable</label>
-                </div>
-            </div>
-        </div>
-    </div>
-
-</div>
-
-<div class="col-sm-12">
-    <div class="form-group">
-        <div class="mt-2 d-flex">
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" name="public" id="is_public" autocomplete="off" {{ old('public') ? 'checked' : '' }}>
-                <label class="form-check-label form_custom_label text-dark-grey pl-2 mr-4 justify-content-start cursor-pointer checkmark-20 pt-1 text-wrap text-break" for="is_public">
-                    Create Public Project
-                </label>
-            </div>
-        </div>
-    </div>
-</div>
-
-        
-<div class="col-md-12">
-    <label>Add Project Members <sup class="text-danger">*</sup></label>
-    <div class="row">
-        <div class="col-md-9">
-            <select name="employee_ids[]" id="projectMembers" class="form-control" multiple>
-                @foreach($users as $u)
-                    <option value="{{ $u->id }}" data-fullname="{{ $u->name }}">
-                        {{ $u->name }} ({{ $u->employee_id }})
-                    </option>
-                @endforeach
-            </select>
-        </div>
-
-        <div class="col-md-3 d-flex align-items-start">
-            <button type="button" class="btn btn-success w-100" data-bs-toggle="modal" data-bs-target="#employeeModal">
-                + Add Employee
-            </button>
-        </div>
-    </div>
-</div>
-
-
-
-
-        
-        <!-- <div class="col-md-6">-->
-        <!--    <label>Status<sup class="text-danger">*</sup></label>-->
-        <!--    <select name="status" class="form-control" required>-->
-        <!--        <option value="not started">Not Started</option>-->
-        <!--        <option value="in progress">In Progress</option>-->
-        <!--        <option value="on hold">On Hold</option>-->
-        <!--        <option value="completed">Completed</option>-->
-        <!--    </select>-->
-        <!--</div>-->
-        
-        
-        <!-- Other Details Section -->
-        <div class="col-12 mt-4">
-            <h5 class="cursor-pointer" data-bs-toggle="collapse" data-bs-target="#otherDetails" aria-expanded="false" aria-controls="otherDetails">
-                Other Details <i class="bi bi-chevron-down"></i>
-            </h5>
-        
-            <div class="collapse" id="otherDetails">
-                <div class="card card-body mt-3">
-        
-                    <!-- File Upload -->
-                    <div class="mb-3">
-                        <label for="project_file" class="form-label">Add File</label>
-                        <input type="file" class="form-control" id="project_file" name="project_file">
-                    </div>
-        
-                   <div class="row">
-                    <!-- Currency -->
-                    <div class="col-md-4 mb-3">
-                        <label for="currency" class="form-label">Currency</label>
-                        <select id="currency" name="currency_id" class="form-select select2">
-                            <option value="">Select</option>
-                            @foreach($currency as $c)
-                                <option value="{{ $c->id }}" {{ old('currency_id') == $c->id ? 'selected' : '' }}>{{ $c->currency_name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                
-                    <!-- Project Budget -->
-                    <div class="col-md-4 mb-3">
-                        <label for="project_budget" class="form-label">Project Budget</label>
-                        <input type="number" class="form-control" id="project_budget" name="project_budget" placeholder="e.g. 10000" value="{{ old('project_budget') }}">
-                    </div>
-                
-                    <!-- Hours Estimate -->
-                    <div class="col-md-4 mb-3">
-                        <label for="hours_estimate" class="form-label">Hours Estimate (In Hours)</label>
-                        <input type="number" class="form-control" id="hours_allocated" name="hours_allocated" placeholder="e.g. 50" value="{{ old('hours_allocated') }}">
-                    </div>
-                </div>
-
-        
-                    <!-- Checkboxes -->
-                    <div class="row">
-                        <!-- Manual Timelog -->
-                        <div class="col-md-6 col-lg-3">
-                            <div class="form-check mt-2">
-                                <input class="form-check-input" type="checkbox" name="manual_timelog" id="manual_timelog" {{ old('manual_timelog') ? 'checked' : '' }}>
-                                <label class="form-check-label" for="manual_timelog">
-                                    Allow manual time logs
-                                </label>
-                            </div>
-                        </div>
-        
-                        <!-- Miroboard -->
-                        <div class="col-md-6 col-lg-3">
-                            <div class="form-check mt-2">
-                                <input class="form-check-input" type="checkbox" name="enable_miroboard" id="miroboard_checkbox" {{ old('enable_miroboard') ? 'checked' : '' }}>
-                                <label class="form-check-label" for="miroboard_checkbox">
-                                    Enable Miroboard
-                                </label>
-                            </div>
-                        </div>
-        
-                        <!-- Client Task Notification -->
-                        <div class="col-md-6 col-lg-4">
-                            <div class="form-check mt-2">
-                                <input class="form-check-input" type="checkbox" name="allow_client_notification" id="client_task_notification" {{ old('allow_client_notification') ? 'checked' : '' }}>
-                                <label class="form-check-label" for="client_task_notification">
-                                    Send task notification to client
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-
-        <div class="col-12">
-            <button type="submit" class="btn btn-primary">Save</button>
-            
-            <a href="{{ route('projects.index') }}" class="btn btn-secondary">Cancel</a>
-        </div>
-    </div>
-</form>
-
-
-<!-- category Modal -->
-<div class="modal fade" id="catModal" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
-
-      <!-- Modal Header with Close -->
-      <div class="modal-header">
-        <h5 class="modal-title">Project Categories</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-
-      <div class="modal-body">
-
-        <!-- Group List Table -->
-        <table class="table table-bordered mb-4">
-          <thead class="table-light">
-            <tr>
-              <th>#</th>
-              <th>Category Name</th>
-              <th width="120">Action</th>
-            </tr>
-          </thead>
-          <tbody id="dpt-list">
-            @foreach($categories as $index => $dpt)
-              <tr id="cat-row-{{ $dpt->id }}">
-                <td>{{ $index + 1 }}</td>
-                <td>{{ $dpt->category_name }}</td>
-                <td>
-                    <button type="button" class="btn btn-sm btn-danger delete-cat" data-id="{{ $dpt->id }}">
-                        Delete
-                    </button>
-                </td>
-            </tr>
-
-            @endforeach
-          </tbody>
-        </table>
-
-        <!-- Add New Category Form -->
-        <form id="addCatForm">
-          @csrf
-          <div id="cat-error" class="alert alert-danger d-none"></div>
-          <div class="mb-3">
-            <label>Category Name</label>
-            <input type="text" name="category_name" class="form-control" required>
-          </div>
-          <div class="modal-footer">
-            <button type="submit" class="btn btn-primary">Save</button>
-          </div>
-        </form>
-
-      </div>
-    </div>
-  </div>
-</div>
-
-<!--clientModal-->
-
-<!-- ✅ Client Modal -->
-<div class="modal fade" id="clientModal" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
-
-      <div class="modal-header">
-        <h5 class="modal-title">Add Client</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-
-      <div class="modal-body">
-        <form id="addClientForm">
-          @csrf
-          <div id="client-error" class="alert alert-danger d-none"></div>
-
-          <div class="mb-3">
-            <label>Client Name <sup class="text-danger">*</sup></label>
-            <input type="text" name="name" class="form-control" placeholder="e.g. John Doe" required>
-          </div>
-
-          <div class="mb-3">
-            <label>Email</label>
-            <input type="email" name="email" class="form-control" placeholder="e.g. johndoe@example.com">
-          </div>
-
-          <div class="mb-3">
-            <label>Company Name</label>
-            <input type="text" name="company_name" class="form-control" placeholder="e.g. Acme Corporation">
-          </div>
-
-          <div class="mb-3">
-            <label>Login Allowed?</label>
+            <div class="alert-icon"><i class="fas fa-exclamation-triangle"></i></div>
             <div>
-              <div class="form-check form-check-inline">
-                <input class="form-check-input" type="radio" name="login_allowed" value="1" checked>
-                <label class="form-check-label">Yes</label>
-              </div>
-              <div class="form-check form-check-inline">
-                <input class="form-check-input" type="radio" name="login_allowed" value="0">
-                <label class="form-check-label">No</label>
-              </div>
-            </div>
-          </div>
-
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            <button type="submit" class="btn btn-primary">Save</button>
-          </div>
-        </form>
-      </div>
-
-    </div>
-  </div>
-</div>
-
-<!-- Employee Modal -->
-<div class="modal fade" id="employeeModal" tabindex="-1" aria-labelledby="employeeModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-scrollable">
-        <div class="modal-content">
-            
-            <div class="modal-header">
-                <h5 class="modal-title" id="employeeModalLabel">Add Employee</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-
-            <div class="modal-body">
-                 <form action="{{ route('employees.store') }}" method="POST" enctype="multipart/form-data" id="employeeForm">
-        @csrf
-
-        <h5 class="mb-3">Account Details</h5>
-
-        <div class="row">
-            <div class="col-md-4 mb-3">
-                <label>Employee ID <sup class="text-danger">*</sup></label>
-                <input type="text" name="employee_id" class="form-control" placeholder="Employee ID is the unique ID distributed to employees" required>
-                @error('employee_id')
-                        <span class="text-danger">{{ $message }}</span>
-                    @enderror
-            </div>
-
-            <div class="col-md-4 mb-3">
-                <label>Salutation</label>
-                <select name="salutation" class="form-control">
-                    <option value="">Select</option>
-                    <option value="Mr">Mr</option>
-                    <option value="Mrs">Mrs</option>
-                    <option value="Miss">Miss</option>
-                    <option value="Dr">Dr</option>
-                    <option value="Sir">Sir</option>
-                    <option value="Madam">Madam</option>
-                </select>
-            </div>
-
-            <div class="col-md-4 mb-3">
-                <label>Employee Name <sup class="text-danger">*</sup></label>
-                <input type="text" name="name" class="form-control" required>
-            </div>
-
-            <div class="col-md-4 mb-3">
-                <label>Email <sup class="text-danger">*</sup></label>
-                <input type="email" name="email" class="form-control" required>
-            </div>
-            
-           <div class="col-md-4 mb-3">
-            <label class="form-label" for="password">Password <sup class="text-danger">*</sup></label>
-            <div class="input-group">
-                <input type="password" name="password" id="password" class="form-control" autocomplete="off" minlength="9">
-                @error('password')
-                    <span class="text-danger">{{ $message }}</span>
-                @enderror
-                
-                <button type="button" class="btn btn-outline-secondary toggle-password" title="Show/Hide Password">
-                    <i class="fa fa-eye"></i>
-                </button>
-        
-                <button type="button" class="btn btn-outline-secondary generate-password" title="Generate Random Password">
-                    <i class="fa fa-random"></i>
-                </button>
-            </div>
-            <small class="form-text text-muted">Must have at least 9 characters</small>
-        </div>
-
-            <div class="col-md-4 mb-3">
-                <label>Designation <sup class="text-danger">*</sup></label>
-                <select name="designation_id" class="form-control" required>
-                    <option value="">Select</option>
-                    @foreach($designations as $designation)
-                        <option value="{{ $designation->id }}">{{ $designation->name }}</option>
+                <strong>Please fix the following errors:</strong>
+                <ul class="mb-0 mt-2">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
                     @endforeach
-                </select>
+                </ul>
             </div>
-            
-            <div class="col-md-4 mb-3">
-                <label>Parent Department <sup class="text-danger">*</sup></label>
-                 <div class="input-group">
-                    <select name="parent_dpt_id" id="prt_department_id" class="form-control" required>
-                        <option value="">Select</option>
-                        @foreach($prtdepartments as $dept)
-                            <option value="{{ $dept->id }}">{{ $dept->dpt_name }}</option>
-                        @endforeach
-                    </select>
-                    
-                     <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#prtModal">
-                                Add
-                    </button>
-                </div>
-            </div>
-
-            <div class="col-md-4 mb-3">
-                <label>Department <sup class="text-danger">*</sup></label>
-                <div class="input-group">
-                    <select name="department_id" class="form-control" required>
-                        <option value="">Select</option>
-                        @foreach($departments as $department)
-                            <option value="{{ $department->id }}">{{ $department->dpt_name }}</option>
-                        @endforeach
-                    </select>
-                    <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#dptModal">
-                                Add
-                    </button>
-                </div>
-            </div>
-
-            <div class="col-md-4 mb-3">
-                <label>Profile Picture</label>
-                <input type="file" name="profile_picture" class="form-control">
-            </div>
-
-           <div class="col-md-4 mb-3">
-            <label class="form-label fw-semibold">Country <sup class="text-danger">*</sup></label>
-        
-            <!-- Country dropdown -->
-            <select name="country" id="country" class="form-select form-select-sm select2">
-                <option value="">Select Country</option>
-                @foreach($countries as $country)
-                    <option value="{{ $country->name }}" 
-                            data-flag="{{ $country->flag_url }}"> <!-- keep flag url in DB -->
-                        {{ $country->name }}
-                    </option>
-                @endforeach
-            </select>
         </div>
+        @endif
 
-            <div class="col-md-4 mb-3">
-                <label>Mobile <sup class="text-danger">*</sup></label>
-                <input type="text" name="mobile" class="form-control" required>
-            </div>
-
-            <div class="col-md-4 mb-3">
-                <label>Gender</label>
-                <select name="gender" class="form-control">
-                    <option value="">Select</option>
-                    <option>Male</option>
-                    <option>Female</option>
-                </select>
-            </div>
-
-            
-            @php
-                $today = \Carbon\Carbon::now()->format('d-m-Y');
-            @endphp
-            
-            <div class="col-md-4 mb-3">
-                
-                    <label>Joining Date <sup class="text-danger">*</sup></label>
-            
-                    <input type="date"  required
-                           class="form-control date-picker height-35 f-14" 
-                           placeholder="Select Date" 
-                           name="joining_date" 
-                           id="joining_date" 
-                           autocomplete="off"
-                            value="{{ date('Y-m-d') }}"  max="{{ date('Y-m-d') }}">
-              
-            </div>
-
-
-            <div class="col-md-4 mb-3">
-                <label>Date of Birth</label>
-                <input type="date" name="dob" id="dob" class="form-control" max="{{ date('Y-m-d') }}">
-            </div>
-
-            <div class="col-md-4 mb-3">
-                <label>Reporting To</label>
-                <select name="reporting_to" class="form-control">
-                    <option value="">Select</option>
-                    @foreach($users as $user)
-                        <option value="{{ $user->id }}">{{ $user->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-
-           
-            
-            <div class="col-md-4 mb-3">
-            <label class="form-label fw-semibold">Change Language</label>
-            <select name="language" id="language" class="form-select form-select-sm select2">
-                <option value="en" data-flag="https://flagcdn.com/w20/gb.png">English</option>
-                <option value="bn" data-flag="https://flagcdn.com/w20/bd.png">Bengali</option>
-                <option value="hi" data-flag="https://flagcdn.com/w20/in.png">Hindi</option>
-                <option value="fr" data-flag="https://flagcdn.com/w20/fr.png">French</option>
-                <option value="de" data-flag="https://flagcdn.com/w20/de.png">German</option>
-            </select>
-        </div>
-
-            <div class="col-md-4 mb-3">
-                <label>User Role <sup class="text-danger">*</sup></label>
-                <select name="user_role" class="form-control select-picker" required>
-                    <option value="">Select Role</option>
-                    <option value="employee">Employee</option>
-                    <option value="admin">Admin</option>
-                </select>
-
-            </div>
-
-            <div class="col-md-6 mb-3">
-                <label>Address</label>
-                <textarea name="address" class="form-control"></textarea>
-            </div>
-
-            <div class="col-md-6 mb-3">
-                <label>About</label>
-                <textarea name="about" class="form-control"></textarea>
-            </div>
-
-            <div class="col-md-6 mb-3">
-                <label>Login Allowed?</label>
-                <select name="login_allowed" class="form-control">
-                    <option value="1">Yes</option>
-                    <option value="0">No</option>
-                </select>
-            </div>
-
-            <div class="col-md-6 mb-3">
-                <label>Email Notifications?</label>
-                <select name="email_notifications" class="form-control">
-                    <option value="1">Yes</option>
-                    <option value="0">No</option>
-                </select>
-            </div>
-
-            <div class="col-md-4 mb-3">
-                <label>Hourly Rate</label>
-                <input type="number" step="0.01" name="hourly_rate" class="form-control">
-            </div>
-
-            <div class="col-md-4 mb-3">
-                <label>Slack Member ID</label>
-                <input type="text" name="slack_member_id" class="form-control">
-            </div>
-
-            <div class="col-md-4 mb-3">
-                <label>Skills</label>
-                <textarea name="skills" class="form-control"></textarea>
-            </div>
-
-            <div class="col-md-4 mb-3">
-                <label>Probation End Date</label>
-                <input type="date" name="probation_end_date" class="form-control">
-            </div>
-
-            <div class="col-md-4 mb-3">
-                <label>Notice Period Start Date</label>
-                <input type="date" name="notice_start_date" class="form-control">
-            </div>
-
-            <div class="col-md-4 mb-3">
-                <label>Notice Period End Date</label>
-                <input type="date" name="notice_end_date" class="form-control">
-            </div>
-
-           
-            
-            <div class="col-md-4 mb-3">
-                <label for="employment_type" class="form-label">Employment Type</label>
-                <select name="employment_type" id="employment_type" class="form-control select-picker" data-size="8">
-                    <option value="">Select</option>
-                    <option value="full_time">Full Time</option>
-                    <option value="part_time">Part Time</option>
-                    <option value="on_contract">On Contract</option>
-                    <option value="internship">Internship</option>
-                    <option value="trainee">Trainee</option>
-                </select>
-            </div>
-
-
-            
-            
-
-            <div class="col-md-4 mb-3">
-                <label for="marital_status" class="form-label">Marital Status</label>
-                <select name="marital_status" id="marital_status" class="form-control select-picker" data-size="8">
-                    <option value="">Select</option>
-                    <option value="single">Single</option>
-                    <option value="married">Married</option>
-                    <option value="widower">Widower</option>
-                    <option value="widow">Widow</option>
-                    <option value="separate">Separate</option>
-                    <option value="divorced">Divorced</option>
-                    <option value="engaged">Engaged</option>
-                </select>
-            </div>
-
-
-            <div class="col-md-4 mb-3">
-                <label>Business Address <sup class="text-danger">*</sup></label>
-                <textarea name="business_address" class="form-control" required>Kolkata</textarea>
-            </div>
-            
-            <div class="col-md-4 mb-3 d-flex align-items-center">
-                <label class="me-3 mb-0" style="min-width: 70px;">Status <sup class="text-danger">*</sup></label>
-                <div class="d-flex gap-3">
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="status" id="status-active" value="Active" checked onchange="toggleExitDate()">
-                        <label class="form-check-label" for="status-active">Active</label>
+        <!-- Main Form Card -->
+        <div class="content-card">
+            <div class="form-header">
+                <div class="form-title">
+                    <div class="form-title-icon">
+                        <i class="fas fa-edit"></i>
                     </div>
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="status" id="status-inactive" value="Inactive" onchange="toggleExitDate()">
-                        <label class="form-check-label" for="status-inactive">Inactive</label>
+                    <div>
+                        <h4>Project Details</h4>
+                        <span class="muted">Fill in all required fields marked with <span class="text-danger">*</span></span>
                     </div>
                 </div>
             </div>
 
-        
-        <div class="col-md-4" id="exit-date-container" >
-            <label>Exit Date <sup class="text-danger">*</sup></label>
-            <input type="date" name="exit_date" id="exit_date" class="form-control">
-        </div>
-        </div>
-      &nbsp;
-        <div class="text-start">
-            <button type="submit" class="btn btn-primary">Save</button>
-            
-            <a href="{{ route('employees.index') }}" class="btn btn-secondary">Cancel</a>
-        </div>
-    </form>
-            </div>
+            <form action="{{ route('projects.store') }}" method="POST" enctype="multipart/form-data" id="projectForm">
+                @csrf
 
-            <div class="modal-footer">
-                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                <button type="submit" form="employeeForm" class="btn btn-primary">Save</button>
-            </div>
+                <div class="form-body">
+                    <!-- Basic Information Section -->
+                    <div class="section-title">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Basic Information</span>
+                    </div>
 
-        </div>
-    </div>
-</div>
-
-
- <!-- Parent Dpt Modal -->
-      <div class="modal fade" id="prtModal" tabindex="-1" aria-labelledby="prtModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-lg">
-                <form id="addPrtDptForm">
-                    @csrf
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">Manage Parent Department</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <div class="form-grid">
+                        <!-- Short Code -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-code"></i> Short Code <span class="text-danger">*</span>
+                            </label>
+                            <div class="shortcode-options">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="shortcode_option_radio" id="shortcode_auto" value="auto" {{ old('shortcode_option', 'auto') === 'auto' ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="shortcode_auto">Auto-generate</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="shortcode_option_radio" id="shortcode_manual_opt" value="manual" {{ old('shortcode_option') === 'manual' ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="shortcode_manual_opt">Custom</label>
+                                </div>
+                            </div>
+                            <input type="hidden" name="shortcode_option" id="shortcode_option" value="{{ old('shortcode_option', 'auto') }}">
+                            <input type="text" id="shortcode_display" class="form-control shortcode-display" value="{{ $nextProjectCode ?? 'Will be generated automatically' }}" readonly>
+                            <input type="text" name="shortcode_manual" id="shortcode_manual" class="form-control d-none" placeholder="Enter shortcode e.g. bit25-26/0001" value="{{ old('shortcode_manual') }}">
+                            <small class="form-hint">Use auto for the next bit code, or custom to enter your own project code.</small>
+                            @error('shortcode_manual')
+                                <div class="text-danger mt-1">{{ $message }}</div>
+                            @enderror
                         </div>
-        
-                        <div class="modal-body">
-                            <!-- Group List Table -->
-                            <table class="table table-bordered mb-4">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>#</th>
-                                        <th>Parent Department Name</th>
-                                        <th width="120">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="prt-dpt-list">
-                                    @foreach($prtdepartments as $index => $prt)
-                                        <tr id="prt-row-{{ $prt->id }}">
-                                            <td>{{ $index + 1 }}</td>
-                                            <td>{{ $prt->dpt_name }}</td>
-                                            <td>
-                                                <button type="button" class="btn btn-sm btn-danger delete-prt" data-id="{{ $prt->id }}">
-                                                    Delete
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-        
-                            <!-- Add New Group -->
-                            <div class="mb-3">
-                                <label>Parent Department Name <sup class="text-danger">*</sup></label>
-                                <input type="text" name="dpt_name" class="form-control" required>
-                                <div id="group-error" class="text-danger d-none mt-2"></div>
+
+                        <!-- Project Name -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-tag"></i> Project Name <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" name="name" class="form-control" required value="{{ old('name') }}" placeholder="Enter project name">
+                        </div>
+
+                        <!-- Start Date -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-calendar-plus"></i> Start Date <span class="text-danger">*</span>
+                            </label>
+                            <input type="date" name="start_date" class="form-control" required value="{{ old('start_date') }}">
+                        </div>
+
+                        <!-- Deadline -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-calendar-times"></i> Deadline <span class="text-danger" id="deadline_required">*</span>
+                            </label>
+                            <input type="date" name="deadline" class="form-control" id="deadline_input" value="{{ old('deadline') }}">
+                        </div>
+
+                        <!-- No Deadline Checkbox -->
+                        <div class="form-group checkbox-group">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="without_deadline" id="without_deadline" {{ old('without_deadline') ? 'checked' : '' }}>
+                                <label class="form-check-label" for="without_deadline">
+                                    <i class="fas fa-infinity"></i> No deadline for this project
+                                </label>
                             </div>
                         </div>
-        
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                            <button type="submit" class="btn btn-primary">Save</button>
+
+                        <!-- Priority -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-bolt"></i> Priority <span class="text-danger">*</span>
+                            </label>
+                            <select name="priority" class="form-control" required>
+                                @foreach(['low' => 'Low', 'medium' => 'Medium', 'high' => 'High', 'critical' => 'Critical'] as $value => $label)
+                                    <option value="{{ $value }}" {{ old('priority', 'medium') === $value ? 'selected' : '' }}>{{ $label }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <!-- Progress -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-chart-simple"></i> Progress Percentage
+                            </label>
+                            <input type="number" name="completion_percent" class="form-control" min="0" max="100" value="{{ old('completion_percent', 0) }}" placeholder="0">
+                        </div>
+
+                        <!-- Project Category -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-folder"></i> Project Category <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <select name="category_id" id="project_category_id" class="form-control" required>
+                                    <option value="">Select Category</option>
+                                    @foreach($categories as $cat)
+                                        <option value="{{ $cat->id }}" {{ old('category_id') == $cat->id ? 'selected' : '' }}>{{ $cat->category_name }}</option>
+                                    @endforeach
+                                </select>
+                                <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#catModal">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Project Departments -->
+                        <div class="form-group full-width">
+                            <label class="form-label">
+                                <i class="fas fa-building"></i> Project Department <span class="text-danger">*</span>
+                            </label>
+                            @php
+                                $selectedDepartmentIds = collect(old('department_ids', []))->map(fn($id) => (string) $id)->all();
+                            @endphp
+                            <div class="department-picker" id="projectDepartmentPicker">
+                                <button type="button" class="department-picker-toggle" id="departmentPickerToggle" aria-expanded="false">
+                                    <span id="departmentPickerText">Select project departments</span>
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+
+                                <div class="department-picker-menu d-none" id="departmentPickerMenu">
+                                    <input type="text" class="department-search" id="departmentSearch" placeholder="Search departments...">
+
+                                    <div class="department-picker-actions">
+                                        <button type="button" id="selectAllDepartments">Select All</button>
+                                        <button type="button" id="deselectAllDepartments">Deselect All</button>
+                                    </div>
+
+                                    <div class="department-options" id="departmentOptions">
+                                        @foreach($departments as $department)
+                                            @php
+                                                $departmentLabel = trim(($department->dpt_code ? $department->dpt_code . ' - ' : '') . $department->dpt_name);
+                                            @endphp
+                                            <label class="department-option" data-label="{{ strtolower($departmentLabel . ' ' . optional($department->parent)->dpt_name) }}">
+                                                <input
+                                                    type="checkbox"
+                                                    class="department-checkbox"
+                                                    value="{{ $department->id }}"
+                                                    data-label="{{ $departmentLabel }}"
+                                                    {{ in_array((string) $department->id, $selectedDepartmentIds, true) ? 'checked' : '' }}
+                                                >
+                                                <span>{{ $departmentLabel }}</span>
+                                                @if(optional($department->parent)->dpt_name)
+                                                    <small>{{ $department->parent->dpt_name }}</small>
+                                                @endif
+                                            </label>
+                                        @endforeach
+                                    </div>
+
+                                    <div class="department-quick-add">
+                                        <strong>Add Department</strong>
+                                        <div class="department-quick-grid">
+                                            <select id="quick_parent_dpt_id" class="form-control">
+                                                <option value="">Parent Department</option>
+                                                @foreach($prtdepartments as $prt)
+                                                    <option value="{{ $prt->id }}">{{ $prt->dpt_name }}</option>
+                                                @endforeach
+                                            </select>
+                                            <input type="text" id="quick_department_name" class="form-control" placeholder="Department name">
+                                            <button type="button" class="btn btn-primary" id="quickAddDepartment">
+                                                <i class="fas fa-plus"></i> Add
+                                            </button>
+                                        </div>
+                                        <div id="quickDepartmentError" class="quick-add-error d-none"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <select name="department_ids[]" id="project_department_ids" class="department-native-select" multiple>
+                                @foreach($departments as $department)
+                                    @php
+                                        $departmentLabel = trim(($department->dpt_code ? $department->dpt_code . ' - ' : '') . $department->dpt_name);
+                                    @endphp
+                                    <option value="{{ $department->id }}" {{ in_array((string) $department->id, $selectedDepartmentIds, true) ? 'selected' : '' }}>
+                                        {{ $departmentLabel }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <small class="form-hint">Select one or more departments. New departments are saved to the department database.</small>
+                        </div>
+
+                        <!-- Client -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-user-tie"></i> Client <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <select name="client_id" id="client_id" class="form-control" required>
+                                    <option value="">Select Client</option>
+                                    @foreach($clients as $client)
+                                        <option value="{{ $client->id }}" {{ old('client_id') == $client->id ? 'selected' : '' }}>{{ $client->name }}</option>
+                                    @endforeach
+                                </select>
+                                <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#clientModal">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Project Summary -->
+                        <div class="form-group full-width">
+                            <label class="form-label">
+                                <i class="fas fa-align-left"></i> Project Summary
+                            </label>
+                            <textarea name="description" class="form-control" rows="3" placeholder="Enter project summary">{{ old('description') }}</textarea>
+                        </div>
+
+                        <!-- Notes -->
+                        <div class="form-group full-width">
+                            <label class="form-label">
+                                <i class="fas fa-sticky-note"></i> Notes
+                            </label>
+                            <textarea name="notes" class="form-control" rows="2" placeholder="Add any additional notes">{{ old('notes') }}</textarea>
+                        </div>
+
+                        <!-- Remarks -->
+                        <div class="form-group full-width">
+                            <label class="form-label">
+                                <i class="fas fa-comment-dots"></i> Remarks
+                            </label>
+                            <textarea name="remarks" class="form-control" rows="2" placeholder="Initial project remarks">{{ old('remarks') }}</textarea>
                         </div>
                     </div>
-                </form>
-            </div>
+
+                    <!-- Settings Section -->
+                    <div class="section-title mt-4">
+                        <i class="fas fa-cog"></i>
+                        <span>Project Settings</span>
+                    </div>
+
+                    <div class="settings-grid">
+                        <!-- Public Gantt Chart -->
+                        <div class="form-group">
+                            <label class="form-label">Public Gantt Chart</label>
+                            <div class="radio-group">
+                                <div class="form-check">
+                                    <input type="radio" value="enable" class="form-check-input" id="public_gantt_chart-yes" name="public_gantt_chart" {{ old('public_gantt_chart', 'enable') == 'enable' ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="public_gantt_chart-yes">Enable</label>
+                                </div>
+                                <div class="form-check">
+                                    <input type="radio" value="disable" class="form-check-input" id="public_gantt_chart-no" name="public_gantt_chart" {{ old('public_gantt_chart') == 'disable' ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="public_gantt_chart-no">Disable</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Public Task Board -->
+                        <div class="form-group">
+                            <label class="form-label">Public Task Board</label>
+                            <div class="radio-group">
+                                <div class="form-check">
+                                    <input type="radio" value="enable" class="form-check-input" id="public_taskboard-yes" name="public_taskboard" {{ old('public_taskboard', 'enable') == 'enable' ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="public_taskboard-yes">Enable</label>
+                                </div>
+                                <div class="form-check">
+                                    <input type="radio" value="disable" class="form-check-input" id="public_taskboard-no" name="public_taskboard" {{ old('public_taskboard') == 'disable' ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="public_taskboard-no">Disable</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Task Approval -->
+                        <div class="form-group">
+                            <label class="form-label">Task Approval Required</label>
+                            <div class="radio-group">
+                                <div class="form-check">
+                                    <input type="radio" value="1" class="form-check-input" id="need_approval_by_admin-yes" name="need_approval_by_admin" {{ old('need_approval_by_admin') == '1' ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="need_approval_by_admin-yes">Enable</label>
+                                </div>
+                                <div class="form-check">
+                                    <input type="radio" value="0" class="form-check-input" id="need_approval_by_admin-no" name="need_approval_by_admin" {{ old('need_approval_by_admin', '0') == '0' ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="need_approval_by_admin-no">Disable</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Public Project -->
+                        <div class="form-group checkbox-group">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="public" id="is_public" {{ old('public') ? 'checked' : '' }}>
+                                <label class="form-check-label" for="is_public">
+                                    <i class="fas fa-globe"></i> Create Public Project
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Project Members -->
+                    <div class="section-title mt-4">
+                        <i class="fas fa-users"></i>
+                        <span>Project Members <span class="text-danger">*</span></span>
+                    </div>
+
+                    <div class="members-section">
+                        <div class="form-group">
+                            <label class="form-label">Select Members</label>
+                            <select name="employee_ids[]" id="projectMembers" class="form-control" multiple>
+                                @foreach($users as $u)
+                                    <option value="{{ $u->id }}" data-fullname="{{ $u->name }}">
+                                        {{ $u->name }} ({{ $u->employee_id }})
+                                    </option>
+                                @endforeach
+                            </select>
+                            <small class="form-hint">Hold Ctrl/Cmd to select multiple members</small>
+                        </div>
+                        <div class="add-member-btn">
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#employeeModal">
+                                <i class="fas fa-user-plus"></i> Add Employee
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Other Details (Collapsible) -->
+                    <div class="other-details-section mt-4">
+                        <div class="other-details-toggle" data-bs-toggle="collapse" data-bs-target="#otherDetails" aria-expanded="false">
+                            <i class="fas fa-chevron-down"></i>
+                            <span>Other Details</span>
+                            <small class="text-muted">(Optional settings)</small>
+                        </div>
+
+                        <div class="collapse" id="otherDetails">
+                            <div class="other-details-body">
+                                <!-- File Upload -->
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <i class="fas fa-file-upload"></i> Add File
+                                    </label>
+                                    <input type="file" class="form-control" id="project_file" name="project_file">
+                                </div>
+
+                                <div class="form-grid">
+                                    <!-- Currency -->
+                                    <div class="form-group">
+                                        <label class="form-label">
+                                            <i class="fas fa-dollar-sign"></i> Currency
+                                        </label>
+                                        <select id="currency" name="currency_id" class="form-control">
+                                            <option value="">Select Currency</option>
+                                            @foreach($currency as $c)
+                                                <option value="{{ $c->id }}" {{ old('currency_id') == $c->id ? 'selected' : '' }}>{{ $c->currency_name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+
+                                    <!-- Project Budget -->
+                                    <div class="form-group">
+                                        <label class="form-label">
+                                            <i class="fas fa-wallet"></i> Project Budget
+                                        </label>
+                                        <input type="number" class="form-control" id="project_budget" name="project_budget" placeholder="e.g. 10000" value="{{ old('project_budget') }}">
+                                    </div>
+
+                                    <!-- Hours Estimate -->
+                                    <div class="form-group">
+                                        <label class="form-label">
+                                            <i class="fas fa-clock"></i> Hours Estimate
+                                        </label>
+                                        <input type="number" class="form-control" id="hours_allocated" name="hours_allocated" placeholder="e.g. 50" value="{{ old('hours_allocated') }}">
+                                    </div>
+                                </div>
+
+                                <!-- Additional Checkboxes -->
+                                <div class="checkbox-grid">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="manual_timelog" id="manual_timelog" {{ old('manual_timelog') ? 'checked' : '' }}>
+                                        <label class="form-check-label" for="manual_timelog">
+                                            <i class="fas fa-stopwatch"></i> Allow manual time logs
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="enable_miroboard" id="miroboard_checkbox" {{ old('enable_miroboard') ? 'checked' : '' }}>
+                                        <label class="form-check-label" for="miroboard_checkbox">
+                                            <i class="fas fa-chalkboard"></i> Enable Miroboard
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="allow_client_notification" id="client_task_notification" {{ old('allow_client_notification') ? 'checked' : '' }}>
+                                        <label class="form-check-label" for="client_task_notification">
+                                            <i class="fas fa-bell"></i> Send task notification to client
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Create Project
+                        </button>
+                        <a href="{{ route('projects.index') }}" class="btn btn-outline">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                    </div>
+                </div>
+            </form>
         </div>
-
-<!--dpt model-->
-     <div class="modal fade" id="dptModal" tabindex="-1" aria-labelledby="dptModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <form id="addDptForm">
-            @csrf
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Manage Department</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-
-                <div class="modal-body">
-                    <!-- Group List Table -->
-                    <table class="table table-bordered mb-4">
-                        <thead class="table-light">
-                            <tr>
-                                <th>#</th>
-                                <th>Parent Department Name</th>
-                                <th>Department Name</th>
-                                <th width="120">Action</th>
-                            </tr>
-                        </thead>
-                        <!-- Modal table -->
-                    <tbody id="dpt-list">
-                        @foreach($departments as $index => $dpt)
-                            <tr id="dpt-row-{{ $dpt->id }}">
-                                <td>{{ $index + 1 }}</td>
-                                 <td>{{ $dpt->parent?->dpt_name ?? 'N/A' }}</td>
-
-                                <td>{{ $dpt->dpt_name }}</td>
-                                <td>
-                                    <button type="button" class="btn btn-sm btn-danger delete-dpt" data-id="{{ $dpt->id }}">
-                                        Delete
-                                    </button>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-
-                    </table>
-
-                    <!-- Add New Dpt -->
-                    <div class="mb-3">
-                        <label>Parent Department (optional)</label>
-                        <select name="parent_dpt_id" class="form-control">
-                            <option value="">None</option>
-                            @foreach($prtdepartments as $pd)
-                                <option value="{{ $pd->id }}">{{ $pd->dpt_name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label>Department Name <sup class="text-danger">*</sup></label>
-                        <input type="text" name="dpt_name" class="form-control" required>
-                    </div>
-            
-                    
-                </div>
-
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save</button>
-                </div>
-            </div>
-        </form>
     </div>
 </div>
-    </div>
-</main>
 
-@endsection
+<!-- Include all modals here (Category, Client, Employee, Parent Department, Department) -->
+<!-- [All modal code remains exactly as provided - keeping functionality intact] -->
 
-@section('js')
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-<!-- Bootstrap-select CSS -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.14.0-beta2/css/bootstrap-select.min.css" />
-<!-- SweetAlert2 CSS -->
-<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
-<!-- SweetAlert2 JS -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+@include('admin.projects.partials.modals')
 
-<!-- Bootstrap-select JS -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.14.0-beta2/js/bootstrap-select.min.js"></script>
+<style>
+    /* ===== PREMIUM CREATE PROJECT PAGE - GREEN/TEAL THEME ===== */
+    .create-project-page {
+        padding: 30px 0;
+        min-height: 100vh;
+        background: linear-gradient(145deg, #f7fbf9, #eef7f2);
+        color: #07130d;
+    }
 
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    /* Breadcrumb */
+    .breadcrumb {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(10px);
+        padding: 16px 26px;
+        border-radius: 18px;
+        border: 1px solid rgba(15, 116, 76, .12);
+        margin-bottom: 28px;
+        color: #0f744c;
+        font-weight: 600;
+        font-size: 1.05rem;
+    }
 
+    .breadcrumb i {
+        margin-right: 12px;
+        color: #34d399;
+        font-size: 1.1rem;
+    }
+
+    .breadcrumb strong {
+        color: #07130d;
+    }
+
+    /* Header Card */
+    .header-card {
+        background: #ffffff;
+        border-radius: 24px;
+        padding: 30px 36px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 24px;
+        box-shadow: 0 18px 45px rgba(15, 116, 76, .09);
+        border: 1px solid rgba(15, 116, 76, .12);
+        margin-bottom: 28px;
+    }
+
+    .header-left {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+    }
+
+    .header-icon {
+        width: 70px;
+        height: 70px;
+        background: linear-gradient(145deg, #34d399, #10b981);
+        color: white;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 32px;
+        box-shadow: 0 10px 25px rgba(16, 185, 129, .2);
+    }
+
+    .header-card h1 {
+        font-size: 34px;
+        font-weight: 700;
+        margin-bottom: 6px;
+        color: #07130d;
+    }
+
+    .header-card p {
+        color: #52645a;
+        font-size: 17px;
+        margin: 0;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        border: none;
+        padding: 12px 24px;
+        border-radius: 14px;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        transition: all 0.25s ease;
+        text-decoration: none;
+        min-height: 48px;
+    }
+
+    .btn-outline {
+        background: transparent;
+        border: 1px solid rgba(15, 116, 76, .2);
+        color: #0f744c;
+    }
+
+    .btn-outline:hover {
+        background: #edf8f2;
+        border-color: #34d399;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(15, 116, 76, .1);
+    }
+
+    .btn-primary {
+        background: linear-gradient(145deg, #34d399, #10b981);
+        color: white;
+        box-shadow: 0 8px 20px rgba(16, 185, 129, .25);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 28px rgba(16, 185, 129, .35);
+    }
+
+    /* Alert */
+    .alert {
+        border-radius: 16px;
+        padding: 18px 24px;
+        margin-bottom: 22px;
+        border: none;
+        display: flex;
+        gap: 16px;
+        align-items: flex-start;
+        font-size: 1rem;
+    }
+
+    .alert-danger {
+        background: #fef2f2;
+        color: #991b1b;
+        border-left: 4px solid #ef4444;
+    }
+
+    .alert-icon {
+        font-size: 1.4rem;
+        color: #ef4444;
+        flex-shrink: 0;
+        margin-top: 2px;
+    }
+
+    .alert ul {
+        padding-left: 20px;
+        color: #991b1b;
+    }
+
+    /* Content Card */
+    .content-card {
+        background: white;
+        border-radius: 24px;
+        border: 1px solid rgba(15, 116, 76, .12);
+        box-shadow: 0 18px 45px rgba(15, 116, 76, .08);
+        overflow: hidden;
+    }
+
+    /* Form Header */
+    .form-header {
+        padding: 22px 28px;
+        background: linear-gradient(135deg, #ffffff, #f5fbf7);
+        border-bottom: 1px solid rgba(15, 116, 76, .1);
+    }
+
+    .form-title {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .form-title-icon {
+        width: 48px;
+        height: 48px;
+        background: #e7f5ee;
+        color: #0f744c;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+    }
+
+    .form-title h4 {
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin: 0;
+        color: #07130d;
+    }
+
+    .form-title .muted {
+        font-size: 0.95rem;
+        color: #8ba198;
+        display: block;
+        margin-top: 2px;
+    }
+
+    .text-danger {
+        color: #dc2626;
+    }
+
+    /* Form Body */
+    .form-body {
+        padding: 28px;
+    }
+
+    /* Section Title */
+    .section-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #07130d;
+        padding-bottom: 12px;
+        border-bottom: 2px solid rgba(15, 116, 76, .08);
+        margin-bottom: 20px;
+    }
+
+    .section-title i {
+        color: #0f744c;
+        font-size: 1.2rem;
+    }
+
+    /* Form Grid */
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .form-group.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .form-group.checkbox-group {
+        justify-content: flex-end;
+        padding-bottom: 4px;
+    }
+
+    .form-label {
+        font-weight: 600;
+        font-size: 0.95rem;
+        color: #07130d;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .form-label i {
+        color: #0f744c;
+        font-size: 0.9rem;
+    }
+
+    .form-control {
+        border-radius: 12px;
+        border: 1px solid rgba(15, 116, 76, .18);
+        padding: 12px 16px;
+        font-weight: 500;
+        font-size: 1rem;
+        min-height: 48px;
+        transition: all 0.2s ease;
+        background: #fafefb;
+        width: 100%;
+    }
+
+    .form-control:focus {
+        border-color: #34d399;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, .1);
+    }
+
+    .form-control[readonly] {
+        background: #f0f9f4;
+        cursor: not-allowed;
+    }
+
+    textarea.form-control {
+        min-height: 80px;
+        resize: vertical;
+    }
+
+    .input-group {
+        display: flex;
+        gap: 0;
+    }
+
+    .input-group .form-control {
+        border-radius: 12px 0 0 12px;
+    }
+
+    .input-group .btn {
+        border-radius: 0 12px 12px 0;
+        min-height: 48px;
+        padding: 0 16px;
+        background: #f0f9f4;
+        color: #0f744c;
+        border: 1px solid rgba(15, 116, 76, .18);
+        border-left: none;
+    }
+
+    .input-group .btn:hover {
+        background: #d1fae5;
+    }
+
+    .department-picker {
+        position: relative;
+    }
+
+    .department-picker-toggle {
+        width: 100%;
+        min-height: 52px;
+        border: 1px solid rgba(15, 116, 76, .18);
+        border-radius: 12px;
+        background: #fafefb;
+        color: #07130d;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px 16px;
+        font-weight: 600;
+        text-align: left;
+    }
+
+    .department-picker-toggle span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .department-picker-menu {
+        position: absolute;
+        top: calc(100% + 8px);
+        left: 0;
+        right: 0;
+        z-index: 1080;
+        background: #ffffff;
+        border: 1px solid rgba(15, 116, 76, .16);
+        border-radius: 14px;
+        box-shadow: 0 18px 45px rgba(15, 116, 76, .16);
+        padding: 14px;
+    }
+
+    .department-search {
+        width: 100%;
+        border: 1px solid rgba(15, 116, 76, .18);
+        border-radius: 10px;
+        padding: 10px 12px;
+        margin-bottom: 12px;
+        background: #fafefb;
+    }
+
+    .department-picker-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+
+    .department-picker-actions button {
+        border: none;
+        background: #f0f9f4;
+        color: #0f744c;
+        border-radius: 10px;
+        padding: 10px;
+        font-weight: 700;
+    }
+
+    .department-options {
+        max-height: 330px;
+        overflow-y: auto;
+        padding-right: 4px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .department-option {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border: 1px solid rgba(15, 116, 76, .10);
+        border-radius: 999px;
+        padding: 10px 14px;
+        background: #ffffff;
+        cursor: pointer;
+        font-weight: 700;
+        color: #07130d;
+    }
+
+    .department-option:hover {
+        background: #edf8f2;
+    }
+
+    .department-option input {
+        width: 18px;
+        height: 18px;
+        accent-color: #0f744c;
+    }
+
+    .department-option small {
+        color: #6b7d73;
+        font-weight: 500;
+        margin-left: auto;
+    }
+
+    .department-quick-add {
+        border-top: 1px solid rgba(15, 116, 76, .10);
+        margin-top: 14px;
+        padding-top: 14px;
+    }
+
+    .department-quick-grid {
+        display: grid;
+        grid-template-columns: minmax(170px, .8fr) 1fr auto;
+        gap: 10px;
+        margin-top: 10px;
+    }
+
+    .quick-add-error {
+        margin-top: 8px;
+        color: #dc2626;
+        font-size: .9rem;
+        font-weight: 600;
+    }
+
+    .department-native-select {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .form-hint {
+        font-size: 0.85rem;
+        color: #8ba198;
+        margin-top: 4px;
+    }
+
+    /* Shortcode */
+    .shortcode-options {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 8px;
+    }
+
+    .shortcode-display {
+        font-weight: 700;
+        color: #0f744c;
+    }
+
+    /* Settings Grid */
+    .settings-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr 1fr;
+        gap: 20px;
+    }
+
+    .radio-group {
+        display: flex;
+        gap: 20px;
+        margin-top: 4px;
+    }
+
+    .form-check {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .form-check-input {
+        width: 18px;
+        height: 18px;
+        border-radius: 4px;
+        border: 2px solid #a7f3d0;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .form-check-input:checked {
+        background-color: #0f744c;
+        border-color: #0f744c;
+    }
+
+    .form-check-input[type="radio"] {
+        border-radius: 50%;
+    }
+
+    .form-check-label {
+        font-size: 0.95rem;
+        cursor: pointer;
+        color: #07130d;
+        font-weight: 500;
+    }
+
+    /* Members Section */
+    .members-section {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 16px;
+        align-items: end;
+    }
+
+    .add-member-btn {
+        padding-bottom: 4px;
+    }
+
+    /* Other Details */
+    .other-details-toggle {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 20px;
+        background: #f0f9f4;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-weight: 700;
+        font-size: 1rem;
+        color: #07130d;
+    }
+
+    .other-details-toggle:hover {
+        background: #d1fae5;
+    }
+
+    .other-details-toggle i:first-child {
+        color: #0f744c;
+        transition: transform 0.3s;
+    }
+
+    .other-details-toggle[aria-expanded="true"] i:first-child {
+        transform: rotate(180deg);
+    }
+
+    .other-details-toggle small {
+        font-weight: 400;
+    }
+
+    .other-details-body {
+        padding: 20px;
+        background: #fafefb;
+        border-radius: 0 0 12px 12px;
+        border: 1px solid rgba(15, 116, 76, .08);
+        border-top: none;
+    }
+
+    .checkbox-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 16px;
+        margin-top: 16px;
+    }
+
+    /* Form Actions */
+    .form-actions {
+        display: flex;
+        gap: 16px;
+        margin-top: 28px;
+        padding-top: 24px;
+        border-top: 1px solid rgba(15, 116, 76, .08);
+    }
+
+    /* Responsive */
+    @media (max-width: 1200px) {
+        .settings-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    @media (max-width: 992px) {
+        .header-card {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .header-actions {
+            width: 100%;
+        }
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+        .members-section {
+            grid-template-columns: 1fr;
+        }
+        .checkbox-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .create-project-page {
+            padding: 16px 0;
+        }
+        .header-card {
+            padding: 20px 24px;
+        }
+        .header-card h1 {
+            font-size: 26px;
+        }
+        .header-card p {
+            font-size: 15px;
+        }
+        .form-body {
+            padding: 20px;
+        }
+        .settings-grid {
+            grid-template-columns: 1fr;
+        }
+        .form-actions {
+            flex-direction: column;
+        }
+        .form-actions .btn {
+            width: 100%;
+            justify-content: center;
+        }
+        .shortcode-options {
+            flex-wrap: wrap;
+        }
+        .department-picker-menu {
+            position: static;
+            margin-top: 8px;
+        }
+        .department-quick-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Dark Mode Support */
+    html[data-pms-theme="dark"] .create-project-page {
+        background: linear-gradient(145deg, #07130d, #102119);
+    }
+
+    html[data-pms-theme="dark"] .breadcrumb,
+    html[data-pms-theme="dark"] .header-card,
+    html[data-pms-theme="dark"] .content-card {
+        background: #102119;
+        border-color: rgba(122, 240, 181, .18);
+    }
+
+    html[data-pms-theme="dark"] .header-card h1,
+    html[data-pms-theme="dark"] .form-title h4,
+    html[data-pms-theme="dark"] .section-title {
+        color: #ffffff;
+    }
+
+    html[data-pms-theme="dark"] .form-control {
+        background: #183026;
+        color: #ffffff;
+        border-color: rgba(122, 240, 181, .18);
+    }
+
+    html[data-pms-theme="dark"] .form-control[readonly] {
+        background: #142a20;
+    }
+
+    html[data-pms-theme="dark"] .form-header {
+        background: #142a20;
+        border-color: rgba(122, 240, 181, .16);
+    }
+
+    html[data-pms-theme="dark"] .form-title-icon {
+        background: rgba(122, 240, 181, .15);
+        color: #7af0b5;
+    }
+
+    html[data-pms-theme="dark"] .other-details-toggle {
+        background: #142a20;
+        color: #ffffff;
+    }
+
+    html[data-pms-theme="dark"] .other-details-toggle:hover {
+        background: #183026;
+    }
+
+    html[data-pms-theme="dark"] .other-details-body {
+        background: #142a20;
+        border-color: rgba(122, 240, 181, .08);
+    }
+
+    html[data-pms-theme="dark"] .form-label {
+        color: #d9f1e4;
+    }
+
+    html[data-pms-theme="dark"] .form-check-label {
+        color: #d9f1e4;
+    }
+
+    html[data-pms-theme="dark"] .input-group .btn {
+        background: #183026;
+        color: #7af0b5;
+        border-color: rgba(122, 240, 181, .18);
+    }
+
+    html[data-pms-theme="dark"] .input-group .btn:hover {
+        background: #142a20;
+    }
+
+    html[data-pms-theme="dark"] .department-picker-toggle,
+    html[data-pms-theme="dark"] .department-picker-menu,
+    html[data-pms-theme="dark"] .department-search,
+    html[data-pms-theme="dark"] .department-option {
+        background: #183026;
+        color: #ffffff;
+        border-color: rgba(122, 240, 181, .18);
+    }
+
+    html[data-pms-theme="dark"] .department-picker-actions button {
+        background: #142a20;
+        color: #7af0b5;
+    }
+
+    html[data-pms-theme="dark"] .department-option:hover {
+        background: #142a20;
+    }
+
+    html[data-pms-theme="dark"] .department-option small {
+        color: #8ba198;
+    }
+
+    html[data-pms-theme="dark"] .section-title {
+        border-color: rgba(122, 240, 181, .08);
+    }
+
+    html[data-pms-theme="dark"] .form-actions {
+        border-color: rgba(122, 240, 181, .08);
+    }
+
+    html[data-pms-theme="dark"] .alert-danger {
+        background: rgba(239, 68, 68, .15);
+        color: #f87171;
+    }
+
+    html[data-pms-theme="dark"] .alert ul {
+        color: #f87171;
+    }
+</style>
+
+@push('js')
 <script>
     // Shortcode toggle + hidden fallback sync
     (function () {
@@ -998,12 +1266,14 @@
             $('#without_deadline').on('change', function () {
                 if ($(this).is(':checked')) {
                     $('#deadline_input').val('').prop('disabled', true);
-                    $('#deadline_required').addClass('d-none');   // hide *
+                    $('#deadline_required').addClass('d-none');
                 } else {
                     $('#deadline_input').prop('disabled', false);
-                    $('#deadline_required').removeClass('d-none'); // show *
+                    $('#deadline_required').removeClass('d-none');
                 }
-            }).trigger('change'); // initialize on page load
+            }).trigger('change');
+
+            initProjectDepartmentPicker();
 
             // Toggle password visibility
             $(document).on('click', '.toggle-password', function() {
@@ -1041,105 +1311,261 @@
             });
         });
     })();
-</script>
 
-<script>
-  // Add Project Category via AJAX
-$('#addCatForm').on('submit', function(e) {
-    e.preventDefault();
+    function initProjectDepartmentPicker() {
+        const picker = document.getElementById('projectDepartmentPicker');
+        const toggle = document.getElementById('departmentPickerToggle');
+        const menu = document.getElementById('departmentPickerMenu');
+        const text = document.getElementById('departmentPickerText');
+        const nativeSelect = document.getElementById('project_department_ids');
+        const search = document.getElementById('departmentSearch');
+        const selectAll = document.getElementById('selectAllDepartments');
+        const deselectAll = document.getElementById('deselectAllDepartments');
+        const quickAdd = document.getElementById('quickAddDepartment');
+        const quickName = document.getElementById('quick_department_name');
+        const quickParent = document.getElementById('quick_parent_dpt_id');
+        const quickError = document.getElementById('quickDepartmentError');
 
-    $.ajax({
-        url: '{{ route('project-categories.store') }}',
-        method: 'POST',
-        data: $(this).serialize(),
-        success: function(res) {
-            if (res.status === 'success') {
-                $('#project_category_id').append(
-                    `<option value="${res.cat.id}" selected>${res.cat.category_name}</option>`
-                ).trigger('change');
+        if (!picker || !toggle || !menu || !nativeSelect) return;
 
-                $('#addCatForm')[0].reset();
+        const getCheckboxes = () => Array.from(picker.querySelectorAll('.department-checkbox'));
 
-                const modalEl = document.getElementById('catModal');
-                const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
-                modalInstance.hide();
+        function syncNativeSelect() {
+            const checkedValues = getCheckboxes()
+                .filter(checkbox => checkbox.checked)
+                .map(checkbox => checkbox.value);
 
-                Swal.fire({
-                    title: 'Success!',
-                    text: 'Project Category added successfully.',
-                    icon: 'success',
-                    confirmButtonText: 'OK'
-                });
+            Array.from(nativeSelect.options).forEach(option => {
+                option.selected = checkedValues.includes(option.value);
+            });
+
+            const checkedLabels = getCheckboxes()
+                .filter(checkbox => checkbox.checked)
+                .map(checkbox => checkbox.dataset.label);
+
+            if (!checkedLabels.length) {
+                text.textContent = 'Select project departments';
+            } else if (checkedLabels.length <= 2) {
+                text.textContent = checkedLabels.join(', ');
+            } else {
+                text.textContent = `${checkedLabels.length} departments selected`;
             }
-        },
-        error: function(xhr) {
-            $('#cat-error').removeClass('d-none').text(xhr.responseJSON.message || 'Error occurred.');
         }
-    });
-});
-</script>
 
-<script>
-  // Delete Project Category via AJAX
-$(document).on('click', '.delete-cat', function () {
-    const id = $(this).data('id');
-    if (confirm('Are you sure you want to delete this category?')) {
-        $.ajax({
-            url: `{{ url('project-categories') }}/${id}`,
-            method: 'POST',
-            data: {
-                _method: 'DELETE',
-                _token: '{{ csrf_token() }}'
-            },
-            success: function (res) {
-                if (res.status === 'success') {
-                    $(`#cat-row-${id}`).remove();
-                    $(`#project_category_id option[value="${id}"]`).remove();
-                }
+        function addDepartmentOption(department, parentLabel = '') {
+            const label = `${department.dpt_code ? department.dpt_code + ' - ' : ''}${department.dpt_name}`;
+            const optionWrapper = document.createElement('label');
+            optionWrapper.className = 'department-option';
+            optionWrapper.dataset.label = `${label} ${parentLabel}`.toLowerCase();
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.className = 'department-checkbox';
+            checkbox.value = department.id;
+            checkbox.dataset.label = label;
+            checkbox.checked = true;
+
+            const labelText = document.createElement('span');
+            labelText.textContent = label;
+
+            optionWrapper.appendChild(checkbox);
+            optionWrapper.appendChild(labelText);
+
+            if (parentLabel) {
+                const parentText = document.createElement('small');
+                parentText.textContent = parentLabel;
+                optionWrapper.appendChild(parentText);
+            }
+
+            document.getElementById('departmentOptions').appendChild(optionWrapper);
+
+            const nativeOption = new Option(label, department.id, true, true);
+            nativeSelect.add(nativeOption);
+            syncNativeSelect();
+        }
+
+        toggle.addEventListener('click', function () {
+            const willOpen = menu.classList.contains('d-none');
+            menu.classList.toggle('d-none');
+            toggle.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+        });
+
+        document.addEventListener('click', function (event) {
+            if (!picker.contains(event.target)) {
+                menu.classList.add('d-none');
+                toggle.setAttribute('aria-expanded', 'false');
             }
         });
-    }
-});
-</script>
 
-<script>
-  // Add Client via AJAX
-$('#addClientForm').on('submit', function(e) {
-    e.preventDefault();
-
-    $.ajax({
-        url: '{{ route('project.clientstore') }}',
-        method: 'POST',
-        data: $(this).serialize(),
-        success: function(res) {
-            if (res.status === 'success') {
-                $('#client_id').append(
-                    `<option value="${res.client.id}" selected>${res.client.name}</option>`
-                );
-
-                $('#addClientForm')[0].reset();
-
-                const modalEl = document.getElementById('clientModal');
-                const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
-                modalInstance.hide();
-
-                Swal.fire({
-                    title: 'Success!',
-                    text: 'Client added successfully.',
-                    icon: 'success',
-                    confirmButtonText: 'OK'
-                });
+        picker.addEventListener('change', function (event) {
+            if (event.target.classList.contains('department-checkbox')) {
+                syncNativeSelect();
             }
-        },
-        error: function(xhr) {
-            $('#client-error').removeClass('d-none').text(xhr.responseJSON.message || 'Error occurred.');
+        });
+
+        search.addEventListener('input', function () {
+            const query = search.value.trim().toLowerCase();
+            picker.querySelectorAll('.department-option').forEach(option => {
+                option.classList.toggle('d-none', query && !option.dataset.label.includes(query));
+            });
+        });
+
+        selectAll.addEventListener('click', function () {
+            getCheckboxes().forEach(checkbox => checkbox.checked = true);
+            syncNativeSelect();
+        });
+
+        deselectAll.addEventListener('click', function () {
+            getCheckboxes().forEach(checkbox => checkbox.checked = false);
+            syncNativeSelect();
+        });
+
+        quickAdd.addEventListener('click', function () {
+            quickError.classList.add('d-none');
+            quickError.textContent = '';
+
+            if (!quickParent.value || !quickName.value.trim()) {
+                quickError.textContent = 'Choose a parent department and enter a department name.';
+                quickError.classList.remove('d-none');
+                return;
+            }
+
+            quickAdd.disabled = true;
+
+            $.ajax({
+                url: '{{ route('departments.store.ajax') }}',
+                method: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    parent_dpt_id: quickParent.value,
+                    dpt_name: quickName.value.trim(),
+                    status: 'Active'
+                },
+                success: function (res) {
+                    if (res.status === 'success' && res.department) {
+                        const parentLabel = quickParent.options[quickParent.selectedIndex]?.text || '';
+                        addDepartmentOption(res.department, parentLabel);
+                        quickName.value = '';
+                    }
+                },
+                error: function (xhr) {
+                    const errors = xhr.responseJSON?.errors || {};
+                    quickError.textContent = errors.dpt_name?.[0] || errors.parent_dpt_id?.[0] || xhr.responseJSON?.message || 'Could not add department.';
+                    quickError.classList.remove('d-none');
+                },
+                complete: function () {
+                    quickAdd.disabled = false;
+                }
+            });
+        });
+
+        const form = document.getElementById('projectForm');
+        if (form) {
+            form.addEventListener('submit', function (event) {
+                syncNativeSelect();
+                if (!Array.from(nativeSelect.selectedOptions).length) {
+                    event.preventDefault();
+                    menu.classList.remove('d-none');
+                    toggle.setAttribute('aria-expanded', 'true');
+                    quickError.textContent = 'Select at least one project department.';
+                    quickError.classList.remove('d-none');
+                }
+            });
+        }
+
+        syncNativeSelect();
+    }
+
+    // Add Project Category via AJAX
+    $('#addCatForm').on('submit', function(e) {
+        e.preventDefault();
+
+        $.ajax({
+            url: '{{ route('project-categories.store') }}',
+            method: 'POST',
+            data: $(this).serialize(),
+            success: function(res) {
+                if (res.status === 'success') {
+                    $('#project_category_id').append(
+                        `<option value="${res.cat.id}" selected>${res.cat.category_name}</option>`
+                    ).trigger('change');
+
+                    $('#addCatForm')[0].reset();
+
+                    const modalEl = document.getElementById('catModal');
+                    const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
+                    modalInstance.hide();
+
+                    Swal.fire({
+                        title: 'Success!',
+                        text: 'Project Category added successfully.',
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            },
+            error: function(xhr) {
+                $('#cat-error').removeClass('d-none').text(xhr.responseJSON.message || 'Error occurred.');
+            }
+        });
+    });
+
+    // Delete Project Category
+    $(document).on('click', '.delete-cat', function () {
+        const id = $(this).data('id');
+        if (confirm('Are you sure you want to delete this category?')) {
+            $.ajax({
+                url: `{{ url('project-categories') }}/${id}`,
+                method: 'POST',
+                data: {
+                    _method: 'DELETE',
+                    _token: '{{ csrf_token() }}'
+                },
+                success: function (res) {
+                    if (res.status === 'success') {
+                        $(`#cat-row-${id}`).remove();
+                        $(`#project_category_id option[value="${id}"]`).remove();
+                    }
+                }
+            });
         }
     });
-});
-</script>
 
+    // Add Client via AJAX
+    $('#addClientForm').on('submit', function(e) {
+        e.preventDefault();
 
-<script>
+        $.ajax({
+            url: '{{ route('project.clientstore') }}',
+            method: 'POST',
+            data: $(this).serialize(),
+            success: function(res) {
+                if (res.status === 'success') {
+                    $('#client_id').append(
+                        `<option value="${res.client.id}" selected>${res.client.name}</option>`
+                    );
+
+                    $('#addClientForm')[0].reset();
+
+                    const modalEl = document.getElementById('clientModal');
+                    const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
+                    modalInstance.hide();
+
+                    Swal.fire({
+                        title: 'Success!',
+                        text: 'Client added successfully.',
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            },
+            error: function(xhr) {
+                $('#client-error').removeClass('d-none').text(xhr.responseJSON.message || 'Error occurred.');
+            }
+        });
+    });
+
+    // Department cascade
     $('#parent_dpt_id').on('change', function () {
         let parentId = $(this).val();
 
@@ -1157,9 +1583,8 @@ $('#addClientForm').on('submit', function(e) {
             }
         });
     });
-</script>
 
-<script>
+    // Select2 for project members
     $(document).ready(function() {
         $('#projectMembers').select2({
             placeholder: "Select Employees",
@@ -1167,38 +1592,20 @@ $('#addClientForm').on('submit', function(e) {
             width: '100%'
         });
     });
-</script>
 
-
-
-<script>
-$(document).ready(function() {
-    $('#currency').on('change', function() {
-        // optional: handle currency change logic
-    });
-});
-</script>
-
-
-
-<script>
-    // ensure select2 already initialized for #projectMembers
+    // Employee names hidden inputs for form submission
     (function(){
         const form = document.querySelector('form[action="{{ route('projects.store') }}"]');
         if (!form) return;
 
         form.addEventListener('submit', function (e) {
-            // remove any previous hidden name inputs (if resubmitting)
             document.querySelectorAll('input[name="employee_names[]"]').forEach(i => i.remove());
 
-            // get selected options from select2/native select
             const sel = document.getElementById('projectMembers');
             if (!sel) return;
 
-            // For multi-select, selectedOptions is standard; if using select2, read .val() and map
             let selected = [];
             if (typeof $(sel).select2 === 'function') {
-                // select2 mode
                 const vals = $(sel).val() || [];
                 vals.forEach(v => {
                     const opt = sel.querySelector(`option[value="${v}"]`);
@@ -1208,7 +1615,6 @@ $(document).ready(function() {
                 selected = Array.from(sel.selectedOptions || []);
             }
 
-            // For each selected option, create a hidden input employee_names[] with the option's data-fullname
             selected.forEach(opt => {
                 const fullName = opt.dataset.fullname ?? opt.textContent.trim();
                 const input = document.createElement('input');
@@ -1217,9 +1623,8 @@ $(document).ready(function() {
                 input.value = fullName;
                 form.appendChild(input);
             });
-            // allow the form to submit
         });
     })();
 </script>
-
+@endpush
 @endsection

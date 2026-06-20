@@ -4,15 +4,22 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
+use App\Http\Requests\StoreTimeLogRequest;
+use App\Http\Requests\UpdateTimeLogRequest;
 use App\Models\TimeLog;
 use App\Models\TaskTimer;
 use App\Models\Project;
 use App\Models\User;
 use App\Models\Task;
+use App\Services\TimeLogService;
 use DB;
 
 class TimeLogController extends Controller
 {
+    public function __construct(private TimeLogService $timeLogService)
+    {
+    }
+
     public function index(Request $request, Project $project = null)
     {
         $query = TaskTimer::with(['project', 'task', 'user']);
@@ -30,7 +37,7 @@ class TimeLogController extends Controller
         }
 
         // Employee filter
-        if ($request->filled('user_id')) {
+        if ($request->filled('user_id') && $canReviewTimeLogs) {
             $query->where('user_id', $request->user_id);
         }
 
@@ -47,6 +54,19 @@ class TimeLogController extends Controller
         }
 
         $logs = $query->latest()->get();
+        $stats = [
+            'total_hours' => round((float) $logs->sum('total_hours'), 2),
+            'log_count' => $logs->count(),
+            'employees' => $logs->pluck('user_id')->filter()->unique()->count(),
+            'projects' => $logs->pluck('project_id')->filter()->unique()->count(),
+        ];
+        $employeeProductivity = $logs->groupBy('user_id')->map(function ($items) {
+            return [
+                'employee' => $items->first()->user?->name ?? 'Unknown',
+                'hours' => round((float) $items->sum('total_hours'), 2),
+                'logs' => $items->count(),
+            ];
+        })->sortByDesc('hours')->values();
 
         // Dropdown employees list
         if ($canReviewTimeLogs) {
@@ -55,22 +75,24 @@ class TimeLogController extends Controller
             $employees = User::where('id', auth()->id())->get();
         }
 
-        return view('admin.timelogs.index', compact('logs', 'project', 'employees'));
+        return view('admin.timelogs.index', compact('logs', 'project', 'employees', 'stats', 'employeeProductivity'));
     }
 
 public function create()
 {
-    $projects = Project::all();
-    $tasks = Task::all();              // ✅ correct
-    $employees = [];
-
-    if (auth()->user()->role === 'admin') {
-        $employees = User::where('role', 'employee')->orderBy('name')->get();
-    }
+    $canReviewTimeLogs = $this->canReviewTimeLogs();
+    $projects = $canReviewTimeLogs
+        ? Project::orderBy('name')->get()
+        : Project::whereHas('users', fn ($users) => $users->where('users.id', auth()->id()))->orderBy('name')->get();
+    $tasks = $canReviewTimeLogs
+        ? Task::orderBy('title')->get()
+        : Task::where(function ($query) {
+            $this->applyEmployeeTaskScope($query);
+        })->orderBy('title')->get();
+    $employees = $canReviewTimeLogs ? User::where('role', 'employee')->orderBy('name')->get() : collect();
 
     return view('admin.timelogs.create', compact('projects', 'tasks', 'employees'));
 }
-
 
 public function store(Request $request)
 {

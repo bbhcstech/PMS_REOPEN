@@ -120,9 +120,7 @@
                         <label>Assigned To <span class="text-danger">*</span></label>
                          <div class="row">
                          <div class="col-md-9">
-                        <select name="assigned_to[]" multiple class="form-select select2" required>
-
-                            <option value="">Nothing selected</option>
+                        <select name="assigned_to[]" class="form-select select2" multiple required>
                             @foreach($users as $user)
                                 <option value="{{ $user->id }}"
                                 {{ in_array($user->id, old('assigned_to', $assignedUserIds ?? [])) ? 'selected' : '' }}>
@@ -131,6 +129,7 @@
 
                             @endforeach
                         </select>
+                        <small class="form-text text-muted">Select one or more employees for this task.</small>
                         
                         </div>
                             <div class="col-md-3 d-flex align-items-start">
@@ -186,12 +185,10 @@
 
                     <div class="col-md-2">
                         <label>Status</label>
-                        <select name="board_column_id" class="form-control select-picker">
-                            <option value="1" {{ old('board_column_id', $duplicateTask->board_column_id ?? '') == 1 ? 'selected' : '' }}>Incomplete</option>
-                            <option value="2" {{ old('board_column_id', $duplicateTask->board_column_id ?? '') == 2 ? 'selected' : '' }}>To Do</option>
-                            <option value="3" {{ old('board_column_id', $duplicateTask->board_column_id ?? '') == 3 ? 'selected' : '' }}>Doing</option>
-                            <option value="4" {{ old('board_column_id', $duplicateTask->board_column_id ?? '') == 4 ? 'selected' : '' }}>Completed</option>
-                            <option value="5" {{ old('board_column_id', $duplicateTask->board_column_id ?? '') == 5 ? 'selected' : '' }}>Waiting for Approval</option>
+                        <select name="status" class="form-control select-picker">
+                            @foreach(['Incomplete', 'To Do', 'Doing', 'Completed', 'Waiting for Approval'] as $status)
+                                <option value="{{ $status }}" {{ old('status', $duplicateTask->status ?? 'To Do') === $status ? 'selected' : '' }}>{{ $status }}</option>
+                            @endforeach
                         </select>
                     </div>
 
@@ -203,6 +200,17 @@
                             <option value="low" {{ old('priority', $duplicateTask->priority ?? 'medium') == 'low' ? 'selected' : '' }}>Low</option>
 
                         </select>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <label>Progress (%)</label>
+                        <input type="number" name="progress" class="form-control" min="0" max="100" value="{{ old('progress', $duplicateTask->progress ?? 0) }}">
+                    </div>
+                    <div class="col-md-9">
+                        <label>Remarks</label>
+                        <textarea name="remarks" class="form-control" rows="2" maxlength="2000">{{ old('remarks', $duplicateTask->remarks ?? '') }}</textarea>
                     </div>
                 </div>
 

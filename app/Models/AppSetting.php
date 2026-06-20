@@ -27,4 +27,9 @@ class AppSetting extends Model
     protected $casts = [
         'options' => 'array',
     ];
+
+    public static function valueFor(string $key, ?string $default = null): ?string
+    {
+        return static::where('key', $key)->value('value') ?? $default;
+    }
 }

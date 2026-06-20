@@ -7,6 +7,7 @@ use App\Models\Project;
 use App\Models\User;
 use App\Models\TaskLabel;
 use App\Models\TaskCategory;
+use App\Models\TaskUpdate;
 use App\Models\Country;
 use App\Models\Department;
 use App\Models\Designation;
@@ -28,12 +29,22 @@ class TaskController extends Controller
 
 public function index(Request $request, Project $project = null) 
 {
-    $query = Task::with(['project', 'assignees', 'subTasks.assignee', 'timers'])
+    $query = Task::with(['project', 'assignees', 'subTasks.assignee', 'timers', 'latestUpdate.user'])
         ->whereNull('parent_id');
     $user = auth()->user();
+    $canManageTasks = $this->canCreateWorkItems();
 
-    if ($user && strtolower((string) $user->role) === 'employee') {
-        $this->applyEmployeeTaskScope($query, $user);
+    if ($user && $user->normalizedRole() !== 'admin') {
+        $visibleUserIds = $user->visibleEmployeeIds()->push($user->id)->unique()->values();
+        $query->where(function ($taskScope) use ($visibleUserIds) {
+            $taskScope->whereHas('assignees', function ($assignees) use ($visibleUserIds) {
+                $assignees->whereIn('users.id', $visibleUserIds);
+            });
+
+            foreach ($visibleUserIds as $visibleUserId) {
+                $taskScope->orWhereRaw('FIND_IN_SET(?, assigned_to)', [$visibleUserId]);
+            }
+        });
     }
 
     // Filter by project
@@ -46,7 +57,8 @@ public function index(Request $request, Project $project = null)
         $query->where(function ($q) use ($request) {
             $q->where('title', 'like', '%' . $request->search . '%')
               ->orWhere('id', $request->search)
-              ->orWhere('task_short_code', $request->search);
+              ->orWhere('task_short_code', $request->search)
+              ->orWhere('description', 'like', '%' . $request->search . '%');
         });
     }
 
@@ -79,9 +91,25 @@ public function index(Request $request, Project $project = null)
         $query->where('status', '!=', 'Completed');
     }
 
-    $tasks = $query->orderBy('created_at', 'desc')->get();
+    if ($request->filled('employee_id')) {
+        $query->whereHas('assignees', function ($assignees) use ($request) {
+            $assignees->where('users.id', $request->employee_id);
+        });
+    }
 
-    return view('admin.tasks.index', compact('tasks', 'project'));
+    if (! $project && $request->filled('project_id')) {
+        $query->where('project_id', $request->project_id);
+    }
+
+    if ($request->filled('priority')) {
+        $query->where('priority', $request->priority);
+    }
+
+    $tasks = $query->orderBy('created_at', 'desc')->get();
+    $employees = User::where('role', 'employee')->orderBy('name')->get();
+    $projects = Project::orderBy('name')->get();
+
+    return view('admin.tasks.index', compact('tasks', 'project', 'employees', 'projects'));
 }
 
 
@@ -101,7 +129,7 @@ public function create(Request $request)
     $assignedUserIds = [];
 
     $projects = Project::all();
-    $users = User::all();
+    $users = User::where('role', 'employee')->orderBy('name')->get();
     $labels = TaskLabel::with('project')->get();
     $taskCategories = TaskCategory::all();
     $milestones = ProjectMilestone::all();
@@ -134,7 +162,7 @@ public function create(Request $request)
     // departments, designations, countries, etc.
     $departments = Department::with('parent')->latest()->get();
     $designations = Designation::all();
-    $users = User::all(); // for Reporting To
+    $users = User::where('role', 'employee')->orderBy('name')->get();
     $countries = Country::all();
     $employee = null;
     $prtdepartments = ParentDepartment::latest()->get();
@@ -196,7 +224,8 @@ public function create(Request $request)
         'start_date'        => 'nullable|date',
         // 'due_date'          => $request->has('without_due_date') ? 'nullable' : 'nullable|date',
         'due_date' => $request->has('without_due_date') ? 'nullable' : 'nullable|date|after_or_equal:start_date',
-         'assigned_to.*' => 'nullable|integer|exists:users,id',
+        'assigned_to' => 'required|array|min:1',
+        'assigned_to.*' => 'required|integer|exists:users,id',
         'description'       => 'nullable|string',
         'task_labels'       => 'nullable|array',
         'task_labels.*'     => 'exists:task_label_list,id',
@@ -212,10 +241,12 @@ public function create(Request $request)
         'repeat_type'       => 'nullable|in:day,week,month,year',
         'repeat_cycles'     => 'nullable|integer',
         'dependent_task_id' => 'nullable|integer',
-        'priority'          => 'nullable|string',
+        'priority'          => 'nullable|in:low,medium,high',
+        'progress'          => 'nullable|integer|min:0|max:100',
+        'remarks'           => 'nullable|string|max:2000',
         'category_id'       => 'nullable|integer',
         'parent_id'         => 'nullable|integer',
-        'status'            => 'nullable|string',
+        'status'            => 'nullable|in:Waiting for Approval,To Do,Doing,Incomplete,Completed',
         'image_url' => [
     'nullable',
     'file',
@@ -255,11 +286,13 @@ public function create(Request $request)
         'project_id'        => $request->project_id,
         'start_date'        => $request->start_date,
         'due_date' => $request->has('without_due_date') ? null : $request->due_date,
-        'assigned_to' => $request->has('assigned_to') ? implode(',', $request->assigned_to) : null,
+        'assigned_to' => $request->filled('assigned_to') ? (int) collect($request->assigned_to)->first() : null,
+        'created_by'        => auth()->id(),
         'description'       => $request->description,
+        'remarks'           => $request->remarks,
         'task_labels'       => $request->has('task_labels') ? implode(',', $request->task_labels) : null,
         'milestone_id'      => $request->milestone_id,
-        'board_column_id'   => $request->board_column_id ?? 1,
+        'board_column_id'   => $request->board_column_id ?? $this->boardColumnForStatus($request->status ?? 'To Do'),
         'is_private'        => $request->has('is_private'),
         'billable'          => $request->has('billable'),
         'estimate_hours'    => $request->estimate_hours,
@@ -271,7 +304,8 @@ public function create(Request $request)
         'repeat_cycles'     => $request->repeat_cycles,
         'dependent_task_id' => $request->dependent_task_id,
         'image_url'         => $profileImagePath,
-        'priority'          => $request->priority,
+        'priority'          => $request->priority ?? 'medium',
+        'progress'          => $request->integer('progress', 0),
         'category_id'       => $request->category_id,
         'parent_id'         => $request->parent_id,
         'status'            => $request->status ?? 'To Do',
@@ -285,7 +319,7 @@ public function create(Request $request)
 ]);
 
     if ($request->has('assigned_to')) {
-    $task->assignees()->sync($request->assigned_to);
+    $this->syncTaskAssignees($task, $request->assigned_to);
 
     // 🔔 Send notification to each assigned user
     foreach ($request->assigned_to as $userId) {
@@ -316,7 +350,7 @@ public function create(Request $request)
     $task->load(['assignees']); // eager load to avoid null
 
     $projects = Project::all();
-    $users = User::all();
+    $users = User::where('role', 'employee')->orderBy('name')->get();
     $labels = TaskLabel::with('project')->get();
     $taskCategories = TaskCategory::all();
     $milestones = ProjectMilestone::all();
@@ -335,7 +369,7 @@ public function create(Request $request)
         
         $designations = Designation::all();
          $departments = Department::with('parent')->latest()->get();
-        $users = User::all(); // for Reporting To
+        $users = User::where('role', 'employee')->orderBy('name')->get();
        $countries = Country::all();
        $employee = null;
        $prtdepartments = ParentDepartment::latest()->get();
@@ -356,6 +390,8 @@ public function create(Request $request)
 
 public function update(Request $request, Task $task)
 {
+    abort_unless($this->canCreateWorkItems(), 403);
+
     $request->validate([
         'task_short_code'  => 'required|string|max:255',
         'title'             => 'required|string|max:255',
@@ -363,7 +399,8 @@ public function update(Request $request, Task $task)
         'start_date'        => 'nullable|date',
         // 'due_date'          => $request->has('without_due_date') ? 'nullable' : 'nullable|date',
         'due_date' => $request->has('without_due_date') ? 'nullable' : 'nullable|date|after_or_equal:start_date',
-        'assigned_to.*'     => 'nullable|integer|exists:users,id',
+        'assigned_to'       => 'required|array|min:1',
+        'assigned_to.*'     => 'required|integer|exists:users,id',
         'description'       => 'nullable|string',
         'task_labels'       => 'nullable|array',
         'task_labels.*'     => 'exists:task_label_list,id',
@@ -379,10 +416,12 @@ public function update(Request $request, Task $task)
         'repeat_type'       => 'nullable|in:day,week,month,year',
         'repeat_cycles'     => 'nullable|integer',
         'dependent_task_id' => 'nullable|integer',
-        'priority'          => 'nullable|string',
+        'priority'          => 'nullable|in:low,medium,high',
+        'progress'          => 'nullable|integer|min:0|max:100',
+        'remarks'           => 'nullable|string|max:2000',
         'category_id'       => 'nullable|integer',
         'parent_id'         => 'nullable|integer',
-        'status'            => 'nullable|string',
+        'status'            => 'nullable|in:Waiting for Approval,To Do,Doing,Incomplete,Completed',
         'image_url' => [
             'nullable',
             'file',
@@ -418,11 +457,12 @@ public function update(Request $request, Task $task)
         'project_id'        => $request->project_id,
         'start_date'        => $request->start_date,
         'due_date'          => $request->has('without_due_date') ? null : $request->due_date,
-        'assigned_to'       => $request->has('assigned_to') ? implode(',', $request->assigned_to) : null,
+        'assigned_to'       => $request->filled('assigned_to') ? (int) collect($request->assigned_to)->first() : null,
         'description'       => $request->description,
+        'remarks'           => $request->remarks,
         'task_labels'       => $request->has('task_labels') ? implode(',', $request->task_labels) : null,
         'milestone_id'      => $request->milestone_id,
-        'board_column_id'   => $request->board_column_id ?? $task->board_column_id,
+        'board_column_id'   => $request->board_column_id ?? $this->boardColumnForStatus($request->status ?? $task->status),
         'is_private'        => $request->has('is_private'),
         'billable'          => $request->has('billable'),
         'estimate_hours'    => $request->estimate_hours,
@@ -434,10 +474,13 @@ public function update(Request $request, Task $task)
         'repeat_cycles'     => $request->repeat_cycles,
         'dependent_task_id' => $request->dependent_task_id,
         'image_url'         => $profileImagePath,
-        'priority'          => $request->priority,
+        'priority'          => $request->priority ?? 'medium',
+        'progress'          => $request->integer('progress', (int) ($task->progress ?? 0)),
         'category_id'       => $request->category_id,
         'parent_id'         => $request->parent_id,
         'status'            => $request->status ?? $task->status,
+        'is_completed'      => ($request->status ?? $task->status) === 'Completed' ? 1 : 0,
+        'completed_on'      => ($request->status ?? $task->status) === 'Completed' ? ($task->completed_on ?: now()) : null,
     ]);
     
     UserActivity::create([
@@ -449,7 +492,7 @@ public function update(Request $request, Task $task)
 
     // Sync assigned users
     if ($request->has('assigned_to')) {
-    $task->assignees()->sync($request->assigned_to);
+    $this->syncTaskAssignees($task, $request->assigned_to);
 
     foreach ($request->assigned_to as $userId) {
         $user = User::find($userId);
@@ -467,6 +510,8 @@ public function update(Request $request, Task $task)
 
     public function destroy(Task $task)
     {
+        abort_unless($this->canCreateWorkItems(), 403);
+
         $task->delete();
         return redirect()->route('tasks.index')->with('success', 'Task deleted successfully.');
     }
@@ -531,9 +576,12 @@ public function taskBoard(Project $project)
 public function updateStatus(Request $request, Task $task)
 {
     \Log::info("TASK UPDATE", ['task_id' => $task->id, 'new_status' => $request->status]);
+    $this->authorizeTaskAccess($task);
 
     $request->validate([
-        'status' => 'required|string',
+        'status' => 'required|in:Waiting for Approval,To Do,Doing,Incomplete,Completed',
+        'progress' => 'nullable|integer|min:0|max:100',
+        'remarks' => 'nullable|string|max:2000',
     ]);
 
     // ❗ Rule: If marking a parent task as 'Completed', check all sub-tasks
@@ -550,28 +598,19 @@ public function updateStatus(Request $request, Task $task)
         }
     }
 
-    if ($task->status === 'Waiting for Approval' && $request->status !== 'Waiting for Approval') {
-        $task->status = $request->status;
-    } elseif ($task->status !== 'Waiting for Approval') {
-        $task->status = $request->status;
-    } else {
+    if ($task->status === 'Waiting for Approval' && $request->status !== 'Waiting for Approval' && ! $this->canCreateWorkItems()) {
         return response()->json([
             'success' => false,
-            'message' => 'Tasks in Waiting for Approval cannot be updated directly from/to certain states.'
+            'message' => 'Tasks in Waiting for Approval can only be moved by an admin, HR, or manager.'
         ], 403);
     }
 
     // ✅ Sync completion
-    $task->is_completed = $request->status === 'Completed' ? 1 : 0;
+    $this->applyTaskStatus($task, $request->status, $request->has('progress') ? $request->integer('progress') : null, $request->remarks);
+    $this->recordTaskUpdate($task, $request->status, $task->progress, $request->remarks);
 
     // ✅ Set completed_on date only when status is Completed
-    if ($request->status === 'Completed') {
-        $task->completed_on = now();
-    } else {
-        $task->completed_on = null; // Clear date if status changed back
-    }
-
-    $task->save();
+    
 
     if (strtolower((string) auth()->user()?->role) === 'employee') {
         SystemNotificationService::notifyAdmins(
@@ -582,7 +621,25 @@ public function updateStatus(Request $request, Task $task)
         );
     }
 
-    return response()->json(['success' => true]);
+    return response()->json([
+        'success' => true,
+        'status' => $task->status,
+        'progress' => (int) ($task->progress ?? 0),
+        'completed_on' => $task->completed_on ? Carbon::parse($task->completed_on)->format('M d, Y') : '--',
+        'remarks' => $task->remarks,
+    ]);
+}
+
+public function togglePin(Task $task)
+{
+    $this->authorizeTaskAccess($task);
+
+    $task->forceFill(['is_pinned' => ! (bool) $task->is_pinned])->save();
+
+    return response()->json([
+        'success' => true,
+        'is_pinned' => (bool) $task->is_pinned,
+    ]);
 }
 
 
@@ -619,8 +676,10 @@ public function storeLabel(Request $request)
 
 public function show(Task $task)
 {
+    $this->authorizeTaskAccess($task);
+
     $task->load([
-        'project', 'assignee', 'parent',
+        'project', 'assignee', 'assignees', 'createdBy', 'latestUpdate.user', 'updates.user', 'parent',
         'notes.user',
         'activityLogs.user',
         'subTasks.assignee',
@@ -681,8 +740,9 @@ public function show(Task $task)
 
 public function markComplete(Task $task)
 {
-    $task->status = 'Completed';
-    $task->save();
+    $this->authorizeTaskAccess($task);
+    $this->applyTaskStatus($task, 'Completed', 100, null);
+    $this->recordTaskUpdate($task, 'Completed', 100, null);
 
     return redirect()->back()->with('success', 'Task marked as completed.');
 }
@@ -788,10 +848,11 @@ public function calendarView(Request $request)
     ]);
 }
 
-public function userTaskBoard(User $user, Request $request)
+public function userTaskBoard(Request $request, User $user = null)
 {
     $query = Task::with(['assignee']);
     $currentUser = auth()->user();
+    $user = $user ?: $currentUser;
 
     // Filter by assigned user
     // $query->where('assigned_to', $user->id);
@@ -861,17 +922,25 @@ public function waitingApproval(Request $request)
 
 public function bulkStatusUpdate(Request $request)
 {
+    abort_unless($this->canCreateWorkItems(), 403);
+
     $request->validate([
         'ids' => 'required|array',
-        'status' => 'required|string',
+        'ids.*' => 'integer|exists:tasks,id',
+        'status' => 'required|in:Waiting for Approval,To Do,Doing,Incomplete,Completed',
     ]);
 
-    Task::whereIn('id', $request->ids)->update(['status' => $request->status]);
+    Task::whereIn('id', $request->ids)->get()->each(function (Task $task) use ($request) {
+        $this->applyTaskStatus($task, $request->status, $request->status === 'Completed' ? 100 : null, null);
+        $this->recordTaskUpdate($task, $request->status, $task->progress, null);
+    });
 
     return response()->json(['success' => true]);
 }
 public function bulkDelete(Request $request)
 {
+    abort_unless($this->canCreateWorkItems(), 403);
+
     $request->validate([
         'ids'   => 'required|array',
         'ids.*' => 'integer|exists:tasks,id',
@@ -900,6 +969,81 @@ public function bulkDelete(Request $request)
 private function canCreateWorkItems(): bool
 {
     return in_array(strtolower((string) auth()->user()?->role), ['admin', 'hr', 'manager'], true);
+}
+
+private function boardColumnForStatus(?string $status): int
+{
+    return [
+        'Incomplete' => 1,
+        'To Do' => 2,
+        'Doing' => 3,
+        'Completed' => 4,
+        'Waiting for Approval' => 5,
+    ][$status ?: 'To Do'] ?? 2;
+}
+
+private function syncTaskAssignees(Task $task, array $userIds): void
+{
+    $syncData = collect($userIds)
+        ->filter()
+        ->unique()
+        ->mapWithKeys(fn ($userId) => [
+            (int) $userId => [
+                'assigned_by' => auth()->id(),
+                'assigned_at' => now(),
+            ],
+        ])
+        ->all();
+
+    $task->assignees()->sync($syncData);
+}
+
+private function applyTaskStatus(Task $task, string $status, ?int $progress = null, ?string $remarks = null): void
+{
+    $task->status = $status;
+    $task->board_column_id = $this->boardColumnForStatus($status);
+    $task->is_completed = $status === 'Completed' ? 1 : 0;
+    $task->completed_on = $status === 'Completed' ? ($task->completed_on ?: now()) : null;
+
+    if ($progress !== null) {
+        $task->progress = max(0, min(100, $progress));
+    } elseif ($status === 'Completed') {
+        $task->progress = 100;
+    }
+
+    if ($remarks !== null) {
+        $task->remarks = $remarks;
+    }
+
+    $task->save();
+}
+
+private function recordTaskUpdate(Task $task, ?string $status, ?int $progress, ?string $remarks): void
+{
+    TaskUpdate::create([
+        'task_id' => $task->id,
+        'user_id' => auth()->id(),
+        'status' => $status,
+        'progress' => $progress ?? (int) ($task->progress ?? 0),
+        'remarks' => $remarks,
+    ]);
+}
+
+private function authorizeTaskAccess(Task $task): void
+{
+    if ($this->canCreateWorkItems()) {
+        return;
+    }
+
+    $user = auth()->user();
+
+    abort_unless(
+        $user && (
+            $task->assignees()->where('users.id', $user->id)->exists()
+            || collect(explode(',', (string) $task->assigned_to))->contains((string) $user->id)
+        ),
+        403
+    );
 }
 
 private function applyEmployeeTaskScope($query, User $user): void

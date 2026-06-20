@@ -14,12 +14,18 @@ use App\Http\Controllers\DiscussionController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\Admin\GovernmentIdVerificationController;
+use App\Http\Controllers\Admin\CompanyManagementController;
+use App\Http\Controllers\Admin\ModuleManagementController;
+use App\Http\Controllers\Admin\RoleAccountController;
+use App\Http\Controllers\Admin\RolePermissionController;
 // use App\Http\Controllers\Frontend\FrontendController;
 use App\Http\Controllers\FrontendUIController;
 use App\Http\Controllers\HolidayController;
 use App\Http\Controllers\LeaveController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\OrganizationDirectoryController;
 use App\Http\Controllers\ParentDepartmentController;
+use App\Http\Controllers\PayrollController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectFileController;
@@ -46,6 +52,7 @@ use App\Http\Controllers\Admin\Settings\CompanySettingsController;
 use App\Http\Controllers\Admin\Settings\BusinessAddressController;
 use App\Http\Controllers\Admin\Settings\AppSettingController;
 use App\Http\Controllers\Admin\Settings\ProfileSettingController;
+use App\Http\Controllers\Admin\Settings\TermsPolicyController;
 use App\Http\Controllers\Admin\ContractController;
 use App\Http\Controllers\Admin\ContractTemplateController;
 use App\Http\Controllers\Admin\LeadContactController;
@@ -285,8 +292,16 @@ Route::get('/verify-otp', function () {
     return view('auth.verify-otp');
 })->name('verify-otp');
 
+Route::get('/hr-login', function () {
+    return view('auth.login', ['loginTitle' => 'HR Login']);
+})->middleware('guest')->name('hr.login');
+
+Route::get('/manager-login', function () {
+    return view('auth.login', ['loginTitle' => 'Manager Login']);
+})->middleware('guest')->name('manager.login');
+
 Route::get('/dashboard', [DashboardController::class, 'index'])
-    ->middleware(['auth', 'verified'])
+    ->middleware(['auth', 'verified', 'module.access'])
     ->name('dashboard');
 
 Route::middleware(['auth', 'verified'])->prefix('superadmin')->name('superadmin.')->group(function () {
@@ -387,7 +402,68 @@ Route::get('/logout', function () {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'module.access'])->group(function () {
+    Route::prefix('admin/settings')->name('admin.')->group(function () {
+        Route::get('/companies', [CompanyManagementController::class, 'index'])->name('companies.index');
+        Route::get('/companies/create', [CompanyManagementController::class, 'create'])->name('companies.create');
+        Route::post('/companies', [CompanyManagementController::class, 'store'])->name('companies.store');
+        Route::get('/companies/{company}/edit', [CompanyManagementController::class, 'edit'])->name('companies.edit');
+        Route::put('/companies/{company}', [CompanyManagementController::class, 'update'])->name('companies.update');
+        Route::patch('/companies/{company}/activate', [CompanyManagementController::class, 'activate'])->name('companies.activate');
+        Route::patch('/companies/{company}/deactivate', [CompanyManagementController::class, 'deactivate'])->name('companies.deactivate');
+
+        Route::get('/modules', [ModuleManagementController::class, 'index'])->name('modules.index');
+        Route::post('/modules', [ModuleManagementController::class, 'store'])->name('modules.store');
+        Route::put('/modules/{module}', [ModuleManagementController::class, 'update'])->name('modules.update');
+        Route::delete('/modules/{module}', [ModuleManagementController::class, 'destroy'])->name('modules.destroy');
+
+        Route::get('/role-permissions', [RolePermissionController::class, 'index'])->name('role-permissions.index');
+        Route::post('/role-permissions', [RolePermissionController::class, 'update'])->name('role-permissions.update');
+
+        Route::get('/accounts/{role}', [RoleAccountController::class, 'index'])->name('role-accounts.index');
+        Route::post('/accounts/{role}', [RoleAccountController::class, 'store'])->name('role-accounts.store');
+        Route::put('/accounts/{role}/{user}', [RoleAccountController::class, 'update'])->name('role-accounts.update');
+        Route::post('/accounts/{role}/{user}/reset-password', [RoleAccountController::class, 'resetPassword'])->name('role-accounts.reset-password');
+    });
+
+    Route::prefix('payroll')->name('payroll.')->group(function () {
+        Route::get('/', [PayrollController::class, 'index'])->name('index');
+
+        Route::get('/architectures', [PayrollController::class, 'architectures'])->name('architectures.index');
+        Route::post('/architectures', [PayrollController::class, 'storeArchitecture'])->name('architectures.store');
+        Route::patch('/architectures/{architecture}/activate', [PayrollController::class, 'activateArchitecture'])->name('architectures.activate');
+
+        Route::get('/salary-structures', [PayrollController::class, 'salaryStructures'])->name('salary-structures.index');
+        Route::post('/salary-structures', [PayrollController::class, 'storeSalaryStructure'])->name('salary-structures.store');
+        Route::post('/salary-components', [PayrollController::class, 'storeSalaryComponent'])->name('salary-components.store');
+
+        Route::get('/deduction-rules', [PayrollController::class, 'deductionRules'])->name('deduction-rules.index');
+        Route::post('/deduction-rules', [PayrollController::class, 'storeDeductionRule'])->name('deduction-rules.store');
+        Route::get('/bonus-rules', [PayrollController::class, 'bonusRules'])->name('bonus-rules.index');
+        Route::post('/bonus-rules', [PayrollController::class, 'storeBonusRule'])->name('bonus-rules.store');
+        Route::get('/tax-rules', [PayrollController::class, 'taxRules'])->name('tax-rules.index');
+        Route::post('/tax-rules', [PayrollController::class, 'storeTaxRule'])->name('tax-rules.store');
+        Route::get('/overtime-rules', [PayrollController::class, 'overtimeRules'])->name('overtime-rules.index');
+        Route::post('/overtime-rules', [PayrollController::class, 'storeOvertimeRule'])->name('overtime-rules.store');
+
+        Route::get('/cycles', [PayrollController::class, 'cycles'])->name('cycles.index');
+        Route::post('/cycles', [PayrollController::class, 'storeCycle'])->name('cycles.store');
+        Route::post('/cycles/{cycle}/process', [PayrollController::class, 'process'])->name('cycles.process');
+
+        Route::get('/payslips', [PayrollController::class, 'payslips'])->name('payslips.index');
+        Route::get('/reports', [PayrollController::class, 'reports'])->name('reports.index');
+        Route::get('/audit-logs', [PayrollController::class, 'auditLogs'])->name('audit-logs.index');
+
+        Route::get('/policies', [PayrollController::class, 'policies'])->name('policies.index');
+        Route::get('/settings', [PayrollController::class, 'settings'])->name('settings.index');
+        Route::get('/import-export', [PayrollController::class, 'importExport'])->name('import-export.index');
+        Route::get('/archive', [PayrollController::class, 'archive'])->name('archive.index');
+        Route::get('/formula-builder', [PayrollController::class, 'formulaBuilder'])->name('formula-builder.index');
+    });
+
+    Route::get('/organization', [OrganizationDirectoryController::class, 'index'])->name('organization.index');
+    Route::get('/organization/employees/{employee}', [OrganizationDirectoryController::class, 'show'])->name('organization.show');
+    Route::patch('/organization/employees/{employee}/directory-profile', [OrganizationDirectoryController::class, 'updateDirectoryProfile'])->name('organization.directory-profile.update');
 
     /*
     |----------------------------------------------------------------------
@@ -399,6 +475,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/notifications/{id}/open', [NotificationController::class, 'open'])->name('notifications.open');
     Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.readAll');
+    Route::post('/notifications/section/{section}/read', [NotificationController::class, 'markSectionAsRead'])->name('notifications.section.read');
     Route::post('/notifications/clear-all', [NotificationController::class, 'clearAll'])->name('notifications.clearAll');
     Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount'])->name('notifications.unreadCount');
     Route::get('/notifications/latest', [NotificationController::class, 'latest'])->name('notifications.latest');
@@ -752,7 +829,9 @@ Route::get('/my-awards', [AwardController::class, 'myAwards'])->name('awards.my-
 
     Route::post('/projects/bulk-delete', [ProjectController::class, 'bulkDelete'])->name('projects.bulk-delete');
     Route::post('/projects/bulk-status', [ProjectController::class, 'bulkStatus'])->name('projects.bulk-status');
+    Route::post('/projects/import', [ProjectController::class, 'import'])->name('projects.import');
     Route::patch('admin/projects/{project}/status', [ProjectController::class, 'toggleStatus'])->name('projects.toggleStatus');
+    Route::post('projects/{project}/updates', [ProjectController::class, 'storeUpdate'])->name('projects.updates.store');
 
     Route::get('projects/archive', [ProjectController::class, 'archive'])->name('projects.archive');
     Route::post('projects/{project}/archive', [ProjectController::class, 'archiveProject'])->name('projects.archive.action');
@@ -844,6 +923,7 @@ Route::get('/my-awards', [AwardController::class, 'myAwards'])->name('awards.my-
     Route::get('/projects/{project}/tasks', [TaskController::class, 'index'])->name('projects.tasks.index');
     Route::get('projects/{project}/tasks/board', [TaskController::class, 'taskBoard'])->name('projects.tasks.board');
     Route::post('/tasks/{task}/update-status', [TaskController::class, 'updateStatus'])->name('tasks.updateStatus');
+    Route::post('/tasks/{task}/toggle-pin', [TaskController::class, 'togglePin'])->name('tasks.toggle-pin');
 
     Route::post('/tasks/{task}/notes', [TaskController::class, 'storeNote'])->name('tasks.notes.store');
 
@@ -1115,6 +1195,12 @@ Route::get('/admin/settings/app/google-map', [AppSettingController::class, 'goog
 Route::post('/admin/settings/app/update', [AppSettingController::class, 'update'])->name('admin.settings.app.update');
 Route::post('/admin/settings/app/add-field', [AppSettingController::class, 'addField'])->name('admin.settings.app.add-field');
     //profile setting
+
+Route::get('/admin/settings/terms-policy', [TermsPolicyController::class, 'index'])
+    ->name('admin.settings.terms-policy');
+
+Route::put('/admin/settings/terms-policy', [TermsPolicyController::class, 'update'])
+    ->name('admin.settings.terms-policy.update');
 
 /*
 |--------------------------------------------------------------------------

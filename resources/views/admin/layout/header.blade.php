@@ -14,7 +14,12 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0" />
 
-    <title>Bitroxia PMS</title>
+    @php
+      $companyBrand = $currentCompany?->brand_name ?? 'Bitroxia PMS';
+      $companyFavicon = $currentCompany?->favicon ? asset($currentCompany->favicon) : asset('admin/assets/img/favicon/favicon.ico');
+    @endphp
+
+    <title>{{ $companyBrand }}</title>
 
     <meta name="description" content="" />
     <script>
@@ -24,8 +29,12 @@
       })();
     </script>
 
+    @php
+      $adminRefreshVersion = file_exists(public_path('admin/assets/css/pms-refresh.css')) ? filemtime(public_path('admin/assets/css/pms-refresh.css')) : time();
+    @endphp
+
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="{{ asset('admin/assets/img/favicon/favicon.ico')}}" />
+    <link rel="icon" type="image/x-icon" href="{{ $companyFavicon }}" />
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -41,7 +50,7 @@
 
     <link rel="stylesheet" href="{{ asset('admin/assets/vendor/css/core.css')}}" />
     <link rel="stylesheet" href="{{ asset('admin/assets/css/demo.css')}}" />
-    <link rel="stylesheet" href="{{ asset('admin/assets/css/pms-refresh.css')}}" />
+    <link rel="stylesheet" href="{{ asset('admin/assets/css/pms-refresh.css') }}?v={{ $adminRefreshVersion }}" />
 
     <!-- Vendors CSS -->
 
@@ -75,4 +84,5 @@
     {{-- ✅ CSRF token for AJAX --}}
     <meta name="csrf-token" content="{{ csrf_token() }}">
      @yield('css')
+     @stack('styles')
   </head>

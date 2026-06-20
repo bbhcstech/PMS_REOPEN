@@ -11,93 +11,55 @@
 
 <style>
     .small-chart {
-        height: 200px !important;
-        max-height: 200px !important;
+        height: 240px !important;
+        max-height: 240px !important;
+        width: 100% !important;
     }
 </style>
-<div class="container-fluid py-4">
-      <!-- Sub-navigation pills -->
-      <ul class="nav nav-pills nav-fill mb-4 shadow-sm rounded border" id="dashboardTabs" role="tablist" style="background-color: #f8f9fa;">
-    <li class="nav-item" role="presentation">
-        <a class="nav-link fw-bold text-dark py-3 {{ request('tab') === 'project' ? 'active' : '' }}"
-           href="{{ route('dashboard', ['tab' => 'project']) }}">
-           <i class="bx bx-folder me-1"></i> Overview
-        </a>
-    </li>
-
-    <li class="nav-item">
-        <a class="nav-link fw-bold text-dark py-3 {{ Route::currentRouteName() === 'dashproject' ? 'active' : '' }}"
-           href="{{ route('dashproject') }}">
-           <i class="bx bx-folder me-1"></i> Project
-        </a>
-    </li>
-
-    <li class="nav-item">
-        <a class="nav-link fw-bold text-dark py-3 {{ Route::currentRouteName() === 'dashboard.client' ? 'active' : '' }}"
-           href="{{ route('dashboard.client') }}">
-           <i class="bx bx-folder me-1"></i> Clients
-        </a>
-    </li>
-
-    <li class="nav-item" role="presentation">
-        <a class="nav-link fw-bold text-dark py-3 {{ Route::currentRouteName() === 'hr.dashboard' ? 'active' : '' }}"
-           href="{{ route('hr.dashboard') }}">
-           <i class="bx bx-folder me-1"></i> HR
-        </a>
-    </li>
-
-    <li class="nav-item" role="presentation">
-        <a class="nav-link fw-bold text-dark py-3 {{ Route::currentRouteName() === 'dashboard.ticket' ? 'active' : '' }}"
-           href="{{ route('dashboard.ticket') }}">
-           <i class="bx bx-folder me-1"></i> Ticket
-        </a>
-    </li>
-</ul>
-
-    <!-- Heading and Date Filter on Same Line -->
-    <div class="row align-items-center mb-4">
-        <!-- Left: Page Title -->
-        <div class="col-md-6 col-12 mb-2 mb-md-0">
-            <h3 class="fw-bold mb-0">Ticket Dashboard</h3>
-        </div>
-    
-        <!-- Right: Date Filter -->
-        <div class="col-md-6 col-12 text-md-end">
-             <form method="GET" class="d-flex align-items-center gap-2">
-                        <label class="mb-0 fw-semibold">Date Range:</label>
-                        <input type="date" name="start_date" class="form-control form-control-sm" value="{{ $startDateFormatted }}">
-                        <span class="fw-bold">to</span>
-                        <input type="date" name="end_date" class="form-control form-control-sm" value="{{ $endDateFormatted }}">
-                        <button type="submit" class="btn btn-sm btn-primary">Filter</button>
-                    </form>
-        </div>
-    </div>
-
-    <!-- Stats -->
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card shadow-sm text-center">
-                <div class="card-body">
-                    <h6>Tickets</h6>
-                    <span class="text-danger">{{ $unresolved }}</span> Unresolved /
-                    <span class="text-success">{{ $resolved }}</span> Resolved
-                </div>
+<div class="container-fluid py-4 ticket-dashboard-page">
+    <section class="dashboard-polish-shell">
+        <div class="dashboard-polish-hero">
+            <div>
+                <span class="dashboard-polish-eyebrow">Support workspace</span>
+                <h1>Ticket Dashboard</h1>
+                <p>Track unresolved, resolved, unassigned, channel, type, and priority signals in one responsive view.</p>
+                <form method="GET" class="dashboard-polish-filter">
+                    <label>Date Range</label>
+                    <input type="date" name="start_date" class="form-control form-control-sm" value="{{ $startDateFormatted }}">
+                    <span>to</span>
+                    <input type="date" name="end_date" class="form-control form-control-sm" value="{{ $endDateFormatted }}">
+                    <button type="submit" class="btn btn-sm btn-primary">Filter</button>
+                </form>
+            </div>
+            <div class="dashboard-polish-focus">
+                <span>Open Queue</span>
+                <strong>{{ $unresolved }}</strong>
+                <small>{{ $resolved }} resolved</small>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card shadow-sm text-center">
-                <div class="card-body">
-                    <h6>Total Unassigned Ticket</h6>
-                    <span>{{ $unassigned }}</span>
-                </div>
+
+        <div class="dashboard-polish-grid dashboard-polish-grid-3">
+            <div class="dashboard-polish-card">
+                <span>Unresolved</span>
+                <strong>{{ $unresolved }}</strong>
+                <small>Tickets waiting</small>
+            </div>
+            <div class="dashboard-polish-card">
+                <span>Resolved</span>
+                <strong>{{ $resolved }}</strong>
+                <small>Closed work</small>
+            </div>
+            <div class="dashboard-polish-card">
+                <span>Unassigned</span>
+                <strong>{{ $unassigned }}</strong>
+                <small>Needs owner</small>
             </div>
         </div>
-    </div>
 
     <!-- Charts -->
-    <div class="row mb-4">
+    <div class="row g-4 mt-1">
         <div class="col-md-6">
-            <div class="card shadow-sm h-100">
+            <div class="card dashboard-polish-panel h-100">
                 <div class="card-header"><h6 class="mb-0">Type Wise Ticket</h6></div>
                 <div class="card-body p-3">
                     <canvas id="typeWiseChart" class="small-chart"></canvas>
@@ -106,7 +68,7 @@
         </div>
 
         <div class="col-md-6">
-            <div class="card shadow-sm h-100">
+            <div class="card dashboard-polish-panel h-100">
                 <div class="card-header"><h6 class="mb-0">Status Wise Ticket</h6></div>
                 <div class="card-body p-3 text-center">
                     @if(empty($statusWiseData))
@@ -120,9 +82,9 @@
     </div>
 
     <!-- Channel and Open Tickets -->
-    <div class="row">
+    <div class="row g-4 mt-1">
         <div class="col-md-6">
-            <div class="card shadow-sm h-100">
+            <div class="card dashboard-polish-panel h-100">
                 <div class="card-header"><h6 class="mb-0">Channel Wise Ticket</h6></div>
                 <div class="card-body p-3 text-center">
                     @if(empty($channelWiseData))
@@ -135,7 +97,7 @@
         </div>
 
         <div class="col-md-6">
-            <div class="card shadow-sm h-100">
+            <div class="card dashboard-polish-panel h-100">
                 <div class="card-header"><h6 class="mb-0">Open Tickets</h6></div>
                 <div class="card-body p-3">
                     @forelse($openTickets as $ticket)
@@ -156,6 +118,7 @@
             </div>
         </div>
     </div>
+    </section>
 </div>
 @endsection
 

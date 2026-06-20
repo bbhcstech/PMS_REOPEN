@@ -421,6 +421,10 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
             return view('client-dashboard');
         }
 
+        if (in_array(strtolower((string) auth()->user()->role), ['hr', 'manager'], true)) {
+            return $this->hrindex(request());
+        }
+
 
         // ✅ Employee logic
         if (auth()->user()->role == 'employee') {
@@ -726,7 +730,7 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
             ->with('error', 'Photo capture failed. Please retake your photo and try again.');
     }
 
-    $clockInTime = $now->format('H:i');
+    $clockInTime = $now->format('H:i:s');
     $currentLocationLabel = trim((string) ($validated['clock_in_address'] ?? ''));
 
     if ($currentLocationLabel === '') {
@@ -736,6 +740,8 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
             . $validated['clock_in_longitude']
             . ' (' . round($distance, 1) . 'm from office)';
     }
+
+    $currentLocationLabel = mb_substr($currentLocationLabel, 0, 255);
 
     $attendance = Attendance::create([
         'user_id'  => $userId,
@@ -791,7 +797,7 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
     }
 
     $attendance->update([
-        'clock_out' => $now->format('H:i')
+        'clock_out' => $now->format('H:i:s')
     ]);
     $this->applyOrganizationAttendanceRules($attendance->fresh());
 
@@ -801,6 +807,8 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
 
 public function project(Request $request)
 {
+    return redirect()->route('dashboard');
+
     // Default to today if no filter
     $startDate = $request->filled('start_date') ? Carbon::parse($request->start_date)->startOfDay() : now()->startOfDay();
     $endDate = $request->filled('end_date') ? Carbon::parse($request->end_date)->endOfDay() : now()->endOfDay();
@@ -841,6 +849,8 @@ public function project(Request $request)
 
 public function clientDashboard(Request $request)
 {
+    return redirect()->route('dashboard');
+
     $startDate = $request->filled('start_date')
         ? Carbon::parse($request->start_date)->startOfDay()
         : now()->startOfDay();
@@ -877,6 +887,8 @@ public function clientDashboard(Request $request)
 
 public function ticketDashboard(Request $request)
 {
+    return redirect()->route('dashboard');
+
     $startDate = $request->filled('start_date')
         ? Carbon::parse($request->start_date)->startOfDay()
         : now()->startOfDay();
@@ -960,7 +972,7 @@ public function hrindex(Request $request)
                         ->groupBy('month')
                         ->pluck('attritions', 'month');
 
-         $lateAttendances = Attendance::with('employee.employeeDetail.designation')
+         $lateAttendances = Attendance::with('user.employeeDetail.designation')
             ->where('status', 'Late')
             ->whereBetween('date', [$startDate, $endDate])
             ->orderBy('user_id')

@@ -71,7 +71,7 @@
                     <li>Audit-friendly activity tracking for tasks, projects, tickets, and users.</li>
                     <li>Settings for company profile, app behavior, file uploads, maps, and custom profile fields.</li>
                 </ul>
-                <a href="{{ route('register') }}" class="btn btn-purple btn-lg">Start Free <i class="fas fa-arrow-right"></i></a>
+                <a href="{{ route('login') }}" class="btn btn-purple btn-lg">Login <i class="fas fa-arrow-right"></i></a>
             </div>
         </div>
     </div>
@@ -113,7 +113,7 @@
         <div class="newsletter-content" data-aos="fade-up">
             <h2>Ready to organize your project operations?</h2>
             <p>Use Bitroxia PMS to align tasks, teams, time, tickets, HR, and reporting in one clear workspace.</p>
-            <a href="{{ route('register') }}" class="btn btn-purple btn-lg">Create Your Account <i class="fas fa-arrow-right"></i></a>
+            <a href="{{ route('login') }}" class="btn btn-purple btn-lg">Login <i class="fas fa-arrow-right"></i></a>
         </div>
     </div>
 </section>

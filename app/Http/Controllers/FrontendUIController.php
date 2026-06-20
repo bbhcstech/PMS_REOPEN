@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AppSetting;
 use Illuminate\Http\Request;
 
 class FrontendUIController extends Controller
@@ -43,7 +44,21 @@ class FrontendUIController extends Controller
             'company.terms' => ['title' => 'Terms of Service', 'eyebrow' => 'Company', 'heading' => 'Clear expectations for using Bitroxia PMS', 'description' => 'Review the terms that guide responsible use of the Bitroxia PMS platform and services.', 'icon' => 'fa-file-contract'],
         ];
 
+        if ($key === 'company.terms') {
+            $pages[$key]['type'] = 'legal';
+            $pages[$key]['title'] = AppSetting::valueFor('legal_terms_title', 'Terms & Conditions');
+            $pages[$key]['heading'] = AppSetting::valueFor('legal_terms_title', 'Terms & Conditions');
+            $pages[$key]['description'] = 'Please review the current organization terms, conditions, and policy before using the system.';
+            $pages[$key]['legal_content'] = AppSetting::valueFor('legal_terms_content', $this->defaultTermsContent());
+            $pages[$key]['effective_date'] = AppSetting::valueFor('legal_terms_effective_date');
+        }
+
         return view('frontend.page', ['page' => $pages[$key]]);
+    }
+
+    private function defaultTermsContent(): string
+    {
+        return "These Terms & Conditions explain the expected use of Bitroxia PMS for organization users.\n\nUsers must access the system only with their assigned account, keep login credentials confidential, and follow company policies while using project, HR, attendance, payroll, client, ticket, and reporting modules.\n\nThe organization may update these terms when policies, workflows, or compliance requirements change. Continued use of the system means the user accepts the latest published terms.";
     }
 
     // ===========================================
