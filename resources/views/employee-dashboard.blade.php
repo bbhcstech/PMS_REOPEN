@@ -1019,13 +1019,17 @@
 </style>
 
 @if($showEmployeeWelcome ?? false)
+    @php
+        $welcomeCompanyName = $currentCompany?->display_name ?? 'our company';
+        $welcomeCompanyLogo = $currentCompany?->logoUrl() ?? asset('logos/Bengal IT Hub_05.png');
+    @endphp
     <div class="employee-welcome-overlay" id="employeeWelcomeOverlay" data-seen-url="{{ route('dashboard.employeeWelcomeSeen') }}">
         <div class="welcome-balloon"></div>
         <div class="welcome-balloon"></div>
         <div class="welcome-balloon"></div>
         <div class="welcome-balloon"></div>
         <div class="welcome-confetti" id="welcomeConfetti"></div>
-        <audio id="welcomeCelebrationSound" src="{{ asset('sound/celebration sound.mp3') }}" preload="auto" loop></audio>
+        <audio id="welcomeCelebrationSound" src="{{ asset('sound/celebration sound.mp3') }}" preload="auto"></audio>
 
         <div class="employee-welcome-card" id="employeeWelcomeCard">
             <button type="button" class="welcome-close-btn" id="employeeWelcomeClose" aria-label="Close welcome policy">
@@ -1033,8 +1037,8 @@
             </button>
 
             <div class="employee-welcome-stage">
-                <img src="{{ asset('logos/Bengal IT Hub_05.png') }}" alt="Bengal IT Hub" class="employee-welcome-logo">
-                <h2 class="employee-welcome-title">{{ $currentCompany?->greeting_message ?: 'Welcome to' }} {{ $currentCompany?->display_name ?? 'our company' }}, {{ $user->name }}</h2>
+                <img src="{{ $welcomeCompanyLogo }}" alt="{{ $welcomeCompanyName }}" class="employee-welcome-logo">
+                <h2 class="employee-welcome-title">{{ $currentCompany?->greeting_message ?: 'Welcome to' }} {{ $welcomeCompanyName }}, {{ $user->name }}</h2>
                 <p class="employee-welcome-message">
                     We are delighted to have you with us. Wishing you a confident start, meaningful growth, strong teamwork, and a successful journey with our organization.
                 </p>
@@ -1645,6 +1649,8 @@
         if (welcomeOverlay && welcomeCard) {
             const welcomeDuration = 60;
             let remaining = welcomeDuration;
+            let countdownTimer = null;
+            let welcomeSeenMarked = false;
 
             const formatCountdown = seconds => {
                 const minutes = String(Math.floor(seconds / 60)).padStart(2, '0');
@@ -1698,6 +1704,12 @@
             };
 
             const markWelcomeSeen = () => {
+                if (welcomeSeenMarked || !welcomeOverlay.dataset.seenUrl) {
+                    return Promise.resolve();
+                }
+
+                welcomeSeenMarked = true;
+
                 return fetch(welcomeOverlay.dataset.seenUrl, {
                     method: 'POST',
                     credentials: 'same-origin',
@@ -1710,14 +1722,27 @@
                 }).catch(() => {});
             };
 
+            const closeWelcome = () => {
+                welcomeOverlay.classList.add('is-hidden');
+                if (countdownTimer) {
+                    clearInterval(countdownTimer);
+                    countdownTimer = null;
+                }
+                stopCelebrationSound();
+                markWelcomeSeen();
+            };
+
             createConfetti();
+            markWelcomeSeen();
             playCelebrationSound();
 
             welcomeOverlay.addEventListener('click', () => {
-                playCelebrationSound();
+                if (!welcomeCard.classList.contains('show-policy') && !welcomeOverlay.classList.contains('is-hidden')) {
+                    playCelebrationSound();
+                }
             }, { once: true });
 
-            const countdownTimer = setInterval(() => {
+            countdownTimer = setInterval(() => {
                 remaining -= 1;
                 if (welcomeCountdown) {
                     welcomeCountdown.textContent = formatCountdown(Math.max(remaining, 0));
@@ -1728,15 +1753,22 @@
 
                 if (remaining <= 0) {
                     clearInterval(countdownTimer);
+                    countdownTimer = null;
                     showPolicy();
                 }
             }, 1000);
 
-            welcomeClose?.addEventListener('click', () => {
-                welcomeOverlay.classList.add('is-hidden');
-                clearInterval(countdownTimer);
-                stopCelebrationSound();
-                markWelcomeSeen();
+            welcomeClose?.addEventListener('click', closeWelcome);
+            document.addEventListener('keydown', event => {
+                if (event.key === 'Escape' && !welcomeOverlay.classList.contains('is-hidden')) {
+                    closeWelcome();
+                }
+            });
+            window.addEventListener('pagehide', stopCelebrationSound);
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) {
+                    stopCelebrationSound();
+                }
             });
         }
 
