@@ -1679,6 +1679,7 @@
                     return;
                 }
 
+                welcomeCelebrationSound.loop = false;
                 welcomeCelebrationSound.volume = 0.45;
                 welcomeCelebrationSound.play().catch(() => {});
             };
@@ -1735,12 +1736,7 @@
             createConfetti();
             markWelcomeSeen();
             playCelebrationSound();
-
-            welcomeOverlay.addEventListener('click', () => {
-                if (!welcomeCard.classList.contains('show-policy') && !welcomeOverlay.classList.contains('is-hidden')) {
-                    playCelebrationSound();
-                }
-            }, { once: true });
+            welcomeCelebrationSound?.addEventListener('ended', stopCelebrationSound);
 
             countdownTimer = setInterval(() => {
                 remaining -= 1;
