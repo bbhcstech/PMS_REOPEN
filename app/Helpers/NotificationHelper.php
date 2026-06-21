@@ -5,6 +5,7 @@ namespace App\Helpers;
 use App\Models\User;
 use App\Notifications\NotifyAdminToEmployees;
 use App\Notifications\NotifyEmployeeToAdmins;
+use App\Services\SystemNotificationService;
 
 class NotificationHelper
 {
@@ -13,9 +14,6 @@ class NotificationHelper
      */
     public static function notifyAdmins($title, $message, $url = null, $ticket_id = null)
     {
-        // Get all admins
-        $admins = User::where('is_admin', true)->get();
-
         // Get current employee
         $employee = auth()->user();
 
@@ -31,10 +29,7 @@ class NotificationHelper
             'time' => now()->format('Y-m-d H:i:s'),
         ];
 
-        // Send to each admin
-        foreach ($admins as $admin) {
-            $admin->notify(new NotifyEmployeeToAdmins($data));
-        }
+        SystemNotificationService::notifyAllRoles($title, $message, $url, $data, $employee?->company_id);
 
         return true;
     }
@@ -44,9 +39,6 @@ class NotificationHelper
      */
     public static function notifyEmployees($title, $message, $url = null, $ticket_id = null)
     {
-        // Get all employees
-        $employees = User::where('is_admin', false)->get();
-
         // Get current admin
         $admin = auth()->user();
 
@@ -62,10 +54,7 @@ class NotificationHelper
             'time' => now()->format('Y-m-d H:i:s'),
         ];
 
-        // Send to each employee
-        foreach ($employees as $employee) {
-            $employee->notify(new NotifyAdminToEmployees($data));
-        }
+        SystemNotificationService::notifyAllRoles($title, $message, $url, $data, $admin?->company_id);
 
         return true;
     }

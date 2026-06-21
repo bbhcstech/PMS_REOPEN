@@ -328,6 +328,13 @@ public function create(Request $request)
             $user->notify(new TaskAssignedNotification($task, auth()->user(), 'employee'));
         }
     }
+
+    SystemNotificationService::notifyAllRoles(
+        'Task Assigned',
+        auth()->user()->name . ' assigned task "' . $task->title . '".',
+        route('tasks.show', $task->id),
+        ['task_id' => $task->id, 'project_id' => $task->project_id, 'type' => 'task_assigned', 'icon' => 'fa-tasks', 'color' => 'primary']
+    );
 }
 
 
@@ -500,6 +507,13 @@ public function update(Request $request, Task $task)
             $user->notify(new TaskAssignedNotification($task, auth()->user(), 'employee'));
         }
     }
+
+    SystemNotificationService::notifyAllRoles(
+        'Task Updated',
+        auth()->user()->name . ' updated task "' . $task->title . '".',
+        route('tasks.show', $task->id),
+        ['task_id' => $task->id, 'project_id' => $task->project_id, 'type' => 'task_updated', 'icon' => 'fa-tasks', 'color' => 'info']
+    );
 }
 
 
@@ -612,14 +626,12 @@ public function updateStatus(Request $request, Task $task)
     // ✅ Set completed_on date only when status is Completed
     
 
-    if (strtolower((string) auth()->user()?->role) === 'employee') {
-        SystemNotificationService::notifyAdmins(
-            'Task Status Updated',
-            auth()->user()->name . ' changed task "' . $task->title . '" to ' . $task->status,
-            route('tasks.show', $task->id),
-            ['task_id' => $task->id, 'project_id' => $task->project_id, 'type' => 'task_status_updated', 'icon' => 'fa-tasks']
-        );
-    }
+    SystemNotificationService::notifyAllRoles(
+        'Task Status Updated',
+        auth()->user()->name . ' changed task "' . $task->title . '" to ' . $task->status,
+        route('tasks.show', $task->id),
+        ['task_id' => $task->id, 'project_id' => $task->project_id, 'type' => 'task_status_updated', 'icon' => 'fa-tasks', 'color' => 'info']
+    );
 
     return response()->json([
         'success' => true,

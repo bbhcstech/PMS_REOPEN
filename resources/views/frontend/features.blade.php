@@ -7,6 +7,10 @@
 @section('content')
 <section class="page-hero">
     <div class="container">
+        <button type="button" class="frontend-back-btn" onclick="if (window.history.length > 1) { window.history.back(); } else { window.location.href='{{ url('/') }}'; }">
+            <i class="fas fa-arrow-left"></i>
+            <span>Back</span>
+        </button>
         <div class="hero-badge">
             <i class="fas fa-layer-group"></i>
             <span>Complete PMS toolkit</span>

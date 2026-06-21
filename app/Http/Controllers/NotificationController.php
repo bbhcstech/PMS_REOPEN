@@ -3,11 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\User;
-use App\Notifications\NotifyAdminToEmployees;
-use App\Notifications\NotifyEmployeeToAdmins;
 use App\Services\NotificationUrlResolver;
 use App\Services\SidebarNotificationService;
+use App\Services\SystemNotificationService;
 use Illuminate\Notifications\DatabaseNotification;
 
 class NotificationController extends Controller
@@ -145,23 +143,22 @@ class NotificationController extends Controller
             'url' => 'nullable|url',
         ]);
 
-        $employees = User::where('is_admin', false)->get();
-
         $data = [
             'title' => $request->title,
             'message' => $request->message,
             'url' => $request->url,
             'ticket_id' => $request->ticket_id,
+            'type' => 'admin_to_employee',
+            'icon' => 'fa-shield-halved',
+            'color' => 'warning',
         ];
 
-        foreach ($employees as $employee) {
-            $employee->notify(new NotifyAdminToEmployees($data));
-        }
+        SystemNotificationService::notifyAllRoles($request->title, $request->message, $request->url, $data);
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Notification sent to all employees',
-            'count' => $employees->count()
+            'message' => 'Notification sent to all ERP roles',
+            'count' => SystemNotificationService::roleUsers(auth()->user()?->company_id)->count()
         ]);
     }
 
@@ -176,23 +173,22 @@ class NotificationController extends Controller
             'url' => 'nullable|url',
         ]);
 
-        $admins = User::where('is_admin', true)->get();
-
         $data = [
             'title' => $request->title,
             'message' => $request->message,
             'url' => $request->url,
             'ticket_id' => $request->ticket_id,
+            'type' => 'employee_to_admin',
+            'icon' => 'fa-user-clock',
+            'color' => 'info',
         ];
 
-        foreach ($admins as $admin) {
-            $admin->notify(new NotifyEmployeeToAdmins($data));
-        }
+        SystemNotificationService::notifyAllRoles($request->title, $request->message, $request->url, $data);
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Notification sent to all admins',
-            'count' => $admins->count()
+            'message' => 'Notification sent to all ERP roles',
+            'count' => SystemNotificationService::roleUsers(auth()->user()?->company_id)->count()
         ]);
     }
 
@@ -208,26 +204,21 @@ class NotificationController extends Controller
             'message' => 'required|string',
         ]);
 
-        $users = User::whereIn('id', $request->user_ids)->get();
         $sender = auth()->user();
-
-        foreach ($users as $user) {
-            $notificationClass = $sender->is_admin
-                ? NotifyAdminToEmployees::class
-                : NotifyEmployeeToAdmins::class;
-
-            $user->notify(new $notificationClass([
-                'title' => $request->title,
-                'message' => $request->message,
-                'url' => $request->url,
-                'ticket_id' => $request->ticket_id,
-            ]));
-        }
+        SystemNotificationService::notifyAllRoles($request->title, $request->message, $request->url, [
+            'type' => 'manual_notification',
+            'ticket_id' => $request->ticket_id,
+            'sender_id' => $sender?->id,
+            'sender_name' => $sender?->name,
+            'sender_role' => $sender?->role,
+            'icon' => 'fa-envelope',
+            'color' => 'primary',
+        ]);
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Notification sent to selected users',
-            'count' => $users->count()
+            'message' => 'Notification sent to all ERP roles',
+            'count' => SystemNotificationService::roleUsers(auth()->user()?->company_id)->count()
         ]);
     }
 

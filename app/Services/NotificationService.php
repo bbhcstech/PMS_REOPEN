@@ -3,9 +3,6 @@
 namespace App\Services;
 
 use App\Models\User;
-use App\Notifications\NotifyAdminToEmployees;
-use App\Notifications\NotifyEmployeeToAdmins;
-use App\Notifications\ActionNotification;
 
 class NotificationService
 {
@@ -14,8 +11,6 @@ class NotificationService
      */
     public static function notifyAdmins($title, $message, $url = null, $ticketId = null, $employee = null)
     {
-        $admins = User::where('is_admin', true)->get();
-
         if (!$employee) {
             $employee = auth()->user();
         }
@@ -32,9 +27,7 @@ class NotificationService
             'color' => 'info',
         ];
 
-        foreach ($admins as $admin) {
-            $admin->notify(new NotifyEmployeeToAdmins($data));
-        }
+        SystemNotificationService::notifyAllRoles($title, $message, $url, $data, $employee?->company_id);
 
         // Create action log for employee
         if ($employee) {
@@ -59,8 +52,6 @@ class NotificationService
      */
     public static function notifyEmployees($title, $message, $url = null, $ticketId = null, $admin = null)
     {
-        $employees = User::where('is_admin', false)->get();
-
         if (!$admin) {
             $admin = auth()->user();
         }
@@ -77,9 +68,7 @@ class NotificationService
             'color' => 'warning',
         ];
 
-        foreach ($employees as $employee) {
-            $employee->notify(new NotifyAdminToEmployees($data));
-        }
+        SystemNotificationService::notifyAllRoles($title, $message, $url, $data, $admin?->company_id);
 
         // Create action log for admin
         $admin->notifications()->create([
@@ -106,7 +95,6 @@ class NotificationService
             $userIds = [$userIds];
         }
 
-        $users = User::whereIn('id', $userIds)->get();
         $sender = auth()->user();
 
         $data = [
@@ -122,13 +110,7 @@ class NotificationService
             'color' => 'primary',
         ];
 
-        foreach ($users as $user) {
-            if ($sender->is_admin) {
-                $user->notify(new NotifyAdminToEmployees($data));
-            } else {
-                $user->notify(new NotifyEmployeeToAdmins($data));
-            }
-        }
+        SystemNotificationService::notifyAllRoles($title, $message, $url, $data, $sender?->company_id);
 
         return true;
     }
@@ -149,7 +131,7 @@ class NotificationService
             'color' => 'secondary',
         ];
 
-        $user->notify(new ActionNotification($data));
+        SystemNotificationService::notifyAllRoles($title, $message, $url, $data, $user?->company_id);
 
         return true;
     }

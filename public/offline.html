@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#1268ff">
+  <title>Bitroxia PMS Offline</title>
+  <style>
+    :root {
+      --blue: #1268ff;
+      --cyan: #13d5e7;
+      --purple: #8f25ff;
+      --ink: #101427;
+      --muted: #697083;
+    }
+    * { box-sizing: border-box; }
+    body {
+      min-height: 100vh;
+      margin: 0;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 18% 18%, rgba(19, 213, 231, 0.24), transparent 32%),
+        radial-gradient(circle at 88% 12%, rgba(143, 37, 255, 0.22), transparent 30%),
+        linear-gradient(135deg, #eef5ff 0%, #dfeaff 48%, #f8fbff 100%);
+    }
+    main {
+      width: min(100%, 440px);
+      padding: 34px 28px;
+      border: 1px solid rgba(18, 104, 255, 0.14);
+      border-radius: 28px;
+      background: rgba(255, 255, 255, 0.88);
+      box-shadow: 0 28px 70px rgba(16, 20, 39, 0.16);
+      text-align: center;
+    }
+    img {
+      width: 78px;
+      height: 78px;
+      border-radius: 22px;
+      object-fit: cover;
+      box-shadow: 0 18px 34px rgba(18, 104, 255, 0.18);
+    }
+    h1 {
+      margin: 22px 0 10px;
+      font-size: clamp(1.8rem, 8vw, 2.5rem);
+      line-height: 1.05;
+    }
+    p {
+      margin: 0 auto 24px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+    button {
+      width: 100%;
+      min-height: 48px;
+      border: 0;
+      border-radius: 999px;
+      color: #fff;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+      box-shadow: 0 18px 36px rgba(18, 104, 255, 0.24);
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <img src="/logo.png" alt="">
+    <h1>You are offline</h1>
+    <p>Bitroxia PMS is installed, but this page needs an internet connection. Check your network and try again.</p>
+    <button type="button" onclick="window.location.reload()">Try again</button>
+  </main>
+</body>
+</html>

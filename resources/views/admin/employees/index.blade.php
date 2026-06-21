@@ -2222,24 +2222,34 @@
 
     /* Final employee action polish */
     .employee-dashboard .action-buttons {
-        align-items: flex-start !important;
+        align-items: center !important;
+        display: flex !important;
+        flex-wrap: wrap !important;
         gap: 10px !important;
+        justify-content: flex-end !important;
+        margin-left: auto !important;
+        overflow: visible !important;
     }
 
     .employee-dashboard .quick-actions {
+        display: inline-flex !important;
         position: relative !important;
-        top: -12px !important;
+        top: auto !important;
         z-index: 25 !important;
     }
 
     .employee-dashboard .quick-actions .dropdown {
+        display: inline-flex !important;
         position: relative !important;
         z-index: 30 !important;
     }
 
     .employee-dashboard .quick-actions .dropdown-menu {
-        margin-top: 0 !important;
-        transform: translateY(-8px) !important;
+        left: auto !important;
+        margin-top: 0.45rem !important;
+        min-width: 210px !important;
+        right: 0 !important;
+        transform: none !important;
         z-index: 4000 !important;
     }
 
@@ -2282,10 +2292,51 @@
     }
 
     .employee-dashboard .quick-actions .dropdown-toggle {
-        min-height: 36px !important;
-        padding: 0.42rem 0.72rem !important;
+        align-items: center !important;
+        display: inline-flex !important;
+        justify-content: center !important;
+        min-height: 42px !important;
+        min-width: 150px !important;
+        padding: 0.54rem 0.9rem !important;
         font-size: 0.84rem !important;
         border-radius: 999px !important;
+        white-space: nowrap !important;
+    }
+
+    .employee-dashboard .btn-archive-employees,
+    .employee-dashboard a.btn.btn-add,
+    .employee-dashboard button.btn.btn-invite {
+        align-items: center !important;
+        display: inline-flex !important;
+        justify-content: center !important;
+        min-height: 42px !important;
+        white-space: nowrap !important;
+    }
+
+    @media (max-width: 991.98px) {
+        .employee-dashboard .action-buttons {
+            display: grid !important;
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            justify-content: stretch !important;
+            margin-left: 0 !important;
+            width: 100% !important;
+        }
+
+        .employee-dashboard .quick-actions,
+        .employee-dashboard .quick-actions .dropdown,
+        .employee-dashboard .quick-actions .dropdown-toggle,
+        .employee-dashboard .btn-archive-employees,
+        .employee-dashboard a.btn.btn-add,
+        .employee-dashboard button.btn.btn-invite {
+            min-width: 0 !important;
+            width: 100% !important;
+        }
+    }
+
+    @media (max-width: 575.98px) {
+        .employee-dashboard .action-buttons {
+            grid-template-columns: 1fr !important;
+        }
     }
 
     .employee-dashboard #bulkDeleteTrigger {
