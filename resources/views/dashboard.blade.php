@@ -1994,6 +1994,14 @@
         .saas-module-grid {
             grid-template-columns: 1fr;
         }
+
+        .industry-dashboard-shell .industry-panel,
+        .industry-dashboard-shell .industry-metric-card,
+        .industry-dashboard-shell .industry-feature-card,
+        .industry-dashboard-shell .industry-chart-card {
+            opacity: 1 !important;
+            transform: none !important;
+        }
     }
 </style>
 
@@ -2195,6 +2203,23 @@
                     'color' => ['#2563eb', '#10b981', '#f59e0b', '#ef4444', '#7c3aed', '#06b6d4', '#14b8a6', '#64748b'][$index % 8],
                 ];
             })->filter(fn ($module) => $module['url'])->values();
+            if ($autoModuleCards->isEmpty()) {
+                $autoModuleCards = collect($moduleRouteFallbacks)->map(function ($route, $slug) use ($moduleMetricMap, $moduleScale, $safeRouteUrl) {
+                    $url = $safeRouteUrl($route);
+                    $metric = $moduleMetricMap[$slug] ?? 1;
+
+                    return [
+                        'name' => \Illuminate\Support\Str::headline($slug),
+                        'slug' => $slug,
+                        'icon' => 'bx-grid-alt',
+                        'route' => $route,
+                        'url' => $url,
+                        'value' => $metric,
+                        'percent' => is_numeric($metric) ? round(((float) $metric / $moduleScale) * 100) : 35,
+                        'color' => '#2563eb',
+                    ];
+                })->filter(fn ($module) => $module['url'])->take(8)->values();
+            }
             $sparkValues = [
                 max(10, min(100, $dashboardAttendancePercent)),
                 max(10, min(100, round(($dashboardTotalProject / $dashboardFeatureScale) * 100))),
@@ -2886,28 +2911,36 @@
             });
         });
 
-        // Add intersection observer for scroll animations
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
-        };
+        // Add intersection observer for scroll animations. Keep mobile panels visible so
+        // dashboard sections do not disappear when mobile browsers delay observers.
+        const animatedCards = document.querySelectorAll('.stat-card, .content-card, .industry-metric-card, .industry-panel, .industry-feature-card, .industry-chart-card');
+        if (window.innerWidth > 575 && 'IntersectionObserver' in window) {
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
 
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.style.opacity = '1';
-                    entry.target.style.transform = 'translateY(0)';
-                }
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, observerOptions);
+
+            animatedCards.forEach(card => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                observer.observe(card);
             });
-        }, observerOptions);
-
-        // Observe all animated elements
-        document.querySelectorAll('.stat-card, .content-card, .industry-metric-card, .industry-panel, .industry-feature-card, .industry-chart-card').forEach(card => {
-            card.style.opacity = '0';
-            card.style.transform = 'translateY(20px)';
-            card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-            observer.observe(card);
-        });
+        } else {
+            animatedCards.forEach(card => {
+                card.style.opacity = '1';
+                card.style.transform = 'none';
+            });
+        }
 
         // Update active tab based on current route
         function updateActiveTab() {

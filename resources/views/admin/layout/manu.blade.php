@@ -1602,6 +1602,11 @@
             }
 
             renderSidebarNotifications(sidebarNotificationItems);
+            document.querySelectorAll('[data-sidebar-key]').forEach(function (link) {
+                link.addEventListener('click', function () {
+                    markSidebarKeySeen(link.getAttribute('data-sidebar-key'), sidebarNotificationItems);
+                });
+            });
             setTimeout(markCurrentSectionRead, 600);
             setTimeout(fetchSidebarNotifications, 1200);
             setInterval(fetchSidebarNotifications, 45000);
@@ -1677,7 +1682,6 @@
               <span class="mobile-navbar-logo">
                 <img src="{{ $brandLogo }}" alt="">
               </span>
-              <span class="mobile-navbar-text">{{ $brandName }}</span>
             </a>
 
             <div class="navbar-nav-right d-flex align-items-center justify-content-end" id="navbar-collapse">
@@ -2016,6 +2020,8 @@
           document.addEventListener('DOMContentLoaded', function () {
               const bell = document.getElementById('navbarDropdown');
               const unreadText = document.getElementById('navbarNotificationUnreadText');
+              const readAllUrl = @json(route('notifications.readAll'));
+              const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
               let soundReady = false;
               let pendingNotificationSound = false;
               let previousUnread = Number(localStorage.getItem('pms_unread_notifications') || '{{ $navbarUnreadCount }}');
@@ -2121,6 +2127,35 @@
 
               window.pmsUpdateNotificationBell = updateBell;
 
+              function silentlyMarkBellNotificationsRead() {
+                  fetch(readAllUrl, {
+                      method: 'POST',
+                      credentials: 'same-origin',
+                      headers: {
+                          'Accept': 'application/json',
+                          'Content-Type': 'application/json',
+                          'X-CSRF-TOKEN': csrfToken,
+                          'X-Requested-With': 'XMLHttpRequest'
+                      },
+                      body: JSON.stringify({})
+                  })
+                  .then(response => response.ok ? response.json() : Promise.reject(response))
+                  .then(() => {
+                      document.querySelectorAll('.notification-card-link.is-unread').forEach(function (link) {
+                          link.classList.remove('is-unread');
+                      });
+                      document.querySelectorAll('.notification-unread-dot').forEach(function (dot) {
+                          dot.remove();
+                      });
+                      updateBell(0);
+                  })
+                  .catch(() => {});
+              }
+
+              if (bell) {
+                  bell.addEventListener('shown.bs.dropdown', silentlyMarkBellNotificationsRead);
+              }
+
               function checkNotifications() {
                   fetch('{{ route('notifications.unreadCount') }}', {
                       headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
@@ -2142,10 +2177,6 @@
               }
 
               updateBell(previousUnread);
-              if (previousUnread > 0 && !sessionStorage.getItem('pms_notification_sound_seen')) {
-                  sessionStorage.setItem('pms_notification_sound_seen', '1');
-                  setTimeout(playNotificationSound, 900);
-              }
               setTimeout(checkNotifications, 1500);
               setInterval(checkNotifications, 15000);
           });

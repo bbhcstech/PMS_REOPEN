@@ -28,6 +28,7 @@
     <link rel="canonical" href="{{ $canonicalUrl }}">
     <link rel="icon" type="image/png" href="{{ $logoUrl }}">
     <link rel="apple-touch-icon" href="{{ $logoUrl }}">
+    @include('partials.pwa')
     <meta property="og:locale" content="en_US">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="{{ $siteName }}">
@@ -145,10 +146,17 @@
     <!-- Footer -->
     @include('frontend.layouts-frontend.footer')
 
-    <!-- Back to Top -->
-    <button id="backToTop" class="back-to-top-btn">
-        <i class="fas fa-arrow-up"></i>
-    </button>
+    <!-- Scroll Controls -->
+    <div class="scroll-control-stack" aria-label="Page scroll controls">
+        <button id="backToTop" class="back-to-top-btn" type="button" aria-label="Scroll to top">
+            <i class="fas fa-arrow-up"></i>
+        </button>
+        <button id="scrollToBottom" class="back-to-top-btn scroll-down-btn" type="button" aria-label="Scroll to bottom">
+            <i class="fas fa-arrow-down"></i>
+        </button>
+    </div>
+
+    @include('partials.pwa-install')
 
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

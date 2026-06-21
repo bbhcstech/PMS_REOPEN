@@ -939,6 +939,14 @@ class AttendanceController extends Controller
                         } catch (\Throwable $e) {
                             Log::error('ClockInNotification failed (bulk)', ['user' => $userId, 'error' => $e->getMessage()]);
                         }
+
+                        SystemNotificationService::notifyAllRoles(
+                            'Attendance Updated',
+                            $user->name . ' attendance was updated for ' . Carbon::parse($record->date)->format('M d, Y') . '.',
+                            route('attendance.index'),
+                            ['type' => 'attendance_updated', 'record_id' => $record->id, 'employee_id' => $user->id, 'icon' => 'fa-clock', 'color' => 'success'],
+                            $user->company_id
+                        );
                     }
                 }
             }
@@ -994,6 +1002,14 @@ class AttendanceController extends Controller
                     } catch (\Throwable $e) {
                         Log::error('ClockInNotification failed (single)', ['user' => $userId, 'error' => $e->getMessage()]);
                     }
+
+                    SystemNotificationService::notifyAllRoles(
+                        'Attendance Updated',
+                        $user->name . ' attendance was updated for ' . Carbon::parse($record->date)->format('M d, Y') . '.',
+                        route('attendance.index'),
+                        ['type' => 'attendance_updated', 'record_id' => $record->id, 'employee_id' => $user->id, 'icon' => 'fa-clock', 'color' => 'success'],
+                        $user->company_id
+                    );
                 }
             }
         }
@@ -1985,6 +2001,14 @@ class AttendanceController extends Controller
                         'error' => $e->getMessage()
                     ]);
                 }
+
+                SystemNotificationService::notifyAllRoles(
+                    'Clock In Recorded',
+                    $user->name . ' clocked in.',
+                    route('attendance.index'),
+                    ['type' => 'clock_in', 'record_id' => $attendance->id, 'employee_id' => $user->id, 'icon' => 'fa-clock', 'color' => 'success'],
+                    $user->company_id
+                );
 
                 // fetch the latest notification just created for immediate frontend use
                 $latestNotification = $user->notifications()->latest('created_at')->first();

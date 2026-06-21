@@ -3,9 +3,7 @@
 namespace App\Helpers;
 
 use App\Models\User;
-use App\Notifications\ClockInNotification;
-use App\Notifications\TaskAssignedNotification;
-use App\Notifications\TicketCreatedNotification;
+use App\Services\SystemNotificationService;
 
 class Notify
 {
@@ -15,14 +13,20 @@ class Notify
     public static function employeeClockedIn($attendance)
     {
         $employee = $attendance->user;
-        $admins = User::where('is_admin', 1)->get();
-
-        foreach ($admins as $admin) {
-            $admin->notify(new ClockInNotification($attendance, 'admin'));
-        }
-
-        // Also notify employee
-        $employee->notify(new ClockInNotification($attendance, 'employee'));
+        SystemNotificationService::notifyAllRoles(
+            'Clock In Recorded',
+            ($employee?->name ?? 'Employee') . ' clocked in.',
+            route('attendance.index'),
+            [
+                'type' => 'clock_in',
+                'record_id' => $attendance->id,
+                'user_id' => $attendance->user_id,
+                'employee_id' => $attendance->user_id,
+                'icon' => 'fa-clock',
+                'color' => 'success',
+            ],
+            $employee?->company_id
+        );
 
         return true;
     }
@@ -35,11 +39,20 @@ class Notify
         $employee = User::find($employeeId);
         if (!$employee) return false;
 
-        // Notify employee
-        $employee->notify(new TaskAssignedNotification($task, $admin, 'employee'));
-
-        // Also notify admin (optional confirmation)
-        $admin->notify(new TaskAssignedNotification($task, $admin, 'admin'));
+        SystemNotificationService::notifyAllRoles(
+            'Task Assigned',
+            ($admin?->name ?? 'Someone') . ' assigned "' . $task->title . '" to ' . $employee->name . '.',
+            route('tasks.show', $task->id),
+            [
+                'type' => 'task_assigned',
+                'task_id' => $task->id,
+                'project_id' => $task->project_id ?? null,
+                'employee_id' => $employee->id,
+                'icon' => 'fa-tasks',
+                'color' => 'primary',
+            ],
+            $employee->company_id ?? $admin?->company_id
+        );
 
         return true;
     }
@@ -49,19 +62,20 @@ class Notify
      */
     public static function ticketCreated($ticket, $employee)
     {
-        $admins = User::where('is_admin', 1)->get();
-
-        foreach ($admins as $admin) {
-            $admin->notify(new TicketCreatedNotification($ticket, $employee, 'admin'));
-        }
-
-        // If ticket is assigned to someone, notify them too
-        if ($ticket->assigned_to) {
-            $assignedUser = User::find($ticket->assigned_to);
-            if ($assignedUser) {
-                $assignedUser->notify(new TicketCreatedNotification($ticket, $employee, 'employee'));
-            }
-        }
+        SystemNotificationService::notifyAllRoles(
+            'Ticket Raised',
+            ($employee?->name ?? 'Someone') . ' raised ticket #' . $ticket->id . ': ' . ($ticket->subject ?? 'Ticket'),
+            route('tickets.show', $ticket->id),
+            [
+                'type' => 'ticket_created',
+                'ticket_id' => $ticket->id,
+                'project_id' => $ticket->project_id ?? null,
+                'employee_id' => $employee?->id,
+                'icon' => 'fa-ticket',
+                'color' => 'info',
+            ],
+            $employee?->company_id
+        );
 
         return true;
     }
@@ -82,7 +96,13 @@ class Notify
             'color' => 'warning',
         ];
 
-        $employee->notify(new \App\Notifications\ActionNotification($notificationData));
+        SystemNotificationService::notifyAllRoles(
+            $notificationData['title'],
+            $notificationData['message'],
+            $notificationData['url'],
+            $notificationData,
+            $employee?->company_id ?? $admin?->company_id
+        );
 
         return true;
     }
@@ -101,7 +121,14 @@ class Notify
             'color' => 'primary',
         ];
 
-        $user->notify(new \App\Notifications\ActionNotification(array_merge($defaults, $data)));
+        $payload = array_merge($defaults, $data);
+        SystemNotificationService::notifyAllRoles(
+            $payload['title'],
+            $payload['message'],
+            $payload['url'],
+            $payload,
+            $user?->company_id
+        );
 
         return true;
     }

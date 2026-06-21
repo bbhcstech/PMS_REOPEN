@@ -8,6 +8,21 @@ use Illuminate\Database\Eloquent\Collection;
 
 class SystemNotificationService
 {
+    public const ERP_ROLES = ['admin', 'manager', 'hr', 'employee'];
+
+    public static function roleUsers(?int $companyId = null): Collection
+    {
+        return User::query()
+            ->whereIn('role', self::ERP_ROLES)
+            ->where(function ($query) {
+                $query->where('is_active', true)->orWhereNull('is_active');
+            })
+            ->when($companyId, fn ($query) => $query->where(function ($companyQuery) use ($companyId) {
+                $companyQuery->where('company_id', $companyId)->orWhereNull('company_id');
+            }))
+            ->get();
+    }
+
     public static function adminsAndHr(?int $companyId = null): Collection
     {
         return User::query()
@@ -40,7 +55,7 @@ class SystemNotificationService
 
     public static function notifyAdmins(string $title, string $message, ?string $url = null, array $data = []): void
     {
-        self::send(self::adminsAndHr(auth()->user()?->company_id), $title, $message, $url, $data + [
+        self::notifyAllRoles($title, $message, $url, $data + [
             'type' => 'employee_to_admin',
             'icon' => 'fa-user-clock',
             'color' => 'info',
@@ -49,10 +64,24 @@ class SystemNotificationService
 
     public static function notifyEmployees(string $title, string $message, ?string $url = null, array $data = []): void
     {
-        self::send(self::employees(auth()->user()?->company_id), $title, $message, $url, $data + [
+        self::notifyAllRoles($title, $message, $url, $data + [
             'type' => 'admin_to_employee',
             'icon' => 'fa-shield-halved',
             'color' => 'warning',
+        ]);
+    }
+
+    public static function notifyAllRoles(string $title, string $message, ?string $url = null, array $data = [], ?int $companyId = null): void
+    {
+        $actor = auth()->user();
+        $companyId ??= $actor?->company_id;
+
+        self::send(self::roleUsers($companyId), $title, $message, $url, $data + [
+            'type' => 'erp_activity',
+            'icon' => 'fa-bell',
+            'color' => 'info',
+            'actor_role' => $actor?->role,
+            'audience' => 'all_roles',
         ]);
     }
 

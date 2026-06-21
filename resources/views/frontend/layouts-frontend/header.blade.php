@@ -28,7 +28,7 @@
             <ul class="navbar-nav mx-auto">
                 <!-- Product Dropdown -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                    <a class="nav-link dropdown-toggle" href="javascript:void(0)" role="button" data-frontend-dropdown="true" aria-expanded="false">
                         Product <i class="fas fa-chevron-down ms-1"></i>
                     </a>
                     <div class="dropdown-menu mega-menu">
@@ -111,7 +111,7 @@
 
                 <!-- Solutions Dropdown -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                    <a class="nav-link dropdown-toggle" href="javascript:void(0)" role="button" data-frontend-dropdown="true" aria-expanded="false">
                         Solutions <i class="fas fa-chevron-down ms-1"></i>
                     </a>
                     <div class="dropdown-menu mega-menu">
@@ -176,7 +176,7 @@
 
                 <!-- Resources Dropdown -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                    <a class="nav-link dropdown-toggle" href="javascript:void(0)" role="button" data-frontend-dropdown="true" aria-expanded="false">
                         Resources <i class="fas fa-chevron-down ms-1"></i>
                     </a>
                     <div class="dropdown-menu mega-menu">
@@ -231,7 +231,7 @@
 
                 <!-- Company Dropdown -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                    <a class="nav-link dropdown-toggle" href="javascript:void(0)" role="button" data-frontend-dropdown="true" aria-expanded="false">
                         Company <i class="fas fa-chevron-down ms-1"></i>
                     </a>
                     <div class="dropdown-menu mega-menu">
@@ -288,8 +288,11 @@
             <!-- Right Side Buttons -->
             <div class="navbar-actions">
                 @auth
+                    <a href="{{ route('dashboard') }}" class="btn btn-purple mobile-dashboard-action d-lg-none">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </a>
                     <div class="dropdown">
-                        <button class="btn btn-outline-purple dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <button class="btn btn-outline-purple dropdown-toggle" type="button" data-frontend-dropdown="true" aria-expanded="false">
                             <i class="fas fa-user-circle"></i> {{ Auth::user()->name }}
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end">
@@ -312,7 +315,7 @@
                     </div>
                 @else
                     <a href="{{ route('login') }}" class="btn btn-purple btn-glow">
-                        Get Started <i class="fas fa-arrow-right"></i>
+                        Login <i class="fas fa-arrow-right"></i>
                     </a>
                 @endauth
             </div>

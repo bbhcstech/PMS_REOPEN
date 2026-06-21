@@ -225,6 +225,19 @@ class TicketController extends Controller
         }
     }
 
+    SystemNotificationService::notifyAllRoles(
+        'Ticket Raised',
+        auth()->user()->name . ' raised ticket #' . $ticket->id . ': ' . $ticket->subject,
+        route('tickets.show', $ticket->id),
+        [
+            'ticket_id' => $ticket->id,
+            'project_id' => $ticket->project_id,
+            'type' => 'ticket_created',
+            'icon' => 'fa-ticket',
+            'color' => 'info',
+        ]
+    );
+
     return redirect()->route('tickets.index')->with('success', 'Ticket created successfully');
 }
 
@@ -328,22 +341,12 @@ class TicketController extends Controller
         $ticket->status = $request->status;
         $ticket->save();
 
-        if ($user && strtolower((string) $user->role) === 'employee') {
-            SystemNotificationService::notifyAdmins(
-                'Ticket Updated',
-                $user->name . ' changed ticket #' . $ticket->id . ' to ' . ucfirst($ticket->status),
-                route('tickets.show', $ticket->id),
-                ['ticket_id' => $ticket->id, 'project_id' => $ticket->project_id, 'type' => 'ticket_status_updated', 'icon' => 'fa-ticket']
-            );
-        } elseif ($ticket->agent_id || $ticket->requester_id) {
-            SystemNotificationService::notifyUser(
-                array_filter([$ticket->agent_id, $ticket->requester_id]),
-                'Ticket Status Updated',
-                'Ticket #' . $ticket->id . ' is now ' . ucfirst($ticket->status),
-                route('tickets.show', $ticket->id),
-                ['ticket_id' => $ticket->id, 'project_id' => $ticket->project_id, 'type' => 'ticket_status_updated', 'icon' => 'fa-ticket']
-            );
-        }
+        SystemNotificationService::notifyAllRoles(
+            'Ticket Status Updated',
+            ($user?->name ?? 'Someone') . ' changed ticket #' . $ticket->id . ' to ' . ucfirst($ticket->status),
+            route('tickets.show', $ticket->id),
+            ['ticket_id' => $ticket->id, 'project_id' => $ticket->project_id, 'type' => 'ticket_status_updated', 'icon' => 'fa-ticket', 'color' => 'info']
+        );
 
         if (! $request->expectsJson() && ! $request->ajax()) {
             return back()->with('success', 'Ticket status updated.');
