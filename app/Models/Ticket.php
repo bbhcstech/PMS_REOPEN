@@ -1,9 +1,11 @@
 <?php
 namespace App\Models;
 
+use App\Models\TenantModel;
+
 use Illuminate\Database\Eloquent\Model;
 
-class Ticket extends Model
+class Ticket extends TenantModel
 {
     protected $fillable = [
         'requester_id',

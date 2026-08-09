@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Models\TenantModel;
+
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 
-class EmployeeDetail extends Model
+class EmployeeDetail extends TenantModel
 {
     protected $fillable = [
         'user_id', 'company_id', 'designation_id', 'parent_dpt_id', 'department_id', 'employee_id',

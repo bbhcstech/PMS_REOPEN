@@ -37,6 +37,21 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        // Multi-Tenant: Store current company database name in session
+        $user = Auth::user();
+        if ($user) {
+            $company = null;
+            if (!empty($user->company_id)) {
+                $company = \App\Models\Central\Company::where('id', $user->company_id)->first();
+            }
+            if (!$company) {
+                $company = \App\Models\Central\Company::where('db_name', env('DB_DATABASE', 'pms_last'))->first();
+            }
+
+            $dbName = $company?->db_name ?: env('DB_DATABASE', 'pms_last');
+            $request->session()->put('current_company_db', $dbName);
+        }
+
         if (Auth::user()?->role === 'superadmin') {
             return redirect()->intended(route('superadmin.dashboard', absolute: false));
         }

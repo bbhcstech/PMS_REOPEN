@@ -1,10 +1,12 @@
 <?php
 namespace App\Models;
 
+use App\Models\TenantModel;
+
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Discussion extends Model
+class Discussion extends TenantModel
 {
     use SoftDeletes;
     

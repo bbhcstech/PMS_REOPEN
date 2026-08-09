@@ -1,9 +1,11 @@
 <?php
 namespace App\Models;
 
+use App\Models\TenantModel;
+
 use Illuminate\Database\Eloquent\Model;
 
-class Expense extends Model
+class Expense extends TenantModel
 {
     protected $fillable = [
         'item_name', 'currency', 'exchange_rate', 'price', 'purchase_date',

@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Models\TenantModel;
+
 use Illuminate\Database\Eloquent\Model;
 
-class UserActivity extends Model
+class UserActivity extends TenantModel
 {
     protected $fillable = [
         'company_id',

@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Models\TenantModel;
+
 use Illuminate\Database\Eloquent\Model;
 
-class TaskUpdate extends Model
+class TaskUpdate extends TenantModel
 {
     protected $fillable = [
         'task_id',

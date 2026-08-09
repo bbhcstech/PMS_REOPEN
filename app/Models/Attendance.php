@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Models\TenantModel;
+
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 
-class Attendance extends Model
+class Attendance extends TenantModel
 {
     // explicit mapping to your table
     protected $table = 'attendances';

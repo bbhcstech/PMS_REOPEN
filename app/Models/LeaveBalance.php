@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Models\TenantModel;
+
 use Illuminate\Database\Eloquent\Model;
 
-class LeaveBalance extends Model
+class LeaveBalance extends TenantModel
 {
     protected $fillable = [
         'user_id',

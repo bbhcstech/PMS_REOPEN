@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Models\TenantModel;
+
 use Illuminate\Database\Eloquent\Model;
 
-class LeavePolicyLog extends Model
+class LeavePolicyLog extends TenantModel
 {
     protected $fillable = [
         'leave_policy_id',

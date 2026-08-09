@@ -62,6 +62,56 @@ return [
             ]) : [],
         ],
 
+        // ---------------------------------------------------------------
+        // CENTRAL connection — holds cross-company data:
+        //   companies, super_admins, plans, company_subscriptions,
+        //   super_admin_activity_logs
+        // Collation is utf8mb4_general_ci to match the existing pms_last DB.
+        // ---------------------------------------------------------------
+        'central' => [
+            'driver'    => 'mysql',
+            'host'      => env('CENTRAL_DB_HOST', env('DB_HOST', '127.0.0.1')),
+            'port'      => env('CENTRAL_DB_PORT', env('DB_PORT', '3306')),
+            'database'  => env('CENTRAL_DB_DATABASE', 'pms_central'),
+            'username'  => env('CENTRAL_DB_USERNAME', env('DB_USERNAME', 'root')),
+            'password'  => env('CENTRAL_DB_PASSWORD', env('DB_PASSWORD', '')),
+            'unix_socket' => env('CENTRAL_DB_SOCKET', ''),
+            'charset'   => 'utf8mb4',
+            'collation' => 'utf8mb4_general_ci',   // must match pms_last
+            'prefix'    => '',
+            'prefix_indexes' => true,
+            'strict'    => true,
+            'engine'    => null,
+            'options'   => extension_loaded('pdo_mysql') ? array_filter([
+                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+            ]) : [],
+        ],
+
+        // ---------------------------------------------------------------
+        // TENANT connection — dynamic connection per company/tenant.
+        // Database name is null by default and populated at runtime
+        // by SetTenantConnection middleware.
+        // Collation is utf8mb4_general_ci to match pms_last.
+        // ---------------------------------------------------------------
+        'tenant' => [
+            'driver'    => 'mysql',
+            'host'      => env('TENANT_DB_HOST', env('DB_HOST', '127.0.0.1')),
+            'port'      => env('TENANT_DB_PORT', env('DB_PORT', '3306')),
+            'database'  => null,
+            'username'  => env('TENANT_DB_USERNAME', env('DB_USERNAME', 'root')),
+            'password'  => env('TENANT_DB_PASSWORD', env('DB_PASSWORD', '')),
+            'unix_socket' => env('TENANT_DB_SOCKET', ''),
+            'charset'   => 'utf8mb4',
+            'collation' => 'utf8mb4_general_ci',
+            'prefix'    => '',
+            'prefix_indexes' => true,
+            'strict'    => true,
+            'engine'    => null,
+            'options'   => extension_loaded('pdo_mysql') ? array_filter([
+                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+            ]) : [],
+        ],
+
         'mariadb' => [
             'driver' => 'mariadb',
             'url' => env('DB_URL'),

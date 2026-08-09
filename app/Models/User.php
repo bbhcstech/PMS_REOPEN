@@ -9,6 +9,7 @@ use Carbon\Carbon;
 
 class User extends Authenticatable
 {
+    protected $connection = 'tenant';
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 

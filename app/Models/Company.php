@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Company extends Model
 {
+    protected $connection = 'central';
     use SoftDeletes;
 
     protected $fillable = [

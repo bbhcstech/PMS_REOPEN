@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Models\TenantModel;
+
 use Illuminate\Database\Eloquent\Model;
 
-class TaskTimer extends Model
+class TaskTimer extends TenantModel
 {
    protected $fillable = ['task_id', 'user_id','project_id','start_date', 'start_time', 'end_time','end_date','pause_time','memo','remarks','total_hours','status'];
 

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Invoice extends Model
 {
+    protected $connection = 'central';
     protected $fillable = [
         'company_id',
         'payment_id',

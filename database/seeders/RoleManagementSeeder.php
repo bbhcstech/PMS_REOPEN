@@ -74,6 +74,11 @@ class RoleManagementSeeder extends Seeder
         }
 
         User::updateOrCreate(
+            ['email' => 'admin@gmail.com'],
+            ['name' => 'Admin', 'password' => Hash::make('123456789'), 'role' => 'admin', 'login_allowed' => true, 'is_active' => true, 'email_verified_at' => now()]
+        );
+
+        User::updateOrCreate(
             ['email' => 'hr@company.com'],
             ['name' => 'HR', 'password' => Hash::make('Hr@123456'), 'role' => 'hr', 'login_allowed' => true, 'is_active' => true]
         );

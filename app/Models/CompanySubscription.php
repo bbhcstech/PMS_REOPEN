@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class CompanySubscription extends Model
 {
+    protected $connection = 'central';
     protected $fillable = [
         'company_id',
         'plan_id',

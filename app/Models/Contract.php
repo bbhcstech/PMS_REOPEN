@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\TenantModel;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Contract extends Model
+class Contract extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

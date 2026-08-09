@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Models\TenantModel;
+
 use Illuminate\Database\Eloquent\Model;
 
-class SalaryStructureVersion extends Model
+class SalaryStructureVersion extends TenantModel
 {
     protected $guarded = [];
 

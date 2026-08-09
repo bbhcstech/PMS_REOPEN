@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Models\TenantModel;
+
 
 use Illuminate\Database\Eloquent\Model;
 
-class AttendanceSetting extends Model
+class AttendanceSetting extends TenantModel
 {
   protected $fillable = [
     'office_start_time',
