@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Models\TenantModel;
+
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class RolePermission extends Model
+class RolePermission extends TenantModel
 {
     protected $fillable = [
         'role',

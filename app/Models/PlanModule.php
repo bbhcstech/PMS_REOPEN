@@ -6,5 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class PlanModule extends Model
 {
+    protected $connection = 'central';
     //
 }

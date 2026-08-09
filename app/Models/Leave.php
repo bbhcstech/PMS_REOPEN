@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Models\TenantModel;
+
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class Leave extends Model
+class Leave extends TenantModel
 {
     use HasFactory;
 

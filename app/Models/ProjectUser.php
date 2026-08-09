@@ -1,9 +1,11 @@
 <?php
 namespace App\Models;
 
+use App\Models\TenantModel;
+
 use Illuminate\Database\Eloquent\Model;
 
-class ProjectUser extends Model
+class ProjectUser extends TenantModel
 {
     protected $table = 'project_user'; // since it's not plural
 

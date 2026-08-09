@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Models\TenantModel;
+
 use Illuminate\Database\Eloquent\Model;
 
-class TaskHistory extends Model
+class TaskHistory extends TenantModel
 {
     
     protected $table = 'task_history'; // your actual table name

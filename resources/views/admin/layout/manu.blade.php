@@ -56,14 +56,29 @@
        border-radius: 4px;
    }
 
-   /* ===================== NAVBAR CORE FIX ===================== */
+   /* ===================== NAVBAR CORE PREMIUM FIX ===================== */
    #layout-navbar {
        display: flex;
        flex-wrap: nowrap !important;
        align-items: center;
        width: 100%;
-       background: var(--white-pure) !important;
-       box-shadow: 0 2px 10px rgba(124, 58, 237, 0.08);
+       background: rgba(255, 255, 255, 0.92) !important;
+       backdrop-filter: blur(20px) saturate(180%);
+       -webkit-backdrop-filter: blur(20px) saturate(180%);
+       box-shadow: 0 12px 35px -10px rgba(15, 116, 76, 0.08), 0 2px 6px rgba(0, 0, 0, 0.03) !important;
+       border-radius: 20px;
+       border: 1px solid rgba(255, 255, 255, 0.9);
+       padding: 0.65rem 1.25rem;
+       font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+   }
+
+   #layout-navbar .nav-item,
+   #layout-navbar .fw-bold,
+   #layout-navbar .navbar-brand {
+       font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+       font-size: 1.18rem !important;
+       font-weight: 800 !important;
+       letter-spacing: -0.015em;
    }
 
    #layout-navbar .navbar-nav {
@@ -82,32 +97,38 @@
        display: contents;
    }
 
-   /* ===================== RIGHT ICONS FIX ===================== */
+   /* ===================== RIGHT ICONS & SEARCH FIX ===================== */
    .navbar-nav-right,
    #layout-navbar .navbar-nav-right {
        display: flex;
        flex-direction: row !important;
        flex-wrap: nowrap !important;
        align-items: center;
-       gap: 8px;
+       gap: 10px;
    }
 
    .header-icon-box {
        display: flex;
        align-items: center;
        justify-content: center;
-       min-width: 36px;
-       color: var(--purple-primary);
-       transition: all 0.2s ease;
+       min-width: 40px;
+       height: 40px;
+       border-radius: 12px;
+       background: rgba(15, 116, 76, 0.06);
+       color: #0f744c;
+       transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
    }
 
    .header-icon-box:hover {
-       color: var(--purple-dark);
-       transform: scale(1.1);
+       color: #094c32;
+       background: rgba(15, 116, 76, 0.12);
+       transform: translateY(-2px) scale(1.06);
+       box-shadow: 0 6px 18px rgba(15, 116, 76, 0.15);
    }
 
    .header-icon-box i {
-       color: var(--purple-primary);
+       color: #0f744c;
+       font-size: 1.2rem;
    }
 
    /* ===================== SEARCH FIELD CONTROL ===================== */
@@ -1136,11 +1157,21 @@
                             <div class="text-truncate" data-i18n="Container">Recognition</div>
                         </a>
                     </li>
+                    <li class="menu-item {{ request()->routeIs('letterhead.*') || request()->routeIs('admin.letterhead.*') ? 'active' : '' }}">
+                        <a href="{{ route('letterhead.index') }}" class="menu-link">
+                            <div class="text-truncate" data-i18n="Letter Head">Letter Head</div>
+                        </a>
+                    </li>
                     @elseif($canSeeModule('awards') && auth()->user()->role === 'employee')
                     <!-- Employee also sees Recognition menu but goes to filtered view -->
                     <li class="menu-item {{ request()->routeIs('awards.*') || request()->routeIs('employee.awards') ? 'active' : '' }}">
                         <a href="{{ route('awards.index') }}" class="menu-link">
                             <div class="text-truncate" data-i18n="Container">My Awards</div>
+                        </a>
+                    </li>
+                    <li class="menu-item {{ request()->routeIs('letterhead.*') || request()->routeIs('admin.letterhead.*') ? 'active' : '' }}">
+                        <a href="{{ route('letterhead.index') }}" class="menu-link">
+                            <div class="text-truncate" data-i18n="Letter Head">Letter Head</div>
                         </a>
                     </li>
                 @endif

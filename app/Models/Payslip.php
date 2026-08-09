@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Models\TenantModel;
+
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Payslip extends Model
+class Payslip extends TenantModel
 {
     use SoftDeletes;
 

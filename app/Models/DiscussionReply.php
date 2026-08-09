@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Models\TenantModel;
+
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class DiscussionReply extends Model
+class DiscussionReply extends TenantModel
 {
     use SoftDeletes;
 

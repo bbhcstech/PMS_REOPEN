@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Models\TenantModel;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class StickyNote extends Model
+class StickyNote extends TenantModel
 {
     protected $fillable = [
         'company_id',

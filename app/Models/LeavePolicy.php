@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Models\TenantModel;
+
 use Illuminate\Database\Eloquent\Model;
 
-class LeavePolicy extends Model
+class LeavePolicy extends TenantModel
 {
     protected $fillable = [
         'annual_leaves',

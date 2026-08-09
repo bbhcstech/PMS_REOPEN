@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Models\TenantModel;
+
 use Illuminate\Database\Eloquent\Model;
 
-class Department extends Model
+class Department extends TenantModel
 {
     protected $fillable = [
         'dpt_name',

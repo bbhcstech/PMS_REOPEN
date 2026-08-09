@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Models\TenantModel;
+
 use Illuminate\Database\Eloquent\Model;
 
-class AppSetting extends Model
+class AppSetting extends TenantModel
 {
     protected $table = 'app_settings';
 

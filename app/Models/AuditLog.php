@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class AuditLog extends Model
 {
+    protected $connection = 'central';
     protected $fillable = [
         'user_id',
         'company_id',

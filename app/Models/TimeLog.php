@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Models\TenantModel;
+
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 
-class TimeLog extends Model
+class TimeLog extends TenantModel
 {
     protected $fillable = [
         'user_id',

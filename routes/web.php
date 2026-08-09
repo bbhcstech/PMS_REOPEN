@@ -15,6 +15,7 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\Admin\GovernmentIdVerificationController;
 use App\Http\Controllers\Admin\CompanyManagementController;
+use App\Http\Controllers\Admin\LetterheadController;
 use App\Http\Controllers\Admin\ModuleManagementController;
 use App\Http\Controllers\Admin\RoleAccountController;
 use App\Http\Controllers\Admin\RolePermissionController;
@@ -412,6 +413,12 @@ Route::middleware(['auth', 'module.access'])->group(function () {
         Route::patch('/companies/{company}/activate', [CompanyManagementController::class, 'activate'])->name('companies.activate');
         Route::patch('/companies/{company}/deactivate', [CompanyManagementController::class, 'deactivate'])->name('companies.deactivate');
 
+        // Letterhead management
+        Route::get('/letterhead', [LetterheadController::class, 'index'])->name('letterhead.index');
+        Route::post('/letterhead/{company}/upload', [LetterheadController::class, 'upload'])->name('letterhead.upload');
+        Route::get('/letterhead/{company}/download', [LetterheadController::class, 'download'])->name('letterhead.download');
+        Route::delete('/letterhead/{company}/delete', [LetterheadController::class, 'destroy'])->name('letterhead.delete');
+
         Route::get('/modules', [ModuleManagementController::class, 'index'])->name('modules.index');
         Route::post('/modules', [ModuleManagementController::class, 'store'])->name('modules.store');
         Route::put('/modules/{module}', [ModuleManagementController::class, 'update'])->name('modules.update');
@@ -425,6 +432,12 @@ Route::middleware(['auth', 'module.access'])->group(function () {
         Route::put('/accounts/{role}/{user}', [RoleAccountController::class, 'update'])->name('role-accounts.update');
         Route::post('/accounts/{role}/{user}/reset-password', [RoleAccountController::class, 'resetPassword'])->name('role-accounts.reset-password');
     });
+
+    // Letterhead alias routes
+    Route::get('/letterhead', [LetterheadController::class, 'index'])->name('letterhead.index');
+    Route::post('/letterhead/{company}/upload', [LetterheadController::class, 'upload'])->name('letterhead.upload');
+    Route::get('/letterhead/{company}/download', [LetterheadController::class, 'download'])->name('letterhead.download');
+    Route::delete('/letterhead/{company}/delete', [LetterheadController::class, 'destroy'])->name('letterhead.delete');
 
     Route::prefix('payroll')->name('payroll.')->group(function () {
         Route::get('/', [PayrollController::class, 'index'])->name('index');
