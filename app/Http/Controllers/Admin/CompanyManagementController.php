@@ -144,6 +144,8 @@ class CompanyManagementController extends Controller
 
     private function authorizeAdmin(): void
     {
-        abort_unless(auth()->check() && auth()->user()->role === 'admin', 403);
+        $user = auth()->user();
+        $isAdmin = \Illuminate\Support\Facades\Auth::guard('super_admin')->check() || ($user && in_array(strtolower((string) $user->role), ['admin', 'superadmin'], true));
+        abort_unless($isAdmin, 403);
     }
 }

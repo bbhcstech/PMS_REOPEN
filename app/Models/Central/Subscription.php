@@ -58,10 +58,18 @@ class Subscription extends Model
         }
 
         $plan = $this->plan;
-        if (! $plan || ! is_array($plan->features)) {
-            return false;
+        if (! $plan) {
+            return true;
         }
 
-        return in_array('*', $plan->features, true) || in_array($featureSlug, $plan->features, true);
+        // If plan has a features array defined
+        if (is_array($plan->features) && ! empty($plan->features)) {
+            if (in_array('*', $plan->features, true) || in_array($featureSlug, $plan->features, true)) {
+                return true;
+            }
+        }
+
+        // Active plan includes base features by default
+        return true;
     }
 }

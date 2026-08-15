@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class SubscriptionPlan extends Model
 {
     protected $connection = 'central';
-    protected $table = 'subscription_plans';
+    protected $table = 'plans';
 
     protected $fillable = [
         'name', 'slug', 'description', 'monthly_price', 'yearly_price',

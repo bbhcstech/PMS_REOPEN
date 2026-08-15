@@ -74,6 +74,8 @@ class ModuleManagementController extends Controller
 
     private function authorizeAdmin(): void
     {
-        abort_unless(auth()->user()?->normalizedRole() === 'admin', 403);
+        $user = auth()->user();
+        $isAdmin = \Illuminate\Support\Facades\Auth::guard('super_admin')->check() || ($user && in_array($user->normalizedRole(), ['admin', 'superadmin'], true));
+        abort_unless($isAdmin, 403);
     }
 }
