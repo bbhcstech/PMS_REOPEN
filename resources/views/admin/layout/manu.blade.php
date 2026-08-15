@@ -885,8 +885,9 @@
 @php
     $adminRefreshVersion = file_exists(public_path('admin/assets/css/pms-refresh.css')) ? filemtime(public_path('admin/assets/css/pms-refresh.css')) : time();
     $logoVersion = file_exists(public_path('logo.png')) ? filemtime(public_path('logo.png')) : time();
-    $brandLogo = $currentCompany?->logo ? asset($currentCompany->logo) : asset('logo.png') . '?v=' . $logoVersion;
-    $brandName = $currentCompany?->brand_name ?? 'Bitroxia';
+    $companySetting = \App\Models\CompanySetting::first();
+    $brandLogo = $currentCompany?->logo ? asset($currentCompany->logo) : ($companySetting?->company_logo ? asset($companySetting->company_logo) : asset('logo.png') . '?v=' . $logoVersion);
+    $brandName = $currentCompany?->brand_name ?? ($companySetting?->company_name ?? 'Bitroxia');
 @endphp
 <link rel="stylesheet" href="{{ asset('admin/assets/css/pms-refresh.css') }}?v={{ $adminRefreshVersion }}">
 
@@ -1033,6 +1034,14 @@
             </li>
             @endif
 
+            <!-- My Documents -->
+            <li class="menu-item {{ request()->routeIs('my-documents.*') ? 'active' : '' }}">
+              <a href="{{ route('my-documents.index') }}" class="menu-link" data-sidebar-key="my-documents">
+                  <i class="menu-icon tf-icons bx bx-file"></i>
+                  <div class="text-truncate" data-i18n="My Documents">My Documents</div>
+              </a>
+            </li>
+
             @if($canSeeModule('organization'))
             <li class="menu-item {{ request()->routeIs('organization.*') ? 'active' : '' }}">
               <a href="{{ route('organization.index') }}" class="menu-link" data-sidebar-key="organization">
@@ -1087,7 +1096,7 @@
                     <ul class="menu-sub">
                       <li class="menu-item {{ request()->routeIs('parent-departments.*') ? 'active' : '' }}">
                         <a href="{{ route('parent-departments.index') }}" class="menu-link">
-                          <div class="text-truncate"> Department</div>
+                          <div class="text-truncate">Parent Department</div>
                         </a>
                       </li>
                       <li class="menu-item {{ request()->routeIs('departments.*') ? 'active' : '' }}">
@@ -1420,22 +1429,46 @@
                         <div class="text-truncate" data-i18n="Settings">Settings</div>
                     </a>
                     <ul class="menu-sub">
-                        @if(Route::has('admin.companies.index') && auth()->user()->role === 'admin')
-                            <li class="menu-item {{ request()->routeIs('admin.companies.*') ? 'active' : '' }}"><a href="{{ route('admin.companies.index') }}" class="menu-link"><div>Company Management</div></a></li>
-                        @endif
-                        @if(Route::has('settings.company'))
-                            <li class="menu-item {{ request()->routeIs('settings.company') ? 'active' : '' }}"><a href="{{ route('settings.company') }}" class="menu-link"><div>Company Settings</div></a></li>
-                        @endif
-                        @if(Route::has('admin.settings.app'))
-                            <li class="menu-item"><a href="{{ route('admin.settings.app', ['page' => 'app']) }}" class="menu-link"><div>App Settings</div></a></li>
-                        @endif
-                        @if(Route::has('admin.settings.terms-policy'))
-                            <li class="menu-item {{ request()->routeIs('admin.settings.terms-policy*') ? 'active' : '' }}"><a href="{{ route('admin.settings.terms-policy') }}" class="menu-link"><div>Terms &amp; Policy</div></a></li>
-                        @endif
-                        <li class="menu-item {{ request()->routeIs('admin.modules.*') ? 'active' : '' }}"><a href="{{ route('admin.modules.index') }}" class="menu-link"><div>Module Management</div></a></li>
+                        <li class="menu-item {{ request()->routeIs('admin.settings.index') ? 'active' : '' }}"><a href="{{ route('admin.settings.index') }}" class="menu-link"><div>Settings Dashboard</div></a></li>
+                        <li class="menu-item {{ request()->routeIs('settings.company') ? 'active' : '' }}"><a href="{{ route('settings.company') }}" class="menu-link"><div>Company Profile</div></a></li>
+                        <li class="menu-item {{ request()->routeIs('admin.settings.organization-details*') ? 'active' : '' }}"><a href="{{ route('admin.settings.organization-details') }}" class="menu-link"><div>Organization Details</div></a></li>
+                        <li class="menu-item {{ request()->routeIs('admin.settings.business-address*') ? 'active' : '' }}"><a href="{{ route('admin.settings.business-address.index') }}" class="menu-link"><div>Branches / Locations</div></a></li>
+                        <li class="menu-item {{ request()->routeIs('parent-departments.*') || request()->routeIs('departments.*') ? 'active open' : '' }}">
+                            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                                <div>Department</div>
+                            </a>
+                            <ul class="menu-sub">
+                                <li class="menu-item {{ request()->routeIs('parent-departments.*') ? 'active' : '' }}">
+                                    <a href="{{ route('parent-departments.index') }}" class="menu-link">
+                                        <div>Parent Department</div>
+                                    </a>
+                                </li>
+                                <li class="menu-item {{ request()->routeIs('departments.*') ? 'active' : '' }}">
+                                    <a href="{{ route('departments.index') }}" class="menu-link">
+                                        <div>Sub Department</div>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="menu-item {{ request()->routeIs('designations.*') ? 'active' : '' }}"><a href="{{ route('designations.index') }}" class="menu-link"><div>Designations</div></a></li>
+                        <li class="menu-item {{ request()->routeIs('admin.settings.employee-id*') ? 'active' : '' }}"><a href="{{ route('admin.settings.employee-id') }}" class="menu-link"><div>Employee ID Settings</div></a></li>
+                        <li class="menu-item {{ request()->routeIs('admin.settings.work-schedule*') ? 'active' : '' }}"><a href="{{ route('admin.settings.work-schedule') }}" class="menu-link"><div>Work Schedule</div></a></li>
+                        <li class="menu-item {{ request()->routeIs('admin.settings.leave*') ? 'active' : '' }}"><a href="{{ route('admin.settings.leave') }}" class="menu-link"><div>Leave Settings</div></a></li>
+                        <li class="menu-item {{ request()->routeIs('holidays.*') ? 'active' : '' }}"><a href="{{ route('holidays.index') }}" class="menu-link"><div>Holiday Settings</div></a></li>
+                        <li class="menu-item {{ request()->routeIs('attendance.settings*') ? 'active' : '' }}"><a href="{{ route('attendance.settings') }}" class="menu-link"><div>Attendance Settings</div></a></li>
+                        <li class="menu-item {{ request()->routeIs('payroll.settings*') ? 'active' : '' }}"><a href="{{ route('payroll.settings.index') }}" class="menu-link"><div>Payroll Settings</div></a></li>
+                        <li class="menu-item {{ request()->routeIs('admin.settings.recruitment*') ? 'active' : '' }}"><a href="{{ route('admin.settings.recruitment') }}" class="menu-link"><div>Recruitment Settings</div></a></li>
+                        <li class="menu-item {{ request()->routeIs('admin.settings.performance*') ? 'active' : '' }}"><a href="{{ route('admin.settings.performance') }}" class="menu-link"><div>Performance Settings</div></a></li>
+                        <li class="menu-item {{ request()->routeIs('admin.settings.notification*') ? 'active' : '' }}"><a href="{{ route('admin.settings.notification') }}" class="menu-link"><div>Notification Settings</div></a></li>
+                        <li class="menu-item {{ request()->routeIs('admin.settings.email*') ? 'active' : '' }}"><a href="{{ route('admin.settings.email') }}" class="menu-link"><div>Email Settings</div></a></li>
+                        <li class="menu-item {{ request()->routeIs('admin.settings.document*') ? 'active' : '' }}"><a href="{{ route('admin.settings.document') }}" class="menu-link"><div>Document Settings</div></a></li>
+                        <li class="menu-item {{ request()->routeIs('admin.settings.security*') ? 'active' : '' }}"><a href="{{ route('admin.settings.security') }}" class="menu-link"><div>Security Settings</div></a></li>
+                        <li class="menu-item {{ request()->routeIs('admin.settings.change-password*') ? 'active' : '' }}"><a href="{{ route('admin.settings.change-password') }}" class="menu-link"><div>Change Password</div></a></li>
                         <li class="menu-item {{ request()->routeIs('admin.role-permissions.*') ? 'active' : '' }}"><a href="{{ route('admin.role-permissions.index') }}" class="menu-link"><div>Role & Permission</div></a></li>
-                        <li class="menu-item {{ request()->routeIs('admin.role-accounts.*') && request()->route('role') === 'hr' ? 'active' : '' }}"><a href="{{ route('admin.role-accounts.index', 'hr') }}" class="menu-link"><div>HR Management</div></a></li>
-                        <li class="menu-item {{ request()->routeIs('admin.role-accounts.*') && request()->route('role') === 'manager' ? 'active' : '' }}"><a href="{{ route('admin.role-accounts.index', 'manager') }}" class="menu-link"><div>Manager Management</div></a></li>
+                        <li class="menu-item {{ request()->routeIs('admin.settings.localization*') ? 'active' : '' }}"><a href="{{ route('admin.settings.localization') }}" class="menu-link"><div>Localization</div></a></li>
+                        <li class="menu-item {{ request()->routeIs('admin.settings.app*') ? 'active' : '' }}"><a href="{{ route('admin.settings.app', ['page' => 'app']) }}" class="menu-link"><div>System Preferences</div></a></li>
+                        <li class="menu-item {{ request()->routeIs('admin.settings.terms-policy*') ? 'active' : '' }}"><a href="{{ route('admin.settings.terms-policy') }}" class="menu-link"><div>Terms &amp; Policy</div></a></li>
+                        <li class="menu-item {{ request()->routeIs('admin.modules.*') ? 'active' : '' }}"><a href="{{ route('admin.modules.index') }}" class="menu-link"><div>Module Management</div></a></li>
                     </ul>
                 </li>
             @endif
@@ -1923,24 +1956,38 @@
                                 } else {
                                     $link = data_get($data, 'url', '#');
                                 }
+                                $isClickable = data_get($data, 'clickable', true) !== false && data_get($data, 'type') !== 'own_password_changed';
                             @endphp
 
-    <a href="{{ route('notifications.open', $notification->id) }}"
-       class="notification-card-link {{ $isUnread ? 'is-unread' : '' }}">
+    @if($isClickable)
+        <a href="{{ route('notifications.open', $notification->id) }}"
+           class="notification-card-link {{ $isUnread ? 'is-unread' : '' }}">
+    @else
+        <div class="notification-card-link {{ $isUnread ? 'is-unread' : '' }}" style="cursor: default; opacity: 0.95;">
+    @endif
         <span class="notification-avatar-icon color-{{ $color }}">
             <i class="fas {{ $icon }}"></i>
         </span>
-        <span>
-            <span class="notification-title">{{ $title }}</span>
+        <span class="flex-grow-1">
+            <span class="notification-title d-flex align-items-center justify-content-between">
+                <span>{{ $title }}</span>
+                @if(!$isClickable)
+                    <span class="badge bg-secondary text-white rounded-pill px-2 py-0.5" style="font-size: 0.65rem;">View Only</span>
+                @endif
+            </span>
             @if($message)
                 <span class="notification-message">{{ \Illuminate\Support\Str::limit($message, 92) }}</span>
             @endif
-            <span class="notification-time"><i class="fas fa-clock"></i>{{ $notification->created_at->diffForHumans() }}</span>
+            <span class="notification-time"><i class="fas fa-clock me-1"></i>{{ $notification->created_at->diffForHumans() }}</span>
         </span>
         @if($isUnread)
             <span class="notification-unread-dot"></span>
         @endif
-    </a>
+    @if($isClickable)
+        </a>
+    @else
+        </div>
+    @endif
 @empty
     <div class="px-3 py-5 text-center text-muted">
         <i class="fas fa-bell-slash fa-2x mb-2 d-block"></i>
@@ -2022,6 +2069,11 @@
                     <li>
                       <a class="dropdown-item" href="{{ route('profile.edit') }}">
                         <i class="icon-base bx bx-user icon-md me-3"></i><span>My Profile</span>
+                      </a>
+                    </li>
+                    <li>
+                      <a class="dropdown-item" href="{{ route('admin.settings.change-password') }}">
+                        <i class="icon-base bx bx-key icon-md me-3"></i><span>Change Password</span>
                       </a>
                     </li>
                     <li>

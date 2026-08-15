@@ -1307,6 +1307,7 @@
                     </div>
                 </div>
                 <div class="employee-quick-actions">
+                    <a href="{{ route('my-documents.index') }}" class="employee-quick-action"><span class="employee-icon success" style="background: rgba(16, 185, 129, 0.15); color: #059669;"><i class="bx bx-file"></i></span> My Documents</a>
                     <a href="{{ route('tasks.index') }}" class="employee-quick-action"><span class="employee-icon primary"><i class="bx bx-list-check"></i></span> Tasks</a>
                     <a href="{{ route('projects.index') }}" class="employee-quick-action"><span class="employee-icon success"><i class="bx bx-folder-open"></i></span> Projects</a>
                     <a href="{{ route('tickets.index') }}" class="employee-quick-action"><span class="employee-icon warning"><i class="bx bx-message-square-detail"></i></span> Tickets</a>

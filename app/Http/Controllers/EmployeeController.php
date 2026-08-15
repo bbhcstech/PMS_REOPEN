@@ -814,7 +814,7 @@ class EmployeeController extends Controller
             $user->login_allowed = $request->login_allowed ?? 1;
             $user->email_notifications = $request->email_notifications ?? 1;
             if ($request->filled('password')) {
-                $user->password = Hash::make($request->password);
+                \App\Services\PasswordManagementService::updatePassword(Auth::user(), $user, $request->password);
             }
             $user->save();
 

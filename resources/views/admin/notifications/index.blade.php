@@ -36,10 +36,15 @@
                     $icon = $data['icon'] ?? 'fa-bell';
                     $color = $data['color'] ?? 'info';
                     $isUnread = is_null($notification->read_at);
+                    $isClickable = data_get($data, 'clickable', true) !== false && data_get($data, 'type') !== 'own_password_changed';
                 @endphp
 
-                <a href="{{ route('notifications.open', $notification->id) }}"
-                   class="notification-list-item {{ $isUnread ? 'is-unread' : '' }}">
+                @if($isClickable)
+                    <a href="{{ route('notifications.open', $notification->id) }}"
+                       class="notification-list-item {{ $isUnread ? 'is-unread' : '' }}">
+                @else
+                    <div class="notification-list-item {{ $isUnread ? 'is-unread' : '' }}" style="cursor: default; opacity: 0.95;">
+                @endif
                     <span class="notification-list-icon color-{{ $color }}">
                         <i class="fas {{ $icon }}"></i>
                     </span>
@@ -51,14 +56,24 @@
                         <span class="notification-list-time"><i class="fas fa-clock"></i>{{ $notification->created_at->diffForHumans() }}</span>
                     </span>
                     <span class="notification-list-state">
-                        @if($isUnread)
+                        @if(!$isClickable)
+                            <span class="read-pill bg-secondary text-white fw-bold" style="font-size: 11px;">View Only</span>
+                        @elseif($isUnread)
                             <span class="unread-pill">New</span>
                         @else
                             <span class="read-pill">Read</span>
                         @endif
-                        <i class="fas fa-chevron-right"></i>
+                        @if($isClickable)
+                            <i class="fas fa-chevron-right"></i>
+                        @else
+                            <i class="fas fa-lock text-muted" style="font-size: 12px;"></i>
+                        @endif
                     </span>
-                </a>
+                @if($isClickable)
+                    </a>
+                @else
+                    </div>
+                @endif
             @empty
                 <div class="notification-empty">
                     <i class="fas fa-bell-slash"></i>

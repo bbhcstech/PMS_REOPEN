@@ -50,6 +50,11 @@ class NotificationController extends Controller
         $notification = auth()->user()->notifications()->where('id', $id)->firstOrFail();
         $notification->markAsRead();
 
+        $data = $notification->data ?? [];
+        if (data_get($data, 'clickable') === false || data_get($data, 'type') === 'own_password_changed') {
+            return back()->with('info', 'This notification is view-only.');
+        }
+
         return redirect(NotificationUrlResolver::resolve($notification));
     }
 

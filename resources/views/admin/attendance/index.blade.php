@@ -201,14 +201,16 @@
         margin-bottom: 2rem;
     }
 
-    .stat-card {
-        background: rgba(255, 255, 255, 0.95);
+    .stat-card,
+    .attendance-container .stat-card,
+    .attendance-container .stat-card:first-of-type {
+        background: #ffffff !important;
         backdrop-filter: blur(20px);
         border-radius: 24px;
         padding: 1.5rem 1.5rem;
         transition: var(--spring-transition);
-        border: 1px solid var(--glass-border);
-        box-shadow: var(--card-shadow);
+        border: 1px solid var(--glass-border) !important;
+        box-shadow: var(--card-shadow) !important;
         display: flex;
         align-items: center;
         gap: 1.25rem;
@@ -216,6 +218,26 @@
         opacity: 0;
         position: relative;
         overflow: hidden;
+        color: #0a2e1f !important;
+    }
+
+    .attendance-container .stat-card:first-of-type *,
+    .attendance-container .stat-card * {
+        -webkit-text-fill-color: initial;
+    }
+
+    .attendance-container .stat-card h3,
+    .attendance-container .stat-card:first-of-type h3 {
+        color: #0a2e1f !important;
+        -webkit-text-fill-color: #0a2e1f !important;
+    }
+
+    .attendance-container .stat-card h6,
+    .attendance-container .stat-card span,
+    .attendance-container .stat-card:first-of-type span,
+    .attendance-container .stat-card:first-of-type h6 {
+        color: #64748b !important;
+        -webkit-text-fill-color: #64748b !important;
     }
 
     .stat-card::after {
@@ -246,8 +268,8 @@
 
     .stat-card:hover {
         transform: translateY(-6px) scale(1.02);
-        box-shadow: var(--card-shadow-hover);
-        border-color: rgba(14, 165, 164, 0.15);
+        box-shadow: var(--card-shadow-hover) !important;
+        border-color: rgba(14, 165, 164, 0.15) !important;
     }
 
     .stat-icon {
@@ -262,9 +284,11 @@
         box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
     }
 
-    .stat-icon.total {
-        background: linear-gradient(135deg, #dbeafe, #bfdbfe);
-        color: #1d4ed8;
+    .stat-icon.total,
+    .attendance-container .stat-card:first-of-type .stat-icon.total {
+        background: linear-gradient(135deg, #dbeafe, #bfdbfe) !important;
+        color: #1d4ed8 !important;
+        -webkit-text-fill-color: #1d4ed8 !important;
     }
 
     .stat-icon.month {
@@ -1196,6 +1220,18 @@
 
     <div class="content-wrapper">
         @php $user = Auth::user(); @endphp
+
+        <!-- ===== BREADCRUMB ===== -->
+        <div class="breadcrumb-custom mb-3" style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 600; color: #64748b;">
+            <i class="fas fa-building" style="color: #059669;"></i>
+            <a href="{{ route('admin.settings.index') }}" style="color: #059669; text-decoration: none;">Admin</a>
+            <span>/</span>
+            <a href="{{ route('admin.settings.index') }}" style="color: #059669; text-decoration: none;">Settings</a>
+            <span>/</span>
+            <a href="{{ route('attendance.settings') }}" style="color: #059669; text-decoration: none;">Attendance Settings</a>
+            <span>/</span>
+            <span>Attendance Log</span>
+        </div>
 
         <!-- ===== HEADER ===== -->
         <div class="header-card">

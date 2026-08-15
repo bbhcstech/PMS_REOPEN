@@ -59,6 +59,17 @@ use App\Http\Controllers\Admin\ContractTemplateController;
 use App\Http\Controllers\Admin\LeadContactController;
 use App\Exports\AttendanceExport;
 use App\Http\Controllers\DealController;
+use App\Http\Controllers\Admin\Settings\OrganizationDetailsController;
+use App\Http\Controllers\Admin\Settings\EmployeeIdSettingsController;
+use App\Http\Controllers\Admin\Settings\WorkScheduleController;
+use App\Http\Controllers\Admin\Settings\LeaveSettingsController;
+use App\Http\Controllers\Admin\Settings\RecruitmentSettingsController;
+use App\Http\Controllers\Admin\Settings\PerformanceSettingsController;
+use App\Http\Controllers\Admin\Settings\NotificationSettingsController;
+use App\Http\Controllers\Admin\Settings\EmailSettingsController;
+use App\Http\Controllers\Admin\Settings\DocumentSettingsController;
+use App\Http\Controllers\Admin\Settings\SecuritySettingsController;
+use App\Http\Controllers\Admin\Settings\LocalizationController;
 
 
 
@@ -68,6 +79,14 @@ use App\Http\Controllers\DealController;
 Route::middleware(['auth'])->group(function () {
     Route::post('/attendance/clock-in', [AttendanceController::class, 'clockIn'])
         ->name('attendance.clockIn');
+    Route::post('/users/{user}/change-password', [\App\Http\Controllers\UserPasswordChangeController::class, 'changePassword'])
+        ->name('users.change-password');
+    Route::post('/password-changed-logout', [\App\Http\Controllers\UserPasswordChangeController::class, 'passwordChangedLogout'])
+        ->name('password-changed-logout');
+    Route::get('/check-password-status', [\App\Http\Controllers\UserPasswordChangeController::class, 'checkPasswordStatus'])
+        ->name('check-password-status');
+    Route::post('/user/change-own-password', [\App\Http\Controllers\UserPasswordChangeController::class, 'changeOwnPassword'])
+        ->name('user.change-own-password');
 });
 
 
@@ -405,13 +424,6 @@ Route::get('/logout', function () {
 
 Route::middleware(['auth', 'module.access'])->group(function () {
     Route::prefix('admin/settings')->name('admin.')->group(function () {
-        Route::get('/companies', [CompanyManagementController::class, 'index'])->name('companies.index');
-        Route::get('/companies/create', [CompanyManagementController::class, 'create'])->name('companies.create');
-        Route::post('/companies', [CompanyManagementController::class, 'store'])->name('companies.store');
-        Route::get('/companies/{company}/edit', [CompanyManagementController::class, 'edit'])->name('companies.edit');
-        Route::put('/companies/{company}', [CompanyManagementController::class, 'update'])->name('companies.update');
-        Route::patch('/companies/{company}/activate', [CompanyManagementController::class, 'activate'])->name('companies.activate');
-        Route::patch('/companies/{company}/deactivate', [CompanyManagementController::class, 'deactivate'])->name('companies.deactivate');
 
         // Letterhead management
         Route::get('/letterhead', [LetterheadController::class, 'index'])->name('letterhead.index');
@@ -1195,40 +1207,78 @@ Route::put('/admin/settings/business-address/{businessAddress}/make-default', [B
 
 // 4 Separate Pages for Settings
 
-// routes/web.php
-Route::get('/admin/settings/app', [AppSettingController::class, 'appSettings'])->name('admin.settings.app');
+Route::middleware(['auth'])->group(function () {
+    Route::get('/admin/settings/app', [AppSettingController::class, 'appSettings'])->name('admin.settings.app');
+    Route::get('/admin/settings/app/client-signup', [AppSettingController::class, 'clientSignupSettings'])->name('admin.settings.app.client-signup');
+    Route::get('/admin/settings/app/file-upload', [AppSettingController::class, 'fileUploadSettings'])->name('admin.settings.app.file-upload');
+    Route::get('/admin/settings/app/google-map', [AppSettingController::class, 'googleMapSettings'])->name('admin.settings.app.google-map');
+    Route::post('/admin/settings/app/update', [AppSettingController::class, 'update'])->name('admin.settings.app.update');
+    Route::post('/admin/settings/app/add-field', [AppSettingController::class, 'addField'])->name('admin.settings.app.add-field');
 
-Route::get('/admin/settings/app/client-signup', [AppSettingController::class, 'clientSignupSettings'])->name('admin.settings.app.client-signup');
+    Route::get('/admin/settings/terms-policy', [TermsPolicyController::class, 'index'])
+        ->name('admin.settings.terms-policy');
+    Route::put('/admin/settings/terms-policy', [TermsPolicyController::class, 'update'])
+        ->name('admin.settings.terms-policy.update');
 
-Route::get('/admin/settings/app/file-upload', [AppSettingController::class, 'fileUploadSettings'])->name('admin.settings.app.file-upload');
+    Route::get('/admin/settings/profile', [ProfileSettingController::class, 'index'])
+        ->name('admin.settings.profile');
+    Route::post('/admin/settings/profile/store', [ProfileSettingController::class, 'store'])
+        ->name('admin.settings.profile.store');
+    Route::post('/admin/settings/profile/update', [ProfileSettingController::class, 'update'])
+        ->name('admin.settings.profile.update');
 
-Route::get('/admin/settings/app/google-map', [AppSettingController::class, 'googleMapSettings'])->name('admin.settings.app.google-map');
+    // Admin Settings Dashboard & 20 Modules
+    Route::get('/admin/settings', [SettingController::class, 'index'])->name('admin.settings.index');
 
-// Common routes for all pages
-Route::post('/admin/settings/app/update', [AppSettingController::class, 'update'])->name('admin.settings.app.update');
-Route::post('/admin/settings/app/add-field', [AppSettingController::class, 'addField'])->name('admin.settings.app.add-field');
-    //profile setting
+    Route::get('/admin/settings/organization-details', [OrganizationDetailsController::class, 'index'])->name('admin.settings.organization-details');
+    Route::post('/admin/settings/organization-details', [OrganizationDetailsController::class, 'update'])->name('admin.settings.organization-details.update');
 
-Route::get('/admin/settings/terms-policy', [TermsPolicyController::class, 'index'])
-    ->name('admin.settings.terms-policy');
+    Route::get('/admin/settings/employee-id', [EmployeeIdSettingsController::class, 'index'])->name('admin.settings.employee-id');
+    Route::post('/admin/settings/employee-id', [EmployeeIdSettingsController::class, 'update'])->name('admin.settings.employee-id.update');
 
-Route::put('/admin/settings/terms-policy', [TermsPolicyController::class, 'update'])
-    ->name('admin.settings.terms-policy.update');
+    Route::get('/admin/settings/work-schedule', [WorkScheduleController::class, 'index'])->name('admin.settings.work-schedule');
+    Route::post('/admin/settings/work-schedule', [WorkScheduleController::class, 'update'])->name('admin.settings.work-schedule.update');
+    Route::post('/admin/settings/work-schedule/special-day', [WorkScheduleController::class, 'addSpecialDay'])->name('admin.settings.work-schedule.special-day.store');
+    Route::delete('/admin/settings/work-schedule/special-day/{id}', [WorkScheduleController::class, 'deleteSpecialDay'])->name('admin.settings.work-schedule.special-day.destroy');
+    Route::post('/admin/settings/work-schedule/employee-mode', [WorkScheduleController::class, 'updateEmployeeMode'])->name('admin.settings.work-schedule.employee-mode.update');
+    Route::post('/admin/settings/work-schedule/employee-modes-bulk', [WorkScheduleController::class, 'bulkUpdateEmployeeModes'])->name('admin.settings.work-schedule.employee-modes-bulk.update');
 
-/*
-|--------------------------------------------------------------------------
-| Profile Settings (Manual Routes)
-|--------------------------------------------------------------------------
-*/
+    Route::get('/admin/settings/leave', [LeaveSettingsController::class, 'index'])->name('admin.settings.leave');
+    Route::post('/admin/settings/leave', [LeaveSettingsController::class, 'update'])->name('admin.settings.leave.update');
 
-Route::get('/admin/settings/profile', [ProfileSettingController::class, 'index'])
-    ->name('admin.settings.profile');
+    Route::get('/admin/settings/recruitment', [RecruitmentSettingsController::class, 'index'])->name('admin.settings.recruitment');
+    Route::post('/admin/settings/recruitment', [RecruitmentSettingsController::class, 'update'])->name('admin.settings.recruitment.update');
 
-Route::post('/admin/settings/profile/store', [ProfileSettingController::class, 'store'])
-    ->name('admin.settings.profile.store');
+    Route::get('/admin/settings/performance', [PerformanceSettingsController::class, 'index'])->name('admin.settings.performance');
+    Route::post('/admin/settings/performance', [PerformanceSettingsController::class, 'update'])->name('admin.settings.performance.update');
 
-Route::post('/admin/settings/profile/update', [ProfileSettingController::class, 'update'])
-    ->name('admin.settings.profile.update');
+    Route::get('/admin/settings/notification', [NotificationSettingsController::class, 'index'])->name('admin.settings.notification');
+    Route::post('/admin/settings/notification', [NotificationSettingsController::class, 'update'])->name('admin.settings.notification.update');
+
+    Route::get('/admin/settings/email', [EmailSettingsController::class, 'index'])->name('admin.settings.email');
+    Route::post('/admin/settings/email', [EmailSettingsController::class, 'update'])->name('admin.settings.email.update');
+    Route::post('/admin/settings/email/test', [EmailSettingsController::class, 'testEmail'])->name('admin.settings.email.test');
+
+    Route::get('/admin/settings/document', [DocumentSettingsController::class, 'index'])->name('admin.settings.document');
+    Route::post('/admin/settings/document', [DocumentSettingsController::class, 'update'])->name('admin.settings.document.update');
+    Route::post('/admin/settings/document/type/store', [DocumentSettingsController::class, 'addDocumentType'])->name('admin.settings.document.type.store');
+    Route::post('/admin/settings/document/type/delete', [DocumentSettingsController::class, 'deleteDocumentType'])->name('admin.settings.document.type.delete');
+
+    // My Documents (Employee, HR, Manager, Admin)
+    Route::get('/my-documents', [\App\Http\Controllers\UserDocumentController::class, 'index'])->name('my-documents.index');
+    Route::post('/my-documents/upload', [\App\Http\Controllers\UserDocumentController::class, 'upload'])->name('my-documents.upload');
+    Route::delete('/my-documents/{type}/{id}', [\App\Http\Controllers\UserDocumentController::class, 'destroy'])->name('my-documents.destroy');
+    Route::get('/my-documents/download/{type}/{id}', [\App\Http\Controllers\UserDocumentController::class, 'download'])->name('my-documents.download');
+
+    Route::get('/admin/settings/security', [SecuritySettingsController::class, 'index'])->name('admin.settings.security');
+    Route::post('/admin/settings/security', [SecuritySettingsController::class, 'update'])->name('admin.settings.security.update');
+
+    Route::get('/admin/settings/change-password', [\App\Http\Controllers\Admin\Settings\ChangePasswordSettingsController::class, 'index'])->name('admin.settings.change-password');
+    Route::post('/admin/settings/change-password', [\App\Http\Controllers\Admin\Settings\ChangePasswordSettingsController::class, 'update'])->name('admin.settings.change-password.update');
+
+    Route::get('/admin/settings/localization', [LocalizationController::class, 'index'])->name('admin.settings.localization');
+    Route::post('/admin/settings/localization', [LocalizationController::class, 'update'])->name('admin.settings.localization.update');
+});
 
 
 

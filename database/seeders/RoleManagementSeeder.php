@@ -12,6 +12,11 @@ class RoleManagementSeeder extends Seeder
 {
     public function run(): void
     {
+        if (!config('database.connections.tenant.database')) {
+            config(['database.connections.tenant.database' => env('DB_DATABASE', 'pms_last')]);
+            \Illuminate\Support\Facades\DB::purge('tenant');
+        }
+
         $modules = [
             ['name' => 'Dashboard', 'slug' => 'dashboard', 'icon' => 'bx bx-home-smile', 'route_name' => 'dashboard', 'sort_order' => 10],
             ['name' => 'Notifications', 'slug' => 'notifications', 'icon' => 'bx bx-bell', 'route_name' => 'notifications.all', 'sort_order' => 20],
@@ -73,19 +78,39 @@ class RoleManagementSeeder extends Seeder
             }
         }
 
-        User::updateOrCreate(
+        $admin = User::updateOrCreate(
             ['email' => 'admin@gmail.com'],
-            ['name' => 'Admin', 'password' => Hash::make('123456789'), 'role' => 'admin', 'login_allowed' => true, 'is_active' => true, 'email_verified_at' => now()]
+            ['name' => 'Admin User', 'password' => Hash::make('123456789'), 'role' => 'admin', 'login_allowed' => true, 'is_active' => true, 'email_verified_at' => now()]
         );
 
-        User::updateOrCreate(
-            ['email' => 'hr@company.com'],
-            ['name' => 'HR', 'password' => Hash::make('Hr@123456'), 'role' => 'hr', 'login_allowed' => true, 'is_active' => true]
+        $admin2 = User::updateOrCreate(
+            ['email' => 'admin@company.com'],
+            ['name' => 'Admin User', 'password' => Hash::make('Admin@123456'), 'role' => 'admin', 'login_allowed' => true, 'is_active' => true, 'email_verified_at' => now()]
         );
 
-        User::updateOrCreate(
+        $manager = User::updateOrCreate(
             ['email' => 'manager@company.com'],
-            ['name' => 'Manager', 'password' => Hash::make('Manager@123456'), 'role' => 'manager', 'login_allowed' => true, 'is_active' => true]
+            ['name' => 'Manager User', 'password' => Hash::make('Manager@123456'), 'role' => 'manager', 'login_allowed' => true, 'is_active' => true, 'email_verified_at' => now()]
+        );
+
+        $hr = User::updateOrCreate(
+            ['email' => 'hr@company.com'],
+            ['name' => 'HR User', 'password' => Hash::make('Hr@123456'), 'role' => 'hr', 'login_allowed' => true, 'is_active' => true, 'email_verified_at' => now()]
+        );
+
+        $employee = User::updateOrCreate(
+            ['email' => 'employee@company.com'],
+            [
+                'name' => 'Employee User',
+                'password' => Hash::make('Employee@123456'),
+                'role' => 'employee',
+                'login_allowed' => true,
+                'is_active' => true,
+                'email_verified_at' => now(),
+                'manager_id' => $manager->id,
+                'hr_id' => $hr->id,
+                'reports_to_id' => $manager->id,
+            ]
         );
     }
 }

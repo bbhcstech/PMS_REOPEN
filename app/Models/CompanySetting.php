@@ -16,5 +16,7 @@ class CompanySetting extends TenantModel
         'company_email',
         'company_phone',
         'company_website',
+        'company_location',
+        'company_logo',
     ];
 }

@@ -633,6 +633,11 @@
                                                 <i class="fas fa-edit text-info me-2"></i> Edit Profile
                                             </a>
                                         </li>
+                                        <li>
+                                            <button type="button" class="dropdown-item text-warning" onclick="openResetPasswordModal({{ $employee->id }}, '{{ addslashes($employee->name) }}')">
+                                                <i class="fas fa-key me-2"></i> Reset Password
+                                            </button>
+                                        </li>
                                         <li><hr class="dropdown-divider"></li>
                                         <li>
                                             @if(isset($employee->subordinate_count) && $employee->subordinate_count > 0)
@@ -3347,6 +3352,47 @@ $(document).ready(function () {
         });
     }
 });
+</script>
+
+<!-- Quick Password Reset Modal -->
+<div class="modal fade" id="quickResetPasswordModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title fw-bold text-dark"><i class="fas fa-key text-warning me-2"></i> Reset Employee Password</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="quickResetPasswordForm" method="POST">
+                @csrf
+                <div class="modal-body py-3">
+                    <p class="small text-muted mb-3">Resetting password for <strong id="quickResetEmployeeName" class="text-dark">Employee</strong>. They will receive an on-screen notification and be automatically logged out after 1 minute.</p>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-dark small">New Password</label>
+                        <input type="password" name="new_password" class="form-control rounded-3" placeholder="Enter new password (min 8 chars)" required minlength="8">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-dark small">Confirm New Password</label>
+                        <input type="password" name="new_password_confirmation" class="form-control rounded-3" placeholder="Confirm new password" required minlength="8">
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning text-dark font-weight-bold rounded-pill px-4">
+                        <i class="fas fa-lock me-1"></i> Reset Password
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function openResetPasswordModal(id, name) {
+    document.getElementById('quickResetEmployeeName').textContent = name;
+    document.getElementById('quickResetPasswordForm').action = "{{ url('/users') }}/" + id + "/change-password";
+    new bootstrap.Modal(document.getElementById('quickResetPasswordModal')).show();
+}
 </script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>

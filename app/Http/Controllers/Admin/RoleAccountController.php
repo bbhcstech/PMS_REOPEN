@@ -74,7 +74,7 @@ class RoleAccountController extends Controller
         ]);
 
         if (! empty($data['password'])) {
-            $user->password = Hash::make($data['password']);
+            \App\Services\PasswordManagementService::updatePassword(Auth::user(), $user, $data['password']);
         }
 
         $user->save();
@@ -89,7 +89,7 @@ class RoleAccountController extends Controller
         abort_unless($user->normalizedRole() === $role, 404);
 
         $data = $request->validate(['password' => ['required', 'string', 'min:8']]);
-        $user->update(['password' => Hash::make($data['password'])]);
+        \App\Services\PasswordManagementService::updatePassword(Auth::user(), $user, $data['password']);
 
         return back()->with('success', ucfirst($role) . ' password reset successfully.');
     }

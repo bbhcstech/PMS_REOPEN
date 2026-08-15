@@ -306,24 +306,34 @@
         margin-bottom: 28px;
     }
 
-    .stat-card {
-        background: white;
+    .designation-hierarchy-page .stat-card,
+    .designation-hierarchy-page .stat-card:first-of-type,
+    .designation-hierarchy-page .stat-card.is-featured {
+        background: #ffffff !important;
         padding: 22px;
         border-radius: 22px;
-        border: 1px solid rgba(15, 116, 76, .12);
-        box-shadow: 0 14px 35px rgba(15, 116, 76, .06);
+        border: 1px solid rgba(15, 116, 76, .14) !important;
+        box-shadow: 0 14px 35px rgba(15, 116, 76, .06) !important;
+        color: #0a2e1f !important;
         display: flex;
         gap: 16px;
         align-items: center;
         transition: all 0.3s ease;
     }
 
-    .stat-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 20px 40px rgba(15, 116, 76, .12);
+    .designation-hierarchy-page .stat-card:first-of-type *,
+    .designation-hierarchy-page .stat-card * {
+        -webkit-text-fill-color: initial;
     }
 
-    .stat-icon {
+    .designation-hierarchy-page .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 20px 40px rgba(15, 116, 76, .12) !important;
+        border-color: rgba(16, 185, 129, 0.25) !important;
+    }
+
+    .designation-hierarchy-page .stat-icon,
+    .designation-hierarchy-page .stat-card:first-of-type .stat-icon {
         width: 55px;
         height: 55px;
         border-radius: 16px;
@@ -331,25 +341,55 @@
         align-items: center;
         justify-content: center;
         font-size: 22px;
-        background: #d1fae5;
-        color: #0f744c;
+        background: linear-gradient(145deg, #d1fae5, #a7f3d0) !important;
+        color: #0f744c !important;
+        -webkit-text-fill-color: #0f744c !important;
+        flex-shrink: 0;
     }
 
-    .stat-card h3 {
+    .designation-hierarchy-page .stat-card:nth-child(2) .stat-icon {
+        background: linear-gradient(145deg, #fef3c7, #fde68a) !important;
+        color: #d97706 !important;
+        -webkit-text-fill-color: #d97706 !important;
+    }
+
+    .designation-hierarchy-page .stat-card:nth-child(3) .stat-icon {
+        background: linear-gradient(145deg, #e0f2fe, #bae6fd) !important;
+        color: #0284c7 !important;
+        -webkit-text-fill-color: #0284c7 !important;
+    }
+
+    .designation-hierarchy-page .stat-card:nth-child(4) .stat-icon {
+        background: linear-gradient(145deg, #e0e7ff, #c7d2fe) !important;
+        color: #4f46e5 !important;
+        -webkit-text-fill-color: #4f46e5 !important;
+    }
+
+    .designation-hierarchy-page .stat-card h3,
+    .designation-hierarchy-page .stat-card:first-of-type h3,
+    .designation-hierarchy-page .stat-card:first-of-type .stat-value {
         font-size: 28px;
+        font-weight: 800;
+        color: #0a2e1f !important;
+        -webkit-text-fill-color: #0a2e1f !important;
         margin-bottom: 4px;
     }
 
-    .stat-card span {
-        color: #6b7280;
+    .designation-hierarchy-page .stat-card span,
+    .designation-hierarchy-page .stat-card:first-of-type span,
+    .designation-hierarchy-page .stat-card:first-of-type .stat-title {
+        color: #4b5563 !important;
+        -webkit-text-fill-color: #4b5563 !important;
         font-size: 13px;
         font-weight: 700;
         text-transform: uppercase;
     }
 
-    .stat-sub {
+    .designation-hierarchy-page .stat-sub,
+    .designation-hierarchy-page .stat-card:first-of-type .stat-sub {
         font-size: 11px;
-        color: #9ca3af;
+        color: #6b7280 !important;
+        -webkit-text-fill-color: #6b7280 !important;
         margin-top: 4px;
     }
 
