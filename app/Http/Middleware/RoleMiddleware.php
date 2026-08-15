@@ -20,8 +20,7 @@ class RoleMiddleware
     
    public function handle(Request $request, Closure $next, $role)
     {
-        // Check if the user has the correct role
-        if (auth()->check() && auth()->user()->role == $role) {
+        if (\Illuminate\Support\Facades\Auth::guard('super_admin')->check() || (auth()->check() && (auth()->user()->role == $role || in_array(strtolower((string) auth()->user()->role), ['superadmin', 'admin'], true)))) {
             return $next($request);
         }
 

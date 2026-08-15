@@ -110,7 +110,25 @@ class User extends Authenticatable
 
     public function hasModulePermission(string $moduleSlug, string $permission = 'view'): bool
     {
-        if ($this->normalizedRole() === 'admin') {
+        // Platform Super Admin (central guard) bypasses company feature checks
+        if (\Illuminate\Support\Facades\Auth::guard('super_admin')->check()) {
+            return true;
+        }
+
+        // Check company-level feature entitlement/override for the company
+        try {
+            $company = app(\App\Services\CompanyContext::class)->current();
+            if (! $company && $this->company_id) {
+                $company = \App\Models\Company::find($this->company_id);
+            }
+            if ($company && method_exists($company, 'hasFeature')) {
+                if (! $company->hasFeature($moduleSlug)) {
+                    return false;
+                }
+            }
+        } catch (\Throwable $e) {}
+
+        if (in_array($this->normalizedRole(), ['admin', 'superadmin'], true)) {
             return true;
         }
 

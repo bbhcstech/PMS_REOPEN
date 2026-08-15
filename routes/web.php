@@ -307,6 +307,12 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
 
 Route::middleware(['auth', 'verified'])->prefix('superadmin')->name('superadmin.')->group(function () {
     Route::get('/', [SuperAdminController::class, 'dashboard'])->name('dashboard');
+    Route::get('/subscriptions', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'subscriptions'])->name('subscriptions.index');
+    Route::post('/plans/toggle-module', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'togglePlanModule'])->name('plans.toggle-module');
+    Route::post('/subscriptions/assign', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'assignPlan'])->name('subscriptions.assign');
+    Route::post('/subscriptions/toggle-override', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'toggleCompanyOverride'])->name('subscriptions.toggle-override');
+    Route::get('/companies/directory', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'index'])->name('companies.index');
+    Route::get('/companies/create', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'create'])->name('companies.create');
     Route::post('/companies', [SuperAdminController::class, 'storeCompany'])->name('companies.store');
     Route::post('/company-admins', [SuperAdminController::class, 'storeAdmin'])->name('admins.store');
     Route::get('/company-admins', [SuperAdminController::class, 'companyAdmins'])->name('admins.index');
@@ -316,7 +322,24 @@ Route::middleware(['auth', 'verified'])->prefix('superadmin')->name('superadmin.
     Route::patch('/company-admins/{admin}/restore', [SuperAdminController::class, 'restoreAdmin'])->name('admins.restore');
     Route::delete('/company-admins/{admin}', [SuperAdminController::class, 'deleteAdmin'])->name('admins.delete');
     Route::patch('/companies/{company}/status', [SuperAdminController::class, 'updateCompanyStatus'])->name('companies.status');
+    Route::get('/alerts', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'alerts'])->name('alerts.index');
+    Route::post('/alerts/{id}/read', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'markAlertRead'])->name('alerts.read');
+    Route::post('/alerts/{id}/resolve', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'resolveAlert'])->name('alerts.resolve');
+    Route::post('/alerts/mark-all-read', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'markAllAlertsRead'])->name('alerts.mark-all-read');
+    Route::get('/alerts/details/{id}', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'alertDetails'])->name('alerts.details');
 });
+
+// Standalone route aliases for admins.* without prefix
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/company-admins/export', [\App\Http\Controllers\SuperAdminController::class, 'exportAdmins'])->name('admins.export');
+    Route::get('/company-admins', [\App\Http\Controllers\SuperAdminController::class, 'companyAdmins'])->name('admins.index');
+    Route::post('/company-admins', [\App\Http\Controllers\SuperAdminController::class, 'storeAdmin'])->name('admins.store');
+    Route::patch('/company-admins/{admin}', [\App\Http\Controllers\SuperAdminController::class, 'updateAdmin'])->name('admins.update');
+    Route::patch('/company-admins/{admin}/archive', [\App\Http\Controllers\SuperAdminController::class, 'archiveAdmin'])->name('admins.archive');
+    Route::patch('/company-admins/{admin}/restore', [\App\Http\Controllers\SuperAdminController::class, 'restoreAdmin'])->name('admins.restore');
+    Route::delete('/company-admins/{admin}', [\App\Http\Controllers\SuperAdminController::class, 'deleteAdmin'])->name('admins.delete');
+});
+
 
 // Front Controller (landing)
 // Route::get('/', [FrontendController::class, 'index'])->name('home');
@@ -1231,5 +1254,28 @@ Route::post('/admin/settings/profile/update', [ProfileSettingController::class, 
     ->name('admin.settings.profile.update');
 
 
+
+/*
+|--------------------------------------------------------------------------
+| Developer Portal Workspace Routes
+|--------------------------------------------------------------------------
+|
+| Separate workspace for Developers (isolated from Super Admin modules)
+|
+*/
+Route::middleware(['auth', 'developer.access'])->prefix('developer')->name('developer.')->group(function () {
+    Route::get('/dashboard', [\App\Http\Controllers\DeveloperPortalController::class, 'dashboard'])->name('dashboard');
+    Route::get('/my-work', [\App\Http\Controllers\DeveloperPortalController::class, 'myWork'])->name('my-work');
+    Route::get('/my-contributions', [\App\Http\Controllers\DeveloperPortalController::class, 'myContributions'])->name('my-contributions');
+    Route::get('/deadlines', [\App\Http\Controllers\DeveloperPortalController::class, 'deadlines'])->name('deadlines');
+    Route::get('/notifications', [\App\Http\Controllers\DeveloperPortalController::class, 'notifications'])->name('notifications');
+    Route::get('/profile', [\App\Http\Controllers\DeveloperPortalController::class, 'profile'])->name('profile');
+    Route::post('/profile', [\App\Http\Controllers\DeveloperPortalController::class, 'updateProfile'])->name('profile.update');
+    Route::get('/settings', [\App\Http\Controllers\DeveloperPortalController::class, 'settings'])->name('settings');
+    Route::post('/settings/password', [\App\Http\Controllers\DeveloperPortalController::class, 'updatePassword'])->name('settings.password');
+    Route::post('/tasks/{id}/status', [\App\Http\Controllers\DeveloperPortalController::class, 'updateTaskStatus'])->name('tasks.status');
+    Route::post('/tasks/{id}/notes', [\App\Http\Controllers\DeveloperPortalController::class, 'addTaskNote'])->name('tasks.notes');
+    Route::get('/tasks/{id}/details', [\App\Http\Controllers\DeveloperPortalController::class, 'getTaskDetails'])->name('tasks.details');
+});
 
 require __DIR__.'/auth.php';

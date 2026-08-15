@@ -11,16 +11,50 @@ class EnsureModuleAccess
 {
     public function handle(Request $request, Closure $next, string $permission = 'view'): Response
     {
+        if (\Illuminate\Support\Facades\Auth::guard('super_admin')->check()) {
+            return $next($request);
+        }
+
         $user = $request->user();
-        if (! $user || $user->normalizedRole() === 'admin') {
+        if (! $user) {
             return $next($request);
         }
 
         $routeName = (string) $request->route()?->getName();
+
+        // Core routes are always accessible to avoid redirect loops
+        if (in_array($routeName, ['dashboard', 'home', 'login', 'logout'], true) || str_starts_with($routeName, 'dashboard.')) {
+            return $next($request);
+        }
+
         $module = $this->moduleForRoute($routeName);
 
-        if ($module && ! $user->hasModulePermission($module->slug, $permission)) {
-            abort(403, 'You do not have permission to access this module.');
+        if ($module && $module->slug !== 'dashboard') {
+            // Check company feature access for all tenant users (including Company Admins)
+            $company = app(\App\Services\CompanyContext::class)->current();
+            if (! $company && $user->company_id) {
+                $company = \App\Models\Company::find($user->company_id);
+            }
+
+            if ($company && method_exists($company, 'hasFeature') && ! $company->hasFeature($module->slug)) {
+                if ($request->expectsJson()) {
+                    return response()->json([
+                        'error' => "Feature '{$module->name}' is not enabled for your company subscription plan.",
+                    ], 403);
+                }
+
+                return redirect()->route('dashboard')
+                    ->with('error', "Access Denied: The '{$module->name}' module is not included in your subscription plan.");
+            }
+
+            if (! $user->hasModulePermission($module->slug, $permission)) {
+                if ($request->expectsJson()) {
+                    return response()->json(['error' => 'You do not have permission to access this module.'], 403);
+                }
+
+                return redirect()->route('dashboard')
+                    ->with('error', 'You do not have permission to access this module.');
+            }
         }
 
         return $next($request);

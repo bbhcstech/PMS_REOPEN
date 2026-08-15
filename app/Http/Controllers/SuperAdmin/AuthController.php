@@ -15,11 +15,11 @@ class AuthController extends Controller
      */
     public function showLoginForm(): View|RedirectResponse
     {
-        if (Auth::guard('super_admin')->check()) {
-            return redirect()->route('super-admin.companies.index');
+        if (Auth::guard('super_admin')->check() || Auth::guard('web')->check()) {
+            return redirect()->route('superadmin.dashboard');
         }
 
-        return view('superadmin.auth.login');
+        return redirect()->route('login');
     }
 
     /**
@@ -51,7 +51,7 @@ class AuthController extends Controller
 
             $request->session()->regenerate();
 
-            return redirect()->intended(route('super-admin.companies.index'));
+            return redirect()->intended(route('superadmin.dashboard'));
         }
 
         return back()->withErrors([
@@ -65,10 +65,11 @@ class AuthController extends Controller
     public function logout(Request $request): RedirectResponse
     {
         Auth::guard('super_admin')->logout();
+        Auth::guard('web')->logout();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('super-admin.login');
+        return redirect()->route('login');
     }
 }

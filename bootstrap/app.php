@@ -26,6 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'module.access' => EnsureModuleAccess::class,
             'role' => RoleMiddleware::class,
             'feature' => \App\Http\Middleware\CheckFeatureAccess::class,
+            'developer.access' => \App\Http\Middleware\EnsureDeveloperAccess::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

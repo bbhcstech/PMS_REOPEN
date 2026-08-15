@@ -1045,7 +1045,7 @@
 
 
             <!-- Layouts -->
-            @if($canAnyModule(['employees', 'designations', 'departments', 'attendance', 'leaves', 'holidays', 'awards']))
+            @if($canSeeModule('hr') && $canAnyModule(['employees', 'designations', 'departments', 'attendance', 'leaves', 'holidays', 'awards', 'hr-employees', 'recognition']))
             <li class="menu-item {{ request()->routeIs('employees.*') ||
                       request()->routeIs('designations.*') ||
                       (request()->routeIs('attendance.*') && !request()->routeIs('attendance.report')) ||
@@ -1227,7 +1227,7 @@
             </li>
             @endif
 
-            @if($canAnyModule(['projects', 'tasks', 'timelogs']))
+            @if($canSeeModule('work') && $canAnyModule(['projects', 'tasks', 'timelogs', 'timesheets']))
             <li class="menu-item {{ request()->routeIs('projects.*') ||
                 request()->routeIs('tasks.*') || request()->routeIs('users.tasks.*') ||
                 request()->routeIs('timelogs.*') || request()->routeIs('task-timer.*') ||
@@ -1282,7 +1282,7 @@
             </li>
             @endif
 
-            @if($canAnyModule(['payroll', 'payroll-architectures', 'payslips', 'salary-structures', 'payroll-policies', 'payroll-cycles', 'tax-rules', 'bonus-rules', 'deduction-rules', 'overtime-rules', 'payroll-reports', 'payroll-audit-logs', 'payroll-settings', 'payroll-import-export', 'payroll-archive', 'formula-builder']))
+            @if($canSeeModule('payroll') && $canAnyModule(['payroll', 'payroll-architectures', 'payslips', 'salary-structures', 'payroll-policies', 'payroll-cycles', 'tax-rules', 'bonus-rules', 'deduction-rules', 'overtime-rules', 'payroll-reports', 'payroll-audit-logs', 'payroll-settings', 'payroll-import-export', 'payroll-archive', 'formula-builder']))
             <li class="menu-item {{ request()->routeIs('payroll.*') ? 'active open' : '' }}">
                 <a href="javascript:void(0);" class="menu-link menu-toggle" data-sidebar-key="payroll">
                     <i class="menu-icon tf-icons bx bx-wallet"></i>
@@ -1376,7 +1376,7 @@
 
 <!--    //leads section -->
 
-                   @if($canSeeModule('leads'))
+                   @if($canSeeModule('leads') && $canAnyModule(['leads', 'crm-deals', 'leads-contacts', 'deals', 'crm']))
                     <li class="menu-item has-sub {{ request()->routeIs('leads.*') || request()->routeIs('admin.deals.*') ? 'active open' : '' }}">
                         <a href="javascript:void(0);" class="menu-link menu-toggle">
                             <i class="menu-icon tf-icons bx bx-target-lock"></i>
