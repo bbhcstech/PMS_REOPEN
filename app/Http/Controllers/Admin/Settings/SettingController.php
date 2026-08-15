@@ -64,14 +64,6 @@ class SettingController extends Controller
                 'route' => 'designations.index',
                 'category' => 'Organization'
             ],
-            'employee-id' => [
-                'name' => 'Employee ID Settings',
-                'description' => 'Employee ID prefix, numbering format, auto-generation',
-                'icon' => 'bx bx-barcode',
-                'color' => 'primary',
-                'route' => 'admin.settings.employee-id',
-                'category' => 'HR'
-            ],
             'work-schedule' => [
                 'name' => 'Work Schedule',
                 'description' => 'Working days, working hours, shifts',
@@ -182,14 +174,6 @@ class SettingController extends Controller
                 'icon' => 'bx bx-globe',
                 'color' => 'warning',
                 'route' => 'admin.settings.localization',
-                'category' => 'System'
-            ],
-            'system-preferences' => [
-                'name' => 'System Preferences',
-                'description' => 'General application behavior and defaults',
-                'icon' => 'bx bx-slider-alt',
-                'color' => 'danger',
-                'route' => 'admin.settings.app',
                 'category' => 'System'
             ],
         ];
