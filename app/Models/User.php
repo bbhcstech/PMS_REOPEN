@@ -50,6 +50,9 @@ class User extends Authenticatable
         'leave_amount',
         'last_leave_reset',
         'carry_forward_leaves',
+        'password_changed_notice',
+        'password_changed_by_role',
+        'password_changed_at',
     ];
 
     protected $hidden = [
@@ -67,7 +70,8 @@ class User extends Authenticatable
             'archived_at' => 'datetime',
             'email_notifications' => 'boolean',
             'employee_welcome_seen_at' => 'datetime',
-            // ADD THESE NEW CASTS:
+            'password_changed_notice' => 'boolean',
+            'password_changed_at' => 'datetime',
             'joining_date' => 'date',
             'last_leave_reset' => 'date',
             'annual_leave_balance' => 'integer',
@@ -448,5 +452,30 @@ class User extends Authenticatable
         } else {
             return ($currentYear - 1) . '-' . $currentYear;
         }
+    }
+
+    public function documents()
+    {
+        return $this->hasMany(EmployeeDocument::class, 'user_id');
+    }
+
+    public function employeeDocuments()
+    {
+        return $this->hasMany(EmployeeDocument::class, 'user_id');
+    }
+
+    public function hrDocuments()
+    {
+        return $this->hasMany(HrDocument::class, 'user_id');
+    }
+
+    public function managerDocuments()
+    {
+        return $this->hasMany(ManagerDocument::class, 'user_id');
+    }
+
+    public function adminDocuments()
+    {
+        return $this->hasMany(AdminDocument::class, 'user_id');
     }
 }

@@ -7,7 +7,7 @@
 <div class="sub-department-page">
     <!-- Breadcrumb -->
     <div class="breadcrumb">
-        <i class="fas fa-sitemap"></i> Dashboard / Sub Departments
+        <i class="fas fa-sitemap"></i> Admin / Settings / Sub Department
     </div>
 
     <!-- Header Card -->
@@ -478,11 +478,15 @@
         margin-bottom: 32px;
     }
 
-    .stat-card {
-        background: white;
+    .sub-department-page .stat-card,
+    .sub-department-page .stat-card:first-of-type,
+    .sub-department-page .stat-card.is-featured {
+        background: #ffffff !important;
         padding: 24px;
         border-radius: 24px;
-        border: 1px solid rgba(16, 185, 129, 0.1);
+        border: 1px solid rgba(16, 185, 129, 0.14) !important;
+        box-shadow: 0 10px 30px -10px rgba(16, 185, 129, 0.08) !important;
+        color: #0a2e1f !important;
         display: flex;
         gap: 18px;
         align-items: flex-start;
@@ -491,7 +495,12 @@
         overflow: hidden;
     }
 
-    .stat-card::after {
+    .sub-department-page .stat-card:first-of-type *,
+    .sub-department-page .stat-card * {
+        -webkit-text-fill-color: initial;
+    }
+
+    .sub-department-page .stat-card::after {
         content: '';
         position: absolute;
         bottom: 0;
@@ -503,17 +512,18 @@
         transition: transform 0.3s ease;
     }
 
-    .stat-card:hover::after {
+    .sub-department-page .stat-card:hover::after {
         transform: scaleX(1);
     }
 
-    .stat-card:hover {
+    .sub-department-page .stat-card:hover {
         transform: translateY(-4px);
-        box-shadow: 0 20px 35px -12px rgba(16, 185, 129, 0.15);
-        border-color: rgba(16, 185, 129, 0.2);
+        box-shadow: 0 20px 35px -12px rgba(16, 185, 129, 0.15) !important;
+        border-color: rgba(16, 185, 129, 0.25) !important;
     }
 
-    .stat-icon {
+    .sub-department-page .stat-icon,
+    .sub-department-page .stat-card:first-of-type .stat-icon {
         width: 56px;
         height: 56px;
         border-radius: 18px;
@@ -521,29 +531,58 @@
         align-items: center;
         justify-content: center;
         font-size: 24px;
-        background: linear-gradient(145deg, #d1fae5, #a7f3d0);
-        color: #059669;
+        background: linear-gradient(145deg, #d1fae5, #a7f3d0) !important;
+        color: #059669 !important;
+        -webkit-text-fill-color: #059669 !important;
+        flex-shrink: 0;
     }
 
-    .stat-card h3 {
+    .sub-department-page .stat-card:nth-child(2) .stat-icon {
+        background: linear-gradient(145deg, #e0f2fe, #bae6fd) !important;
+        color: #0284c7 !important;
+        -webkit-text-fill-color: #0284c7 !important;
+    }
+
+    .sub-department-page .stat-card:nth-child(3) .stat-icon {
+        background: linear-gradient(145deg, #e0e7ff, #c7d2fe) !important;
+        color: #4f46e5 !important;
+        -webkit-text-fill-color: #4f46e5 !important;
+    }
+
+    .sub-department-page .stat-card:nth-child(4) .stat-icon {
+        background: linear-gradient(145deg, #fef3c7, #fde68a) !important;
+        color: #d97706 !important;
+        -webkit-text-fill-color: #d97706 !important;
+    }
+
+    .sub-department-page .stat-card h3,
+    .sub-department-page .stat-card:first-of-type h3,
+    .sub-department-page .stat-card:first-of-type .stat-value {
         font-size: 32px;
         font-weight: 800;
-        color: #0a2e1f;
+        color: #0a2e1f !important;
+        -webkit-text-fill-color: #0a2e1f !important;
         margin-bottom: 6px;
         line-height: 1;
     }
 
-    .stat-card span {
-        color: #6b7280;
+    .sub-department-page .stat-card span,
+    .sub-department-page .stat-card:first-of-type span,
+    .sub-department-page .stat-card:first-of-type .stat-title {
+        color: #4b5563 !important;
+        -webkit-text-fill-color: #4b5563 !important;
         font-size: 12px;
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
 
-    .stat-sub {
+    .sub-department-page .stat-sub,
+    .sub-department-page .stat-card:first-of-type .stat-sub,
+    .sub-department-page .stat-card:first-of-type .stat-trend {
         font-size: 11px;
-        color: #9ca3af;
+        color: #6b7280 !important;
+        -webkit-text-fill-color: #6b7280 !important;
         margin-top: 6px;
         font-weight: 500;
     }

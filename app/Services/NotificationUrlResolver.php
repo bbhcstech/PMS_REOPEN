@@ -26,6 +26,10 @@ class NotificationUrlResolver
 
         $data = is_array($data) ? $data : [];
 
+        if (data_get($data, 'clickable') === false || data_get($data, 'type') === 'own_password_changed') {
+            return 'javascript:void(0)';
+        }
+
         return self::fromPrimaryIdentifiers($data)
             ?? self::fromEntity($data)
             ?? self::fromWorkflowType($data)

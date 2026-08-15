@@ -20,8 +20,8 @@
             </div>
         </div>
         <div class="leave-hero-actions">
-            <a href="{{ route('leaves.create') }}" class="btn btn-primary"><i class="fas fa-plus-circle"></i> Apply Leave</a>
             @if(! $isAdmin)
+                <a href="{{ route('leaves.create') }}" class="btn btn-primary"><i class="fas fa-plus-circle"></i> Apply Leave</a>
                 <a href="{{ route('leaves.apology-letters.create') }}" class="btn btn-light"><i class="fas fa-envelope-open-text"></i> Write Apology Letter</a>
             @endif
             <a href="{{ route('leaves.calendar') }}" class="btn btn-light"><i class="fas fa-calendar-alt"></i> Calendar</a>
@@ -2367,6 +2367,14 @@
 @if($isAdmin)
 <script>
 $(function () {
+    @if(request('open_policy') || request('policy') || session('open_policy'))
+        var policyModalEl = document.getElementById('policyModal');
+        if (policyModalEl) {
+            var policyModal = new bootstrap.Modal(policyModalEl);
+            policyModal.show();
+        }
+    @endif
+
     $('#bulk-action').on('change', function () {
         $('#status-dropdown').toggle(this.value === 'change_status');
     });
