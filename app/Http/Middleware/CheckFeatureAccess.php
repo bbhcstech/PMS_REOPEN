@@ -19,11 +19,26 @@ class CheckFeatureAccess
      */
     public function handle(Request $request, Closure $next, string $feature): Response
     {
-        $tenantDb = session('current_company_db') ?: env('DB_DATABASE', 'pms_last');
+        // Platform Super Admin (central guard) bypasses feature checks
+        if (\Illuminate\Support\Facades\Auth::guard('super_admin')->check()) {
+            return $next($request);
+        }
 
-        $company = Company::on('central')->where('db_name', $tenantDb)->first();
+        $routeName = (string) $request->route()?->getName();
+        if (in_array($routeName, ['dashboard', 'home', 'login', 'logout'], true) || in_array($feature, ['dashboard', 'home'], true)) {
+            return $next($request);
+        }
 
-        if ($company && ! $company->hasFeature($feature)) {
+        $company = app(\App\Services\CompanyContext::class)->current();
+        if (! $company && auth()->check() && auth()->user()?->company_id) {
+            $company = Company::on('central')->find(auth()->user()->company_id) ?? \App\Models\Company::find(auth()->user()->company_id);
+        }
+        if (! $company) {
+            $tenantDb = session('current_company_db') ?: env('DB_DATABASE', 'pms_last');
+            $company = Company::on('central')->where('db_name', $tenantDb)->first();
+        }
+
+        if ($company && method_exists($company, 'hasFeature') && ! $company->hasFeature($feature)) {
             if ($request->expectsJson()) {
                 return response()->json([
                     'error' => "Feature '{$feature}' is not enabled for your company subscription plan.",

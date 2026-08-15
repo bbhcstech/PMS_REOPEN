@@ -52,8 +52,15 @@ class AuthenticatedSessionController extends Controller
             $request->session()->put('current_company_db', $dbName);
         }
 
-        if (Auth::user()?->role === 'superadmin') {
+        $role = strtolower(Auth::user()?->role ?? '');
+        $designation = strtolower(Auth::user()?->designation ?? '');
+
+        if ($role === 'superadmin') {
             return redirect()->intended(route('superadmin.dashboard', absolute: false));
+        }
+
+        if (in_array($role, ['developer', 'dev'], true) || str_contains($designation, 'developer') || str_contains($designation, 'engineer')) {
+            return redirect()->intended(route('developer.dashboard', absolute: false));
         }
 
         return redirect()->intended(route('dashboard', absolute: false));

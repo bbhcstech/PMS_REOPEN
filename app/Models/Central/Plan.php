@@ -33,6 +33,12 @@ class Plan extends Model
         return $this->hasMany(Subscription::class);
     }
 
+    public function modules()
+    {
+        return $this->belongsToMany(\App\Models\Module::class, 'plan_modules', 'plan_id', 'module_id')
+            ->withTimestamps();
+    }
+
     public function getPriceForCycle(string $cycle): float
     {
         return $cycle === 'monthly' ? (float) $this->monthly_price : (float) $this->yearly_price;
