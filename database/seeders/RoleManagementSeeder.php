@@ -29,6 +29,8 @@ class RoleManagementSeeder extends Seeder
             ['name' => 'Leave Management', 'slug' => 'leaves', 'route_name' => 'leaves.index', 'route_prefix' => 'leaves', 'sort_order' => 90],
             ['name' => 'Holidays', 'slug' => 'holidays', 'route_name' => 'holidays.calendar', 'route_prefix' => 'holidays', 'sort_order' => 100],
             ['name' => 'Recognition', 'slug' => 'awards', 'route_name' => 'awards.index', 'route_prefix' => 'awards', 'sort_order' => 110],
+            ['name' => 'Recruitment', 'slug' => 'recruitment', 'route_name' => 'recruitment.index', 'route_prefix' => 'recruitment', 'sort_order' => 115],
+            ['name' => 'Appraisal', 'slug' => 'appraisal', 'route_name' => 'appraisal.index', 'route_prefix' => 'appraisal', 'sort_order' => 118],
             ['name' => 'Reports', 'slug' => 'reports', 'icon' => 'bx bx-bar-chart-alt', 'sort_order' => 120],
             ['name' => 'Projects', 'slug' => 'projects', 'route_name' => 'projects.index', 'route_prefix' => 'projects', 'sort_order' => 130],
             ['name' => 'Tasks', 'slug' => 'tasks', 'route_name' => 'tasks.index', 'route_prefix' => 'tasks', 'sort_order' => 140],
@@ -55,9 +57,9 @@ class RoleManagementSeeder extends Seeder
 
         $permissionMap = [
             'admin' => Module::pluck('slug')->all(),
-            'manager' => ['dashboard', 'notifications', 'organization', 'teams', 'hr-management', 'employees', 'projects', 'tasks', 'attendance', 'leaves', 'reports'],
-            'hr' => ['dashboard', 'notifications', 'employees', 'attendance', 'leaves', 'timelogs', 'payroll', 'reports'],
-            'employee' => ['dashboard', 'notifications', 'projects', 'tasks', 'attendance', 'timelogs', 'leaves'],
+            'manager' => ['dashboard', 'notifications', 'organization', 'teams', 'hr-management', 'employees', 'projects', 'tasks', 'attendance', 'leaves', 'reports', 'recruitment', 'appraisal'],
+            'hr' => ['dashboard', 'notifications', 'employees', 'attendance', 'leaves', 'timelogs', 'payroll', 'reports', 'recruitment', 'appraisal'],
+            'employee' => ['dashboard', 'notifications', 'projects', 'tasks', 'attendance', 'timelogs', 'leaves', 'recruitment', 'appraisal'],
         ];
 
         foreach ($permissionMap as $role => $slugs) {

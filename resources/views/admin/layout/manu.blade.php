@@ -1054,14 +1054,16 @@
 
 
             <!-- Layouts -->
-            @if($canAnyModule(['employees', 'designations', 'departments', 'attendance', 'leaves', 'holidays', 'awards']))
+            @if($canAnyModule(['employees', 'designations', 'departments', 'attendance', 'leaves', 'holidays', 'awards', 'recruitment', 'appraisal']))
             <li class="menu-item {{ request()->routeIs('employees.*') ||
                       request()->routeIs('designations.*') ||
                       (request()->routeIs('attendance.*') && !request()->routeIs('attendance.report')) ||
                       request()->routeIs('leaves.*') ||
                       request()->routeIs('holidays.*') ||
                       request()->routeIs('awards.*') ||
-                      request()->routeIs('employee.awards')
+                      request()->routeIs('employee.awards') ||
+                      request()->routeIs('recruitment.*') ||
+                      request()->routeIs('appraisal.*')
                       ? 'active open' : '' }}">
 
               <a href="javascript:void(0);" class="menu-link menu-toggle" data-sidebar-key="hr">
@@ -1076,6 +1078,22 @@
                         <li class="menu-item {{ request()->routeIs('employees.*') ? 'active' : '' }}">
                             <a href="{{ route('employees.index') }}" class="menu-link" data-sidebar-key="employees">
                                 <div class="text-truncate" data-i18n="Without menu">Employee</div>
+                            </a>
+                        </li>
+                    @endif
+
+                    @if($canSeeModule('recruitment'))
+                        <li class="menu-item {{ request()->routeIs('recruitment.*') ? 'active' : '' }}">
+                            <a href="{{ route('recruitment.index') }}" class="menu-link" data-sidebar-key="recruitment">
+                                <div class="text-truncate" data-i18n="Recruitment">Recruitment</div>
+                            </a>
+                        </li>
+                    @endif
+
+                    @if($canSeeModule('appraisal'))
+                        <li class="menu-item {{ request()->routeIs('appraisal.*') ? 'active' : '' }}">
+                            <a href="{{ route('appraisal.index') }}" class="menu-link" data-sidebar-key="appraisal">
+                                <div class="text-truncate" data-i18n="Appraisal">Appraisal</div>
                             </a>
                         </li>
                     @endif
@@ -1451,7 +1469,6 @@
                             </ul>
                         </li>
                         <li class="menu-item {{ request()->routeIs('designations.*') ? 'active' : '' }}"><a href="{{ route('designations.index') }}" class="menu-link"><div>Designations</div></a></li>
-                        <li class="menu-item {{ request()->routeIs('admin.settings.employee-id*') ? 'active' : '' }}"><a href="{{ route('admin.settings.employee-id') }}" class="menu-link"><div>Employee ID Settings</div></a></li>
                         <li class="menu-item {{ request()->routeIs('admin.settings.work-schedule*') ? 'active' : '' }}"><a href="{{ route('admin.settings.work-schedule') }}" class="menu-link"><div>Work Schedule</div></a></li>
                         <li class="menu-item {{ request()->routeIs('admin.settings.leave*') ? 'active' : '' }}"><a href="{{ route('admin.settings.leave') }}" class="menu-link"><div>Leave Settings</div></a></li>
                         <li class="menu-item {{ request()->routeIs('holidays.*') ? 'active' : '' }}"><a href="{{ route('holidays.index') }}" class="menu-link"><div>Holiday Settings</div></a></li>
@@ -1466,7 +1483,6 @@
                         <li class="menu-item {{ request()->routeIs('admin.settings.change-password*') ? 'active' : '' }}"><a href="{{ route('admin.settings.change-password') }}" class="menu-link"><div>Change Password</div></a></li>
                         <li class="menu-item {{ request()->routeIs('admin.role-permissions.*') ? 'active' : '' }}"><a href="{{ route('admin.role-permissions.index') }}" class="menu-link"><div>Role & Permission</div></a></li>
                         <li class="menu-item {{ request()->routeIs('admin.settings.localization*') ? 'active' : '' }}"><a href="{{ route('admin.settings.localization') }}" class="menu-link"><div>Localization</div></a></li>
-                        <li class="menu-item {{ request()->routeIs('admin.settings.app*') ? 'active' : '' }}"><a href="{{ route('admin.settings.app', ['page' => 'app']) }}" class="menu-link"><div>System Preferences</div></a></li>
                         <li class="menu-item {{ request()->routeIs('admin.settings.terms-policy*') ? 'active' : '' }}"><a href="{{ route('admin.settings.terms-policy') }}" class="menu-link"><div>Terms &amp; Policy</div></a></li>
                         <li class="menu-item {{ request()->routeIs('admin.modules.*') ? 'active' : '' }}"><a href="{{ route('admin.modules.index') }}" class="menu-link"><div>Module Management</div></a></li>
                     </ul>

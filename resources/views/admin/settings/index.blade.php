@@ -12,7 +12,7 @@
                     <h4 class="fw-bold py-1 mb-1">
                         <span class="text-muted fw-light">Admin /</span> Settings Dashboard
                     </h4>
-                    <p class="text-muted mb-0 small">Manage and configure all 20 admin settings modules from a single workspace.</p>
+                    <p class="text-muted mb-0 small">Manage and configure all admin settings modules from a single workspace.</p>
                 </div>
                 <div class="d-flex gap-2">
                     <button type="button" class="btn btn-outline-secondary btn-sm" onclick="location.reload()">
@@ -130,7 +130,7 @@
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-transparent border-bottom py-3 d-flex justify-content-between align-items-center">
                     <h6 class="mb-0 fw-semibold text-dark"><i class="bx bx-check-shield me-2 text-success"></i>System Configuration Status</h6>
-                    <span class="badge bg-success">All 20 Settings Active</span>
+                    <span class="badge bg-success">All {{ count($settingsGroups) }} Settings Active</span>
                 </div>
                 <div class="card-body py-3">
                     <div class="row text-center g-3">

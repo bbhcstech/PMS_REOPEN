@@ -70,6 +70,7 @@ use App\Http\Controllers\Admin\Settings\EmailSettingsController;
 use App\Http\Controllers\Admin\Settings\DocumentSettingsController;
 use App\Http\Controllers\Admin\Settings\SecuritySettingsController;
 use App\Http\Controllers\Admin\Settings\LocalizationController;
+use App\Http\Controllers\Admin\RecruitmentController;
 
 
 
@@ -1278,6 +1279,19 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/admin/settings/localization', [LocalizationController::class, 'index'])->name('admin.settings.localization');
     Route::post('/admin/settings/localization', [LocalizationController::class, 'update'])->name('admin.settings.localization.update');
+
+    // Recruitment Module Routes (Under HR)
+    Route::get('/admin/hr/recruitment', [RecruitmentController::class, 'index'])->name('recruitment.index');
+    Route::post('/admin/hr/recruitment', [RecruitmentController::class, 'store'])->name('recruitment.store');
+    Route::get('/admin/hr/recruitment/{id}/download', [RecruitmentController::class, 'download'])->name('recruitment.download');
+    Route::post('/admin/hr/recruitment/{id}/status', [RecruitmentController::class, 'updateStatus'])->name('recruitment.status');
+    Route::delete('/admin/hr/recruitment/{id}', [RecruitmentController::class, 'destroy'])->name('recruitment.destroy');
+
+    // Appraisal Module Routes (Under HR)
+    Route::get('/admin/hr/appraisal', [\App\Http\Controllers\Admin\AppraisalController::class, 'index'])->name('appraisal.index');
+    Route::post('/admin/hr/appraisal', [\App\Http\Controllers\Admin\AppraisalController::class, 'store'])->name('appraisal.store');
+    Route::post('/admin/hr/appraisal/auto-calculate', [\App\Http\Controllers\Admin\AppraisalController::class, 'autoCalculate'])->name('appraisal.autoCalculate');
+    Route::delete('/admin/hr/appraisal/{id}', [\App\Http\Controllers\Admin\AppraisalController::class, 'destroy'])->name('appraisal.destroy');
 });
 
 
