@@ -28,9 +28,32 @@
                     {{ ucfirst($dev->designation ?? 'Backend Developer') }}
                 </p>
                 <span style="font-size: 12px; color: var(--slate-muted); font-family: monospace; display: block; margin-top: 4px;">
-                    ID: DEV-{{ str_pad($dev->id, 3, '0', STR_PAD_LEFT) }} &bull; Joined: {{ $dev->created_at ? $dev->created_at->format('M Y') : 'Aug 2026' }}
+                    ID: {{ $empDetail->developer_id ?? ('DEV-' . str_pad($dev->id, 4, '0', STR_PAD_LEFT)) }} &bull; Joined: {{ !empty($empDetail->joining_date) ? \Carbon\Carbon::parse($empDetail->joining_date)->format('M Y') : ($dev->created_at ? $dev->created_at->format('M Y') : 'Aug 2026') }}
                 </span>
             </div>
+        </div>
+    </div>
+
+    <!-- PERFORMANCE OVERVIEW CARDS -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+        <div class="dev-card" style="margin-bottom: 0; padding: 20px;">
+            <span style="font-size: 11px; font-weight: 700; color: var(--slate-muted); text-transform: uppercase;">Total Work Assigned</span>
+            <div style="font-size: 24px; font-weight: 800; color: var(--slate-dark); margin-top: 4px;">{{ $performance['total_assigned'] ?? 0 }} Tasks</div>
+        </div>
+
+        <div class="dev-card" style="margin-bottom: 0; padding: 20px;">
+            <span style="font-size: 11px; font-weight: 700; color: var(--slate-muted); text-transform: uppercase;">Tasks Completed</span>
+            <div style="font-size: 24px; font-weight: 800; color: #059669; margin-top: 4px;">{{ $performance['completed'] ?? 0 }} Tasks</div>
+        </div>
+
+        <div class="dev-card" style="margin-bottom: 0; padding: 20px;">
+            <span style="font-size: 11px; font-weight: 700; color: var(--slate-muted); text-transform: uppercase;">Task Completion Rate</span>
+            <div style="font-size: 24px; font-weight: 800; color: #2563eb; margin-top: 4px;">{{ $performance['completion_rate'] ?? 100 }}%</div>
+        </div>
+
+        <div class="dev-card" style="margin-bottom: 0; padding: 20px;">
+            <span style="font-size: 11px; font-weight: 700; color: var(--slate-muted); text-transform: uppercase;">Avg Completion Time</span>
+            <div style="font-size: 24px; font-weight: 800; color: #7c3aed; margin-top: 4px;">{{ $performance['avg_completion_time'] ?? 1.5 }} Days</div>
         </div>
     </div>
 
@@ -50,23 +73,33 @@
                 </div>
 
                 <div>
-                    <span style="color: var(--slate-muted); font-size: 11px; font-weight: 700; display: block; text-transform: uppercase;">REGISTERED EMAIL</span>
-                    <strong style="color: var(--slate-dark);">{{ $dev->email }}</strong>
+                    <span style="color: var(--slate-muted); font-size: 11px; font-weight: 700; display: block; text-transform: uppercase;">LOGIN EMAIL</span>
+                    <strong style="color: var(--slate-dark); font-family: monospace;">{{ $dev->email }}</strong>
                 </div>
 
                 <div>
-                    <span style="color: var(--slate-muted); font-size: 11px; font-weight: 700; display: block; text-transform: uppercase;">DEVELOPER ROLE</span>
-                    <strong style="color: var(--primary);">{{ ucfirst($dev->role ?? 'Developer') }}</strong>
+                    <span style="color: var(--slate-muted); font-size: 11px; font-weight: 700; display: block; text-transform: uppercase;">PERSONAL EMAIL (CREDENTIALS)</span>
+                    <strong style="color: var(--slate-dark); font-family: monospace;">{{ $dev->personal_email ?? $dev->email }}</strong>
+                </div>
+
+                <div>
+                    <span style="color: var(--slate-muted); font-size: 11px; font-weight: 700; display: block; text-transform: uppercase;">DESIGNATION / ROLE</span>
+                    <strong style="color: var(--primary);">{{ ucfirst($dev->designation ?? 'Developer') }}</strong>
                 </div>
 
                 <div>
                     <span style="color: var(--slate-muted); font-size: 11px; font-weight: 700; display: block; text-transform: uppercase;">DEVELOPER ID</span>
-                    <strong style="font-family: monospace; color: var(--slate-dark);">DEV-{{ str_pad($dev->id, 3, '0', STR_PAD_LEFT) }}</strong>
+                    <strong style="font-family: monospace; color: var(--slate-dark);">{{ $empDetail->developer_id ?? ('DEV-' . str_pad($dev->id, 4, '0', STR_PAD_LEFT)) }}</strong>
+                </div>
+
+                <div>
+                    <span style="color: var(--slate-muted); font-size: 11px; font-weight: 700; display: block; text-transform: uppercase;">EXPERIENCE LEVEL</span>
+                    <strong style="color: var(--slate-dark);">{{ $empDetail->experience ?? '3+ Years' }}</strong>
                 </div>
 
                 <div>
                     <span style="color: var(--slate-muted); font-size: 11px; font-weight: 700; display: block; text-transform: uppercase;">ACCOUNT STATUS</span>
-                    <strong style="color: #059669;">ACTIVE &amp; VERIFIED</strong>
+                    <strong style="color: #059669;">PERMANENT ACCOUNT &bull; VERIFIED</strong>
                 </div>
             </div>
         </div>

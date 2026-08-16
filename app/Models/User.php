@@ -50,6 +50,9 @@ class User extends Authenticatable
         'leave_amount',
         'last_leave_reset',
         'carry_forward_leaves',
+        'must_change_password',
+        'personal_email',
+        'raw_password',
     ];
 
     protected $hidden = [
@@ -64,6 +67,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'is_active' => 'boolean',
             'login_allowed' => 'boolean',
+            'must_change_password' => 'boolean',
             'archived_at' => 'datetime',
             'email_notifications' => 'boolean',
             'employee_welcome_seen_at' => 'datetime',
@@ -352,14 +356,45 @@ class User extends Authenticatable
     }
 
     /**
+     * Check if user account is a Developer role/designation
+     */
+    public function isDeveloper(): bool
+    {
+        $role = strtolower($this->role ?? '');
+        $designation = strtolower($this->designation ?? '');
+
+        return in_array($role, ['developer', 'dev'], true)
+            || str_contains($designation, 'developer')
+            || str_contains($designation, 'engineer')
+            || str_contains($designation, 'devops')
+            || str_contains($designation, 'qa');
+    }
+
+    /**
+     * Check if developer has any assigned tasks in the system
+     */
+    public function hasAssignedTasks(): bool
+    {
+        return \Illuminate\Support\Facades\DB::table('tasks')
+            ->where('assigned_to', $this->id)
+            ->exists();
+    }
+
+    /**
      * CRITICAL FIX: Employee can login BASED ON EXIT DATE
      * - Inactive status but exit date in FUTURE = CAN LOGIN
      * - Active/Inactive with exit date passed = CANNOT LOGIN
+     * - Developer MUST HAVE assigned tasks to login to Developer Portal
      */
     public function canLogin()
     {
         // First check login_allowed
         if (!$this->login_allowed) {
+            return false;
+        }
+
+        // Developer login check: Only developers with assigned tasks can log in
+        if ($this->isDeveloper() && !$this->hasAssignedTasks()) {
             return false;
         }
 
@@ -392,6 +427,11 @@ class User extends Authenticatable
         // Check login_allowed first
         if (!$loginAllowed) {
             return 'Your account is active but login is blocked by admin. Please contact administrator.';
+        }
+
+        // Developer task assignment check
+        if ($this->isDeveloper() && !$this->hasAssignedTasks()) {
+            return 'Access Denied: Only developers with assigned tasks can access the Developer Portal. Please contact your manager or admin to assign work.';
         }
 
         // Check exit date logic
