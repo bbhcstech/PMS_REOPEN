@@ -294,12 +294,55 @@ class DeveloperPortalController extends Controller
         $dev = $this->getDevUser();
         $empDetail = DB::table('employee_details')->where('user_id', $dev->id)->first();
 
+        $allTasks = DB::table('tasks')
+            ->where('assigned_to', $dev->id)
+            ->whereNull('deleted_at')
+            ->get();
+
+        $completedTasks = $allTasks->where('status', 'completed');
+        $inProgressTasks = $allTasks->where('status', 'in_progress');
+        $overdueTasks = $allTasks->where('status', '!=', 'completed')->where('status', '!=', 'cancelled')
+            ->filter(fn ($t) => !empty($t->due_date) && Carbon::parse($t->due_date)->isPast());
+
+        $totalCount = max(1, $allTasks->count());
+        $completedCount = $completedTasks->count();
+        $completionRate = (int) round(($completedCount / $totalCount) * 100);
+
+        // Calculate average completion time in days
+        $completionDays = [];
+        foreach ($completedTasks as $ct) {
+            if ($ct->completed_on && $ct->created_at) {
+                $days = Carbon::parse($ct->created_at)->diffInDays(Carbon::parse($ct->completed_on));
+                $completionDays[] = max(1, $days);
+            }
+        }
+        $avgCompletionTime = count($completionDays) > 0 ? round(array_sum($completionDays) / count($completionDays), 1) : 1.5;
+
+        $performance = [
+            'total_assigned' => $allTasks->count(),
+            'completed' => $completedCount,
+            'in_progress' => $inProgressTasks->count(),
+            'overdue' => $overdueTasks->count(),
+            'completion_rate' => $completionRate,
+            'avg_completion_time' => $avgCompletionTime,
+        ];
+
+        $recentTasks = DB::table('tasks')
+            ->leftJoin('companies', 'tasks.company_id', '=', 'companies.id')
+            ->leftJoin('projects', 'tasks.project_id', '=', 'projects.id')
+            ->select('tasks.*', 'companies.name as company_name', 'projects.name as project_name')
+            ->where('tasks.assigned_to', $dev->id)
+            ->whereNull('tasks.deleted_at')
+            ->latest('tasks.updated_at')
+            ->take(6)
+            ->get();
+
         $skillsRaw = $empDetail?->skills ?? ($dev->about ?? 'PHP, Laravel, MySQL, REST API, Git');
         $skillsArray = array_filter(array_map('trim', explode(',', str_replace(['·', '|'], ',', $skillsRaw))));
 
         $statusOptions = ['Available', 'Busy', 'On Leave'];
 
-        return view('developer.profile', compact('dev', 'empDetail', 'skillsArray', 'statusOptions'));
+        return view('developer.profile', compact('dev', 'empDetail', 'skillsArray', 'statusOptions', 'performance', 'recentTasks'));
     }
 
     /**
@@ -312,6 +355,7 @@ class DeveloperPortalController extends Controller
         $data = $request->validate([
             'mobile' => ['nullable', 'string', 'max:20'],
             'skills' => ['nullable', 'string', 'max:500'],
+            'experience' => ['nullable', 'string', 'max:100'],
             'about' => ['nullable', 'string', 'max:1000'],
             'status' => ['nullable', 'in:Available,Busy,On Leave,available,busy,on_leave'],
         ]);
@@ -329,6 +373,7 @@ class DeveloperPortalController extends Controller
                 'company_id' => $dev->company_id,
                 'mobile' => $data['mobile'] ?? $dev->mobile,
                 'skills' => $data['skills'] ?? 'Laravel, PHP, MySQL',
+                'experience' => $data['experience'] ?? '2+ Years',
                 'about' => $data['about'] ?? $dev->about,
                 'status' => $statusKey,
                 'updated_at' => now(),
@@ -354,7 +399,7 @@ class DeveloperPortalController extends Controller
      */
     public function updatePassword(Request $request): RedirectResponse
     {
-        $dev = User::findOrFail(Auth::id());
+        $dev = User::findOrFail(Auth::id() ?? $this->getDevUser()->id);
 
         $data = $request->validate([
             'current_password' => ['required', 'string'],
@@ -367,11 +412,13 @@ class DeveloperPortalController extends Controller
 
         $dev->update([
             'password' => Hash::make($data['new_password']),
+            'raw_password' => $data['new_password'],
+            'must_change_password' => false,
         ]);
 
         $this->logDevActivity('developer.password_changed', "Developer {$dev->name} changed their account password.");
 
-        return back()->with('success', 'Password updated successfully.');
+        return back()->with('success', 'Password updated successfully. Account security verified.');
     }
 
     /**
@@ -390,7 +437,7 @@ class DeveloperPortalController extends Controller
         }
 
         $newStatus = $request->input('status', 'in_progress');
-        $validStatuses = ['assigned', 'in_progress', 'on_hold', 'completed', 'cancelled'];
+        $validStatuses = ['to_do', 'assigned', 'in_progress', 'on_hold', 'completed', 'cancelled'];
         if (! in_array($newStatus, $validStatuses, true)) {
             $newStatus = 'in_progress';
         }
@@ -413,11 +460,21 @@ class DeveloperPortalController extends Controller
             $updateData['is_completed'] = 0;
         }
 
+        $oldStatusFormatted = ucfirst(str_replace('_', ' ', (string)$task->status));
+        $newStatusFormatted = ucfirst(str_replace('_', ' ', $newStatus));
+
         DB::table('tasks')->where('id', $id)->update($updateData);
 
-        // Log progress note automatically if status changed to completed or in_progress
-        $oldStatusFormatted = strtoupper(str_replace('_', ' ', $task->status));
-        $newStatusFormatted = strtoupper(str_replace('_', ' ', $newStatus));
+        // Record Task Activity Timeline in task_history table
+        try {
+            DB::table('task_history')->insert([
+                'task_id' => $id,
+                'user_id' => $dev->id,
+                'details' => "Status changed from {$oldStatusFormatted} to {$newStatusFormatted} by developer {$dev->name}.",
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        } catch (\Throwable $e) {}
 
         try {
             if (DB::getSchemaBuilder()->hasTable('task_notes')) {

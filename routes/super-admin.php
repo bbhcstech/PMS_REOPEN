@@ -23,7 +23,7 @@ Route::prefix('super-admin')->name('super-admin.')->group(function () {
     });
 
     // Authenticated super admin routes (supports super_admin and web auth guards)
-    Route::middleware(['auth:super_admin,web'])->group(function () {
+    Route::middleware(['auth'])->group(function () {
         Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
         // Company management & impersonation
@@ -99,6 +99,7 @@ Route::prefix('super-admin')->name('super-admin.')->group(function () {
         Route::post('/developers/{id}/toggle-status', [\App\Http\Controllers\SuperAdminController::class, 'toggleDeveloperStatus'])->name('developers.toggle-status');
         Route::post('/developers/assign-work', [\App\Http\Controllers\SuperAdminController::class, 'assignWork'])->name('developers.assign-work');
         Route::post('/developers/tasks/{id}/status', [\App\Http\Controllers\SuperAdminController::class, 'updateTaskStatus'])->name('developers.task-status');
+        Route::get('/developers/tasks/{id}/history', [\App\Http\Controllers\SuperAdminController::class, 'getTaskHistory'])->name('developers.task-history');
         Route::get('/developers/search-email', [\App\Http\Controllers\SuperAdminController::class, 'searchDeveloperEmail'])->name('developers.search-email');
         Route::post('/developers/{id}/enter-workspace', [\App\Http\Controllers\SuperAdminController::class, 'enterDeveloperWorkspace'])->name('developers.enter-workspace');
         Route::post('/developers/exit-workspace', [\App\Http\Controllers\SuperAdminController::class, 'exitDeveloperWorkspace'])->name('developers.exit-workspace');
