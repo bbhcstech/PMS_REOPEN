@@ -8,7 +8,7 @@
     <!-- Breadcrumb -->
     <div class="breadcrumb">
         <i class="fas {{ isset($designation) ? 'fa-user-edit' : 'fa-user-plus' }}"></i>
-        Dashboard / Designations / {{ isset($designation) ? 'Edit' : 'Add' }}
+        Admin / Settings / Designations / {{ isset($designation) ? 'Edit' : 'Add' }}
     </div>
 
     <!-- Header Card -->

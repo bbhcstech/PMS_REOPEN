@@ -557,7 +557,7 @@
     <!-- Header & Summary -->
     <div class="lh-page-header">
         <div class="lh-page-title">
-            <h3>Company Management</h3>
+            <h3>Letterhead Management</h3>
             <p>Manage company identity, prefixes, status, and official letterhead templates.</p>
         </div>
         @if(Route::has('admin.companies.create'))

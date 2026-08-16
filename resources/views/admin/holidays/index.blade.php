@@ -6,7 +6,7 @@
 <div class="holiday-list-page">
     <!-- Breadcrumb -->
     <div class="breadcrumb">
-        <i class="fas fa-calendar-alt"></i> Dashboard / Holidays
+        <i class="fas fa-calendar-alt"></i> <a href="{{ route('admin.settings.index') }}" style="color: inherit; text-decoration: none;">Admin</a> / <a href="{{ route('admin.settings.index') }}" style="color: inherit; text-decoration: none;">Settings</a> / Holidays
     </div>
 
     <!-- Header Card -->
@@ -856,18 +856,38 @@
         to { opacity: 1; transform: translateY(0); }
     }
 
-    .stat-card {
-        background: white;
+    .stat-card,
+    .holiday-list-page .stat-card,
+    .holiday-list-page .stat-card:first-of-type {
+        background: #ffffff !important;
         padding: 24px;
         border-radius: 24px;
-        border: 1px solid rgba(16, 185, 129, 0.1);
+        border: 1px solid rgba(16, 185, 129, 0.1) !important;
         display: flex;
         gap: 18px;
         align-items: center;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         position: relative;
         overflow: hidden;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02) !important;
+        color: #0a2e1f !important;
+    }
+
+    .holiday-list-page .stat-card:first-of-type *,
+    .holiday-list-page .stat-card * {
+        -webkit-text-fill-color: initial;
+    }
+
+    .holiday-list-page .stat-card .stat-value,
+    .holiday-list-page .stat-card:first-of-type .stat-value {
+        color: #0a2e1f !important;
+        -webkit-text-fill-color: #0a2e1f !important;
+    }
+
+    .holiday-list-page .stat-card .stat-label,
+    .holiday-list-page .stat-card:first-of-type .stat-label {
+        color: #6b7280 !important;
+        -webkit-text-fill-color: #6b7280 !important;
     }
 
     .stat-card::after {
@@ -892,8 +912,8 @@
 
     .stat-card:hover {
         transform: translateY(-4px);
-        box-shadow: 0 20px 35px -12px rgba(16, 185, 129, 0.15);
-        border-color: rgba(16, 185, 129, 0.2);
+        box-shadow: 0 20px 35px -12px rgba(16, 185, 129, 0.15) !important;
+        border-color: rgba(16, 185, 129, 0.2) !important;
     }
 
     .stat-icon {
@@ -907,10 +927,33 @@
         flex-shrink: 0;
     }
 
-    .stat-icon.total { background: linear-gradient(145deg, #d1fae5, #a7f3d0); color: #059669; }
-    .stat-icon.weekly { background: linear-gradient(145deg, #dbeafe, #bfdbfe); color: #2563eb; }
-    .stat-icon.special { background: linear-gradient(145deg, #fef3c7, #fde68a); color: #d97706; }
-    .stat-icon.months { background: linear-gradient(145deg, #ede9fe, #c4b5fd); color: #7c3aed; }
+    .stat-icon.total,
+    .holiday-list-page .stat-card:first-of-type .stat-icon.total {
+        background: linear-gradient(145deg, #d1fae5, #a7f3d0) !important;
+        color: #059669 !important;
+        -webkit-text-fill-color: #059669 !important;
+    }
+
+    .stat-icon.weekly,
+    .holiday-list-page .stat-card .stat-icon.weekly {
+        background: linear-gradient(145deg, #dbeafe, #bfdbfe) !important;
+        color: #2563eb !important;
+        -webkit-text-fill-color: #2563eb !important;
+    }
+
+    .stat-icon.special,
+    .holiday-list-page .stat-card .stat-icon.special {
+        background: linear-gradient(145deg, #fef3c7, #fde68a) !important;
+        color: #d97706 !important;
+        -webkit-text-fill-color: #d97706 !important;
+    }
+
+    .stat-icon.months,
+    .holiday-list-page .stat-card .stat-icon.months {
+        background: linear-gradient(145deg, #ede9fe, #c4b5fd) !important;
+        color: #7c3aed !important;
+        -webkit-text-fill-color: #7c3aed !important;
+    }
 
     .stat-label {
         display: block;

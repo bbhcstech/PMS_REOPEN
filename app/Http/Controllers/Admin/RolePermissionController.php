@@ -23,12 +23,17 @@ class RolePermissionController extends Controller
             $role = 'manager';
         }
 
+        $staffUsers = \App\Models\User::whereIn('role', ['admin', 'manager', 'hr', 'employee', 'user'])
+            ->orderBy('name')
+            ->get(['id', 'name', 'email', 'role']);
+
         return view('admin.settings.role-permissions.index', [
             'roles' => $this->roles,
             'role' => $role,
             'permissions' => $this->permissions,
             'modules' => Module::with('parent')->where('is_active', true)->orderBy('sort_order')->orderBy('name')->get(),
             'savedPermissions' => RolePermission::where('role', $role)->get()->keyBy('module_id'),
+            'staffUsers' => $staffUsers,
         ]);
     }
 

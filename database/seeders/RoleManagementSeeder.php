@@ -12,6 +12,11 @@ class RoleManagementSeeder extends Seeder
 {
     public function run(): void
     {
+        if (!config('database.connections.tenant.database')) {
+            config(['database.connections.tenant.database' => env('DB_DATABASE', 'pms_last')]);
+            \Illuminate\Support\Facades\DB::purge('tenant');
+        }
+
         $modules = [
             ['name' => 'Dashboard', 'slug' => 'dashboard', 'icon' => 'bx bx-home-smile', 'route_name' => 'dashboard', 'sort_order' => 10],
             ['name' => 'Notifications', 'slug' => 'notifications', 'icon' => 'bx bx-bell', 'route_name' => 'notifications.all', 'sort_order' => 20],
@@ -24,6 +29,8 @@ class RoleManagementSeeder extends Seeder
             ['name' => 'Leave Management', 'slug' => 'leaves', 'route_name' => 'leaves.index', 'route_prefix' => 'leaves', 'sort_order' => 90],
             ['name' => 'Holidays', 'slug' => 'holidays', 'route_name' => 'holidays.calendar', 'route_prefix' => 'holidays', 'sort_order' => 100],
             ['name' => 'Recognition', 'slug' => 'awards', 'route_name' => 'awards.index', 'route_prefix' => 'awards', 'sort_order' => 110],
+            ['name' => 'Recruitment', 'slug' => 'recruitment', 'route_name' => 'recruitment.index', 'route_prefix' => 'recruitment', 'sort_order' => 115],
+            ['name' => 'Appraisal', 'slug' => 'appraisal', 'route_name' => 'appraisal.index', 'route_prefix' => 'appraisal', 'sort_order' => 118],
             ['name' => 'Reports', 'slug' => 'reports', 'icon' => 'bx bx-bar-chart-alt', 'sort_order' => 120],
             ['name' => 'Projects', 'slug' => 'projects', 'route_name' => 'projects.index', 'route_prefix' => 'projects', 'sort_order' => 130],
             ['name' => 'Tasks', 'slug' => 'tasks', 'route_name' => 'tasks.index', 'route_prefix' => 'tasks', 'sort_order' => 140],
@@ -50,9 +57,9 @@ class RoleManagementSeeder extends Seeder
 
         $permissionMap = [
             'admin' => Module::pluck('slug')->all(),
-            'manager' => ['dashboard', 'notifications', 'organization', 'teams', 'hr-management', 'employees', 'projects', 'tasks', 'attendance', 'leaves', 'reports'],
-            'hr' => ['dashboard', 'notifications', 'employees', 'attendance', 'leaves', 'timelogs', 'payroll', 'reports'],
-            'employee' => ['dashboard', 'notifications', 'projects', 'tasks', 'attendance', 'timelogs', 'leaves'],
+            'manager' => ['dashboard', 'notifications', 'organization', 'teams', 'hr-management', 'employees', 'projects', 'tasks', 'attendance', 'leaves', 'reports', 'recruitment', 'appraisal'],
+            'hr' => ['dashboard', 'notifications', 'employees', 'attendance', 'leaves', 'timelogs', 'payroll', 'reports', 'recruitment', 'appraisal'],
+            'employee' => ['dashboard', 'notifications', 'projects', 'tasks', 'attendance', 'timelogs', 'leaves', 'recruitment', 'appraisal'],
         ];
 
         foreach ($permissionMap as $role => $slugs) {
@@ -73,19 +80,39 @@ class RoleManagementSeeder extends Seeder
             }
         }
 
-        User::updateOrCreate(
+        $admin = User::updateOrCreate(
             ['email' => 'admin@gmail.com'],
-            ['name' => 'Admin', 'password' => Hash::make('123456789'), 'role' => 'admin', 'login_allowed' => true, 'is_active' => true, 'email_verified_at' => now()]
+            ['name' => 'Admin User', 'password' => Hash::make('123456789'), 'role' => 'admin', 'login_allowed' => true, 'is_active' => true, 'email_verified_at' => now()]
         );
 
-        User::updateOrCreate(
-            ['email' => 'hr@company.com'],
-            ['name' => 'HR', 'password' => Hash::make('Hr@123456'), 'role' => 'hr', 'login_allowed' => true, 'is_active' => true]
+        $admin2 = User::updateOrCreate(
+            ['email' => 'admin@company.com'],
+            ['name' => 'Admin User', 'password' => Hash::make('Admin@123456'), 'role' => 'admin', 'login_allowed' => true, 'is_active' => true, 'email_verified_at' => now()]
         );
 
-        User::updateOrCreate(
+        $manager = User::updateOrCreate(
             ['email' => 'manager@company.com'],
-            ['name' => 'Manager', 'password' => Hash::make('Manager@123456'), 'role' => 'manager', 'login_allowed' => true, 'is_active' => true]
+            ['name' => 'Manager User', 'password' => Hash::make('Manager@123456'), 'role' => 'manager', 'login_allowed' => true, 'is_active' => true, 'email_verified_at' => now()]
+        );
+
+        $hr = User::updateOrCreate(
+            ['email' => 'hr@company.com'],
+            ['name' => 'HR User', 'password' => Hash::make('Hr@123456'), 'role' => 'hr', 'login_allowed' => true, 'is_active' => true, 'email_verified_at' => now()]
+        );
+
+        $employee = User::updateOrCreate(
+            ['email' => 'employee@company.com'],
+            [
+                'name' => 'Employee User',
+                'password' => Hash::make('Employee@123456'),
+                'role' => 'employee',
+                'login_allowed' => true,
+                'is_active' => true,
+                'email_verified_at' => now(),
+                'manager_id' => $manager->id,
+                'hr_id' => $hr->id,
+                'reports_to_id' => $manager->id,
+            ]
         );
     }
 }

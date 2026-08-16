@@ -22,8 +22,9 @@ class DepartmentController extends Controller
            ->latest()
            ->get();
        $archivedCount = Department::whereNotNull('archived_at')->count();
+       $parentDepartmentsCount = ParentDepartment::whereNull('archived_at')->count();
 
-        return view('admin.departments.index', compact('departments', 'archivedCount'));
+        return view('admin.departments.index', compact('departments', 'archivedCount', 'parentDepartmentsCount'));
     }
 
     /**
