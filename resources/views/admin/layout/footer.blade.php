@@ -4,6 +4,13 @@
   $adminRefreshVersion = file_exists(public_path('admin/assets/css/pms-refresh.css')) ? filemtime(public_path('admin/assets/css/pms-refresh.css')) : time();
 @endphp
 <link rel="stylesheet" href="{{ asset('admin/assets/css/pms-refresh.css') }}?v={{ $adminRefreshVersion }}">
+@php
+  $adminTableToolsVersion = max(
+    file_exists(public_path('admin/assets/css/pms-table-tools.css')) ? filemtime(public_path('admin/assets/css/pms-table-tools.css')) : 0,
+    file_exists(public_path('admin/assets/js/pms-table-tools.js')) ? filemtime(public_path('admin/assets/js/pms-table-tools.js')) : 0
+  );
+@endphp
+<link rel="stylesheet" href="{{ asset('admin/assets/css/pms-table-tools.css') }}?v={{ $adminTableToolsVersion }}">
 
 <!-- Footer -->
             <footer class="content-footer footer bg-footer-theme">
@@ -160,5 +167,6 @@
         @yield('js')
         @stack('js')
         @stack('scripts')  <!-- ✅ Correct way to render pushed scripts -->
+        <script src="{{ asset('admin/assets/js/pms-table-tools.js') }}?v={{ $adminTableToolsVersion }}"></script>
           </body>
         </html>

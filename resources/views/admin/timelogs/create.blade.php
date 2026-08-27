@@ -50,8 +50,8 @@
 </select>
 
 
-            {{-- Employee (Admins Only) --}}
-            @if(auth()->user()->role === 'admin')
+            {{-- Employee (Admins, Managers, HR) --}}
+            @if(in_array(strtolower((string) auth()->user()?->role), ['admin', 'manager', 'hr'], true))
                 <div class="col-md-6">
                     <label class="form-label">Employee <span class="text-danger">*</span></label>
                     <select name="employee_id" id="employee_id" class="form-select" required>

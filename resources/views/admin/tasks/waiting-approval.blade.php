@@ -36,11 +36,11 @@
                         </div>
 
                         <!-- Buttons -->
-                        <div class="col-md-3 d-flex mt-3">
-                            <button type="submit" class="btn btn-outline-primary w-100 me-2">
+                        <div class="col-md-auto d-flex align-items-center gap-2 mt-3">
+                            <button type="submit" class="btn btn-outline-primary px-3 text-nowrap" style="white-space: nowrap;">
                                 <i class="fas fa-filter me-1"></i> Filter
                             </button>
-                            <a href="{{ route('tasks.waiting-approval') }}" class="btn btn-outline-secondary w-100">
+                            <a href="{{ route('tasks.waiting-approval') }}" class="btn btn-outline-secondary px-3 text-nowrap" style="white-space: nowrap;">
                                 <i class="fas fa-redo me-1"></i> Reset
                             </a>
                         </div>

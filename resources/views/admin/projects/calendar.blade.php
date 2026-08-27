@@ -37,7 +37,7 @@
                         <span>Calendar</span>
                     </a>
                 </div>
-                @if(auth()->user()->role === 'admin')
+                @if(in_array(strtolower((string) auth()->user()?->role), ['admin', 'manager', 'hr'], true))
                     <a href="{{ route('projects.create') }}" class="btn btn-primary">
                         <i class="fas fa-plus-circle"></i> Add Project
                     </a>

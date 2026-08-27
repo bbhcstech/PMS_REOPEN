@@ -11,7 +11,7 @@ use Illuminate\View\View;
 
 class RolePermissionController extends Controller
 {
-    private array $roles = ['admin', 'manager', 'hr', 'employee'];
+    private array $roles = ['manager', 'hr', 'employee'];
     private array $permissions = ['view', 'create', 'edit', 'delete', 'approve', 'export', 'assign'];
 
     public function index(Request $request): View

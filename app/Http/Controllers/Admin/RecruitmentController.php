@@ -119,6 +119,14 @@ class RecruitmentController extends Controller
             ->with('success', "Requirement created successfully! Notification shared with all employees, managers, and HR.");
     }
 
+    public function show($id)
+    {
+        $requirement = RecruitmentRequirement::with(['department', 'creator'])->findOrFail($id);
+        $policyCard = $this->generatePolicyCard();
+
+        return view('admin.recruitment.show', compact('requirement', 'policyCard'));
+    }
+
     public function download($id)
     {
         $requirement = RecruitmentRequirement::with(['department', 'creator'])->findOrFail($id);

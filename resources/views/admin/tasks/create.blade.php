@@ -184,12 +184,9 @@
                     </div>
 
                     <div class="col-md-2">
-                        <label>Status</label>
-                        <select name="status" class="form-control select-picker">
-                            @foreach(['Incomplete', 'To Do', 'Doing', 'Completed', 'Waiting for Approval'] as $status)
-                                <option value="{{ $status }}" {{ old('status', $duplicateTask->status ?? 'To Do') === $status ? 'selected' : '' }}>{{ $status }}</option>
-                            @endforeach
-                        </select>
+                        <label>Status <small class="text-muted">(Initial)</small></label>
+                        <input type="text" class="form-control bg-light" value="To Do" readonly disabled title="Task starts in 'To Do' status. Assigned employee will update progress.">
+                        <input type="hidden" name="status" value="To Do">
                     </div>
 
                     <div class="col-md-2">
@@ -198,15 +195,15 @@
                             <option value="high" {{ old('priority', $duplicateTask->priority ?? 'medium') == 'high' ? 'selected' : '' }}>High</option>
                             <option value="medium" {{ old('priority', $duplicateTask->priority ?? 'medium') == 'medium' ? 'selected' : '' }}>Medium</option>
                             <option value="low" {{ old('priority', $duplicateTask->priority ?? 'medium') == 'low' ? 'selected' : '' }}>Low</option>
-
                         </select>
                     </div>
                 </div>
 
                 <div class="row mb-3">
                     <div class="col-md-3">
-                        <label>Progress (%)</label>
-                        <input type="number" name="progress" class="form-control" min="0" max="100" value="{{ old('progress', $duplicateTask->progress ?? 0) }}">
+                        <label>Progress (%) <small class="text-muted">(Initial)</small></label>
+                        <input type="text" class="form-control bg-light" value="0%" readonly disabled title="Initial progress is 0%. Assigned employee will update progress.">
+                        <input type="hidden" name="progress" value="0">
                     </div>
                     <div class="col-md-9">
                         <label>Remarks</label>

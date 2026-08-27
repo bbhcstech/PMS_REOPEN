@@ -88,13 +88,19 @@ class TicketController extends Controller
             }
         }
 
+        if ($request->filled('project_id')) {
+            $tickets->where('project_id', $request->project_id);
+        }
+
         if ($request->filled('status')) {
             $tickets->where('status', $request->status);
         }
 
         $tickets = $tickets->latest()->get();
+        $currentProject = $request->filled('project_id') ? Project::find($request->project_id) : null;
+        $project = $currentProject;
 
-        return view('admin.tickets.index', compact('tickets', 'agents', 'projects'));
+        return view('admin.tickets.index', compact('tickets', 'agents', 'projects', 'currentProject', 'project'));
     }
 
     public function create()

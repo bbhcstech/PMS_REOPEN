@@ -20,7 +20,7 @@ class TimeLogController extends Controller
     {
     }
 
-    public function index(Request $request, Project $project = null)
+    public function index(Request $request, ?Project $project = null)
     {
         $query = TaskTimer::with(['project', 'task', 'user']);
 
@@ -80,7 +80,7 @@ class TimeLogController extends Controller
 
 public function create()
 {
-    $canReviewTimeLogs = $this->canReviewTimeLogs();
+    $canReviewTimeLogs = $this->canManageTimelogs();
     $projects = $canReviewTimeLogs
         ? Project::orderBy('name')->get()
         : Project::whereHas('users', fn ($users) => $users->where('users.id', auth()->id()))->orderBy('name')->get();
@@ -296,12 +296,17 @@ public function store(Request $request)
         return response()->json($tasks);
     }
 
+    private function canManageTimelogs(): bool
+    {
+        return in_array(strtolower((string) auth()->user()?->role), ['admin', 'hr', 'manager'], true);
+    }
+
     public function calendar()
     {
         $query = TaskTimer::with(['project', 'task', 'user']);
 
-        // Admin sees all, employee sees only own logs
-        if (auth()->user()->role !== 'admin') {
+        // Admin/HR/Manager sees all, employee sees only own logs
+        if (! $this->canManageTimelogs()) {
             $query->where('user_id', auth()->id());
         }
 
@@ -322,9 +327,9 @@ public function store(Request $request)
         $query = TaskTimer::with(['project', 'task', 'user']);
 
         // Filter by employee
-        if ($request->filled('user_id')) {
+        if ($request->filled('user_id') && $this->canManageTimelogs()) {
             $query->where('user_id', $request->user_id);
-        } elseif (auth()->user()->role !== 'admin') {
+        } elseif (! $this->canManageTimelogs()) {
             $query->where('user_id', auth()->id());
         }
 
@@ -343,7 +348,7 @@ public function store(Request $request)
 
         $logs = $query->get();
 
-        if (auth()->user()->role === 'admin') {
+        if ($this->canManageTimelogs()) {
             $employees = User::where('role', 'employee')->orderBy('name')->get();
         } else {
             $employees = User::where('id', auth()->id())->get();
@@ -365,7 +370,7 @@ public function bulkStatusUpdate(Request $request)
 
     DB::beginTransaction();
     try {
-        if (auth()->user()->role !== 'admin') {
+        if (! $this->canManageTimelogs()) {
             $affected = TaskTimer::whereIn('id', $ids)
                 ->where('user_id', auth()->id())
                 ->update(['status' => $status]);
@@ -402,7 +407,7 @@ public function bulkDelete(Request $request)
 
     DB::beginTransaction();
     try {
-        if (auth()->user()->role !== 'admin') {
+        if (! $this->canManageTimelogs()) {
             $deleted = TaskTimer::whereIn('id', $ids)
                 ->where('user_id', auth()->id())
                 ->delete();
