@@ -501,6 +501,8 @@
                 $lockoutMins = $settings['lockout_duration_mins'] ?? '15';
                 $reqSpec = ($settings['require_special_char'] ?? '1') == '1';
                 $reqNum = ($settings['require_numbers'] ?? '1') == '1';
+                $reqUpper = ($settings['require_uppercase'] ?? '1') == '1';
+                $reqLower = ($settings['require_lowercase'] ?? '1') == '1';
                 $enable2fa = ($settings['enable_2fa'] ?? '0') == '1';
             @endphp
             <div class="stats-grid">
@@ -586,7 +588,7 @@
                                 <small class="text-muted mt-1 d-block">Automatic logout after inactivity (e.g. 120 mins).</small>
                             </div>
 
-                            <!-- Max Login Attempts -->
+                            <!-- Max Failed Login Attempts -->
                             <div class="col-md-4">
                                 <label class="form-label-custom">Max Failed Login Attempts <span class="req-asterisk">*</span></label>
                                 <div class="input-group input-group-custom">
@@ -619,20 +621,40 @@
                             <div class="col-md-6">
                                 <div class="policy-switch-box">
                                     <label class="form-label-custom mb-3" style="color: #0a2e1f;"><i class="fas fa-shield-cat me-1.5" style="color: #059669;"></i>Password Complexity Requirements</label>
+                                    
                                     <div class="form-check form-switch mb-2.5 d-flex align-items-center gap-3">
-                                        <input class="form-check-input flex-shrink-0" type="checkbox" name="require_special_char" value="1" id="specCharSwitch"
+                                        <input class="form-check-input flex-shrink-0" type="checkbox" name="require_uppercase" value="1" id="uppercaseSwitch"
                                             style="width: 2.5em; height: 1.3em; cursor: pointer;"
-                                            {{ $reqSpec ? 'checked' : '' }}>
-                                        <label class="form-check-label fw-bold text-dark mb-0" for="specCharSwitch" style="cursor: pointer; font-size: 0.88rem;">
-                                            Require at least 1 special character (!@#$%^&*)
+                                            {{ $reqUpper ? 'checked' : '' }}>
+                                        <label class="form-check-label fw-bold text-dark mb-0" for="uppercaseSwitch" style="cursor: pointer; font-size: 0.88rem;">
+                                            Atleast one Capital Letter (A-Z)
                                         </label>
                                     </div>
-                                    <div class="form-check form-switch m-0 d-flex align-items-center gap-3">
+
+                                    <div class="form-check form-switch mb-2.5 d-flex align-items-center gap-3">
+                                        <input class="form-check-input flex-shrink-0" type="checkbox" name="require_lowercase" value="1" id="lowercaseSwitch"
+                                            style="width: 2.5em; height: 1.3em; cursor: pointer;"
+                                            {{ $reqLower ? 'checked' : '' }}>
+                                        <label class="form-check-label fw-bold text-dark mb-0" for="lowercaseSwitch" style="cursor: pointer; font-size: 0.88rem;">
+                                            Atleast one small Letter (a-z)
+                                        </label>
+                                    </div>
+
+                                    <div class="form-check form-switch mb-2.5 d-flex align-items-center gap-3">
                                         <input class="form-check-input flex-shrink-0" type="checkbox" name="require_numbers" value="1" id="numbersSwitch"
                                             style="width: 2.5em; height: 1.3em; cursor: pointer;"
                                             {{ $reqNum ? 'checked' : '' }}>
                                         <label class="form-check-label fw-bold text-dark mb-0" for="numbersSwitch" style="cursor: pointer; font-size: 0.88rem;">
                                             Require numeric digits (0-9)
+                                        </label>
+                                    </div>
+
+                                    <div class="form-check form-switch m-0 d-flex align-items-center gap-3">
+                                        <input class="form-check-input flex-shrink-0" type="checkbox" name="require_special_char" value="1" id="specCharSwitch"
+                                            style="width: 2.5em; height: 1.3em; cursor: pointer;"
+                                            {{ $reqSpec ? 'checked' : '' }}>
+                                        <label class="form-check-label fw-bold text-dark mb-0" for="specCharSwitch" style="cursor: pointer; font-size: 0.88rem;">
+                                            Require at least 1 special character (!@#$%^&*)
                                         </label>
                                     </div>
                                 </div>

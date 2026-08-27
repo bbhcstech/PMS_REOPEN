@@ -49,6 +49,21 @@ class Task extends TenantModel
         'completed_on' => 'datetime',
     ];
 
+    protected static function booted()
+    {
+        static::saved(function (Task $task) {
+            if ($task->project_id) {
+                Project::find($task->project_id)?->recalculateProgressAndStatus();
+            }
+        });
+
+        static::deleted(function (Task $task) {
+            if ($task->project_id) {
+                Project::find($task->project_id)?->recalculateProgressAndStatus();
+            }
+        });
+    }
+
    // Relationships
 
     public function project()

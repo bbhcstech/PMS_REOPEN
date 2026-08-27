@@ -6,35 +6,14 @@
     <br>
 
     @if($project)
-        <a href="{{ route('projects.index') }}" class="btn btn-secondary mb-3">← Back to Projects</a>
-
-        {{-- Sub-navigation bar --}}
-        <ul class="nav nav-tabs mb-4">
-            <li class="nav-item"><a class="nav-link active" href="{{ route('projects.show', $project->id) }}">Overview</a></li>
-            <li class="nav-item"><a class="nav-link" href="{{ route('project-members.index', $project->id)}}">Members</a></li>
-            <li class="nav-item"><a class="nav-link" href="{{ route('project-files.index', $project->id)}}">Files</a></li>
-            <li class="nav-item"><a class="nav-link" href="{{ route('milestones.index', $project->id)}}">Milestones</a></li>
-            <li class="nav-item"><a class="nav-link" href="{{ route('projects.tasks.index', $project->id) }}">Tasks</a></li>
-            <li class="nav-item"><a class="nav-link" href="{{ route('projects.tasks.board', $project->id) }}">Task Board</a></li>
-            <li class="nav-item"><a class="nav-link" href="{{ route('projects.gantt', $project->id) }}">Gantt Chart</a></li>
-            <li class="nav-item"><a class="nav-link" href="{{ route('projects.timelogs.index', $project->id) }}">Timesheet</a></li>
-            <li class="nav-item"><a class="nav-link" href="{{ route('expenses.index', $project->id) }}">Expenses</a></li>
-            <li class="nav-item"><a class="nav-link" href="{{ route('projects.notes.index', $project->id) }}">Notes</a></li>
-            <li class="nav-item"><a class="nav-link text-primary" href="#" id="toggle-more">More ▾</a></li>
-        </ul>
-
-        <ul class="nav nav-tabs mb-4 d-none" id="more-tabs">
-            <li class="nav-item"><a class="nav-link" href="{{ route('projects.discussions.index', $project->id) }}" >Discussion</a></li>
-            <li class="nav-item"><a class="nav-link" href="{{ route('projects.burndown', $project->id) }}">Burndown Chart</a></li>
-            <li class="nav-item"><a class="nav-link" href="{{ route('admin.activities.project', $project->id) }}">Activity</a></li>
-            <li class="nav-item"><a class="nav-link" href="{{ route('tickets.index', ['project_id' => $project->id]) }}">Ticket</a></li>
-        </ul>
+        {{-- Standardized Project Header & 13-Tab Navigation --}}
+        @include('admin.projects.partials.header', [
+            'project' => $project,
+            'activeTab' => 'timesheet'
+        ])
     @endif
 
-    <h4 class="mb-0 me-3">Timesheet</h4>
-    &nbsp;
-
-    <form method="GET" action="{{ route('timelogs.index') }}" class="row g-3 mb-3">
+    <form method="GET" action="{{ $project ? route('projects.timelogs.index', $project->id) : route('timelogs.index') }}" class="row g-3 mb-3">
         <div class="col-md-4">
             <label class="form-label">Duration</label>
             <input type="text" name="daterange" id="daterange" class="form-control"
@@ -206,8 +185,7 @@
 <script>
 $(document).ready(function () {
     $('#timelogTable').DataTable({
-        dom: 'Bfrtip',
-        buttons: ['copy', 'csv', 'excel', 'pdf', 'print'],
+        dom: 'rftip',
         responsive: true,
         pageLength: 10,
         lengthMenu: [10, 25, 50, 100],

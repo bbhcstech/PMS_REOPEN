@@ -4,197 +4,687 @@
 
 @section('content')
 <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+
     .recruitment-shell {
-        font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
-        padding-bottom: 2rem;
+        --rec-green-900: #071a12;
+        --rec-green-800: #0a2e1f;
+        --rec-green-700: #0f744c;
+        --rec-green-600: #059669;
+        --rec-green-500: #10b981;
+        --rec-green-400: #34d399;
+        --rec-green-100: #ecfdf5;
+        --rec-green-50: #f0fdf4;
+        --rec-border: rgba(15, 116, 76, 0.12);
+        --rec-surface: #ffffff;
+        --rec-text-dark: #0f172a;
+        --rec-text-muted: #64748b;
+        font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        padding-bottom: 2.5rem;
     }
 
-    /* Page Header */
-    .rec-header {
+    /* Ambient entry animations */
+    .rec-animate-in {
+        animation: recSlideUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+    @keyframes recSlideUp {
+        from { opacity: 0; transform: translateY(16px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ===== BREADCRUMB ===== */
+    .breadcrumb-custom {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--rec-text-muted);
+        margin-bottom: 1.25rem;
+    }
+    .breadcrumb-custom a {
+        color: var(--rec-green-700);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        transition: color 0.2s ease;
+    }
+    .breadcrumb-custom a:hover {
+        color: var(--rec-green-600);
+    }
+    .breadcrumb-custom .separator {
+        font-size: 1.1rem;
+        color: #94a3b8;
+    }
+    .breadcrumb-custom .active-crumb {
+        color: var(--rec-text-dark);
+        font-weight: 700;
+    }
+
+    /* ===== ELEVATED HEADER CARD ===== */
+    .rec-header-card {
+        background: #ffffff;
+        border-radius: 24px;
+        padding: 1.6rem 2rem;
+        margin-bottom: 1.75rem;
+        border: 1px solid var(--rec-border);
+        box-shadow: 0 14px 36px -10px rgba(15, 116, 76, 0.08);
         display: flex;
         justify-content: space-between;
         align-items: center;
         flex-wrap: wrap;
-        gap: 1rem;
-        margin-bottom: 1.5rem;
+        gap: 1.25rem;
+        position: relative;
+        overflow: hidden;
     }
-    .rec-header h3 {
+    .rec-header-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #10b981 0%, #059669 50%, #047857 100%);
+    }
+    .rec-header-left {
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+    }
+    .rec-header-icon {
+        width: 58px;
+        height: 58px;
+        border-radius: 18px;
+        background: linear-gradient(135deg, #10b981 0%, #047857 100%);
+        color: #ffffff !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.75rem;
+        box-shadow: 0 8px 20px -4px rgba(5, 150, 105, 0.35);
+        flex-shrink: 0;
+    }
+    .rec-header-icon i {
+        color: #ffffff !important;
+    }
+    .rec-title {
+        font-size: 1.55rem;
         font-weight: 800;
-        color: #1f2937;
-        margin: 0 0 0.25rem;
-        font-size: 1.65rem;
-    }
-    .rec-header p {
-        color: #6b7280;
+        color: var(--rec-green-900);
         margin: 0;
-        font-size: 0.925rem;
+        letter-spacing: -0.025em;
+        line-height: 1.25;
+    }
+    .rec-live-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0.2rem 0.65rem;
+        background: #ecfdf5;
+        color: #065f46;
+        border: 1px solid rgba(16, 185, 129, 0.25);
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+    }
+    .live-pulse-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background-color: #10b981;
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+        animation: pulseLive 2s infinite;
+    }
+    @keyframes pulseLive {
+        0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+        70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+        100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+    .rec-subtitle {
+        color: var(--rec-text-muted);
+        font-size: 0.9rem;
+        margin: 0;
+        font-weight: 500;
+    }
+    .rec-header-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        flex-wrap: wrap;
     }
 
     /* Buttons */
-    .btn-purple-primary {
-        background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%) !important;
+    .btn-rec-primary {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
         color: #ffffff !important;
         border: none !important;
         font-weight: 700;
-        box-shadow: 0 4px 14px rgba(124, 58, 237, 0.25);
-        transition: all 0.2s ease;
+        font-size: 0.9rem;
+        padding: 0.65rem 1.35rem;
+        border-radius: 12px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        white-space: nowrap !important;
+        box-shadow: 0 8px 18px -4px rgba(16, 185, 129, 0.35);
+        transition: all 0.25s ease;
+        text-decoration: none;
     }
-    .btn-purple-primary:hover {
-        background: linear-gradient(135deg, #6D28D9 0%, #5B21B6 100%) !important;
+    .btn-rec-primary:hover {
+        background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
         color: #ffffff !important;
-        transform: translateY(-1px);
-        box-shadow: 0 6px 18px rgba(124, 58, 237, 0.35);
+        transform: translateY(-2px);
+        box-shadow: 0 12px 24px -4px rgba(16, 185, 129, 0.45);
     }
-    .btn-purple-primary * {
+    .btn-rec-primary i {
         color: #ffffff !important;
+        font-size: 1.15rem;
+    }
+    .btn-rec-outline {
+        background: #ffffff;
+        color: var(--rec-green-700) !important;
+        border: 1px solid rgba(15, 116, 76, 0.25) !important;
+        font-weight: 700;
+        font-size: 0.9rem;
+        padding: 0.65rem 1.25rem;
+        border-radius: 12px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        transition: all 0.25s ease;
+        text-decoration: none;
+    }
+    .btn-rec-outline:hover {
+        background: #ecfdf5;
+        color: var(--rec-green-800) !important;
+        border-color: rgba(16, 185, 129, 0.4) !important;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px -2px rgba(15, 116, 76, 0.08);
+    }
+    .btn-rec-outline i {
+        color: var(--rec-green-700) !important;
+        font-size: 1.15rem;
+    }
+    .badge-rec-readonly {
+        background: #f1f5f9;
+        color: #475569;
+        border: 1px solid #cbd5e1;
+        padding: 0.6rem 1rem;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
     }
 
-    /* Policy Card styling */
+    /* ===== POLICY CARD (HERO ELEMENT) ===== */
     .policy-card {
-        background: linear-gradient(135deg, #ffffff 0%, #faf5ff 100%);
-        border: 1px solid rgba(124, 58, 237, 0.18);
-        border-radius: 16px;
-        box-shadow: 0 10px 30px -5px rgba(124, 58, 237, 0.1);
+        background: #ffffff;
+        border-radius: 20px;
+        border: 1px solid rgba(16, 185, 129, 0.2);
+        box-shadow: 0 16px 36px -12px rgba(15, 116, 76, 0.1);
         margin-bottom: 2rem;
         overflow: hidden;
         position: relative;
     }
     .policy-card-header {
-        background: linear-gradient(135deg, #7C3AED 0%, #8B5CF6 100%);
-        color: #ffffff;
-        padding: 1.25rem 1.5rem;
+        background: linear-gradient(135deg, #064e3b 0%, #065f46 50%, #047857 100%) !important;
+        color: #ffffff !important;
+        padding: 1.25rem 1.75rem;
         display: flex;
         align-items: center;
         justify-content: space-between;
         flex-wrap: wrap;
-        gap: 0.75rem;
+        gap: 1rem;
     }
-    .policy-card-header h5 {
-        color: #ffffff !important;
-        font-weight: 800;
-        margin: 0;
-        font-size: 1.15rem;
+    .policy-header-left {
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: 1rem;
     }
+    .policy-icon-wrapper {
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.22) !important;
+        backdrop-filter: blur(8px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.55rem;
+        color: #ffffff !important;
+        border: 1.5px solid rgba(255, 255, 255, 0.45) !important;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+        flex-shrink: 0;
+    }
+    .policy-icon-wrapper i {
+        color: #ffffff !important;
+        font-size: 1.55rem !important;
+    }
+    .policy-title {
+        color: #ffffff !important;
+        font-weight: 800;
+        font-size: 1.22rem;
+        margin: 0 0 0.25rem 0;
+        letter-spacing: -0.015em;
+    }
+    .policy-meta-row {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.92) !important;
+    }
+    .policy-code-pill {
+        background: rgba(255, 255, 255, 0.22) !important;
+        color: #ffffff !important;
+        padding: 0.2rem 0.65rem;
+        border-radius: 6px;
+        font-weight: 700;
+        font-size: 0.8rem;
+        letter-spacing: 0.03em;
+        border: 1px solid rgba(255, 255, 255, 0.35) !important;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .policy-code-pill i, .policy-updated-text i {
+        color: #ffffff !important;
+    }
+    .policy-updated-text {
+        color: rgba(255, 255, 255, 0.92) !important;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .policy-divider {
+        color: rgba(255, 255, 255, 0.5) !important;
+    }
+    .policy-header-right {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    .policy-status-pill {
+        background: rgba(4, 78, 59, 0.72) !important;
+        color: #ffffff !important;
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        padding: 0.38rem 0.95rem;
+        border-radius: 30px;
+        font-weight: 800;
+        font-size: 0.825rem;
+        letter-spacing: 0.02em;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .policy-status-pill,
+    .policy-status-pill * {
+        color: #ffffff !important;
+    }
+    .status-pulse-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background-color: #10b981;
+    }
+    .btn-policy-toggle {
+        background: rgba(255, 255, 255, 0.18) !important;
+        backdrop-filter: blur(8px);
+        color: #ffffff !important;
+        border: 1px solid rgba(255, 255, 255, 0.45) !important;
+        padding: 0.38rem 0.95rem;
+        border-radius: 30px;
+        font-weight: 700;
+        font-size: 0.825rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        transition: all 0.2s ease;
+    }
+    .btn-policy-toggle:hover {
+        background: rgba(255, 255, 255, 0.32) !important;
+        color: #ffffff !important;
+        border-color: rgba(255, 255, 255, 0.75) !important;
+        transform: translateY(-1px);
+    }
+    .btn-policy-toggle i {
+        color: #ffffff !important;
+        transition: transform 0.25s ease;
+    }
+    .btn-policy-toggle[aria-expanded="false"] .toggle-chevron {
+        transform: rotate(-90deg);
+    }
+
+    /* Ultra-Specific Pure White Guarantee for Policy Card Header */
+    html body .policy-card .policy-card-header,
+    html body .policy-card .policy-card-header *,
+    html body .policy-card .policy-card-header h5,
+    html body .policy-card .policy-card-header h5 *,
+    html body .policy-card .policy-card-header .policy-title,
+    html body .policy-card .policy-card-header .policy-title *,
+    html body .policy-card .policy-card-header i,
+    html body .policy-card .policy-card-header i[class^="bx"],
+    html body .policy-card .policy-card-header i[class*=" bx"],
+    html body .policy-card .policy-card-header .policy-icon-wrapper,
+    html body .policy-card .policy-card-header .policy-icon-wrapper i,
+    html body .policy-card .policy-card-header .policy-meta-row,
+    html body .policy-card .policy-card-header .policy-meta-row *,
+    html body .policy-card .policy-card-header .policy-code-pill,
+    html body .policy-card .policy-card-header .policy-code-pill *,
+    html body .policy-card .policy-card-header .policy-updated-text,
+    html body .policy-card .policy-card-header .policy-updated-text *,
+    html body .policy-card .policy-card-header .btn-policy-toggle,
+    html body .policy-card .policy-card-header .btn-policy-toggle * {
+        color: #ffffff !important;
+    }
+
+    html body .policy-card .policy-card-header h5.policy-title,
+    html body .policy-card .policy-card-header h5.policy-title span {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
     .policy-card-body {
-        padding: 1.5rem;
+        padding: 1.5rem 1.75rem;
+        background: #ffffff;
     }
     .policy-param-box {
-        background: #ffffff;
-        border: 1px solid #ede9fe;
-        border-radius: 12px;
-        padding: 1rem;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 1rem 1.15rem;
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
         height: 100%;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        transition: all 0.2s ease;
     }
     .policy-param-box:hover {
+        background: #ffffff;
+        border-color: rgba(16, 185, 129, 0.4);
+        box-shadow: 0 8px 20px -4px rgba(15, 116, 76, 0.08);
         transform: translateY(-2px);
-        box-shadow: 0 6px 18px rgba(124, 58, 237, 0.08);
+    }
+    .policy-param-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: #ecfdf5;
+        color: #059669;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        flex-shrink: 0;
+    }
+    .policy-param-icon i {
+        color: #059669 !important;
     }
     .policy-param-label {
         font-size: 0.775rem;
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        color: #6d28d9;
+        color: #64748b;
         font-weight: 700;
-        margin-bottom: 0.35rem;
+        margin-bottom: 0.2rem;
     }
     .policy-param-value {
         font-size: 0.95rem;
-        font-weight: 700;
-        color: #1f2937;
+        font-weight: 800;
+        color: var(--rec-green-900);
+    }
+
+    /* Pipeline Flow */
+    .pipeline-section {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 1rem 1.25rem;
+    }
+    .pipeline-flow-wrapper {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.5rem;
     }
     .pipeline-step-pill {
         display: inline-flex;
         align-items: center;
-        gap: 0.35rem;
-        padding: 0.35rem 0.75rem;
-        background: #f3e8ff;
-        color: #6d28d9;
-        border-radius: 50px;
-        font-size: 0.8rem;
+        gap: 0.45rem;
+        padding: 0.4rem 0.85rem;
+        background: #ffffff;
+        color: var(--rec-green-800);
+        border: 1px solid rgba(16, 185, 129, 0.2);
+        border-radius: 10px;
+        font-size: 0.825rem;
         font-weight: 700;
-        margin-right: 0.35rem;
-        margin-bottom: 0.35rem;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+    }
+    .pipeline-num {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #059669;
+        color: #ffffff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        font-weight: 800;
+    }
+    .pipeline-arrow {
+        color: #94a3b8;
+        font-size: 1.25rem;
     }
 
-    /* Metric Cards */
-    .metric-card {
-        background: #ffffff;
-        border: 1px solid #e5e7eb;
-        border-radius: 14px;
-        padding: 1.25rem;
+    /* Policy Footer Cards */
+    .policy-footer-card {
         display: flex;
-        align-items: center;
-        gap: 1rem;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-        margin-bottom: 1.5rem;
-    }
-    .metric-icon {
-        width: 48px;
-        height: 48px;
+        gap: 0.85rem;
+        align-items: flex-start;
+        padding: 0.85rem 1rem;
+        background: #f8fafc;
         border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        height: 100%;
+    }
+    .policy-footer-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: #ecfdf5;
+        color: #059669;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.4rem;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+        margin-top: 2px;
+    }
+    .policy-footer-icon i {
+        color: #059669 !important;
+    }
+    .policy-footer-title {
+        font-size: 0.825rem;
+        font-weight: 700;
+        color: var(--rec-green-900);
+        margin-bottom: 0.2rem;
+    }
+    .policy-footer-desc {
+        font-size: 0.8rem;
+        color: #64748b;
+        margin: 0;
+        line-height: 1.4;
+    }
+
+    /* ===== METRIC CARDS ===== */
+    .rec-metric-card {
+        background: #ffffff;
+        border: 1px solid var(--rec-border);
+        border-radius: 18px;
+        padding: 1.25rem 1.35rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        box-shadow: 0 8px 24px -6px rgba(15, 116, 76, 0.05);
+        margin-bottom: 1.5rem;
+        transition: all 0.25s ease;
+    }
+    .rec-metric-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 14px 28px -6px rgba(15, 116, 76, 0.12);
+        border-color: rgba(16, 185, 129, 0.35);
+    }
+    .rec-metric-icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
         flex-shrink: 0;
     }
-    .metric-icon.purple { background: #ede9fe; color: #7C3AED; }
-    .metric-icon.blue { background: #dbeafe; color: #2563eb; }
-    .metric-icon.green { background: #dcfce7; color: #16a34a; }
-    .metric-icon.amber { background: #fef3c7; color: #d97706; }
-    .metric-info h4 {
-        margin: 0;
+    .rec-metric-icon.emerald { background: #ecfdf5; color: #059669; }
+    .rec-metric-icon.blue { background: #eff6ff; color: #2563eb; }
+    .rec-metric-icon.amber { background: #fffbeb; color: #d97706; }
+    .rec-metric-icon.green { background: #f0fdf4; color: #16a34a; }
+    .rec-metric-icon i { color: inherit !important; }
+    .rec-metric-info h4 {
+        margin: 0 0 0.15rem 0;
         font-weight: 800;
-        color: #1f2937;
-        font-size: 1.35rem;
+        color: var(--rec-green-900);
+        font-size: 1.5rem;
+        letter-spacing: -0.02em;
     }
-    .metric-info span {
+    .rec-metric-info span {
         font-size: 0.825rem;
-        color: #6b7280;
+        color: #64748b;
         font-weight: 600;
     }
 
-    /* Table styling */
+    /* ===== FILTER CARD ===== */
+    .rec-filter-card {
+        background: #ffffff;
+        border-radius: 18px;
+        border: 1px solid var(--rec-border);
+        box-shadow: 0 8px 24px -6px rgba(15, 116, 76, 0.04);
+        margin-bottom: 1.5rem;
+        padding: 1.25rem 1.5rem;
+    }
+
+    /* ===== TABLE CARD ===== */
     .rec-table-card {
         background: #ffffff;
-        border-radius: 16px;
-        border: 1px solid #e5e7eb;
-        box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+        border-radius: 18px;
+        border: 1px solid var(--rec-border);
+        box-shadow: 0 12px 30px -8px rgba(15, 116, 76, 0.06);
         overflow: hidden;
     }
     .rec-table th {
-        background: #f9fafb;
+        background: #f8fafc;
         font-weight: 700;
-        color: #374151;
-        font-size: 0.825rem;
+        color: #475569;
+        font-size: 0.8rem;
         text-transform: uppercase;
-        letter-spacing: 0.04em;
-        padding: 1rem 1.25rem;
+        letter-spacing: 0.05em;
+        padding: 1.1rem 1.25rem;
+        border-bottom: 1px solid #e2e8f0;
     }
     .rec-table td {
-        padding: 1rem 1.25rem;
+        padding: 1.1rem 1.25rem;
         vertical-align: middle;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    .rec-table tbody tr {
+        transition: background-color 0.2s ease;
+    }
+    .rec-table tbody tr:hover {
+        background: #f0fdf4;
+    }
+    .badge-employment {
+        background-color: #ecfdf5;
+        color: #065f46;
+        border: 1px solid rgba(16, 185, 129, 0.2);
+        font-weight: 700;
+        font-size: 0.75rem;
+        padding: 0.25rem 0.6rem;
+        border-radius: 6px;
+        display: inline-block;
+        margin-top: 0.25rem;
     }
 
-    .badge-employment {
-        background-color: #f3f4f6;
-        color: #4b5563;
-        font-weight: 600;
-        font-size: 0.75rem;
-        padding: 0.25rem 0.5rem;
-        border-radius: 6px;
+    /* Dark Mode Adjustments */
+    html[data-pms-theme="dark"] .rec-header-card,
+    html[data-pms-theme="dark"] .policy-card,
+    html[data-pms-theme="dark"] .policy-card-body,
+    html[data-pms-theme="dark"] .rec-metric-card,
+    html[data-pms-theme="dark"] .rec-filter-card,
+    html[data-pms-theme="dark"] .rec-table-card {
+        background: #102119 !important;
+        border-color: rgba(225, 255, 240, 0.15) !important;
+    }
+    html[data-pms-theme="dark"] .rec-title,
+    html[data-pms-theme="dark"] .policy-param-value,
+    html[data-pms-theme="dark"] .rec-metric-info h4,
+    html[data-pms-theme="dark"] .policy-footer-title {
+        color: #ffffff !important;
+    }
+    html[data-pms-theme="dark"] .policy-param-box,
+    html[data-pms-theme="dark"] .pipeline-section,
+    html[data-pms-theme="dark"] .policy-footer-card {
+        background: #183026 !important;
+        border-color: rgba(225, 255, 240, 0.12) !important;
+    }
+    html[data-pms-theme="dark"] .btn-rec-outline {
+        background: #102119 !important;
+        color: #40d48c !important;
+        border-color: rgba(64, 212, 140, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .rec-table th {
+        background: #183026 !important;
+        color: #d9f1e4 !important;
+        border-bottom-color: rgba(225, 255, 240, 0.12) !important;
+    }
+    html[data-pms-theme="dark"] .rec-table td {
+        border-bottom-color: rgba(225, 255, 240, 0.08) !important;
+    }
+    html[data-pms-theme="dark"] .rec-table tbody tr:hover {
+        background: rgba(64, 212, 140, 0.06) !important;
+    }
+
+    @media (max-width: 767.98px) {
+        .rec-header-card { padding: 1.25rem; }
+        .rec-header-left { flex-direction: column; align-items: flex-start; }
+        .rec-header-actions { width: 100%; }
+        .rec-header-actions .btn-rec-primary,
+        .rec-header-actions .btn-rec-outline { flex: 1 1 auto; justify-content: center; }
+        .policy-card-header { padding: 1rem; }
+        .policy-header-right { width: 100%; justify-content: space-between; }
     }
 </style>
 
 <div class="container-xxl flex-grow-1 container-p-y recruitment-shell">
 
+    {{-- Breadcrumb Navigation --}}
+    <div class="breadcrumb-custom rec-animate-in">
+        <a href="{{ route('dashboard') }}"><i class="bx bx-home-alt me-1"></i> Dashboard</a>
+        <i class="bx bx-chevron-right separator"></i>
+        <span>HR</span>
+        <i class="bx bx-chevron-right separator"></i>
+        <span class="active-crumb"><i class="bx bx-briefcase-alt me-1 text-success"></i> Recruitment & Talent Acquisition</span>
+    </div>
+
     {{-- Alert Messages --}}
     @if(session('success'))
-    <div class="alert alert-success alert-dismissible fade show d-flex align-items-center mb-4" role="alert">
+    <div class="alert alert-success alert-dismissible fade show d-flex align-items-center mb-4 rec-animate-in" role="alert">
         <i class="bx bx-check-circle me-2 fs-4"></i>
         <div>{{ session('success') }}</div>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -202,29 +692,43 @@
     @endif
 
     @if(session('error'))
-    <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center mb-4" role="alert">
+    <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center mb-4 rec-animate-in" role="alert">
         <i class="bx bx-error-circle me-2 fs-4"></i>
         <div>{{ session('error') }}</div>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
     @endif
 
-    {{-- Page Header --}}
-    <div class="rec-header">
-        <div>
-            <h3>Recruitment & Talent Acquisition</h3>
-            <p>View corporate job requirements, read the auto-generated policy card, and download requirement specifications for sharing.</p>
+    {{-- Elevated Page Header Card --}}
+    <div class="rec-header-card rec-animate-in">
+        <div class="rec-header-left">
+            <div class="rec-header-icon" style="background: linear-gradient(135deg, #10b981 0%, #047857 100%) !important; color: #ffffff !important;">
+                <i class="bx bx-user-plus" style="color: #ffffff !important; font-size: 1.75rem;"></i>
+            </div>
+            <div class="rec-header-text">
+                <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+                    <h1 class="rec-title">Recruitment & Talent Acquisition</h1>
+                    <span class="rec-live-badge">
+                        <span class="live-pulse-dot"></span> Live Portal
+                    </span>
+                </div>
+                <p class="rec-subtitle">
+                    Manage corporate job requirements, monitor live recruitment policies, and download requirement specifications.
+                </p>
+            </div>
         </div>
-        <div class="d-flex gap-2">
+        <div class="rec-header-actions">
             @if(auth()->user()?->role === 'admin')
-            <a href="{{ route('admin.settings.recruitment') }}" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1">
-                <i class="bx bx-cog"></i> Recruitment Settings
+            <a href="{{ route('admin.settings.recruitment') }}" class="btn-rec-outline" title="Configure Recruitment Policies">
+                <i class="bx bx-cog"></i>
+                <span>Recruitment Settings</span>
             </a>
-            <button class="btn btn-purple-primary btn-sm d-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#createRequirementModal">
-                <i class="bx bx-plus-circle"></i> Add New Requirement
+            <button class="btn-rec-primary" data-bs-toggle="modal" data-bs-target="#createRequirementModal">
+                <i class="bx bx-plus-circle"></i>
+                <span>Add New Requirement</span>
             </button>
             @else
-            <span class="badge bg-label-info p-2 d-flex align-items-center gap-1">
+            <span class="badge-rec-readonly">
                 <i class="bx bx-lock-alt"></i> Read-Only Mode (Download Available)
             </span>
             @endif
@@ -232,63 +736,101 @@
     </div>
 
     {{-- AUTOMATICALLY GENERATED RECRUITMENT POLICY CARD --}}
-    <div class="policy-card">
-        <div class="policy-card-header">
-            <div>
-                <h5><i class="bx bx-file-find"></i> Automatically Generated Recruitment Policy Card</h5>
-                <small class="text-white-50">System Code: {{ $policyCard['code'] }} | Updated: {{ $policyCard['generated_at'] }}</small>
+    <div class="policy-card rec-animate-in">
+        <div class="policy-card-header" style="background: linear-gradient(135deg, #064e3b 0%, #065f46 50%, #047857 100%) !important; color: #ffffff !important;">
+            <div class="policy-header-left">
+                <div class="policy-icon-wrapper" style="background: rgba(255, 255, 255, 0.22) !important; border: 1.5px solid rgba(255, 255, 255, 0.45) !important; color: #ffffff !important;">
+                    <i class="bx bx-file-find" style="color: #ffffff !important; font-size: 1.55rem;"></i>
+                </div>
+                <div>
+                    <h5 class="policy-title" style="color: #ffffff !important; font-weight: 800; font-size: 1.22rem; margin: 0 0 4px 0;">
+                        <span style="color: #ffffff !important;">Automatically Generated Recruitment Policy Card</span>
+                    </h5>
+                    <div class="policy-meta-row" style="color: rgba(255, 255, 255, 0.92) !important;">
+                        <span class="policy-code-pill" style="background: rgba(255, 255, 255, 0.22) !important; color: #ffffff !important; border: 1px solid rgba(255, 255, 255, 0.35) !important;">
+                            <i class="bx bx-hash" style="color: #ffffff !important;"></i> <span style="color: #ffffff !important;">{{ $policyCard['code'] }}</span>
+                        </span>
+                        <span class="policy-divider" style="color: rgba(255, 255, 255, 0.5) !important;">·</span>
+                        <span class="policy-updated-text" style="color: rgba(255, 255, 255, 0.92) !important;">
+                            <i class="bx bx-time-five" style="color: #ffffff !important;"></i> <span style="color: #ffffff !important;">Updated: {{ $policyCard['generated_at'] }}</span>
+                        </span>
+                    </div>
+                </div>
             </div>
-            <div class="d-flex align-items-center gap-2">
-                <span class="badge bg-light text-purple fw-bold">{{ $policyCard['status'] }}</span>
-                <button class="btn btn-sm btn-outline-light" type="button" data-bs-toggle="collapse" data-bs-target="#policyCardContent">
-                    <i class="bx bx-chevron-down"></i> Toggle Details
+            <div class="policy-header-right">
+                <span class="policy-status-pill">
+                    <span class="status-pulse-dot"></span> {{ $policyCard['status'] }}
+                </span>
+                <button class="btn btn-policy-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#policyCardContent" aria-expanded="true" style="color: #ffffff !important; background: rgba(255, 255, 255, 0.18) !important; border: 1px solid rgba(255, 255, 255, 0.45) !important;">
+                    <i class="bx bx-chevron-down toggle-chevron" style="color: #ffffff !important;"></i>
+                    <span class="toggle-text" style="color: #ffffff !important;">Toggle Details</span>
                 </button>
             </div>
         </div>
         <div class="collapse show policy-card-body" id="policyCardContent">
             <div class="row g-3 mb-3">
-                <div class="col-md-3 col-sm-6">
+                <div class="col-lg-3 col-sm-6">
                     <div class="policy-param-box">
-                        <div class="policy-param-label">Probation Period</div>
-                        <div class="policy-param-value">{{ $policyCard['probation_period'] }}</div>
+                        <div class="policy-param-icon">
+                            <i class="bx bx-calendar-check"></i>
+                        </div>
+                        <div>
+                            <div class="policy-param-label">Probation Period</div>
+                            <div class="policy-param-value">{{ $policyCard['probation_period'] }}</div>
+                        </div>
                     </div>
                 </div>
-                <div class="col-md-3 col-sm-6">
+                <div class="col-lg-3 col-sm-6">
                     <div class="policy-param-box">
-                        <div class="policy-param-label">Target Hiring SLA</div>
-                        <div class="policy-param-value">{{ $policyCard['hiring_sla'] }}</div>
+                        <div class="policy-param-icon">
+                            <i class="bx bx-target-lock"></i>
+                        </div>
+                        <div>
+                            <div class="policy-param-label">Target Hiring SLA</div>
+                            <div class="policy-param-value">{{ $policyCard['hiring_sla'] }}</div>
+                        </div>
                     </div>
                 </div>
-                <div class="col-md-3 col-sm-6">
+                <div class="col-lg-3 col-sm-6">
                     <div class="policy-param-box">
-                        <div class="policy-param-label">Allowed Resume Formats</div>
-                        <div class="policy-param-value">{{ $policyCard['allowed_file_types'] }} (Max {{ $policyCard['max_resume_size'] }})</div>
+                        <div class="policy-param-icon">
+                            <i class="bx bx-file"></i>
+                        </div>
+                        <div>
+                            <div class="policy-param-label">Allowed Resume Formats</div>
+                            <div class="policy-param-value">{{ $policyCard['allowed_file_types'] }} <small class="text-muted fw-normal">(Max {{ $policyCard['max_resume_size'] }})</small></div>
+                        </div>
                     </div>
                 </div>
-                <div class="col-md-3 col-sm-6">
+                <div class="col-lg-3 col-sm-6">
                     <div class="policy-param-box">
-                        <div class="policy-param-label">Candidate Auto-Reply</div>
-                        <div class="policy-param-value">
-                            @if($policyCard['auto_reply_enabled'])
-                                <span class="text-success"><i class="bx bx-check-circle"></i> Enabled</span>
-                            @else
-                                <span class="text-muted"><i class="bx bx-x-circle"></i> Disabled</span>
-                            @endif
+                        <div class="policy-param-icon">
+                            <i class="bx bx-bot"></i>
+                        </div>
+                        <div>
+                            <div class="policy-param-label">Candidate Auto-Reply</div>
+                            <div class="policy-param-value">
+                                @if($policyCard['auto_reply_enabled'])
+                                    <span class="text-success d-inline-flex align-items-center gap-1"><i class="bx bx-check-circle"></i> Enabled</span>
+                                @else
+                                    <span class="text-muted d-inline-flex align-items-center gap-1"><i class="bx bx-x-circle"></i> Disabled</span>
+                                @endif
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="mb-3">
-                <div class="policy-param-label mb-2">Standard Hiring Pipeline Stages</div>
-                <div>
+            <div class="pipeline-section mb-3">
+                <div class="policy-param-label mb-2"><i class="bx bx-git-commit me-1 text-success"></i> Standard Hiring Pipeline Stages</div>
+                <div class="pipeline-flow-wrapper">
                     @foreach($policyCard['pipeline_stages'] as $index => $stage)
-                        <span class="pipeline-step-pill">
-                            <span class="badge bg-purple rounded-circle text-white me-1">{{ $index + 1 }}</span>
-                            {{ trim($stage) }}
-                        </span>
+                        <div class="pipeline-step-pill">
+                            <span class="pipeline-num">{{ $index + 1 }}</span>
+                            <span>{{ trim($stage) }}</span>
+                        </div>
                         @if(!$loop->last)
-                            <i class="bx bx-right-arrow-alt text-muted me-1"></i>
+                            <i class="bx bx-chevron-right pipeline-arrow"></i>
                         @endif
                     @endforeach
                 </div>
@@ -296,12 +838,26 @@
 
             <div class="row g-3 pt-2 border-top">
                 <div class="col-md-6">
-                    <small class="text-muted d-block fw-bold mb-1"><i class="bx bx-shield-quarter"></i> Equal Opportunity Policy:</small>
-                    <small class="text-secondary d-block">{{ $policyCard['equal_opportunity'] }}</small>
+                    <div class="policy-footer-card">
+                        <div class="policy-footer-icon">
+                            <i class="bx bx-shield-quarter"></i>
+                        </div>
+                        <div>
+                            <div class="policy-footer-title">Equal Opportunity Policy</div>
+                            <p class="policy-footer-desc">{{ $policyCard['equal_opportunity'] }}</p>
+                        </div>
+                    </div>
                 </div>
                 <div class="col-md-6">
-                    <small class="text-muted d-block fw-bold mb-1"><i class="bx bx-gift"></i> Internal Referral & Background Checks:</small>
-                    <small class="text-secondary d-block">{{ $policyCard['referral_policy'] }} {{ $policyCard['background_check'] }}</small>
+                    <div class="policy-footer-card">
+                        <div class="policy-footer-icon">
+                            <i class="bx bx-gift"></i>
+                        </div>
+                        <div>
+                            <div class="policy-footer-title">Internal Referral & Background Checks</div>
+                            <p class="policy-footer-desc">{{ $policyCard['referral_policy'] }} {{ $policyCard['background_check'] }}</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -310,44 +866,44 @@
     {{-- METRIC COUNTER CARDS --}}
     <div class="row mb-4">
         <div class="col-md-3 col-sm-6">
-            <div class="metric-card">
-                <div class="metric-icon purple">
+            <div class="rec-metric-card">
+                <div class="rec-metric-icon emerald">
                     <i class="bx bx-briefcase"></i>
                 </div>
-                <div class="metric-info">
+                <div class="rec-metric-info">
                     <h4>{{ $totalOpen }}</h4>
                     <span>Active Openings</span>
                 </div>
             </div>
         </div>
         <div class="col-md-3 col-sm-6">
-            <div class="metric-card">
-                <div class="metric-icon blue">
+            <div class="rec-metric-card">
+                <div class="rec-metric-icon blue">
                     <i class="bx bx-loader-circle"></i>
                 </div>
-                <div class="metric-info">
+                <div class="rec-metric-info">
                     <h4>{{ $totalInProgress }}</h4>
                     <span>In Progress</span>
                 </div>
             </div>
         </div>
         <div class="col-md-3 col-sm-6">
-            <div class="metric-card">
-                <div class="metric-icon amber">
+            <div class="rec-metric-card">
+                <div class="rec-metric-icon amber">
                     <i class="bx bx-group"></i>
                 </div>
-                <div class="metric-info">
+                <div class="rec-metric-info">
                     <h4>{{ $totalPositionsOpen }}</h4>
                     <span>Positions Needed</span>
                 </div>
             </div>
         </div>
         <div class="col-md-3 col-sm-6">
-            <div class="metric-card">
-                <div class="metric-icon green">
+            <div class="rec-metric-card">
+                <div class="rec-metric-icon green">
                     <i class="bx bx-check-shield"></i>
                 </div>
-                <div class="metric-info">
+                <div class="rec-metric-info">
                     <h4>{{ $totalClosed }}</h4>
                     <span>Fulfilled / Closed</span>
                 </div>
@@ -356,43 +912,45 @@
     </div>
 
     {{-- FILTER & SEARCH BAR --}}
-    <div class="card mb-4 border-0 shadow-sm">
-        <div class="card-body">
-            <form method="GET" action="{{ route('recruitment.index') }}" class="row g-3">
-                <div class="col-md-4">
-                    <label class="form-label fw-bold">Search Requirement</label>
-                    <div class="input-group input-group-merge">
-                        <span class="input-group-text"><i class="bx bx-search"></i></span>
-                        <input type="text" name="search" class="form-control" placeholder="Search by title, department, location..." value="{{ request('search') }}">
-                    </div>
+    <div class="rec-filter-card">
+        <form method="GET" action="{{ route('recruitment.index') }}" class="row g-3 align-items-end">
+            <div class="col-xl-4 col-lg-3 col-md-6 col-12">
+                <label class="form-label fw-bold small text-uppercase" style="letter-spacing: 0.04em;">Search Requirement</label>
+                <div class="input-group input-group-merge">
+                    <span class="input-group-text"><i class="bx bx-search"></i></span>
+                    <input type="text" name="search" class="form-control" placeholder="Search by title, department, location..." value="{{ request('search') }}">
                 </div>
-                <div class="col-md-3">
-                    <label class="form-label fw-bold">Status Filter</label>
-                    <select name="status" class="form-select" onchange="this.form.submit()">
-                        <option value="">All Statuses</option>
-                        <option value="open" {{ request('status') == 'open' ? 'selected' : '' }}>Open</option>
-                        <option value="in_progress" {{ request('status') == 'in_progress' ? 'selected' : '' }}>In Progress</option>
-                        <option value="closed" {{ request('status') == 'closed' ? 'selected' : '' }}>Closed</option>
-                        <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label fw-bold">Department</label>
-                    <select name="department_id" class="form-select" onchange="this.form.submit()">
-                        <option value="">All Departments</option>
-                        @foreach($departments as $dept)
-                            <option value="{{ $dept->id }}" {{ request('department_id') == $dept->id ? 'selected' : '' }}>
-                                {{ $dept->dpt_name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-2 d-flex align-items-end gap-1">
-                    <button type="submit" class="btn btn-primary w-100"><i class="bx bx-filter-alt"></i> Filter</button>
-                    <a href="{{ route('recruitment.index') }}" class="btn btn-outline-secondary" title="Reset Filters"><i class="bx bx-refresh"></i></a>
-                </div>
-            </form>
-        </div>
+            </div>
+            <div class="col-xl-3 col-lg-3 col-md-6 col-sm-6">
+                <label class="form-label fw-bold small text-uppercase" style="letter-spacing: 0.04em;">Status Filter</label>
+                <select name="status" class="form-select" onchange="this.form.submit()">
+                    <option value="">All Statuses</option>
+                    <option value="open" {{ request('status') == 'open' ? 'selected' : '' }}>Open</option>
+                    <option value="in_progress" {{ request('status') == 'in_progress' ? 'selected' : '' }}>In Progress</option>
+                    <option value="closed" {{ request('status') == 'closed' ? 'selected' : '' }}>Closed</option>
+                    <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                </select>
+            </div>
+            <div class="col-xl-3 col-lg-3 col-md-6 col-sm-6">
+                <label class="form-label fw-bold small text-uppercase" style="letter-spacing: 0.04em;">Department</label>
+                <select name="department_id" class="form-select" onchange="this.form.submit()">
+                    <option value="">All Departments</option>
+                    @foreach($departments as $dept)
+                        <option value="{{ $dept->id }}" {{ request('department_id') == $dept->id ? 'selected' : '' }}>
+                            {{ $dept->dpt_name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-xl-2 col-lg-3 col-md-6 col-12 d-flex gap-2">
+                <button type="submit" class="btn btn-rec-primary flex-grow-1 justify-content-center" style="white-space: nowrap !important; min-width: 90px; height: 38.6px; padding: 0.45rem 1rem;">
+                    <i class="bx bx-filter-alt me-1"></i> Filter
+                </button>
+                <a href="{{ route('recruitment.index') }}" class="btn btn-outline-secondary" title="Reset Filters" style="height: 38.6px; width: 38.6px; min-width: 38.6px; padding: 0; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <i class="bx bx-refresh fs-5"></i>
+                </a>
+            </div>
+        </form>
     </div>
 
     {{-- REQUIREMENTS TABLE --}}
@@ -415,7 +973,7 @@
                     @forelse($requirements as $req)
                     <tr>
                         <td>
-                            <div class="fw-bold text-dark fs-6">{{ $req->title }}</div>
+                            <div class="fw-bold fs-6">{{ $req->title }}</div>
                             <span class="badge-employment">{{ $req->employment_type }}</span>
                         </td>
                         <td>
@@ -428,7 +986,7 @@
                             <span class="text-muted small">{{ $req->experience_required ?? 'Not Specified' }}</span>
                         </td>
                         <td>
-                            <div class="fw-semibold text-dark small">{{ $req->salary_range ?? 'Negotiable' }}</div>
+                            <div class="fw-semibold small">{{ $req->salary_range ?? 'Negotiable' }}</div>
                             <small class="text-muted"><i class="bx bx-map-pin"></i> {{ $req->location ?? 'Headquarters' }}</small>
                         </td>
                         <td>
@@ -437,7 +995,7 @@
                             </span>
                         </td>
                         <td>
-                            <div class="small fw-semibold text-dark">{{ $req->created_at->format('M d, Y') }}</div>
+                            <div class="small fw-semibold">{{ $req->created_at->format('M d, Y') }}</div>
                             <small class="text-muted">By {{ $req->creator?->name ?? 'System' }}</small>
                         </td>
                         <td class="text-end">
@@ -505,9 +1063,9 @@
                     {{-- VIEW REQUIREMENT DETAIL MODAL --}}
                     <div class="modal fade" id="viewReqModal-{{ $req->id }}" tabindex="-1" aria-hidden="true">
                         <div class="modal-dialog modal-lg modal-dialog-centered">
-                            <div class="modal-content">
-                                <div class="modal-header bg-purple text-white">
-                                    <h5 class="modal-title text-white fw-bold"><i class="bx bx-briefcase me-1"></i> {{ $req->title }}</h5>
+                            <div class="modal-content border-0 shadow-lg">
+                                <div class="modal-header" style="background: linear-gradient(135deg, #065f46 0%, #047857 100%); color: #ffffff;">
+                                    <h5 class="modal-title fw-bold" style="color: #ffffff !important;"><i class="bx bx-briefcase me-2" style="color: #ffffff !important;"></i> {{ $req->title }}</h5>
                                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                                 </div>
                                 <div class="modal-body p-4">
@@ -521,52 +1079,52 @@
 
                                     <div class="row g-3 mb-4">
                                         <div class="col-sm-6">
-                                            <div class="p-3 bg-light rounded">
-                                                <small class="text-muted d-block fw-bold">Department</small>
-                                                <span class="fw-semibold text-dark">{{ $req->department_name ?? 'General' }}</span>
+                                            <div class="p-3 bg-light rounded-3">
+                                                <small class="text-muted d-block fw-bold mb-1">Department</small>
+                                                <span class="fw-semibold">{{ $req->department_name ?? 'General' }}</span>
                                             </div>
                                         </div>
                                         <div class="col-sm-6">
-                                            <div class="p-3 bg-light rounded">
-                                                <small class="text-muted d-block fw-bold">Vacancies / Positions</small>
-                                                <span class="fw-bold text-purple">{{ $req->positions }} Position(s)</span>
+                                            <div class="p-3 bg-light rounded-3">
+                                                <small class="text-muted d-block fw-bold mb-1">Vacancies / Positions</small>
+                                                <span class="fw-bold text-success">{{ $req->positions }} Position(s)</span>
                                             </div>
                                         </div>
                                         <div class="col-sm-6">
-                                            <div class="p-3 bg-light rounded">
-                                                <small class="text-muted d-block fw-bold">Experience Required</small>
-                                                <span class="fw-semibold text-dark">{{ $req->experience_required ?? 'N/A' }}</span>
+                                            <div class="p-3 bg-light rounded-3">
+                                                <small class="text-muted d-block fw-bold mb-1">Experience Required</small>
+                                                <span class="fw-semibold">{{ $req->experience_required ?? 'N/A' }}</span>
                                             </div>
                                         </div>
                                         <div class="col-sm-6">
-                                            <div class="p-3 bg-light rounded">
-                                                <small class="text-muted d-block fw-bold">Salary & Location</small>
-                                                <span class="fw-semibold text-dark">{{ $req->salary_range ?? 'Negotiable' }} | {{ $req->location ?? 'Headquarters' }}</span>
+                                            <div class="p-3 bg-light rounded-3">
+                                                <small class="text-muted d-block fw-bold mb-1">Salary & Location</small>
+                                                <span class="fw-semibold">{{ $req->salary_range ?? 'Negotiable' }} | {{ $req->location ?? 'Headquarters' }}</span>
                                             </div>
                                         </div>
                                     </div>
 
                                     @if($req->description)
                                     <div class="mb-3">
-                                        <h6 class="fw-bold text-dark"><i class="bx bx-text me-1"></i> Job Description</h6>
-                                        <div class="p-3 bg-white border rounded text-secondary" style="white-space: pre-line;">{{ $req->description }}</div>
+                                        <h6 class="fw-bold mb-2"><i class="bx bx-text me-1 text-success"></i> Job Description</h6>
+                                        <div class="p-3 bg-light border rounded-3" style="white-space: pre-line;">{{ $req->description }}</div>
                                     </div>
                                     @endif
 
                                     @if($req->requirements_summary)
                                     <div class="mb-3">
-                                        <h6 class="fw-bold text-dark"><i class="bx bx-list-check me-1"></i> Candidate Requirements & Qualifications</h6>
-                                        <div class="p-3 bg-white border rounded text-secondary" style="white-space: pre-line;">{{ $req->requirements_summary }}</div>
+                                        <h6 class="fw-bold mb-2"><i class="bx bx-list-check me-1 text-success"></i> Candidate Requirements & Qualifications</h6>
+                                        <div class="p-3 bg-light border rounded-3" style="white-space: pre-line;">{{ $req->requirements_summary }}</div>
                                     </div>
                                     @endif
 
-                                    <div class="alert alert-info d-flex align-items-center mb-0 mt-3">
+                                    <div class="alert alert-info d-flex align-items-center mb-0 mt-3 rounded-3">
                                         <i class="bx bx-bell me-2 fs-4"></i>
                                         <small>Notification regarding this requirement has been broadcasted to all employees, managers, and HR personnel.</small>
                                     </div>
                                 </div>
                                 <div class="modal-footer d-flex justify-content-between">
-                                    <a href="{{ route('recruitment.download', $req->id) }}" class="btn btn-purple-primary">
+                                    <a href="{{ route('recruitment.download', $req->id) }}" class="btn btn-rec-primary">
                                         <i class="bx bx-download me-1"></i> Download Requirement PDF
                                     </a>
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -582,7 +1140,7 @@
                                 <h5 class="text-secondary fw-bold">No Job Requirements Found</h5>
                                 <p class="text-muted mb-3">There are no job requirements posted at this moment.</p>
                                 @if(auth()->user()?->role === 'admin')
-                                <button class="btn btn-purple-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createRequirementModal">
+                                <button class="btn btn-rec-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createRequirementModal">
                                     <i class="bx bx-plus-circle me-1"></i> Add First Requirement
                                 </button>
                                 @endif
@@ -600,20 +1158,20 @@
 {{-- CREATE NEW REQUIREMENT MODAL (ADMIN ONLY) --}}
 <div class="modal fade" id="createRequirementModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content">
+        <div class="modal-content border-0 shadow-lg">
             <form method="POST" action="{{ route('recruitment.store') }}">
                 @csrf
-                <div class="modal-header bg-purple text-white">
-                    <h5 class="modal-title text-white fw-bold"><i class="bx bx-plus-circle me-1"></i> Create New Recruitment Requirement</h5>
+                <div class="modal-header" style="background: linear-gradient(135deg, #065f46 0%, #047857 100%); color: #ffffff;">
+                    <h5 class="modal-title fw-bold" style="color: #ffffff !important;"><i class="bx bx-plus-circle me-2" style="color: #ffffff !important;"></i> Create New Recruitment Requirement</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-4">
 
-                    <div class="alert alert-purple d-flex align-items-center mb-4" style="background: #f3e8ff; border: 1px solid #d8b4fe; color: #5b21b6;">
-                        <i class="bx bx-bell-plus me-2 fs-3"></i>
+                    <div class="alert d-flex align-items-center mb-4 rounded-3" style="background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46;">
+                        <i class="bx bx-bell-plus me-2 fs-3 text-success"></i>
                         <div>
                             <strong>Automatic All-Role Notification:</strong>
-                            Submitting this new requirement will automatically send an instant in-app notification to <strong>all Employees, Managers, and HR staff</strong>.
+                            Submitting this new requirement will automatically broadcast an in-app notification to <strong>all Employees, Managers, and HR staff</strong>.
                         </div>
                     </div>
 
@@ -676,7 +1234,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-purple-primary px-4"><i class="bx bx-paper-plane me-1"></i> Create & Broadcast Requirement</button>
+                    <button type="submit" class="btn btn-rec-primary px-4"><i class="bx bx-paper-plane me-1"></i> Create & Broadcast Requirement</button>
                 </div>
             </form>
         </div>

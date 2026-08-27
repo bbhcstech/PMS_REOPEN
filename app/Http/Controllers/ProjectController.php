@@ -30,13 +30,35 @@ class ProjectController extends Controller
 {
    public function index(Request $request)
 {
-    $query = Project::with(['client', 'users.employeeDetail', 'latestUpdate.employee'])->withCount('tasks')->whereNull('deleted_at');
     $viewer = auth()->user();
     $isEmployee = $viewer?->role === 'employee';
 
+    $query = Project::with([
+        'client',
+        'users.employeeDetail',
+        'latestUpdate.employee',
+        'tasks' => function ($q) use ($viewer, $isEmployee) {
+            if ($isEmployee && $viewer) {
+                $q->where(function ($taskScope) use ($viewer) {
+                    $taskScope->whereHas('assignees', fn ($assignees) => $assignees->where('users.id', $viewer->id))
+                        ->orWhereRaw('FIND_IN_SET(?, assigned_to)', [$viewer->id]);
+                });
+            }
+            $q->orderBy('title');
+        }
+    ])->withCount('tasks')->whereNull('deleted_at');
+
     if ($isEmployee) {
-        $query->whereHas('users', fn ($user) => $user->where('users.id', auth()->id()));
-    } elseif ($viewer && $viewer->normalizedRole() !== 'admin') {
+        $query->where(function ($q) use ($viewer) {
+            $q->whereHas('users', fn ($user) => $user->where('users.id', $viewer->id))
+              ->orWhereHas('tasks', function ($t) use ($viewer) {
+                  $t->where(function ($taskScope) use ($viewer) {
+                      $taskScope->whereHas('assignees', fn ($assignees) => $assignees->where('users.id', $viewer->id))
+                          ->orWhereRaw('FIND_IN_SET(?, assigned_to)', [$viewer->id]);
+                  });
+              });
+        });
+    } elseif ($viewer && ! $this->canManageProjects()) {
         $visibleUserIds = $viewer->visibleEmployeeIds()->push($viewer->id)->unique()->values();
         $query->whereHas('users', fn ($user) => $user->whereIn('users.id', $visibleUserIds));
     }
@@ -85,9 +107,14 @@ class ProjectController extends Controller
 
     if ($request->filled('progress')) {
         $query->where(function($q) use ($request) {
-            foreach ($request->progress as $range) {
-                [$min, $max] = explode('-', $range);
-                $q->orWhereBetween('completion_percent', [(int)$min, (int)$max]);
+            $progressItems = is_array($request->progress) ? $request->progress : explode(',', (string)$request->progress);
+            foreach ($progressItems as $range) {
+                if (is_string($range) && str_contains($range, '-')) {
+                    [$min, $max] = explode('-', $range);
+                    $q->orWhereBetween('completion_percent', [(int)$min, (int)$max]);
+                } elseif (is_numeric($range)) {
+                    $q->orWhere('completion_percent', (int)$range);
+                }
             }
         });
     }
@@ -106,7 +133,7 @@ class ProjectController extends Controller
 
 public function create()
 {
-    abort_unless(auth()->user()?->role === 'admin', 403);
+    abort_unless($this->canManageProjects(), 403);
 
     $clients        = Client::all();
 $users = User::select('users.id', 'users.name', 'employee_details.employee_id')
@@ -169,7 +196,7 @@ $users = User::select('users.id', 'users.name', 'employee_details.employee_id')
 
 public function store(Request $request)
 {
-    abort_unless(auth()->user()?->role === 'admin', 403);
+    abort_unless($this->canManageProjects(), 403);
 
     Log::info('Project Request:', $request->all());
 
@@ -316,7 +343,7 @@ public function store(Request $request)
 
 public function edit($id)
 {
-    abort_unless(auth()->user()?->role === 'admin', 403);
+    abort_unless($this->canManageProjects(), 403);
 
     $project = Project::with('users')->findOrFail($id);
 
@@ -354,7 +381,7 @@ public function edit($id)
 
  public function update(Request $request, $id)
 {
-    abort_unless(auth()->user()?->role === 'admin', 403);
+    abort_unless($this->canManageProjects(), 403);
 
     Log::info('Project Update Request:', $request->all());
 
@@ -479,49 +506,101 @@ public function edit($id)
 
     public function destroy($id)
     {
-        abort_unless(auth()->user()?->role === 'admin', 403);
+        abort_unless($this->canManageProjects(), 403);
         Project::destroy($id);
         return redirect()->route('projects.index')->with('success', 'Project deleted successfully.');
     }
 
     public function show($id)
     {
-        $project = Project::with(['client', 'users.employeeDetail'])->findOrFail($id);
+        $project = Project::with([
+            'client',
+            'users.employeeDetail.designation',
+            'tasks.assignees',
+            'milestones',
+            'files.uploadedBy',
+            'updates.employee',
+            'expenses',
+            'projectNotes',
+            'discussions.user',
+            'timelogs.user',
+            'tickets'
+        ])->findOrFail($id);
+
         $this->authorizeProjectAccess($project);
 
-        return view('admin.projects.show', compact('project'));
+        $stats = [
+            'total_tasks' => $project->tasks->count(),
+            'completed_tasks' => $project->tasks->where('status', 'Completed')->count(),
+            'pending_tasks' => $project->tasks->where('status', '!=', 'Completed')->count(),
+            'total_hours' => round((float) $project->timelogs->sum('total_hours'), 2),
+            'total_expenses' => (float) $project->expenses->sum('price'),
+            'milestones_count' => $project->milestones->count(),
+            'files_count' => $project->files->count(),
+            'members_count' => $project->users->count(),
+        ];
+
+        return view('admin.projects.show', compact('project', 'stats'));
     }
 
     public function ganttChart($projectId)
     {
-        $project = Project::with('tasks')->findOrFail($projectId);
+        $project = Project::with(['tasks.assignees', 'milestones'])->findOrFail($projectId);
         $this->authorizeProjectAccess($project);
 
-        return view('admin.projects.gantt', compact('project'));
+        $min = $project->tasks->whereNotNull('start_date')->min('start_date');
+        $max = $project->tasks->whereNotNull('due_date')->max('due_date');
+        $startDate = Carbon::parse($min ?? $project->start_date ?? now())->startOfWeek();
+        $endDate = Carbon::parse($max ?? $project->deadline ?? now()->addMonths(2))->endOfWeek();
+        if ($endDate->lt($startDate->copy()->addWeeks(4))) {
+            $endDate = $startDate->copy()->addWeeks(6)->endOfWeek();
+        }
+        $totalDays = max(1, $startDate->diffInDays($endDate) + 1);
+
+        return view('admin.projects.gantt', compact('project', 'startDate', 'endDate', 'totalDays'));
     }
 
     public function getGanttTasks($projectId)
     {
-        $project = Project::findOrFail($projectId);
+        $project = Project::with(['tasks.assignees'])->findOrFail($projectId);
         $this->authorizeProjectAccess($project);
 
-        $tasks = Task::where('project_id', $projectId)
-            ->whereNotNull('start_date')
-            ->whereNotNull('due_date')
-            ->get()
-            ->map(function ($task) {
-                $start = Carbon::parse($task->start_date);
-                $end = Carbon::parse($task->due_date);
-                if ($start->equalTo($end)) {
-                    $end->addDay();
+        $tasks = $project->tasks
+            ->map(function ($task) use ($project) {
+                $start = $task->start_date ? Carbon::parse($task->start_date) : ($project->start_date ? Carbon::parse($project->start_date) : now());
+                $end = $task->due_date ? Carbon::parse($task->due_date) : ($project->deadline ? Carbon::parse($project->deadline) : $start->copy()->addDays(7));
+                if ($end->lte($start)) {
+                    $end = $start->copy()->addDay();
                 }
+                $isCompleted = strtolower((string)$task->status) === 'completed' || (bool)$task->is_completed;
+                $progress = $isCompleted ? 100 : max(0, min(100, (int)($task->progress ?? 0)));
+                $statusKey = strtolower((string)$task->status ?: 'to do');
+
+                $customClass = match(true) {
+                    $isCompleted => 'bar-complete',
+                    $statusKey === 'doing' || $statusKey === 'in progress' || $progress > 0 => 'bar-progress',
+                    $statusKey === 'waiting for approval' => 'bar-waiting',
+                    default => 'bar-todo'
+                };
+
+                $assigneeNames = $task->assignees->pluck('name')->implode(', ');
+                $firstAssignee = $task->assignees->first();
+
                 return [
-                    'id' => $task->id,
+                    'id' => (string) $task->id,
                     'name' => $task->title,
-                    'start' => $start->toDateString(),
-                    'end' => $end->toDateString(),
-                    'progress' => $task->is_completed ? 100 : 0,
-                    'custom_class' => $task->is_completed ? 'bar-complete' : 'bar-incomplete'
+                    'code' => $task->task_short_code ?: 'TASK-' . str_pad($task->id, 4, '0', STR_PAD_LEFT),
+                    'start' => $start->format('Y-m-d'),
+                    'end' => $end->format('Y-m-d'),
+                    'progress' => $progress,
+                    'status' => $task->status ?: 'To Do',
+                    'priority' => ucfirst($task->priority ?? 'Medium'),
+                    'assignees' => $assigneeNames ?: 'Unassigned',
+                    'assignee_avatar' => $firstAssignee?->profile_image ? asset($firstAssignee->profile_image) : null,
+                    'assignee_initial' => $firstAssignee ? strtoupper(mb_substr($firstAssignee->name, 0, 1)) : null,
+                    'dependencies' => $task->parent_id ? (string) $task->parent_id : '',
+                    'custom_class' => $customClass,
+                    'url' => route('tasks.show', $task->id)
                 ];
             });
 
@@ -619,7 +698,7 @@ public function clientstore(Request $request)
 
     public function duplicate(Request $request, $id)
     {
-        abort_unless(auth()->user()?->role === 'admin', 403);
+        abort_unless($this->canManageProjects(), 403);
 
         $request->validate([
             'project_name' => 'required|string|max:255',
@@ -798,7 +877,7 @@ public function clientstore(Request $request)
 
   public function bulkStatus(Request $request)
 {
-    abort_unless(auth()->user()?->role === 'admin', 403);
+    abort_unless($this->canManageProjects(), 403);
 
     $request->validate([
         'ids' => 'required|array',
@@ -991,7 +1070,7 @@ public function storeUpdate(Request $request, Project $project)
         $project->loadMissing('users:id');
         abort_unless($project->users->contains('id', $user->id), 403);
     } else {
-        abort_unless($user && $user->role === 'admin', 403);
+        abort_unless($user && $this->canManageProjects(), 403);
     }
 
     $validated = $request->validate([
@@ -1022,7 +1101,7 @@ public function storeUpdate(Request $request, Project $project)
 
 public function bulkDelete(Request $request)
 {
-    abort_unless(auth()->user()?->role === 'admin', 403);
+    abort_unless($this->canManageProjects(), 403);
 
     $ids = $request->input('ids', []);
 
@@ -1041,6 +1120,11 @@ public function bulkDelete(Request $request)
     ]);
 }
 
+private function canManageProjects(): bool
+{
+    return in_array(strtolower((string) auth()->user()?->role), ['admin', 'hr', 'manager'], true);
+}
+
 private function authorizeProjectAccess(Project $project): void
 {
     $user = auth()->user();
@@ -1049,7 +1133,7 @@ private function authorizeProjectAccess(Project $project): void
         abort(403);
     }
 
-    if ($user->role === 'admin') {
+    if (in_array(strtolower((string) $user->role), ['admin', 'hr', 'manager'], true)) {
         return;
     }
 
@@ -1091,7 +1175,7 @@ private function recordProjectUpdate(Project $project, ?string $status, int $pro
 
 public function import(Request $request)
 {
-    abort_unless(auth()->user()?->role === 'admin', 403);
+    abort_unless($this->canManageProjects(), 403);
 
     $request->validate([
         'project_import' => ['required', 'file', 'mimes:csv,txt', 'max:4096'],
@@ -1158,10 +1242,5 @@ public function import(Request $request)
         return back()->withErrors(['project_import' => 'Project import failed. Please check the CSV format.']);
     }
 }
-
-
-
-
-
-
 }
+

@@ -2,10 +2,18 @@
 
 @section('content')
 <div class="container mt-4">
-    <div class="mb-3">
-        <h4>Ticket #{{ $ticket->id }}</h4>
-        <small class="text-muted">Home • Tickets • Ticket #{{ $ticket->id }}</small>
-    </div>
+    @if($ticket->project)
+        {{-- Standardized Project Header & 13-Tab Navigation --}}
+        @include('admin.projects.partials.header', [
+            'project' => $ticket->project,
+            'activeTab' => 'tickets'
+        ])
+    @else
+        <div class="mb-3">
+            <h4>Ticket #{{ $ticket->id }}</h4>
+            <small class="text-muted">Home • Tickets • Ticket #{{ $ticket->id }}</small>
+        </div>
+    @endif
 
     <div class="card mb-4">
         <div class="card-body">

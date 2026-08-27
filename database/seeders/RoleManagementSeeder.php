@@ -32,6 +32,7 @@ class RoleManagementSeeder extends Seeder
             ['name' => 'Recruitment', 'slug' => 'recruitment', 'route_name' => 'recruitment.index', 'route_prefix' => 'recruitment', 'sort_order' => 115],
             ['name' => 'Appraisal', 'slug' => 'appraisal', 'route_name' => 'appraisal.index', 'route_prefix' => 'appraisal', 'sort_order' => 118],
             ['name' => 'Reports', 'slug' => 'reports', 'icon' => 'bx bx-bar-chart-alt', 'sort_order' => 120],
+            ['name' => 'Work', 'slug' => 'work', 'icon' => 'bx bx-store', 'route_name' => 'projects.index', 'sort_order' => 125],
             ['name' => 'Projects', 'slug' => 'projects', 'route_name' => 'projects.index', 'route_prefix' => 'projects', 'sort_order' => 130],
             ['name' => 'Tasks', 'slug' => 'tasks', 'route_name' => 'tasks.index', 'route_prefix' => 'tasks', 'sort_order' => 140],
             ['name' => 'Timesheets', 'slug' => 'timelogs', 'route_name' => 'timelogs.index', 'route_prefix' => 'timelogs', 'sort_order' => 150],
@@ -53,28 +54,64 @@ class RoleManagementSeeder extends Seeder
                 ['slug' => $module['slug']],
                 array_merge(['is_core' => true, 'is_active' => true, 'description' => null], $module)
             );
+
+            try {
+                $tenantMod = \Illuminate\Support\Facades\DB::connection('tenant')->table('modules')->where('slug', $module['slug'])->first();
+                if (! $tenantMod) {
+                    \Illuminate\Support\Facades\DB::connection('tenant')->table('modules')->insert([
+                        'name' => $module['name'],
+                        'slug' => $module['slug'],
+                        'icon' => $module['icon'] ?? null,
+                        'description' => $module['description'] ?? null,
+                        'route_prefix' => $module['route_prefix'] ?? null,
+                        'route_name' => $module['route_name'] ?? null,
+                        'parent_id' => $module['parent_id'] ?? null,
+                        'is_core' => 1,
+                        'is_active' => 1,
+                        'sort_order' => $module['sort_order'] ?? 0,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                } else {
+                    \Illuminate\Support\Facades\DB::connection('tenant')->table('modules')->where('id', $tenantMod->id)->update([
+                        'name' => $module['name'],
+                        'icon' => $module['icon'] ?? $tenantMod->icon,
+                        'route_name' => $module['route_name'] ?? $tenantMod->route_name,
+                        'is_core' => 1,
+                        'is_active' => 1,
+                        'sort_order' => $module['sort_order'] ?? $tenantMod->sort_order,
+                        'updated_at' => now(),
+                    ]);
+                }
+            } catch (\Throwable $e) {}
         }
 
         $permissionMap = [
             'admin' => Module::pluck('slug')->all(),
-            'manager' => ['dashboard', 'notifications', 'organization', 'teams', 'hr-management', 'employees', 'projects', 'tasks', 'attendance', 'leaves', 'reports', 'recruitment', 'appraisal'],
-            'hr' => ['dashboard', 'notifications', 'employees', 'attendance', 'leaves', 'timelogs', 'payroll', 'reports', 'recruitment', 'appraisal'],
+            'manager' => ['dashboard', 'notifications', 'organization', 'teams', 'hr-management', 'employees', 'work', 'projects', 'tasks', 'timelogs', 'attendance', 'leaves', 'reports', 'recruitment', 'appraisal'],
+            'hr' => ['dashboard', 'notifications', 'employees', 'attendance', 'leaves', 'work', 'projects', 'tasks', 'timelogs', 'payroll', 'reports', 'recruitment', 'appraisal'],
             'employee' => ['dashboard', 'notifications', 'projects', 'tasks', 'attendance', 'timelogs', 'leaves', 'recruitment', 'appraisal'],
         ];
 
+        $workSlugs = ['work', 'projects', 'tasks', 'timelogs'];
+        $tenantModules = \Illuminate\Support\Facades\DB::connection('tenant')->table('modules')->get();
+
         foreach ($permissionMap as $role => $slugs) {
-            foreach (Module::all() as $module) {
+            foreach ($tenantModules as $module) {
                 $enabled = in_array($module->slug, $slugs, true);
+                $isWorkModule = in_array($module->slug, $workSlugs, true);
+                $isManagerOrHr = in_array($role, ['manager', 'hr'], true);
+
                 RolePermission::updateOrCreate(
                     ['role' => $role, 'module_id' => $module->id],
                     [
                         'can_view' => $enabled,
-                        'can_create' => $role === 'admin',
-                        'can_edit' => $role === 'admin',
-                        'can_delete' => $role === 'admin',
-                        'can_approve' => $role === 'admin' || ($enabled && in_array($role, ['manager', 'hr'], true) && in_array($module->slug, ['leaves', 'tasks'], true)),
-                        'can_export' => $role === 'admin' || ($enabled && in_array($role, ['manager', 'hr'], true) && $module->slug === 'reports'),
-                        'can_assign' => $role === 'admin' || ($enabled && $role === 'manager' && in_array($module->slug, ['projects', 'tasks'], true)),
+                        'can_create' => $role === 'admin' || ($enabled && $isManagerOrHr && $isWorkModule),
+                        'can_edit' => $role === 'admin' || ($enabled && $isManagerOrHr && $isWorkModule),
+                        'can_delete' => $role === 'admin' || ($enabled && $isManagerOrHr && $isWorkModule),
+                        'can_approve' => $role === 'admin' || ($enabled && $isManagerOrHr && (in_array($module->slug, ['leaves', 'tasks', 'timelogs'], true))),
+                        'can_export' => $role === 'admin' || ($enabled && $isManagerOrHr && ($module->slug === 'reports' || $isWorkModule)),
+                        'can_assign' => $role === 'admin' || ($enabled && $isManagerOrHr && in_array($module->slug, ['projects', 'tasks'], true)),
                     ]
                 );
             }

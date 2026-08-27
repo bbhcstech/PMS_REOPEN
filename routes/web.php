@@ -1306,6 +1306,7 @@ Route::middleware(['auth'])->group(function () {
     // Recruitment Module Routes (Under HR)
     Route::get('/admin/hr/recruitment', [RecruitmentController::class, 'index'])->name('recruitment.index');
     Route::post('/admin/hr/recruitment', [RecruitmentController::class, 'store'])->name('recruitment.store');
+    Route::get('/admin/hr/recruitment/{id}', [RecruitmentController::class, 'show'])->name('recruitment.show');
     Route::get('/admin/hr/recruitment/{id}/download', [RecruitmentController::class, 'download'])->name('recruitment.download');
     Route::post('/admin/hr/recruitment/{id}/status', [RecruitmentController::class, 'updateStatus'])->name('recruitment.status');
     Route::delete('/admin/hr/recruitment/{id}', [RecruitmentController::class, 'destroy'])->name('recruitment.destroy');

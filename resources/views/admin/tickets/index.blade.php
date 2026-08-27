@@ -1,16 +1,30 @@
 @extends('admin.layout.app')
 
 @section('content')
+@php
+    $project = $project ?? $currentProject ?? (request('project_id') ? \App\Models\Project::find(request('project_id')) : null);
+@endphp
 <div class="container-fluid mt-4">
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4 class="mb-0">Tickets</h4>
-    </div>
+    @if($project)
+        {{-- Standardized Project Header & 13-Tab Navigation --}}
+        @include('admin.projects.partials.header', [
+            'project' => $project,
+            'activeTab' => 'tickets'
+        ])
+    @else
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="mb-0">Tickets</h4>
+        </div>
+    @endif
 
     <!-- Filters -->
     <div class="card shadow-sm border-0 mb-4">
         <div class="card-body">
             <form method="GET" action="{{ route('tickets.index') }}">
+                @if(request('project_id'))
+                    <input type="hidden" name="project_id" value="{{ request('project_id') }}">
+                @endif
                 <div class="row g-3 align-items-end">
 
                     <!-- Date Range -->
@@ -38,11 +52,11 @@
                     </div>
 
                     <!-- Button -->
-                    <div class="col-md-2 d-flex">
-                        <button type="submit" class="btn btn-outline-primary w-100 me-2">
+                    <div class="col-md-auto d-flex align-items-center gap-2">
+                        <button type="submit" class="btn btn-outline-primary px-3 text-nowrap" style="white-space: nowrap;">
                             <i class="fas fa-filter me-1"></i> Filter
                         </button>
-                        <a href="{{ route('tickets.index') }}" class="btn btn-outline-secondary w-100">
+                        <a href="{{ request('project_id') ? route('tickets.index', ['project_id' => request('project_id')]) : route('tickets.index') }}" class="btn btn-outline-secondary px-3 text-nowrap" style="white-space: nowrap;">
                             <i class="fas fa-redo me-1"></i> Reset
                         </a>
                     </div>
@@ -249,39 +263,7 @@
     $(document).ready(function () {
         // init datatable
         let ticketsDatatable = $('#tickets-table').DataTable({
-            dom: 'Bfrtip',
-            buttons: [
-                {
-                    extend: 'copy',
-                    exportOptions: {
-                        columns: ':not(:first-child):not(:last-child)'
-                    }
-                },
-                {
-                    extend: 'csv',
-                    exportOptions: {
-                        columns: ':not(:first-child):not(:last-child)'
-                    }
-                },
-                {
-                    extend: 'excel',
-                    exportOptions: {
-                        columns: ':not(:first-child):not(:last-child)'
-                    }
-                },
-                {
-                    extend: 'pdf',
-                    exportOptions: {
-                        columns: ':not(:first-child):not(:last-child)'
-                    }
-                },
-                {
-                    extend: 'print',
-                    exportOptions: {
-                        columns: ':not(:first-child):not(:last-child)'
-                    }
-                }
-            ],
+            dom: 'rftip',
             pageLength: 10,
             lengthMenu: [10, 25, 50, 100],
             language: {

@@ -48,8 +48,6 @@ class NotificationUrlResolver
             ['leave_id', 'leaves.show'],
             ['apology_letter_id', 'leaves.apology-letters.show'],
             ['leave_apology_letter_id', 'leaves.apology-letters.show'],
-            ['requirement_id', 'recruitment.index'],
-            ['recruitment_id', 'recruitment.index'],
         ];
 
         foreach ($candidates as [$key, $route]) {
@@ -73,7 +71,11 @@ class NotificationUrlResolver
         }
 
         if (data_get($data, 'requirement_id') || data_get($data, 'recruitment_id')) {
-            return self::routeIfExists('recruitment.index');
+            $requirementId = data_get($data, 'requirement_id') ?: data_get($data, 'recruitment_id');
+
+            return Route::has('recruitment.show')
+                ? route('recruitment.show', $requirementId)
+                : self::routeIfExists('recruitment.index');
         }
 
         return null;

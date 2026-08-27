@@ -640,21 +640,6 @@
         flex-wrap: wrap;
     }
 
-    .selected-count-badge {
-        min-height: 36px;
-        padding: 0.45rem 0.9rem;
-        border-radius: 999px;
-        background: #f1f5f9;
-        color: #475569;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.4rem;
-        font-size: 1rem;
-        font-weight: 800;
-        border: 1px solid #e2e8f0;
-    }
-
-    .btn-clear-selection,
     .btn-export-menu {
         min-height: 38px;
         border: 0;
@@ -666,17 +651,6 @@
         font-size: 1rem;
         font-weight: 800;
         transition: var(--spring-transition);
-    }
-
-    .btn-clear-selection {
-        background: #e2e8f0;
-        color: #475569;
-    }
-
-    .btn-clear-selection:hover {
-        background: #cbd5e1;
-        color: #0f172a;
-        transform: translateY(-2px);
     }
 
     .btn-export-menu {
@@ -1173,13 +1147,6 @@
         color: #fbcfe8;
     }
 
-    html[data-pms-theme="dark"] .selected-count-badge,
-    html[data-pms-theme="dark"] .btn-clear-selection {
-        background: #183026;
-        color: #d9f1e4;
-        border-color: rgba(122, 240, 181, 0.15);
-    }
-
     html[data-pms-theme="dark"] .btn-export-menu {
         background: #183026;
         color: #d9f1e4;
@@ -1449,12 +1416,6 @@
             <div class="table-header">
                 <h6><i class="fas fa-table"></i>Attendance Summary</h6>
                 <div class="attendance-table-actions">
-                    <span class="selected-count-badge" id="attendanceSelectedCount">
-                        <i class="fas fa-check-square"></i>0 selected
-                    </span>
-                    <button type="button" class="btn-clear-selection" id="attendanceClearSelection">
-                        <i class="fas fa-times"></i>Clear
-                    </button>
                     <div class="dropdown attendance-export-dropdown">
                         <button class="btn-export-menu dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fas fa-cloud-download-alt"></i> Export
@@ -1523,15 +1484,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
 
-        const exportRows = function(idx, data, node) {
-            const selectedRows = $('#attendanceTable .attendance-row-checkbox:checked');
-            if (selectedRows.length > 0) {
-                return $(node).find('.attendance-row-checkbox').is(':checked');
-            }
-
-            return true;
-        };
-
         const exportFormat = {
             body: function(data, row, column, node) {
                 const cell = $(node);
@@ -1562,7 +1514,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     title: 'Attendance Summary',
                     exportOptions: {
                         columns: exportColumnIndexes,
-                        rows: exportRows,
                         modifier: { search: 'applied' },
                         stripHtml: true,
                         format: exportFormat
@@ -1575,7 +1526,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     filename: 'attendance-summary',
                     exportOptions: {
                         columns: exportColumnIndexes,
-                        rows: exportRows,
                         modifier: { search: 'applied' },
                         stripHtml: true,
                         format: exportFormat
@@ -1588,7 +1538,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     filename: 'attendance-summary',
                     exportOptions: {
                         columns: exportColumnIndexes,
-                        rows: exportRows,
                         modifier: { search: 'applied' },
                         stripHtml: true,
                         format: exportFormat
@@ -1603,7 +1552,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     orientation: 'landscape',
                     exportOptions: {
                         columns: exportColumnIndexes,
-                        rows: exportRows,
                         modifier: { search: 'applied' },
                         stripHtml: true,
                         format: exportFormat
@@ -1615,7 +1563,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     title: 'Attendance Summary',
                     exportOptions: {
                         columns: exportColumnIndexes,
-                        rows: exportRows,
                         modifier: { search: 'applied' },
                         stripHtml: true,
                         format: exportFormat
@@ -1635,7 +1582,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         table.buttons().container().addClass('attendance-page-export-buttons').appendTo('.table-card');
-        updateAttendanceSelection();
     }
 
     initDataTable();
@@ -1707,7 +1653,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 target.innerHTML = json.html;
                 updateAttendanceStats(json.meta);
                 initDataTable();
-                updateAttendanceSelection();
                 window.history.replaceState({}, '', "{{ route('attendance.index') }}" + (data ? '?' + data : ''));
 
                 if (showSuccess) {
@@ -1742,50 +1687,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }, 250);
         });
     });
-
-    function updateAttendanceSelection() {
-        const rowCheckboxes = document.querySelectorAll('#attendanceTable .attendance-row-checkbox');
-        const checkedRows = document.querySelectorAll('#attendanceTable .attendance-row-checkbox:checked');
-        const selectAll = document.getElementById('attendanceSelectAll');
-        const selectedCount = document.getElementById('attendanceSelectedCount');
-
-        if (selectedCount) {
-            selectedCount.innerHTML = `<i class="fas fa-check-square"></i>${checkedRows.length} selected`;
-        }
-
-        if (selectAll) {
-            selectAll.checked = rowCheckboxes.length > 0 && checkedRows.length === rowCheckboxes.length;
-            selectAll.indeterminate = checkedRows.length > 0 && checkedRows.length < rowCheckboxes.length;
-        }
-
-        rowCheckboxes.forEach(function(checkbox) {
-            checkbox.closest('tr')?.classList.toggle('attendance-row-selected', checkbox.checked);
-        });
-    }
-
-    document.addEventListener('change', function(event) {
-        if (event.target && event.target.id === 'attendanceSelectAll') {
-            document.querySelectorAll('#attendanceTable .attendance-row-checkbox').forEach(function(checkbox) {
-                checkbox.checked = event.target.checked;
-            });
-            updateAttendanceSelection();
-        }
-
-        if (event.target && event.target.classList.contains('attendance-row-checkbox')) {
-            updateAttendanceSelection();
-        }
-    });
-
-    const clearSelectionButton = document.getElementById('attendanceClearSelection');
-    if (clearSelectionButton) {
-        clearSelectionButton.addEventListener('click', function() {
-            document.querySelectorAll('#attendanceTable .attendance-row-checkbox, #attendanceSelectAll').forEach(function(checkbox) {
-                checkbox.checked = false;
-                checkbox.indeterminate = false;
-            });
-            updateAttendanceSelection();
-        });
-    }
 
     // Notification function
     function showNotification(message, type = 'info') {

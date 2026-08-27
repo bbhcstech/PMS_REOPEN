@@ -45,7 +45,7 @@ class ChangePasswordSettingsController extends Controller
 
         $request->validate([
             'user_id' => 'required|exists:users,id',
-            'new_password' => 'required|string|min:8|confirmed',
+            'new_password' => 'required|string|confirmed',
         ]);
 
         $targetUser = User::findOrFail($request->user_id);

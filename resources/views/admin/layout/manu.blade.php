@@ -1042,6 +1042,16 @@
               </a>
             </li>
 
+            <!-- My Projects (for Employee) -->
+            @if($isEmployeeUser || $canSeeModule('projects'))
+            <li class="menu-item {{ (request()->routeIs('projects.*') && !request()->routeIs('projects.tasks.*') && !request()->routeIs('projects.timelogs.*')) ? 'active' : '' }}">
+              <a href="{{ route('projects.index') }}" class="menu-link" data-sidebar-key="my-projects">
+                  <i class="menu-icon tf-icons bx bx-briefcase-alt-2"></i>
+                  <div class="text-truncate" data-i18n="My Projects">My Projects</div>
+              </a>
+            </li>
+            @endif
+
             @if($canSeeModule('organization'))
             <li class="menu-item {{ request()->routeIs('organization.*') ? 'active' : '' }}">
               <a href="{{ route('organization.index') }}" class="menu-link" data-sidebar-key="organization">
@@ -1254,7 +1264,7 @@
             </li>
             @endif
 
-            @if($canSeeModule('work') && $canAnyModule(['projects', 'tasks', 'timelogs', 'timesheets']))
+            @if(($canSeeModule('work') || in_array(strtolower((string) auth()->user()?->role), ['admin', 'manager', 'hr'], true)) && ($canAnyModule(['projects', 'tasks', 'timelogs', 'timesheets']) || in_array(strtolower((string) auth()->user()?->role), ['admin', 'manager', 'hr'], true)))
             <li class="menu-item {{ request()->routeIs('projects.*') ||
                 request()->routeIs('tasks.*') || request()->routeIs('users.tasks.*') ||
                 request()->routeIs('timelogs.*') || request()->routeIs('task-timer.*') ||
@@ -1266,7 +1276,7 @@
                 </a>
 
                 <ul class="menu-sub">
-                    @if($canSeeModule('projects'))
+                    @if($canSeeModule('projects') || in_array(strtolower((string) auth()->user()?->role), ['admin', 'manager', 'hr'], true))
                         <li class="menu-item {{ (request()->routeIs('projects.*') && !request()->routeIs('projects.tasks.*') && !request()->routeIs('projects.timelogs.*')) ? 'active' : '' }}">
                             <a href="{{ route('projects.index') }}" class="menu-link" data-sidebar-key="projects">
                                 <div class="text-truncate" data-i18n="Landing">Projects</div>
@@ -1274,7 +1284,7 @@
                         </li>
                     @endif
 
-                    @if($canSeeModule('tasks'))
+                    @if($canSeeModule('tasks') || in_array(strtolower((string) auth()->user()?->role), ['admin', 'manager', 'hr'], true))
                     <li class="menu-item {{ request()->routeIs('tasks.*') || request()->routeIs('projects.tasks.*') || request()->routeIs('users.tasks.*') || request()->routeIs('task-timer.*') ? 'active' : '' }}">
                         <a href="{{ route('tasks.index') }}" class="menu-link" data-sidebar-key="tasks">
                             <div class="text-truncate" data-i18n="Pricing">Tasks</div>
@@ -1282,7 +1292,7 @@
                     </li>
                     @endif
 
-                    @if($canSeeModule('timelogs'))
+                    @if($canSeeModule('timelogs') || $canSeeModule('timesheets') || in_array(strtolower((string) auth()->user()?->role), ['admin', 'manager', 'hr'], true))
                         <li class="menu-item {{ request()->routeIs('timelogs.*') || request()->routeIs('projects.timelogs.*') ? 'active' : '' }}">
                             <a href="{{ route('timelogs.index') }}" class="menu-link" data-sidebar-key="timelogs">
                                 <div class="text-truncate" data-i18n="Payment">Timesheet</div>

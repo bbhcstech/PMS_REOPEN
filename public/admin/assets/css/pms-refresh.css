@@ -16,6 +16,38 @@
   --pms-ring: rgba(15, 116, 76, 0.18);
 }
 
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden !important;
+}
+
+html {
+  overflow-y: auto;
+}
+
+body {
+  overflow-y: visible !important;
+}
+
+.layout-wrapper,
+.layout-container,
+.layout-page,
+.content-wrapper {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.layout-wrapper {
+  width: 100%;
+  overflow-x: hidden;
+}
+
+.layout-page,
+.content-wrapper {
+  overflow-x: hidden;
+}
+
 html[data-pms-theme="dark"] {
   color-scheme: dark;
   --pms-bg: #07110d;
@@ -5756,3 +5788,34 @@ html[data-pms-theme="dark"] .content-wrapper .list-group-item {
     grid-template-columns: 1fr !important;
   }
 }
+
+/* ==========================================================================
+   RECRUITMENT POLICY CARD HEADER - GUARANTEED PURE WHITE STYLING
+   ========================================================================== */
+.policy-card-header,
+.policy-card-header *,
+.policy-card-header h5,
+.policy-card-header h5 span,
+.policy-card-header .policy-title,
+.policy-card-header .policy-title span,
+.policy-card-header p,
+.policy-card-header small,
+.policy-card-header .policy-icon-wrapper,
+.policy-card-header .policy-icon-wrapper i,
+.policy-card-header i,
+.policy-card-header .policy-meta-row,
+.policy-card-header .policy-meta-row *,
+.policy-card-header .policy-code-pill,
+.policy-card-header .policy-code-pill *,
+.policy-card-header .policy-updated-text,
+.policy-card-header .policy-updated-text *,
+.policy-card-header .btn-policy-toggle,
+.policy-card-header .btn-policy-toggle * {
+  color: #ffffff !important;
+}
+
+.policy-card-header .policy-status-pill,
+.policy-card-header .policy-status-pill * {
+  color: #065f46 !important;
+}
+
