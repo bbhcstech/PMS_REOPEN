@@ -639,6 +639,11 @@ html[data-pms-theme="dark"] .page-link {
   box-shadow: 0 12px 20px rgba(15, 116, 76, 0.2);
 }
 
+.nav-pills .nav-link.active *,
+.nav-tabs .nav-link.active * {
+  color: #ffffff !important;
+}
+
 .stat-card,
 .content-card,
 .welcome-card {

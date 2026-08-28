@@ -20,13 +20,23 @@
                 </div>
                 <div>
                     <h1>Create New Project</h1>
-                    <p>Fill in the details to create a new project</p>
+                    @if(!empty($isClientFixed) && $selectedClient)
+                        <p>Adding project under client <strong>{{ $selectedClient->name }}</strong></p>
+                    @else
+                        <p>Fill in the details to create a new project</p>
+                    @endif
                 </div>
             </div>
             <div class="header-actions">
-                <a href="{{ route('projects.index') }}" class="btn btn-outline">
-                    <i class="fas fa-arrow-left"></i> Back to Projects
-                </a>
+                @if(!empty($isClientFixed) && $selectedClient)
+                    <a href="{{ route('clients.show', $selectedClient->id) }}#projects" class="btn btn-outline">
+                        <i class="fas fa-arrow-left"></i> Back to {{ $selectedClient->name }}
+                    </a>
+                @else
+                    <a href="{{ route('projects.index') }}" class="btn btn-outline">
+                        <i class="fas fa-arrow-left"></i> Back to Projects
+                    </a>
+                @endif
             </div>
         </div>
 
@@ -243,20 +253,32 @@
 
                         <!-- Client -->
                         <div class="form-group">
-                            <label class="form-label">
-                                <i class="fas fa-user-tie"></i> Client <span class="text-danger">*</span>
+                            <label class="form-label d-flex align-items-center justify-content-between">
+                                <span><i class="fas fa-user-tie"></i> Client <span class="text-danger">*</span></span>
+                                @if(!empty($isClientFixed) && $selectedClient)
+                                    <span class="badge bg-light text-success border"><i class="fas fa-lock me-1"></i> Fixed Client</span>
+                                @endif
                             </label>
-                            <div class="input-group">
-                                <select name="client_id" id="client_id" class="form-control" required>
-                                    <option value="">Select Client</option>
-                                    @foreach($clients as $client)
-                                        <option value="{{ $client->id }}" {{ old('client_id') == $client->id ? 'selected' : '' }}>{{ $client->name }}</option>
-                                    @endforeach
-                                </select>
-                                <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#clientModal">
-                                    <i class="fas fa-plus"></i>
-                                </button>
-                            </div>
+                            @if(!empty($isClientFixed) && $selectedClient)
+                                <input type="hidden" name="client_id" value="{{ $selectedClient->id }}">
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light text-muted border-end-0"><i class="fas fa-lock"></i></span>
+                                    <input type="text" class="form-control bg-light fw-bold border-start-0" value="{{ $selectedClient->name }} ({{ $selectedClient->client_uid ?? ('CL-' . $selectedClient->id) }})" readonly style="cursor: not-allowed; color: #0f172a;">
+                                </div>
+                                <small class="form-hint text-success"><i class="fas fa-shield-alt me-1"></i> Project will be created under <strong>{{ $selectedClient->name }}</strong> (cannot be overridden).</small>
+                            @else
+                                <div class="input-group">
+                                    <select name="client_id" id="client_id" class="form-control" required>
+                                        <option value="">Select Client</option>
+                                        @foreach($clients as $c)
+                                            <option value="{{ $c->id }}" {{ old('client_id', $selectedClientId ?? null) == $c->id ? 'selected' : '' }}>{{ $c->name }}</option>
+                                        @endforeach
+                                    </select>
+                                    <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#clientModal">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                            @endif
                         </div>
 
                         <!-- Project Summary -->

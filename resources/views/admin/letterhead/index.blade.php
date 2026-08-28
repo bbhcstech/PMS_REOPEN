@@ -543,7 +543,7 @@
         </div>
     @endif
 
-    @if($errors->any())
+    @if(isset($errors) && $errors->any())
         <div class="alert alert-danger alert-dismissible fade show rounded-4 border-0 shadow-sm mb-4" role="alert">
             <ul class="mb-0 ps-3">
                 @foreach($errors->all() as $err)

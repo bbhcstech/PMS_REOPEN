@@ -39,12 +39,17 @@ class Company extends Model
         'max_clients',
         'max_storage_mb',
         'settings',
+        'letterhead_file',
+        'letterhead_original_name',
+        'letterhead_file_type',
+        'letterhead_uploaded_at',
     ];
 
     protected $casts = [
         'settings' => 'array',
         'theme' => 'array',
         'trial_ends_at' => 'datetime',
+        'letterhead_uploaded_at' => 'datetime',
     ];
 
     public function getCompanyNameAttribute(): string
@@ -75,6 +80,16 @@ class Company extends Model
     public function faviconUrl(): ?string
     {
         return $this->favicon ? asset($this->favicon) : null;
+    }
+
+    public function hasLetterhead(): bool
+    {
+        return !empty($this->letterhead_file);
+    }
+
+    public function letterheadUrl(): ?string
+    {
+        return $this->letterhead_file ? asset($this->letterhead_file) : null;
     }
 
     public function users(): HasMany

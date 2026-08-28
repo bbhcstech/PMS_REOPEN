@@ -67,6 +67,16 @@ class Company extends Model
         return strtolower($this->status ?? '') === 'suspended';
     }
 
+    public function hasLetterhead(): bool
+    {
+        return !empty($this->letterhead_file);
+    }
+
+    public function letterheadUrl(): ?string
+    {
+        return $this->letterhead_file ? asset($this->letterhead_file) : null;
+    }
+
     public function isOnTrial(): bool
     {
         return $this->status === 'trial' && $this->trial_ends_at?->isFuture();

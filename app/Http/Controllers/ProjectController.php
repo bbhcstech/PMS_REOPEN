@@ -131,12 +131,16 @@ class ProjectController extends Controller
 }
 
 
-public function create()
+public function create(Request $request)
 {
     abort_unless($this->canManageProjects(), 403);
 
+    $selectedClientId = $request->query('client_id');
+    $selectedClient   = $selectedClientId ? Client::find($selectedClientId) : null;
+    $isClientFixed    = $selectedClient !== null;
+
     $clients        = Client::all();
-$users = User::select('users.id', 'users.name', 'employee_details.employee_id')
+    $users = User::select('users.id', 'users.name', 'employee_details.employee_id')
     ->join('employee_details', 'employee_details.user_id', '=', 'users.id')
     ->where('users.role', 'employee')
     ->orderBy('users.name')
@@ -187,7 +191,10 @@ $users = User::select('users.id', 'users.name', 'employee_details.employee_id')
         'employee',
         'prtdepartments',
         'currency',
-        'nextProjectCode'   // <- pass to blade
+        'nextProjectCode',
+        'selectedClientId',
+        'selectedClient',
+        'isClientFixed'
     ));
 }
 

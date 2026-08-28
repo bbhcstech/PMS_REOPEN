@@ -1,6 +1,51 @@
 @extends('admin.layout.app')
 
 @section('content')
+<style>
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.35rem 0.85rem;
+        font-size: 0.82rem;
+        font-weight: 700;
+        border-radius: 999px;
+        white-space: nowrap;
+        line-height: 1.2;
+        color: #000000 !important;
+    }
+    .status-badge.completed, .status-badge.approved {
+        background-color: #d1fae5 !important;
+        color: #000000 !important;
+        border: 1px solid #86efac !important;
+    }
+    .status-badge.doing, .status-badge.in-progress, .status-badge.inprogress {
+        background-color: #dbeafe !important;
+        color: #000000 !important;
+        border: 1px solid #93c5fd !important;
+    }
+    .status-badge.pending {
+        background-color: #fef08a !important;
+        color: #000000 !important;
+        border: 1px solid #fde047 !important;
+    }
+    .status-badge.to-do, .status-badge.todo {
+        background-color: #e2e8f0 !important;
+        color: #000000 !important;
+        border: 1px solid #cbd5e1 !important;
+    }
+    .status-badge.incomplete, .status-badge.rejected {
+        background-color: #fee2e2 !important;
+        color: #000000 !important;
+        border: 1px solid #fca5a5 !important;
+    }
+    .status-badge.waiting-for-approval {
+        background-color: #ffedd5 !important;
+        color: #000000 !important;
+        border: 1px solid #fdba74 !important;
+    }
+</style>
+
 <div class="container">
     @php $canReviewTimeLogs = in_array(strtolower((string) auth()->user()?->role), ['admin', 'hr', 'manager'], true); @endphp
     <br>
@@ -55,55 +100,27 @@
             <a href="{{ route('timelogs.create') }}" class="btn btn-primary">Log Time</a>
         </div>
 
-        <div class="btn-group" role="group">
-            <div class="d-flex mb-3">
-                <select id="bulkLogStatus" class="form-select" disabled>
-                    <option value="">Change Status</option>
-                    <option value="pending">Pending</option>
-                    <option value="approved">Approved</option>
-                    <option value="rejected">Rejected</option>
-                </select>
-                <button id="applyBulkLogStatus" class="btn btn-primary" disabled>Apply</button>
-            </div>
-            &nbsp;&nbsp;
-            <div class="d-flex align-items-center mb-3">
-                <a href="{{ route('timelogs.index') }}" class="btn btn-sm btn-outline-primary {{ request()->routeIs('timelogs.index') ? 'active' : '' }}" data-toggle="tooltip" title="Timesheet">
-                    <i class="side-icon bi bi-list-ul"></i>
-                </a>
+        <div class="d-flex align-items-center gap-1 mb-3">
+            <a href="{{ route('timelogs.index') }}" class="btn btn-sm btn-outline-primary {{ request()->routeIs('timelogs.index') ? 'active' : '' }}" data-toggle="tooltip" title="Timesheet">
+                <i class="side-icon bi bi-list-ul"></i>
+            </a>
 
-                <a href="{{ route('timelogs.calendar') }}" class="btn btn-sm btn-outline-primary {{ request()->routeIs('timelogs.calendar') ? 'active' : '' }}"  data-toggle="tooltip" title="Calendar">
-                    <i class="side-icon bi bi-calendar"></i>
-                </a>
+            <a href="{{ route('timelogs.calendar') }}" class="btn btn-sm btn-outline-primary {{ request()->routeIs('timelogs.calendar') ? 'active' : '' }}"  data-toggle="tooltip" title="Calendar">
+                <i class="side-icon bi bi-calendar"></i>
+            </a>
 
-                <a href="{{ route('timelogs.byEmployee')}}" class="btn btn-sm btn-outline-primary {{ request()->routeIs('timelogs.byEmployee') ? 'active' : '' }}" data-toggle="tooltip" title="Employee TimeLogs">
-                    <i class="side-icon bi bi-person"></i>
-                </a>
+            <a href="{{ route('timelogs.byEmployee')}}" class="btn btn-sm btn-outline-primary {{ request()->routeIs('timelogs.byEmployee') ? 'active' : '' }}" data-toggle="tooltip" title="Employee TimeLogs">
+                <i class="side-icon bi bi-person"></i>
+            </a>
 
-                <a href="javascript:;" class="btn btn-sm btn-secondary" data-bs-toggle="modal" data-bs-target="#howItWorksModal" data-bs-toggle="tooltip" title="How It Works">
-                    <i class="side-icon bi bi-question-circle"></i>
-                </a>
-            </div>
+            <button type="button" class="btn btn-sm btn-secondary" data-bs-toggle="modal" data-bs-target="#howItWorksModal" title="How It Works">
+                <i class="side-icon bi bi-question-circle"></i>
+            </button>
         </div>
     </div>
     &nbsp;
 
-    <!-- Modal -->
-    <div class="modal fade" id="howItWorksModal" tabindex="-1" aria-labelledby="howItWorksLabel" aria-hidden="true">
-      <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="howItWorksLabel">Timesheet Lifecycle</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body text-center">
-            <img src="{{ asset('timesheet-lifecycle.png') }}" alt="Timesheet Lifecycle" class="img-fluid">
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          </div>
-        </div>
-      </div>
-    </div>
+    @include('admin.timelogs.partials.how-it-works-modal')
 
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
@@ -112,61 +129,169 @@
     <table id="timelogTable" class="table table-bordered table-striped align-middle">
         <thead class="table-dark">
             <tr>
-                <th><input type="checkbox" id="selectAllLogs"></th>
-                <th>Id</th>
-                <th>Code</th>
+                <th style="width: 40px;"><input type="checkbox" id="selectAllLogs"></th>
+                <th style="width: 50px;">Id</th>
+                <th style="white-space: nowrap;">Code</th>
                 <th>Task</th>
                 <th>Employee</th>
                 <th style="white-space: nowrap;">Start Time</th>
                 <th style="white-space: nowrap;">End Time</th>
-                <th style="white-space: nowrap;">Total Hours</th>
+                <th style="white-space: nowrap;">Task Duration</th>
                 <th>Status</th>
-                <th>Action</th>
+                <th style="width: 80px;" class="text-center">Action</th>
             </tr>
         </thead>
         <tbody>
-            @foreach($logs as $key => $log)
-            <tr data-id="{{ $log->id }}">
-                <td><input type="checkbox" class="log-checkbox" value="{{ $log->id }}"></td>
-                <td>{{ $key + 1 }}</td>
+            @foreach($tasks as $key => $task)
+                @php
+                    $latestTimer = $task->timers->sortByDesc('id')->first();
+                    $assignedUsers = $task->assignees ?? collect();
+                    if ($assignedUsers->isEmpty() && $task->assigned_to) {
+                        $ids = explode(',', (string) $task->assigned_to);
+                        $assignedUsers = \App\Models\User::whereIn('id', $ids)->get();
+                    }
+                    $assignedNames = $assignedUsers->isNotEmpty()
+                        ? $assignedUsers->pluck('name')->join(', ')
+                        : ($task->assignee?->name ?? ($latestTimer?->user?->name ?? 'Unassigned'));
 
-                {{-- ✅ AUTO-GENERATED CODE --}}
-                <td>
-                    @php
-                        $prefix = $log->project->project_code ?? '';
-                        $autoNumber = str_pad($log->id, 4, '0', STR_PAD_LEFT);
-                        echo $prefix . $autoNumber;
-                    @endphp
-                </td>
+                    $estHours = (int) ($task->estimate_hours ?? 0);
+                    $estMins = (int) ($task->estimate_minutes ?? 0);
+                    $hasEst = ($estHours > 0 || $estMins > 0);
+                    $loggedFormatted = $task->total_logged_formatted ?: '00h 00m 00s';
 
-                <td>{{ $log->task->title ?? '-' }}</td>
-                <td>{{ $log->user->name ?? '-' }}</td>
-                <td style="white-space: nowrap;">{{ \Carbon\Carbon::parse($log->start_date)->format('d-m-Y') }} {{ \Carbon\Carbon::parse($log->start_time)->format('h:i A') }}</td>
-                <td style="white-space: nowrap;">{{ \Carbon\Carbon::parse($log->end_date)->format('d-m-Y') }} {{ \Carbon\Carbon::parse($log->end_time)->format('h:i A') }}</td>
-                <td>{{ is_numeric($log->total_hours) ? number_format($log->total_hours, 2) : ($log->total_hours ?? '0h 0m 0s') }}</td>
-                <td class="statusCell">{{ ucfirst($log->status ?? 'pending') }}</td>
-                <td>
-                    <div class="dropdown">
-                        <button class="btn btn-sm btn-light" type="button" data-bs-toggle="dropdown">
-                            <i class="bi bi-three-dots-vertical"></i>
-                        </button>
+                    $codePrefix = $task->project?->project_code ?? '';
+                    $taskCode = $codePrefix
+                        ? $codePrefix . str_pad($task->id, 4, '0', STR_PAD_LEFT)
+                        : ($task->task_short_code ?: 'TASK-' . str_pad($task->id, 4, '0', STR_PAD_LEFT));
 
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ route('timelogs.show', $log->id) }}"><i class="bi bi-eye me-2"></i> View</a></li>
-                            <li><a class="dropdown-item" href="{{ route('timelogs.edit', $log->id) }}"><i class="bi bi-pencil-square me-2"></i> Edit</a></li>
-                            <li>
-                                <form action="{{ route('timelogs.destroy', $log->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this log?');">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" class="dropdown-item text-danger">
-                                        <i class="bi bi-trash me-2"></i> Delete
-                                    </button>
-                                </form>
-                            </li>
-                        </ul>
+                    $startDateStr = $latestTimer?->start_date
+                        ? \Carbon\Carbon::parse($latestTimer->start_date)->format('d-m-Y') . ($latestTimer->start_time ? ' ' . \Carbon\Carbon::parse($latestTimer->start_time)->format('h:i A') : '')
+                        : ($task->start_date ? \Carbon\Carbon::parse($task->start_date)->format('d-m-Y') : '--');
 
-                    </div>
-                </td>
-            </tr>
+                    $endDateStr = $latestTimer?->end_date
+                        ? \Carbon\Carbon::parse($latestTimer->end_date)->format('d-m-Y') . ($latestTimer->end_time ? ' ' . \Carbon\Carbon::parse($latestTimer->end_time)->format('h:i A') : '')
+                        : ($task->due_date ? \Carbon\Carbon::parse($task->due_date)->format('d-m-Y') : '--');
+
+                    $statusValue = $latestTimer?->status ?: ($task->status ?: 'To Do');
+                @endphp
+                <tr data-id="{{ $task->id }}">
+                    <td>
+                        <input type="checkbox" class="log-checkbox task-checkbox" value="{{ $task->id }}">
+                    </td>
+                    <td>{{ $key + 1 }}</td>
+
+                    {{-- ✅ AUTO-GENERATED CODE --}}
+                    <td style="white-space: nowrap;">
+                        <span class="badge bg-light text-dark border fw-bold">{{ $taskCode }}</span>
+                    </td>
+
+                    {{-- ✅ TASK & PROJECT --}}
+                    <td>
+                        <div class="d-flex flex-column">
+                            <a href="{{ route('tasks.show', $task->id) }}" class="fw-bold text-dark text-decoration-none">
+                                {{ $task->title ?? 'Untitled Task' }}
+                            </a>
+                            @if($task->project)
+                                <small class="text-muted">
+                                    <i class="bi bi-folder2-open me-1 text-primary"></i>{{ $task->project->name }}
+                                </small>
+                            @else
+                                <small class="text-muted">No Project</small>
+                            @endif
+                        </div>
+                    </td>
+
+                    {{-- ✅ EMPLOYEE --}}
+                    <td>
+                        <div class="d-flex align-items-center gap-1 flex-wrap">
+                            <span class="badge bg-label-info text-dark">{{ $assignedNames }}</span>
+                        </div>
+                    </td>
+
+                    {{-- ✅ START TIME --}}
+                    <td style="white-space: nowrap;">{{ $startDateStr }}</td>
+
+                    {{-- ✅ END TIME --}}
+                    <td style="white-space: nowrap;">{{ $endDateStr }}</td>
+
+                    {{-- ✅ TASK DURATION --}}
+                    <td style="white-space: nowrap;">
+                        <div class="d-flex flex-column">
+                            <div class="fw-bold text-success">
+                                <i class="bi bi-clock-history me-1"></i>{{ $loggedFormatted }}
+                            </div>
+                            @if($hasEst)
+                                <small class="text-muted">
+                                    <i class="bi bi-hourglass-split me-1"></i>Est: {{ $estHours }}h {{ $estMins }}m
+                                </small>
+                            @endif
+                            @if($task->timers->isNotEmpty())
+                                <small class="text-primary mt-1">
+                                    <i class="bi bi-journal-text me-1"></i>{{ $task->timers->count() }} log{{ $task->timers->count() === 1 ? '' : 's' }} recorded
+                                </small>
+                            @endif
+                        </div>
+                    </td>
+
+                    {{-- ✅ STATUS --}}
+                    <td class="statusCell" style="white-space: nowrap;">
+                        @php
+                            $normalizedStatus = strtolower(str_replace([' ', '_'], '-', (string) $statusValue));
+                        @endphp
+                        <span class="status-badge {{ $normalizedStatus }}">
+                            {{ ucfirst($statusValue) }}
+                        </span>
+                    </td>
+
+                    {{-- ✅ ACTION --}}
+                    <td class="text-center">
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-light border" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-three-dots-vertical"></i>
+                            </button>
+
+                            <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                <li>
+                                    <a class="dropdown-item" href="{{ route('timelogs.create', ['project_id' => $task->project_id, 'task_id' => $task->id]) }}">
+                                        <i class="bi bi-plus-circle text-primary me-2"></i> Log Time
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{{ route('tasks.show', $task->id) }}">
+                                        <i class="bi bi-eye me-2 text-info"></i> View Task
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{{ route('tasks.edit', $task->id) }}">
+                                        <i class="bi bi-pencil-square me-2 text-warning"></i> Edit Task
+                                    </a>
+                                </li>
+
+                                @if($latestTimer)
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('timelogs.show', $latestTimer->id) }}">
+                                            <i class="bi bi-clock me-2"></i> View Latest Log
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('timelogs.edit', $latestTimer->id) }}">
+                                            <i class="bi bi-pencil me-2"></i> Edit Latest Log
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <form action="{{ route('timelogs.destroy', $latestTimer->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this time log?');">
+                                            @csrf @method('DELETE')
+                                            <button type="submit" class="dropdown-item text-danger">
+                                                <i class="bi bi-trash me-2"></i> Delete Log
+                                            </button>
+                                        </form>
+                                    </li>
+                                @endif
+                            </ul>
+                        </div>
+                    </td>
+                </tr>
             @endforeach
         </tbody>
     </table>

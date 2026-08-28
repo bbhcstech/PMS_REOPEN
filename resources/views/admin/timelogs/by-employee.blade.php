@@ -72,40 +72,18 @@
                     <i class="side-icon bi bi-person"></i>
                 </a>
         
-                <a href="javascript:;" 
-               class="btn btn-secondary f-14" 
-               data-bs-toggle="modal" 
-               data-bs-target="#howItWorksModal"
-               data-bs-toggle="tooltip" 
-               title="How It Works">
-                <i class="side-icon bi bi-question-circle"></i>
-            </a>
+                <button type="button" 
+                        class="btn btn-secondary btn-sm" 
+                        data-bs-toggle="modal" 
+                        data-bs-target="#howItWorksModal"
+                        title="How It Works">
+                    <i class="side-icon bi bi-question-circle"></i>
+                </button>
             </div>
         </div>
         &nbsp;
         
-        
-        <!-- Modal -->
-<div class="modal fade" id="howItWorksModal" tabindex="-1" aria-labelledby="howItWorksLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content">
-
-      <div class="modal-header">
-        <h5 class="modal-title" id="howItWorksLabel">Timesheet Lifecycle</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-
-      <div class="modal-body text-center">
-        <img src="{{ asset('timesheet-lifecycle.png') }}" alt="Timesheet Lifecycle" class="img-fluid">
-      </div>
-
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-      </div>
-
-    </div>
-  </div>
-</div>
+        @include('admin.timelogs.partials.how-it-works-modal')
 
         <!-- Results -->
         <div class="card">
