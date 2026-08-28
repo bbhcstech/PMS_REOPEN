@@ -59,9 +59,12 @@ class LoginRequest extends FormRequest
         $inputPassword = (string) $this->string('password');
 
         // First, check if user exists by email or personal_email
-        $user = User::where('email', $inputEmail)
-            ->orWhere('personal_email', $inputEmail)
-            ->first();
+        $user = User::where(function ($query) use ($inputEmail) {
+            $query->where('email', $inputEmail);
+            if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'personal_email')) {
+                $query->orWhere('personal_email', $inputEmail);
+            }
+        })->first();
 
         if ($user) {
             // Auto-sync password hash if raw_password matches the provided password
