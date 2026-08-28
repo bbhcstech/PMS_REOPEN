@@ -76,11 +76,6 @@ class Client extends TenantModel
         return $this->belongsTo(ClientSubCategory::class, 'client_sub_category_id');
     }
 
-    public function subCategory()
-    {
-        return $this->belongsTo(ClientSubCategory::class, 'client_sub_category_id');
-    }
-
     public function addedBy()
     {
         return $this->belongsTo(User::class, 'added_by');
