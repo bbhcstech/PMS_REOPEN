@@ -949,6 +949,17 @@ Route::get('/my-awards', [AwardController::class, 'myAwards'])->name('awards.my-
     Route::get('account/projects/{project}/burndown-chart', [ProjectController::class, 'burndown'])->name('projects.burndown');
     Route::get('/admin/activity-log/project/{project}', [AdminActivityController::class, 'projectActivity'])->name('admin.activities.project');
 
+    // Comprehensive System Reports
+    Route::middleware(['auth'])->prefix('reports')->name('reports.')->group(function () {
+        Route::get('/task', [\App\Http\Controllers\ReportController::class, 'taskReport'])->name('task');
+        Route::get('/timelog', [\App\Http\Controllers\ReportController::class, 'timelogReport'])->name('timelog');
+        Route::get('/finance', [\App\Http\Controllers\ReportController::class, 'financeReport'])->name('finance');
+        Route::get('/income-vs-expense', [\App\Http\Controllers\ReportController::class, 'incomeVsExpenseReport'])->name('income-vs-expense');
+        Route::get('/expense', [\App\Http\Controllers\ReportController::class, 'expenseReport'])->name('expense');
+        Route::get('/deal', [\App\Http\Controllers\ReportController::class, 'dealReport'])->name('deal');
+        Route::get('/sales', [\App\Http\Controllers\ReportController::class, 'salesReport'])->name('sales');
+    });
+
     Route::get('/account/dashboard-project', [DashboardController::class, 'project'])->name('dashproject');
     Route::get('/account/dashboard-advanced', [DashboardController::class, 'clientDashboard'])->name('dashboard.client');
     Route::get('/dashboard-advanced', [DashboardController::class, 'ticketDashboard'])->name('dashboard.ticket');
@@ -1065,6 +1076,8 @@ Route::get('/my-awards', [AwardController::class, 'myAwards'])->name('awards.my-
     Route::get('/tickets/{ticket}', [TicketController::class, 'show'])->name('tickets.show');
     Route::post('/tickets/{id}/reply', [TicketController::class, 'reply'])->name('tickets.reply');
     Route::put('/tickets/{id}/update-details', [TicketController::class, 'updateDetails'])->name('tickets.updateDetails');
+    Route::post('/tickets/{id}/reopen', [TicketController::class, 'reopen'])->name('tickets.reopen');
+    Route::post('/tickets/{id}/log-time', [TicketController::class, 'logTime'])->name('tickets.logTime');
     Route::get('/admin/tickets', [TicketController::class, 'index'])->name('tickets.index');
     Route::post('tickets/bulk-action', [TicketController::class, 'bulkAction'])->name('tickets.bulk-action');
 

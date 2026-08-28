@@ -126,7 +126,7 @@
                     <div>
                         <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
                             <span class="badge bg-light text-dark border fw-bold">{{ $client->client_uid ?? 'XINK-CL-' . str_pad($client->id, 4, '0', STR_PAD_LEFT) }}</span>
-                            <span class="badge {{ strtolower($client->status) === 'active' ? 'bg-success-subtle text-success border border-success-subtle' : 'bg-warning-subtle text-dark border border-warning-subtle' }} rounded-pill px-2 py-1 text-capitalize">
+                            <span class="badge {{ strtolower($client->status ?? 'active') === 'active' ? 'bg-success-subtle text-success border border-success-subtle' : 'bg-warning-subtle text-dark border border-warning-subtle' }} rounded-pill px-2 py-1 text-capitalize">
                                 {{ $client->status ?? 'Active' }}
                             </span>
                         </div>
@@ -469,4 +469,3 @@
     });
 </script>
 @endsection
-

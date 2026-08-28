@@ -965,13 +965,22 @@
         </button>
 
         <!-- Executive Profile Menu -->
+        @php
+          $saUser = auth('super_admin')->user();
+          $webUser = auth()->user();
+          $isDevWebUser = $webUser && (method_exists($webUser, 'isDeveloper') ? $webUser->isDeveloper() : in_array(strtolower((string) ($webUser->role ?? '')), ['developer', 'dev'], true));
+          $displayUser = $saUser ?? (($webUser && !$isDevWebUser && in_array(strtolower((string) ($webUser->role ?? '')), ['superadmin', 'admin'], true)) ? $webUser : null);
+          $displayName = $displayUser?->name ?? 'Super Admin';
+          $displayEmail = $displayUser?->email ?? 'admin@platform.io';
+          $displayInitials = strtoupper(substr($displayName, 0, 2));
+        @endphp
         <div class="profile-wrapper" id="profileWrapper">
           <div class="profile" id="profileMenuToggle">
             <div class="avatar">
-              {{ strtoupper(substr(auth('super_admin')->user()?->name ?? auth()->user()?->name ?? 'SA', 0, 2)) }}
+              {{ $displayInitials }}
             </div>
             <div class="info">
-              <div class="name">{{ auth('super_admin')->user()?->name ?? auth()->user()?->name ?? 'Super Admin' }}</div>
+              <div class="name">{{ $displayName }}</div>
               <div class="role">Platform Administrator</div>
             </div>
             <i class="bx bx-chevron-down arrow"></i>
@@ -980,8 +989,8 @@
           <!-- Executive Profile Dropdown -->
           <div class="profile-dropdown" id="profileDropdown">
             <div class="profile-dropdown-header">
-              <div class="user-name">{{ auth('super_admin')->user()?->name ?? auth()->user()?->name ?? 'Super Admin' }}</div>
-              <div class="user-email">{{ auth('super_admin')->user()?->email ?? auth()->user()?->email ?? 'root@platform.io' }}</div>
+              <div class="user-name">{{ $displayName }}</div>
+              <div class="user-email">{{ $displayEmail }}</div>
             </div>
             <a href="#platform-health"><i class="bx bx-slider-alt" style="color:#2563eb;"></i> System Health</a>
             <a href="{{ Route::has('super-admin.tenant-audit.index') ? route('super-admin.tenant-audit.index') : url('/super-admin/tenant-audit') }}"><i class="bx bx-shield-alt-2" style="color:#7c3aed;"></i> Audit Activity</a>

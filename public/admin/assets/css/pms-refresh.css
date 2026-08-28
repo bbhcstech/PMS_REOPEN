@@ -147,6 +147,8 @@ i[class*=" bx"],
   box-shadow: var(--pms-shadow);
   overflow: hidden;
   backdrop-filter: blur(18px);
+  display: flex !important;
+  flex-direction: column !important;
 }
 
 html[data-pms-theme="dark"] .layout-menu.bg-menu-theme {
@@ -154,20 +156,78 @@ html[data-pms-theme="dark"] .layout-menu.bg-menu-theme {
 }
 
 .app-brand {
-  background: transparent !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 30 !important;
+  background: #ffffff !important;
   border-bottom: 1px solid var(--pms-border) !important;
-  padding-inline: 1.15rem;
-  min-height: 76px;
+  padding: 0.85rem 1.15rem !important;
+  min-height: 74px;
+  flex: 0 0 auto !important;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+  display: flex !important;
+  align-items: center !important;
 }
 
-.app-brand-text {
-  color: var(--pms-text) !important;
+html[data-pms-theme="dark"] .app-brand {
+  background: #102119 !important;
+}
+
+.app-brand-link {
+  display: flex !important;
+  align-items: center !important;
+  min-width: 0 !important;
+  flex: 1 1 auto !important;
+  overflow: hidden !important;
+}
+
+.app-brand-text,
+.app-brand-text.demo {
+  max-width: 175px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  font-size: 1.05rem !important;
   font-weight: 800 !important;
-  letter-spacing: -0.01em;
+  line-height: 1.25 !important;
+  letter-spacing: -0.01em !important;
+  background: linear-gradient(135deg, #0569ff 0%, #00b4d8 50%, #7c3aed 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block !important;
+}
+
+html[data-pms-theme="dark"] .app-brand-text,
+html[data-pms-theme="dark"] .app-brand-text.demo {
+  background: linear-gradient(135deg, #40d48c 0%, #7af0b5 50%, #38bdf8 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
 }
 
 .menu-inner {
+  flex: 1 1 auto !important;
+  overflow-y: auto !important;
   padding: 0.75rem 0.8rem !important;
+  overscroll-behavior: contain;
+}
+
+.menu-inner::-webkit-scrollbar {
+  width: 5px;
+}
+
+.menu-inner::-webkit-scrollbar-thumb {
+  background: rgba(15, 116, 76, 0.2);
+  border-radius: 10px;
+}
+
+.menu-inner::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 .menu-inner .menu-item .menu-link {
@@ -194,8 +254,16 @@ html[data-pms-theme="dark"] .layout-menu.bg-menu-theme {
 .menu-sub .menu-item.active .menu-link {
   background: linear-gradient(135deg, var(--pms-primary-strong), var(--pms-primary)) !important;
   color: #ffffff !important;
-  box-shadow: 0 14px 24px rgba(15, 116, 76, 0.22) !important;
+  box-shadow: 0 4px 12px rgba(15, 116, 76, 0.16) !important;
   border-left: 0 !important;
+}
+
+.menu-inner-shadow {
+  display: none !important;
+}
+
+.app-brand-logo.demo {
+  box-shadow: 0 4px 12px rgba(5, 105, 255, 0.12) !important;
 }
 
 .menu-inner .menu-header,

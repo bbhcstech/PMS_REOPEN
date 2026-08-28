@@ -17,11 +17,36 @@ use Illuminate\Support\Str;
 
 class CompanyController extends Controller
 {
+    private function authorizeSuperAdmin(): void
+    {
+        if (\Illuminate\Support\Facades\Auth::guard('super_admin')->check()) {
+            return;
+        }
+
+        if (auth()->check()) {
+            $user = auth()->user();
+            $isDev = method_exists($user, 'isDeveloper') ? $user->isDeveloper() : in_array(strtolower((string) ($user->role ?? '')), ['developer', 'dev'], true);
+            if ($isDev) {
+                abort(redirect()->route('developer.dashboard'));
+            }
+
+            $role = strtolower((string) ($user->role ?? ''));
+            if ($role === 'client' || $role === 'customer') {
+                abort(403, 'Unauthorized access to Super Admin portal.');
+            }
+
+            return;
+        }
+
+        throw new \Illuminate\Auth\AuthenticationException('Unauthenticated.', ['web', 'super_admin']);
+    }
+
     /**
      * Display a list of all registered tenant companies.
      */
     public function index(): View
     {
+        $this->authorizeSuperAdmin();
         try {
             $companies = Company::on('central')->latest()->get();
         } catch (\Throwable $e) {

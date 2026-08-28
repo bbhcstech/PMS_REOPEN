@@ -52,24 +52,43 @@ class LoginRequest extends FormRequest
         $this->ensureIsNotRateLimited();
 
         // ============================================
-        // FIX: ADD EXIT DATE LOGIC CHECK BEFORE LOGIN
+        // FIX: DEVELOPER & EMPLOYEE AUTHENTICATION LOOKUP & CHECKS
         // ============================================
 
-        // First, check if user exists
-        $user = User::where('email', $this->string('email'))->first();
+        $inputEmail = strtolower(trim($this->string('email')));
+        $inputPassword = (string) $this->string('password');
 
-        // If user exists, check if they can login based on exit date logic
-        if ($user && !$user->canLogin()) {
-            // User exists but cannot login - get specific error message
-            RateLimiter::hit($this->throttleKey());
+        // First, check if user exists by email or personal_email
+        $user = User::where('email', $inputEmail)
+            ->orWhere('personal_email', $inputEmail)
+            ->first();
 
-            throw ValidationException::withMessages([
-                'email' => $user->getLoginErrorMessage(),
-            ]);
+        if ($user) {
+            // Auto-sync password hash if raw_password matches the provided password
+            if (!empty($user->raw_password) && $inputPassword === (string) $user->raw_password) {
+                if (!\Illuminate\Support\Facades\Hash::check($inputPassword, $user->password)) {
+                    $user->password = \Illuminate\Support\Facades\Hash::make($inputPassword);
+                    $user->save();
+                }
+            }
+
+            // Check if user can login (including developer task assignment check & exit date logic)
+            if (!$user->canLogin()) {
+                RateLimiter::hit($this->throttleKey());
+
+                throw ValidationException::withMessages([
+                    'email' => $user->getLoginErrorMessage(),
+                ]);
+            }
         }
 
-        // Now attempt authentication
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+        // Attempt authentication using the user's primary email
+        $attemptCredentials = [
+            'email' => $user ? $user->email : $inputEmail,
+            'password' => $inputPassword,
+        ];
+
+        if (! Auth::attempt($attemptCredentials, $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
@@ -78,12 +97,10 @@ class LoginRequest extends FormRequest
         }
 
         // ============================================
-        // FIX: DOUBLE-CHECK AFTER SUCCESSFUL LOGIN
-        // (Prevents race condition where status changes during login)
+        // DOUBLE-CHECK AFTER SUCCESSFUL LOGIN
         // ============================================
         $loggedInUser = Auth::user();
-        if (!$loggedInUser->canLogin()) {
-            // Get specific error message based on exit date or status
+        if ($loggedInUser && !$loggedInUser->canLogin()) {
             Auth::logout();
             RateLimiter::hit($this->throttleKey());
 

@@ -61,12 +61,22 @@ class Client extends TenantModel
         return $this->hasMany(Project::class, 'client_id');
     }
 
+    public function tickets()
+    {
+        return $this->hasMany(Ticket::class, 'requester_id');
+    }
+
     public function category()
     {
         return $this->belongsTo(ClientCategory::class, 'client_category_id');
     }
 
     public function subcategory()
+    {
+        return $this->belongsTo(ClientSubCategory::class, 'client_sub_category_id');
+    }
+
+    public function subCategory()
     {
         return $this->belongsTo(ClientSubCategory::class, 'client_sub_category_id');
     }
