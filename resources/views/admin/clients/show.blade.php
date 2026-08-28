@@ -43,10 +43,14 @@
     .custom-segmented-pills .nav-item {
         margin: 0;
     }
-    .custom-segmented-pills .nav-link {
+    /* Unselected tab styles - black text and icons */
+    .custom-segmented-pills .nav-link,
+    #clientTabs .nav-link,
+    #clientTabs .nav-link:not(.active) {
         border: none !important;
         background: transparent !important;
-        color: #475569 !important;
+        color: #000000 !important;
+        -webkit-text-fill-color: #000000 !important;
         font-weight: 700 !important;
         font-size: 0.9rem !important;
         padding: 0.6rem 1.25rem !important;
@@ -59,37 +63,68 @@
         cursor: pointer !important;
     }
     .custom-segmented-pills .nav-link i,
-    .custom-segmented-pills .nav-link span {
-        color: inherit !important;
+    .custom-segmented-pills .nav-link span,
+    .custom-segmented-pills .nav-link:not(.active) i,
+    .custom-segmented-pills .nav-link:not(.active) span,
+    #clientTabs .nav-link:not(.active) i,
+    #clientTabs .nav-link:not(.active) span {
+        color: #000000 !important;
+        -webkit-text-fill-color: #000000 !important;
+        -webkit-text-stroke: 0 !important;
     }
-    .custom-segmented-pills .nav-link:hover:not(.active) {
-        color: #0f172a !important;
-        background: rgba(255, 255, 255, 0.75) !important;
+    .custom-segmented-pills .nav-link:hover:not(.active),
+    #clientTabs .nav-link:hover:not(.active) {
+        color: #000000 !important;
+        -webkit-text-fill-color: #000000 !important;
+        background: rgba(255, 255, 255, 0.85) !important;
     }
-    .custom-segmented-pills .nav-link.active {
+    .custom-segmented-pills .nav-link:hover:not(.active) i,
+    .custom-segmented-pills .nav-link:hover:not(.active) span,
+    #clientTabs .nav-link:hover:not(.active) i,
+    #clientTabs .nav-link:hover:not(.active) span {
+        color: #000000 !important;
+        -webkit-text-fill-color: #000000 !important;
+    }
+    /* Selected / Active tab styles - white text and icons */
+    .custom-segmented-pills .nav-link.active,
+    #clientTabs .nav-link.active {
         background: #0f744c !important;
         color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
         font-weight: 700 !important;
         box-shadow: 0 4px 12px rgba(15, 116, 76, 0.25) !important;
     }
     .custom-segmented-pills .nav-link.active,
     .custom-segmented-pills .nav-link.active *,
     .custom-segmented-pills .nav-link.active i,
-    .custom-segmented-pills .nav-link.active span {
+    .custom-segmented-pills .nav-link.active span,
+    .custom-segmented-pills .nav-link.active > i.bx,
+    #clientTabs .nav-link.active,
+    #clientTabs .nav-link.active *,
+    #clientTabs .nav-link.active i,
+    #clientTabs .nav-link.active span,
+    #clientTabs .nav-link.active > i.bx {
         color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        -webkit-text-stroke: 0 !important;
     }
-    .custom-segmented-pills .nav-link .tab-count-badge {
+    /* Tab counter badge */
+    .custom-segmented-pills .nav-link .tab-count-badge,
+    #clientTabs .nav-link .tab-count-badge {
         background: #cbd5e1;
-        color: #1e293b;
+        color: #000000 !important;
+        -webkit-text-fill-color: #000000 !important;
         font-size: 0.75rem;
         padding: 0.2rem 0.55rem;
         border-radius: 999px;
         font-weight: 800;
         transition: all 0.2s ease;
     }
-    .custom-segmented-pills .nav-link.active .tab-count-badge {
+    .custom-segmented-pills .nav-link.active .tab-count-badge,
+    #clientTabs .nav-link.active .tab-count-badge {
         background: rgba(255, 255, 255, 0.25) !important;
         color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
         border: 1px solid rgba(255, 255, 255, 0.4) !important;
     }
     .status-badge-custom {

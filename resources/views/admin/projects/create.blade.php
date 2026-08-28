@@ -251,10 +251,32 @@
                             <small class="form-hint">Select one or more departments. New departments are saved to the department database.</small>
                         </div>
 
+                        <!-- Project Type (Client vs Home) -->
+                        <div class="form-group full-width mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-layer-group text-primary me-1"></i> Project Type <span class="text-danger">*</span>
+                            </label>
+                            <div class="d-flex align-items-center gap-4 p-3 bg-light rounded-3 border">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="project_type" id="project_type_client" value="client" {{ old('project_type', 'client') === 'client' ? 'checked' : '' }} onchange="toggleProjectType()">
+                                    <label class="form-check-label fw-semibold text-dark" for="project_type_client" style="cursor: pointer;">
+                                        <i class="fas fa-user-tie text-primary me-1"></i> Client
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="project_type" id="project_type_home" value="home" {{ old('project_type') === 'home' ? 'checked' : '' }} onchange="toggleProjectType()">
+                                    <label class="form-check-label fw-semibold text-dark" for="project_type_home" style="cursor: pointer;">
+                                        <i class="fas fa-home text-success me-1"></i> Home
+                                    </label>
+                                </div>
+                            </div>
+                            <small class="form-hint">Choose <strong>Client</strong> for client projects or <strong>Home</strong> for in-house/internal projects.</small>
+                        </div>
+
                         <!-- Client -->
-                        <div class="form-group">
+                        <div class="form-group" id="client_select_wrapper">
                             <label class="form-label d-flex align-items-center justify-content-between">
-                                <span><i class="fas fa-user-tie"></i> Client <span class="text-danger">*</span></span>
+                                <span><i class="fas fa-user-tie"></i> Client <span class="text-danger" id="client_required_star">*</span></span>
                                 @if(!empty($isClientFixed) && $selectedClient)
                                     <span class="badge bg-light text-success border"><i class="fas fa-lock me-1"></i> Fixed Client</span>
                                 @endif
@@ -268,7 +290,7 @@
                                 <small class="form-hint text-success"><i class="fas fa-shield-alt me-1"></i> Project will be created under <strong>{{ $selectedClient->name }}</strong> (cannot be overridden).</small>
                             @else
                                 <div class="input-group">
-                                    <select name="client_id" id="client_id" class="form-control" required>
+                                    <select name="client_id" id="client_id" class="form-control">
                                         <option value="">Select Client</option>
                                         @foreach($clients as $c)
                                             <option value="{{ $c->id }}" {{ old('client_id', $selectedClientId ?? null) == $c->id ? 'selected' : '' }}>{{ $c->name }}</option>
@@ -1613,6 +1635,26 @@
             allowClear: true,
             width: '100%'
         });
+    });
+
+    // Toggle Project Type (Client vs Home)
+    function toggleProjectType() {
+        const isClient = $('#project_type_client').is(':checked');
+        if (isClient) {
+            $('#client_select_wrapper').show();
+            @if(empty($isClientFixed))
+                $('#client_id').prop('required', true);
+            @endif
+        } else {
+            $('#client_select_wrapper').hide();
+            @if(empty($isClientFixed))
+                $('#client_id').prop('required', false).val('');
+            @endif
+        }
+    }
+
+    $(document).ready(function() {
+        toggleProjectType();
     });
 
     // Employee names hidden inputs for form submission

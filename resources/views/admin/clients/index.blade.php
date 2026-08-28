@@ -127,8 +127,17 @@
                                 <td>{{ $client->email }}</td>
                                 <td style="white-space: nowrap;">{{ $client->company_name ?? '—' }}</td>
                                 <td>
-                                    <span class="badge {{ strtolower($client->status ?? '') === 'active' ? 'bg-success' : 'bg-secondary' }}">
-                                        {{ $client->status ?? '—' }}
+                                    @php
+                                        $clientStatus = strtolower(trim((string)($client->status ?? 'active')));
+                                        $badgeClass = match($clientStatus) {
+                                            'active' => 'bg-success',
+                                            'pending' => 'bg-warning',
+                                            'inactive', 'deactive', 'suspended', 'blocked' => 'bg-danger',
+                                            default => 'bg-secondary'
+                                        };
+                                    @endphp
+                                    <span class="badge {{ $badgeClass }} text-capitalize">
+                                        {{ $client->status ?? 'Active' }}
                                     </span>
                                 </td>
                                 <td style="white-space: nowrap;">
