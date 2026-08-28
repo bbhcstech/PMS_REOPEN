@@ -558,9 +558,13 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
         ->limit(10)
         ->get();
 
-        $myTickets = Ticket::where('requester_id', $userId)
-            ->orderBy('created_at', 'desc')
-            ->limit(5)
+        $myTickets = Ticket::where(function ($q) use ($userId) {
+                $q->where('agent_id', $userId)
+                  ->orWhere('requester_id', $userId);
+            })
+            ->with(['project', 'requester', 'agent'])
+            ->orderBy('updated_at', 'desc')
+            ->limit(10)
             ->get();
 
         $myProjects = Project::whereNull('deleted_at')

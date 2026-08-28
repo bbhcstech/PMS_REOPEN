@@ -303,7 +303,7 @@ public function store(Request $request)
 
     public function calendar()
     {
-        $query = TaskTimer::with(['project', 'task', 'user']);
+        $query = TimeLog::with(['project', 'task', 'employee']);
 
         // Admin/HR/Manager sees all, employee sees only own logs
         if (! $this->canManageTimelogs()) {
@@ -311,11 +311,25 @@ public function store(Request $request)
         }
 
         $timelogs = $query->get()->map(function ($log) {
+            $startDate = $log->start_date ?? now()->toDateString();
+            $endDate = $log->end_date ?? $startDate;
+            $startTime = $log->start_time ? date('H:i:s', strtotime($log->start_time)) : '09:00:00';
+            $endTime = $log->end_time ? date('H:i:s', strtotime($log->end_time)) : '17:00:00';
+
+            $empName = $log->employee?->name ?? 'Employee';
+            $taskTitle = $log->task?->title ?? $log->project?->name ?? 'Timesheet Log';
+            $hours = is_numeric($log->total_hours) ? number_format(abs((float)$log->total_hours), 2) : '0.00';
+
             return [
-                'title' => $log->user->name . ' - ' . ($log->task->title ?? 'No Task'),
-                'start' => $log->start_time,
-                'end'   => $log->end_time,
+                'id' => $log->id,
+                'title' => $empName . ': ' . $taskTitle . ' (' . $hours . ' hrs)',
+                'start' => $startDate . 'T' . $startTime,
+                'end' => $endDate . 'T' . $endTime,
+                'url' => route('timelogs.show', $log->id),
                 'allDay' => false,
+                'backgroundColor' => '#0f744c',
+                'borderColor' => '#0f744c',
+                'textColor' => '#ffffff',
             ];
         });
 
@@ -324,29 +338,37 @@ public function store(Request $request)
 
     public function byEmployee(Request $request)
     {
-        $query = TaskTimer::with(['project', 'task', 'user']);
+        $query = TimeLog::with(['project', 'task', 'employee']);
 
         // Filter by employee
         if ($request->filled('user_id') && $this->canManageTimelogs()) {
             $query->where('user_id', $request->user_id);
-        } elseif (! $this->canManageTimelogs()) {
+        } elseif ($this->canManageTimelogs()) {
+            // Admin/HR/Manager: Only show Employee logs
+            $employeeIds = User::where('role', 'employee')->pluck('id');
+            $query->whereIn('user_id', $employeeIds);
+        } else {
+            // Employee sees their own logs
             $query->where('user_id', auth()->id());
         }
 
         // Filter by date range
         if ($request->filled('start_date') && $request->filled('end_date')) {
-            $query->whereBetween('start_time', [$request->start_date, $request->end_date]);
+            $query->whereBetween('start_date', [$request->start_date, $request->end_date]);
         }
 
-        // Search (by project/task/user name)
+        // Search (by project/task/user name/memo)
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->whereHas('task', fn($q) => $q->where('title', 'like', "%$search%"))
-                  ->orWhereHas('project', fn($q) => $q->where('project_code', 'like', "%$search%"))
-                  ->orWhereHas('user', fn($q) => $q->where('name', 'like', "%$search%"));
+            $query->where(function($q) use ($search) {
+                $q->whereHas('task', fn($t) => $t->where('title', 'like', "%$search%"))
+                  ->orWhereHas('project', fn($p) => $p->where('name', 'like', "%$search%"))
+                  ->orWhereHas('employee', fn($e) => $e->where('name', 'like', "%$search%"))
+                  ->orWhere('memo', 'like', "%$search%");
+            });
         }
 
-        $logs = $query->get();
+        $logs = $query->latest()->get();
 
         if ($this->canManageTimelogs()) {
             $employees = User::where('role', 'employee')->orderBy('name')->get();

@@ -176,18 +176,6 @@
         </div>
 
         <div class="toolbar-right">
-            @if($isAdmin)
-                <select id="bulkProjectStatus" class="form-select-sm" disabled>
-                    <option value="">Change Status</option>
-                    @foreach($statusOptions as $value => $label)
-                        <option value="{{ $value }}">{{ $label }}</option>
-                    @endforeach
-                </select>
-                <button id="applyBulkProjectStatus" class="btn btn-sm btn-primary" disabled>Apply</button>
-                <button id="bulkDeleteProjects" class="btn btn-sm btn-danger" disabled>
-                    <i class="fas fa-trash-alt"></i>
-                </button>
-            @endif
             <div class="view-toggle">
                 <a href="{{ route('projects.index') }}" class="view-btn active" title="List View">
                     <i class="fas fa-list-ul"></i>
@@ -2002,48 +1990,34 @@
         }
     }
 
-    /* Final row action dropdown fix: three-dot menus must escape table/card clipping. */
-    .projects-page .table-card,
-    .projects-page .table-wrapper,
-    .projects-page .project-table,
-    .projects-page .project-table tbody,
-    .projects-page .project-table tr,
-    .projects-page .project-table td.action-cell,
-    .projects-page .project-action-dropdown {
-        overflow: visible !important;
-    }
-
-    .projects-page .table-card {
-        position: relative;
-        z-index: 1;
-    }
-
+    /* Clean row action dropdown: floating body portal without table scroll container overflow */
     .projects-page .table-wrapper {
-        overflow-x: auto !important;
-        overflow-y: visible !important;
-        padding-bottom: 140px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding-bottom: 18px !important;
     }
 
     .projects-page .project-action-dropdown .dropdown-menu {
         border: 1px solid rgba(15, 116, 76, 0.14) !important;
         border-radius: 14px !important;
         box-shadow: 0 22px 55px rgba(15, 23, 42, 0.18) !important;
-        max-height: min(70vh, 520px);
+        max-height: min(60vh, 440px);
         min-width: 240px;
         overflow-y: auto;
         padding: 8px !important;
-        z-index: 2090 !important;
     }
 
     body > .project-floating-action-menu {
-        border: 1px solid rgba(15, 116, 76, 0.14) !important;
+        position: fixed !important;
+        border: 1px solid rgba(15, 116, 76, 0.16) !important;
         border-radius: 14px !important;
-        box-shadow: 0 22px 55px rgba(15, 23, 42, 0.2) !important;
-        max-height: min(70vh, 520px);
+        box-shadow: 0 22px 55px rgba(15, 23, 42, 0.22) !important;
+        max-height: min(60vh, 440px);
         min-width: 240px;
         overflow-y: auto;
         padding: 8px !important;
-        z-index: 3000 !important;
+        background: #ffffff !important;
+        z-index: 99999 !important;
     }
 
     .projects-page .project-action-dropdown .dropdown-menu.show {
@@ -2261,30 +2235,44 @@ document.addEventListener('DOMContentLoaded', function () {
 
         function positionFloatingMenu() {
             const rect = button.getBoundingClientRect();
-            const menuWidth = Math.max(menu.offsetWidth || 240, 240);
+            const menuWidth = 240;
+            const menuHeight = Math.min(menu.offsetHeight || 320, window.innerHeight * 0.6);
             const viewportGap = 12;
-            const left = Math.max(viewportGap, Math.min(window.innerWidth - menuWidth - viewportGap, rect.right - menuWidth));
-            const opensUp = rect.bottom + menu.offsetHeight + viewportGap > window.innerHeight;
-            const top = opensUp
-                ? Math.max(viewportGap, rect.top - menu.offsetHeight - 8)
-                : Math.min(window.innerHeight - viewportGap, rect.bottom + 8);
 
-            menu.style.left = left + 'px';
+            let left = rect.right - menuWidth;
+            if (left < viewportGap) left = viewportGap;
+            if (left + menuWidth > window.innerWidth - viewportGap) {
+                left = window.innerWidth - menuWidth - viewportGap;
+            }
+
+            const spaceBelow = window.innerHeight - rect.bottom;
+            const spaceAbove = rect.top;
+            let top;
+
+            if (spaceBelow < menuHeight && spaceAbove > spaceBelow) {
+                top = Math.max(viewportGap, rect.top - menuHeight - 6);
+            } else {
+                top = Math.min(window.innerHeight - menuHeight - viewportGap, rect.bottom + 6);
+            }
+
+            menu.style.position = 'fixed';
             menu.style.top = top + 'px';
+            menu.style.left = left + 'px';
+            menu.style.right = 'auto';
+            menu.style.bottom = 'auto';
+            menu.style.transform = 'none';
+            menu.style.zIndex = '99999';
         }
 
         dropdown.addEventListener('show.bs.dropdown', function () {
             originalParent = menu.parentNode;
             originalNextSibling = menu.nextSibling;
+            document.body.appendChild(menu);
+            menu.classList.add('project-floating-action-menu');
+            positionFloatingMenu();
         });
 
         dropdown.addEventListener('shown.bs.dropdown', function () {
-            document.body.appendChild(menu);
-            menu.classList.add('project-floating-action-menu');
-            menu.style.position = 'fixed';
-            menu.style.right = 'auto';
-            menu.style.bottom = 'auto';
-            menu.style.transform = 'none';
             positionFloatingMenu();
         });
 
@@ -2298,13 +2286,13 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         window.addEventListener('resize', function () {
-            if (menu.classList.contains('show') && menu.classList.contains('project-floating-action-menu')) {
+            if (menu.classList.contains('project-floating-action-menu')) {
                 positionFloatingMenu();
             }
         });
 
         window.addEventListener('scroll', function () {
-            if (menu.classList.contains('show') && menu.classList.contains('project-floating-action-menu')) {
+            if (menu.classList.contains('project-floating-action-menu')) {
                 positionFloatingMenu();
             }
         }, true);
