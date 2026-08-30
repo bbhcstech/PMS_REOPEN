@@ -1482,6 +1482,22 @@
                     </li>
                 @endif
 
+                <!-- Products -->
+                <li class="menu-item {{ request()->routeIs('products.*') ? 'active' : '' }}">
+                    <a href="{{ route('products.index') }}" class="menu-link" data-sidebar-key="products">
+                        <i class="menu-icon tf-icons bx bx-cube"></i>
+                        <div class="text-truncate" data-i18n="Products">Products</div>
+                    </a>
+                </li>
+
+                <!-- Orders -->
+                <li class="menu-item {{ request()->routeIs('orders.*') ? 'active' : '' }}">
+                    <a href="{{ route('orders.index') }}" class="menu-link" data-sidebar-key="orders">
+                        <i class="menu-icon tf-icons bx bx-cart"></i>
+                        <div class="text-truncate" data-i18n="Orders">Orders</div>
+                    </a>
+                </li>
+
                 <!-- //ticket section . -->
 
 

@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 140" width="1240" height="140">
+  <defs>
+    <linearGradient id="footerSlate" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#475569" />
+      <stop offset="100%" stop-color="#334155" />
+    </linearGradient>
+    <linearGradient id="footerBlueRibbon" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#bfdbfe" />
+      <stop offset="100%" stop-color="#3b82f6" />
+    </linearGradient>
+    <linearGradient id="footerDarkRibbon" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2563eb" />
+      <stop offset="100%" stop-color="#1d4ed8" />
+    </linearGradient>
+  </defs>
+
+  <!-- Left Bottom Blue Geometric Ribbons -->
+  <polygon points="40,25 120,25 180,90 100,90" fill="url(#footerBlueRibbon)" />
+  <polygon points="100,90 125,115 205,50 180,25" fill="url(#footerDarkRibbon)" opacity="0.75" />
+
+  <polygon points="150,25 230,25 290,90 210,90" fill="url(#footerBlueRibbon)" />
+  <polygon points="210,90 235,115 315,50 290,25" fill="url(#footerDarkRibbon)" opacity="0.75" />
+
+  <polygon points="260,25 340,25 400,90 320,90" fill="url(#footerBlueRibbon)" />
+  <polygon points="320,90 345,115 425,50 400,25" fill="url(#footerDarkRibbon)" opacity="0.75" />
+
+  <!-- Bottom Slate Background Ribbon Bar -->
+  <path d="M 0 50 L 520 50 L 560 140 L 0 140 Z" fill="#64748b" />
+  <path d="M 520 50 L 1240 50 L 1240 140 L 560 140 Z" fill="url(#footerSlate)" />
+
+  <!-- Footer Contact Info Text on Slate Bar -->
+  <g font-family="'Plus Jakarta Sans', Inter, sans-serif" fill="#ffffff">
+    <!-- Address Line -->
+    <text x="620" y="80" font-size="14.5" font-weight="700" text-anchor="middle" letter-spacing="0.5">
+      3RD FLOOR 259, NEW SANTOSHPUR MAIN RD, SANTOSHPUR, KOLKATA 700075, INDIA
+    </text>
+
+    <!-- Phone, Web, Email -->
+    <text x="620" y="112" font-size="14" font-weight="800" text-anchor="middle" letter-spacing="1.2">
+      +91 92306 53975 &nbsp; | &nbsp; WWW.BENGALITHUB.COM &nbsp; | &nbsp; CONTACT@BENGALITHUB.COM
+    </text>
+  </g>
+</svg>

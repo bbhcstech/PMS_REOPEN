@@ -57,6 +57,8 @@ use App\Http\Controllers\Admin\Settings\TermsPolicyController;
 use App\Http\Controllers\Admin\ContractController;
 use App\Http\Controllers\Admin\ContractTemplateController;
 use App\Http\Controllers\Admin\LeadContactController;
+use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\OrderController;
 use App\Exports\AttendanceExport;
 use App\Http\Controllers\DealController;
 use App\Http\Controllers\Admin\Settings\OrganizationDetailsController;
@@ -449,11 +451,29 @@ Route::get('/logout', function () {
 Route::middleware(['auth', 'module.access'])->group(function () {
     Route::prefix('admin/settings')->name('admin.')->group(function () {
 
-        // Letterhead management
+        // Letterhead management routes
         Route::get('/letterhead', [LetterheadController::class, 'index'])->name('letterhead.index');
+        Route::get('/letterhead/create', [LetterheadController::class, 'create'])->name('letterhead.create');
+        Route::post('/letterhead', [LetterheadController::class, 'store'])->name('letterhead.store');
+        Route::post('/letterhead/export-pdf', [LetterheadController::class, 'exportPdf'])->name('letterhead.export-pdf');
+        Route::post('/letterhead/export-word', [LetterheadController::class, 'exportWord'])->name('letterhead.export-word');
+        Route::get('/letterhead/demo-download', [LetterheadController::class, 'demoDownload'])->name('letterhead.demo-download');
+        Route::post('/letterhead/send-letter', [LetterheadController::class, 'sendLetter'])->name('letterhead.send-letter');
+        Route::get('/letterhead/{letterhead}', [LetterheadController::class, 'show'])->name('letterhead.show');
+        Route::get('/letterhead/{letterhead}/edit', [LetterheadController::class, 'edit'])->name('letterhead.edit');
+        Route::put('/letterhead/{letterhead}', [LetterheadController::class, 'update'])->name('letterhead.update');
+        Route::delete('/letterhead/{letterhead}', [LetterheadController::class, 'destroy'])->name('letterhead.destroy');
+        Route::post('/letterhead/{letterhead}/duplicate', [LetterheadController::class, 'duplicate'])->name('letterhead.duplicate');
+        Route::post('/letterhead/{letterhead}/default', [LetterheadController::class, 'setDefault'])->name('letterhead.default');
+        Route::post('/letterhead/{letterhead}/toggle-status', [LetterheadController::class, 'toggleStatus'])->name('letterhead.toggle-status');
+        Route::post('/letterhead/{letterhead}/archive', [LetterheadController::class, 'archive'])->name('letterhead.archive');
+        Route::get('/letterhead/{letterhead}/pdf', [LetterheadController::class, 'generatePdf'])->name('letterhead.pdf');
+        Route::get('/letterhead/{letterhead}/print', [LetterheadController::class, 'printPreview'])->name('letterhead.print');
+
+        // Legacy compatibility routes
         Route::post('/letterhead/{company}/upload', [LetterheadController::class, 'upload'])->name('letterhead.upload');
         Route::get('/letterhead/{company}/download', [LetterheadController::class, 'download'])->name('letterhead.download');
-        Route::delete('/letterhead/{company}/delete', [LetterheadController::class, 'destroy'])->name('letterhead.delete');
+        Route::delete('/letterhead/{company}/delete', [LetterheadController::class, 'destroyLegacy'])->name('letterhead.delete');
 
         Route::get('/modules', [ModuleManagementController::class, 'index'])->name('modules.index');
         Route::post('/modules', [ModuleManagementController::class, 'store'])->name('modules.store');
@@ -469,11 +489,29 @@ Route::middleware(['auth', 'module.access'])->group(function () {
         Route::post('/accounts/{role}/{user}/reset-password', [RoleAccountController::class, 'resetPassword'])->name('role-accounts.reset-password');
     });
 
-    // Letterhead alias routes
+    // Letterhead direct top-level alias routes
     Route::get('/letterhead', [LetterheadController::class, 'index'])->name('letterhead.index');
+    Route::get('/letterhead/create', [LetterheadController::class, 'create'])->name('letterhead.create');
+    Route::post('/letterhead', [LetterheadController::class, 'store'])->name('letterhead.store');
+    Route::post('/letterhead/export-pdf', [LetterheadController::class, 'exportPdf'])->name('letterhead.export-pdf');
+    Route::post('/letterhead/export-word', [LetterheadController::class, 'exportWord'])->name('letterhead.export-word');
+    Route::get('/letterhead/demo-download', [LetterheadController::class, 'demoDownload'])->name('letterhead.demo-download');
+    Route::post('/letterhead/send-letter', [LetterheadController::class, 'sendLetter'])->name('letterhead.send-letter');
+    Route::get('/letterhead/{letterhead}', [LetterheadController::class, 'show'])->name('letterhead.show');
+    Route::get('/letterhead/{letterhead}/edit', [LetterheadController::class, 'edit'])->name('letterhead.edit');
+    Route::put('/letterhead/{letterhead}', [LetterheadController::class, 'update'])->name('letterhead.update');
+    Route::delete('/letterhead/{letterhead}', [LetterheadController::class, 'destroy'])->name('letterhead.destroy');
+    Route::post('/letterhead/{letterhead}/duplicate', [LetterheadController::class, 'duplicate'])->name('letterhead.duplicate');
+    Route::post('/letterhead/{letterhead}/default', [LetterheadController::class, 'setDefault'])->name('letterhead.default');
+    Route::post('/letterhead/{letterhead}/toggle-status', [LetterheadController::class, 'toggleStatus'])->name('letterhead.toggle-status');
+    Route::post('/letterhead/{letterhead}/archive', [LetterheadController::class, 'archive'])->name('letterhead.archive');
+    Route::get('/letterhead/{letterhead}/pdf', [LetterheadController::class, 'generatePdf'])->name('letterhead.pdf');
+    Route::get('/letterhead/{letterhead}/print', [LetterheadController::class, 'printPreview'])->name('letterhead.print');
+
+    // Legacy direct alias routes
     Route::post('/letterhead/{company}/upload', [LetterheadController::class, 'upload'])->name('letterhead.upload');
     Route::get('/letterhead/{company}/download', [LetterheadController::class, 'download'])->name('letterhead.download');
-    Route::delete('/letterhead/{company}/delete', [LetterheadController::class, 'destroy'])->name('letterhead.delete');
+    Route::delete('/letterhead/{company}/delete', [LetterheadController::class, 'destroyLegacy'])->name('letterhead.delete');
 
     Route::prefix('payroll')->name('payroll.')->group(function () {
         Route::get('/', [PayrollController::class, 'index'])->name('index');
@@ -1086,6 +1124,16 @@ Route::get('/my-awards', [AwardController::class, 'myAwards'])->name('awards.my-
     | Misc dashboards
     |----------------------------------------------------------------------
     */
+
+    /*
+    |----------------------------------------------------------------------
+    | Products & Orders
+    |----------------------------------------------------------------------
+    */
+    Route::get('/products', [ProductController::class, 'index'])->name('products.index');
+    Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+    Route::post('/orders/bulk-payment-status', [OrderController::class, 'bulkUpdatePaymentStatus'])->name('orders.bulk-payment-status');
+    Route::post('/orders/{id}/payment-status', [OrderController::class, 'updatePaymentStatus'])->name('orders.update-payment-status');
 
     Route::get('/account/dashboard-project', [DashboardController::class, 'project'])->name('dashproject');
     Route::get('/account/dashboard-advanced', [DashboardController::class, 'clientDashboard'])->name('dashboard.client');
