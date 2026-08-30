@@ -389,9 +389,7 @@ Route::prefix('product')->name('product.')->group(function () {
     Route::get('/analytics', [FrontendUIController::class, 'productAnalytics'])->name('analytics');
 });
 
-// ===========================================
-// Solutions Routes
-// ===========================================
+Route::get('/solutions', [FrontendUIController::class, 'solutions'])->name('solutions');
 Route::prefix('solutions')->name('solutions.')->group(function () {
     Route::get('/enterprise', [FrontendUIController::class, 'solutionsEnterprise'])->name('enterprise');
     Route::get('/startups', [FrontendUIController::class, 'solutionsStartups'])->name('startups');
@@ -409,6 +407,7 @@ Route::get('/pricing', [FrontendUIController::class, 'pricing'])->name('pricing'
 // ===========================================
 // Resources Routes
 // ===========================================
+Route::get('/resources', [FrontendUIController::class, 'resources'])->name('resources');
 Route::prefix('resources')->name('resources.')->group(function () {
     Route::get('/blog', [FrontendUIController::class, 'blog'])->name('blog');
     Route::get('/blog/{slug}', [FrontendUIController::class, 'blogSingle'])->name('blog.single');
@@ -421,6 +420,11 @@ Route::prefix('resources')->name('resources.')->group(function () {
 // ===========================================
 // Company Routes
 // ===========================================
+Route::get('/about', [FrontendUIController::class, 'about'])->name('about');
+Route::get('/contact', [FrontendUIController::class, 'contact'])->name('contact');
+Route::get('/privacy', [FrontendUIController::class, 'privacy'])->name('privacy');
+Route::get('/terms', [FrontendUIController::class, 'terms'])->name('terms');
+
 Route::prefix('company')->name('company.')->group(function () {
     Route::get('/about', [FrontendUIController::class, 'about'])->name('about');
     Route::get('/careers', [FrontendUIController::class, 'careers'])->name('careers');
