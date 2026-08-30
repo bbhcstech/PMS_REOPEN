@@ -13,37 +13,40 @@ return new class extends Migration
     {
         // 1. Update users table for developer password flow & personal email
         Schema::table('users', function (Blueprint $table) {
+            if (! Schema::hasColumn('users', 'raw_password')) {
+                $table->string('raw_password')->nullable();
+            }
             if (! Schema::hasColumn('users', 'must_change_password')) {
-                $table->boolean('must_change_password')->default(false)->after('password');
+                $table->boolean('must_change_password')->default(false);
             }
             if (! Schema::hasColumn('users', 'personal_email')) {
-                $table->string('personal_email')->nullable()->after('email');
+                $table->string('personal_email')->nullable();
             }
         });
 
         // 2. Update employee_details table for developer metadata
         Schema::table('employee_details', function (Blueprint $table) {
             if (! Schema::hasColumn('employee_details', 'developer_id')) {
-                $table->string('developer_id')->nullable()->after('user_id');
+                $table->string('developer_id')->nullable();
             }
             if (! Schema::hasColumn('employee_details', 'experience')) {
-                $table->string('experience')->nullable()->after('skills');
+                $table->string('experience')->nullable();
             }
             if (! Schema::hasColumn('employee_details', 'joining_date')) {
-                $table->date('joining_date')->nullable()->after('status');
+                $table->date('joining_date')->nullable();
             }
         });
 
         // 3. Update tasks table for assignment details & instructions
         Schema::table('tasks', function (Blueprint $table) {
             if (! Schema::hasColumn('tasks', 'additional_instructions')) {
-                $table->text('additional_instructions')->nullable()->after('description');
+                $table->text('additional_instructions')->nullable();
             }
             if (! Schema::hasColumn('tasks', 'attachments')) {
-                $table->text('attachments')->nullable()->after('additional_instructions');
+                $table->text('attachments')->nullable();
             }
             if (! Schema::hasColumn('tasks', 'start_date')) {
-                $table->dateTime('start_date')->nullable()->after('due_date');
+                $table->dateTime('start_date')->nullable();
             }
         });
     }

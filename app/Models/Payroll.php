@@ -26,4 +26,24 @@ class Payroll extends TenantModel
     {
         return $this->belongsTo(PayrollCycle::class, 'payroll_cycle_id');
     }
+
+    public function items()
+    {
+        return $this->hasMany(PayrollHistory::class, 'payroll_id');
+    }
+
+    public function histories()
+    {
+        return $this->hasMany(PayrollHistory::class, 'payroll_id');
+    }
+
+    public function payslips()
+    {
+        return $this->hasMany(Payslip::class, 'payroll_id');
+    }
+
+    public function approvals()
+    {
+        return $this->hasMany(PayrollApproval::class, 'payroll_id');
+    }
 }

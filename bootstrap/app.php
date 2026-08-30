@@ -18,6 +18,9 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware) {
+        $middleware->web(append: [
+            \App\Http\Middleware\EnsureCompanySubscriptionActive::class,
+        ]);
         $middleware->web(prepend: [
             SetTenantConnection::class,
         ]);
@@ -27,6 +30,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => RoleMiddleware::class,
             'feature' => \App\Http\Middleware\CheckFeatureAccess::class,
             'developer.access' => \App\Http\Middleware\EnsureDeveloperAccess::class,
+            'subscription.active' => \App\Http\Middleware\EnsureCompanySubscriptionActive::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

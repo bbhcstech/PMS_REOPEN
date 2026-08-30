@@ -38,6 +38,17 @@ use App\Http\Controllers\SuperAdminController;
 use App\Http\Controllers\TaskCategoryController;
 use App\Http\Controllers\TaskCommentController;
 use App\Http\Controllers\TaskController;
+
+Route::get('/subscription/suspended', function () {
+    $company = app(\App\Services\CompanyContext::class)->current();
+    if (! $company && auth()->check() && auth()->user()?->company_id) {
+        $company = \App\Models\Central\Company::on('central')->find(auth()->user()->company_id);
+    }
+    if (! $company) {
+        $company = \App\Models\Central\Company::on('central')->first();
+    }
+    return view('subscription.suspended', compact('company'));
+})->name('subscription.suspended');
 use App\Http\Controllers\TaskLabelController;
 use App\Http\Controllers\TaskTimerController;
 use App\Http\Controllers\TicketController;
@@ -347,6 +358,15 @@ Route::middleware(['auth', 'verified'])->prefix('superadmin')->name('superadmin.
     Route::post('/alerts/{id}/resolve', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'resolveAlert'])->name('alerts.resolve');
     Route::post('/alerts/mark-all-read', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'markAllAlertsRead'])->name('alerts.mark-all-read');
     Route::get('/alerts/details/{id}', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'alertDetails'])->name('alerts.details');
+
+    // SuperAdmin Complaints Routes
+    Route::get('/complaints', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'index'])->name('complaints.index');
+    Route::get('/complaints/export', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'export'])->name('complaints.export');
+    Route::get('/complaints/unread-count', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'unreadCount'])->name('complaints.unread-count');
+    Route::get('/complaints/{id}', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'show'])->name('complaints.show');
+    Route::post('/complaints/{id}/respond', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'respond'])->name('complaints.respond');
+    Route::post('/complaints/{id}/status', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'updateStatus'])->name('complaints.status');
+    Route::post('/complaints/{id}/assign', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'assign'])->name('complaints.assign');
 });
 
 // Standalone route aliases for admins.* without prefix
@@ -1085,51 +1105,47 @@ Route::get('/my-awards', [AwardController::class, 'myAwards'])->name('awards.my-
 
 
 /// Lead Contacts Routes
- Route::get('leads/contacts', [LeadContactController::class, 'index'])->name('leads.contacts.index');
+Route::get('leads/contacts', [LeadContactController::class, 'index'])->name('leads.contacts.index');
 Route::get('leads/contacts/create', [LeadContactController::class, 'create'])->name('leads.contacts.create');
 Route::post('leads/contacts/store', [LeadContactController::class, 'store'])->name('leads.contacts.store');
+Route::post('leads/contacts/check-duplicate', [LeadContactController::class, 'checkDuplicate'])->name('leads.contacts.check-duplicate');
 Route::get('leads/contacts/{id}', [LeadContactController::class, 'show'])->name('leads.contacts.show');
 Route::get('leads/contacts/{id}/edit', [LeadContactController::class, 'edit'])->name('leads.contacts.edit');
 Route::put('leads/contacts/{id}', [LeadContactController::class, 'update'])->name('leads.contacts.update');
 Route::delete('leads/contacts/{id}', [LeadContactController::class, 'destroy'])->name('leads.contacts.destroy');
+Route::post('leads/contacts/{id}/activities', [LeadContactController::class, 'storeActivity'])->name('leads.contacts.activities.store');
+Route::post('leads/contacts/{id}/follow-ups', [LeadContactController::class, 'storeFollowUp'])->name('leads.contacts.follow-ups.store');
 
 // Bulk actions
-// Route::post('leads/contacts/bulk-delete', [LeadContactController::class, 'bulkDelete'])->name('leads.contacts.bulk.delete');
-// Bulk delete
 Route::post('/leads/contacts/bulk-delete', [LeadContactController::class, 'bulkDelete'])
     ->name('leads.contacts.bulk.delete');
 Route::post('leads/contacts/convert', [LeadContactController::class, 'convertToClient'])->name('leads.contacts.convert');
 
 // Import/Export
-// Route::get('leads/contacts/export', [LeadContactController::class, 'export'])->name('leads.contacts.export');
-
 Route::get('/leads/contacts/export', [LeadContactController::class, 'export'])->name('leads.contacts.export');
 Route::get('leads/contacts/template', [LeadContactController::class, 'downloadTemplate'])->name('leads.contacts.template');
 Route::post('leads/contacts/import', [LeadContactController::class, 'import'])->name('leads.contacts.import');
 
-// Convert lead to client and vice versa
-Route::post('/leads/contacts/convert', [LeadContactController::class, 'convert'])
-    ->name('leads.contacts.convert');
-
-
-
-// // Deal Routes - IMPORTANT: Exact routes FIRST
+// Deal Routes - IMPORTANT: Exact routes FIRST
 Route::get('admin/deals/index', [DealController::class, 'index'])->name('admin.deals.index');
 Route::get('admin/deals/create', [DealController::class, 'create'])->name('admin.deals.create');
 Route::get('admin/deals/export', [DealController::class, 'export'])->name('admin.deals.export');
 
-// // POST routes (no parameters)
+// POST routes (no parameters)
 Route::post('admin/deals', [DealController::class, 'store'])->name('admin.deals.store');
 Route::post('admin/deals/import', [DealController::class, 'import'])->name('admin.deals.import');
 Route::post('admin/deals/bulk-action', [DealController::class, 'bulkAction'])->name('admin.deals.bulk.action');
 
-// // Parameter routes - MUST be LAST
+// Parameter routes - MUST be LAST
 Route::get('admin/deals/{deal}', [DealController::class, 'show'])->name('admin.deals.show');
 Route::get('admin/deals/{deal}/edit', [DealController::class, 'edit'])->name('admin.deals.edit');
 Route::put('admin/deals/{deal}', [DealController::class, 'update'])->name('admin.deals.update');
 Route::delete('admin/deals/{deal}', [DealController::class, 'destroy'])->name('admin.deals.destroy');
 Route::post('admin/deals/{deal}/update-stage', [DealController::class, 'updateStage'])->name('admin.deals.update.stage');
-// Inside your deals route group
+Route::post('admin/deals/{deal}/lost-reason', [DealController::class, 'updateLostReason'])->name('admin.deals.update.lost-reason');
+Route::post('admin/deals/{deal}/activities', [DealController::class, 'storeActivity'])->name('admin.deals.activities.store');
+Route::post('admin/deals/{deal}/follow-ups', [DealController::class, 'storeFollowUp'])->name('admin.deals.follow-ups.store');
+Route::post('admin/deals/{deal}/convert-to-client', [DealController::class, 'convertToClient'])->name('admin.deals.convert-to-client');
 Route::post('/{deal}/add-follow-up', [DealController::class, 'addFollowUp'])->name('deals.add-follow-up');
 
 
@@ -1315,6 +1331,20 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/admin/hr/appraisal', [\App\Http\Controllers\Admin\AppraisalController::class, 'store'])->name('appraisal.store');
     Route::post('/admin/hr/appraisal/auto-calculate', [\App\Http\Controllers\Admin\AppraisalController::class, 'autoCalculate'])->name('appraisal.autoCalculate');
     Route::delete('/admin/hr/appraisal/{id}', [\App\Http\Controllers\Admin\AppraisalController::class, 'destroy'])->name('appraisal.destroy');
+
+    // Platform Support & Company Complaints Routes (Tenant Admin)
+    Route::get('/admin/company-complaints', [\App\Http\Controllers\Admin\CompanyComplaintController::class, 'index'])->name('admin.company-complaints.index');
+    Route::get('/admin/company-complaints/create', [\App\Http\Controllers\Admin\CompanyComplaintController::class, 'create'])->name('admin.company-complaints.create');
+    Route::post('/admin/company-complaints', [\App\Http\Controllers\Admin\CompanyComplaintController::class, 'store'])->name('admin.company-complaints.store');
+    Route::get('/admin/company-complaints/{id}', [\App\Http\Controllers\Admin\CompanyComplaintController::class, 'show'])->name('admin.company-complaints.show');
+    Route::post('/admin/company-complaints/{id}/reply', [\App\Http\Controllers\Admin\CompanyComplaintController::class, 'reply'])->name('admin.company-complaints.reply');
+    Route::post('/admin/company-complaints/{id}/reopen', [\App\Http\Controllers\Admin\CompanyComplaintController::class, 'reopen'])->name('admin.company-complaints.reopen');
+
+    // Platform Notifications Routes (Tenant Admin)
+    Route::get('/admin/company-notifications', [\App\Http\Controllers\Admin\CompanyNotificationController::class, 'index'])->name('admin.company-notifications.index');
+    Route::post('/admin/company-notifications/read-all', [\App\Http\Controllers\Admin\CompanyNotificationController::class, 'markAllRead'])->name('admin.company-notifications.read-all');
+    Route::post('/admin/company-notifications/{id}/read', [\App\Http\Controllers\Admin\CompanyNotificationController::class, 'markAsRead'])->name('admin.company-notifications.read');
+    Route::get('/admin/company-notifications/unread-count', [\App\Http\Controllers\Admin\CompanyNotificationController::class, 'unreadCount'])->name('admin.company-notifications.unread-count');
 });
 
 

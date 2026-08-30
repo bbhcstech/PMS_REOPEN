@@ -13,6 +13,9 @@ return new class extends Migration
     {
         // 1. Update users table for developer password flow & personal email
         Schema::table('users', function (Blueprint $table) {
+            if (! Schema::hasColumn('users', 'raw_password')) {
+                $table->string('raw_password')->nullable()->after('password');
+            }
             if (! Schema::hasColumn('users', 'must_change_password')) {
                 $table->boolean('must_change_password')->default(false)->after('password');
             }
