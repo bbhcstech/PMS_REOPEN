@@ -1094,6 +1094,26 @@
             </li>
             @endif
 
+            <!-- Events -->
+            @if($canSeeModule('events') || (auth()->check() && auth()->user()->normalizedRole() !== 'superadmin'))
+            <li class="menu-item {{ request()->routeIs('events.*') ? 'active' : '' }}">
+              <a href="{{ route('events.index') }}" class="menu-link" data-sidebar-key="events">
+                  <i class="menu-icon tf-icons bx bx-calendar-event"></i>
+                  <div class="text-truncate" data-i18n="Events">Events</div>
+              </a>
+            </li>
+            @endif
+
+            <!-- Community Message -->
+            @if(auth()->check() && auth()->user()->normalizedRole() !== 'superadmin')
+            <li class="menu-item {{ request()->routeIs('community.*') ? 'active' : '' }}">
+              <a href="{{ route('community.index') }}" class="menu-link" data-sidebar-key="community">
+                  <i class="menu-icon tf-icons bx bx-chat"></i>
+                  <div class="text-truncate" data-i18n="Community">Community</div>
+              </a>
+            </li>
+            @endif
+
 
 
             <!-- Layouts -->
