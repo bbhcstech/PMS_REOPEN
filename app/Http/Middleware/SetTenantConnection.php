@@ -18,10 +18,37 @@ class SetTenantConnection
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $tenantDb = session('current_company_db') ?: env('DB_DATABASE', 'pms_last');
+        $tenantDb = session('current_company_db');
 
-        config(['database.connections.tenant.database' => $tenantDb]);
+        $user = auth()->user();
+        if ($user && !empty($user->company_id)) {
+            try {
+                $company = \App\Models\Central\Company::on('central')->find($user->company_id);
+                if ($company && $company->db_name) {
+                    $tenantDb = $company->db_name;
+                    session([
+                        'current_company_db'   => $tenantDb,
+                        'current_company_id'   => $company->id,
+                        'current_company_name' => $company->name,
+                    ]);
+                }
+            } catch (\Throwable $e) {}
+        }
+
+        if (! $tenantDb) {
+            $tenantDb = env('DB_DATABASE', 'pms_last');
+        }
+
+        config([
+            'database.connections.tenant.database' => $tenantDb,
+            'database.connections.mysql.database'  => $tenantDb,
+        ]);
         DB::purge('tenant');
+        DB::purge('mysql');
+
+        if (app()->bound(\App\Services\CompanyContext::class)) {
+            app(\App\Services\CompanyContext::class)->reset();
+        }
 
         return $next($request);
     }

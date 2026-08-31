@@ -29,6 +29,33 @@ class DeveloperPortalController extends Controller
     }
 
     /**
+     * Helper to get all associated developer user IDs for task lookup
+     */
+    private function getDevUserIds(): array
+    {
+        $dev = $this->getDevUser();
+        if (! $dev) {
+            return [];
+        }
+
+        $emails = array_filter([
+            strtolower(trim((string) ($dev->email ?? ''))),
+            strtolower(trim((string) ($dev->personal_email ?? ''))),
+        ]);
+
+        $ids = User::whereIn('id', [$dev->id])
+            ->when(! empty($emails), function ($q) use ($emails) {
+                $q->orWhereIn('email', $emails)
+                  ->orWhereIn('personal_email', $emails);
+            })
+            ->pluck('id')
+            ->toArray();
+
+        $allIds = array_unique(array_merge([(int) $dev->id], array_map('intval', $ids)));
+        return array_values($allIds);
+    }
+
+    /**
      * Helper to log activity to central super_admin_activity_logs or audit table
      */
     private function logDevActivity(string $action, string $description, ?array $details = null): void
@@ -62,14 +89,15 @@ class DeveloperPortalController extends Controller
     public function dashboard(): View
     {
         $dev = $this->getDevUser();
-        $empDetail = DB::table('employee_details')->where('user_id', $dev->id)->first();
+        $devUserIds = $this->getDevUserIds();
+        $empDetail = DB::table('employee_details')->whereIn('user_id', $devUserIds)->first();
 
         // Real Tasks Query for Logged-In Developer
         $allDevTasks = DB::table('tasks')
             ->leftJoin('companies', 'tasks.company_id', '=', 'companies.id')
             ->leftJoin('projects', 'tasks.project_id', '=', 'projects.id')
             ->select('tasks.*', 'companies.name as company_name', 'projects.name as project_name')
-            ->where('tasks.assigned_to', $dev->id)
+            ->whereIn('tasks.assigned_to', $devUserIds)
             ->whereNull('tasks.deleted_at')
             ->latest('tasks.created_at')
             ->get();
@@ -106,7 +134,8 @@ class DeveloperPortalController extends Controller
 
         // Developer Notifications / System Alerts
         $notifications = DB::table('tasks')
-            ->where('assigned_to', $dev->id)
+            ->whereIn('assigned_to', $devUserIds)
+            ->whereNull('deleted_at')
             ->latest('updated_at')
             ->take(5)
             ->get();
@@ -128,6 +157,7 @@ class DeveloperPortalController extends Controller
     public function myWork(Request $request): View
     {
         $dev = $this->getDevUser();
+        $devUserIds = $this->getDevUserIds();
 
         $statusFilter = $request->input('status', 'all');
         $priorityFilter = $request->input('priority', 'all');
@@ -143,7 +173,7 @@ class DeveloperPortalController extends Controller
                 'projects.name as project_name',
                 'assigner.name as assigner_name'
             )
-            ->where('tasks.assigned_to', $dev->id)
+            ->whereIn('tasks.assigned_to', $devUserIds)
             ->whereNull('tasks.deleted_at');
 
         if ($statusFilter !== 'all') {
@@ -174,12 +204,13 @@ class DeveloperPortalController extends Controller
     public function myContributions(Request $request): View
     {
         $dev = $this->getDevUser();
+        $devUserIds = $this->getDevUserIds();
 
         $allTasks = DB::table('tasks')
             ->leftJoin('companies', 'tasks.company_id', '=', 'companies.id')
             ->leftJoin('projects', 'tasks.project_id', '=', 'projects.id')
             ->select('tasks.*', 'companies.name as company_name', 'projects.name as project_name')
-            ->where('tasks.assigned_to', $dev->id)
+            ->whereIn('tasks.assigned_to', $devUserIds)
             ->whereNull('tasks.deleted_at')
             ->get();
 
@@ -233,12 +264,13 @@ class DeveloperPortalController extends Controller
     public function deadlines(Request $request): View
     {
         $dev = $this->getDevUser();
+        $devUserIds = $this->getDevUserIds();
 
         $tasks = DB::table('tasks')
             ->leftJoin('companies', 'tasks.company_id', '=', 'companies.id')
             ->leftJoin('projects', 'tasks.project_id', '=', 'projects.id')
             ->select('tasks.*', 'companies.name as company_name', 'projects.name as project_name')
-            ->where('tasks.assigned_to', $dev->id)
+            ->whereIn('tasks.assigned_to', $devUserIds)
             ->where('tasks.status', '!=', 'completed')
             ->where('tasks.status', '!=', 'cancelled')
             ->whereNull('tasks.deleted_at')
@@ -292,10 +324,11 @@ class DeveloperPortalController extends Controller
     public function profile(): View
     {
         $dev = $this->getDevUser();
-        $empDetail = DB::table('employee_details')->where('user_id', $dev->id)->first();
+        $devUserIds = $this->getDevUserIds();
+        $empDetail = DB::table('employee_details')->whereIn('user_id', $devUserIds)->first();
 
         $allTasks = DB::table('tasks')
-            ->where('assigned_to', $dev->id)
+            ->whereIn('assigned_to', $devUserIds)
             ->whereNull('deleted_at')
             ->get();
 
@@ -331,7 +364,7 @@ class DeveloperPortalController extends Controller
             ->leftJoin('companies', 'tasks.company_id', '=', 'companies.id')
             ->leftJoin('projects', 'tasks.project_id', '=', 'projects.id')
             ->select('tasks.*', 'companies.name as company_name', 'projects.name as project_name')
-            ->where('tasks.assigned_to', $dev->id)
+            ->whereIn('tasks.assigned_to', $devUserIds)
             ->whereNull('tasks.deleted_at')
             ->latest('tasks.updated_at')
             ->take(6)
@@ -353,6 +386,7 @@ class DeveloperPortalController extends Controller
         $dev = $this->getDevUser();
 
         $data = $request->validate([
+            'profile_image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:5120'],
             'mobile' => ['nullable', 'string', 'max:20'],
             'skills' => ['nullable', 'string', 'max:500'],
             'experience' => ['nullable', 'string', 'max:100'],
@@ -360,25 +394,66 @@ class DeveloperPortalController extends Controller
             'status' => ['nullable', 'in:Available,Busy,On Leave,available,busy,on_leave'],
         ]);
 
-        User::where('id', $dev->id)->update([
+        $userUpdate = [
             'mobile' => $data['mobile'] ?? $dev->mobile,
             'about' => $data['about'] ?? $dev->about,
-        ]);
+        ];
+
+        if ($request->hasFile('profile_image')) {
+            $image = $request->file('profile_image');
+            $imageName = time() . '-dev-' . $dev->id . '.' . $image->getClientOriginalExtension();
+            $dir = public_path('admin/uploads/profile-images');
+            if (!is_dir($dir)) {
+                mkdir($dir, 0755, true);
+            }
+            if (!empty($dev->profile_image) && file_exists(public_path($dev->profile_image))) {
+                @unlink(public_path($dev->profile_image));
+            }
+            $image->move($dir, $imageName);
+            $userUpdate['profile_image'] = 'admin/uploads/profile-images/' . $imageName;
+        }
+
+        User::where('id', $dev->id)->update($userUpdate);
 
         $statusKey = strtolower(str_replace(' ', '_', $data['status'] ?? 'available'));
 
-        DB::table('employee_details')->updateOrInsert(
-            ['user_id' => $dev->id],
-            [
-                'company_id' => $dev->company_id,
+        try {
+            DB::statement("ALTER TABLE `employee_details` MODIFY `status` VARCHAR(191) NULL DEFAULT 'active';");
+        } catch (\Throwable $e) {
+            // Table column already expanded or restricted DB user
+        }
+
+        $empExists = DB::table('employee_details')->where('user_id', $dev->id)->exists();
+
+        if ($empExists) {
+            DB::table('employee_details')->where('user_id', $dev->id)->update([
+                'company_id' => $dev->company_id ?? 1,
                 'mobile' => $data['mobile'] ?? $dev->mobile,
                 'skills' => $data['skills'] ?? 'Laravel, PHP, MySQL',
                 'experience' => $data['experience'] ?? '2+ Years',
                 'about' => $data['about'] ?? $dev->about,
                 'status' => $statusKey,
                 'updated_at' => now(),
-            ]
-        );
+            ]);
+        } else {
+            $defaultParentDpt = DB::table('parent_departments')->value('id') ?? DB::table('departments')->value('id');
+
+            DB::table('employee_details')->insert([
+                'user_id' => $dev->id,
+                'company_id' => $dev->company_id ?? 1,
+                'parent_dpt_id' => $defaultParentDpt,
+                'employee_id' => 'DEV-' . str_pad($dev->id, 4, '0', STR_PAD_LEFT),
+                'joining_date' => now()->format('Y-m-d'),
+                'business_address' => 'Corporate Head Office',
+                'mobile' => $data['mobile'] ?? $dev->mobile,
+                'skills' => $data['skills'] ?? 'Laravel, PHP, MySQL',
+                'experience' => $data['experience'] ?? '2+ Years',
+                'about' => $data['about'] ?? $dev->about,
+                'status' => $statusKey,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
 
         $this->logDevActivity('developer.profile_updated', "Developer {$dev->name} updated their profile details.");
 
@@ -427,8 +502,12 @@ class DeveloperPortalController extends Controller
     public function updateTaskStatus(Request $request, $id)
     {
         $dev = $this->getDevUser();
+        $devUserIds = $this->getDevUserIds();
 
-        $task = DB::table('tasks')->where('id', $id)->where('assigned_to', $dev->id)->first();
+        $task = DB::table('tasks')
+            ->where('id', $id)
+            ->whereIn('assigned_to', $devUserIds)
+            ->first();
         if (! $task) {
             if ($request->wantsJson()) {
                 return response()->json(['success' => false, 'message' => 'Task not found or not assigned to you.'], 404);
@@ -511,8 +590,12 @@ class DeveloperPortalController extends Controller
     public function addTaskNote(Request $request, $id): RedirectResponse
     {
         $dev = $this->getDevUser();
+        $devUserIds = $this->getDevUserIds();
 
-        $task = DB::table('tasks')->where('id', $id)->where('assigned_to', $dev->id)->first();
+        $task = DB::table('tasks')
+            ->where('id', $id)
+            ->whereIn('assigned_to', $devUserIds)
+            ->first();
         if (! $task) {
             return back()->withErrors(['error' => 'Task not found or not assigned to you.']);
         }
@@ -557,6 +640,7 @@ class DeveloperPortalController extends Controller
     public function getTaskDetails($id)
     {
         $dev = $this->getDevUser();
+        $devUserIds = $this->getDevUserIds();
 
         $task = DB::table('tasks')
             ->leftJoin('companies', 'tasks.company_id', '=', 'companies.id')
@@ -569,7 +653,7 @@ class DeveloperPortalController extends Controller
                 'assigner.name as assigner_name'
             )
             ->where('tasks.id', $id)
-            ->where('tasks.assigned_to', $dev->id)
+            ->whereIn('tasks.assigned_to', $devUserIds)
             ->first();
 
         if (! $task) {

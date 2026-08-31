@@ -59,6 +59,7 @@ class CompanyCreateCommand extends Command
             'company_code'   => strtoupper($slug),
             'name'           => $name,
             'email'          => "admin@{$slug}.local",
+            'password'       => 'password123',
             'db_name'        => $dbName,
             'status'         => 'active',
             'max_users'      => 100,
@@ -87,6 +88,9 @@ class CompanyCreateCommand extends Command
 
         $this->info("✔ Migrations completed successfully.");
 
+        // Ensure company record exists in tenant DB
+        User::syncCompanyToConnection('tenant', $company);
+
         // 5. Seed default company admin user into the new tenant DB
         $adminEmail = "admin@{$slug}.com";
         $adminPassword = 'password123';
@@ -95,7 +99,7 @@ class CompanyCreateCommand extends Command
             'name'          => $name . ' Admin',
             'email'         => $adminEmail,
             'password'      => Hash::make($adminPassword),
-            'company_id'    => null,
+            'company_id'    => $company->id,
             'role'          => 'admin',
             'is_active'     => true,
             'login_allowed' => true,

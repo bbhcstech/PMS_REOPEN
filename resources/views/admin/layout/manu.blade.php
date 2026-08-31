@@ -1017,6 +1017,49 @@
           <div class="menu-inner-shadow"></div>
 
           <ul class="menu-inner py-1">
+            @php
+                $sidebarCompanyObj = app(\App\Services\CompanyContext::class)->current();
+                if (! $sidebarCompanyObj && auth()->check() && auth()->user()?->company_id) {
+                    $sidebarCompanyObj = \App\Models\Company::find(auth()->user()->company_id);
+                }
+                $isSidebarSuspended = $sidebarCompanyObj ? $sidebarCompanyObj->isSuspended() : false;
+            @endphp
+
+            @if($isSidebarSuspended)
+                <div class="px-3 py-3 mx-2 my-2 text-center" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 12px; color: #ef4444;">
+                    <i class="bx bx-lock-alt fs-3 d-block mb-1"></i>
+                    <div class="fw-bold fs-7">ACCOUNT SUSPENDED</div>
+                    <small class="d-block mt-1 text-muted" style="font-size: 11px;">Subscription expired. Upgrade or renew to unlock full PMS features.</small>
+                </div>
+
+                <li class="menu-item {{ request()->routeIs('subscription.suspended') ? 'active' : '' }}">
+                    <a href="{{ route('subscription.suspended') }}" class="menu-link text-danger fw-bold">
+                        <i class="menu-icon tf-icons bx bx-zap text-danger"></i>
+                        <div class="text-truncate">Reactivate Plan</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('notifications.*') || request()->routeIs('admin.company-notifications.*') ? 'active' : '' }}">
+                    <a href="{{ route('notifications.all') }}" class="menu-link">
+                        <i class="menu-icon tf-icons bx bx-bell"></i>
+                        <div class="text-truncate">Notifications Center</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('admin.company-complaints.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.company-complaints.index') }}" class="menu-link">
+                        <i class="menu-icon tf-icons bx bx-support"></i>
+                        <div class="text-truncate">Platform Support</div>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <form method="POST" action="{{ route('logout') }}" id="sidebarSuspendedLogoutForm">
+                        @csrf
+                        <a href="javascript:void(0);" onclick="document.getElementById('sidebarSuspendedLogoutForm').submit();" class="menu-link text-muted">
+                            <i class="menu-icon tf-icons bx bx-log-out"></i>
+                            <div class="text-truncate">Log Out</div>
+                        </a>
+                    </form>
+                </li>
+            @else
 
             @if($canSeeModule('dashboard'))
             <li class="menu-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
@@ -1059,6 +1102,26 @@
               <a href="{{ route('organization.index') }}" class="menu-link" data-sidebar-key="organization">
                   <i class="menu-icon tf-icons bx bx-sitemap"></i>
                   <div class="text-truncate">Organization</div>
+              </a>
+            </li>
+            @endif
+
+            <!-- Events -->
+            @if($canSeeModule('events') || (auth()->check() && auth()->user()->normalizedRole() !== 'superadmin'))
+            <li class="menu-item {{ request()->routeIs('events.*') ? 'active' : '' }}">
+              <a href="{{ route('events.index') }}" class="menu-link" data-sidebar-key="events">
+                  <i class="menu-icon tf-icons bx bx-calendar-event"></i>
+                  <div class="text-truncate" data-i18n="Events">Events</div>
+              </a>
+            </li>
+            @endif
+
+            <!-- Community Message -->
+            @if(auth()->check() && auth()->user()->normalizedRole() !== 'superadmin')
+            <li class="menu-item {{ request()->routeIs('community.*') ? 'active' : '' }}">
+              <a href="{{ route('community.index') }}" class="menu-link" data-sidebar-key="community">
+                  <i class="menu-icon tf-icons bx bx-chat"></i>
+                  <div class="text-truncate" data-i18n="Community">Community</div>
               </a>
             </li>
             @endif
@@ -1494,6 +1557,14 @@
               </li>
             @endif
 
+            <!-- Platform Support & Complaints -->
+            <li class="menu-item {{ request()->routeIs('admin.company-complaints.*') ? 'active' : '' }}">
+                <a href="{{ route('admin.company-complaints.index') }}" class="menu-link">
+                    <i class="menu-icon tf-icons bx bx-support"></i>
+                    <div class="text-truncate">Platform Support &amp; Complaints</div>
+                </a>
+            </li>
+
             @if($canSeeModule('settings'))
                 <li class="menu-item {{ request()->routeIs('settings.*') || request()->routeIs('admin.settings.*') || request()->routeIs('admin.modules.*') || request()->routeIs('admin.role-permissions.*') || request()->routeIs('admin.role-accounts.*') ? 'active open' : '' }}">
                     <a href="javascript:void(0);" class="menu-link menu-toggle">
@@ -1501,10 +1572,19 @@
                         <div class="text-truncate" data-i18n="Settings">Settings</div>
                     </a>
                     <ul class="menu-sub">
+                        @if($canSeeModule('settings-dashboard'))
                         <li class="menu-item {{ request()->routeIs('admin.settings.index') ? 'active' : '' }}"><a href="{{ route('admin.settings.index') }}" class="menu-link"><div>Settings Dashboard</div></a></li>
+                        @endif
+                        @if($canSeeModule('company-profile-settings'))
                         <li class="menu-item {{ request()->routeIs('settings.company') ? 'active' : '' }}"><a href="{{ route('settings.company') }}" class="menu-link"><div>Company Profile</div></a></li>
+                        @endif
+                        @if($canSeeModule('organization-details-settings'))
                         <li class="menu-item {{ request()->routeIs('admin.settings.organization-details*') ? 'active' : '' }}"><a href="{{ route('admin.settings.organization-details') }}" class="menu-link"><div>Organization Details</div></a></li>
+                        @endif
+                        @if($canSeeModule('business-address-settings'))
                         <li class="menu-item {{ request()->routeIs('admin.settings.business-address*') ? 'active' : '' }}"><a href="{{ route('admin.settings.business-address.index') }}" class="menu-link"><div>Branches / Locations</div></a></li>
+                        @endif
+                        @if($canSeeModule('departments'))
                         <li class="menu-item {{ request()->routeIs('parent-departments.*') || request()->routeIs('departments.*') ? 'active open' : '' }}">
                             <a href="javascript:void(0);" class="menu-link menu-toggle">
                                 <div>Department</div>
@@ -1522,25 +1602,61 @@
                                 </li>
                             </ul>
                         </li>
+                        @endif
+                        @if($canSeeModule('designations'))
                         <li class="menu-item {{ request()->routeIs('designations.*') ? 'active' : '' }}"><a href="{{ route('designations.index') }}" class="menu-link"><div>Designations</div></a></li>
+                        @endif
+                        @if($canSeeModule('work-schedule-settings'))
                         <li class="menu-item {{ request()->routeIs('admin.settings.work-schedule*') ? 'active' : '' }}"><a href="{{ route('admin.settings.work-schedule') }}" class="menu-link"><div>Work Schedule</div></a></li>
+                        @endif
+                        @if($canSeeModule('leave-settings'))
                         <li class="menu-item {{ request()->routeIs('admin.settings.leave*') ? 'active' : '' }}"><a href="{{ route('admin.settings.leave') }}" class="menu-link"><div>Leave Settings</div></a></li>
+                        @endif
+                        @if($canSeeModule('holiday-settings'))
                         <li class="menu-item {{ request()->routeIs('holidays.*') ? 'active' : '' }}"><a href="{{ route('holidays.index') }}" class="menu-link"><div>Holiday Settings</div></a></li>
+                        @endif
+                        @if($canSeeModule('attendance-settings'))
                         <li class="menu-item {{ request()->routeIs('attendance.settings*') ? 'active' : '' }}"><a href="{{ route('attendance.settings') }}" class="menu-link"><div>Attendance Settings</div></a></li>
+                        @endif
+                        @if($canSeeModule('payroll-settings'))
                         <li class="menu-item {{ request()->routeIs('payroll.settings*') ? 'active' : '' }}"><a href="{{ route('payroll.settings.index') }}" class="menu-link"><div>Payroll Settings</div></a></li>
+                        @endif
+                        @if($canSeeModule('recruitment-settings'))
                         <li class="menu-item {{ request()->routeIs('admin.settings.recruitment*') ? 'active' : '' }}"><a href="{{ route('admin.settings.recruitment') }}" class="menu-link"><div>Recruitment Settings</div></a></li>
+                        @endif
+                        @if($canSeeModule('performance-settings'))
                         <li class="menu-item {{ request()->routeIs('admin.settings.performance*') ? 'active' : '' }}"><a href="{{ route('admin.settings.performance') }}" class="menu-link"><div>Performance Settings</div></a></li>
+                        @endif
+                        @if($canSeeModule('notification-settings'))
                         <li class="menu-item {{ request()->routeIs('admin.settings.notification*') ? 'active' : '' }}"><a href="{{ route('admin.settings.notification') }}" class="menu-link"><div>Notification Settings</div></a></li>
+                        @endif
+                        @if($canSeeModule('email-settings'))
                         <li class="menu-item {{ request()->routeIs('admin.settings.email*') ? 'active' : '' }}"><a href="{{ route('admin.settings.email') }}" class="menu-link"><div>Email Settings</div></a></li>
+                        @endif
+                        @if($canSeeModule('document-settings'))
                         <li class="menu-item {{ request()->routeIs('admin.settings.document*') ? 'active' : '' }}"><a href="{{ route('admin.settings.document') }}" class="menu-link"><div>Document Settings</div></a></li>
+                        @endif
+                        @if($canSeeModule('security-settings'))
                         <li class="menu-item {{ request()->routeIs('admin.settings.security*') ? 'active' : '' }}"><a href="{{ route('admin.settings.security') }}" class="menu-link"><div>Security Settings</div></a></li>
+                        @endif
+                        @if($canSeeModule('change-password-settings'))
                         <li class="menu-item {{ request()->routeIs('admin.settings.change-password*') ? 'active' : '' }}"><a href="{{ route('admin.settings.change-password') }}" class="menu-link"><div>Change Password</div></a></li>
+                        @endif
+                        @if($canSeeModule('role-permissions-settings') || $canSeeModule('role-management'))
                         <li class="menu-item {{ request()->routeIs('admin.role-permissions.*') ? 'active' : '' }}"><a href="{{ route('admin.role-permissions.index') }}" class="menu-link"><div>Role & Permission</div></a></li>
+                        @endif
+                        @if($canSeeModule('localization-settings'))
                         <li class="menu-item {{ request()->routeIs('admin.settings.localization*') ? 'active' : '' }}"><a href="{{ route('admin.settings.localization') }}" class="menu-link"><div>Localization</div></a></li>
+                        @endif
+                        @if($canSeeModule('terms-policy-settings'))
                         <li class="menu-item {{ request()->routeIs('admin.settings.terms-policy*') ? 'active' : '' }}"><a href="{{ route('admin.settings.terms-policy') }}" class="menu-link"><div>Terms &amp; Policy</div></a></li>
+                        @endif
+                        @if($canSeeModule('module-management'))
                         <li class="menu-item {{ request()->routeIs('admin.modules.*') ? 'active' : '' }}"><a href="{{ route('admin.modules.index') }}" class="menu-link"><div>Module Management</div></a></li>
+                        @endif
                     </ul>
                 </li>
+            @endif
             @endif
           </ul>
 
@@ -1980,13 +2096,42 @@
                       </button>
                   </div>
 
+                  @php
+                      $headerCentralNotifications = collect();
+                      $headerCentralUnreadCount = 0;
+                      try {
+                          $hdrCompany = app(\App\Services\CompanyContext::class)->current();
+                          $hdrCompanyId = $hdrCompany?->id ?? auth()->user()?->company_id;
+                          if ($hdrCompanyId && class_exists(\App\Models\Central\CentralNotification::class)) {
+                               try {
+                                   app(\App\Services\SubscriptionNotificationEngine::class)->scanAndGenerateAlerts($hdrCompanyId);
+                               } catch (\Throwable $e) {}
+
+                               $headerCentralNotifications = \App\Models\Central\CentralNotification::on('central')
+                                  ->where('company_id', $hdrCompanyId)
+                                  ->whereIn('target_audience', ['company_admin', 'all'])
+                                  ->orderBy('created_at', 'desc')
+                                  ->take(5)
+                                  ->get();
+                              $headerCentralUnreadCount = \App\Models\Central\CentralNotification::on('central')
+                                  ->where('company_id', $hdrCompanyId)
+                                  ->whereIn('target_audience', ['company_admin', 'all'])
+                                  ->where('is_read', false)
+                                  ->count();
+                          }
+                      } catch (\Throwable $e) {}
+
+                      $totalHeaderUnread = ($navbarUnreadCount ?? 0) + $headerCentralUnreadCount;
+                      $navbarNotifications = $navbarNotifications ?? collect();
+                  @endphp
+
                   <div class="nav-item me-3">
                        <li class="nav-item dropdown" title="New notifications">
-                        <a class="nav-link header-icon-box notification-bell {{ $navbarUnreadCount > 0 ? 'has-unread' : '' }}" href="#" id="navbarDropdown"
+                        <a class="nav-link header-icon-box notification-bell {{ $totalHeaderUnread > 0 ? 'has-unread' : '' }}" href="#" id="navbarDropdown"
                            role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fa fa-bell f-16 text-dark-grey"></i>
-                            @if($navbarUnreadCount > 0)
-                                <span class="badge bg-danger" id="navbarNotificationCount">{{ $navbarUnreadCount }}</span>
+                            @if($totalHeaderUnread > 0)
+                                <span class="badge bg-danger" id="navbarNotificationCount">{{ $totalHeaderUnread }}</span>
                             @endif
                         </a>
 
@@ -1996,7 +2141,7 @@
                                 <li class="notification-dropdown-head d-flex align-items-center justify-content-between">
                                     <div>
                                         <p class="mb-0 fw-bold">Notifications</p>
-                                        <small class="text-muted" id="navbarNotificationUnreadText">{{ $navbarUnreadCount }} unread</small>
+                                        <small class="text-muted" id="navbarNotificationUnreadText">{{ $totalHeaderUnread }} unread</small>
                                     </div>
                                     <form method="POST" action="{{ route('notifications.readAll') }}">
                                         @csrf
@@ -2005,6 +2150,29 @@
                                 </li>
 
                                 <li class="notification-dropdown-body">
+                           @foreach($headerCentralNotifications as $cntf)
+                             <a href="{{ $cntf->action_url ?: route('notifications.all') }}"
+                                class="notification-card-link {{ !$cntf->is_read ? 'is-unread' : '' }}" style="border-left: 3px solid {{ $cntf->severity === 'CRITICAL' ? '#ef4444' : ($cntf->severity === 'WARNING' ? '#f59e0b' : '#3b82f6') }};">
+                                 <span class="notification-avatar-icon color-{{ $cntf->severity === 'CRITICAL' ? 'danger' : ($cntf->severity === 'WARNING' ? 'warning' : 'info') }}">
+                                     <i class="fas {{ $cntf->severity === 'CRITICAL' ? 'fa-exclamation-triangle' : ($cntf->severity === 'WARNING' ? 'fa-bell-circle-exclamation' : 'fa-bell') }}"></i>
+                                 </span>
+                                 <span class="flex-grow-1">
+                                     <span class="notification-title d-flex align-items-center justify-content-between">
+                                         <span>{{ $cntf->title }}</span>
+                                         <span class="badge bg-{{ $cntf->severity === 'CRITICAL' ? 'danger' : ($cntf->severity === 'WARNING' ? 'warning' : 'primary') }} text-white rounded-pill px-2 py-0.5" style="font-size: 0.65rem;">
+                                             {{ $cntf->severity }}
+                                         </span>
+                                     </span>
+                                     @if($cntf->message)
+                                         <span class="notification-message">{{ \Illuminate\Support\Str::limit($cntf->message, 85) }}</span>
+                                     @endif
+                                     <span class="notification-time"><i class="fas fa-clock me-1"></i>{{ $cntf->created_at?->diffForHumans() }}</span>
+                                 </span>
+                                 @if(!$cntf->is_read)
+                                     <span class="notification-unread-dot" style="background: #ef4444;"></span>
+                                 @endif
+                             </a>
+                           @endforeach
                            @forelse($navbarNotifications as $notification)
                             @php
                                 $data = $notification->data ?? [];
@@ -2681,3 +2849,66 @@
           <!-- Content wrapper -->
           <div class="content-wrapper">
             <div class="container-xxl flex-grow-1 container-p-y">
+
+              @php
+                $bannerComp = app(\App\Services\CompanyContext::class)->current();
+                $bannerSub = $bannerComp?->subscriptions?->where('status', 'active')?->first();
+                $bannerExpiry = $bannerSub?->ends_at ?? $bannerComp?->trial_ends_at;
+                $bannerDaysLeft = $bannerExpiry ? (int) \Carbon\Carbon::now()->startOfDay()->diffInDays(\Carbon\Carbon::parse($bannerExpiry)->startOfDay(), false) : null;
+                $bannerIsSuspended = $bannerComp ? $bannerComp->isSuspended() : false;
+                $currentPath = strtolower(request()->path());
+                $showExpiringBanner = request()->routeIs('dashboard', 'dashboard.*', 'admin.dashboard', 'superadmin.dashboard', 'developer.dashboard', 'notifications.*', 'admin.company-notifications.*', 'developer.notifications')
+                    || str_contains($currentPath, 'dashboard')
+                    || str_contains($currentPath, 'notification')
+                    || $currentPath === '/'
+                    || $currentPath === 'home';
+              @endphp
+
+              @if($bannerIsSuspended)
+                <div class="alert border-0 shadow-sm mb-4 d-flex align-items-center justify-content-between flex-wrap gap-3" style="background: linear-gradient(135deg, #fef2f2 0%, #ffe4e6 100%); border-left: 5px solid #ef4444 !important; border-radius: 14px; color: #991b1b; padding: 16px 20px;">
+                    <div class="d-flex align-items-center gap-3">
+                        <div style="width: 38px; height: 38px; border-radius: 50%; background: #fee2e2; color: #ef4444; display: flex; align-items: center; justify-content: center; font-size: 20px;" class="flex-shrink-0">
+                            <i class="bx bx-lock-alt"></i>
+                        </div>
+                        <div>
+                            <div class="fw-bold" style="font-size: 15px;">Account Suspended – Immediate Action Required</div>
+                            <div style="font-size: 13px; opacity: 0.9;">Your organization's subscription has expired and account access is restricted. Renew or upgrade your plan to restore full access.</div>
+                        </div>
+                    </div>
+                    <a href="{{ route('subscription.suspended') }}" class="btn btn-danger fw-bold rounded-pill px-4" style="font-size: 13px;">
+                        <i class="bx bx-zap me-1"></i> Reactivate Plan
+                    </a>
+                </div>
+              @elseif($showExpiringBanner && $bannerDaysLeft !== null && $bannerDaysLeft <= 7 && $bannerDaysLeft >= 0)
+                @php
+                    $bBg = $bannerDaysLeft <= 3 ? 'linear-gradient(135deg, #fff5f5 0%, #fef2f2 100%)' : 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)';
+                    $bBorder = $bannerDaysLeft <= 3 ? '#ef4444' : '#f59e0b';
+                    $bColor = $bannerDaysLeft <= 3 ? '#991b1b' : '#92400e';
+                    $bIconBg = $bannerDaysLeft <= 3 ? '#fee2e2' : '#fde68a';
+                    $bIconColor = $bannerDaysLeft <= 3 ? '#ef4444' : '#d97706';
+                    $bPlanName = strtoupper($bannerSub?->plan?->name ?? ($bannerComp?->isOnTrial() ? 'FREE TRIAL' : 'SUBSCRIPTION'));
+                @endphp
+                <div class="alert border-0 shadow-sm mb-4 d-flex align-items-center justify-content-between flex-wrap gap-3" style="background: {{ $bBg }}; border-left: 5px solid {{ $bBorder }} !important; border-radius: 14px; color: {{ $bColor }}; padding: 16px 20px;">
+                    <div class="d-flex align-items-center gap-3">
+                        <div style="width: 38px; height: 38px; border-radius: 50%; background: {{ $bIconBg }}; color: {{ $bIconColor }}; display: flex; align-items: center; justify-content: center; font-size: 20px;" class="flex-shrink-0">
+                            <i class="bx {{ $bannerDaysLeft <= 3 ? 'bx-error-alt' : 'bx-time-five' }}"></i>
+                        </div>
+                        <div>
+                            <div class="fw-bold" style="font-size: 15px;">
+                                Subscription Warning: Expiring in {{ $bannerDaysLeft == 1 ? '1 Day (Tomorrow)' : $bannerDaysLeft . ' Days' }} – {{ $bPlanName }}
+                            </div>
+                            <div style="font-size: 13px; opacity: 0.9;">
+                                Your {{ $bPlanName }} subscription is scheduled to expire on {{ \Carbon\Carbon::parse($bannerExpiry)->format('d M Y') }}. Renew or upgrade now to avoid suspension.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <a href="{{ route('notifications.all') }}" class="btn btn-outline-dark fw-bold rounded-pill px-3" style="font-size: 12.5px;">
+                            <i class="bx bx-bell me-1"></i> Notifications
+                        </a>
+                        <a href="{{ route('subscription.suspended') }}" class="btn btn-primary fw-bold rounded-pill px-3" style="font-size: 12.5px; background: #2563eb; border-color: #2563eb;">
+                            <i class="bx bx-credit-card me-1"></i> Renew / Upgrade
+                        </a>
+                    </div>
+                </div>
+              @endif
