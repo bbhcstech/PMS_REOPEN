@@ -185,23 +185,7 @@
     </div>
 </div>
 
-<!-- Modal: How it works -->
-<div class="modal fade" id="howItWorksModal" tabindex="-1" aria-labelledby="howItWorksLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content rounded-4 border-0 shadow">
-      <div class="modal-header border-bottom">
-        <h5 class="modal-title fw-bold" id="howItWorksLabel"><i class="bx bx-info-circle text-primary me-2"></i> Timesheet Lifecycle</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body text-center p-4">
-        <img src="{{ asset('timesheet-lifecycle.png') }}" alt="Timesheet Lifecycle" class="img-fluid rounded-3">
-      </div>
-      <div class="modal-footer border-top">
-        <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Close</button>
-      </div>
-    </div>
-  </div>
-</div>
+@include('admin.timelogs.partials.how-it-works-modal')
 @endsection
 
 @push('css')

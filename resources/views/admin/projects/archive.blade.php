@@ -96,7 +96,7 @@
                             <th><i class="fas fa-tag"></i> Project Name</th>
                             <th><i class="fas fa-users"></i> Members</th>
                             <th><i class="fas fa-calendar-times"></i> Deadline</th>
-                            <th><i class="fas fa-building"></i> Client</th>
+                            <th><i class="fas fa-building"></i> Client/Home</th>
                             <th><i class="fas fa-chart-simple"></i> Completion</th>
                             <th><i class="fas fa-circle"></i> Status</th>
                             <th class="action-cell"><i class="fas fa-cog"></i> Actions</th>
@@ -141,12 +141,21 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <div class="client-cell">
-                                        <div class="client-avatar">
-                                            {{ strtoupper(mb_substr($project->client->name ?? 'N', 0, 1)) }}
+                                    @if($project->project_type === 'home' || (!$project->client_id && !$project->client))
+                                        <div class="client-cell">
+                                            <div class="client-avatar" style="background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe;">
+                                                <i class="fas fa-home" style="font-size: 13px;"></i>
+                                            </div>
+                                            <span class="fw-bold" style="color: #1e40af;">Home</span>
                                         </div>
-                                        <span>{{ $project->client->name ?? 'No Client' }}</span>
-                                    </div>
+                                    @else
+                                        <div class="client-cell">
+                                            <div class="client-avatar">
+                                                {{ strtoupper(mb_substr($project->client->name ?? 'N', 0, 1)) }}
+                                            </div>
+                                            <span>{{ $project->client->name ?? 'No Client' }}</span>
+                                        </div>
+                                    @endif
                                 </td>
                                 <td>
                                     <div class="progress-cell">

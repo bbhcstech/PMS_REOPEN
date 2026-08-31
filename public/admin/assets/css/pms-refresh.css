@@ -707,6 +707,11 @@ html[data-pms-theme="dark"] .page-link {
   box-shadow: 0 12px 20px rgba(15, 116, 76, 0.2);
 }
 
+.nav-pills .nav-link.active *,
+.nav-tabs .nav-link.active * {
+  color: #ffffff !important;
+}
+
 .stat-card,
 .content-card,
 .welcome-card {
@@ -1620,22 +1625,164 @@ html[data-pms-theme="dark"] .content-card .card-action:hover {
   color: #07110d !important;
 }
 
+/* ----------------------------------------------------
+   STATUS BADGES: Light Background with Dark Crisp Text
+   ---------------------------------------------------- */
+.badge,
+.content-wrapper .badge,
+.table .badge,
+.table tbody td .badge,
+.table-responsive .badge {
+  border-radius: 999px !important;
+  font-weight: 700 !important;
+  font-size: 0.76rem !important;
+  padding: 0.32rem 0.7rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.35rem !important;
+  letter-spacing: 0.02em;
+  text-transform: capitalize;
+  line-height: 1.25 !important;
+}
+
+/* 1. Success / Active / Approved / Completed / Resolved / Operational */
 .badge.bg-success,
-.text-bg-success {
-  background: #dff7ea !important;
-  color: #0f744c !important;
+.badge.bg-success-subtle,
+.badge.badge-success,
+.badge.status-active,
+.badge.status-completed,
+.badge.status-resolved,
+.badge.status-approved,
+.text-bg-success,
+.table tbody td .badge.bg-success {
+  background-color: #d1fae5 !important;
+  color: #065f46 !important;
+  -webkit-text-fill-color: #065f46 !important;
+  border: 1px solid #a7f3d0 !important;
+}
+.badge.bg-success *,
+.badge.bg-success-subtle *,
+.badge.badge-success *,
+.badge.status-active *,
+.badge.status-completed *,
+.table tbody td .badge.bg-success * {
+  color: #065f46 !important;
+  -webkit-text-fill-color: #065f46 !important;
 }
 
+/* 2. Warning / Pending / In Progress / Open / Waiting / On Hold */
 .badge.bg-warning,
-.text-bg-warning {
-  background: #fff2d8 !important;
-  color: #8c5b09 !important;
+.badge.bg-warning-subtle,
+.badge.badge-warning,
+.badge.status-pending,
+.badge.status-in-progress,
+.badge.status-open,
+.badge.status-on-hold,
+.text-bg-warning,
+.table tbody td .badge.bg-warning {
+  background-color: #fef3c7 !important;
+  color: #92400e !important;
+  -webkit-text-fill-color: #92400e !important;
+  border: 1px solid #fde68a !important;
+}
+.badge.bg-warning *,
+.badge.bg-warning-subtle *,
+.badge.badge-warning *,
+.badge.status-pending *,
+.badge.status-in-progress *,
+.table tbody td .badge.bg-warning * {
+  color: #92400e !important;
+  -webkit-text-fill-color: #92400e !important;
 }
 
+/* 3. Danger / Rejected / Failed / Suspended / Overdue / Late / Blocked */
 .badge.bg-danger,
-.text-bg-danger {
-  background: #ffe1e1 !important;
-  color: #b42323 !important;
+.badge.bg-danger-subtle,
+.badge.badge-danger,
+.badge.status-danger,
+.badge.status-rejected,
+.badge.status-failed,
+.badge.status-suspended,
+.badge.status-overdue,
+.text-bg-danger,
+.table tbody td .badge.bg-danger {
+  background-color: #fee2e2 !important;
+  color: #991b1b !important;
+  -webkit-text-fill-color: #991b1b !important;
+  border: 1px solid #fecaca !important;
+}
+.badge.bg-danger *,
+.badge.bg-danger-subtle *,
+.badge.badge-danger *,
+.table tbody td .badge.bg-danger * {
+  color: #991b1b !important;
+  -webkit-text-fill-color: #991b1b !important;
+}
+
+/* 4. Secondary / Not Started / Closed / Archived / Inactive / Unassigned */
+.badge.bg-secondary,
+.badge.bg-secondary-subtle,
+.badge.badge-secondary,
+.badge.status-not-started,
+.badge.status-closed,
+.badge.status-inactive,
+.badge.status-unassigned,
+.text-bg-secondary,
+.table tbody td .badge.bg-secondary {
+  background-color: #f1f5f9 !important;
+  color: #334155 !important;
+  -webkit-text-fill-color: #334155 !important;
+  border: 1px solid #cbd5e1 !important;
+}
+.badge.bg-secondary *,
+.badge.bg-secondary-subtle *,
+.badge.badge-secondary *,
+.table tbody td .badge.bg-secondary * {
+  color: #334155 !important;
+  -webkit-text-fill-color: #334155 !important;
+}
+
+/* 5. Info / Primary / Blue / Process */
+.badge.bg-info,
+.badge.bg-info-subtle,
+.badge.badge-info,
+.badge.bg-primary,
+.badge.bg-primary-subtle,
+.badge.badge-primary,
+.text-bg-info,
+.text-bg-primary,
+.table tbody td .badge.bg-info,
+.table tbody td .badge.bg-primary {
+  background-color: #e0f2fe !important;
+  color: #0369a1 !important;
+  -webkit-text-fill-color: #0369a1 !important;
+  border: 1px solid #bae6fd !important;
+}
+.badge.bg-info *,
+.badge.bg-info-subtle *,
+.badge.badge-info *,
+.badge.bg-primary *,
+.badge.bg-primary-subtle *,
+.table tbody td .badge.bg-info *,
+.table tbody td .badge.bg-primary * {
+  color: #0369a1 !important;
+  -webkit-text-fill-color: #0369a1 !important;
+}
+
+/* 6. Light / Dark Badges */
+.badge.bg-light,
+.badge.text-dark {
+  background-color: #f8fafc !important;
+  color: #1e293b !important;
+  -webkit-text-fill-color: #1e293b !important;
+  border: 1px solid #e2e8f0 !important;
+}
+.badge.bg-dark {
+  background-color: #e2e8f0 !important;
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+  border: 1px solid #cbd5e1 !important;
 }
 
 .list-group-item,
@@ -2501,8 +2648,8 @@ body:has(form[action*="employees"]) .btn-outline-secondary {
 
 .btn-primary,
 .btn-success,
-.bg-primary,
-.bg-success,
+:not(.badge).bg-primary,
+:not(.badge).bg-success,
 .btn-add,
 .btn-invite,
 .btn-export-all,
@@ -2520,8 +2667,8 @@ a[style*="background: var(--pms-primary"] {
 
 .btn-primary *,
 .btn-success *,
-.bg-primary *,
-.bg-success *,
+:not(.badge).bg-primary *,
+:not(.badge).bg-success *,
 .btn-add *,
 .btn-invite *,
 .btn-export-all *,
