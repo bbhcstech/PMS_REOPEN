@@ -17,6 +17,9 @@ use App\Models\SalaryComponent;
 use App\Models\SalaryStructure;
 use App\Models\SalaryStructureVersion;
 use App\Models\TaxRule;
+use App\Models\BusinessAddress;
+use App\Models\EmployeeDetail;
+use App\Services\PayrollCalculationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -36,6 +39,268 @@ class PayrollController extends Controller
             'payslipCount' => $this->payslipQuery($companyId)->count(),
             'historyCount' => $this->payrollHistoryQuery($companyId)->count(),
         ]);
+    }
+
+    public function processing(Request $request, PayrollCalculationService $payrollService)
+    {
+        $this->authorizePayroll('payroll');
+        $companyId = $this->selectedCompanyId($request);
+
+        $year = (int) $request->input('year', date('Y'));
+        $month = (int) $request->input('month', date('n'));
+        $workingDays = (int) $request->input('working_days', 22);
+        $office = $request->input('office', 'all');
+        $employeeType = $request->input('employee_type', 'all');
+
+        $offices = BusinessAddress::pluck('branch_name')->filter()->unique()->toArray();
+        $dbEmpAddresses = EmployeeDetail::pluck('business_address')->filter()->unique()->toArray();
+        $officesList = array_unique(array_merge(['BBH', 'Kolkata', 'Main Office'], $offices, $dbEmpAddresses));
+
+        $empTypesList = ['Full Time', 'Part Time', 'Contract', 'Internship', 'Remote'];
+
+        // Check if existing payroll exists for period
+        $existingPayroll = $payrollService->checkExistingPayroll($companyId, $year, $month, $office, $employeeType);
+
+        $payrollRun = null;
+        $payrollItems = collect();
+
+        if ($existingPayroll) {
+            $payrollRun = $existingPayroll;
+            $payrollItems = PayrollHistory::where('payroll_id', $existingPayroll->id)->orderBy('id', 'asc')->get();
+        } elseif ($request->boolean('generate') || $request->isMethod('post')) {
+            $payrollRun = $payrollService->processPayrollRun($companyId, $year, $month, $workingDays, $office, $employeeType, auth()->id());
+            $payrollItems = PayrollHistory::where('payroll_id', $payrollRun->id)->orderBy('id', 'asc')->get();
+        } else {
+            // Auto calculate draft preview in-memory
+            $employees = $payrollService->getEligibleEmployees($companyId, $office, $employeeType);
+            $srNo = 1;
+            foreach ($employees as $employee) {
+                $line = $payrollService->calculateEmployeePayrollLine($employee, $year, $month, $workingDays, $srNo++);
+                $payrollItems->push((object)[
+                    'id' => null,
+                    'user_id' => $employee->id,
+                    'snapshot' => $line,
+                    'gross_salary' => $line['gross'],
+                    'net_salary' => $line['ac_gross'],
+                    'payroll_status' => 'Calculated',
+                ]);
+            }
+        }
+
+        // Calculate dynamic KPIs
+        $totalEmployees = $payrollItems->count();
+        $grossPayroll = 0.0;
+        $actualPayroll = 0.0;
+        $totalAbsent = 0.0;
+        $totalPresent = 0.0;
+        $totalLeave = 0.0;
+
+        foreach ($payrollItems as $item) {
+            $snap = is_array($item->snapshot) ? $item->snapshot : (json_decode($item->snapshot ?? '{}', true) ?: []);
+            $grossPayroll += (float) ($snap['gross'] ?? 0);
+            $actualPayroll += (float) ($snap['ac_gross'] ?? 0);
+            $totalAbsent += (float) ($snap['total_absent'] ?? 0);
+            $totalPresent += (float) ($snap['presents'] ?? 0);
+            $totalLeave += (float) ($snap['total_leave'] ?? 0);
+        }
+
+        $summary = [
+            'total_employees' => $totalEmployees,
+            'gross_payroll' => round($grossPayroll, 2),
+            'actual_payroll' => round($actualPayroll, 2),
+            'total_absent' => round($totalAbsent, 2),
+            'total_present' => round($totalPresent, 2),
+            'total_leave' => round($totalLeave, 2),
+            'payslips_count' => $payrollRun ? Payslip::where('payroll_id', $payrollRun->id)->count() : 0,
+            'pending_review' => ($payrollRun && $payrollRun->status !== 'finalized') ? 1 : 0,
+        ];
+
+        return view('admin.payroll.processing', [
+            'year' => $year,
+            'month' => $month,
+            'workingDays' => $workingDays,
+            'office' => $office,
+            'employeeType' => $employeeType,
+            'officesList' => $officesList,
+            'empTypesList' => $empTypesList,
+            'existingPayroll' => $existingPayroll,
+            'payrollRun' => $payrollRun,
+            'payrollItems' => $payrollItems,
+            'summary' => $summary,
+        ]);
+    }
+
+    public function calculate(Request $request, PayrollCalculationService $payrollService)
+    {
+        $this->authorizePayroll('payroll', 'create');
+
+        $request->validate([
+            'year' => ['required', 'integer', 'min:2020', 'max:2035'],
+            'month' => ['required', 'integer', 'min:1', 'max:12'],
+            'working_days' => ['required', 'integer', 'min:1', 'max:31'],
+            'office' => ['nullable', 'string'],
+            'employee_type' => ['nullable', 'string'],
+        ]);
+
+        $companyId = $this->selectedCompanyId($request);
+        $year = $request->integer('year');
+        $month = $request->integer('month');
+        $workingDays = $request->integer('working_days');
+        $office = $request->input('office', 'all');
+        $employeeType = $request->input('employee_type', 'all');
+
+        try {
+            $payroll = $payrollService->processPayrollRun($companyId, $year, $month, $workingDays, $office, $employeeType, auth()->id());
+            return redirect()->route('payroll.processing', [
+                'year' => $year,
+                'month' => $month,
+                'working_days' => $workingDays,
+                'office' => $office,
+                'employee_type' => $employeeType,
+            ])->with('success', 'Payroll calculated successfully for ' . date('F Y', mktime(0, 0, 0, $month, 1, $year)) . '.');
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+    }
+
+    public function finalize(Request $request, Payroll $payroll, PayrollCalculationService $payrollService)
+    {
+        $this->authorizePayroll('payroll', 'create');
+
+        try {
+            $payrollService->finalizePayroll($payroll, auth()->id());
+            return back()->with('success', 'Payroll run #' . $payroll->id . ' has been finalized successfully.');
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+    }
+
+    public function recalculate(Request $request, Payroll $payroll, PayrollCalculationService $payrollService)
+    {
+        $this->authorizePayroll('payroll', 'create');
+
+        $meta = $payroll->metadata ?? [];
+        $year = (int) ($meta['year'] ?? date('Y', strtotime($payroll->period_start)));
+        $month = (int) ($meta['month'] ?? date('n', strtotime($payroll->period_start)));
+        $workingDays = (int) ($meta['working_days'] ?? $request->integer('working_days', 22));
+        $office = $meta['office'] ?? 'all';
+        $employeeType = $meta['employee_type'] ?? 'all';
+
+        try {
+            // Allow recalculating if status is draft, calculated, or review_required
+            if ($payroll->status === 'finalized') {
+                // If explicit admin recalculation requested, unlock status
+                $payroll->update(['status' => 'calculated']);
+            }
+            $payrollService->processPayrollRun($payroll->company_id, $year, $month, $workingDays, $office, $employeeType, auth()->id());
+            return back()->with('success', 'Payroll recalculated successfully.');
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+    }
+
+    public function generatePayslipsForRun(Request $request, Payroll $payroll, PayrollCalculationService $payrollService)
+    {
+        $this->authorizePayroll('payslips', 'create');
+
+        try {
+            $count = $payrollService->generatePayslips($payroll, auth()->id());
+            return back()->with('success', "{$count} Payslips generated successfully.");
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+    }
+
+    public function sendPayslipSingle(Request $request, Payslip $payslip, PayrollCalculationService $payrollService)
+    {
+        $this->authorizePayroll('payslips', 'create');
+
+        $sent = $payrollService->sendPayslip($payslip);
+        if ($sent) {
+            return back()->with('success', 'Payslip sent to ' . ($payslip->user?->email ?: 'employee') . ' successfully.');
+        }
+        return back()->with('error', 'Failed to send payslip. Please check email configuration.');
+    }
+
+    public function export(Request $request, Payroll $payroll)
+    {
+        $this->authorizePayroll('payroll');
+
+        $query = PayrollHistory::where('payroll_id', $payroll->id);
+        if ($request->filled('selected_ids')) {
+            $ids = array_filter(explode(',', (string) $request->input('selected_ids')));
+            if (!empty($ids)) {
+                $query->whereIn('user_id', $ids);
+            }
+        }
+        $items = $query->get();
+        $fileName = 'Payroll_' . date('Y_m', strtotime($payroll->period_start)) . '_Export.csv';
+
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => "attachment; filename=\"$fileName\"",
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires' => '0',
+        ];
+
+        $callback = function () use ($items) {
+            $file = fopen('php://output', 'w');
+            
+            // CSV Header Row matching section 8 requirements
+            fputcsv($file, [
+                'Sr. No',
+                'Employee ID',
+                'Employee Name',
+                'Initial Leave Balance',
+                'Full Leave',
+                'Half Leave',
+                'Current Leave Balance',
+                'Full Absent',
+                'Half Absent',
+                'Total Absent',
+                'Presents',
+                'Basic',
+                'HRA',
+                'Special',
+                'Gross',
+                'Actual Basic',
+                'Actual HRA',
+                'Actual Special',
+                'Actual Gross',
+                'Status',
+            ]);
+
+            foreach ($items as $item) {
+                $s = is_array($item->snapshot) ? $item->snapshot : (json_decode($item->snapshot ?? '{}', true) ?: []);
+                fputcsv($file, [
+                    $s['sr_no'] ?? '-',
+                    $s['employee_id'] ?? '-',
+                    $s['employee_name'] ?? '-',
+                    $s['initial_leave_balance'] ?? 0,
+                    $s['full_leave'] ?? 0,
+                    $s['half_leave'] ?? 0,
+                    $s['current_leave_balance'] ?? 0,
+                    $s['full_absent'] ?? 0,
+                    $s['half_absent'] ?? 0,
+                    $s['total_absent'] ?? 0,
+                    $s['presents'] ?? 0,
+                    $s['basic'] ?? 0,
+                    $s['hra'] ?? 0,
+                    $s['special'] ?? 0,
+                    $s['gross'] ?? 0,
+                    $s['ac_basic'] ?? 0,
+                    $s['ac_hra'] ?? 0,
+                    $s['ac_special'] ?? 0,
+                    $s['ac_gross'] ?? 0,
+                    $item->payroll_status ?? 'Calculated',
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 
     public function architectures()

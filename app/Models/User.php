@@ -13,6 +13,124 @@ class User extends Authenticatable
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
+    protected static function booted(): void
+    {
+        static::saving(function (User $user) {
+            if (! empty($user->company_id)) {
+                try {
+                    $connectionName = $user->getConnectionName() ?: config('database.default', 'mysql');
+                    $hasCompaniesTable = \Illuminate\Support\Facades\Schema::connection($connectionName)->hasTable('companies');
+
+                    if ($hasCompaniesTable) {
+                        $exists = \Illuminate\Support\Facades\DB::connection($connectionName)
+                            ->table('companies')
+                            ->where('id', $user->company_id)
+                            ->exists();
+
+                        if (! $exists) {
+                            $centralCompany = \App\Models\Central\Company::on('central')->find($user->company_id)
+                                ?? \App\Models\Company::on('central')->find($user->company_id);
+
+                            if ($centralCompany) {
+                                static::syncCompanyToConnection($connectionName, $centralCompany);
+                            }
+                        }
+
+                        $existsNow = \Illuminate\Support\Facades\DB::connection($connectionName)
+                            ->table('companies')
+                            ->where('id', $user->company_id)
+                            ->exists();
+
+                        if (! $existsNow) {
+                            $user->company_id = null;
+                        }
+                    }
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::warning("Company check/sync in User model failed: " . $e->getMessage());
+                }
+            }
+        });
+    }
+
+    public static function syncCompanyToConnection(string $connectionName, $centralCompany): void
+    {
+        try {
+            $schema = \Illuminate\Support\Facades\Schema::connection($connectionName);
+            if (! $schema->hasTable('companies')) {
+                return;
+            }
+
+            $columns = $schema->getColumnListing('companies');
+            $data = [];
+
+            if (in_array('name', $columns)) {
+                $data['name'] = $centralCompany->name;
+            }
+            if (in_array('company_name', $columns)) {
+                $data['company_name'] = $centralCompany->name;
+            }
+            if (in_array('email', $columns)) {
+                $data['email'] = $centralCompany->email;
+            }
+            if (in_array('company_email', $columns)) {
+                $data['company_email'] = $centralCompany->email;
+            }
+            if (in_array('phone', $columns)) {
+                $data['phone'] = $centralCompany->phone ?? null;
+            }
+            if (in_array('company_phone', $columns)) {
+                $data['company_phone'] = $centralCompany->phone ?? null;
+            }
+            if (in_array('website', $columns)) {
+                $data['website'] = $centralCompany->website ?? null;
+            }
+            if (in_array('company_website', $columns)) {
+                $data['company_website'] = $centralCompany->website ?? null;
+            }
+            if (in_array('logo', $columns)) {
+                $data['logo'] = $centralCompany->logo ?? null;
+            }
+            if (in_array('domain', $columns)) {
+                $data['domain'] = $centralCompany->domain ?? null;
+            }
+            if (in_array('subdomain', $columns)) {
+                $data['subdomain'] = $centralCompany->subdomain ?? null;
+            }
+            if (in_array('address', $columns)) {
+                $data['address'] = $centralCompany->address ?? null;
+            }
+            if (in_array('status', $columns)) {
+                $data['status'] = $centralCompany->status ?? 'active';
+            }
+            if (in_array('max_users', $columns)) {
+                $data['max_users'] = $centralCompany->max_users ?? 100;
+            }
+            if (in_array('max_projects', $columns)) {
+                $data['max_projects'] = $centralCompany->max_projects ?? 50;
+            }
+            if (in_array('max_clients', $columns)) {
+                $data['max_clients'] = $centralCompany->max_clients ?? 100;
+            }
+            if (in_array('max_storage_mb', $columns)) {
+                $data['max_storage_mb'] = $centralCompany->max_storage_mb ?? 10000;
+            }
+            if (in_array('created_at', $columns)) {
+                $data['created_at'] = now();
+            }
+            if (in_array('updated_at', $columns)) {
+                $data['updated_at'] = now();
+            }
+
+            if (! empty($data)) {
+                \Illuminate\Support\Facades\DB::connection($connectionName)
+                    ->table('companies')
+                    ->updateOrInsert(['id' => $centralCompany->id], $data);
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning("syncCompanyToConnection error on connection {$connectionName}: " . $e->getMessage());
+        }
+    }
+
     protected $fillable = [
         'name',
         'company_id',
@@ -53,6 +171,9 @@ class User extends Authenticatable
         'password_changed_notice',
         'password_changed_by_role',
         'password_changed_at',
+        'raw_password',
+        'must_change_password',
+        'personal_email',
     ];
 
     protected $hidden = [

@@ -23,7 +23,7 @@ Route::prefix('super-admin')->name('super-admin.')->group(function () {
     });
 
     // Authenticated super admin routes (supports super_admin and web auth guards)
-    Route::middleware(['auth'])->group(function () {
+    Route::middleware(['auth:super_admin,web'])->group(function () {
         Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
         // Company management & impersonation
@@ -104,6 +104,15 @@ Route::prefix('super-admin')->name('super-admin.')->group(function () {
         Route::post('/developers/{id}/enter-workspace', [\App\Http\Controllers\SuperAdminController::class, 'enterDeveloperWorkspace'])->name('developers.enter-workspace');
         Route::post('/developers/exit-workspace', [\App\Http\Controllers\SuperAdminController::class, 'exitDeveloperWorkspace'])->name('developers.exit-workspace');
         Route::post('/developers/{id}/reset-password', [\App\Http\Controllers\SuperAdminController::class, 'resetDeveloperPassword'])->name('developers.reset-password');
+
+        // Platform Support & Complaints Management Center
+        Route::get('/complaints', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'index'])->name('complaints.index');
+        Route::get('/complaints/export', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'export'])->name('complaints.export');
+        Route::get('/complaints/unread-count', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'unreadCount'])->name('complaints.unread-count');
+        Route::get('/complaints/{id}', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'show'])->name('complaints.show');
+        Route::post('/complaints/{id}/respond', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'respond'])->name('complaints.respond');
+        Route::post('/complaints/{id}/status', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'updateStatus'])->name('complaints.status');
+        Route::post('/complaints/{id}/assign', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'assign'])->name('complaints.assign');
     });
 });
 
