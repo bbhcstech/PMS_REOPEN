@@ -110,7 +110,7 @@ class NotificationService
             'color' => 'primary',
         ];
 
-        SystemNotificationService::notifyAllRoles($title, $message, $url, $data, $sender?->company_id);
+        SystemNotificationService::notifyUser($userIds, $title, $message, $url, $data);
 
         return true;
     }

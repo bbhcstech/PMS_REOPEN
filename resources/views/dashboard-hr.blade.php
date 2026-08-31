@@ -7,19 +7,26 @@
     $defaultEnd = now()->format('Y-m-d');
     $startDate = request('start_date', $defaultStart);
     $endDate = request('end_date', $defaultEnd);
-    $roleName = 'HR';
+    $roleName = ucfirst(auth()->user()?->role ?? 'HR');
+    if ($roleName === 'Admin') {
+        $roleName = 'Admin';
+    } elseif ($roleName === 'Manager') {
+        $roleName = 'Manager';
+    } else {
+        $roleName = 'HR';
+    }
     $canSeeModule = fn (string $slug) => auth()->user()?->canViewModule($slug) ?? false;
     $attendancePercent = $totalEmployees > 0 ? round(($todayPresent / $totalEmployees) * 100) : 0;
     $absentToday = max(($totalEmployees ?? 0) - ($todayPresent ?? 0) - ($onLeaveToday ?? 0), 0);
-    $roleScale = max($totalEmployees ?? 0, $newEmployees ?? 0, $exits ?? 0, $approvedLeaves ?? 0, $todayPresent ?? 0, $pendingTasks ?? 0, $pendingLeaves ?? 0, 1);
+    $roleScale = max($totalEmployees ?? 0, $totalProjects ?? 0, $newEmployees ?? 0, $exits ?? 0, $approvedLeaves ?? 0, $todayPresent ?? 0, $pendingTasks ?? 0, $pendingLeaves ?? 0, 1);
     $rolePieCharts = [
-        ['slug' => 'employees', 'route' => 'employees.index', 'label' => 'Employees', 'value' => $totalEmployees ?? 0, 'hint' => 'Total workforce', 'percent' => round((($totalEmployees ?? 0) / $roleScale) * 100), 'color' => '#2563eb'],
-        ['slug' => 'attendance', 'route' => 'attendance.index', 'label' => 'Presence', 'value' => $todayPresent ?? 0, 'hint' => "{$attendancePercent}% present today", 'percent' => $attendancePercent, 'color' => '#10b981'],
-        ['slug' => 'leaves', 'route' => 'leaves.index', 'label' => 'Pending Leaves', 'value' => $pendingLeaves ?? 0, 'hint' => 'Awaiting review', 'percent' => round((($pendingLeaves ?? 0) / $roleScale) * 100), 'color' => '#f59e0b'],
+        ['slug' => 'projects', 'route' => 'projects.index', 'label' => 'Projects', 'value' => $totalProjects ?? 0, 'hint' => ($activeProjects ?? 0) . ' active projects', 'percent' => round((($totalProjects ?? 0) / $roleScale) * 100), 'color' => '#2563eb'],
         ['slug' => 'tasks', 'route' => 'tasks.index', 'label' => 'Pending Tasks', 'value' => $pendingTasks ?? 0, 'hint' => 'Open work queue', 'percent' => round((($pendingTasks ?? 0) / $roleScale) * 100), 'color' => '#7c3aed'],
-        ['slug' => 'employees', 'route' => 'employees.index', 'label' => 'New Joiners', 'value' => $newEmployees ?? 0, 'hint' => 'In selected range', 'percent' => round((($newEmployees ?? 0) / $roleScale) * 100), 'color' => '#06b6d4'],
-        ['slug' => 'employees', 'route' => 'employees.index', 'label' => 'Exits', 'value' => $exits ?? 0, 'hint' => 'In selected range', 'percent' => round((($exits ?? 0) / $roleScale) * 100), 'color' => '#ef4444'],
-        ['slug' => 'leaves', 'route' => 'leaves.index', 'label' => 'Approved Leaves', 'value' => $approvedLeaves ?? 0, 'hint' => 'Approved in range', 'percent' => round((($approvedLeaves ?? 0) / $roleScale) * 100), 'color' => '#14b8a6'],
+        ['slug' => 'timelogs', 'route' => 'timelogs.index', 'label' => 'Timesheet Hours', 'value' => $totalTimelogHours ?? 0, 'hint' => ($totalTimelogsCount ?? 0) . ' logged entries', 'percent' => min(100, round((($totalTimelogHours ?? 0) / max($roleScale * 8, 1)) * 100)), 'color' => '#10b981'],
+        ['slug' => 'employees', 'route' => 'employees.index', 'label' => 'Employees', 'value' => $totalEmployees ?? 0, 'hint' => 'Total workforce', 'percent' => round((($totalEmployees ?? 0) / $roleScale) * 100), 'color' => '#06b6d4'],
+        ['slug' => 'attendance', 'route' => 'attendance.index', 'label' => 'Presence', 'value' => $todayPresent ?? 0, 'hint' => "{$attendancePercent}% present today", 'percent' => $attendancePercent, 'color' => '#14b8a6'],
+        ['slug' => 'leaves', 'route' => 'leaves.index', 'label' => 'Pending Leaves', 'value' => $pendingLeaves ?? 0, 'hint' => 'Awaiting review', 'percent' => round((($pendingLeaves ?? 0) / $roleScale) * 100), 'color' => '#f59e0b'],
+        ['slug' => 'employees', 'route' => 'employees.index', 'label' => 'New Joiners', 'value' => $newEmployees ?? 0, 'hint' => 'In selected range', 'percent' => round((($newEmployees ?? 0) / $roleScale) * 100), 'color' => '#6366f1'],
         ['slug' => 'attendance', 'route' => 'attendance.report', 'label' => 'Absent Today', 'value' => $absentToday, 'hint' => 'Not present / leave', 'percent' => $totalEmployees > 0 ? round(($absentToday / $totalEmployees) * 100) : 0, 'color' => '#64748b'],
     ];
 @endphp
@@ -382,8 +389,23 @@
                 <h1>{{ $roleName }} Dashboard</h1>
                 <p>Monitor workforce health, leave flow, attendance, tasks, and HR analytics from one responsive workspace.</p>
                 <div class="role-hero-actions">
+                    @if(Route::has('projects.create'))
+                        <a href="{{ route('projects.create') }}" class="role-btn role-btn-primary"><i class="bx bx-plus"></i> Add Project</a>
+                    @endif
+                    @if(Route::has('tasks.create'))
+                        <a href="{{ route('tasks.create') }}" class="role-btn role-btn-light"><i class="bx bx-task"></i> New Task</a>
+                    @endif
+                    @if(Route::has('projects.index') && ($canSeeModule('projects') || in_array(strtolower((string) auth()->user()?->role), ['admin', 'manager', 'hr'], true)))
+                        <a href="{{ route('projects.index') }}" class="role-btn role-btn-light"><i class="bx bx-briefcase-alt-2"></i> Projects</a>
+                    @endif
+                    @if(Route::has('tasks.index') && ($canSeeModule('tasks') || in_array(strtolower((string) auth()->user()?->role), ['admin', 'manager', 'hr'], true)))
+                        <a href="{{ route('tasks.index') }}" class="role-btn role-btn-light"><i class="bx bx-task"></i> Tasks</a>
+                    @endif
+                    @if(Route::has('timelogs.index') && ($canSeeModule('timelogs') || in_array(strtolower((string) auth()->user()?->role), ['admin', 'manager', 'hr'], true)))
+                        <a href="{{ route('timelogs.index') }}" class="role-btn role-btn-light"><i class="bx bx-time-five"></i> Timesheet</a>
+                    @endif
                     @if(Route::has('employees.index') && $canSeeModule('employees'))
-                        <a href="{{ route('employees.index') }}" class="role-btn role-btn-primary"><i class="bx bx-group"></i> Employees</a>
+                        <a href="{{ route('employees.index') }}" class="role-btn role-btn-light"><i class="bx bx-group"></i> Employees</a>
                     @endif
                     @if(Route::has('leaves.index') && $canSeeModule('leaves'))
                         <a href="{{ route('leaves.index') }}" class="role-btn role-btn-light"><i class="bx bx-calendar-minus"></i> Leaves</a>
@@ -412,10 +434,10 @@
         </div>
 
         <div class="role-stat-grid">
-            <div class="role-stat-card"><span>Total Employees</span><strong>{{ $totalEmployees ?? 0 }}</strong></div>
-            <div class="role-stat-card"><span>New Employees</span><strong>{{ $newEmployees ?? 0 }}</strong></div>
-            <div class="role-stat-card"><span>Pending Leaves</span><strong>{{ $pendingLeaves ?? 0 }}</strong></div>
+            <div class="role-stat-card"><span>Total Projects</span><strong>{{ $totalProjects ?? 0 }}</strong></div>
             <div class="role-stat-card"><span>Pending Tasks</span><strong>{{ $pendingTasks ?? 0 }}</strong></div>
+            <div class="role-stat-card"><span>Logged Work</span><strong>{{ $totalTimelogHours ?? 0 }}h</strong></div>
+            <div class="role-stat-card"><span>Total Employees</span><strong>{{ $totalEmployees ?? 0 }}</strong></div>
         </div>
 
         <div class="role-panel">
@@ -600,6 +622,156 @@
         </div>
     </div>
 </div>
+
+<!-- ============ WORK MANAGEMENT SECTION (PROJECTS, TASKS, RECENT ACTIVITIES, TIMESHEET) ============ -->
+<div class="row g-3 mt-3">
+    <div class="col-12">
+        <div class="card shadow-sm border-0" style="border-radius: 16px; overflow: hidden;">
+            <div class="card-header bg-white border-bottom py-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <div>
+                    <h6 class="mb-0 fw-bold text-dark"><i class="bx bx-store text-primary me-2"></i>Work Section (Projects & Tasks)</h6>
+                    <small class="text-muted">Live view of projects, pending task queue, timesheets, and recent deliverables.</small>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                    @if(Route::has('projects.create'))
+                        <a href="{{ route('projects.create') }}" class="btn btn-sm btn-primary">
+                            <i class="bx bx-plus me-1"></i> Add Project
+                        </a>
+                    @endif
+                    @if(Route::has('tasks.create'))
+                        <a href="{{ route('tasks.create') }}" class="btn btn-sm btn-outline-primary">
+                            <i class="bx bx-task me-1"></i> New Task
+                        </a>
+                    @endif
+                    @if(Route::has('timelogs.create'))
+                        <a href="{{ route('timelogs.create') }}" class="btn btn-sm btn-outline-success">
+                            <i class="bx bx-time-five me-1"></i> Log Time
+                        </a>
+                    @endif
+                </div>
+            </div>
+            <div class="card-body p-3 p-md-4">
+                <div class="row g-4">
+                    <!-- Left column: Active Projects & Timesheet stats -->
+                    <div class="col-lg-4">
+                        <!-- Project Highlights Card -->
+                        <div class="p-3 border rounded-3 bg-light mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="fw-bold mb-0 text-dark"><i class="bx bx-briefcase-alt-2 text-primary me-1"></i> Projects Summary</h6>
+                                <a href="{{ route('projects.index') }}" class="btn btn-sm btn-link text-primary p-0">View All <i class="bx bx-chevron-right"></i></a>
+                            </div>
+                            <div class="row g-2 text-center my-2">
+                                <div class="col-6">
+                                    <div class="bg-white p-2 rounded border">
+                                        <span class="text-muted d-block small">Total</span>
+                                        <strong class="h5 mb-0 text-primary">{{ $totalProjects ?? 0 }}</strong>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="bg-white p-2 rounded border">
+                                        <span class="text-muted d-block small">Active</span>
+                                        <strong class="h5 mb-0 text-success">{{ $activeProjects ?? 0 }}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-grid gap-2 mt-3">
+                                <a href="{{ route('projects.index') }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bx bx-folder-open me-1"></i> Open Projects Workspace
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Timesheet Highlights Card -->
+                        <div class="p-3 border rounded-3 bg-light">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="fw-bold mb-0 text-dark"><i class="bx bx-time-five text-success me-1"></i> Timesheet Overview</h6>
+                                <a href="{{ route('timelogs.index') }}" class="btn btn-sm btn-link text-success p-0">Timesheets <i class="bx bx-chevron-right"></i></a>
+                            </div>
+                            <div class="row g-2 text-center my-2">
+                                <div class="col-6">
+                                    <div class="bg-white p-2 rounded border">
+                                        <span class="text-muted d-block small">Total Hours</span>
+                                        <strong class="h5 mb-0 text-success">{{ $totalTimelogHours ?? 0 }}h</strong>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="bg-white p-2 rounded border">
+                                        <span class="text-muted d-block small">Logged Entries</span>
+                                        <strong class="h5 mb-0 text-dark">{{ $totalTimelogsCount ?? 0 }}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-grid gap-2 mt-3">
+                                <a href="{{ route('timelogs.index') }}" class="btn btn-sm btn-outline-success">
+                                    <i class="bx bx-list-check me-1"></i> Review Timesheets
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Middle column: Pending Tasks List -->
+                    <div class="col-lg-4">
+                        <div class="p-3 border rounded-3 h-100 bg-white shadow-none">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="fw-bold mb-0 text-dark"><i class="bx bx-list-check text-warning me-1"></i> Pending Tasks Queue</h6>
+                                <a href="{{ route('tasks.index', ['exclude_completed' => true]) }}" class="btn btn-sm btn-link text-primary p-0">View All <i class="bx bx-chevron-right"></i></a>
+                            </div>
+                            <div class="d-flex flex-column gap-2" style="max-height: 290px; overflow-y: auto;">
+                                @forelse($pendingTasksTotal ?? [] as $task)
+                                    <div class="p-2 border rounded bg-light d-flex justify-content-between align-items-start">
+                                        <div class="me-2 text-truncate">
+                                            <a href="{{ route('tasks.show', $task->id) }}" class="fw-semibold text-dark text-decoration-none d-block text-truncate" title="{{ $task->title }}">
+                                                {{ $task->title ?? 'N/A' }}
+                                            </a>
+                                            <small class="text-muted d-block text-truncate">
+                                                <i class="bx bx-folder me-1"></i>{{ $task->project->name ?? 'No project' }}
+                                            </small>
+                                        </div>
+                                        <span class="badge bg-warning text-dark text-capitalize" style="font-size: 0.72rem;">
+                                            {{ $task->status ?? 'Pending' }}
+                                        </span>
+                                    </div>
+                                @empty
+                                    <div class="text-center py-4 text-muted">
+                                        <i class="bx bx-check-circle fs-2 text-success mb-2"></i>
+                                        <p class="mb-0 small">No pending tasks! All caught up! 🎉</p>
+                                    </div>
+                                @endforelse
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right column: Recent Project Activities -->
+                    <div class="col-lg-4">
+                        <div class="p-3 border rounded-3 h-100 bg-white shadow-none">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="fw-bold mb-0 text-dark"><i class="bx bx-pulse text-info me-1"></i> Recent Project Activities</h6>
+                                <a href="{{ route('projects.index') }}" class="btn btn-sm btn-link text-primary p-0">All Projects <i class="bx bx-chevron-right"></i></a>
+                            </div>
+                            <div class="d-flex flex-column gap-2" style="max-height: 290px; overflow-y: auto;">
+                                @forelse($activities ?? [] as $activity)
+                                    <div class="p-2 border-bottom pb-2">
+                                        <div class="text-dark small fw-semibold">{{ $activity->activity ?? 'No activity' }}</div>
+                                        <div class="d-flex justify-content-between text-muted mt-1" style="font-size: 0.75rem;">
+                                            <span><i class="bx bx-folder me-1"></i>{{ $activity->project_name ?? 'N/A' }}</span>
+                                            <span><i class="bx bx-time me-1"></i>{{ \Carbon\Carbon::parse($activity->created_at ?? now())->diffForHumans() }}</span>
+                                        </div>
+                                    </div>
+                                @empty
+                                    <div class="text-center py-4 text-muted">
+                                        <i class="bx bx-time fs-2 text-muted mb-2"></i>
+                                        <p class="mb-0 small">No recent activities logged.</p>
+                                    </div>
+                                @endforelse
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- ============ END WORK MANAGEMENT SECTION ============ -->
 
 <!-- ============ LEAVE MANAGEMENT SECTION - ADDED HERE ============ -->
 <div class="row g-3 mt-3">

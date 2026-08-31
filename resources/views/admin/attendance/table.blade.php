@@ -6,9 +6,7 @@
     <table id="attendanceTable" class="table table-bordered align-middle text-center attendance-table">
       <thead class="table-light">
         <tr>
-          <th class="no-export" style="background-color:#f0f0f0; width:54px;">
-            <input type="checkbox" id="attendanceSelectAll" class="attendance-checkbox" aria-label="Select all attendance rows">
-          </th>
+          <th class="no-export" data-pms-selection-column aria-label="Select rows"></th>
           <th style="background-color:#f0f0f0; min-width:240px;">Employee</th>
           @for($i=1;$i<=$daysInMonth;$i++)
             @php $date = \Carbon\Carbon::createFromDate($year,$month,$i); @endphp
@@ -22,9 +20,7 @@
       <tbody>
         @foreach($users as $user)
           <tr>
-            <td class="no-export">
-              <input type="checkbox" class="attendance-checkbox attendance-row-checkbox" value="{{ $user->id }}" aria-label="Select {{ $user->name }}">
-            </td>
+            <td class="no-export" data-pms-selection-column></td>
             <td class="text-start" style="background-color:#f9f9f9; white-space:nowrap;">
               <div class="attendance-employee-cell">
                 <img src="{{ $user->profile_image ? asset($user->profile_image) : asset('images/default-avatar.png') }}"
@@ -246,16 +242,6 @@
 <style>
   .half-star { display:inline-block; width:18px; height:18px; }
   .leave-plane { display:inline-block; padding:2px 6px; border-radius:4px; font-size:14px; }
-  .attendance-checkbox {
-    width: 20px;
-    height: 20px;
-    border-radius: 6px;
-    cursor: pointer;
-    accent-color: #0ea5a4;
-  }
-  #attendanceTable tbody tr.attendance-row-selected td {
-    background-color: #f0f9ff !important;
-  }
   .attendance-employee-cell {
     display: flex;
     align-items: center;

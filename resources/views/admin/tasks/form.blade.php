@@ -165,12 +165,14 @@
     </div>
 
     <div class="col-md-2">
-        <label>Status</label>
-        <select name="status" class="form-control select-picker">
-            @foreach(['Incomplete', 'To Do', 'Doing', 'Completed', 'Waiting for Approval'] as $status)
-                <option value="{{ $status }}" {{ old('status', $task->status ?? 'To Do') === $status ? 'selected' : '' }}>{{ $status }}</option>
-            @endforeach
-        </select>
+        <label>Status @if(!isset($task)) <small class="text-muted">(Initial)</small> @else <small class="text-muted">(Employee Managed)</small> @endif</label>
+        @if(isset($task))
+            <input type="text" class="form-control bg-light" value="{{ $task->status ?? 'To Do' }}" readonly disabled title="Task status is updated by the assigned employee.">
+            <input type="hidden" name="status" value="{{ $task->status ?? 'To Do' }}">
+        @else
+            <input type="text" class="form-control bg-light" value="To Do" readonly disabled title="Task starts in 'To Do' status. Assigned employee will update progress.">
+            <input type="hidden" name="status" value="To Do">
+        @endif
     </div>
 
     <div class="col-md-2">
@@ -185,8 +187,14 @@
 
 <div class="row mb-3">
     <div class="col-md-3">
-        <label>Progress (%)</label>
-        <input type="number" name="progress" class="form-control" min="0" max="100" value="{{ old('progress', $task->progress ?? 0) }}">
+        <label>Progress (%) @if(!isset($task)) <small class="text-muted">(Initial)</small> @else <small class="text-muted">(Employee Managed)</small> @endif</label>
+        @if(isset($task))
+            <input type="text" class="form-control bg-light" value="{{ $task->progress ?? 0 }}%" readonly disabled title="Task progress is updated by the assigned employee.">
+            <input type="hidden" name="progress" value="{{ $task->progress ?? 0 }}">
+        @else
+            <input type="text" class="form-control bg-light" value="0%" readonly disabled title="Initial progress is 0%. Assigned employee will update progress.">
+            <input type="hidden" name="progress" value="0">
+        @endif
     </div>
     <div class="col-md-9">
         <label>Remarks</label>

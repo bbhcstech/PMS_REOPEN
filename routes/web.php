@@ -441,9 +441,7 @@ Route::prefix('product')->name('product.')->group(function () {
     Route::get('/analytics', [FrontendUIController::class, 'productAnalytics'])->name('analytics');
 });
 
-// ===========================================
-// Solutions Routes
-// ===========================================
+Route::get('/solutions', [FrontendUIController::class, 'solutions'])->name('solutions');
 Route::prefix('solutions')->name('solutions.')->group(function () {
     Route::get('/enterprise', [FrontendUIController::class, 'solutionsEnterprise'])->name('enterprise');
     Route::get('/startups', [FrontendUIController::class, 'solutionsStartups'])->name('startups');
@@ -461,6 +459,7 @@ Route::get('/pricing', [FrontendUIController::class, 'pricing'])->name('pricing'
 // ===========================================
 // Resources Routes
 // ===========================================
+Route::get('/resources', [FrontendUIController::class, 'resources'])->name('resources');
 Route::prefix('resources')->name('resources.')->group(function () {
     Route::get('/blog', [FrontendUIController::class, 'blog'])->name('blog');
     Route::get('/blog/{slug}', [FrontendUIController::class, 'blogSingle'])->name('blog.single');
@@ -473,6 +472,11 @@ Route::prefix('resources')->name('resources.')->group(function () {
 // ===========================================
 // Company Routes
 // ===========================================
+Route::get('/about', [FrontendUIController::class, 'about'])->name('about');
+Route::get('/contact', [FrontendUIController::class, 'contact'])->name('contact');
+Route::get('/privacy', [FrontendUIController::class, 'privacy'])->name('privacy');
+Route::get('/terms', [FrontendUIController::class, 'terms'])->name('terms');
+
 Route::prefix('company')->name('company.')->group(function () {
     Route::get('/about', [FrontendUIController::class, 'about'])->name('about');
     Route::get('/careers', [FrontendUIController::class, 'careers'])->name('careers');
@@ -1001,6 +1005,17 @@ Route::get('/my-awards', [AwardController::class, 'myAwards'])->name('awards.my-
     Route::get('account/projects/{project}/burndown-chart', [ProjectController::class, 'burndown'])->name('projects.burndown');
     Route::get('/admin/activity-log/project/{project}', [AdminActivityController::class, 'projectActivity'])->name('admin.activities.project');
 
+    // Comprehensive System Reports
+    Route::middleware(['auth'])->prefix('reports')->name('reports.')->group(function () {
+        Route::get('/task', [\App\Http\Controllers\ReportController::class, 'taskReport'])->name('task');
+        Route::get('/timelog', [\App\Http\Controllers\ReportController::class, 'timelogReport'])->name('timelog');
+        Route::get('/finance', [\App\Http\Controllers\ReportController::class, 'financeReport'])->name('finance');
+        Route::get('/income-vs-expense', [\App\Http\Controllers\ReportController::class, 'incomeVsExpenseReport'])->name('income-vs-expense');
+        Route::get('/expense', [\App\Http\Controllers\ReportController::class, 'expenseReport'])->name('expense');
+        Route::get('/deal', [\App\Http\Controllers\ReportController::class, 'dealReport'])->name('deal');
+        Route::get('/sales', [\App\Http\Controllers\ReportController::class, 'salesReport'])->name('sales');
+    });
+
     Route::get('/account/dashboard-project', [DashboardController::class, 'project'])->name('dashproject');
     Route::get('/account/dashboard-advanced', [DashboardController::class, 'clientDashboard'])->name('dashboard.client');
     Route::get('/dashboard-advanced', [DashboardController::class, 'ticketDashboard'])->name('dashboard.ticket');
@@ -1117,6 +1132,8 @@ Route::get('/my-awards', [AwardController::class, 'myAwards'])->name('awards.my-
     Route::get('/tickets/{ticket}', [TicketController::class, 'show'])->name('tickets.show');
     Route::post('/tickets/{id}/reply', [TicketController::class, 'reply'])->name('tickets.reply');
     Route::put('/tickets/{id}/update-details', [TicketController::class, 'updateDetails'])->name('tickets.updateDetails');
+    Route::post('/tickets/{id}/reopen', [TicketController::class, 'reopen'])->name('tickets.reopen');
+    Route::post('/tickets/{id}/log-time', [TicketController::class, 'logTime'])->name('tickets.logTime');
     Route::get('/admin/tickets', [TicketController::class, 'index'])->name('tickets.index');
     Route::post('tickets/bulk-action', [TicketController::class, 'bulkAction'])->name('tickets.bulk-action');
 
@@ -1354,6 +1371,7 @@ Route::middleware(['auth'])->group(function () {
     // Recruitment Module Routes (Under HR)
     Route::get('/admin/hr/recruitment', [RecruitmentController::class, 'index'])->name('recruitment.index');
     Route::post('/admin/hr/recruitment', [RecruitmentController::class, 'store'])->name('recruitment.store');
+    Route::get('/admin/hr/recruitment/{id}', [RecruitmentController::class, 'show'])->name('recruitment.show');
     Route::get('/admin/hr/recruitment/{id}/download', [RecruitmentController::class, 'download'])->name('recruitment.download');
     Route::post('/admin/hr/recruitment/{id}/status', [RecruitmentController::class, 'updateStatus'])->name('recruitment.status');
     Route::delete('/admin/hr/recruitment/{id}', [RecruitmentController::class, 'destroy'])->name('recruitment.destroy');

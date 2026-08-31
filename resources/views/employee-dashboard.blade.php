@@ -1412,6 +1412,118 @@
                 </div>
             </div>
 
+            <!-- ============ MY PROJECTS SECTION ============ -->
+            <div class="employee-panel mb-4">
+                <div class="employee-card-header d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h3 class="employee-card-title mb-1"><i class="bx bx-folder-open text-primary me-2"></i>My Projects</h3>
+                        <p class="employee-muted mb-0">Overview of all assigned projects. Click the action menu (⋮) to view and edit your tasks.</p>
+                    </div>
+                    <span class="badge bg-primary rounded-pill px-3 py-2 fs-6">{{ ($myProjects ?? collect())->count() }} Projects</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table employee-table align-middle">
+                        <thead>
+                            <tr>
+                                <th>Project</th>
+                                <th>Client / Category</th>
+                                <th>Timeline</th>
+                                <th>Project Progress</th>
+                                <th>My Assigned Tasks</th>
+                                <th class="text-center" width="80">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($myProjects ?? [] as $project)
+                                @php
+                                    $assignedTasks = $project->tasks ?? collect();
+                                    $totalAssigned = $assignedTasks->count();
+                                    $completedAssigned = $assignedTasks->where('status', 'Completed')->count();
+                                    $projStatusClass = match(strtolower((string) $project->status)) {
+                                        'completed' => 'bg-success',
+                                        'in progress' => 'bg-primary',
+                                        'on hold' => 'bg-warning text-dark',
+                                        'delayed' => 'bg-danger',
+                                        default => 'bg-secondary',
+                                    };
+                                @endphp
+                                <tr data-project-id="{{ $project->id }}">
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar avatar-sm me-2 rounded p-2 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px; background: rgba(91, 92, 226, 0.1);">
+                                                <i class="bx bx-briefcase text-primary fs-4"></i>
+                                            </div>
+                                            <div>
+                                                <a href="{{ route('projects.show', $project->id) }}" class="fw-bold text-dark text-decoration-none d-block">
+                                                    {{ $project->name }}
+                                                </a>
+                                                <small class="text-muted">{{ $project->project_code ?? 'PROJ-' . $project->id }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="text-dark">{{ $project->client->company_name ?? ($project->client->name ?? 'Internal Project') }}</span>
+                                    </td>
+                                    <td>
+                                        <small class="d-block text-muted">
+                                            <i class="bx bx-calendar me-1"></i>{{ $project->start_date ? Carbon::parse($project->start_date)->format('d M, Y') : '--' }}
+                                        </small>
+                                        <small class="d-block text-dark fw-semibold">
+                                            <i class="bx bx-flag me-1 text-danger"></i>{{ $project->deadline ? Carbon::parse($project->deadline)->format('d M, Y') : 'No Deadline' }}
+                                        </small>
+                                    </td>
+                                    <td style="min-width: 170px;">
+                                        <div class="d-flex align-items-center justify-content-between mb-1">
+                                            <span class="badge {{ $projStatusClass }} text-capitalize" style="font-size: 0.75rem;">
+                                                {{ $project->status ?? 'Not Started' }}
+                                            </span>
+                                            <small class="fw-bold text-dark">{{ $project->completion_percent ?? 0 }}%</small>
+                                        </div>
+                                        <div class="progress" style="height: 6px;">
+                                            <div class="progress-bar {{ $projStatusClass }}" role="progressbar" style="width: {{ max(0, min(100, $project->completion_percent ?? 0)) }}%;" aria-valuenow="{{ $project->completion_percent ?? 0 }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="badge bg-light text-primary border fs-7 fw-semibold">
+                                                {{ $totalAssigned }} {{ Str::plural('Task', $totalAssigned) }}
+                                            </span>
+                                            @if($totalAssigned > 0)
+                                                <small class="text-muted">({{ $completedAssigned }} completed)</small>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-light border rounded-circle shadow-none p-0 d-inline-flex align-items-center justify-content-center" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="width: 32px; height: 32px;" title="Project Options">
+                                                <i class="bx bx-dots-vertical-rounded fs-4 text-secondary"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end shadow border-0 py-1" style="border-radius: 12px; min-width: 150px; z-index: 1050;">
+                                                <li>
+                                                    <button type="button" class="dropdown-item d-flex align-items-center py-2 text-primary fw-semibold" data-bs-toggle="modal" data-bs-target="#projectTasksModal_{{ $project->id }}">
+                                                        <i class="bx bx-task me-2 fs-5"></i> My Tasks
+                                                    </button>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="6" class="text-center py-5">
+                                        <div class="text-muted">
+                                            <i class="bx bx-folder fs-1 text-secondary mb-2"></i>
+                                            <p class="mb-0">No assigned projects found.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <!-- ============ END MY PROJECTS SECTION ============ -->
+
             <div class="row g-4 mb-4">
                 <div class="col-xl-6">
                     <div class="employee-table-card h-100">
@@ -1460,39 +1572,50 @@
 
                 <div class="col-xl-6">
                     <div class="employee-table-card h-100">
-                        <div class="employee-table-head">
-                            <a href="{{ route('tickets.index') }}" class="text-decoration-none"><h3 class="employee-card-title mb-0">Tickets</h3></a>
+                        <div class="employee-table-head d-flex align-items-center justify-content-between">
+                            <a href="{{ route('tickets.index') }}" class="text-decoration-none"><h3 class="employee-card-title mb-0">Support Tickets</h3></a>
                             <span class="employee-icon warning"><i class="bx bx-message-detail"></i></span>
                         </div>
                         <div class="table-responsive">
-                            <table class="table employee-table">
+                            <table class="table employee-table align-middle">
                                 <thead>
                                     <tr>
                                         <th>Ticket#</th>
-                                        <th>Subject</th>
+                                        <th>Subject & Project</th>
                                         <th>Status</th>
-                                        <th>Date</th>
+                                        <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @forelse($myTickets as $ticket)
                                         <tr>
-                                            <td>#{{ $ticket->id }}</td>
-                                            <td class="fw-semibold">{{ $ticket->subject }}</td>
+                                            <td class="fw-bold">#{{ $ticket->id }}</td>
                                             <td>
-                                                @if($ticket->status == 'open')
-                                                    <span class="badge bg-warning">Open</span>
-                                                @elseif($ticket->status == 'resolved')
+                                                <div class="fw-semibold text-dark">{{ Str::limit($ticket->subject, 32) }}</div>
+                                                <small class="text-muted"><i class="bx bx-folder"></i> {{ $ticket->project?->name ?? 'General Support' }}</small>
+                                            </td>
+                                            <td>
+                                                @if(strtolower((string)$ticket->status) == 'open')
+                                                    <span class="badge bg-warning text-dark">Open</span>
+                                                @elseif(strtolower((string)$ticket->status) == 'reopened')
+                                                    <span class="badge bg-danger">REOPENED</span>
+                                                @elseif(strtolower((string)$ticket->status) == 'resolved')
                                                     <span class="badge bg-success">Resolved</span>
+                                                @elseif(strtolower((string)$ticket->status) == 'closed')
+                                                    <span class="badge bg-secondary">Closed</span>
                                                 @else
-                                                    <span class="badge bg-secondary">{{ ucfirst($ticket->status) }}</span>
+                                                    <span class="badge bg-info">{{ ucfirst($ticket->status) }}</span>
                                                 @endif
                                             </td>
-                                            <td>{{ $ticket->created_at->format('d-m-Y') }}</td>
+                                            <td>
+                                                <a href="{{ route('tickets.show', $ticket->id) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                                    <i class="bx bx-show-alt me-1"></i> View
+                                                </a>
+                                            </td>
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="4" class="text-center py-4">No tickets found</td>
+                                            <td colspan="4" class="text-center py-4 text-muted">No assigned tickets found</td>
                                         </tr>
                                     @endforelse
                                 </tbody>
@@ -1634,6 +1757,208 @@
         </div>
     </div>
 </main>
+
+<!-- ============ PROJECT TASKS MODALS FOR EMPLOYEE ============ -->
+<script>
+window.saveEmployeeTask = function(submitBtn, taskId) {
+    try {
+        var form = submitBtn ? submitBtn.closest('form') : document.querySelector('form[data-task-id="' + taskId + '"]');
+        if (!form) return;
+
+        var originalHtml = submitBtn ? submitBtn.innerHTML : 'Save';
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Saving...';
+        }
+
+        var tokenMeta = document.querySelector('meta[name="csrf-token"]');
+        var csrfToken = tokenMeta ? tokenMeta.getAttribute('content') : (form.querySelector('input[name="_token"]')?.value || '{{ csrf_token() }}');
+        var statusVal = form.querySelector('select[name="status"]')?.value || 'To Do';
+        var progressVal = form.querySelector('input[name="progress"]')?.value || 0;
+        var remarksVal = form.querySelector('input[name="remarks"]')?.value || '';
+
+        fetch('/tasks/' + taskId + '/update-status', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': csrfToken
+            },
+            body: JSON.stringify({
+                status: statusVal,
+                progress: progressVal,
+                remarks: remarksVal
+            })
+        })
+        .then(function(res) {
+            return res.json().then(function(data) {
+                return { ok: res.ok, status: res.status, data: data };
+            }).catch(function() {
+                return { ok: res.ok, status: res.status, data: { success: false, message: 'Server response error (' + res.status + ')' } };
+            });
+        })
+        .then(function(result) {
+            var data = result.data;
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalHtml;
+            }
+
+                if (result.ok && data && data.success) {
+                    var taskCard = document.getElementById('task_card_' + taskId);
+                    if (taskCard) {
+                        var badge = taskCard.querySelector('.task-current-status-badge');
+                        if (badge) badge.textContent = data.status || statusVal;
+                        var disp = taskCard.querySelector('.task-progress-display');
+                        if (disp) disp.textContent = (data.progress !== undefined ? data.progress : progressVal) + '%';
+                    }
+
+                    // Update project row in table
+                    if (data.project_id) {
+                        var projRow = document.querySelector('tr[data-project-id="' + data.project_id + '"]');
+                        if (projRow) {
+                            if (data.project_progress !== undefined) {
+                                var pBar = projRow.querySelector('.progress-bar');
+                                if (pBar) pBar.style.width = data.project_progress + '%';
+                                var pSmall = projRow.querySelector('small.fw-bold');
+                                if (pSmall) pSmall.textContent = data.project_progress + '%';
+                            }
+                            if (data.project_status) {
+                                var sBadge = projRow.querySelector('.badge');
+                                if (sBadge) {
+                                    sBadge.textContent = data.project_status.replace(/\b\w/g, function(l) { return l.toUpperCase(); });
+                                }
+                            }
+                        }
+                    }
+
+                    if (submitBtn) {
+                        submitBtn.classList.remove('btn-primary');
+                        submitBtn.classList.add('btn-success');
+                        submitBtn.innerHTML = '<i class="bx bx-check me-1"></i> Saved!';
+                        setTimeout(function() {
+                            submitBtn.classList.remove('btn-success');
+                            submitBtn.classList.add('btn-primary');
+                            submitBtn.innerHTML = originalHtml;
+                        }, 2000);
+                    }
+                } else {
+                var errMsg = (data && data.message) ? data.message : ('Failed to update task (status ' + result.status + ').');
+                alert(errMsg);
+            }
+        })
+        .catch(function(err) {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalHtml;
+            }
+            console.error("Task update error:", err);
+            alert('Network error while updating task: ' + err.message);
+        });
+    } catch (ex) {
+        console.error("Save task exception:", ex);
+        alert('Exception: ' + ex.message);
+        if (submitBtn) submitBtn.disabled = false;
+    }
+};
+</script>
+@foreach($myProjects ?? [] as $project)
+<div class="modal fade" id="projectTasksModal_{{ $project->id }}" tabindex="-1" aria-labelledby="projectTasksModalLabel_{{ $project->id }}" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+            <div class="modal-header bg-light border-bottom py-3 px-4">
+                <div>
+                    <h5 class="modal-title fw-bold text-dark mb-0" id="projectTasksModalLabel_{{ $project->id }}">
+                        <i class="bx bx-folder text-primary me-2"></i>My Tasks &mdash; {{ $project->name }}
+                    </h5>
+                    <small class="text-muted">{{ $project->project_code ?? 'PROJ-' . $project->id }} &bull; Update status and progress for your assigned deliverables</small>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                @php
+                    $pTasks = $project->tasks ?? collect();
+                @endphp
+                @if($pTasks->isEmpty())
+                    <div class="text-center py-5">
+                        <i class="bx bx-check-circle fs-1 text-success mb-2"></i>
+                        <p class="mb-0 text-muted">You have no tasks assigned in this project yet.</p>
+                    </div>
+                @else
+                    <div class="d-flex flex-column gap-3">
+                        @foreach($pTasks as $pTask)
+                            <div class="p-3 border rounded-3 bg-white shadow-sm task-item-card" id="task_card_{{ $pTask->id }}" data-task-id="{{ $pTask->id }}">
+                                <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-2">
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex align-items-center gap-2 mb-1">
+                                            <span class="badge bg-primary text-white font-monospace">{{ $pTask->task_short_code ?? '#TASK-' . $pTask->id }}</span>
+                                            <h6 class="fw-bold text-dark mb-0">{{ $pTask->title }}</h6>
+                                        </div>
+                                        @if($pTask->description)
+                                            <p class="text-muted small mb-2 text-truncate" style="max-width: 500px;" title="{{ strip_tags($pTask->description) }}">
+                                                {{ Str::limit(strip_tags($pTask->description), 100) }}
+                                            </p>
+                                        @endif
+                                        <div class="d-flex flex-wrap align-items-center gap-3 text-muted" style="font-size: 0.8rem;">
+                                            <span><i class="bx bx-calendar me-1"></i>Due: <strong>{{ $pTask->due_date ? Carbon::parse($pTask->due_date)->format('d M, Y') : 'No due date' }}</strong></span>
+                                            <span>Priority: <span class="badge bg-light text-dark border text-capitalize">{{ $pTask->priority ?? 'Medium' }}</span></span>
+                                            <span>Current Status: <span class="badge bg-info text-white task-current-status-badge">{{ $pTask->status ?? 'To Do' }}</span></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="p-3 rounded-2 bg-light border mt-2">
+                                    <form class="employee-task-update-form" data-task-id="{{ $pTask->id }}" method="POST" action="javascript:void(0);" onsubmit="event.preventDefault(); return false;">
+                                        @csrf
+                                        <div class="row g-3 align-items-center">
+                                            <!-- Status Select -->
+                                            <div class="col-md-4">
+                                                <label class="form-label small fw-bold mb-1">Task Status</label>
+                                                <select name="status" class="form-select form-select-sm task-status-select" required>
+                                                    @foreach(['Incomplete', 'To Do', 'Doing', 'Waiting for Approval', 'Completed'] as $st)
+                                                        <option value="{{ $st }}" {{ ($pTask->status ?? 'To Do') === $st ? 'selected' : '' }}>{{ $st }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+
+                                            <!-- Progress Slider & Value -->
+                                            <div class="col-md-5">
+                                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                                    <label class="form-label small fw-bold mb-0">Progress</label>
+                                                    <span class="badge bg-primary rounded-pill task-progress-display fw-bold px-2 py-1 fs-7">{{ $pTask->progress ?? 0 }}%</span>
+                                                </div>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <input type="range" class="form-range task-progress-range" min="0" max="100" step="5" value="{{ $pTask->progress ?? 0 }}" name="progress" oninput="const d = this.closest('.col-md-5')?.querySelector('.task-progress-display'); if (d) d.textContent = this.value + '%';">
+                                                </div>
+                                            </div>
+
+                                            <!-- Save Button -->
+                                            <div class="col-md-3 d-flex align-items-end">
+                                                <button type="button" class="btn btn-sm btn-primary w-100 py-1 save-task-btn" onclick="saveEmployeeTask(this, {{ $pTask->id }})">
+                                                    <i class="bx bx-check me-1"></i> Save Changes
+                                                </button>
+                                            </div>
+
+                                            <!-- Remarks input -->
+                                            <div class="col-12 mt-2">
+                                                <input type="text" name="remarks" class="form-control form-control-sm task-remarks-input" placeholder="Add optional remarks / deliverables note..." value="{{ $pTask->remarks ?? '' }}">
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
+            </div>
+            <div class="modal-footer bg-light border-top py-2 px-4">
+                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+@endforeach
+<!-- ============ END PROJECT TASKS MODALS ============ -->
 @endsection
 
 @push('scripts')
@@ -2173,6 +2498,92 @@
             labels: ['Open', 'Recent Resolved'],
             colors: ['#f59e0b', '#12a66a']
         });
+
+        // Live percentage slider update
+        document.querySelectorAll('.task-progress-range').forEach(function(slider) {
+            slider.addEventListener('input', function() {
+                const form = this.closest('form');
+                if (form) {
+                    const display = form.querySelector('.task-progress-display');
+                    if (display) {
+                        display.textContent = this.value + '%';
+                    }
+                }
+            });
+        });
+
+        // Live progress slider updating
+        document.addEventListener('input', function (e) {
+            if (e.target && e.target.classList.contains('task-progress-range')) {
+                const container = e.target.closest('.col-md-5') || e.target.closest('form');
+                const display = container ? container.querySelector('.task-progress-display') : null;
+                if (display) display.textContent = e.target.value + '%';
+            }
+        });
+
+        // Explicit Save function for Employee Tasks in Modal
+        window.saveEmployeeTask = function(submitBtn, taskId) {
+            const form = submitBtn.closest('form') || document.querySelector(`form[data-task-id="${taskId}"]`);
+            if (!form) return;
+
+            const originalHtml = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Saving...';
+
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') 
+                           || form.querySelector('input[name="_token"]')?.value 
+                           || '{{ csrf_token() }}';
+            const statusVal = form.querySelector('select[name="status"]')?.value || 'To Do';
+            const progressVal = form.querySelector('input[name="progress"]')?.value || 0;
+            const remarksVal = form.querySelector('input[name="remarks"]')?.value || '';
+
+            fetch('/tasks/' + taskId + '/update-status', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                body: JSON.stringify({
+                    status: statusVal,
+                    progress: progressVal,
+                    remarks: remarksVal
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalHtml;
+
+                if (data.success) {
+                    const taskCard = document.getElementById('task_card_' + taskId);
+                    if (taskCard) {
+                        const badge = taskCard.querySelector('.task-current-status-badge');
+                        if (badge) badge.textContent = data.status || statusVal;
+                        const disp = taskCard.querySelector('.task-progress-display');
+                        if (disp) disp.textContent = (data.progress !== undefined ? data.progress : progressVal) + '%';
+                    }
+
+                    submitBtn.classList.remove('btn-primary');
+                    submitBtn.classList.add('btn-success');
+                    submitBtn.innerHTML = '<i class="bx bx-check me-1"></i> Saved!';
+                    setTimeout(() => {
+                        submitBtn.classList.remove('btn-success');
+                        submitBtn.classList.add('btn-primary');
+                        submitBtn.innerHTML = originalHtml;
+                    }, 2000);
+                } else {
+                    const errMsg = data.message || 'Failed to update task.';
+                    alert(errMsg);
+                }
+            })
+            .catch(err => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalHtml;
+                console.error(err);
+                alert('Network error while updating task.');
+            });
+        };
     });
 </script>
 @endpush

@@ -6,153 +6,11 @@
 <div class="project-milestones-page">
     <div class="container-fluid px-4">
 
-        <!-- Breadcrumb -->
-        <div class="breadcrumb">
-            <i class="fas fa-flag-checkered"></i>
-            <span>Dashboard / Projects / <a href="{{ route('projects.show', $project->id) }}">{{ $project->name }}</a> / Milestones</span>
-        </div>
-
-        <!-- Header Card -->
-        <div class="header-card">
-            <div class="header-left">
-                <div class="header-icon">
-                    <i class="fas fa-flag-checkered"></i>
-                </div>
-                <div>
-                    <h1>Project Milestones</h1>
-                    <p>Track and manage milestones for <strong>{{ $project->name }}</strong></p>
-                </div>
-            </div>
-            <div class="header-actions">
-                <a href="{{ route('projects.index') }}" class="btn btn-outline">
-                    <i class="fas fa-arrow-left"></i> Back to Projects
-                </a>
-                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createMilestoneModal">
-                    <i class="fas fa-plus-circle"></i> Create Milestone
-                </button>
-            </div>
-        </div>
-
-        <!-- Stats Cards -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-tasks"></i></div>
-                <div>
-                    <h3>{{ $milestones->count() }}</h3>
-                    <span>Total Milestones</span>
-                    <p class="stat-sub">Project milestones</p>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
-                <div>
-                    <h3>{{ $milestones->where('status', 'completed')->count() }}</h3>
-                    <span>Completed</span>
-                    <p class="stat-sub">Finished milestones</p>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-spinner"></i></div>
-                <div>
-                    <h3>{{ $milestones->where('status', 'in_progress')->count() }}</h3>
-                    <span>In Progress</span>
-                    <p class="stat-sub">Active milestones</p>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-clock"></i></div>
-                <div>
-                    <h3>{{ $milestones->where('status', 'pending')->count() }}</h3>
-                    <span>Pending</span>
-                    <p class="stat-sub">Not yet started</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Navigation Tabs -->
-        <div class="nav-tabs-wrapper">
-            <ul class="nav-tabs">
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('projects.show', $project->id) }}">
-                        <i class="fas fa-chart-pie"></i> Overview
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('project-members.index', $project->id) }}">
-                        <i class="fas fa-users"></i> Members
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('project-files.index', $project->id) }}">
-                        <i class="fas fa-folder-open"></i> Files
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link active" href="{{ route('milestones.index', $project->id) }}">
-                        <i class="fas fa-flag-checkered"></i> Milestones
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('projects.tasks.index', $project->id) }}">
-                        <i class="fas fa-tasks"></i> Tasks
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('projects.tasks.board', $project->id) }}">
-                        <i class="fas fa-columns"></i> Task Board
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('projects.gantt', $project->id) }}">
-                        <i class="fas fa-chart-bar"></i> Gantt Chart
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('projects.timelogs.index', $project->id) }}">
-                        <i class="fas fa-clock"></i> Timesheet
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('expenses.index', $project->id) }}">
-                        <i class="fas fa-money-bill-wave"></i> Expenses
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('projects.notes.index', $project->id) }}">
-                        <i class="fas fa-sticky-note"></i> Notes
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link more-toggle" href="#" id="toggle-more">
-                        <i class="fas fa-ellipsis-h"></i> More <i class="fas fa-chevron-down"></i>
-                    </a>
-                </li>
-            </ul>
-
-            <!-- Collapsible Extra Tabs -->
-            <ul class="nav-tabs extra-tabs d-none" id="more-tabs">
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('projects.discussions.index', $project->id) }}">
-                        <i class="fas fa-comments"></i> Discussion
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('projects.burndown', $project->id) }}">
-                        <i class="fas fa-fire"></i> Burndown Chart
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('admin.activities.project', $project->id) }}">
-                        <i class="fas fa-history"></i> Activity
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('tickets.index', ['project_id' => $project->id]) }}">
-                        <i class="fas fa-ticket-alt"></i> Tickets
-                    </a>
-                </li>
-            </ul>
-        </div>
+        {{-- Standardized Project Header & 13-Tab Navigation --}}
+        @include('admin.projects.partials.header', [
+            'project' => $project,
+            'activeTab' => 'milestones'
+        ])
 
         <!-- Main Content Card -->
         <div class="content-card">
@@ -1155,8 +1013,7 @@
     $(document).ready(function () {
         // Initialize DataTable
         $('#mileTable').DataTable({
-            dom: 'Bfrtip',
-            buttons: ['copy', 'csv', 'excel', 'pdf', 'print'],
+            dom: 'rftip',
             responsive: true,
             pageLength: 10,
             lengthMenu: [10, 25, 50, 100],

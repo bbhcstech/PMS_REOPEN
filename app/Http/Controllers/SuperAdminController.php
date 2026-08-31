@@ -833,9 +833,12 @@ class SuperAdminController extends Controller
             $developer = User::find($data['developer_id']);
         }
         if (!$developer) {
-            $developer = User::where('email', $developerEmail)
-                ->orWhere('personal_email', $developerEmail)
-                ->first();
+            $developer = User::where(function ($query) use ($developerEmail) {
+                $query->where('email', $developerEmail);
+                if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'personal_email')) {
+                    $query->orWhere('personal_email', $developerEmail);
+                }
+            })->first();
         }
 
         $wasCreated = false;
@@ -1051,9 +1054,12 @@ class SuperAdminController extends Controller
         $personalEmail = !empty($data['personal_email']) ? strtolower(trim($data['personal_email'])) : $loginEmail;
 
         // Check if developer account ALREADY EXISTS
-        $existing = User::where('email', $loginEmail)
-            ->orWhere('personal_email', $loginEmail)
-            ->first();
+        $existing = User::where(function ($query) use ($loginEmail) {
+            $query->where('email', $loginEmail);
+            if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'personal_email')) {
+                $query->orWhere('personal_email', $loginEmail);
+            }
+        })->first();
 
         if ($existing) {
             return back()->withErrors(['email' => 'A developer account already exists with email: ' . $loginEmail . '. Use "Assign Work" to assign tasks to this developer.']);

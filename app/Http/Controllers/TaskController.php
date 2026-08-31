@@ -27,14 +27,14 @@ class TaskController extends Controller
   
 
 
-public function index(Request $request, Project $project = null) 
+public function index(Request $request, ?Project $project = null) 
 {
     $query = Task::with(['project', 'assignees', 'subTasks.assignee', 'timers', 'latestUpdate.user'])
         ->whereNull('parent_id');
     $user = auth()->user();
     $canManageTasks = $this->canCreateWorkItems();
 
-    if ($user && $user->normalizedRole() !== 'admin') {
+    if ($user && ! $canManageTasks) {
         $visibleUserIds = $user->visibleEmployeeIds()->push($user->id)->unique()->values();
         $query->where(function ($taskScope) use ($visibleUserIds) {
             $taskScope->whereHas('assignees', function ($assignees) use ($visibleUserIds) {
@@ -300,15 +300,16 @@ public function create(Request $request)
         'repeat'            => $request->has('repeat'),
         'repeat_complete'   => $request->has('repeat_complete'),
         'repeat_count'      => $request->repeat_count,
-        'repeat_type'       => $request->repeat_type,
+        'repeat_type'       => $request->repeat_type ?? 'day',
         'repeat_cycles'     => $request->repeat_cycles,
         'dependent_task_id' => $request->dependent_task_id,
         'image_url'         => $profileImagePath,
         'priority'          => $request->priority ?? 'medium',
-        'progress'          => $request->integer('progress', 0),
+        'progress'          => 0,
         'category_id'       => $request->category_id,
         'parent_id'         => $request->parent_id,
-        'status'            => $request->status ?? 'To Do',
+        'status'            => 'To Do',
+        'board_column_id'   => 2,
         'is_completed'      => 0,
     ]);
     
@@ -458,6 +459,13 @@ public function update(Request $request, Task $task)
         $profileImagePath = 'admin/uploads/task-files/' . $imageName;
     }
 
+    $isEmployee = strtolower((string) auth()->user()?->role) === 'employee';
+    $newStatus = $isEmployee ? ($request->status ?? $task->status) : $task->status;
+    $newProgress = $isEmployee ? $request->integer('progress', (int) ($task->progress ?? 0)) : (int) ($task->progress ?? 0);
+    $newBoardColumn = $isEmployee ? ($request->board_column_id ?? $this->boardColumnForStatus($newStatus)) : $task->board_column_id;
+    $isCompleted = $newStatus === 'Completed' ? 1 : 0;
+    $completedOn = $newStatus === 'Completed' ? ($task->completed_on ?: now()) : null;
+
     $task->update([
         'task_short_code'  => $request->task_short_code,
         'title'             => $request->title,
@@ -469,7 +477,7 @@ public function update(Request $request, Task $task)
         'remarks'           => $request->remarks,
         'task_labels'       => $request->has('task_labels') ? implode(',', $request->task_labels) : null,
         'milestone_id'      => $request->milestone_id,
-        'board_column_id'   => $request->board_column_id ?? $this->boardColumnForStatus($request->status ?? $task->status),
+        'board_column_id'   => $newBoardColumn,
         'is_private'        => $request->has('is_private'),
         'billable'          => $request->has('billable'),
         'estimate_hours'    => $request->estimate_hours,
@@ -477,17 +485,17 @@ public function update(Request $request, Task $task)
         'repeat'            => $request->has('repeat'),
         'repeat_complete'   => $request->has('repeat_complete'),
         'repeat_count'      => $request->repeat_count,
-        'repeat_type'       => $request->repeat_type,
+        'repeat_type'       => $request->repeat_type ?? ($task->repeat_type ?: 'day'),
         'repeat_cycles'     => $request->repeat_cycles,
         'dependent_task_id' => $request->dependent_task_id,
         'image_url'         => $profileImagePath,
         'priority'          => $request->priority ?? 'medium',
-        'progress'          => $request->integer('progress', (int) ($task->progress ?? 0)),
+        'progress'          => $newProgress,
         'category_id'       => $request->category_id,
         'parent_id'         => $request->parent_id,
-        'status'            => $request->status ?? $task->status,
-        'is_completed'      => ($request->status ?? $task->status) === 'Completed' ? 1 : 0,
-        'completed_on'      => ($request->status ?? $task->status) === 'Completed' ? ($task->completed_on ?: now()) : null,
+        'status'            => $newStatus,
+        'is_completed'      => $isCompleted,
+        'completed_on'      => $completedOn,
     ]);
     
     UserActivity::create([
@@ -590,7 +598,28 @@ public function taskBoard(Project $project)
 public function updateStatus(Request $request, Task $task)
 {
     \Log::info("TASK UPDATE", ['task_id' => $task->id, 'new_status' => $request->status]);
-    $this->authorizeTaskAccess($task);
+
+    $currentUser = auth()->user();
+    if (! $currentUser) {
+        return response()->json(['success' => false, 'message' => 'Unauthenticated.'], 401);
+    }
+
+    if (in_array(strtolower((string) $currentUser->role), ['admin', 'manager', 'hr'], true)) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Progress and status of tasks can only be updated by the assigned employee.',
+        ], 403);
+    }
+
+    $isAssigned = $task->assignees()->where('users.id', $currentUser->id)->exists()
+        || collect(explode(',', (string) $task->assigned_to))->contains((string) $currentUser->id);
+
+    if (! $isAssigned) {
+        return response()->json([
+            'success' => false,
+            'message' => 'You are not assigned to this task.',
+        ], 403);
+    }
 
     $request->validate([
         'status' => 'required|in:Waiting for Approval,To Do,Doing,Incomplete,Completed',
@@ -612,26 +641,22 @@ public function updateStatus(Request $request, Task $task)
         }
     }
 
-    if ($task->status === 'Waiting for Approval' && $request->status !== 'Waiting for Approval' && ! $this->canCreateWorkItems()) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Tasks in Waiting for Approval can only be moved by an admin, HR, or manager.'
-        ], 403);
-    }
-
     // ✅ Sync completion
     $this->applyTaskStatus($task, $request->status, $request->has('progress') ? $request->integer('progress') : null, $request->remarks);
     $this->recordTaskUpdate($task, $request->status, $task->progress, $request->remarks);
 
-    // ✅ Set completed_on date only when status is Completed
-    
-
     SystemNotificationService::notifyAllRoles(
         'Task Status Updated',
-        auth()->user()->name . ' changed task "' . $task->title . '" to ' . $task->status,
+        auth()->user()->name . ' changed task "' . $task->title . '" to ' . $task->status . ' (' . ($task->progress ?? 0) . '% progress)',
         route('tasks.show', $task->id),
         ['task_id' => $task->id, 'project_id' => $task->project_id, 'type' => 'task_status_updated', 'icon' => 'fa-tasks', 'color' => 'info']
     );
+
+    $project = $task->project;
+    if ($project) {
+        $project->recalculateProgressAndStatus();
+        $project->refresh();
+    }
 
     return response()->json([
         'success' => true,
@@ -639,6 +664,10 @@ public function updateStatus(Request $request, Task $task)
         'progress' => (int) ($task->progress ?? 0),
         'completed_on' => $task->completed_on ? Carbon::parse($task->completed_on)->format('M d, Y') : '--',
         'remarks' => $task->remarks,
+        'project_id' => $project?->id,
+        'project_progress' => (int) ($project?->completion_percent ?? 0),
+        'project_status' => $project?->status,
+        'message' => 'Task updated successfully to ' . $task->status . ' (' . ($task->progress ?? 0) . '%)',
     ]);
 }
 
@@ -860,7 +889,7 @@ public function calendarView(Request $request)
     ]);
 }
 
-public function userTaskBoard(Request $request, User $user = null)
+public function userTaskBoard(Request $request, ?User $user = null)
 {
     $query = Task::with(['assignee']);
     $currentUser = auth()->user();

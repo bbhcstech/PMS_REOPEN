@@ -88,13 +88,19 @@ class TicketController extends Controller
             }
         }
 
+        if ($request->filled('project_id')) {
+            $tickets->where('project_id', $request->project_id);
+        }
+
         if ($request->filled('status')) {
             $tickets->where('status', $request->status);
         }
 
         $tickets = $tickets->latest()->get();
+        $currentProject = $request->filled('project_id') ? Project::find($request->project_id) : null;
+        $project = $currentProject;
 
-        return view('admin.tickets.index', compact('tickets', 'agents', 'projects'));
+        return view('admin.tickets.index', compact('tickets', 'agents', 'projects', 'currentProject', 'project'));
     }
 
     public function create()
@@ -120,14 +126,16 @@ class TicketController extends Controller
         'group_id'       => 'nullable',
         'subject'        => 'required|string|max:255',
         'description'    => 'required|string',
-        'attachment'     => 'nullable|file|mimes:jpeg,png,pdf,docx|max:2048',
+        'attachment'     => 'nullable|file|mimes:jpeg,png,jpg,pdf,docx,xlsx,xls,csv,txt,zip|max:10240',
         'priority'       => 'nullable|in:low,medium,high,critical',
         'channel'        => 'nullable|string|max:100',
         'tags'           => 'nullable|string|max:255',
         'type_id'        => 'nullable|string|max:100',
         'agent_id'       => 'nullable|exists:users,id',
         'project_id'     => 'nullable|exists:projects,id',
-        'status'         => 'nullable|in:open,pending,closed,resolved',
+        'affected_module' => 'nullable|string|max:255',
+        'deadline'       => 'nullable|date',
+        'status'         => 'nullable|in:open,pending,closed,resolved,reopened',
     ]);
 
     // create ticket
@@ -139,10 +147,12 @@ class TicketController extends Controller
     $ticket->group_id = $request->group_id;
     $ticket->agent_id = $request->agent_id;
     $ticket->project_id = $request->project_id;
+    $ticket->affected_module = $request->affected_module;
+    $ticket->deadline = $request->deadline;
     $ticket->type_id = $request->type_id;
     $ticket->subject = $request->subject;
     $ticket->description = $request->description;
-    $ticket->priority = $request->priority;
+    $ticket->priority = $request->priority ?? 'medium';
     $ticket->channel = $request->channel;
     $ticket->tags = $request->tags;
     $ticket->status = $request->status ?? 'open';
@@ -257,24 +267,22 @@ class TicketController extends Controller
 
     public function update(Request $request, $id)
     {
-        try {
-            $request->validate([
-                'requester_type' => 'required|in:client,employee',
-                'requester_name' => 'required|exists:users,id',
-                'group_id' => 'required',
-                'subject' => 'required|string|max:255',
-                'description' => 'required|string',
-                'attachment' => 'nullable|file|mimes:jpeg,png,pdf,docx|max:2048',
-                'priority' => 'nullable|in:low,medium,high,critical',
-                'channel' => 'nullable|string|max:100',
-                'tags' => 'nullable|string|max:255',
-                'type_id' => 'nullable|string|max:100',
-                'agent_id' => 'nullable|exists:users,id',
-                'project_id' => 'nullable|exists:projects,id',
-            ]);
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            dd($e->errors());
-        }
+        $request->validate([
+            'requester_type' => 'required|in:client,employee',
+            'requester_name' => 'required|exists:users,id',
+            'group_id' => 'nullable',
+            'subject' => 'required|string|max:255',
+            'description' => 'required|string',
+            'attachment' => 'nullable|file|mimes:jpeg,png,jpg,pdf,docx,xlsx,xls,csv,txt,zip|max:10240',
+            'priority' => 'nullable|in:low,medium,high,critical',
+            'channel' => 'nullable|string|max:100',
+            'tags' => 'nullable|string|max:255',
+            'type_id' => 'nullable|string|max:100',
+            'agent_id' => 'nullable|exists:users,id',
+            'project_id' => 'nullable|exists:projects,id',
+            'affected_module' => 'nullable|string|max:255',
+            'deadline' => 'nullable|date',
+        ]);
 
         $ticket = Ticket::findOrFail($id);
 
@@ -284,10 +292,12 @@ class TicketController extends Controller
         $ticket->group_id = $request->group_id;
         $ticket->agent_id = $request->agent_id;
         $ticket->project_id = $request->project_id;
+        $ticket->affected_module = $request->affected_module;
+        $ticket->deadline = $request->deadline;
         $ticket->type_id = $request->type_id;
         $ticket->subject = $request->subject;
         $ticket->description = $request->description;
-        $ticket->priority = $request->priority;
+        $ticket->priority = $request->priority ?? 'medium';
         $ticket->channel = $request->channel;
         $ticket->tags = $request->tags;
 
@@ -392,12 +402,18 @@ class TicketController extends Controller
 
     public function show($id)
     {
-        $ticket = Ticket::with(['requester', 'agent', 'project', 'group'])->findOrFail($id);
+        $ticket = Ticket::with(['requester', 'agent', 'project.client', 'group', 'replies.user', 'activities.user'])->findOrFail($id);
         $agents = User::where('role', 'employee')->get();
         $groups = TicketGroup::all();
-        $replies  = Reply::all();
+        $replies = Reply::where('ticket_id', $ticket->id)->with('user')->latest()->get();
+        $activities = TicketActivity::where('ticket_id', $ticket->id)->with('user')->latest()->get();
+        $timeLogs = \App\Models\TimeLog::where('project_id', $ticket->project_id)
+            ->where('memo', 'like', "%Ticket #{$ticket->id}%")
+            ->with('employee')
+            ->latest()
+            ->get();
 
-        return view('admin.tickets.show', compact('ticket','agents', 'groups','replies'));
+        return view('admin.tickets.show', compact('ticket', 'agents', 'groups', 'replies', 'activities', 'timeLogs'));
     }
 
     public function reply(Request $request, $id)
@@ -429,6 +445,17 @@ class TicketController extends Controller
             'attachment' => $attachmentPath,
         ]);
 
+        TicketActivity::create([
+            'ticket_id' => $ticket->id,
+            'project_id' => $ticket->project_id,
+            'user_id' => auth()->id(),
+            'assigned_to' => $ticket->agent_id,
+            'status' => $ticket->status,
+            'priority' => $ticket->priority,
+            'type' => 'Comment Added',
+            'content' => auth()->user()->name . ' added a comment/update: ' . Str::limit($request->message, 80),
+        ]);
+
         return redirect()->back()->with('success', 'Reply added successfully.');
     }
 
@@ -438,11 +465,12 @@ class TicketController extends Controller
             'agent_id' => 'nullable|exists:users,id',
             'group_id' => 'nullable|exists:ticket_groups,id',
             'priority' => 'nullable|in:low,medium,high,critical',
-            'status' => 'nullable|in:open,pending,resolved,closed',
-            'type_id' => 'nullable|in:1,2,3,4,5,6,7,8,9',
+            'status' => 'nullable|in:open,pending,resolved,closed,reopened',
+            'type_id' => 'nullable|string|max:100',
         ]);
 
         $ticket = Ticket::findOrFail($id);
+        $oldAgentId = $ticket->agent_id;
 
         $ticket->agent_id = $request->agent_id;
         $ticket->group_id = $request->group_id;
@@ -452,7 +480,143 @@ class TicketController extends Controller
 
         $ticket->save();
 
+        if ($request->agent_id && $oldAgentId != $request->agent_id) {
+            $projectName = $ticket->project?->name ?? 'Assigned Project';
+            \DB::table('notifications')->insert([
+                'id' => (string) \Illuminate\Support\Str::uuid(),
+                'type' => 'App\\Notifications\\TicketCreatedNotification',
+                'notifiable_type' => 'App\\Models\\User',
+                'notifiable_id' => $request->agent_id,
+                'data' => json_encode([
+                    'ticket_id' => $ticket->id,
+                    'title' => 'Ticket Assigned: #' . $ticket->id,
+                    'message' => 'You have been assigned Ticket #' . $ticket->id . ': ' . $ticket->subject . ' for Project ' . $projectName,
+                    'url' => route('tickets.show', $ticket->id),
+                    'icon' => 'fa-ticket',
+                    'color' => 'info',
+                    'created_by' => auth()->id(),
+                ]),
+                'read_at' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        TicketActivity::create([
+            'ticket_id' => $ticket->id,
+            'project_id' => $ticket->project_id,
+            'user_id' => auth()->id(),
+            'assigned_to' => $ticket->agent_id,
+            'status' => $ticket->status,
+            'priority' => $ticket->priority,
+            'type' => 'Details Updated',
+            'content' => 'Ticket details updated by ' . auth()->user()->name,
+        ]);
+
         return redirect()->back()->with('success', 'Ticket details updated.');
+    }
+
+    public function reopen(Request $request, $id)
+    {
+        $request->validate([
+            'reason' => 'nullable|string|max:1000',
+        ]);
+
+        $ticket = Ticket::findOrFail($id);
+        $ticket->status = 'reopened';
+        $ticket->save();
+
+        $reasonText = $request->input('reason', 'Client reported the issue is not fully resolved after delivery.');
+
+        TicketActivity::create([
+            'ticket_id' => $ticket->id,
+            'project_id' => $ticket->project_id,
+            'user_id' => auth()->id(),
+            'assigned_to' => $ticket->agent_id,
+            'status' => 'reopened',
+            'priority' => $ticket->priority,
+            'type' => 'Reopened',
+            'content' => 'Ticket reopened by Admin. Statement: ' . $reasonText,
+        ]);
+
+        if ($ticket->agent_id) {
+            $projectName = $ticket->project?->name ?? 'Assigned Project';
+            \DB::table('notifications')->insert([
+                'id' => (string) \Illuminate\Support\Str::uuid(),
+                'type' => 'App\\Notifications\\TicketReopenedNotification',
+                'notifiable_type' => 'App\\Models\\User',
+                'notifiable_id' => $ticket->agent_id,
+                'data' => json_encode([
+                    'ticket_id' => $ticket->id,
+                    'title' => 'Ticket REOPENED: #' . $ticket->id,
+                    'message' => 'Ticket #' . $ticket->id . ' "' . $ticket->subject . '" for Project ' . $projectName . ' has been REOPENED by Admin. Reason: ' . $reasonText,
+                    'url' => route('tickets.show', $ticket->id),
+                    'icon' => 'fa-redo',
+                    'color' => 'danger',
+                    'created_by' => auth()->id(),
+                ]),
+                'read_at' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        SystemNotificationService::notifyAllRoles(
+            'Ticket Reopened',
+            auth()->user()->name . ' reopened Ticket #' . $ticket->id . ': ' . $ticket->subject,
+            route('tickets.show', $ticket->id),
+            [
+                'ticket_id' => $ticket->id,
+                'project_id' => $ticket->project_id,
+                'type' => 'ticket_reopened',
+                'icon' => 'fa-redo',
+                'color' => 'warning',
+            ]
+        );
+
+        return redirect()->back()->with('success', 'Ticket reopened successfully and notification sent to developer.');
+    }
+
+    public function logTime(Request $request, $id)
+    {
+        $request->validate([
+            'hours' => 'required|numeric|min:0.1|max:24',
+            'memo' => 'required|string|max:500',
+            'start_date' => 'nullable|date',
+        ]);
+
+        $ticket = Ticket::findOrFail($id);
+        $user = auth()->user();
+        $logDate = $request->input('start_date', now()->toDateString());
+        $hours = (float) $request->hours;
+        $memo = $request->memo;
+
+        $startTime = '09:00:00';
+        $endTime = Carbon::parse($startTime)->addMinutes((int) ($hours * 60))->format('H:i:s');
+
+        \App\Models\TimeLog::create([
+            'user_id' => $user->id,
+            'project_id' => $ticket->project_id,
+            'start_date' => $logDate,
+            'start_time' => $startTime,
+            'end_date' => $logDate,
+            'end_time' => $endTime,
+            'total_hours' => $hours,
+            'memo' => "Logged on Ticket #{$ticket->id}: {$ticket->subject} - {$memo}",
+        ]);
+
+        TicketActivity::create([
+            'ticket_id' => $ticket->id,
+            'project_id' => $ticket->project_id,
+            'user_id' => $user->id,
+            'assigned_to' => $ticket->agent_id,
+            'status' => $ticket->status,
+            'priority' => $ticket->priority,
+            'type' => 'Time Logged',
+            'content' => "{$user->name} logged {$hours} hrs on Ticket: {$memo}",
+        ]);
+
+        return redirect()->back()->with('success', "Logged {$hours} hours to timesheet successfully.");
     }
 
     public function bulkAction(Request $request)

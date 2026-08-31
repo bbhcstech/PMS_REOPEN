@@ -309,29 +309,64 @@
                             <p class="fw-semibold">{{ $task->total_logged_formatted ?? '0h 0m 0s' }}</p> {{-- Replace if dynamic --}}
 
                             <hr>
-                            <form id="taskStatusUpdateForm" data-task-id="{{ $task->id }}">
-                                @csrf
-                                <div class="mb-3">
-                                    <label class="form-label small text-muted">Status</label>
-                                    <select name="status" class="form-select status-dropdown" data-task-id="{{ $task->id }}">
-                                        @foreach(['To Do', 'Doing', 'Incomplete', 'Completed'] as $status)
-                                            <option value="{{ $status }}" @selected($task->status === $status)>{{ $status }}</option>
-                                        @endforeach
-                                        @if($task->status === 'Waiting for Approval')
-                                            <option value="Waiting for Approval" selected>Waiting for Approval</option>
-                                        @endif
-                                    </select>
+                            @php
+                                $currentUser = auth()->user();
+                                $isAssignedEmployee = $currentUser && strtolower((string) $currentUser->role) === 'employee' && (
+                                    $task->assignees()->where('users.id', $currentUser->id)->exists()
+                                    || collect(explode(',', (string) $task->assigned_to))->contains((string) $currentUser->id)
+                                );
+                            @endphp
+
+                            @if($isAssignedEmployee)
+                                <form id="taskStatusUpdateForm" data-task-id="{{ $task->id }}">
+                                    @csrf
+                                    <div class="mb-3">
+                                        <label class="form-label small text-muted">Status</label>
+                                        <select name="status" class="form-select status-dropdown" data-task-id="{{ $task->id }}">
+                                            @foreach(['To Do', 'Doing', 'Incomplete', 'Completed'] as $status)
+                                                <option value="{{ $status }}" @selected($task->status === $status)>{{ $status }}</option>
+                                            @endforeach
+                                            @if($task->status === 'Waiting for Approval')
+                                                <option value="Waiting for Approval" selected>Waiting for Approval</option>
+                                            @endif
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label small text-muted">Progress (%)</label>
+                                        <input type="number" name="progress" class="form-control" min="0" max="100" value="{{ (int) ($task->progress ?? 0) }}">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label small text-muted">Work Remarks</label>
+                                        <textarea name="remarks" class="form-control" rows="3" maxlength="2000">{{ $task->remarks }}</textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary w-100">Update Work</button>
+                                </form>
+                            @else
+                                <div class="p-3 bg-light rounded-3 border">
+                                    <div class="mb-2">
+                                        <label class="form-label small text-muted d-block mb-1">Current Status</label>
+                                        <span class="badge bg-primary fs-7">{{ $task->status ?? 'To Do' }}</span>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label small text-muted d-block mb-1">Progress</label>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="progress flex-grow-1" style="height: 6px;">
+                                                <div class="progress-bar bg-success" style="width: {{ (int) ($task->progress ?? 0) }}%;"></div>
+                                            </div>
+                                            <small class="fw-bold">{{ (int) ($task->progress ?? 0) }}%</small>
+                                        </div>
+                                    </div>
+                                    @if($task->remarks)
+                                        <div>
+                                            <label class="form-label small text-muted d-block mb-1">Remarks</label>
+                                            <p class="small text-dark mb-0">{{ $task->remarks }}</p>
+                                        </div>
+                                    @endif
+                                    <small class="text-muted d-block mt-2" style="font-size: 0.75rem;">
+                                        <i class="bi bi-info-circle me-1"></i> Status and progress are managed by the assigned employee.
+                                    </small>
                                 </div>
-                                <div class="mb-3">
-                                    <label class="form-label small text-muted">Progress (%)</label>
-                                    <input type="number" name="progress" class="form-control" min="0" max="100" value="{{ (int) ($task->progress ?? 0) }}">
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label small text-muted">Work Remarks</label>
-                                    <textarea name="remarks" class="form-control" rows="3" maxlength="2000">{{ $task->remarks }}</textarea>
-                                </div>
-                                <button type="submit" class="btn btn-primary w-100">Update Work</button>
-                            </form>
+                            @endif
                         </div>
                     </div>
 

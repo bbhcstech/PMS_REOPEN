@@ -58,14 +58,13 @@ class LoginRequest extends FormRequest
         $inputEmail = strtolower(trim($this->string('email')));
         $inputPassword = (string) $this->string('password');
 
-        // ============================================
-        // DYNAMIC MULTI-TENANT COMPANY & USER RESOLUTION
-        // ============================================
-        $centralCompany = \App\Models\Central\Company::on('central')
-            ->whereRaw('LOWER(email) = ?', [$inputEmail])
-            ->orWhereRaw('LOWER(domain) = ?', [$inputEmail])
-            ->orWhereRaw('LOWER(company_code) = ?', [strtolower($inputEmail)])
-            ->first();
+        // First, check if user exists by email or personal_email
+        $user = User::where(function ($query) use ($inputEmail) {
+            $query->where('email', $inputEmail);
+            if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'personal_email')) {
+                $query->orWhere('personal_email', $inputEmail);
+            }
+        })->first();
 
         if ($centralCompany && !empty($centralCompany->db_name)) {
             $companyEmail = strtolower($centralCompany->email);

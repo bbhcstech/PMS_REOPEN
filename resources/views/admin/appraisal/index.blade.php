@@ -91,24 +91,36 @@
         gap: 0.5rem;
         margin-bottom: 1.5rem;
     }
-    .appraisal-tabs .nav-link {
+    .appraisal-shell #appraisalTabs .nav-link {
         border: none;
-        color: #4b5563;
+        color: #000000 !important;
         font-weight: 700;
         font-size: 0.925rem;
         padding: 0.75rem 1.25rem;
         border-radius: 10px 10px 0 0;
         transition: all 0.2s ease;
     }
-    .appraisal-tabs .nav-link:hover {
-        color: #7C3AED;
+    .appraisal-shell #appraisalTabs .nav-link:not(.active):hover {
+        color: #000000 !important;
         background: #faf5ff;
     }
-    .appraisal-tabs .nav-link.active {
-        color: #7C3AED !important;
-        background: #ffffff !important;
-        border-bottom: 3px solid #7C3AED;
-        box-shadow: 0 -4px 12px rgba(124, 58, 237, 0.08);
+    .appraisal-shell #appraisalTabs .nav-link.active {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        background: var(--pms-primary, #0f744c) !important;
+        border-bottom: 3px solid var(--pms-primary, #0f744c) !important;
+        box-shadow: 0 12px 20px rgba(15, 116, 76, 0.2);
+    }
+    .appraisal-shell #appraisalTabs .nav-link.active i {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    /* Keep titles readable on every coloured table heading on this page. */
+    .appraisal-shell #appraisalTabsContent .app-table-card > .text-white h5,
+    .appraisal-shell #appraisalTabsContent .app-table-card > .text-white h5 i {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
     }
 
     /* Table styling & Horizontal Scrollbar */
@@ -327,11 +339,6 @@
     {{-- APPRAISAL TABS FOR SEPARATE TABLES & MASTER OVERALL TABLE --}}
     <ul class="nav nav-tabs appraisal-tabs" id="appraisalTabs" role="tablist">
         <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="overall-tab" data-bs-toggle="tab" data-bs-target="#overall-table-pane" type="button" role="tab">
-                <i class="bx bx-award me-1 text-purple"></i> 4. Overall Master Summary Table
-            </button>
-        </li>
-        <li class="nav-item" role="presentation">
             <button class="nav-link" id="project-tab" data-bs-toggle="tab" data-bs-target="#project-table-pane" type="button" role="tab">
                 <i class="bx bx-folder-open me-1 text-primary"></i> 1. Project Work Appraisal Table
             </button>
@@ -344,6 +351,11 @@
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="behaviour-tab" data-bs-toggle="tab" data-bs-target="#behaviour-table-pane" type="button" role="tab">
                 <i class="bx bx-smile me-1 text-warning"></i> 3. Behaviour & Conduct Table
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="overall-tab" data-bs-toggle="tab" data-bs-target="#overall-table-pane" type="button" role="tab">
+                <i class="bx bx-award me-1 text-purple"></i> 4. Overall Master Summary Table
             </button>
         </li>
     </ul>

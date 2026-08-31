@@ -574,23 +574,67 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
 
        $workAnniversaries = EmployeeDetail::whereRaw('DATE_FORMAT(joining_date, "%m-%d") = ?', [date('m-d')])->get();
 
+        $myTasks = Task::where(function ($q) use ($userId) {
+            $q->whereHas('assignees', fn ($assignees) => $assignees->where('users.id', $userId))
+              ->orWhereRaw("FIND_IN_SET(?, assigned_to)", [$userId]);
+        })
+        ->with('project')
+        ->orderBy('due_date', 'asc')
+        ->limit(10)
+        ->get();
 
-       $myTasks = Task::whereRaw("FIND_IN_SET(?, assigned_to)", [$userId])
-            ->orderBy('due_date', 'asc')
-            ->limit(5) // show latest 5 tasks
+        $myTickets = Ticket::where(function ($q) use ($userId) {
+                $q->where('agent_id', $userId)
+                  ->orWhere('requester_id', $userId);
+            })
+            ->with(['project', 'requester', 'agent'])
+            ->orderBy('updated_at', 'desc')
+            ->limit(10)
             ->get();
 
-        $myTickets = Ticket::where('requester_id', $userId) // or assigned_to if you track it
-            ->orderBy('created_at', 'desc')
-            ->limit(5)
+        $myProjects = Project::whereNull('deleted_at')
+            ->whereHas('users', fn ($user) => $user->where('users.id', $userId))
+            ->with([
+                'client',
+                'tasks' => function ($q) use ($userId) {
+                    $q->where(function ($taskScope) use ($userId) {
+                        $taskScope->whereHas('assignees', fn ($assignees) => $assignees->where('users.id', $userId))
+                            ->orWhereRaw('FIND_IN_SET(?, assigned_to)', [$userId]);
+                    })->orderBy('title');
+                }
+            ])
+            ->orderByDesc('created_at')
             ->get();
 
+        $projects = $myProjects;
+        $tasks = $myTasks;
 
-            $projects = Project::all();
-            $tasks = Task::all();
-            return view('employee-dashboard', compact('user','projects', 'tasks', 'attendance', 'attendancePolicy', 'weeklyLogs','openTasksCount', 'projectsCount', 'openTicketsCount','appreciations',
-            'birthdaysToday','todaysJoinings','workAnniversaries','onLeaveToday','pendingTasksCount','overdueTasksCount','totalProjects','inProgressCount','overdueCount','myTasks','myTickets','showEmployeeWelcome'));
-        }
+        return view('employee-dashboard', compact(
+            'user',
+            'projects',
+            'tasks',
+            'myProjects',
+            'attendance',
+            'attendancePolicy',
+            'weeklyLogs',
+            'openTasksCount',
+            'projectsCount',
+            'openTicketsCount',
+            'appreciations',
+            'birthdaysToday',
+            'todaysJoinings',
+            'workAnniversaries',
+            'onLeaveToday',
+            'pendingTasksCount',
+            'overdueTasksCount',
+            'totalProjects',
+            'inProgressCount',
+            'overdueCount',
+            'myTasks',
+            'myTickets',
+            'showEmployeeWelcome'
+        ));
+    }
 
         abort(403);
     }
@@ -1032,10 +1076,36 @@ public function hrindex(Request $request)
         ->groupBy('gender')
         ->pluck('total', 'gender');
 
-       $roleCounts = User::select('role')
-        ->selectRaw('COUNT(*) as total')
-        ->groupBy('role')
-        ->pluck('total', 'role');
+        $roleCounts = User::select('role')
+            ->selectRaw('COUNT(*) as total')
+            ->groupBy('role')
+            ->pluck('total', 'role');
+
+        $totalProjects = Project::whereNull('deleted_at')->count();
+        $activeProjects = Project::whereNull('deleted_at')->whereNotIn('status', ['completed', 'canceled'])->count();
+        $pendingTasksTotal = Task::where('status', '!=', 'Completed')
+            ->with('project')
+            ->orderByDesc('start_date')
+            ->take(5)
+            ->get();
+
+        $activities = DB::table('project_activity')
+            ->join('projects', 'projects.id', '=', 'project_activity.project_id')
+            ->select(
+                'project_activity.activity',
+                'project_activity.created_at',
+                'projects.name as project_name'
+            )
+            ->orderByDesc('project_activity.created_at')
+            ->limit(10)
+            ->get();
+
+        $totalTimelogsCount = TaskTimer::count();
+        $totalTimelogHours = round((float) TaskTimer::sum('total_hours'), 1);
+        $totalClient = Client::count();
+        $unresolvedTicket = Ticket::where('status', '!=', 'closed')->count();
+        $projects = Project::whereNull('deleted_at')->orderBy('name')->get();
+        $tasks = Task::all();
 
         return view('dashboard-hr', compact(
             'totalEmployees',
@@ -1059,7 +1129,17 @@ public function hrindex(Request $request)
             'departmentWise',
             'designationWise',
             'genderCounts',
-            'roleCounts'
+            'roleCounts',
+            'totalProjects',
+            'activeProjects',
+            'pendingTasksTotal',
+            'activities',
+            'totalTimelogsCount',
+            'totalTimelogHours',
+            'totalClient',
+            'unresolvedTicket',
+            'projects',
+            'tasks'
         ));
     }
 

@@ -480,7 +480,7 @@
             <table id="employeeTable" class="table table-hover align-middle mb-0 employee-list-table !min-w-[1200px] md:!min-w-full">
                 <thead>
                     <tr>
-                        <th width="50">
+                        <th width="58" class="no-export" data-pms-selection-column aria-label="Select rows">
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" id="selectAll">
                             </div>
@@ -512,7 +512,7 @@
                         @foreach($visibleEmployees as $employee)
                         <tr id="employee-row-{{ $employee->id }}"
                             class="@if(isset($employee->subordinate_count) && $employee->subordinate_count > 0) table-warning @endif">
-                            <td>
+                            <td class="no-export" data-pms-selection-column>
                                 <div class="form-check">
                                     <input type="checkbox" class="form-check-input employee-checkbox"
                                            value="{{ $employee->id }}"

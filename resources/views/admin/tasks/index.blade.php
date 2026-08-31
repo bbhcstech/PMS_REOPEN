@@ -20,47 +20,42 @@
 <main class="tasks-page">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <div class="breadcrumb">
-        <i class="fas fa-tasks"></i>
-        <span>Dashboard / @if($project)<a href="{{ route('projects.show', $project->id) }}">{{ $project->name }}</a> / @endif<strong>Tasks</strong></span>
-    </div>
-
-    <div class="header-card">
-        <div class="header-left">
-            <div class="header-icon">
-                <i class="fas fa-list-check"></i>
-            </div>
-            <div>
-                <h1>{{ $project ? 'Project Tasks' : 'Tasks' }}</h1>
-                <p>{{ $project ? 'Manage task work for ' . $project->name : 'Manage and track task work across projects' }}</p>
-            </div>
-        </div>
-        <div class="header-actions">
-            <button type="button" class="btn-icon" data-task-search-focus title="Search">
-                <i class="fas fa-search"></i>
-            </button>
-            <a href="{{ route('users.tasks.board') }}" class="btn-icon" title="Task Board">
-                <i class="fas fa-columns"></i>
-            </a>
-            <a href="{{ route('tasks.calendar') }}" class="btn-icon" title="Calendar">
-                <i class="fas fa-calendar-alt"></i>
-            </a>
-            <a href="{{ route('tasks.waiting-approval') }}" class="btn-icon" title="Waiting Approval">
-                <i class="fas fa-triangle-exclamation"></i>
-            </a>
-        </div>
-    </div>
-
     @if($project)
-        <div class="project-task-tabs">
-            <a href="{{ route('projects.show', $project->id) }}"><i class="fas fa-chart-pie"></i> Overview</a>
-            <a href="{{ route('project-members.index', $project->id) }}"><i class="fas fa-users"></i> Members</a>
-            <a href="{{ route('project-files.index', $project->id) }}"><i class="fas fa-folder-open"></i> Files</a>
-            <a href="{{ route('milestones.index', $project->id) }}"><i class="fas fa-flag-checkered"></i> Milestones</a>
-            <a class="active" href="{{ route('projects.tasks.index', $project->id) }}"><i class="fas fa-tasks"></i> Tasks</a>
-            <a href="{{ route('projects.tasks.board', $project->id) }}"><i class="fas fa-columns"></i> Task Board</a>
-            <a href="{{ route('projects.gantt', $project->id) }}"><i class="fas fa-chart-bar"></i> Gantt</a>
-            <a href="{{ route('projects.timelogs.index', $project->id) }}"><i class="fas fa-clock"></i> Timesheet</a>
+        {{-- Standardized Project Header & 13-Tab Navigation --}}
+        @include('admin.projects.partials.header', [
+            'project' => $project,
+            'activeTab' => 'tasks'
+        ])
+    @else
+        <div class="breadcrumb">
+            <i class="fas fa-tasks"></i>
+            <span>Dashboard / <strong>Tasks</strong></span>
+        </div>
+
+        <div class="header-card">
+            <div class="header-left">
+                <div class="header-icon">
+                    <i class="fas fa-list-check"></i>
+                </div>
+                <div>
+                    <h1>Tasks</h1>
+                    <p>Manage and track task work across projects</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button type="button" class="btn-icon" data-task-search-focus title="Search">
+                    <i class="fas fa-search"></i>
+                </button>
+                <a href="{{ route('users.tasks.board') }}" class="btn-icon" title="Task Board">
+                    <i class="fas fa-columns"></i>
+                </a>
+                <a href="{{ route('tasks.calendar') }}" class="btn-icon" title="Calendar">
+                    <i class="fas fa-calendar-alt"></i>
+                </a>
+                <a href="{{ route('tasks.waiting-approval') }}" class="btn-icon" title="Waiting Approval">
+                    <i class="fas fa-triangle-exclamation"></i>
+                </a>
+            </div>
         </div>
     @endif
 
@@ -131,8 +126,8 @@
                 </div>
             </div>
             <div class="filter-actions">
-                <button class="btn btn-primary"><i class="fas fa-filter"></i> Apply Filters</button>
-                <a href="{{ $indexRoute }}" class="btn btn-outline"><i class="fas fa-undo"></i> Reset</a>
+                <button type="submit" class="btn btn-primary" style="white-space: nowrap;"><i class="fas fa-filter"></i> Apply Filters</button>
+                <a href="{{ $indexRoute }}" class="btn btn-outline" style="white-space: nowrap;"><i class="fas fa-undo"></i> Reset</a>
             </div>
         </form>
     </div>
@@ -154,13 +149,6 @@
 
         <div class="toolbar-right">
             @if($canManageTasks)
-                <select id="bulkStatus" class="form-select-sm" disabled>
-                    <option value="">Change Status</option>
-                    @foreach($statusOptions as $status)
-                        <option value="{{ $status }}">{{ $status }}</option>
-                    @endforeach
-                </select>
-                <button type="button" id="applyBulkStatus" class="btn btn-sm btn-primary" disabled>Apply</button>
                 <button type="button" id="bulkDeleteTasks" class="btn btn-sm btn-danger" disabled title="Delete selected">
                     <i class="fas fa-trash-alt"></i>
                 </button>
@@ -272,16 +260,7 @@
                                 </div>
                             </td>
                             <td><span class="priority-pill {{ $priority }}">{{ ucfirst($priority) }}</span></td>
-                            <td>
-                                <div class="status-cell">
-                                    <span class="status-pill {{ $statusClass }}">{{ $task->status ?: 'To Do' }}</span>
-                                    <select class="status-select status-dropdown" data-task-id="{{ $task->id }}">
-                                        @foreach($statusOptions as $status)
-                                            <option value="{{ $status }}" @selected($task->status === $status)>{{ $status }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                            </td>
+                            <td><span class="status-pill {{ $statusClass }}">{{ $task->status ?: 'To Do' }}</span></td>
                             <td>
                                 <div class="progress-cell">
                                     <div class="progress-bar"><div style="width: {{ max(0, min(100, $progress)) }}%"></div></div>
@@ -376,7 +355,7 @@
 </main>
 
 <style>
-    .tasks-page{padding:30px;min-height:100vh;background:linear-gradient(145deg,#f7fbf9,#eef7f2);color:#07130d}.breadcrumb{background:rgba(255,255,255,.85);backdrop-filter:blur(10px);padding:16px 26px;border-radius:18px;border:1px solid rgba(15,116,76,.12);margin-bottom:28px;color:#0f744c;font-weight:600;font-size:1.05rem}.breadcrumb i{margin-right:12px;color:#34d399}.breadcrumb a{color:#0f744c;text-decoration:none}.header-card{background:#fff;border-radius:24px;padding:30px 36px;display:flex;justify-content:space-between;align-items:center;gap:24px;box-shadow:0 18px 45px rgba(15,116,76,.09);border:1px solid rgba(15,116,76,.12);margin-bottom:28px}.header-left{display:flex;align-items:center;gap:24px}.header-icon{width:70px;height:70px;background:linear-gradient(145deg,#34d399,#10b981);color:#fff;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:32px;box-shadow:0 10px 25px rgba(16,185,129,.2)}.header-card h1{font-size:34px;font-weight:700;margin:0 0 6px;color:#07130d}.header-card p{color:#52645a;font-size:17px;margin:0}.header-actions{display:flex;gap:12px}.btn-icon,.view-btn{width:46px;height:46px;border-radius:14px;border:1px solid rgba(15,116,76,.18);background:#fff;color:#0f744c;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;transition:.2s}.btn-icon:hover,.view-btn:hover,.view-btn.active{background:#edf8f2;border-color:#34d399;color:#0f744c;transform:translateY(-1px)}.project-task-tabs{display:flex;flex-wrap:wrap;gap:4px;background:linear-gradient(135deg,#fff,#f5fbf7);border:1px solid rgba(15,116,76,.12);border-radius:20px;padding:10px 16px;margin-bottom:28px;box-shadow:0 8px 25px rgba(15,116,76,.06)}.project-task-tabs a{display:flex;align-items:center;gap:9px;padding:10px 18px;border-radius:12px;text-decoration:none;color:#5a6e63;font-weight:700;font-size:.9rem}.project-task-tabs a.active,.project-task-tabs a:hover{background:linear-gradient(145deg,#0f744c,#10b981);color:#fff}.alert{border-radius:16px;padding:16px 22px;margin-bottom:22px;border:none}.alert-success{background:#ecfdf5;color:#065f46}.alert-danger{background:#fef2f2;color:#991b1b}.filter-panel,.table-card{background:#fff;border-radius:24px;border:1px solid rgba(15,116,76,.12);box-shadow:0 14px 35px rgba(15,116,76,.07);margin-bottom:24px}.filter-panel{padding:24px}.filter-grid{display:grid;grid-template-columns:repeat(5,minmax(160px,1fr));gap:18px;align-items:end}.filter-group label{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#07130d}.form-control,.form-select,.form-select-sm,.status-select{border-radius:12px;border:1px solid rgba(15,116,76,.18);padding:11px 14px;background:#fafefb;color:#07130d;min-height:46px}.search-box{position:relative}.search-box i{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#8ba198}.search-box input{padding-left:40px}.filter-actions{display:flex;gap:10px}.btn{border:none;padding:12px 20px;border-radius:14px;font-weight:700;display:inline-flex;align-items:center;gap:9px;text-decoration:none;min-height:46px}.btn-primary{background:linear-gradient(145deg,#34d399,#10b981);color:#fff}.btn-outline{background:transparent;border:1px solid rgba(15,116,76,.22);color:#0f744c}.btn-danger{background:#ef4444;color:#fff}.toolbar{display:flex;justify-content:space-between;align-items:center;gap:18px;margin-bottom:24px}.toolbar-left,.toolbar-right{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.view-toggle{display:flex;gap:6px;background:#fff;border:1px solid rgba(15,116,76,.12);padding:5px;border-radius:16px}.table-header{padding:22px 26px;background:linear-gradient(135deg,#fff,#f5fbf7);border-bottom:1px solid rgba(15,116,76,.1)}.table-title{display:flex;align-items:center;gap:14px}.table-title-icon{width:46px;height:46px;border-radius:14px;background:#e7f5ee;color:#0f744c;display:flex;align-items:center;justify-content:center;font-size:20px}.table-title h4{margin:0;font-size:1.25rem;font-weight:800}.muted,.sub-text,.empty-text{color:#8ba198}.table-wrapper{overflow-x:auto}.task-table{width:100%;border-collapse:separate;border-spacing:0}.task-table th{padding:16px 18px;background:#f5fbf7;color:#0f744c;font-size:.82rem;text-transform:uppercase;letter-spacing:.03em;white-space:nowrap;border-bottom:1px solid rgba(15,116,76,.1)}.task-table td{padding:16px 18px;border-bottom:1px solid rgba(15,116,76,.08);vertical-align:middle}.task-table tr:hover td{background:#fafefb}.check-cell{width:44px;text-align:center}.code-badge{display:inline-flex;padding:7px 11px;border-radius:999px;background:#edf8f2;color:#0f744c;font-weight:800;font-size:.82rem;white-space:nowrap}.name-cell{display:flex;flex-direction:column;gap:4px;min-width:230px}.task-name{color:#07130d;font-weight:800;text-decoration:none}.task-name:hover{color:#0f744c}.date-cell{display:flex;align-items:center;gap:8px;white-space:nowrap}.date-cell i{color:#34d399}.overdue{color:#dc2626}.overdue-badge{margin-left:6px;font-size:.68rem;background:#fee2e2;color:#991b1b;padding:2px 7px;border-radius:999px}.members-cell{display:flex;align-items:center;gap:6px;min-width:115px}.avatar{width:32px;height:32px;border-radius:50%;background:#d1fae5;color:#0f744c;display:inline-flex;align-items:center;justify-content:center;font-weight:800;border:2px solid #fff;overflow:hidden}.avatar img{width:100%;height:100%;object-fit:cover}.avatar.more{background:#0f744c;color:#fff;font-size:.78rem}.status-cell{display:flex;align-items:center;gap:8px;min-width:230px}.status-pill,.priority-pill{display:inline-flex;align-items:center;padding:7px 11px;border-radius:999px;font-weight:800;font-size:.78rem;white-space:nowrap}.status-pill.todo{background:#eef2ff;color:#3730a3}.status-pill.doing{background:#e0f2fe;color:#0369a1}.status-pill.incomplete{background:#fee2e2;color:#991b1b}.status-pill.completed{background:#dcfce7;color:#166534}.status-pill.waiting{background:#fef3c7;color:#92400e}.status-pill.default{background:#f1f5f9;color:#334155}.priority-pill.low{background:#dcfce7;color:#166534}.priority-pill.medium{background:#fef3c7;color:#92400e}.priority-pill.high{background:#fee2e2;color:#991b1b}.status-select{min-height:38px;padding:8px 10px;max-width:150px}.progress-cell{display:flex;align-items:center;gap:10px;min-width:120px}.progress-bar{width:76px;height:8px;border-radius:999px;background:#e5e7eb;overflow:hidden}.progress-bar div{height:100%;background:linear-gradient(90deg,#34d399,#10b981)}.update-cell{display:flex;flex-direction:column;gap:3px;min-width:170px}.update-cell strong{font-size:.85rem;color:#07130d}.update-cell span{font-size:.8rem;color:#8ba198}.status-bar{margin-top:24px;background:#fff;border:1px solid rgba(15,116,76,.12);border-radius:20px;padding:18px 24px;display:flex;flex-wrap:wrap;gap:18px;box-shadow:0 8px 25px rgba(15,116,76,.05)}.status-item{display:flex;align-items:center;gap:9px;color:#5a6e63;font-weight:700}.status-item span{font-size:1.05rem;color:#07130d}.action-cell{text-align:center;width:72px}.action-btn{width:38px;height:38px;border-radius:12px;border:1px solid rgba(15,116,76,.16);background:#fff;color:#0f744c}.dropdown-item{display:flex;align-items:center;gap:9px}.timer-actions{display:flex;gap:6px}.timer-btn{width:34px;height:34px;border:0;border-radius:11px;display:inline-flex;align-items:center;justify-content:center;color:#fff}.timer-btn.start,.timer-btn.resume{background:#10b981}.timer-btn.pause{background:#f59e0b}.timer-btn.stop{background:#ef4444}.empty-state{text-align:center;padding:44px 20px;color:#8ba198}.empty-state i{font-size:42px;color:#34d399;margin-bottom:14px}@media(max-width:1200px){.filter-grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:768px){.tasks-page{padding:16px}.header-card,.toolbar{flex-direction:column;align-items:flex-start}.header-card{padding:22px}.filter-grid{grid-template-columns:1fr}.filter-actions,.toolbar-left,.toolbar-right{width:100%}.btn{justify-content:center}.header-card h1{font-size:28px}}
+    .tasks-page{padding:30px;min-height:100vh;background:linear-gradient(145deg,#f7fbf9,#eef7f2);color:#07130d}.breadcrumb{background:rgba(255,255,255,.85);backdrop-filter:blur(10px);padding:16px 26px;border-radius:18px;border:1px solid rgba(15,116,76,.12);margin-bottom:28px;color:#0f744c;font-weight:600;font-size:1.05rem}.breadcrumb i{margin-right:12px;color:#34d399}.breadcrumb a{color:#0f744c;text-decoration:none}.header-card{background:#fff;border-radius:24px;padding:30px 36px;display:flex;justify-content:space-between;align-items:center;gap:24px;box-shadow:0 18px 45px rgba(15,116,76,.09);border:1px solid rgba(15,116,76,.12);margin-bottom:28px}.header-left{display:flex;align-items:center;gap:24px}.header-icon{width:70px;height:70px;background:linear-gradient(145deg,#34d399,#10b981);color:#fff;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:32px;box-shadow:0 10px 25px rgba(16,185,129,.2)}.header-card h1{font-size:34px;font-weight:700;margin:0 0 6px;color:#07130d}.header-card p{color:#52645a;font-size:17px;margin:0}.header-actions{display:flex;gap:12px}.btn-icon,.view-btn{width:46px;height:46px;border-radius:14px;border:1px solid rgba(15,116,76,.18);background:#fff;color:#0f744c;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;transition:.2s}.btn-icon:hover,.view-btn:hover,.view-btn.active{background:#edf8f2;border-color:#34d399;color:#0f744c;transform:translateY(-1px)}.project-task-tabs{display:flex;flex-wrap:wrap;gap:4px;background:linear-gradient(135deg,#fff,#f5fbf7);border:1px solid rgba(15,116,76,.12);border-radius:20px;padding:10px 16px;margin-bottom:28px;box-shadow:0 8px 25px rgba(15,116,76,.06)}.project-task-tabs a{display:flex;align-items:center;gap:9px;padding:10px 18px;border-radius:12px;text-decoration:none;color:#5a6e63;font-weight:700;font-size:.9rem}.project-task-tabs a.active,.project-task-tabs a:hover{background:linear-gradient(145deg,#0f744c,#10b981);color:#fff}.alert{border-radius:16px;padding:16px 22px;margin-bottom:22px;border:none}.alert-success{background:#ecfdf5;color:#065f46}.alert-danger{background:#fef2f2;color:#991b1b}.filter-panel,.table-card{background:#fff;border-radius:24px;border:1px solid rgba(15,116,76,.12);box-shadow:0 14px 35px rgba(15,116,76,.07);margin-bottom:24px}.filter-panel{padding:24px}.filter-grid{display:grid;grid-template-columns:repeat(5,minmax(160px,1fr));gap:18px;align-items:end}.filter-group label{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#07130d}.form-control,.form-select,.form-select-sm,.status-select{border-radius:12px;border:1px solid rgba(15,116,76,.18);padding:11px 14px;background:#fafefb;color:#07130d;min-height:46px}.search-box{position:relative}.search-box i{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#8ba198}.search-box input{padding-left:40px}.filter-actions{display:flex;gap:12px;grid-column:span 2;align-items:center;white-space:nowrap}.filter-actions .btn{white-space:nowrap;flex-shrink:0}.btn{border:none;padding:12px 20px;border-radius:14px;font-weight:700;display:inline-flex;align-items:center;gap:9px;text-decoration:none;min-height:46px;white-space:nowrap}.btn-primary{background:linear-gradient(145deg,#34d399,#10b981);color:#fff}.btn-outline{background:transparent;border:1px solid rgba(15,116,76,.22);color:#0f744c}.btn-danger{background:#ef4444;color:#fff}.toolbar{display:flex;justify-content:space-between;align-items:center;gap:18px;margin-bottom:24px}.toolbar-left,.toolbar-right{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.view-toggle{display:flex;gap:6px;background:#fff;border:1px solid rgba(15,116,76,.12);padding:5px;border-radius:16px}.table-header{padding:22px 26px;background:linear-gradient(135deg,#fff,#f5fbf7);border-bottom:1px solid rgba(15,116,76,.1)}.table-title{display:flex;align-items:center;gap:14px}.table-title-icon{width:46px;height:46px;border-radius:14px;background:#e7f5ee;color:#0f744c;display:flex;align-items:center;justify-content:center;font-size:20px}.table-title h4{margin:0;font-size:1.25rem;font-weight:800}.muted,.sub-text,.empty-text{color:#8ba198}.table-wrapper{overflow-x:auto}.task-table{width:100%;border-collapse:separate;border-spacing:0}.task-table th{padding:16px 18px;background:#f5fbf7;color:#0f744c;font-size:.82rem;text-transform:uppercase;letter-spacing:.03em;white-space:nowrap;border-bottom:1px solid rgba(15,116,76,.1)}.task-table td{padding:16px 18px;border-bottom:1px solid rgba(15,116,76,.08);vertical-align:middle}.task-table tr:hover td{background:#fafefb}.check-cell{width:44px;text-align:center}.code-badge{display:inline-flex;padding:7px 11px;border-radius:999px;background:#edf8f2;color:#0f744c;font-weight:800;font-size:.82rem;white-space:nowrap}.name-cell{display:flex;flex-direction:column;gap:4px;min-width:230px}.task-name{color:#07130d;font-weight:800;text-decoration:none}.task-name:hover{color:#0f744c}.date-cell{display:flex;align-items:center;gap:8px;white-space:nowrap}.date-cell i{color:#34d399}.overdue{color:#dc2626}.overdue-badge{margin-left:6px;font-size:.68rem;background:#fee2e2;color:#991b1b;padding:2px 7px;border-radius:999px}.members-cell{display:flex;align-items:center;gap:6px;min-width:115px}.avatar{width:32px;height:32px;border-radius:50%;background:#d1fae5;color:#0f744c;display:inline-flex;align-items:center;justify-content:center;font-weight:800;border:2px solid #fff;overflow:hidden}.avatar img{width:100%;height:100%;object-fit:cover}.avatar.more{background:#0f744c;color:#fff;font-size:.78rem}.status-cell{display:inline-flex;align-items:center;gap:8px}.status-pill,.priority-pill{display:inline-flex;align-items:center;padding:7px 11px;border-radius:999px;font-weight:800;font-size:.78rem;white-space:nowrap}.status-pill.todo{background:#eef2ff;color:#3730a3}.status-pill.doing{background:#e0f2fe;color:#0369a1}.status-pill.incomplete{background:#fee2e2;color:#991b1b}.status-pill.completed{background:#dcfce7;color:#166534}.status-pill.waiting{background:#fef3c7;color:#92400e}.status-pill.default{background:#f1f5f9;color:#334155}.priority-pill.low{background:#dcfce7;color:#166534}.priority-pill.medium{background:#fef3c7;color:#92400e}.priority-pill.high{background:#fee2e2;color:#991b1b}.status-select{min-height:38px;padding:8px 10px;max-width:150px}.progress-cell{display:flex;align-items:center;gap:10px;min-width:120px}.progress-bar{width:76px;height:8px;border-radius:999px;background:#e5e7eb;overflow:hidden}.progress-bar div{height:100%;background:linear-gradient(90deg,#34d399,#10b981)}.update-cell{display:flex;flex-direction:column;gap:3px;min-width:170px}.update-cell strong{font-size:.85rem;color:#07130d}.update-cell span{font-size:.8rem;color:#8ba198}.status-bar{margin-top:24px;background:#fff;border:1px solid rgba(15,116,76,.12);border-radius:20px;padding:18px 24px;display:flex;flex-wrap:wrap;gap:18px;box-shadow:0 8px 25px rgba(15,116,76,.05)}.status-item{display:flex;align-items:center;gap:9px;color:#5a6e63;font-weight:700}.status-item span{font-size:1.05rem;color:#07130d}.action-cell{text-align:center;width:72px}.action-btn{width:38px;height:38px;border-radius:12px;border:1px solid rgba(15,116,76,.16);background:#fff;color:#0f744c}.dropdown-item{display:flex;align-items:center;gap:9px}.timer-actions{display:flex;gap:6px}.timer-btn{width:34px;height:34px;border:0;border-radius:11px;display:inline-flex;align-items:center;justify-content:center;color:#fff}.timer-btn.start,.timer-btn.resume{background:#10b981}.timer-btn.pause{background:#f59e0b}.timer-btn.stop{background:#ef4444}.empty-state{text-align:center;padding:44px 20px;color:#8ba198}.empty-state i{font-size:42px;color:#34d399;margin-bottom:14px}@media(max-width:1200px){.filter-grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:768px){.tasks-page{padding:16px}.header-card,.toolbar{flex-direction:column;align-items:flex-start}.header-card{padding:22px}.filter-grid{grid-template-columns:1fr}.filter-actions,.toolbar-left,.toolbar-right{width:100%}.btn{justify-content:center}.header-card h1{font-size:28px}}
 </style>
 
 @push('js')
@@ -396,57 +375,16 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    document.querySelectorAll('.status-dropdown').forEach(select => {
-        select.dataset.previous = select.value;
-        select.addEventListener('change', function () {
-            const previous = select.dataset.previous;
-            const status = select.value;
-            const taskId = select.dataset.taskId;
-
-            if (!confirm(`Change status to "${status}"?`)) {
-                select.value = previous;
-                return;
-            }
-
-            fetch(`{{ url('/tasks') }}/${taskId}/update-status`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json'},
-                body: JSON.stringify({status})
-            }).then(async response => {
-                const data = await response.json().catch(() => ({}));
-                if (!response.ok || !data.success) throw new Error(data.message || 'Status update failed.');
-                select.dataset.previous = status;
-                const pill = select.closest('.status-cell').querySelector('.status-pill');
-                const classMap = {'Waiting for Approval':'waiting','To Do':'todo','Doing':'doing','Incomplete':'incomplete','Completed':'completed'};
-                pill.className = `status-pill ${classMap[status] || 'default'}`;
-                pill.textContent = status;
-                const row = select.closest('tr');
-                const completedCell = row?.children[canManage ? 4 : 3];
-                if (completedCell && data.completed_on) completedCell.textContent = data.completed_on;
-                const progressCell = row?.querySelector('.progress-cell');
-                if (progressCell && data.progress !== undefined) {
-                    progressCell.querySelector('.progress-bar div').style.width = `${data.progress}%`;
-                    progressCell.querySelector('span').textContent = `${data.progress}%`;
-                }
-            }).catch(error => {
-                alert(error.message);
-                select.value = previous;
-            });
-        });
-    });
-
     if (canManage) {
         const selectAll = document.getElementById('selectAllTasks');
         const checkboxes = () => Array.from(document.querySelectorAll('.task-checkbox'));
-        const bulkStatus = document.getElementById('bulkStatus');
-        const applyBulk = document.getElementById('applyBulkStatus');
         const bulkDelete = document.getElementById('bulkDeleteTasks');
 
         function updateBulkControls() {
             const boxes = checkboxes();
             const selected = boxes.filter(checkbox => checkbox.checked);
             const hasSelection = selected.length > 0;
-            [bulkStatus, applyBulk, bulkDelete].forEach(el => { if (el) el.disabled = !hasSelection; });
+            if (bulkDelete) bulkDelete.disabled = !hasSelection;
             if (selectAll) {
                 selectAll.checked = boxes.length > 0 && selected.length === boxes.length;
                 selectAll.indeterminate = selected.length > 0 && selected.length < boxes.length;
@@ -460,22 +398,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
         document.addEventListener('change', event => {
             if (event.target.classList.contains('task-checkbox')) updateBulkControls();
-        });
-
-        applyBulk?.addEventListener('click', function () {
-            const ids = checkboxes().filter(checkbox => checkbox.checked).map(checkbox => checkbox.value);
-            const status = bulkStatus.value;
-            if (!ids.length || !status) return alert('Select tasks and a status.');
-            if (!confirm(`Change selected tasks to "${status}"?`)) return;
-
-            fetch('{{ route('tasks.bulkStatusUpdate') }}', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json'},
-                body: JSON.stringify({ids, status})
-            }).then(response => {
-                if (!response.ok) throw new Error('Bulk status update failed.');
-                location.reload();
-            }).catch(error => alert(error.message));
         });
 
         bulkDelete?.addEventListener('click', function () {
