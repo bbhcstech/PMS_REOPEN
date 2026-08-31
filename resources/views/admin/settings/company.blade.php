@@ -355,6 +355,79 @@
         font-weight: 800;
     }
 
+    /* Phone and Country Code Combo */
+    .phone-combo-group {
+        display: flex;
+        align-items: stretch;
+    }
+
+    .phone-combo-group .country-code-wrapper {
+        min-width: 145px;
+        max-width: 155px;
+        flex-shrink: 0;
+        border-right: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .phone-combo-group .select2-container--bootstrap-5 .select2-selection,
+    .phone-combo-group .select2-container--default .select2-selection--single {
+        height: 50px !important;
+        border: none !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+        display: flex !important;
+        align-items: center !important;
+        padding: 0 10px !important;
+        box-shadow: none !important;
+    }
+
+    .phone-combo-group .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 50px !important;
+        font-weight: 700;
+        color: #0a2e1f;
+        font-size: 0.92rem;
+        padding-left: 0 !important;
+    }
+
+    .phone-combo-group .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 50px !important;
+        right: 8px !important;
+    }
+
+    .select2-dropdown {
+        border: 1px solid rgba(16, 185, 129, 0.25) !important;
+        border-radius: 16px !important;
+        box-shadow: 0 14px 34px rgba(10, 46, 31, 0.12) !important;
+        overflow: hidden !important;
+        z-index: 1070 !important;
+        background: #ffffff !important;
+    }
+
+    .select2-search--dropdown .select2-search__field {
+        border-radius: 10px !important;
+        border: 1px solid rgba(16, 185, 129, 0.3) !important;
+        padding: 8px 12px !important;
+        font-size: 0.88rem;
+    }
+
+    .select2-results__option--highlighted[aria-selected] {
+        background-color: #ecfdf5 !important;
+        color: #065f46 !important;
+    }
+
+    .validation-feedback-pill {
+        display: none;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: #dc2626;
+        margin-top: 5px;
+    }
+
+    .validation-feedback-pill.is-visible {
+        display: flex;
+    }
+
     @media (max-width: 768px) {
         .company-profile-page {
             padding: 1.25rem 1rem;
@@ -459,27 +532,37 @@
                             <input type="hidden" name="id" value="{{ $company->id }}">
                         @endif
 
+                        @if($isSettingsReadOnly)
+                            <div class="alert d-flex align-items-center mb-4 rounded-3 border-0 shadow-sm" style="background: linear-gradient(135deg, #eff6ff, #dbeafe); color: #1e40af; border-left: 4px solid #3b82f6 !important; padding: 14px 18px;">
+                                <i class="fas fa-eye me-3 fs-3 text-primary"></i>
+                                <div>
+                                    <strong class="d-block text-primary fw-bold" style="font-size: 14px;">View-Only Mode</strong>
+                                    <span style="font-size: 13px; color: #1e3a8a;">You are viewing company profile settings in read-only mode. Only Administrators have permission to modify or update company settings.</span>
+                                </div>
+                            </div>
+                        @endif
+
                         <!-- Section 1: Company Logo Upload -->
                         <div class="section-badge">
                             <i class="fas fa-image"></i> Company Logo & Active Branding
                         </div>
 
                         <div class="mb-5">
-                            <label for="company_logo_input" class="logo-upload-dropzone d-block w-100 mb-0" id="logoDropzone">
-                                <input type="file" name="company_logo" id="company_logo_input" class="d-none" accept="image/png, image/jpeg, image/gif, image/svg+xml, image/webp" onchange="previewLogo(this)">
+                            <label for="company_logo_input" class="logo-upload-dropzone d-block w-100 mb-0" id="logoDropzone" @if($isSettingsReadOnly) style="pointer-events: none; opacity: 0.85; cursor: default;" @endif>
+                                <input type="file" name="company_logo" id="company_logo_input" class="d-none" accept="image/png, image/jpeg, image/gif, image/svg+xml, image/webp" onchange="previewLogo(this)" @if($isSettingsReadOnly) disabled @endif>
                                 
                                 <div class="d-flex flex-column align-items-center gap-2">
                                     <div class="upload-icon-box shadow-sm">
-                                        <i class="fas fa-cloud-upload-alt fs-2 text-success"></i>
+                                        <i class="fas {{ $isSettingsReadOnly ? 'fa-shield-alt text-primary' : 'fa-cloud-upload-alt text-success' }} fs-2"></i>
                                     </div>
                                     <div>
-                                        <h6 class="fw-bold mb-1" style="color: #0a2e1f;">Click to upload company logo or drag & drop</h6>
-                                        <p class="text-muted small mb-0">Supported formats: PNG, JPG, GIF, SVG, or WEBP (Max 3MB)</p>
+                                        <h6 class="fw-bold mb-1" style="color: #0a2e1f;">{{ $isSettingsReadOnly ? 'Company Logo (Admin Managed)' : 'Click to upload company logo or drag & drop' }}</h6>
+                                        <p class="text-muted small mb-0">{{ $isSettingsReadOnly ? 'Official company logo asset' : 'Supported formats: PNG, JPG, GIF, SVG, or WEBP (Max 3MB)' }}</p>
                                     </div>
                                     
                                     @if($hasLogo)
                                         <div id="currentLogoBadge" class="badge rounded-pill mt-2 px-3 py-1.5" style="background: linear-gradient(145deg, #ecfdf5, #d1fae5); color: #065f46; border: 1px solid rgba(5, 150, 105, 0.25);">
-                                            <i class="fas fa-check-circle me-1" style="color: #059669;"></i> Logo is currently set (Click to change)
+                                            <i class="fas fa-check-circle me-1" style="color: #059669;"></i> Logo is currently set {{ $isSettingsReadOnly ? '' : '(Click to change)' }}
                                         </div>
                                     @endif
 
@@ -506,7 +589,8 @@
                                     <span class="input-group-text"><i class="fas fa-building"></i></span>
                                     <input type="text" name="company_name" id="input_company_name" class="form-control @error('company_name') is-invalid @enderror"
                                         placeholder="Enter company name"
-                                        value="{{ old('company_name', $company->company_name ?? '') }}" required>
+                                        value="{{ old('company_name', $company->company_name ?? '') }}"
+                                        {{ $isSettingsReadOnly ? 'readonly' : 'required' }}>
                                 </div>
                                 @error('company_name')
                                     <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle me-1"></i>{{ $message }}</div>
@@ -516,43 +600,65 @@
                             <!-- Company Email -->
                             <div class="col-md-6">
                                 <label class="form-label-custom">Company Email <span class="req-asterisk">*</span></label>
-                                <div class="input-group input-group-custom">
+                                <div class="input-group input-group-custom @error('company_email') border-danger @enderror" id="emailGroup">
                                     <span class="input-group-text"><i class="fas fa-envelope"></i></span>
                                     <input type="email" name="company_email" id="input_company_email" class="form-control @error('company_email') is-invalid @enderror"
-                                        placeholder="info@company.com"
-                                        value="{{ old('company_email', $company->company_email ?? '') }}" required>
+                                        placeholder="admin@company.com"
+                                        value="{{ old('company_email', $company->company_email ?? '') }}"
+                                        {{ $isSettingsReadOnly ? 'readonly' : 'required' }}>
                                 </div>
-                                @error('company_email')
-                                    <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle me-1"></i>{{ $message }}</div>
-                                @enderror
+                                <div id="emailValidationMsg" class="validation-feedback-pill @error('company_email') is-visible @enderror">
+                                    <i class="fas fa-exclamation-circle"></i> <span id="emailValidationText">{{ $errors->first('company_email') ?: 'Please enter a valid email address (e.g. info@company.com)' }}</span>
+                                </div>
                             </div>
 
-                            <!-- Company Phone -->
+                            <!-- Company Phone with All Countries Code -->
                             <div class="col-md-6">
                                 <label class="form-label-custom">Company Phone <span class="req-asterisk">*</span></label>
-                                <div class="input-group input-group-custom">
+                                <div class="input-group input-group-custom phone-combo-group @if($errors->has('company_phone') || $errors->has('company_phone_number') || $errors->has('company_country_code')) border-danger @endif" id="phoneGroup">
                                     <span class="input-group-text"><i class="fas fa-phone-alt"></i></span>
-                                    <input type="text" name="company_phone" id="input_company_phone" class="form-control @error('company_phone') is-invalid @enderror"
-                                        placeholder="+1 234 567 8900"
-                                        value="{{ old('company_phone', $company->company_phone ?? '') }}" required>
+                                    <div class="country-code-wrapper">
+                                        <select name="company_country_code" id="company_country_code" class="form-select country-code-select" {{ $isSettingsReadOnly ? 'disabled' : 'required' }}>
+                                            @foreach($countryMap as $countryName => $meta)
+                                                @php
+                                                    $dialCode = $meta['dial_code'];
+                                                    $iso = strtolower($meta['iso']);
+                                                    $flag = 'https://flagcdn.com/w20/' . $iso . '.png';
+                                                    $minD = $meta['min_digits'] ?? 6;
+                                                    $maxD = $meta['max_digits'] ?? 15;
+                                                    $isCurrentSelected = (old('company_country_code', $selectedCountryCode) === $dialCode);
+                                                @endphp
+                                                <option value="{{ $dialCode }}" data-country="{{ $countryName }}" data-flag="{{ $flag }}" data-min-digits="{{ $minD }}" data-max-digits="{{ $maxD }}" {{ $isCurrentSelected ? 'selected' : '' }}>
+                                                    {{ $countryName }} ({{ $dialCode }})
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <input type="text" name="company_phone_number" id="input_company_phone"
+                                        class="form-control @error('company_phone_number') is-invalid @enderror @error('company_phone') is-invalid @enderror"
+                                        placeholder="98765 43210"
+                                        value="{{ old('company_phone_number', $phoneDigits) }}"
+                                        {{ $isSettingsReadOnly ? 'readonly' : 'required' }} maxlength="18">
+                                    <input type="hidden" name="company_phone" id="hidden_company_phone" value="{{ old('company_phone', $company->company_phone ?? '') }}">
                                 </div>
-                                @error('company_phone')
-                                    <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle me-1"></i>{{ $message }}</div>
-                                @enderror
+                                <div id="phoneValidationMsg" class="validation-feedback-pill @if($errors->has('company_phone') || $errors->has('company_phone_number') || $errors->has('company_country_code')) is-visible @endif">
+                                    <i class="fas fa-exclamation-circle"></i> <span id="phoneValidationText">{{ $errors->first('company_phone_number') ?: ($errors->first('company_phone') ?: ($errors->first('company_country_code') ?: 'Please enter a valid phone number.')) }}</span>
+                                </div>
                             </div>
 
                             <!-- Company Website -->
                             <div class="col-md-6">
                                 <label class="form-label-custom">Company Website</label>
-                                <div class="input-group input-group-custom">
+                                <div class="input-group input-group-custom @error('company_website') border-danger @enderror" id="websiteGroup">
                                     <span class="input-group-text"><i class="fas fa-globe"></i></span>
                                     <input type="text" name="company_website" id="input_company_website" class="form-control @error('company_website') is-invalid @enderror"
-                                        placeholder="https://example.com"
-                                        value="{{ old('company_website', $company->company_website ?? '') }}">
+                                        placeholder="https://company.com"
+                                        value="{{ old('company_website', $company->company_website ?? '') }}"
+                                        {{ $isSettingsReadOnly ? 'readonly' : '' }}>
                                 </div>
-                                @error('company_website')
-                                    <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle me-1"></i>{{ $message }}</div>
-                                @enderror
+                                <div id="websiteValidationMsg" class="validation-feedback-pill @error('company_website') is-visible @enderror">
+                                    <i class="fas fa-exclamation-circle"></i> <span id="websiteValidationText">{{ $errors->first('company_website') ?: 'Please enter a valid website URL (e.g. https://company.com)' }}</span>
+                                </div>
                             </div>
 
                             <!-- Company Location -->
@@ -562,7 +668,8 @@
                                     <span class="input-group-text"><i class="fas fa-map-marker-alt"></i></span>
                                     <input type="text" name="company_location" id="input_company_location" class="form-control @error('company_location') is-invalid @enderror"
                                         placeholder="Enter physical location or office address (e.g. 100 Main St, New York, NY)"
-                                        value="{{ old('company_location', $company->company_location ?? '') }}">
+                                        value="{{ old('company_location', $company->company_location ?? '') }}"
+                                        {{ $isSettingsReadOnly ? 'readonly' : '' }}>
                                 </div>
                                 @error('company_location')
                                     <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle me-1"></i>{{ $message }}</div>
@@ -572,16 +679,24 @@
 
                         <!-- Form Action Buttons -->
                         <div class="mt-5 pt-4 border-top d-flex align-items-center justify-content-between flex-wrap gap-2">
-                            <div class="d-flex align-items-center gap-2">
-                                <button type="submit" class="btn-save-address">
-                                    <i class="fas fa-save me-1.5"></i> {{ ($company && $company->id) ? 'Update Settings' : 'Save Settings' }}
-                                </button>
-                            </div>
+                            @if($isSettingsReadOnly)
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="badge rounded-pill px-3.5 py-2 fw-bold" style="background: #f1f5f9; color: #64748b; font-size: 13px; border: 1px solid #cbd5e1;">
+                                        <i class="fas fa-lock me-1.5 text-muted"></i> Read-Only (Admin Managed)
+                                    </span>
+                                </div>
+                            @else
+                                <div class="d-flex align-items-center gap-2">
+                                    <button type="submit" class="btn-save-address">
+                                        <i class="fas fa-save me-1.5"></i> {{ ($company && $company->id) ? 'Update Settings' : 'Save Settings' }}
+                                    </button>
+                                </div>
 
-                            @if($company && $company->id)
-                                <button type="button" class="btn rounded-pill px-3.5 py-2 fw-bold" style="background: #fef2f2; color: #b91c1c; border: 1px solid rgba(220, 38, 38, 0.25);" data-bs-toggle="modal" data-bs-target="#deleteModal">
-                                    <i class="fas fa-trash-alt me-1"></i> Reset Settings
-                                </button>
+                                @if($company && $company->id)
+                                    <button type="button" class="btn rounded-pill px-3.5 py-2 fw-bold" style="background: #fef2f2; color: #b91c1c; border: 1px solid rgba(220, 38, 38, 0.25);" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                                        <i class="fas fa-trash-alt me-1"></i> Reset Settings
+                                    </button>
+                                @endif
                             @endif
                         </div>
                     </form>
@@ -620,6 +735,28 @@
 
 @push('scripts')
 <script>
+    // Format Select2 country code options with flag and dial code
+    function formatCountryCodeOption(state) {
+        if (!state.id) return state.text;
+        const flag = $(state.element).data("flag");
+        const country = $(state.element).data("country");
+        const code = state.id;
+        if (flag) {
+            return $('<span><img src="' + flag + '" width="20" height="14" style="object-fit: cover; border-radius: 2px; margin-right: 8px; vertical-align: middle;"/> ' + country + ' <strong style="color: #059669;">(' + code + ')</strong></span>');
+        }
+        return state.text;
+    }
+
+    function formatCountryCodeSelection(state) {
+        if (!state.id) return state.text;
+        const flag = $(state.element).data("flag");
+        const code = state.id;
+        if (flag) {
+            return $('<span><img src="' + flag + '" width="18" height="12" style="object-fit: cover; border-radius: 2px; margin-right: 6px; vertical-align: middle;"/> <strong>' + code + '</strong></span>');
+        }
+        return code;
+    }
+
     // Live logo preview function
     function previewLogo(input) {
         if (input.files && input.files[0]) {
@@ -684,18 +821,168 @@
         }, false);
     }
 
-    // Real-time text updating on hero card preview as user types
     document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('companyProfileForm');
         const nameInput = document.getElementById('input_company_name');
         const emailInput = document.getElementById('input_company_email');
         const phoneInput = document.getElementById('input_company_phone');
+        const countryCodeSelect = document.getElementById('company_country_code');
+        const hiddenPhoneInput = document.getElementById('hidden_company_phone');
+        const websiteInput = document.getElementById('input_company_website');
         const locationInput = document.getElementById('input_company_location');
 
+        const emailGroup = document.getElementById('emailGroup');
+        const emailMsg = document.getElementById('emailValidationMsg');
+        const emailText = document.getElementById('emailValidationText');
+
+        const phoneGroup = document.getElementById('phoneGroup');
+        const phoneMsg = document.getElementById('phoneValidationMsg');
+        const phoneText = document.getElementById('phoneValidationText');
+
+        const websiteGroup = document.getElementById('websiteGroup');
+        const websiteMsg = document.getElementById('websiteValidationMsg');
+        const websiteText = document.getElementById('websiteValidationText');
+
+        function getSelectedCountryDigitRules() {
+            const selectedOption = $('#company_country_code option:selected');
+            const minDigits = parseInt(selectedOption.attr('data-min-digits')) || 6;
+            const maxDigits = parseInt(selectedOption.attr('data-max-digits')) || 15;
+            const country = selectedOption.attr('data-country') || 'Selected Country';
+            const code = $('#company_country_code').val() || '+91';
+            return { minDigits, maxDigits, country, code };
+        }
+
+        function updatePhoneInputAttributes() {
+            const rules = getSelectedCountryDigitRules();
+            const expectedDesc = (rules.minDigits === rules.maxDigits)
+                ? `${rules.minDigits} digits`
+                : `${rules.minDigits}-${rules.maxDigits} digits`;
+
+            if (phoneInput) {
+                phoneInput.placeholder = `e.g. ${expectedDesc} for ${rules.country}`;
+                phoneInput.maxLength = rules.maxDigits + 4;
+            }
+        }
+
+        // Initialize Select2 on Country Code
+        if ($('#company_country_code').length) {
+            $('#company_country_code').select2({
+                theme: "bootstrap-5",
+                templateResult: formatCountryCodeOption,
+                templateSelection: formatCountryCodeSelection,
+                width: '100%',
+                dropdownAutoWidth: true,
+                dropdownParent: $(document.body)
+            }).on('change', function () {
+                updatePhoneInputAttributes();
+                syncFullPhone();
+                if (phoneInput && phoneInput.value.trim().length > 0) {
+                    validatePhoneField();
+                }
+            });
+        }
+
+        // Phone Sync helper
+        function syncFullPhone() {
+            const code = $('#company_country_code').val() || '+91';
+            const digits = (phoneInput ? phoneInput.value.trim() : '');
+            if (hiddenPhoneInput) {
+                hiddenPhoneInput.value = digits ? (code + ' ' + digits) : '';
+            }
+            const livePhone = document.getElementById('liveCompanyPhone');
+            if (livePhone) {
+                livePhone.innerHTML = '<i class="fas fa-phone-alt text-success"></i> ' + (digits ? (code + ' ' + digits) : '+1 (234) 567-890');
+            }
+        }
+
+        // Validation helper functions
+        function validateEmailField() {
+            const val = emailInput ? emailInput.value.trim() : '';
+            const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            if (!val) {
+                showError(emailGroup, emailMsg, emailText, 'Company email is required.');
+                return false;
+            } else if (!emailRegex.test(val)) {
+                showError(emailGroup, emailMsg, emailText, 'Please enter a valid email address with a domain (e.g. info@company.com).');
+                return false;
+            } else {
+                clearError(emailGroup, emailMsg);
+                return true;
+            }
+        }
+
+        function validatePhoneField() {
+            const rawDigits = phoneInput ? phoneInput.value.trim() : '';
+            const digits = rawDigits.replace(/\D/g, '');
+            const rules = getSelectedCountryDigitRules();
+
+            if (!rawDigits) {
+                showError(phoneGroup, phoneMsg, phoneText, 'Company phone number is required.');
+                return false;
+            }
+
+            const expectedDesc = (rules.minDigits === rules.maxDigits)
+                ? `exactly ${rules.minDigits} digits`
+                : `between ${rules.minDigits} and ${rules.maxDigits} digits`;
+
+            if (digits.length < rules.minDigits || digits.length > rules.maxDigits) {
+                showError(phoneGroup, phoneMsg, phoneText, `Phone number for ${rules.country} (${rules.code}) must have ${expectedDesc} (currently entered ${digits.length} digits).`);
+                return false;
+            } else {
+                clearError(phoneGroup, phoneMsg);
+                return true;
+            }
+        }
+
+        function validateWebsiteField() {
+            let val = websiteInput ? websiteInput.value.trim() : '';
+            if (!val) {
+                clearError(websiteGroup, websiteMsg);
+                return true;
+            }
+            // Auto prepend https:// if protocol missing and domain is valid
+            if (!/^https?:\/\//i.test(val) && /^([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}/i.test(val)) {
+                val = 'https://' + val;
+                websiteInput.value = val;
+            }
+            const urlRegex = /^(https?:\/\/)?([a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}(\/.*)?$/i;
+            if (!urlRegex.test(val)) {
+                showError(websiteGroup, websiteMsg, websiteText, 'Please enter a valid website URL (e.g. https://example.com).');
+                return false;
+            } else {
+                clearError(websiteGroup, websiteMsg);
+                return true;
+            }
+        }
+
+        function showError(groupEl, msgEl, textEl, message) {
+            if (groupEl) {
+                groupEl.classList.add('border-danger');
+            }
+            if (msgEl) {
+                msgEl.classList.add('is-visible');
+            }
+            if (textEl) {
+                textEl.innerText = message;
+            }
+        }
+
+        function clearError(groupEl, msgEl) {
+            if (groupEl) {
+                groupEl.classList.remove('border-danger');
+            }
+            if (msgEl) {
+                msgEl.classList.remove('is-visible');
+            }
+        }
+
+        // Live input listeners
         if (nameInput) {
             nameInput.addEventListener('input', function() {
                 document.getElementById('liveCompanyName').innerText = this.value.trim() || 'Your Company Name';
             });
         }
+
         if (emailInput) {
             emailInput.addEventListener('input', function() {
                 const liveEmail = document.getElementById('liveCompanyEmail');
@@ -703,15 +990,31 @@
                     liveEmail.innerHTML = '<i class="fas fa-envelope text-success"></i> ' + (this.value.trim() || 'email@company.com');
                 }
             });
+            emailInput.addEventListener('blur', validateEmailField);
         }
+
         if (phoneInput) {
+            // Allow only digits, space, hyphen, parentheses, plus
             phoneInput.addEventListener('input', function() {
-                const livePhone = document.getElementById('liveCompanyPhone');
-                if (livePhone) {
-                    livePhone.innerHTML = '<i class="fas fa-phone-alt text-success"></i> ' + (this.value.trim() || '+1 (234) 567-890');
+                this.value = this.value.replace(/[^0-9\s\-()]/g, '');
+                syncFullPhone();
+                if (phoneMsg && phoneMsg.classList.contains('is-visible')) {
+                    validatePhoneField();
                 }
             });
+            phoneInput.addEventListener('blur', validatePhoneField);
         }
+
+        if (websiteInput) {
+            websiteInput.addEventListener('input', function() {
+                const liveBtn = document.getElementById('liveCompanyWebsiteBtn');
+                if (liveBtn) {
+                    liveBtn.href = this.value.trim() || '#';
+                }
+            });
+            websiteInput.addEventListener('blur', validateWebsiteField);
+        }
+
         if (locationInput) {
             locationInput.addEventListener('input', function() {
                 const liveLoc = document.getElementById('liveCompanyLocation');
@@ -720,6 +1023,31 @@
                 }
             });
         }
+
+        // Form submission client validation
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                syncFullPhone();
+                const isEmailValid = validateEmailField();
+                const isPhoneValid = validatePhoneField();
+                const isWebsiteValid = validateWebsiteField();
+
+                if (!isEmailValid || !isPhoneValid || !isWebsiteValid) {
+                    e.preventDefault();
+                    if (!isEmailValid && emailInput) {
+                        emailInput.focus();
+                    } else if (!isPhoneValid && phoneInput) {
+                        phoneInput.focus();
+                    } else if (!isWebsiteValid && websiteInput) {
+                        websiteInput.focus();
+                    }
+                }
+            });
+        }
+
+        // Initial setup on load
+        updatePhoneInputAttributes();
+        syncFullPhone();
     });
 </script>
 @endpush

@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\AppSetting;
 use App\Services\CompanyContext;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
@@ -24,8 +25,17 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Paginator::useBootstrapFive();
+
         view()->composer('*', function ($view) {
-            $view->with('currentCompany', app(CompanyContext::class)->current());
+            $user = auth()->user();
+            $isAdmin = ($user && $user->role === 'admin');
+
+            $view->with([
+                'currentCompany' => app(CompanyContext::class)->current(),
+                'isSettingsReadOnly' => ! $isAdmin,
+                'isAdminUser' => $isAdmin,
+            ]);
         });
 
         Password::defaults(function () {

@@ -11,13 +11,18 @@ use Illuminate\Notifications\DatabaseNotification;
 class NotificationController extends Controller
 {
     /**
-     * Display all notifications
+     * Display all or unread notifications
      */
     public function index(Request $request)
     {
         $user = $request->user();
         $company = app(\App\Services\CompanyContext::class)->current();
         $companyId = $company?->id ?? $user?->company_id;
+
+        $filter = $request->get('filter', 'all');
+        if (! in_array($filter, ['all', 'unread'], true)) {
+            $filter = 'all';
+        }
 
         $centralNotifications = collect();
         if ($companyId && class_exists(\App\Models\Central\CentralNotification::class)) {
@@ -40,6 +45,8 @@ class NotificationController extends Controller
                 } elseif ($request->status === 'read') {
                     $query->where('is_read', true);
                 }
+            } elseif ($filter === 'unread') {
+                $query->where('is_read', false);
             }
 
             $centralNotifications = $query->orderBy('created_at', 'desc')->get();
@@ -52,6 +59,8 @@ class NotificationController extends Controller
             } elseif ($request->status === 'read') {
                 $userNotifQuery->whereNotNull('read_at');
             }
+        } elseif ($filter === 'unread') {
+            $userNotifQuery->whereNull('read_at');
         }
         $userNotifications = $userNotifQuery->orderBy('created_at', 'desc')->get();
 
@@ -67,15 +76,17 @@ class NotificationController extends Controller
             ['path' => $request->url(), 'query' => $request->query()]
         );
 
+        $allCount = $merged->count();
+        $unreadCount = $merged->filter(fn($n) => empty($n->read_at) && empty($n->is_read))->count();
+
         $kpis = [
-            'total'    => $merged->count(),
-            'unread'   => $merged->filter(fn($n) => empty($n->read_at) && empty($n->is_read))->count(),
-            'critical' => $merged->filter(fn($n) => (strtoupper($n->severity ?? '') === 'CRITICAL') && empty($n->read_at) && empty($n->is_read))->count(),
+            'total'    => $allCount,
+            'unread'   => $unreadCount,
+            'critical' => $merged->filter(fn($n) => (strtoupper($n->severity ?? $n->data['severity'] ?? '') === 'CRITICAL') && empty($n->read_at) && empty($n->is_read))->count(),
         ];
 
-        return view('admin.notifications.index', compact('notifications', 'kpis'));
+        return view('admin.notifications.index', compact('notifications', 'kpis', 'filter', 'allCount', 'unreadCount'));
     }
-
 
     /**
      * Mark single notification as read
@@ -112,10 +123,14 @@ class NotificationController extends Controller
 
         if (! request()->expectsJson() && ! request()->ajax()) {
             $url = request('redirect_url') ?: ($notification ? NotificationUrlResolver::resolve($notification) : null);
-            return $url ? redirect($url) : back();
+            return $url && $url !== 'javascript:void(0)' ? redirect($url) : back()->with('success', 'Notification marked as read.');
         }
 
-        return response()->json(['status' => 'ok']);
+        return response()->json([
+            'status' => 'ok',
+            'unread_count' => auth()->user()->unreadNotifications()->count(),
+            'message' => 'Notification marked as read.',
+        ]);
     }
 
     public function open($id)
@@ -152,10 +167,14 @@ class NotificationController extends Controller
         auth()->user()->unreadNotifications->markAsRead();
 
         if (! request()->expectsJson() && ! request()->ajax()) {
-            return back()->with('success', 'All notifications marked as read.');
+            return back()->with('success', 'All unread notifications marked as read.');
         }
 
-        return response()->json(['status' => 'ok']);
+        return response()->json([
+            'status' => 'ok',
+            'unread_count' => 0,
+            'message' => 'All unread notifications marked as read.',
+        ]);
     }
 
     public function markSectionAsRead(string $section)

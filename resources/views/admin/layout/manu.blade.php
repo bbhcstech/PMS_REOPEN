@@ -2243,8 +2243,9 @@
                                 </li>
 
 
-                                <li class="notification-dropdown-foot">
-                                    <a href="{{ route('notifications.all') }}" class="btn btn-sm btn-primary rounded-pill flex-grow-1">View all</a>
+                                <li class="notification-dropdown-foot d-flex gap-2 p-2.5">
+                                    <a href="{{ route('notifications.all') }}" class="btn btn-sm btn-primary rounded-pill flex-grow-1">View All</a>
+                                    <a href="{{ route('notifications.all', ['filter' => 'unread']) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">Unread ({{ $navbarUnreadCount }})</a>
                                 </li>
                             </ul>
                         </li>

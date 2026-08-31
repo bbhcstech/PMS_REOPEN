@@ -104,12 +104,12 @@ i[class*=" bx"],
   text-shadow: 0 0 0 currentColor;
 }
 
-.content-wrapper i[class^="bx"]:not(.btn *):not(.badge *):not(.industry-btn *):not(.menu-link *):not(.nav-link.active *),
-.content-wrapper i[class*=" bx"]:not(.btn *):not(.badge *):not(.industry-btn *):not(.menu-link *):not(.nav-link.active *),
-.content-wrapper .fa:not(.btn *):not(.badge *):not(.industry-btn *),
-.content-wrapper .fas:not(.btn *):not(.badge *):not(.industry-btn *),
-.content-wrapper .far:not(.btn *):not(.badge *):not(.industry-btn *),
-.content-wrapper .bi:not(.btn *):not(.badge *):not(.industry-btn *) {
+.content-wrapper i[class^="bx"]:not(.btn *):not(.badge *):not(.industry-btn *):not(.menu-link *):not(.nav-link.active *):not(.avatar *):not(.avatar-initial *):not([class*="bg-label-"] *):not([class*="setting-icon-"] *),
+.content-wrapper i[class*=" bx"]:not(.btn *):not(.badge *):not(.industry-btn *):not(.menu-link *):not(.nav-link.active *):not(.avatar *):not(.avatar-initial *):not([class*="bg-label-"] *):not([class*="setting-icon-"] *),
+.content-wrapper .fa:not(.btn *):not(.badge *):not(.industry-btn *):not(.avatar *):not(.avatar-initial *):not([class*="bg-label-"] *):not([class*="setting-icon-"] *),
+.content-wrapper .fas:not(.btn *):not(.badge *):not(.industry-btn *):not(.avatar *):not(.avatar-initial *):not([class*="bg-label-"] *):not([class*="setting-icon-"] *),
+.content-wrapper .far:not(.btn *):not(.badge *):not(.industry-btn *):not(.avatar *):not(.avatar-initial *):not([class*="bg-label-"] *):not([class*="setting-icon-"] *),
+.content-wrapper .bi:not(.btn *):not(.badge *):not(.industry-btn *):not(.avatar *):not(.avatar-initial *):not([class*="bg-label-"] *):not([class*="setting-icon-"] *) {
   color: var(--pms-primary) !important;
 }
 
@@ -128,6 +128,8 @@ i[class*=" bx"],
 .content-wrapper .badge i[class*=" bx"],
 .menu-item.active i,
 .stat-icon i,
+.avatar i,
+.avatar-initial i,
 .card-title i,
 .industry-metric-card.is-primary i {
   color: inherit !important;
@@ -808,7 +810,7 @@ html[data-pms-theme="dark"] .page-link {
 }
 
 .stat-icon,
-.avatar-initial,
+.avatar-initial:not([class*="bg-label-"]):not([class*="bg-"]):not(.setting-icon-box),
 .rounded-circle.bg-primary,
 .badge.bg-primary {
   background: var(--pms-primary) !important;
@@ -6090,5 +6092,74 @@ html[data-pms-theme="dark"] .content-wrapper .list-group-item {
 div.dt-buttons {
   display: none !important;
 }
+
+/* Constrain pagination SVGs to prevent giant full-screen icons */
+.pagination svg,
+.page-item svg,
+.page-link svg,
+nav[role="navigation"] svg,
+svg.w-5.h-5,
+svg.w-6.h-6,
+svg.w-5,
+svg.h-5 {
+  width: 16px !important;
+  height: 16px !important;
+  max-width: 16px !important;
+  max-height: 16px !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  display: inline-block !important;
+  vertical-align: middle !important;
+}
+
+/* Global Bootstrap 5 Pagination Enhancement */
+.pagination {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+}
+
+.page-item .page-link {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 36px !important;
+  height: 36px !important;
+  padding: 0 12px !important;
+  border-radius: 10px !important;
+  border: 1px solid var(--pms-border, #e2e8f0) !important;
+  background: #ffffff !important;
+  color: var(--pms-ink, #0f172a) !important;
+  font-weight: 700 !important;
+  font-size: 13px !important;
+  text-decoration: none !important;
+  transition: all .2s ease !important;
+}
+
+.page-item.active .page-link {
+  background: var(--pms-primary, #0f744c) !important;
+  border-color: var(--pms-primary, #0f744c) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(15, 116, 76, 0.25) !important;
+}
+
+.page-item.disabled .page-link {
+  opacity: 0.4 !important;
+  pointer-events: none !important;
+  background: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+}
+
+.page-item:not(.active):not(.disabled) .page-link:hover {
+  background: var(--pms-surface-soft, #f0fdf4) !important;
+  border-color: var(--pms-primary, #0f744c) !important;
+  color: var(--pms-primary, #0f744c) !important;
+}
+
 
 
