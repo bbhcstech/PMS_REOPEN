@@ -1087,15 +1087,7 @@
               </a>
             </li>
 
-            <!-- My Projects (for Employee) -->
-            @if($isEmployeeUser || $canSeeModule('projects'))
-            <li class="menu-item {{ (request()->routeIs('projects.*') && !request()->routeIs('projects.tasks.*') && !request()->routeIs('projects.timelogs.*')) ? 'active' : '' }}">
-              <a href="{{ route('projects.index') }}" class="menu-link" data-sidebar-key="my-projects">
-                  <i class="menu-icon tf-icons bx bx-briefcase-alt-2"></i>
-                  <div class="text-truncate" data-i18n="My Projects">My Projects</div>
-              </a>
-            </li>
-            @endif
+
 
             @if($canSeeModule('organization'))
             <li class="menu-item {{ request()->routeIs('organization.*') ? 'active' : '' }}">
