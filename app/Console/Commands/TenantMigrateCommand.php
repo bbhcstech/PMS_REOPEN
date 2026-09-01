@@ -78,6 +78,10 @@ class TenantMigrateCommand extends Command
 
                 if ($exitCode === 0) {
                     $this->info("✔ Migrations completed successfully for {$company->db_name}.");
+
+                    // Ensure Company record is synced into tenant DB companies table
+                    \App\Models\User::syncCompanyToConnection('tenant', $company);
+
                     $this->line(trim(Artisan::output()));
 
                     if ($this->option('seed')) {

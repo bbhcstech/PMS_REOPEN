@@ -219,7 +219,7 @@
                         <th><i class="fas fa-calendar-plus"></i> Start Date</th>
                         <th><i class="fas fa-calendar-times"></i> Deadline</th>
                         @if($isAdmin)
-                            <th><i class="fas fa-building"></i> Client</th>
+                            <th><i class="fas fa-building"></i> Client/Home</th>
                         @endif
                         <th><i class="fas fa-bolt"></i> Priority</th>
                         <th><i class="fas fa-circle"></i> Status</th>
@@ -289,15 +289,27 @@
                             </td>
                             @if($isAdmin)
                                 <td>
-                                    <div class="client-cell">
-                                        <div class="client-avatar">
-                                            {{ strtoupper(mb_substr(optional($project->client)->name ?? optional($project->client)->company_name ?? 'C', 0, 1)) }}
+                                    @if($project->project_type === 'home' || (!$project->client_id && !$project->client))
+                                        <div class="client-cell">
+                                            <div class="client-avatar" style="background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe;">
+                                                <i class="fas fa-home" style="font-size: 13px;"></i>
+                                            </div>
+                                            <div>
+                                                <div class="client-name fw-bold" style="color: #1e40af;">Home</div>
+                                                <small class="text-muted">In-House</small>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <div class="client-name">{{ optional($project->client)->name ?? 'No Client' }}</div>
-                                            <small>{{ optional($project->client)->company_name ?? '' }}</small>
+                                    @else
+                                        <div class="client-cell">
+                                            <div class="client-avatar">
+                                                {{ strtoupper(mb_substr(optional($project->client)->name ?? optional($project->client)->company_name ?? 'C', 0, 1)) }}
+                                            </div>
+                                            <div>
+                                                <div class="client-name">{{ optional($project->client)->name ?? 'No Client' }}</div>
+                                                <small>{{ optional($project->client)->company_name ?? '' }}</small>
+                                            </div>
                                         </div>
-                                    </div>
+                                    @endif
                                 </td>
                             @endif
                             <td>

@@ -38,6 +38,17 @@ use App\Http\Controllers\SuperAdminController;
 use App\Http\Controllers\TaskCategoryController;
 use App\Http\Controllers\TaskCommentController;
 use App\Http\Controllers\TaskController;
+
+Route::get('/subscription/suspended', function () {
+    $company = app(\App\Services\CompanyContext::class)->current();
+    if (! $company && auth()->check() && auth()->user()?->company_id) {
+        $company = \App\Models\Central\Company::on('central')->find(auth()->user()->company_id);
+    }
+    if (! $company) {
+        $company = \App\Models\Central\Company::on('central')->first();
+    }
+    return view('subscription.suspended', compact('company'));
+})->name('subscription.suspended');
 use App\Http\Controllers\TaskLabelController;
 use App\Http\Controllers\TaskTimerController;
 use App\Http\Controllers\TicketController;
@@ -57,6 +68,8 @@ use App\Http\Controllers\Admin\Settings\TermsPolicyController;
 use App\Http\Controllers\Admin\ContractController;
 use App\Http\Controllers\Admin\ContractTemplateController;
 use App\Http\Controllers\Admin\LeadContactController;
+use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\OrderController;
 use App\Exports\AttendanceExport;
 use App\Http\Controllers\DealController;
 use App\Http\Controllers\Admin\Settings\OrganizationDetailsController;
@@ -77,7 +90,39 @@ use App\Http\Controllers\Admin\RecruitmentController;
 
 
 
+use App\Http\Controllers\EventController;
+use App\Http\Controllers\CommunityMessageController;
+
 Route::middleware(['auth'])->group(function () {
+    // Community Message Module Routes
+    Route::get('/community', [CommunityMessageController::class, 'index'])->name('community.index');
+    Route::get('/community/messages', [CommunityMessageController::class, 'fetchMessages'])->name('community.messages');
+    Route::post('/community/messages', [CommunityMessageController::class, 'store'])->name('community.store');
+    Route::put('/community/messages/{id}', [CommunityMessageController::class, 'update'])->name('community.update');
+    Route::delete('/community/messages/{id}', [CommunityMessageController::class, 'destroy'])->name('community.destroy');
+    Route::post('/community/messages/{id}/react', [CommunityMessageController::class, 'react'])->name('community.react');
+    Route::post('/community/messages/{id}/pin', [CommunityMessageController::class, 'togglePin'])->name('community.pin');
+
+    // Company Events Module Routes
+    Route::get('/events', [EventController::class, 'index'])->name('events.index');
+    Route::get('/events/calendar-data', [EventController::class, 'calendarData'])->name('events.calendar-data');
+    Route::post('/events', [EventController::class, 'store'])->name('events.store');
+    Route::get('/events/{id}', [EventController::class, 'show'])->name('events.show');
+    Route::put('/events/{id}', [EventController::class, 'update'])->name('events.update');
+    Route::delete('/events/{id}', [EventController::class, 'destroy'])->name('events.destroy');
+    Route::post('/events/{id}/publish', [EventController::class, 'publish'])->name('events.publish');
+    Route::post('/events/{id}/cancel', [EventController::class, 'cancel'])->name('events.cancel');
+    Route::post('/events/{id}/rsvp', [EventController::class, 'rsvp'])->name('events.rsvp');
+
+    // Event Memories / Gallery Photo Routes
+    Route::post('/events/{id}/photos', [EventController::class, 'uploadPhotos'])->name('events.photos.upload');
+    Route::get('/events/{id}/photos', [EventController::class, 'getPhotos'])->name('events.photos.index');
+    Route::put('/events/{id}/photos/{photoId}', [EventController::class, 'updatePhoto'])->name('events.photos.update');
+    Route::post('/events/{id}/photos/{photoId}/cover', [EventController::class, 'setGalleryCover'])->name('events.photos.cover');
+    Route::post('/events/{id}/photos/reorder', [EventController::class, 'reorderPhotos'])->name('events.photos.reorder');
+    Route::delete('/events/{id}/photos/{photoId}', [EventController::class, 'deletePhoto'])->name('events.photos.destroy');
+    Route::delete('/events/{id}/photos-bulk', [EventController::class, 'deleteBulkPhotos'])->name('events.photos.destroy-bulk');
+
     Route::post('/attendance/clock-in', [AttendanceController::class, 'clockIn'])
         ->name('attendance.clockIn');
     Route::post('/users/{user}/change-password', [\App\Http\Controllers\UserPasswordChangeController::class, 'changePassword'])
@@ -347,6 +392,15 @@ Route::middleware(['auth', 'verified'])->prefix('superadmin')->name('superadmin.
     Route::post('/alerts/{id}/resolve', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'resolveAlert'])->name('alerts.resolve');
     Route::post('/alerts/mark-all-read', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'markAllAlertsRead'])->name('alerts.mark-all-read');
     Route::get('/alerts/details/{id}', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'alertDetails'])->name('alerts.details');
+
+    // SuperAdmin Complaints Routes
+    Route::get('/complaints', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'index'])->name('complaints.index');
+    Route::get('/complaints/export', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'export'])->name('complaints.export');
+    Route::get('/complaints/unread-count', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'unreadCount'])->name('complaints.unread-count');
+    Route::get('/complaints/{id}', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'show'])->name('complaints.show');
+    Route::post('/complaints/{id}/respond', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'respond'])->name('complaints.respond');
+    Route::post('/complaints/{id}/status', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'updateStatus'])->name('complaints.status');
+    Route::post('/complaints/{id}/assign', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'assign'])->name('complaints.assign');
 });
 
 // Standalone route aliases for admins.* without prefix
@@ -453,11 +507,29 @@ Route::get('/logout', function () {
 Route::middleware(['auth', 'module.access'])->group(function () {
     Route::prefix('admin/settings')->name('admin.')->group(function () {
 
-        // Letterhead management
+        // Letterhead management routes
         Route::get('/letterhead', [LetterheadController::class, 'index'])->name('letterhead.index');
+        Route::get('/letterhead/create', [LetterheadController::class, 'create'])->name('letterhead.create');
+        Route::post('/letterhead', [LetterheadController::class, 'store'])->name('letterhead.store');
+        Route::post('/letterhead/export-pdf', [LetterheadController::class, 'exportPdf'])->name('letterhead.export-pdf');
+        Route::post('/letterhead/export-word', [LetterheadController::class, 'exportWord'])->name('letterhead.export-word');
+        Route::get('/letterhead/demo-download', [LetterheadController::class, 'demoDownload'])->name('letterhead.demo-download');
+        Route::post('/letterhead/send-letter', [LetterheadController::class, 'sendLetter'])->name('letterhead.send-letter');
+        Route::get('/letterhead/{letterhead}', [LetterheadController::class, 'show'])->name('letterhead.show');
+        Route::get('/letterhead/{letterhead}/edit', [LetterheadController::class, 'edit'])->name('letterhead.edit');
+        Route::put('/letterhead/{letterhead}', [LetterheadController::class, 'update'])->name('letterhead.update');
+        Route::delete('/letterhead/{letterhead}', [LetterheadController::class, 'destroy'])->name('letterhead.destroy');
+        Route::post('/letterhead/{letterhead}/duplicate', [LetterheadController::class, 'duplicate'])->name('letterhead.duplicate');
+        Route::post('/letterhead/{letterhead}/default', [LetterheadController::class, 'setDefault'])->name('letterhead.default');
+        Route::post('/letterhead/{letterhead}/toggle-status', [LetterheadController::class, 'toggleStatus'])->name('letterhead.toggle-status');
+        Route::post('/letterhead/{letterhead}/archive', [LetterheadController::class, 'archive'])->name('letterhead.archive');
+        Route::get('/letterhead/{letterhead}/pdf', [LetterheadController::class, 'generatePdf'])->name('letterhead.pdf');
+        Route::get('/letterhead/{letterhead}/print', [LetterheadController::class, 'printPreview'])->name('letterhead.print');
+
+        // Legacy compatibility routes
         Route::post('/letterhead/{company}/upload', [LetterheadController::class, 'upload'])->name('letterhead.upload');
         Route::get('/letterhead/{company}/download', [LetterheadController::class, 'download'])->name('letterhead.download');
-        Route::delete('/letterhead/{company}/delete', [LetterheadController::class, 'destroy'])->name('letterhead.delete');
+        Route::delete('/letterhead/{company}/delete', [LetterheadController::class, 'destroyLegacy'])->name('letterhead.delete');
 
         Route::get('/modules', [ModuleManagementController::class, 'index'])->name('modules.index');
         Route::post('/modules', [ModuleManagementController::class, 'store'])->name('modules.store');
@@ -473,11 +545,29 @@ Route::middleware(['auth', 'module.access'])->group(function () {
         Route::post('/accounts/{role}/{user}/reset-password', [RoleAccountController::class, 'resetPassword'])->name('role-accounts.reset-password');
     });
 
-    // Letterhead alias routes
+    // Letterhead direct top-level alias routes
     Route::get('/letterhead', [LetterheadController::class, 'index'])->name('letterhead.index');
+    Route::get('/letterhead/create', [LetterheadController::class, 'create'])->name('letterhead.create');
+    Route::post('/letterhead', [LetterheadController::class, 'store'])->name('letterhead.store');
+    Route::post('/letterhead/export-pdf', [LetterheadController::class, 'exportPdf'])->name('letterhead.export-pdf');
+    Route::post('/letterhead/export-word', [LetterheadController::class, 'exportWord'])->name('letterhead.export-word');
+    Route::get('/letterhead/demo-download', [LetterheadController::class, 'demoDownload'])->name('letterhead.demo-download');
+    Route::post('/letterhead/send-letter', [LetterheadController::class, 'sendLetter'])->name('letterhead.send-letter');
+    Route::get('/letterhead/{letterhead}', [LetterheadController::class, 'show'])->name('letterhead.show');
+    Route::get('/letterhead/{letterhead}/edit', [LetterheadController::class, 'edit'])->name('letterhead.edit');
+    Route::put('/letterhead/{letterhead}', [LetterheadController::class, 'update'])->name('letterhead.update');
+    Route::delete('/letterhead/{letterhead}', [LetterheadController::class, 'destroy'])->name('letterhead.destroy');
+    Route::post('/letterhead/{letterhead}/duplicate', [LetterheadController::class, 'duplicate'])->name('letterhead.duplicate');
+    Route::post('/letterhead/{letterhead}/default', [LetterheadController::class, 'setDefault'])->name('letterhead.default');
+    Route::post('/letterhead/{letterhead}/toggle-status', [LetterheadController::class, 'toggleStatus'])->name('letterhead.toggle-status');
+    Route::post('/letterhead/{letterhead}/archive', [LetterheadController::class, 'archive'])->name('letterhead.archive');
+    Route::get('/letterhead/{letterhead}/pdf', [LetterheadController::class, 'generatePdf'])->name('letterhead.pdf');
+    Route::get('/letterhead/{letterhead}/print', [LetterheadController::class, 'printPreview'])->name('letterhead.print');
+
+    // Legacy direct alias routes
     Route::post('/letterhead/{company}/upload', [LetterheadController::class, 'upload'])->name('letterhead.upload');
     Route::get('/letterhead/{company}/download', [LetterheadController::class, 'download'])->name('letterhead.download');
-    Route::delete('/letterhead/{company}/delete', [LetterheadController::class, 'destroy'])->name('letterhead.delete');
+    Route::delete('/letterhead/{company}/delete', [LetterheadController::class, 'destroyLegacy'])->name('letterhead.delete');
 
     Route::prefix('payroll')->name('payroll.')->group(function () {
         Route::get('/', [PayrollController::class, 'index'])->name('index');
@@ -1091,6 +1181,16 @@ Route::get('/my-awards', [AwardController::class, 'myAwards'])->name('awards.my-
     |----------------------------------------------------------------------
     */
 
+    /*
+    |----------------------------------------------------------------------
+    | Products & Orders
+    |----------------------------------------------------------------------
+    */
+    Route::get('/products', [ProductController::class, 'index'])->name('products.index');
+    Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+    Route::post('/orders/bulk-payment-status', [OrderController::class, 'bulkUpdatePaymentStatus'])->name('orders.bulk-payment-status');
+    Route::post('/orders/{id}/payment-status', [OrderController::class, 'updatePaymentStatus'])->name('orders.update-payment-status');
+
     Route::get('/account/dashboard-project', [DashboardController::class, 'project'])->name('dashproject');
     Route::get('/account/dashboard-advanced', [DashboardController::class, 'clientDashboard'])->name('dashboard.client');
     Route::get('/dashboard-advanced', [DashboardController::class, 'ticketDashboard'])->name('dashboard.ticket');
@@ -1102,51 +1202,47 @@ Route::get('/my-awards', [AwardController::class, 'myAwards'])->name('awards.my-
 
 
 /// Lead Contacts Routes
- Route::get('leads/contacts', [LeadContactController::class, 'index'])->name('leads.contacts.index');
+Route::get('leads/contacts', [LeadContactController::class, 'index'])->name('leads.contacts.index');
 Route::get('leads/contacts/create', [LeadContactController::class, 'create'])->name('leads.contacts.create');
 Route::post('leads/contacts/store', [LeadContactController::class, 'store'])->name('leads.contacts.store');
+Route::post('leads/contacts/check-duplicate', [LeadContactController::class, 'checkDuplicate'])->name('leads.contacts.check-duplicate');
 Route::get('leads/contacts/{id}', [LeadContactController::class, 'show'])->name('leads.contacts.show');
 Route::get('leads/contacts/{id}/edit', [LeadContactController::class, 'edit'])->name('leads.contacts.edit');
 Route::put('leads/contacts/{id}', [LeadContactController::class, 'update'])->name('leads.contacts.update');
 Route::delete('leads/contacts/{id}', [LeadContactController::class, 'destroy'])->name('leads.contacts.destroy');
+Route::post('leads/contacts/{id}/activities', [LeadContactController::class, 'storeActivity'])->name('leads.contacts.activities.store');
+Route::post('leads/contacts/{id}/follow-ups', [LeadContactController::class, 'storeFollowUp'])->name('leads.contacts.follow-ups.store');
 
 // Bulk actions
-// Route::post('leads/contacts/bulk-delete', [LeadContactController::class, 'bulkDelete'])->name('leads.contacts.bulk.delete');
-// Bulk delete
 Route::post('/leads/contacts/bulk-delete', [LeadContactController::class, 'bulkDelete'])
     ->name('leads.contacts.bulk.delete');
 Route::post('leads/contacts/convert', [LeadContactController::class, 'convertToClient'])->name('leads.contacts.convert');
 
 // Import/Export
-// Route::get('leads/contacts/export', [LeadContactController::class, 'export'])->name('leads.contacts.export');
-
 Route::get('/leads/contacts/export', [LeadContactController::class, 'export'])->name('leads.contacts.export');
 Route::get('leads/contacts/template', [LeadContactController::class, 'downloadTemplate'])->name('leads.contacts.template');
 Route::post('leads/contacts/import', [LeadContactController::class, 'import'])->name('leads.contacts.import');
 
-// Convert lead to client and vice versa
-Route::post('/leads/contacts/convert', [LeadContactController::class, 'convert'])
-    ->name('leads.contacts.convert');
-
-
-
-// // Deal Routes - IMPORTANT: Exact routes FIRST
+// Deal Routes - IMPORTANT: Exact routes FIRST
 Route::get('admin/deals/index', [DealController::class, 'index'])->name('admin.deals.index');
 Route::get('admin/deals/create', [DealController::class, 'create'])->name('admin.deals.create');
 Route::get('admin/deals/export', [DealController::class, 'export'])->name('admin.deals.export');
 
-// // POST routes (no parameters)
+// POST routes (no parameters)
 Route::post('admin/deals', [DealController::class, 'store'])->name('admin.deals.store');
 Route::post('admin/deals/import', [DealController::class, 'import'])->name('admin.deals.import');
 Route::post('admin/deals/bulk-action', [DealController::class, 'bulkAction'])->name('admin.deals.bulk.action');
 
-// // Parameter routes - MUST be LAST
+// Parameter routes - MUST be LAST
 Route::get('admin/deals/{deal}', [DealController::class, 'show'])->name('admin.deals.show');
 Route::get('admin/deals/{deal}/edit', [DealController::class, 'edit'])->name('admin.deals.edit');
 Route::put('admin/deals/{deal}', [DealController::class, 'update'])->name('admin.deals.update');
 Route::delete('admin/deals/{deal}', [DealController::class, 'destroy'])->name('admin.deals.destroy');
 Route::post('admin/deals/{deal}/update-stage', [DealController::class, 'updateStage'])->name('admin.deals.update.stage');
-// Inside your deals route group
+Route::post('admin/deals/{deal}/lost-reason', [DealController::class, 'updateLostReason'])->name('admin.deals.update.lost-reason');
+Route::post('admin/deals/{deal}/activities', [DealController::class, 'storeActivity'])->name('admin.deals.activities.store');
+Route::post('admin/deals/{deal}/follow-ups', [DealController::class, 'storeFollowUp'])->name('admin.deals.follow-ups.store');
+Route::post('admin/deals/{deal}/convert-to-client', [DealController::class, 'convertToClient'])->name('admin.deals.convert-to-client');
 Route::post('/{deal}/add-follow-up', [DealController::class, 'addFollowUp'])->name('deals.add-follow-up');
 
 
@@ -1333,6 +1429,20 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/admin/hr/appraisal', [\App\Http\Controllers\Admin\AppraisalController::class, 'store'])->name('appraisal.store');
     Route::post('/admin/hr/appraisal/auto-calculate', [\App\Http\Controllers\Admin\AppraisalController::class, 'autoCalculate'])->name('appraisal.autoCalculate');
     Route::delete('/admin/hr/appraisal/{id}', [\App\Http\Controllers\Admin\AppraisalController::class, 'destroy'])->name('appraisal.destroy');
+
+    // Platform Support & Company Complaints Routes (Tenant Admin)
+    Route::get('/admin/company-complaints', [\App\Http\Controllers\Admin\CompanyComplaintController::class, 'index'])->name('admin.company-complaints.index');
+    Route::get('/admin/company-complaints/create', [\App\Http\Controllers\Admin\CompanyComplaintController::class, 'create'])->name('admin.company-complaints.create');
+    Route::post('/admin/company-complaints', [\App\Http\Controllers\Admin\CompanyComplaintController::class, 'store'])->name('admin.company-complaints.store');
+    Route::get('/admin/company-complaints/{id}', [\App\Http\Controllers\Admin\CompanyComplaintController::class, 'show'])->name('admin.company-complaints.show');
+    Route::post('/admin/company-complaints/{id}/reply', [\App\Http\Controllers\Admin\CompanyComplaintController::class, 'reply'])->name('admin.company-complaints.reply');
+    Route::post('/admin/company-complaints/{id}/reopen', [\App\Http\Controllers\Admin\CompanyComplaintController::class, 'reopen'])->name('admin.company-complaints.reopen');
+
+    // Platform Notifications Routes (Tenant Admin)
+    Route::get('/admin/company-notifications', [\App\Http\Controllers\Admin\CompanyNotificationController::class, 'index'])->name('admin.company-notifications.index');
+    Route::post('/admin/company-notifications/read-all', [\App\Http\Controllers\Admin\CompanyNotificationController::class, 'markAllRead'])->name('admin.company-notifications.read-all');
+    Route::post('/admin/company-notifications/{id}/read', [\App\Http\Controllers\Admin\CompanyNotificationController::class, 'markAsRead'])->name('admin.company-notifications.read');
+    Route::get('/admin/company-notifications/unread-count', [\App\Http\Controllers\Admin\CompanyNotificationController::class, 'unreadCount'])->name('admin.company-notifications.unread-count');
 });
 
 

@@ -71,9 +71,24 @@ class Client extends TenantModel
         return $this->belongsTo(ClientCategory::class, 'client_category_id');
     }
 
-    public function subCategory()
+    public function subcategory()
     {
         return $this->belongsTo(ClientSubCategory::class, 'client_sub_category_id');
+    }
+
+    public function addedBy()
+    {
+        return $this->belongsTo(User::class, 'added_by');
+    }
+
+    public function countryRel()
+    {
+        return $this->belongsTo(Country::class, 'country');
+    }
+
+    public function getProfileImageAttribute()
+    {
+        return $this->profile_picture;
     }
 }
 
