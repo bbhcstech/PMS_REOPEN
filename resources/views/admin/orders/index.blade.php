@@ -436,10 +436,8 @@
                     </div>
                 </div>
 
-                <div class="d-flex align-items-center gap-2">
-                    <span id="modalPaymentStatusBadge"></span>
-                    <span class="badge bg-light text-dark border px-3 py-2 fw-bold" id="modalTotalAmount">$0.00</span>
-                    <button type="button" class="btn-close ms-2" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
             </div>
 
@@ -742,13 +740,6 @@ function renderOrderModal(order, items) {
     document.getElementById('modalProjectName').textContent = order.project_name || 'Project Deliverables';
     document.getElementById('modalCustomerName').textContent = order.customer_name + (order.customer_company ? ` (${order.customer_company})` : '');
     document.getElementById('modalCreatedAt').textContent = order.created_at || '-';
-    document.getElementById('modalTotalAmount').textContent = `$${parseFloat(order.total_amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-    
-    // Payment badge
-    const paymentBadgeEl = document.getElementById('modalPaymentStatusBadge');
-    if (paymentBadgeEl) {
-        paymentBadgeEl.innerHTML = renderPaymentBadge(order.payment_status || 'Paid');
-    }
 
     // Action links
     const tasksUrlEl = document.getElementById('modalTasksUrl');
