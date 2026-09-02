@@ -1701,83 +1701,99 @@
 @push('js')
 <script>
 $(document).ready(function() {
-    // DataTable functionality for search and filtering
-    var table = $('#designationTable').DataTable({
-        dom: 'lBfrtip',
-        paging: false,
-        searching: true,
-        info: false,
-        ordering: true,
-        buttons: [
-            {
-                extend: 'copyHtml5',
-                text: 'Copy',
-                title: 'Designation List',
-                exportOptions: {
-                    columns: [1, 2, 3, 4, 5],
-                    rows: function(idx, data, node) { return $(node).is(':visible'); },
-                    modifier: { search: 'applied' }
+    var table = null;
+
+    @if($designations->count() > 0)
+    if ($.fn.DataTable && !$.fn.DataTable.isDataTable('#designationTable') && $('#designationTable tbody tr.designation-row').length > 0) {
+        table = $('#designationTable').DataTable({
+            dom: 'lBfrtip',
+            paging: false,
+            searching: true,
+            info: false,
+            ordering: true,
+            columnDefs: [
+                { orderable: false, targets: [0, 6] }
+            ],
+            buttons: [
+                {
+                    extend: 'copyHtml5',
+                    text: 'Copy',
+                    title: 'Designation List',
+                    exportOptions: {
+                        columns: [1, 2, 3, 4, 5],
+                        rows: function(idx, data, node) { return $(node).is(':visible'); },
+                        modifier: { search: 'applied' }
+                    }
+                },
+                {
+                    extend: 'csvHtml5',
+                    text: 'CSV',
+                    title: 'Designation List',
+                    filename: 'designation-list',
+                    exportOptions: {
+                        columns: [1, 2, 3, 4, 5],
+                        rows: function(idx, data, node) { return $(node).is(':visible'); },
+                        modifier: { search: 'applied' }
+                    }
+                },
+                {
+                    extend: 'excelHtml5',
+                    text: 'Excel',
+                    title: 'Designation List',
+                    filename: 'designation-list',
+                    exportOptions: {
+                        columns: [1, 2, 3, 4, 5],
+                        rows: function(idx, data, node) { return $(node).is(':visible'); },
+                        modifier: { search: 'applied' }
+                    }
+                },
+                {
+                    extend: 'pdfHtml5',
+                    text: 'PDF',
+                    title: 'Designation List',
+                    filename: 'designation-list',
+                    pageSize: 'A4',
+                    orientation: 'landscape',
+                    exportOptions: {
+                        columns: [1, 2, 3, 4, 5],
+                        rows: function(idx, data, node) { return $(node).is(':visible'); },
+                        modifier: { search: 'applied' }
+                    }
+                },
+                {
+                    extend: 'print',
+                    text: 'Print',
+                    title: 'Designation List',
+                    exportOptions: {
+                        columns: [1, 2, 3, 4, 5],
+                        rows: function(idx, data, node) { return $(node).is(':visible'); },
+                        modifier: { search: 'applied' }
+                    }
                 }
+            ],
+            language: {
+                search: "",
+                searchPlaceholder: "Search designations...",
+                zeroRecords: "No matching records found",
             },
-            {
-                extend: 'csvHtml5',
-                text: 'CSV',
-                title: 'Designation List',
-                filename: 'designation-list',
-                exportOptions: {
-                    columns: [1, 2, 3, 4, 5],
-                    rows: function(idx, data, node) { return $(node).is(':visible'); },
-                    modifier: { search: 'applied' }
-                }
-            },
-            {
-                extend: 'excelHtml5',
-                text: 'Excel',
-                title: 'Designation List',
-                filename: 'designation-list',
-                exportOptions: {
-                    columns: [1, 2, 3, 4, 5],
-                    rows: function(idx, data, node) { return $(node).is(':visible'); },
-                    modifier: { search: 'applied' }
-                }
-            },
-            {
-                extend: 'pdfHtml5',
-                text: 'PDF',
-                title: 'Designation List',
-                filename: 'designation-list',
-                pageSize: 'A4',
-                orientation: 'landscape',
-                exportOptions: {
-                    columns: [1, 2, 3, 4, 5],
-                    rows: function(idx, data, node) { return $(node).is(':visible'); },
-                    modifier: { search: 'applied' }
-                }
-            },
-            {
-                extend: 'print',
-                text: 'Print',
-                title: 'Designation List',
-                exportOptions: {
-                    columns: [1, 2, 3, 4, 5],
-                    rows: function(idx, data, node) { return $(node).is(':visible'); },
-                    modifier: { search: 'applied' }
-                }
+            initComplete: function() {
+                $('.dataTables_filter').hide();
             }
-        ],
-        language: {
-            search: "",
-            searchPlaceholder: "Search designations...",
-            zeroRecords: "No matching records found",
-        },
-        initComplete: function() {
-            $('.dataTables_filter').hide();
-        }
-    });
+        });
+    }
+    @endif
 
     // Custom search
     $('#designationSearch').on('keyup', function() {
-        table.search(this.value).draw();
+        if (table) {
+            table.search(this.value).draw();
+        } else {
+            var searchTerm = this.value.toLowerCase();
+            $('.designation-row').each(function() {
+                var rowText = $(this).text().toLowerCase();
+                $(this).toggle(!searchTerm || rowText.indexOf(searchTerm) > -1);
+            });
+        }
         updateVisibleRowsForLevelFilter();
     });
 
