@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\AppSetting;
 use App\Models\Department;
+use App\Models\ParentDepartment;
 use App\Models\RecruitmentRequirement;
 use App\Services\SystemNotificationService;
 use Illuminate\Http\Request;
@@ -35,6 +36,7 @@ class RecruitmentController extends Controller
 
         $requirements = $query->get();
         $departments = Department::orderBy('dpt_name')->get();
+        $parentDepartments = ParentDepartment::whereNull('archived_at')->orderBy('dpt_name')->get();
 
         // Metrics Calculation
         $totalOpen = RecruitmentRequirement::where('status', 'open')->count();
@@ -48,6 +50,7 @@ class RecruitmentController extends Controller
         return view('admin.recruitment.index', compact(
             'requirements',
             'departments',
+            'parentDepartments',
             'totalOpen',
             'totalInProgress',
             'totalPositionsOpen',

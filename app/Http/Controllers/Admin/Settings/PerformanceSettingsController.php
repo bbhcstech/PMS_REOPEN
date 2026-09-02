@@ -24,6 +24,10 @@ class PerformanceSettingsController extends Controller
 
     public function update(Request $request)
     {
+        if (auth()->user()?->role !== 'admin') {
+            abort(403, 'Unauthorized. Only administrators can update performance settings.');
+        }
+
         $request->validate([
             'appraisal_cycle' => 'required|string',
             'rating_scale' => 'required|string',
@@ -51,6 +55,19 @@ class PerformanceSettingsController extends Controller
                 ]
             );
         }
+
+        // Broadcast notification to Admin, HR, Manager, and Employees
+        \App\Services\SystemNotificationService::notifyAllRoles(
+            'Performance Appraisal Settings Updated',
+            'Performance appraisal cycles, rating criteria, and review workflow have been updated by ' . (auth()->user()?->name ?? 'Admin') . '.',
+            route('admin.settings.performance'),
+            [
+                'type' => 'setting_update',
+                'setting_module' => 'performance',
+                'icon' => 'fa-chart-line',
+                'color' => 'info',
+            ]
+        );
 
         return back()->with('success', 'Performance settings updated successfully!');
     }

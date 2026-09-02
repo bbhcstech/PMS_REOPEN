@@ -25,6 +25,10 @@ class LocalizationController extends Controller
 
     public function update(Request $request)
     {
+        if (auth()->user()?->role !== 'admin') {
+            abort(403, 'Unauthorized. Only administrators can modify settings.');
+        }
+
         $request->validate([
             'currency' => 'required|string',
             'currency_symbol' => 'required|string',
@@ -57,6 +61,17 @@ class LocalizationController extends Controller
                 ]
             );
         }
+
+        \App\Services\SystemNotificationService::notifyAllRoles(
+            'Localization & Regional Settings Updated',
+            (auth()->user()->name ?? 'Administrator') . ' updated the system currency, timezone, and date/time formatting settings.',
+            route('admin.settings.localization'),
+            [
+                'type' => 'setting_update',
+                'setting_module' => 'localization',
+                'updated_by' => auth()->id(),
+            ]
+        );
 
         return back()->with('success', 'Localization settings updated successfully!');
     }

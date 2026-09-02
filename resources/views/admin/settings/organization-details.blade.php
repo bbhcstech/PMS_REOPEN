@@ -529,6 +529,16 @@
                 </div>
 
                 <div class="p-4 p-md-5">
+                    @if($isSettingsReadOnly)
+                        <div class="alert d-flex align-items-center mb-4 rounded-3 border-0 shadow-sm" style="background: linear-gradient(135deg, #eff6ff, #dbeafe); color: #1e40af; border-left: 4px solid #3b82f6 !important; padding: 14px 18px;">
+                            <i class="fas fa-eye me-3 fs-3 text-primary"></i>
+                            <div>
+                                <strong class="d-block text-primary fw-bold" style="font-size: 14px;">View-Only Mode</strong>
+                                <span style="font-size: 13px; color: #1e3a8a;">You are viewing organization details in read-only mode. Only Administrators have permission to modify or update these details.</span>
+                            </div>
+                        </div>
+                    @endif
+
                     <form method="POST" action="{{ route('admin.settings.organization-details.update') }}">
                         @csrf
 
@@ -546,7 +556,8 @@
                                     <span class="input-group-text"><i class="fas fa-briefcase"></i></span>
                                     <input type="text" name="industry" class="form-control @error('industry') is-invalid @enderror"
                                         placeholder="e.g. Information Technology, Healthcare, Finance"
-                                        value="{{ old('industry', $settings['industry'] ?? '') }}" required>
+                                        value="{{ old('industry', $settings['industry'] ?? '') }}"
+                                        {{ $isSettingsReadOnly ? 'readonly' : 'required' }}>
                                 </div>
                                 @error('industry')
                                     <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle me-1"></i>{{ $message }}</div>
@@ -560,7 +571,7 @@
                                 </label>
                                 <div class="input-group input-group-custom">
                                     <span class="input-group-text"><i class="fas fa-users"></i></span>
-                                    <select name="company_size" class="form-select @error('company_size') is-invalid @enderror" required>
+                                    <select name="company_size" class="form-select @error('company_size') is-invalid @enderror" {{ $isSettingsReadOnly ? 'disabled' : 'required' }}>
                                         <option value="1-10" {{ ($settings['company_size'] ?? '') == '1-10' ? 'selected' : '' }}>1-10 Employees</option>
                                         <option value="11-50" {{ ($settings['company_size'] ?? '') == '11-50' ? 'selected' : '' }}>11-50 Employees</option>
                                         <option value="50-100" {{ ($settings['company_size'] ?? '') == '50-100' ? 'selected' : '' }}>50-100 Employees</option>
@@ -582,7 +593,8 @@
                                     <span class="input-group-text"><i class="fas fa-file-contract"></i></span>
                                     <input type="text" name="registration_number" class="form-control @error('registration_number') is-invalid @enderror"
                                         placeholder="e.g. REG-2026-98765"
-                                        value="{{ old('registration_number', $settings['registration_number'] ?? '') }}">
+                                        value="{{ old('registration_number', $settings['registration_number'] ?? '') }}"
+                                        {{ $isSettingsReadOnly ? 'readonly' : '' }}>
                                 </div>
                                 @error('registration_number')
                                     <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle me-1"></i>{{ $message }}</div>
@@ -598,7 +610,8 @@
                                     <span class="input-group-text"><i class="fas fa-file-invoice-dollar"></i></span>
                                     <input type="text" name="tax_id" class="form-control @error('tax_id') is-invalid @enderror"
                                         placeholder="e.g. TAX-99887766"
-                                        value="{{ old('tax_id', $settings['tax_id'] ?? '') }}">
+                                        value="{{ old('tax_id', $settings['tax_id'] ?? '') }}"
+                                        {{ $isSettingsReadOnly ? 'readonly' : '' }}>
                                 </div>
                                 @error('tax_id')
                                     <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle me-1"></i>{{ $message }}</div>
@@ -614,7 +627,8 @@
                                     <span class="input-group-text"><i class="fas fa-credit-card"></i></span>
                                     <input type="text" name="vat_number" class="form-control @error('vat_number') is-invalid @enderror"
                                         placeholder="e.g. VAT-12345678"
-                                        value="{{ old('vat_number', $settings['vat_number'] ?? '') }}">
+                                        value="{{ old('vat_number', $settings['vat_number'] ?? '') }}"
+                                        {{ $isSettingsReadOnly ? 'readonly' : '' }}>
                                 </div>
                                 @error('vat_number')
                                     <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle me-1"></i>{{ $message }}</div>
@@ -628,7 +642,7 @@
                                 </label>
                                 <div class="input-group input-group-custom">
                                     <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
-                                    <select name="financial_year_start" class="form-select @error('financial_year_start') is-invalid @enderror" required>
+                                    <select name="financial_year_start" class="form-select @error('financial_year_start') is-invalid @enderror" {{ $isSettingsReadOnly ? 'disabled' : 'required' }}>
                                         @foreach(['January','February','March','April','May','June','July','August','September','October','November','December'] as $month)
                                             <option value="{{ $month }}" {{ ($settings['financial_year_start'] ?? 'January') == $month ? 'selected' : '' }}>{{ $month }}</option>
                                         @endforeach
@@ -642,9 +656,15 @@
 
                         <!-- Form Action Buttons -->
                         <div class="mt-5 pt-4 border-top d-flex justify-content-end">
-                            <button type="submit" class="btn-save-address">
-                                <i class="fas fa-save me-1.5"></i> Save Organization Details
-                            </button>
+                            @if($isSettingsReadOnly)
+                                <span class="badge rounded-pill px-3.5 py-2 fw-bold" style="background: #f1f5f9; color: #64748b; font-size: 13px; border: 1px solid #cbd5e1;">
+                                    <i class="fas fa-lock me-1.5 text-muted"></i> Read-Only (Admin Managed)
+                                </span>
+                            @else
+                                <button type="submit" class="btn-save-address">
+                                    <i class="fas fa-save me-1.5"></i> Save Organization Details
+                                </button>
+                            @endif
                         </div>
                     </form>
                 </div>

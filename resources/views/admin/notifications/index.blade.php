@@ -60,7 +60,7 @@
         <div>
           <h4 class="fw-bold mb-1 text-white d-flex align-items-center gap-2">
             <span>Company Notification Center</span>
-            @if($kpis['unread'] > 0)
+            @if(($kpis['unread'] ?? 0) > 0)
               <span class="badge bg-danger rounded-pill fs-8 px-2.5 py-1">{{ $kpis['unread'] }} Unread</span>
             @endif
           </h4>
@@ -68,13 +68,22 @@
         </div>
       </div>
 
-      <div>
+      <div class="d-flex align-items-center gap-2">
         <form method="POST" action="{{ Route::has('notifications.readAll') ? route('notifications.readAll') : route('admin.company-notifications.read-all') }}">
           @csrf
           <button type="submit" class="btn btn-light fw-bold px-3.5 py-2.5 shadow-sm d-flex align-items-center gap-1.5" style="border-radius: 10px; font-size: 13px; color: #0f172a;">
             <i class="bx bx-check-double fs-5"></i> Mark All Read
           </button>
         </form>
+
+        @if(Route::has('notifications.clearAll'))
+          <form method="POST" action="{{ route('notifications.clearAll') }}" onsubmit="return confirm('Are you sure you want to permanently clear all notifications?')">
+            @csrf
+            <button type="submit" class="btn btn-outline-light text-white fw-bold px-3.5 py-2.5 shadow-sm d-flex align-items-center gap-1.5" style="border-radius: 10px; font-size: 13px; border-color: rgba(255,255,255,0.25);">
+              <i class="bx bx-trash fs-5 text-danger"></i> Clear All
+            </button>
+          </form>
+        @endif
       </div>
     </div>
   </div>
@@ -82,6 +91,13 @@
   @if(session('success'))
     <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-4" style="border-radius: 12px; background: #f0fdf4; color: #166534; border-left: 4px solid #16a34a !important;">
       <i class="bx bx-check-circle me-1.5 align-middle fs-5"></i> {{ session('success') }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  @endif
+
+  @if(session('info'))
+    <div class="alert alert-info alert-dismissible fade show border-0 shadow-sm mb-4" style="border-radius: 12px; background: #eff6ff; color: #1e40af; border-left: 4px solid #3b82f6 !important;">
+      <i class="bx bx-info-circle me-1.5 align-middle fs-5"></i> {{ session('info') }}
       <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
   @endif
@@ -94,7 +110,7 @@
           <i class="bx bx-bell-ring"></i>
         </div>
         <div>
-          <div class="fs-4 fw-bolder text-dark" style="letter-spacing: -0.5px;">{{ number_format($kpis['total']) }}</div>
+          <div class="fs-4 fw-bolder text-dark" style="letter-spacing: -0.5px;">{{ number_format($kpis['total'] ?? 0) }}</div>
           <div class="fs-8 text-muted text-uppercase fw-bold" style="letter-spacing: 0.5px;">Total Notifications</div>
         </div>
       </div>
@@ -106,7 +122,7 @@
           <i class="bx bx-envelope"></i>
         </div>
         <div>
-          <div class="fs-4 fw-bolder" style="color: #d97706; letter-spacing: -0.5px;">{{ number_format($kpis['unread']) }}</div>
+          <div class="fs-4 fw-bolder" style="color: #d97706; letter-spacing: -0.5px;">{{ number_format($kpis['unread'] ?? 0) }}</div>
           <div class="fs-8 text-muted text-uppercase fw-bold" style="letter-spacing: 0.5px;">Unread Messages</div>
         </div>
       </div>
@@ -118,7 +134,7 @@
           <i class="bx bx-error-alt"></i>
         </div>
         <div>
-          <div class="fs-4 fw-bolder text-danger" style="letter-spacing: -0.5px;">{{ number_format($kpis['critical']) }}</div>
+          <div class="fs-4 fw-bolder text-danger" style="letter-spacing: -0.5px;">{{ number_format($kpis['critical'] ?? 0) }}</div>
           <div class="fs-8 text-muted text-uppercase fw-bold" style="letter-spacing: 0.5px;">Critical Alerts</div>
         </div>
       </div>
@@ -142,7 +158,7 @@
         <div class="col-md-5">
           <select name="status" class="form-select border-0 bg-light" style="border-radius: 10px; font-weight: 500; font-size: 13px;" onchange="this.form.submit()">
             <option value="">All Statuses</option>
-            <option value="unread" {{ request('status') === 'unread' ? 'selected' : '' }}>Unread Only</option>
+            <option value="unread" {{ (request('status') === 'unread' || request('filter') === 'unread') ? 'selected' : '' }}>Unread Only</option>
             <option value="read" {{ request('status') === 'read' ? 'selected' : '' }}>Read Only</option>
           </select>
         </div>
@@ -246,10 +262,10 @@
         };
 
         $sevBadgeColor = match($severityUpper) {
-          'CRITICAL' => '#ef4444',
-          'WARNING'  => '#d97706',
-          'SUCCESS'  => '#16a34a',
-          default    => '#2563eb'
+          'CRITICAL' => '#b91c1c',
+          'WARNING'  => '#b45309',
+          'SUCCESS'  => '#15803d',
+          default    => '#1d4ed8'
         };
 
         // Company Context for Subscriptions
