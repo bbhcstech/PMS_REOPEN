@@ -18,20 +18,24 @@ class CompanyContext
 
         // 1. Respect active impersonated company ID from session
         if (session('current_company_id')) {
-            $comp = Company::find(session('current_company_id'))
-                ?? \App\Models\Central\Company::on('central')->find(session('current_company_id'));
-            if ($comp) {
-                return $this->company = $comp;
-            }
+            try {
+                $comp = Company::find(session('current_company_id'))
+                    ?? \App\Models\Central\Company::on('central')->find(session('current_company_id'));
+                if ($comp) {
+                    return $this->company = $comp;
+                }
+            } catch (\Throwable $e) {}
         }
 
         // 2. Respect active impersonated company DB from session
         if (session('current_company_db')) {
-            $comp = Company::where('db_name', session('current_company_db'))->first()
-                ?? \App\Models\Central\Company::on('central')->where('db_name', session('current_company_db'))->first();
-            if ($comp) {
-                return $this->company = $comp;
-            }
+            try {
+                $comp = Company::where('db_name', session('current_company_db'))->first()
+                    ?? \App\Models\Central\Company::on('central')->where('db_name', session('current_company_db'))->first();
+                if ($comp) {
+                    return $this->company = $comp;
+                }
+            } catch (\Throwable $e) {}
         }
 
         $user = Auth::user();
@@ -41,15 +45,26 @@ class CompanyContext
         }
 
         if ($user instanceof User && $user->company_id) {
-            $comp = Company::find($user->company_id);
-            if ($comp) {
-                return $this->company = $comp;
-            }
+            try {
+                $comp = Company::find($user->company_id)
+                    ?? \App\Models\Central\Company::on('central')->find($user->company_id);
+                if ($comp) {
+                    return $this->company = $comp;
+                }
+            } catch (\Throwable $e) {}
         }
 
-        return $this->company = Company::where('status', 'active')
-            ->orderBy('id')
-            ->first();
+        try {
+            return $this->company = Company::where('status', 'active')
+                ->orderBy('id')
+                ->first();
+        } catch (\Throwable $e) {
+            try {
+                return $this->company = \App\Models\Central\Company::on('central')->where('status', 'active')->orderBy('id')->first();
+            } catch (\Throwable $ex) {
+                return null;
+            }
+        }
     }
 
     public function id(): ?int

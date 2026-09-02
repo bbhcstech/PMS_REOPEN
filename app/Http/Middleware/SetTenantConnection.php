@@ -23,7 +23,7 @@ class SetTenantConnection
             return $next($request);
         }
 
-        $defaultDb = config('database.connections.tenant.database') ?: config('database.connections.mysql.database');
+        $defaultDb = config('database.connections.tenant.database') ?: (config('database.connections.mysql.database') ?: env('DB_DATABASE', 'thesmart_lara319'));
         $tenantDb = session('current_company_db');
 
         $user = auth()->user();
@@ -54,7 +54,8 @@ class SetTenantConnection
             $tenantDb = $defaultDb;
         }
 
-        if ($tenantDb) {
+        $currentTenantDb = config('database.connections.tenant.database');
+        if ($tenantDb && $tenantDb !== $currentTenantDb) {
             try {
                 config([
                     'database.connections.tenant.database' => $tenantDb,
