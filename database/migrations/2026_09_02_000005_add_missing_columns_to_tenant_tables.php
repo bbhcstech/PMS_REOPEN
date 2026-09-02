@@ -89,9 +89,12 @@ return new class extends Migration
             });
         }
 
-        // 6. Ensure employee_details table has status, exit_date, and company_id
+        // 6. Ensure employee_details table has parent_dpt_id, status, exit_date, and company_id
         if (Schema::hasTable('employee_details')) {
             Schema::table('employee_details', function (Blueprint $table) {
+                if (! Schema::hasColumn('employee_details', 'parent_dpt_id')) {
+                    $table->unsignedBigInteger('parent_dpt_id')->nullable()->after('designation_id')->index();
+                }
                 if (! Schema::hasColumn('employee_details', 'status')) {
                     $table->string('status', 191)->nullable()->default('active')->after('user_id');
                 }
@@ -131,7 +134,7 @@ return new class extends Migration
             });
         }
 
-        // 8. Ensure departments table has dpt_name, dpt_code, company_id, archived_at
+        // 8. Ensure departments table has dpt_name, dpt_code, parent_dpt_id, company_id, archived_at
         if (Schema::hasTable('departments')) {
             Schema::table('departments', function (Blueprint $table) {
                 if (! Schema::hasColumn('departments', 'dpt_name')) {
@@ -139,6 +142,9 @@ return new class extends Migration
                 }
                 if (! Schema::hasColumn('departments', 'dpt_code')) {
                     $table->string('dpt_code')->nullable()->after('dpt_name');
+                }
+                if (! Schema::hasColumn('departments', 'parent_dpt_id')) {
+                    $table->unsignedBigInteger('parent_dpt_id')->nullable()->after('dpt_name')->index();
                 }
                 if (! Schema::hasColumn('departments', 'company_id')) {
                     $table->unsignedBigInteger('company_id')->nullable()->after('id')->index();

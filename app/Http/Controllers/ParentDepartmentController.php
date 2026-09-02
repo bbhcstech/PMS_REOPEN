@@ -16,12 +16,24 @@ class ParentDepartmentController extends Controller
      */
     public function index(Request $request)
     {
-        $departments = ParentDepartment::withCount(['departments', 'employees'])
-            ->whereNull('archived_at')
-            ->orderBy('id', 'desc')
-            ->get();
-        $archivedCount = ParentDepartment::whereNotNull('archived_at')->count();
-        $subDepartmentsCount = \App\Models\Department::whereNull('archived_at')->count();
+        $withCounts = ['departments'];
+        if (\Illuminate\Support\Facades\Schema::hasColumn('employee_details', 'parent_dpt_id')) {
+            $withCounts[] = 'employees';
+        }
+
+        $query = ParentDepartment::withCount($withCounts);
+        if (\Illuminate\Support\Facades\Schema::hasColumn('parent_departments', 'archived_at')) {
+            $query->whereNull('archived_at');
+        }
+        $departments = $query->orderBy('id', 'desc')->get();
+
+        $archivedCount = \Illuminate\Support\Facades\Schema::hasColumn('parent_departments', 'archived_at')
+            ? ParentDepartment::whereNotNull('archived_at')->count()
+            : 0;
+
+        $subDepartmentsCount = \Illuminate\Support\Facades\Schema::hasColumn('departments', 'archived_at')
+            ? \App\Models\Department::whereNull('archived_at')->count()
+            : \App\Models\Department::count();
 
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json(['data' => $departments]);
