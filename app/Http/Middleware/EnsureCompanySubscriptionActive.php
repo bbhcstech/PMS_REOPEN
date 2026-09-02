@@ -73,23 +73,25 @@ class EnsureCompanySubscriptionActive
         }
 
         if ($company) {
-            /** @var SubscriptionService $subService */
-            $subService = app(SubscriptionService::class);
+            try {
+                /** @var SubscriptionService $subService */
+                $subService = app(SubscriptionService::class);
 
-            // Execute real-time dynamic expiration check
-            $subService->checkRealtimeExpiration($company);
+                // Execute real-time dynamic expiration check
+                $subService->checkRealtimeExpiration($company);
 
-            if ($subService->isSuspended($company)) {
-                if ($request->expectsJson() || $request->is('api/*')) {
-                    return response()->json([
-                        'error'               => 'Your subscription has expired and your organization has been suspended. Please select a paid plan to restore access.',
-                        'subscription_status' => 'suspended',
-                        'company'             => $company->name,
-                    ], 402);
+                if ($subService->isSuspended($company)) {
+                    if ($request->expectsJson() || $request->is('api/*')) {
+                        return response()->json([
+                            'error'               => 'Your subscription has expired and your organization has been suspended. Please select a paid plan to restore access.',
+                            'subscription_status' => 'suspended',
+                            'company'             => $company->name,
+                        ], 402);
+                    }
+
+                    return redirect()->route('subscription.suspended');
                 }
-
-                return redirect()->route('subscription.suspended');
-            }
+            } catch (\Throwable $e) {}
         }
 
         return $next($request);
