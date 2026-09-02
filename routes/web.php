@@ -362,7 +362,7 @@ Route::get('/manager-login', function () {
 })->middleware('guest')->name('manager.login');
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
-    ->middleware(['auth', 'verified', 'module.access'])
+    ->middleware(['auth', 'module.access'])
     ->name('dashboard');
 
 Route::middleware(['auth', 'verified'])->prefix('superadmin')->name('superadmin.')->group(function () {

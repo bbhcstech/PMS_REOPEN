@@ -28,14 +28,16 @@ class AppServiceProvider extends ServiceProvider
         Paginator::useBootstrapFive();
 
         view()->composer('*', function ($view) {
-            $user = auth()->user();
-            $isAdmin = ($user && $user->role === 'admin');
+            try {
+                $user = auth()->user();
+                $isAdmin = ($user && in_array(strtolower((string) ($user->role ?? '')), ['admin', 'administrator', 'superadmin'], true));
 
-            $view->with([
-                'currentCompany' => app(CompanyContext::class)->current(),
-                'isSettingsReadOnly' => ! $isAdmin,
-                'isAdminUser' => $isAdmin,
-            ]);
+                $view->with([
+                    'currentCompany' => app(CompanyContext::class)->current(),
+                    'isSettingsReadOnly' => ! $isAdmin,
+                    'isAdminUser' => $isAdmin,
+                ]);
+            } catch (\Throwable $e) {}
         });
 
         Password::defaults(function () {
