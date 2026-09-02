@@ -119,17 +119,25 @@ class EmployeeController extends Controller
             ->get();
 
         $companyStats = $companies->map(function (Company $company) {
+            $activeQuery = User::where('role', 'employee')
+                ->whereNull('archived_at')
+                ->where('company_id', $company->id);
+
+            if (Schema::hasColumn('employee_details', 'status')) {
+                $activeQuery->whereHas('employeeDetail', fn ($detail) => $detail->whereIn('status', ['Active', 'active']));
+            } elseif (Schema::hasColumn('users', 'is_active')) {
+                $activeQuery->where('is_active', true);
+            } elseif (Schema::hasColumn('users', 'status')) {
+                $activeQuery->whereIn('status', ['active', 'Active', 1]);
+            }
+
             return [
                 'company' => $company,
                 'employees' => User::where('role', 'employee')
                     ->whereNull('archived_at')
                     ->where('company_id', $company->id)
                     ->count(),
-                'active' => User::where('role', 'employee')
-                    ->whereNull('archived_at')
-                    ->where('company_id', $company->id)
-                    ->whereHas('employeeDetail', fn ($detail) => $detail->where('status', 'Active'))
-                    ->count(),
+                'active' => $activeQuery->count(),
             ];
         });
 
@@ -192,8 +200,11 @@ class EmployeeController extends Controller
             'departments'     => Department::with('parent')->orderBy('dpt_name')->get(),
             'prtdepartments'  => ParentDepartment::orderBy('dpt_name')->get(),
             'users'           => User::where('role', 'employee')
-                                    ->whereHas('employeeDetail', function ($q) {
-                                        $q->where('status', 'Active');
+                                    ->whereNull('archived_at')
+                                    ->when(Schema::hasColumn('employee_details', 'status'), function ($q) {
+                                        $q->whereHas('employeeDetail', function ($detail) {
+                                            $detail->whereIn('status', ['Active', 'active']);
+                                        });
                                     })
                                     ->orderBy('name')
                                     ->get(),
