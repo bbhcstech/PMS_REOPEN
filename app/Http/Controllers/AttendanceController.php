@@ -410,11 +410,36 @@ class AttendanceController extends Controller
         // ensure model accessors are appended so view can use total_seconds/total_duration
         $attendances->each->append(['total_seconds','total_duration','clock_in_datetime','clock_out_datetime']);
 
-        $leaves = Leave::whereMonth('date', $month)
-            ->whereYear('date', $year)
-            ->where('status', 'approved')
-            ->whereIn('user_id', $users->pluck('id'))
-            ->get();
+        $leavesQuery = Leave::query();
+        if (\Illuminate\Support\Facades\Schema::hasColumn('leaves', 'status')) {
+            $leavesQuery->where('status', 'approved');
+        }
+        if ($users->isNotEmpty()) {
+            $leavesQuery->whereIn('user_id', $users->pluck('id'));
+        }
+
+        $leavesQuery->where(function ($q) use ($startDate, $endDate, $month, $year) {
+            $hasDateFilter = false;
+            if (\Illuminate\Support\Facades\Schema::hasColumn('leaves', 'start_date') && \Illuminate\Support\Facades\Schema::hasColumn('leaves', 'end_date')) {
+                $q->where(function ($sub) use ($startDate, $endDate) {
+                    $sub->whereDate('start_date', '<=', $endDate)
+                        ->whereDate('end_date', '>=', $startDate);
+                });
+                $hasDateFilter = true;
+            }
+            if (\Illuminate\Support\Facades\Schema::hasColumn('leaves', 'date')) {
+                if ($hasDateFilter) {
+                    $q->orWhere(function ($sub) use ($month, $year) {
+                        $sub->whereMonth('date', $month)->whereYear('date', $year);
+                    });
+                } else {
+                    $q->whereMonth('date', $month)->whereYear('date', $year);
+                    $hasDateFilter = true;
+                }
+            }
+        });
+
+        $leaves = $leavesQuery->get();
 
         // Step 3: initialize attendanceMap and mark holidays
         $attendanceMap = [];
@@ -440,13 +465,22 @@ class AttendanceController extends Controller
 
         // Step 5: merge approved leaves
         foreach ($leaves as $leave) {
-            $dateKey = Carbon::parse($leave->date)->format('Y-m-d');
-            $attendanceMap[$leave->user_id][$dateKey] = (object)[
-                'status' => 'leave',
-                'leave_type' => $leave->type,
-                'duration' => $leave->duration,
-                'reason' => $leave->reason ?? null,
-            ];
+            $lStart = !empty($leave->start_date) ? Carbon::parse($leave->start_date) : (!empty($leave->date) ? Carbon::parse($leave->date) : null);
+            $lEnd = !empty($leave->end_date) ? Carbon::parse($leave->end_date) : $lStart;
+
+            if ($lStart) {
+                for ($curr = $lStart->copy(); $curr->lte($lEnd); $curr->addDay()) {
+                    if ($curr->gte($startDate) && $curr->lte($endDate)) {
+                        $dateKey = $curr->format('Y-m-d');
+                        $attendanceMap[$leave->user_id][$dateKey] = (object)[
+                            'status' => 'leave',
+                            'leave_type' => $leave->type ?? 'leave',
+                            'duration' => $leave->duration ?? 'full_day',
+                            'reason' => $leave->reason ?? null,
+                        ];
+                    }
+                }
+            }
         }
 
         // Step 6: fill remaining as absent
