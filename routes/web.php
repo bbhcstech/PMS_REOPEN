@@ -1148,6 +1148,7 @@ Route::get('/my-awards', [AwardController::class, 'myAwards'])->name('awards.my-
     */
     Route::get('/products', [ProductController::class, 'index'])->name('products.index');
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+    Route::get('/orders/{id}/items', [OrderController::class, 'getItems'])->name('orders.items');
     Route::post('/orders/bulk-payment-status', [OrderController::class, 'bulkUpdatePaymentStatus'])->name('orders.bulk-payment-status');
     Route::post('/orders/{id}/payment-status', [OrderController::class, 'updatePaymentStatus'])->name('orders.update-payment-status');
 

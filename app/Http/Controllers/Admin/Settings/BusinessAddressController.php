@@ -22,6 +22,10 @@ class BusinessAddressController extends Controller
 
     public function store(Request $request)
     {
+        if (auth()->user()?->role !== 'admin') {
+            abort(403, 'Unauthorized. Only administrators can add branch addresses.');
+        }
+
         $validated = $request->validate([
             'branch_name' => 'required|string|max:255',
             'location'    => 'required|string|max:255',
@@ -55,6 +59,19 @@ class BusinessAddressController extends Controller
 
         BusinessAddress::create($validated);
 
+        // Broadcast notification to Admin, HR, Manager, and Employees
+        \App\Services\SystemNotificationService::notifyAllRoles(
+            'Branch Address Created',
+            'New branch office address (' . $validated['branch_name'] . ') has been added by ' . (auth()->user()?->name ?? 'Admin') . '.',
+            route('admin.settings.business-address.index'),
+            [
+                'type' => 'setting_update',
+                'setting_module' => 'business-address',
+                'icon' => 'fa-map-pin',
+                'color' => 'success',
+            ]
+        );
+
         return redirect()->route('admin.settings.business-address.index')
             ->with('success', 'Branch address created successfully.');
     }
@@ -67,6 +84,10 @@ class BusinessAddressController extends Controller
 
     public function update(Request $request, BusinessAddress $businessAddress)
     {
+        if (auth()->user()?->role !== 'admin') {
+            abort(403, 'Unauthorized. Only administrators can update branch addresses.');
+        }
+
         $validated = $request->validate([
             'branch_name' => 'required|string|max:255',
             'location'    => 'required|string|max:255',
@@ -111,12 +132,29 @@ class BusinessAddressController extends Controller
 
         $businessAddress->update($validated);
 
+        // Broadcast notification to Admin, HR, Manager, and Employees
+        \App\Services\SystemNotificationService::notifyAllRoles(
+            'Branch Address Updated',
+            'Branch office details (' . $validated['branch_name'] . ') have been updated by ' . (auth()->user()?->name ?? 'Admin') . '.',
+            route('admin.settings.business-address.index'),
+            [
+                'type' => 'setting_update',
+                'setting_module' => 'business-address',
+                'icon' => 'fa-map-pin',
+                'color' => 'success',
+            ]
+        );
+
         return redirect()->route('admin.settings.business-address.index')
             ->with('success', 'Branch address updated successfully.');
     }
 
     public function destroy(BusinessAddress $businessAddress)
     {
+        if (auth()->user()?->role !== 'admin') {
+            abort(403, 'Unauthorized. Only administrators can delete branch addresses.');
+        }
+
         if (BusinessAddress::count() <= 1) {
             return redirect()->route('admin.settings.business-address.index')
                 ->with('error', 'Cannot delete the only business address.');
@@ -133,7 +171,21 @@ class BusinessAddressController extends Controller
             File::delete(public_path($businessAddress->logo));
         }
 
+        $deletedName = $businessAddress->branch_name;
         $businessAddress->delete();
+
+        // Broadcast notification to Admin, HR, Manager, and Employees
+        \App\Services\SystemNotificationService::notifyAllRoles(
+            'Branch Address Deleted',
+            'Branch office location (' . $deletedName . ') has been removed by ' . (auth()->user()?->name ?? 'Admin') . '.',
+            route('admin.settings.business-address.index'),
+            [
+                'type' => 'setting_update',
+                'setting_module' => 'business-address',
+                'icon' => 'fa-trash-alt',
+                'color' => 'warning',
+            ]
+        );
 
         return redirect()->route('admin.settings.business-address.index')
             ->with('success', 'Branch address deleted successfully.');
@@ -141,9 +193,26 @@ class BusinessAddressController extends Controller
 
     public function makeDefault(Request $request, BusinessAddress $businessAddress)
     {
+        if (auth()->user()?->role !== 'admin') {
+            abort(403, 'Unauthorized. Only administrators can change default branch address.');
+        }
+
         BusinessAddress::where('is_default', true)->update(['is_default' => false]);
 
         $businessAddress->update(['is_default' => true]);
+
+        // Broadcast notification to Admin, HR, Manager, and Employees
+        \App\Services\SystemNotificationService::notifyAllRoles(
+            'Default Branch Address Changed',
+            'Primary headquarters branch address has been changed to ' . $businessAddress->branch_name . ' by ' . (auth()->user()?->name ?? 'Admin') . '.',
+            route('admin.settings.business-address.index'),
+            [
+                'type' => 'setting_update',
+                'setting_module' => 'business-address',
+                'icon' => 'fa-star',
+                'color' => 'success',
+            ]
+        );
 
         return redirect()->route('admin.settings.business-address.index')
             ->with('success', 'Default business address updated.');

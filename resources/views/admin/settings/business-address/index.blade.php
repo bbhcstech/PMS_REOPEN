@@ -494,12 +494,24 @@
                         </div>
                     </div>
                     
-                    <a href="{{ route('admin.settings.business-address.create') }}" class="btn btn-sm px-3 rounded-pill fw-bold" style="background: #e6f3ec; color: #0f744c; border: 1px solid rgba(16, 185, 129, 0.25);">
-                        <i class="fas fa-plus me-1"></i> Add Address
-                    </a>
+                    @if(!$isSettingsReadOnly)
+                        <a href="{{ route('admin.settings.business-address.create') }}" class="btn btn-sm px-3 rounded-pill fw-bold" style="background: #e6f3ec; color: #0f744c; border: 1px solid rgba(16, 185, 129, 0.25);">
+                            <i class="fas fa-plus me-1"></i> Add Address
+                        </a>
+                    @endif
                 </div>
 
                 <div class="p-4 p-md-5">
+                    @if($isSettingsReadOnly)
+                        <div class="alert d-flex align-items-center mb-4 rounded-3 border-0 shadow-sm" style="background: linear-gradient(135deg, #eff6ff, #dbeafe); color: #1e40af; border-left: 4px solid #3b82f6 !important; padding: 14px 18px;">
+                            <i class="fas fa-eye me-3 fs-3 text-primary"></i>
+                            <div>
+                                <strong class="d-block text-primary fw-bold" style="font-size: 14px;">View-Only Mode</strong>
+                                <span style="font-size: 13px; color: #1e3a8a;">You are viewing branch office locations in read-only mode. Only Administrators have permission to add, edit, or remove business addresses.</span>
+                            </div>
+                        </div>
+                    @endif
+
                     @if($addresses && $addresses->count() > 0)
                         <div class="row g-4">
                             @foreach($addresses as $index => $address)
@@ -553,35 +565,37 @@
                                             <i class="fas fa-map text-muted me-1"></i> {{ $address->address }}
                                         </div>
 
-                                        <div class="d-flex align-items-center justify-content-between pt-3 border-top flex-wrap gap-2">
-                                            <div>
-                                                @if(!$address->is_default)
-                                                    <form action="{{ route('admin.settings.business-address.make-default', $address->id) }}" method="POST" class="d-inline">
-                                                        @csrf
-                                                        @method('PUT')
-                                                        <button type="submit" class="btn btn-sm rounded-pill px-3 fw-bold" style="background: #e6f3ec; color: #0f744c; border: 1px solid rgba(16, 185, 129, 0.25);">
-                                                            <i class="fas fa-check-circle me-1"></i> Set as Default
-                                                        </button>
-                                                    </form>
-                                                @endif
-                                            </div>
+                                        @if(!$isSettingsReadOnly)
+                                            <div class="d-flex align-items-center justify-content-between pt-3 border-top flex-wrap gap-2">
+                                                <div>
+                                                    @if(!$address->is_default)
+                                                        <form action="{{ route('admin.settings.business-address.make-default', $address->id) }}" method="POST" class="d-inline">
+                                                            @csrf
+                                                            @method('PUT')
+                                                            <button type="submit" class="btn btn-sm rounded-pill px-3 fw-bold" style="background: #e6f3ec; color: #0f744c; border: 1px solid rgba(16, 185, 129, 0.25);">
+                                                                <i class="fas fa-check-circle me-1"></i> Set as Default
+                                                            </button>
+                                                        </form>
+                                                    @endif
+                                                </div>
 
-                                            <div class="d-flex align-items-center gap-2">
-                                                <a href="{{ route('admin.settings.business-address.edit', $address) }}" class="btn btn-sm rounded-pill px-3 fw-bold" style="background: #fef3c7; color: #92400e; border: 1px solid rgba(217, 119, 6, 0.25);">
-                                                    <i class="fas fa-edit me-1"></i> Edit
-                                                </a>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <a href="{{ route('admin.settings.business-address.edit', $address) }}" class="btn btn-sm rounded-pill px-3 fw-bold" style="background: #fef3c7; color: #92400e; border: 1px solid rgba(217, 119, 6, 0.25);">
+                                                        <i class="fas fa-edit me-1"></i> Edit
+                                                    </a>
 
-                                                @if($addresses->count() > 1)
-                                                    <form action="{{ route('admin.settings.business-address.destroy', $address) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this business address?');">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit" class="btn btn-sm rounded-pill px-3 fw-bold" style="background: #fef2f2; color: #b91c1c; border: 1px solid rgba(220, 38, 38, 0.25);">
-                                                            <i class="fas fa-trash-alt me-1"></i> Delete
-                                                        </button>
-                                                    </form>
-                                                @endif
+                                                    @if($addresses->count() > 1)
+                                                        <form action="{{ route('admin.settings.business-address.destroy', $address) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this business address?');">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit" class="btn btn-sm rounded-pill px-3 fw-bold" style="background: #fef2f2; color: #b91c1c; border: 1px solid rgba(220, 38, 38, 0.25);">
+                                                                <i class="fas fa-trash-alt me-1"></i> Delete
+                                                            </button>
+                                                        </form>
+                                                    @endif
+                                                </div>
                                             </div>
-                                        </div>
+                                        @endif
                                     </div>
                                 </div>
                             @endforeach

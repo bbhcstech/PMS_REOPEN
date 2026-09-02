@@ -579,6 +579,16 @@
                 </div>
 
                 <div class="p-4 p-md-5">
+                    @if($isSettingsReadOnly)
+                        <div class="alert d-flex align-items-center mb-4 rounded-3 border-0 shadow-sm" style="background: linear-gradient(135deg, #eff6ff, #dbeafe); color: #1e40af; border-left: 4px solid #3b82f6 !important; padding: 14px 18px;">
+                            <i class="fas fa-eye me-3 fs-3 text-primary"></i>
+                            <div>
+                                <strong class="d-block text-primary fw-bold" style="font-size: 14px;">View-Only Mode</strong>
+                                <span style="font-size: 13px; color: #1e3a8a;">You are viewing leave policy settings in read-only mode. Only Administrators have permission to modify leave allowances and policy workflows.</span>
+                            </div>
+                        </div>
+                    @endif
+
                     <form method="POST" action="{{ route('admin.settings.leave.update') }}">
                         @csrf
 
@@ -594,7 +604,8 @@
                                 <div class="input-group input-group-custom">
                                     <span class="input-group-text"><i class="fas fa-sun"></i></span>
                                     <input type="number" name="annual_casual_leave" class="form-control" min="0" max="365"
-                                        value="{{ old('annual_casual_leave', $settings['annual_casual_leave'] ?? '14') }}" required>
+                                        value="{{ old('annual_casual_leave', $settings['annual_casual_leave'] ?? '14') }}"
+                                        {{ $isSettingsReadOnly ? 'readonly' : 'required' }}>
                                 </div>
                             </div>
 
@@ -604,7 +615,8 @@
                                 <div class="input-group input-group-custom">
                                     <span class="input-group-text"><i class="fas fa-notes-medical"></i></span>
                                     <input type="number" name="annual_sick_leave" class="form-control" min="0" max="365"
-                                        value="{{ old('annual_sick_leave', $settings['annual_sick_leave'] ?? '10') }}" required>
+                                        value="{{ old('annual_sick_leave', $settings['annual_sick_leave'] ?? '10') }}"
+                                        {{ $isSettingsReadOnly ? 'readonly' : 'required' }}>
                                 </div>
                             </div>
 
@@ -614,7 +626,8 @@
                                 <div class="input-group input-group-custom">
                                     <span class="input-group-text"><i class="fas fa-redo-alt"></i></span>
                                     <input type="number" name="carry_forward_limit" class="form-control" min="0" max="100"
-                                        value="{{ old('carry_forward_limit', $settings['carry_forward_limit'] ?? '5') }}" required>
+                                        value="{{ old('carry_forward_limit', $settings['carry_forward_limit'] ?? '5') }}"
+                                        {{ $isSettingsReadOnly ? 'readonly' : 'required' }}>
                                 </div>
                             </div>
                         </div>
@@ -628,9 +641,11 @@
                             <div class="col-md-4">
                                 <div class="switch-box-container">
                                     <div class="form-check form-switch mb-0 d-flex align-items-center gap-3">
-                                        <input class="form-check-input ms-0" type="checkbox" name="require_approval" value="1" id="approvalSwitch" style="width: 44px; height: 24px; cursor: pointer;"
-                                            {{ ($settings['require_approval'] ?? '1') == '1' ? 'checked' : '' }}>
-                                        <label class="form-check-label fw-bold text-dark mb-0" for="approvalSwitch" style="font-size: 0.9rem; cursor: pointer;">
+                                        <input class="form-check-input ms-0" type="checkbox" name="require_approval" value="1" id="approvalSwitch"
+                                            style="width: 44px; height: 24px; cursor: {{ $isSettingsReadOnly ? 'default' : 'pointer' }};"
+                                            {{ ($settings['require_approval'] ?? '1') == '1' ? 'checked' : '' }}
+                                            {{ $isSettingsReadOnly ? 'disabled' : '' }}>
+                                        <label class="form-check-label fw-bold text-dark mb-0" for="approvalSwitch" style="font-size: 0.9rem; cursor: {{ $isSettingsReadOnly ? 'default' : 'pointer' }};">
                                             Require Admin / Manager Approval
                                             <small class="d-block text-muted fw-normal" style="font-size: 0.82rem;">All leave applications must be manually approved by supervisor.</small>
                                         </label>
@@ -641,9 +656,11 @@
                             <div class="col-md-4">
                                 <div class="switch-box-container">
                                     <div class="form-check form-switch mb-0 d-flex align-items-center gap-3">
-                                        <input class="form-check-input ms-0" type="checkbox" name="probation_leave_allowed" value="1" id="probationSwitch" style="width: 44px; height: 24px; cursor: pointer;"
-                                            {{ ($settings['probation_leave_allowed'] ?? '0') == '1' ? 'checked' : '' }}>
-                                        <label class="form-check-label fw-bold text-dark mb-0" for="probationSwitch" style="font-size: 0.9rem; cursor: pointer;">
+                                        <input class="form-check-input ms-0" type="checkbox" name="probation_leave_allowed" value="1" id="probationSwitch"
+                                            style="width: 44px; height: 24px; cursor: {{ $isSettingsReadOnly ? 'default' : 'pointer' }};"
+                                            {{ ($settings['probation_leave_allowed'] ?? '0') == '1' ? 'checked' : '' }}
+                                            {{ $isSettingsReadOnly ? 'disabled' : '' }}>
+                                        <label class="form-check-label fw-bold text-dark mb-0" for="probationSwitch" style="font-size: 0.9rem; cursor: {{ $isSettingsReadOnly ? 'default' : 'pointer' }};">
                                             Allow Leave During Probation
                                             <small class="d-block text-muted fw-normal" style="font-size: 0.82rem;">Permit newly joined employees to apply for paid leave.</small>
                                         </label>
@@ -654,9 +671,11 @@
                             <div class="col-md-4">
                                 <div class="switch-box-container">
                                     <div class="form-check form-switch mb-0 d-flex align-items-center gap-3">
-                                        <input class="form-check-input ms-0" type="checkbox" name="enable_encashment" value="1" id="encashmentSwitch" style="width: 44px; height: 24px; cursor: pointer;"
-                                            {{ ($settings['enable_encashment'] ?? '0') == '1' ? 'checked' : '' }}>
-                                        <label class="form-check-label fw-bold text-dark mb-0" for="encashmentSwitch" style="font-size: 0.9rem; cursor: pointer;">
+                                        <input class="form-check-input ms-0" type="checkbox" name="enable_encashment" value="1" id="encashmentSwitch"
+                                            style="width: 44px; height: 24px; cursor: {{ $isSettingsReadOnly ? 'default' : 'pointer' }};"
+                                            {{ ($settings['enable_encashment'] ?? '0') == '1' ? 'checked' : '' }}
+                                            {{ $isSettingsReadOnly ? 'disabled' : '' }}>
+                                        <label class="form-check-label fw-bold text-dark mb-0" for="encashmentSwitch" style="font-size: 0.9rem; cursor: {{ $isSettingsReadOnly ? 'default' : 'pointer' }};">
                                             Enable Leave Encashment
                                             <small class="d-block text-muted fw-normal" style="font-size: 0.82rem;">Employees can request payout for unused leave balance.</small>
                                         </label>
@@ -667,10 +686,15 @@
 
                         <!-- Form Action Buttons -->
                         <div class="mt-5 pt-4 border-top d-flex justify-content-end">
-                            <button type="submit" class="btn-save-address">
-                                <i class="fas fa-save me-1.5"></i> Save Leave Settings
-                            </button>
-                        </div>
+                            @if($isSettingsReadOnly)
+                                <span class="badge rounded-pill px-3.5 py-2 fw-bold" style="background: #f1f5f9; color: #64748b; font-size: 13px; border: 1px solid #cbd5e1;">
+                                    <i class="fas fa-lock me-1.5 text-muted"></i> Read-Only (Admin Managed)
+                                </span>
+                            @else
+                                <button type="submit" class="btn-save-address">
+                                    <i class="fas fa-save me-1.5"></i> Save Leave Settings
+                                </button>
+                            @endif
                     </form>
                 </div>
             </div>

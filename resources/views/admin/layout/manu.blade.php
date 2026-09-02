@@ -1087,15 +1087,7 @@
               </a>
             </li>
 
-            <!-- My Projects (for Employee) -->
-            @if($isEmployeeUser || $canSeeModule('projects'))
-            <li class="menu-item {{ (request()->routeIs('projects.*') && !request()->routeIs('projects.tasks.*') && !request()->routeIs('projects.timelogs.*')) ? 'active' : '' }}">
-              <a href="{{ route('projects.index') }}" class="menu-link" data-sidebar-key="my-projects">
-                  <i class="menu-icon tf-icons bx bx-briefcase-alt-2"></i>
-                  <div class="text-truncate" data-i18n="My Projects">My Projects</div>
-              </a>
-            </li>
-            @endif
+
 
             @if($canSeeModule('organization'))
             <li class="menu-item {{ request()->routeIs('organization.*') ? 'active' : '' }}">
@@ -2251,8 +2243,9 @@
                                 </li>
 
 
-                                <li class="notification-dropdown-foot">
-                                    <a href="{{ route('notifications.all') }}" class="btn btn-sm btn-primary rounded-pill flex-grow-1">View all</a>
+                                <li class="notification-dropdown-foot d-flex gap-2 p-2.5">
+                                    <a href="{{ route('notifications.all') }}" class="btn btn-sm btn-primary rounded-pill flex-grow-1">View All</a>
+                                    <a href="{{ route('notifications.all', ['filter' => 'unread']) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">Unread ({{ $navbarUnreadCount }})</a>
                                 </li>
                             </ul>
                         </li>

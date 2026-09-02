@@ -23,6 +23,10 @@ class RecruitmentSettingsController extends Controller
 
     public function update(Request $request)
     {
+        if (auth()->user()?->role !== 'admin') {
+            abort(403, 'Unauthorized. Only administrators can update recruitment settings.');
+        }
+
         $request->validate([
             'job_categories' => 'required|string',
             'pipeline_stages' => 'required|string',
@@ -50,6 +54,19 @@ class RecruitmentSettingsController extends Controller
                 ]
             );
         }
+
+        // Broadcast notification to Admin, HR, Manager, and Employees
+        \App\Services\SystemNotificationService::notifyAllRoles(
+            'Recruitment Pipeline Settings Updated',
+            'Recruitment pipeline stages and candidate application settings have been updated by ' . (auth()->user()?->name ?? 'Admin') . '.',
+            route('admin.settings.recruitment'),
+            [
+                'type' => 'setting_update',
+                'setting_module' => 'recruitment',
+                'icon' => 'fa-user-plus',
+                'color' => 'success',
+            ]
+        );
 
         return back()->with('success', 'Recruitment settings updated successfully!');
     }

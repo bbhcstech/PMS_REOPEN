@@ -274,7 +274,13 @@
         border-radius: 20px;
         border: 1px solid var(--lh-card-border);
         box-shadow: var(--lh-shadow);
-        overflow: hidden;
+        overflow: visible !important;
+    }
+    .lh-table-card .table-responsive {
+        min-height: 420px;
+        padding-bottom: 60px;
+        overflow-x: auto;
+        overflow-y: visible !important;
     }
     .lh-table {
         width: 100%;
@@ -421,9 +427,10 @@
     .lh-dropdown-menu {
         border-radius: 14px;
         border: 1px solid var(--lh-slate-200);
-        box-shadow: 0 16px 36px rgba(0,0,0,0.12);
+        box-shadow: 0 16px 36px rgba(0,0,0,0.18);
         padding: 0.5rem;
-        min-width: 210px;
+        min-width: 235px;
+        z-index: 1065 !important;
     }
     .lh-dropdown-item {
         border-radius: 8px;
@@ -776,12 +783,12 @@
                                 </div>
                             </td>
                             <td>
-                                <div style="font-size: 0.85rem; font-weight: 600; color: #334155;">{{ $item->updated_at->format('M d, Y') }}</div>
+                <div style="font-size: 0.85rem; font-weight: 600; color: #334155;">{{ $item->updated_at->format('M d, Y') }}</div>
                                 <small class="text-muted" style="font-size: 0.75rem;">{{ $item->updated_at->format('h:i A') }}</small>
                             </td>
                             <td class="text-end">
                                 <div class="dropdown">
-                                    <button class="lh-action-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <button class="lh-action-btn" type="button" data-bs-toggle="dropdown" data-bs-popper-config='{"strategy":"fixed"}' aria-expanded="false">
                                         <i class="bx bx-dots-vertical-rounded"></i>
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end lh-dropdown-menu">
