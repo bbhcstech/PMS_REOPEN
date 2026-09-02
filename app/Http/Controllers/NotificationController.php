@@ -27,29 +27,33 @@ class NotificationController extends Controller
         $centralNotifications = collect();
         if ($companyId && class_exists(\App\Models\Central\CentralNotification::class)) {
             try {
-                app(\App\Services\SubscriptionNotificationEngine::class)->scanAndGenerateAlerts($companyId);
-            } catch (\Throwable $e) {}
+                try {
+                    app(\App\Services\SubscriptionNotificationEngine::class)->scanAndGenerateAlerts($companyId);
+                } catch (\Throwable $e) {}
 
-            $query = \App\Models\Central\CentralNotification::on('central')
-                ->with(['company.subscriptions.plan'])
-                ->where('company_id', $companyId)
-                ->whereIn('target_audience', ['company_admin', 'all']);
+                $query = \App\Models\Central\CentralNotification::on('central')
+                    ->with(['company.subscriptions.plan'])
+                    ->where('company_id', $companyId)
+                    ->whereIn('target_audience', ['company_admin', 'all']);
 
-            if ($request->filled('severity')) {
-                $query->where('severity', strtoupper($request->severity));
-            }
-
-            if ($request->filled('status')) {
-                if ($request->status === 'unread') {
-                    $query->where('is_read', false);
-                } elseif ($request->status === 'read') {
-                    $query->where('is_read', true);
+                if ($request->filled('severity')) {
+                    $query->where('severity', strtoupper($request->severity));
                 }
-            } elseif ($filter === 'unread') {
-                $query->where('is_read', false);
-            }
 
-            $centralNotifications = $query->orderBy('created_at', 'desc')->get();
+                if ($request->filled('status')) {
+                    if ($request->status === 'unread') {
+                        $query->where('is_read', false);
+                    } elseif ($request->status === 'read') {
+                        $query->where('is_read', true);
+                    }
+                } elseif ($filter === 'unread') {
+                    $query->where('is_read', false);
+                }
+
+                $centralNotifications = $query->orderBy('created_at', 'desc')->get();
+            } catch (\Throwable $e) {
+                $centralNotifications = collect();
+            }
         }
 
         $userNotifQuery = $user->notifications();
@@ -97,22 +101,24 @@ class NotificationController extends Controller
         $companyId = $company?->id ?? auth()->user()?->company_id;
 
         if ($companyId && class_exists(\App\Models\Central\CentralNotification::class)) {
-            $centralNotif = \App\Models\Central\CentralNotification::on('central')
-                ->where('company_id', $companyId)
-                ->where('id', $id)
-                ->first();
+            try {
+                $centralNotif = \App\Models\Central\CentralNotification::on('central')
+                    ->where('company_id', $companyId)
+                    ->where('id', $id)
+                    ->first();
 
-            if ($centralNotif) {
-                $centralNotif->update([
-                    'is_read' => true,
-                    'read_at' => now(),
-                ]);
+                if ($centralNotif) {
+                    $centralNotif->update([
+                        'is_read' => true,
+                        'read_at' => now(),
+                    ]);
 
-                if (request()->expectsJson() || request()->ajax()) {
-                    return response()->json(['status' => 'ok']);
+                    if (request()->expectsJson() || request()->ajax()) {
+                        return response()->json(['status' => 'ok']);
+                    }
+                    return back()->with('success', 'Notification marked as read.');
                 }
-                return back()->with('success', 'Notification marked as read.');
-            }
+            } catch (\Throwable $e) {}
         }
 
         $notification = auth()->user()->notifications()->where('id', $id)->first();
@@ -155,13 +161,15 @@ class NotificationController extends Controller
         $companyId = $company?->id ?? auth()->user()?->company_id;
 
         if ($companyId && class_exists(\App\Models\Central\CentralNotification::class)) {
-            \App\Models\Central\CentralNotification::on('central')
-                ->where('company_id', $companyId)
-                ->where('is_read', false)
-                ->update([
-                    'is_read' => true,
-                    'read_at' => now(),
-                ]);
+            try {
+                \App\Models\Central\CentralNotification::on('central')
+                    ->where('company_id', $companyId)
+                    ->where('is_read', false)
+                    ->update([
+                        'is_read' => true,
+                        'read_at' => now(),
+                    ]);
+            } catch (\Throwable $e) {}
         }
 
         auth()->user()->unreadNotifications->markAsRead();
