@@ -16,8 +16,25 @@ html, body {
 
 @media (max-width: 1080px){
   .nav-links { display: none; }
-  .hamburger { display: flex; }
-  .nav-login { display: none; }
+  .hamburger { display: flex !important; }
+  .nav-actions { display: flex; align-items: center; gap: 8px; }
+  .nav-actions .btn-sm { display: none; }
+  .nav-login {
+    display: inline-flex !important;
+    font-weight: 600;
+    font-size: 13.5px;
+    padding: 7px 13px;
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+    color: var(--ink) !important;
+    border: 1px solid var(--border-strong);
+    text-decoration: none;
+    transition: all var(--dur-fast);
+  }
+  .nav-login:hover {
+    background: var(--border-strong);
+    color: var(--brand-primary) !important;
+  }
 
   .feature-grid { grid-template-columns: repeat(2, 1fr); }
   .dept-grid { grid-template-columns: repeat(2, 1fr); }
