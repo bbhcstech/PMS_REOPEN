@@ -197,8 +197,11 @@ class EmployeeController extends Controller
         return view('admin.employees.create', [
             'companies'        => Company::where('status', 'active')->orderBy('name')->get(),
             'designations'    => Designation::orderBy('name')->get(),
-            'departments'     => Department::with('parent')->orderBy('dpt_name')->get(),
-            'prtdepartments'  => ParentDepartment::orderBy('dpt_name')->get(),
+            'departments'     => Department::with('parent')
+                                    ->when(Schema::hasColumn('departments', 'dpt_name'), fn ($q) => $q->orderBy('dpt_name'), fn ($q) => $q->orderBy('id'))
+                                    ->get(),
+            'prtdepartments'  => ParentDepartment::when(Schema::hasColumn('parent_departments', 'dpt_name'), fn ($q) => $q->orderBy('dpt_name'), fn ($q) => $q->orderBy('id'))
+                                    ->get(),
             'users'           => User::where('role', 'employee')
                                     ->whereNull('archived_at')
                                     ->when(Schema::hasColumn('employee_details', 'status'), function ($q) {
@@ -697,8 +700,8 @@ class EmployeeController extends Controller
         }
 
         $subs = Department::where('parent_dpt_id', $parentId)
-                ->orderBy('dpt_name')
-                ->get(['id', 'dpt_name', 'dpt_code']);
+                ->when(Schema::hasColumn('departments', 'dpt_name'), fn ($q) => $q->orderBy('dpt_name'), fn ($q) => $q->orderBy('id'))
+                ->get(Schema::hasColumn('departments', 'dpt_name') ? ['id', 'dpt_name', 'dpt_code'] : ['id']);
 
         return response()->json($subs);
     }

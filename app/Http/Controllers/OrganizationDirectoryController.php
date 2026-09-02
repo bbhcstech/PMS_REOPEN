@@ -102,7 +102,9 @@ class OrganizationDirectoryController extends Controller
         ];
 
         $companies = \App\Models\Company::where('status', 'active')->orderBy('name')->get();
-        $departments = Department::whereNull('archived_at')->orderBy('dpt_name')->get();
+        $departments = Department::whereNull('archived_at')
+            ->when(Schema::hasColumn('departments', 'dpt_name'), fn ($q) => $q->orderBy('dpt_name'), fn ($q) => $q->orderBy('id'))
+            ->get();
         $designations = Designation::whereNull('archived_at')->orderBy('name')->get();
 
         $managerUserIds = \App\Models\EmployeeDetail::whereNotNull('reporting_to')->pluck('reporting_to')->unique();
@@ -116,7 +118,7 @@ class OrganizationDirectoryController extends Controller
                 }
                 $query->whereHas('user', fn ($user) => $user->whereNull('archived_at'));
             })
-            ->orderBy('dpt_name')
+            ->when(Schema::hasColumn('departments', 'dpt_name'), fn ($q) => $q->orderBy('dpt_name'), fn ($q) => $q->orderBy('id'))
             ->get();
 
         return view('admin.organization-directory.index', compact(
