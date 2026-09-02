@@ -35,8 +35,18 @@ class RecruitmentController extends Controller
         }
 
         $requirements = $query->get();
-        $departments = Department::orderBy('dpt_name')->get();
-        $parentDepartments = ParentDepartment::whereNull('archived_at')->orderBy('dpt_name')->get();
+        $departments = \Illuminate\Support\Facades\Schema::hasColumn('departments', 'dpt_name')
+            ? Department::orderBy('dpt_name')->get()
+            : Department::get();
+
+        $parentQuery = ParentDepartment::query();
+        if (\Illuminate\Support\Facades\Schema::hasColumn('parent_departments', 'archived_at')) {
+            $parentQuery->whereNull('archived_at');
+        }
+        if (\Illuminate\Support\Facades\Schema::hasColumn('parent_departments', 'dpt_name')) {
+            $parentQuery->orderBy('dpt_name');
+        }
+        $parentDepartments = $parentQuery->get();
 
         // Metrics Calculation
         $totalOpen = RecruitmentRequirement::where('status', 'open')->count();
