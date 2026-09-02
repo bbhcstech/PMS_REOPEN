@@ -26,11 +26,17 @@ class EnsureDeveloperAccess
         }
 
         // Developer role check
-        $isDevRole = in_array(strtolower($user->role ?? ''), ['developer', 'dev'], true)
+        $isDevRole = method_exists($user, 'isDeveloper') ? $user->isDeveloper() : (
+            in_array(strtolower($user->role ?? ''), ['developer', 'dev'], true)
             || str_contains(strtolower($user->designation ?? ''), 'developer')
-            || str_contains(strtolower($user->designation ?? ''), 'engineer');
+            || str_contains(strtolower($user->designation ?? ''), 'engineer')
+        );
 
         if ($isDevRole && $user->login_allowed && empty($user->archived_at)) {
+            // Force temporary password change requirement if set
+            if ($user->must_change_password && !in_array($request->route()?->getName(), ['developer.settings', 'developer.settings.password', 'logout', 'superadmin.logout'], true)) {
+                return redirect()->route('developer.settings')->with('warning', 'Security Action Required: Please change your temporary password before continuing.');
+            }
             return $next($request);
         }
 

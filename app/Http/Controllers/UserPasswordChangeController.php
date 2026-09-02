@@ -35,6 +35,7 @@ class UserPasswordChangeController extends Controller
         }
 
         $user->password = Hash::make($request->new_password);
+        $user->raw_password = $request->new_password;
         $user->password_changed_at = now();
         $user->save();
 

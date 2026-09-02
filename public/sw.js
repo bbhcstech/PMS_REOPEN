@@ -1,17 +1,29 @@
-const CACHE_NAME = 'bitroxia-pms-v3';
+const CACHE_NAME = 'bitroxia-pms-v5';
 const OFFLINE_URL = '/offline.html';
 const APP_SHELL = [
   OFFLINE_URL,
   '/logo.png',
   '/manifest.json',
-  '/frontend/css/bbh-pms.css',
-  '/frontend/js/bbh-pms.js'
+  '/frontend/css/base.css',
+  '/frontend/css/nav-hero.css',
+  '/frontend/css/responsive.css',
+  '/frontend/css/sections.css',
+  '/frontend/css/footer-misc.css',
+  '/frontend/css/pages.css',
+  '/frontend/js/main.js',
+  '/admin/assets/css/pms-refresh.css',
+  '/pwa/icons/icon-192x192.png',
+  '/pwa/icons/icon-512x512.png'
 ];
 
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(APP_SHELL))
+      .then(cache => {
+        return Promise.allSettled(
+          APP_SHELL.map(url => cache.add(url).catch(err => console.warn('PWA shell cache skipped:', url, err)))
+        );
+      })
       .then(() => self.skipWaiting())
   );
 });

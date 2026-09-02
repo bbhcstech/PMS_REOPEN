@@ -17,11 +17,36 @@ use Illuminate\Support\Str;
 
 class CompanyController extends Controller
 {
+    private function authorizeSuperAdmin(): void
+    {
+        if (\Illuminate\Support\Facades\Auth::guard('super_admin')->check()) {
+            return;
+        }
+
+        if (auth()->check()) {
+            $user = auth()->user();
+            $isDev = method_exists($user, 'isDeveloper') ? $user->isDeveloper() : in_array(strtolower((string) ($user->role ?? '')), ['developer', 'dev'], true);
+            if ($isDev) {
+                abort(redirect()->route('developer.dashboard'));
+            }
+
+            $role = strtolower((string) ($user->role ?? ''));
+            if ($role === 'client' || $role === 'customer') {
+                abort(403, 'Unauthorized access to Super Admin portal.');
+            }
+
+            return;
+        }
+
+        throw new \Illuminate\Auth\AuthenticationException('Unauthenticated.', ['web', 'super_admin']);
+    }
+
     /**
      * Display a list of all registered tenant companies.
      */
     public function index(): View
     {
+        $this->authorizeSuperAdmin();
         try {
             $companies = Company::on('central')->latest()->get();
         } catch (\Throwable $e) {
@@ -195,80 +220,136 @@ class CompanyController extends Controller
             }
         }
 
-        // Fetch modules
-        try {
-            $modules = \App\Models\Module::on('central')->orderBy('sort_order')->orderBy('name')->get();
-        } catch (\Throwable $e) {
-            $modules = collect();
-        }
+        // Comprehensive list of all Admin Panel features and modules
+        $allSystemModules = [
+            // Core Platform
+            ['name' => 'Dashboard', 'slug' => 'dashboard', 'category' => 'CORE PLATFORM', 'icon' => 'bx-grid-alt', 'description' => 'Overview analytics and key operational widgets.'],
+            ['name' => 'Notifications', 'slug' => 'notifications', 'category' => 'CORE PLATFORM', 'icon' => 'bx-bell', 'description' => 'System alerts and messaging feed.'],
+            ['name' => 'Organization Directory', 'slug' => 'organization', 'category' => 'CORE PLATFORM', 'icon' => 'bx-sitemap', 'description' => 'Company structure and hierarchy.'],
+            ['name' => 'My Documents', 'slug' => 'my-documents', 'category' => 'CORE PLATFORM', 'icon' => 'bx-file', 'description' => 'Personal and employee document repository.'],
 
-        // If modules empty, seed canonical system modules
-        if ($modules->isEmpty()) {
-            $seedModules = [
-                // Core Platform
-                ['name' => 'Dashboard', 'slug' => 'dashboard', 'category' => 'CORE PLATFORM', 'icon' => 'bx-grid-alt', 'description' => 'Overview analytics and key operational widgets.'],
-                ['name' => 'Notifications', 'slug' => 'notifications', 'category' => 'CORE PLATFORM', 'icon' => 'bx-bell', 'description' => 'System alerts and messaging feed.'],
-                ['name' => 'Organization Directory', 'slug' => 'organization', 'category' => 'CORE PLATFORM', 'icon' => 'bx-sitemap', 'description' => 'Company structure and hierarchy.'],
+            // HR & People
+            ['name' => 'HR Management', 'slug' => 'hr', 'category' => 'HR & PEOPLE', 'icon' => 'bx-user-check', 'description' => 'Core HR workflows and admin controls.'],
+            ['name' => 'Employees', 'slug' => 'employees', 'category' => 'HR & PEOPLE', 'icon' => 'bx-user', 'description' => 'Employee database, profiles, and records.'],
+            ['name' => 'Departments', 'slug' => 'departments', 'category' => 'HR & PEOPLE', 'icon' => 'bx-building', 'description' => 'Department division management.'],
+            ['name' => 'Designations', 'slug' => 'designations', 'category' => 'HR & PEOPLE', 'icon' => 'bx-badge-check', 'description' => 'Role titles and designation matrix.'],
+            ['name' => 'Attendance', 'slug' => 'attendance', 'category' => 'HR & PEOPLE', 'icon' => 'bx-time', 'description' => 'Clock in/out tracking, logs, and geolocation.'],
+            ['name' => 'Leave Management', 'slug' => 'leave-management', 'category' => 'HR & PEOPLE', 'icon' => 'bx-calendar-event', 'description' => 'Leave requests, approvals, and balances.'],
+            ['name' => 'Holidays', 'slug' => 'holidays', 'category' => 'HR & PEOPLE', 'icon' => 'bx-gift', 'description' => 'Company and national holiday calendars.'],
+            ['name' => 'Recognition & Awards', 'slug' => 'recognition', 'category' => 'HR & PEOPLE', 'icon' => 'bx-award', 'description' => 'Employee appreciations and rewards.'],
+            ['name' => 'Recruitment', 'slug' => 'recruitment', 'category' => 'HR & PEOPLE', 'icon' => 'bx-user-plus', 'description' => 'Job postings, candidates, and recruitment pipeline.'],
+            ['name' => 'Appraisal & Performance', 'slug' => 'appraisal', 'category' => 'HR & PEOPLE', 'icon' => 'bx-trending-up', 'description' => 'Employee performance appraisals and reviews.'],
 
-                // HR & People
-                ['name' => 'HR Management', 'slug' => 'hr', 'category' => 'HR & PEOPLE', 'icon' => 'bx-user-check', 'description' => 'Core HR workflows and admin controls.'],
-                ['name' => 'Employees', 'slug' => 'employees', 'category' => 'HR & PEOPLE', 'icon' => 'bx-user', 'description' => 'Employee database, profiles, and records.'],
-                ['name' => 'Departments', 'slug' => 'departments', 'category' => 'HR & PEOPLE', 'icon' => 'bx-building', 'description' => 'Department division management.'],
-                ['name' => 'Designations', 'slug' => 'designations', 'category' => 'HR & PEOPLE', 'icon' => 'bx-badge-check', 'description' => 'Role titles and designation matrix.'],
-                ['name' => 'Attendance', 'slug' => 'attendance', 'category' => 'HR & PEOPLE', 'icon' => 'bx-time', 'description' => 'Clock in/out tracking, logs, and geolocation.'],
-                ['name' => 'Leave Management', 'slug' => 'leave-management', 'category' => 'HR & PEOPLE', 'icon' => 'bx-calendar-event', 'description' => 'Leave requests, approvals, and balances.'],
-                ['name' => 'Holidays', 'slug' => 'holidays', 'category' => 'HR & PEOPLE', 'icon' => 'bx-gift', 'description' => 'Company and national holiday calendars.'],
-                ['name' => 'Recognition & Awards', 'slug' => 'recognition', 'category' => 'HR & PEOPLE', 'icon' => 'bx-award', 'description' => 'Employee appreciations and rewards.'],
+            // Work Management
+            ['name' => 'Work', 'slug' => 'work', 'category' => 'WORK MANAGEMENT', 'icon' => 'bx-briefcase', 'description' => 'Work suite parent container.'],
+            ['name' => 'Projects', 'slug' => 'projects', 'category' => 'WORK MANAGEMENT', 'icon' => 'bx-folder-open', 'description' => 'Project tracking, milestones, and files.'],
+            ['name' => 'Tasks', 'slug' => 'tasks', 'category' => 'WORK MANAGEMENT', 'icon' => 'bx-task', 'description' => 'Task assignments, Kanban, and subtasks.'],
+            ['name' => 'Timesheets', 'slug' => 'timesheets', 'category' => 'WORK MANAGEMENT', 'icon' => 'bx-time-five', 'description' => 'Daily and weekly work timelogs.'],
+            ['name' => 'Teams', 'slug' => 'teams', 'category' => 'WORK MANAGEMENT', 'icon' => 'bx-group', 'description' => 'Cross-functional team assignments.'],
+            ['name' => 'Collaborating Companies', 'slug' => 'collaborating-companies', 'category' => 'WORK MANAGEMENT', 'icon' => 'bx-buildings', 'description' => 'External vendor and partner company directory.'],
+            ['name' => 'Clients', 'slug' => 'clients', 'category' => 'WORK MANAGEMENT', 'icon' => 'bx-user-voice', 'description' => 'Client records and account directory.'],
+            ['name' => 'Contracts & Templates', 'slug' => 'contracts', 'category' => 'WORK MANAGEMENT', 'icon' => 'bx-file-blank', 'description' => 'Contract creation, templates, and digital signatures.'],
 
-                // Work Management
-                ['name' => 'Work', 'slug' => 'work', 'category' => 'WORK MANAGEMENT', 'icon' => 'bx-briefcase', 'description' => 'Work suite parent container.'],
-                ['name' => 'Projects', 'slug' => 'projects', 'category' => 'WORK MANAGEMENT', 'icon' => 'bx-folder-open', 'description' => 'Project tracking, milestones, and files.'],
-                ['name' => 'Tasks', 'slug' => 'tasks', 'category' => 'WORK MANAGEMENT', 'icon' => 'bx-task', 'description' => 'Task assignments, Kanban, and subtasks.'],
-                ['name' => 'Timesheets', 'slug' => 'timesheets', 'category' => 'WORK MANAGEMENT', 'icon' => 'bx-time-five', 'description' => 'Daily and weekly work timelogs.'],
-                ['name' => 'Teams', 'slug' => 'teams', 'category' => 'WORK MANAGEMENT', 'icon' => 'bx-group', 'description' => 'Cross-functional team assignments.'],
+            // CRM
+            ['name' => 'Leads & Contacts', 'slug' => 'leads-contacts', 'category' => 'CRM', 'icon' => 'bx-book-content', 'description' => 'Client leads and contact books.'],
+            ['name' => 'CRM Deals', 'slug' => 'crm-deals', 'category' => 'CRM', 'icon' => 'bx-dollar-circle', 'description' => 'Sales pipelines and deal stages.'],
 
-                // CRM
-                ['name' => 'CRM Deals', 'slug' => 'crm-deals', 'category' => 'CRM', 'icon' => 'bx-dollar-circle', 'description' => 'Sales pipelines and deal stages.'],
-                ['name' => 'Leads & Contacts', 'slug' => 'leads-contacts', 'category' => 'CRM', 'icon' => 'bx-book-content', 'description' => 'Client leads and contact books.'],
+            // Finance & Payroll
+            ['name' => 'Payroll', 'slug' => 'payroll', 'category' => 'FINANCE & PAYROLL', 'icon' => 'bx-wallet', 'description' => 'Salary structures, cycles, and payslips.'],
+            ['name' => 'Payroll Architectures', 'slug' => 'payroll-architectures', 'category' => 'FINANCE & PAYROLL', 'icon' => 'bx-pyramid', 'description' => 'Salary structure blueprints and templates.'],
+            ['name' => 'Payslips', 'slug' => 'payslips', 'category' => 'FINANCE & PAYROLL', 'icon' => 'bx-receipt', 'description' => 'Monthly employee payslip generation.'],
+            ['name' => 'Salary Structures', 'slug' => 'salary-structures', 'category' => 'FINANCE & PAYROLL', 'icon' => 'bx-calculator', 'description' => 'Employee salary breakdown definitions.'],
+            ['name' => 'Payroll Cycles', 'slug' => 'payroll-cycles', 'category' => 'FINANCE & PAYROLL', 'icon' => 'bx-refresh', 'description' => 'Monthly and bi-weekly pay runs.'],
+            ['name' => 'Payroll Policies', 'slug' => 'payroll-policies', 'category' => 'FINANCE & PAYROLL', 'icon' => 'bx-shield', 'description' => 'Company pay rules and compliance policies.'],
+            ['name' => 'Formula Builder', 'slug' => 'formula-builder', 'category' => 'FINANCE & PAYROLL', 'icon' => 'bx-code-alt', 'description' => 'Custom salary calculation formulas.'],
+            ['name' => 'Deduction Rules', 'slug' => 'deduction-rules', 'category' => 'FINANCE & PAYROLL', 'icon' => 'bx-minus-circle', 'description' => 'Tax, PF, insurance, and loan deduction rules.'],
+            ['name' => 'Bonus Rules', 'slug' => 'bonus-rules', 'category' => 'FINANCE & PAYROLL', 'icon' => 'bx-plus-circle', 'description' => 'Performance and holiday bonus calculations.'],
+            ['name' => 'Tax Rules', 'slug' => 'tax-rules', 'category' => 'FINANCE & PAYROLL', 'icon' => 'bx-dollar', 'description' => 'Income tax and slab configurations.'],
+            ['name' => 'Overtime Rules', 'slug' => 'overtime-rules', 'category' => 'FINANCE & PAYROLL', 'icon' => 'bx-stopwatch', 'description' => 'Overtime rate multipliers and thresholds.'],
+            ['name' => 'Payroll Reports', 'slug' => 'payroll-reports', 'category' => 'FINANCE & PAYROLL', 'icon' => 'bx-bar-chart', 'description' => 'Comprehensive financial and payroll reporting.'],
+            ['name' => 'Expenses', 'slug' => 'expenses', 'category' => 'FINANCE & PAYROLL', 'icon' => 'bx-receipt', 'description' => 'Expense claims and reimbursement tracking.'],
+            ['name' => 'Billing & Invoices', 'slug' => 'billing', 'category' => 'FINANCE & PAYROLL', 'icon' => 'bx-credit-card', 'description' => 'Invoices and payment receipts.'],
 
-                // Finance
-                ['name' => 'Payroll', 'slug' => 'payroll', 'category' => 'FINANCE', 'icon' => 'bx-wallet', 'description' => 'Salary structures, cycles, and payslips.'],
-                ['name' => 'Expenses', 'slug' => 'expenses', 'category' => 'FINANCE', 'icon' => 'bx-receipt', 'description' => 'Expense claims and reimbursement tracking.'],
-                ['name' => 'Billing & Invoices', 'slug' => 'billing', 'category' => 'FINANCE', 'icon' => 'bx-credit-card', 'description' => 'Invoices and payment receipts.'],
+            // Support & Complaints
+            ['name' => 'Tickets', 'slug' => 'tickets', 'category' => 'SUPPORT & COMPLAINTS', 'icon' => 'bx-support', 'description' => 'Helpdesk tickets and issue resolution.'],
+            ['name' => 'Platform Support & Complaints', 'slug' => 'company-complaints', 'category' => 'SUPPORT & COMPLAINTS', 'icon' => 'bx-message-square-error', 'description' => 'Tenant feedback, issues, and platform support ticket escalations.'],
 
-                // Support
-                ['name' => 'Tickets', 'slug' => 'tickets', 'category' => 'SUPPORT', 'icon' => 'bx-support', 'description' => 'Helpdesk tickets and issue resolution.'],
+            // Reporting & Analytics
+            ['name' => 'Standard Reports', 'slug' => 'reports', 'category' => 'REPORTING & ANALYTICS', 'icon' => 'bx-bar-chart-alt-2', 'description' => 'Core attendance and leave reports.'],
+            ['name' => 'Analytics Dashboard', 'slug' => 'analytics', 'category' => 'REPORTING & ANALYTICS', 'icon' => 'bx-line-chart', 'description' => 'Real-time performance analytics.'],
+            ['name' => 'Advanced Reports', 'slug' => 'advanced-reports', 'category' => 'REPORTING & ANALYTICS', 'icon' => 'bx-pie-chart-alt-2', 'description' => 'Custom exports and intelligence summaries.'],
 
-                // Reporting
-                ['name' => 'Standard Reports', 'slug' => 'reports', 'category' => 'REPORTING', 'icon' => 'bx-bar-chart-alt-2', 'description' => 'Core attendance and leave reports.'],
-                ['name' => 'Analytics Dashboard', 'slug' => 'analytics', 'category' => 'REPORTING', 'icon' => 'bx-line-chart', 'description' => 'Real-time performance analytics.'],
-                ['name' => 'Advanced Reports', 'slug' => 'advanced-reports', 'category' => 'REPORTING', 'icon' => 'bx-pie-chart-alt-2', 'description' => 'Custom exports and intelligence summaries.'],
+            // Administration & Security
+            ['name' => 'User Management', 'slug' => 'user-management', 'category' => 'ADMINISTRATION & SECURITY', 'icon' => 'bx-user-voice', 'description' => 'User provisioning and account status.'],
+            ['name' => 'Role Management', 'slug' => 'role-management', 'category' => 'ADMINISTRATION & SECURITY', 'icon' => 'bx-shield-quarter', 'description' => 'RBAC definitions and access policies.'],
+            ['name' => 'Module Management', 'slug' => 'module-management', 'category' => 'ADMINISTRATION & SECURITY', 'icon' => 'bx-cube', 'description' => 'Module toggles and system settings.'],
+            ['name' => 'Activity Logs', 'slug' => 'activity-logs', 'category' => 'ADMINISTRATION & SECURITY', 'icon' => 'bx-history', 'description' => 'Platform security and audit trails.'],
+            ['name' => 'Settings', 'slug' => 'settings', 'category' => 'ADMINISTRATION & SECURITY', 'icon' => 'bx-cog', 'description' => 'System setup and global preferences.'],
 
-                // Administration
-                ['name' => 'User Management', 'slug' => 'user-management', 'category' => 'ADMINISTRATION', 'icon' => 'bx-user-voice', 'description' => 'User provisioning and account status.'],
-                ['name' => 'Role Management', 'slug' => 'role-management', 'category' => 'ADMINISTRATION', 'icon' => 'bx-shield-quarter', 'description' => 'RBAC definitions and access policies.'],
-                ['name' => 'Module Management', 'slug' => 'module-management', 'category' => 'ADMINISTRATION', 'icon' => 'bx-cube', 'description' => 'Module toggles and system settings.'],
-                ['name' => 'Activity Logs', 'slug' => 'activity-logs', 'category' => 'ADMINISTRATION', 'icon' => 'bx-history', 'description' => 'Platform security and audit trails.'],
-            ];
+            // System & Settings Sub-Features
+            ['name' => 'Settings Dashboard', 'slug' => 'settings-dashboard', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-cog', 'description' => 'Global settings control dashboard.'],
+            ['name' => 'Company Profile Settings', 'slug' => 'company-profile-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-id-card', 'description' => 'Company identity, branding, and contact info.'],
+            ['name' => 'Organization Details Settings', 'slug' => 'organization-details-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-buildings', 'description' => 'Corporate details, fiscal year, and structure.'],
+            ['name' => 'Branches & Locations Settings', 'slug' => 'business-address-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-map-pin', 'description' => 'Branch offices, addresses, and geographic locations.'],
+            ['name' => 'Work Schedule Settings', 'slug' => 'work-schedule-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-time-five', 'description' => 'Work shifts, office hours, and weekly schedules.'],
+            ['name' => 'Leave Settings', 'slug' => 'leave-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-calendar-minus', 'description' => 'Leave types, accrual policies, and quota rules.'],
+            ['name' => 'Holiday Settings', 'slug' => 'holiday-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-gift', 'description' => 'Company and national holiday calendars.'],
+            ['name' => 'Attendance Settings', 'slug' => 'attendance-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-calendar-check', 'description' => 'Clock-in radius, IP restrictions, and late thresholds.'],
+            ['name' => 'Payroll Settings', 'slug' => 'payroll-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-wallet', 'description' => 'Pay cycles, tax rules, and currency setup.'],
+            ['name' => 'Recruitment Settings', 'slug' => 'recruitment-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-user-plus', 'description' => 'Job posting stages and candidate fields.'],
+            ['name' => 'Performance Settings', 'slug' => 'performance-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-trending-up', 'description' => 'KPI metrics and appraisal cycles.'],
+            ['name' => 'Notification Settings', 'slug' => 'notification-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-bell', 'description' => 'System, email, and push alert triggers.'],
+            ['name' => 'Email Settings', 'slug' => 'email-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-envelope', 'description' => 'SMTP mail gateway and email templates.'],
+            ['name' => 'Document Settings', 'slug' => 'document-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-file', 'description' => 'Document categories and storage rules.'],
+            ['name' => 'Security Settings', 'slug' => 'security-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-shield', 'description' => '2FA, password policy, and session timeouts.'],
+            ['name' => 'Change Password', 'slug' => 'change-password-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-key', 'description' => 'User password security update.'],
+            ['name' => 'Role & Permissions Settings', 'slug' => 'role-permissions-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-shield-quarter', 'description' => 'RBAC definitions and permission matrix.'],
+            ['name' => 'Localization Settings', 'slug' => 'localization-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-globe', 'description' => 'Timezone, language, and date format setup.'],
+            ['name' => 'Terms & Policy Settings', 'slug' => 'terms-policy-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-paperclip', 'description' => 'Terms of service and privacy policy pages.'],
+        ];
 
-            foreach ($seedModules as $i => $sm) {
-                try {
-                    \App\Models\Module::on('central')->create([
+        // Ensure all canonical modules exist in central database
+        foreach ($allSystemModules as $i => $sm) {
+            try {
+                \App\Models\Module::on('central')->firstOrCreate(
+                    ['slug' => $sm['slug']],
+                    [
                         'name' => $sm['name'],
-                        'slug' => $sm['slug'],
+                        'category' => $sm['category'],
                         'icon' => $sm['icon'],
                         'description' => $sm['description'],
                         'is_active' => true,
                         'sort_order' => $i + 1,
-                    ]);
-                } catch (\Throwable $e) {}
-            }
+                    ]
+                );
+            } catch (\Throwable $e) {}
+        }
 
-            try {
-                $modules = \App\Models\Module::on('central')->orderBy('sort_order')->orderBy('name')->get();
-            } catch (\Throwable $e) {
-                $modules = collect();
+        // Auto-sync any custom modules from tenant modules table into central database
+        try {
+            $tenantModules = \App\Models\Module::get();
+            foreach ($tenantModules as $tm) {
+                if ($tm->slug) {
+                    \App\Models\Module::on('central')->firstOrCreate(
+                        ['slug' => $tm->slug],
+                        [
+                            'name' => $tm->name,
+                            'category' => $tm->category ?? 'CUSTOM MODULES',
+                            'icon' => $tm->icon ?? 'bx-cube',
+                            'description' => $tm->description ?? 'Admin panel feature module.',
+                            'is_active' => true,
+                            'sort_order' => $tm->sort_order ?? 99,
+                        ]
+                    );
+                }
             }
+        } catch (\Throwable $e) {}
+
+        // Fetch all registered modules for Super Admin Subscriptions interface
+        try {
+            $modules = \App\Models\Module::on('central')->orderBy('sort_order')->orderBy('name')->get();
+        } catch (\Throwable $e) {
+            $modules = collect();
         }
 
         // Fetch central audit logs for timeline
@@ -296,12 +377,23 @@ class CompanyController extends Controller
 
         $currentCompanyDb = session('current_company_db');
 
-        // Dynamically fetch actual details from the tenant database
+        // Dynamically fetch actual details from primary database and tenant database
         $tenantUsers = collect();
         $tenantAdmins = collect();
         $dbConnected = false;
         $dbLatency = 0;
 
+        // 1. Fetch users from primary DB matching this company_id or company email
+        try {
+            $primaryUsers = User::on('mysql')
+                ->where('company_id', $company->id)
+                ->orWhere('email', $company->email)
+                ->latest()
+                ->get();
+            $tenantUsers = $tenantUsers->merge($primaryUsers);
+        } catch (\Throwable $e) {}
+
+        // 2. Fetch users from tenant DB if provisioned
         if (! empty($company->db_name)) {
             try {
                 config(['database.connections.tenant.database' => $company->db_name]);
@@ -312,18 +404,34 @@ class CompanyController extends Controller
                 $dbLatency = round((microtime(true) - $startTime) * 1000);
                 $dbConnected = true;
 
-                $tenantUsers = User::on('tenant')->latest()->get();
-                $tenantAdmins = User::on('tenant')->whereIn('role', ['admin', 'superadmin', 'administrator'])->latest()->get();
-                if ($tenantAdmins->isEmpty() && $tenantUsers->isNotEmpty()) {
-                    $tenantAdmins = $tenantUsers->take(1);
-                }
+                $tUsers = User::on('tenant')->latest()->get();
+                $tenantUsers = $tenantUsers->merge($tUsers);
             } catch (\Throwable $e) {
                 $dbConnected = false;
             }
         }
 
+        // Deduplicate uniquely by email
+        $tenantUsers = $tenantUsers->unique(function ($u) {
+            return strtolower(trim($u->email ?? (string)$u->id));
+        })->values();
+
+        // Filter tenant admins
+        $tenantAdmins = $tenantUsers->filter(function ($u) {
+            return in_array(strtolower($u->role ?? ''), ['admin', 'superadmin', 'administrator', 'company_admin'], true);
+        })->values();
+
+        if ($tenantAdmins->isEmpty() && $tenantUsers->isNotEmpty()) {
+            $tenantAdmins = $tenantUsers->take(1);
+        }
+
         $totalUsersCount = $tenantUsers->count();
         $adminsCount = $tenantAdmins->count();
+
+        $companyLoginEmail = !empty($company->email) ? $company->email : ($tenantAdmins->first()?->email ?? '');
+        $companyPassword = !empty($company->password)
+            ? $company->password
+            : ($tenantAdmins->first()?->raw_password ?? ($tenantUsers->first()?->raw_password ?? ''));
 
         return view('superadmin.companies.show', compact(
             'company',
@@ -333,8 +441,36 @@ class CompanyController extends Controller
             'totalUsersCount',
             'adminsCount',
             'dbConnected',
-            'dbLatency'
+            'dbLatency',
+            'companyLoginEmail',
+            'companyPassword'
         ));
+    }
+
+    /**
+     * Get tenant database prefix (supports cPanel prefix and TENANT_DB_PREFIX env).
+     */
+    public function getTenantDbPrefix(): string
+    {
+        $prefix = env('TENANT_DB_PREFIX');
+        if ($prefix !== null && $prefix !== '') {
+            return $prefix;
+        }
+
+        // Auto-detect cPanel prefix from central or default database name (e.g. thesmart_lara319 -> thesmart_)
+        $dbName = (string) (config('database.connections.central.database') ?: config('database.connections.mysql.database', ''));
+        if (str_contains($dbName, '_')) {
+            $parts = explode('_', $dbName);
+            return $parts[0] . '_';
+        }
+
+        $dbUser = (string) (config('database.connections.central.username') ?: config('database.connections.mysql.username', ''));
+        if (str_contains($dbUser, '_')) {
+            $parts = explode('_', $dbUser);
+            return $parts[0] . '_';
+        }
+
+        return 'pms_';
     }
 
     /**
@@ -342,7 +478,8 @@ class CompanyController extends Controller
      */
     public function create(): View
     {
-        return view('superadmin.companies.create');
+        $dbPrefix = $this->getTenantDbPrefix();
+        return view('superadmin.companies.create', compact('dbPrefix'));
     }
 
     /**
@@ -350,6 +487,9 @@ class CompanyController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        @set_time_limit(300);
+        @ini_set('max_execution_time', '300');
+
         $data = $request->validate([
             'name'                => ['required', 'string', 'max:255'],
             'slug'                => ['required', 'string', 'max:50', 'regex:/^[a-zA-Z0-9_-]+$/'],
@@ -365,7 +505,13 @@ class CompanyController extends Controller
 
         $rawSlug = strtolower(trim($data['slug']));
         $slug = preg_replace('/[^a-z0-9_]/', '', $rawSlug);
-        $dbName = 'pms_' . $slug;
+        
+        $dbPrefix = $this->getTenantDbPrefix();
+        if ($dbPrefix && str_starts_with($slug, $dbPrefix)) {
+            $dbName = $slug;
+        } else {
+            $dbName = $dbPrefix . $slug;
+        }
 
         // Check if DB name or company code already exists in central registry
         $existing = Company::on('central')->where('db_name', $dbName)
@@ -404,14 +550,52 @@ class CompanyController extends Controller
             $adminProfileImagePath = 'uploads/admin_avatars/' . $filename;
         }
 
-        // 1. Create physical MySQL database matching utf8mb4_general_ci charset
+        // 1. Create or verify physical MySQL database matching utf8mb4_general_ci charset
+        $dbVerified = false;
         try {
             $pdo = DB::connection('central')->getPdo();
             $pdo->exec("CREATE DATABASE IF NOT EXISTS `{$dbName}` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci");
+            $dbVerified = true;
         } catch (\Throwable $e) {
-            return back()->withErrors([
-                'error' => "Failed to create database '{$dbName}': " . $e->getMessage(),
-            ])->withInput();
+            // On shared hosting (cPanel), MySQL user might not have CREATE DATABASE SQL privilege.
+            // Check if database was already created in cPanel MySQL Databases
+            try {
+                $baseConn = config('database.connections.central') ?: (config('database.connections.tenant') ?: config('database.connections.mysql'));
+                config([
+                    'database.connections.test_tenant' => array_merge($baseConn, [
+                        'database' => $dbName,
+                    ])
+                ]);
+                DB::purge('test_tenant');
+                DB::connection('test_tenant')->getPdo();
+                $dbVerified = true;
+            } catch (\Throwable $ex) {
+                try {
+                    $baseConn = config('database.connections.tenant') ?: config('database.connections.mysql');
+                    config([
+                        'database.connections.test_tenant' => array_merge($baseConn, [
+                            'database' => $dbName,
+                        ])
+                    ]);
+                    DB::purge('test_tenant');
+                    DB::connection('test_tenant')->getPdo();
+                    $dbVerified = true;
+                } catch (\Throwable $ex2) {
+                    $dbVerified = false;
+                }
+            }
+
+            if (! $dbVerified) {
+                $tenantUser = config('database.connections.tenant.username') ?: config('database.connections.mysql.username', 'thesmart_lara319');
+                return back()->withErrors([
+                    'error' => "Cannot create MySQL database '{$dbName}' automatically due to cPanel shared hosting privileges.\n\n" .
+                               "To complete provisioning:\n" .
+                               "1. Go to your cPanel -> 'MySQL Databases'.\n" .
+                               "2. Under 'Create New Database', create: '{$dbName}'\n" .
+                               "3. Under 'Add User To Database', select user '{$tenantUser}' and database '{$dbName}', check 'ALL PRIVILEGES' and save.\n" .
+                               "4. Submit this form again — PMS will automatically migrate and configure your company!",
+                ])->withInput();
+            }
         }
 
         // 2. Register Company in central database
@@ -419,6 +603,7 @@ class CompanyController extends Controller
             'company_code'   => strtoupper($slug),
             'name'           => $data['name'],
             'email'          => $data['email'],
+            'password'       => $data['admin_password'],
             'phone'          => $data['phone'] ?? null,
             'address'        => $data['address'] ?? null,
             'logo'           => $logoPath,
@@ -429,6 +614,103 @@ class CompanyController extends Controller
             'max_clients'    => 100,
             'max_storage_mb' => 10000,
         ]);
+
+        // Provision central subscription record for the new tenant based on selected plan
+        try {
+            $rawPlanInput = $request->input('subscription_plan')
+                ?? $request->input('plan_slug')
+                ?? $request->input('plan_id')
+                ?? $request->input('plan')
+                ?? 'free';
+
+            $planSlug = strtolower(trim((string)$rawPlanInput));
+
+            $targetPlan = \App\Models\Central\Plan::on('central')->where('slug', $planSlug)->first()
+                ?? \App\Models\Central\Plan::on('central')->find($rawPlanInput)
+                ?? \App\Models\Central\Plan::on('central')->where('name', 'LIKE', $planSlug)->first();
+
+            if (! $targetPlan) {
+                $defaultPlans = [
+                    'free'     => ['name' => 'FREE', 'slug' => 'free', 'description' => 'Essential features for small teams.', 'monthly_price' => 0, 'yearly_price' => 0, 'max_users' => 5, 'max_storage_mb' => 5120],
+                    'gold'     => ['name' => 'GOLD', 'slug' => 'gold', 'description' => 'Popular for growing businesses.', 'monthly_price' => 4999, 'yearly_price' => 49990, 'max_users' => 25, 'max_storage_mb' => 25600],
+                    'platinum' => ['name' => 'PLATINUM', 'slug' => 'platinum', 'description' => 'Advanced capabilities for scaling enterprise.', 'monthly_price' => 9999, 'yearly_price' => 99990, 'max_users' => 100, 'max_storage_mb' => 102400],
+                    'diamond'  => ['name' => 'DIAMOND', 'slug' => 'diamond', 'description' => 'Maximum limits and dedicated resources.', 'monthly_price' => 19999, 'yearly_price' => 199990, 'max_users' => 0, 'max_storage_mb' => 512000],
+                ];
+
+                $dp = $defaultPlans[$planSlug] ?? $defaultPlans['free'];
+                try {
+                    $targetPlan = \App\Models\Central\Plan::on('central')->firstOrCreate(['slug' => $dp['slug']], $dp);
+                } catch (\Throwable $e) {}
+            }
+
+            $startsAt = now();
+            $endsAt = now()->addDays(30);
+
+            /** @var \App\Services\SubscriptionService $subService */
+            $subService = app(\App\Services\SubscriptionService::class);
+
+            if ($targetPlan && strtolower($targetPlan->slug) !== 'free') {
+                $sub = $subService->activateOrUpgradePlan(
+                    company: $company,
+                    plan: $targetPlan,
+                    billingCycle: 'monthly',
+                    performedBy: auth('super_admin')->user()?->name ?? auth()->user()?->name ?? 'Super Admin Provisioning'
+                );
+
+                $sub->update([
+                    'starts_at' => $startsAt->toDateString(),
+                    'ends_at'   => $endsAt->toDateString(),
+                    'status'    => 'active',
+                ]);
+
+                $company->update([
+                    'max_users'          => $targetPlan->max_users > 0 ? $targetPlan->max_users : 999999,
+                    'max_storage_mb'     => $targetPlan->max_storage_mb > 0 ? $targetPlan->max_storage_mb : 512000,
+                    'status'             => 'active',
+                    'trial_ends_at'      => $endsAt,
+                    'highest_plan_level' => \App\Services\PlanEligibilityService::getPlanLevel($targetPlan),
+                    'highest_plan_slug'  => strtolower($targetPlan->slug),
+                ]);
+            } else {
+                $sub = $subService->initializeTrial($company);
+                $sub->update([
+                    'starts_at'     => $startsAt->toDateString(),
+                    'ends_at'       => $endsAt->toDateString(),
+                    'trial_ends_at' => $endsAt->toDateString(),
+                    'status'        => 'trial',
+                ]);
+                $company->update([
+                    'status'        => 'trial',
+                    'trial_ends_at' => $endsAt,
+                ]);
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error("Central subscription creation info: " . $e->getMessage());
+
+            if (isset($targetPlan) && $targetPlan) {
+                $targetLevel = \App\Services\PlanEligibilityService::getPlanLevel($targetPlan);
+                \App\Models\Central\Subscription::on('central')->create([
+                    'company_id'         => $company->id,
+                    'plan_id'            => $targetPlan->id,
+                    'billing_cycle'      => 'monthly',
+                    'starts_at'          => now()->toDateString(),
+                    'ends_at'            => now()->addDays(30)->toDateString(),
+                    'price'              => $targetPlan->monthly_price ?? 0,
+                    'status'             => 'active',
+                    'auto_renew'         => true,
+                    'highest_plan_level' => $targetLevel,
+                    'current_plan_level' => $targetLevel,
+                    'activated_at'       => now(),
+                ]);
+
+                $company->update([
+                    'status'             => 'active',
+                    'trial_ends_at'      => now()->addDays(30),
+                    'highest_plan_level' => $targetLevel,
+                    'highest_plan_slug'  => strtolower($targetPlan->slug),
+                ]);
+            }
+        }
 
         // 3. Configure tenant connection dynamically and run tenant migrations
         config(['database.connections.tenant.database' => $dbName]);
@@ -446,17 +728,62 @@ class CompanyController extends Controller
             ])->withInput();
         }
 
-        // 4. Seed default admin user into the new tenant DB
+        // 4. Seed default admin user into the new tenant DB and primary DB
+        $companyEmail = strtolower(trim($data['email']));
+        $adminEmail = !empty($data['admin_email']) ? strtolower(trim($data['admin_email'])) : $companyEmail;
+        $adminName = !empty($data['admin_name']) ? trim($data['admin_name']) : ($data['name'] . ' Admin');
+
+        // Create Admin User in Primary MySQL DB (if applicable)
+        try {
+            User::syncCompanyToConnection('mysql', $company);
+            User::on('mysql')->create([
+                'company_id'    => $company->id,
+                'name'          => $adminName,
+                'email'         => $adminEmail,
+                'password'      => Hash::make($data['admin_password']),
+                'raw_password'  => $data['admin_password'],
+                'profile_image' => $adminProfileImagePath,
+                'role'          => 'admin',
+                'is_active'     => true,
+                'login_allowed' => true,
+                'email_notifications' => true,
+            ]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::info("Primary DB admin creation info: " . $e->getMessage());
+        }
+
+        // Ensure Company record exists in Tenant DB
+        User::syncCompanyToConnection('tenant', $company);
+
+        // Create Admin User in Tenant DB
         User::on('tenant')->create([
-            'name'          => $data['admin_name'],
-            'email'         => $data['admin_email'],
+            'company_id'    => $company->id,
+            'name'          => $adminName,
+            'email'         => $adminEmail,
             'password'      => Hash::make($data['admin_password']),
+            'raw_password'  => $data['admin_password'],
             'profile_image' => $adminProfileImagePath,
-            'company_id'    => null,
             'role'          => 'admin',
             'is_active'     => true,
             'login_allowed' => true,
+            'email_notifications' => true,
         ]);
+
+        if ($adminEmail !== $companyEmail) {
+            User::on('tenant')->firstOrCreate(
+                ['email' => $companyEmail],
+                [
+                    'company_id'    => $company->id,
+                    'name'          => $data['name'] . ' Contact',
+                    'password'      => Hash::make($data['admin_password']),
+                    'raw_password'  => $data['admin_password'],
+                    'profile_image' => $adminProfileImagePath,
+                    'role'          => 'admin',
+                    'is_active'     => true,
+                    'login_allowed' => true,
+                ]
+            );
+        }
 
         return redirect()->route('super-admin.companies.index')
             ->with('success', "Tenant Company '{$company->name}' created successfully with database '{$dbName}'.");
@@ -467,7 +794,22 @@ class CompanyController extends Controller
      */
     public function enter(Company $company): RedirectResponse
     {
-        session(['current_company_db' => $company->db_name]);
+        session([
+            'current_company_db'   => $company->db_name,
+            'current_company_id'   => $company->id,
+            'current_company_name' => $company->name,
+        ]);
+
+        config([
+            'database.connections.tenant.database' => $company->db_name,
+            'database.connections.mysql.database'  => $company->db_name,
+        ]);
+        DB::purge('tenant');
+        DB::purge('mysql');
+
+        if (app()->bound(\App\Services\CompanyContext::class)) {
+            app(\App\Services\CompanyContext::class)->reset();
+        }
 
         return redirect('/dashboard')
             ->with('success', "Switched database context to tenant: {$company->name} ({$company->db_name})");
@@ -478,7 +820,19 @@ class CompanyController extends Controller
      */
     public function leaveImpersonation(): RedirectResponse
     {
-        session()->forget('current_company_db');
+        session()->forget(['current_company_db', 'current_company_id', 'current_company_name']);
+
+        $defaultDb = config('database.connections.tenant.database') ?: config('database.connections.mysql.database');
+        config([
+            'database.connections.tenant.database' => $defaultDb,
+            'database.connections.mysql.database'  => $defaultDb,
+        ]);
+        DB::purge('tenant');
+        DB::purge('mysql');
+
+        if (app()->bound(\App\Services\CompanyContext::class)) {
+            app(\App\Services\CompanyContext::class)->reset();
+        }
 
         return redirect()->route('super-admin.companies.index')
             ->with('success', 'Exited tenant company impersonation.');
@@ -739,19 +1093,14 @@ class CompanyController extends Controller
         try {
             // Resolve Company
             $company = Company::on('central')->find($companyId) ?? \App\Models\Company::find($companyId);
-            
-            // Block plan changes if company is currently suspended
-            if ($company && (strtolower($company->status ?? '') === 'suspended' || (method_exists($company, 'isSuspended') && $company->isSuspended()))) {
+            if (!$company) {
                 if ($request->wantsJson()) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => "Cannot change subscription plan for '{$company->name}' because this company is SUSPENDED. Please activate the company first."
-                    ], 422);
+                    return response()->json(['success' => false, 'message' => 'Tenant company not found.'], 422);
                 }
-                return back()->withErrors(['error' => "Cannot change subscription plan for '{$company->name}' because this company is SUSPENDED. Please activate the company first."]);
+                return back()->withErrors(['error' => 'Tenant company not found.']);
             }
             
-            // Resolve Plan (supports numeric ID, slug, or plan name string like GOLD/PLATINUM)
+            // Resolve Plan
             $plan = \App\Models\Central\Plan::on('central')->find($planId)
                  ?? \App\Models\Central\Plan::on('central')->where('slug', strtolower($planId))->orWhere('name', 'LIKE', $planId)->first()
                  ?? \App\Models\SubscriptionPlan::find($planId)
@@ -778,89 +1127,47 @@ class CompanyController extends Controller
             }
 
             if ($company && $plan) {
-                $isFree = strtoupper($plan->name) === 'FREE' || strtolower($plan->slug) === 'free';
-                $price = method_exists($plan, 'getPriceForCycle') ? $plan->getPriceForCycle($cycle) : ($cycle === 'yearly' ? ($plan->yearly_price ?? 0) : ($plan->monthly_price ?? 0));
-                
-                $startsAt = now();
-                $endsAt = now()->addDays(30);
-                $status = $isFree ? 'trial' : 'active';
+                /** @var \App\Services\SubscriptionService $subService */
+                $subService = app(\App\Services\SubscriptionService::class);
+                $sub = $subService->activateOrUpgradePlan(
+                    company: $company,
+                    plan: $plan,
+                    billingCycle: $cycle,
+                    performedBy: auth('super_admin')->user()?->name ?? auth()->user()?->name ?? 'Super Admin Command Center'
+                );
 
-                // Find existing subscription or create new
-                $sub = \App\Models\Central\Subscription::on('central')
-                    ->where('company_id', $company->id)
-                    ->orderBy('id', 'desc')
-                    ->first();
+                // Update resource limits on company record
+                $company->update([
+                    'max_users'      => $plan->max_users > 0 ? $plan->max_users : 999999,
+                    'max_storage_mb' => $plan->max_storage_mb > 0 ? $plan->max_storage_mb : 512000,
+                    'status'         => 'active',
+                    'trial_ends_at'  => $sub->ends_at,
+                ]);
 
-                if ($sub) {
-                    $sub->update([
-                        'plan_id'       => $plan->id,
-                        'billing_cycle' => $cycle,
-                        'price'         => $price,
-                        'status'        => $status,
-                        'starts_at'     => $startsAt,
-                        'ends_at'       => $endsAt,
-                    ]);
-                } else {
-                    $sub = \App\Models\Central\Subscription::on('central')->create([
-                        'company_id'    => $company->id,
-                        'plan_id'       => $plan->id,
-                        'billing_cycle' => $cycle,
-                        'starts_at'     => $startsAt,
-                        'ends_at'       => $endsAt,
-                        'price'         => $price,
-                        'status'        => $status,
-                        'auto_renew'    => true,
-                    ]);
-                }
-
-                // Deactivate any alternate subscription rows for this company to prevent conflict
-                \App\Models\Central\Subscription::on('central')
-                    ->where('company_id', $company->id)
-                    ->where('id', '!=', $sub->id)
-                    ->update(['status' => 'cancelled']);
-
-                // Update company status & resource limits
-                try {
-                    $company->update([
-                        'max_users'      => $plan->max_users > 0 ? $plan->max_users : 999999,
-                        'max_storage_mb' => $plan->max_storage_mb > 0 ? $plan->max_storage_mb : 512000,
-                        'status'         => 'active',
-                        'trial_ends_at'  => $endsAt,
-                    ]);
-                } catch (\Throwable $e) {}
-
-                // Log Audit Action
-                try {
-                    \App\Models\AuditLog::create([
-                        'user_id' => auth()->id(),
-                        'company_id' => $company->id,
-                        'action' => 'subscription.plan_changed',
-                        'entity_type' => 'Company',
-                        'entity_id' => $company->id,
-                        'new_values' => ['plan' => $plan->name, 'price' => $price, 'cycle' => $cycle, 'starts_at' => $startsAt->toDateTimeString(), 'ends_at' => $endsAt->toDateTimeString()],
-                        'ip_address' => request()->ip(),
-                        'user_agent' => substr((string) request()->userAgent(), 0, 255),
-                    ]);
-                } catch (\Throwable $e) {}
-
-                $startFmt = $startsAt->format('M d, Y, h:i A');
-                $endFmt = $endsAt->format('M d, Y, h:i A');
+                $startFmt = $sub->starts_at->format('M d, Y, h:i A');
+                $endFmt = $sub->ends_at->format('M d, Y, h:i A');
+                $msg = "Subscription plan '{$plan->name}' activated for {$company->name}. Valid until {$endFmt}.";
 
                 if ($request->wantsJson()) {
                     return response()->json([
                         'success'             => true,
-                        'message'             => "Subscription plan assigned: '{$plan->name}' for {$company->name}. Active from {$startFmt} until {$endFmt}.",
+                        'message'             => $msg,
                         'plan_name'           => strtoupper($plan->name),
                         'plan_class'          => strtolower($plan->name),
                         'company_id'          => $company->id,
                         'starts_at_formatted' => $startFmt,
                         'ends_at_formatted'   => $endFmt,
-                        'status'              => $status,
+                        'status'              => 'active',
                     ]);
                 }
 
-                return back()->with('success', "Subscription plan assigned: '{$plan->name}'. Active from {$startFmt} until {$endFmt}.");
+                return back()->with('success', $msg);
             }
+        } catch (\InvalidArgumentException $e) {
+            if ($request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
+            }
+            return back()->withErrors(['error' => $e->getMessage()]);
         } catch (\Throwable $e) {
             if ($request->wantsJson()) {
                 return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
@@ -1278,6 +1585,9 @@ class CompanyController extends Controller
      */
     public function runMigration(Request $request): \Illuminate\Http\JsonResponse
     {
+        @set_time_limit(300);
+        @ini_set('max_execution_time', '300');
+
         $request->validate([
             'company_id' => 'required',
         ]);
@@ -1375,6 +1685,9 @@ class CompanyController extends Controller
      */
     public function bulkRunMigration(Request $request): \Illuminate\Http\JsonResponse
     {
+        @set_time_limit(600);
+        @ini_set('max_execution_time', '600');
+
         $request->validate([
             'company_ids'   => 'required|array',
             'company_ids.*' => 'required',
@@ -2599,14 +2912,60 @@ class CompanyController extends Controller
 
     /**
      * Super Admin Platform Alert & Notification Center.
+     * @param Request $request
+     * @param string|null $viewName  Override the view rendered (e.g. for the notifications route).
      */
-    public function alerts(Request $request)
+    public function alerts(Request $request, ?string $viewName = null)
     {
         $companies = Company::on('central')->latest()->get();
 
         // Build master list of system & tenant alerts
         $rawAlerts = [];
         $idCounter = 1;
+
+        // 0. Real Database Alerts & Notifications from CentralNotification table
+        if (class_exists(\App\Models\Central\CentralNotification::class)) {
+            try {
+                $dbNotifications = \App\Models\Central\CentralNotification::on('central')
+                    ->where(function ($q) {
+                        $q->whereNull('target_audience')
+                          ->orWhereIn('target_audience', ['super_admin', 'both', 'all']);
+                    })
+                    ->with('company')
+                    ->latest()
+                    ->take(50)
+                    ->get();
+
+                foreach ($dbNotifications as $dNotif) {
+                    $comp = $dNotif->company;
+                    $logoUrl = null;
+                    if ($comp && !empty($comp->logo)) {
+                        if (file_exists(public_path($comp->logo))) {
+                            $logoUrl = asset($comp->logo);
+                        } elseif (file_exists(public_path('user-uploads/app-logo/' . $comp->logo))) {
+                            $logoUrl = asset('user-uploads/app-logo/' . $comp->logo);
+                        }
+                    }
+
+                    $rawAlerts[] = [
+                        'id'               => $dNotif->id,
+                        'title'            => $dNotif->title,
+                        'description'      => $dNotif->message,
+                        'category'         => $dNotif->related_module ?: 'company',
+                        'severity'         => $dNotif->severity ?: 'info',
+                        'status'           => $dNotif->is_read ? 'read' : 'unread',
+                        'action_required'  => in_array($dNotif->severity, ['warning', 'critical'], true),
+                        'company_id'       => $dNotif->company_id,
+                        'company_name'     => $comp?->name ?? 'Tenant Company',
+                        'tenant_code'      => $comp?->company_code ?? ($dNotif->company_id ? 'TEN-' . str_pad($dNotif->company_id, 3, '0', STR_PAD_LEFT) : 'SYSTEM'),
+                        'logo_url'         => $logoUrl,
+                        'action_url'       => $dNotif->action_url,
+                        'created_at'       => $dNotif->created_at ? $dNotif->created_at->diffForHumans() : 'Just now',
+                        'timestamp'        => $dNotif->created_at ? $dNotif->created_at->format('Y-m-d H:i:s') : now()->format('Y-m-d H:i:s'),
+                    ];
+                }
+            } catch (\Throwable $ex) {}
+        }
 
         // 1. Subscription Expiration Intelligence Alerts (Generated from Company Data)
         foreach ($companies as $idx => $comp) {
@@ -2808,7 +3167,8 @@ class CompanyController extends Controller
             'resolved_today'        => count(array_filter($allAlerts, fn($a) => $a['status'] === 'resolved')),
         ];
 
-        return view('superadmin.alerts.index', compact('allAlerts', 'companies', 'kpis'));
+        $resolvedView = $viewName ?? 'superadmin.alerts.index';
+        return view($resolvedView, compact('allAlerts', 'companies', 'kpis'));
     }
 
     /**

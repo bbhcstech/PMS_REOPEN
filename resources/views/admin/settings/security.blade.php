@@ -557,6 +557,16 @@
                 </div>
 
                 <div class="p-4 p-md-5">
+                    @if($isSettingsReadOnly)
+                        <div class="alert d-flex align-items-center mb-4 rounded-3 border-0 shadow-sm" style="background: linear-gradient(135deg, #eff6ff, #dbeafe); color: #1e40af; border-left: 4px solid #3b82f6 !important; padding: 14px 18px;">
+                            <i class="fas fa-eye me-3 fs-3 text-primary"></i>
+                            <div>
+                                <strong class="d-block text-primary fw-bold" style="font-size: 14px;">View-Only Mode</strong>
+                                <span style="font-size: 13px; color: #1e3a8a;">You are viewing security policies in read-only mode. Only Administrators have permission to modify authentication rules, password requirements, and 2FA policies.</span>
+                            </div>
+                        </div>
+                    @endif
+
                     <form method="POST" action="{{ route('admin.settings.security.update') }}">
                         @csrf
 
@@ -572,7 +582,8 @@
                                 <div class="input-group input-group-custom">
                                     <span class="input-group-text"><i class="fas fa-lock"></i></span>
                                     <input type="number" name="min_password_length" class="form-control" min="6" max="32"
-                                        value="{{ old('min_password_length', $settings['min_password_length'] ?? '8') }}" required>
+                                        value="{{ old('min_password_length', $settings['min_password_length'] ?? '8') }}"
+                                        {{ $isSettingsReadOnly ? 'readonly' : 'required' }}>
                                 </div>
                                 <small class="text-muted mt-1 d-block">Recommended: 8+ characters.</small>
                             </div>
@@ -583,7 +594,8 @@
                                 <div class="input-group input-group-custom">
                                     <span class="input-group-text"><i class="fas fa-stopwatch"></i></span>
                                     <input type="number" name="session_timeout_mins" class="form-control" min="5" max="1440"
-                                        value="{{ old('session_timeout_mins', $settings['session_timeout_mins'] ?? '120') }}" required>
+                                        value="{{ old('session_timeout_mins', $settings['session_timeout_mins'] ?? '120') }}"
+                                        {{ $isSettingsReadOnly ? 'readonly' : 'required' }}>
                                 </div>
                                 <small class="text-muted mt-1 d-block">Automatic logout after inactivity (e.g. 120 mins).</small>
                             </div>
@@ -594,7 +606,8 @@
                                 <div class="input-group input-group-custom">
                                     <span class="input-group-text"><i class="fas fa-ban"></i></span>
                                     <input type="number" name="max_login_attempts" class="form-control" min="3" max="10"
-                                        value="{{ old('max_login_attempts', $settings['max_login_attempts'] ?? '5') }}" required>
+                                        value="{{ old('max_login_attempts', $settings['max_login_attempts'] ?? '5') }}"
+                                        {{ $isSettingsReadOnly ? 'readonly' : 'required' }}>
                                 </div>
                                 <small class="text-muted mt-1 d-block">Max failed passwords before account lock.</small>
                             </div>
@@ -612,7 +625,8 @@
                                 <div class="input-group input-group-custom">
                                     <span class="input-group-text"><i class="fas fa-clock-rotate-left"></i></span>
                                     <input type="number" name="lockout_duration_mins" class="form-control" min="1" max="1440"
-                                        value="{{ old('lockout_duration_mins', $settings['lockout_duration_mins'] ?? '15') }}" required>
+                                        value="{{ old('lockout_duration_mins', $settings['lockout_duration_mins'] ?? '15') }}"
+                                        {{ $isSettingsReadOnly ? 'readonly' : 'required' }}>
                                 </div>
                                 <small class="text-muted mt-1 d-block">Time an account stays locked after max failed attempts.</small>
                             </div>
@@ -624,36 +638,36 @@
                                     
                                     <div class="form-check form-switch mb-2.5 d-flex align-items-center gap-3">
                                         <input class="form-check-input flex-shrink-0" type="checkbox" name="require_uppercase" value="1" id="uppercaseSwitch"
-                                            style="width: 2.5em; height: 1.3em; cursor: pointer;"
-                                            {{ $reqUpper ? 'checked' : '' }}>
-                                        <label class="form-check-label fw-bold text-dark mb-0" for="uppercaseSwitch" style="cursor: pointer; font-size: 0.88rem;">
+                                            style="width: 2.5em; height: 1.3em; cursor: {{ $isSettingsReadOnly ? 'default' : 'pointer' }};"
+                                            {{ $reqUpper ? 'checked' : '' }} {{ $isSettingsReadOnly ? 'disabled' : '' }}>
+                                        <label class="form-check-label fw-bold text-dark mb-0" for="uppercaseSwitch" style="cursor: {{ $isSettingsReadOnly ? 'default' : 'pointer' }}; font-size: 0.88rem;">
                                             Atleast one Capital Letter (A-Z)
                                         </label>
                                     </div>
 
                                     <div class="form-check form-switch mb-2.5 d-flex align-items-center gap-3">
                                         <input class="form-check-input flex-shrink-0" type="checkbox" name="require_lowercase" value="1" id="lowercaseSwitch"
-                                            style="width: 2.5em; height: 1.3em; cursor: pointer;"
-                                            {{ $reqLower ? 'checked' : '' }}>
-                                        <label class="form-check-label fw-bold text-dark mb-0" for="lowercaseSwitch" style="cursor: pointer; font-size: 0.88rem;">
+                                            style="width: 2.5em; height: 1.3em; cursor: {{ $isSettingsReadOnly ? 'default' : 'pointer' }};"
+                                            {{ $reqLower ? 'checked' : '' }} {{ $isSettingsReadOnly ? 'disabled' : '' }}>
+                                        <label class="form-check-label fw-bold text-dark mb-0" for="lowercaseSwitch" style="cursor: {{ $isSettingsReadOnly ? 'default' : 'pointer' }}; font-size: 0.88rem;">
                                             Atleast one small Letter (a-z)
                                         </label>
                                     </div>
 
                                     <div class="form-check form-switch mb-2.5 d-flex align-items-center gap-3">
                                         <input class="form-check-input flex-shrink-0" type="checkbox" name="require_numbers" value="1" id="numbersSwitch"
-                                            style="width: 2.5em; height: 1.3em; cursor: pointer;"
-                                            {{ $reqNum ? 'checked' : '' }}>
-                                        <label class="form-check-label fw-bold text-dark mb-0" for="numbersSwitch" style="cursor: pointer; font-size: 0.88rem;">
+                                            style="width: 2.5em; height: 1.3em; cursor: {{ $isSettingsReadOnly ? 'default' : 'pointer' }};"
+                                            {{ $reqNum ? 'checked' : '' }} {{ $isSettingsReadOnly ? 'disabled' : '' }}>
+                                        <label class="form-check-label fw-bold text-dark mb-0" for="numbersSwitch" style="cursor: {{ $isSettingsReadOnly ? 'default' : 'pointer' }}; font-size: 0.88rem;">
                                             Require numeric digits (0-9)
                                         </label>
                                     </div>
 
                                     <div class="form-check form-switch m-0 d-flex align-items-center gap-3">
                                         <input class="form-check-input flex-shrink-0" type="checkbox" name="require_special_char" value="1" id="specCharSwitch"
-                                            style="width: 2.5em; height: 1.3em; cursor: pointer;"
-                                            {{ $reqSpec ? 'checked' : '' }}>
-                                        <label class="form-check-label fw-bold text-dark mb-0" for="specCharSwitch" style="cursor: pointer; font-size: 0.88rem;">
+                                            style="width: 2.5em; height: 1.3em; cursor: {{ $isSettingsReadOnly ? 'default' : 'pointer' }};"
+                                            {{ $reqSpec ? 'checked' : '' }} {{ $isSettingsReadOnly ? 'disabled' : '' }}>
+                                        <label class="form-check-label fw-bold text-dark mb-0" for="specCharSwitch" style="cursor: {{ $isSettingsReadOnly ? 'default' : 'pointer' }}; font-size: 0.88rem;">
                                             Require at least 1 special character (!@#$%^&*)
                                         </label>
                                     </div>
@@ -671,9 +685,9 @@
                                 <div class="policy-switch-box" style="padding: 1.5rem 1.8rem;">
                                     <div class="form-check form-switch m-0 d-flex align-items-center gap-3 w-100">
                                         <input class="form-check-input flex-shrink-0" type="checkbox" name="enable_2fa" value="1" id="twoFactorSwitch"
-                                            style="width: 2.8em; height: 1.4em; cursor: pointer;"
-                                            {{ $enable2fa ? 'checked' : '' }}>
-                                        <label class="form-check-label fw-bold text-dark mb-0" for="twoFactorSwitch" style="cursor: pointer;">
+                                            style="width: 2.8em; height: 1.4em; cursor: {{ $isSettingsReadOnly ? 'default' : 'pointer' }};"
+                                            {{ $enable2fa ? 'checked' : '' }} {{ $isSettingsReadOnly ? 'disabled' : '' }}>
+                                        <label class="form-check-label fw-bold text-dark mb-0" for="twoFactorSwitch" style="cursor: {{ $isSettingsReadOnly ? 'default' : 'pointer' }};">
                                             Enforce Two-Factor Authentication (2FA) for Admin & Management Roles
                                             <small class="d-block text-muted fw-normal mt-0.5" style="font-size: 0.85rem;">Requires an OTP verification code during user login.</small>
                                         </label>
@@ -684,10 +698,15 @@
 
                         <!-- Form Action Buttons -->
                         <div class="mt-5 pt-4 border-top d-flex justify-content-end">
-                            <button type="submit" class="btn-save-address">
-                                <i class="fas fa-save me-1.5"></i> Save Security Settings
-                            </button>
-                        </div>
+                            @if($isSettingsReadOnly)
+                                <span class="badge rounded-pill px-3.5 py-2 fw-bold" style="background: #f1f5f9; color: #64748b; font-size: 13px; border: 1px solid #cbd5e1;">
+                                    <i class="fas fa-lock me-1.5 text-muted"></i> Read-Only (Admin Managed)
+                                </span>
+                            @else
+                                <button type="submit" class="btn-save-address">
+                                    <i class="fas fa-save me-1.5"></i> Save Security Settings
+                                </button>
+                            @endif
                     </form>
                 </div>
             </div>

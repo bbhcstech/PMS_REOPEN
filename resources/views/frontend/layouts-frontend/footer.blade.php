@@ -1,80 +1,65 @@
-<!-- Footer -->
-@php
-    $logoUrl = $logoUrl ?? asset('logo.png') . '?v=' . (file_exists(public_path('logo.png')) ? filemtime(public_path('logo.png')) : time());
-@endphp
-<footer class="bbh-footer">
-    <div class="container">
-        <div class="row g-5">
-            <div class="col-lg-4 col-md-6">
-                <div class="footer-widget">
-                    <div class="footer-brand">
-                        <img src="{{ $logoUrl }}" alt="Bitroxia PMS logo">
-                        <h4 class="mb-0">Bitroxia PMS</h4>
-                    </div>
-                    <p class="text-white-50 mb-4">A practical project, HR, attendance, and reporting workspace for teams that need clear ownership and faster delivery.</p>
-                    <div class="social-links">
-                        <a href="#"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#"><i class="fab fa-twitter"></i></a>
-                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
-                        <a href="#"><i class="fab fa-instagram"></i></a>
-                        <a href="#"><i class="fab fa-youtube"></i></a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-lg-2 col-md-6">
-                <div class="footer-widget">
-                    <h4>Quick Links</h4>
-                    <ul class="footer-links">
-                        <li><a href="{{ route('company.about') }}"><i class="fas fa-chevron-right"></i> About Us</a></li>
-                        <li><a href="{{ route('features') }}"><i class="fas fa-chevron-right"></i> Features</a></li>
-                        <li><a href="{{ route('pricing') }}"><i class="fas fa-chevron-right"></i> Pricing</a></li>
-                        <li><a href="{{ route('resources.blog') }}"><i class="fas fa-chevron-right"></i> Blog</a></li>
-                        <li><a href="{{ route('company.contact') }}"><i class="fas fa-chevron-right"></i> Contact</a></li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="col-lg-3 col-md-6">
-                <div class="footer-widget">
-                    <h4>Support</h4>
-                    <ul class="footer-links">
-                        <li><a href="{{ route('resources.help') }}"><i class="fas fa-chevron-right"></i> Help Center</a></li>
-                        <li><a href="{{ route('resources.docs') }}"><i class="fas fa-chevron-right"></i> Documentation</a></li>
-                        <li><a href="{{ route('resources.api') }}"><i class="fas fa-chevron-right"></i> API Reference</a></li>
-                        <li><a href="{{ route('resources.faq') }}"><i class="fas fa-chevron-right"></i> FAQ</a></li>
-                        <li><a href="#"><i class="fas fa-chevron-right"></i> Status</a></li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="col-lg-3 col-md-6">
-                <div class="footer-widget">
-                    <h4>Contact Info</h4>
-                    <div class="footer-contact">
-                        <p><i class="fas fa-map-marker-alt"></i> India and global remote delivery</p>
-                        <p><i class="fas fa-phone-alt"></i> Available for business teams</p>
-                        <p><i class="fas fa-envelope"></i> info@bitroxia.com</p>
-                    </div>
-                </div>
-            </div>
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-col footer-brand">
+        <a href="{{ route('home') }}" class="brand">
+          <img src="{{ asset('logo.png') }}" alt="Bitroxia logo">
+          <span>Bitroxia</span>
+        </a>
+        <p>A practical project, HR, attendance and reporting workspace for teams that need clear ownership and faster delivery.</p>
+        <div class="footer-social">
+          <a href="#" aria-label="Bitroxia on LinkedIn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-4 0v7h-4V8h4v1.5A5.99 5.99 0 0116 8z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg></a>
+          <a href="#" aria-label="Bitroxia on X"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 4L6 20M6 4l12 16"/></svg></a>
+          <a href="#" aria-label="Bitroxia on Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1"/></svg></a>
         </div>
-
-        <div class="footer-bottom">
-            <div class="row align-items-center">
-                <div class="col-md-6">
-                    <div class="copyright">
-                        &copy; {{ date('Y') }} <a href="#">Bitroxia PMS</a>. All Rights Reserved.
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="footer-menu">
-                        <a href="{{ route('company.privacy') }}">Privacy Policy</a>
-                        <a href="{{ route('company.terms') }}">Terms of Service</a>
-                        <a href="#">Cookie Policy</a>
-                    </div>
-                </div>
-            </div>
-        </div>
+      </div>
+      <div class="footer-col">
+        <h5>Product</h5>
+        <ul>
+          <li><a href="{{ route('features') }}#tasks">Task Management</a></li>
+          <li><a href="{{ route('features') }}#gantt">Gantt Charts</a></li>
+          <li><a href="{{ route('features') }}#kanban">Kanban Boards</a></li>
+          <li><a href="{{ route('features') }}#attendance">Attendance</a></li>
+          <li><a href="{{ route('features') }}#leave">Leave Management</a></li>
+          <li><a href="{{ route('features') }}#dashboard">Dashboard</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Company</h5>
+        <ul>
+          <li><a href="{{ route('company.about') }}">About Us</a></li>
+          <li><a href="{{ route('features') }}">Features</a></li>
+          <li><a href="{{ route('pricing') }}">Pricing</a></li>
+          <li><a href="{{ route('company.about') }}#careers">Careers</a></li>
+          <li><a href="{{ route('company.contact') }}">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Resources</h5>
+        <ul>
+          <li><a href="{{ route('resources') }}#faq">FAQ</a></li>
+          <li><a href="{{ route('resources') }}#blog">Blog</a></li>
+          <li><a href="{{ route('resources') }}#docs">Documentation</a></li>
+          <li><a href="{{ route('resources') }}#help">Help Center</a></li>
+          <li><a href="{{ route('resources') }}#api">API &amp; Webhooks</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Contact</h5>
+        <ul>
+          <li><a href="mailto:info@bitroxia.com">info@bitroxia.com</a></li>
+          <li><a href="tel:+910000000000">+91 00000 00000</a></li>
+          <li>India &amp; global remote delivery</li>
+        </ul>
+      </div>
     </div>
+    <div class="footer-bottom">
+      <p>&copy; {{ date('Y') }} Bitroxia PMS. All rights reserved.</p>
+      <div class="footer-legal">
+        <a href="{{ route('company.privacy') }}">Privacy Policy</a>
+        <a href="{{ route('company.terms') }}">Terms of Service</a>
+        <a href="{{ route('login') }}">Staff Login</a>
+      </div>
+    </div>
+  </div>
 </footer>

@@ -123,7 +123,18 @@
                             </td>
                             <td>{{ $client->email }}</td>
                            
-                            <td><span class="badge bg-success">{{ $client->status ?? '—' }}</span></td>
+                            <td>
+                                @php
+                                    $vStatus = strtolower(trim((string)($client->status ?? 'pending')));
+                                    $vBadgeClass = match($vStatus) {
+                                        'active' => 'bg-success',
+                                        'pending' => 'bg-warning',
+                                        'inactive', 'deactive', 'suspended', 'blocked' => 'bg-danger',
+                                        default => 'bg-secondary'
+                                    };
+                                @endphp
+                                <span class="badge {{ $vBadgeClass }} text-capitalize">{{ $client->status ?? 'Pending' }}</span>
+                            </td>
                             <td style="white-space: nowrap;">{{ \Carbon\Carbon::parse($client->created_at)->format('d-m-Y') }}</td>
                             <td>
                                 <div class="dropdown">

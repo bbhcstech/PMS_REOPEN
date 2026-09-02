@@ -1186,13 +1186,59 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label fw-bold">Department</label>
-                            <select name="department_id" class="form-select">
-                                <option value="">-- Select Department --</option>
-                                @foreach($departments as $dept)
-                                    <option value="{{ $dept->id }}">{{ $dept->dpt_name }}</option>
-                                @endforeach
-                            </select>
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label class="form-label fw-bold mb-0">Department</label>
+                                <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none fw-bold text-success d-inline-flex align-items-center gap-1" id="btnToggleInlineDept" onclick="toggleInlineAddDept();" style="font-size: 0.8rem;">
+                                    <i class="bx bx-plus-circle"></i> Add Department
+                                </button>
+                            </div>
+                            <div class="input-group">
+                                <select name="department_id" id="recruitment_department_select" class="form-select">
+                                    <option value="">-- Select Department --</option>
+                                    @foreach($departments as $dept)
+                                        <option value="{{ $dept->id }}">{{ $dept->dpt_name }}</option>
+                                    @endforeach
+                                </select>
+                                <button type="button" class="btn btn-outline-success d-flex align-items-center" onclick="toggleInlineAddDept();" title="Add New Department" style="border-top-right-radius: 0.375rem; border-bottom-right-radius: 0.375rem;">
+                                    <i class="bx bx-plus fs-5"></i>
+                                </button>
+                            </div>
+
+                            <!-- INLINE QUICK ADD DEPARTMENT PANEL -->
+                            <div id="inlineAddDeptPanel" class="mt-2 p-3 rounded-3 border d-none" style="background: #f0fdf4; border-color: #a7f3d0 !important; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.12);">
+                                <div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom border-success-subtle">
+                                    <span class="fw-bold text-success small d-flex align-items-center gap-1">
+                                        <i class="bx bx-buildings"></i> Quick Add Department
+                                    </span>
+                                    <button type="button" class="btn-close" style="font-size: 0.65rem;" onclick="toggleInlineAddDept(false);" aria-label="Close"></button>
+                                </div>
+
+                                <div id="inlineDptError" class="alert alert-danger py-1 px-2 small rounded-2 mb-2 d-none"></div>
+
+                                <div class="mb-2">
+                                    <label class="form-label small fw-bold mb-1 text-dark">Department Name <sup class="text-danger">*</sup></label>
+                                    <input type="text" id="inline_dpt_name" class="form-control form-control-sm bg-white" placeholder="e.g. PHP DEV, QA, Marketing" autocomplete="off">
+                                </div>
+
+                                <div class="mb-2">
+                                    <label class="form-label small fw-bold mb-1 text-dark">Parent Department <span class="text-muted fw-normal">(Optional)</span></label>
+                                    <select id="inline_parent_dpt_id" class="form-select form-select-sm bg-white">
+                                        <option value="">-- None / Top Level Department --</option>
+                                        @if(isset($parentDepartments))
+                                            @foreach($parentDepartments as $pDept)
+                                                <option value="{{ $pDept->id }}">{{ $pDept->dpt_name }}</option>
+                                            @endforeach
+                                        @endif
+                                    </select>
+                                </div>
+
+                                <div class="d-flex justify-content-end gap-2 mt-2 pt-1">
+                                    <button type="button" class="btn btn-sm btn-light border" onclick="toggleInlineAddDept(false);">Cancel</button>
+                                    <button type="button" id="btnSaveInlineDept" class="btn btn-sm btn-rec-primary px-3" onclick="saveInlineDepartment();">
+                                        <i class="bx bx-check me-1"></i> Save & Select
+                                    </button>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="col-md-6">
@@ -1240,5 +1286,171 @@
         </div>
     </div>
 </div>
+
+<!-- Floating Toast Container for instant feedback -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11000">
+    <div id="recruitmentToast" class="toast align-items-center text-white bg-dark border-0 rounded-4 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body d-flex align-items-center gap-2">
+                <i class="bx bx-check-circle text-success fs-4" id="recruitmentToastIcon"></i>
+                <span id="recruitmentToastMessage">Department created successfully.</span>
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleInlineAddDept(forceState) {
+    const panel = document.getElementById('inlineAddDeptPanel');
+    const input = document.getElementById('inline_dpt_name');
+    const errorBox = document.getElementById('inlineDptError');
+    if (!panel) return;
+
+    if (errorBox) {
+        errorBox.classList.add('d-none');
+        errorBox.textContent = '';
+    }
+
+    const isCurrentlyHidden = panel.classList.contains('d-none');
+    const shouldShow = (typeof forceState === 'boolean') ? forceState : isCurrentlyHidden;
+
+    if (shouldShow) {
+        panel.classList.remove('d-none');
+        if (input) {
+            setTimeout(() => input.focus(), 50);
+        }
+    } else {
+        panel.classList.add('d-none');
+        if (input) input.value = '';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const inlineInput = document.getElementById('inline_dpt_name');
+    if (inlineInput) {
+        inlineInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                e.stopPropagation();
+                saveInlineDepartment();
+            }
+        });
+    }
+});
+
+function saveInlineDepartment() {
+    const btn = document.getElementById('btnSaveInlineDept');
+    const errorBox = document.getElementById('inlineDptError');
+    const inputName = document.getElementById('inline_dpt_name');
+    const selectParent = document.getElementById('inline_parent_dpt_id');
+    
+    if (errorBox) {
+        errorBox.classList.add('d-none');
+        errorBox.textContent = '';
+    }
+    
+    const dptName = inputName ? inputName.value.trim() : '';
+    const parentDptId = selectParent ? selectParent.value : '';
+
+    if (!dptName) {
+        if (errorBox) {
+            errorBox.textContent = 'Please enter a department name.';
+            errorBox.classList.remove('d-none');
+        }
+        if (inputName) inputName.focus();
+        return;
+    }
+
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="bx bx-loader-alt bx-spin me-1"></i> Saving...';
+    }
+
+    fetch('{{ route("departments.store") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({
+            dpt_name: dptName,
+            parent_dpt_id: parentDptId || null,
+            code_generation_mode: 'auto'
+        })
+    })
+    .then(async res => {
+        const data = await res.json().catch(() => ({}));
+        return { status: res.status, data };
+    })
+    .then(({ status, data }) => {
+        if (status >= 200 && status < 300 && data.success) {
+            const dept = data.department || data.dpt;
+            
+            // Add option to Recruitment Requirement select and select it immediately
+            const recSelect = document.getElementById('recruitment_department_select');
+            if (recSelect && dept) {
+                const newOption = new Option(dept.dpt_name, dept.id, true, true);
+                recSelect.add(newOption);
+                recSelect.value = dept.id;
+            }
+
+            // Also add to filter select if present on the page
+            const filterSelect = document.querySelector('form[action*="recruitment"] select[name="department_id"]');
+            if (filterSelect && recSelect !== filterSelect && dept) {
+                filterSelect.add(new Option(dept.dpt_name, dept.id, false, false));
+            }
+
+            // Reset and close inline add panel
+            if (inputName) inputName.value = '';
+            if (selectParent) selectParent.value = '';
+            toggleInlineAddDept(false);
+
+            // Show instant success feedback toast
+            showQuickToast(`Department "${dept.dpt_name}" added and selected!`, true);
+        } else {
+            let errMsg = data.message || 'Failed to create department. Please check the inputs.';
+            if (data.errors) {
+                errMsg = Object.values(data.errors).flat().join('<br>');
+            }
+            if (errorBox) {
+                errorBox.innerHTML = errMsg;
+                errorBox.classList.remove('d-none');
+            }
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        if (errorBox) {
+            errorBox.textContent = 'Network error while creating department. Please try again.';
+            errorBox.classList.remove('d-none');
+        }
+    })
+    .finally(() => {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bx bx-check me-1"></i> Save & Select';
+        }
+    });
+}
+
+function showQuickToast(message, isSuccess = true) {
+    const toastEl = document.getElementById('recruitmentToast');
+    const msgEl = document.getElementById('recruitmentToastMessage');
+    const iconEl = document.getElementById('recruitmentToastIcon');
+    
+    if (msgEl) msgEl.textContent = message;
+    if (iconEl) {
+        iconEl.className = isSuccess ? 'bx bx-check-circle text-success fs-4' : 'bx bx-error-circle text-danger fs-4';
+    }
+    
+    if (toastEl && window.bootstrap) {
+        const toast = bootstrap.Toast.getOrCreateInstance(toastEl, { delay: 3500 });
+        toast.show();
+    }
+}
+</script>
 @endif
 @endsection

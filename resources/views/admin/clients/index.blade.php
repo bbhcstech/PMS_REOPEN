@@ -1,4 +1,3 @@
-{{-- resources/views/admin/clients/index.blade.php --}}
 @extends('admin.layout.app')
 
 @section('title', 'Clients')
@@ -9,38 +8,57 @@
         display: none !important;
     }
 </style>
-<div class="container-fluid mt-4">
 
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h4 class="fw-bold mb-0">Clients</h4>
+<div class="container-fluid px-4 py-4">
+    <!-- Top Header -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+        <div>
+            <h3 class="fw-bold mb-0 text-dark"><i class="bx bx-user-voice text-primary me-2"></i> Client Management</h3>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="{{ route('dashboard') }}" class="text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Clients</li>
+                </ol>
+            </nav>
+        </div>
 
-        @if(session('success'))
-            <div class="alert alert-success py-2 px-3 mb-0" style="background-color: #28a745; color: white; border-color: #28a745;">
-                {{ session('success') }}
-            </div>
-        @endif
+        <div class="d-flex align-items-center gap-2">
+            <a href="{{ route('clients.create') }}" class="btn btn-primary rounded-pill px-4 shadow-sm">
+                <i class="bx bx-plus-circle me-1"></i> Add Client
+            </a>
+        </div>
     </div>
 
-    {{-- Filters Card --}}
-    <div class="card shadow-sm border-0 mb-4">
-        <form method="GET" action="{{ route('clients.index') }}">
-            <div class="card-body">
-                <div class="row g-3">
-                    <div class="col-md-3">
-                        <label for="duration" class="form-label mb-1 text-muted">Duration</label>
-                        <input type="text"
-                               class="form-control border rounded-2"
-                               id="duration"
-                               name="duration"
-                               value="{{ request('duration') }}"
-                               placeholder="Select Range"
-                               autocomplete="off">
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show rounded-3 shadow-sm mb-4" role="alert">
+            <i class="bx bx-check-circle me-2 fs-5 align-middle"></i> {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    <!-- Filters Section -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body p-4">
+            <form method="GET" action="{{ route('clients.index') }}">
+                <div class="row g-3 align-items-end">
+                    <div class="col-lg-4 col-md-5">
+                        <label for="duration" class="form-label fw-semibold text-dark mb-1">Duration / Date Range</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0"><i class="bx bx-calendar text-primary"></i></span>
+                            <input type="text"
+                                   class="form-control border-start-0 ps-0 rounded-end"
+                                   id="duration"
+                                   name="duration"
+                                   value="{{ request('duration') }}"
+                                   placeholder="Select Date Range"
+                                   autocomplete="off">
+                        </div>
                     </div>
 
-                    <div class="col-md-3">
-                        <label for="name" class="form-label mb-1 text-muted">Clients</label>
-                        <select class="form-select select2" id="name" name="name" style="min-height: 45px; font-size: 15px;">
-                            <option value="">All</option>
+                    <div class="col-lg-4 col-md-4">
+                        <label for="name" class="form-label fw-semibold text-dark mb-1">Filter by Client</label>
+                        <select class="form-select rounded-3 select2" id="name" name="name">
+                            <option value="">All Clients</option>
                             @foreach($clients as $c)
                                 <option value="{{ $c->id }}" {{ request('name') == $c->id ? 'selected' : '' }}>
                                     {{ $c->client_uid ?? $c->id }} - {{ $c->name }}
@@ -49,18 +67,22 @@
                         </select>
                     </div>
 
-                    <div class="col-md-3 d-flex align-items-end">
-                        <button type="submit" class="btn btn-primary me-2">Filter</button>
-                        <a href="{{ route('clients.index') }}" class="btn btn-secondary">Reset</a>
+                    <div class="col-lg-4 col-md-3 d-flex align-items-center gap-2">
+                        <button type="submit" class="btn btn-primary rounded-pill px-4 flex-grow-1 text-nowrap">
+                            <i class="bx bx-filter-alt me-1"></i> Filter
+                        </button>
+                        <a href="{{ route('clients.index') }}" class="btn btn-outline-secondary rounded-pill px-4 flex-grow-1 text-nowrap">
+                            <i class="bx bx-refresh me-1"></i> Reset
+                        </a>
                     </div>
                 </div>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
 
-    {{-- Actions top --}}
+    <!-- Actions & Views Switcher Toolbar -->
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <a href="{{ route('clients.create') }}" class="btn btn-primary btn-sm">
+        <a href="{{ route('clients.create') }}" class="btn btn-primary btn-sm rounded-pill px-3">
             <i class="bi bi-plus-circle me-1"></i> Add Client
         </a>
 
@@ -68,16 +90,15 @@
             <a href="{{ route('clients.index') }}" class="btn btn-secondary f-14" data-toggle="tooltip" data-original-title="Table View">
                 <i class="side-icon bi bi-list-ul"></i>
             </a>
-
             <a href="{{ route('clients.pending') }}" class="btn btn-secondary f-14 show-unverified btn-active" data-toggle="tooltip" data-original-title="Account verification pending">
                 <i class="side-icon bi bi-person-x"></i>
             </a>
         </div>
     </div>
 
-    {{-- Table --}}
-    <div class="card shadow-sm border-0 mb-4">
-        <div class="card-body">
+    <!-- Table Card -->
+    <div class="card shadow-sm border-0 mb-4 rounded-4">
+        <div class="card-body p-4">
             <div class="table-responsive">
                 <table id="clientsTable" class="table table-bordered table-hover table-striped align-middle mb-0">
                     <thead class="table-dark">
@@ -106,8 +127,17 @@
                                 <td>{{ $client->email }}</td>
                                 <td style="white-space: nowrap;">{{ $client->company_name ?? '—' }}</td>
                                 <td>
-                                    <span class="badge {{ ($client->status ?? '') === 'Active' ? 'bg-success' : 'bg-secondary' }}">
-                                        {{ $client->status ?? '—' }}
+                                    @php
+                                        $clientStatus = strtolower(trim((string)($client->status ?? 'active')));
+                                        $badgeClass = match($clientStatus) {
+                                            'active' => 'bg-success',
+                                            'pending' => 'bg-warning',
+                                            'inactive', 'deactive', 'suspended', 'blocked' => 'bg-danger',
+                                            default => 'bg-secondary'
+                                        };
+                                    @endphp
+                                    <span class="badge {{ $badgeClass }} text-capitalize">
+                                        {{ $client->status ?? 'Active' }}
                                     </span>
                                 </td>
                                 <td style="white-space: nowrap;">
@@ -119,7 +149,7 @@
                                             <i class="bi bi-three-dots-vertical"></i>
                                         </button>
 
-                                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton{{ $client->id }}">
+                                        <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="dropdownMenuButton{{ $client->id }}">
                                             <li>
                                                 <a class="dropdown-item" href="{{ route('clients.show', $client->id) }}">
                                                     <i class="bi bi-eye me-2"></i> View
@@ -152,7 +182,6 @@
                                 </td>
                             </tr>
                         @endforeach
-                        {{-- no @empty row here; DataTables will show "No clients found." --}}
                     </tbody>
                 </table>
             </div>
@@ -184,7 +213,6 @@
 
     <script>
     $(document).ready(function () {
-        // DataTable
         $('#clientsTable').DataTable({
             paging: false,
             info: false,
@@ -195,7 +223,6 @@
                 emptyTable: "No clients found."
             },
             drawCallback: function() {
-                // keep bulk button state consistent after redraw
                 updateBulkButtonsState();
             }
         });
@@ -253,68 +280,7 @@
             updateBulkButtonsState();
         });
 
-        // Quick action controls toggle
-        $('#quick-action-type').on('change', function () {
-            if ($(this).val() === 'change-status') {
-                $('#quick-action-status').removeClass('d-none');
-            } else {
-                $('#quick-action-status').addClass('d-none');
-            }
-            toggleQuickApply();
-        });
-
-        $('#quick-action-status').on('change', toggleQuickApply);
-        $(document).on('change', '.client-checkbox', toggleQuickApply);
-
-        function toggleQuickApply() {
-            const anyChecked = $('.client-checkbox:checked').length > 0;
-            const actionSelected = $('#quick-action-type').val() !== '';
-            $('#quick-action-apply').prop('disabled', !(anyChecked && actionSelected));
-        }
-
-        // Apply quick action (status or delete)
-        $('#quick-action-apply').on('click', function () {
-            const ids = $('.client-checkbox:checked').map(function () { return $(this).val(); }).get();
-            const action = $('#quick-action-type').val();
-            const status = $('#quick-action-status').val();
-
-            if (!action || ids.length === 0) {
-                alert('Please select at least one client and an action.');
-                return;
-            }
-
-            if (action === 'delete' && !confirm('Are you sure you want to delete selected clients?')) {
-                return;
-            }
-
-            $.ajax({
-                url: '{{ route("clients.bulkAction") }}',
-                type: 'POST',
-                data: {
-                    _token: '{{ csrf_token() }}',
-                    client_ids: ids,
-                    action: action,
-                    status: status
-                },
-                success: function (res) {
-                    if (res.success) {
-                        if (action === 'delete') {
-                            ids.forEach(function(id){
-                                $("tr[data-id='" + id + "']").remove();
-                            });
-                        }
-                        location.reload();
-                    } else {
-                        alert(res.message || 'Action failed');
-                    }
-                },
-                error: function () {
-                    alert('Something went wrong');
-                }
-            });
-        });
-
-        // Separate Bulk Delete button under table
+        // Bulk Delete button under table
         $('#bulkDeleteBtn').on('click', function () {
             const ids = $('.client-checkbox:checked').map(function () { return $(this).val(); }).get();
 
@@ -356,14 +322,11 @@
             });
         });
 
-        // Enable/disable bulk buttons
         function updateBulkButtonsState() {
             const anyChecked = $('.client-checkbox:checked').length > 0;
             $('#bulkDeleteBtn').prop('disabled', !anyChecked);
-            toggleQuickApply();
         }
 
-        // initial state
         updateBulkButtonsState();
     });
     </script>

@@ -40,13 +40,17 @@ class Task extends TenantModel
         'progress',
         'remarks',
         'created_by',
-        'completed_on'
+        'completed_on',
+        'additional_instructions',
+        'attachments',
     ];
 
     protected $casts = [
         'is_completed' => 'boolean',
         'is_pinned' => 'boolean',
         'completed_on' => 'datetime',
+        'start_date' => 'datetime',
+        'due_date' => 'datetime',
     ];
 
     protected static function booted()

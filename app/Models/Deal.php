@@ -3,9 +3,7 @@
 namespace App\Models;
 
 use App\Models\TenantModel;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Deal extends TenantModel
@@ -13,11 +11,15 @@ class Deal extends TenantModel
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        // 'lead_id',          // Add this - foreign key to leads table
+        'lead_id',
         'deal_name',
-        'lead_name',        // Keep for backward compatibility
-        'contact_details',  // Keep for backward compatibility
+        'lead_name',
+        'contact_details',
+        'company_name',
         'value',
+        'currency',
+        'probability',
+        'weighted_value',
         'close_date',
         'next_follow_up',
         'deal_agent_id',
@@ -25,12 +27,17 @@ class Deal extends TenantModel
         'deal_category_id',
         'pipeline',
         'product',
+        'priority',
+        'lost_reason',
+        'lost_notes',
         'notes',
-        'is_active'
+        'is_active',
     ];
 
     protected $casts = [
         'value' => 'decimal:2',
+        'weighted_value' => 'decimal:2',
+        'probability' => 'integer',
         'close_date' => 'date',
         'next_follow_up' => 'date',
         'is_active' => 'boolean',
@@ -51,19 +58,31 @@ class Deal extends TenantModel
         return $this->belongsTo(DealCategory::class, 'deal_category_id');
     }
 
-    // Watchers relationship
     public function watchers()
     {
         return $this->belongsToMany(User::class, 'deal_watchers', 'deal_id', 'user_id')
                     ->withTimestamps();
     }
 
-    // ADD THIS: Lead relationship
     public function lead()
     {
-        return $this->belongsTo(Lead::class, 'lead_id');
+        return $this->belongsTo(LeadContact::class, 'lead_id');
     }
 
-    // Remove all the extra methods for now to keep it clean
-    // We'll add them back later if needed
+    public function activities()
+    {
+        return $this->hasMany(CrmActivity::class, 'deal_id')->latest('activity_date');
+    }
+
+    public function followUps()
+    {
+        return $this->hasMany(CrmFollowUp::class, 'deal_id')->latest('date');
+    }
+
+    public function calculateWeightedValue(): float
+    {
+        $val = (float) ($this->value ?? 0);
+        $prob = (int) ($this->probability ?? 0);
+        return round(($val * $prob) / 100, 2);
+    }
 }

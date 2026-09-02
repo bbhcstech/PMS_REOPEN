@@ -574,6 +574,16 @@
                 </div>
 
                 <div class="p-4 p-md-5">
+                    @if($isSettingsReadOnly)
+                        <div class="alert d-flex align-items-center mb-4 rounded-3 border-0 shadow-sm" style="background: linear-gradient(135deg, #eff6ff, #dbeafe); color: #1e40af; border-left: 4px solid #3b82f6 !important; padding: 14px 18px;">
+                            <i class="fas fa-eye me-3 fs-3 text-primary"></i>
+                            <div>
+                                <strong class="d-block text-primary fw-bold" style="font-size: 14px;">View-Only Mode</strong>
+                                <span style="font-size: 13px; color: #1e3a8a;">You are viewing recruitment and hiring pipeline settings in read-only mode. Only Administrators have permission to modify hiring workflows and application rules.</span>
+                            </div>
+                        </div>
+                    @endif
+
                     <form method="POST" action="{{ route('admin.settings.recruitment.update') }}">
                         @csrf
 
@@ -586,14 +596,14 @@
                             <!-- Job Categories -->
                             <div class="col-md-6">
                                 <label class="form-label-custom">Job Categories (Comma Separated) <span class="req-asterisk">*</span></label>
-                                <textarea name="job_categories" class="textarea-custom" rows="4" required placeholder="e.g. Engineering, Design, Marketing, Sales, HR">{{ old('job_categories', $settings['job_categories'] ?? '') }}</textarea>
+                                <textarea name="job_categories" class="textarea-custom" rows="4" {{ $isSettingsReadOnly ? 'readonly' : 'required' }} placeholder="e.g. Engineering, Design, Marketing, Sales, HR">{{ old('job_categories', $settings['job_categories'] ?? '') }}</textarea>
                                 <small class="text-muted mt-1.5 d-block"><i class="fas fa-info-circle me-1" style="color: #059669;"></i>Separate multiple categories with commas (e.g. Engineering, Design, Marketing, Sales, HR).</small>
                             </div>
 
                             <!-- Pipeline Stages -->
                             <div class="col-md-6">
                                 <label class="form-label-custom">Recruitment Pipeline Stages (Comma Separated) <span class="req-asterisk">*</span></label>
-                                <textarea name="pipeline_stages" class="textarea-custom" rows="4" required placeholder="e.g. Applied, Screening, Technical Interview, HR Interview, Offered, Hired">{{ old('pipeline_stages', $settings['pipeline_stages'] ?? '') }}</textarea>
+                                <textarea name="pipeline_stages" class="textarea-custom" rows="4" {{ $isSettingsReadOnly ? 'readonly' : 'required' }} placeholder="e.g. Applied, Screening, Technical Interview, HR Interview, Offered, Hired">{{ old('pipeline_stages', $settings['pipeline_stages'] ?? '') }}</textarea>
                                 <small class="text-muted mt-1.5 d-block"><i class="fas fa-info-circle me-1" style="color: #059669;"></i>Define candidate pipeline progression steps (e.g. Applied, Screening, Technical Interview, HR Interview, Offered, Hired).</small>
                             </div>
                         </div>
@@ -610,7 +620,8 @@
                                 <div class="input-group input-group-custom">
                                     <span class="input-group-text"><i class="fas fa-file-pdf"></i></span>
                                     <input type="number" name="max_resume_size_mb" class="form-control" min="1" max="50"
-                                        value="{{ old('max_resume_size_mb', $settings['max_resume_size_mb'] ?? '5') }}" required>
+                                        value="{{ old('max_resume_size_mb', $settings['max_resume_size_mb'] ?? '5') }}"
+                                        {{ $isSettingsReadOnly ? 'readonly' : 'required' }}>
                                 </div>
                                 <small class="text-muted mt-1 d-block">Maximum allowed file size per candidate application.</small>
                             </div>
@@ -621,7 +632,8 @@
                                 <div class="input-group input-group-custom">
                                     <span class="input-group-text"><i class="fas fa-file-code"></i></span>
                                     <input type="text" name="allowed_file_types" class="form-control"
-                                        value="{{ old('allowed_file_types', $settings['allowed_file_types'] ?? 'pdf,doc,docx') }}" required>
+                                        value="{{ old('allowed_file_types', $settings['allowed_file_types'] ?? 'pdf,doc,docx') }}"
+                                        {{ $isSettingsReadOnly ? 'readonly' : 'required' }}>
                                 </div>
                                 <small class="text-muted mt-1 d-block">Comma-separated file extensions (e.g. pdf, doc, docx).</small>
                             </div>
@@ -632,9 +644,10 @@
                                 <div class="policy-switch-box">
                                     <div class="form-check form-switch m-0 d-flex align-items-center gap-3 w-100">
                                         <input class="form-check-input flex-shrink-0" type="checkbox" name="auto_reply" value="1" id="autoReplySwitch"
-                                            style="width: 2.8em; height: 1.4em; cursor: pointer;"
-                                            {{ ($settings['auto_reply'] ?? '1') == '1' ? 'checked' : '' }}>
-                                        <label class="form-check-label fw-bold text-dark mb-0" for="autoReplySwitch" style="cursor: pointer; font-size: 0.9rem;">
+                                            style="width: 2.8em; height: 1.4em; cursor: {{ $isSettingsReadOnly ? 'default' : 'pointer' }};"
+                                            {{ ($settings['auto_reply'] ?? '1') == '1' ? 'checked' : '' }}
+                                            {{ $isSettingsReadOnly ? 'disabled' : '' }}>
+                                        <label class="form-check-label fw-bold text-dark mb-0" for="autoReplySwitch" style="cursor: {{ $isSettingsReadOnly ? 'default' : 'pointer' }}; font-size: 0.9rem;">
                                             Send Candidate Auto-Acknowledgement Email
                                         </label>
                                     </div>
@@ -644,10 +657,15 @@
 
                         <!-- Form Action Buttons -->
                         <div class="mt-5 pt-4 border-top d-flex justify-content-end">
-                            <button type="submit" class="btn-save-address">
-                                <i class="fas fa-save me-1.5"></i> Save Recruitment Settings
-                            </button>
-                        </div>
+                            @if($isSettingsReadOnly)
+                                <span class="badge rounded-pill px-3.5 py-2 fw-bold" style="background: #f1f5f9; color: #64748b; font-size: 13px; border: 1px solid #cbd5e1;">
+                                    <i class="fas fa-lock me-1.5 text-muted"></i> Read-Only (Admin Managed)
+                                </span>
+                            @else
+                                <button type="submit" class="btn-save-address">
+                                    <i class="fas fa-save me-1.5"></i> Save Recruitment Settings
+                                </button>
+                            @endif
                     </form>
                 </div>
             </div>

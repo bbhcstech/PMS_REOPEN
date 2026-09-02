@@ -66,6 +66,25 @@ class CompanyManagementController extends Controller
         $data['theme'] = $this->themePayload($request);
         $company->update($data);
 
+        // Dispatch notification to Super Admin Alert Center
+        try {
+            if (class_exists(\App\Models\Central\CentralNotification::class)) {
+                $updaterName = auth()->user()?->name ?? 'Company Admin';
+                \App\Models\Central\CentralNotification::createNotification([
+                    'company_id'        => $company->id,
+                    'type'              => 'company_profile_updated',
+                    'title'             => 'Tenant Company Updated: ' . $company->name,
+                    'message'           => "Tenant company '{$company->name}' details were updated by {$updaterName}.",
+                    'severity'          => 'info',
+                    'related_module'    => 'company_profile',
+                    'related_record_id' => $company->id,
+                    'action_url'        => route('super-admin.companies.show', $company->id),
+                    'target_audience'   => 'super_admin',
+                    'is_read'           => false,
+                ]);
+            }
+        } catch (\Throwable $e) {}
+
         return redirect()->route('admin.companies.index')->with('success', 'Company updated successfully.');
     }
 
