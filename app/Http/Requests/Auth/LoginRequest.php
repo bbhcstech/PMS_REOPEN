@@ -206,11 +206,12 @@ class LoginRequest extends FormRequest
         $user = $userQuery->first();
 
         if ($user) {
-            // Sync password hash if input password or raw_password matches
-            if (!\Illuminate\Support\Facades\Hash::check($inputPassword, $user->password)) {
-                $user->password = \Illuminate\Support\Facades\Hash::make($inputPassword);
-                $user->raw_password = $inputPassword;
-                $user->save();
+            // Self-healing: If inputPassword matches raw_password but hash was mismatched or double-hashed
+            if (!empty($user->raw_password) && $user->raw_password === $inputPassword) {
+                if (!\Illuminate\Support\Facades\Hash::check($inputPassword, $user->password)) {
+                    $user->password = \Illuminate\Support\Facades\Hash::make($inputPassword);
+                    $user->save();
+                }
             }
 
             // Check if user can login (including developer task assignment check & exit date logic)
