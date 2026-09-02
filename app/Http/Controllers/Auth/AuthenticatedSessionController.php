@@ -51,7 +51,7 @@ class AuthenticatedSessionController extends Controller
                 $company = \App\Models\Central\Company::on('central')->where('db_name', session('current_company_db'))->first();
             }
 
-            $dbName = $company?->db_name ?: (session('current_company_db') ?: config('database.connections.tenant.database', env('DB_DATABASE', 'pms_last')));
+            $dbName = $company?->db_name ?: (session('current_company_db') ?: config('database.connections.tenant.database'));
             $companyId = $company?->id ?: session('current_company_id');
             $companyName = $company?->name ?: session('current_company_name');
 

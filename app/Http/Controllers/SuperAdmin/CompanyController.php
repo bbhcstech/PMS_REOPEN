@@ -751,7 +751,7 @@ class CompanyController extends Controller
     {
         session()->forget(['current_company_db', 'current_company_id', 'current_company_name']);
 
-        $defaultDb = env('DB_DATABASE', 'pms_last');
+        $defaultDb = config('database.connections.tenant.database') ?: config('database.connections.mysql.database');
         config([
             'database.connections.tenant.database' => $defaultDb,
             'database.connections.mysql.database'  => $defaultDb,
