@@ -154,6 +154,24 @@ return new class extends Migration
                 }
             });
         }
+
+        // 9. Ensure leaves table has date, duration, company_id, archived_at
+        if (Schema::hasTable('leaves')) {
+            Schema::table('leaves', function (Blueprint $table) {
+                if (! Schema::hasColumn('leaves', 'date')) {
+                    $table->date('date')->nullable()->after('type');
+                }
+                if (! Schema::hasColumn('leaves', 'duration')) {
+                    $table->string('duration', 50)->default('full_day')->after('date');
+                }
+                if (! Schema::hasColumn('leaves', 'company_id')) {
+                    $table->unsignedBigInteger('company_id')->nullable()->after('id')->index();
+                }
+                if (! Schema::hasColumn('leaves', 'archived_at')) {
+                    $table->timestamp('archived_at')->nullable()->after('updated_at');
+                }
+            });
+        }
     }
 
     /**
