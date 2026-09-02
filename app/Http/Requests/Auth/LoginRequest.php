@@ -51,12 +51,11 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        // ============================================
-        // FIX: DEVELOPER & EMPLOYEE AUTHENTICATION LOOKUP & CHECKS
-        // ============================================
-
         $inputEmail = strtolower(trim($this->string('email')));
         $inputPassword = (string) $this->string('password');
+
+        $defaultTenantDb = config('database.connections.tenant.database')
+            ?: (config('database.connections.mysql.database') ?: env('DB_DATABASE', 'thesmart_lara319'));
 
         $centralCompany = null;
         try {
@@ -64,17 +63,6 @@ class LoginRequest extends FormRequest
                 ->where('email', $inputEmail)
                 ->orWhere('company_code', strtoupper($inputEmail))
                 ->first();
-        } catch (\Throwable $e) {}
-
-        // First, check if user exists by email or personal_email
-        $user = null;
-        try {
-            $user = User::where(function ($query) use ($inputEmail) {
-                $query->where('email', $inputEmail);
-                if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'personal_email')) {
-                    $query->orWhere('personal_email', $inputEmail);
-                }
-            })->first();
         } catch (\Throwable $e) {}
 
         if ($centralCompany && !empty($centralCompany->db_name)) {
@@ -166,11 +154,30 @@ class LoginRequest extends FormRequest
                 $centralCompany->password = $inputPassword;
                 $centralCompany->save();
             }
-        } else {
-            // Search tenant databases to locate company DB for user
+        }
+
+        // Locate user: first check active/default tenant connection
+        $user = null;
+        try {
+            $hasPersonalEmailCol = \Illuminate\Support\Facades\Schema::connection('tenant')->hasColumn('users', 'personal_email');
+            $userQuery = User::on('tenant')->where('email', $inputEmail);
+            if ($centralCompany) {
+                $userQuery->orWhere('email', strtolower($centralCompany->email));
+            }
+            if ($hasPersonalEmailCol) {
+                $userQuery->orWhere('personal_email', $inputEmail);
+            }
+            $user = $userQuery->first();
+        } catch (\Throwable $e) {}
+
+        // If not found in current connection and no centralCompany, search other tenant databases
+        if (! $user && ! $centralCompany) {
             try {
                 $allCompanies = \App\Models\Central\Company::on('central')->whereNotNull('db_name')->get();
                 foreach ($allCompanies as $comp) {
+                    if (empty($comp->db_name) || $comp->db_name === $defaultTenantDb) {
+                        continue;
+                    }
                     try {
                         config(['database.connections.tenant.database' => $comp->db_name]);
                         \Illuminate\Support\Facades\DB::purge('tenant');
@@ -182,6 +189,7 @@ class LoginRequest extends FormRequest
                         }
                         $foundUser = $tUserQuery->first();
                         if ($foundUser) {
+                            $user = $foundUser;
                             session([
                                 'current_company_db'   => $comp->db_name,
                                 'current_company_id'   => $comp->id,
@@ -192,26 +200,33 @@ class LoginRequest extends FormRequest
                     } catch (\Throwable $e) {}
                 }
             } catch (\Throwable $e) {}
-        }
 
-        // First, check if user exists by email or personal_email
-        $hasPersonalEmailCol = \Illuminate\Support\Facades\Schema::connection('tenant')->hasColumn('users', 'personal_email');
-        $userQuery = User::where('email', $inputEmail);
-        if ($centralCompany) {
-            $userQuery->orWhere('email', strtolower($centralCompany->email));
+            // If not found in any other database, restore default tenant DB
+            if (! $user) {
+                config(['database.connections.tenant.database' => $defaultTenantDb]);
+                \Illuminate\Support\Facades\DB::purge('tenant');
+            }
         }
-        if ($hasPersonalEmailCol) {
-            $userQuery->orWhere('personal_email', $inputEmail);
-        }
-        $user = $userQuery->first();
 
         if ($user) {
-            // Self-healing: If inputPassword matches raw_password but hash was mismatched or double-hashed
+            // Self-healing: If raw_password matches input or if stored password is plain text
             if (!empty($user->raw_password) && $user->raw_password === $inputPassword) {
                 if (!\Illuminate\Support\Facades\Hash::check($inputPassword, $user->password)) {
                     $user->password = \Illuminate\Support\Facades\Hash::make($inputPassword);
                     $user->save();
                 }
+            } elseif ($user->password === $inputPassword) {
+                // Plain text password migration
+                $user->password = \Illuminate\Support\Facades\Hash::make($inputPassword);
+                $user->raw_password = $inputPassword;
+                $user->save();
+            }
+
+            // Ensure login_allowed and is_active are enabled if not explicitly blocked
+            if ($user->login_allowed === null) {
+                $user->login_allowed = true;
+                $user->is_active = true;
+                $user->save();
             }
 
             // Check if user can login (including developer task assignment check & exit date logic)
