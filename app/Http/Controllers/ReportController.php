@@ -83,7 +83,10 @@ class ReportController extends Controller
     public function financeReport(Request $request)
     {
         $totalIncomes = Payment::sum('amount');
-        $totalExpenses = Expense::where('status', 'approved')->sum('price');
+        $totalExpenses = \Illuminate\Support\Facades\Schema::hasColumn('expenses', 'status')
+            ? Expense::where('status', 'approved')->sum('price')
+            : Expense::sum('price');
+
         if ($totalExpenses == 0) {
             $totalExpenses = Expense::sum('price');
         }
@@ -126,7 +129,7 @@ class ReportController extends Controller
     {
         $query = Expense::with(['project', 'user']);
 
-        if ($request->filled('status')) {
+        if ($request->filled('status') && \Illuminate\Support\Facades\Schema::hasColumn('expenses', 'status')) {
             $query->where('status', $request->status);
         }
         if ($request->filled('start_date') && $request->filled('end_date')) {

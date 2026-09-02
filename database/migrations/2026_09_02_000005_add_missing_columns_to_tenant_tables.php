@@ -172,6 +172,18 @@ return new class extends Migration
                 }
             });
         }
+
+        // 10. Ensure expenses table has status, company_id
+        if (Schema::hasTable('expenses')) {
+            Schema::table('expenses', function (Blueprint $table) {
+                if (! Schema::hasColumn('expenses', 'status')) {
+                    $table->string('status', 50)->default('approved')->after('price');
+                }
+                if (! Schema::hasColumn('expenses', 'company_id')) {
+                    $table->unsignedBigInteger('company_id')->nullable()->after('id')->index();
+                }
+            });
+        }
     }
 
     /**
