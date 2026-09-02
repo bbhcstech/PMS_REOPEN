@@ -1083,6 +1083,7 @@
             </li>
             @endif
 
+            @if($canSeeModule('my-documents') || $canSeeModule('documents'))
             <!-- My Documents -->
             <li class="menu-item {{ request()->routeIs('my-documents.*') ? 'active' : '' }}">
               <a href="{{ route('my-documents.index') }}" class="menu-link" data-sidebar-key="my-documents">
@@ -1090,8 +1091,7 @@
                   <div class="text-truncate" data-i18n="My Documents">My Documents</div>
               </a>
             </li>
-
-
+            @endif
 
             @if($canSeeModule('organization'))
             <li class="menu-item {{ request()->routeIs('organization.*') ? 'active' : '' }}">
@@ -1103,7 +1103,7 @@
             @endif
 
             <!-- Events -->
-            @if($canSeeModule('events') || (auth()->check() && auth()->user()->normalizedRole() !== 'superadmin'))
+            @if($canSeeModule('events'))
             <li class="menu-item {{ request()->routeIs('events.*') ? 'active' : '' }}">
               <a href="{{ route('events.index') }}" class="menu-link" data-sidebar-key="events">
                   <i class="menu-icon tf-icons bx bx-calendar-event"></i>
@@ -1113,7 +1113,7 @@
             @endif
 
             <!-- Community Message -->
-            @if(auth()->check() && auth()->user()->normalizedRole() !== 'superadmin')
+            @if($canSeeModule('community'))
             <li class="menu-item {{ request()->routeIs('community.*') ? 'active' : '' }}">
               <a href="{{ route('community.index') }}" class="menu-link" data-sidebar-key="community">
                   <i class="menu-icon tf-icons bx bx-chat"></i>
@@ -1175,6 +1175,7 @@
                                 <div class="text-truncate" data-i18n="Without menu">Designation</div>
                             </a>
                         </li>
+                    @endif
 
  <!-- Department with Submenu -->
                   @if($canSeeModule('departments'))
@@ -1196,7 +1197,6 @@
                     </ul>
                   </li>
                   @endif
-                @endif
 
 
                      @if($canSeeModule('attendance'))
@@ -1210,17 +1210,6 @@
                     @endif
 
 
-<!--
-                @if(auth()->user()->role === 'admin')
-                <li class="menu-item {{ request()->routeIs('attendance.report') ? 'active open' : '' }}">
-                  <a href="{{ route('attendance.report') }}" class="menu-link">
-                    <div class="text-truncate" data-i18n="Without menu">Attendance Report</div>
-                  </a>
-                </li>
-                 @endif -->
-
-
-
                 @if($canSeeModule('leaves'))
                 <li class="menu-item {{ request()->routeIs('leaves.*') ? 'active' : '' }}">
                 <a href="{{ route('leaves.index') }}" class="menu-link" data-sidebar-key="leaves">
@@ -1229,14 +1218,6 @@
                 </li>
                 @endif
 
-
-                <!-- @if(auth()->user()->role === 'admin')
-                <li class="menu-item {{ request()->routeIs('admin.leave.report') ? 'active open' : '' }}">
-                <a href="{{ route('admin.leave.report') }}" class="menu-link">
-                    <div class="text-truncate" data-i18n="Without navbar">Leaves Report</div>
-                </a>
-                </li>
-                @endif -->
 
                 {{-- Employee Holiday View --}}
                 @if($canSeeModule('holidays'))
@@ -1353,7 +1334,7 @@
             <li class="menu-item {{ request()->routeIs('collaborating-companies.*') ? 'active' : '' }}">
                 <a href="{{ route('collaborating-companies.index') }}" class="menu-link" data-sidebar-key="collaborating-companies">
                     <i class="menu-icon tf-icons bx bx-buildings"></i>
-                    <div class="text-truncate">Collaborating Companies</div>
+                    <div class="text-truncate">Collab Companies</div>
                 </a>
             </li>
             @endif
@@ -1361,13 +1342,13 @@
             @if($canSeeModule('clients'))
             <li class="menu-item {{ request()->routeIs('clients.*') ? 'active' : '' }}">
                 <a href="{{ route('clients.index') }}" class="menu-link" data-sidebar-key="clients">
-                    <i class="menu-icon tf-icons bx bx-user-voice"></i>
+                    <i class="menu-icon tf-icons bx bx-user"></i>
                     <div class="text-truncate">Client</div>
                 </a>
             </li>
             @endif
 
-            @if(($canSeeModule('work') || in_array(strtolower((string) auth()->user()?->role), ['admin', 'manager', 'hr'], true)) && ($canAnyModule(['projects', 'tasks', 'timelogs', 'timesheets']) || in_array(strtolower((string) auth()->user()?->role), ['admin', 'manager', 'hr'], true)))
+            @if($canSeeModule('work') && $canAnyModule(['projects', 'tasks', 'timelogs', 'timesheets']))
             <li class="menu-item {{ request()->routeIs('projects.*') ||
                 request()->routeIs('tasks.*') || request()->routeIs('users.tasks.*') ||
                 request()->routeIs('timelogs.*') || request()->routeIs('task-timer.*') ||
@@ -1379,7 +1360,7 @@
                 </a>
 
                 <ul class="menu-sub">
-                    @if($canSeeModule('projects') || in_array(strtolower((string) auth()->user()?->role), ['admin', 'manager', 'hr'], true))
+                    @if($canSeeModule('projects'))
                         <li class="menu-item {{ (request()->routeIs('projects.*') && !request()->routeIs('projects.tasks.*') && !request()->routeIs('projects.timelogs.*')) ? 'active' : '' }}">
                             <a href="{{ route('projects.index') }}" class="menu-link" data-sidebar-key="projects">
                                 <div class="text-truncate" data-i18n="Landing">Projects</div>
@@ -1387,7 +1368,7 @@
                         </li>
                     @endif
 
-                    @if($canSeeModule('tasks') || in_array(strtolower((string) auth()->user()?->role), ['admin', 'manager', 'hr'], true))
+                    @if($canSeeModule('tasks'))
                     <li class="menu-item {{ request()->routeIs('tasks.*') || request()->routeIs('projects.tasks.*') || request()->routeIs('users.tasks.*') || request()->routeIs('task-timer.*') ? 'active' : '' }}">
                         <a href="{{ route('tasks.index') }}" class="menu-link" data-sidebar-key="tasks">
                             <div class="text-truncate" data-i18n="Pricing">Tasks</div>
@@ -1395,28 +1376,12 @@
                     </li>
                     @endif
 
-                    @if($canSeeModule('timelogs') || $canSeeModule('timesheets') || in_array(strtolower((string) auth()->user()?->role), ['admin', 'manager', 'hr'], true))
+                    @if($canSeeModule('timelogs') || $canSeeModule('timesheets'))
                         <li class="menu-item {{ request()->routeIs('timelogs.*') || request()->routeIs('projects.timelogs.*') ? 'active' : '' }}">
                             <a href="{{ route('timelogs.index') }}" class="menu-link" data-sidebar-key="timelogs">
                                 <div class="text-truncate" data-i18n="Payment">Timesheet</div>
                             </a>
                         </li>
-                    @endif
-
-                    <!-- Contracts Section - Admin Only -->
-
-                    <!-- @if(auth()->user()->role === 'admin')
-                         <li class="menu-item {{ request()->routeIs('admin.contracts.*') ? 'active open' : '' }}">
-                            <a href="{{ route('admin.contracts.index') }}" class="menu-link">
-                                <div class="text-truncate" data-i18n="Contracts">Contracts</div>
-                            </a>
-                        </li>
-
-                        <li class="menu-item {{ request()->routeIs('admin.contract-templates.*') ? 'active open' : '' }}">
-                            <a href="{{ route('admin.contract-templates.index') }}" class="menu-link">
-                                <div class="text-truncate" data-i18n="Contract Templates">Contract Templates</div>
-                            </a>
-                        </li> -->
                     @endif
                 </ul>
             </li>
@@ -1541,6 +1506,7 @@
                     </li>
                 @endif
 
+                @if($canSeeModule('products'))
                 <!-- Products -->
                 <li class="menu-item {{ request()->routeIs('products.*') ? 'active' : '' }}">
                     <a href="{{ route('products.index') }}" class="menu-link" data-sidebar-key="products">
@@ -1548,7 +1514,9 @@
                         <div class="text-truncate" data-i18n="Products">Products</div>
                     </a>
                 </li>
+                @endif
 
+                @if($canSeeModule('orders'))
                 <!-- Orders -->
                 <li class="menu-item {{ request()->routeIs('orders.*') ? 'active' : '' }}">
                     <a href="{{ route('orders.index') }}" class="menu-link" data-sidebar-key="orders">
@@ -1556,6 +1524,7 @@
                         <div class="text-truncate" data-i18n="Orders">Orders</div>
                     </a>
                 </li>
+                @endif
 
                 <!-- //ticket section . -->
 
