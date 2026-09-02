@@ -448,11 +448,38 @@ class CompanyController extends Controller
     }
 
     /**
+     * Get tenant database prefix (supports cPanel prefix and TENANT_DB_PREFIX env).
+     */
+    public function getTenantDbPrefix(): string
+    {
+        $prefix = env('TENANT_DB_PREFIX');
+        if ($prefix !== null && $prefix !== '') {
+            return $prefix;
+        }
+
+        // Auto-detect cPanel prefix from central or default database name (e.g. thesmart_lara319 -> thesmart_)
+        $dbName = (string) (config('database.connections.central.database') ?: config('database.connections.mysql.database', ''));
+        if (str_contains($dbName, '_')) {
+            $parts = explode('_', $dbName);
+            return $parts[0] . '_';
+        }
+
+        $dbUser = (string) (config('database.connections.central.username') ?: config('database.connections.mysql.username', ''));
+        if (str_contains($dbUser, '_')) {
+            $parts = explode('_', $dbUser);
+            return $parts[0] . '_';
+        }
+
+        return 'pms_';
+    }
+
+    /**
      * Show form to create a new tenant company.
      */
     public function create(): View
     {
-        return view('superadmin.companies.create');
+        $dbPrefix = $this->getTenantDbPrefix();
+        return view('superadmin.companies.create', compact('dbPrefix'));
     }
 
     /**
@@ -478,7 +505,13 @@ class CompanyController extends Controller
 
         $rawSlug = strtolower(trim($data['slug']));
         $slug = preg_replace('/[^a-z0-9_]/', '', $rawSlug);
-        $dbName = 'pms_' . $slug;
+        
+        $dbPrefix = $this->getTenantDbPrefix();
+        if ($dbPrefix && str_starts_with($slug, $dbPrefix)) {
+            $dbName = $slug;
+        } else {
+            $dbName = $dbPrefix . $slug;
+        }
 
         // Check if DB name or company code already exists in central registry
         $existing = Company::on('central')->where('db_name', $dbName)
@@ -517,14 +550,40 @@ class CompanyController extends Controller
             $adminProfileImagePath = 'uploads/admin_avatars/' . $filename;
         }
 
-        // 1. Create physical MySQL database matching utf8mb4_general_ci charset
+        // 1. Create or verify physical MySQL database matching utf8mb4_general_ci charset
+        $dbVerified = false;
         try {
             $pdo = DB::connection('central')->getPdo();
             $pdo->exec("CREATE DATABASE IF NOT EXISTS `{$dbName}` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci");
+            $dbVerified = true;
         } catch (\Throwable $e) {
-            return back()->withErrors([
-                'error' => "Failed to create database '{$dbName}': " . $e->getMessage(),
-            ])->withInput();
+            // On shared hosting (cPanel), MySQL user might not have CREATE DATABASE SQL privilege.
+            // Check if database was already created in cPanel MySQL Databases
+            try {
+                $tenantHost = config('database.connections.tenant.host') ?: config('database.connections.mysql.host', '127.0.0.1');
+                $tenantPort = config('database.connections.tenant.port') ?: config('database.connections.mysql.port', 3306);
+                $tenantUser = config('database.connections.tenant.username') ?: config('database.connections.mysql.username', 'root');
+                $tenantPass = config('database.connections.tenant.password') ?: config('database.connections.mysql.password', '');
+
+                new \PDO("mysql:host={$tenantHost};port={$tenantPort};dbname={$dbName}", $tenantUser, $tenantPass, [
+                    \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION
+                ]);
+                $dbVerified = true;
+            } catch (\Throwable $ex) {
+                $dbVerified = false;
+            }
+
+            if (! $dbVerified) {
+                $tenantUser = config('database.connections.tenant.username') ?: config('database.connections.mysql.username', 'thesmart_lara319');
+                return back()->withErrors([
+                    'error' => "Cannot create MySQL database '{$dbName}' automatically due to cPanel shared hosting privileges.\n\n" .
+                               "To complete provisioning:\n" .
+                               "1. Go to your cPanel -> 'MySQL Databases'.\n" .
+                               "2. Under 'Create New Database', create: '{$dbName}'\n" .
+                               "3. Under 'Add User To Database', select user '{$tenantUser}' and database '{$dbName}', check 'ALL PRIVILEGES' and save.\n" .
+                               "4. Submit this form again — PMS will automatically migrate and configure your company!",
+                ])->withInput();
+            }
         }
 
         // 2. Register Company in central database

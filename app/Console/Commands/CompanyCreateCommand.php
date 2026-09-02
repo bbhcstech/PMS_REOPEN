@@ -26,6 +26,25 @@ class CompanyCreateCommand extends Command
     protected $description = 'Create a new tenant database, register company in central DB, run migrations, and seed default admin.';
 
     /**
+     * Get tenant database prefix.
+     */
+    private function getTenantDbPrefix(): string
+    {
+        $prefix = env('TENANT_DB_PREFIX');
+        if ($prefix !== null && $prefix !== '') {
+            return $prefix;
+        }
+
+        $dbName = (string) (config('database.connections.central.database') ?: config('database.connections.mysql.database', ''));
+        if (str_contains($dbName, '_')) {
+            $parts = explode('_', $dbName);
+            return $parts[0] . '_';
+        }
+
+        return 'pms_';
+    }
+
+    /**
      * Execute the console command.
      */
     public function handle(): int
@@ -33,7 +52,13 @@ class CompanyCreateCommand extends Command
         $name = trim($this->argument('name'));
         $rawSlug = strtolower(trim($this->argument('slug')));
         $slug = preg_replace('/[^a-z0-9_]/', '', $rawSlug);
-        $dbName = 'pms_' . $slug;
+        
+        $dbPrefix = $this->getTenantDbPrefix();
+        if ($dbPrefix && str_starts_with($slug, $dbPrefix)) {
+            $dbName = $slug;
+        } else {
+            $dbName = $dbPrefix . $slug;
+        }
 
         $this->info("Creating tenant company: {$name} (Database: {$dbName})...");
 
@@ -44,14 +69,33 @@ class CompanyCreateCommand extends Command
             return Command::FAILURE;
         }
 
-        // 2. Create physical MySQL database matching charset/collation utf8mb4_general_ci
+        // 2. Create or verify physical MySQL database matching charset/collation utf8mb4_general_ci
+        $dbVerified = false;
         try {
             $pdo = DB::connection('central')->getPdo();
             $pdo->exec("CREATE DATABASE IF NOT EXISTS `{$dbName}` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci");
             $this->info("✔ Created MySQL Database: `{$dbName}`");
+            $dbVerified = true;
         } catch (\Throwable $e) {
-            $this->error("Failed to create database '{$dbName}': " . $e->getMessage());
-            return Command::FAILURE;
+            try {
+                $tenantHost = config('database.connections.tenant.host') ?: config('database.connections.mysql.host', '127.0.0.1');
+                $tenantPort = config('database.connections.tenant.port') ?: config('database.connections.mysql.port', 3306);
+                $tenantUser = config('database.connections.tenant.username') ?: config('database.connections.mysql.username', 'root');
+                $tenantPass = config('database.connections.tenant.password') ?: config('database.connections.mysql.password', '');
+
+                new \PDO("mysql:host={$tenantHost};port={$tenantPort};dbname={$dbName}", $tenantUser, $tenantPass, [
+                    \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION
+                ]);
+                $this->info("✔ Verified existing MySQL Database: `{$dbName}`");
+                $dbVerified = true;
+            } catch (\Throwable $ex) {
+                $dbVerified = false;
+            }
+
+            if (! $dbVerified) {
+                $this->error("Failed to create database '{$dbName}': " . $e->getMessage());
+                return Command::FAILURE;
+            }
         }
 
         // 3. Register company in pms_central.companies
