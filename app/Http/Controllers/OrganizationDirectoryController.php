@@ -110,7 +110,10 @@ class OrganizationDirectoryController extends Controller
         $departmentGroups = Department::with(['employeeDetails.user', 'employeeDetails.designation'])
             ->whereNull('archived_at')
             ->whereHas('employeeDetails', function ($query) {
-                $query->where('status', 'Active')->whereHas('user', fn ($user) => $user->whereNull('archived_at'));
+                if (Schema::hasColumn('employee_details', 'status')) {
+                    $query->whereIn('status', ['Active', 'active']);
+                }
+                $query->whereHas('user', fn ($user) => $user->whereNull('archived_at'));
             })
             ->orderBy('dpt_name')
             ->get();
