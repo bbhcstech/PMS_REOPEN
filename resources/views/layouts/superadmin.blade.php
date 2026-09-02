@@ -581,14 +581,203 @@
 
     .top-header .right .btn-notif .badge-dot {
       position: absolute;
-      top: 6px;
-      right: 6px;
+      top: 5px;
+      right: 5px;
       width: 8px;
       height: 8px;
       background: var(--rose-accent);
       border-radius: 50%;
       border: 2px solid #fff;
       animation: pulse 2s infinite;
+    }
+
+    .top-header .right .notif-wrapper {
+      position: relative;
+    }
+
+    .notif-dropdown {
+      position: absolute;
+      right: 0;
+      top: calc(100% + 8px);
+      background: rgba(255, 255, 255, 0.98);
+      border-radius: 16px;
+      border: 1px solid rgba(226, 232, 240, 0.85);
+      box-shadow: 0 20px 50px -10px rgba(15, 116, 76, 0.15), 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+      width: 380px;
+      max-width: 90vw;
+      display: none;
+      z-index: 70;
+      animation: fadeSlide 0.2s ease;
+      backdrop-filter: blur(20px);
+      overflow: hidden;
+    }
+
+    .notif-wrapper.open .notif-dropdown {
+      display: block;
+    }
+
+    .notif-dropdown-header {
+      padding: 14px 18px;
+      background: linear-gradient(135deg, #073a26 0%, #0f744c 100%);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .notif-dropdown-header .notif-header-title {
+      font-size: 13.5px;
+      font-weight: 800;
+      letter-spacing: -0.2px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .notif-dropdown-header .notif-header-title i {
+      font-size: 16px;
+      color: var(--emerald-light);
+    }
+
+    .notif-dropdown-header .notif-unread-pill {
+      font-size: 10.5px;
+      font-weight: 700;
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      padding: 2px 8px;
+      border-radius: 20px;
+    }
+
+    .notif-dropdown-body {
+      max-height: 380px;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+    }
+
+    .notif-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(241, 245, 249, 0.9);
+      transition: all 0.15s ease;
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .notif-item:hover {
+      background: #f8fafc;
+    }
+
+    .notif-item.unread {
+      background: #f0fdf4;
+    }
+
+    .notif-item.unread:hover {
+      background: #e6f7ec;
+    }
+
+    .notif-icon-wrap {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .notif-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .notif-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      margin-bottom: 3px;
+    }
+
+    .notif-company-tag {
+      font-size: 10.5px;
+      font-weight: 700;
+      color: #0f744c;
+      background: #e4f3eb;
+      padding: 1px 7px;
+      border-radius: 6px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 170px;
+    }
+
+    .notif-time {
+      font-size: 10.5px;
+      color: #94a3b8;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .notif-title {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--slate-dark);
+      line-height: 1.35;
+      margin-bottom: 2px;
+    }
+
+    .notif-desc {
+      font-size: 11.5px;
+      color: var(--slate-muted);
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .notif-empty {
+      padding: 36px 20px;
+      text-align: center;
+      color: var(--slate-muted);
+    }
+
+    .notif-empty i {
+      font-size: 36px;
+      opacity: 0.4;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .notif-empty p {
+      font-size: 12.5px;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .notif-dropdown-footer {
+      padding: 10px 16px;
+      background: #f8fafc;
+      border-top: 1px solid rgba(226, 232, 240, 0.8);
+      text-align: center;
+    }
+
+    .notif-dropdown-footer a {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--emerald-primary);
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: color 0.15s ease;
+    }
+
+    .notif-dropdown-footer a:hover {
+      color: var(--emerald-dark);
     }
 
     .top-header .right .profile-wrapper {
@@ -960,10 +1149,107 @@
       </div>
 
       <div class="right">
-        <button class="btn-notif" id="btnNotif" title="System Alerts" aria-label="System Alerts">
-          <i class="bx bx-bell"></i>
-          <span class="badge-dot"></span>
-        </button>
+        @php
+          $saHeaderNotifications = collect();
+          $saHeaderUnreadCount = 0;
+          if (class_exists(\App\Models\Central\CentralNotification::class)) {
+              try {
+                  $saHeaderNotifications = \App\Models\Central\CentralNotification::on('central')
+                      ->where(function($q) {
+                          $q->whereNull('target_audience')
+                            ->orWhereIn('target_audience', ['super_admin', 'both', 'all']);
+                      })
+                      ->with('company')
+                      ->latest()
+                      ->take(8)
+                      ->get();
+                  $saHeaderUnreadCount = \App\Models\Central\CentralNotification::on('central')
+                      ->where(function($q) {
+                          $q->whereNull('target_audience')
+                            ->orWhereIn('target_audience', ['super_admin', 'both', 'all']);
+                      })
+                      ->where('is_read', false)
+                      ->count();
+              } catch (\Throwable $e) {}
+          }
+        @endphp
+
+        <!-- Notification Bell & Live Alerts Dropdown -->
+        <div class="notif-wrapper" id="notifWrapper">
+          <button class="btn-notif" id="btnNotif" title="System & Tenant Alerts" aria-label="System & Tenant Alerts">
+            <i class="bx bx-bell"></i>
+            @if($saHeaderUnreadCount > 0)
+              <span class="badge-dot"></span>
+            @endif
+          </button>
+
+          <!-- Dropdown Panel -->
+          <div class="notif-dropdown" id="notifDropdown">
+            <div class="notif-dropdown-header">
+              <div class="notif-header-title">
+                <i class="bx bx-bell"></i>
+                <span>Platform &amp; Tenant Alerts</span>
+              </div>
+              @if($saHeaderUnreadCount > 0)
+                <span class="notif-unread-pill">{{ $saHeaderUnreadCount }} New</span>
+              @endif
+            </div>
+
+            <div class="notif-dropdown-body">
+              @forelse($saHeaderNotifications as $sNotif)
+                @php
+                  $notifComp = $sNotif->company;
+                  $isUnread = !$sNotif->is_read;
+                  $sevColor = match($sNotif->severity ?? 'info') {
+                      'critical', 'danger' => '#ef4444',
+                      'warning' => '#f59e0b',
+                      'success' => '#10b981',
+                      default => '#3b82f6',
+                  };
+                  $sevBg = match($sNotif->severity ?? 'info') {
+                      'critical', 'danger' => 'rgba(239, 68, 68, 0.1)',
+                      'warning' => 'rgba(245, 158, 11, 0.1)',
+                      'success' => 'rgba(16, 185, 129, 0.1)',
+                      default => 'rgba(59, 130, 246, 0.1)',
+                  };
+                  $notifIcon = match($sNotif->type ?? '') {
+                      'company_profile_updated', 'company_profile_reset' => 'bx-building',
+                      'subscription_expired', 'subscription_warning' => 'bx-receipt',
+                      'complaint_created', 'complaint_reply' => 'bx-message-square-detail',
+                      default => 'bx-bell',
+                  };
+                  $targetUrl = $sNotif->action_url ?: (Route::has('super-admin.alerts.index') ? route('super-admin.alerts.index') : url('/super-admin/alerts'));
+                @endphp
+                <a href="{{ $targetUrl }}" class="notif-item {{ $isUnread ? 'unread' : '' }}">
+                  <div class="notif-icon-wrap" style="background: {{ $sevBg }}; color: {{ $sevColor }};">
+                    <i class="bx {{ $notifIcon }}"></i>
+                  </div>
+                  <div class="notif-content">
+                    <div class="notif-meta">
+                      @if($notifComp)
+                        <span class="notif-company-tag">{{ $notifComp->name }}</span>
+                      @endif
+                      <span class="notif-time">{{ $sNotif->created_at ? $sNotif->created_at->diffForHumans() : 'Just now' }}</span>
+                    </div>
+                    <div class="notif-title">{{ $sNotif->title }}</div>
+                    <div class="notif-desc">{{ Str::limit($sNotif->message, 85) }}</div>
+                  </div>
+                </a>
+              @empty
+                <div class="notif-empty">
+                  <i class="bx bx-bell-off"></i>
+                  <p>No new system or tenant alerts</p>
+                </div>
+              @endforelse
+            </div>
+
+            <div class="notif-dropdown-footer">
+              <a href="{{ Route::has('super-admin.alerts.index') ? route('super-admin.alerts.index') : (Route::has('superadmin.alerts.index') ? route('superadmin.alerts.index') : url('/super-admin/alerts')) }}">
+                View All Notifications &amp; Alerts <i class="bx bx-right-arrow-alt"></i>
+              </a>
+            </div>
+          </div>
+        </div>
 
         <!-- Executive Profile Menu -->
         @php
@@ -1047,12 +1333,27 @@
       });
     }
 
+    // Notification Dropdown Toggle
+    const notifWrapper = document.getElementById('notifWrapper');
+    const btnNotif = document.getElementById('btnNotif');
+    if (btnNotif && notifWrapper) {
+      btnNotif.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (profileWrapper) profileWrapper.classList.remove('open');
+        notifWrapper.classList.toggle('open');
+      });
+      document.addEventListener('click', () => {
+        notifWrapper.classList.remove('open');
+      });
+    }
+
     // Profile Dropdown Toggle
     const profileWrapper = document.getElementById('profileWrapper');
     const profileToggle = document.getElementById('profileMenuToggle');
     if (profileToggle && profileWrapper) {
       profileToggle.addEventListener('click', (e) => {
         e.stopPropagation();
+        if (notifWrapper) notifWrapper.classList.remove('open');
         profileWrapper.classList.toggle('open');
       });
       document.addEventListener('click', () => {
