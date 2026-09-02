@@ -514,11 +514,6 @@ class User extends Authenticatable
             return false;
         }
 
-        // Developer login check: Only developers with assigned tasks can log in
-        if ($this->isDeveloper() && !$this->hasAssignedTasks()) {
-            return false;
-        }
-
         $employeeStatus = $this->employeeDetail ? $this->employeeDetail->status : 'Active';
 
         // Check if employee has exit date
@@ -548,11 +543,6 @@ class User extends Authenticatable
         // Check login_allowed first
         if (!$loginAllowed) {
             return 'Your account is active but login is blocked by admin. Please contact administrator.';
-        }
-
-        // Developer task assignment check
-        if ($this->isDeveloper() && !$this->hasAssignedTasks()) {
-            return 'Access Denied: Only developers with assigned tasks can access the Developer Portal. Please contact your manager or admin to assign work.';
         }
 
         // Check exit date logic
