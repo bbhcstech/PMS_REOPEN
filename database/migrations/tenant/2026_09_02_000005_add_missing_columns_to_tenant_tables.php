@@ -106,6 +106,48 @@ return new class extends Migration
                 }
             });
         }
+
+        // 7. Ensure parent_departments table has dpt_name, dpt_code, company_id, archived_at
+        if (Schema::hasTable('parent_departments')) {
+            Schema::table('parent_departments', function (Blueprint $table) {
+                if (! Schema::hasColumn('parent_departments', 'dpt_name')) {
+                    $table->string('dpt_name')->default('General')->after('id');
+                }
+                if (! Schema::hasColumn('parent_departments', 'dpt_code')) {
+                    $table->string('dpt_code')->nullable()->after('dpt_name');
+                }
+                if (! Schema::hasColumn('parent_departments', 'added_by')) {
+                    $table->unsignedBigInteger('added_by')->nullable()->after('dpt_code');
+                }
+                if (! Schema::hasColumn('parent_departments', 'last_updated_by')) {
+                    $table->unsignedBigInteger('last_updated_by')->nullable()->after('added_by');
+                }
+                if (! Schema::hasColumn('parent_departments', 'company_id')) {
+                    $table->unsignedBigInteger('company_id')->nullable()->after('id')->index();
+                }
+                if (! Schema::hasColumn('parent_departments', 'archived_at')) {
+                    $table->timestamp('archived_at')->nullable()->after('updated_at');
+                }
+            });
+        }
+
+        // 8. Ensure departments table has dpt_name, dpt_code, company_id, archived_at
+        if (Schema::hasTable('departments')) {
+            Schema::table('departments', function (Blueprint $table) {
+                if (! Schema::hasColumn('departments', 'dpt_name')) {
+                    $table->string('dpt_name')->default('General')->after('id');
+                }
+                if (! Schema::hasColumn('departments', 'dpt_code')) {
+                    $table->string('dpt_code')->nullable()->after('dpt_name');
+                }
+                if (! Schema::hasColumn('departments', 'company_id')) {
+                    $table->unsignedBigInteger('company_id')->nullable()->after('id')->index();
+                }
+                if (! Schema::hasColumn('departments', 'archived_at')) {
+                    $table->timestamp('archived_at')->nullable()->after('updated_at');
+                }
+            });
+        }
     }
 
     /**
