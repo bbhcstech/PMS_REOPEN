@@ -8,9 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 class Expense extends TenantModel
 {
     protected $fillable = [
-        'item_name', 'currency', 'exchange_rate', 'price', 'purchase_date',
+        'company_id', 'item_name', 'currency', 'exchange_rate', 'price', 'purchase_date',
         'employee_id', 'project_id', 'category_id', 'purchased_from',
-        'bank_account_id', 'description', 'bill'
+        'bank_account_id', 'description', 'bill', 'status'
     ];
 
     public function employee() {
