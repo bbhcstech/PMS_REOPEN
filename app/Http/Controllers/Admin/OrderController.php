@@ -32,10 +32,14 @@ class OrderController extends Controller
             'expenses',
         ])
         ->withCount('tasks')
-        ->whereNotNull('client_id')
-        ->whereNotIn('project_type', ['home', 'internal', 'in_house'])
-        ->whereNull('deleted_at')
-        ->orderBy('created_at', 'desc');
+        ->whereNotNull('client_id');
+
+        if (\Illuminate\Support\Facades\Schema::hasColumn('projects', 'project_type')) {
+            $query->whereNotIn('project_type', ['home', 'internal', 'in_house']);
+        }
+
+        $query->whereNull('deleted_at')
+              ->orderBy('created_at', 'desc');
 
         if (!empty($search)) {
             $query->where(function ($q) use ($search) {
