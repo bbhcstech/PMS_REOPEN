@@ -1,9 +1,11 @@
 <?php
 namespace App\Models;
 
+use App\Models\TenantModel;
+
 use Illuminate\Database\Eloquent\Model;
 
-class ProjectNote extends Model
+class ProjectNote extends TenantModel
 {
     protected $fillable = [
         'project_id', 'title', 'type','employee_id', 'client_id', 'is_client_show',

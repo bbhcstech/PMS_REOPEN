@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Models\TenantModel;
+
 use Illuminate\Database\Eloquent\Model;
 
-class TicketActivity extends Model
+class TicketActivity extends TenantModel
 {
     protected $table = 'ticket_activities';
 

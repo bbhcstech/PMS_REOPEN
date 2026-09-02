@@ -7,7 +7,7 @@
 <div class="designation-page">
     <!-- Breadcrumb -->
     <div class="breadcrumb">
-        <i class="fas fa-building"></i> Dashboard / Designations
+        <i class="fas fa-building"></i> Admin / Settings / Designations
     </div>
 
     <!-- Header Card -->
@@ -547,11 +547,15 @@
         margin-bottom: 32px;
     }
 
-    .stat-card {
-        background: white;
+    .designation-page .stat-card,
+    .designation-page .stat-card:first-of-type,
+    .designation-page .stat-card.is-featured {
+        background: #ffffff !important;
         padding: 24px;
         border-radius: 24px;
-        border: 1px solid rgba(16, 185, 129, 0.1);
+        border: 1px solid rgba(16, 185, 129, 0.14) !important;
+        box-shadow: 0 10px 30px -10px rgba(16, 185, 129, 0.08) !important;
+        color: #0a2e1f !important;
         display: flex;
         gap: 18px;
         align-items: flex-start;
@@ -560,7 +564,12 @@
         overflow: hidden;
     }
 
-    .stat-card::after {
+    .designation-page .stat-card:first-of-type *,
+    .designation-page .stat-card * {
+        -webkit-text-fill-color: initial;
+    }
+
+    .designation-page .stat-card::after {
         content: '';
         position: absolute;
         bottom: 0;
@@ -572,17 +581,18 @@
         transition: transform 0.3s ease;
     }
 
-    .stat-card:hover::after {
+    .designation-page .stat-card:hover::after {
         transform: scaleX(1);
     }
 
-    .stat-card:hover {
+    .designation-page .stat-card:hover {
         transform: translateY(-4px);
-        box-shadow: 0 20px 35px -12px rgba(16, 185, 129, 0.15);
-        border-color: rgba(16, 185, 129, 0.2);
+        box-shadow: 0 20px 35px -12px rgba(16, 185, 129, 0.15) !important;
+        border-color: rgba(16, 185, 129, 0.25) !important;
     }
 
-    .stat-icon {
+    .designation-page .stat-icon,
+    .designation-page .stat-card:first-of-type .stat-icon {
         width: 56px;
         height: 56px;
         border-radius: 18px;
@@ -590,29 +600,58 @@
         align-items: center;
         justify-content: center;
         font-size: 24px;
-        background: linear-gradient(145deg, #d1fae5, #a7f3d0);
-        color: #059669;
+        background: linear-gradient(145deg, #d1fae5, #a7f3d0) !important;
+        color: #059669 !important;
+        -webkit-text-fill-color: #059669 !important;
+        flex-shrink: 0;
     }
 
-    .stat-card h3 {
+    .designation-page .stat-card:nth-child(2) .stat-icon {
+        background: linear-gradient(145deg, #e0f2fe, #bae6fd) !important;
+        color: #0284c7 !important;
+        -webkit-text-fill-color: #0284c7 !important;
+    }
+
+    .designation-page .stat-card:nth-child(3) .stat-icon {
+        background: linear-gradient(145deg, #fef3c7, #fde68a) !important;
+        color: #d97706 !important;
+        -webkit-text-fill-color: #d97706 !important;
+    }
+
+    .designation-page .stat-card:nth-child(4) .stat-icon {
+        background: linear-gradient(145deg, #e0e7ff, #c7d2fe) !important;
+        color: #4f46e5 !important;
+        -webkit-text-fill-color: #4f46e5 !important;
+    }
+
+    .designation-page .stat-card h3,
+    .designation-page .stat-card:first-of-type h3,
+    .designation-page .stat-card:first-of-type .stat-value {
         font-size: 32px;
         font-weight: 800;
-        color: #0a2e1f;
+        color: #0a2e1f !important;
+        -webkit-text-fill-color: #0a2e1f !important;
         margin-bottom: 6px;
         line-height: 1;
     }
 
-    .stat-card span {
-        color: #6b7280;
+    .designation-page .stat-card span,
+    .designation-page .stat-card:first-of-type span,
+    .designation-page .stat-card:first-of-type .stat-title {
+        color: #4b5563 !important;
+        -webkit-text-fill-color: #4b5563 !important;
         font-size: 12px;
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
 
-    .stat-sub {
+    .designation-page .stat-sub,
+    .designation-page .stat-card:first-of-type .stat-sub,
+    .designation-page .stat-card:first-of-type .stat-trend {
         font-size: 11px;
-        color: #9ca3af;
+        color: #6b7280 !important;
+        -webkit-text-fill-color: #6b7280 !important;
         margin-top: 6px;
         font-weight: 500;
     }
@@ -961,31 +1000,85 @@
         font-size: 0.65rem;
     }
 
-    /* Level Badges */
+    /* Level Badges & High-Contrast Level Pills */
     .level {
         padding: 6px 16px;
         border-radius: 40px;
-        color: white;
-        font-size: 0.75rem;
-        font-weight: 700;
+        font-size: 0.78rem;
+        font-weight: 750;
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        transition: all 0.25s ease;
     }
 
     .level i {
-        font-size: 0.7rem;
+        font-size: 0.75rem;
     }
 
-    .l0 { background: linear-gradient(145deg, #1f2937, #111827); }
-    .l1 { background: linear-gradient(145deg, #0f744c, #0a5a3a); }
-    .l2 { background: linear-gradient(145deg, #10b981, #059669); }
-    .l3 { background: linear-gradient(145deg, #3b82f6, #2563eb); }
-    .l4 { background: linear-gradient(145deg, #f59e0b, #d97706); }
-    .l5 { background: linear-gradient(145deg, #f97316, #ea580c); }
-    .l6 { background: linear-gradient(145deg, #ef4444, #dc2626); }
-    .level-default { background: linear-gradient(145deg, #e5e7eb, #d1d5db); color: #6b7280; }
+    .l0 {
+        background: linear-gradient(135deg, #f1f5f9, #e2e8f0) !important;
+        color: #334155 !important;
+        -webkit-text-fill-color: #334155 !important;
+        border: 1px solid rgba(51, 65, 85, 0.2) !important;
+    }
+    .l0 i { color: #475569 !important; -webkit-text-fill-color: #475569 !important; }
+
+    .l1 {
+        background: linear-gradient(135deg, #ecfdf5, #d1fae5) !important;
+        color: #065f46 !important;
+        -webkit-text-fill-color: #065f46 !important;
+        border: 1px solid rgba(5, 150, 105, 0.25) !important;
+    }
+    .l1 i { color: #059669 !important; -webkit-text-fill-color: #059669 !important; }
+
+    .l2 {
+        background: linear-gradient(135deg, #f0fdf4, #bbf7d0) !important;
+        color: #15803d !important;
+        -webkit-text-fill-color: #15803d !important;
+        border: 1px solid rgba(22, 163, 74, 0.25) !important;
+    }
+    .l2 i { color: #16a34a !important; -webkit-text-fill-color: #16a34a !important; }
+
+    .l3 {
+        background: linear-gradient(135deg, #eff6ff, #dbeafe) !important;
+        color: #1e40af !important;
+        -webkit-text-fill-color: #1e40af !important;
+        border: 1px solid rgba(37, 99, 235, 0.25) !important;
+    }
+    .l3 i { color: #2563eb !important; -webkit-text-fill-color: #2563eb !important; }
+
+    .l4 {
+        background: linear-gradient(135deg, #fffbeb, #fef3c7) !important;
+        color: #92400e !important;
+        -webkit-text-fill-color: #92400e !important;
+        border: 1px solid rgba(217, 119, 6, 0.25) !important;
+    }
+    .l4 i { color: #d97706 !important; -webkit-text-fill-color: #d97706 !important; }
+
+    .l5 {
+        background: linear-gradient(135deg, #fff7ed, #ffedd5) !important;
+        color: #c2410c !important;
+        -webkit-text-fill-color: #c2410c !important;
+        border: 1px solid rgba(234, 88, 12, 0.25) !important;
+    }
+    .l5 i { color: #ea580c !important; -webkit-text-fill-color: #ea580c !important; }
+
+    .l6 {
+        background: linear-gradient(135deg, #fef2f2, #fee2e2) !important;
+        color: #b91c1c !important;
+        -webkit-text-fill-color: #b91c1c !important;
+        border: 1px solid rgba(220, 38, 38, 0.25) !important;
+    }
+    .l6 i { color: #dc2626 !important; -webkit-text-fill-color: #dc2626 !important; }
+
+    .level-default {
+        background: linear-gradient(135deg, #f8fafc, #f1f5f9) !important;
+        color: #64748b !important;
+        -webkit-text-fill-color: #64748b !important;
+        border: 1px solid rgba(100, 116, 139, 0.2) !important;
+    }
 
     /* User Info */
     .user-info {
@@ -1204,38 +1297,55 @@
     /* Legend Card */
     .legend-card {
         margin-top: 28px;
-        background: white;
-        border: 1px solid rgba(16, 185, 129, 0.1);
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(16, 185, 129, 0.15);
         border-radius: 24px;
-        padding: 18px 28px;
+        padding: 22px 30px;
+        box-shadow: 0 10px 30px -10px rgba(16, 185, 129, 0.08);
         transition: all 0.3s ease;
     }
 
     .legend-card:hover {
-        box-shadow: 0 8px 25px rgba(16, 185, 129, 0.08);
+        box-shadow: 0 14px 35px rgba(16, 185, 129, 0.12);
+        border-color: rgba(16, 185, 129, 0.25);
     }
 
     .legend-content {
         display: flex;
         align-items: center;
-        gap: 20px;
+        gap: 16px;
         flex-wrap: wrap;
     }
 
     .legend-title {
-        font-weight: 700;
-        color: #0a2e1f;
-        font-size: 0.85rem;
+        font-weight: 800;
+        color: #0a2e1f !important;
+        -webkit-text-fill-color: #0a2e1f !important;
+        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-right: 6px;
     }
 
     .legend-title i {
-        margin-right: 8px;
-        color: #34d399;
+        color: #059669 !important;
+        -webkit-text-fill-color: #059669 !important;
+        font-size: 1.1rem;
     }
 
     .legend-content .level {
-        padding: 4px 14px;
-        font-size: 0.7rem;
+        padding: 8px 18px !important;
+        font-size: 0.82rem !important;
+        font-weight: 750 !important;
+        cursor: default;
+        transition: all 0.25s ease !important;
+    }
+
+    .legend-content .level:hover {
+        transform: translateY(-2px) scale(1.03);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08) !important;
     }
 
     /* Empty State */

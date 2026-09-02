@@ -11,16 +11,55 @@ class EnsureModuleAccess
 {
     public function handle(Request $request, Closure $next, string $permission = 'view'): Response
     {
+        if (\Illuminate\Support\Facades\Auth::guard('super_admin')->check()) {
+            return $next($request);
+        }
+
         $user = $request->user();
-        if (! $user || $user->normalizedRole() === 'admin') {
+        if (! $user) {
             return $next($request);
         }
 
         $routeName = (string) $request->route()?->getName();
-        $module = $this->moduleForRoute($routeName);
 
-        if ($module && ! $user->hasModulePermission($module->slug, $permission)) {
-            abort(403, 'You do not have permission to access this module.');
+        // Core authentication & profile routes are always accessible to avoid redirect loops
+        if (in_array($routeName, ['home', 'login', 'logout', 'profile.edit', 'profile.update'], true)) {
+            return $next($request);
+        }
+
+        $module = $this->moduleForRoute($routeName);
+        $moduleSlug = $module ? $module->slug : ($routeName === 'dashboard' ? 'dashboard' : null);
+
+        if ($moduleSlug) {
+            $company = app(\App\Services\CompanyContext::class)->current();
+            if (! $company && $user->company_id) {
+                $company = \App\Models\Company::find($user->company_id);
+            }
+
+            if ($company && method_exists($company, 'hasFeature') && ! $company->hasFeature($moduleSlug)) {
+                if ($request->expectsJson()) {
+                    return response()->json([
+                        'error' => "Feature '{$moduleSlug}' is not enabled for your company subscription plan.",
+                    ], 403);
+                }
+
+                if ($routeName === 'dashboard' || str_starts_with($routeName, 'dashboard.')) {
+                    return redirect()->route('profile.edit')
+                        ->with('error', "Access Denied: The 'Dashboard' module has been turned off by Super Admin for your company.");
+                }
+
+                return redirect()->route('dashboard')
+                    ->with('error', "Access Denied: The module '{$moduleSlug}' is not enabled for your company.");
+            }
+
+            if ($module && ! $user->hasModulePermission($module->slug, $permission)) {
+                if ($request->expectsJson()) {
+                    return response()->json(['error' => 'You do not have permission to access this module.'], 403);
+                }
+
+                return redirect()->route('dashboard')
+                    ->with('error', 'You do not have permission to access this module.');
+            }
         }
 
         return $next($request);
@@ -39,11 +78,33 @@ class EnsureModuleAccess
             'task-timer' => 'tasks',
             'sticky_notes' => 'dashboard',
             'dashboard-timers' => 'timelogs',
+            'admin.settings.organization-details' => 'organization-details-settings',
+            'admin.settings.business-address' => 'business-address-settings',
+            'admin.settings.work-schedule' => 'work-schedule-settings',
+            'admin.settings.leave' => 'leave-settings',
+            'attendance.settings' => 'attendance-settings',
+            'payroll.settings' => 'payroll-settings',
+            'admin.settings.recruitment' => 'recruitment-settings',
+            'admin.settings.performance' => 'performance-settings',
+            'admin.settings.notification' => 'notification-settings',
+            'admin.settings.email' => 'email-settings',
+            'admin.settings.document' => 'document-settings',
+            'admin.settings.security' => 'security-settings',
+            'admin.settings.change-password' => 'change-password-settings',
+            'admin.role-permissions' => 'role-permissions-settings',
+            'admin.settings.localization' => 'localization-settings',
+            'admin.settings.terms-policy' => 'terms-policy-settings',
+            'settings.company' => 'company-profile-settings',
+            'admin.settings.index' => 'settings-dashboard',
         ];
 
         foreach ($aliases as $prefix => $slug) {
             if ($routeName === $prefix || str_starts_with($routeName, $prefix . '.')) {
-                return Module::where('slug', $slug)->where('is_active', true)->first();
+                $foundModule = Module::where('slug', $slug)->where('is_active', true)->first();
+                if ($foundModule) {
+                    return $foundModule;
+                }
+                return new Module(['slug' => $slug, 'name' => \Illuminate\Support\Str::headline($slug)]);
             }
         }
 

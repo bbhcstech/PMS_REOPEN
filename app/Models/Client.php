@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Models\TenantModel;
+
 use Illuminate\Database\Eloquent\Model;
 
-class Client extends Model
+class Client extends TenantModel
 {
     protected $fillable = [
         'salutation',
@@ -52,6 +54,41 @@ class Client extends Model
 
             $client->client_uid = 'XINK-CL-' . str_pad($number, 4, '0', STR_PAD_LEFT);
         });
+    }
+
+    public function projects()
+    {
+        return $this->hasMany(Project::class, 'client_id');
+    }
+
+    public function tickets()
+    {
+        return $this->hasMany(Ticket::class, 'requester_id');
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(ClientCategory::class, 'client_category_id');
+    }
+
+    public function subcategory()
+    {
+        return $this->belongsTo(ClientSubCategory::class, 'client_sub_category_id');
+    }
+
+    public function addedBy()
+    {
+        return $this->belongsTo(User::class, 'added_by');
+    }
+
+    public function countryRel()
+    {
+        return $this->belongsTo(Country::class, 'country');
+    }
+
+    public function getProfileImageAttribute()
+    {
+        return $this->profile_picture;
     }
 }
 

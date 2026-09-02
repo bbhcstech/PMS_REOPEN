@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Models\TenantModel;
+
 use Illuminate\Database\Eloquent\Model;
 
-class ProjectUpdate extends Model
+class ProjectUpdate extends TenantModel
 {
     protected $fillable = [
         'project_id',

@@ -26,6 +26,10 @@ class NotificationUrlResolver
 
         $data = is_array($data) ? $data : [];
 
+        if (data_get($data, 'clickable') === false || data_get($data, 'type') === 'own_password_changed') {
+            return 'javascript:void(0)';
+        }
+
         return self::fromPrimaryIdentifiers($data)
             ?? self::fromEntity($data)
             ?? self::fromWorkflowType($data)
@@ -50,7 +54,7 @@ class NotificationUrlResolver
             $id = data_get($data, $key);
 
             if ($id && Route::has($route)) {
-                return route($route, $id);
+                return route($route);
             }
         }
 
@@ -64,6 +68,14 @@ class NotificationUrlResolver
 
         if (data_get($data, 'award_id')) {
             return self::routeIfExists('awards.index');
+        }
+
+        if (data_get($data, 'requirement_id') || data_get($data, 'recruitment_id')) {
+            $requirementId = data_get($data, 'requirement_id') ?: data_get($data, 'recruitment_id');
+
+            return Route::has('recruitment.show')
+                ? route('recruitment.show', $requirementId)
+                : self::routeIfExists('recruitment.index');
         }
 
         return null;
@@ -83,6 +95,10 @@ class NotificationUrlResolver
 
         if (str_contains($type, 'award') || str_contains($type, 'recognition')) {
             return self::routeIfExists('awards.index');
+        }
+
+        if (str_contains($type, 'recruitment')) {
+            return self::routeIfExists('recruitment.index');
         }
 
         return null;

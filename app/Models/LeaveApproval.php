@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Models\TenantModel;
+
 use Illuminate\Database\Eloquent\Model;
 
-class LeaveApproval extends Model
+class LeaveApproval extends TenantModel
 {
     protected $fillable = [
         'leave_id',

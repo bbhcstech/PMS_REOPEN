@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Module extends Model
 {
+    protected $connection = 'central';
     protected $fillable = [
         'name', 'slug', 'icon', 'description', 'route_prefix',
         'route_name', 'parent_id', 'is_core', 'is_active', 'sort_order'

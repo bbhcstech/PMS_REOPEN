@@ -4,73 +4,11 @@
 <div class="container">
     
     <br>
-        <a href="{{ route('projects.index') }}" class="btn btn-secondary mb-3">← Back to Projects</a>
-
-             {{-- Sub-navigation bar --}}
-            <ul class="nav nav-tabs mb-4">
-            <li class="nav-item">
-                <a class="nav-link active" href="{{ route('projects.show', $project->id) }}">Overview</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{{ route('project-members.index', $project->id)}}">Members</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{{ route('project-files.index', $project->id)}}">Files</a>
-            </li>
-            <li class="nav-item">
-                  <a class="nav-link" href="{{ route('milestones.index', $project->id)}}">Milestones</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{{ route('projects.tasks.index', $project->id) }}">Tasks</a>
-
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{{ route('projects.tasks.board', $project->id) }}">Task Board</a>
-              
-            </li>
-             <li class="nav-item">
-                    <a class="nav-link" href="{{ route('projects.gantt', $project->id) }}">Gantt Chart</a>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link" href="{{ route('projects.timelogs.index', $project->id) }}">Timesheet</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{{ route('expenses.index', $project->id) }}">Expenses</a>
-            </li>
-             <li class="nav-item">
-                <a class="nav-link" href="{{ route('projects.notes.index', $project->id) }}">Notes</a>
-            </li>
-           {{-- Toggle Button --}}
-                <li class="nav-item">
-                    <a class="nav-link text-primary" href="#" id="toggle-more">More ▾</a>
-                </li>
-            </ul>
-            
-            {{-- Collapsible Extra Tabs --}}
-            <ul class="nav nav-tabs mb-4 d-none" id="more-tabs">
-              <li class="nav-item">
-                <a class="nav-link" href="{{ route('projects.discussions.index', $project->id) }}" >Discussion</a>
-            </li>
-            
-            <li class="nav-item">
-               <a class="nav-link" href="{{ route('projects.burndown', $project->id) }}">Burndown Chart</a>
-
-            </li>
-            
-            <li class="nav-item">
-               <a class="nav-link" href="{{ route('admin.activities.project', $project->id) }}">Activity</a>
-
-
-            </li>
-            
-            <li class="nav-item">
-               <a class="nav-link" href="{{ route('tickets.index', ['project_id' => $project->id]) }}">Ticket</a>
-
-
-            </li>
-                {{-- Add more optional tabs here if needed --}}
-            </ul>
+    {{-- Standardized Project Header & 13-Tab Navigation --}}
+    @include('admin.projects.partials.header', [
+        'project' => $project,
+        'activeTab' => 'expenses'
+    ])
 
        
     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -146,14 +84,13 @@
                 <div class="col-md-6">
                     <label>Currency</label>
                     <select name="currency" class="form-select">
-                    
                         <option value="">Select</option>
-                        @foreach($currency as $cu)
-                            <option value="{{ $cu->id }}">{{ $cu->currency_name }}</option>
-                        @endforeach
+                        @if(isset($currency) && is_iterable($currency))
+                            @foreach($currency as $cu)
+                                <option value="{{ $cu->id ?? $cu }}">{{ $cu->currency_name ?? $cu }}</option>
+                            @endforeach
+                        @endif
                     </select>
-                    
-                    
                 </div>
 
                 <div class="col-md-4">
@@ -175,25 +112,29 @@
                     <label>Employee</label>
                     <select name="employee_id" class="form-select">
                         <option value="">Select</option>
-                        @foreach($employees as $emp)
-                            <option value="{{ $emp->id }}">{{ $emp->name }}</option>
-                        @endforeach
+                        @if(isset($employees) && is_iterable($employees))
+                            @foreach($employees as $emp)
+                                <option value="{{ $emp->id }}">{{ $emp->name }}</option>
+                            @endforeach
+                        @endif
                     </select>
                 </div>
 
                 <div class="col-md-6">
                     <label>Project</label>
                     <input type="hidden" name="project_id" value="{{ $project->id }}">
-                      <input type="text" class="form-control" value="{{ $project->name }}" readonly>
+                    <input type="text" class="form-control" value="{{ $project->name }}" readonly>
                 </div>
 
                 <div class="col-md-6">
                     <label>Expense Category</label>
                     <select name="category_id" class="form-select">
                         <option value="">Select</option>
-                        @foreach($categories as $cat)
-                            <option value="{{ $cat->id }}">{{ $cat->category_name }}</option>
-                        @endforeach
+                        @if(isset($categories) && is_iterable($categories))
+                            @foreach($categories as $cat)
+                                <option value="{{ $cat->id }}">{{ $cat->category_name }}</option>
+                            @endforeach
+                        @endif
                     </select>
                 </div>
 
@@ -206,9 +147,11 @@
                     <label>Bank Account</label>
                     <select name="bank_account_id" class="form-select">
                         <option value="">Select</option>
-                        @foreach($accounts as $acc)
-                            <option value="{{ $acc->id }}">{{ $acc->bank_name }}</option>
-                        @endforeach
+                        @if(isset($accounts) && is_iterable($accounts))
+                            @foreach($accounts as $acc)
+                                <option value="{{ $acc->id }}">{{ $acc->bank_name }}</option>
+                            @endforeach
+                        @endif
                     </select>
                 </div>
 
@@ -238,8 +181,7 @@
    
     $(document).ready(function () {
     $('#expenseTable').DataTable({
-        dom: 'Bfrtip',
-        buttons: ['copy', 'csv', 'excel', 'pdf', 'print'],
+        dom: 'rftip',
         responsive: true,
         pageLength: 10,
         lengthMenu: [10, 25, 50, 100],

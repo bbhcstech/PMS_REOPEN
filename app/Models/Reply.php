@@ -1,9 +1,11 @@
 <?php
 namespace App\Models;
 
+use App\Models\TenantModel;
+
 use Illuminate\Database\Eloquent\Model;
 
-class Reply extends Model
+class Reply extends TenantModel
 {
     protected $fillable = ['ticket_id', 'user_id', 'message', 'attachment'];
 

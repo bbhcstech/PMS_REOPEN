@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Collection;
 
 class SystemNotificationService
 {
-    public const ERP_ROLES = ['admin', 'manager', 'hr', 'employee'];
+    public const ERP_ROLES = ['admin', 'manager', 'hr', 'employee', 'user'];
 
     public static function roleUsers(?int $companyId = null): Collection
     {
@@ -53,9 +53,22 @@ class SystemNotificationService
             ->get();
     }
 
+    public static function admins(?int $companyId = null): Collection
+    {
+        return User::query()
+            ->where('role', 'admin')
+            ->when($companyId, fn ($query) => $query->where(function ($companyQuery) use ($companyId) {
+                $companyQuery->where('company_id', $companyId)->orWhereNull('company_id');
+            }))
+            ->get();
+    }
+
     public static function notifyAdmins(string $title, string $message, ?string $url = null, array $data = []): void
     {
-        self::notifyAllRoles($title, $message, $url, $data + [
+        $actor = auth()->user();
+        $companyId = $actor?->company_id;
+
+        self::send(self::admins($companyId), $title, $message, $url, $data + [
             'type' => 'employee_to_admin',
             'icon' => 'fa-user-clock',
             'color' => 'info',

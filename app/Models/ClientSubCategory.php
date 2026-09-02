@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Models\TenantModel;
+
 use Illuminate\Database\Eloquent\Model;
 
-class ClientSubCategory extends Model
+class ClientSubCategory extends TenantModel
 {
     protected $fillable = ['name', 'client_category_id'];
     public function category()

@@ -16,13 +16,64 @@ class NotificationController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
+        $company = app(\App\Services\CompanyContext::class)->current();
+        $companyId = $company?->id ?? $user?->company_id;
 
-        $notifications = $user->notifications()
-            ->orderBy('created_at', 'desc')
-            ->paginate(15);
+        $centralNotifications = collect();
+        if ($companyId && class_exists(\App\Models\Central\CentralNotification::class)) {
+            try {
+                app(\App\Services\SubscriptionNotificationEngine::class)->scanAndGenerateAlerts($companyId);
+            } catch (\Throwable $e) {}
 
-        // 🔥 CHANGE THIS: Use ONE view file instead of two
-        return view('admin.notifications.index', compact('notifications'));
+            $query = \App\Models\Central\CentralNotification::on('central')
+                ->with(['company.subscriptions.plan'])
+                ->where('company_id', $companyId)
+                ->whereIn('target_audience', ['company_admin', 'all']);
+
+            if ($request->filled('severity')) {
+                $query->where('severity', strtoupper($request->severity));
+            }
+
+            if ($request->filled('status')) {
+                if ($request->status === 'unread') {
+                    $query->where('is_read', false);
+                } elseif ($request->status === 'read') {
+                    $query->where('is_read', true);
+                }
+            }
+
+            $centralNotifications = $query->orderBy('created_at', 'desc')->get();
+        }
+
+        $userNotifQuery = $user->notifications();
+        if ($request->filled('status')) {
+            if ($request->status === 'unread') {
+                $userNotifQuery->whereNull('read_at');
+            } elseif ($request->status === 'read') {
+                $userNotifQuery->whereNotNull('read_at');
+            }
+        }
+        $userNotifications = $userNotifQuery->orderBy('created_at', 'desc')->get();
+
+        $merged = $centralNotifications->concat($userNotifications)->sortByDesc('created_at');
+
+        $page = (int) $request->get('page', 1);
+        $perPage = 15;
+        $notifications = new \Illuminate\Pagination\LengthAwarePaginator(
+            $merged->forPage($page, $perPage)->values(),
+            $merged->count(),
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
+
+        $kpis = [
+            'total'    => $merged->count(),
+            'unread'   => $merged->filter(fn($n) => empty($n->read_at) && empty($n->is_read))->count(),
+            'critical' => $merged->filter(fn($n) => (strtoupper($n->severity ?? '') === 'CRITICAL') && empty($n->read_at) && empty($n->is_read))->count(),
+        ];
+
+        return view('admin.notifications.index', compact('notifications', 'kpis'));
     }
 
 
@@ -31,6 +82,28 @@ class NotificationController extends Controller
      */
     public function markAsRead($id)
     {
+        $company = app(\App\Services\CompanyContext::class)->current();
+        $companyId = $company?->id ?? auth()->user()?->company_id;
+
+        if ($companyId && class_exists(\App\Models\Central\CentralNotification::class)) {
+            $centralNotif = \App\Models\Central\CentralNotification::on('central')
+                ->where('company_id', $companyId)
+                ->where('id', $id)
+                ->first();
+
+            if ($centralNotif) {
+                $centralNotif->update([
+                    'is_read' => true,
+                    'read_at' => now(),
+                ]);
+
+                if (request()->expectsJson() || request()->ajax()) {
+                    return response()->json(['status' => 'ok']);
+                }
+                return back()->with('success', 'Notification marked as read.');
+            }
+        }
+
         $notification = auth()->user()->notifications()->where('id', $id)->first();
 
         if ($notification) {
@@ -50,6 +123,11 @@ class NotificationController extends Controller
         $notification = auth()->user()->notifications()->where('id', $id)->firstOrFail();
         $notification->markAsRead();
 
+        $data = $notification->data ?? [];
+        if (data_get($data, 'clickable') === false || data_get($data, 'type') === 'own_password_changed') {
+            return back()->with('info', 'This notification is view-only.');
+        }
+
         return redirect(NotificationUrlResolver::resolve($notification));
     }
 
@@ -58,6 +136,19 @@ class NotificationController extends Controller
      */
     public function markAllAsRead()
     {
+        $company = app(\App\Services\CompanyContext::class)->current();
+        $companyId = $company?->id ?? auth()->user()?->company_id;
+
+        if ($companyId && class_exists(\App\Models\Central\CentralNotification::class)) {
+            \App\Models\Central\CentralNotification::on('central')
+                ->where('company_id', $companyId)
+                ->where('is_read', false)
+                ->update([
+                    'is_read' => true,
+                    'read_at' => now(),
+                ]);
+        }
+
         auth()->user()->unreadNotifications->markAsRead();
 
         if (! request()->expectsJson() && ! request()->ajax()) {
@@ -205,7 +296,7 @@ class NotificationController extends Controller
         ]);
 
         $sender = auth()->user();
-        SystemNotificationService::notifyAllRoles($request->title, $request->message, $request->url, [
+        SystemNotificationService::notifyUser($request->user_ids, $request->title, $request->message, $request->url, [
             'type' => 'manual_notification',
             'ticket_id' => $request->ticket_id,
             'sender_id' => $sender?->id,

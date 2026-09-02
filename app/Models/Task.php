@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Models\TenantModel;
+
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Task extends Model
+class Task extends TenantModel
 {
      protected $fillable = [
         'task_short_code',
@@ -38,14 +40,33 @@ class Task extends Model
         'progress',
         'remarks',
         'created_by',
-        'completed_on'
+        'completed_on',
+        'additional_instructions',
+        'attachments',
     ];
 
     protected $casts = [
         'is_completed' => 'boolean',
         'is_pinned' => 'boolean',
         'completed_on' => 'datetime',
+        'start_date' => 'datetime',
+        'due_date' => 'datetime',
     ];
+
+    protected static function booted()
+    {
+        static::saved(function (Task $task) {
+            if ($task->project_id) {
+                Project::find($task->project_id)?->recalculateProgressAndStatus();
+            }
+        });
+
+        static::deleted(function (Task $task) {
+            if ($task->project_id) {
+                Project::find($task->project_id)?->recalculateProgressAndStatus();
+            }
+        });
+    }
 
    // Relationships
 

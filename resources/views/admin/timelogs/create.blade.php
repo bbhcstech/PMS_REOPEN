@@ -30,28 +30,33 @@
                 <label class="form-label">Project <span class="text-danger">*</span></label>
                 <select name="project_id" id="project_id" class="form-select" required>
                     <option value="">Select Project</option>
-                    @foreach($projects as $project)
-                        <option value="{{ $project->id }}"
-                                data-code="{{ $project->project_code }}">
-                            {{ $project->name }}
+                    @foreach($projects as $proj)
+                        <option value="{{ $proj->id }}"
+                                data-code="{{ $proj->project_code }}"
+                                {{ (old('project_id', $selectedProjectId ?? request('project_id')) == $proj->id) ? 'selected' : '' }}>
+                            {{ $proj->name }}
                         </option>
                     @endforeach
                 </select>
             </div>
 
             {{-- Task --}}
-           <select name="task_id" id="task_id" class="form-control" required>
-    <option value="">Select Task</option>
-    @foreach($tasks as $task)
-        <option value="{{ $task->id }}">
-            {{ $task->title }}
-        </option>
-    @endforeach
-</select>
+            <div class="col-md-6">
+                <label class="form-label">Task <span class="text-danger">*</span></label>
+                <select name="task_id" id="task_id" class="form-control" required>
+                    <option value="">Select Task</option>
+                    @foreach($tasks as $t)
+                        <option value="{{ $t->id }}"
+                                {{ (old('task_id', $selectedTaskId ?? request('task_id')) == $t->id) ? 'selected' : '' }}>
+                            {{ $t->title }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
 
 
-            {{-- Employee (Admins Only) --}}
-            @if(auth()->user()->role === 'admin')
+            {{-- Employee (Admins, Managers, HR) --}}
+            @if(in_array(strtolower((string) auth()->user()?->role), ['admin', 'manager', 'hr'], true))
                 <div class="col-md-6">
                     <label class="form-label">Employee <span class="text-danger">*</span></label>
                     <select name="employee_id" id="employee_id" class="form-select" required>

@@ -21,10 +21,15 @@ class ProjectUserController extends Controller
         return view('admin.projects.members.index', compact('project', 'members'));
     }
 
+    private function canManageProjectMembers(): bool
+    {
+        return in_array(strtolower((string) auth()->user()?->role), ['admin', 'hr', 'manager'], true);
+    }
+
     // Add new member form
     public function create($projectId)
     {
-        abort_unless(auth()->user()?->role === 'admin', 403);
+        abort_unless($this->canManageProjectMembers(), 403);
 
         $project = Project::findOrFail($projectId);
         $users = User::all();
@@ -35,7 +40,7 @@ class ProjectUserController extends Controller
     // Store new member
     public function store(Request $request, $projectId)
     {
-        abort_unless(auth()->user()?->role === 'admin', 403);
+        abort_unless($this->canManageProjectMembers(), 403);
 
         $request->validate([
             'user_id' => 'required|exists:users,id',
@@ -56,7 +61,7 @@ class ProjectUserController extends Controller
     // Remove member
     public function destroy($projectId, $userId)
     {
-        abort_unless(auth()->user()?->role === 'admin', 403);
+        abort_unless($this->canManageProjectMembers(), 403);
 
         $project = Project::findOrFail($projectId);
         $project->users()->detach($userId);
@@ -72,7 +77,7 @@ class ProjectUserController extends Controller
             abort(403);
         }
 
-        if ($user->role === 'admin') {
+        if (in_array(strtolower((string) $user->role), ['admin', 'hr', 'manager'], true)) {
             return;
         }
 

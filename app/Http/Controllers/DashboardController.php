@@ -338,62 +338,88 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
     public function index()
     {
         $userId = Auth::id();
+        $userRole = strtolower((string) (auth()->user()?->role ?? ''));
 
-        if (auth()->user()->role == 'admin') {
-            $totalEmployees = \App\Models\User::where('role', 'employee')->count();
+        if (in_array($userRole, ['admin', 'administrator', 'superadmin'], true)) {
+            try { $totalEmployees = \App\Models\User::where('role', 'employee')->count(); } catch (\Throwable $e) { $totalEmployees = 0; }
             $today = now()->toDateString();
 
-            $presentCount = \App\Models\Attendance::where('date', $today)
-                ->whereIn('status', ['present', 'late'])
-                ->count();
+            try {
+                $presentCount = \App\Models\Attendance::where('date', $today)
+                    ->whereIn('status', ['present', 'late'])
+                    ->count();
+            } catch (\Throwable $e) { $presentCount = 0; }
 
-            $lateCount = \App\Models\Attendance::where('date', $today)
-                ->where('status', 'late')
-                ->count();
+            try {
+                $lateCount = \App\Models\Attendance::where('date', $today)
+                    ->where('status', 'late')
+                    ->count();
+            } catch (\Throwable $e) { $lateCount = 0; }
 
-            $absentCount = $totalEmployees - $presentCount;
+            $absentCount = max(0, $totalEmployees - $presentCount);
 
-            $totalClient = \App\Models\Client::count();
-            $totalProject = \App\Models\Project::count();
-            $pendingTask = \App\Models\Task::where('status','!=' ,'Completed')->count();
-            $unresolvedTicket = \App\Models\Ticket::where('status', '!=', 'closed')->count();
+            try { $totalClient = \App\Models\Client::count(); } catch (\Throwable $e) { $totalClient = 0; }
+            try { $totalProject = \App\Models\Project::count(); } catch (\Throwable $e) { $totalProject = 0; }
+            try { $pendingTask = \App\Models\Task::where('status', '!=', 'Completed')->count(); } catch (\Throwable $e) { $pendingTask = 0; }
 
+            try {
+                if (\Illuminate\Support\Facades\Schema::hasColumn('tickets', 'status')) {
+                    $unresolvedTicket = \App\Models\Ticket::where('status', '!=', 'closed')->count();
+                } else {
+                    $unresolvedTicket = \App\Models\Ticket::count();
+                }
+            } catch (\Throwable $e) { $unresolvedTicket = 0; }
 
-            // Only for Admin
-           $pendingLeaves = Auth::user()->role == 'admin'
-        ? Leave::with('user')->where('status', 'pending')->latest()->take(5)->get()
-        : collect(); // empty if not admin
+            try {
+                $pendingLeaves = Leave::with('user')->where('status', 'pending')->latest()->take(5)->get();
+            } catch (\Throwable $e) { $pendingLeaves = collect(); }
 
-        $openTickets = \App\Models\Ticket::where('status', 'open')
-            ->with(['project', 'agent'])  // eager loading for performance
-            ->latest()
-            ->take(5) // Show top 5 recent
-            ->get();
+            try {
+                if (\Illuminate\Support\Facades\Schema::hasColumn('tickets', 'status')) {
+                    $openTickets = \App\Models\Ticket::where('status', 'open')
+                        ->with(['project', 'agent'])
+                        ->latest()
+                        ->take(5)
+                        ->get();
+                } else {
+                    $openTickets = \App\Models\Ticket::with(['project', 'agent'])->latest()->take(5)->get();
+                }
+            } catch (\Throwable $e) { $openTickets = collect(); }
 
-            $pendingTasksTotal = \App\Models\Task::where('status', '!=', 'Completed')
-            ->with('project')
-            ->orderByDesc('start_date')
-            ->take(5) // Show recent 5 tasks
-            ->get();
+            try {
+                $pendingTasksTotal = \App\Models\Task::where('status', '!=', 'Completed')
+                    ->with('project')
+                    ->orderByDesc('created_at')
+                    ->take(5)
+                    ->get();
+            } catch (\Throwable $e) { $pendingTasksTotal = collect(); }
 
-          $activities = DB::table('project_activity')
-        ->join('projects', 'projects.id', '=', 'project_activity.project_id')
-        ->select(
-            'project_activity.activity',
-            'project_activity.created_at',
-            'projects.name as project_name'
-        )
-        ->orderByDesc('project_activity.created_at')
-        ->limit(15)
-        ->get();
+            try {
+                if (\Illuminate\Support\Facades\Schema::hasTable('project_activity')) {
+                    $activities = DB::table('project_activity')
+                        ->join('projects', 'projects.id', '=', 'project_activity.project_id')
+                        ->select(
+                            'project_activity.activity',
+                            'project_activity.created_at',
+                            'projects.name as project_name'
+                        )
+                        ->orderByDesc('project_activity.created_at')
+                        ->limit(15)
+                        ->get();
+                } else {
+                    $activities = collect();
+                }
+            } catch (\Throwable $e) { $activities = collect(); }
 
+            try {
+                $useractivities = UserActivity::with('user')
+                    ->orderBy('created_at', 'desc')
+                    ->limit(10)
+                    ->get();
+            } catch (\Throwable $e) { $useractivities = collect(); }
 
- $useractivities = UserActivity::with('user')
-        ->orderBy('created_at', 'desc')
-        ->limit(10)
-        ->get();
-          $projects = Project::all();
-            $tasks = Task::all();
+            try { $projects = Project::all(); } catch (\Throwable $e) { $projects = collect(); }
+            try { $tasks = Task::all(); } catch (\Throwable $e) { $tasks = collect(); }
 
             return view('dashboard', compact(
                 'totalEmployees',
@@ -410,7 +436,6 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
                 'activities',
                 'useractivities',
                 'projects', 'tasks'
-
             ));
         }
 
@@ -549,23 +574,67 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
 
        $workAnniversaries = EmployeeDetail::whereRaw('DATE_FORMAT(joining_date, "%m-%d") = ?', [date('m-d')])->get();
 
+        $myTasks = Task::where(function ($q) use ($userId) {
+            $q->whereHas('assignees', fn ($assignees) => $assignees->where('users.id', $userId))
+              ->orWhereRaw("FIND_IN_SET(?, assigned_to)", [$userId]);
+        })
+        ->with('project')
+        ->orderBy('due_date', 'asc')
+        ->limit(10)
+        ->get();
 
-       $myTasks = Task::whereRaw("FIND_IN_SET(?, assigned_to)", [$userId])
-            ->orderBy('due_date', 'asc')
-            ->limit(5) // show latest 5 tasks
+        $myTickets = Ticket::where(function ($q) use ($userId) {
+                $q->where('agent_id', $userId)
+                  ->orWhere('requester_id', $userId);
+            })
+            ->with(['project', 'requester', 'agent'])
+            ->orderBy('updated_at', 'desc')
+            ->limit(10)
             ->get();
 
-        $myTickets = Ticket::where('requester_id', $userId) // or assigned_to if you track it
-            ->orderBy('created_at', 'desc')
-            ->limit(5)
+        $myProjects = Project::whereNull('deleted_at')
+            ->whereHas('users', fn ($user) => $user->where('users.id', $userId))
+            ->with([
+                'client',
+                'tasks' => function ($q) use ($userId) {
+                    $q->where(function ($taskScope) use ($userId) {
+                        $taskScope->whereHas('assignees', fn ($assignees) => $assignees->where('users.id', $userId))
+                            ->orWhereRaw('FIND_IN_SET(?, assigned_to)', [$userId]);
+                    })->orderBy('title');
+                }
+            ])
+            ->orderByDesc('created_at')
             ->get();
 
+        $projects = $myProjects;
+        $tasks = $myTasks;
 
-            $projects = Project::all();
-            $tasks = Task::all();
-            return view('employee-dashboard', compact('user','projects', 'tasks', 'attendance', 'attendancePolicy', 'weeklyLogs','openTasksCount', 'projectsCount', 'openTicketsCount','appreciations',
-            'birthdaysToday','todaysJoinings','workAnniversaries','onLeaveToday','pendingTasksCount','overdueTasksCount','totalProjects','inProgressCount','overdueCount','myTasks','myTickets','showEmployeeWelcome'));
-        }
+        return view('employee-dashboard', compact(
+            'user',
+            'projects',
+            'tasks',
+            'myProjects',
+            'attendance',
+            'attendancePolicy',
+            'weeklyLogs',
+            'openTasksCount',
+            'projectsCount',
+            'openTicketsCount',
+            'appreciations',
+            'birthdaysToday',
+            'todaysJoinings',
+            'workAnniversaries',
+            'onLeaveToday',
+            'pendingTasksCount',
+            'overdueTasksCount',
+            'totalProjects',
+            'inProgressCount',
+            'overdueCount',
+            'myTasks',
+            'myTickets',
+            'showEmployeeWelcome'
+        ));
+    }
 
         abort(403);
     }
@@ -1007,10 +1076,36 @@ public function hrindex(Request $request)
         ->groupBy('gender')
         ->pluck('total', 'gender');
 
-       $roleCounts = User::select('role')
-        ->selectRaw('COUNT(*) as total')
-        ->groupBy('role')
-        ->pluck('total', 'role');
+        $roleCounts = User::select('role')
+            ->selectRaw('COUNT(*) as total')
+            ->groupBy('role')
+            ->pluck('total', 'role');
+
+        $totalProjects = Project::whereNull('deleted_at')->count();
+        $activeProjects = Project::whereNull('deleted_at')->whereNotIn('status', ['completed', 'canceled'])->count();
+        $pendingTasksTotal = Task::where('status', '!=', 'Completed')
+            ->with('project')
+            ->orderByDesc('start_date')
+            ->take(5)
+            ->get();
+
+        $activities = DB::table('project_activity')
+            ->join('projects', 'projects.id', '=', 'project_activity.project_id')
+            ->select(
+                'project_activity.activity',
+                'project_activity.created_at',
+                'projects.name as project_name'
+            )
+            ->orderByDesc('project_activity.created_at')
+            ->limit(10)
+            ->get();
+
+        $totalTimelogsCount = TaskTimer::count();
+        $totalTimelogHours = round((float) TaskTimer::sum('total_hours'), 1);
+        $totalClient = Client::count();
+        $unresolvedTicket = Ticket::where('status', '!=', 'closed')->count();
+        $projects = Project::whereNull('deleted_at')->orderBy('name')->get();
+        $tasks = Task::all();
 
         return view('dashboard-hr', compact(
             'totalEmployees',
@@ -1034,7 +1129,17 @@ public function hrindex(Request $request)
             'departmentWise',
             'designationWise',
             'genderCounts',
-            'roleCounts'
+            'roleCounts',
+            'totalProjects',
+            'activeProjects',
+            'pendingTasksTotal',
+            'activities',
+            'totalTimelogsCount',
+            'totalTimelogHours',
+            'totalClient',
+            'unresolvedTicket',
+            'projects',
+            'tasks'
         ));
     }
 

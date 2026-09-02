@@ -6,5 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class CompanyModule extends Model
 {
+    protected $connection = 'central';
     //
 }

@@ -1,0 +1,541 @@
+/* Shared admin table export controls and animated grid separators. */
+.pms-table-tools {
+  --pms-table-accent: #059669;
+  --pms-table-line: rgba(5, 150, 105, 0.22);
+  align-items: center;
+  background: rgba(248, 250, 252, 0.96);
+  border: 1px solid rgba(15, 23, 42, 0.07);
+  border-radius: 16px 16px 0 0;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  min-height: 64px;
+  padding: 0.8rem 1.15rem;
+  position: relative;
+  width: 100%;
+  z-index: 4;
+}
+
+.pms-table-tools__status {
+  color: #0f172a;
+  font-size: 0.84rem;
+  font-weight: 800;
+  margin-right: auto;
+  min-width: 1px;
+}
+
+.pms-table-tools__status[aria-live] { transition: color 180ms ease; }
+.pms-table-export { position: relative; }
+
+.pms-table-scroll-host {
+  -webkit-overflow-scrolling: touch;
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 0 0 18px 18px;
+  box-shadow: 0 10px 24px -16px rgba(15, 23, 42, 0.3);
+  display: block;
+  max-width: 100% !important;
+  overflow-x: auto !important;
+  scrollbar-color: rgba(5, 150, 105, 0.48) rgba(15, 23, 42, 0.06);
+  scrollbar-width: thin;
+  width: 100% !important;
+}
+
+.pms-table-scroll-host::-webkit-scrollbar { height: 8px; }
+.pms-table-scroll-host::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.06); }
+.pms-table-scroll-host::-webkit-scrollbar-thumb {
+  background: linear-gradient(90deg, #10b981, #047857);
+  border-radius: 999px;
+}
+
+.pms-card-needs-position { position: relative !important; }
+
+.pms-animated-card-border > .pms-card-border-layer {
+  animation: pmsCardBorderBreathe var(--pms-card-border-duration, 6s) ease-in-out var(--pms-card-border-delay, 0s) infinite;
+  background: linear-gradient(115deg, var(--pms-card-color-a), var(--pms-card-color-b), var(--pms-card-color-a));
+  border-radius: inherit;
+  inset: 0;
+  padding: 1px;
+  pointer-events: none;
+  position: absolute;
+  z-index: 6;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+}
+
+.pms-animated-card-border:hover > .pms-card-border-layer {
+  animation: pmsCardBorderHover var(--pms-card-border-hover-duration, 3.7s) ease-in-out infinite;
+}
+
+.pms-exportable-table {
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  min-width: var(--pms-table-content-min-width, 720px) !important;
+  min-width: max(100%, var(--pms-table-content-min-width, 720px)) !important;
+  table-layout: auto !important;
+  width: 100% !important;
+}
+
+.pms-exportable-table > tbody > tr {
+  background-color: #ffffff;
+  transition: background-color 180ms ease;
+}
+
+.pms-exportable-table > tbody > tr > :is(th, td) {
+  border-bottom-color: rgba(15, 23, 42, 0.09) !important;
+  color: #42524a;
+  padding-bottom: 1rem !important;
+  padding-top: 1rem !important;
+}
+
+.pms-exportable-table > tbody > tr:hover > :is(th, td) {
+  background-color: rgba(236, 253, 245, 0.56) !important;
+}
+
+.pms-exportable-table > tbody > tr:last-child > :is(th, td) {
+  border-bottom-width: 0 !important;
+}
+
+/* Preserve complete words; the scroll host handles genuinely wide tables. */
+.pms-exportable-table > thead > tr > :is(th, td) {
+  overflow-wrap: normal !important;
+  white-space: nowrap !important;
+  word-break: normal !important;
+}
+
+.pms-exportable-table > tbody > tr > :is(th, td) {
+  overflow-wrap: normal !important;
+  word-break: normal !important;
+}
+
+.pms-exportable-table > tbody > tr > :is(th, td) :is(.btn, button, .badge, .dropdown-item),
+.pms-exportable-table > tbody > tr > :is(th, td) > :is(.btn, button, .badge) {
+  overflow-wrap: normal !important;
+  white-space: nowrap !important;
+  word-break: keep-all !important;
+}
+
+.pms-exportable-table > tbody > tr > :is(th, td) :is(.d-flex, .d-inline-flex) {
+  flex-wrap: nowrap !important;
+}
+
+.pms-table-export__toggle {
+  align-items: center;
+  background: #fff;
+  border: 1px solid rgba(5, 150, 105, 0.3);
+  border-radius: 10px;
+  color: #047857;
+  cursor: pointer;
+  display: inline-flex;
+  font-family: inherit;
+  font-size: 0.84rem;
+  font-weight: 800;
+  gap: 0.5rem;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0.5rem 0.85rem;
+  transition: background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.pms-table-export__toggle:hover,
+.pms-table-export__toggle:focus-visible,
+.pms-table-export.is-open .pms-table-export__toggle {
+  background: #ecfdf5;
+  border-color: rgba(5, 150, 105, 0.58);
+  box-shadow: 0 7px 18px rgba(5, 150, 105, 0.13);
+  color: #065f46;
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.pms-table-export__toggle svg,
+.pms-table-export__option svg { display: block; flex: 0 0 auto; }
+.pms-table-export__chevron { transition: transform 180ms ease; }
+.pms-table-export.is-open .pms-table-export__chevron { transform: rotate(180deg); }
+
+.pms-table-export__menu {
+  background: #fff;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 18px 38px rgba(15, 23, 42, 0.16);
+  display: none;
+  min-width: 220px;
+  overflow: hidden;
+  padding: 0.4rem;
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.45rem);
+  z-index: 1085;
+}
+
+.pms-table-export.is-open .pms-table-export__menu {
+  animation: pmsExportMenuIn 160ms ease both;
+  display: block;
+}
+
+.pms-table-export__option {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+  color: #334155;
+  cursor: pointer;
+  display: flex;
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  gap: 0.65rem;
+  padding: 0.62rem 0.7rem;
+  text-align: left;
+  transition: background-color 150ms ease, color 150ms ease;
+  width: 100%;
+}
+
+.pms-table-export__option:hover,
+.pms-table-export__option:focus-visible {
+  background: #ecfdf5;
+  color: #047857;
+  outline: none;
+}
+
+.pms-table-export__option:disabled {
+  background: transparent;
+  color: #94a3b8;
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
+.pms-table-select {
+  align-items: center !important;
+  background: rgba(5, 150, 105, 0.035);
+  bottom: 0 !important;
+  display: flex !important;
+  height: auto !important;
+  justify-content: center !important;
+  left: 0 !important;
+  margin: 0 !important;
+  position: absolute !important;
+  top: 0 !important;
+  transform: none !important;
+  width: 46px;
+  z-index: 3;
+}
+
+.pms-table-select::after {
+  animation: pmsSelectionColumnLine 7.2s ease-in-out infinite;
+  background-color: rgba(5, 150, 105, 0.24);
+  bottom: 0;
+  content: '';
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 1px;
+}
+
+.pms-exportable-table > :is(thead, tbody) > tr > .pms-table-selection-cell {
+  padding-left: 58px !important;
+  vertical-align: middle !important;
+}
+
+.pms-exportable-table > :is(thead, tbody) > tr > [data-pms-selection-column].pms-table-selection-cell {
+  box-sizing: border-box !important;
+  max-width: 58px !important;
+  min-width: 58px !important;
+  padding: 0 !important;
+  text-align: center !important;
+  width: 58px !important;
+}
+
+.pms-exportable-table > :is(thead, tbody) > tr > [data-pms-selection-column] > .pms-table-select {
+  width: 100% !important;
+}
+
+.pms-table-select__input {
+  accent-color: var(--pms-table-accent, #059669);
+  appearance: auto;
+  cursor: pointer;
+  display: block !important;
+  height: 16px;
+  margin: 0 !important;
+  min-height: 16px;
+  min-width: 16px;
+  padding: 0 !important;
+  position: static !important;
+  transform: none !important;
+  width: 16px;
+}
+
+.pms-table-select__input:focus-visible {
+  outline: 2px solid rgba(5, 150, 105, 0.35);
+  outline-offset: 2px;
+}
+
+.pms-exportable-table > thead > tr > th,
+.pms-exportable-table > thead > tr > td,
+.pms-exportable-table > tbody > tr > th,
+.pms-exportable-table > tbody > tr > td { position: relative; }
+
+/* Shared light table header matching the admin document table. */
+.pms-exportable-table > thead {
+  animation: pmsTableHeaderGradient 14s ease-in-out infinite;
+  background-color: #f8fafc !important;
+  background-image: linear-gradient(115deg, #f8fafc 0%, #f2fbf6 48%, #f8fafc 100%) !important;
+  background-position: 0% 50%;
+  background-size: 260% 260%;
+}
+
+.pms-exportable-table > thead > tr > :is(th, td) {
+  animation: pmsTableHeadingGlow 6.4s ease-in-out infinite;
+  background-color: rgba(248, 250, 252, 0.84) !important;
+  border-bottom-color: rgba(15, 23, 42, 0.1) !important;
+  color: #263b31 !important;
+  font-size: 0.8rem;
+  font-weight: 800 !important;
+  letter-spacing: 0.025em;
+  padding-bottom: 1rem !important;
+  padding-top: 1rem !important;
+  box-shadow: inset -1px 0 rgba(5, 150, 105, 0.1);
+  text-shadow: 0 1px 1px rgba(15, 23, 42, 0.08), 0 0 0 rgba(16, 185, 129, 0);
+  text-transform: uppercase;
+}
+
+.pms-exportable-table > thead > tr > :is(th, td):nth-child(2n) { animation-delay: 0.22s; }
+.pms-exportable-table > thead > tr > :is(th, td):nth-child(3n) { animation-delay: 0.44s; }
+.pms-exportable-table > thead > tr > :is(th, td):nth-child(4n) { animation-delay: 0.66s; }
+
+.pms-exportable-table > thead > tr > :is(th, td) > :not(.pms-table-select) {
+  color: inherit !important;
+}
+
+.pms-exportable-table > thead > tr > :is(th, td) :is(a, div, i, small, span, strong) {
+  color: #263b31 !important;
+}
+
+.pms-exportable-table > thead .pms-table-select {
+  background: rgba(236, 253, 245, 0.58);
+  box-shadow: inset -1px 0 rgba(5, 150, 105, 0.16);
+}
+
+.pms-exportable-table > thead .pms-table-select__input {
+  accent-color: #059669;
+}
+
+/* The complete grid remains visible and animated even when the table is idle. */
+.pms-exportable-table > tbody > tr > :is(th, td):not(:last-child)::after {
+  animation: pmsTableLineVertical 8.4s ease-in-out infinite;
+  background-color: var(--pms-table-line);
+  content: '';
+  height: 100%;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 1px;
+  z-index: 1;
+}
+
+.pms-exportable-table > tbody > tr > :is(th, td)::before {
+  animation: pmsTableLineHorizontal 9.2s ease-in-out infinite;
+  background-color: var(--pms-table-line);
+  bottom: 0;
+  content: '';
+  height: 1px;
+  left: 0;
+  pointer-events: none;
+  position: absolute;
+  width: 100%;
+  z-index: 1;
+}
+
+.pms-exportable-table > tbody > tr:hover > :is(th, td)::after,
+.pms-exportable-table > tbody > tr.pms-row-selected > :is(th, td)::after,
+.pms-exportable-table > tbody > tr.pms-row-selected > :is(th, td)::before {
+  --pms-table-line: rgba(5, 150, 105, 0.5);
+}
+
+/* Hover deliberately switches to a faster pulse animation. */
+.pms-exportable-table > tbody > tr:hover > :is(th, td)::after {
+  animation: pmsTableHoverVertical 2.2s ease-in-out infinite;
+  background-color: rgba(5, 150, 105, 0.4);
+}
+
+.pms-exportable-table > tbody > tr:hover > :is(th, td)::before {
+  animation: pmsTableHoverHorizontal 2.2s ease-in-out infinite;
+  background-color: rgba(5, 150, 105, 0.4);
+}
+
+.pms-exportable-table > tbody > tr:hover > .pms-table-selection-cell > .pms-table-select::after {
+  animation: pmsSelectionColumnHover 2s ease-in-out infinite alternate;
+}
+
+.pms-exportable-table > tbody > tr.pms-row-selected > :is(th, td) {
+  box-shadow: inset 0 0 0 999px rgba(16, 185, 129, 0.055);
+}
+
+html[data-pms-theme="dark"] .pms-table-tools {
+  --pms-table-line: rgba(52, 211, 153, 0.28);
+  background: rgba(15, 31, 24, 0.97);
+  border-bottom-color: rgba(226, 255, 239, 0.1);
+}
+
+html[data-pms-theme="dark"] .pms-table-tools__status { color: #a7c8b6; }
+
+html[data-pms-theme="dark"] .pms-table-scroll-host {
+  background: #102119;
+  border-color: rgba(226, 255, 239, 0.12);
+}
+
+html[data-pms-theme="dark"] .pms-exportable-table > tbody > tr {
+  background-color: #102119;
+}
+
+html[data-pms-theme="dark"] .pms-exportable-table > tbody > tr > :is(th, td) {
+  border-bottom-color: rgba(226, 255, 239, 0.09) !important;
+  color: #d1e7da;
+}
+
+html[data-pms-theme="dark"] .pms-exportable-table > tbody > tr:hover > :is(th, td) {
+  background-color: rgba(52, 211, 153, 0.06) !important;
+}
+
+html[data-pms-theme="dark"] .pms-table-select {
+  background: rgba(52, 211, 153, 0.055);
+}
+
+html[data-pms-theme="dark"] .pms-exportable-table > thead {
+  background-color: #030e14 !important;
+  background-image: linear-gradient(115deg, #020b10 0%, #0b2029 25%, #064e3b 50%, #0a3033 75%, #020b10 100%) !important;
+}
+
+html[data-pms-theme="dark"] .pms-exportable-table > thead > tr > :is(th, td) {
+  background-color: rgba(3, 28, 24, 0.78) !important;
+  border-bottom-color: rgba(226, 255, 239, 0.15) !important;
+  color: #ffffff !important;
+  box-shadow: inset -1px 0 rgba(167, 243, 208, 0.14);
+}
+
+html[data-pms-theme="dark"] .pms-exportable-table > thead > tr > :is(th, td) :is(a, div, i, small, span, strong) {
+  color: #ffffff !important;
+}
+
+html[data-pms-theme="dark"] .pms-exportable-table > thead .pms-table-select {
+  background: rgba(255, 255, 255, 0.075);
+}
+
+html[data-pms-theme="dark"] .pms-table-export__toggle,
+html[data-pms-theme="dark"] .pms-table-export__menu {
+  background: #132a20;
+  border-color: rgba(52, 211, 153, 0.25);
+  color: #6ee7b7;
+}
+
+html[data-pms-theme="dark"] .pms-table-export__toggle:hover,
+html[data-pms-theme="dark"] .pms-table-export__toggle:focus-visible,
+html[data-pms-theme="dark"] .pms-table-export.is-open .pms-table-export__toggle,
+html[data-pms-theme="dark"] .pms-table-export__option:hover,
+html[data-pms-theme="dark"] .pms-table-export__option:focus-visible {
+  background: #18372a;
+  color: #a7f3d0;
+}
+
+html[data-pms-theme="dark"] .pms-table-export__option { color: #d1e7da; }
+html[data-pms-theme="dark"] .pms-table-export__option:disabled { color: #6f8c7c; }
+
+@keyframes pmsExportMenuIn {
+  from { opacity: 0; transform: translateY(-5px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes pmsCardBorderBreathe {
+  0%, 100% { opacity: 0.38; }
+  50% { opacity: 0.72; }
+}
+
+@keyframes pmsCardBorderHover {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 0.82; }
+}
+
+@keyframes pmsTableHeaderGradient {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes pmsTableHeadingGlow {
+  0%, 100% {
+    color: #263b31;
+    text-shadow: 0 1px 1px rgba(15, 23, 42, 0.08), 0 0 0 rgba(16, 185, 129, 0);
+  }
+  50% {
+    color: #0f5132;
+    text-shadow: 0 1px 1px rgba(15, 23, 42, 0.06), 0 0 5px rgba(16, 185, 129, 0.22);
+  }
+}
+
+@keyframes pmsTableLineVertical {
+  0%, 100% { opacity: 0.28; }
+  50% { opacity: 0.56; }
+}
+
+@keyframes pmsTableLineHorizontal {
+  0%, 100% { opacity: 0.25; }
+  50% { opacity: 0.52; }
+}
+
+@keyframes pmsTableHoverVertical {
+  0%, 100% { opacity: 0.52; }
+  50% { opacity: 0.9; }
+}
+
+@keyframes pmsTableHoverHorizontal {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 0.88; }
+}
+
+@keyframes pmsSelectionColumnLine {
+  0%, 100% { opacity: 0.34; }
+  50% { opacity: 0.68; }
+}
+
+@keyframes pmsSelectionColumnHover {
+  from { opacity: 0.55; }
+  to { opacity: 0.9; }
+}
+
+@media (max-width: 575.98px) {
+  .pms-table-tools { min-height: 54px; padding: 0.6rem 0.75rem; }
+  .pms-table-tools__status { font-size: 0.72rem; }
+  .pms-table-export__toggle { min-height: 36px; padding: 0.45rem 0.7rem; }
+  .pms-table-select { width: 42px; }
+  .pms-exportable-table > :is(thead, tbody) > tr > .pms-table-selection-cell { padding-left: 52px !important; }
+  .pms-exportable-table > :is(thead, tbody) > tr > [data-pms-selection-column].pms-table-selection-cell {
+    max-width: 48px !important;
+    min-width: 48px !important;
+    padding: 0 !important;
+    width: 48px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pms-animated-card-border > .pms-card-border-layer,
+  .pms-table-export.is-open .pms-table-export__menu,
+  .pms-table-select::after,
+  .pms-exportable-table > thead,
+  .pms-exportable-table > thead > tr > :is(th, td),
+  .pms-exportable-table > tbody > tr > :is(th, td)::after,
+  .pms-exportable-table > tbody > tr > :is(th, td)::before { animation: none !important; }
+}
+
+@media (update: slow) {
+  .pms-animated-card-border > .pms-card-border-layer,
+  .pms-table-select::after,
+  .pms-exportable-table > thead,
+  .pms-exportable-table > thead > tr > :is(th, td),
+  .pms-exportable-table > tbody > tr > :is(th, td)::after,
+  .pms-exportable-table > tbody > tr > :is(th, td)::before {
+    animation: none !important;
+  }
+}

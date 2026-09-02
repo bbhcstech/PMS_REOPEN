@@ -3,6 +3,26 @@
 @section('title', 'Company Management')
 
 @section('content')
+<style>
+    .btn-primary,
+    .btn-primary *,
+    .btn-primary i,
+    .btn-primary span {
+        background: linear-gradient(135deg, #073a26 0%, #0f744c 60%, #10b981 100%) !important;
+        border: none !important;
+        color: #ffffff !important;
+        fill: #ffffff !important;
+        font-weight: 800 !important;
+        border-radius: 999px !important;
+    }
+    .btn-primary:hover,
+    .btn-primary:hover * {
+        color: #ffffff !important;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(15, 116, 76, 0.32) !important;
+    }
+</style>
+
 <div class="container-xxl flex-grow-1 container-p-y">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>

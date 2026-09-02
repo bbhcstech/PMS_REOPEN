@@ -20,53 +20,99 @@ class TimeLogController extends Controller
     {
     }
 
-    public function index(Request $request, Project $project = null)
+    public function index(Request $request, ?Project $project = null)
     {
-        $query = TaskTimer::with(['project', 'task', 'user']);
+        $canReviewTimeLogs = $this->canManageTimelogs();
 
-        $canReviewTimeLogs = in_array(strtolower((string) auth()->user()?->role), ['admin', 'hr', 'manager'], true);
-
-        // Admin/HR/manager see all, employee sees only own logs
-        if (! $canReviewTimeLogs) {
-            $query->where('user_id', auth()->id());
-        }
+        // Query all tasks of all projects (or specific project if provided)
+        $query = Task::with(['project', 'assignee', 'assignees', 'timers.user', 'activeTimer']);
 
         // Project filter
         if ($project) {
             $query->where('project_id', $project->id);
         }
 
-        // Employee filter
+        // Scope for employee role
+        if (! $canReviewTimeLogs) {
+            $user = auth()->user();
+            $query->where(function ($q) use ($user) {
+                $this->applyEmployeeTaskScope($q, $user);
+            });
+        }
+
+        // Employee filter from request
         if ($request->filled('user_id') && $canReviewTimeLogs) {
-            $query->where('user_id', $request->user_id);
+            $targetUser = User::find($request->user_id);
+            if ($targetUser) {
+                $query->where(function ($q) use ($targetUser) {
+                    $this->applyEmployeeTaskScope($q, $targetUser);
+                });
+            }
         }
 
         // Date range filter
         if ($request->filled('start_date') && $request->filled('end_date')) {
-            $query->whereBetween('created_at', [
-                $request->start_date . " 00:00:00",
-                $request->end_date . " 23:59:59"
-            ]);
+            $query->where(function ($q) use ($request) {
+                $q->whereBetween('start_date', [$request->start_date, $request->end_date])
+                  ->orWhereBetween('due_date', [$request->start_date, $request->end_date])
+                  ->orWhereHas('timers', fn($tq) => $tq->whereBetween('start_time', [
+                      $request->start_date . " 00:00:00",
+                      $request->end_date . " 23:59:59"
+                  ]));
+            });
         } elseif ($request->filled('start_date')) {
-            $query->whereDate('created_at', '>=', $request->start_date);
+            $query->where(function ($q) use ($request) {
+                $q->whereDate('start_date', '>=', $request->start_date)
+                  ->orWhereHas('timers', fn($tq) => $tq->whereDate('start_time', '>=', $request->start_date));
+            });
         } elseif ($request->filled('end_date')) {
-            $query->whereDate('created_at', '<=', $request->end_date);
+            $query->where(function ($q) use ($request) {
+                $q->whereDate('due_date', '<=', $request->end_date)
+                  ->orWhereHas('timers', fn($tq) => $tq->whereDate('end_time', '<=', $request->end_date));
+            });
         }
 
-        $logs = $query->latest()->get();
+        $tasks = $query->orderByDesc('id')->get();
+
+        $totalEstimatedHours = $tasks->sum(function ($t) {
+            return (float) ($t->estimate_hours ?? 0) + ((float) ($t->estimate_minutes ?? 0) / 60);
+        });
+
+        $totalLoggedHours = $tasks->sum(function ($t) {
+            return (float) $t->timers->sum('total_hours');
+        });
+
         $stats = [
-            'total_hours' => round((float) $logs->sum('total_hours'), 2),
-            'log_count' => $logs->count(),
-            'employees' => $logs->pluck('user_id')->filter()->unique()->count(),
-            'projects' => $logs->pluck('project_id')->filter()->unique()->count(),
+            'total_tasks' => $tasks->count(),
+            'total_hours' => round($totalLoggedHours, 2),
+            'total_estimated_hours' => round($totalEstimatedHours, 2),
+            'employees' => $tasks->flatMap(function ($t) {
+                $ids = $t->assignees->pluck('id')->all();
+                if ($t->assigned_to) {
+                    $ids = array_merge($ids, explode(',', (string) $t->assigned_to));
+                }
+                return $ids;
+            })->filter()->unique()->count(),
+            'projects' => $tasks->pluck('project_id')->filter()->unique()->count(),
         ];
-        $employeeProductivity = $logs->groupBy('user_id')->map(function ($items) {
-            return [
-                'employee' => $items->first()->user?->name ?? 'Unknown',
-                'hours' => round((float) $items->sum('total_hours'), 2),
-                'logs' => $items->count(),
-            ];
-        })->sortByDesc('hours')->values();
+
+        $productivity = [];
+        foreach ($tasks as $t) {
+            foreach ($t->timers as $timer) {
+                $empName = $timer->user?->name ?? 'Unknown';
+                $empId = $timer->user_id;
+                if (!isset($productivity[$empId])) {
+                    $productivity[$empId] = [
+                        'employee' => $empName,
+                        'hours' => 0,
+                        'logs' => 0,
+                    ];
+                }
+                $productivity[$empId]['hours'] += (float) ($timer->total_hours ?? 0);
+                $productivity[$empId]['logs'] += 1;
+            }
+        }
+        $employeeProductivity = collect($productivity)->sortByDesc('hours')->values();
 
         // Dropdown employees list
         if ($canReviewTimeLogs) {
@@ -75,24 +121,29 @@ class TimeLogController extends Controller
             $employees = User::where('id', auth()->id())->get();
         }
 
-        return view('admin.timelogs.index', compact('logs', 'project', 'employees', 'stats', 'employeeProductivity'));
+        $logs = $tasks;
+
+        return view('admin.timelogs.index', compact('tasks', 'logs', 'project', 'employees', 'stats', 'employeeProductivity'));
     }
 
-public function create()
-{
-    $canReviewTimeLogs = $this->canReviewTimeLogs();
-    $projects = $canReviewTimeLogs
-        ? Project::orderBy('name')->get()
-        : Project::whereHas('users', fn ($users) => $users->where('users.id', auth()->id()))->orderBy('name')->get();
-    $tasks = $canReviewTimeLogs
-        ? Task::orderBy('title')->get()
-        : Task::where(function ($query) {
-            $this->applyEmployeeTaskScope($query);
-        })->orderBy('title')->get();
-    $employees = $canReviewTimeLogs ? User::where('role', 'employee')->orderBy('name')->get() : collect();
+    public function create(Request $request)
+    {
+        $canReviewTimeLogs = $this->canManageTimelogs();
+        $projects = $canReviewTimeLogs
+            ? Project::orderBy('name')->get()
+            : Project::whereHas('users', fn ($users) => $users->where('users.id', auth()->id()))->orderBy('name')->get();
+        $tasks = $canReviewTimeLogs
+            ? Task::orderBy('title')->get()
+            : Task::where(function ($query) {
+                $this->applyEmployeeTaskScope($query);
+            })->orderBy('title')->get();
+        $employees = $canReviewTimeLogs ? User::where('role', 'employee')->orderBy('name')->get() : collect();
 
-    return view('admin.timelogs.create', compact('projects', 'tasks', 'employees'));
-}
+        $selectedProjectId = $request->query('project_id');
+        $selectedTaskId = $request->query('task_id');
+
+        return view('admin.timelogs.create', compact('projects', 'tasks', 'employees', 'selectedProjectId', 'selectedTaskId'));
+    }
 
 public function store(Request $request)
 {
@@ -296,137 +347,177 @@ public function store(Request $request)
         return response()->json($tasks);
     }
 
-    public function calendar()
+    private function canManageTimelogs(): bool
     {
-        $query = TaskTimer::with(['project', 'task', 'user']);
+        return in_array(strtolower((string) auth()->user()?->role), ['admin', 'hr', 'manager'], true);
+    }
 
-        // Admin sees all, employee sees only own logs
-        if (auth()->user()->role !== 'admin') {
-            $query->where('user_id', auth()->id());
+    private function applyEmployeeTaskScope($query, ?User $user = null): void
+    {
+        $user = $user ?? auth()->user();
+        if (! $user) {
+            return;
         }
 
-        $timelogs = $query->get()->map(function ($log) {
-            return [
-                'title' => $log->user->name . ' - ' . ($log->task->title ?? 'No Task'),
-                'start' => $log->start_time,
-                'end'   => $log->end_time,
-                'allDay' => false,
-            ];
+        $userId = $user->id;
+        $query->where(function ($q) use ($userId) {
+            $q->whereHas('assignees', function ($aq) use ($userId) {
+                $aq->where('users.id', $userId);
+            })
+            ->orWhereRaw('FIND_IN_SET(?, assigned_to)', [$userId])
+            ->orWhere('assigned_to', $userId)
+            ->orWhereHas('timers', function ($tq) use ($userId) {
+                $tq->where('user_id', $userId);
+            });
         });
+    }
+
+    public function calendar()
+    {
+        $canReview = $this->canManageTimelogs();
+        $tasksQuery = Task::with(['project', 'assignees', 'timers.user'])->whereNotNull('start_date');
+
+        if (! $canReview) {
+            $user = auth()->user();
+            $tasksQuery->where(function ($q) use ($user) {
+                $this->applyEmployeeTaskScope($q, $user);
+            });
+        }
+
+        $tasks = $tasksQuery->get();
+        $timelogs = collect();
+
+        foreach ($tasks as $t) {
+            $assignedNames = $t->assignees->pluck('name')->join(', ') ?: ($t->assignee?->name ?? 'Unassigned');
+            $start = $t->start_date ? \Carbon\Carbon::parse($t->start_date)->toIso8601String() : null;
+            $end = $t->due_date ? \Carbon\Carbon::parse($t->due_date)->toIso8601String() : $start;
+
+            if ($start) {
+                $timelogs->push([
+                    'title' => ($t->project?->name ? $t->project->name . ' - ' : '') . $t->title . ' (' . $assignedNames . ')',
+                    'start' => $start,
+                    'end'   => $end,
+                    'allDay' => true,
+                ]);
+            }
+
+            foreach ($t->timers as $timer) {
+                if ($timer->start_time) {
+                    $timelogs->push([
+                        'title' => ($timer->user?->name ?? 'User') . ' - ' . $t->title . ' (' . ($timer->total_hours ?? 0) . 'h)',
+                        'start' => \Carbon\Carbon::parse($timer->start_time)->toIso8601String(),
+                        'end'   => $timer->end_time ? \Carbon\Carbon::parse($timer->end_time)->toIso8601String() : null,
+                        'allDay' => false,
+                    ]);
+                }
+            }
+        }
 
         return view('admin.timelogs.calendar', compact('timelogs'));
     }
 
     public function byEmployee(Request $request)
     {
-        $query = TaskTimer::with(['project', 'task', 'user']);
+        $canReview = $this->canManageTimelogs();
+        $taskQuery = Task::with(['project', 'assignees', 'timers.user', 'assignee']);
 
         // Filter by employee
-        if ($request->filled('user_id')) {
-            $query->where('user_id', $request->user_id);
-        } elseif (auth()->user()->role !== 'admin') {
-            $query->where('user_id', auth()->id());
+        if ($request->filled('user_id') && $canReview) {
+            $targetUser = User::find($request->user_id);
+            if ($targetUser) {
+                $taskQuery->where(function ($q) use ($targetUser) {
+                    $this->applyEmployeeTaskScope($q, $targetUser);
+                });
+            }
+        } elseif (! $canReview) {
+            $taskQuery->where(function ($q) {
+                $this->applyEmployeeTaskScope($q, auth()->user());
+            });
         }
 
         // Filter by date range
         if ($request->filled('start_date') && $request->filled('end_date')) {
-            $query->whereBetween('start_time', [$request->start_date, $request->end_date]);
+            $taskQuery->whereBetween('start_date', [$request->start_date, $request->end_date]);
         }
 
-        // Search (by project/task/user name)
+        // Search (by project/task/user name/memo)
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->whereHas('task', fn($q) => $q->where('title', 'like', "%$search%"))
-                  ->orWhereHas('project', fn($q) => $q->where('project_code', 'like', "%$search%"))
-                  ->orWhereHas('user', fn($q) => $q->where('name', 'like', "%$search%"));
+            $taskQuery->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%$search%")
+                  ->orWhere('task_short_code', 'like', "%$search%")
+                  ->orWhereHas('project', fn($pq) => $pq->where('name', 'like', "%$search%")->orWhere('project_code', 'like', "%$search%"));
+            });
         }
 
-        $logs = $query->get();
+        $tasks = $taskQuery->latest()->get();
+        $logs = TaskTimer::with(['project', 'task', 'user'])->latest()->get();
 
-        if (auth()->user()->role === 'admin') {
+        if ($canReview) {
             $employees = User::where('role', 'employee')->orderBy('name')->get();
         } else {
             $employees = User::where('id', auth()->id())->get();
         }
 
-        return view('admin.timelogs.by-employee', compact('logs', 'employees'));
+        return view('admin.timelogs.by-employee', compact('tasks', 'logs', 'employees'));
     }
 
-public function bulkStatusUpdate(Request $request)
-{
-    $request->validate([
-        'ids'    => 'required|array|min:1',
-        'ids.*'  => 'integer|exists:task_timers,id',
-        'status' => 'required|string|in:pending,approved,rejected',
-    ]);
-
-    $ids = $request->ids;
-    $status = $request->status;
-
-    DB::beginTransaction();
-    try {
-        if (auth()->user()->role !== 'admin') {
-            $affected = TaskTimer::whereIn('id', $ids)
-                ->where('user_id', auth()->id())
-                ->update(['status' => $status]);
-        } else {
-            $affected = TaskTimer::whereIn('id', $ids)
-                ->update(['status' => $status]);
-        }
-
-        DB::commit();
-
-        return response()->json([
-            'success'  => true,
-            'message'  => 'Status updated successfully',
-            'affected' => $affected,
+    public function bulkStatusUpdate(Request $request)
+    {
+        $request->validate([
+            'ids'    => 'required|array|min:1',
+            'status' => 'required|string',
         ]);
-    } catch (\Throwable $e) {
-        DB::rollBack();
-        Log::error('bulkStatusUpdate failed: ' . $e->getMessage(), ['ids' => $ids, 'status' => $status]);
-        return response()->json(['success' => false, 'message' => 'Server error'], 500);
-    }
-}
 
+        $ids = $request->ids;
+        $status = strtolower($request->status);
 
+        DB::beginTransaction();
+        try {
+            Task::whereIn('id', $ids)->update(['status' => ucfirst($status)]);
+            TaskTimer::whereIn('task_id', $ids)->orWhereIn('id', $ids)->update(['status' => $status]);
 
+            DB::commit();
 
-public function bulkDelete(Request $request)
-{
-    $request->validate([
-        'ids'   => 'required|array|min:1',
-        'ids.*' => 'integer|exists:task_timers,id',
-    ]);
-
-    $ids = $request->ids;
-
-    DB::beginTransaction();
-    try {
-        if (auth()->user()->role !== 'admin') {
-            $deleted = TaskTimer::whereIn('id', $ids)
-                ->where('user_id', auth()->id())
-                ->delete();
-        } else {
-            $deleted = TaskTimer::whereIn('id', $ids)->delete();
+            return response()->json([
+                'success'  => true,
+                'message'  => 'Status updated successfully',
+            ]);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            \Log::error('bulkStatusUpdate failed: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Server error'], 500);
         }
-
-        DB::commit();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Selected time logs deleted',
-            'deleted' => $deleted,
-        ]);
-    } catch (\Throwable $e) {
-        DB::rollBack();
-        Log::error('bulkDelete failed: '.$e->getMessage(), ['ids' => $ids]);
-
-        return response()->json([
-            'success' => false,
-            'message' => 'Server error',
-        ], 500);
     }
-}
+
+    public function bulkDelete(Request $request)
+    {
+        $request->validate([
+            'ids'   => 'required|array|min:1',
+        ]);
+
+        $ids = $request->ids;
+
+        DB::beginTransaction();
+        try {
+            TaskTimer::whereIn('task_id', $ids)->orWhereIn('id', $ids)->delete();
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Selected time logs deleted',
+            ]);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            \Log::error('bulkDelete failed: '.$e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Server error',
+            ], 500);
+        }
+    }
 
 
 

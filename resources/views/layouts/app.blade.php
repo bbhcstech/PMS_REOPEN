@@ -65,5 +65,6 @@
                 });
             })();
         </script>
+        @include('partials.password-changed-modal')
     </body>
 </html>

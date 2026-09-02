@@ -11,7 +11,7 @@ use Illuminate\View\View;
 
 class RolePermissionController extends Controller
 {
-    private array $roles = ['admin', 'manager', 'hr', 'employee'];
+    private array $roles = ['manager', 'hr', 'employee'];
     private array $permissions = ['view', 'create', 'edit', 'delete', 'approve', 'export', 'assign'];
 
     public function index(Request $request): View
@@ -23,12 +23,17 @@ class RolePermissionController extends Controller
             $role = 'manager';
         }
 
+        $staffUsers = \App\Models\User::whereIn('role', ['admin', 'manager', 'hr', 'employee', 'user'])
+            ->orderBy('name')
+            ->get(['id', 'name', 'email', 'role']);
+
         return view('admin.settings.role-permissions.index', [
             'roles' => $this->roles,
             'role' => $role,
             'permissions' => $this->permissions,
             'modules' => Module::with('parent')->where('is_active', true)->orderBy('sort_order')->orderBy('name')->get(),
             'savedPermissions' => RolePermission::where('role', $role)->get()->keyBy('module_id'),
+            'staffUsers' => $staffUsers,
         ]);
     }
 
@@ -56,6 +61,8 @@ class RolePermissionController extends Controller
 
     private function authorizeAdmin(): void
     {
-        abort_unless(auth()->user()?->normalizedRole() === 'admin', 403);
+        $user = auth()->user();
+        $isAdmin = \Illuminate\Support\Facades\Auth::guard('super_admin')->check() || ($user && in_array($user->normalizedRole(), ['admin', 'superadmin'], true));
+        abort_unless($isAdmin, 403);
     }
 }

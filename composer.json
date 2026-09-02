@@ -10,7 +10,9 @@
         "barryvdh/laravel-dompdf": "^3.1",
         "laravel/framework": "^11.31",
         "laravel/tinker": "^2.9",
-        "maatwebsite/excel": "^3.1"
+        "maatwebsite/excel": "^3.1",
+        "setasign/fpdf": "*",
+        "setasign/fpdi": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
@@ -36,18 +38,18 @@
     "scripts": {
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
-            "@/usr/local/bin/php artisan package:discover --ansi"
+            "@php artisan package:discover --ansi"
         ],
         "post-update-cmd": [
-            "@/usr/local/bin/php artisan vendor:publish --tag=laravel-assets --ansi --force"
+            "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
         ],
         "post-root-package-install": [
-            "@/usr/local/bin/php -r \"file_exists('.env') || copy('.env.example', '.env');\""
+            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
         ],
         "post-create-project-cmd": [
-            "@/usr/local/bin/php artisan key:generate --ansi",
-            "@/usr/local/bin/php -r \"file_exists('database/database.sqlite') || touch('database/database.sqlite');\"",
-            "@/usr/local/bin/php artisan migrate --graceful --ansi"
+            "@php artisan key:generate --ansi",
+            "@php -r \"file_exists('database/database.sqlite') || touch('database/database.sqlite');\"",
+            "@php artisan migrate --graceful --ansi"
         ],
         "dev": [
             "Composer\\Config::disableProcessTimeout",

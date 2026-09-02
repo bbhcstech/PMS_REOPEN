@@ -6,162 +6,24 @@
 <div class="gantt-page">
     <div class="container-fluid px-4">
 
-        <!-- Breadcrumb -->
-        <div class="breadcrumb">
-            <i class="fas fa-chart-bar"></i>
-            <span>Dashboard / Projects / <a href="{{ route('projects.show', $project->id) }}">{{ $project->name }}</a> / <strong>Gantt Chart</strong></span>
-        </div>
+@php
+    if (!isset($startDate) || !isset($endDate) || !isset($totalDays)) {
+        $min = $project->tasks->whereNotNull('start_date')->min('start_date');
+        $max = $project->tasks->whereNotNull('due_date')->max('due_date');
+        $startDate = \Carbon\Carbon::parse($min ?? $project->start_date ?? now())->startOfWeek();
+        $endDate = \Carbon\Carbon::parse($max ?? $project->deadline ?? now()->addMonth())->endOfWeek();
+        if ($endDate->lt($startDate)) {
+            $endDate = $startDate->copy()->addMonth()->endOfWeek();
+        }
+        $totalDays = $startDate->diffInDays($endDate) + 1;
+    }
+@endphp
 
-        <!-- Header Card -->
-        <div class="header-card">
-            <div class="header-left">
-                <div class="header-icon">
-                    <i class="fas fa-chart-bar"></i>
-                </div>
-                <div>
-                    <h1>Gantt Chart</h1>
-                    <p>Visualize project timeline for <strong>{{ $project->name }}</strong></p>
-                </div>
-            </div>
-            <div class="header-actions">
-                <a href="{{ route('projects.index') }}" class="btn btn-outline">
-                    <i class="fas fa-arrow-left"></i> Back to Projects
-                </a>
-                <a href="{{ route('projects.show', $project->id) }}" class="btn btn-outline">
-                    <i class="fas fa-eye"></i> View Project
-                </a>
-            </div>
-        </div>
-
-        <!-- Stats Cards -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-tasks"></i></div>
-                <div>
-                    <h3>{{ $project->tasks->count() }}</h3>
-                    <span>Total Tasks</span>
-                    <p class="stat-sub">All tasks in project</p>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
-                <div>
-                    <h3>{{ $project->tasks->where('status', 'completed')->count() }}</h3>
-                    <span>Completed</span>
-                    <p class="stat-sub">Finished tasks</p>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-spinner"></i></div>
-                <div>
-                    <h3>{{ $project->tasks->where('status', '!=', 'completed')->count() }}</h3>
-                    <span>In Progress</span>
-                    <p class="stat-sub">Active tasks</p>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-calendar-alt"></i></div>
-                <div>
-                    <h3>
-                        @php
-                            $min = $project->tasks->min('start_date');
-                            $max = $project->tasks->max('due_date');
-                            $startDate = \Carbon\Carbon::parse($min ?? now())->startOfWeek();
-                            $endDate = \Carbon\Carbon::parse($max ?? now())->endOfWeek();
-                            $totalDays = $startDate->diffInDays($endDate) + 1;
-                        @endphp
-                        {{ $totalDays }}
-                    </h3>
-                    <span>Total Days</span>
-                    <p class="stat-sub">Project duration</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Navigation Tabs -->
-        <div class="nav-tabs-wrapper">
-            <ul class="nav-tabs">
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('projects.show', $project->id) }}">
-                        <i class="fas fa-chart-pie"></i> Overview
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('project-members.index', $project->id) }}">
-                        <i class="fas fa-users"></i> Members
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('project-files.index', $project->id) }}">
-                        <i class="fas fa-folder-open"></i> Files
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('milestones.index', $project->id) }}">
-                        <i class="fas fa-flag-checkered"></i> Milestones
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('projects.tasks.index', $project->id) }}">
-                        <i class="fas fa-tasks"></i> Tasks
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('projects.tasks.board', $project->id) }}">
-                        <i class="fas fa-columns"></i> Task Board
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link active" href="{{ route('projects.gantt', $project->id) }}">
-                        <i class="fas fa-chart-bar"></i> Gantt Chart
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('projects.timelogs.index', $project->id) }}">
-                        <i class="fas fa-clock"></i> Timesheet
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('expenses.index', $project->id) }}">
-                        <i class="fas fa-money-bill-wave"></i> Expenses
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('projects.notes.index', $project->id) }}">
-                        <i class="fas fa-sticky-note"></i> Notes
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link more-toggle" href="#" id="toggle-more">
-                        <i class="fas fa-ellipsis-h"></i> More <i class="fas fa-chevron-down"></i>
-                    </a>
-                </li>
-            </ul>
-
-            <!-- Collapsible Extra Tabs -->
-            <ul class="nav-tabs extra-tabs d-none" id="more-tabs">
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('projects.discussions.index', $project->id) }}">
-                        <i class="fas fa-comments"></i> Discussion
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('projects.burndown', $project->id) }}">
-                        <i class="fas fa-fire"></i> Burndown Chart
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('admin.activities.project', $project->id) }}">
-                        <i class="fas fa-history"></i> Activity
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('tickets.index', ['project_id' => $project->id]) }}">
-                        <i class="fas fa-ticket-alt"></i> Tickets
-                    </a>
-                </li>
-            </ul>
-        </div>
+        {{-- Standardized Project Header & 13-Tab Navigation --}}
+        @include('admin.projects.partials.header', [
+            'project' => $project,
+            'activeTab' => 'gantt'
+        ])
 
         <!-- Timeline Header -->
         <div class="timeline-header">

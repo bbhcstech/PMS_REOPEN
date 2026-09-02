@@ -1,9 +1,11 @@
 <?php
 namespace App\Models;
 
+use App\Models\TenantModel;
+
 use Illuminate\Database\Eloquent\Model;
 
-class Ticket extends Model
+class Ticket extends TenantModel
 {
     protected $fillable = [
         'requester_id',
@@ -12,11 +14,14 @@ class Ticket extends Model
         'group_id',
         'agent_id',
         'project_id',
+        'affected_module',
         'type',
+        'type_id',
         'subject',
         'description',
         'attachment',
         'priority',
+        'deadline',
         'channel',
         'tags',
         'status'
@@ -43,8 +48,17 @@ class Ticket extends Model
     }
 
     public function replies()
-{
-    return $this->hasMany(Reply::class);
-}
+    {
+        return $this->hasMany(Reply::class);
+    }
 
+    public function activities()
+    {
+        return $this->hasMany(TicketActivity::class, 'ticket_id')->latest();
+    }
+
+    public function client()
+    {
+        return $this->belongsTo(User::class, 'requester_id');
+    }
 }

@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Models\TenantModel;
+
 use Illuminate\Database\Eloquent\Model;
 use App\Models\ParentDepartment;
 
-class CompanyAddress extends Model
+class CompanyAddress extends TenantModel
 {
    protected $fillable = ['country_id', 'address', 'is_default', 'location', 'tax_number', 'tax_name', 'longitude', 'latitude'];
 

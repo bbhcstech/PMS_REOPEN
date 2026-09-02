@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Models\TenantModel;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class CompanySetting extends Model
+class CompanySetting extends TenantModel
 {
     use HasFactory;
 
@@ -14,5 +16,7 @@ class CompanySetting extends Model
         'company_email',
         'company_phone',
         'company_website',
+        'company_location',
+        'company_logo',
     ];
 }

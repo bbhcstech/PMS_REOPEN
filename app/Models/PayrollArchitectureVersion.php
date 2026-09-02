@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Models\TenantModel;
+
 use Illuminate\Database\Eloquent\Model;
 
-class PayrollArchitectureVersion extends Model
+class PayrollArchitectureVersion extends TenantModel
 {
     protected $guarded = [];
 

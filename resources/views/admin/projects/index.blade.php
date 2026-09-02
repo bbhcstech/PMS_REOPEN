@@ -4,7 +4,7 @@
 
 @section('content')
 @php
-    $isAdmin = auth()->user()?->role === 'admin';
+    $isAdmin = in_array(strtolower((string) auth()->user()?->role), ['admin', 'manager', 'hr'], true);
     $isEmployee = auth()->user()?->role === 'employee';
     $statusOptions = [
         'pending' => 'Pending',
@@ -176,18 +176,6 @@
         </div>
 
         <div class="toolbar-right">
-            @if($isAdmin)
-                <select id="bulkProjectStatus" class="form-select-sm" disabled>
-                    <option value="">Change Status</option>
-                    @foreach($statusOptions as $value => $label)
-                        <option value="{{ $value }}">{{ $label }}</option>
-                    @endforeach
-                </select>
-                <button id="applyBulkProjectStatus" class="btn btn-sm btn-primary" disabled>Apply</button>
-                <button id="bulkDeleteProjects" class="btn btn-sm btn-danger" disabled>
-                    <i class="fas fa-trash-alt"></i>
-                </button>
-            @endif
             <div class="view-toggle">
                 <a href="{{ route('projects.index') }}" class="view-btn active" title="List View">
                     <i class="fas fa-list-ul"></i>
@@ -231,7 +219,7 @@
                         <th><i class="fas fa-calendar-plus"></i> Start Date</th>
                         <th><i class="fas fa-calendar-times"></i> Deadline</th>
                         @if($isAdmin)
-                            <th><i class="fas fa-building"></i> Client</th>
+                            <th><i class="fas fa-building"></i> Client/Home</th>
                         @endif
                         <th><i class="fas fa-bolt"></i> Priority</th>
                         <th><i class="fas fa-circle"></i> Status</th>
@@ -301,30 +289,34 @@
                             </td>
                             @if($isAdmin)
                                 <td>
-                                    <div class="client-cell">
-                                        <div class="client-avatar">
-                                            {{ strtoupper(mb_substr(optional($project->client)->name ?? optional($project->client)->company_name ?? 'C', 0, 1)) }}
+                                    @if($project->project_type === 'home' || (!$project->client_id && !$project->client))
+                                        <div class="client-cell">
+                                            <div class="client-avatar" style="background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe;">
+                                                <i class="fas fa-home" style="font-size: 13px;"></i>
+                                            </div>
+                                            <div>
+                                                <div class="client-name fw-bold" style="color: #1e40af;">Home</div>
+                                                <small class="text-muted">In-House</small>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <div class="client-name">{{ optional($project->client)->name ?? 'No Client' }}</div>
-                                            <small>{{ optional($project->client)->company_name ?? '' }}</small>
+                                    @else
+                                        <div class="client-cell">
+                                            <div class="client-avatar">
+                                                {{ strtoupper(mb_substr(optional($project->client)->name ?? optional($project->client)->company_name ?? 'C', 0, 1)) }}
+                                            </div>
+                                            <div>
+                                                <div class="client-name">{{ optional($project->client)->name ?? 'No Client' }}</div>
+                                                <small>{{ optional($project->client)->company_name ?? '' }}</small>
+                                            </div>
                                         </div>
-                                    </div>
+                                    @endif
                                 </td>
                             @endif
                             <td>
                                 <span class="priority-pill {{ $priority }}">{{ $priorityOptions[$priority] ?? ucfirst($priority) }}</span>
                             </td>
                             <td>
-                                @if($isAdmin || $isEmployee)
-                                    <select class="status-select status-{{ $statusClass }}" data-project-id="{{ $project->id }}">
-                                        @foreach($statusOptions as $value => $label)
-                                            <option value="{{ $value }}" @selected($status === $value)>{{ $label }}</option>
-                                        @endforeach
-                                    </select>
-                                @else
-                                    <span class="status-pill {{ $statusClass }}">{{ $statusOptions[$status] ?? ucfirst($status) }}</span>
-                                @endif
+                                <span class="status-pill status-{{ $statusClass }}">{{ $statusOptions[$status] ?? ucfirst($status) }}</span>
                             </td>
                             <td>
                                 <div class="progress-cell">
@@ -353,35 +345,39 @@
                                         <i class="fas fa-ellipsis-v"></i>
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end">
-                                        <li><h6 class="dropdown-header">{{ \Illuminate\Support\Str::limit($project->name, 28) }}</h6></li>
-                                        <li><a class="dropdown-item" href="{{ route('projects.show', $project) }}"><i class="fas fa-eye"></i> View</a></li>
                                         @if($isEmployee)
-                                            <li><a class="dropdown-item" href="{{ route('projects.gantt', $project) }}"><i class="fas fa-chart-bar"></i> Gantt Chart</a></li>
-                                            <li><a class="dropdown-item" href="{{ route('projects.tasks.board', $project) }}"><i class="fas fa-columns"></i> Task Board</a></li>
-                                        @endif
-                                        @if($isAdmin)
-                                            <li><a class="dropdown-item" href="{{ route('projects.edit', $project) }}"><i class="fas fa-pen"></i> Edit</a></li>
-                                            <li><button class="dropdown-item" type="button" data-bs-toggle="modal" data-bs-target="#duplicateProjectModal{{ $project->id }}"><i class="fas fa-copy"></i> Duplicate</button></li>
-                                            <li><hr class="dropdown-divider"></li>
-                                            <li><a class="dropdown-item" href="{{ route('projects.gantt', $project) }}"><i class="fas fa-chart-bar"></i> Gantt Chart</a></li>
-                                            <li><a class="dropdown-item" href="{{ route('projects.public-gantt', $project) }}" target="_blank"><i class="fas fa-external-link-alt"></i> Public Gantt</a></li>
-                                            <li><button class="dropdown-item" type="button" data-copy-url="{{ route('projects.public-gantt', $project) }}"><i class="fas fa-link"></i> Copy Gantt Link</button></li>
-                                            <li><a class="dropdown-item" href="{{ route('projects.tasks.board', $project) }}" target="_blank"><i class="fas fa-columns"></i> Public Task Board</a></li>
-                                            <li><button class="dropdown-item" type="button" data-copy-url="{{ route('projects.tasks.board', $project) }}"><i class="fas fa-link"></i> Copy Board Link</button></li>
-                                            <li><hr class="dropdown-divider"></li>
                                             <li>
-                                                <form action="{{ route('projects.archive.action', $project) }}" method="POST" data-confirm-submit="Archive this project?">
-                                                    @csrf
-                                                    <button class="dropdown-item text-warning" type="submit"><i class="fas fa-archive"></i> Archive</button>
-                                                </form>
+                                                <button type="button" class="dropdown-item d-flex align-items-center py-2 text-primary fw-semibold" data-bs-toggle="modal" data-bs-target="#projectTasksModal_{{ $project->id }}">
+                                                    <i class="fas fa-tasks me-2"></i> My Tasks
+                                                </button>
                                             </li>
-                                            <li>
-                                                <form action="{{ route('projects.destroy', $project) }}" method="POST" data-confirm-submit="Delete this project permanently?">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button class="dropdown-item text-danger" type="submit"><i class="fas fa-trash-alt"></i> Delete</button>
-                                                </form>
-                                            </li>
+                                        @else
+                                            <li><h6 class="dropdown-header">{{ \Illuminate\Support\Str::limit($project->name, 28) }}</h6></li>
+                                            <li><a class="dropdown-item" href="{{ route('projects.show', $project) }}"><i class="fas fa-eye"></i> View</a></li>
+                                            @if($isAdmin)
+                                                <li><a class="dropdown-item" href="{{ route('projects.edit', $project) }}"><i class="fas fa-pen"></i> Edit</a></li>
+                                                <li><button class="dropdown-item" type="button" data-bs-toggle="modal" data-bs-target="#duplicateProjectModal{{ $project->id }}"><i class="fas fa-copy"></i> Duplicate</button></li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li><a class="dropdown-item" href="{{ route('projects.gantt', $project) }}"><i class="fas fa-chart-bar"></i> Gantt Chart</a></li>
+                                                <li><a class="dropdown-item" href="{{ route('projects.public-gantt', $project) }}" target="_blank"><i class="fas fa-external-link-alt"></i> Public Gantt</a></li>
+                                                <li><button class="dropdown-item" type="button" data-copy-url="{{ route('projects.public-gantt', $project) }}"><i class="fas fa-link"></i> Copy Gantt Link</button></li>
+                                                <li><a class="dropdown-item" href="{{ route('projects.tasks.board', $project) }}" target="_blank"><i class="fas fa-columns"></i> Public Task Board</a></li>
+                                                <li><button class="dropdown-item" type="button" data-copy-url="{{ route('projects.tasks.board', $project) }}"><i class="fas fa-link"></i> Copy Board Link</button></li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li>
+                                                    <form action="{{ route('projects.archive.action', $project) }}" method="POST" data-confirm-submit="Archive this project?">
+                                                        @csrf
+                                                        <button class="dropdown-item text-warning" type="submit"><i class="fas fa-archive"></i> Archive</button>
+                                                    </form>
+                                                </li>
+                                                <li>
+                                                    <form action="{{ route('projects.destroy', $project) }}" method="POST" data-confirm-submit="Delete this project permanently?">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button class="dropdown-item text-danger" type="submit"><i class="fas fa-trash-alt"></i> Delete</button>
+                                                    </form>
+                                                </li>
+                                            @endif
                                         @endif
                                     </ul>
                                 </div>
@@ -414,6 +410,218 @@
             </div>
         </div>
     </div>
+
+    <!-- Employee Project Tasks Modals -->
+    @if($isEmployee)
+        <script>
+        window.saveEmployeeTask = function(btn, taskId) {
+            try {
+                var card = btn ? (btn.closest('.task-item-card') || document.getElementById('task_card_' + taskId)) : document.getElementById('task_card_' + taskId);
+                var form = btn ? btn.closest('form') : document.querySelector('form[data-task-id="' + taskId + '"]');
+                if (!form) return;
+
+                var statusSelect = form.querySelector('.task-status-select') || form.querySelector('select[name="status"]');
+                var progressRange = form.querySelector('.task-progress-range') || form.querySelector('input[name="progress"]');
+                var remarksInput = form.querySelector('.task-remarks-input') || form.querySelector('input[name="remarks"]');
+
+                var status = statusSelect ? statusSelect.value : 'To Do';
+                var progress = progressRange ? parseInt(progressRange.value, 10) : 0;
+                var remarks = remarksInput ? remarksInput.value : '';
+
+                var tokenMeta = document.querySelector('meta[name="csrf-token"]');
+                var csrfToken = tokenMeta ? tokenMeta.getAttribute('content') : (form.querySelector('input[name="_token"]')?.value || '{{ csrf_token() }}');
+
+                var originalBtnHtml = btn ? btn.innerHTML : 'Save';
+                if (btn) {
+                    btn.disabled = true;
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Saving...';
+                }
+
+                fetch('/tasks/' + taskId + '/update-status', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        status: status,
+                        progress: progress,
+                        remarks: remarks
+                    })
+                })
+                .then(function(res) {
+                    return res.json().then(function(data) {
+                        return { ok: res.ok, status: res.status, data: data };
+                    }).catch(function() {
+                        return { ok: res.ok, status: res.status, data: { success: false, message: 'Server response error (' + res.status + ')' } };
+                    });
+                })
+                .then(function(result) {
+                    var data = result.data;
+                    if (result.ok && data && data.success) {
+                        if (card) {
+                            var statusBadge = card.querySelector('.task-current-status-badge');
+                            if (statusBadge) statusBadge.textContent = data.status || status;
+                            var progressDisplay = card.querySelector('.task-progress-display');
+                            if (progressDisplay) progressDisplay.textContent = (data.progress !== undefined ? data.progress : progress) + '%';
+                        }
+
+                        // Also update project row in table
+                        if (data.project_id) {
+                            var projRow = document.querySelector('tr[data-project-id="' + data.project_id + '"]');
+                            if (projRow) {
+                                if (data.project_progress !== undefined) {
+                                    var pBar = projRow.querySelector('.progress-bar div');
+                                    if (pBar) pBar.style.width = data.project_progress + '%';
+                                    var pText = projRow.querySelector('.progress-text');
+                                    if (pText) pText.textContent = data.project_progress + '%';
+                                }
+                                if (data.project_status) {
+                                    var sBadge = projRow.querySelector('.status-pill');
+                                    if (sBadge) {
+                                        var cleanStatus = data.project_status.replace(/\b\w/g, function(l) { return l.toUpperCase(); });
+                                        sBadge.textContent = cleanStatus;
+                                        sBadge.className = 'status-pill status-' + data.project_status.toLowerCase().replace(/\s+/g, '-');
+                                    }
+                                }
+                            }
+                        }
+
+                        if (btn) {
+                            btn.classList.remove('btn-primary');
+                            btn.classList.add('btn-success');
+                            btn.innerHTML = '<i class="fas fa-check me-1"></i> Saved!';
+                            setTimeout(function() {
+                                btn.classList.remove('btn-success');
+                                btn.classList.add('btn-primary');
+                                btn.innerHTML = originalBtnHtml;
+                                btn.disabled = false;
+                            }, 2000);
+                        }
+                    } else {
+                        var msg = (data && data.message) ? data.message : ('Could not save task (status ' + result.status + ').');
+                        alert(msg);
+                        if (btn) {
+                            btn.innerHTML = originalBtnHtml;
+                            btn.disabled = false;
+                        }
+                    }
+                })
+                .catch(function(err) {
+                    console.error("Save task error:", err);
+                    alert('Error saving task: ' + err.message);
+                    if (btn) {
+                        btn.innerHTML = originalBtnHtml;
+                        btn.disabled = false;
+                    }
+                });
+            } catch(ex) {
+                console.error("Save task exception:", ex);
+                alert('Exception: ' + ex.message);
+                if (btn) {
+                    btn.disabled = false;
+                }
+            }
+        };
+        </script>
+        @foreach($projects as $project)
+            @php
+                $pTasks = $project->tasks ?? collect();
+            @endphp
+            <div class="modal fade" id="projectTasksModal_{{ $project->id }}" tabindex="-1" aria-labelledby="projectTasksModalLabel_{{ $project->id }}" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                    <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+                        <div class="modal-header bg-light border-bottom py-3 px-4">
+                            <div>
+                                <h5 class="modal-title fw-bold text-dark mb-0" id="projectTasksModalLabel_{{ $project->id }}">
+                                    <i class="fas fa-folder-open text-primary me-2"></i>My Tasks &mdash; {{ $project->name }}
+                                </h5>
+                                <small class="text-muted">{{ $project->project_code ?? 'PROJ-' . $project->id }} &bull; Update status and progress for your assigned deliverables</small>
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body p-4">
+                            @if($pTasks->isEmpty())
+                                <div class="text-center py-5">
+                                    <i class="fas fa-check-circle text-success fa-3x mb-3 d-block"></i>
+                                    <p class="mb-0 text-muted">You have no tasks assigned in this project yet.</p>
+                                </div>
+                            @else
+                                <div class="d-flex flex-column gap-3">
+                                    @foreach($pTasks as $pTask)
+                                        <div class="p-3 border rounded-3 bg-white shadow-sm task-item-card" id="task_card_{{ $pTask->id }}" data-task-id="{{ $pTask->id }}">
+                                            <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-2">
+                                                <div class="flex-grow-1">
+                                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                                        <span class="badge bg-primary text-white font-monospace">{{ $pTask->task_short_code ?? '#TASK-' . $pTask->id }}</span>
+                                                        <h6 class="fw-bold text-dark mb-0">{{ $pTask->title }}</h6>
+                                                    </div>
+                                                    @if($pTask->description)
+                                                        <p class="text-muted small mb-2 text-truncate" style="max-width: 500px;" title="{{ strip_tags($pTask->description) }}">
+                                                            {{ Str::limit(strip_tags($pTask->description), 100) }}
+                                                        </p>
+                                                    @endif
+                                                    <div class="d-flex flex-wrap align-items-center gap-3 text-muted" style="font-size: 0.8rem;">
+                                                        <span><i class="fas fa-calendar-alt me-1"></i>Due: <strong>{{ $pTask->due_date ? \Carbon\Carbon::parse($pTask->due_date)->format('d M, Y') : 'No due date' }}</strong></span>
+                                                        <span>Priority: <span class="badge bg-light text-dark border text-capitalize">{{ $pTask->priority ?? 'Medium' }}</span></span>
+                                                        <span>Current Status: <span class="badge bg-info text-white task-current-status-badge">{{ $pTask->status ?? 'To Do' }}</span></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="p-3 rounded-2 bg-light border mt-2">
+                                                <form class="employee-task-update-form" data-task-id="{{ $pTask->id }}" method="POST" action="javascript:void(0);" onsubmit="event.preventDefault(); return false;">
+                                                    @csrf
+                                                    <div class="row g-3 align-items-center">
+                                                        <!-- Status Select -->
+                                                        <div class="col-md-4">
+                                                            <label class="form-label small fw-bold mb-1">Task Status</label>
+                                                            <select name="status" class="form-select form-select-sm task-status-select" required>
+                                                                @foreach(['Incomplete', 'To Do', 'Doing', 'Waiting for Approval', 'Completed'] as $st)
+                                                                    <option value="{{ $st }}" {{ ($pTask->status ?? 'To Do') === $st ? 'selected' : '' }}>{{ $st }}</option>
+                                                                @endforeach
+                                                            </select>
+                                                        </div>
+
+                                                        <!-- Progress Slider & Value -->
+                                                        <div class="col-md-5">
+                                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                                <label class="form-label small fw-bold mb-0">Progress</label>
+                                                                <span class="badge bg-primary rounded-pill task-progress-display fw-bold px-2 py-1 fs-7">{{ $pTask->progress ?? 0 }}%</span>
+                                                            </div>
+                                                            <div class="d-flex align-items-center gap-2">
+                                                                <input type="range" class="form-range task-progress-range" min="0" max="100" step="5" value="{{ $pTask->progress ?? 0 }}" name="progress" oninput="const d = this.closest('.col-md-5')?.querySelector('.task-progress-display'); if (d) d.textContent = this.value + '%';">
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Save Button -->
+                                                        <div class="col-md-3 d-flex align-items-end">
+                                                            <button type="button" class="btn btn-sm btn-primary w-100 py-1 save-task-btn" onclick="saveEmployeeTask(this, {{ $pTask->id }})">
+                                                                <i class="fas fa-check me-1"></i> Save Changes
+                                                            </button>
+                                                        </div>
+
+                                                        <!-- Remarks input -->
+                                                        <div class="col-12 mt-2">
+                                                            <input type="text" name="remarks" class="form-control form-control-sm task-remarks-input" placeholder="Add optional remarks / deliverables note..." value="{{ $pTask->remarks ?? '' }}">
+                                                        </div>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @endif
+                        </div>
+                        <div class="modal-footer bg-light border-top py-2 px-4">
+                            <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endforeach
+    @endif
 
     <!-- Duplicate Modals -->
     @foreach($projects as $project)
@@ -1794,48 +2002,34 @@
         }
     }
 
-    /* Final row action dropdown fix: three-dot menus must escape table/card clipping. */
-    .projects-page .table-card,
-    .projects-page .table-wrapper,
-    .projects-page .project-table,
-    .projects-page .project-table tbody,
-    .projects-page .project-table tr,
-    .projects-page .project-table td.action-cell,
-    .projects-page .project-action-dropdown {
-        overflow: visible !important;
-    }
-
-    .projects-page .table-card {
-        position: relative;
-        z-index: 1;
-    }
-
+    /* Clean row action dropdown: floating body portal without table scroll container overflow */
     .projects-page .table-wrapper {
-        overflow-x: auto !important;
-        overflow-y: visible !important;
-        padding-bottom: 140px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding-bottom: 18px !important;
     }
 
     .projects-page .project-action-dropdown .dropdown-menu {
         border: 1px solid rgba(15, 116, 76, 0.14) !important;
         border-radius: 14px !important;
         box-shadow: 0 22px 55px rgba(15, 23, 42, 0.18) !important;
-        max-height: min(70vh, 520px);
+        max-height: min(60vh, 440px);
         min-width: 240px;
         overflow-y: auto;
         padding: 8px !important;
-        z-index: 2090 !important;
     }
 
     body > .project-floating-action-menu {
-        border: 1px solid rgba(15, 116, 76, 0.14) !important;
+        position: fixed !important;
+        border: 1px solid rgba(15, 116, 76, 0.16) !important;
         border-radius: 14px !important;
-        box-shadow: 0 22px 55px rgba(15, 23, 42, 0.2) !important;
-        max-height: min(70vh, 520px);
+        box-shadow: 0 22px 55px rgba(15, 23, 42, 0.22) !important;
+        max-height: min(60vh, 440px);
         min-width: 240px;
         overflow-y: auto;
         padding: 8px !important;
-        z-index: 3000 !important;
+        background: #ffffff !important;
+        z-index: 99999 !important;
     }
 
     .projects-page .project-action-dropdown .dropdown-menu.show {
@@ -2053,30 +2247,44 @@ document.addEventListener('DOMContentLoaded', function () {
 
         function positionFloatingMenu() {
             const rect = button.getBoundingClientRect();
-            const menuWidth = Math.max(menu.offsetWidth || 240, 240);
+            const menuWidth = 240;
+            const menuHeight = Math.min(menu.offsetHeight || 320, window.innerHeight * 0.6);
             const viewportGap = 12;
-            const left = Math.max(viewportGap, Math.min(window.innerWidth - menuWidth - viewportGap, rect.right - menuWidth));
-            const opensUp = rect.bottom + menu.offsetHeight + viewportGap > window.innerHeight;
-            const top = opensUp
-                ? Math.max(viewportGap, rect.top - menu.offsetHeight - 8)
-                : Math.min(window.innerHeight - viewportGap, rect.bottom + 8);
 
-            menu.style.left = left + 'px';
+            let left = rect.right - menuWidth;
+            if (left < viewportGap) left = viewportGap;
+            if (left + menuWidth > window.innerWidth - viewportGap) {
+                left = window.innerWidth - menuWidth - viewportGap;
+            }
+
+            const spaceBelow = window.innerHeight - rect.bottom;
+            const spaceAbove = rect.top;
+            let top;
+
+            if (spaceBelow < menuHeight && spaceAbove > spaceBelow) {
+                top = Math.max(viewportGap, rect.top - menuHeight - 6);
+            } else {
+                top = Math.min(window.innerHeight - menuHeight - viewportGap, rect.bottom + 6);
+            }
+
+            menu.style.position = 'fixed';
             menu.style.top = top + 'px';
+            menu.style.left = left + 'px';
+            menu.style.right = 'auto';
+            menu.style.bottom = 'auto';
+            menu.style.transform = 'none';
+            menu.style.zIndex = '99999';
         }
 
         dropdown.addEventListener('show.bs.dropdown', function () {
             originalParent = menu.parentNode;
             originalNextSibling = menu.nextSibling;
+            document.body.appendChild(menu);
+            menu.classList.add('project-floating-action-menu');
+            positionFloatingMenu();
         });
 
         dropdown.addEventListener('shown.bs.dropdown', function () {
-            document.body.appendChild(menu);
-            menu.classList.add('project-floating-action-menu');
-            menu.style.position = 'fixed';
-            menu.style.right = 'auto';
-            menu.style.bottom = 'auto';
-            menu.style.transform = 'none';
             positionFloatingMenu();
         });
 
@@ -2090,13 +2298,13 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         window.addEventListener('resize', function () {
-            if (menu.classList.contains('show') && menu.classList.contains('project-floating-action-menu')) {
+            if (menu.classList.contains('project-floating-action-menu')) {
                 positionFloatingMenu();
             }
         });
 
         window.addEventListener('scroll', function () {
-            if (menu.classList.contains('show') && menu.classList.contains('project-floating-action-menu')) {
+            if (menu.classList.contains('project-floating-action-menu')) {
                 positionFloatingMenu();
             }
         }, true);
@@ -2116,6 +2324,86 @@ document.addEventListener('DOMContentLoaded', function () {
             }, 250);
         });
     });
+
+    // Live progress slider updating
+    document.addEventListener('input', function (e) {
+        if (e.target && e.target.classList.contains('task-progress-range')) {
+            const container = e.target.closest('.col-md-5') || e.target.closest('form');
+            const display = container ? container.querySelector('.task-progress-display') : null;
+            if (display) display.textContent = e.target.value + '%';
+        }
+    });
+
+    // Explicit Save function for Employee Tasks in Modal
+    window.saveEmployeeTask = function(btn, taskId) {
+        const card = btn.closest('.task-item-card') || document.getElementById('task_card_' + taskId);
+        const form = btn.closest('form');
+        if (!form) return;
+
+        const statusSelect = form.querySelector('.task-status-select') || form.querySelector('select[name="status"]');
+        const progressRange = form.querySelector('.task-progress-range') || form.querySelector('input[name="progress"]');
+        const remarksInput = form.querySelector('.task-remarks-input') || form.querySelector('input[name="remarks"]');
+
+        const status = statusSelect ? statusSelect.value : 'To Do';
+        const progress = progressRange ? parseInt(progressRange.value, 10) : 0;
+        const remarks = remarksInput ? remarksInput.value : '';
+
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') 
+                       || form.querySelector('input[name="_token"]')?.value 
+                       || '{{ csrf_token() }}';
+
+        const originalBtnHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Saving...';
+
+        fetch(`{{ url('/tasks') }}/${taskId}/update-status`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                status: status,
+                progress: progress,
+                remarks: remarks
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                if (card) {
+                    const statusBadge = card.querySelector('.task-current-status-badge');
+                    if (statusBadge) {
+                        statusBadge.textContent = data.status || status;
+                    }
+                    const progressDisplay = card.querySelector('.task-progress-display');
+                    if (progressDisplay) {
+                        progressDisplay.textContent = (data.progress !== undefined ? data.progress : progress) + '%';
+                    }
+                }
+                btn.classList.remove('btn-primary');
+                btn.classList.add('btn-success');
+                btn.innerHTML = '<i class="fas fa-check me-1"></i> Saved!';
+                setTimeout(() => {
+                    btn.classList.remove('btn-success');
+                    btn.classList.add('btn-primary');
+                    btn.innerHTML = originalBtnHtml;
+                    btn.disabled = false;
+                }, 2000);
+            } else {
+                alert(data.message || 'Failed to update task.');
+                btn.innerHTML = originalBtnHtml;
+                btn.disabled = false;
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert('An error occurred while updating the task.');
+            btn.innerHTML = originalBtnHtml;
+            btn.disabled = false;
+        });
+    };
 
     refreshBulkControls();
 });

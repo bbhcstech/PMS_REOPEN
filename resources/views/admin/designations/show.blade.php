@@ -7,7 +7,7 @@
 <div class="designation-view-page">
     <!-- Breadcrumb -->
     <div class="breadcrumb">
-        <i class="fas fa-user-tie"></i> Dashboard / Designations / View
+        <i class="fas fa-user-tie"></i> Admin / Settings / Designations / View
     </div>
 
     <!-- Header Card -->

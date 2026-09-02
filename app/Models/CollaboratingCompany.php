@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Models\TenantModel;
+
 use Illuminate\Database\Eloquent\Model;
 
-class CollaboratingCompany extends Model
+class CollaboratingCompany extends TenantModel
 {
     protected $fillable = [
         'name',

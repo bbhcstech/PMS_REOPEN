@@ -21,12 +21,13 @@ class ParentDepartmentController extends Controller
             ->orderBy('id', 'desc')
             ->get();
         $archivedCount = ParentDepartment::whereNotNull('archived_at')->count();
+        $subDepartmentsCount = \App\Models\Department::whereNull('archived_at')->count();
 
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json(['data' => $departments]);
         }
 
-        return view('admin.parent_departments.index', compact('departments', 'archivedCount'));
+        return view('admin.parent_departments.index', compact('departments', 'archivedCount', 'subDepartmentsCount'));
     }
 
     /**
