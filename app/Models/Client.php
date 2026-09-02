@@ -55,5 +55,25 @@ class Client extends TenantModel
             $client->client_uid = 'XINK-CL-' . str_pad($number, 4, '0', STR_PAD_LEFT);
         });
     }
+
+    public function projects()
+    {
+        return $this->hasMany(Project::class, 'client_id');
+    }
+
+    public function tickets()
+    {
+        return $this->hasMany(Ticket::class, 'requester_id');
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(ClientCategory::class, 'client_category_id');
+    }
+
+    public function subCategory()
+    {
+        return $this->belongsTo(ClientSubCategory::class, 'client_sub_category_id');
+    }
 }
 

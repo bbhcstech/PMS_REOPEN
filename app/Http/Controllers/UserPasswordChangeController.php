@@ -25,8 +25,10 @@ class UserPasswordChangeController extends Controller
 
         $request->validate([
             'current_password' => ['required', 'string'],
-            'new_password' => ['required', 'string', 'min:8', 'confirmed'],
+            'new_password' => ['required', 'string', 'confirmed'],
         ]);
+
+        PasswordManagementService::validateComplexity($request->new_password, 'new_password');
 
         if (! Hash::check($request->current_password, $user->password)) {
             return back()->withErrors(['current_password' => 'The provided current password does not match our records.']);
@@ -76,7 +78,7 @@ class UserPasswordChangeController extends Controller
         }
 
         $request->validate([
-            'new_password' => 'required|string|min:8|confirmed',
+            'new_password' => 'required|string|confirmed',
         ]);
 
         PasswordManagementService::updatePassword($actor, $user, $request->new_password);

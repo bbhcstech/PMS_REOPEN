@@ -300,7 +300,7 @@ class ClientController extends Controller
 
     public function show(Client $client)
     {
-        $client->load('category', 'subcategory');
+        $client->load(['category', 'subCategory', 'projects', 'tickets']);
         return view('admin.clients.show', compact('client'));
     }
 

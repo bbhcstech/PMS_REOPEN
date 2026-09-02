@@ -212,19 +212,21 @@
        display: block;
    }
 
-   .app-brand-text.demo {
-       max-width: 132px;
-       overflow: hidden;
-       text-overflow: ellipsis;
-       white-space: nowrap;
-       font-size: 1.08rem !important;
-       line-height: 1.1;
-       letter-spacing: 0 !important;
-       background: linear-gradient(135deg, #0569ff, #13d5e7 50%, #8f25ff);
-       -webkit-background-clip: text;
-       background-clip: text;
-       color: transparent !important;
-   }
+    .app-brand-text.demo {
+        max-width: 175px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 1.05rem !important;
+        font-weight: 800 !important;
+        line-height: 1.25;
+        letter-spacing: -0.01em !important;
+        background: linear-gradient(135deg, #0569ff, #13d5e7 50%, #8f25ff);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent !important;
+        color: transparent !important;
+    }
 
    .menu-inner .menu-item .menu-link {
        color: var(--text-dark);
@@ -243,7 +245,7 @@
    .menu-inner .menu-item.active > .menu-link {
        background: var(--purple-gradient);
        color: var(--white-pure);
-       box-shadow: var(--shadow-purple);
+       box-shadow: 0 4px 12px rgba(15, 116, 76, 0.16);
    }
 
    .menu-inner .menu-item.active > .menu-link i {
@@ -270,14 +272,14 @@
        animation: sidebarActiveDot 1.25s ease-in-out infinite;
    }
 
-   @keyframes sidebarActiveGlow {
-       0%, 100% {
-           box-shadow: 0 4px 18px rgba(124, 58, 237, 0.18);
-       }
-       50% {
-           box-shadow: 0 8px 26px rgba(124, 58, 237, 0.38);
-       }
-   }
+    @keyframes sidebarActiveGlow {
+        0%, 100% {
+            box-shadow: 0 4px 12px rgba(15, 116, 76, 0.16);
+        }
+        50% {
+            box-shadow: 0 6px 16px rgba(15, 116, 76, 0.24);
+        }
+    }
 
    @keyframes sidebarActiveDot {
        0% {
@@ -1089,6 +1091,16 @@
               </a>
             </li>
 
+            <!-- My Projects (for Employee) -->
+            @if($isEmployeeUser || $canSeeModule('projects'))
+            <li class="menu-item {{ (request()->routeIs('projects.*') && !request()->routeIs('projects.tasks.*') && !request()->routeIs('projects.timelogs.*')) ? 'active' : '' }}">
+              <a href="{{ route('projects.index') }}" class="menu-link" data-sidebar-key="my-projects">
+                  <i class="menu-icon tf-icons bx bx-briefcase-alt-2"></i>
+                  <div class="text-truncate" data-i18n="My Projects">My Projects</div>
+              </a>
+            </li>
+            @endif
+
             @if($canSeeModule('organization'))
             <li class="menu-item {{ request()->routeIs('organization.*') ? 'active' : '' }}">
               <a href="{{ route('organization.index') }}" class="menu-link" data-sidebar-key="organization">
@@ -1278,22 +1290,64 @@
 
              <!-- Reports Section -->
             @if($canSeeModule('reports'))
-            <li class="menu-item {{ request()->routeIs('attendance.report') || request()->routeIs('admin.leave.report') ? 'active open' : '' }}">
+            <li class="menu-item {{ request()->routeIs('reports.*') || request()->routeIs('attendance.report') || request()->routeIs('admin.leave.report') ? 'active open' : '' }}">
               <a href="javascript:void(0);" class="menu-link menu-toggle" data-sidebar-key="reports">
-                <i class="menu-icon tf-icons bx bx-bar-chart-alt"></i>
-                <div class="text-truncate" data-i18n="Layouts">Reports</div>
+                <i class="menu-icon tf-icons bx bx-bar-chart-alt-2"></i>
+                <div class="text-truncate">Reports</div>
               </a>
 
               <ul class="menu-sub">
+                  <li class="menu-item {{ request()->routeIs('reports.task') ? 'active' : '' }}">
+                    <a href="{{ route('reports.task') }}" class="menu-link">
+                      <div class="text-truncate">Task Report</div>
+                    </a>
+                  </li>
+
+                  <li class="menu-item {{ request()->routeIs('reports.timelog') ? 'active' : '' }}">
+                    <a href="{{ route('reports.timelog') }}" class="menu-link">
+                      <div class="text-truncate">Time Log Report</div>
+                    </a>
+                  </li>
+
+                  <li class="menu-item {{ request()->routeIs('reports.finance') ? 'active' : '' }}">
+                    <a href="{{ route('reports.finance') }}" class="menu-link">
+                      <div class="text-truncate">Finance Report</div>
+                    </a>
+                  </li>
+
+                  <li class="menu-item {{ request()->routeIs('reports.income-vs-expense') ? 'active' : '' }}">
+                    <a href="{{ route('reports.income-vs-expense') }}" class="menu-link">
+                      <div class="text-truncate">Income Vs Expense</div>
+                    </a>
+                  </li>
+
+                  <li class="menu-item {{ request()->routeIs('admin.leave.report') ? 'active' : '' }}">
+                    <a href="{{ route('admin.leave.report') }}" class="menu-link">
+                      <div class="text-truncate">Leave Report</div>
+                    </a>
+                  </li>
+
                   <li class="menu-item {{ request()->routeIs('attendance.report') ? 'active' : '' }}">
                     <a href="{{ route('attendance.report') }}" class="menu-link">
                       <div class="text-truncate">Attendance Report</div>
                     </a>
                   </li>
 
-                  <li class="menu-item {{ request()->routeIs('admin.leave.report') ? 'active' : '' }}">
-                    <a href="{{ route('admin.leave.report') }}" class="menu-link">
-                      <div class="text-truncate">Leaves Report</div>
+                  <li class="menu-item {{ request()->routeIs('reports.expense') ? 'active' : '' }}">
+                    <a href="{{ route('reports.expense') }}" class="menu-link">
+                      <div class="text-truncate">Expense Report</div>
+                    </a>
+                  </li>
+
+                  <li class="menu-item {{ request()->routeIs('reports.deal') ? 'active' : '' }}">
+                    <a href="{{ route('reports.deal') }}" class="menu-link">
+                      <div class="text-truncate">Deal Report</div>
+                    </a>
+                  </li>
+
+                  <li class="menu-item {{ request()->routeIs('reports.sales') ? 'active' : '' }}">
+                    <a href="{{ route('reports.sales') }}" class="menu-link">
+                      <div class="text-truncate">Sales Report</div>
                     </a>
                   </li>
               </ul>
@@ -1321,7 +1375,7 @@
             </li>
             @endif
 
-            @if($canSeeModule('work') && $canAnyModule(['projects', 'tasks', 'timelogs', 'timesheets']))
+            @if(($canSeeModule('work') || in_array(strtolower((string) auth()->user()?->role), ['admin', 'manager', 'hr'], true)) && ($canAnyModule(['projects', 'tasks', 'timelogs', 'timesheets']) || in_array(strtolower((string) auth()->user()?->role), ['admin', 'manager', 'hr'], true)))
             <li class="menu-item {{ request()->routeIs('projects.*') ||
                 request()->routeIs('tasks.*') || request()->routeIs('users.tasks.*') ||
                 request()->routeIs('timelogs.*') || request()->routeIs('task-timer.*') ||
@@ -1333,7 +1387,7 @@
                 </a>
 
                 <ul class="menu-sub">
-                    @if($canSeeModule('projects'))
+                    @if($canSeeModule('projects') || in_array(strtolower((string) auth()->user()?->role), ['admin', 'manager', 'hr'], true))
                         <li class="menu-item {{ (request()->routeIs('projects.*') && !request()->routeIs('projects.tasks.*') && !request()->routeIs('projects.timelogs.*')) ? 'active' : '' }}">
                             <a href="{{ route('projects.index') }}" class="menu-link" data-sidebar-key="projects">
                                 <div class="text-truncate" data-i18n="Landing">Projects</div>
@@ -1341,7 +1395,7 @@
                         </li>
                     @endif
 
-                    @if($canSeeModule('tasks'))
+                    @if($canSeeModule('tasks') || in_array(strtolower((string) auth()->user()?->role), ['admin', 'manager', 'hr'], true))
                     <li class="menu-item {{ request()->routeIs('tasks.*') || request()->routeIs('projects.tasks.*') || request()->routeIs('users.tasks.*') || request()->routeIs('task-timer.*') ? 'active' : '' }}">
                         <a href="{{ route('tasks.index') }}" class="menu-link" data-sidebar-key="tasks">
                             <div class="text-truncate" data-i18n="Pricing">Tasks</div>
@@ -1349,7 +1403,7 @@
                     </li>
                     @endif
 
-                    @if($canSeeModule('timelogs'))
+                    @if($canSeeModule('timelogs') || $canSeeModule('timesheets') || in_array(strtolower((string) auth()->user()?->role), ['admin', 'manager', 'hr'], true))
                         <li class="menu-item {{ request()->routeIs('timelogs.*') || request()->routeIs('projects.timelogs.*') ? 'active' : '' }}">
                             <a href="{{ route('timelogs.index') }}" class="menu-link" data-sidebar-key="timelogs">
                                 <div class="text-truncate" data-i18n="Payment">Timesheet</div>

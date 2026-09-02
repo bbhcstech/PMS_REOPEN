@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Collection;
 
 class SystemNotificationService
 {
-    public const ERP_ROLES = ['admin', 'manager', 'hr', 'employee'];
+    public const ERP_ROLES = ['admin', 'manager', 'hr', 'employee', 'user'];
 
     public static function roleUsers(?int $companyId = null): Collection
     {

@@ -296,7 +296,7 @@ class NotificationController extends Controller
         ]);
 
         $sender = auth()->user();
-        SystemNotificationService::notifyAllRoles($request->title, $request->message, $request->url, [
+        SystemNotificationService::notifyUser($request->user_ids, $request->title, $request->message, $request->url, [
             'type' => 'manual_notification',
             'ticket_id' => $request->ticket_id,
             'sender_id' => $sender?->id,
