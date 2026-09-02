@@ -33,6 +33,8 @@ class SetTenantConnection
                     ]);
                 }
             } catch (\Throwable $e) {}
+        }
+
         $defaultDb = config('database.connections.tenant.database') ?: config('database.connections.mysql.database');
 
         if (! $tenantDb) {
