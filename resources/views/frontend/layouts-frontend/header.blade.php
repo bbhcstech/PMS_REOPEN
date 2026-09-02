@@ -104,6 +104,20 @@
   <div class="mobile-drawer" id="mobileDrawer">
     <div class="scrim" data-close-drawer></div>
     <div class="mobile-panel">
+      <!-- Drawer Header with Brand & Close Button -->
+      <div class="drawer-header">
+        <a href="{{ route('home') }}" class="brand" data-close-drawer>
+          <img src="{{ asset('logo.png') }}" alt="Bitroxia logo">
+          <span>Bitroxia</span>
+        </a>
+        <button class="drawer-close-btn" data-close-drawer aria-label="Close menu">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
       <ul class="mobile-links">
         <li>
           <details>
@@ -158,7 +172,7 @@
         </li>
       </ul>
       <div class="mobile-cta">
-        <a href="{{ route('login') }}" class="btn btn-secondary btn-block">Login</a>
+        <a href="{{ route('login') }}" class="btn btn-secondary btn-block">Staff / Client Login</a>
         <a href="{{ route('company.contact') }}" class="btn btn-primary btn-block" data-close-drawer>Request Access</a>
       </div>
     </div>
