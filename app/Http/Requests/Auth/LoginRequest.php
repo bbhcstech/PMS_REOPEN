@@ -57,6 +57,23 @@ class LoginRequest extends FormRequest
         $defaultTenantDb = config('database.connections.tenant.database')
             ?: (config('database.connections.mysql.database') ?: env('DB_DATABASE', 'thesmart_lara319'));
 
+        // 0. Check SuperAdmin in central database
+        try {
+            if (class_exists(\App\Models\Central\SuperAdmin::class)) {
+                $superAdmin = \App\Models\Central\SuperAdmin::on('central')->where('email', $inputEmail)->first();
+                if ($superAdmin && \Illuminate\Support\Facades\Hash::check($inputPassword, $superAdmin->password)) {
+                    \Illuminate\Support\Facades\Auth::guard('super_admin')->login($superAdmin, $this->boolean('remember'));
+                    $webUser = User::on('tenant')->where('email', $inputEmail)->first()
+                        ?? User::on('mysql')->where('email', $inputEmail)->first();
+                    if ($webUser) {
+                        \Illuminate\Support\Facades\Auth::guard('web')->login($webUser, $this->boolean('remember'));
+                    }
+                    RateLimiter::clear($this->throttleKey());
+                    return;
+                }
+            }
+        } catch (\Throwable $e) {}
+
         $centralCompany = null;
         try {
             $centralCompany = \App\Models\Central\Company::on('central')
@@ -68,18 +85,31 @@ class LoginRequest extends FormRequest
         if ($centralCompany && !empty($centralCompany->db_name)) {
             $companyEmail = strtolower($centralCompany->email);
 
-            // Set dynamic tenant DB connection for this company login
-            config([
-                'database.connections.tenant.database' => $centralCompany->db_name,
-                'database.connections.mysql.database'  => $centralCompany->db_name,
-            ]);
-            \Illuminate\Support\Facades\DB::purge('tenant');
-            \Illuminate\Support\Facades\DB::purge('mysql');
-            session([
-                'current_company_db'   => $centralCompany->db_name,
-                'current_company_id'   => $centralCompany->id,
-                'current_company_name' => $centralCompany->name,
-            ]);
+            // Set dynamic tenant DB connection for this company login with PDO validation
+            $targetDb = $centralCompany->db_name;
+            try {
+                config([
+                    'database.connections.tenant.database' => $targetDb,
+                    'database.connections.mysql.database'  => $targetDb,
+                ]);
+                DB::purge('tenant');
+                DB::purge('mysql');
+                DB::connection('tenant')->getPdo();
+
+                session([
+                    'current_company_db'   => $targetDb,
+                    'current_company_id'   => $centralCompany->id,
+                    'current_company_name' => $centralCompany->name,
+                ]);
+            } catch (\Throwable $e) {
+                // Fall back to default tenant DB if custom tenant DB cannot be connected
+                config([
+                    'database.connections.tenant.database' => $defaultTenantDb,
+                    'database.connections.mysql.database'  => $defaultTenantDb,
+                ]);
+                DB::purge('tenant');
+                DB::purge('mysql');
+            }
 
             if (app()->bound(\App\Services\CompanyContext::class)) {
                 app(\App\Services\CompanyContext::class)->reset();
