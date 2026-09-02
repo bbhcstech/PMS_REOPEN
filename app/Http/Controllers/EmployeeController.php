@@ -92,9 +92,17 @@ class EmployeeController extends Controller
 
         // Exclude users whose employeeDetail indicates they are on notice or on probation.
         $query->whereDoesntHave('employeeDetail', function ($q) {
-            $q->whereIn('status', ['notice', 'probation'])
-              ->orWhereNotNull('notice_end_date')
-              ->orWhereNotNull('probation_end_date');
+            $q->where(function ($sub) {
+                if (\Illuminate\Support\Facades\Schema::hasColumn('employee_details', 'status')) {
+                    $sub->whereIn('status', ['notice', 'probation']);
+                }
+                if (\Illuminate\Support\Facades\Schema::hasColumn('employee_details', 'notice_end_date')) {
+                    $sub->orWhereNotNull('notice_end_date');
+                }
+                if (\Illuminate\Support\Facades\Schema::hasColumn('employee_details', 'probation_end_date')) {
+                    $sub->orWhereNotNull('probation_end_date');
+                }
+            });
         });
 
         // include subordinate count for reporting-to integrity UI
