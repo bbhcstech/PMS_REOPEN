@@ -88,6 +88,24 @@ return new class extends Migration
                 }
             });
         }
+
+        // 6. Ensure employee_details table has status, exit_date, and company_id
+        if (Schema::hasTable('employee_details')) {
+            Schema::table('employee_details', function (Blueprint $table) {
+                if (! Schema::hasColumn('employee_details', 'status')) {
+                    $table->string('status', 191)->nullable()->default('active')->after('user_id');
+                }
+                if (! Schema::hasColumn('employee_details', 'exit_date')) {
+                    $table->date('exit_date')->nullable()->after('notice_end_date');
+                }
+                if (! Schema::hasColumn('employee_details', 'last_date')) {
+                    $table->date('last_date')->nullable()->after('exit_date');
+                }
+                if (! Schema::hasColumn('employee_details', 'company_id')) {
+                    $table->unsignedBigInteger('company_id')->nullable()->after('id')->index();
+                }
+            });
+        }
     }
 
     /**

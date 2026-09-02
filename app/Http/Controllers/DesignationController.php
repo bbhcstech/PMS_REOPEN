@@ -437,9 +437,17 @@ class DesignationController extends Controller
             ->where('role', 'employee')
             ->whereNull('archived_at')
             ->whereDoesntHave('employeeDetail', function ($query) {
-                $query->whereIn('status', ['notice', 'probation'])
-                    ->orWhereNotNull('notice_end_date')
-                    ->orWhereNotNull('probation_end_date');
+                $query->where(function ($sub) {
+                    if (\Illuminate\Support\Facades\Schema::hasColumn('employee_details', 'status')) {
+                        $sub->whereIn('status', ['notice', 'probation']);
+                    }
+                    if (\Illuminate\Support\Facades\Schema::hasColumn('employee_details', 'notice_end_date')) {
+                        $sub->orWhereNotNull('notice_end_date');
+                    }
+                    if (\Illuminate\Support\Facades\Schema::hasColumn('employee_details', 'probation_end_date')) {
+                        $sub->orWhereNotNull('probation_end_date');
+                    }
+                });
             })
             ->orderBy('name')
             ->get();
