@@ -227,6 +227,8 @@ class CompanyController extends Controller
             ['name' => 'Notifications', 'slug' => 'notifications', 'category' => 'CORE PLATFORM', 'icon' => 'bx-bell', 'description' => 'System alerts and messaging feed.'],
             ['name' => 'Organization Directory', 'slug' => 'organization', 'category' => 'CORE PLATFORM', 'icon' => 'bx-sitemap', 'description' => 'Company structure and hierarchy.'],
             ['name' => 'My Documents', 'slug' => 'my-documents', 'category' => 'CORE PLATFORM', 'icon' => 'bx-file', 'description' => 'Personal and employee document repository.'],
+            ['name' => 'Community', 'slug' => 'community', 'category' => 'CORE PLATFORM', 'icon' => 'bx-chat', 'description' => 'Company-wide group messaging and announcements channel.'],
+            ['name' => 'Events', 'slug' => 'events', 'category' => 'CORE PLATFORM', 'icon' => 'bx-calendar-event', 'description' => 'Company events, celebrations, and calendar activities.'],
 
             // HR & People
             ['name' => 'HR Management', 'slug' => 'hr', 'category' => 'HR & PEOPLE', 'icon' => 'bx-user-check', 'description' => 'Core HR workflows and admin controls.'],
@@ -325,7 +327,7 @@ class CompanyController extends Controller
             } catch (\Throwable $e) {}
         }
 
-        // Auto-sync any custom modules from tenant modules table into central database
+        // Auto-sync any custom modules from tenant modules table or new sidebar features into central database
         try {
             $tenantModules = \App\Models\Module::get();
             foreach ($tenantModules as $tm) {
@@ -341,6 +343,34 @@ class CompanyController extends Controller
                             'sort_order' => $tm->sort_order ?? 99,
                         ]
                     );
+                }
+            }
+        } catch (\Throwable $e) {}
+
+        // Dynamic Auto-Discovery: Scan sidebar layout file to ensure any newly added tenant feature appears automatically in Super Admin
+        try {
+            $manuFile = resource_path('views/admin/layout/manu.blade.php');
+            if (file_exists($manuFile)) {
+                $manuContent = file_get_contents($manuFile);
+                preg_match_all('/data-sidebar-key=["\']([^"\']+)["\']/', $manuContent, $matches);
+                if (! empty($matches[1])) {
+                    foreach (array_unique($matches[1]) as $sidebarKey) {
+                        $slug = strtolower(trim($sidebarKey));
+                        if ($slug && strlen($slug) > 1) {
+                            $name = ucwords(str_replace(['-', '_'], ' ', $slug));
+                            \App\Models\Module::on('central')->firstOrCreate(
+                                ['slug' => $slug],
+                                [
+                                    'name' => $name,
+                                    'category' => 'CORE PLATFORM',
+                                    'icon' => 'bx-cube',
+                                    'description' => "Company {$name} feature module.",
+                                    'is_active' => true,
+                                    'sort_order' => 80,
+                                ]
+                            );
+                        }
+                    }
                 }
             }
         } catch (\Throwable $e) {}
@@ -1123,16 +1153,6 @@ class CompanyController extends Controller
             $company = Company::on('central')->find($id) ?? \App\Models\Company::find($id);
 
             if ($company) {
-                // Block extending subscription if company is currently SUSPENDED
-                if (strtolower($company->status ?? '') === 'suspended' || (method_exists($company, 'isSuspended') && $company->isSuspended())) {
-                    if ($request->wantsJson()) {
-                        return response()->json([
-                            'success' => false,
-                            'message' => "Cannot extend subscription for '{$company->name}' because this company is SUSPENDED. Please activate the company first."
-                        ], 422);
-                    }
-                    return back()->withErrors(['error' => "Cannot extend subscription for '{$company->name}' because this company is SUSPENDED. Please activate the company first."]);
-                }
                 $sub = \App\Models\Central\Subscription::on('central')
                     ->where('company_id', $company->id)
                     ->orderBy('id', 'desc')
@@ -1167,6 +1187,16 @@ class CompanyController extends Controller
                     'status'        => 'active',
                     'trial_ends_at' => $newEndsAt,
                 ]);
+
+                try {
+                    $tenantComp = \App\Models\Company::find($company->id);
+                    if ($tenantComp) {
+                        $tenantComp->update([
+                            'status'        => 'active',
+                            'trial_ends_at' => $newEndsAt,
+                        ]);
+                    }
+                } catch (\Throwable $e) {}
 
                 // Log Audit Action
                 try {

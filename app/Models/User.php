@@ -497,15 +497,39 @@ class User extends Authenticatable
      */
     public function hasAssignedTasks(): bool
     {
-        return \Illuminate\Support\Facades\DB::table('tasks')
-            ->where('assigned_to', $this->id)
-            ->exists();
+        try {
+            $hasDirect = \Illuminate\Support\Facades\DB::table('tasks')
+                ->where(function ($q) {
+                    $q->where('assigned_to', $this->id)
+                      ->orWhereRaw('FIND_IN_SET(?, assigned_to)', [$this->id]);
+                })
+                ->exists();
+
+            if ($hasDirect) {
+                return true;
+            }
+
+            if (\Illuminate\Support\Facades\Schema::hasTable('task_user')) {
+                if (\Illuminate\Support\Facades\DB::table('task_user')->where('user_id', $this->id)->exists()) {
+                    return true;
+                }
+            }
+
+            if (\Illuminate\Support\Facades\Schema::hasTable('task_assignees')) {
+                if (\Illuminate\Support\Facades\DB::table('task_assignees')->where('user_id', $this->id)->exists()) {
+                    return true;
+                }
+            }
+        } catch (\Throwable $e) {}
+
+        return false;
     }
 
     /**
-     * CRITICAL FIX: Employee can login BASED ON EXIT DATE
+     * CRITICAL FIX: Employee can login BASED ON EXIT DATE & ACTIVE STATUS
      * - Inactive status but exit date in FUTURE = CAN LOGIN
-     * - Active/Inactive with exit date passed = CANNOT LOGIN
+     * - Active/Available/OnDuty status = CAN LOGIN
+     * - Inactive/Exited/Suspended status = CANNOT LOGIN
      * - Developer MUST HAVE assigned tasks to login to Developer Portal
      */
     public function canLogin()
@@ -520,7 +544,7 @@ class User extends Authenticatable
             return false;
         }
 
-        $employeeStatus = $this->employeeDetail ? $this->employeeDetail->status : 'Active';
+        $employeeStatus = $this->employeeDetail ? (string) $this->employeeDetail->status : 'Active';
 
         // Check if employee has exit date
         if ($this->employeeDetail && $this->employeeDetail->exit_date) {
@@ -533,9 +557,8 @@ class User extends Authenticatable
         }
 
         // If no exit date:
-        // - Active status = CAN login
-        // - Inactive status = CANNOT login
-        return $employeeStatus === 'Active';
+        // Any status that is NOT explicitly inactive/exited/terminated/suspended = CAN login
+        return ! in_array(strtolower(trim($employeeStatus)), ['inactive', 'exited', 'terminated', 'suspended', 'deactivated'], true);
     }
 
     /**
@@ -544,7 +567,8 @@ class User extends Authenticatable
     public function getLoginErrorMessage()
     {
         $loginAllowed = (bool) $this->login_allowed;
-        $employeeStatus = $this->employeeDetail ? $this->employeeDetail->status : 'Active';
+        $employeeStatus = $this->employeeDetail ? (string) $this->employeeDetail->status : 'Active';
+        $normalizedStatus = strtolower(trim($employeeStatus));
 
         // Check login_allowed first
         if (!$loginAllowed) {
@@ -565,14 +589,14 @@ class User extends Authenticatable
                 return 'Your account access has ended as per your exit date (' . $exitDate->format('d/m/Y') . '). Please contact HR.';
             }
 
-            // If today < exit_date but still can't login
-            if ($employeeStatus === 'Inactive') {
+            // If today < exit_date but still inactive
+            if (in_array($normalizedStatus, ['inactive', 'exited', 'terminated'], true)) {
                 return 'Your account is marked as Inactive but you can still login until your exit date (' . $exitDate->format('d/m/Y') . ').';
             }
         }
 
         // Status based messages
-        if ($employeeStatus === 'Inactive') {
+        if (in_array($normalizedStatus, ['inactive', 'exited', 'terminated', 'suspended', 'deactivated'], true)) {
             return 'Your account is inactive. Please contact administrator.';
         }
 

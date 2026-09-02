@@ -111,7 +111,7 @@ class Company extends Model
             return false;
         }
 
-        if (in_array($featureSlug, ['home', 'profile', 'dashboard'], true)) {
+        if (in_array($featureSlug, ['home', 'profile'], true)) {
             return true;
         }
 

@@ -19,57 +19,22 @@ class EnsureCompanySubscriptionActive
             return $next($request);
         }
 
-        $routeName = (string) $request->route()?->getName();
-        $allowedRoutes = [
-            'subscription.suspended',
-            'super-admin.subscriptions.index',
-            'super-admin.subscriptions.store',
-            'superadmin.subscriptions.index',
-            'subscriptions.index',
-            'subscriptions.plans',
-            'subscriptions.checkout',
-            'subscriptions.store',
-            'subscriptions.update',
-            'subscriptions.toggle-override',
-            'super-admin.subscriptions.toggle-override',
-            'superadmin.subscriptions.toggle-override',
-            'notifications.all',
-            'notifications.index',
-            'notifications.open',
-            'notifications.read',
-            'notifications.readAll',
-            'notifications.unreadCount',
-            'notifications.latest',
-            'notifications.sidebar',
-            'admin.company-notifications.index',
-            'admin.company-notifications.read',
-            'admin.company-notifications.read-all',
-            'admin.company-notifications.unread-count',
-            'admin.company-complaints.index',
-            'admin.company-complaints.create',
-            'admin.company-complaints.store',
-            'admin.company-complaints.show',
-            'admin.company-complaints.reply',
-            'admin.company-complaints.reopen',
-            'logout',
-            'login',
-            'profile.edit',
-            'profile.update',
-        ];
-
-        if (
-            in_array($routeName, $allowedRoutes, true) ||
-            str_starts_with($routeName, 'notifications.') ||
-            str_starts_with($routeName, 'admin.company-notifications.') ||
-            str_starts_with($routeName, 'admin.company-complaints.') ||
-            str_contains($routeName, 'subscription')
-        ) {
-            return $next($request);
+        // Resolve Central Company for current request/user
+        $company = null;
+        $user = Auth::user();
+        if ($user && !empty($user->company_id)) {
+            $company = Company::on('central')->find($user->company_id) ?? \App\Models\Company::find($user->company_id);
         }
 
-        $company = app(CompanyContext::class)->current();
-        if (! $company && Auth::check() && Auth::user()?->company_id) {
-            $company = Company::on('central')->find(Auth::user()->company_id) ?? \App\Models\Company::find(Auth::user()->company_id);
+        if (!$company && session('current_company_id')) {
+            $company = Company::on('central')->find(session('current_company_id')) ?? \App\Models\Company::find(session('current_company_id'));
+        }
+
+        if (!$company) {
+            $ctxComp = app(CompanyContext::class)->current();
+            if ($ctxComp) {
+                $company = Company::on('central')->find($ctxComp->id) ?? $ctxComp;
+            }
         }
 
         if ($company) {
@@ -79,16 +44,42 @@ class EnsureCompanySubscriptionActive
             // Execute real-time dynamic expiration check
             $subService->checkRealtimeExpiration($company);
 
-            if ($subService->isSuspended($company)) {
-                if ($request->expectsJson() || $request->is('api/*')) {
-                    return response()->json([
-                        'error'               => 'Your subscription has expired and your organization has been suspended. Please select a paid plan to restore access.',
-                        'subscription_status' => 'suspended',
-                        'company'             => $company->name,
-                    ], 402);
-                }
+            // Refresh central company model to get fresh status
+            $centralComp = Company::on('central')->find($company->id) ?? $company;
 
-                return redirect()->route('subscription.suspended');
+            $isSuspended = strtolower((string)($centralComp->status ?? '')) === 'suspended'
+                || $subService->isSuspended($centralComp)
+                || $subService->isExpired($centralComp);
+
+            if ($isSuspended) {
+                $routeName = (string) $request->route()?->getName();
+
+                // If company subscription is finished/suspended, strictly allow ONLY:
+                // 1. Notification section routes
+                // 2. Subscription suspended & renewal/assignment routes
+                // 3. Auth logout/login routes
+                $isAllowedWhenSuspended = (
+                    $routeName === 'subscription.suspended' ||
+                    $routeName === 'logout' ||
+                    $routeName === 'login' ||
+                    str_starts_with($routeName, 'notifications.') ||
+                    str_starts_with($routeName, 'admin.company-notifications.') ||
+                    str_starts_with($routeName, 'super-admin.subscriptions.') ||
+                    str_starts_with($routeName, 'superadmin.subscriptions.') ||
+                    str_starts_with($routeName, 'subscriptions.')
+                );
+
+                if (!$isAllowedWhenSuspended) {
+                    if ($request->expectsJson() || $request->is('api/*')) {
+                        return response()->json([
+                            'error'               => 'Your subscription has expired and your organization access is restricted until Super Admin extends your subscription.',
+                            'subscription_status' => 'suspended',
+                            'company'             => $centralComp->name ?? 'Organization',
+                        ], 402);
+                    }
+
+                    return redirect()->route('subscription.suspended');
+                }
             }
         }
 

@@ -25,7 +25,7 @@ class CheckFeatureAccess
         }
 
         $routeName = (string) $request->route()?->getName();
-        if (in_array($routeName, ['dashboard', 'home', 'login', 'logout'], true) || in_array($feature, ['dashboard', 'home'], true)) {
+        if (in_array($routeName, ['home', 'login', 'logout'], true) || in_array($feature, ['home'], true)) {
             return $next($request);
         }
 
@@ -43,6 +43,11 @@ class CheckFeatureAccess
                 return response()->json([
                     'error' => "Feature '{$feature}' is not enabled for your company subscription plan.",
                 ], 403);
+            }
+
+            if ($feature === 'dashboard' || $routeName === 'dashboard') {
+                return redirect()->route('profile.edit')
+                    ->with('error', "Access Denied: The 'Dashboard' module has been turned off by Super Admin for your company.");
             }
 
             return redirect()->route('dashboard')

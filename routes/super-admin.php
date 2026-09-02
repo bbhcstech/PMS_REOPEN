@@ -36,6 +36,8 @@ Route::prefix('super-admin')->name('super-admin.')->group(function () {
         Route::delete('/plans/{plan}', [CompanyController::class, 'destroyPlan'])->name('plans.destroy');
         Route::post('/plans/toggle-module', [CompanyController::class, 'togglePlanModule'])->name('plans.toggle-module');
         Route::get('/subscriptions', [CompanyController::class, 'subscriptions'])->name('subscriptions.index');
+        Route::post('/subscriptions', [CompanyController::class, 'assignPlan'])->name('subscriptions.store');
+        Route::post('/subscriptions/store', [CompanyController::class, 'assignPlan']);
         Route::post('/subscriptions/assign', [CompanyController::class, 'assignPlan'])->name('subscriptions.assign');
         Route::post('/subscriptions/{id}/extend', [CompanyController::class, 'extendSubscription'])->name('subscriptions.extend');
         Route::post('/subscriptions/{id}/reduce', [CompanyController::class, 'reduceSubscription'])->name('subscriptions.reduce');

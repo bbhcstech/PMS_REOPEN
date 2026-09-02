@@ -269,21 +269,3 @@ function clearCompanySelection() {
 }
 </script>
 @endsection
-  if (count > 0) {
-    toolbar.style.display = 'flex';
-    display.innerText = count;
-  } else {
-    toolbar.style.display = 'none';
-  }
-}
-
-function clearCompanySelection() {
-  const master = document.getElementById('selectAllCompanyComplaints');
-  if (master) master.checked = false;
-  
-  const checkboxes = document.querySelectorAll('.company-ticket-checkbox');
-  checkboxes.forEach(cb => cb.checked = false);
-  updateCompanySelectedCount();
-}
-</script>
-@endsection

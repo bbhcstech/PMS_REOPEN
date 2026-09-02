@@ -93,23 +93,27 @@ use App\Http\Controllers\CommunityMessageController;
 
 Route::middleware(['auth'])->group(function () {
     // Community Message Module Routes
-    Route::get('/community', [CommunityMessageController::class, 'index'])->name('community.index');
-    Route::get('/community/messages', [CommunityMessageController::class, 'fetchMessages'])->name('community.messages');
-    Route::post('/community/messages', [CommunityMessageController::class, 'store'])->name('community.store');
-    Route::put('/community/messages/{id}', [CommunityMessageController::class, 'update'])->name('community.update');
-    Route::delete('/community/messages/{id}', [CommunityMessageController::class, 'destroy'])->name('community.destroy');
-    Route::post('/community/messages/{id}/react', [CommunityMessageController::class, 'react'])->name('community.react');
-    Route::post('/community/messages/{id}/pin', [CommunityMessageController::class, 'togglePin'])->name('community.pin');
+    Route::middleware(['feature:community'])->group(function () {
+        Route::get('/community', [CommunityMessageController::class, 'index'])->name('community.index');
+        Route::get('/community/messages', [CommunityMessageController::class, 'fetchMessages'])->name('community.messages');
+        Route::post('/community/messages', [CommunityMessageController::class, 'store'])->name('community.store');
+        Route::put('/community/messages/{id}', [CommunityMessageController::class, 'update'])->name('community.update');
+        Route::delete('/community/messages/{id}', [CommunityMessageController::class, 'destroy'])->name('community.destroy');
+        Route::post('/community/messages/{id}/react', [CommunityMessageController::class, 'react'])->name('community.react');
+        Route::post('/community/messages/{id}/pin', [CommunityMessageController::class, 'togglePin'])->name('community.pin');
+    });
 
     // Company Events Module Routes
-    Route::get('/events', [EventController::class, 'index'])->name('events.index');
-    Route::get('/events/calendar-data', [EventController::class, 'calendarData'])->name('events.calendar-data');
-    Route::post('/events', [EventController::class, 'store'])->name('events.store');
-    Route::get('/events/{id}', [EventController::class, 'show'])->name('events.show');
-    Route::put('/events/{id}', [EventController::class, 'update'])->name('events.update');
-    Route::delete('/events/{id}', [EventController::class, 'destroy'])->name('events.destroy');
-    Route::post('/events/{id}/publish', [EventController::class, 'publish'])->name('events.publish');
-    Route::post('/events/{id}/cancel', [EventController::class, 'cancel'])->name('events.cancel');
+    Route::middleware(['feature:events'])->group(function () {
+        Route::get('/events', [EventController::class, 'index'])->name('events.index');
+        Route::get('/events/calendar-data', [EventController::class, 'calendarData'])->name('events.calendar-data');
+        Route::post('/events', [EventController::class, 'store'])->name('events.store');
+        Route::get('/events/{id}', [EventController::class, 'show'])->name('events.show');
+        Route::put('/events/{id}', [EventController::class, 'update'])->name('events.update');
+        Route::delete('/events/{id}', [EventController::class, 'destroy'])->name('events.destroy');
+        Route::post('/events/{id}/publish', [EventController::class, 'publish'])->name('events.publish');
+        Route::post('/events/{id}/cancel', [EventController::class, 'cancel'])->name('events.cancel');
+    });
     Route::post('/events/{id}/rsvp', [EventController::class, 'rsvp'])->name('events.rsvp');
 
     // Event Memories / Gallery Photo Routes
@@ -371,6 +375,8 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
 Route::middleware(['auth', 'verified'])->prefix('superadmin')->name('superadmin.')->group(function () {
     Route::get('/', [SuperAdminController::class, 'dashboard'])->name('dashboard');
     Route::get('/subscriptions', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'subscriptions'])->name('subscriptions.index');
+    Route::post('/subscriptions', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'assignPlan'])->name('subscriptions.store');
+    Route::post('/subscriptions/store', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'assignPlan']);
     Route::post('/plans/toggle-module', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'togglePlanModule'])->name('plans.toggle-module');
     Route::post('/subscriptions/assign', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'assignPlan'])->name('subscriptions.assign');
     Route::post('/subscriptions/toggle-override', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'toggleCompanyOverride'])->name('subscriptions.toggle-override');

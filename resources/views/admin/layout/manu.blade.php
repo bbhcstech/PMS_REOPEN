@@ -192,19 +192,23 @@
    .app-brand-logo.demo {
        width: 42px;
        height: 42px;
-       border-radius: 14px;
+       border-radius: 12px;
        overflow: hidden;
        display: inline-flex;
        align-items: center;
        justify-content: center;
        flex: 0 0 auto;
-       box-shadow: 0 10px 22px rgba(5, 105, 255, 0.18);
+       box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+       background: #ffffff;
+       padding: 4px;
    }
 
    .app-brand-logo.demo img {
-       width: 100%;
-       height: 100%;
-       object-fit: cover;
+       max-width: 100%;
+       max-height: 100%;
+       width: auto;
+       height: auto;
+       object-fit: contain;
        display: block;
    }
 
@@ -1095,7 +1099,7 @@
             @endif
 
             <!-- Events -->
-            @if($canSeeModule('events') || (auth()->check() && auth()->user()->normalizedRole() !== 'superadmin'))
+            @if($canSeeModule('events'))
             <li class="menu-item {{ request()->routeIs('events.*') ? 'active' : '' }}">
               <a href="{{ route('events.index') }}" class="menu-link" data-sidebar-key="events">
                   <i class="menu-icon tf-icons bx bx-calendar-event"></i>
@@ -1105,7 +1109,7 @@
             @endif
 
             <!-- Community Message -->
-            @if(auth()->check() && auth()->user()->normalizedRole() !== 'superadmin')
+            @if($canSeeModule('community'))
             <li class="menu-item {{ request()->routeIs('community.*') ? 'active' : '' }}">
               <a href="{{ route('community.index') }}" class="menu-link" data-sidebar-key="community">
                   <i class="menu-icon tf-icons bx bx-chat"></i>
