@@ -919,9 +919,13 @@
     $canSeeModule = fn (string $slug) => auth()->user()?->canViewModule($slug) ?? false;
     $canAnyModule = fn (array $slugs) => collect($slugs)->contains(fn ($slug) => $canSeeModule($slug));
     $isEmployeeUser = strtolower((string) auth()->user()?->role) === 'employee';
-    $userId = auth()->id();
-    $navbarNotifications = auth()->user()->notifications()->latest()->take(8)->get();
-    $navbarUnreadCount = auth()->user()->unreadNotifications()->count();
+    try {
+        $navbarNotifications = auth()->user()->notifications()->latest()->take(8)->get();
+        $navbarUnreadCount = auth()->user()->unreadNotifications()->count();
+    } catch (\Throwable $e) {
+        $navbarNotifications = collect();
+        $navbarUnreadCount = 0;
+    }
     $sidebarNotificationItems = SidebarNotificationService::forUser(auth()->user());
     $assignedWorkProjects = collect();
     $assignedWorkTasks = collect();
