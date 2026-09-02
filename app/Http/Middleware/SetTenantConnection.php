@@ -33,18 +33,20 @@ class SetTenantConnection
                     ]);
                 }
             } catch (\Throwable $e) {}
-        }
+        $defaultDb = config('database.connections.tenant.database') ?: config('database.connections.mysql.database');
 
         if (! $tenantDb) {
-            $tenantDb = env('DB_DATABASE', 'pms_last');
+            $tenantDb = $defaultDb;
         }
 
-        config([
-            'database.connections.tenant.database' => $tenantDb,
-            'database.connections.mysql.database'  => $tenantDb,
-        ]);
-        DB::purge('tenant');
-        DB::purge('mysql');
+        if ($tenantDb && $tenantDb !== config('database.connections.tenant.database')) {
+            config([
+                'database.connections.tenant.database' => $tenantDb,
+                'database.connections.mysql.database'  => $tenantDb,
+            ]);
+            DB::purge('tenant');
+            DB::purge('mysql');
+        }
 
         if (app()->bound(\App\Services\CompanyContext::class)) {
             app(\App\Services\CompanyContext::class)->reset();
