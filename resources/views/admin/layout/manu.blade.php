@@ -1958,16 +1958,16 @@
                 <div class="navbar-nav align-items-center ms-auto d-flex">
 
                   <!-- Small search -->
-                  <div class="nav-item d-flex align-items-center me-3" style="width: 200px;" title="Saerch">
-                    <i class="bx bx-search icon-md me-2" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#searchModal"></i>
+                  <div class="nav-item navbar-search-wrapper d-flex align-items-center me-2 me-sm-3" title="Search">
+                    <i class="bx bx-search icon-md me-1 me-sm-2" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#searchModal"></i>
                     <input
                       type="text"
-                      class="form-control border-0 shadow-none ps-1 ps-sm-2"
+                      class="form-control border-0 shadow-none ps-1 ps-sm-2 d-none d-md-inline-block"
                       placeholder="Search..."
                       data-bs-toggle="modal"
                       data-bs-target="#searchModal"
                       readonly
-                      style="cursor: pointer; height: 32px; font-size: 14px;" />
+                      style="cursor: pointer; height: 32px; font-size: 14px; width: 170px;" />
                   </div>
 
                   <!-- Sticky Note Icon -->
