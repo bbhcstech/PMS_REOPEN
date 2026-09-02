@@ -227,6 +227,30 @@ class CompanySettingsController extends Controller
             ]
         );
 
+        // Dispatch automatic notification to Super Admin Alert & Notification Center
+        try {
+            if (class_exists(\App\Models\Central\CentralNotification::class)) {
+                $companyId = $currentCompany?->id ?: (session('current_company_id') ?: auth()->user()?->company_id);
+                $companyName = $validated['company_name'] ?? ($currentCompany?->name ?? 'Tenant Company');
+                $updaterName = auth()->user()?->name ?? 'Company Administrator';
+
+                \App\Models\Central\CentralNotification::createNotification([
+                    'company_id'        => $companyId,
+                    'type'              => 'company_profile_updated',
+                    'title'             => 'Tenant Company Profile Updated: ' . $companyName,
+                    'message'           => "Tenant company '{$companyName}' updated their company details (Name: {$companyName}, Email: {$validated['company_email']}, Phone: {$validated['company_phone']}) by {$updaterName}.",
+                    'severity'          => 'info',
+                    'related_module'    => 'company_profile',
+                    'related_record_id' => $companyId,
+                    'action_url'        => $companyId ? (route('super-admin.companies.show', $companyId) ?? route('super-admin.companies.index')) : route('super-admin.companies.index'),
+                    'target_audience'   => 'super_admin',
+                    'is_read'           => false,
+                ]);
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Super Admin central notification for company profile update: ' . $e->getMessage());
+        }
+
         return back()->with('success', 'Company settings updated successfully');
     }
 
@@ -264,6 +288,30 @@ class CompanySettingsController extends Controller
                 'color' => 'warning',
             ]
         );
+
+        // Dispatch automatic notification to Super Admin Alert & Notification Center
+        try {
+            if (class_exists(\App\Models\Central\CentralNotification::class)) {
+                $companyId = $currentCompany?->id ?: (session('current_company_id') ?: auth()->user()?->company_id);
+                $companyName = $currentCompany?->name ?? 'Tenant Company';
+                $updaterName = auth()->user()?->name ?? 'Company Administrator';
+
+                \App\Models\Central\CentralNotification::createNotification([
+                    'company_id'        => $companyId,
+                    'type'              => 'company_profile_reset',
+                    'title'             => 'Tenant Company Profile Reset: ' . $companyName,
+                    'message'           => "Tenant company '{$companyName}' profile and logo settings were reset by {$updaterName}.",
+                    'severity'          => 'warning',
+                    'related_module'    => 'company_profile',
+                    'related_record_id' => $companyId,
+                    'action_url'        => $companyId ? (route('super-admin.companies.show', $companyId) ?? route('super-admin.companies.index')) : route('super-admin.companies.index'),
+                    'target_audience'   => 'super_admin',
+                    'is_read'           => false,
+                ]);
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Super Admin central notification for company profile reset: ' . $e->getMessage());
+        }
 
         return redirect()
             ->route('settings.company')

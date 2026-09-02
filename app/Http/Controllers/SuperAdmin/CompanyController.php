@@ -2923,6 +2923,50 @@ class CompanyController extends Controller
         $rawAlerts = [];
         $idCounter = 1;
 
+        // 0. Real Database Alerts & Notifications from CentralNotification table
+        if (class_exists(\App\Models\Central\CentralNotification::class)) {
+            try {
+                $dbNotifications = \App\Models\Central\CentralNotification::on('central')
+                    ->where(function ($q) {
+                        $q->whereNull('target_audience')
+                          ->orWhereIn('target_audience', ['super_admin', 'both', 'all']);
+                    })
+                    ->with('company')
+                    ->latest()
+                    ->take(50)
+                    ->get();
+
+                foreach ($dbNotifications as $dNotif) {
+                    $comp = $dNotif->company;
+                    $logoUrl = null;
+                    if ($comp && !empty($comp->logo)) {
+                        if (file_exists(public_path($comp->logo))) {
+                            $logoUrl = asset($comp->logo);
+                        } elseif (file_exists(public_path('user-uploads/app-logo/' . $comp->logo))) {
+                            $logoUrl = asset('user-uploads/app-logo/' . $comp->logo);
+                        }
+                    }
+
+                    $rawAlerts[] = [
+                        'id'               => $dNotif->id,
+                        'title'            => $dNotif->title,
+                        'description'      => $dNotif->message,
+                        'category'         => $dNotif->related_module ?: 'company',
+                        'severity'         => $dNotif->severity ?: 'info',
+                        'status'           => $dNotif->is_read ? 'read' : 'unread',
+                        'action_required'  => in_array($dNotif->severity, ['warning', 'critical'], true),
+                        'company_id'       => $dNotif->company_id,
+                        'company_name'     => $comp?->name ?? 'Tenant Company',
+                        'tenant_code'      => $comp?->company_code ?? ($dNotif->company_id ? 'TEN-' . str_pad($dNotif->company_id, 3, '0', STR_PAD_LEFT) : 'SYSTEM'),
+                        'logo_url'         => $logoUrl,
+                        'action_url'       => $dNotif->action_url,
+                        'created_at'       => $dNotif->created_at ? $dNotif->created_at->diffForHumans() : 'Just now',
+                        'timestamp'        => $dNotif->created_at ? $dNotif->created_at->format('Y-m-d H:i:s') : now()->format('Y-m-d H:i:s'),
+                    ];
+                }
+            } catch (\Throwable $ex) {}
+        }
+
         // 1. Subscription Expiration Intelligence Alerts (Generated from Company Data)
         foreach ($companies as $idx => $comp) {
             $logoUrl = null;
