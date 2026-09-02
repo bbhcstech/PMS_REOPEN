@@ -17,7 +17,7 @@
         <p class="lede">Bitroxia PMS keeps tasks, timelines, attendance, leave, tickets, clients and reports in one place — so managers see work clearly and teams move without confusion.</p>
         <div class="hero-ctas">
           <a href="{{ route('company.contact') }}" class="btn btn-primary">Request Access
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
           </a>
           <a href="{{ route('features') }}" class="btn btn-secondary">Explore Features</a>
         </div>
