@@ -19,10 +19,8 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->web(append: [
-            \App\Http\Middleware\EnsureCompanySubscriptionActive::class,
-        ]);
-        $middleware->web(prepend: [
             SetTenantConnection::class,
+            \App\Http\Middleware\EnsureCompanySubscriptionActive::class,
         ]);
         $middleware->alias([
             'tenant' => SetTenantConnection::class,

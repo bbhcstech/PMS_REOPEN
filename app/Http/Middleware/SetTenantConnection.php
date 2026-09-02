@@ -21,18 +21,27 @@ class SetTenantConnection
         $tenantDb = session('current_company_db');
 
         $user = auth()->user();
-        if ($user && !empty($user->company_id)) {
-            try {
-                $company = \App\Models\Central\Company::on('central')->find($user->company_id);
-                if ($company && $company->db_name) {
-                    $tenantDb = $company->db_name;
-                    session([
-                        'current_company_db'   => $tenantDb,
-                        'current_company_id'   => $company->id,
-                        'current_company_name' => $company->name,
-                    ]);
-                }
-            } catch (\Throwable $e) {}
+        if ($user) {
+            $company = null;
+            if (!empty($user->company_id)) {
+                try {
+                    $company = \App\Models\Central\Company::on('central')->find($user->company_id);
+                } catch (\Throwable $e) {}
+            }
+            if (!$company && !empty($user->email)) {
+                try {
+                    $company = \App\Models\Central\Company::on('central')->where('email', $user->email)->first();
+                } catch (\Throwable $e) {}
+            }
+
+            if ($company && !empty($company->db_name)) {
+                $tenantDb = $company->db_name;
+                session([
+                    'current_company_db'   => $tenantDb,
+                    'current_company_id'   => $company->id,
+                    'current_company_name' => $company->name,
+                ]);
+            }
         }
 
         $defaultDb = config('database.connections.tenant.database') ?: config('database.connections.mysql.database');
@@ -41,7 +50,7 @@ class SetTenantConnection
             $tenantDb = $defaultDb;
         }
 
-        if ($tenantDb && $tenantDb !== config('database.connections.tenant.database')) {
+        if ($tenantDb) {
             config([
                 'database.connections.tenant.database' => $tenantDb,
                 'database.connections.mysql.database'  => $tenantDb,
