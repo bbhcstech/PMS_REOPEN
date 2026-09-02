@@ -20,29 +20,47 @@ class SidebarNotificationService
         $isReviewer = in_array($role, ['admin', 'hr', 'manager'], true);
         $items = [];
 
-        $items['notifications'] = self::item($user->unreadNotifications()->count(), 'unread');
+        try {
+            $items['notifications'] = self::item($user->unreadNotifications()->count(), 'unread');
+        } catch (\Throwable $e) {
+            $items['notifications'] = self::item(0, 'unread');
+        }
 
         if ($isReviewer) {
-            $pendingLeaves = Leave::where('status', 'pending')->whereNull('archived_at')->count();
-            $pendingTimers = TaskTimer::where(function ($query) {
-                $query->whereNull('status')->orWhere('status', 'pending');
-            })->whereNotNull('end_time')->count();
-            $openTickets = Ticket::whereIn('status', ['open', 'pending'])->count();
-            $overdueProjects = Project::whereNotNull('deadline')
-                ->whereDate('deadline', '<', Carbon::today())
-                ->whereNotIn('status', ['completed'])
-                ->count();
-            $overdueTasks = Task::whereNotNull('due_date')
-                ->whereDate('due_date', '<', Carbon::today())
-                ->whereNotIn('status', ['Completed', 'completed'])
-                ->count();
-            $inactiveEmployees = User::where('role', 'employee')
-                ->where(function ($query) {
-                    $query->where('is_active', false)
-                        ->orWhere('login_allowed', false)
-                        ->orWhereNotNull('archived_at');
-                })
-                ->count();
+            try { $pendingLeaves = Leave::where('status', 'pending')->whereNull('archived_at')->count(); } catch (\Throwable $e) { $pendingLeaves = 0; }
+            try {
+                $pendingTimers = TaskTimer::where(function ($query) {
+                    $query->whereNull('status')->orWhere('status', 'pending');
+                })->whereNotNull('end_time')->count();
+            } catch (\Throwable $e) { $pendingTimers = 0; }
+            try {
+                if (\Illuminate\Support\Facades\Schema::hasColumn('tickets', 'status')) {
+                    $openTickets = Ticket::whereIn('status', ['open', 'pending'])->count();
+                } else {
+                    $openTickets = Ticket::count();
+                }
+            } catch (\Throwable $e) { $openTickets = 0; }
+            try {
+                $overdueProjects = Project::whereNotNull('deadline')
+                    ->whereDate('deadline', '<', Carbon::today())
+                    ->whereNotIn('status', ['completed'])
+                    ->count();
+            } catch (\Throwable $e) { $overdueProjects = 0; }
+            try {
+                $overdueTasks = Task::whereNotNull('due_date')
+                    ->whereDate('due_date', '<', Carbon::today())
+                    ->whereNotIn('status', ['Completed', 'completed'])
+                    ->count();
+            } catch (\Throwable $e) { $overdueTasks = 0; }
+            try {
+                $inactiveEmployees = User::where('role', 'employee')
+                    ->where(function ($query) {
+                        $query->where('is_active', false)
+                            ->orWhere('login_allowed', false)
+                            ->orWhereNotNull('archived_at');
+                    })
+                    ->count();
+            } catch (\Throwable $e) { $inactiveEmployees = 0; }
 
             $items['employees'] = self::item($inactiveEmployees, 'warning');
             $items['attendance'] = self::item(self::missingAttendanceCount(), 'warning');
@@ -54,60 +72,80 @@ class SidebarNotificationService
             $items['holidays'] = self::item(self::upcomingHolidayCount(), 'new');
         } else {
             $today = Carbon::today();
-            $assignedTasks = Task::where(function ($query) use ($user) {
-                    $query->whereHas('assignees', function ($assignees) use ($user) {
-                        $assignees->where('users.id', $user->id);
-                    })->orWhereRaw('FIND_IN_SET(?, assigned_to)', [$user->id]);
-                })
-                ->whereNotIn('status', ['Completed', 'completed'])
-                ->count();
-
-            $overdueTasks = Task::where(function ($query) use ($user) {
-                    $query->whereHas('assignees', function ($assignees) use ($user) {
-                        $assignees->where('users.id', $user->id);
-                    })->orWhereRaw('FIND_IN_SET(?, assigned_to)', [$user->id]);
-                })
-                ->whereNotNull('due_date')
-                ->whereDate('due_date', '<', $today)
-                ->whereNotIn('status', ['Completed', 'completed'])
-                ->count();
-
-            $activeTickets = Ticket::where(function ($query) use ($user) {
-                    $query->where('agent_id', $user->id)->orWhere('requester_id', $user->id);
-                })
-                ->whereIn('status', ['open', 'pending'])
-                ->count();
-
-            $myPendingLeaves = Leave::where('user_id', $user->id)
-                ->where('status', 'pending')
-                ->whereNull('archived_at')
-                ->count();
-
-            $myRejectedLeaves = Leave::where('user_id', $user->id)
-                ->where('status', 'rejected')
-                ->whereNull('archived_at')
-                ->count();
-
-            $myOpenTimers = TaskTimer::where('user_id', $user->id)
-                ->whereNull('end_time')
-                ->count();
-
-            $todayAttendanceCount = Attendance::where('user_id', $user->id)
-                ->whereDate('date', $today)
-                ->whereNotNull('clock_in')
-                ->count();
-
-            $assignedProjects = Project::where(function ($query) use ($user) {
-                    $query->whereHas('users', function ($members) use ($user) {
-                        $members->where('users.id', $user->id);
-                    })->orWhereHas('tasks', function ($taskQuery) use ($user) {
-                        $taskQuery->whereHas('assignees', function ($assignees) use ($user) {
+            try {
+                $assignedTasks = Task::where(function ($query) use ($user) {
+                        $query->whereHas('assignees', function ($assignees) use ($user) {
                             $assignees->where('users.id', $user->id);
                         })->orWhereRaw('FIND_IN_SET(?, assigned_to)', [$user->id]);
-                    });
-                })
-                ->whereNotIn('status', ['completed'])
-                ->count();
+                    })
+                    ->whereNotIn('status', ['Completed', 'completed'])
+                    ->count();
+            } catch (\Throwable $e) { $assignedTasks = 0; }
+
+            try {
+                $overdueTasks = Task::where(function ($query) use ($user) {
+                        $query->whereHas('assignees', function ($assignees) use ($user) {
+                            $assignees->where('users.id', $user->id);
+                        })->orWhereRaw('FIND_IN_SET(?, assigned_to)', [$user->id]);
+                    })
+                    ->whereNotNull('due_date')
+                    ->whereDate('due_date', '<', $today)
+                    ->whereNotIn('status', ['Completed', 'completed'])
+                    ->count();
+            } catch (\Throwable $e) { $overdueTasks = 0; }
+
+            try {
+                if (\Illuminate\Support\Facades\Schema::hasColumn('tickets', 'status')) {
+                    $activeTickets = Ticket::where(function ($query) use ($user) {
+                            $query->where('agent_id', $user->id)->orWhere('requester_id', $user->id);
+                        })
+                        ->whereIn('status', ['open', 'pending'])
+                        ->count();
+                } else {
+                    $activeTickets = Ticket::where('agent_id', $user->id)->orWhere('requester_id', $user->id)->count();
+                }
+            } catch (\Throwable $e) { $activeTickets = 0; }
+
+            try {
+                $myPendingLeaves = Leave::where('user_id', $user->id)
+                    ->where('status', 'pending')
+                    ->whereNull('archived_at')
+                    ->count();
+            } catch (\Throwable $e) { $myPendingLeaves = 0; }
+
+            try {
+                $myRejectedLeaves = Leave::where('user_id', $user->id)
+                    ->where('status', 'rejected')
+                    ->whereNull('archived_at')
+                    ->count();
+            } catch (\Throwable $e) { $myRejectedLeaves = 0; }
+
+            try {
+                $myOpenTimers = TaskTimer::where('user_id', $user->id)
+                    ->whereNull('end_time')
+                    ->count();
+            } catch (\Throwable $e) { $myOpenTimers = 0; }
+
+            try {
+                $todayAttendanceCount = Attendance::where('user_id', $user->id)
+                    ->whereDate('date', $today)
+                    ->whereNotNull('clock_in')
+                    ->count();
+            } catch (\Throwable $e) { $todayAttendanceCount = 0; }
+
+            try {
+                $assignedProjects = Project::where(function ($query) use ($user) {
+                        $query->whereHas('users', function ($members) use ($user) {
+                            $members->where('users.id', $user->id);
+                        })->orWhereHas('tasks', function ($taskQuery) use ($user) {
+                            $taskQuery->whereHas('assignees', function ($assignees) use ($user) {
+                                $assignees->where('users.id', $user->id);
+                            })->orWhereRaw('FIND_IN_SET(?, assigned_to)', [$user->id]);
+                        });
+                    })
+                    ->whereNotIn('status', ['completed'])
+                    ->count();
+            } catch (\Throwable $e) { $assignedProjects = 0; }
 
             $items['attendance'] = self::item($todayAttendanceCount > 0 ? 0 : 1, 'warning', $todayAttendanceCount === 0);
             $items['projects'] = self::item($assignedProjects, 'new');
