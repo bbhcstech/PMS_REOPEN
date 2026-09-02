@@ -560,17 +560,29 @@ class CompanyController extends Controller
             // On shared hosting (cPanel), MySQL user might not have CREATE DATABASE SQL privilege.
             // Check if database was already created in cPanel MySQL Databases
             try {
-                $tenantHost = config('database.connections.tenant.host') ?: config('database.connections.mysql.host', '127.0.0.1');
-                $tenantPort = config('database.connections.tenant.port') ?: config('database.connections.mysql.port', 3306);
-                $tenantUser = config('database.connections.tenant.username') ?: config('database.connections.mysql.username', 'root');
-                $tenantPass = config('database.connections.tenant.password') ?: config('database.connections.mysql.password', '');
-
-                new \PDO("mysql:host={$tenantHost};port={$tenantPort};dbname={$dbName}", $tenantUser, $tenantPass, [
-                    \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION
+                $baseConn = config('database.connections.central') ?: (config('database.connections.tenant') ?: config('database.connections.mysql'));
+                config([
+                    'database.connections.test_tenant' => array_merge($baseConn, [
+                        'database' => $dbName,
+                    ])
                 ]);
+                DB::purge('test_tenant');
+                DB::connection('test_tenant')->getPdo();
                 $dbVerified = true;
             } catch (\Throwable $ex) {
-                $dbVerified = false;
+                try {
+                    $baseConn = config('database.connections.tenant') ?: config('database.connections.mysql');
+                    config([
+                        'database.connections.test_tenant' => array_merge($baseConn, [
+                            'database' => $dbName,
+                        ])
+                    ]);
+                    DB::purge('test_tenant');
+                    DB::connection('test_tenant')->getPdo();
+                    $dbVerified = true;
+                } catch (\Throwable $ex2) {
+                    $dbVerified = false;
+                }
             }
 
             if (! $dbVerified) {
