@@ -68,6 +68,8 @@ use App\Http\Controllers\Admin\Settings\TermsPolicyController;
 use App\Http\Controllers\Admin\ContractController;
 use App\Http\Controllers\Admin\ContractTemplateController;
 use App\Http\Controllers\Admin\LeadContactController;
+use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\OrderController;
 use App\Exports\AttendanceExport;
 use App\Http\Controllers\DealController;
 use App\Http\Controllers\Admin\Settings\OrganizationDetailsController;
@@ -165,11 +167,6 @@ Route::get('attendance/export/excel', [AttendanceExport::class, 'exportExcel'])
 
 Route::get('attendance/export/pdf', [AttendanceExport::class, 'exportPdf'])
     ->name('attendance.export.pdf');
-
-// Add this route for bulk delete
-Route::delete('designations/bulk-delete', [DesignationController::class, 'bulkDelete'])->name('designations.bulk-delete');
-
-
 
 Route::get('attendance/filter', [App\Http\Controllers\AttendanceController::class, 'filter'])->name('attendance.filter');
 
@@ -369,7 +366,7 @@ Route::get('/manager-login', function () {
 })->middleware('guest')->name('manager.login');
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
-    ->middleware(['auth', 'verified', 'module.access'])
+    ->middleware(['auth', 'module.access'])
     ->name('dashboard');
 
 Route::middleware(['auth', 'verified'])->prefix('superadmin')->name('superadmin.')->group(function () {
@@ -496,11 +493,8 @@ Route::prefix('company')->name('company.')->group(function () {
 
 
 
-// Simple logout that clears custom session key
-Route::get('/logout', function () {
-    Session::forget('auth_id');
-    return redirect()->route('home');
-})->name('logout');
+// Simple GET logout
+Route::get('/logout', [\App\Http\Controllers\Auth\AuthenticatedSessionController::class, 'destroy'])->name('logout.get');
 
 /*
 |--------------------------------------------------------------------------
@@ -511,11 +505,29 @@ Route::get('/logout', function () {
 Route::middleware(['auth', 'module.access'])->group(function () {
     Route::prefix('admin/settings')->name('admin.')->group(function () {
 
-        // Letterhead management
+        // Letterhead management routes
         Route::get('/letterhead', [LetterheadController::class, 'index'])->name('letterhead.index');
+        Route::get('/letterhead/create', [LetterheadController::class, 'create'])->name('letterhead.create');
+        Route::post('/letterhead', [LetterheadController::class, 'store'])->name('letterhead.store');
+        Route::post('/letterhead/export-pdf', [LetterheadController::class, 'exportPdf'])->name('letterhead.export-pdf');
+        Route::post('/letterhead/export-word', [LetterheadController::class, 'exportWord'])->name('letterhead.export-word');
+        Route::get('/letterhead/demo-download', [LetterheadController::class, 'demoDownload'])->name('letterhead.demo-download');
+        Route::post('/letterhead/send-letter', [LetterheadController::class, 'sendLetter'])->name('letterhead.send-letter');
+        Route::get('/letterhead/{letterhead}', [LetterheadController::class, 'show'])->name('letterhead.show');
+        Route::get('/letterhead/{letterhead}/edit', [LetterheadController::class, 'edit'])->name('letterhead.edit');
+        Route::put('/letterhead/{letterhead}', [LetterheadController::class, 'update'])->name('letterhead.update');
+        Route::delete('/letterhead/{letterhead}', [LetterheadController::class, 'destroy'])->name('letterhead.destroy');
+        Route::post('/letterhead/{letterhead}/duplicate', [LetterheadController::class, 'duplicate'])->name('letterhead.duplicate');
+        Route::post('/letterhead/{letterhead}/default', [LetterheadController::class, 'setDefault'])->name('letterhead.default');
+        Route::post('/letterhead/{letterhead}/toggle-status', [LetterheadController::class, 'toggleStatus'])->name('letterhead.toggle-status');
+        Route::post('/letterhead/{letterhead}/archive', [LetterheadController::class, 'archive'])->name('letterhead.archive');
+        Route::get('/letterhead/{letterhead}/pdf', [LetterheadController::class, 'generatePdf'])->name('letterhead.pdf');
+        Route::get('/letterhead/{letterhead}/print', [LetterheadController::class, 'printPreview'])->name('letterhead.print');
+
+        // Legacy compatibility routes
         Route::post('/letterhead/{company}/upload', [LetterheadController::class, 'upload'])->name('letterhead.upload');
         Route::get('/letterhead/{company}/download', [LetterheadController::class, 'download'])->name('letterhead.download');
-        Route::delete('/letterhead/{company}/delete', [LetterheadController::class, 'destroy'])->name('letterhead.delete');
+        Route::delete('/letterhead/{company}/delete', [LetterheadController::class, 'destroyLegacy'])->name('letterhead.delete');
 
         Route::get('/modules', [ModuleManagementController::class, 'index'])->name('modules.index');
         Route::post('/modules', [ModuleManagementController::class, 'store'])->name('modules.store');
@@ -531,11 +543,29 @@ Route::middleware(['auth', 'module.access'])->group(function () {
         Route::post('/accounts/{role}/{user}/reset-password', [RoleAccountController::class, 'resetPassword'])->name('role-accounts.reset-password');
     });
 
-    // Letterhead alias routes
+    // Letterhead direct top-level alias routes
     Route::get('/letterhead', [LetterheadController::class, 'index'])->name('letterhead.index');
+    Route::get('/letterhead/create', [LetterheadController::class, 'create'])->name('letterhead.create');
+    Route::post('/letterhead', [LetterheadController::class, 'store'])->name('letterhead.store');
+    Route::post('/letterhead/export-pdf', [LetterheadController::class, 'exportPdf'])->name('letterhead.export-pdf');
+    Route::post('/letterhead/export-word', [LetterheadController::class, 'exportWord'])->name('letterhead.export-word');
+    Route::get('/letterhead/demo-download', [LetterheadController::class, 'demoDownload'])->name('letterhead.demo-download');
+    Route::post('/letterhead/send-letter', [LetterheadController::class, 'sendLetter'])->name('letterhead.send-letter');
+    Route::get('/letterhead/{letterhead}', [LetterheadController::class, 'show'])->name('letterhead.show');
+    Route::get('/letterhead/{letterhead}/edit', [LetterheadController::class, 'edit'])->name('letterhead.edit');
+    Route::put('/letterhead/{letterhead}', [LetterheadController::class, 'update'])->name('letterhead.update');
+    Route::delete('/letterhead/{letterhead}', [LetterheadController::class, 'destroy'])->name('letterhead.destroy');
+    Route::post('/letterhead/{letterhead}/duplicate', [LetterheadController::class, 'duplicate'])->name('letterhead.duplicate');
+    Route::post('/letterhead/{letterhead}/default', [LetterheadController::class, 'setDefault'])->name('letterhead.default');
+    Route::post('/letterhead/{letterhead}/toggle-status', [LetterheadController::class, 'toggleStatus'])->name('letterhead.toggle-status');
+    Route::post('/letterhead/{letterhead}/archive', [LetterheadController::class, 'archive'])->name('letterhead.archive');
+    Route::get('/letterhead/{letterhead}/pdf', [LetterheadController::class, 'generatePdf'])->name('letterhead.pdf');
+    Route::get('/letterhead/{letterhead}/print', [LetterheadController::class, 'printPreview'])->name('letterhead.print');
+
+    // Legacy direct alias routes
     Route::post('/letterhead/{company}/upload', [LetterheadController::class, 'upload'])->name('letterhead.upload');
     Route::get('/letterhead/{company}/download', [LetterheadController::class, 'download'])->name('letterhead.download');
-    Route::delete('/letterhead/{company}/delete', [LetterheadController::class, 'destroy'])->name('letterhead.delete');
+    Route::delete('/letterhead/{company}/delete', [LetterheadController::class, 'destroyLegacy'])->name('letterhead.delete');
 
     Route::prefix('payroll')->name('payroll.')->group(function () {
         Route::get('/', [PayrollController::class, 'index'])->name('index');
@@ -642,11 +672,8 @@ Route::middleware(['auth', 'module.access'])->group(function () {
         ->name('designations.restore');
 
     // Bulk delete designations
-Route::post('designations/bulk-delete', [DesignationController::class, 'bulkDelete'])
-    ->name('designations.bulk-delete');
-
-Route::resource('designations', DesignationController::class);
-
+    Route::post('designations/bulk-delete', [DesignationController::class, 'bulkDelete'])
+        ->name('designations.bulk-delete');
 
     // Ajax create designation from employee form
     Route::post('/designations/ajax-store', [EmployeeController::class, 'storeDesignation'])
@@ -689,7 +716,6 @@ Route::resource('designations', DesignationController::class);
         ->name('employees.restore');
 
     Route::resource('employees', EmployeeController::class);
-    Route::get('employees/{id}', [EmployeeController::class, 'show'])->name('employees.show');
 
 
     // Add this route in your routes/web.php file
@@ -754,36 +780,10 @@ Route::resource('designations', DesignationController::class);
     Route::post('/attendance/settings', [AttendanceController::class, 'updateSettings'])->name('attendance.settings.update');
 
     // Remove this duplicate ↓ (same name + same controller)
-    // Route::get('/admin/attendance/filter', [AttendanceController::class, 'filter'])->name('attendance.filter');
-
-    // Create / Store
-    Route::get('/attendance/create', [AttendanceController::class, 'create'])->name('attendance.create');
-    Route::post('/attendance/store', [AttendanceController::class, 'store'])->name('attendance.store');
-
-    // Old single-user report
-    Route::get('/attendance-report', [AttendanceController::class, 'attendanceReport'])->name('attendance.report');
-
     // Archive
     Route::get('/attendance/archive', [AttendanceController::class, 'archive'])->name('attendance.archive');
     Route::post('/attendance/{id}/restore', [AttendanceController::class, 'restore'])->name('attendance.restore');
-
-    // Exports (keep your URL & names exactly SAME)
-    Route::get('/attendance-export-excel', [AttendanceController::class, 'exportExcel'])->name('attendance.export.excel');
-    Route::get('/attendance-export-pdf',   [AttendanceController::class, 'exportPdf'])->name('attendance.export.pdf');
-
-    // Edit
-    Route::get('attendance/edit', [AttendanceController::class, 'edit'])->name('attendance.edit');
-    Route::put('attendance/{attendance}', [AttendanceController::class, 'update'])->name('attendance.update');
     Route::post('/attendance/month/archive', [AttendanceController::class, 'archiveMonth'])->name('attendance.month.archive');
-
-    // Map view
-    Route::get('/attendance/today/map', [AttendanceController::class, 'todayAttendanceByMap'])->name('attendance.today.map');
-
-    // Member-wise view
-    Route::get('/attendance/member', [AttendanceController::class, 'byMember'])->name('attendance.byMember');
-
-    // By-hour view
-    Route::get('/by-hour', [AttendanceController::class, 'byHour'])->name('attendance.byHour');
 });
 
     /*
@@ -1135,12 +1135,10 @@ Route::get('/my-awards', [AwardController::class, 'myAwards'])->name('awards.my-
     Route::post('/ticket-groups/store', [TicketController::class, 'storeGroup'])->name('ticket-groups.store');
     Route::get('/ticket-groups/fetch', [TicketController::class, 'fetchGroups'])->name('ticket-groups.fetch');
     Route::delete('/ticket-groups/{id}', [TicketController::class, 'destroygroup'])->name('ticket-groups.destroy');
-    Route::get('/tickets/{ticket}', [TicketController::class, 'show'])->name('tickets.show');
     Route::post('/tickets/{id}/reply', [TicketController::class, 'reply'])->name('tickets.reply');
     Route::put('/tickets/{id}/update-details', [TicketController::class, 'updateDetails'])->name('tickets.updateDetails');
     Route::post('/tickets/{id}/reopen', [TicketController::class, 'reopen'])->name('tickets.reopen');
     Route::post('/tickets/{id}/log-time', [TicketController::class, 'logTime'])->name('tickets.logTime');
-    Route::get('/admin/tickets', [TicketController::class, 'index'])->name('tickets.index');
     Route::post('tickets/bulk-action', [TicketController::class, 'bulkAction'])->name('tickets.bulk-action');
 
     /*
@@ -1148,6 +1146,17 @@ Route::get('/my-awards', [AwardController::class, 'myAwards'])->name('awards.my-
     | Misc dashboards
     |----------------------------------------------------------------------
     */
+
+    /*
+    |----------------------------------------------------------------------
+    | Products & Orders
+    |----------------------------------------------------------------------
+    */
+    Route::get('/products', [ProductController::class, 'index'])->name('products.index');
+    Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+    Route::get('/orders/{id}/items', [OrderController::class, 'getItems'])->name('orders.items');
+    Route::post('/orders/bulk-payment-status', [OrderController::class, 'bulkUpdatePaymentStatus'])->name('orders.bulk-payment-status');
+    Route::post('/orders/{id}/payment-status', [OrderController::class, 'updatePaymentStatus'])->name('orders.update-payment-status');
 
     Route::get('/account/dashboard-project', [DashboardController::class, 'project'])->name('dashproject');
     Route::get('/account/dashboard-advanced', [DashboardController::class, 'clientDashboard'])->name('dashboard.client');

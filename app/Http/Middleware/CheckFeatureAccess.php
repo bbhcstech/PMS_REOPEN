@@ -33,8 +33,9 @@ class CheckFeatureAccess
         if (! $company && auth()->check() && auth()->user()?->company_id) {
             $company = Company::on('central')->find(auth()->user()->company_id) ?? \App\Models\Company::find(auth()->user()->company_id);
         }
+
         if (! $company) {
-            $tenantDb = session('current_company_db') ?: env('DB_DATABASE', 'pms_last');
+            $tenantDb = session('current_company_db') ?: config('database.connections.tenant.database');
             $company = Company::on('central')->where('db_name', $tenantDb)->first();
         }
 

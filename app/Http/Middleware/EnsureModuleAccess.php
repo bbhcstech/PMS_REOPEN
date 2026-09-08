@@ -23,35 +23,40 @@ class EnsureModuleAccess
         $routeName = (string) $request->route()?->getName();
 
         // Core authentication & profile routes are always accessible to avoid redirect loops
-        if (in_array($routeName, ['home', 'login', 'logout', 'profile.edit', 'profile.update'], true)) {
+        if (in_array($routeName, ['home', 'login', 'logout', 'profile.edit', 'profile.update', 'dashboard'], true)) {
             return $next($request);
         }
 
         $module = $this->moduleForRoute($routeName);
-        $moduleSlug = $module ? $module->slug : ($routeName === 'dashboard' ? 'dashboard' : null);
+        $moduleSlug = $module ? $module->slug : null;
 
         if ($moduleSlug) {
             $company = app(\App\Services\CompanyContext::class)->current();
             if (! $company && $user->company_id) {
-                $company = \App\Models\Company::find($user->company_id);
+                try {
+                    $company = \App\Models\Company::find($user->company_id)
+                        ?? \App\Models\Central\Company::on('central')->find($user->company_id);
+                } catch (\Throwable $e) {}
             }
 
+            // 1. Company subscription / Super Admin feature check: MUST BE CHECKED FOR ALL USERS
             if ($company && method_exists($company, 'hasFeature') && ! $company->hasFeature($moduleSlug)) {
                 if ($request->expectsJson()) {
                     return response()->json([
-                        'error' => "Feature '{$moduleSlug}' is not enabled for your company subscription plan.",
+                        'error' => "Feature '{$moduleSlug}' is disabled for your company by the platform administrator.",
                     ], 403);
                 }
 
-                if ($routeName === 'dashboard' || str_starts_with($routeName, 'dashboard.')) {
-                    return redirect()->route('profile.edit')
-                        ->with('error', "Access Denied: The 'Dashboard' module has been turned off by Super Admin for your company.");
-                }
-
                 return redirect()->route('dashboard')
-                    ->with('error', "Access Denied: The module '{$moduleSlug}' is not enabled for your company.");
+                    ->with('error', "Access Denied: The feature '{$moduleSlug}' is disabled for your organization.");
             }
 
+            // 2. Platform Admin / Tenant Admin has unrestricted role-based permissions on all ENABLED features
+            if (in_array(strtolower((string) $user->role), ['admin', 'administrator', 'superadmin'], true)) {
+                return $next($request);
+            }
+
+            // 3. Granular Role-based permissions for other roles (HR, Manager, Employee, etc.)
             if ($module && ! $user->hasModulePermission($module->slug, $permission)) {
                 if ($request->expectsJson()) {
                     return response()->json(['error' => 'You do not have permission to access this module.'], 403);

@@ -1,9 +1,9 @@
-{{-- ðŸ”¹ Sub Tasks Section --}}
-<div class="card shadow-sm mt-4">
-    <div class="card-body">
-        <h5 class="mb-3">Sub Tasks</h5>
+<div class="py-2">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <h6 class="fw-bold text-dark mb-0"><i class="bx bx-list-check me-1 text-primary"></i> Sub Tasks Management</h6>
+    </div>
 
-        {{-- Form to Add Subtask --}}
+    {{-- Form to Add Subtask --}}
        @php
     $agents = \App\Models\User::where('role', 'employee')->get();
 @endphp
@@ -142,7 +142,7 @@
                     @if($subtask->assignee)
                         {{ $subtask->assignee->name }}
                         @if($subtask->assignee->id === auth()->id())
-                            <br><small class="text-success">{{ $subtask->assignee->gender == 'female' ? 'Mrs' : 'Mr' }} {{ $subtask->assignee->name }} – It's you</small>
+                            <br><small class="text-success">{{ $subtask->assignee->gender == 'female' ? 'Mrs' : 'Mr' }} {{ $subtask->assignee->name }} ? It's you</small>
                         @endif
                         <br><small class="text-muted">{{ $subtask->assignee->designation ?? '' }}</small>
                     @else
@@ -278,5 +278,4 @@
         @else
             <div class="alert alert-warning mt-3 mb-0">No sub-tasks added yet.</div>
         @endif
-    </div>
 </div>

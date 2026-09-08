@@ -185,7 +185,6 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
             'is_active' => 'boolean',
             'login_allowed' => 'boolean',
             'must_change_password' => 'boolean',
@@ -534,13 +533,13 @@ class User extends Authenticatable
      */
     public function canLogin()
     {
-        // First check login_allowed
-        if (!$this->login_allowed) {
+        // First check login_allowed (if explicitly set to false, block login)
+        if ($this->login_allowed === false || $this->login_allowed === 0 || $this->login_allowed === '0') {
             return false;
         }
 
-        // Developer login check: Only developers with assigned tasks can log in
-        if ($this->isDeveloper() && !$this->hasAssignedTasks()) {
+        // Archived accounts cannot log in
+        if (!empty($this->archived_at)) {
             return false;
         }
 
@@ -551,9 +550,14 @@ class User extends Authenticatable
             $today = Carbon::today();
             $exitDate = Carbon::parse($this->employeeDetail->exit_date);
 
-            // LOGIC: Can login ONLY if today < exit_date
-            // (BEFORE exit date, NOT ON or AFTER)
-            return $today->lt($exitDate); // $today < $exit_date
+            // LOGIC: Can login ONLY if today < exit_date (BEFORE exit date)
+            return $today->lt($exitDate);
+        }
+
+        // Employee status check (case-insensitive)
+        $employeeStatus = strtolower(trim((string) ($this->employeeDetail?->status ?? 'active')));
+        if (in_array($employeeStatus, ['inactive', 'deactivated', 'terminated', 'resigned'], true)) {
+            return false;
         }
 
         // If no exit date:
@@ -575,17 +579,18 @@ class User extends Authenticatable
             return 'Your account is active but login is blocked by admin. Please contact administrator.';
         }
 
-        // Developer task assignment check
-        if ($this->isDeveloper() && !$this->hasAssignedTasks()) {
-            return 'Access Denied: Only developers with assigned tasks can access the Developer Portal. Please contact your manager or admin to assign work.';
+        if (!empty($this->archived_at)) {
+            return 'This account has been archived. Please contact administrator.';
         }
+
+        $employeeStatus = strtolower(trim((string) ($this->employeeDetail?->status ?? 'active')));
 
         // Check exit date logic
         if ($this->employeeDetail && $this->employeeDetail->exit_date) {
             $today = Carbon::today();
             $exitDate = Carbon::parse($this->employeeDetail->exit_date);
 
-            if ($today->gte($exitDate)) { // $today >= $exitDate
+            if ($today->gte($exitDate)) {
                 return 'Your account access has ended as per your exit date (' . $exitDate->format('d/m/Y') . '). Please contact HR.';
             }
 

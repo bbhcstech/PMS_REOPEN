@@ -38,11 +38,12 @@ class EnsureCompanySubscriptionActive
         }
 
         if ($company) {
-            /** @var SubscriptionService $subService */
-            $subService = app(SubscriptionService::class);
+            try {
+                /** @var SubscriptionService $subService */
+                $subService = app(SubscriptionService::class);
 
-            // Execute real-time dynamic expiration check
-            $subService->checkRealtimeExpiration($company);
+                // Execute real-time dynamic expiration check
+                $subService->checkRealtimeExpiration($company);
 
             // Refresh central company model to get fresh status
             $centralComp = Company::on('central')->find($company->id) ?? $company;

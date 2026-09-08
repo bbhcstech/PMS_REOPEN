@@ -131,12 +131,16 @@ class ProjectController extends Controller
 }
 
 
-public function create()
+public function create(Request $request)
 {
     abort_unless($this->canManageProjects(), 403);
 
+    $selectedClientId = $request->query('client_id');
+    $selectedClient   = $selectedClientId ? Client::find($selectedClientId) : null;
+    $isClientFixed    = $selectedClient !== null;
+
     $clients        = Client::all();
-$users = User::select('users.id', 'users.name', 'employee_details.employee_id')
+    $users = User::select('users.id', 'users.name', 'employee_details.employee_id')
     ->join('employee_details', 'employee_details.user_id', '=', 'users.id')
     ->where('users.role', 'employee')
     ->orderBy('users.name')
@@ -187,7 +191,10 @@ $users = User::select('users.id', 'users.name', 'employee_details.employee_id')
         'employee',
         'prtdepartments',
         'currency',
-        'nextProjectCode'   // <- pass to blade
+        'nextProjectCode',
+        'selectedClientId',
+        'selectedClient',
+        'isClientFixed'
     ));
 }
 
@@ -200,7 +207,10 @@ public function store(Request $request)
 
     Log::info('Project Request:', $request->all());
 
+    $projectType = $request->input('project_type', 'client') === 'home' ? 'home' : 'client';
+
     $rules = [
+        'project_type' => 'nullable|in:client,home',
         'name' => 'required|string|max:255',
         'start_date' => 'nullable|date',
         'without_deadline' => 'nullable',
@@ -216,6 +226,12 @@ public function store(Request $request)
         'remarks' => 'nullable|string|max:3000',
     ];
 
+    if ($projectType === 'client') {
+        $rules['client_id'] = 'required|exists:clients,id';
+    } else {
+        $rules['client_id'] = 'nullable';
+    }
+
     if (!$request->boolean('without_deadline')) {
         $rules['deadline'] = $request->filled('start_date')
             ? 'required|date|after_or_equal:start_date'
@@ -228,12 +244,11 @@ public function store(Request $request)
 
     $request->validate($rules);
 
-    // generate project code (keeps your existing logic)
+    // generate project code
     $projectCode = null;
     if ($request->input('shortcode_option') === 'manual') {
         $projectCode = $request->input('shortcode_manual');
     } else {
-        DB::beginTransaction();
         try {
             $now = Carbon::now();
             $year = (int) $now->format('Y');
@@ -244,9 +259,7 @@ public function store(Request $request)
             $prefix = 'bit' . $fyString . '/';
             $like = $prefix . '%';
 
-            $last = DB::table('projects')
-                ->where('project_code', 'like', $like)
-                ->lockForUpdate()
+            $last = Project::where('project_code', 'like', $like)
                 ->orderBy('id', 'desc')
                 ->value('project_code');
 
@@ -258,28 +271,29 @@ public function store(Request $request)
             $nextNum = $lastNum + 1;
             $projectCode = $prefix . str_pad($nextNum, 4, '0', STR_PAD_LEFT);
         } catch (\Exception $e) {
-            DB::rollBack();
             Log::error('Shortcode generation failed: ' . $e->getMessage());
             return back()->withInput()->withErrors(['shortcode' => 'Failed to generate project code.']);
         }
     }
 
     try {
+        $authUserId = auth()->id() ?: (User::first()?->id ?? null);
         $project = Project::create([
-            'client_id' => $request->client_id,
-            'created_by' => auth()->id(),
+            'project_type' => $projectType,
+            'client_id' => $projectType === 'client' ? $request->client_id : null,
+            'created_by' => $authUserId,
             'name' => $request->name,
             'project_code' => $projectCode,
-            'category_id' => $request->category_id,
+            'category_id' => $request->category_id ?: (ProjectCategory::first()?->id ?? 1),
             'department_id' => collect($request->input('department_ids', []))->first() ?: $request->input('department_id'),
             'notes' => $request->notes,
             'remarks' => $request->remarks,
-            'priority' => $request->input('priority', 'medium'),
-            'public_gantt_chart' => $request->has('public_gantt_chart') ? 1 : 0,
-            'public_taskboard' => $request->has('public_taskboard') ? 1 : 0,
+            'priority' => $request->input('priority', 'medium') ?: 'medium',
+            'public_gantt_chart' => $request->has('public_gantt_chart') ? 'enable' : 'disable',
+            'public_taskboard' => $request->has('public_taskboard') ? 'enable' : 'disable',
             'client_access' => $request->has('client_access') ? 1 : 0,
-            'need_approval_by_admin' => $request->has('need_approval_by_admin') ? 1 : 0,
-            'public' => $request->has('public') ? 1 : 0,
+            'need_approval_by_admin' => $request->has('need_approval_by_admin') ? '1' : '0',
+            'public' => $request->has('public') ? '1' : '0',
             'description' => $request->description,
             'start_date' => $request->start_date,
             'deadline' => $request->boolean('without_deadline') ? null : $request->deadline,
@@ -387,8 +401,10 @@ public function edit($id)
 
     $project = Project::findOrFail($id);
 
+    $projectType = $request->input('project_type', $project->project_type ?? ($project->client_id ? 'client' : 'home'));
+
     $rules = [
-        'client_id'       => 'required|exists:clients,id',
+        'project_type'    => 'nullable|in:client,home',
         'name'            => 'required|string|max:255',
         'project_code'    => ['nullable','string','max:50', Rule::unique('projects','project_code')->ignore($project->id)],
         'description'     => 'nullable|string',
@@ -406,6 +422,12 @@ public function edit($id)
         'remarks'         => 'nullable|string|max:3000',
     ];
 
+    if ($projectType === 'client') {
+        $rules['client_id'] = 'required|exists:clients,id';
+    } else {
+        $rules['client_id'] = 'nullable';
+    }
+
     if (! $request->boolean('without_deadline')) {
         $rules['deadline'] = $request->filled('start_date')
             ? 'required|date|after_or_equal:start_date'
@@ -419,7 +441,8 @@ public function edit($id)
     try {
         // Use fill + save to avoid mass-assignment surprises. Make sure Project::$fillable includes these fields.
         $project->fill([
-            'client_id' => $validated['client_id'],
+            'project_type' => $projectType,
+            'client_id' => $projectType === 'client' ? ($validated['client_id'] ?? $request->client_id) : null,
             'name' => $validated['name'],
             'project_code' => $validated['project_code'] ?? $project->project_code,
             'category_id' => $request->input('category_id'),

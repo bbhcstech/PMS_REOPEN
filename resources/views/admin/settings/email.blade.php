@@ -573,6 +573,16 @@
                         </div>
 
                         <div class="p-4 p-md-5">
+                            @if($isSettingsReadOnly)
+                                <div class="alert d-flex align-items-center mb-4 rounded-3 border-0 shadow-sm" style="background: linear-gradient(135deg, #eff6ff, #dbeafe); color: #1e40af; border-left: 4px solid #3b82f6 !important; padding: 14px 18px;">
+                                    <i class="fas fa-eye me-3 fs-3 text-primary"></i>
+                                    <div>
+                                        <strong class="d-block text-primary fw-bold" style="font-size: 14px;">View-Only Mode</strong>
+                                        <span style="font-size: 13px; color: #1e3a8a;">You are viewing email gateway settings in read-only mode. Only Administrators have permission to modify SMTP configurations and credentials.</span>
+                                    </div>
+                                </div>
+                            @endif
+
                             <form method="POST" action="{{ route('admin.settings.email.update') }}">
                                 @csrf
 
@@ -587,7 +597,7 @@
                                         <label class="form-label-custom">Mail Driver / Protocol <span class="req-asterisk">*</span></label>
                                         <div class="input-group input-group-custom">
                                             <span class="input-group-text"><i class="fas fa-cog"></i></span>
-                                            <select name="mail_mailer" class="form-select" required>
+                                            <select name="mail_mailer" class="form-select" {{ $isSettingsReadOnly ? 'disabled' : 'required' }}>
                                                 <option value="smtp" {{ ($settings['mail_mailer'] ?? '') == 'smtp' ? 'selected' : '' }}>SMTP</option>
                                                 <option value="sendmail" {{ ($settings['mail_mailer'] ?? '') == 'sendmail' ? 'selected' : '' }}>Sendmail</option>
                                                 <option value="log" {{ ($settings['mail_mailer'] ?? '') == 'log' ? 'selected' : '' }}>Log (Dev Testing)</option>
@@ -601,43 +611,46 @@
                                         <div class="input-group input-group-custom">
                                             <span class="input-group-text"><i class="fas fa-network-wired"></i></span>
                                             <input type="text" name="mail_host" class="form-control"
-                                                placeholder="smtp.gmail.com or mail.yourdomain.com"
-                                                value="{{ old('mail_host', $settings['mail_host'] ?? '') }}" required>
+                                                placeholder="smtp.mailtrap.io"
+                                                value="{{ old('mail_host', $settings['mail_host'] ?? '') }}"
+                                                {{ $isSettingsReadOnly ? 'readonly' : 'required' }}>
                                         </div>
                                     </div>
 
                                     <!-- SMTP Port -->
-                                    <div class="col-md-4">
-                                        <label class="form-label-custom">Port Number <span class="req-asterisk">*</span></label>
+                                    <div class="col-md-6">
+                                        <label class="form-label-custom">SMTP Port <span class="req-asterisk">*</span></label>
                                         <div class="input-group input-group-custom">
                                             <span class="input-group-text"><i class="fas fa-hashtag"></i></span>
                                             <input type="number" name="mail_port" class="form-control"
-                                                placeholder="587 / 465 / 25"
-                                                value="{{ old('mail_port', $settings['mail_port'] ?? '') }}" required>
+                                                placeholder="587 or 465"
+                                                value="{{ old('mail_port', $settings['mail_port'] ?? '') }}"
+                                                {{ $isSettingsReadOnly ? 'readonly' : 'required' }}>
                                         </div>
                                     </div>
 
                                     <!-- Encryption -->
-                                    <div class="col-md-4">
-                                        <label class="form-label-custom">Encryption Protocol <span class="req-asterisk">*</span></label>
+                                    <div class="col-md-6">
+                                        <label class="form-label-custom">Encryption Type</label>
                                         <div class="input-group input-group-custom">
-                                            <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                                            <select name="mail_encryption" class="form-select" required>
+                                            <span class="input-group-text"><i class="fas fa-shield-halved"></i></span>
+                                            <select name="mail_encryption" class="form-select" {{ $isSettingsReadOnly ? 'disabled' : '' }}>
                                                 <option value="tls" {{ ($settings['mail_encryption'] ?? '') == 'tls' ? 'selected' : '' }}>TLS</option>
                                                 <option value="ssl" {{ ($settings['mail_encryption'] ?? '') == 'ssl' ? 'selected' : '' }}>SSL</option>
-                                                <option value="null" {{ ($settings['mail_encryption'] ?? '') == 'null' ? 'selected' : '' }}>None</option>
+                                                <option value="none" {{ ($settings['mail_encryption'] ?? '') == 'none' ? 'selected' : '' }}>None</option>
                                             </select>
                                         </div>
                                     </div>
 
                                     <!-- Username -->
-                                    <div class="col-md-4">
+                                    <div class="col-md-6">
                                         <label class="form-label-custom">SMTP Username</label>
                                         <div class="input-group input-group-custom">
-                                            <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                            <span class="input-group-text"><i class="fas fa-user-tag"></i></span>
                                             <input type="text" name="mail_username" class="form-control"
-                                                placeholder="user@domain.com"
-                                                value="{{ old('mail_username', $settings['mail_username'] ?? '') }}">
+                                                placeholder="username or API key"
+                                                value="{{ old('mail_username', $settings['mail_username'] ?? '') }}"
+                                                {{ $isSettingsReadOnly ? 'readonly' : '' }}>
                                         </div>
                                     </div>
 
@@ -646,9 +659,9 @@
                                         <label class="form-label-custom">SMTP Password</label>
                                         <div class="input-group input-group-custom">
                                             <span class="input-group-text"><i class="fas fa-key"></i></span>
-                                            <input type="password" name="mail_password" class="form-control" placeholder="••••••••••••">
+                                            <input type="password" name="mail_password" class="form-control" placeholder="••••••••••••" {{ $isSettingsReadOnly ? 'disabled' : '' }}>
                                         </div>
-                                        <small class="text-muted mt-1 d-block">Leave empty to keep existing password unchanged.</small>
+                                        <small class="text-muted mt-1 d-block">{{ $isSettingsReadOnly ? 'Encrypted and stored securely.' : 'Leave empty to keep existing password unchanged.' }}</small>
                                     </div>
 
                                     <!-- From Address -->
@@ -658,27 +671,35 @@
                                             <span class="input-group-text"><i class="fas fa-at"></i></span>
                                             <input type="email" name="mail_from_address" class="form-control"
                                                 placeholder="noreply@yourdomain.com"
-                                                value="{{ old('mail_from_address', $settings['mail_from_address'] ?? '') }}" required>
+                                                value="{{ old('mail_from_address', $settings['mail_from_address'] ?? '') }}"
+                                                {{ $isSettingsReadOnly ? 'readonly' : 'required' }}>
                                         </div>
                                     </div>
 
                                     <!-- From Name -->
-                                    <div class="col-md-12">
+                                    <div class="col-md-6">
                                         <label class="form-label-custom">From Sender Name <span class="req-asterisk">*</span></label>
                                         <div class="input-group input-group-custom">
                                             <span class="input-group-text"><i class="fas fa-signature"></i></span>
                                             <input type="text" name="mail_from_name" class="form-control"
                                                 placeholder="PMS System Notification"
-                                                value="{{ old('mail_from_name', $settings['mail_from_name'] ?? '') }}" required>
+                                                value="{{ old('mail_from_name', $settings['mail_from_name'] ?? '') }}"
+                                                {{ $isSettingsReadOnly ? 'readonly' : 'required' }}>
                                         </div>
                                     </div>
                                 </div>
 
                                 <!-- Form Action Buttons -->
                                 <div class="mt-4 pt-4 border-top d-flex justify-content-end">
-                                    <button type="submit" class="btn-save-address">
-                                        <i class="fas fa-save me-1.5"></i> Save SMTP Configuration
-                                    </button>
+                                    @if($isSettingsReadOnly)
+                                        <span class="badge rounded-pill px-3.5 py-2 fw-bold" style="background: #f1f5f9; color: #64748b; font-size: 13px; border: 1px solid #cbd5e1;">
+                                            <i class="fas fa-lock me-1.5 text-muted"></i> Read-Only (Admin Managed)
+                                        </span>
+                                    @else
+                                        <button type="submit" class="btn-save-address">
+                                            <i class="fas fa-save me-1.5"></i> Save SMTP Configuration
+                                        </button>
+                                    @endif
                                 </div>
                             </form>
                         </div>
@@ -699,22 +720,29 @@
                         </div>
 
                         <div class="p-4 p-md-5">
-                            <form method="POST" action="{{ route('admin.settings.email.test') }}">
-                                @csrf
-
-                                <div class="mb-4">
-                                    <label class="form-label-custom">Recipient Email Address <span class="req-asterisk">*</span></label>
-                                    <div class="input-group input-group-custom">
-                                        <span class="input-group-text"><i class="fas fa-envelope-open-text"></i></span>
-                                        <input type="email" name="test_email" class="form-control" placeholder="your-email@domain.com" required>
-                                    </div>
-                                    <small class="text-muted mt-1.5 d-block">System will attempt sending a real-time test mail to this address.</small>
+                            @if($isSettingsReadOnly)
+                                <div class="text-center py-4 text-muted">
+                                    <i class="fas fa-shield-alt fs-2 mb-2 text-secondary"></i>
+                                    <p class="small mb-0">SMTP testing is reserved for system administrators.</p>
                                 </div>
+                            @else
+                                <form method="POST" action="{{ route('admin.settings.email.test') }}">
+                                    @csrf
 
-                                <button type="submit" class="btn-send-test">
-                                    <i class="fas fa-paper-plane me-1.5"></i> Send Test Email
-                                </button>
-                            </form>
+                                    <div class="mb-4">
+                                        <label class="form-label-custom">Recipient Email Address <span class="req-asterisk">*</span></label>
+                                        <div class="input-group input-group-custom">
+                                            <span class="input-group-text"><i class="fas fa-envelope-open-text"></i></span>
+                                            <input type="email" name="test_email" class="form-control" placeholder="your-email@domain.com" required>
+                                        </div>
+                                        <small class="text-muted mt-1.5 d-block">System will attempt sending a real-time test mail to this address.</small>
+                                    </div>
+
+                                    <button type="submit" class="btn-send-test">
+                                        <i class="fas fa-paper-plane me-1.5"></i> Send Test Email
+                                    </button>
+                                </form>
+                            @endif
                         </div>
                     </div>
                 </div>

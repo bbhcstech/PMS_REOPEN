@@ -92,9 +92,17 @@ class EmployeeController extends Controller
 
         // Exclude users whose employeeDetail indicates they are on notice or on probation.
         $query->whereDoesntHave('employeeDetail', function ($q) {
-            $q->whereIn('status', ['notice', 'probation'])
-              ->orWhereNotNull('notice_end_date')
-              ->orWhereNotNull('probation_end_date');
+            $q->where(function ($sub) {
+                if (\Illuminate\Support\Facades\Schema::hasColumn('employee_details', 'status')) {
+                    $sub->whereIn('status', ['notice', 'probation']);
+                }
+                if (\Illuminate\Support\Facades\Schema::hasColumn('employee_details', 'notice_end_date')) {
+                    $sub->orWhereNotNull('notice_end_date');
+                }
+                if (\Illuminate\Support\Facades\Schema::hasColumn('employee_details', 'probation_end_date')) {
+                    $sub->orWhereNotNull('probation_end_date');
+                }
+            });
         });
 
         // include subordinate count for reporting-to integrity UI
@@ -111,17 +119,25 @@ class EmployeeController extends Controller
             ->get();
 
         $companyStats = $companies->map(function (Company $company) {
+            $activeQuery = User::where('role', 'employee')
+                ->whereNull('archived_at')
+                ->where('company_id', $company->id);
+
+            if (Schema::hasColumn('employee_details', 'status')) {
+                $activeQuery->whereHas('employeeDetail', fn ($detail) => $detail->whereIn('status', ['Active', 'active']));
+            } elseif (Schema::hasColumn('users', 'is_active')) {
+                $activeQuery->where('is_active', true);
+            } elseif (Schema::hasColumn('users', 'status')) {
+                $activeQuery->whereIn('status', ['active', 'Active', 1]);
+            }
+
             return [
                 'company' => $company,
                 'employees' => User::where('role', 'employee')
                     ->whereNull('archived_at')
                     ->where('company_id', $company->id)
                     ->count(),
-                'active' => User::where('role', 'employee')
-                    ->whereNull('archived_at')
-                    ->where('company_id', $company->id)
-                    ->whereHas('employeeDetail', fn ($detail) => $detail->where('status', 'Active'))
-                    ->count(),
+                'active' => $activeQuery->count(),
             ];
         });
 
@@ -181,11 +197,17 @@ class EmployeeController extends Controller
         return view('admin.employees.create', [
             'companies'        => Company::where('status', 'active')->orderBy('name')->get(),
             'designations'    => Designation::orderBy('name')->get(),
-            'departments'     => Department::with('parent')->orderBy('dpt_name')->get(),
-            'prtdepartments'  => ParentDepartment::orderBy('dpt_name')->get(),
+            'departments'     => Department::with('parent')
+                                    ->when(Schema::hasColumn('departments', 'dpt_name'), fn ($q) => $q->orderBy('dpt_name'), fn ($q) => $q->orderBy('id'))
+                                    ->get(),
+            'prtdepartments'  => ParentDepartment::when(Schema::hasColumn('parent_departments', 'dpt_name'), fn ($q) => $q->orderBy('dpt_name'), fn ($q) => $q->orderBy('id'))
+                                    ->get(),
             'users'           => User::where('role', 'employee')
-                                    ->whereHas('employeeDetail', function ($q) {
-                                        $q->where('status', 'Active');
+                                    ->whereNull('archived_at')
+                                    ->when(Schema::hasColumn('employee_details', 'status'), function ($q) {
+                                        $q->whereHas('employeeDetail', function ($detail) {
+                                            $detail->whereIn('status', ['Active', 'active']);
+                                        });
                                     })
                                     ->orderBy('name')
                                     ->get(),
@@ -678,8 +700,8 @@ class EmployeeController extends Controller
         }
 
         $subs = Department::where('parent_dpt_id', $parentId)
-                ->orderBy('dpt_name')
-                ->get(['id', 'dpt_name', 'dpt_code']);
+                ->when(Schema::hasColumn('departments', 'dpt_name'), fn ($q) => $q->orderBy('dpt_name'), fn ($q) => $q->orderBy('id'))
+                ->get(Schema::hasColumn('departments', 'dpt_name') ? ['id', 'dpt_name', 'dpt_code'] : ['id']);
 
         return response()->json($subs);
     }

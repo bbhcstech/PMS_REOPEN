@@ -879,11 +879,11 @@
         <div class="form-field-group">
           <label class="form-label">Slug / DB Identifier <span class="req">*</span></label>
           <div class="slug-input-wrap">
-            <span class="slug-prefix">pms_</span>
-            <input type="text" name="slug" id="company_slug_input" value="{{ old('slug') }}" required placeholder="acme" class="slug-input" />
+            <span class="slug-prefix">{{ $dbPrefix ?? 'pms_' }}</span>
+            <input type="text" name="slug" id="company_slug_input" value="{{ old('slug') }}" required placeholder="community_hub" class="slug-input" />
           </div>
           <div class="db-badge-preview">
-            <span class="pulse-dot"></span> Target Database: <code id="db_name_preview">pms_acme</code> • Charset: <span>utf8mb4_general_ci</span>
+            <span class="pulse-dot"></span> Target Database: <code id="db_name_preview">{{ $dbPrefix ?? 'pms_' }}community_hub</code> • Charset: <span>utf8mb4_general_ci</span>
           </div>
         </div>
 
@@ -1123,7 +1123,8 @@ document.addEventListener('DOMContentLoaded', function() {
       if (slugInput) slugInput.value = slugVal;
     }
 
-    const fullDb = 'pms_' + (slugVal || 'acme');
+    const tenantPrefix = @json($dbPrefix ?? 'pms_');
+    const fullDb = tenantPrefix + (slugVal || 'community_hub');
     if (dbPreview) dbPreview.textContent = fullDb;
     if (footerDbCode) footerDbCode.textContent = fullDb;
 

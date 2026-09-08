@@ -119,24 +119,29 @@ class Company extends Model
             $slugs = match ($featureSlug) {
                 'crm', 'deals', 'crm-deals' => ['crm-deals', 'crm', 'deals', 'leads-contacts'],
                 'leads', 'leads-contacts' => ['leads-contacts', 'leads', 'crm'],
-                'leaves', 'leave-management', 'leave-settings' => ['leave-management', 'leaves', 'leave-settings', 'hr'],
-                'employees', 'user-management' => ['employees', 'user-management', 'hr'],
-                'designations' => ['designations', 'hr'],
-                'departments' => ['departments', 'hr'],
-                'attendance', 'attendance-settings' => ['attendance', 'attendance-settings', 'hr'],
-                'holidays', 'holiday-settings' => ['holidays', 'holiday-settings', 'hr'],
-                'awards', 'recognition' => ['recognition', 'awards', 'hr'],
-                'recruitment', 'recruitment-settings' => ['recruitment', 'recruitment-settings', 'hr'],
-                'appraisal', 'performance-settings' => ['appraisal', 'performance-settings', 'hr'],
+                'leaves', 'leave-management', 'leave-settings' => ['leave-management', 'leaves', 'leave-settings'],
+                'employees', 'user-management' => ['employees', 'user-management'],
+                'designations' => ['designations'],
+                'departments', 'parent-departments' => ['departments', 'parent-departments'],
+                'attendance', 'attendance-settings' => ['attendance', 'attendance-settings'],
+                'holidays', 'holiday-settings' => ['holidays', 'holiday-settings'],
+                'awards', 'recognition', 'letterhead' => ['recognition', 'awards', 'letterhead'],
+                'recruitment', 'recruitment-settings' => ['recruitment', 'recruitment-settings'],
+                'appraisal', 'performance-settings' => ['appraisal', 'performance-settings'],
                 'hr', 'hr-management' => ['hr', 'hr-management', 'hr-employees'],
-                'projects' => ['projects', 'work'],
-                'tasks' => ['tasks', 'work'],
-                'timelogs', 'timesheets' => ['timesheets', 'timelogs', 'work'],
+                'projects' => ['projects'],
+                'tasks' => ['tasks'],
+                'timelogs', 'timesheets' => ['timesheets', 'timelogs'],
                 'work' => ['work'],
                 'payroll', 'payslips', 'salary-structures', 'payroll-architectures', 'payroll-settings', 'payroll-policies', 'payroll-cycles', 'payroll-reports', 'bonus-rules', 'deduction-rules', 'overtime-rules', 'tax-rules', 'formula-builder' => ['payroll', 'payslips', 'salary-structures', 'payroll-architectures', 'payroll-settings', 'payroll-policies', 'payroll-cycles', 'payroll-reports', 'bonus-rules', 'deduction-rules', 'overtime-rules', 'tax-rules', 'formula-builder'],
-                'expenses' => ['expenses', 'billing'],
+                'expenses' => ['expenses'],
                 'billing' => ['billing', 'expenses'],
                 'clients', 'client' => ['clients', 'client', 'leads-contacts'],
+                'products' => ['products'],
+                'orders' => ['orders'],
+                'events' => ['events'],
+                'my-documents', 'documents' => ['my-documents', 'documents'],
+                'community' => ['community'],
                 'collaborating-companies', 'collaborating_companies' => ['collaborating-companies', 'collaborating_companies'],
                 'reports', 'standard-reports', 'analytics', 'advanced-reports', 'company-complaints', 'activity-logs', 'system-logs' => ['reports', 'standard-reports', 'analytics', 'advanced-reports', 'company-complaints', 'activity-logs', 'system-logs'],
                 'organization', 'teams' => ['organization', 'teams'],
@@ -158,7 +163,7 @@ class Company extends Model
             };
 
             // 1. Explicit Company Module Overrides set by Super Admin (takes top priority)
-            $overrides = \Illuminate\Support\Facades\DB::connection('central')
+            $directOverrides = \Illuminate\Support\Facades\DB::connection('central')
                 ->table('company_modules')
                 ->join('modules', 'modules.id', '=', 'company_modules.module_id')
                 ->where('company_modules.company_id', $this->id)
@@ -167,11 +172,11 @@ class Company extends Model
                 ->orderBy('company_modules.is_enabled', 'asc') // disabled (0) comes first
                 ->get();
 
-            if ($overrides->isNotEmpty()) {
-                if ($overrides->contains('is_enabled', 0)) {
+            if ($directOverrides->isNotEmpty()) {
+                if ($directOverrides->contains('is_enabled', 0)) {
                     return false;
                 }
-                if ($overrides->contains('is_enabled', 1)) {
+                if ($directOverrides->contains('is_enabled', 1)) {
                     return true;
                 }
             }
@@ -189,11 +194,6 @@ class Company extends Model
                 $plan = $sub->plan ?? \App\Models\Central\Plan::on('central')->find($sub->plan_id);
                 $planSlug = strtolower($plan?->slug ?? '');
 
-                // Standard paid plans (gold, platinum, diamond) include all base platform features by default
-                if (in_array($planSlug, ['gold', 'platinum', 'diamond'], true)) {
-                    return true;
-                }
-
                 $planModules = \Illuminate\Support\Facades\DB::connection('central')
                     ->table('plan_modules')
                     ->join('modules', 'modules.id', '=', 'plan_modules.module_id')
@@ -204,6 +204,22 @@ class Company extends Model
                 if (! empty($planModules)) {
                     foreach ($slugs as $slug) {
                         if (in_array($slug, $planModules, true)) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+
+                // Standard paid plans (gold, platinum, diamond) include all base platform features by default if plan_modules not explicitly populated
+                if (in_array($planSlug, ['gold', 'platinum', 'diamond'], true)) {
+                    return true;
+                }
+
+                // Free tier default allowed features
+                if (in_array($planSlug, ['free', 'trial', 'starter'], true)) {
+                    $freeAllowed = ['dashboard', 'notifications', 'organization', 'hr', 'employees', 'attendance', 'leave-management', 'leaves', 'holidays', 'events', 'my-documents', 'community', 'tickets', 'settings'];
+                    foreach ($slugs as $slug) {
+                        if (in_array($slug, $freeAllowed, true)) {
                             return true;
                         }
                     }
@@ -223,7 +239,7 @@ class Company extends Model
     private function isParentFeatureRevoked(string $featureSlug): bool
     {
         $parentKey = match ($featureSlug) {
-            'designations', 'departments', 'attendance', 'leaves', 'leave-management', 'holidays', 'awards', 'recognition', 'recruitment', 'appraisal', 'employees', 'user-management' => 'hr',
+            'designations', 'departments', 'parent-departments', 'attendance', 'leaves', 'leave-management', 'holidays', 'awards', 'recognition', 'recruitment', 'appraisal', 'employees', 'user-management' => 'hr',
             'projects', 'tasks', 'timelogs', 'timesheets' => 'work',
             'deals', 'crm', 'crm-deals', 'leads-contacts' => 'leads',
             'expenses', 'billing', 'payslips', 'salary-structures', 'payroll-architectures' => 'payroll',

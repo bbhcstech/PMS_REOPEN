@@ -24,6 +24,10 @@ class NotificationSettingsController extends Controller
 
     public function update(Request $request)
     {
+        if (auth()->user()?->role !== 'admin') {
+            abort(403, 'Unauthorized. Only administrators can update notification settings.');
+        }
+
         $data = [
             'email_enabled' => $request->has('email_notifications') ? '1' : '0',
             'system_enabled' => $request->has('system_notifications') ? '1' : '0',
@@ -45,6 +49,19 @@ class NotificationSettingsController extends Controller
                 ]
             );
         }
+
+        // Broadcast notification to Admin, HR, Manager, and Employees
+        \App\Services\SystemNotificationService::notifyAllRoles(
+            'Notification Preferences Updated',
+            'System alert preferences and notification rules have been updated by ' . (auth()->user()?->name ?? 'Admin') . '.',
+            route('admin.settings.notification'),
+            [
+                'type' => 'setting_update',
+                'setting_module' => 'notification-settings',
+                'icon' => 'fa-bell',
+                'color' => 'warning',
+            ]
+        );
 
         return back()->with('success', 'Notification settings updated successfully!');
     }
