@@ -189,24 +189,28 @@
        font-weight: 800 !important;
    }
 
-    .app-brand-logo.demo {
-        width: 42px;
-        height: 42px;
-        border-radius: 14px;
-        overflow: hidden;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        flex: 0 0 auto;
-        box-shadow: 0 4px 12px rgba(5, 105, 255, 0.12);
-    }
+   .app-brand-logo.demo {
+       width: 42px;
+       height: 42px;
+       border-radius: 12px;
+       overflow: hidden;
+       display: inline-flex;
+       align-items: center;
+       justify-content: center;
+       flex: 0 0 auto;
+       box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+       background: #ffffff;
+       padding: 4px;
+   }
 
-    .app-brand-logo.demo img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: block;
-    }
+   .app-brand-logo.demo img {
+       max-width: 100%;
+       max-height: 100%;
+       width: auto;
+       height: auto;
+       object-fit: contain;
+       display: block;
+   }
 
     .app-brand-text.demo {
         max-width: 175px;
