@@ -30,21 +30,145 @@ class CompanySettingsController extends Controller
         if (empty($company->company_email) && !empty($currentCompany?->email)) {
             $company->company_email = $currentCompany->email;
         }
+        if (empty($company->company_phone) && !empty($currentCompany?->phone)) {
+            $company->company_phone = $currentCompany->phone;
+        }
+        if (empty($company->company_website) && !empty($currentCompany?->website)) {
+            $company->company_website = $currentCompany->website;
+        }
 
-        return view('admin.settings.company', compact('company'));
+        $countryMap = \App\Support\CountryPhone::map();
+
+        // Parse existing phone into country code and number
+        $selectedCountryCode = '+91';
+        $phoneDigits = $company->company_phone ?? '';
+
+        if (!empty($phoneDigits)) {
+            $matched = false;
+            // Match longest dial codes first to avoid false prefixes (e.g. +971 vs +9)
+            $sortedCodes = [];
+            foreach ($countryMap as $cName => $meta) {
+                $sortedCodes[$meta['dial_code']] = strlen($meta['dial_code']);
+            }
+            arsort($sortedCodes);
+
+            foreach ($sortedCodes as $dCode => $len) {
+                if (str_starts_with($phoneDigits, $dCode)) {
+                    $selectedCountryCode = $dCode;
+                    $phoneDigits = trim(substr($phoneDigits, strlen($dCode)));
+                    $matched = true;
+                    break;
+                }
+            }
+
+            if (!$matched && preg_match('/^(\+\d{1,4})\s*(.*)$/', $phoneDigits, $matches)) {
+                $selectedCountryCode = $matches[1];
+                $phoneDigits = trim($matches[2]);
+            }
+        }
+
+        return view('admin.settings.company', compact('company', 'countryMap', 'selectedCountryCode', 'phoneDigits'));
     }
 
     // Store or update company settings
     public function store(Request $request)
     {
+        if (auth()->user()?->role !== 'admin') {
+            abort(403, 'Unauthorized. Only administrators can update company settings.');
+        }
+
+        // Normalize website if provided without scheme
+        if ($request->filled('company_website')) {
+            $website = trim($request->input('company_website'));
+            if (!preg_match('/^https?:\/\//i', $website)) {
+                $website = 'https://' . $website;
+                $request->merge(['company_website' => $website]);
+            }
+        }
+
+        // Assemble phone if submitted via split country code + number
+        if ($request->filled('company_country_code') && $request->filled('company_phone_number')) {
+            $countryCode = trim($request->input('company_country_code'));
+            $phoneNumber = trim($request->input('company_phone_number'));
+            $cleanNumber = preg_replace('/[^\d\s\-()]/', '', $phoneNumber);
+            $fullPhone = $countryCode . ' ' . $cleanNumber;
+            $request->merge([
+                'company_phone' => $fullPhone,
+                'company_phone_number' => $cleanNumber,
+            ]);
+        } elseif ($request->filled('company_phone') && !$request->filled('company_phone_number')) {
+            $phone = trim($request->input('company_phone'));
+            if (preg_match('/^(\+\d{1,4})\s*(.*)$/', $phone, $m)) {
+                $request->merge([
+                    'company_country_code' => $m[1],
+                    'company_phone_number' => $m[2],
+                ]);
+            } else {
+                $request->merge([
+                    'company_country_code' => '+91',
+                    'company_phone_number' => $phone,
+                    'company_phone' => '+91 ' . $phone,
+                ]);
+            }
+        }
+
         $validated = $request->validate([
-            'company_name'     => 'required|string|max:255',
-            'company_email'    => 'required|email|max:255',
-            'company_phone'    => 'required|string|max:25',
-            'company_website'  => 'nullable|url|max:255',
-            'company_location' => 'nullable|string|max:255',
-            'company_logo'     => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:3072',
+            'company_name'         => 'required|string|max:255',
+            'company_email'        => [
+                'required',
+                'string',
+                'email',
+                'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/',
+                'max:255'
+            ],
+            'company_country_code' => ['required', 'string', 'regex:/^\+\d{1,4}$/'],
+            'company_phone_number' => ['required', 'string', 'regex:/^[0-9\s\-()]+$/'],
+            'company_phone'        => ['required', 'string', 'max:35'],
+            'company_website'      => [
+                'nullable',
+                'string',
+                'url',
+                'regex:/^(https?:\/\/)?([a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}(\/.*)?$/i',
+                'max:255'
+            ],
+            'company_location'     => 'nullable|string|max:255',
+            'company_logo'         => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:3072',
+        ], [
+            'company_name.required'         => 'Company name is required.',
+            'company_email.required'        => 'Company email is required.',
+            'company_email.email'           => 'Please enter a valid email address.',
+            'company_email.regex'           => 'Please enter a valid email address with a valid domain (e.g. info@company.com).',
+            'company_country_code.required' => 'Please select a country code.',
+            'company_country_code.regex'    => 'Invalid country code format.',
+            'company_phone_number.required' => 'Company phone number is required.',
+            'company_phone_number.regex'    => 'Phone number contains invalid characters.',
+            'company_phone.required'        => 'Company phone is required.',
+            'company_website.url'           => 'Please enter a valid website URL (e.g. https://example.com).',
+            'company_website.regex'         => 'Please enter a valid website domain URL (e.g. https://example.com).',
+            'company_logo.image'            => 'Uploaded logo must be an image file.',
+            'company_logo.mimes'            => 'Allowed logo formats: PNG, JPG, JPEG, GIF, SVG, WEBP.',
+            'company_logo.max'              => 'Company logo size must not exceed 3MB.',
         ]);
+
+        // Country-specific phone digit validation
+        $countryRules = \App\Support\CountryPhone::getDigitRules($validated['company_country_code']);
+        $minDigits = $countryRules['min_digits'] ?? 6;
+        $maxDigits = $countryRules['max_digits'] ?? 15;
+        $countryName = $countryRules['name'] ?? 'Selected Country';
+        $dialCode = $countryRules['dial_code'] ?? $validated['company_country_code'];
+
+        $digitsOnly = preg_replace('/\D/', '', (string) $validated['company_phone_number']);
+        $digitCount = strlen($digitsOnly);
+
+        if ($digitCount < $minDigits || $digitCount > $maxDigits) {
+            $expectedText = ($minDigits === $maxDigits)
+                ? "must be exactly {$minDigits} digits"
+                : "must be between {$minDigits} and {$maxDigits} digits";
+
+            return back()->withInput()->withErrors([
+                'company_phone_number' => "Phone number for {$countryName} ({$dialCode}) {$expectedText}. You entered {$digitCount} digits.",
+            ]);
+        }
 
         $company = CompanySetting::first() ?? new CompanySetting();
 
@@ -90,11 +214,52 @@ class CompanySettingsController extends Controller
             $currentCompany->update($centralUpdate);
         }
 
+        // Broadcast notification to Admin, HR, Manager, and Employees
+        \App\Services\SystemNotificationService::notifyAllRoles(
+            'Company Profile Updated',
+            'Company profile and contact details have been updated by ' . (auth()->user()?->name ?? 'Admin') . '.',
+            route('settings.company'),
+            [
+                'type' => 'setting_update',
+                'setting_module' => 'company-profile',
+                'icon' => 'fa-building',
+                'color' => 'success',
+            ]
+        );
+
+        // Dispatch automatic notification to Super Admin Alert & Notification Center
+        try {
+            if (class_exists(\App\Models\Central\CentralNotification::class)) {
+                $companyId = $currentCompany?->id ?: (session('current_company_id') ?: auth()->user()?->company_id);
+                $companyName = $validated['company_name'] ?? ($currentCompany?->name ?? 'Tenant Company');
+                $updaterName = auth()->user()?->name ?? 'Company Administrator';
+
+                \App\Models\Central\CentralNotification::createNotification([
+                    'company_id'        => $companyId,
+                    'type'              => 'company_profile_updated',
+                    'title'             => 'Tenant Company Profile Updated: ' . $companyName,
+                    'message'           => "Tenant company '{$companyName}' updated their company details (Name: {$companyName}, Email: {$validated['company_email']}, Phone: {$validated['company_phone']}) by {$updaterName}.",
+                    'severity'          => 'info',
+                    'related_module'    => 'company_profile',
+                    'related_record_id' => $companyId,
+                    'action_url'        => $companyId ? (route('super-admin.companies.show', $companyId) ?? route('super-admin.companies.index')) : route('super-admin.companies.index'),
+                    'target_audience'   => 'super_admin',
+                    'is_read'           => false,
+                ]);
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Super Admin central notification for company profile update: ' . $e->getMessage());
+        }
+
         return back()->with('success', 'Company settings updated successfully');
     }
 
     public function destroy()
     {
+        if (auth()->user()?->role !== 'admin') {
+            abort(403, 'Unauthorized. Only administrators can reset company settings.');
+        }
+
         $company = CompanySetting::first();
         if ($company && $company->company_logo && File::exists(public_path($company->company_logo))) {
             File::delete(public_path($company->company_logo));
@@ -109,6 +274,43 @@ class CompanySettingsController extends Controller
                 File::delete(public_path($currentCompany->logo));
             }
             $currentCompany->update(['logo' => null]);
+        }
+
+        // Broadcast notification to Admin, HR, Manager, and Employees
+        \App\Services\SystemNotificationService::notifyAllRoles(
+            'Company Profile Reset',
+            'Company profile settings have been reset by ' . (auth()->user()?->name ?? 'Admin') . '.',
+            route('settings.company'),
+            [
+                'type' => 'setting_update',
+                'setting_module' => 'company-profile',
+                'icon' => 'fa-rotate-left',
+                'color' => 'warning',
+            ]
+        );
+
+        // Dispatch automatic notification to Super Admin Alert & Notification Center
+        try {
+            if (class_exists(\App\Models\Central\CentralNotification::class)) {
+                $companyId = $currentCompany?->id ?: (session('current_company_id') ?: auth()->user()?->company_id);
+                $companyName = $currentCompany?->name ?? 'Tenant Company';
+                $updaterName = auth()->user()?->name ?? 'Company Administrator';
+
+                \App\Models\Central\CentralNotification::createNotification([
+                    'company_id'        => $companyId,
+                    'type'              => 'company_profile_reset',
+                    'title'             => 'Tenant Company Profile Reset: ' . $companyName,
+                    'message'           => "Tenant company '{$companyName}' profile and logo settings were reset by {$updaterName}.",
+                    'severity'          => 'warning',
+                    'related_module'    => 'company_profile',
+                    'related_record_id' => $companyId,
+                    'action_url'        => $companyId ? (route('super-admin.companies.show', $companyId) ?? route('super-admin.companies.index')) : route('super-admin.companies.index'),
+                    'target_audience'   => 'super_admin',
+                    'is_read'           => false,
+                ]);
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Super Admin central notification for company profile reset: ' . $e->getMessage());
         }
 
         return redirect()

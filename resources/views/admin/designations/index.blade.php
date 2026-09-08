@@ -1631,121 +1631,9 @@
 </style>
 
 <style>
-    /* DataTables export buttons styled to match the designation UI. */
+    /* Hide visible DataTables button bar since Export dropdown is already provided in header */
     .designation-page .dataTables_wrapper .dt-buttons {
-        display: flex;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 10px;
-        width: fit-content;
-        margin: 14px 20px 6px;
-        padding: 8px;
-        border: 1px solid rgba(16, 185, 129, .14);
-        border-radius: 16px;
-        background: #f7fcf9;
-    }
-
-    .designation-page .dataTables_wrapper .dt-buttons .dt-button {
-        min-height: 42px;
-        margin: 0 !important;
-        padding: 9px 16px !important;
-        border: 1px solid rgba(16, 185, 129, .18) !important;
-        border-radius: 12px !important;
-        background: #fff !important;
-        color: #0f744c !important;
-        box-shadow: 0 4px 12px -10px rgba(5, 150, 105, .7);
-        font-size: .95rem !important;
-        font-weight: 750 !important;
-        line-height: 1.2 !important;
-        transition: border-color .2s ease, background .2s ease, color .2s ease, transform .2s ease, box-shadow .2s ease;
-    }
-
-    .designation-page .dataTables_wrapper .dt-buttons .dt-button span {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .designation-page .dataTables_wrapper .dt-buttons .dt-button span::before {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 20px;
-        font-family: "Font Awesome 5 Free";
-        font-size: 1rem;
-        font-weight: 900;
-    }
-
-    .designation-page .dataTables_wrapper .buttons-copy span::before {
-        content: "\f0c5";
-    }
-
-    .designation-page .dataTables_wrapper .buttons-csv span::before {
-        content: "\f6dd";
-    }
-
-    .designation-page .dataTables_wrapper .buttons-excel span::before {
-        content: "\f1c3";
-    }
-
-    .designation-page .dataTables_wrapper .buttons-pdf span::before {
-        content: "\f1c1";
-    }
-
-    .designation-page .dataTables_wrapper .buttons-print span::before {
-        content: "\f02f";
-    }
-
-    .designation-page .dataTables_wrapper .dt-buttons .dt-button:hover,
-    .designation-page .dataTables_wrapper .dt-buttons .dt-button:focus {
-        border-color: #10b981 !important;
-        background: linear-gradient(145deg, #34d399, #059669) !important;
-        color: #fff !important;
-        box-shadow: 0 9px 20px -12px rgba(5, 150, 105, .8);
-        transform: translateY(-1px);
-    }
-
-    .designation-page .dataTables_wrapper .buttons-excel {
-        background: #ecfdf5 !important;
-    }
-
-    .designation-page .dataTables_wrapper .buttons-csv {
-        background: #f0fdf4 !important;
-    }
-
-    .designation-page .dataTables_wrapper .buttons-pdf {
-        color: #b91c1c !important;
-        background: #fff7f7 !important;
-        border-color: rgba(239, 68, 68, .18) !important;
-    }
-
-    .designation-page .dataTables_wrapper .buttons-print {
-        color: #315f75 !important;
-        background: #f4fbff !important;
-        border-color: rgba(49, 95, 117, .18) !important;
-    }
-
-    html[data-pms-theme="dark"] .designation-page .dataTables_wrapper .dt-buttons {
-        border-color: rgba(122, 240, 181, .16);
-        background: #142a20;
-    }
-
-    html[data-pms-theme="dark"] .designation-page .dataTables_wrapper .dt-buttons .dt-button {
-        border-color: rgba(122, 240, 181, .18) !important;
-        background: #183026 !important;
-        color: #d9f1e4 !important;
-    }
-
-    @media (max-width: 768px) {
-        .designation-page .dataTables_wrapper .dt-buttons {
-            width: calc(100% - 32px);
-            margin-inline: 16px;
-        }
-
-        .designation-page .dataTables_wrapper .dt-buttons .dt-button {
-            flex: 1 1 120px;
-            justify-content: center;
-        }
+        display: none !important;
     }
 </style>
 
@@ -1813,83 +1701,99 @@
 @push('js')
 <script>
 $(document).ready(function() {
-    // DataTable functionality for search and filtering
-    var table = $('#designationTable').DataTable({
-        dom: 'lBfrtip',
-        paging: false,
-        searching: true,
-        info: false,
-        ordering: true,
-        buttons: [
-            {
-                extend: 'copyHtml5',
-                text: 'Copy',
-                title: 'Designation List',
-                exportOptions: {
-                    columns: [1, 2, 3, 4, 5],
-                    rows: function(idx, data, node) { return $(node).is(':visible'); },
-                    modifier: { search: 'applied' }
+    var table = null;
+
+    @if($designations->count() > 0)
+    if ($.fn.DataTable && !$.fn.DataTable.isDataTable('#designationTable') && $('#designationTable tbody tr.designation-row').length > 0) {
+        table = $('#designationTable').DataTable({
+            dom: 'lBfrtip',
+            paging: false,
+            searching: true,
+            info: false,
+            ordering: true,
+            columnDefs: [
+                { orderable: false, targets: [0, 6] }
+            ],
+            buttons: [
+                {
+                    extend: 'copyHtml5',
+                    text: 'Copy',
+                    title: 'Designation List',
+                    exportOptions: {
+                        columns: [1, 2, 3, 4, 5],
+                        rows: function(idx, data, node) { return $(node).is(':visible'); },
+                        modifier: { search: 'applied' }
+                    }
+                },
+                {
+                    extend: 'csvHtml5',
+                    text: 'CSV',
+                    title: 'Designation List',
+                    filename: 'designation-list',
+                    exportOptions: {
+                        columns: [1, 2, 3, 4, 5],
+                        rows: function(idx, data, node) { return $(node).is(':visible'); },
+                        modifier: { search: 'applied' }
+                    }
+                },
+                {
+                    extend: 'excelHtml5',
+                    text: 'Excel',
+                    title: 'Designation List',
+                    filename: 'designation-list',
+                    exportOptions: {
+                        columns: [1, 2, 3, 4, 5],
+                        rows: function(idx, data, node) { return $(node).is(':visible'); },
+                        modifier: { search: 'applied' }
+                    }
+                },
+                {
+                    extend: 'pdfHtml5',
+                    text: 'PDF',
+                    title: 'Designation List',
+                    filename: 'designation-list',
+                    pageSize: 'A4',
+                    orientation: 'landscape',
+                    exportOptions: {
+                        columns: [1, 2, 3, 4, 5],
+                        rows: function(idx, data, node) { return $(node).is(':visible'); },
+                        modifier: { search: 'applied' }
+                    }
+                },
+                {
+                    extend: 'print',
+                    text: 'Print',
+                    title: 'Designation List',
+                    exportOptions: {
+                        columns: [1, 2, 3, 4, 5],
+                        rows: function(idx, data, node) { return $(node).is(':visible'); },
+                        modifier: { search: 'applied' }
+                    }
                 }
+            ],
+            language: {
+                search: "",
+                searchPlaceholder: "Search designations...",
+                zeroRecords: "No matching records found",
             },
-            {
-                extend: 'csvHtml5',
-                text: 'CSV',
-                title: 'Designation List',
-                filename: 'designation-list',
-                exportOptions: {
-                    columns: [1, 2, 3, 4, 5],
-                    rows: function(idx, data, node) { return $(node).is(':visible'); },
-                    modifier: { search: 'applied' }
-                }
-            },
-            {
-                extend: 'excelHtml5',
-                text: 'Excel',
-                title: 'Designation List',
-                filename: 'designation-list',
-                exportOptions: {
-                    columns: [1, 2, 3, 4, 5],
-                    rows: function(idx, data, node) { return $(node).is(':visible'); },
-                    modifier: { search: 'applied' }
-                }
-            },
-            {
-                extend: 'pdfHtml5',
-                text: 'PDF',
-                title: 'Designation List',
-                filename: 'designation-list',
-                pageSize: 'A4',
-                orientation: 'landscape',
-                exportOptions: {
-                    columns: [1, 2, 3, 4, 5],
-                    rows: function(idx, data, node) { return $(node).is(':visible'); },
-                    modifier: { search: 'applied' }
-                }
-            },
-            {
-                extend: 'print',
-                text: 'Print',
-                title: 'Designation List',
-                exportOptions: {
-                    columns: [1, 2, 3, 4, 5],
-                    rows: function(idx, data, node) { return $(node).is(':visible'); },
-                    modifier: { search: 'applied' }
-                }
+            initComplete: function() {
+                $('.dataTables_filter').hide();
             }
-        ],
-        language: {
-            search: "",
-            searchPlaceholder: "Search designations...",
-            zeroRecords: "No matching records found",
-        },
-        initComplete: function() {
-            $('.dataTables_filter').hide();
-        }
-    });
+        });
+    }
+    @endif
 
     // Custom search
     $('#designationSearch').on('keyup', function() {
-        table.search(this.value).draw();
+        if (table) {
+            table.search(this.value).draw();
+        } else {
+            var searchTerm = this.value.toLowerCase();
+            $('.designation-row').each(function() {
+                var rowText = $(this).text().toLowerCase();
+                $(this).toggle(!searchTerm || rowText.indexOf(searchTerm) > -1);
+            });
+        }
         updateVisibleRowsForLevelFilter();
     });
 

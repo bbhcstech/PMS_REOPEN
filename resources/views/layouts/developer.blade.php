@@ -4,38 +4,45 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Developer Portal') - PMS Developer Hub</title>
+    <title>@yield('title', 'Developer Portal') - Bitroxia Developer Hub</title>
 
     <!-- Google Fonts & Boxicons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,600&display=swap" rel="stylesheet">
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
 
     <style>
         :root {
-            --bg-base: #f8fafc;
+            --bg-base: #f4f6f9;
             --bg-surface: #ffffff;
             --bg-sidebar: #0f172a;
             --sidebar-border: #1e293b;
-            --sidebar-text: #94a3b8;
-            --sidebar-active-bg: rgba(15, 116, 76, 0.15);
-            --sidebar-active-text: #10b981;
-            --primary: #0f744c;
-            --primary-hover: #0a5638;
+            --sidebar-text: #cbd5e1; /* Lighter high-contrast sidebar text */
+            --sidebar-label: #94a3b8; /* Lighter clear label text */
+            --sidebar-active-bg: rgba(16, 185, 129, 0.16);
+            --sidebar-active-border: rgba(16, 185, 129, 0.35);
+            --sidebar-active-text: #34d399; /* Bright green active link */
+            --primary: #059669;
+            --primary-vibrant: #10b981;
+            --primary-hover: #047857;
             --primary-light: #ecfdf5;
             --primary-border: #a7f3d0;
             --slate-dark: #0f172a;
+            --slate-heading: #1e293b;
             --slate-body: #334155;
             --slate-muted: #64748b;
-            --border-color: #e2e8f0;
-            --radius-sm: 6px;
-            --radius-md: 10px;
-            --radius-lg: 14px;
+            --slate-light: #f8fafc;
+            --border-color: #cbd5e1;
+            --border-subtle: #e2e8f0;
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
             --radius-xl: 20px;
-            --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05);
-            --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
-            --shadow-lg: 0 12px 24px -4px rgba(15, 23, 42, 0.12);
+            --shadow-xs: 0 1px 3px rgba(15, 23, 42, 0.04);
+            --shadow-sm: 0 3px 8px rgba(15, 23, 42, 0.06);
+            --shadow-md: 0 8px 20px -2px rgba(15, 23, 42, 0.09);
+            --shadow-lg: 0 14px 32px -4px rgba(15, 23, 42, 0.14);
         }
 
         * {
@@ -45,18 +52,20 @@
         }
 
         body {
-            font-family: 'Outfit', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: 'Plus Jakarta Sans', 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
             background-color: var(--bg-base);
             color: var(--slate-body);
             display: flex;
             min-height: 100vh;
             overflow-x: hidden;
             -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
         }
 
         /* SIDEBAR STYLES */
         .dev-sidebar {
-            width: 260px;
+            width: 270px;
             background: var(--bg-sidebar);
             color: #ffffff;
             display: flex;
@@ -74,99 +83,104 @@
             padding: 24px 20px;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 14px;
             border-bottom: 1px solid var(--sidebar-border);
         }
 
         .dev-brand-icon {
-            width: 38px;
-            height: 38px;
-            border-radius: var(--radius-md);
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
             background: linear-gradient(135deg, #10b981, #059669);
             color: #ffffff;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 22px;
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            font-size: 24px;
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
+            flex-shrink: 0;
         }
 
         .dev-brand-title {
-            font-size: 16px;
-            font-weight: 700;
-            letter-spacing: -0.3px;
+            font-size: 16.5px;
+            font-weight: 800;
+            letter-spacing: -0.4px;
             color: #ffffff;
+            line-height: 1.2;
         }
 
         .dev-brand-sub {
-            font-size: 11px;
-            color: #64748b;
-            font-weight: 500;
+            font-size: 10.5px;
+            color: #94a3b8; /* Lighter clear subtitle */
+            font-weight: 700;
             display: block;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.9px;
+            margin-top: 2px;
         }
 
         .dev-nav-menu {
-            padding: 20px 12px;
+            padding: 20px 14px;
             flex: 1;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 6px;
         }
 
         .dev-nav-label {
             font-size: 10.5px;
-            font-weight: 700;
+            font-weight: 800;
             text-transform: uppercase;
-            letter-spacing: 0.8px;
-            color: #475569;
-            padding: 12px 12px 6px;
+            letter-spacing: 1.1px;
+            color: var(--sidebar-label); /* Lighter category label */
+            padding: 16px 12px 6px;
         }
 
         .dev-nav-item {
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 11px 14px;
+            padding: 11px 16px;
             border-radius: var(--radius-md);
-            color: var(--sidebar-text);
+            color: var(--sidebar-text); /* Lighter text color */
             text-decoration: none;
-            font-size: 13.5px;
+            font-size: 14px;
             font-weight: 600;
             transition: all 0.2s ease;
+            border: 1px solid transparent;
         }
 
         .dev-nav-item:hover {
             color: #ffffff;
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.09);
         }
 
         .dev-nav-item.active {
             background: var(--sidebar-active-bg);
             color: var(--sidebar-active-text);
             font-weight: 700;
-            border-left: 3px solid #10b981;
+            border-color: var(--sidebar-active-border);
+            box-shadow: 0 2px 10px rgba(16, 185, 129, 0.2);
         }
 
         .dev-nav-item i {
-            font-size: 19px;
+            font-size: 20px;
             transition: transform 0.2s ease;
         }
 
         .dev-nav-item:hover i {
-            transform: translateX(2px);
+            transform: translateX(3px);
         }
 
         .dev-sidebar-footer {
-            padding: 16px;
+            padding: 18px 14px;
             border-top: 1px solid var(--sidebar-border);
         }
 
         /* MAIN CONTENT AREA */
         .dev-main-wrapper {
-            margin-left: 260px;
+            margin-left: 270px;
             flex: 1;
             display: flex;
             flex-direction: column;
@@ -176,9 +190,9 @@
 
         /* TOPBAR STYLES */
         .dev-topbar {
-            height: 70px;
+            height: 72px;
             background: var(--bg-surface);
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-subtle);
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -186,7 +200,7 @@
             position: sticky;
             top: 0;
             z-index: 90;
-            box-shadow: var(--shadow-sm);
+            box-shadow: var(--shadow-xs);
         }
 
         .dev-topbar-left {
@@ -199,16 +213,16 @@
             display: none;
             background: none;
             border: none;
-            font-size: 24px;
+            font-size: 26px;
             color: var(--slate-dark);
             cursor: pointer;
         }
 
         .page-header-title {
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--slate-dark);
-            letter-spacing: -0.3px;
+            font-size: 19.5px;
+            font-weight: 800;
+            color: var(--slate-heading);
+            letter-spacing: -0.4px;
         }
 
         .dev-topbar-right {
@@ -221,12 +235,12 @@
         .user-profile-btn {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             background: none;
             border: none;
             cursor: pointer;
-            padding: 4px 8px;
-            border-radius: var(--radius-md);
+            padding: 4px 10px 4px 6px;
+            border-radius: 30px;
             transition: background 0.2s;
             position: relative;
         }
@@ -236,19 +250,20 @@
         }
 
         .user-avatar {
-            width: 38px;
-            height: 38px;
+            width: 42px;
+            height: 42px;
             border-radius: 50%;
-            background: #1e293b;
+            background: linear-gradient(135deg, #059669, #047857);
             color: #ffffff;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 700;
-            font-size: 14px;
+            font-weight: 800;
+            font-size: 15px;
             border: 2px solid #ffffff;
             box-shadow: var(--shadow-sm);
             overflow: hidden;
+            flex-shrink: 0;
         }
 
         .user-avatar img {
@@ -262,32 +277,32 @@
         }
 
         .user-name {
-            font-size: 13.5px;
-            font-weight: 700;
-            color: var(--slate-dark);
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--slate-heading);
             display: block;
             line-height: 1.2;
         }
 
         .user-role-tag {
-            font-size: 11px;
+            font-size: 11.5px;
             color: var(--primary);
-            font-weight: 600;
+            font-weight: 700;
         }
 
         .dropdown-menu-box {
             position: absolute;
             top: 100%;
             right: 0;
-            margin-top: 8px;
-            width: 210px;
+            margin-top: 10px;
+            width: 220px;
             background: var(--bg-surface);
-            border: 1px solid var(--border-color);
+            border: 1px solid var(--border-subtle);
             border-radius: var(--radius-lg);
             box-shadow: var(--shadow-lg);
             display: none;
             flex-direction: column;
-            padding: 6px;
+            padding: 8px;
             z-index: 200;
         }
 
@@ -299,8 +314,8 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            padding: 10px 12px;
-            font-size: 13px;
+            padding: 10px 14px;
+            font-size: 13.5px;
             font-weight: 600;
             color: var(--slate-body);
             text-decoration: none;
@@ -314,7 +329,7 @@
         }
 
         .dropdown-item-link i {
-            font-size: 17px;
+            font-size: 18px;
             color: var(--slate-muted);
         }
 
@@ -327,11 +342,23 @@
         /* CARD CONTAINERS */
         .dev-card {
             background: var(--bg-surface);
-            border: 1px solid var(--border-color);
+            border: 1px solid var(--border-subtle);
             border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-sm);
+            box-shadow: var(--shadow-xs);
             padding: 24px;
             margin-bottom: 24px;
+            transition: box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+
+        /* FORM CONTROLS PREMIUM STYLING */
+        input[type="text"], input[type="email"], input[type="password"], select, textarea {
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+        }
+        input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus, select:focus, textarea:focus {
+            border-color: var(--primary-vibrant) !important;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15) !important;
+            outline: none !important;
         }
 
         /* BADGES */
@@ -339,12 +366,12 @@
             display: inline-flex;
             align-items: center;
             gap: 5px;
-            padding: 4px 10px;
+            padding: 4px 12px;
             border-radius: 20px;
             font-size: 11.5px;
-            font-weight: 700;
+            font-weight: 800;
             text-transform: uppercase;
-            letter-spacing: 0.4px;
+            letter-spacing: 0.5px;
         }
         .status-in_progress { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
         .status-assigned { background: #fef3c7; color: #d97706; border: 1px solid #fde68a; }
@@ -354,14 +381,15 @@
 
         /* ALERTS */
         .alert-box {
-            padding: 14px 18px;
+            padding: 14px 20px;
             border-radius: var(--radius-md);
             margin-bottom: 24px;
-            font-size: 13.5px;
+            font-size: 14px;
             font-weight: 600;
             display: flex;
             align-items: center;
             gap: 12px;
+            box-shadow: var(--shadow-xs);
         }
         .alert-success { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
         .alert-danger { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
@@ -373,7 +401,7 @@
             .dev-main-wrapper { margin-left: 0; }
             .toggle-sidebar-btn { display: block; }
             .dev-topbar { padding: 0 16px; }
-            .dev-body-content { padding: 16px; }
+            .dev-body-content { padding: 20px 16px; }
         }
     </style>
     @yield('styles')
@@ -383,12 +411,12 @@
     <!-- SIDEBAR NAVIGATION -->
     <aside class="dev-sidebar" id="devSidebar">
         <div class="dev-sidebar-brand">
-            <div class="dev-brand-icon">
-                <i class="bx bx-code-alt"></i>
+            <div class="dev-brand-icon" style="background: transparent; box-shadow: none; width: 40px; height: 40px; border-radius: 50%; overflow: hidden;">
+                <img src="{{ asset('logos/bitroxia_logo.png') }}" alt="Bitroxia" style="width: 100%; height: 100%; object-fit: cover;">
             </div>
             <div>
-                <div class="dev-brand-title">PMS Developer Hub</div>
-                <span class="dev-brand-sub">Developer Workspace</span>
+                <div class="dev-brand-title" style="font-size: 16px; font-weight: 800; color: #ffffff;">Bitroxia Developer Hub</div>
+                <span class="dev-brand-sub">DEVELOPER WORKSPACE</span>
             </div>
         </div>
 
@@ -401,7 +429,7 @@
             </a>
 
             <a href="{{ route('developer.my-work') }}" class="dev-nav-item {{ request()->routeIs('developer.my-work') ? 'active' : '' }}">
-                <i class="bx bx-task"></i>
+                <i class="bx bx-check-square"></i>
                 <span>My Work</span>
             </a>
 
@@ -437,7 +465,7 @@
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button type="submit" class="dev-nav-item" style="width: 100%; border: none; background: none; cursor: pointer; color: #f87171;">
-                    <i class="bx bx-log-out"></i>
+                    <i class="bx bx-log-out" style="color: #f87171;"></i>
                     <span>Logout</span>
                 </button>
             </form>
@@ -486,7 +514,7 @@
                             <span class="user-name">{{ Auth::user()->name }}</span>
                             <span class="user-role-tag">{{ ucfirst(Auth::user()->designation ?? 'Developer') }}</span>
                         </div>
-                        <i class="bx bx-chevron-down" style="color: var(--slate-muted); font-size: 16px;"></i>
+                        <i class="bx bx-chevron-down" style="color: var(--slate-muted); font-size: 18px;"></i>
                     </button>
 
                     <div class="dropdown-menu-box" id="userDropdownMenu">
@@ -512,14 +540,14 @@
         <main class="dev-body-content">
             @if(session('success'))
                 <div class="alert-box alert-success">
-                    <i class="bx bx-check-circle" style="font-size: 20px;"></i>
+                    <i class="bx bx-check-circle" style="font-size: 22px;"></i>
                     <span>{{ session('success') }}</span>
                 </div>
             @endif
 
             @if(session('error') || $errors->any())
                 <div class="alert-box alert-danger">
-                    <i class="bx bx-error-circle" style="font-size: 20px;"></i>
+                    <i class="bx bx-error-circle" style="font-size: 22px;"></i>
                     <span>{{ session('error') ?? $errors->first() }}</span>
                 </div>
             @endif
@@ -545,3 +573,4 @@
     @yield('scripts')
 </body>
 </html>
+

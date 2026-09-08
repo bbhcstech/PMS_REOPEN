@@ -647,6 +647,39 @@
 </div>
 @endif
 
+@php
+    $todayObj = \Carbon\Carbon::now()->startOfDay();
+    $kpiExpiring7 = 0;
+    $kpiExpiring3 = 0;
+    $kpiExpiringTomorrow = 0;
+    $kpiSuspended = 0;
+
+    foreach ($companies as $c) {
+        if (strtolower($c->status ?? '') === 'suspended') {
+            $kpiSuspended++;
+            continue;
+        }
+
+        $subItem = $c->activeSubscription;
+        $expiryObj = $subItem?->ends_at ?? $c->trial_ends_at;
+        if ($expiryObj) {
+            $dLeft = (int) $todayObj->diffInDays(\Carbon\Carbon::parse($expiryObj)->startOfDay(), false);
+            if ($dLeft >= 1 && $dLeft <= 7) {
+                $kpiExpiring7++;
+            }
+            if ($dLeft >= 1 && $dLeft <= 3) {
+                $kpiExpiring3++;
+            }
+            if ($dLeft === 1) {
+                $kpiExpiringTomorrow++;
+            }
+            if ($dLeft <= 0) {
+                $kpiSuspended++;
+            }
+        }
+    }
+@endphp
+
 <!-- 8 EXECUTIVE SUMMARY KPI CARDS BAR -->
 <div class="subs-kpi-grid">
     <!-- 1. TOTAL SUBSCRIPTIONS -->
@@ -669,17 +702,47 @@
         <div class="sub positive">Operational &amp; billed</div>
     </div>
 
-    <!-- 3. FREE PLANS -->
+    <!-- 3. EXPIRING IN 7 DAYS -->
     <div class="kpi-card">
         <div class="head">
-            <span class="lbl">Free Plans</span>
-            <div class="icon-box" style="background: #f1f5f9; color: #64748b;"><i class="fas fa-tag"></i></div>
+            <span class="lbl">Expiring in 7 Days</span>
+            <div class="icon-box" style="background: #fffbeb; color: #d97706;"><i class="fas fa-clock"></i></div>
         </div>
-        <div class="val">{{ number_format($companies->filter(fn($c) => strtolower($c->activeSubscription?->plan?->name ?? 'free') === 'free')->count()) }}</div>
-        <div class="sub">Free tier tenants</div>
+        <div class="val">{{ number_format($kpiExpiring7) }}</div>
+        <div class="sub warning">Daily warnings active</div>
     </div>
 
-    <!-- 4. GOLD PLANS -->
+    <!-- 4. EXPIRING IN 3 DAYS -->
+    <div class="kpi-card">
+        <div class="head">
+            <span class="lbl">Expiring in 3 Days</span>
+            <div class="icon-box" style="background: #fef2f2; color: #dc2626;"><i class="fas fa-exclamation-triangle"></i></div>
+        </div>
+        <div class="val">{{ number_format($kpiExpiring3) }}</div>
+        <div class="sub danger">Urgent warning tier</div>
+    </div>
+
+    <!-- 5. EXPIRES TOMORROW -->
+    <div class="kpi-card">
+        <div class="head">
+            <span class="lbl">Expires Tomorrow</span>
+            <div class="icon-box" style="background: #fef2f2; color: #991b1b;"><i class="fas fa-bell"></i></div>
+        </div>
+        <div class="val">{{ number_format($kpiExpiringTomorrow) }}</div>
+        <div class="sub danger">Final warning tier</div>
+    </div>
+
+    <!-- 6. SUSPENDED / EXPIRED -->
+    <div class="kpi-card">
+        <div class="head">
+            <span class="lbl">Suspended Companies</span>
+            <div class="icon-box" style="background: #fdf2f8; color: #db2777;"><i class="fas fa-lock"></i></div>
+        </div>
+        <div class="val">{{ number_format($kpiSuspended) }}</div>
+        <div class="sub danger">Restricted access</div>
+    </div>
+
+    <!-- 7. GOLD PLANS -->
     <div class="kpi-card">
         <div class="head">
             <span class="lbl">Gold Plans</span>
@@ -689,44 +752,14 @@
         <div class="sub positive">Popular tier</div>
     </div>
 
-    <!-- 5. PLATINUM PLANS -->
+    <!-- 8. DIAMOND & PLATINUM -->
     <div class="kpi-card">
         <div class="head">
-            <span class="lbl">Platinum Plans</span>
-            <div class="icon-box" style="background: #f0f9ff; color: #0284c7;"><i class="fas fa-gem"></i></div>
+            <span class="lbl">Platinum &amp; Diamond</span>
+            <div class="icon-box" style="background: #f5f3ff; color: #7c3aed;"><i class="fas fa-gem"></i></div>
         </div>
-        <div class="val">{{ number_format($companies->filter(fn($c) => strtolower($c->activeSubscription?->plan?->name ?? '') === 'platinum')->count()) }}</div>
-        <div class="sub positive">Scaling tier</div>
-    </div>
-
-    <!-- 6. DIAMOND PLANS -->
-    <div class="kpi-card">
-        <div class="head">
-            <span class="lbl">Diamond Plans</span>
-            <div class="icon-box" style="background: #f5f3ff; color: #7c3aed;"><i class="fas fa-wand-magic-sparkles"></i></div>
-        </div>
-        <div class="val">{{ number_format($companies->filter(fn($c) => strtolower($c->activeSubscription?->plan?->name ?? '') === 'diamond')->count()) }}</div>
-        <div class="sub positive">Enterprise tier</div>
-    </div>
-
-    <!-- 7. EXPIRING SOON -->
-    <div class="kpi-card">
-        <div class="head">
-            <span class="lbl">Expiring Soon</span>
-            <div class="icon-box" style="background: #fffbeb; color: #d97706;"><i class="fas fa-clock"></i></div>
-        </div>
-        <div class="val">2</div>
-        <div class="sub warning">Renewals within 7 days</div>
-    </div>
-
-    <!-- 8. MONTHLY RECURRING REVENUE -->
-    <div class="kpi-card">
-        <div class="head">
-            <span class="lbl">Monthly Revenue</span>
-            <div class="icon-box" style="background: #f0fdf4; color: #16a34a;"><i class="fas fa-indian-rupee-sign"></i></div>
-        </div>
-        <div class="val">₹2,48,500</div>
-        <div class="sub positive"><i class="fas fa-arrow-trend-up"></i> +18.2% MoM</div>
+        <div class="val">{{ number_format($companies->filter(fn($c) => in_array(strtolower($c->activeSubscription?->plan?->name ?? ''), ['platinum', 'diamond'], true))->count()) }}</div>
+        <div class="sub positive">High-tier enterprise</div>
     </div>
 </div>
 
@@ -771,6 +804,10 @@
                 <option value="">All Statuses</option>
                 <option value="active">Active</option>
                 <option value="trial">Trial</option>
+                <option value="expiring_7">Expiring in 7 days</option>
+                <option value="expiring_3">Expiring in 3 days</option>
+                <option value="expiring_1">Expiring tomorrow</option>
+                <option value="expired">Expired</option>
                 <option value="suspended">Suspended</option>
             </select>
 
@@ -828,11 +865,12 @@
                         $startsAtFmt = $startsAtObj ? \Carbon\Carbon::parse($startsAtObj)->format('M d, Y, h:i A') : 'N/A';
                         $endsAtObj = $sub?->ends_at ?? $company->trial_ends_at ?? ($startsAtObj ? \Carbon\Carbon::parse($startsAtObj)->addDays(30) : null);
                         $endsAtFmt = $endsAtObj ? \Carbon\Carbon::parse($endsAtObj)->format('M d, Y, h:i A') : 'N/A';
+                        $daysLeftCalc = $endsAtObj ? (int) \Carbon\Carbon::now()->startOfDay()->diffInDays(\Carbon\Carbon::parse($endsAtObj)->startOfDay(), false) : 999;
                         $isExpired = $endsAtObj ? \Carbon\Carbon::parse($endsAtObj)->isPast() : false;
                         $rawStatus = strtolower($company->status ?? 'active');
                         $effStatus = ($rawStatus === 'suspended' || $isExpired) ? 'suspended' : $rawStatus;
                     @endphp
-                    <tr class="feature-item-row" data-status="{{ $effStatus }}" data-plan="{{ $pClass }}">
+                    <tr class="feature-item-row" data-status="{{ $effStatus }}" data-plan="{{ $pClass }}" data-daysleft="{{ $daysLeftCalc }}">
                         <td style="text-align: center;"><input type="checkbox" class="row-sub-cb" value="{{ $company->id }}" /></td>
                         <td style="text-align: left;">
                             <div style="display: flex; align-items: center; gap: 10px;">
@@ -930,7 +968,10 @@
             $uLimit = $planObj?->max_users ?? match($pName) { 'FREE' => 5, 'GOLD' => 25, 'PLATINUM' => 100, 'DIAMOND' => 0 };
             $sGb = round(($planObj?->max_storage_mb ?? match($pName) { 'FREE' => 5120, 'GOLD' => 25600, 'PLATINUM' => 102400, 'DIAMOND' => 512000 }) / 1024);
             $subCount = $companies->filter(fn($c) => strtoupper($c->activeSubscription?->plan?->name ?? ($idx === 0 ? 'FREE' : '')) === $pName)->count();
-            $enabledModCount = match($pName) { 'FREE' => 7, 'GOLD' => 16, 'PLATINUM' => 23, 'DIAMOND' => 28 };
+            $totalModCount = max(1, $modules->count());
+            $enabledModCount = $planObj && method_exists($planObj, 'modules') && $planObj->modules->count() > 0 
+                ? $planObj->modules->count() 
+                : match($pName) { 'FREE' => min(8, $totalModCount), 'GOLD' => max(1, $totalModCount - 11), 'PLATINUM' => $totalModCount, 'DIAMOND' => $totalModCount };
         @endphp
         <div class="plan-card-item theme-{{ $pClass }}">
             @if($pName === 'GOLD')
@@ -958,7 +999,7 @@
                 </div>
                 <div class="plan-stats-item" style="text-align: right;">
                     <span>Enabled Modules</span>
-                    <strong>{{ $enabledModCount }} / 28 Modules</strong>
+                    <strong>{{ $enabledModCount }} / {{ $totalModCount }} Modules</strong>
                 </div>
             </div>
 
@@ -1535,21 +1576,25 @@
 
             <div style="margin-bottom: 20px;">
                 <label style="font-size: 12px; font-weight: 700; color: var(--text-subtle); text-transform: uppercase;">Select Target Plan Tier:</label>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 6px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 6px;" id="modalPlanOptionsGrid">
                     @foreach(['FREE', 'GOLD', 'PLATINUM', 'DIAMOND'] as $pIdx => $pName)
                     @php
                         $planObj = $plans->first(fn($p) => strtoupper($p->name) === $pName);
                         $pId = $planObj?->id ?? $pName;
                         $pPrice = $planObj?->monthly_price ?? match($pName) { 'FREE' => 0, 'GOLD' => 4999, 'PLATINUM' => 9999, 'DIAMOND' => 19999 };
+                        $pLevel = match($pName) { 'FREE' => 0, 'GOLD' => 1, 'PLATINUM' => 2, 'DIAMOND' => 3 };
                     @endphp
-                    <label style="padding: 14px; border: 2px solid var(--border-color); border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: space-between;" class="plan-card-option">
+                    <label style="padding: 14px; border: 2px solid var(--border-color); border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: space-between;" class="plan-card-option" data-planlevel="{{ $pLevel }}" data-planname="{{ $pName }}">
                         <div style="display: flex; align-items: center; gap: 8px;">
-                            <input type="radio" name="plan_id" value="{{ $pId }}" data-planname="{{ $pName }}" {{ $pName === 'GOLD' ? 'checked' : '' }} />
+                            <input type="radio" name="plan_id" value="{{ $pId }}" data-planname="{{ $pName }}" data-planlevel="{{ $pLevel }}" {{ $pName === 'GOLD' ? 'checked' : '' }} />
                             <span class="plan-badge-cell plan-{{ strtolower($pName) }}">{{ $pName }}</span>
                         </div>
                         <strong style="font-size: 13.5px;">₹{{ number_format($pPrice) }}/mo</strong>
                     </label>
                     @endforeach
+                </div>
+                <div id="downgradeWarningNotice" style="display: none; background: #fff1f2; color: #e11d48; border: 1px solid #fecdd3; border-radius: 10px; padding: 10px 14px; font-size: 12px; margin-top: 10px; font-weight: 600;">
+                    <i class="fas fa-lock me-1"></i> Downgrade Unavailable: This organization has reached a higher plan tier. Companies can only renew their current tier or upgrade to a higher tier.
                 </div>
             </div>
 
@@ -2045,6 +2090,45 @@ document.addEventListener('DOMContentLoaded', function() {
     if (openModalBtn && modal) openModalBtn.addEventListener('click', () => modal.classList.add('open'));
     if (closeModalBtn && modal) closeModalBtn.addEventListener('click', () => modal.classList.remove('open'));
 
+    function updateModalPlanLock(companyId) {
+        const compData = window.companyOverridesMap ? window.companyOverridesMap[companyId] : null;
+        const highestLevel = compData ? (compData.highest_level || 0) : 0;
+        let hasBlockedOption = false;
+
+        document.querySelectorAll('.plan-card-option').forEach(option => {
+            const level = parseInt(option.getAttribute('data-planlevel') || 0);
+            const radio = option.querySelector('input[type="radio"]');
+
+            if (highestLevel > 0 && level < highestLevel) {
+                option.style.opacity = '0.45';
+                option.style.cursor = 'not-allowed';
+                option.title = 'Downgrade unavailable: Organization has reached a higher tier.';
+                if (radio) {
+                    radio.disabled = true;
+                    if (radio.checked) radio.checked = false;
+                }
+                hasBlockedOption = true;
+            } else {
+                option.style.opacity = '1';
+                option.style.cursor = 'pointer';
+                option.title = '';
+                if (radio) radio.disabled = false;
+            }
+        });
+
+        const notice = document.getElementById('downgradeWarningNotice');
+        if (notice) {
+            notice.style.display = hasBlockedOption ? 'block' : 'none';
+        }
+    }
+
+    const modalCompSelect = document.getElementById('modalCompanySelect');
+    if (modalCompSelect) {
+        modalCompSelect.addEventListener('change', function() {
+            updateModalPlanLock(this.value);
+        });
+    }
+
     document.querySelectorAll('.open-change-modal, #drawerChangePlanTrigger').forEach(btn => {
         btn.addEventListener('click', function() {
             const compId = this.getAttribute('data-id');
@@ -2058,11 +2142,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const currentPlan = (this.getAttribute('data-currentplan') || this.getAttribute('data-plan') || 'GOLD').toUpperCase();
             
-            const compSelect = document.getElementById('modalCompanySelect');
-            if (compSelect && compId) compSelect.value = compId;
+            if (modalCompSelect && compId) {
+                modalCompSelect.value = compId;
+                updateModalPlanLock(compId);
+            }
 
-            // Pre-select matching plan radio button in modal
-            const targetRadio = document.querySelector(`input[name="plan_id"][data-planname="${currentPlan}"]`) || document.querySelector(`input[name="plan_id"][value="${currentPlan}"]`);
+            // Pre-select matching plan radio button in modal if not disabled
+            const targetRadio = document.querySelector(`input[name="plan_id"][data-planname="${currentPlan}"]:not(:disabled)`) 
+                || document.querySelector(`input[name="plan_id"]:not(:disabled)`);
             if (targetRadio) {
                 targetRadio.checked = true;
             }
@@ -2149,12 +2236,25 @@ document.addEventListener('DOMContentLoaded', function() {
 
         document.querySelectorAll('#subsCompanyTable tbody tr.feature-item-row').forEach(row => {
             const text = row.textContent.toLowerCase();
-            const rowStatus = row.getAttribute('data-status') || '';
-            const rowPlan = row.getAttribute('data-plan') || '';
+            const rowStatus = (row.getAttribute('data-status') || '').toLowerCase();
+            const rowPlan = (row.getAttribute('data-plan') || '').toLowerCase();
+            const daysLeft = parseInt(row.getAttribute('data-daysleft') || '999', 10);
 
             const matchesSearch = query === '' || text.includes(query);
-            const matchesStatus = statusVal === '' || rowStatus === statusVal;
             const matchesPlan = planVal === '' || rowPlan === planVal;
+
+            let matchesStatus = true;
+            if (statusVal === 'expiring_7') {
+                matchesStatus = (daysLeft >= 1 && daysLeft <= 7 && rowStatus !== 'suspended');
+            } else if (statusVal === 'expiring_3') {
+                matchesStatus = (daysLeft >= 1 && daysLeft <= 3 && rowStatus !== 'suspended');
+            } else if (statusVal === 'expiring_1') {
+                matchesStatus = (daysLeft === 1 && rowStatus !== 'suspended');
+            } else if (statusVal === 'expired') {
+                matchesStatus = (daysLeft <= 0 || rowStatus === 'suspended');
+            } else if (statusVal !== '') {
+                matchesStatus = (rowStatus === statusVal);
+            }
 
             row.style.display = (matchesSearch && matchesStatus && matchesPlan) ? '' : 'none';
         });
@@ -2190,6 +2290,8 @@ document.addEventListener('DOMContentLoaded', function() {
             "id": "{{ $c->id }}",
             "name": @json($c->name),
             "plan": "{{ strtoupper($c->activeSubscription?->plan?->name ?? 'FREE') }}",
+            "highest_level": {{ (int) ($c->highest_plan_level ?? 0) }},
+            "highest_slug": "{{ strtolower($c->highest_plan_slug ?? 'free') }}",
             "plan_features": @json($c->activeSubscription?->plan?->features ?? []),
             "overrides": {
                 @foreach($c->companyModules as $cm)

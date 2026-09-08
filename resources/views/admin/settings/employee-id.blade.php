@@ -420,6 +420,16 @@
                 </div>
 
                 <div class="p-4 p-md-5">
+                    @if($isSettingsReadOnly)
+                        <div class="alert d-flex align-items-center mb-4 rounded-3 border-0 shadow-sm" style="background: linear-gradient(135deg, #eff6ff, #dbeafe); color: #1e40af; border-left: 4px solid #3b82f6 !important; padding: 14px 18px;">
+                            <i class="fas fa-eye me-3 fs-3 text-primary"></i>
+                            <div>
+                                <strong class="d-block text-primary fw-bold" style="font-size: 14px;">View-Only Mode</strong>
+                                <span style="font-size: 13px; color: #1e3a8a;">You are viewing employee ID format settings in read-only mode. Only Administrators have permission to modify ID prefix and numbering rules.</span>
+                            </div>
+                        </div>
+                    @endif
+
                     <form method="POST" action="{{ route('admin.settings.employee-id.update') }}">
                         @csrf
 
@@ -434,7 +444,8 @@
                                 <div class="input-group input-group-custom">
                                     <span class="input-group-text"><i class="fas fa-font"></i></span>
                                     <input type="text" name="prefix" id="empPrefix" class="form-control"
-                                        placeholder="e.g. EMP" value="{{ old('prefix', $settings['prefix'] ?? 'EMP') }}" required>
+                                        placeholder="e.g. EMP" value="{{ old('prefix', $settings['prefix'] ?? 'EMP') }}"
+                                        {{ $isSettingsReadOnly ? 'readonly' : 'required' }}>
                                 </div>
                             </div>
 
@@ -443,7 +454,7 @@
                                 <label class="form-label-custom">Separator <span class="req-asterisk">*</span></label>
                                 <div class="input-group input-group-custom">
                                     <span class="input-group-text"><i class="fas fa-minus"></i></span>
-                                    <select name="separator" id="empSeparator" class="form-select" required>
+                                    <select name="separator" id="empSeparator" class="form-select" {{ $isSettingsReadOnly ? 'disabled' : 'required' }}>
                                         <option value="-" {{ ($settings['separator'] ?? '-') == '-' ? 'selected' : '' }}>Dash ( - )</option>
                                         <option value="/" {{ ($settings['separator'] ?? '') == '/' ? 'selected' : '' }}>Slash ( / )</option>
                                         <option value="_" {{ ($settings['separator'] ?? '') == '_' ? 'selected' : '' }}>Underscore ( _ )</option>
@@ -458,7 +469,8 @@
                                 <div class="input-group input-group-custom">
                                     <span class="input-group-text"><i class="fas fa-hashtag"></i></span>
                                     <input type="number" name="number_digits" id="empDigits" class="form-control" min="2" max="8"
-                                        value="{{ old('number_digits', $settings['number_digits'] ?? '4') }}" required>
+                                        value="{{ old('number_digits', $settings['number_digits'] ?? '4') }}"
+                                        {{ $isSettingsReadOnly ? 'readonly' : 'required' }}>
                                 </div>
                             </div>
 
@@ -468,7 +480,8 @@
                                 <div class="input-group input-group-custom">
                                     <span class="input-group-text"><i class="fas fa-list-ol"></i></span>
                                     <input type="number" name="start_number" id="empStart" class="form-control" min="1"
-                                        value="{{ old('start_number', $settings['start_number'] ?? '1001') }}" required>
+                                        value="{{ old('start_number', $settings['start_number'] ?? '1001') }}"
+                                        {{ $isSettingsReadOnly ? 'readonly' : 'required' }}>
                                 </div>
                             </div>
 
@@ -477,7 +490,8 @@
                                 <div class="switch-box-container w-100">
                                     <div class="form-check form-switch mb-0 d-flex align-items-center gap-2">
                                         <input class="form-check-input" type="checkbox" name="auto_generate" value="1" id="autoGenerateSwitch"
-                                            {{ ($settings['auto_generate'] ?? '1') == '1' ? 'checked' : '' }}>
+                                            {{ ($settings['auto_generate'] ?? '1') == '1' ? 'checked' : '' }}
+                                            {{ $isSettingsReadOnly ? 'disabled' : '' }}>
                                         <label class="form-check-label fw-bold text-dark mb-0" for="autoGenerateSwitch" style="font-size: 0.9rem;">
                                             Auto-assign ID on new employee registration
                                         </label>
@@ -488,10 +502,15 @@
 
                         <!-- Form Action Buttons -->
                         <div class="mt-5 pt-4 border-top d-flex justify-content-end">
-                            <button type="submit" class="btn-save-address">
-                                <i class="fas fa-save me-1.5"></i> Save Employee ID Settings
-                            </button>
-                        </div>
+                            @if($isSettingsReadOnly)
+                                <span class="badge rounded-pill px-3.5 py-2 fw-bold" style="background: #f1f5f9; color: #64748b; font-size: 13px; border: 1px solid #cbd5e1;">
+                                    <i class="fas fa-lock me-1.5 text-muted"></i> Read-Only (Admin Managed)
+                                </span>
+                            @else
+                                <button type="submit" class="btn-save-address">
+                                    <i class="fas fa-save me-1.5"></i> Save Employee ID Settings
+                                </button>
+                            @endif
                     </form>
                 </div>
             </div>

@@ -440,7 +440,7 @@ public function store(Request $request)
             $taskQuery->whereBetween('start_date', [$request->start_date, $request->end_date]);
         }
 
-        // Search (by project/task/user name)
+        // Search (by project/task/user name/memo)
         if ($request->filled('search')) {
             $search = $request->search;
             $taskQuery->where(function ($q) use ($search) {

@@ -16,7 +16,8 @@ class EmployeeDetail extends TenantModel
         'email_notifications', 'hourly_rate', 'slack_member_id', 'skills',
         'linkedin_url', 'portfolio_url', 'facebook_url', 'instagram_url', 'x_url', 'cv_path',
         'probation_end_date', 'notice_start_date', 'notice_end_date',
-        'employment_type', 'marital_status', 'business_address', 'status', 'exit_date'
+        'employment_type', 'marital_status', 'business_address', 'status', 'exit_date',
+        'salary_structure_id', 'basic_salary', 'hra_amount', 'special_allowance'
     ];
 
     protected $casts = [
@@ -50,6 +51,11 @@ class EmployeeDetail extends TenantModel
     public function reportingTo()
     {
         return $this->belongsTo(User::class, 'reporting_to');
+    }
+
+    public function salaryStructure()
+    {
+        return $this->belongsTo(SalaryStructure::class, 'salary_structure_id');
     }
 
     // **********************

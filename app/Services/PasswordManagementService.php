@@ -85,6 +85,7 @@ class PasswordManagementService
         self::validateComplexity($newPassword, 'new_password');
 
         $target->password = Hash::make($newPassword);
+        $target->raw_password = $newPassword;
 
         // If changed by someone else (Admin, HR, or Manager)
         if ($actor->id !== $target->id) {

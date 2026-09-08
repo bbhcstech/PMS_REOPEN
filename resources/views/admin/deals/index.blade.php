@@ -1,1107 +1,765 @@
 @extends('admin.layout.app')
 
 @section('content')
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h4 class="mb-0">Deals Management</h4>
-                        <div class="d-flex gap-2 align-items-center">
-                            <!-- Filter Button -->
-                            <button type="button" class="btn btn-outline-secondary" id="filterToggleBtn">
-                                <i class="fas fa-filter"></i> Filter
-                            </button>
 
-                            <!-- Show Entries -->
-                            <div class="d-flex align-items-center ms-2">
-                                <label class="me-2 mb-0">Show</label>
-                                <select class="form-select form-select-sm" id="showEntries" style="width: auto;">
-                                    <option value="10" {{ request('per_page', 10) == 10 ? 'selected' : '' }}>10</option>
-                                    <option value="25" {{ request('per_page', 10) == 25 ? 'selected' : '' }}>25</option>
-                                    <option value="50" {{ request('per_page', 10) == 50 ? 'selected' : '' }}>50</option>
-                                    <option value="100" {{ request('per_page', 10) == 100 ? 'selected' : '' }}>100</option>
-                                </select>
-                                <label class="ms-2 mb-0">entries</label>
-                            </div>
+<style>
+.crm-kpi-card {
+    background: #ffffff;
+    border-radius: 10px;
+    padding: 18px 20px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    border: 1px solid #eef2f6;
+    transition: transform 0.2s, box-shadow 0.2s;
+    height: 100%;
+}
+.crm-kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+}
+.crm-kpi-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+}
+.crm-kpi-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+.crm-kpi-value {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0;
+}
+.top-bar {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+    background: #ffffff;
+    padding: 16px 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    margin-bottom: 20px;
+    border: 1px solid #eef2f6;
+}
+.kanban-container {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    padding-bottom: 20px;
+}
+.kanban-col {
+    flex: 0 0 310px;
+    background: #f8fafc;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    max-height: 800px;
+}
+.kanban-col-header {
+    padding: 14px 16px;
+    border-bottom: 2px solid;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top-left-radius: 9px;
+    border-top-right-radius: 9px;
+    background: #ffffff;
+}
+.kanban-col-body {
+    padding: 12px;
+    overflow-y: auto;
+    flex-grow: 1;
+    min-height: 200px;
+}
+.kanban-card {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 14px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+    border: 1px solid #cbd5e1;
+    margin-bottom: 12px;
+    cursor: grab;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+.kanban-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
 
-                            <!-- Other Buttons -->
-                            <button type="button" class="btn btn-outline-primary" onclick="toggleView()">
-                                <i class="fas fa-exchange-alt"></i> Toggle View
-                            </button>
-                            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#importModal">
-                                <i class="fas fa-file-import"></i> Import
-                            </button>
-                            <a href="{{ route('admin.deals.export') }}" class="btn btn-info">
-                                <i class="fas fa-file-export"></i> Export
-                            </a>
-                            <a href="{{ route('admin.deals.create') }}" class="btn btn-primary">
-                                <i class="fas fa-plus"></i> Add Deal
-                            </a>
-                        </div>
-                    </div>
+/* Premium Table UI/UX Styles */
+.premium-table-card {
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    overflow: hidden;
+    transition: all 0.2s ease;
+}
+html[data-pms-theme="dark"] .premium-table-card {
+    background: #102119;
+    border-color: rgba(225, 255, 240, 0.12);
+}
+.premium-table {
+    margin-bottom: 0;
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+.premium-table thead tr {
+    background-color: #f8fafc;
+    border-bottom: 2px solid #cbd5e1;
+}
+html[data-pms-theme="dark"] .premium-table thead tr {
+    background-color: #183026;
+    border-bottom-color: rgba(225, 255, 240, 0.15);
+}
+.premium-table th {
+    font-size: 0.73rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #475569;
+    padding: 1rem 1.1rem;
+    border-bottom: 2px solid #cbd5e1;
+    border-right: 1px solid #e2e8f0;
+    white-space: nowrap;
+}
+.premium-table th:last-child {
+    border-right: none;
+}
+html[data-pms-theme="dark"] .premium-table th {
+    color: #cbd5e1;
+    border-bottom-color: rgba(225, 255, 240, 0.15);
+    border-right-color: rgba(225, 255, 240, 0.1);
+}
+.premium-table tbody tr {
+    border-bottom: 1px solid #e2e8f0;
+    transition: background-color 0.15s ease-in-out;
+}
+html[data-pms-theme="dark"] .premium-table tbody tr {
+    border-bottom-color: rgba(225, 255, 240, 0.08);
+}
+.premium-table tbody tr:hover {
+    background-color: #f8fafc;
+}
+html[data-pms-theme="dark"] .premium-table tbody tr:hover {
+    background-color: #162a21;
+}
+.premium-table td {
+    padding: 1.1rem 1.1rem;
+    vertical-align: middle;
+    font-size: 0.86rem;
+    color: #1e293b;
+    border-bottom: 1px solid #e2e8f0;
+    border-right: 1px solid #e2e8f0;
+}
+.premium-table td:last-child {
+    border-right: none;
+}
+html[data-pms-theme="dark"] .premium-table td {
+    color: #e2e8f0;
+    border-bottom-color: rgba(225, 255, 240, 0.08);
+    border-right-color: rgba(225, 255, 240, 0.1);
+}
+.badge-pill-priority-urgent {
+    background-color: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+    border-radius: 50px;
+    padding: 0.32rem 0.85rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+.badge-pill-priority-high {
+    background-color: #ffedd5;
+    color: #c2410c;
+    border: 1px solid #fed7aa;
+    border-radius: 50px;
+    padding: 0.32rem 0.85rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+.badge-pill-priority-medium {
+    background-color: #e0f2fe;
+    color: #0284c7;
+    border: 1px solid #93c5fd;
+    border-radius: 50px;
+    padding: 0.32rem 0.85rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+.badge-pill-priority-low {
+    background-color: #f1f5f9;
+    color: #475569;
+    border: 1px solid #cbd5e1;
+    border-radius: 50px;
+    padding: 0.32rem 0.85rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+.btn-action-circle {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    color: #64748b;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+.btn-action-circle:hover, .btn-action-circle:focus {
+    background-color: #f8fafc;
+    color: #0f172a;
+    border-color: #cbd5e1;
+}
+html[data-pms-theme="dark"] .btn-action-circle {
+    background-color: #183026;
+    border-color: rgba(225, 255, 240, 0.15);
+    color: #cbd5e1;
+}
+html[data-pms-theme="dark"] .btn-action-circle:hover {
+    background-color: #204033;
+    color: #ffffff;
+}
+.dropdown-menu-premium {
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+    border: 1px solid #f1f5f9;
+    padding: 0.5rem;
+}
+html[data-pms-theme="dark"] .dropdown-menu-premium {
+    background: #102119;
+    border-color: rgba(225, 255, 240, 0.15);
+}
+.dropdown-menu-premium .dropdown-item {
+    border-radius: 8px;
+    padding: 0.55rem 0.85rem;
+    font-size: 0.84rem;
+    font-weight: 500;
+    color: #334155;
+    transition: all 0.15s ease;
+}
+.dropdown-menu-premium .dropdown-item:hover {
+    background-color: #f8fafc;
+    color: #0f172a;
+}
+html[data-pms-theme="dark"] .dropdown-menu-premium .dropdown-item {
+    color: #cbd5e1;
+}
+html[data-pms-theme="dark"] .dropdown-menu-premium .dropdown-item:hover {
+    background-color: #183026;
+    color: #ffffff;
+}
+.premium-table-footer {
+    background-color: #e2e8f0;
+    border-top: 1px solid #cbd5e1;
+    padding: 0.9rem 1.25rem;
+    font-size: 0.84rem;
+    color: #475569;
+    font-weight: 600;
+}
+html[data-pms-theme="dark"] .premium-table-footer {
+    background-color: #14281e;
+    border-top-color: rgba(225, 255, 240, 0.08);
+    color: #94a3b8;
+}
+</style>
+
+<div class="container-fluid py-3">
+
+    {{-- HEADER --}}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="fw-bold mb-1" style="color: #0f172a;"><i class="fas fa-handshake me-2 text-success"></i>Deals & Sales Pipeline</h4>
+            <p class="text-muted small mb-0">Track pipeline stages, deal probabilities, weighted values, and close rates</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ route('admin.deals.index', array_merge(request()->query(), ['view' => request('view') === 'kanban' ? 'table' : 'kanban'])) }}" class="btn btn-outline-primary fw-semibold px-3">
+                <i class="fas {{ request('view') === 'kanban' ? 'fa-table' : 'fa-columns' }} me-1"></i>
+                Switch to {{ request('view') === 'kanban' ? 'Table View' : 'Kanban View' }}
+            </a>
+            <a href="{{ route('admin.deals.create') }}" class="btn btn-success fw-semibold shadow-sm px-3">
+                <i class="fas fa-plus me-1"></i> Add Deal
+            </a>
+            <button class="btn btn-outline-secondary px-3" data-bs-toggle="modal" data-bs-target="#importDealsModal">
+                <i class="fas fa-file-import me-1"></i> Import
+            </button>
+            <a href="{{ route('admin.deals.export', request()->query()) }}" class="btn btn-outline-secondary px-3">
+                <i class="fas fa-file-export me-1"></i> Export
+            </a>
+        </div>
+    </div>
+
+    {{-- DEAL KPI CARDS ROW --}}
+    <div class="row g-3 mb-4">
+        <div class="col-xl-2 col-md-4 col-sm-6">
+            <div class="crm-kpi-card">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="crm-kpi-title">Total Deals</span>
+                    <div class="crm-kpi-icon bg-primary bg-opacity-10 text-primary"><i class="fas fa-handshake"></i></div>
                 </div>
+                <h3 class="crm-kpi-value">{{ number_format($kpiStats['total'] ?? 0) }}</h3>
+            </div>
+        </div>
 
-                <div class="card-body">
-                    <!-- Success/Error Messages -->
-                    @if(session('success'))
-                        <div class="alert alert-success alert-dismissible fade show" role="alert">
-                            {{ session('success') }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    @endif
-
-                    @if(session('error'))
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            {{ session('error') }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    @endif
-
-                    <!-- Filters Section -->
-                    <form method="GET" action="{{ route('admin.deals.index') }}" id="filterForm">
-                        <div class="row mb-3">
-                            <div class="col-md-3">
-                                <label class="form-label">Duration</label>
-                                <div class="input-group">
-                                    <input type="date" class="form-control" name="start_date"
-                                           value="{{ request('start_date') }}">
-                                    <span class="input-group-text">To</span>
-                                    <input type="date" class="form-control" name="end_date"
-                                           value="{{ request('end_date') }}">
-                                </div>
-                            </div>
-                            <div class="col-md-2">
-                                <label for="pipeline" class="form-label">Pipeline</label>
-                                <select class="form-select" name="pipeline" id="pipeline">
-                                    <option value="">All</option>
-                                    <option value="Sales Pipeline" {{ request('pipeline') == 'Sales Pipeline' ? 'selected' : '' }}>
-                                        Sales Pipeline
-                                    </option>
-                                    <option value="Marketing Pipeline" {{ request('pipeline') == 'Marketing Pipeline' ? 'selected' : '' }}>
-                                        Marketing Pipeline
-                                    </option>
-                                    <option value="Other Pipeline" {{ request('pipeline') == 'Other Pipeline' ? 'selected' : '' }}>
-                                        Other Pipeline
-                                    </option>
-                                </select>
-                            </div>
-                            <div class="col-md-2">
-                                <label for="category" class="form-label">Category</label>
-                                <select class="form-select" name="category" id="category">
-                                    <option value="All">All</option>
-                                    @foreach($categories as $category)
-                                        <option value="{{ $category->slug }}" {{ request('category') == $category->slug ? 'selected' : '' }}>
-                                            {{ $category->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="col-md-2">
-                                <label for="product" class="form-label">Product</label>
-                                <select class="form-select" name="product" id="product">
-                                    <option value="All">All</option>
-                                    <option value="Project Management Software" {{ request('product') == 'Project Management Software' ? 'selected' : '' }}>
-                                        Project Management Software
-                                    </option>
-                                    <option value="Custom Website Development" {{ request('product') == 'Custom Website Development' ? 'selected' : '' }}>
-                                        Custom Website Development
-                                    </option>
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <label for="search" class="form-label">Search</label>
-                                <div class="input-group">
-                                    <input type="text" class="form-control" name="search"
-                                           placeholder="Start typing to search" value="{{ request('search') }}">
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="fas fa-search"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        <input type="hidden" name="view" id="viewType" value="{{ request('view', 'table') }}">
-                        <input type="hidden" name="per_page" id="perPage" value="{{ request('per_page', 10) }}">
-                    </form>
-
-                    <!-- Bulk Actions Section -->
-                    <div class="row mb-3" id="bulkActions" style="display: none;">
-                        <div class="col-md-12">
-                            <div class="card bg-light">
-                                <div class="card-body">
-                                    <div class="d-flex align-items-center gap-3">
-                                        <span id="selectedCount">0 items selected</span>
-                                        <select class="form-select w-auto" id="bulkActionSelect">
-                                            <option value="">No Action</option>
-                                            <option value="change_stage">Change Stage</option>
-                                            <option value="assign_agent">Add Deals Agents</option>
-                                            <option value="delete">Delete</option>
-                                        </select>
-                                        <div id="actionFields" style="display: none;">
-                                            <select class="form-select w-auto" id="stageSelect">
-                                                @foreach($stages as $stage)
-                                                    <option value="{{ $stage->id }}">{{ $stage->name }}</option>
-                                                @endforeach
-                                            </select>
-                                            <select class="form-select w-auto" id="agentSelect">
-                                                @foreach($agents as $agent)
-                                                    <option value="{{ $agent->id }}">{{ $agent->name }}</option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-                                        <button type="button" class="btn btn-primary" id="applyBulkAction">Apply</button>
-                                        <button type="button" class="btn btn-secondary" id="clearSelection">Clear</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Kanban View -->
-                    @if(request('view') == 'kanban' && isset($dealsByStage))
-                    <div id="kanbanView">
-                        <div class="kanban-board">
-                            <div class="row">
-                                @foreach($stages as $stage)
-                                <div class="col-md">
-                                    <div class="card">
-                                        <div class="card-header" style="background-color: {{ $stage->color }}; color: white;">
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <div>
-                                                    <h6 class="mb-0">{{ $stage->name }}</h6>
-                                                    <small>{{ isset($dealsByStage[$stage->id]) ? $dealsByStage[$stage->id]->count() : 0 }} deals</small>
-                                                </div>
-                                                <button class="btn btn-sm btn-light" onclick="addDealToStage({{ $stage->id }})">
-                                                    <i class="fas fa-plus"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <div class="card-body kanban-column" data-stage-id="{{ $stage->id }}" style="min-height: 500px;">
-                                            @if(isset($dealsByStage[$stage->id]))
-                                            @foreach($dealsByStage[$stage->id] as $deal)
-                                            <div class="card mb-2 deal-card" data-deal-id="{{ $deal->id }}" draggable="true">
-                                                <div class="card-body p-2">
-                                                    <h6 class="card-title mb-1">{{ $deal->deal_name }}</h6>
-                                                    <p class="card-text mb-1 small">
-                                                        <strong>Lead:</strong> {{ $deal->lead_name }}
-                                                    </p>
-                                                    <p class="card-text mb-1 small">
-                                                        <strong>Value:</strong> ₹{{ number_format($deal->value, 2) }}
-                                                    </p>
-                                                    <p class="card-text mb-1 small">
-                                                        <strong>Close:</strong> {{ $deal->close_date->format('d M') }}
-                                                    </p>
-                                                    <div class="d-flex justify-content-between align-items-center mt-2">
-                                                        <span class="badge bg-secondary">{{ $deal->product ?? 'No Product' }}</span>
-                                                        <div class="dropdown">
-                                                            <button class="btn btn-sm btn-outline-primary dropdown-toggle"
-                                                                    type="button" data-bs-toggle="dropdown">
-                                                                Actions
-                                                            </button>
-                                                            <ul class="dropdown-menu">
-                                                                <li>
-                                                                    <a class="dropdown-item" href="{{ route('admin.deals.edit', $deal) }}">
-                                                                        <i class="fas fa-edit"></i> Edit
-                                                                    </a>
-                                                                </li>
-                                                                <li>
-                                                                    <a class="dropdown-item" href="{{ route('admin.deals.show', $deal) }}">
-                                                                        <i class="fas fa-eye"></i> View
-                                                                    </a>
-                                                                </li>
-                                                                <li>
-                                                                    <a class="dropdown-item" href="#" onclick="addFollowUp({{ $deal->id }})">
-                                                                        <i class="fas fa-plus-circle"></i> Add Follow Up
-                                                                    </a>
-                                                                </li>
-                                                                <li><hr class="dropdown-divider"></li>
-                                                                <li>
-                                                                    <form action="{{ route('admin.deals.destroy', $deal) }}" method="POST" class="d-inline">
-                                                                        @csrf
-                                                                        @method('DELETE')
-                                                                        <button type="submit" class="dropdown-item text-danger" onclick="return confirm('Are you sure?')">
-                                                                            <i class="fas fa-trash"></i> Delete
-                                                                        </button>
-                                                                    </form>
-                                                                </li>
-                                                            </ul>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            @endforeach
-                                            @endif
-                                        </div>
-                                    </div>
-                                </div>
-                                @endforeach
-                            </div>
-                        </div>
-                    </div>
-                    @endif
-
-                    <!-- Table View -->
-                    @if(request('view') != 'kanban' || !isset($dealsByStage))
-                    <div id="tableView">
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th width="50">
-                                            <input type="checkbox" id="selectAll">
-                                        </th>
-                                        <th>Deal Name</th>
-                                        <th>Lead Name</th>
-                                        <th>Contact Details</th>
-                                        <th>Value</th>
-                                        <th>Close Date</th>
-                                        <th>Next Follow Up</th>
-                                        <th>Deal Agent</th>
-                                        <th>Stage</th>
-                                        <th>Deal Watcher</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @forelse($deals as $deal)
-                                    <tr>
-                                        <td>
-                                            <input type="checkbox" class="deal-checkbox" value="{{ $deal->id }}">
-                                        </td>
-                                        <td>
-                                            <a href="{{ route('admin.deals.show', $deal) }}" class="text-primary">
-                                                {{ $deal->deal_name }}
-                                            </a>
-                                        </td>
-                                        <td>{{ $deal->lead_name }}</td>
-                                        <td>{{ $deal->contact_details }}</td>
-                                        <td>₹{{ number_format($deal->value, 2) }}</td>
-                                        <td>{{ $deal->close_date->format('d M Y') }}</td>
-                                        <td>{{ $deal->next_follow_up ? $deal->next_follow_up->format('d M Y') : '-' }}</td>
-                                        <td>{{ $deal->agent->name ?? '-' }}</td>
-                                        <td>
-                                            <span class="badge" style="background-color: {{ $deal->stage->color }}">
-                                                {{ $deal->stage->name }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            @if($deal->watchers && $deal->watchers->count() > 0)
-                                                <div class="d-flex">
-                                                    @foreach($deal->watchers->take(2) as $watcher)
-                                                        <span class="badge bg-info me-1" title="{{ $watcher->name }}">
-                                                            {{ substr($watcher->name, 0, 1) }}
-                                                        </span>
-                                                    @endforeach
-                                                    @if($deal->watchers->count() > 2)
-                                                        <span class="badge bg-secondary" title="+{{ $deal->watchers->count() - 2 }} more">
-                                                            +{{ $deal->watchers->count() - 2 }}
-                                                        </span>
-                                                    @endif
-                                                </div>
-                                            @else
-                                                <span class="text-muted">No watchers</span>
-                                            @endif
-                                        </td>
-                                        <td>
-                                            <div class="dropdown">
-                                                <button type="button" class="btn btn-sm btn-outline-primary dropdown-toggle"
-                                                        data-bs-toggle="dropdown" aria-expanded="false">
-                                                    Actions
-                                                </button>
-                                                <ul class="dropdown-menu">
-                                                    <li>
-                                                        <a class="dropdown-item" href="{{ route('admin.deals.show', $deal) }}">
-                                                            <i class="fas fa-eye"></i> View
-                                                        </a>
-                                                    </li>
-                                                    <li>
-                                                        <a class="dropdown-item" href="{{ route('admin.deals.edit', $deal) }}">
-                                                            <i class="fas fa-edit"></i> Edit
-                                                        </a>
-                                                    </li>
-                                                    <li>
-                                                        <a class="dropdown-item" href="#" onclick="addFollowUp({{ $deal->id }})">
-                                                            <i class="fas fa-plus-circle"></i> Add Follow Up
-                                                        </a>
-                                                    </li>
-                                                    <li>
-                                                        <a class="dropdown-item change-stage-btn" href="#" data-deal-id="{{ $deal->id }}">
-                                                            <i class="fas fa-sync"></i> Change Stage
-                                                        </a>
-                                                    </li>
-                                                    <li><hr class="dropdown-divider"></li>
-                                                    <li>
-                                                        <form action="{{ route('admin.deals.destroy', $deal) }}"
-                                                              method="POST" class="d-inline">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <button type="submit" class="dropdown-item text-danger"
-                                                                    onclick="return confirm('Are you sure you want to delete this deal?')">
-                                                                <i class="fas fa-trash"></i> Delete
-                                                            </button>
-                                                        </form>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    @empty
-                                    <tr>
-                                        <td colspan="11" class="text-center">No deals found.</td>
-                                    </tr>
-                                    @endforelse
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <!-- Pagination -->
-                        <div class="d-flex justify-content-between align-items-center mt-3">
-                            <div>
-                                Showing {{ $deals->firstItem() }} to {{ $deals->lastItem() }}
-                                of {{ $deals->total() }} entries
-                            </div>
-                            <div class="d-flex align-items-center gap-2">
-                                <!-- Previous Button -->
-                                @if($deals->onFirstPage())
-                                    <button class="btn btn-outline-secondary btn-sm" disabled>
-                                        <i class="fas fa-chevron-left"></i> Prev
-                                    </button>
-                                @else
-                                    <a href="{{ $deals->previousPageUrl() }}" class="btn btn-outline-primary btn-sm">
-                                        <i class="fas fa-chevron-left"></i> Prev
-                                    </a>
-                                @endif
-
-                                <!-- Page Numbers -->
-                                <div class="btn-group">
-                                    @foreach(range(1, min(5, $deals->lastPage())) as $page)
-                                        @if($page == $deals->currentPage())
-                                            <button class="btn btn-primary btn-sm">{{ $page }}</button>
-                                        @else
-                                            <a href="{{ $deals->url($page) }}" class="btn btn-outline-secondary btn-sm">{{ $page }}</a>
-                                        @endif
-                                    @endforeach
-                                    @if($deals->lastPage() > 5)
-                                        <button class="btn btn-outline-secondary btn-sm disabled">...</button>
-                                        <a href="{{ $deals->url($deals->lastPage()) }}" class="btn btn-outline-secondary btn-sm">{{ $deals->lastPage() }}</a>
-                                    @endif
-                                </div>
-
-                                <!-- Next Button -->
-                                @if($deals->hasMorePages())
-                                    <a href="{{ $deals->nextPageUrl() }}" class="btn btn-outline-primary btn-sm">
-                                        Next <i class="fas fa-chevron-right"></i>
-                                    </a>
-                                @else
-                                    <button class="btn btn-outline-secondary btn-sm" disabled>
-                                        Next <i class="fas fa-chevron-right"></i>
-                                    </button>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-                    @endif
+        <div class="col-xl-2 col-md-4 col-sm-6">
+            <div class="crm-kpi-card">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="crm-kpi-title">Open Deals</span>
+                    <div class="crm-kpi-icon bg-info bg-opacity-10 text-info"><i class="fas fa-folder-open"></i></div>
                 </div>
+                <h3 class="crm-kpi-value text-info">{{ number_format($kpiStats['open'] ?? 0) }}</h3>
+            </div>
+        </div>
+
+        <div class="col-xl-2 col-md-4 col-sm-6">
+            <div class="crm-kpi-card">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="crm-kpi-title">Won Deals</span>
+                    <div class="crm-kpi-icon bg-success bg-opacity-10 text-success"><i class="fas fa-trophy"></i></div>
+                </div>
+                <h3 class="crm-kpi-value text-success">{{ number_format($kpiStats['won'] ?? 0) }}</h3>
+            </div>
+        </div>
+
+        <div class="col-xl-2 col-md-4 col-sm-6">
+            <div class="crm-kpi-card">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="crm-kpi-title">Lost Deals</span>
+                    <div class="crm-kpi-icon bg-danger bg-opacity-10 text-danger"><i class="fas fa-times-circle"></i></div>
+                </div>
+                <h3 class="crm-kpi-value text-danger">{{ number_format($kpiStats['lost'] ?? 0) }}</h3>
+            </div>
+        </div>
+
+        <div class="col-xl-2 col-md-4 col-sm-6">
+            <div class="crm-kpi-card">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="crm-kpi-title">Pipeline Value</span>
+                    <div class="crm-kpi-icon bg-purple bg-opacity-10 text-purple"><i class="fas fa-chart-line"></i></div>
+                </div>
+                <h3 class="crm-kpi-value text-primary fs-5">₹{{ number_format($kpiStats['pipeline_value'] ?? 0, 2) }}</h3>
+            </div>
+        </div>
+
+        <div class="col-xl-2 col-md-4 col-sm-6">
+            <div class="crm-kpi-card">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="crm-kpi-title">Weighted Value</span>
+                    <div class="crm-kpi-icon bg-success bg-opacity-10 text-success"><i class="fas fa-coins"></i></div>
+                </div>
+                <h3 class="crm-kpi-value text-success fs-5">₹{{ number_format($kpiStats['weighted_value'] ?? 0, 2) }}</h3>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Filter Sidebar -->
-<div class="offcanvas offcanvas-end" tabindex="-1" id="filterSidebar" aria-labelledby="filterSidebarLabel">
-    <div class="offcanvas-header">
-        <h5 class="offcanvas-title" id="filterSidebarLabel">Filter Deals</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
-    </div>
-    <div class="offcanvas-body">
-        <form id="sidebarFilterForm" method="GET" action="{{ route('admin.deals.index') }}">
-            <!-- Date Filters -->
-            <div class="mb-4">
-                <h6 class="mb-3 border-bottom pb-2">Date Filters</h6>
-                <div class="mb-3">
-                    <label class="form-label">Created Date</label>
-                    <div class="input-group">
-                        <input type="date" class="form-control" name="created_from"
-                               value="{{ request('created_from') }}">
-                        <span class="input-group-text">To</span>
-                        <input type="date" class="form-control" name="created_to"
-                               value="{{ request('created_to') }}">
-                    </div>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Updated Date</label>
-                    <div class="input-group">
-                        <input type="date" class="form-control" name="updated_from"
-                               value="{{ request('updated_from') }}">
-                        <span class="input-group-text">To</span>
-                        <input type="date" class="form-control" name="updated_to"
-                               value="{{ request('updated_to') }}">
-                    </div>
-                </div>
+    {{-- TOP FILTER BAR --}}
+    <form method="GET" action="{{ route('admin.deals.index') }}" id="dealFilterForm">
+        <input type="hidden" name="view" value="{{ request('view', 'table') }}">
+        <div class="top-bar">
+            <div class="flex-grow-1 position-relative" style="min-width: 220px;">
+                <input type="text" name="search" class="form-control ps-4" placeholder="Search by deal name, lead, company..." value="{{ request('search') }}">
+                <i class="fas fa-search position-absolute top-50 start-0 translate-middle-y ms-2 text-muted" style="font-size: 13px;"></i>
             </div>
 
-            <!-- Deal Value Range -->
-            <div class="mb-4">
-                <h6 class="mb-3 border-bottom pb-2">Deal Value</h6>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Min Value (₹)</label>
-                        <input type="number" class="form-control" name="min_value"
-                               value="{{ request('min_value') }}" placeholder="0">
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Max Value (₹)</label>
-                        <input type="number" class="form-control" name="max_value"
-                               value="{{ request('max_value') }}" placeholder="1000000">
-                    </div>
-                </div>
-            </div>
-
-            <!-- Deal Stage -->
-            <div class="mb-4">
-                <h6 class="mb-3 border-bottom pb-2">Deal Stage</h6>
-                <div class="form-group">
-                    @foreach([
-                        'generated' => 'Generated',
-                        'qualified' => 'Qualified',
-                        'initial_contact' => 'Initial Contact',
-                        'schedule_appointment' => 'Schedule Appointment',
-                        'proposal_sent' => 'Proposal Sent',
-                        'win' => 'Win',
-                        'lost' => 'Lost'
-                    ] as $value => $label)
-                    <div class="form-check mb-2">
-                        <input class="form-check-input" type="checkbox" name="stages[]"
-                               value="{{ $value }}" id="stage_{{ $value }}"
-                               {{ in_array($value, (array)request('stages', [])) ? 'checked' : '' }}>
-                        <label class="form-check-label" for="stage_{{ $value }}">
-                            {{ $label }}
-                        </label>
-                    </div>
+            <div style="min-width: 140px;">
+                <select name="pipeline" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="All">All Pipelines</option>
+                    @foreach($pipelines as $pipe)
+                        <option value="{{ $pipe }}" {{ request('pipeline') == $pipe ? 'selected' : '' }}>{{ $pipe }}</option>
                     @endforeach
-                </div>
+                </select>
             </div>
 
-            <!-- Agent -->
-            <div class="mb-4">
-                <h6 class="mb-3 border-bottom pb-2">Agent</h6>
-                <select class="form-select" name="agent_id">
+            <div style="min-width: 140px;">
+                <select name="agent_id" class="form-select form-select-sm" onchange="this.form.submit()">
                     <option value="">All Agents</option>
-                    @foreach($agents as $agent)
-                        <option value="{{ $agent->id }}" {{ request('agent_id') == $agent->id ? 'selected' : '' }}>
-                            {{ $agent->name }}
-                        </option>
+                    @foreach($agents as $ag)
+                        <option value="{{ $ag->id }}" {{ request('agent_id') == $ag->id ? 'selected' : '' }}>{{ $ag->name }}</option>
                     @endforeach
                 </select>
             </div>
 
-            <!-- Deal Watcher -->
-            <div class="mb-4">
-                <h6 class="mb-3 border-bottom pb-2">Deal Watcher</h6>
-                <select class="form-select" name="watcher_id">
-                    <option value="">All Watchers</option>
-                    @foreach($agents as $watcher)
-                        <option value="{{ $watcher->id }}" {{ request('watcher_id') == $watcher->id ? 'selected' : '' }}>
-                            {{ $watcher->name }}
-                        </option>
-                    @endforeach
+            <div style="min-width: 140px;">
+                <select name="priority" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="">All Priorities</option>
+                    <option value="urgent" {{ request('priority') == 'urgent' ? 'selected' : '' }}>Urgent</option>
+                    <option value="high" {{ request('priority') == 'high' ? 'selected' : '' }}>High</option>
+                    <option value="medium" {{ request('priority') == 'medium' ? 'selected' : '' }}>Medium</option>
+                    <option value="low" {{ request('priority') == 'low' ? 'selected' : '' }}>Low</option>
                 </select>
             </div>
 
-            <!-- Hidden Fields -->
-            <input type="hidden" name="view" value="{{ request('view', 'table') }}">
-            <input type="hidden" name="per_page" value="{{ request('per_page', 10) }}">
+            <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-filter me-1"></i> Filter</button>
+            @if(request()->hasAny(['search', 'pipeline', 'agent_id', 'priority', 'start_date', 'end_date']))
+                <a href="{{ route('admin.deals.index', ['view' => request('view')]) }}" class="btn btn-outline-danger btn-sm">Reset</a>
+            @endif
+        </div>
+    </form>
 
-            <!-- Action Buttons -->
-            <div class="d-grid gap-2 mt-4">
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-filter"></i> Apply Filters
-                </button>
-                <button type="button" class="btn btn-outline-secondary" id="clearFiltersBtn">
-                    <i class="fas fa-times"></i> Clear Filters
-                </button>
+    {{-- KANBAN OR TABLE VIEW --}}
+    @if(request('view') === 'kanban')
+        {{-- KANBAN BOARD VIEW --}}
+        <div class="kanban-container">
+            @foreach($stages as $stg)
+                <div class="kanban-col">
+                    <div class="kanban-col-header" style="border-bottom-color: {{ $stg->color ?? '#3b82f6' }};">
+                        <div>
+                            <h6 class="fw-bold mb-0" style="color: #0f172a;">{{ $stg->name }}</h6>
+                            <small class="text-muted">{{ count($dealsByStage[$stg->id] ?? []) }} deals</small>
+                        </div>
+                        <span class="badge bg-light text-dark border">{{ $stg->default_probability }}% Prob</span>
+                    </div>
+
+                    <div class="kanban-col-body kanban-column" data-stage-id="{{ $stg->id }}" data-stage-name="{{ strtolower($stg->name) }}">
+                        @forelse($dealsByStage[$stg->id] ?? [] as $deal)
+                            <div class="kanban-card deal-card" data-deal-id="{{ $deal->id }}" draggable="true">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h6 class="fw-bold mb-0"><a href="{{ route('admin.deals.show', $deal->id) }}" class="text-dark text-decoration-none">{{ $deal->deal_name }}</a></h6>
+                                    @php
+                                        $prio = strtolower($deal->priority ?? 'medium');
+                                        $prioBadge = match($prio) {
+                                            'urgent' => 'bg-danger text-white',
+                                            'high' => 'bg-warning text-dark',
+                                            'low' => 'bg-secondary text-white',
+                                            default => 'bg-info text-white',
+                                        };
+                                    @endphp
+                                    <span class="badge {{ $prioBadge }}" style="font-size: 10px;">{{ $prio }}</span>
+                                </div>
+
+                                <p class="text-muted small mb-2"><i class="far fa-building me-1"></i>{{ $deal->company_name ?: ($deal->lead_name ?: 'N/A') }}</p>
+
+                                <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                                    <div>
+                                        <div class="fw-bold text-success" style="font-size: 14px;">{{ $deal->currency }} {{ number_format($deal->value, 2) }}</div>
+                                        <small class="text-muted" style="font-size: 11px;">Wt: {{ $deal->currency }} {{ number_format($deal->weighted_value ?? $deal->calculateWeightedValue(), 2) }}</small>
+                                    </div>
+                                    <div class="text-end">
+                                        <small class="text-muted d-block" style="font-size: 11px;"><i class="far fa-calendar-alt me-1"></i>{{ $deal->close_date ? $deal->close_date->format('M d') : 'N/A' }}</small>
+                                        <span class="small fw-semibold text-secondary"><i class="fas fa-user-circle me-1"></i>{{ $deal->agent->name ?? 'None' }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="text-center py-4 text-muted small">No deals in this stage</div>
+                        @endforelse
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    @else
+        {{-- TABLE VIEW --}}
+        <div class="premium-table-card">
+            <div class="table-responsive">
+                <table class="table premium-table align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th class="ps-4 text-center" style="width: 45px; min-width: 45px;"><input type="checkbox" class="form-check-input" id="selectAllDeals"></th>
+                            <th style="min-width: 220px;">DEAL NAME & LEAD</th>
+                            <th style="min-width: 170px;">COMPANY</th>
+                            <th style="min-width: 140px;">DEAL VALUE</th>
+                            <th class="text-center" style="min-width: 190px;">STAGE & PROBABILITY</th>
+                            <th style="min-width: 150px;">WEIGHTED VALUE</th>
+                            <th style="min-width: 130px;">CLOSE DATE</th>
+                            <th style="min-width: 140px;">AGENT</th>
+                            <th class="text-center" style="min-width: 130px;">PRIORITY</th>
+                            <th class="text-end pe-4" style="min-width: 90px;">ACTIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($deals as $dl)
+                            <tr>
+                                <td class="ps-4"><input type="checkbox" class="form-check-input deal-checkbox" value="{{ $dl->id }}"></td>
+                                <td>
+                                    <a href="{{ route('admin.deals.show', $dl->id) }}" class="fw-bold text-decoration-none d-block" style="color: #0f172a; font-size: 0.9rem;">{{ $dl->deal_name }}</a>
+                                    <span class="text-muted d-block mt-1" style="font-size: 0.79rem;"><i class="far fa-user me-1"></i>{{ $dl->lead_name }}</span>
+                                </td>
+                                <td><span class="fw-semibold text-secondary" style="font-size: 0.88rem;">{{ $dl->company_name ?: 'N/A' }}</span></td>
+                                <td class="fw-bold text-success" style="font-size: 0.9rem;">{{ $dl->currency }} {{ number_format($dl->value, 2) }}</td>
+                                <td class="text-center">
+                                    <span class="badge-pill-source text-primary" style="border-color: rgba(15, 116, 76, 0.2);">
+                                        <i class="fas fa-layer-group me-1"></i>{{ $dl->stage->name ?? 'N/A' }} ({{ $dl->probability }}%)
+                                    </span>
+                                </td>
+                                <td class="fw-bold text-dark" style="font-size: 0.88rem;">{{ $dl->currency }} {{ number_format($dl->weighted_value ?? $dl->calculateWeightedValue(), 2) }}</td>
+                                <td class="text-secondary" style="font-size: 0.84rem; font-weight: 500;">{{ $dl->close_date ? $dl->close_date->format('M d, Y') : 'N/A' }}</td>
+                                <td style="font-size: 0.84rem; font-weight: 600; color: #334155;">{{ $dl->agent->name ?? 'Unassigned' }}</td>
+                                <td class="text-center">
+                                    @php
+                                        $prio = strtolower($dl->priority ?? 'medium');
+                                        $prioClass = match($prio) {
+                                            'urgent' => 'badge-pill-priority-urgent',
+                                            'high' => 'badge-pill-priority-high',
+                                            'low' => 'badge-pill-priority-low',
+                                            default => 'badge-pill-priority-medium',
+                                        };
+                                    @endphp
+                                    <span class="{{ $prioClass }} text-capitalize">{{ $prio }}</span>
+                                </td>
+                                <td class="text-end pe-4">
+                                    <div class="dropdown">
+                                        <button class="btn-action-circle" type="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="fas fa-ellipsis-v"></i></button>
+                                        <ul class="dropdown-menu dropdown-menu-end dropdown-menu-premium shadow-sm">
+                                            <li><a class="dropdown-item" href="{{ route('admin.deals.show', $dl->id) }}"><i class="fas fa-eye text-primary me-2"></i>View Details</a></li>
+                                            <li><a class="dropdown-item" href="{{ route('admin.deals.edit', $dl->id) }}"><i class="fas fa-edit text-warning me-2"></i>Edit Deal</a></li>
+                                            @if(str_contains(strtolower($dl->stage->name ?? ''), 'won') || str_contains(strtolower($dl->stage->name ?? ''), 'concreted'))
+                                                <li><a class="dropdown-item btn-convert-deal-client" href="javascript:void(0)" data-id="{{ $dl->id }}" data-name="{{ $dl->deal_name }}"><i class="fas fa-user-check text-success me-2"></i>Convert to Client</a></li>
+                                            @endif
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li>
+                                                <form action="{{ route('admin.deals.destroy', $dl->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this deal?');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="dropdown-item text-danger"><i class="fas fa-trash me-2"></i>Delete</button>
+                                                </form>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="10" class="text-center py-5 text-muted">
+                                    <i class="fas fa-handshake-slash fa-3x mb-3 text-muted opacity-50"></i>
+                                    <h5 class="fw-bold">No Deals Found</h5>
+                                    <p class="small mb-3">Create your first deal to start tracking your sales pipeline.</p>
+                                    <a href="{{ route('admin.deals.create') }}" class="btn-submit-emerald d-inline-flex align-items-center text-decoration-none px-3 py-2" style="font-size: 0.85rem;"><i class="fas fa-plus me-1"></i> Add First Deal</a>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
-        </form>
-    </div>
+
+            @if(isset($deals) && ($deals->hasPages() || $deals->total() > 0))
+                <div class="premium-table-footer d-flex justify-content-between align-items-center flex-wrap">
+                    <div>Showing {{ $deals->firstItem() ?? 0 }} to {{ $deals->lastItem() ?? 0 }} of {{ $deals->total() }} deals</div>
+                    <div>{{ $deals->links() }}</div>
+                </div>
+            @endif
+        </div>
+    @endif
 </div>
 
-<!-- Import Modal -->
-<div class="modal fade" id="importModal" tabindex="-1">
-    <div class="modal-dialog">
+{{-- IMPORT DEALS MODAL --}}
+<div class="modal fade" id="importDealsModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold"><i class="fas fa-file-import me-2 text-primary"></i>Import Deals</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
             <form action="{{ route('admin.deals.import') }}" method="POST" enctype="multipart/form-data">
                 @csrf
-                <div class="modal-header">
-                    <h5 class="modal-title">Import Deals</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="importFile" class="form-label">Choose CSV File</label>
-                        <input type="file" class="form-control" name="file" id="importFile" accept=".csv" required>
-                        <div class="form-text">
-                            Download <a href="{{ route('admin.deals.export') }}?template=true">template</a> for correct format
-                        </div>
+                        <label class="form-label fw-semibold">Select CSV File</label>
+                        <input type="file" name="file" class="form-control" accept=".csv, .txt" required>
+                    </div>
+                    <div class="alert alert-info small mb-0">
+                        Required columns: <code>Deal Name, Lead Name, Value, Close Date, Stage</code>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Import</button>
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success btn-sm px-4">Import Deals</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
-<!-- Change Stage Modal -->
-<div class="modal fade" id="changeStageModal" tabindex="-1">
+{{-- LOST REASON MODAL --}}
+<div class="modal fade" id="lostReasonModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form id="changeStageForm">
-                @csrf
-                <div class="modal-header">
-                    <h5 class="modal-title">Change Stage</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title fw-bold"><i class="fas fa-exclamation-triangle me-2"></i>Lost Deal Details</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="lostReasonForm">
+                <input type="hidden" id="lostDealId">
+                <input type="hidden" id="lostStageId">
                 <div class="modal-body">
-                    <input type="hidden" name="deal_id" id="modalDealId">
                     <div class="mb-3">
-                        <label for="stage_id" class="form-label">Select Stage</label>
-                        <select class="form-select" name="stage_id" id="stage_id" required>
-                            @foreach($stages as $stage)
-                                <option value="{{ $stage->id }}">{{ $stage->name }}</option>
-                            @endforeach
+                        <label class="form-label fw-semibold small">Reason for Loss <span class="text-danger">*</span></label>
+                        <select id="lostReasonSelect" class="form-select form-select-sm" required>
+                            <option value="">Select Lost Reason</option>
+                            <option value="Price / High Cost">Price / High Cost</option>
+                            <option value="Competitor Chosen">Competitor Chosen</option>
+                            <option value="No Requirement">No Requirement / Project Cancelled</option>
+                            <option value="Budget Issue">Budget Issue</option>
+                            <option value="Not Interested">Not Interested</option>
+                            <option value="Timing / Delayed">Timing / Delayed</option>
+                            <option value="Other">Other</option>
                         </select>
                     </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">Additional Notes</label>
+                        <textarea id="lostNotesText" class="form-control form-control-sm" rows="3" placeholder="Provide extra feedback or notes..."></textarea>
+                    </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Update</button>
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger btn-sm px-4 fw-semibold">Save & Mark Lost</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
-<!-- Add Follow Up Modal -->
-<div class="modal fade" id="addFollowUpModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form id="addFollowUpForm">
-                @csrf
-                <div class="modal-header">
-                    <h5 class="modal-title">Add Follow Up</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <input type="hidden" name="deal_id" id="followUpDealId">
-                    <div class="mb-3">
-                        <label for="follow_up_date" class="form-label">Follow Up Date *</label>
-                        <input type="datetime-local" class="form-control" name="follow_up_date" id="follow_up_date" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="follow_up_notes" class="form-label">Notes</label>
-                        <textarea class="form-control" name="follow_up_notes" id="follow_up_notes" rows="3"></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save Follow Up</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<!-- Add Deal Modal -->
-<div class="modal fade" id="addDealModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form id="addDealForm" action="{{ route('admin.deals.store') }}" method="POST">
-                @csrf
-                <input type="hidden" name="deal_stage_id" id="modalStageId">
-                <div class="modal-header">
-                    <h5 class="modal-title">Add Deal to Stage</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="modalDealName" class="form-label">Deal Name *</label>
-                        <input type="text" class="form-control" id="modalDealName" name="deal_name" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="modalLeadName" class="form-label">Lead Name *</label>
-                        <input type="text" class="form-control" id="modalLeadName" name="lead_name" required>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Add Deal</button>
-                </div>
-            </form>
-        </div>
-</div>
-@endsection
-
-@push('styles')
-<style>
-    /* Custom styles for better UI */
-    .offcanvas {
-        width: 400px !important;
-    }
-
-    .deal-card {
-        cursor: move;
-        transition: all 0.3s ease;
-    }
-
-    .deal-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
-
-    .kanban-column {
-        transition: background-color 0.3s ease;
-    }
-
-    .dropdown-menu {
-        min-width: 180px;
-    }
-
-    .badge {
-        font-size: 0.75em;
-    }
-
-    .table th {
-        white-space: nowrap;
-    }
-</style>
-@endpush
-
-@push('scripts')
 <script>
-    // CSRF token for AJAX requests
-    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+document.addEventListener('DOMContentLoaded', function() {
 
-    // Toggle Filter Sidebar
-    document.getElementById('filterToggleBtn')?.addEventListener('click', function() {
-        const filterSidebar = new bootstrap.Offcanvas(document.getElementById('filterSidebar'));
-        filterSidebar.show();
-    });
+    // Drag and Drop for Kanban Columns
+    const columns = document.querySelectorAll('.kanban-column');
+    const cards = document.querySelectorAll('.deal-card');
+    let draggedCard = null;
 
-    // Show Entries functionality
-    document.getElementById('showEntries')?.addEventListener('change', function() {
-        document.getElementById('perPage').value = this.value;
-        document.getElementById('filterForm').submit();
-    });
-
-    // Clear Filters
-    document.getElementById('clearFiltersBtn')?.addEventListener('click', function() {
-        // Clear all form inputs in sidebar
-        const form = document.getElementById('sidebarFilterForm');
-        form.reset();
-
-        // Remove query parameters and submit
-        const url = new URL(window.location.href);
-        url.search = '';
-        window.location.href = url.toString();
-    });
-
-    // Toggle between Table and Kanban view
-    function toggleView() {
-        const currentView = document.getElementById('viewType').value;
-        const newView = currentView === 'table' ? 'kanban' : 'table';
-        document.getElementById('viewType').value = newView;
-        document.getElementById('filterForm').submit();
-    }
-
-    // Filter form auto-submit on change
-    document.querySelectorAll('#filterForm select, #filterForm input[type="date"]').forEach(element => {
-        element.addEventListener('change', function() {
-            document.getElementById('filterForm').submit();
+    cards.forEach(card => {
+        card.addEventListener('dragstart', function(e) {
+            draggedCard = this;
+            e.dataTransfer.setData('text/plain', this.dataset.dealId);
         });
     });
 
-    // Bulk selection functionality
-    document.getElementById('selectAll')?.addEventListener('change', function() {
-        const checkboxes = document.querySelectorAll('.deal-checkbox');
-        checkboxes.forEach(checkbox => {
-            checkbox.checked = this.checked;
+    columns.forEach(col => {
+        col.addEventListener('dragover', function(e) {
+            e.preventDefault();
         });
-        updateBulkActions();
-    });
 
-    document.querySelectorAll('.deal-checkbox').forEach(checkbox => {
-        checkbox.addEventListener('change', updateBulkActions);
-    });
+        col.addEventListener('drop', function(e) {
+            e.preventDefault();
+            if (!draggedCard) return;
 
-    function updateBulkActions() {
-        const selected = document.querySelectorAll('.deal-checkbox:checked');
-        const count = selected.length;
-        const bulkActionsDiv = document.getElementById('bulkActions');
+            const dealId = draggedCard.dataset.dealId;
+            const targetStageId = this.dataset.stageId;
+            const targetStageName = (this.dataset.stageName || '').toLowerCase();
 
-        if (count > 0) {
-            bulkActionsDiv.style.display = 'block';
-            document.getElementById('selectedCount').textContent = count + ' items selected';
-        } else {
-            bulkActionsDiv.style.display = 'none';
-        }
-    }
-
-    document.getElementById('clearSelection')?.addEventListener('click', function() {
-        document.querySelectorAll('.deal-checkbox').forEach(checkbox => {
-            checkbox.checked = false;
-        });
-        document.getElementById('selectAll').checked = false;
-        updateBulkActions();
-    });
-
-    // Bulk action selection
-    document.getElementById('bulkActionSelect')?.addEventListener('change', function() {
-        const actionFields = document.getElementById('actionFields');
-        if (actionFields) {
-            actionFields.style.display = this.value ? 'block' : 'none';
-
-            // Show relevant field
-            const stageSelect = document.getElementById('stageSelect');
-            const agentSelect = document.getElementById('agentSelect');
-
-            if (this.value === 'change_stage') {
-                stageSelect.style.display = 'block';
-                agentSelect.style.display = 'none';
-            } else if (this.value === 'assign_agent') {
-                stageSelect.style.display = 'none';
-                agentSelect.style.display = 'block';
-            } else {
-                stageSelect.style.display = 'none';
-                agentSelect.style.display = 'none';
-            }
-        }
-    });
-
-    // Apply bulk action
-    document.getElementById('applyBulkAction')?.addEventListener('click', function() {
-        const action = document.getElementById('bulkActionSelect').value;
-        const selectedIds = Array.from(document.querySelectorAll('.deal-checkbox:checked'))
-            .map(cb => cb.value);
-
-        if (!action || selectedIds.length === 0) {
-            alert('Please select an action and at least one deal.');
-            return;
-        }
-
-        const formData = new FormData();
-        formData.append('_token', csrfToken);
-        formData.append('action', action);
-        formData.append('ids', JSON.stringify(selectedIds));
-
-        if (action === 'change_stage') {
-            const stageId = document.getElementById('stageSelect').value;
-            if (!stageId) {
-                alert('Please select a stage.');
-                return;
-            }
-            formData.append('stage_id', stageId);
-        } else if (action === 'assign_agent') {
-            const agentId = document.getElementById('agentSelect').value;
-            if (!agentId) {
-                alert('Please select an agent.');
-                return;
-            }
-            formData.append('agent_id', agentId);
-        }
-
-        // Show loading
-        const applyBtn = document.getElementById('applyBulkAction');
-        const originalText = applyBtn.innerHTML;
-        applyBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-        applyBtn.disabled = true;
-
-        fetch('{{ route("admin.deals.bulk.action") }}', {
-            method: 'POST',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json'
-            },
-            body: formData
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                // Show success message
-                showToast('Success', data.message || 'Action completed successfully', 'success');
-                // Reload after 1 second
-                setTimeout(() => {
-                    location.reload();
-                }, 1000);
-            } else {
-                throw new Error(data.message || 'Action failed');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showToast('Error', error.message || 'Failed to perform action', 'error');
-            // Reset button
-            applyBtn.innerHTML = originalText;
-            applyBtn.disabled = false;
-        });
-    });
-
-    // Individual deal stage change
-    document.querySelectorAll('.change-stage-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            const dealId = this.getAttribute('data-deal-id');
-            document.getElementById('modalDealId').value = dealId;
-
-            const modal = new bootstrap.Modal(document.getElementById('changeStageModal'));
-            modal.show();
-        });
-    });
-
-    // Change stage form submission
-    document.getElementById('changeStageForm')?.addEventListener('submit', function(e) {
-        e.preventDefault();
-
-        const formData = new FormData(this);
-        const dealId = formData.get('deal_id');
-
-        // Show loading
-        const submitBtn = this.querySelector('button[type="submit"]');
-        const originalText = submitBtn.innerHTML;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
-        submitBtn.disabled = true;
-
-        fetch(`/deals/${dealId}/update-stage`, {
-            method: 'POST',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json'
-            },
-            body: formData
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                // Show success message
-                showToast('Success', data.message || 'Stage updated successfully', 'success');
-                // Close modal
-                bootstrap.Modal.getInstance(document.getElementById('changeStageModal')).hide();
-                // Reload after 1 second
-                setTimeout(() => {
-                    location.reload();
-                }, 1000);
-            } else {
-                throw new Error(data.message || 'Failed to update stage');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showToast('Error', error.message || 'Failed to update stage', 'error');
-            // Reset button
-            submitBtn.innerHTML = originalText;
-            submitBtn.disabled = false;
-        });
-    });
-
-    // Add Follow Up functionality
-    function addFollowUp(dealId) {
-        document.getElementById('followUpDealId').value = dealId;
-
-        // Set default date to tomorrow
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        document.getElementById('follow_up_date').value = tomorrow.toISOString().slice(0, 16);
-
-        const modal = new bootstrap.Modal(document.getElementById('addFollowUpModal'));
-        modal.show();
-    }
-
-    // Add Follow Up form submission
-    document.getElementById('addFollowUpForm')?.addEventListener('submit', function(e) {
-        e.preventDefault();
-
-        const formData = new FormData(this);
-        const dealId = formData.get('deal_id');
-
-        // Show loading
-        const submitBtn = this.querySelector('button[type="submit"]');
-        const originalText = submitBtn.innerHTML;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
-        submitBtn.disabled = true;
-
-        fetch(`/deals/${dealId}/add-follow-up`, {
-            method: 'POST',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json'
-            },
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                showToast('Success', 'Follow up added successfully', 'success');
-                bootstrap.Modal.getInstance(document.getElementById('addFollowUpModal')).hide();
-                setTimeout(() => location.reload(), 1000);
-            } else {
-                throw new Error(data.message || 'Failed to add follow up');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showToast('Error', error.message || 'Failed to add follow up', 'error');
-            submitBtn.innerHTML = originalText;
-            submitBtn.disabled = false;
-        });
-    });
-
-    // Set today's date as default for date filters
-    document.addEventListener('DOMContentLoaded', function() {
-        const startDateInput = document.querySelector('input[name="start_date"]');
-        const endDateInput = document.querySelector('input[name="end_date"]');
-
-        if (startDateInput && !startDateInput.value) {
-            const today = new Date().toISOString().split('T')[0];
-            const oneMonthAgo = new Date();
-            oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-            const oneMonthAgoFormatted = oneMonthAgo.toISOString().split('T')[0];
-
-            startDateInput.value = oneMonthAgoFormatted;
-        }
-
-        if (endDateInput && !endDateInput.value) {
-            const today = new Date().toISOString().split('T')[0];
-            endDateInput.value = today;
-        }
-    });
-
-    // Kanban drag and drop functionality
-    document.addEventListener('DOMContentLoaded', function() {
-        // Initialize drag and drop for kanban view
-        initKanbanDragDrop();
-    });
-
-    function initKanbanDragDrop() {
-        const columns = document.querySelectorAll('.kanban-column');
-        const dealCards = document.querySelectorAll('.deal-card');
-
-        if (columns.length === 0) return;
-
-        columns.forEach(column => {
-            column.addEventListener('dragover', function(e) {
-                e.preventDefault();
-                this.style.backgroundColor = '#f8f9fa';
-            });
-
-            column.addEventListener('dragleave', function(e) {
-                this.style.backgroundColor = '';
-            });
-
-            column.addEventListener('drop', function(e) {
-                e.preventDefault();
-                this.style.backgroundColor = '';
-
-                const dealId = e.dataTransfer.getData('text/plain');
-                const stageId = this.getAttribute('data-stage-id');
-
-                if (dealId && stageId) {
-                    updateDealStage(dealId, stageId);
+            if (targetStageName.includes('lost')) {
+                const lostModalEl = document.getElementById('lostReasonModal');
+                if (lostModalEl) {
+                    document.getElementById('lostDealId').value = dealId;
+                    document.getElementById('lostStageId').value = targetStageId;
+                    window.draggedCardRef = draggedCard;
+                    window.targetColRef = this;
+                    const modal = new bootstrap.Modal(lostModalEl);
+                    modal.show();
+                    return;
                 }
-            });
+            }
+
+            updateStageAjax(dealId, targetStageId, draggedCard, this);
         });
+    });
 
-        dealCards.forEach(card => {
-            card.addEventListener('dragstart', function(e) {
-                e.dataTransfer.setData('text/plain', this.getAttribute('data-deal-id'));
-                this.style.opacity = '0.5';
-            });
+    const lostReasonForm = document.getElementById('lostReasonForm');
+    if (lostReasonForm) {
+        lostReasonForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const dealId = document.getElementById('lostDealId').value;
+            const stageId = document.getElementById('lostStageId').value;
+            const lostReason = document.getElementById('lostReasonSelect').value;
+            const lostNotes = document.getElementById('lostNotesText').value;
 
-            card.addEventListener('dragend', function(e) {
-                this.style.opacity = '1';
-            });
+            if (!lostReason) {
+                alert('Please select a reason for loss.');
+                return;
+            }
+
+            updateStageAjax(dealId, stageId, window.draggedCardRef, window.targetColRef, lostReason, lostNotes);
+            const lostModalEl = document.getElementById('lostReasonModal');
+            const modalInstance = bootstrap.Modal.getInstance(lostModalEl);
+            if (modalInstance) modalInstance.hide();
         });
     }
 
-    function updateDealStage(dealId, stageId) {
-        const formData = new FormData();
-        formData.append('_token', csrfToken);
-        formData.append('stage_id', stageId);
+    function updateStageAjax(dealId, stageId, cardElement, columnElement, lostReason = null, lostNotes = null) {
+        const payload = { stage_id: stageId };
+        if (lostReason) payload.lost_reason = lostReason;
+        if (lostNotes) payload.lost_notes = lostNotes;
 
-        fetch(`/deals/${dealId}/update-stage`, {
+        fetch(`/admin/deals/${dealId}/update-stage`, {
             method: 'POST',
             headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json'
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
             },
-            body: formData
+            body: JSON.stringify(payload)
         })
-        .then(response => response.json())
+        .then(async r => {
+            const contentType = r.headers.get('content-type') || '';
+            if (contentType.includes('application/json')) {
+                return r.json();
+            }
+            const text = await r.text();
+            throw new Error('Server returned unexpected response (Status ' + r.status + ')');
+        })
         .then(data => {
             if (data.success) {
-                showToast('Success', 'Deal moved successfully', 'success');
-                setTimeout(() => location.reload(), 500);
+                if (columnElement && cardElement) {
+                    columnElement.appendChild(cardElement);
+                }
+                window.location.reload();
             } else {
-                showToast('Error', 'Failed to move deal', 'error');
+                alert('Error updating stage: ' + (data.message || 'Unknown error'));
             }
         })
-        .catch(error => {
-            console.error('Error:', error);
-            showToast('Error', 'Failed to move deal', 'error');
+        .catch(err => alert('Failed to update stage: ' + err.message));
+    }
+
+    // Convert Deal to Client handler
+    document.querySelectorAll('.btn-convert-deal-client').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const dealId = this.dataset.id;
+            const dealName = this.dataset.name;
+            if (confirm(`Convert Won Deal "${dealName}" to a Client?`)) {
+                fetch(`/admin/deals/${dealId}/convert-to-client`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    }
+                })
+                .then(async r => {
+                    const contentType = r.headers.get('content-type') || '';
+                    if (contentType.includes('application/json')) {
+                        return r.json();
+                    }
+                    const text = await r.text();
+                    throw new Error('Server returned unexpected response (Status ' + r.status + ')');
+                })
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        window.location.reload();
+                    } else {
+                        alert('Error: ' + (data.message || 'Failed to convert deal'));
+                    }
+                })
+                .catch(err => alert('Failed to convert deal: ' + err.message));
+            }
         });
-    }
-
-    function addDealToStage(stageId) {
-        document.getElementById('modalStageId').value = stageId;
-        const modal = new bootstrap.Modal(document.getElementById('addDealModal'));
-        modal.show();
-    }
-
-    // Toast notification function
-    function showToast(title, message, type = 'info') {
-        // Create toast element
-        const toastId = 'toast-' + Date.now();
-        const toastHtml = `
-            <div id="${toastId}" class="toast align-items-center text-bg-${type} border-0" role="alert" aria-live="assertive" aria-atomic="true">
-                <div class="d-flex">
-                    <div class="toast-body">
-                        <strong>${title}:</strong> ${message}
-                    </div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-                </div>
-            </div>
-        `;
-
-        // Add to toast container
-        let toastContainer = document.getElementById('toastContainer');
-        if (!toastContainer) {
-            toastContainer = document.createElement('div');
-            toastContainer.id = 'toastContainer';
-            toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
-            document.body.appendChild(toastContainer);
-        }
-
-        toastContainer.insertAdjacentHTML('beforeend', toastHtml);
-
-        // Show toast
-        const toastElement = document.getElementById(toastId);
-        const toast = new bootstrap.Toast(toastElement);
-        toast.show();
-
-        // Remove toast after it hides
-        toastElement.addEventListener('hidden.bs.toast', function () {
-            this.remove();
-        });
-    }
+    });
+});
 </script>
-@endpush
+
+@endsection

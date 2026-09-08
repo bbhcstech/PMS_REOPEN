@@ -27,6 +27,10 @@ class EmailSettingsController extends Controller
 
     public function update(Request $request)
     {
+        if (auth()->user()?->role !== 'admin') {
+            abort(403, 'Unauthorized. Only administrators can update email settings.');
+        }
+
         $request->validate([
             'mail_mailer' => 'required|string',
             'mail_host' => 'required|string',
@@ -62,6 +66,19 @@ class EmailSettingsController extends Controller
                 ]
             );
         }
+
+        // Broadcast notification to Admin, HR, Manager, and Employees
+        \App\Services\SystemNotificationService::notifyAllRoles(
+            'Email SMTP Settings Updated',
+            'System email gateway and outbound SMTP configurations have been updated by ' . (auth()->user()?->name ?? 'Admin') . '.',
+            route('admin.settings.email'),
+            [
+                'type' => 'setting_update',
+                'setting_module' => 'email-settings',
+                'icon' => 'fa-envelope',
+                'color' => 'info',
+            ]
+        );
 
         return back()->with('success', 'Email SMTP settings updated successfully!');
     }

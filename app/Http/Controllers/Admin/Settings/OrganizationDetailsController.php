@@ -25,6 +25,10 @@ class OrganizationDetailsController extends Controller
 
     public function update(Request $request)
     {
+        if (auth()->user()?->role !== 'admin') {
+            abort(403, 'Unauthorized. Only administrators can update organization details.');
+        }
+
         $request->validate([
             'industry' => 'required|string',
             'company_size' => 'required|string',
@@ -48,6 +52,19 @@ class OrganizationDetailsController extends Controller
                 ]
             );
         }
+
+        // Broadcast notification to Admin, HR, Manager, and Employees
+        \App\Services\SystemNotificationService::notifyAllRoles(
+            'Organization Details Updated',
+            'Organization details and business registration info have been updated by ' . (auth()->user()?->name ?? 'Admin') . '.',
+            route('admin.settings.organization-details'),
+            [
+                'type' => 'setting_update',
+                'setting_module' => 'organization-details',
+                'icon' => 'fa-building-shield',
+                'color' => 'info',
+            ]
+        );
 
         return back()->with('success', 'Organization details updated successfully!');
     }

@@ -338,62 +338,88 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
     public function index()
     {
         $userId = Auth::id();
+        $userRole = strtolower((string) (auth()->user()?->role ?? ''));
 
-        if (auth()->user()->role == 'admin') {
-            $totalEmployees = \App\Models\User::where('role', 'employee')->count();
+        if (in_array($userRole, ['admin', 'administrator', 'superadmin'], true)) {
+            try { $totalEmployees = \App\Models\User::where('role', 'employee')->count(); } catch (\Throwable $e) { $totalEmployees = 0; }
             $today = now()->toDateString();
 
-            $presentCount = \App\Models\Attendance::where('date', $today)
-                ->whereIn('status', ['present', 'late'])
-                ->count();
+            try {
+                $presentCount = \App\Models\Attendance::where('date', $today)
+                    ->whereIn('status', ['present', 'late'])
+                    ->count();
+            } catch (\Throwable $e) { $presentCount = 0; }
 
-            $lateCount = \App\Models\Attendance::where('date', $today)
-                ->where('status', 'late')
-                ->count();
+            try {
+                $lateCount = \App\Models\Attendance::where('date', $today)
+                    ->where('status', 'late')
+                    ->count();
+            } catch (\Throwable $e) { $lateCount = 0; }
 
-            $absentCount = $totalEmployees - $presentCount;
+            $absentCount = max(0, $totalEmployees - $presentCount);
 
-            $totalClient = \App\Models\Client::count();
-            $totalProject = \App\Models\Project::count();
-            $pendingTask = \App\Models\Task::where('status','!=' ,'Completed')->count();
-            $unresolvedTicket = \App\Models\Ticket::where('status', '!=', 'closed')->count();
+            try { $totalClient = \App\Models\Client::count(); } catch (\Throwable $e) { $totalClient = 0; }
+            try { $totalProject = \App\Models\Project::count(); } catch (\Throwable $e) { $totalProject = 0; }
+            try { $pendingTask = \App\Models\Task::where('status', '!=', 'Completed')->count(); } catch (\Throwable $e) { $pendingTask = 0; }
 
+            try {
+                if (\Illuminate\Support\Facades\Schema::hasColumn('tickets', 'status')) {
+                    $unresolvedTicket = \App\Models\Ticket::where('status', '!=', 'closed')->count();
+                } else {
+                    $unresolvedTicket = \App\Models\Ticket::count();
+                }
+            } catch (\Throwable $e) { $unresolvedTicket = 0; }
 
-            // Only for Admin
-           $pendingLeaves = Auth::user()->role == 'admin'
-        ? Leave::with('user')->where('status', 'pending')->latest()->take(5)->get()
-        : collect(); // empty if not admin
+            try {
+                $pendingLeaves = Leave::with('user')->where('status', 'pending')->latest()->take(5)->get();
+            } catch (\Throwable $e) { $pendingLeaves = collect(); }
 
-        $openTickets = \App\Models\Ticket::where('status', 'open')
-            ->with(['project', 'agent'])  // eager loading for performance
-            ->latest()
-            ->take(5) // Show top 5 recent
-            ->get();
+            try {
+                if (\Illuminate\Support\Facades\Schema::hasColumn('tickets', 'status')) {
+                    $openTickets = \App\Models\Ticket::where('status', 'open')
+                        ->with(['project', 'agent'])
+                        ->latest()
+                        ->take(5)
+                        ->get();
+                } else {
+                    $openTickets = \App\Models\Ticket::with(['project', 'agent'])->latest()->take(5)->get();
+                }
+            } catch (\Throwable $e) { $openTickets = collect(); }
 
-            $pendingTasksTotal = \App\Models\Task::where('status', '!=', 'Completed')
-            ->with('project')
-            ->orderByDesc('start_date')
-            ->take(5) // Show recent 5 tasks
-            ->get();
+            try {
+                $pendingTasksTotal = \App\Models\Task::where('status', '!=', 'Completed')
+                    ->with('project')
+                    ->orderByDesc('created_at')
+                    ->take(5)
+                    ->get();
+            } catch (\Throwable $e) { $pendingTasksTotal = collect(); }
 
-          $activities = DB::table('project_activity')
-        ->join('projects', 'projects.id', '=', 'project_activity.project_id')
-        ->select(
-            'project_activity.activity',
-            'project_activity.created_at',
-            'projects.name as project_name'
-        )
-        ->orderByDesc('project_activity.created_at')
-        ->limit(15)
-        ->get();
+            try {
+                if (\Illuminate\Support\Facades\Schema::hasTable('project_activity')) {
+                    $activities = DB::table('project_activity')
+                        ->join('projects', 'projects.id', '=', 'project_activity.project_id')
+                        ->select(
+                            'project_activity.activity',
+                            'project_activity.created_at',
+                            'projects.name as project_name'
+                        )
+                        ->orderByDesc('project_activity.created_at')
+                        ->limit(15)
+                        ->get();
+                } else {
+                    $activities = collect();
+                }
+            } catch (\Throwable $e) { $activities = collect(); }
 
+            try {
+                $useractivities = UserActivity::with('user')
+                    ->orderBy('created_at', 'desc')
+                    ->limit(10)
+                    ->get();
+            } catch (\Throwable $e) { $useractivities = collect(); }
 
- $useractivities = UserActivity::with('user')
-        ->orderBy('created_at', 'desc')
-        ->limit(10)
-        ->get();
-          $projects = Project::all();
-            $tasks = Task::all();
+            try { $projects = Project::all(); } catch (\Throwable $e) { $projects = collect(); }
+            try { $tasks = Task::all(); } catch (\Throwable $e) { $tasks = collect(); }
 
             return view('dashboard', compact(
                 'totalEmployees',
@@ -410,7 +436,6 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
                 'activities',
                 'useractivities',
                 'projects', 'tasks'
-
             ));
         }
 
@@ -558,9 +583,13 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
         ->limit(10)
         ->get();
 
-        $myTickets = Ticket::where('requester_id', $userId)
-            ->orderBy('created_at', 'desc')
-            ->limit(5)
+        $myTickets = Ticket::where(function ($q) use ($userId) {
+                $q->where('agent_id', $userId)
+                  ->orWhere('requester_id', $userId);
+            })
+            ->with(['project', 'requester', 'agent'])
+            ->orderBy('updated_at', 'desc')
+            ->limit(10)
             ->get();
 
         $myProjects = Project::whereNull('deleted_at')

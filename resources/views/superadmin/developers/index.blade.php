@@ -969,20 +969,28 @@
 
                         <!-- ACTIONS -->
                         <td style="text-align: right;">
-                            <div style="display: flex; align-items: center; justify-content: flex-end; gap: 6px;">
+                            <div style="display: flex; align-items: center; justify-content: flex-end; gap: 5px;">
                                 <form method="POST" action="{{ route('super-admin.developers.enter-workspace', $dev->id) }}" style="display: inline;" onsubmit="return confirmWorkspacePreview('{{ addslashes($dev->name) }}', event, this);">
                                     @csrf
-                                    <button type="submit" class="btn-action-secondary" style="padding: 6px 12px; font-size: 12px; color: #6366f1; border-color: #c7d2fe;" title="Enter Workspace as Super Admin">
+                                    <button type="submit" class="btn-action-secondary" style="padding: 5px 10px; font-size: 11.5px; color: #6366f1; border-color: #c7d2fe;" title="Enter Workspace as Super Admin">
                                         <i class="bx bx-laptop"></i> Workspace
                                     </button>
                                 </form>
-                                <button class="btn-action-secondary" onclick="openDevDrawer('{{ $dev->id }}')" style="padding: 6px 12px; font-size: 12px;">
+                                <button class="btn-action-secondary" onclick="openDevDrawer('{{ $dev->id }}')" style="padding: 5px 10px; font-size: 11.5px;" title="View Details">
                                     <i class="bx bx-show"></i> View
                                 </button>
-                                <button class="btn-action-secondary" onclick="quickAssignWork('{{ $dev->email }}')" style="padding: 6px 10px; font-size: 12px; color: var(--blue-accent);" title="Assign Work">
+                                <button class="btn-action-secondary" onclick="quickAssignWork('{{ $dev->email }}')" style="padding: 5px 8px; font-size: 12px; color: var(--blue-accent);" title="Assign Work">
                                     <i class="bx bx-send"></i>
                                 </button>
-                                <button class="btn-action-secondary" onclick="openEditDeveloperModal('{{ $dev->id }}')" style="padding: 6px 10px; font-size: 12px;" title="Edit Profile">
+                                <!-- WHATSAPP SHARE -->
+                                <button class="btn-action-secondary" onclick="shareDevWhatsApp('{{ addslashes($dev->name) }}', '{{ $dev->email }}', '{{ $dev->personal_email ?: $dev->email }}', '{{ $dev->phone_number }}', 'DEV-{{ str_pad($dev->id, 3, '0', STR_PAD_LEFT) }}', '{{ $dev->active_tasks_count }}', '{{ addslashes($dev->raw_password ?: 'Developer@123') }}')" style="padding: 5px 8px; font-size: 14px; color: #059669; border-color: #a7f3d0; background: #ecfdf5;" title="Share Credentials & Tasks via WhatsApp">
+                                    <i class="bx bxl-whatsapp"></i>
+                                </button>
+                                <!-- EMAIL CREDENTIALS & NOTIFICATION -->
+                                <button class="btn-action-secondary" onclick="openDevCredentialsModal('{{ $dev->id }}', '{{ addslashes($dev->name) }}', '{{ $dev->email }}', '{{ $dev->personal_email ?: $dev->email }}', '{{ $dev->phone_number }}', 'DEV-{{ str_pad($dev->id, 3, '0', STR_PAD_LEFT) }}', '{{ $dev->active_tasks_count }}', '{{ addslashes($dev->raw_password ?: 'Developer@123') }}')" style="padding: 5px 8px; font-size: 14px; color: #2563eb; border-color: #bfdbfe; background: #eff6ff;" title="Developer Credentials & Email Notification">
+                                    <i class="bx bx-envelope"></i>
+                                </button>
+                                <button class="btn-action-secondary" onclick="openEditDeveloperModal('{{ $dev->id }}')" style="padding: 5px 8px; font-size: 12px;" title="Edit Profile">
                                     <i class="bx bx-edit-alt"></i>
                                 </button>
                             </div>
@@ -1227,37 +1235,57 @@
 
 <!-- MODAL 1: ADD / EDIT DEVELOPER MODAL -->
 <div class="modal-overlay" id="developerModal">
-    <div class="modal-box">
+    <div class="modal-box" style="width: 650px;">
         <form id="devForm" method="POST" action="{{ route('super-admin.developers.store') }}">
             @csrf
             <input type="hidden" name="_method" id="devFormMethod" value="POST">
 
             <div class="modal-header">
-                <h3 style="font-size: 17px; font-weight: 800; color: var(--slate-dark); margin: 0;" id="devModalTitle">Add New Developer</h3>
+                <div>
+                    <h3 style="font-size: 17px; font-weight: 800; color: var(--slate-dark); margin: 0;" id="devModalTitle">Add New Developer</h3>
+                    <p style="font-size: 12px; color: var(--slate-muted); margin: 2px 0 0 0;" id="devModalSubTitle">Create a permanent developer account (Only ONCE per developer).</p>
+                </div>
                 <button type="button" onclick="closeDeveloperModal()" style="background: none; border: none; font-size: 22px; color: var(--slate-muted); cursor: pointer;">
                     <i class="bx bx-x"></i>
                 </button>
             </div>
 
             <div class="modal-body">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+
+                <!-- NOTICE BANNER -->
+                <div id="devNoticeBanner" style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: var(--radius-md); padding: 12px 14px; margin-bottom: 18px; color: #1e40af; font-size: 12px; display: flex; align-items: flex-start; gap: 10px;">
+                    <i class="bx bx-info-circle" style="font-size: 18px; color: #2563eb; flex-shrink: 0; margin-top: 1px;"></i>
                     <div>
-                        <label style="display: block; font-size: 12px; font-weight: 700; color: var(--slate-dark); margin-bottom: 6px;">Developer Name *</label>
-                        <input type="text" name="name" id="devFormName" required class="search-group" style="width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 13px;" placeholder="e.g. Karan Malhotra">
-                    </div>
-                    <div>
-                        <label style="display: block; font-size: 12px; font-weight: 700; color: var(--slate-dark); margin-bottom: 6px;">Registered Email Address *</label>
-                        <input type="email" name="email" id="devFormEmail" required style="width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 13px;" placeholder="e.g. karan@company.com">
+                        <strong style="display: block; font-size: 12.5px; margin-bottom: 2px;">Permanent Account Architecture:</strong>
+                        <span>Creating a developer generates <strong>ONE permanent account</strong> and dispatches initial login credentials to their personal email address. Future task assignments will automatically reuse this account without generating new passwords.</span>
                     </div>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
                     <div>
-                        <label style="display: block; font-size: 12px; font-weight: 700; color: var(--slate-dark); margin-bottom: 6px;">Mobile Number</label>
-                        <input type="text" name="mobile" id="devFormMobile" style="width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 13px;" placeholder="+91 98765 43210">
+                        <label style="display: block; font-size: 12px; font-weight: 700; color: var(--slate-dark); margin-bottom: 6px;">Full Name *</label>
+                        <input type="text" name="name" id="devFormName" required style="width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 13px;" placeholder="e.g. Siraj Ali Laskar">
                     </div>
                     <div>
-                        <label style="display: block; font-size: 12px; font-weight: 700; color: var(--slate-dark); margin-bottom: 6px;">Role / Specialization *</label>
+                        <label style="display: block; font-size: 12px; font-weight: 700; color: var(--slate-dark); margin-bottom: 6px;">Developer Login Email *</label>
+                        <input type="email" name="email" id="devFormEmail" required style="width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 13px;" placeholder="e.g. developer@example.com">
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                    <div>
+                        <label style="display: block; font-size: 12px; font-weight: 700; color: var(--slate-dark); margin-bottom: 6px;">Personal Email (for Credentials) *</label>
+                        <input type="email" name="personal_email" id="devFormPersonalEmail" required style="width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 13px;" placeholder="e.g. siraj.personal@gmail.com">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 12px; font-weight: 700; color: var(--slate-dark); margin-bottom: 6px;">Phone Number</label>
+                        <input type="text" name="mobile" id="devFormMobile" style="width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 13px;" placeholder="+91 98765 43210">
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                    <div>
+                        <label style="display: block; font-size: 12px; font-weight: 700; color: var(--slate-dark); margin-bottom: 6px;">Designation / Role *</label>
                         <select name="role" id="devFormRole" required style="width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 13px;">
                             <option value="Full Stack Developer">Full Stack Developer</option>
                             <option value="Backend Developer">Backend Developer</option>
@@ -1267,16 +1295,26 @@
                             <option value="UI/UX Developer">UI/UX Developer</option>
                         </select>
                     </div>
+                    <div>
+                        <label style="display: block; font-size: 12px; font-weight: 700; color: var(--slate-dark); margin-bottom: 6px;">Experience Level</label>
+                        <input type="text" name="experience" id="devFormExperience" style="width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 13px;" placeholder="e.g. 3+ Years">
+                    </div>
                 </div>
 
-                <div style="margin-bottom: 16px;">
-                    <label style="display: block; font-size: 12px; font-weight: 700; color: var(--slate-dark); margin-bottom: 6px;">Assign to Tenant Company</label>
-                    <select name="company_id" id="devFormCompany" style="width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 13px;">
-                        <option value="">-- Central Platform Developer --</option>
-                        @foreach($companyOptions as $c)
-                            <option value="{{ $c->id }}">{{ $c->name }} ({{ $c->company_code ?? 'MAIN' }})</option>
-                        @endforeach
-                    </select>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                    <div>
+                        <label style="display: block; font-size: 12px; font-weight: 700; color: var(--slate-dark); margin-bottom: 6px;">Assign to Company</label>
+                        <select name="company_id" id="devFormCompany" style="width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 13px;">
+                            <option value="">-- Platform Central Developer --</option>
+                            @foreach($companyOptions as $c)
+                                <option value="{{ $c->id }}">{{ $c->name }} ({{ $c->company_code ?? 'MAIN' }})</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 12px; font-weight: 700; color: var(--slate-dark); margin-bottom: 6px;">Joining Date</label>
+                        <input type="date" name="joining_date" id="devFormJoiningDate" value="{{ date('Y-m-d') }}" style="width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 13px;">
+                    </div>
                 </div>
 
                 <div>
@@ -1287,21 +1325,23 @@
 
             <div class="modal-footer">
                 <button type="button" class="btn-action-secondary" onclick="closeDeveloperModal()">Cancel</button>
-                <button type="submit" class="btn-action-primary">Save Developer Profile</button>
+                <button type="submit" class="btn-action-primary" id="devFormSubmitBtn">
+                    <i class="bx bx-user-check"></i> Create Developer Account
+                </button>
             </div>
         </form>
     </div>
 </div>
 
-<!-- MODAL 2: EMAIL-BASED WORK ALLOCATION MODAL -->
+<!-- MODAL 2: ASSIGN TASK WORK ALLOCATION MODAL -->
 <div class="modal-overlay" id="assignWorkModal">
-    <div class="modal-box" style="width: 650px;">
+    <div class="modal-box" style="width: 720px;">
         <form method="POST" action="{{ route('super-admin.developers.assign-work') }}">
             @csrf
             <div class="modal-header">
                 <div>
                     <h3 style="font-size: 17px; font-weight: 800; color: var(--slate-dark); margin: 0;">Assign Development Work</h3>
-                    <p style="font-size: 12px; color: var(--slate-muted); margin: 2px 0 0 0;">Assign development task directly through developer's registered email address.</p>
+                    <p style="font-size: 12px; color: var(--slate-muted); margin: 2px 0 0 0;">Assign task to an existing developer or auto-provision a new developer account.</p>
                 </div>
                 <button type="button" onclick="closeAssignModal()" style="background: none; border: none; font-size: 22px; color: var(--slate-muted); cursor: pointer;">
                     <i class="bx bx-x"></i>
@@ -1310,12 +1350,39 @@
 
             <div class="modal-body">
 
-                <!-- EMAIL LOOKUP FIELD -->
+                <!-- RULE EXPLANATION BANNER -->
+                <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: var(--radius-md); padding: 12px 14px; margin-bottom: 16px; color: #166534; font-size: 12px; display: flex; align-items: center; gap: 10px;">
+                    <i class="bx bx-shield-check" style="font-size: 20px; color: #16a34a; flex-shrink: 0;"></i>
+                    <span><strong>1 Developer = 1 Account Rule:</strong> If the selected developer already exists, the task will be assigned to their existing account. No new account, password, or login credentials email will be generated.</span>
+                </div>
+
+                <!-- DEVELOPER SELECTOR DROPDOWN -->
                 <div style="margin-bottom: 16px;">
-                    <label style="display: block; font-size: 12px; font-weight: 700; color: var(--slate-dark); margin-bottom: 6px;">Developer Registered Email *</label>
-                    <div style="position: relative;">
-                        <input type="email" name="developer_email" id="assignDevEmailInput" required onkeyup="lookupDevEmail(this.value)" style="width: 100%; padding: 10px 14px 10px 38px; border: 1px solid var(--blue-accent); border-radius: var(--radius-md); font-size: 13.5px; font-family: monospace;" placeholder="Enter developer email (e.g. rahul@company.com)">
-                        <i class="bx bx-envelope" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 18px; color: var(--blue-accent);"></i>
+                    <label style="display: block; font-size: 12px; font-weight: 700; color: var(--slate-dark); margin-bottom: 6px;">Select Developer *</label>
+                    <select name="developer_id" id="assignDevSelect" onchange="onDevSelectChange(this)" style="width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 13.5px; font-weight: 600; color: var(--slate-dark);">
+                        <option value="">-- Choose Existing Developer --</option>
+                        @foreach($paginatedDevs as $d)
+                            <option value="{{ $d->id }}" data-email="{{ $d->email }}" data-name="{{ $d->name }}" data-role="{{ $d->role_title }}" data-tasks="{{ $d->active_tasks_count }}" data-workload="{{ $d->workload_category }}">
+                                {{ $d->name }} ({{ $d->role_title }}) — {{ $d->dev_status }} · {{ $d->active_tasks_count }} Active Tasks [{{ $d->email }}]
+                            </option>
+                        @endforeach
+                        <option value="new">+ Enter New Developer Email...</option>
+                    </select>
+                </div>
+
+                <!-- MANUAL EMAIL & NAME INPUTS (IF NEW DEVELOPER CHOSEN OR DIRECT LOOKUP) -->
+                <div id="manualDevFields" style="display: none; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 16px; background: #f8fafc; padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                    <div>
+                        <label style="display: block; font-size: 11.5px; font-weight: 700; color: var(--slate-dark); margin-bottom: 4px;">Developer Email *</label>
+                        <input type="email" name="developer_email" id="assignDevEmailInput" onkeyup="lookupDevEmail(this.value)" style="width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 12.5px; font-family: monospace;" placeholder="developer@example.com">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 11.5px; font-weight: 700; color: var(--slate-dark); margin-bottom: 4px;">Full Name</label>
+                        <input type="text" name="developer_name" id="assignDevNameInput" style="width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 12.5px;" placeholder="Full Name">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 11.5px; font-weight: 700; color: var(--slate-dark); margin-bottom: 4px;">Designation</label>
+                        <input type="text" name="designation" id="assignDevRoleInput" style="width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 12.5px;" placeholder="Backend Developer">
                     </div>
                 </div>
 
@@ -1324,31 +1391,43 @@
                     <div style="display: flex; align-items: center; justify-content: space-between;">
                         <div>
                             <strong style="font-size: 14px; color: var(--slate-dark);" id="lookupDevName">Rahul Sharma</strong>
-                            <span style="font-size: 12px; color: var(--slate-muted); display: block;" id="lookupDevRole">Backend Developer · TechEdFest</span>
+                            <span style="font-size: 12px; color: var(--slate-muted); display: block;" id="lookupDevRole">Backend Developer</span>
                         </div>
                         <span style="background: var(--primary-light); color: var(--primary); padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 800;" id="lookupDevWorkloadBadge">Available</span>
                     </div>
 
-                    <!-- WORKLOAD PROTECTION WARNING ALERT -->
                     <div id="workloadAlertBanner" style="display: none; margin-top: 10px; padding: 10px 12px; background: #fffbeb; border: 1px solid #fde68a; border-radius: 6px; color: #b45309; font-size: 12px; font-weight: 600;">
                         <i class="bx bx-error" style="font-size: 16px; vertical-align: middle;"></i> ⚠️ Developer workload is currently heavy. Consider assigning to another available developer.
                     </div>
                 </div>
 
-                <!-- TASK DETAILS -->
+                <!-- TASK TITLE -->
                 <div style="margin-bottom: 16px;">
                     <label style="display: block; font-size: 12px; font-weight: 700; color: var(--slate-dark); margin-bottom: 6px;">Task Title *</label>
-                    <input type="text" name="task_title" required style="width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 13px;" placeholder="e.g. Implement Webhook Payment Handler">
+                    <input type="text" name="task_title" required style="width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 13px;" placeholder="e.g. Implement Subscription Expiry Notifications">
                 </div>
 
+                <!-- DESCRIPTION -->
                 <div style="margin-bottom: 16px;">
-                    <label style="display: block; font-size: 12px; font-weight: 700; color: var(--slate-dark); margin-bottom: 6px;">Task Description &amp; Technical Requirements</label>
-                    <textarea name="description" rows="3" style="width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 13px;" placeholder="Provide brief specifications or instructions for the developer..."></textarea>
+                    <label style="display: block; font-size: 12px; font-weight: 700; color: var(--slate-dark); margin-bottom: 6px;">Detailed Description</label>
+                    <textarea name="description" rows="3" style="width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 13px;" placeholder="Describe technical scope and acceptance criteria..."></textarea>
+                </div>
+
+                <!-- ADDITIONAL INSTRUCTIONS & ATTACHMENTS -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                    <div>
+                        <label style="display: block; font-size: 12px; font-weight: 700; color: var(--slate-dark); margin-bottom: 6px;">Additional Instructions</label>
+                        <input type="text" name="additional_instructions" style="width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 13px;" placeholder="Special guidelines, repo links, branch names...">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 12px; font-weight: 700; color: var(--slate-dark); margin-bottom: 6px;">Attachments / Docs Link</label>
+                        <input type="text" name="attachments" style="width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 13px;" placeholder="e.g. Figma link, API doc URL, PDF path">
+                    </div>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
                     <div>
-                        <label style="display: block; font-size: 12px; font-weight: 700; color: var(--slate-dark); margin-bottom: 6px;">Target Company</label>
+                        <label style="display: block; font-size: 12px; font-weight: 700; color: var(--slate-dark); margin-bottom: 6px;">Company</label>
                         <select name="company_id" style="width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 13px;">
                             @foreach($companyOptions as $c)
                                 <option value="{{ $c->id }}">{{ $c->name }}</option>
@@ -1356,7 +1435,7 @@
                         </select>
                     </div>
                     <div>
-                        <label style="display: block; font-size: 12px; font-weight: 700; color: var(--slate-dark); margin-bottom: 6px;">Project Context</label>
+                        <label style="display: block; font-size: 12px; font-weight: 700; color: var(--slate-dark); margin-bottom: 6px;">Project</label>
                         <select name="project_id" style="width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 13px;">
                             @foreach($projectOptions as $p)
                                 <option value="{{ $p->id }}">{{ $p->project_name }}</option>
@@ -1365,23 +1444,27 @@
                     </div>
                 </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 14px;">
                     <div>
                         <label style="display: block; font-size: 12px; font-weight: 700; color: var(--slate-dark); margin-bottom: 6px;">Priority *</label>
                         <select name="priority" required style="width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 13px;">
-                            <option value="medium">Medium</option>
-                            <option value="low">Low</option>
-                            <option value="high">High</option>
                             <option value="critical">Critical</option>
+                            <option value="high">High</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="low">Low</option>
                         </select>
-                    </div>
-                    <div>
-                        <label style="display: block; font-size: 12px; font-weight: 700; color: var(--slate-dark); margin-bottom: 6px;">Due Date</label>
-                        <input type="date" name="due_date" value="{{ date('Y-m-d', strtotime('+3 days')) }}" style="width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 13px;">
                     </div>
                     <div>
                         <label style="display: block; font-size: 12px; font-weight: 700; color: var(--slate-dark); margin-bottom: 6px;">Estimate (Hours)</label>
                         <input type="number" name="estimate_hours" value="8" min="1" max="200" style="width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 13px;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 12px; font-weight: 700; color: var(--slate-dark); margin-bottom: 6px;">Start Date</label>
+                        <input type="date" name="start_date" value="{{ date('Y-m-d') }}" style="width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 13px;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 12px; font-weight: 700; color: var(--slate-dark); margin-bottom: 6px;">Deadline *</label>
+                        <input type="date" name="due_date" value="{{ date('Y-m-d', strtotime('+3 days')) }}" required style="width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 13px;">
                     </div>
                 </div>
 
@@ -1390,10 +1473,130 @@
             <div class="modal-footer">
                 <button type="button" class="btn-action-secondary" onclick="closeAssignModal()">Cancel</button>
                 <button type="submit" class="btn-action-primary">
-                    <i class="bx bx-send"></i> Assign Work &amp; Notify Developer
+                    <i class="bx bx-send"></i> Assign Task
                 </button>
             </div>
         </form>
+    </div>
+</div>
+
+<!-- MODAL 3: TASK ACTIVITY TIMELINE HISTORY MODAL -->
+<div class="modal-overlay" id="taskHistoryModal">
+    <div class="modal-box" style="width: 650px;">
+        <div class="modal-header">
+            <div>
+                <h3 style="font-size: 17px; font-weight: 800; color: var(--slate-dark); margin: 0;" id="historyModalTaskTitle">Task Activity Timeline</h3>
+                <p style="font-size: 12px; color: var(--slate-muted); margin: 2px 0 0 0;" id="historyModalTaskSub">Audit trail &amp; status change history</p>
+            </div>
+            <button type="button" onclick="closeTaskHistoryModal()" style="background: none; border: none; font-size: 22px; color: var(--slate-muted); cursor: pointer;">
+                <i class="bx bx-x"></i>
+            </button>
+        </div>
+        <div class="modal-body" id="taskHistoryTimelineBody">
+            <div style="text-align: center; padding: 24px; color: var(--slate-muted);">Loading activity history...</div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn-action-secondary" onclick="closeTaskHistoryModal()">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL 4: DEVELOPER CREDENTIALS & SHARE MODAL -->
+<div class="modal-overlay" id="devCredentialsModal">
+    <div class="modal-box" style="width: 620px;">
+        <div class="modal-header" style="background: #f8fafc; border-bottom: 1px solid var(--border-color);">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="width: 38px; height: 38px; border-radius: 50%; background: #eff6ff; color: #2563eb; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: bold; flex-shrink: 0;">
+                    <i class="bx bx-key"></i>
+                </div>
+                <div>
+                    <h3 style="font-size: 16px; font-weight: 800; color: var(--slate-dark); margin: 0;" id="credModalDevName">Developer Credentials</h3>
+                    <p style="font-size: 11.5px; color: var(--slate-muted); margin: 2px 0 0 0;" id="credModalDevId">Account Credentials &amp; Contact Telemetry</p>
+                </div>
+            </div>
+            <button type="button" onclick="closeDevCredentialsModal()" style="background: none; border: none; font-size: 22px; color: var(--slate-muted); cursor: pointer;">
+                <i class="bx bx-x"></i>
+            </button>
+        </div>
+
+        <div class="modal-body" style="padding: 20px;">
+            <!-- CREDENTIAL SUMMARY CARD -->
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: var(--radius-md); padding: 16px; margin-bottom: 18px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; font-size: 12.5px; margin-bottom: 14px;">
+                    <div>
+                        <span style="color: var(--slate-muted); font-weight: 700; display: block; font-size: 11px; margin-bottom: 2px;">DEVELOPER LOGIN EMAIL</span>
+                        <strong style="color: var(--slate-dark); font-family: monospace; font-size: 13px;" id="credModalLoginEmail">-</strong>
+                    </div>
+                    <div>
+                        <span style="color: var(--slate-muted); font-weight: 700; display: block; font-size: 11px; margin-bottom: 2px;">DEVELOPER LOGIN PASSWORD</span>
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <input type="password" id="credModalLoginPasswordInput" readonly value="Developer@123" style="font-family: monospace; font-size: 13px; font-weight: 700; color: #059669; border: 1px solid #cbd5e1; border-radius: 6px; padding: 3px 8px; width: 135px; background: #ffffff;">
+                            <button type="button" onclick="togglePasswordVisibility('credModalLoginPasswordInput', this)" class="btn-action-secondary" style="padding: 3px 6px; font-size: 13px; border-color: #cbd5e1;" title="Show/Hide Password">
+                                <i class="bx bx-show"></i>
+                            </button>
+                            <button type="button" onclick="copyTextToClipboard(document.getElementById('credModalLoginPasswordInput').value, 'Password copied to clipboard!')" class="btn-action-secondary" style="padding: 3px 6px; font-size: 13px; border-color: #cbd5e1;" title="Copy Password">
+                                <i class="bx bx-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div>
+                        <span style="color: var(--slate-muted); font-weight: 700; display: block; font-size: 11px; margin-bottom: 2px;">PERSONAL EMAIL (CREDENTIAL INBOX)</span>
+                        <strong style="color: var(--blue-accent); font-family: monospace; font-size: 13px;" id="credModalPersonalEmail">-</strong>
+                    </div>
+                    <div>
+                        <span style="color: var(--slate-muted); font-weight: 700; display: block; font-size: 11px; margin-bottom: 2px;">PHONE / WHATSAPP NUMBER</span>
+                        <strong style="color: var(--slate-dark); font-size: 12.5px;" id="credModalPhone">-</strong>
+                    </div>
+                </div>
+
+                <div style="border-top: 1px solid #e2e8f0; padding-top: 10px; display: flex; align-items: center; justify-content: space-between;">
+                    <div>
+                        <span style="color: var(--slate-muted); font-weight: 700; font-size: 11px;">ACTIVE ASSIGNED TASKS:</span>
+                        <span style="background: #dbeafe; color: #1e40af; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; margin-left: 4px;" id="credModalActiveTasks">0 Tasks</span>
+                    </div>
+                    <div>
+                        <span style="color: var(--slate-muted); font-weight: 700; font-size: 11px;">PASSWORD SYNC:</span>
+                        <span style="background: #ecfdf5; color: #065f46; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; margin-left: 4px;">Live Auto-Updated</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LOGIN PORTAL LINK INFO -->
+            <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: var(--radius-md); padding: 12px 14px; margin-bottom: 18px; font-size: 12px; color: #1e40af;">
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
+                    <div>
+                        <strong style="display: block; font-size: 12px; margin-bottom: 2px;">Developer Portal Login URL:</strong>
+                        <span style="font-family: monospace; font-weight: 700;">{{ url('/login') }}</span>
+                    </div>
+                    <button type="button" onclick="copyTextToClipboard('{{ url('/login') }}', 'Login URL copied to clipboard!')" class="btn-action-secondary" style="padding: 4px 10px; font-size: 11px; background: #ffffff; color: #2563eb; border-color: #bfdbfe;">
+                        <i class="bx bx-copy"></i> Copy Link
+                    </button>
+                </div>
+            </div>
+
+            <!-- ACTION OPTIONS -->
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <form id="credResetForm" method="POST" action="">
+                    @csrf
+                    <button type="submit" class="btn-action-primary" style="width: 100%; padding: 10px; justify-content: center; font-size: 13px;">
+                        <i class="bx bx-paper-plane"></i> Reset Password &amp; Dispatch Credentials Email
+                    </button>
+                </form>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <button type="button" id="credMailtoBtn" class="btn-action-secondary" style="padding: 9px; justify-content: center; font-size: 12.5px; color: #2563eb; border-color: #bfdbfe; background: #f0f9ff;">
+                        <i class="bx bx-envelope"></i> Open Mail Client
+                    </button>
+                    <button type="button" id="credWhatsappBtn" class="btn-action-secondary" style="padding: 9px; justify-content: center; font-size: 12.5px; color: #059669; border-color: #a7f3d0; background: #ecfdf5;">
+                        <i class="bx bxl-whatsapp"></i> Share on WhatsApp
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" class="btn-action-secondary" onclick="closeDevCredentialsModal()">Close</button>
+        </div>
     </div>
 </div>
 
@@ -1852,11 +2055,22 @@
     // Modal Control
     function openAddDeveloperModal() {
         document.getElementById('devModalTitle').innerText = 'Add New Developer';
+        document.getElementById('devModalSubTitle').innerText = 'Create a permanent developer account (Only ONCE per developer).';
+        const banner = document.getElementById('devNoticeBanner');
+        if (banner) banner.style.display = 'flex';
+        const submitBtn = document.getElementById('devFormSubmitBtn');
+        if (submitBtn) submitBtn.innerHTML = '<i class="bx bx-user-check"></i> Create Developer Account';
+
         document.getElementById('devForm').action = '{{ route('super-admin.developers.store') }}';
         document.getElementById('devFormMethod').value = 'POST';
         document.getElementById('devFormName').value = '';
         document.getElementById('devFormEmail').value = '';
+        document.getElementById('devFormPersonalEmail').value = '';
         document.getElementById('devFormMobile').value = '';
+        document.getElementById('devFormRole').value = 'Full Stack Developer';
+        document.getElementById('devFormExperience').value = '';
+        document.getElementById('devFormCompany').value = '';
+        document.getElementById('devFormJoiningDate').value = '{{ date('Y-m-d') }}';
         document.getElementById('devFormSkills').value = '';
         document.getElementById('developerModal').classList.add('active');
     }
@@ -1865,13 +2079,23 @@
         const dev = devData.find(d => d.id == devId);
         if (!dev) return;
 
-        document.getElementById('devModalTitle').innerText = 'Edit Developer Details';
+        document.getElementById('devModalTitle').innerText = 'Edit Developer Profile & Details';
+        document.getElementById('devModalSubTitle').innerText = 'Update profile, role specialization, and skills configuration for ' + dev.name + '.';
+        const banner = document.getElementById('devNoticeBanner');
+        if (banner) banner.style.display = 'none';
+        const submitBtn = document.getElementById('devFormSubmitBtn');
+        if (submitBtn) submitBtn.innerHTML = '<i class="bx bx-save"></i> Save Developer Profile';
+
         document.getElementById('devForm').action = '{{ url('/super-admin/developers') }}/' + dev.id;
         document.getElementById('devFormMethod').value = 'PUT';
-        document.getElementById('devFormName').value = dev.name;
-        document.getElementById('devFormEmail').value = dev.email;
-        document.getElementById('devFormMobile').value = dev.phone_number;
-        document.getElementById('devFormRole').value = dev.role_title;
+        document.getElementById('devFormName').value = dev.name || '';
+        document.getElementById('devFormEmail').value = dev.email || '';
+        document.getElementById('devFormPersonalEmail').value = dev.personal_email || dev.email || '';
+        document.getElementById('devFormMobile').value = dev.phone_number || dev.mobile || '';
+        document.getElementById('devFormRole').value = dev.role_title || dev.designation || 'Full Stack Developer';
+        document.getElementById('devFormExperience').value = dev.experience || '';
+        document.getElementById('devFormCompany').value = dev.company_id || (dev.company ? dev.company.id : '');
+        document.getElementById('devFormJoiningDate').value = dev.joining_date || '';
         document.getElementById('devFormSkills').value = (dev.skills_list || []).join(', ');
         document.getElementById('developerModal').classList.add('active');
     }
@@ -1890,10 +2114,56 @@
 
     function quickAssignWork(email) {
         openAssignModal();
-        const input = document.getElementById('assignDevEmailInput');
-        if (input) {
-            input.value = email;
+        const select = document.getElementById('assignDevSelect');
+        let matched = false;
+        if (select) {
+            for (let i = 0; i < select.options.length; i++) {
+                if (select.options[i].getAttribute('data-email') === email) {
+                    select.selectedIndex = i;
+                    onDevSelectChange(select);
+                    matched = true;
+                    break;
+                }
+            }
+        }
+        if (!matched) {
+            select.value = 'new';
+            onDevSelectChange(select);
+            const input = document.getElementById('assignDevEmailInput');
+            if (input) {
+                input.value = email;
+                lookupDevEmail(email);
+            }
+        }
+    }
+
+    function onDevSelectChange(selectElem) {
+        const val = selectElem.value;
+        const manualFields = document.getElementById('manualDevFields');
+        const emailInput = document.getElementById('assignDevEmailInput');
+        const nameInput = document.getElementById('assignDevNameInput');
+        const roleInput = document.getElementById('assignDevRoleInput');
+        
+        if (val === 'new') {
+            manualFields.style.display = 'grid';
+            emailInput.value = '';
+            emailInput.required = true;
+            nameInput.value = '';
+            roleInput.value = '';
+            document.getElementById('devLookupCard').style.display = 'none';
+        } else if (val) {
+            manualFields.style.display = 'none';
+            const selectedOpt = selectElem.options[selectElem.selectedIndex];
+            const email = selectedOpt.getAttribute('data-email');
+            const name = selectedOpt.getAttribute('data-name');
+            const role = selectedOpt.getAttribute('data-role');
+            emailInput.value = email;
+            nameInput.value = name;
+            roleInput.value = role;
             lookupDevEmail(email);
+        } else {
+            manualFields.style.display = 'none';
+            document.getElementById('devLookupCard').style.display = 'none';
         }
     }
 
@@ -1920,10 +2190,154 @@
             }
         } else {
             card.style.display = 'block';
-            document.getElementById('lookupDevName').innerText = 'Developer Not Found';
-            document.getElementById('lookupDevRole').innerText = 'No registered developer matches: ' + query;
-            document.getElementById('lookupDevWorkloadBadge').innerText = 'Unknown';
+            document.getElementById('lookupDevName').innerText = 'New Developer Account';
+            document.getElementById('lookupDevRole').innerText = 'A new developer account will be created once and initial login credentials sent to: ' + query;
+            document.getElementById('lookupDevWorkloadBadge').innerText = 'New Account';
             alertBanner.style.display = 'none';
+        }
+    }
+
+    function openTaskHistoryModal(taskId) {
+        const modal = document.getElementById('taskHistoryModal');
+        const body = document.getElementById('taskHistoryTimelineBody');
+        body.innerHTML = '<div style="text-align:center; padding: 28px; color: var(--slate-muted);"><i class="bx bx-loader-alt bx-spin" style="font-size: 32px; color: var(--primary);"></i><br><span style="margin-top: 8px; display: inline-block;">Loading activity timeline...</span></div>';
+        modal.classList.add('active');
+
+        fetch('{{ url('/super-admin/developers/tasks') }}/' + taskId + '/history')
+            .then(res => res.json())
+            .then(data => {
+                if (!data.success || !data.task) {
+                    body.innerHTML = '<div style="text-align:center; padding: 24px; color: var(--danger);">Unable to load activity history.</div>';
+                    return;
+                }
+                document.getElementById('historyModalTaskTitle').innerText = data.task.title;
+                document.getElementById('historyModalTaskSub').innerText = 'Assigned Developer: ' + (data.task.developer_name || 'Developer') + ' (' + (data.task.company_name || 'Platform Central') + ')';
+                
+                if (!data.history || data.history.length === 0) {
+                    body.innerHTML = `
+                        <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 16px; margin-bottom: 16px;">
+                            <strong style="font-size: 13.5px; color: var(--slate-dark); display: block; margin-bottom: 4px;">Task Initialized: ${data.task.title}</strong>
+                            <span style="font-size: 12px; color: var(--slate-muted);">Created on ${new Date(data.task.created_at).toLocaleString()} · Initial Status: ${data.task.status.toUpperCase()}</span>
+                        </div>
+                        <div style="text-align:center; padding: 20px; color: var(--slate-muted); font-size: 13px;">No further activity logs recorded yet.</div>
+                    `;
+                    return;
+                }
+
+                let html = '<div style="display: flex; flex-direction: column; gap: 14px;">';
+                data.history.forEach((h, idx) => {
+                    const dateStr = new Date(h.created_at).toLocaleString();
+                    html += `
+                        <div style="display: flex; gap: 14px; position: relative;">
+                            <div style="width: 34px; height: 34px; border-radius: 50%; background: #ecfdf5; color: #059669; display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; border: 1px solid #a7f3d0;">
+                                <i class="bx bx-history"></i>
+                            </div>
+                            <div style="flex: 1; background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px 16px;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                                    <strong style="font-size: 13px; color: var(--slate-dark);">${h.user_name || 'System / Admin'}</strong>
+                                    <span style="font-size: 11px; color: var(--slate-muted); font-weight: 600;">${dateStr}</span>
+                                </div>
+                                <div style="font-size: 12.5px; color: var(--slate-body);">${h.details || 'Task action logged.'}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                body.innerHTML = html;
+            })
+            .catch(err => {
+                body.innerHTML = '<div style="text-align:center; padding: 24px; color: var(--danger);">Failed to load activity history timeline.</div>';
+            });
+    }
+
+    function closeTaskHistoryModal() {
+        document.getElementById('taskHistoryModal').classList.remove('active');
+    }
+
+    function shareDevWhatsApp(name, email, personalEmail, phone, devId, activeTasks, password) {
+        let cleanPhone = (phone || '').replace(/[^0-9]/g, '');
+        if (!cleanPhone) {
+            cleanPhone = '919876543210';
+        }
+
+        const pwdText = password || 'Developer@123';
+        const loginUrl = '{{ url('/login') }}';
+        const msgText = `*PMS Developer Portal Credentials & Task Info*\n` +
+            `Hello ${name},\n\n` +
+            `Here are your Developer Workspace login details:\n` +
+            `👤 Name: ${name}\n` +
+            `🆔 Developer ID: ${devId}\n` +
+            `📧 Login Email: ${email}\n` +
+            `🔑 Login Password: ${pwdText}\n` +
+            `📩 Personal Email: ${personalEmail || email}\n` +
+            `🔗 Login Portal: ${loginUrl}\n` +
+            `📋 Active Tasks: ${activeTasks || 0} Assigned\n\n` +
+            `Please log into your Developer Workspace to review and complete your assigned tasks.`;
+
+        const encodedMsg = encodeURIComponent(msgText);
+        window.open(`https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodedMsg}`, '_blank');
+    }
+
+    let activeCredDevId = null;
+    function openDevCredentialsModal(devId, name, email, personalEmail, phone, devCode, activeTasks, password) {
+        activeCredDevId = devId;
+        const pwdText = password || 'Developer@123';
+
+        document.getElementById('credModalDevName').innerText = name + ' - Credentials';
+        document.getElementById('credModalDevId').innerText = devCode + ' · ' + (personalEmail || email);
+        document.getElementById('credModalLoginEmail').innerText = email;
+        document.getElementById('credModalLoginPasswordInput').value = pwdText;
+        document.getElementById('credModalPersonalEmail').innerText = personalEmail || email;
+        document.getElementById('credModalPhone').innerText = phone || 'N/A';
+        document.getElementById('credModalActiveTasks').innerText = (activeTasks || 0) + ' Active Tasks';
+
+        document.getElementById('credResetForm').action = `{{ url('/super-admin/developers') }}/${devId}/reset-password`;
+
+        const loginUrl = '{{ url('/login') }}';
+        const msgText = `PMS Developer Portal Credentials for ${name}:\nLogin Email: ${email}\nLogin Password: ${pwdText}\nLogin Portal: ${loginUrl}\nActive Tasks: ${activeTasks || 0}`;
+        const encodedText = encodeURIComponent(msgText);
+
+        document.getElementById('credMailtoBtn').onclick = function() {
+            const subject = encodeURIComponent(`Developer Workspace Credentials - ${name}`);
+            window.location.href = `mailto:${personalEmail || email}?subject=${subject}&body=${encodedText}`;
+        };
+
+        document.getElementById('credWhatsappBtn').onclick = function() {
+            shareDevWhatsApp(name, email, personalEmail, phone, devCode, activeTasks, pwdText);
+        };
+
+        document.getElementById('devCredentialsModal').classList.add('active');
+    }
+
+    function togglePasswordVisibility(inputId, btnElem) {
+        const input = document.getElementById(inputId);
+        if (!input) return;
+        if (input.type === 'password') {
+            input.type = 'text';
+            btnElem.innerHTML = '<i class="bx bx-hide"></i>';
+        } else {
+            input.type = 'password';
+            btnElem.innerHTML = '<i class="bx bx-show"></i>';
+        }
+    }
+
+    function closeDevCredentialsModal() {
+        document.getElementById('devCredentialsModal').classList.remove('active');
+    }
+
+    function copyTextToClipboard(text, successMsg) {
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert(successMsg || 'Copied to clipboard!');
+            });
+        } else {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            alert(successMsg || 'Copied to clipboard!');
         }
     }
 </script>

@@ -37,33 +37,65 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        // Multi-Tenant: Store current company database name in session
+        // Multi-Tenant: Preserve and set active tenant company database name and company ID in session
         $user = Auth::user();
         if ($user) {
             $company = null;
             if (!empty($user->company_id)) {
-                $company = \App\Models\Central\Company::where('id', $user->company_id)->first();
+                $company = \App\Models\Central\Company::on('central')->where('id', $user->company_id)->first();
             }
-            if (!$company) {
-                $company = \App\Models\Central\Company::where('db_name', env('DB_DATABASE', 'pms_last'))->first();
+            if (!$company && !empty($user->email)) {
+                $company = \App\Models\Central\Company::on('central')->where('email', $user->email)->first();
+            }
+            if (!$company && session('current_company_db')) {
+                $company = \App\Models\Central\Company::on('central')->where('db_name', session('current_company_db'))->first();
             }
 
-            $dbName = $company?->db_name ?: env('DB_DATABASE', 'pms_last');
+            $dbName = $company?->db_name ?: (session('current_company_db') ?: config('database.connections.tenant.database'));
+            $companyId = $company?->id ?: session('current_company_id');
+            $companyName = $company?->name ?: session('current_company_name');
+
             $request->session()->put('current_company_db', $dbName);
+            if ($companyId) {
+                $request->session()->put('current_company_id', $companyId);
+            }
+            if ($companyName) {
+                $request->session()->put('current_company_name', $companyName);
+            }
+
+            config([
+                'database.connections.tenant.database' => $dbName,
+                'database.connections.mysql.database'  => $dbName,
+            ]);
+            \Illuminate\Support\Facades\DB::purge('tenant');
+            \Illuminate\Support\Facades\DB::purge('mysql');
+
+            if (app()->bound(\App\Services\CompanyContext::class)) {
+                app(\App\Services\CompanyContext::class)->reset();
+            }
+        }
+
+        $intendedUrl = session('url.intended');
+        if ($intendedUrl && (str_contains($intendedUrl, '/login') || str_contains($intendedUrl, '/register'))) {
+            session()->forget('url.intended');
         }
 
         $role = strtolower(Auth::user()?->role ?? '');
         $designation = strtolower(Auth::user()?->designation ?? '');
 
         if ($role === 'superadmin') {
-            return redirect()->intended(route('superadmin.dashboard', absolute: false));
+            // If superadmin logged in via company credentials (tenant company session active), redirect to company dashboard
+            if (session('current_company_id') && session('current_company_id') != 1) {
+                return redirect()->route('dashboard');
+            }
+            return redirect()->route('superadmin.dashboard');
         }
 
         if (in_array($role, ['developer', 'dev'], true) || str_contains($designation, 'developer') || str_contains($designation, 'engineer')) {
-            return redirect()->intended(route('developer.dashboard', absolute: false));
+            return redirect()->route('developer.dashboard');
         }
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        return redirect()->route('dashboard');
     }
 
     /**

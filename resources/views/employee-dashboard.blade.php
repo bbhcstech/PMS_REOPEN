@@ -1572,39 +1572,50 @@
 
                 <div class="col-xl-6">
                     <div class="employee-table-card h-100">
-                        <div class="employee-table-head">
-                            <a href="{{ route('tickets.index') }}" class="text-decoration-none"><h3 class="employee-card-title mb-0">Tickets</h3></a>
+                        <div class="employee-table-head d-flex align-items-center justify-content-between">
+                            <a href="{{ route('tickets.index') }}" class="text-decoration-none"><h3 class="employee-card-title mb-0">Support Tickets</h3></a>
                             <span class="employee-icon warning"><i class="bx bx-message-detail"></i></span>
                         </div>
                         <div class="table-responsive">
-                            <table class="table employee-table">
+                            <table class="table employee-table align-middle">
                                 <thead>
                                     <tr>
                                         <th>Ticket#</th>
-                                        <th>Subject</th>
+                                        <th>Subject & Project</th>
                                         <th>Status</th>
-                                        <th>Date</th>
+                                        <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @forelse($myTickets as $ticket)
                                         <tr>
-                                            <td>#{{ $ticket->id }}</td>
-                                            <td class="fw-semibold">{{ $ticket->subject }}</td>
+                                            <td class="fw-bold">#{{ $ticket->id }}</td>
                                             <td>
-                                                @if($ticket->status == 'open')
-                                                    <span class="badge bg-warning">Open</span>
-                                                @elseif($ticket->status == 'resolved')
+                                                <div class="fw-semibold text-dark">{{ Str::limit($ticket->subject, 32) }}</div>
+                                                <small class="text-muted"><i class="bx bx-folder"></i> {{ $ticket->project?->name ?? 'General Support' }}</small>
+                                            </td>
+                                            <td>
+                                                @if(strtolower((string)$ticket->status) == 'open')
+                                                    <span class="badge bg-warning text-dark">Open</span>
+                                                @elseif(strtolower((string)$ticket->status) == 'reopened')
+                                                    <span class="badge bg-danger">REOPENED</span>
+                                                @elseif(strtolower((string)$ticket->status) == 'resolved')
                                                     <span class="badge bg-success">Resolved</span>
+                                                @elseif(strtolower((string)$ticket->status) == 'closed')
+                                                    <span class="badge bg-secondary">Closed</span>
                                                 @else
-                                                    <span class="badge bg-secondary">{{ ucfirst($ticket->status) }}</span>
+                                                    <span class="badge bg-info">{{ ucfirst($ticket->status) }}</span>
                                                 @endif
                                             </td>
-                                            <td>{{ $ticket->created_at->format('d-m-Y') }}</td>
+                                            <td>
+                                                <a href="{{ route('tickets.show', $ticket->id) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                                    <i class="bx bx-show-alt me-1"></i> View
+                                                </a>
+                                            </td>
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="4" class="text-center py-4">No tickets found</td>
+                                            <td colspan="4" class="text-center py-4 text-muted">No assigned tickets found</td>
                                         </tr>
                                     @endforelse
                                 </tbody>

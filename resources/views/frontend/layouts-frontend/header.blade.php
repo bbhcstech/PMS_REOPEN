@@ -1,324 +1,180 @@
-<!-- Premium Navbar -->
-@php
-    $logoUrl = $logoUrl ?? asset('logo.png') . '?v=' . (file_exists(public_path('logo.png')) ? filemtime(public_path('logo.png')) : time());
-@endphp
-<nav class="bbh-navbar navbar navbar-expand-lg" id="bbhNavbar">
-    <div class="container">
-        <!-- Logo -->
-        <a class="navbar-brand" href="{{ url('/') }}">
-            <div class="brand-logo">
-                <span class="brand-icon" aria-hidden="true">
-                    <img src="{{ $logoUrl }}" alt="">
-                </span>
-                <span class="brand-text">BITRO<span class="text-purple">XIA</span></span>
+<header class="nav" id="siteNav">
+  <div class="container">
+    <a href="{{ route('home') }}" class="brand">
+      <img src="{{ asset('logo.png') }}" alt="Bitroxia logo">
+      <span>Bitroxia<small>Project &amp; HR Workspace</small></span>
+    </a>
+
+    <nav aria-label="Primary">
+      <ul class="nav-links">
+        <li class="{{ request()->is('product*') ? 'is-active' : '' }}">
+          <button class="nav-top-link" aria-expanded="false">Product
+            <svg class="nav-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="mega">
+            <div class="mega-col">
+              <div class="mega-col-title">Project Management</div>
+              <a href="{{ route('features') }}#tasks"><strong>Task Management</strong><span>Organize and track tasks</span></a>
+              <a href="{{ route('features') }}#gantt"><strong>Gantt Charts</strong><span>Visual project timelines</span></a>
+              <a href="{{ route('features') }}#kanban"><strong>Kanban Boards</strong><span>Agile workflow</span></a>
             </div>
-        </a>
-
-        <!-- Mobile Toggle -->
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
-            <div class="hamburger">
-                <span></span>
-                <span></span>
-                <span></span>
+            <div class="mega-col">
+              <div class="mega-col-title">HR Management</div>
+              <a href="{{ route('features') }}#attendance"><strong>Attendance</strong><span>Track employee hours</span></a>
+              <a href="{{ route('features') }}#leave"><strong>Leave Management</strong><span>Manage time off</span></a>
+              <a href="{{ route('features') }}#performance"><strong>Performance</strong><span>Employee reviews</span></a>
             </div>
-        </button>
-
-        <!-- Navbar Items -->
-        <div class="collapse navbar-collapse" id="mainNavbar">
-            <ul class="navbar-nav mx-auto">
-                <!-- Product Dropdown -->
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="javascript:void(0)" role="button" data-frontend-dropdown="true" aria-expanded="false">
-                        Product <i class="fas fa-chevron-down ms-1"></i>
-                    </a>
-                    <div class="dropdown-menu mega-menu">
-                        <div class="mega-menu-grid">
-                            <div class="mega-menu-col">
-                                <h6 class="dropdown-header">Project Management</h6>
-                                <a class="dropdown-item" href="{{ route('product.tasks') }}">
-                                    <i class="fas fa-tasks"></i>
-                                    <div>
-                                        <span>Task Management</span>
-                                        <small>Organize and track tasks</small>
-                                    </div>
-                                </a>
-                                <a class="dropdown-item" href="{{ route('product.gantt') }}">
-                                    <i class="fas fa-chart-line"></i>
-                                    <div>
-                                        <span>Gantt Charts</span>
-                                        <small>Visual project timelines</small>
-                                    </div>
-                                </a>
-                                <a class="dropdown-item" href="{{ route('product.kanban') }}">
-                                    <i class="fas fa-columns"></i>
-                                    <div>
-                                        <span>Kanban Boards</span>
-                                        <small>Agile workflow</small>
-                                    </div>
-                                </a>
-                            </div>
-                            <div class="mega-menu-col">
-                                <h6 class="dropdown-header">HR Management</h6>
-                                <a class="dropdown-item" href="{{ route('product.attendance') }}">
-                                    <i class="fas fa-clock"></i>
-                                    <div>
-                                        <span>Attendance</span>
-                                        <small>Track employee hours</small>
-                                    </div>
-                                </a>
-                                <a class="dropdown-item" href="{{ route('product.leave') }}">
-                                    <i class="fas fa-calendar-alt"></i>
-                                    <div>
-                                        <span>Leave Management</span>
-                                        <small>Manage time off</small>
-                                    </div>
-                                </a>
-                                <a class="dropdown-item" href="{{ route('product.performance') }}">
-                                    <i class="fas fa-chart-bar"></i>
-                                    <div>
-                                        <span>Performance</span>
-                                        <small>Employee reviews</small>
-                                    </div>
-                                </a>
-                            </div>
-                            <div class="mega-menu-col">
-                                <h6 class="dropdown-header">Analytics</h6>
-                                <a class="dropdown-item" href="{{ route('product.reports') }}">
-                                    <i class="fas fa-file-alt"></i>
-                                    <div>
-                                        <span>Reports</span>
-                                        <small>Custom reporting</small>
-                                    </div>
-                                </a>
-                                <a class="dropdown-item" href="{{ route('product.dashboard') }}">
-                                    <i class="fas fa-tachometer-alt"></i>
-                                    <div>
-                                        <span>Dashboard</span>
-                                        <small>Real-time insights</small>
-                                    </div>
-                                </a>
-                                <a class="dropdown-item" href="{{ route('product.analytics') }}">
-                                    <i class="fas fa-chart-pie"></i>
-                                    <div>
-                                        <span>Analytics</span>
-                                        <small>Data visualization</small>
-                                    </div>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </li>
-
-                <!-- Solutions Dropdown -->
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="javascript:void(0)" role="button" data-frontend-dropdown="true" aria-expanded="false">
-                        Solutions <i class="fas fa-chevron-down ms-1"></i>
-                    </a>
-                    <div class="dropdown-menu mega-menu">
-                        <div class="mega-menu-grid">
-                            <div class="mega-menu-col">
-                                <h6 class="dropdown-header">Business Teams</h6>
-                                <a class="dropdown-item" href="{{ route('solutions.enterprise') }}">
-                                    <i class="fas fa-building"></i>
-                                    <div>
-                                        <span>For Enterprises</span>
-                                        <small>Scale governance and teams</small>
-                                    </div>
-                                </a>
-                                <a class="dropdown-item" href="{{ route('solutions.startups') }}">
-                                    <i class="fas fa-rocket"></i>
-                                    <div>
-                                        <span>For Startups</span>
-                                        <small>Move fast with one workspace</small>
-                                    </div>
-                                </a>
-                            </div>
-                            <div class="mega-menu-col">
-                                <h6 class="dropdown-header">Operations</h6>
-                                <a class="dropdown-item" href="{{ route('solutions.hr') }}">
-                                    <i class="fas fa-users"></i>
-                                    <div>
-                                        <span>For HR Teams</span>
-                                        <small>People, attendance, and leave</small>
-                                    </div>
-                                </a>
-                                <a class="dropdown-item" href="{{ route('solutions.remote') }}">
-                                    <i class="fas fa-home"></i>
-                                    <div>
-                                        <span>For Remote Teams</span>
-                                        <small>Coordinate distributed work</small>
-                                    </div>
-                                </a>
-                            </div>
-                            <div class="mega-menu-col">
-                                <h6 class="dropdown-header">Delivery</h6>
-                                <a class="dropdown-item" href="{{ route('solutions.developers') }}">
-                                    <i class="fas fa-code"></i>
-                                    <div>
-                                        <span>For Developers</span>
-                                        <small>Tasks, boards, and delivery flow</small>
-                                    </div>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </li>
-
-                <!-- Features -->
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('features') }}">Features</a>
-                </li>
-
-                <!-- Pricing -->
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('pricing') }}">Pricing</a>
-                </li>
-
-                <!-- Resources Dropdown -->
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="javascript:void(0)" role="button" data-frontend-dropdown="true" aria-expanded="false">
-                        Resources <i class="fas fa-chevron-down ms-1"></i>
-                    </a>
-                    <div class="dropdown-menu mega-menu">
-                        <div class="mega-menu-grid">
-                            <div class="mega-menu-col">
-                                <h6 class="dropdown-header">Learn</h6>
-                                <a class="dropdown-item" href="{{ route('resources.blog') }}">
-                                    <i class="fas fa-blog"></i>
-                                    <div>
-                                        <span>Blog</span>
-                                        <small>Product and workflow updates</small>
-                                    </div>
-                                </a>
-                                <a class="dropdown-item" href="{{ route('resources.faq') }}">
-                                    <i class="fas fa-comments"></i>
-                                    <div>
-                                        <span>FAQ</span>
-                                        <small>Common questions answered</small>
-                                    </div>
-                                </a>
-                            </div>
-                            <div class="mega-menu-col">
-                                <h6 class="dropdown-header">Support</h6>
-                                <a class="dropdown-item" href="{{ route('resources.docs') }}">
-                                    <i class="fas fa-book"></i>
-                                    <div>
-                                        <span>Documentation</span>
-                                        <small>Guides and setup help</small>
-                                    </div>
-                                </a>
-                                <a class="dropdown-item" href="{{ route('resources.help') }}">
-                                    <i class="fas fa-question-circle"></i>
-                                    <div>
-                                        <span>Help Center</span>
-                                        <small>Find help for your team</small>
-                                    </div>
-                                </a>
-                            </div>
-                            <div class="mega-menu-col">
-                                <h6 class="dropdown-header">Developers</h6>
-                                <a class="dropdown-item" href="{{ route('resources.api') }}">
-                                    <i class="fas fa-code-branch"></i>
-                                    <div>
-                                        <span>API</span>
-                                        <small>Connect external systems</small>
-                                    </div>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </li>
-
-                <!-- Company Dropdown -->
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="javascript:void(0)" role="button" data-frontend-dropdown="true" aria-expanded="false">
-                        Company <i class="fas fa-chevron-down ms-1"></i>
-                    </a>
-                    <div class="dropdown-menu mega-menu">
-                        <div class="mega-menu-grid">
-                            <div class="mega-menu-col">
-                                <h6 class="dropdown-header">Bitroxia</h6>
-                                <a class="dropdown-item" href="{{ route('company.about') }}">
-                                    <i class="fas fa-info-circle"></i>
-                                    <div>
-                                        <span>About Us</span>
-                                        <small>Who we are and what we build</small>
-                                    </div>
-                                </a>
-                                <a class="dropdown-item" href="{{ route('company.careers') }}">
-                                    <i class="fas fa-briefcase"></i>
-                                    <div>
-                                        <span>Careers</span>
-                                        <small>Join the team behind PMS</small>
-                                    </div>
-                                </a>
-                            </div>
-                            <div class="mega-menu-col">
-                                <h6 class="dropdown-header">Contact</h6>
-                                <a class="dropdown-item" href="{{ route('company.contact') }}">
-                                    <i class="fas fa-envelope"></i>
-                                    <div>
-                                        <span>Contact</span>
-                                        <small>Talk to us about your needs</small>
-                                    </div>
-                                </a>
-                            </div>
-                            <div class="mega-menu-col">
-                                <h6 class="dropdown-header">Legal</h6>
-                                <a class="dropdown-item" href="{{ route('company.privacy') }}">
-                                    <i class="fas fa-shield-alt"></i>
-                                    <div>
-                                        <span>Privacy Policy</span>
-                                        <small>How data is handled</small>
-                                    </div>
-                                </a>
-                                <a class="dropdown-item" href="{{ route('company.terms') }}">
-                                    <i class="fas fa-file-contract"></i>
-                                    <div>
-                                        <span>Terms</span>
-                                        <small>Usage terms and policies</small>
-                                    </div>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </li>
-            </ul>
-
-            <!-- Right Side Buttons -->
-            <div class="navbar-actions">
-                @auth
-                    <a href="{{ route('dashboard') }}" class="btn btn-purple mobile-dashboard-action d-lg-none">
-                        <i class="fas fa-tachometer-alt"></i> Dashboard
-                    </a>
-                    <div class="dropdown">
-                        <button class="btn btn-outline-purple dropdown-toggle" type="button" data-frontend-dropdown="true" aria-expanded="false">
-                            <i class="fas fa-user-circle"></i> {{ Auth::user()->name }}
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="{{ route('dashboard') }}">
-                                <i class="fas fa-tachometer-alt"></i> Dashboard
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ route('profile.edit') }}">
-                                <i class="fas fa-user-edit"></i> Profile
-                            </a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <form method="POST" action="{{ route('logout') }}">
-                                    @csrf
-                                    <button type="submit" class="dropdown-item text-danger">
-                                        <i class="fas fa-sign-out-alt"></i> Logout
-                                    </button>
-                                </form>
-                            </li>
-                        </ul>
-                    </div>
-                @else
-                    <a href="{{ route('login') }}" class="btn btn-purple btn-glow">
-                        Login <i class="fas fa-arrow-right"></i>
-                    </a>
-                @endauth
+          </div>
+        </li>
+        <li class="{{ request()->is('solutions*') ? 'is-active' : '' }}">
+          <button class="nav-top-link" aria-expanded="false">Solutions
+            <svg class="nav-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="mega">
+            <div class="mega-col">
+              <div class="mega-col-title">Business Teams</div>
+              <a href="{{ route('solutions') }}#enterprise"><strong>For Enterprises</strong><span>Scale governance and teams</span></a>
+              <a href="{{ route('solutions') }}#startups"><strong>For Startups</strong><span>Move fast with one workspace</span></a>
             </div>
-        </div>
+            <div class="mega-col">
+              <div class="mega-col-title">Operations</div>
+              <a href="{{ route('solutions') }}#hr"><strong>For HR Teams</strong><span>People, attendance and leave</span></a>
+              <a href="{{ route('solutions') }}#remote"><strong>For Remote Teams</strong><span>Coordinate distributed work</span></a>
+              <a href="{{ route('solutions') }}#developers"><strong>For Developers</strong><span>Visibility and accountability</span></a>
+            </div>
+          </div>
+        </li>
+        <li><a href="{{ route('features') }}"{!! request()->routeIs('features') ? ' aria-current="page"' : '' !!}>Features</a></li>
+        <li><a href="{{ route('pricing') }}"{!! request()->routeIs('pricing') ? ' aria-current="page"' : '' !!}>Pricing</a></li>
+        <li class="{{ request()->is('resources*') ? 'is-active' : '' }}">
+          <button class="nav-top-link" aria-expanded="false">Resources
+            <svg class="nav-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="mega">
+            <div class="mega-col">
+              <div class="mega-col-title">Learn</div>
+              <a href="{{ route('resources') }}#blog"><strong>Blog</strong><span>Product and workflow updates</span></a>
+              <a href="{{ route('resources') }}#faq"><strong>FAQ</strong><span>Common questions answered</span></a>
+            </div>
+            <div class="mega-col">
+              <div class="mega-col-title">Support</div>
+              <a href="{{ route('resources') }}#docs"><strong>Documentation</strong><span>Guides and setup help</span></a>
+              <a href="{{ route('resources') }}#help"><strong>Help Center</strong><span>Find help for your team</span></a>
+              <a href="{{ route('resources') }}#api"><strong>API</strong><span>Connect external systems</span></a>
+            </div>
+          </div>
+        </li>
+        <li class="{{ request()->is('company*') || request()->routeIs('about') || request()->routeIs('contact') ? 'is-active' : '' }}">
+          <button class="nav-top-link" aria-expanded="false">Company
+            <svg class="nav-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="mega">
+            <div class="mega-col">
+              <div class="mega-col-title">Bitroxia</div>
+              <a href="{{ route('company.about') }}"><strong>About Us</strong><span>Who we are and what we build</span></a>
+              <a href="{{ route('company.about') }}#careers"><strong>Careers</strong><span>Join the team behind PMS</span></a>
+            </div>
+            <div class="mega-col">
+              <div class="mega-col-title">Legal &amp; Contact</div>
+              <a href="{{ route('company.contact') }}"><strong>Contact</strong><span>Talk to us about your needs</span></a>
+              <a href="{{ route('company.privacy') }}"><strong>Privacy Policy</strong><span>How data is handled</span></a>
+              <a href="{{ route('company.terms') }}"><strong>Terms</strong><span>Usage terms and policies</span></a>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="nav-actions">
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle light and dark theme" aria-pressed="false">
+        <span class="knob">
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="currentColor"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>
+        </span>
+      </button>
+      <a href="{{ route('login') }}" class="nav-login">Login</a>
+      <a href="{{ route('company.contact') }}" class="btn btn-primary btn-sm">Request Access</a>
+      <button class="hamburger" id="hamburgerBtn" aria-label="Open menu" aria-expanded="false" aria-controls="mobileDrawer">
+        <span></span>
+      </button>
     </div>
-</nav>
+  </div>
+
+  <!-- Mobile drawer -->
+  <div class="mobile-drawer" id="mobileDrawer">
+    <div class="scrim" data-close-drawer></div>
+    <div class="mobile-panel">
+      <!-- Drawer Header with Brand & Close Button -->
+      <div class="drawer-header">
+        <a href="{{ route('home') }}" class="brand" data-close-drawer>
+          <img src="{{ asset('logo.png') }}" alt="Bitroxia logo">
+          <span>Bitroxia</span>
+        </a>
+        <button class="drawer-close-btn" data-close-drawer aria-label="Close menu">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <ul class="mobile-links">
+        <li>
+          <details>
+            <summary>Product <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 9l6 6 6-6"/></svg></summary>
+            <div class="mobile-sub">
+              <a href="{{ route('features') }}#tasks" data-close-drawer>Task Management</a>
+              <a href="{{ route('features') }}#gantt" data-close-drawer>Gantt Charts</a>
+              <a href="{{ route('features') }}#kanban" data-close-drawer>Kanban Boards</a>
+              <a href="{{ route('features') }}#attendance" data-close-drawer>Attendance</a>
+              <a href="{{ route('features') }}#leave" data-close-drawer>Leave Management</a>
+              <a href="{{ route('features') }}#performance" data-close-drawer>Performance</a>
+            </div>
+          </details>
+        </li>
+        <li>
+          <details>
+            <summary>Solutions <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 9l6 6 6-6"/></svg></summary>
+            <div class="mobile-sub">
+              <a href="{{ route('solutions') }}#enterprise" data-close-drawer>For Enterprises</a>
+              <a href="{{ route('solutions') }}#startups" data-close-drawer>For Startups</a>
+              <a href="{{ route('solutions') }}#hr" data-close-drawer>For HR Teams</a>
+              <a href="{{ route('solutions') }}#remote" data-close-drawer>For Remote Teams</a>
+              <a href="{{ route('solutions') }}#developers" data-close-drawer>For Developers</a>
+            </div>
+          </details>
+        </li>
+        <li><a href="{{ route('features') }}" data-close-drawer>Features</a></li>
+        <li><a href="{{ route('pricing') }}" data-close-drawer>Pricing</a></li>
+        <li>
+          <details>
+            <summary>Resources <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 9l6 6 6-6"/></svg></summary>
+            <div class="mobile-sub">
+              <a href="{{ route('resources') }}#blog" data-close-drawer>Blog</a>
+              <a href="{{ route('resources') }}#faq" data-close-drawer>FAQ</a>
+              <a href="{{ route('resources') }}#docs" data-close-drawer>Documentation</a>
+              <a href="{{ route('resources') }}#help" data-close-drawer>Help Center</a>
+              <a href="{{ route('resources') }}#api" data-close-drawer>API</a>
+            </div>
+          </details>
+        </li>
+        <li>
+          <details>
+            <summary>Company <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 9l6 6 6-6"/></svg></summary>
+            <div class="mobile-sub">
+              <a href="{{ route('company.about') }}" data-close-drawer>About Us</a>
+              <a href="{{ route('company.about') }}#careers" data-close-drawer>Careers</a>
+              <a href="{{ route('company.contact') }}" data-close-drawer>Contact</a>
+              <a href="{{ route('company.privacy') }}" data-close-drawer>Privacy Policy</a>
+              <a href="{{ route('company.terms') }}" data-close-drawer>Terms</a>
+            </div>
+          </details>
+        </li>
+      </ul>
+      <div class="mobile-cta">
+        <a href="{{ route('login') }}" class="btn btn-secondary btn-block">Staff / Client Login</a>
+        <a href="{{ route('company.contact') }}" class="btn btn-primary btn-block" data-close-drawer>Request Access</a>
+      </div>
+    </div>
+  </div>
+</header>

@@ -2,6 +2,12 @@
 @section('title', 'Appreciation Templates')
 
 @section('content')
+<style>
+    /* Hide duplicate visible DataTables button bar */
+    .dataTables_wrapper .dt-buttons {
+        display: none !important;
+    }
+</style>
 <div class="container py-4">
 
     @if(auth()->user()->role === 'admin')

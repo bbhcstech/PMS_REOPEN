@@ -15,8 +15,20 @@ class AuthController extends Controller
      */
     public function showLoginForm(): View|RedirectResponse
     {
-        if (Auth::guard('super_admin')->check() || Auth::guard('web')->check()) {
+        if (Auth::guard('super_admin')->check()) {
             return redirect()->route('superadmin.dashboard');
+        }
+
+        if (Auth::guard('web')->check()) {
+            $user = Auth::guard('web')->user();
+            $isDev = method_exists($user, 'isDeveloper') ? $user->isDeveloper() : in_array(strtolower((string) ($user->role ?? '')), ['developer', 'dev'], true);
+            if ($isDev) {
+                return redirect()->route('developer.dashboard');
+            }
+            if (in_array(strtolower((string) ($user->role ?? '')), ['superadmin', 'admin'], true)) {
+                return redirect()->route('superadmin.dashboard');
+            }
+            return redirect()->route('dashboard');
         }
 
         return redirect()->route('login');

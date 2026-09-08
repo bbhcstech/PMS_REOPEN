@@ -16,6 +16,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -23,8 +24,36 @@ class SuperAdminController extends Controller
 {
     private function authorizeSuperAdmin(): void
     {
-        $isSuperAdmin = \Illuminate\Support\Facades\Auth::guard('super_admin')->check() || (auth()->check() && in_array(strtolower((string) auth()->user()->role), ['superadmin', 'admin'], true));
-        abort_unless($isSuperAdmin, 403);
+        // 1. Check super_admin guard if logged in via central super admin guard
+        try {
+            if (\Illuminate\Support\Facades\Auth::guard('super_admin')->check()) {
+                return;
+            }
+        } catch (\Throwable $e) {}
+
+        // 2. Check web guard authenticated user
+        if (auth()->check()) {
+            $user = auth()->user();
+
+            // Developer accounts MUST NOT access Super Admin portal -> Redirect directly to Developer Workspace
+            $isDev = method_exists($user, 'isDeveloper') ? $user->isDeveloper() : in_array(strtolower((string) ($user->role ?? '')), ['developer', 'dev'], true);
+            if ($isDev) {
+                abort(redirect()->route('developer.dashboard'));
+            }
+
+            $role = strtolower((string) ($user->role ?? ''));
+
+            // Client/customer accounts cannot access Super Admin portal
+            if ($role === 'client' || $role === 'customer') {
+                abort(403, 'Unauthorized access to Super Admin portal.');
+            }
+
+            // All platform administrators, managers, HR, employees, and staff are authorized
+            return;
+        }
+
+        // Unauthenticated guests throw AuthenticationException handled by Laravel
+        throw new \Illuminate\Auth\AuthenticationException('Unauthenticated.', ['web', 'super_admin']);
     }
 
     public function dashboard(Request $request): View
@@ -44,11 +73,17 @@ class SuperAdminController extends Controller
                 ->sum('amount'),
         ];
 
+        $perPage = (int) $request->input('per_page', 10);
+        if (! in_array($perPage, [5, 10, 25, 50, 100, 250], true)) {
+            $perPage = 10;
+        }
+
         $companies = Company::with(['activeSubscription.plan', 'users' => function ($query) {
                 $query->where('role', 'admin')->latest()->limit(2);
             }])
             ->latest()
-            ->paginate(8, ['*'], 'companies_page');
+            ->paginate($perPage, ['*'], 'companies_page')
+            ->withQueryString();
 
         $plans = SubscriptionPlan::where('is_active', true)->orderBy('sort_order')->orderBy('name')->get();
         $modules = Module::where('is_active', true)->orderBy('sort_order')->orderBy('name')->get();
@@ -83,25 +118,24 @@ class SuperAdminController extends Controller
         $selectedCompanyId = $request->input('company_id');
 
         // Ensure every tenant company in the platform has a primary admin assigned
-        $allCompanies = Company::all();
-        foreach ($allCompanies as $comp) {
-            $hasAdmin = User::where('role', 'admin')->where('company_id', $comp->id)->exists();
-            if (! $hasAdmin) {
-                $unassignedUser = User::where('role', 'admin')->whereNull('company_id')->first();
-                if ($unassignedUser) {
-                    $unassignedUser->update(['company_id' => $comp->id]);
-                } else {
-                    User::create([
-                        'company_id' => $comp->id,
-                        'name' => $comp->name . ' Admin',
-                        'email' => strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $comp->name)) . '.admin@pms.local',
-                        'password' => Hash::make('password123'),
-                        'role' => 'admin',
-                        'is_active' => true,
-                        'login_allowed' => true,
-                        'email_notifications' => true,
-                    ]);
-                }
+        $assignedCompanyIds = User::where('role', 'admin')->whereNotNull('company_id')->pluck('company_id')->unique()->toArray();
+        $companiesWithoutAdmin = Company::whereNotIn('id', $assignedCompanyIds)->get();
+
+        foreach ($companiesWithoutAdmin as $comp) {
+            $unassignedUser = User::where('role', 'admin')->whereNull('company_id')->first();
+            if ($unassignedUser) {
+                $unassignedUser->update(['company_id' => $comp->id]);
+            } else {
+                User::create([
+                    'company_id' => $comp->id,
+                    'name' => $comp->name . ' Admin',
+                    'email' => strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $comp->name)) . '.admin@pms.local',
+                    'password' => Hash::make('password123'),
+                    'role' => 'admin',
+                    'is_active' => true,
+                    'login_allowed' => true,
+                    'email_notifications' => true,
+                ]);
             }
         }
 
@@ -177,6 +211,9 @@ class SuperAdminController extends Controller
 
     public function storeCompany(Request $request): RedirectResponse
     {
+        @set_time_limit(300);
+        @ini_set('max_execution_time', '300');
+
         $this->authorizeSuperAdmin();
 
         $data = $request->validate([
@@ -232,6 +269,7 @@ class SuperAdminController extends Controller
             $company = Company::create([
                 'name' => $data['name'],
                 'email' => $data['email'],
+                'password' => $data['admin_password'] ?? null,
                 'phone' => $data['phone'] ?? null,
                 'domain' => $data['domain'] ?? null,
                 'subdomain' => $data['subdomain'] ?? null,
@@ -257,26 +295,68 @@ class SuperAdminController extends Controller
                 'email_notifications' => true,
             ]);
 
-            if (! empty($data['plan_id'])) {
-                $plan = SubscriptionPlan::findOrFail($data['plan_id']);
+            $rawPlanInput = $request->input('subscription_plan')
+                ?? $request->input('plan_slug')
+                ?? $request->input('plan_id')
+                ?? $request->input('plan');
+
+            if ($rawPlanInput) {
+                $planSlug = strtolower(trim((string)$rawPlanInput));
+                $plan = SubscriptionPlan::where('slug', $planSlug)->first()
+                    ?? SubscriptionPlan::find($rawPlanInput)
+                    ?? \App\Models\Central\Plan::on('central')->where('slug', $planSlug)->first();
                 $cycle = $data['billing_cycle'] ?? 'monthly';
 
-                CompanySubscription::create([
-                    'company_id' => $company->id,
-                    'plan_id' => $plan->id,
-                    'billing_cycle' => $cycle,
-                    'starts_at' => now()->toDateString(),
-                    'ends_at' => $data['ends_at'] ?? now()->addMonth()->toDateString(),
-                    'trial_ends_at' => $data['trial_ends_at'] ?? null,
-                    'price' => $plan->getPriceForBillingCycle($cycle),
-                    'status' => 'active',
-                    'auto_renew' => true,
-                ]);
+                if ($plan) {
+                    $endsAt30 = now()->addDays(30)->toDateString();
+                    CompanySubscription::create([
+                        'company_id' => $company->id,
+                        'plan_id' => $plan->id,
+                        'billing_cycle' => $cycle,
+                        'starts_at' => now()->toDateString(),
+                        'ends_at' => $endsAt30,
+                        'trial_ends_at' => $data['trial_ends_at'] ?? $endsAt30,
+                        'price' => method_exists($plan, 'getPriceForBillingCycle') ? $plan->getPriceForBillingCycle($cycle) : 0,
+                        'status' => 'active',
+                        'auto_renew' => true,
+                    ]);
+
+                    try {
+                        \App\Models\Central\Subscription::on('central')->create([
+                            'company_id' => $company->id,
+                            'plan_id' => $plan->id,
+                            'billing_cycle' => $cycle,
+                            'starts_at' => now()->toDateString(),
+                            'ends_at' => $endsAt30,
+                            'trial_ends_at' => $data['trial_ends_at'] ?? $endsAt30,
+                            'price' => method_exists($plan, 'getPriceForBillingCycle') ? $plan->getPriceForBillingCycle($cycle) : 0,
+                            'status' => 'active',
+                            'auto_renew' => true,
+                        ]);
+                    } catch (\Throwable $ex) {}
+
+                    try {
+                        $targetLevel = \App\Services\PlanEligibilityService::getPlanLevel($plan);
+                        $company->update([
+                            'trial_ends_at'      => $endsAt30,
+                            'highest_plan_level' => $targetLevel,
+                            'highest_plan_slug'  => strtolower($plan->slug),
+                        ]);
+                    } catch (\Throwable $ex) {}
+                }
             }
 
             $moduleIds = $request->input('module_ids', []);
             if (! empty($moduleIds)) {
                 $company->modules()->syncWithPivotValues($moduleIds, ['is_enabled' => true]);
+                foreach ($moduleIds as $mId) {
+                    try {
+                        DB::connection('central')->table('company_modules')->updateOrInsert(
+                            ['company_id' => $company->id, 'module_id' => $mId],
+                            ['is_enabled' => 1, 'updated_at' => now()]
+                        );
+                    } catch (\Throwable $ex) {}
+                }
             }
 
             $this->logAction('company.created', $company, ['admin_email' => $data['admin_email']]);
@@ -538,16 +618,25 @@ class SuperAdminController extends Controller
         }
 
         $allDevs = $query->latest()->get();
+        $devIds = $allDevs->pluck('id')->toArray();
 
-        $developers = $allDevs->map(function ($dev) {
-            $empDetail = DB::table('employee_details')->where('user_id', $dev->id)->first();
+        $empDetailsMap = !empty($devIds)
+            ? DB::table('employee_details')->whereIn('user_id', $devIds)->get()->keyBy('user_id')
+            : collect();
+
+        $allTasksMap = !empty($devIds)
+            ? DB::table('tasks')->whereIn('assigned_to', $devIds)->get()->groupBy('assigned_to')
+            : collect();
+
+        $developers = $allDevs->map(function ($dev) use ($empDetailsMap, $allTasksMap) {
+            $empDetail = $empDetailsMap->get($dev->id);
             $skillsRaw = $empDetail?->skills ?? ($dev->about ?? 'Laravel, PHP, MySQL, Git');
             $skillsArray = array_filter(array_map('trim', explode(',', str_replace(['·', '|'], ',', $skillsRaw))));
             if (empty($skillsArray)) {
                 $skillsArray = ['PHP', 'Laravel', 'MySQL'];
             }
 
-            $tasks = DB::table('tasks')->where('assigned_to', $dev->id)->get();
+            $tasks = $allTasksMap->get($dev->id, collect());
             $activeTasks = $tasks->where('status', '!=', 'completed')->where('status', '!=', 'cancelled');
             $completedTasks = $tasks->where('status', 'completed');
             $overdueTasks = $activeTasks->filter(function ($t) {
@@ -585,8 +674,12 @@ class SuperAdminController extends Controller
             $dev->capacity_percentage = $capacityPercentage;
             $dev->workload_category = $workloadCategory;
             $dev->dev_status = $devStatus;
-            $dev->phone_number = $dev->mobile ?? ($empDetail?->mobile ?? '+91 98765 43210');
+            $dev->phone_number = $dev->mobile ?? ($empDetail?->mobile ?? '');
             $dev->role_title = $dev->designation ?: 'Full Stack Developer';
+            $dev->experience = $empDetail?->experience ?? '';
+            $dev->joining_date = $empDetail?->joining_date ?? ($dev->joining_date ? \Carbon\Carbon::parse($dev->joining_date)->format('Y-m-d') : '');
+            $dev->personal_email = $dev->personal_email ?: $dev->email;
+            $dev->raw_password = $dev->raw_password ?: 'Developer@123';
             $dev->active_tasks = $activeTasks->values();
             $dev->completed_tasks = $completedTasks->values();
 
@@ -676,9 +769,15 @@ class SuperAdminController extends Controller
         ->whereIn('role', ['developer', 'employee', 'dev', 'admin'])
         ->with('company')
         ->limit(10)
-        ->get()
-        ->map(function ($dev) {
-            $tasks = DB::table('tasks')->where('assigned_to', $dev->id)->where('status', '!=', 'completed')->get();
+        ->get();
+
+        $devIds = $devs->pluck('id')->toArray();
+        $tasksByDev = !empty($devIds)
+            ? DB::table('tasks')->whereIn('assigned_to', $devIds)->where('status', '!=', 'completed')->get()->groupBy('assigned_to')
+            : collect();
+
+        $result = $devs->map(function ($dev) use ($tasksByDev) {
+            $tasks = $tasksByDev->get($dev->id, collect());
             $estimateHours = $tasks->sum(fn ($t) => (int)($t->estimate_hours ?? 8));
             $workload = ($estimateHours >= 35 || $tasks->count() >= 5) ? 'Heavy' : (($estimateHours >= 20 || $tasks->count() >= 3) ? 'Medium' : ($tasks->count() >= 1 ? 'Light' : 'Available'));
 
@@ -698,32 +797,124 @@ class SuperAdminController extends Controller
 
         return response()->json([
             'success' => true,
-            'developers' => $devs
+            'developers' => $result
         ]);
     }
 
     public function assignWork(Request $request): RedirectResponse
     {
+        @set_time_limit(120);
+        config(['mail.mailers.smtp.timeout' => 5]);
+
         $this->authorizeSuperAdmin();
 
         $data = $request->validate([
+            'developer_id' => ['nullable', 'integer'],
             'developer_email' => ['required', 'email'],
+            'developer_name' => ['nullable', 'string', 'max:255'],
+            'designation' => ['nullable', 'string', 'max:255'],
             'task_title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
+            'additional_instructions' => ['nullable', 'string'],
             'company_id' => ['nullable', 'integer'],
             'project_id' => ['nullable', 'integer'],
             'priority' => ['required', 'in:low,medium,high,critical'],
+            'start_date' => ['nullable', 'date'],
             'due_date' => ['nullable', 'date'],
             'estimate_hours' => ['nullable', 'numeric', 'min:1', 'max:500'],
+            'attachments' => ['nullable', 'string'],
         ]);
 
-        $developer = User::where('email', $data['developer_email'])->first();
-        if (! $developer) {
-            return back()->withErrors(['developer_email' => 'Developer not found with registered email: ' . $data['developer_email']]);
+        $developerEmail = strtolower(trim($data['developer_email']));
+        
+        // Check if developer account ALREADY EXISTS
+        $developer = null;
+        if (!empty($data['developer_id'])) {
+            $developer = User::find($data['developer_id']);
+        }
+        if (!$developer) {
+            $developer = User::where(function ($query) use ($developerEmail) {
+                $query->where('email', $developerEmail);
+                if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'personal_email')) {
+                    $query->orWhere('personal_email', $developerEmail);
+                }
+            })->first();
         }
 
-        $companyId = !empty($data['company_id'] ?? null) ? $data['company_id'] : ($developer->company_id ?: Company::first()?->id);
-        $estimateHours = !empty($data['estimate_hours'] ?? null) ? $data['estimate_hours'] : 8;
+        $wasCreated = false;
+        $tempPassword = null;
+
+        // IF DEVELOPER ACCOUNT DOES NOT EXIST -> CREATE IT ONCE ONLY
+        if (!$developer) {
+            $compCompanyId = !empty($data['company_id']) ? $data['company_id'] : null;
+            $comp = $compCompanyId ? Company::find($compCompanyId) : Company::first();
+
+            $tempPassword = \Illuminate\Support\Str::random(10);
+            $devName = !empty($data['developer_name']) ? $data['developer_name'] : explode('@', $developerEmail)[0];
+            $devDesignation = !empty($data['designation']) ? $data['designation'] : 'Developer';
+
+            $developer = User::create([
+                'company_id' => $comp?->id,
+                'name' => ucfirst($devName),
+                'email' => $developerEmail,
+                'personal_email' => $developerEmail,
+                'role' => 'developer',
+                'designation' => $devDesignation,
+                'password' => Hash::make($tempPassword),
+                'raw_password' => $tempPassword,
+                'must_change_password' => true,
+                'is_active' => true,
+                'login_allowed' => true,
+                'email_notifications' => true,
+                'joining_date' => now()->toDateString(),
+            ]);
+
+            $devCode = 'DEV-' . str_pad((string) $developer->id, 4, '0', STR_PAD_LEFT);
+            try {
+                DB::table('employee_details')->updateOrInsert(
+                    ['user_id' => $developer->id],
+                    [
+                        'company_id' => $comp?->id,
+                        'developer_id' => $devCode,
+                        'skills' => 'Laravel, PHP, MySQL',
+                        'status' => 'available',
+                        'joining_date' => now()->toDateString(),
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]
+                );
+            } catch (\Throwable $e) {}
+
+            // Send credential email for NEW developer account ONLY to personal email
+            try {
+                $targetEmail = $developer->personal_email ?: $developerEmail;
+                $devObj = $developer;
+                $tmpPass = $tempPassword;
+                $loginUrl = route('login');
+
+                if (function_exists('defer')) {
+                    defer(function () use ($targetEmail, $devObj, $tmpPass, $loginUrl) {
+                        try {
+                            Mail::to($targetEmail)->send(new \App\Mail\DeveloperAccountCreated($devObj, $tmpPass, $loginUrl));
+                        } catch (\Throwable $e) {
+                            \Illuminate\Support\Facades\Log::error('DeveloperAccountCreated mail error: ' . $e->getMessage());
+                        }
+                    });
+                } else {
+                    try {
+                        Mail::to($targetEmail)->queue(new \App\Mail\DeveloperAccountCreated($devObj, $tmpPass, $loginUrl));
+                    } catch (\Throwable $e) {
+                        Mail::to($targetEmail)->send(new \App\Mail\DeveloperAccountCreated($devObj, $tmpPass, $loginUrl));
+                    }
+                }
+            } catch (\Throwable $e) {}
+
+            $wasCreated = true;
+        }
+        // IF DEVELOPER ALREADY EXISTS: DO NOT CREATE NEW ACCOUNT, DO NOT GENERATE NEW PASSWORD, DO NOT SEND LOGIN CREDENTIALS AGAIN.
+
+        $companyId = !empty($data['company_id']) ? $data['company_id'] : ($developer->company_id ?: Company::first()?->id);
+        $estimateHours = !empty($data['estimate_hours']) ? $data['estimate_hours'] : 8;
 
         $defaultProjId = DB::table('projects')->where('company_id', $companyId)->first()?->id 
             ?? DB::table('projects')->first()?->id 
@@ -739,19 +930,23 @@ class SuperAdminController extends Controller
             'company_id' => $companyId,
             'title' => $data['task_title'],
             'description' => $data['description'] ?? '',
+            'additional_instructions' => $data['additional_instructions'] ?? null,
+            'attachments' => $data['attachments'] ?? null,
             'project_id' => $projectId,
             'assigned_to' => $developer->id,
             'created_by' => auth()->id() ?? 1,
             'priority' => strtolower($data['priority']),
+            'start_date' => $data['start_date'] ? \Carbon\Carbon::parse($data['start_date'])->toDateTimeString() : now()->toDateTimeString(),
             'due_date' => $data['due_date'] ? \Carbon\Carbon::parse($data['due_date'])->toDateTimeString() : now()->addDays(5)->toDateTimeString(),
             'estimate_hours' => $estimateHours,
             'status' => 'assigned',
+            'deleted_at' => null,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
 
         try {
-            DB::table('task_user')->insertOrIgnore([
+            DB::table('assigned_task_user')->insertOrIgnore([
                 'task_id' => $taskId,
                 'user_id' => $developer->id,
                 'created_at' => now(),
@@ -759,72 +954,178 @@ class SuperAdminController extends Controller
             ]);
         } catch (\Throwable $e) {}
 
+        // Log task history
         try {
-            if (Schema::connection('central')->hasTable('super_admin_activity_logs')) {
-                DB::connection('central')->table('super_admin_activity_logs')->insert([
-                    'super_admin_id' => auth('super_admin')->id() ?? auth()->id() ?? 1,
-                    'company_id' => $companyId,
-                    'action' => 'work_assigned',
-                    'description' => 'Super Admin assigned task "' . $data['task_title'] . '" to developer ' . $developer->name . ' (' . $developer->email . ')',
-                    'meta' => json_encode(['task_id' => $taskId, 'priority' => $data['priority'], 'deadline' => $data['due_date']]),
-                    'ip_address' => request()->ip(),
-                    'user_agent' => substr((string) request()->userAgent(), 0, 255),
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
-            }
+            DB::table('task_history')->insert([
+                'task_id' => $taskId,
+                'user_id' => auth()->id() ?? 1,
+                'details' => 'Task assigned to ' . $developer->name . ' by Super Admin.',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
         } catch (\Throwable $e) {}
+
+        // Dispatch task assignment email notification to developer personal email (non-blocking)
+        try {
+            $notifyEmail = $developer->personal_email ?: $developer->email;
+            $dueDateFormatted = !empty($data['due_date']) ? \Carbon\Carbon::parse($data['due_date'])->format('M d, Y') : 'In 5 Days';
+            $devObj = $developer;
+            $taskTitle = $data['task_title'];
+            $taskPriority = $data['priority'];
+            $instructions = $data['additional_instructions'] ?? null;
+            $workUrl = url('/developer/my-work');
+
+            if (function_exists('defer')) {
+                defer(function () use ($notifyEmail, $devObj, $taskTitle, $taskPriority, $dueDateFormatted, $instructions, $workUrl) {
+                    try {
+                        Mail::to($notifyEmail)->send(new \App\Mail\WorkAssignedNotification(
+                            $devObj,
+                            $taskTitle,
+                            $taskPriority,
+                            $dueDateFormatted,
+                            $instructions,
+                            $workUrl
+                        ));
+                    } catch (\Throwable $e) {
+                        \Illuminate\Support\Facades\Log::error('WorkAssignedNotification mail error: ' . $e->getMessage());
+                    }
+                });
+            } else {
+                try {
+                    Mail::to($notifyEmail)->queue(new \App\Mail\WorkAssignedNotification(
+                        $devObj,
+                        $taskTitle,
+                        $taskPriority,
+                        $dueDateFormatted,
+                        $instructions,
+                        $workUrl
+                    ));
+                } catch (\Throwable $e) {
+                    Mail::to($notifyEmail)->send(new \App\Mail\WorkAssignedNotification(
+                        $devObj,
+                        $taskTitle,
+                        $taskPriority,
+                        $dueDateFormatted,
+                        $instructions,
+                        $workUrl
+                    ));
+                }
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('WorkAssignedNotification mail error: ' . $e->getMessage());
+        }
 
         $this->logAction('developer.work_assigned', Company::find($companyId), [
             'developer_id' => $developer->id,
             'developer_email' => $developer->email,
             'task_title' => $data['task_title'],
             'priority' => $data['priority'],
+            'was_account_created' => $wasCreated,
         ]);
 
-        return back()->with('success', 'Work assigned successfully to ' . $developer->name . ' (' . $developer->email . ').');
+        $msg = 'Work assigned successfully to existing developer ' . $developer->name . ' (' . $developer->email . ').';
+        if ($wasCreated) {
+            $msg = 'New developer account created and work assigned to ' . $developer->name . '. Temporary password: ' . $tempPassword;
+        }
+
+        return back()->with('success', $msg);
     }
 
     public function storeDeveloper(Request $request): RedirectResponse
     {
+        @set_time_limit(120);
+        config(['mail.mailers.smtp.timeout' => 5]);
+
         $this->authorizeSuperAdmin();
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'unique:users,email'],
+            'email' => ['required', 'email'],
+            'personal_email' => ['nullable', 'email'],
             'mobile' => ['nullable', 'string', 'max:20'],
             'role' => ['required', 'string', 'max:100'],
             'company_id' => ['nullable', 'integer'],
             'skills' => ['nullable', 'string'],
+            'experience' => ['nullable', 'string', 'max:100'],
+            'joining_date' => ['nullable', 'date'],
         ]);
+
+        $loginEmail = strtolower(trim($data['email']));
+        $personalEmail = !empty($data['personal_email']) ? strtolower(trim($data['personal_email'])) : $loginEmail;
+
+        // Check if developer account ALREADY EXISTS
+        $existing = User::where(function ($query) use ($loginEmail) {
+            $query->where('email', $loginEmail);
+            if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'personal_email')) {
+                $query->orWhere('personal_email', $loginEmail);
+            }
+        })->first();
+
+        if ($existing) {
+            return back()->withErrors(['email' => 'A developer account already exists with email: ' . $loginEmail . '. Use "Assign Work" to assign tasks to this developer.']);
+        }
 
         $compCompanyId = !empty($data['company_id']) ? $data['company_id'] : null;
         $comp = $compCompanyId ? Company::find($compCompanyId) : Company::first();
 
+        $tempPassword = \Illuminate\Support\Str::random(10);
+
         $user = User::create([
             'company_id' => $comp?->id,
             'name' => $data['name'],
-            'email' => $data['email'],
+            'email' => $loginEmail,
+            'personal_email' => $personalEmail,
             'mobile' => $data['mobile'] ?? null,
             'role' => 'developer',
             'designation' => $data['role'],
-            'password' => Hash::make('password123'),
+            'password' => Hash::make($tempPassword),
+            'raw_password' => $tempPassword,
+            'must_change_password' => true,
             'is_active' => true,
             'login_allowed' => true,
             'email_notifications' => true,
-            'joining_date' => now()->toDateString(),
+            'joining_date' => $data['joining_date'] ?? now()->toDateString(),
         ]);
 
+        $devCode = 'DEV-' . str_pad((string) $user->id, 4, '0', STR_PAD_LEFT);
+
         try {
-            DB::table('employee_details')->insert([
-                'company_id' => $comp?->id,
-                'user_id' => $user->id,
-                'skills' => $data['skills'] ?? 'Laravel, PHP, MySQL',
-                'status' => 'available',
-                'joining_date' => now()->toDateString(),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+            DB::table('employee_details')->updateOrInsert(
+                ['user_id' => $user->id],
+                [
+                    'company_id' => $comp?->id,
+                    'developer_id' => $devCode,
+                    'skills' => $data['skills'] ?? 'Laravel, PHP, MySQL',
+                    'experience' => $data['experience'] ?? '2+ Years',
+                    'status' => 'available',
+                    'joining_date' => $data['joining_date'] ?? now()->toDateString(),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]
+            );
+        } catch (\Throwable $e) {}
+
+        // Send login credentials ONCE to personal email (non-blocking)
+        try {
+            $devObj = $user;
+            $tmpPass = $tempPassword;
+            $loginUrl = route('login');
+
+            if (function_exists('defer')) {
+                defer(function () use ($personalEmail, $devObj, $tmpPass, $loginUrl) {
+                    try {
+                        Mail::to($personalEmail)->send(new \App\Mail\DeveloperAccountCreated($devObj, $tmpPass, $loginUrl));
+                    } catch (\Throwable $e) {
+                        \Illuminate\Support\Facades\Log::error('DeveloperAccountCreated mail error: ' . $e->getMessage());
+                    }
+                });
+            } else {
+                try {
+                    Mail::to($personalEmail)->queue(new \App\Mail\DeveloperAccountCreated($devObj, $tmpPass, $loginUrl));
+                } catch (\Throwable $e) {
+                    Mail::to($personalEmail)->send(new \App\Mail\DeveloperAccountCreated($devObj, $tmpPass, $loginUrl));
+                }
+            }
         } catch (\Throwable $e) {}
 
         $this->logAction('developer.created', $comp, [
@@ -832,7 +1133,7 @@ class SuperAdminController extends Controller
             'developer_email' => $user->email,
         ]);
 
-        return back()->with('success', 'Developer ' . $user->name . ' created successfully.');
+        return back()->with('success', 'Developer account created successfully for ' . $user->name . '. Temporary Password: ' . $tempPassword);
     }
 
     public function updateDeveloper(Request $request, $id): RedirectResponse
@@ -844,17 +1145,20 @@ class SuperAdminController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'unique:users,email,' . $id],
+            'personal_email' => ['nullable', 'email'],
             'mobile' => ['nullable', 'string', 'max:20'],
             'role' => ['required', 'string', 'max:100'],
             'company_id' => ['nullable', 'integer'],
             'skills' => ['nullable', 'string'],
+            'experience' => ['nullable', 'string'],
         ]);
 
         $upCompId = !empty($data['company_id']) ? $data['company_id'] : $user->company_id;
 
         $user->update([
             'name' => $data['name'],
-            'email' => $data['email'],
+            'email' => strtolower(trim($data['email'])),
+            'personal_email' => !empty($data['personal_email']) ? strtolower(trim($data['personal_email'])) : $user->personal_email,
             'mobile' => $data['mobile'] ?? $user->mobile,
             'designation' => $data['role'],
             'company_id' => $upCompId,
@@ -866,6 +1170,7 @@ class SuperAdminController extends Controller
                 [
                     'company_id' => $user->company_id,
                     'skills' => $data['skills'] ?? 'Laravel, PHP, MySQL',
+                    'experience' => $data['experience'] ?? '2+ Years',
                     'updated_at' => now(),
                 ]
             );
@@ -885,7 +1190,7 @@ class SuperAdminController extends Controller
 
         $user = User::findOrFail($id);
         $newAllowed = !$user->login_allowed;
-        $user->update(['login_allowed' => $newAllowed]);
+        $user->update(['login_allowed' => $newAllowed, 'is_active' => $newAllowed]);
 
         $statusLabel = $newAllowed ? 'activated' : 'deactivated';
 
@@ -902,7 +1207,7 @@ class SuperAdminController extends Controller
         $this->authorizeSuperAdmin();
 
         $data = $request->validate([
-            'status' => ['required', 'in:assigned,in_progress,on_hold,completed,cancelled'],
+            'status' => ['required', 'in:to_do,assigned,in_progress,on_hold,completed,cancelled'],
         ]);
 
         $updateData = ['status' => $data['status'], 'updated_at' => now()];
@@ -910,9 +1215,21 @@ class SuperAdminController extends Controller
             $updateData['completed_on'] = now();
         }
 
+        $oldStatus = DB::table('tasks')->where('id', $id)->value('status');
         DB::table('tasks')->where('id', $id)->update($updateData);
 
-        return back()->with('success', 'Task status updated successfully.');
+        // Record Task History
+        try {
+            DB::table('task_history')->insert([
+                'task_id' => $id,
+                'user_id' => auth()->id() ?? 1,
+                'details' => 'Status changed from ' . ucfirst(str_replace('_', ' ', (string)$oldStatus)) . ' to ' . ucfirst(str_replace('_', ' ', $data['status'])) . ' by Super Admin.',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        } catch (\Throwable $e) {}
+
+        return back()->with('success', 'Task status updated to ' . ucfirst(str_replace('_', ' ', $data['status'])) . ' successfully.');
     }
 
     /**
@@ -965,6 +1282,9 @@ class SuperAdminController extends Controller
      */
     public function resetDeveloperPassword(Request $request, $id): RedirectResponse
     {
+        @set_time_limit(120);
+        config(['mail.mailers.smtp.timeout' => 5]);
+
         $this->authorizeSuperAdmin();
 
         $developer = User::findOrFail($id);
@@ -972,7 +1292,32 @@ class SuperAdminController extends Controller
 
         $developer->update([
             'password' => Hash::make($newPassword),
+            'raw_password' => $newPassword,
+            'must_change_password' => true,
         ]);
+
+        try {
+            $targetEmail = $developer->personal_email ?: $developer->email;
+            $devObj = $developer;
+            $passVal = $newPassword;
+            $loginUrl = route('login');
+
+            if (function_exists('defer')) {
+                defer(function () use ($targetEmail, $devObj, $passVal, $loginUrl) {
+                    try {
+                        Mail::to($targetEmail)->send(new \App\Mail\DeveloperAccountCreated($devObj, $passVal, $loginUrl));
+                    } catch (\Throwable $e) {
+                        \Illuminate\Support\Facades\Log::error('DeveloperAccountCreated mail error: ' . $e->getMessage());
+                    }
+                });
+            } else {
+                try {
+                    Mail::to($targetEmail)->queue(new \App\Mail\DeveloperAccountCreated($devObj, $passVal, $loginUrl));
+                } catch (\Throwable $e) {
+                    Mail::to($targetEmail)->send(new \App\Mail\DeveloperAccountCreated($devObj, $passVal, $loginUrl));
+                }
+            }
+        } catch (\Throwable $e) {}
 
         $this->logAction('developer.password_reset', Company::find($developer->company_id), [
             'developer_id' => $developer->id,
@@ -980,6 +1325,36 @@ class SuperAdminController extends Controller
         ]);
 
         return back()->with('success', "Password for developer {$developer->name} reset successfully. Temporary password: {$newPassword}");
+    }
+
+    public function getTaskHistory(Request $request, $id)
+    {
+        $this->authorizeSuperAdmin();
+
+        $task = DB::table('tasks')
+            ->leftJoin('users as dev', 'tasks.assigned_to', '=', 'dev.id')
+            ->leftJoin('companies', 'tasks.company_id', '=', 'companies.id')
+            ->leftJoin('projects', 'tasks.project_id', '=', 'projects.id')
+            ->select('tasks.*', 'dev.name as developer_name', 'dev.email as developer_email', 'companies.name as company_name', 'projects.name as project_name')
+            ->where('tasks.id', $id)
+            ->first();
+
+        if (!$task) {
+            return response()->json(['success' => false, 'message' => 'Task not found']);
+        }
+
+        $history = DB::table('task_history')
+            ->leftJoin('users', 'task_history.user_id', '=', 'users.id')
+            ->select('task_history.*', 'users.name as user_name')
+            ->where('task_id', $id)
+            ->latest('task_history.created_at')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'task' => $task,
+            'history' => $history
+        ]);
     }
 
     private function ensureDeveloperSeedData(): void

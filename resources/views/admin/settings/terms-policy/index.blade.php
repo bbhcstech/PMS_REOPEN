@@ -597,6 +597,16 @@
                 </div>
 
                 <div class="p-4 p-md-5">
+                    @if($isSettingsReadOnly)
+                        <div class="alert d-flex align-items-center mb-4 rounded-3 border-0 shadow-sm" style="background: linear-gradient(135deg, #eff6ff, #dbeafe); color: #1e40af; border-left: 4px solid #3b82f6 !important; padding: 14px 18px;">
+                            <i class="fas fa-eye me-3 fs-3 text-primary"></i>
+                            <div>
+                                <strong class="d-block text-primary fw-bold" style="font-size: 14px;">View-Only Mode</strong>
+                                <span style="font-size: 13px; color: #1e3a8a;">You are viewing Terms & Conditions policy in read-only mode. Only Administrators have permission to modify legal policy content.</span>
+                            </div>
+                        </div>
+                    @endif
+
                     <form method="POST" action="{{ route('admin.settings.terms-policy.update') }}">
                         @csrf
                         @method('PUT')
@@ -618,7 +628,7 @@
                                         id="legal_terms_title"
                                         class="form-control @error('legal_terms_title') is-invalid @enderror"
                                         value="{{ old('legal_terms_title', $title) }}"
-                                        required>
+                                        {{ $isSettingsReadOnly ? 'readonly' : 'required' }}>
                                 </div>
                                 @error('legal_terms_title')
                                     <small class="text-danger mt-1 d-block">{{ $message }}</small>
@@ -635,7 +645,8 @@
                                         name="legal_terms_effective_date"
                                         id="legal_terms_effective_date"
                                         class="form-control @error('legal_terms_effective_date') is-invalid @enderror"
-                                        value="{{ old('legal_terms_effective_date', $effectiveDate) }}">
+                                        value="{{ old('legal_terms_effective_date', $effectiveDate) }}"
+                                        {{ $isSettingsReadOnly ? 'readonly' : '' }}>
                                 </div>
                                 @error('legal_terms_effective_date')
                                     <small class="text-danger mt-1 d-block">{{ $message }}</small>
@@ -656,7 +667,7 @@
                                     id="legal_terms_content"
                                     rows="16"
                                     class="textarea-custom @error('legal_terms_content') is-invalid @enderror"
-                                    required>{{ old('legal_terms_content', $content) }}</textarea>
+                                    {{ $isSettingsReadOnly ? 'readonly' : 'required' }}>{{ old('legal_terms_content', $content) }}</textarea>
                                 <small class="text-muted mt-2 d-block"><i class="fas fa-info-circle me-1" style="color: #059669;"></i>Use double line breaks to separate paragraphs. The public portal terms page updates immediately upon saving.</small>
                                 @error('legal_terms_content')
                                     <small class="text-danger mt-1 d-block">{{ $message }}</small>
@@ -666,9 +677,15 @@
 
                         <!-- Form Action Buttons -->
                         <div class="mt-5 pt-4 border-top d-flex justify-content-end">
-                            <button type="submit" class="btn-save-address">
-                                <i class="fas fa-save me-1.5"></i> Save Terms
-                            </button>
+                            @if($isSettingsReadOnly)
+                                <span class="badge rounded-pill px-3.5 py-2 fw-bold" style="background: #f1f5f9; color: #64748b; font-size: 13px; border: 1px solid #cbd5e1;">
+                                    <i class="fas fa-lock me-1.5 text-muted"></i> Read-Only (Admin Managed)
+                                </span>
+                            @else
+                                <button type="submit" class="btn-save-address">
+                                    <i class="fas fa-save me-1.5"></i> Save Terms
+                                </button>
+                            @endif
                         </div>
                     </form>
                 </div>

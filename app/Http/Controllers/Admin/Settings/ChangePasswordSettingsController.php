@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Services\PasswordManagementService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
 
 class ChangePasswordSettingsController extends Controller
 {
@@ -23,7 +24,15 @@ class ChangePasswordSettingsController extends Controller
             $query->whereIn('role', ['employee', 'user']);
         }
 
-        $staffUsers = $query->orderBy('name')->get(['id', 'name', 'email', 'role', 'created_at', 'password_changed_at', 'password_changed_by_role']);
+        $selectColumns = ['id', 'name', 'email', 'role', 'created_at'];
+        if (Schema::hasColumn('users', 'password_changed_at')) {
+            $selectColumns[] = 'password_changed_at';
+        }
+        if (Schema::hasColumn('users', 'password_changed_by_role')) {
+            $selectColumns[] = 'password_changed_by_role';
+        }
+
+        $staffUsers = $query->orderBy('name')->get($selectColumns);
 
         $totalCount = $staffUsers->count();
         $hrCount = $staffUsers->filter(fn($u) => strtolower($u->role) === 'hr')->count();

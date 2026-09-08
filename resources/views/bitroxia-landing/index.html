@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bitroxia PMS — Project, HR & Team Management, Unified</title>
+<meta name="description" content="Bitroxia PMS brings projects, tasks, attendance, leave, tickets, clients and reporting into one connected workspace built for fast-moving teams.">
+<meta name="theme-color" content="#2F6BFF">
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<link rel="icon" href="assets/img/logo.png">
+<link rel="stylesheet" href="assets/css/base.css">
+<link rel="stylesheet" href="assets/css/nav-hero.css">
+<link rel="stylesheet" href="assets/css/sections.css">
+<link rel="stylesheet" href="assets/css/footer-misc.css">
+<link rel="stylesheet" href="assets/css/pages.css">
+<link rel="stylesheet" href="assets/css/responsive.css">
+</head>
+<body>
+<a href="#main" class="skip-link">Skip to content</a>
+
+<!-- ============ NAV ============ -->
+<header class="nav" id="siteNav">
+  <div class="container">
+    <a href="#top" class="brand">
+      <img src="assets/img/logo.png" alt="Bitroxia logo">
+      <span>Bitroxia<small>Project &amp; HR Workspace</small></span>
+    </a>
+
+    <nav aria-label="Primary">
+      <ul class="nav-links">
+        <li>
+          <button class="nav-top-link" aria-expanded="false">Product
+            <svg class="nav-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="mega">
+            <div class="mega-col">
+              <div class="mega-col-title">Project Management</div>
+              <a href="features.html#tasks"><strong>Task Management</strong><span>Organize and track tasks</span></a>
+              <a href="features.html#gantt"><strong>Gantt Charts</strong><span>Visual project timelines</span></a>
+              <a href="features.html#kanban"><strong>Kanban Boards</strong><span>Agile workflow</span></a>
+            </div>
+            <div class="mega-col">
+              <div class="mega-col-title">HR Management</div>
+              <a href="features.html#attendance"><strong>Attendance</strong><span>Track employee hours</span></a>
+              <a href="features.html#leave"><strong>Leave Management</strong><span>Manage time off</span></a>
+              <a href="features.html#performance"><strong>Performance</strong><span>Employee reviews</span></a>
+            </div>
+          </div>
+        </li>
+        <li>
+          <button class="nav-top-link" aria-expanded="false">Solutions
+            <svg class="nav-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="mega">
+            <div class="mega-col">
+              <div class="mega-col-title">Business Teams</div>
+              <a href="solutions.html#enterprise"><strong>For Enterprises</strong><span>Scale governance and teams</span></a>
+              <a href="solutions.html#startups"><strong>For Startups</strong><span>Move fast with one workspace</span></a>
+            </div>
+            <div class="mega-col">
+              <div class="mega-col-title">Operations</div>
+              <a href="solutions.html#hr"><strong>For HR Teams</strong><span>People, attendance and leave</span></a>
+              <a href="solutions.html#remote"><strong>For Remote Teams</strong><span>Coordinate distributed work</span></a>
+            </div>
+          </div>
+        </li>
+        <li><a href="features.html" aria-current="page">Features</a></li>
+        <li><a href="pricing.html">Pricing</a></li>
+        <li>
+          <button class="nav-top-link" aria-expanded="false">Resources
+            <svg class="nav-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="mega">
+            <div class="mega-col">
+              <div class="mega-col-title">Learn</div>
+              <a href="resources.html#blog"><strong>Blog</strong><span>Product and workflow updates</span></a>
+              <a href="resources.html#faq"><strong>FAQ</strong><span>Common questions answered</span></a>
+            </div>
+            <div class="mega-col">
+              <div class="mega-col-title">Support</div>
+              <a href="resources.html#docs"><strong>Documentation</strong><span>Guides and setup help</span></a>
+              <a href="resources.html#help"><strong>Help Center</strong><span>Find help for your team</span></a>
+              <a href="resources.html#api"><strong>API</strong><span>Connect external systems</span></a>
+            </div>
+          </div>
+        </li>
+        <li>
+          <button class="nav-top-link" aria-expanded="false">Company
+            <svg class="nav-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="mega">
+            <div class="mega-col">
+              <div class="mega-col-title">Bitroxia</div>
+              <a href="about.html"><strong>About Us</strong><span>Who we are and what we build</span></a>
+              <a href="about.html#careers"><strong>Careers</strong><span>Join the team behind PMS</span></a>
+            </div>
+            <div class="mega-col">
+              <div class="mega-col-title">Legal</div>
+              <a href="contact.html"><strong>Contact</strong><span>Talk to us about your needs</span></a>
+              <a href="privacy.html"><strong>Privacy Policy</strong><span>How data is handled</span></a>
+              <a href="terms.html"><strong>Terms</strong><span>Usage terms and policies</span></a>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="nav-actions">
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle light and dark theme" aria-pressed="false">
+        <span class="knob">
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="currentColor"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>
+        </span>
+      </button>
+      <a href="admin/login.html" class="nav-login">Login</a>
+      <a href="contact.html" class="btn btn-primary btn-sm">Request Access</a>
+      <button class="hamburger" id="hamburgerBtn" aria-label="Open menu" aria-expanded="false" aria-controls="mobileDrawer">
+        <span></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile drawer -->
+  <div class="mobile-drawer" id="mobileDrawer">
+    <div class="scrim" data-close-drawer></div>
+    <div class="mobile-panel">
+      <ul class="mobile-links">
+        <li>
+          <details>
+            <summary>Product <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 9l6 6 6-6"/></svg></summary>
+            <div class="mobile-sub">
+              <a href="features.html#tasks" data-close-drawer>Task Management</a>
+              <a href="features.html#gantt" data-close-drawer>Gantt Charts</a>
+              <a href="features.html#kanban" data-close-drawer>Kanban Boards</a>
+              <a href="features.html#attendance" data-close-drawer>Attendance</a>
+              <a href="features.html#leave" data-close-drawer>Leave Management</a>
+            </div>
+          </details>
+        </li>
+        <li>
+          <details>
+            <summary>Solutions <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 9l6 6 6-6"/></svg></summary>
+            <div class="mobile-sub">
+              <a href="solutions.html#enterprise" data-close-drawer>For Enterprises</a>
+              <a href="solutions.html#startups" data-close-drawer>For Startups</a>
+              <a href="solutions.html#hr" data-close-drawer>For HR Teams</a>
+              <a href="solutions.html#remote" data-close-drawer>For Remote Teams</a>
+              <a href="solutions.html#developers" data-close-drawer>For Developers</a>
+            </div>
+          </details>
+        </li>
+        <li><a href="features.html" data-close-drawer>Features</a></li>
+        <li><a href="pricing.html" data-close-drawer>Pricing</a></li>
+        <li>
+          <details>
+            <summary>Resources <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 9l6 6 6-6"/></svg></summary>
+            <div class="mobile-sub">
+              <a href="resources.html#blog" data-close-drawer>Blog</a>
+              <a href="resources.html#faq" data-close-drawer>FAQ</a>
+              <a href="resources.html#docs" data-close-drawer>Documentation</a>
+              <a href="resources.html#help" data-close-drawer>Help Center</a>
+              <a href="resources.html#api" data-close-drawer>API</a>
+            </div>
+          </details>
+        </li>
+        <li>
+          <details>
+            <summary>Company <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 9l6 6 6-6"/></svg></summary>
+            <div class="mobile-sub">
+              <a href="about.html" data-close-drawer>About Us</a>
+              <a href="about.html#careers" data-close-drawer>Careers</a>
+              <a href="contact.html" data-close-drawer>Contact</a>
+              <a href="privacy.html" data-close-drawer>Privacy Policy</a>
+              <a href="terms.html" data-close-drawer>Terms</a>
+            </div>
+          </details>
+        </li>
+      </ul>
+      <div class="mobile-cta">
+        <a href="admin/login.html" class="btn btn-secondary btn-block">Login</a>
+        <a href="contact.html" class="btn btn-primary btn-block" data-close-drawer>Request Access</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ============ HERO ============ -->
+  <section class="hero" id="top">
+    <div class="hero-bg" aria-hidden="true"></div>
+    <div class="hero-grid-lines" aria-hidden="true"></div>
+    <div class="container">
+      <div class="hero-top" data-reveal>
+        <span class="eyebrow">Project operations · HR · Reporting</span>
+        <h1>One connected workspace<br>for teams that <span class="text-gradient">move fast</span></h1>
+        <p class="lede">Bitroxia PMS keeps tasks, timelines, attendance, leave, tickets, clients and reports in one place — so managers see work clearly and teams move without confusion.</p>
+        <div class="hero-ctas">
+          <a href="contact.html" class="btn btn-primary">Request Access
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+          <a href="#features" class="btn btn-secondary">Explore Features</a>
+        </div>
+        <p class="hero-note">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+          No credit card needed to preview a workspace
+        </p>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="hero-stats" data-reveal>
+        <div class="stat"><b data-count="120">0</b><span>Daily Workflows</span></div>
+        <div class="stat"><b data-count="18">0</b><span>Core Modules</span></div>
+        <div class="stat"><b data-count="99" data-suffix="%">0%</b><span>Responsive UI</span></div>
+      </div>
+
+      <div class="hero-mockup" data-reveal>
+        <span class="float-card float-1">
+          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>
+          <span>124 tasks completed<small>Updated just now</small></span>
+        </span>
+        <span class="float-card float-2">
+          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3"/><path d="M2 20c0-3.9 3.1-7 7-7s7 3.1 7 7"/><path d="M16 3.1a4 4 0 010 7.8M22 20c0-2.8-2-5.2-4.7-6.4"/></svg></span>
+          <span>Team availability live<small>32 of 36 online</small></span>
+        </span>
+        <span class="float-card float-3">
+          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20"/></svg></span>
+          <span>₹4,200 payment received<small>Client invoice #2291</small></span>
+        </span>
+
+        <div class="hero-mockup-inner">
+          <div class="mockup-topbar">
+            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+            <div class="tabs">
+              <span>Projects</span><span>Tasks</span><span>Kanban</span><span>Gantt</span><span>Attendance</span><span>Reports</span>
+            </div>
+          </div>
+          <div class="mockup-columns">
+            <div class="mockup-col">
+              <div class="mockup-col-title">To Do <span>4</span></div>
+              <div class="mockup-card"><b>Design onboarding flow</b>Due in 2 days</div>
+              <div class="mockup-card"><b>Client contract review</b>Assigned to Priya</div>
+            </div>
+            <div class="mockup-col">
+              <div class="mockup-col-title">In Progress <span>6</span></div>
+              <div class="mockup-card"><b>API integration — v2</b>62% complete</div>
+              <div class="mockup-card"><b>QA regression pass</b>Blocked · waiting review</div>
+            </div>
+            <div class="mockup-col">
+              <div class="mockup-col-title">Review <span>3</span></div>
+              <div class="mockup-card"><b>Attendance report — July</b>Ready for approval</div>
+            </div>
+            <div class="mockup-col">
+              <div class="mockup-col-title">Done <span>12</span></div>
+              <div class="mockup-card"><b>Leave policy update</b>Published to team</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TRUST STRIP ============ -->
+  <section class="trust-strip">
+    <div class="container">
+      <p class="trust-label">Built for the way real teams operate</p>
+      <div class="trust-row">
+        <span class="trust-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Enterprises</span>
+        <span class="trust-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h7l-1 8 10-12h-7z"/></svg>Startups</span>
+        <span class="trust-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3"/><path d="M2 20c0-3.9 3.1-7 7-7s7 3.1 7 7"/><path d="M16 3.1a4 4 0 010 7.8M22 20c0-2.8-2-5.2-4.7-6.4"/></svg>HR Teams</span>
+        <span class="trust-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h5l2-6 4 12 2-6h7"/></svg>Remote Teams</span>
+        <span class="trust-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>Developers</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="arrow-divider" aria-hidden="true">
+    <span class="line"></span>
+    <svg viewBox="0 0 24 24" fill="none"><path d="M12 19V5M6 11l6-6 6 6" stroke="url(#gradArrow1)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><defs><linearGradient id="gradArrow1" x1="0" y1="0" x2="24" y2="24"><stop stop-color="#2F6BFF"/><stop offset="1" stop-color="#22D3EE"/></linearGradient></defs></svg>
+    <span class="line"></span>
+  </div>
+
+  <!-- ============ FEATURE GRID ============ -->
+  <section class="section" id="features">
+    <div class="container">
+      <div class="section-head center">
+        <span class="eyebrow">Operational Control</span>
+        <h2>Everything a project team checks every day</h2>
+        <p>Bitroxia PMS brings delivery, people, time, approvals and reporting into a single practical system — no tab-switching between five different tools.</p>
+      </div>
+
+      <div class="feature-grid" data-reveal-group>
+        <article class="feature-card" data-reveal style="--i:0">
+          <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>
+          <h3>Projects &amp; Milestones</h3>
+          <p>Plan delivery, split work into phases, assign owners, and keep project progress visible to everyone.</p>
+          <a href="features.html#gantt" class="feature-link">View details <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </article>
+        <article class="feature-card" data-reveal style="--i:1">
+          <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg></div>
+          <h3>Tasks &amp; Kanban</h3>
+          <p>Track priorities, comments, files, labels, subtasks and status changes without scattered updates.</p>
+          <a href="features.html#kanban" class="feature-link">View details <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </article>
+        <article class="feature-card" data-reveal style="--i:2">
+          <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div>
+          <h3>Attendance &amp; Timelogs</h3>
+          <p>Record clock-ins, work hours, locations, task timers and timesheets from one simple workflow.</p>
+          <a href="features.html#attendance" class="feature-link">View details <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </article>
+        <article class="feature-card" data-reveal style="--i:3">
+          <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg></div>
+          <h3>Leave &amp; Holidays</h3>
+          <p>Manage leave policies, balances, holiday calendars, and approvals while protecting project capacity.</p>
+          <a href="features.html#leave" class="feature-link">View details <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </article>
+        <article class="feature-card" data-reveal style="--i:4">
+          <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
+          <h3>Tickets &amp; Clients</h3>
+          <p>Handle support issues, client records, lead contacts, deals and project communication in context.</p>
+          <a href="features.html#tickets" class="feature-link">View details <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </article>
+        <article class="feature-card" data-reveal style="--i:5">
+          <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 3 5-7"/></svg></div>
+          <h3>Dashboards &amp; Reports</h3>
+          <p>Use dashboards, exports, analytics and activity logs to understand delivery health quickly.</p>
+          <a href="features.html#dashboard" class="feature-link">View details <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ COLORFUL WORKSPACE SHOWCASE ============ -->
+  <section class="section section-soft">
+    <div class="container">
+      <div class="showcase">
+        <div class="showcase-copy" data-reveal>
+          <div class="section-head">
+            <span class="eyebrow">Colorful Workspace</span>
+            <h2>Beautiful screens for serious daily work</h2>
+            <p>Clean visual hierarchy, bright status colors and focused dashboards — built so managers can scan faster and employees can act with confidence.</p>
+          </div>
+          <div class="showcase-bullets">
+            <div class="showcase-bullet">
+              <span class="num">01</span>
+              <div><h4>Animated dashboard states</h4><p>Subtle motion helps important information feel alive without distracting from the work.</p></div>
+            </div>
+            <div class="showcase-bullet">
+              <span class="num">02</span>
+              <div><h4>Balanced color system</h4><p>Blue, cyan, violet and emerald accents separate modules and action states at a glance.</p></div>
+            </div>
+            <div class="showcase-bullet">
+              <span class="num">03</span>
+              <div><h4>Responsive by design</h4><p>Every public page and app entry point stays polished from a 5" phone to a wide monitor.</p></div>
+            </div>
+          </div>
+        </div>
+        <div class="showcase-media" data-reveal>
+          <div class="showcase-panel">
+            <div class="color-bars"><span></span><span></span><span></span><span></span><span></span></div>
+            <div class="showcase-rows">
+              <div class="showcase-row">
+                <span class="avatar"></span>
+                <span class="meta"><b>Homepage redesign — Phase 2</b><span>Design · Priya Sharma</span></span>
+                <span class="badge-status progress">In Progress</span>
+              </div>
+              <div class="showcase-row">
+                <span class="avatar" style="background:linear-gradient(135deg,var(--brand-cyan),var(--brand-blue))"></span>
+                <span class="meta"><b>Vendor contract — renewal</b><span>Client · Arjun Mehta</span></span>
+                <span class="badge-status review">In Review</span>
+              </div>
+              <div class="showcase-row">
+                <span class="avatar" style="background:linear-gradient(135deg,#34D399,#6EE7B7)"></span>
+                <span class="meta"><b>Payroll sync — August</b><span>HR · Neha Kapoor</span></span>
+                <span class="badge-status done">Completed</span>
+              </div>
+              <div class="showcase-row">
+                <span class="avatar" style="background:linear-gradient(135deg,var(--brand-purple),#B389FF)"></span>
+                <span class="meta"><b>Support ticket #4821</b><span>Client Success · Rohan Das</span></span>
+                <span class="badge-status progress">In Progress</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ VIDEO SECTION ============ -->
+  <section class="section" id="demo">
+    <div class="container">
+      <div class="section-head center">
+        <span class="eyebrow">Product Walkthrough</span>
+        <h2>See Bitroxia PMS in action</h2>
+        <p>A quick walkthrough of planning a project, assigning owners, tracking attendance and reading the reporting dashboard — the way your team would use it day to day.</p>
+      </div>
+
+      <div class="video-wrap" id="videoWrap" data-reveal>
+        <video id="demoVideo" playsinline preload="none" poster="assets/img/logo.png">
+          <source src="assets/video/bitroxia-demo.mp4" type="video/mp4">
+        </video>
+        <div class="video-poster" id="videoPoster">
+          <div class="poster-frame"><span>Drop bitroxia-demo.mp4 into assets/video to enable playback</span></div>
+          <button class="play-btn" id="playBtn" aria-label="Play product walkthrough video">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+        </div>
+        <div class="video-controls">
+          <button id="pauseBtn" aria-label="Pause video"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg></button>
+          <div class="bar"><i id="videoProgress"></i></div>
+          <button id="muteBtn" aria-label="Mute video"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M19 9a5 5 0 010 6"/></svg></button>
+        </div>
+      </div>
+      <p class="video-caption">2 min overview · Silent-friendly with captions available on request</p>
+    </div>
+  </section>
+
+  <div class="arrow-divider" aria-hidden="true">
+    <span class="line"></span>
+    <svg viewBox="0 0 24 24" fill="none"><path d="M12 19V5M6 11l6-6 6 6" stroke="url(#gradArrow2)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><defs><linearGradient id="gradArrow2" x1="0" y1="0" x2="24" y2="24"><stop stop-color="#8B5CF6"/><stop offset="1" stop-color="#2F6BFF"/></linearGradient></defs></svg>
+    <span class="line"></span>
+  </div>
+
+  <!-- ============ HOW IT WORKS ============ -->
+  <section class="section section-soft" id="how">
+    <div class="container">
+      <div class="section-head center">
+        <span class="eyebrow">How It Works</span>
+        <h2>Built for the rhythm of real teams</h2>
+        <p>From planning to payroll-adjacent attendance records, every module supports the day-to-day operating loop.</p>
+      </div>
+
+      <div class="steps" data-reveal-group>
+        <div class="step" data-reveal style="--i:0">
+          <div class="step-num">1</div>
+          <h3>Plan</h3>
+          <p>Create projects, milestones, tasks, labels and dependencies before work begins.</p>
+        </div>
+        <div class="step" data-reveal style="--i:1">
+          <div class="step-num">2</div>
+          <h3>Assign</h3>
+          <p>Add teams, clients, departments, roles and clear ownership for every piece of work.</p>
+        </div>
+        <div class="step" data-reveal style="--i:2">
+          <div class="step-num">3</div>
+          <h3>Track</h3>
+          <p>Monitor task status, attendance, timelogs, leaves, tickets and files in real time.</p>
+        </div>
+        <div class="step" data-reveal style="--i:3">
+          <div class="step-num">4</div>
+          <h3>Report</h3>
+          <p>Use dashboards, exports, analytics and activity logs to make faster decisions.</p>
+        </div>
+      </div>
+      <div class="steps-foot">
+        <a href="contact.html" class="btn btn-primary">Request Access</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ STATS BAND ============ -->
+  <section class="section-tight">
+    <div class="container">
+      <div class="stats-band" data-reveal>
+        <div class="stat-block">
+          <b data-count-text="24/7">24/7</b>
+          <h4>Operational visibility</h4>
+          <p>Project, HR, attendance and ticket records stay available whenever your team needs them.</p>
+        </div>
+        <div class="stat-block">
+          <b data-count-text="360°">360°</b>
+          <h4>Degree workspace</h4>
+          <p>Tasks, clients, people, contracts, files, approvals and reports connect into one view.</p>
+        </div>
+        <div class="stat-block">
+          <b data-count-text="Zero">Zero</b>
+          <h4>Template confusion</h4>
+          <p>Every page uses one consistent brand system, so nothing feels bolted-on or inconsistent.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ DEPARTMENTS ============ -->
+  <section class="section" id="departments">
+    <div class="container">
+      <div class="section-head center">
+        <span class="eyebrow">For Every Department</span>
+        <h2>One interface, many business functions</h2>
+        <p>The UI stays clean while supporting project delivery, HR operations, client management and reporting.</p>
+      </div>
+      <div class="dept-grid" data-reveal-group>
+        <div class="dept-card" data-reveal style="--i:0">
+          <span class="tag">Managers</span>
+          <h3>Plan capacity, spot blockers early</h3>
+          <p>Review project health, approve work, and see exactly where delivery is at risk before it becomes a problem.</p>
+          <ul>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Portfolio-level project overview</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Capacity and workload planning</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Approval queues in one inbox</li>
+          </ul>
+        </div>
+        <div class="dept-card" data-reveal style="--i:1">
+          <span class="tag">HR Teams</span>
+          <h3>People data, always in context</h3>
+          <p>Track employees, departments, designations, attendance, leaves, holidays and awards without leaving the workspace.</p>
+          <ul>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Attendance and leave together</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Holiday and policy calendars</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Performance and award records</li>
+          </ul>
+        </div>
+        <div class="dept-card" data-reveal style="--i:2">
+          <span class="tag">Client Teams</span>
+          <h3>Every client conversation, tracked</h3>
+          <p>Manage clients, lead contacts, deals, tickets, contracts and project communication in one connected record.</p>
+          <ul>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Ticket history tied to projects</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Contract and deal tracking</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Client-facing status visibility</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CONNECTED PLATFORM ============ -->
+  <section class="section section-surface">
+    <div class="container">
+      <div class="section-head center">
+        <span class="eyebrow">Connected Platform</span>
+        <h2>Works across your whole business flow</h2>
+        <p>Every function feeds the same records, so nothing lives in a spreadsheet that falls out of date.</p>
+      </div>
+      <div class="platform-grid" data-reveal-group>
+        <div class="platform-card" data-reveal style="--i:0">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg></div>
+          <h4>Exports</h4><p>Attendance, leads, reports, timelogs</p>
+        </div>
+        <div class="platform-card" data-reveal style="--i:1">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg></div>
+          <h4>Notifications</h4><p>Tasks, tickets, employees, clock-ins</p>
+        </div>
+        <div class="platform-card" data-reveal style="--i:2">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 6-9 12-9 12s-9-6-9-12a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+          <h4>Location</h4><p>Attendance map and team visibility</p>
+        </div>
+        <div class="platform-card" data-reveal style="--i:3">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"/></svg></div>
+          <h4>Roles</h4><p>Admin, employee, client, superadmin</p>
+        </div>
+        <div class="platform-card" data-reveal style="--i:4">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v4H4zM4 12h16v8H4z"/></svg></div>
+          <h4>Records</h4><p>Projects, clients, contracts, payments</p>
+        </div>
+        <div class="platform-card" data-reveal style="--i:5">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 3 5-7"/></svg></div>
+          <h4>Insights</h4><p>Dashboards, audit logs, analytics</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TESTIMONIALS ============ -->
+  <section class="section" id="testimonials">
+    <div class="container">
+      <div class="section-head center">
+        <span class="eyebrow">Proof Points</span>
+        <h2>Designed for clarity under pressure</h2>
+        <p>Bitroxia PMS focuses on the screens teams actually need: lists, boards, dashboards, approvals and audit-friendly records.</p>
+      </div>
+
+      <div class="testi-wrap">
+        <div class="testi-track">
+          <div class="testi-slides" id="testiSlides">
+            <div class="testi-slide">
+              <div class="testi-card">
+                <div class="testi-quote-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 8a4 4 0 00-4 4v5h5v-5H6a2 2 0 012-2zM17 8a4 4 0 00-4 4v5h5v-5h-2a2 2 0 012-2z"/></svg></div>
+                <p>"We can see delivery status, assigned owners and pending actions without asking five different people for updates."</p>
+                <div class="testi-person">
+                  <span class="testi-avatar">PD</span>
+                  <span class="who"><b>Project Director</b><span>Bitroxia PMS user</span></span>
+                </div>
+              </div>
+            </div>
+            <div class="testi-slide">
+              <div class="testi-card">
+                <div class="testi-quote-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 8a4 4 0 00-4 4v5h5v-5H6a2 2 0 012-2zM17 8a4 4 0 00-4 4v5h5v-5h-2a2 2 0 012-2z"/></svg></div>
+                <p>"Attendance, leave, employees and holidays live beside project data, so planning is much more practical."</p>
+                <div class="testi-person">
+                  <span class="testi-avatar">HL</span>
+                  <span class="who"><b>HR Lead</b><span>Bitroxia PMS user</span></span>
+                </div>
+              </div>
+            </div>
+            <div class="testi-slide">
+              <div class="testi-card">
+                <div class="testi-quote-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 8a4 4 0 00-4 4v5h5v-5H6a2 2 0 012-2zM17 8a4 4 0 00-4 4v5h5v-5h-2a2 2 0 012-2z"/></svg></div>
+                <p>"The dashboards give our team enough detail to act quickly without drowning everyone in reports."</p>
+                <div class="testi-person">
+                  <span class="testi-avatar">OM</span>
+                  <span class="who"><b>Operations Manager</b><span>Bitroxia PMS user</span></span>
+                </div>
+              </div>
+            </div>
+            <div class="testi-slide">
+              <div class="testi-card">
+                <div class="testi-quote-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 8a4 4 0 00-4 4v5h5v-5H6a2 2 0 012-2zM17 8a4 4 0 00-4 4v5h5v-5h-2a2 2 0 012-2z"/></svg></div>
+                <p>"Tickets, files, comments and client records stay connected to the work that caused them."</p>
+                <div class="testi-person">
+                  <span class="testi-avatar">CS</span>
+                  <span class="who"><b>Client Success Lead</b><span>Bitroxia PMS user</span></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="testi-nav">
+          <button class="testi-arrow" id="testiPrev" aria-label="Previous testimonial"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+          <div class="testi-dots" id="testiDots"></div>
+          <button class="testi-arrow" id="testiNext" aria-label="Next testimonial"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PRICING TEASER / FAQ ============ -->
+  <section class="section section-soft" id="pricing">
+    <div class="container">
+      <div class="section-head center">
+        <span class="eyebrow">Simple Pricing</span>
+        <h2>One plan, every module included</h2>
+        <p>No feature paywalls between departments — projects, HR, tickets and reporting ship together from day one.</p>
+      </div>
+      <div class="dept-grid">
+        <div class="dept-card">
+          <span class="tag">Starter</span>
+          <h3>For small, focused teams</h3>
+          <p>Everything you need to run projects and attendance for a single team.</p>
+          <ul>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Up to 15 team members</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Tasks, Kanban &amp; attendance</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Standard reporting</li>
+          </ul>
+          <div style="margin-top:var(--sp-3)"><a href="pricing.html" class="btn btn-secondary btn-block">Talk to sales</a></div>
+        </div>
+        <div class="dept-card" style="border-color:var(--brand-blue)">
+          <span class="tag">Growth</span>
+          <h3>For scaling departments</h3>
+          <p>Full HR, ticketing and client workflows added on top of the core workspace.</p>
+          <ul>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Up to 100 team members</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Leave, tickets &amp; clients</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Custom dashboards</li>
+          </ul>
+          <div style="margin-top:var(--sp-3)"><a href="pricing.html" class="btn btn-primary btn-block">Talk to sales</a></div>
+        </div>
+        <div class="dept-card">
+          <span class="tag">Enterprise</span>
+          <h3>For multi-department orgs</h3>
+          <p>Roles, contracts, audit logs and dedicated onboarding for larger organizations.</p>
+          <ul>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Unlimited team members</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Contracts &amp; audit logs</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Dedicated onboarding</li>
+          </ul>
+          <div style="margin-top:var(--sp-3)"><a href="pricing.html" class="btn btn-secondary btn-block">Talk to sales</a></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="faq">
+    <div class="container">
+      <div class="section-head center">
+        <span class="eyebrow">Good to Know</span>
+        <h2>Frequently asked questions</h2>
+        <p>Still unsure about something? Reach out — we're happy to help you scope the right workspace.</p>
+      </div>
+      <div class="faq-list">
+        <div class="faq-item is-open">
+          <button class="faq-q"><span>Can I use Bitroxia PMS for HR and projects together?</span><span class="plus"></span></button>
+          <div class="faq-a"><div class="faq-a-inner">Yes — attendance, leave, holidays and employee records sit alongside projects and tasks in the same workspace, so managers plan capacity with real people data instead of guesswork.</div></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q"><span>How long does onboarding usually take?</span><span class="plus"></span></button>
+          <div class="faq-a"><div class="faq-a-inner">Most teams are running their first projects within a day. We help you import existing tasks, set up departments and roles, and configure attendance policies during onboarding.</div></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q"><span>Can clients see their own tickets and project status?</span><span class="plus"></span></button>
+          <div class="faq-a"><div class="faq-a-inner">Yes. Client-role accounts can view relevant tickets, contracts and project status without access to internal HR or attendance data, keeping visibility scoped correctly.</div></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q"><span>Does the platform support remote and field teams?</span><span class="plus"></span></button>
+          <div class="faq-a"><div class="faq-a-inner">Attendance supports location-based clock-ins, task timers work independent of office hours, and every dashboard is fully responsive for teams checking in from mobile devices.</div></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q"><span>Can I export my data at any time?</span><span class="plus"></span></button>
+          <div class="faq-a"><div class="faq-a-inner">Attendance, leads, reports and timelogs can all be exported on demand, so your records are never locked into the platform.</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CTA BANNER ============ -->
+  <section class="section-tight">
+    <div class="container">
+      <div class="cta-banner" data-reveal>
+        <h2>Bring your team into one workspace</h2>
+        <p>Start with projects and tasks, then add HR, attendance, leave, tickets, clients and reporting as your team grows.</p>
+        <div class="cta-banner-actions">
+          <a href="contact.html" class="btn btn-primary">Request Access</a>
+          <a href="#demo" class="btn btn-secondary" style="border-color:rgba(255,255,255,0.25);color:#fff;">Watch Walkthrough</a>
+        </div>
+        <p class="fine">Responsive web app · Secure login · Built for daily operations</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CONTACT ============ -->
+  <section class="section" id="contact">
+    <div class="container">
+      <div class="contact-grid">
+        <div class="contact-info" data-reveal>
+          <span class="eyebrow">Contact</span>
+          <h2>Talk to us about your PMS workflow</h2>
+          <p>Need project management, attendance, HR, ticket, client, or reporting customization? Share your requirement and we'll help align modules, roles and reports.</p>
+
+          <div class="contact-detail">
+            <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z" opacity="0"/><path d="M22 6l-10 7L2 6"/><path d="M2 6h20v12H2z"/></svg></span>
+            <div><b>Email</b><a href="mailto:info@bitroxia.com">info@bitroxia.com</a></div>
+          </div>
+          <div class="contact-detail">
+            <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6A19.8 19.8 0 012.1 4.2 2 2 0 014 2h3a2 2 0 012 1.7c.1.9.3 1.8.6 2.7a2 2 0 01-.4 2.1L8 9.9a16 16 0 006 6l1.4-1.4a2 2 0 012.1-.4c.9.3 1.8.5 2.7.6a2 2 0 011.8 2.2z"/></svg></span>
+            <div><b>Phone</b><a href="tel:+910000000000">+91 00000 00000</a></div>
+          </div>
+          <div class="contact-detail">
+            <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 6-9 12-9 12s-9-6-9-12a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
+            <div><b>Delivery</b><span>India and global remote delivery</span></div>
+          </div>
+
+          <div class="map-embed">
+            <iframe src="https://www.google.com/maps?q=India&output=embed" loading="lazy" title="Business location map" referrerpolicy="no-referrer-when-downgrade"></iframe>
+          </div>
+        </div>
+
+        <form class="contact-form" id="contactFormHome" data-reveal>
+          <div class="form-alert" id="contactAlertHome"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg><span></span></div>
+          <div class="form-row">
+            <div class="field"><label for="fname">Full name</label><input id="fname" data-field="name" type="text" placeholder="Your name" required></div>
+            <div class="field"><label for="femail">Work email</label><input id="femail" data-field="email" type="email" placeholder="you@company.com" required></div>
+          </div>
+          <div class="form-row">
+            <div class="field"><label for="fcompany">Company</label><input id="fcompany" data-field="company" type="text" placeholder="Company name"></div>
+            <div class="field"><label for="fsize">Team size</label>
+              <select id="fsize" data-field="teamSize">
+                <option>1–15</option><option>16–50</option><option>51–100</option><option>100+</option>
+              </select>
+            </div>
+          </div>
+          <div class="field"><label for="fmsg">What do you need?</label><textarea id="fmsg" data-field="message" placeholder="Tell us about your project management, HR, ticketing, or reporting needs"></textarea></div>
+          <button type="submit" class="btn btn-primary btn-block">Send Message</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-col footer-brand">
+        <a href="index.html" class="brand"><img src="assets/img/logo.png" alt="Bitroxia logo"><span>Bitroxia</span></a>
+        <p>A practical project, HR, attendance and reporting workspace for teams that need clear ownership and faster delivery.</p>
+        <div class="footer-social">
+          <a href="#" aria-label="Bitroxia on LinkedIn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-4 0v7h-4V8h4v1.5A5.99 5.99 0 0116 8z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg></a>
+          <a href="#" aria-label="Bitroxia on X"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 4L6 20M6 4l12 16"/></svg></a>
+          <a href="#" aria-label="Bitroxia on Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1"/></svg></a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h5>Product</h5>
+        <ul>
+          <li><a href="features.html#tasks">Task Management</a></li>
+          <li><a href="features.html#gantt">Gantt Charts</a></li>
+          <li><a href="features.html#kanban">Kanban Boards</a></li>
+          <li><a href="features.html#attendance">Attendance</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Company</h5>
+        <ul>
+          <li><a href="about.html">About Us</a></li>
+          <li><a href="features.html">Features</a></li>
+          <li><a href="pricing.html">Pricing</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Resources</h5>
+        <ul>
+          <li><a href="resources.html#faq">FAQ</a></li>
+          <li><a href="resources.html#blog">Blog</a></li>
+          <li><a href="resources.html#docs">Documentation</a></li>
+          <li><a href="resources.html#help">Help Center</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Contact</h5>
+        <ul>
+          <li><a href="mailto:info@bitroxia.com">info@bitroxia.com</a></li>
+          <li><a href="tel:+910000000000">+91 00000 00000</a></li>
+          <li>India &amp; global remote delivery</li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 Bitroxia PMS. All rights reserved.</p>
+      <div class="footer-legal">
+        <a href="privacy.html">Privacy Policy</a>
+        <a href="terms.html">Terms of Service</a>
+        <a href="admin/login.html">Staff Login</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<button class="back-to-top" id="backToTop" aria-label="Back to top">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg>
+</button>
+
+<script src="assets/js/leads.js"></script>
+<script src="assets/js/main.js" defer></script>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  window.BitroxiaLeads.wireForm(document.getElementById('contactFormHome'), document.getElementById('contactAlertHome'), 'Home Page');
+});
+</script>
+</body>
+</html>

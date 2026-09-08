@@ -1586,16 +1586,44 @@
                 ['label' => 'Permissions', 'hint' => 'Access matrix', 'icon' => 'bx-lock-alt', 'route' => 'admin.role-permissions.index', 'value' => 'ACL'],
                 ['label' => 'Settings', 'hint' => 'System setup', 'icon' => 'bx-cog', 'route' => 'admin.settings.app', 'value' => 'Set'],
             ];
+            $featureLinks = collect($featureLinks)->filter(function ($link) use ($currentCompany) {
+                $slug = match ($link['label']) {
+                    'Employees' => 'employees',
+                    'Attendance' => 'attendance',
+                    'Leaves' => 'leaves',
+                    'Projects' => 'projects',
+                    'Tasks' => 'tasks',
+                    'Timesheet' => 'timelogs',
+                    'Tickets' => 'tickets',
+                    'Clients' => 'clients',
+                    'Leads' => 'leads',
+                    'Deals' => 'deals',
+                    'Holidays' => 'holidays',
+                    'Reports' => 'reports',
+                    'Payroll' => 'payroll',
+                    'Organization' => 'organization',
+                    'Awards' => 'awards',
+                    'Departments' => 'departments',
+                    'Designations' => 'designations',
+                    default => strtolower($link['label']),
+                };
+                return $currentCompany ? $currentCompany->hasFeature($slug) : true;
+            })->values()->all();
+
             $adminPieCharts = [
-                ['label' => 'Attendance', 'hint' => "{$dashboardPresentCount} present / {$dashboardTotalEmployees} employees", 'route' => 'attendance.index', 'value' => $dashboardPresentCount, 'percent' => $dashboardAttendancePercent, 'color' => '#10b981'],
-                ['label' => 'Projects', 'hint' => "{$dashboardTotalProject} active projects", 'route' => 'projects.index', 'value' => $dashboardTotalProject, 'percent' => round(($dashboardTotalProject / $dashboardFeatureScale) * 100), 'color' => '#2563eb'],
-                ['label' => 'Tasks', 'hint' => "{$dashboardPendingTask} pending tasks", 'route' => 'tasks.index', 'value' => $dashboardPendingTask, 'percent' => round(($dashboardPendingTask / $dashboardFeatureScale) * 100), 'color' => '#f59e0b'],
-                ['label' => 'Tickets', 'hint' => "{$dashboardUnresolvedTicket} unresolved tickets", 'route' => 'tickets.index', 'value' => $dashboardUnresolvedTicket, 'percent' => round(($dashboardUnresolvedTicket / $dashboardFeatureScale) * 100), 'color' => '#ef4444'],
-                ['label' => 'Clients', 'hint' => "{$dashboardTotalClient} client records", 'route' => 'clients.index', 'value' => $dashboardTotalClient, 'percent' => round(($dashboardTotalClient / $dashboardFeatureScale) * 100), 'color' => '#7c3aed'],
-                ['label' => 'Leaves', 'hint' => "{$dashboardPendingLeaves} pending requests", 'route' => 'leaves.index', 'value' => $dashboardPendingLeaves, 'percent' => round(($dashboardPendingLeaves / $dashboardFeatureScale) * 100), 'color' => '#06b6d4'],
-                ['label' => 'Employees', 'hint' => "{$dashboardTotalEmployees} total employees", 'route' => 'employees.index', 'value' => $dashboardTotalEmployees, 'percent' => round(($dashboardTotalEmployees / $dashboardFeatureScale) * 100), 'color' => '#14b8a6'],
-                ['label' => 'Reports', 'hint' => 'Attendance and operations reporting', 'route' => 'attendance.report', 'value' => 'View', 'percent' => max(35, $dashboardAttendancePercent), 'color' => '#64748b'],
+                ['label' => 'Attendance', 'slug' => 'attendance', 'hint' => "{$dashboardPresentCount} present / {$dashboardTotalEmployees} employees", 'route' => 'attendance.index', 'value' => $dashboardPresentCount, 'percent' => $dashboardAttendancePercent, 'color' => '#10b981'],
+                ['label' => 'Projects', 'slug' => 'projects', 'hint' => "{$dashboardTotalProject} active projects", 'route' => 'projects.index', 'value' => $dashboardTotalProject, 'percent' => round(($dashboardTotalProject / $dashboardFeatureScale) * 100), 'color' => '#2563eb'],
+                ['label' => 'Tasks', 'slug' => 'tasks', 'hint' => "{$dashboardPendingTask} pending tasks", 'route' => 'tasks.index', 'value' => $dashboardPendingTask, 'percent' => round(($dashboardPendingTask / $dashboardFeatureScale) * 100), 'color' => '#f59e0b'],
+                ['label' => 'Tickets', 'slug' => 'tickets', 'hint' => "{$dashboardUnresolvedTicket} unresolved tickets", 'route' => 'tickets.index', 'value' => $dashboardUnresolvedTicket, 'percent' => round(($dashboardUnresolvedTicket / $dashboardFeatureScale) * 100), 'color' => '#ef4444'],
+                ['label' => 'Clients', 'slug' => 'clients', 'hint' => "{$dashboardTotalClient} client records", 'route' => 'clients.index', 'value' => $dashboardTotalClient, 'percent' => round(($dashboardTotalClient / $dashboardFeatureScale) * 100), 'color' => '#7c3aed'],
+                ['label' => 'Leaves', 'slug' => 'leaves', 'hint' => "{$dashboardPendingLeaves} pending requests", 'route' => 'leaves.index', 'value' => $dashboardPendingLeaves, 'percent' => round(($dashboardPendingLeaves / $dashboardFeatureScale) * 100), 'color' => '#06b6d4'],
+                ['label' => 'Employees', 'slug' => 'employees', 'hint' => "{$dashboardTotalEmployees} total employees", 'route' => 'employees.index', 'value' => $dashboardTotalEmployees, 'percent' => round(($dashboardTotalEmployees / $dashboardFeatureScale) * 100), 'color' => '#14b8a6'],
+                ['label' => 'Reports', 'slug' => 'reports', 'hint' => 'Attendance and operations reporting', 'route' => 'attendance.report', 'value' => 'View', 'percent' => max(35, $dashboardAttendancePercent), 'color' => '#64748b'],
             ];
+            $adminPieCharts = collect($adminPieCharts)->filter(function ($chart) use ($currentCompany) {
+                return $currentCompany ? $currentCompany->hasFeature($chart['slug']) : true;
+            })->values()->all();
+
             $safeTableSum = function (string $table, string $column): float {
                 try {
                     return \Illuminate\Support\Facades\Schema::hasTable($table) && \Illuminate\Support\Facades\Schema::hasColumn($table, $column)
@@ -1713,6 +1741,9 @@
             } catch (\Throwable $e) {
                 $activeModules = collect();
             }
+            if ($currentCompany && method_exists($currentCompany, 'hasFeature')) {
+                $activeModules = $activeModules->filter(fn ($m) => $currentCompany->hasFeature($m->slug))->values();
+            }
             $moduleScale = max(collect($moduleMetricMap)->filter(fn ($value) => is_numeric($value))->max() ?? 1, 1);
             $autoModuleCards = $activeModules->map(function ($module, $index) use ($moduleRouteFallbacks, $moduleMetricMap, $moduleScale, $safeRouteUrl) {
                 $route = $module->route_name ?: ($moduleRouteFallbacks[$module->slug] ?? null);
@@ -1730,7 +1761,9 @@
                 ];
             })->filter(fn ($module) => $module['url'])->values();
             if ($autoModuleCards->isEmpty()) {
-                $autoModuleCards = collect($moduleRouteFallbacks)->map(function ($route, $slug) use ($moduleMetricMap, $moduleScale, $safeRouteUrl) {
+                $autoModuleCards = collect($moduleRouteFallbacks)->filter(function ($route, $slug) use ($currentCompany) {
+                    return $currentCompany ? $currentCompany->hasFeature($slug) : true;
+                })->map(function ($route, $slug) use ($moduleMetricMap, $moduleScale, $safeRouteUrl) {
                     $url = $safeRouteUrl($route);
                     $metric = $moduleMetricMap[$slug] ?? 1;
 

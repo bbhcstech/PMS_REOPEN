@@ -157,6 +157,7 @@
       white-space: nowrap;
       height: 38px;
       cursor: pointer;
+      text-decoration: none;
     }
 
     .btn-primary {
@@ -675,16 +676,26 @@
       text-transform: uppercase;
       letter-spacing: 0.5px;
       color: var(--slate-muted);
-      background: rgba(248, 250, 252, 0.8);
-      border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+      background: rgba(248, 250, 252, 0.95);
+      border-bottom: 1px solid rgba(203, 213, 225, 0.8);
+      border-right: 1px solid rgba(226, 232, 240, 0.85);
+    }
+
+    .table-wrap th:last-child, .table-compact th:last-child {
+      border-right: none;
     }
 
     .table-wrap td, .table-compact td {
       padding: 12px 16px;
-      border-bottom: 1px solid rgba(226, 232, 240, 0.5);
+      border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+      border-right: 1px solid rgba(226, 232, 240, 0.85);
       color: var(--slate-body);
       vertical-align: middle;
       font-weight: 600;
+    }
+
+    .table-wrap td:last-child, .table-compact td:last-child {
+      border-right: none;
     }
 
     .table-wrap tr:hover, .table-compact tr:hover {
@@ -855,7 +866,7 @@
         <span class="dot"></span> System Operational
       </div>
       <div class="actions">
-        <button class="btn btn-primary" id="openCreateModalBtn"><i class="bx bx-plus-circle"></i> Provision Tenant</button>
+        <a href="{{ Route::has('super-admin.companies.create') ? route('super-admin.companies.create') : (Route::has('superadmin.companies.create') ? route('superadmin.companies.create') : url('/super-admin/companies/create')) }}" class="btn btn-primary"><i class="bx bx-plus-circle"></i> Provision Tenant</a>
         <a href="{{ route('super-admin.companies.index') }}" class="btn btn-outline"><i class="bx bx-download"></i> System Report</a>
       </div>
     </div>
@@ -1185,15 +1196,35 @@
   <div class="section-header" id="companies-section">
     <h2>Registered Tenant Companies</h2>
     <div style="display: flex; gap: 10px; align-items: center;">
-      <button class="btn btn-primary" id="openCreateModalBtn"><i class="bx bx-plus-circle"></i> Provision Tenant</button>
+      <a href="{{ Route::has('super-admin.companies.create') ? route('super-admin.companies.create') : (Route::has('superadmin.companies.create') ? route('superadmin.companies.create') : url('/super-admin/companies/create')) }}" class="btn btn-primary"><i class="bx bx-plus-circle"></i> Provision Tenant</a>
       <a href="{{ route('super-admin.companies.index') }}" class="action-link">Central Register <i class="bx bx-right-arrow-alt"></i></a>
     </div>
   </div>
 
-  <div class="table-wrap">
-    <table class="table-compact">
+  <div class="table-wrap" style="border: 1px solid rgba(203, 213, 225, 0.8); border-radius: 20px; overflow: hidden;">
+    <div style="display:flex; justify-content:space-between; align-items:center; padding: 14px 20px; background: rgba(248, 250, 252, 0.95); border-bottom: 1px solid rgba(203, 213, 225, 0.8); flex-wrap: wrap; gap: 12px;">
+      <div style="display:flex; align-items:center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--slate-body);">
+        <span>Show</span>
+        <select id="entriesPerPageSelect" onchange="changeEntriesPerPage(this.value)" style="padding: 6px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; font-weight: 700; color: var(--slate-dark); background: #fff; cursor: pointer; outline: none;">
+          <option value="10" {{ request('per_page', 10) == 10 ? 'selected' : '' }}>10</option>
+          <option value="25" {{ request('per_page') == 25 ? 'selected' : '' }}>25</option>
+          <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50</option>
+          <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100</option>
+        </select>
+        <span>entries</span>
+      </div>
+      <div style="position: relative;">
+        <i class="bx bx-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--slate-muted); font-size: 17px;"></i>
+        <input type="text" id="dashboardTableSearch" placeholder="Search companies..." onkeyup="filterDashboardCompanies()" style="padding: 6px 14px 6px 36px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; font-weight: 500; width: 220px; background: #fff; outline: none; transition: border-color 0.2s ease;" />
+      </div>
+    </div>
+
+    <table class="table-compact" id="dashboardCompaniesTable">
       <thead>
         <tr>
+          <th style="width: 42px; text-align: center;">
+            <input type="checkbox" id="selectAllDashboardCompanies" onchange="toggleSelectAllDashboardCompanies(this)" style="cursor: pointer; width: 16px; height: 16px; accent-color: var(--emerald-primary);" />
+          </th>
           <th>Company</th>
           <th>Subdomain / Identifier</th>
           <th>Database Name</th>
@@ -1206,12 +1237,31 @@
       </thead>
       <tbody>
         @forelse($companies as $company)
+          @php
+            $logoUrl = null;
+            if (!empty($company->logo)) {
+                if (file_exists(public_path($company->logo))) {
+                    $logoUrl = asset($company->logo);
+                } elseif (file_exists(public_path('user-uploads/app-logo/' . $company->logo))) {
+                    $logoUrl = asset('user-uploads/app-logo/' . $company->logo);
+                } elseif (str_starts_with($company->logo, 'http') || str_starts_with($company->logo, '/')) {
+                    $logoUrl = asset($company->logo);
+                }
+            }
+          @endphp
           <tr>
+            <td style="text-align: center;">
+              <input type="checkbox" class="dashboard-company-cb" value="{{ $company->id }}" style="cursor: pointer; width: 16px; height: 16px; accent-color: var(--emerald-primary);" />
+            </td>
             <td>
               <div style="display:flex; align-items:center; gap:12px;">
-                <div style="width:36px; height:36px; border-radius:10px; background: linear-gradient(135deg, var(--slate-dark), var(--emerald-dark)); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px; flex-shrink:0;">
-                  {{ strtoupper(substr($company->name, 0, 2)) }}
-                </div>
+                @if($logoUrl)
+                  <img src="{{ $logoUrl }}" alt="{{ $company->name }}" style="width:36px; height:36px; border-radius:10px; object-fit:cover; border:1px solid rgba(203, 213, 225, 0.8); flex-shrink:0;" />
+                @else
+                  <div style="width:36px; height:36px; border-radius:10px; background: linear-gradient(135deg, var(--slate-dark), var(--emerald-dark)); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px; flex-shrink:0;">
+                    {{ strtoupper(substr($company->name, 0, 2)) }}
+                  </div>
+                @endif
                 <div>
                   <strong style="color:var(--slate-dark); font-weight:700;">{{ $company->name }}</strong>
                   <div style="font-size:11px; color:var(--slate-muted);">{{ $company->email }}</div>
@@ -1275,19 +1325,44 @@
           </tr>
         @empty
           <tr>
-            <td colspan="8" style="text-align:center; padding:24px; color:var(--slate-muted);">
+            <td colspan="9" style="text-align:center; padding:24px; color:var(--slate-muted);">
               No tenant companies found. Click "Provision Tenant" above to create one.
             </td>
           </tr>
         @endforelse
       </tbody>
     </table>
-    @if(method_exists($companies, 'links'))
-      <div style="padding: 14px 20px; border-top: 1px solid rgba(226, 232, 240, 0.8); background: var(--slate-light);">
-        {{ $companies->links() }}
+    <div style="padding: 14px 20px; border-top: 1px solid rgba(203, 213, 225, 0.8); background: var(--slate-light); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+      <div style="font-size: 12.5px; font-weight: 600; color: var(--slate-muted);">
+        @if(method_exists($companies, 'total'))
+          Showing {{ $companies->firstItem() ?? 0 }} to {{ $companies->lastItem() ?? 0 }} of {{ $companies->total() }} entries
+        @else
+          Showing {{ count($companies) }} entries
+        @endif
       </div>
-    @endif
+      @if(method_exists($companies, 'links'))
+        <div>
+          {{ $companies->links() }}
+        </div>
+      @endif
+    </div>
   </div>
+
+  <script>
+    function toggleSelectAllDashboardCompanies(master) {
+      document.querySelectorAll('.dashboard-company-cb').forEach(cb => cb.checked = master.checked);
+    }
+    function changeEntriesPerPage(val) {
+      window.location.href = "{{ url()->current() }}?per_page=" + val;
+    }
+    function filterDashboardCompanies() {
+      const input = document.getElementById('dashboardTableSearch').value.toLowerCase();
+      const rows = document.querySelectorAll('#dashboardCompaniesTable tbody tr');
+      rows.forEach(row => {
+        row.style.display = row.textContent.toLowerCase().includes(input) ? '' : 'none';
+      });
+    }
+  </script>
 
   <!-- SUBSCRIPTION CATALOG -->
   <div class="section-header" id="plans">
@@ -1604,6 +1679,29 @@
     }
     if (closeBtn && createModal) {
       closeBtn.addEventListener('click', () => createModal.classList.remove('active'));
+    }
+
+    function toggleSelectAllDashboardCompanies(master) {
+      const checkboxes = document.querySelectorAll('.dashboard-company-cb');
+      checkboxes.forEach(cb => cb.checked = master.checked);
+    }
+
+    function changeEntriesPerPage(val) {
+      const url = new URL(window.location.href);
+      url.searchParams.set('per_page', val);
+      url.searchParams.delete('companies_page');
+      window.location.href = url.toString();
+    }
+
+    function filterDashboardCompanies() {
+      const query = document.getElementById('dashboardTableSearch').value.toLowerCase().trim();
+      const rows = document.querySelectorAll('#dashboardCompaniesTable tbody tr');
+      
+      rows.forEach(row => {
+        const text = row.innerText.toLowerCase();
+        if (row.querySelector('td[colspan]')) return;
+        row.style.display = text.includes(query) ? '' : 'none';
+      });
     }
 
     function openStatusModal(companyId, companyName, currentStatus) {

@@ -1,25 +1,25 @@
 @extends('layouts.superadmin')
 
-@section('title', 'Super Admin · ' . $company->name . ' Command Center')
+@section('title', 'Super Admin · ' . $company->name . ' Workspace')
 @section('page_title', 'Company Workspace')
 @section('page_subtitle', 'Enterprise tenant command center, resource allocation, and connection telemetry.')
 
 @section('content')
 <style>
     :root {
-        --primary: #0f744c;
-        --primary-hover: #0a5236;
-        --primary-glow: rgba(15, 116, 76, 0.15);
+        --primary: #059669;
+        --primary-hover: #047857;
+        --primary-glow: rgba(5, 150, 105, 0.18);
         --bg-main: #f8fafc;
         --bg-surface: #ffffff;
         --border-color: #cbd5e1;
         --border-subtle: #e2e8f0;
         --text-main: #0f172a;
         --text-muted: #475569;
-        --text-subtle: #94a3b8;
+        --text-subtle: #64748b;
         --success: #10b981;
-        --success-bg: #f0fdf4;
-        --success-border: #bbf7d0;
+        --success-bg: #ecfdf5;
+        --success-border: #a7f3d0;
         --warning: #f59e0b;
         --warning-bg: #fffbeb;
         --warning-border: #fde68a;
@@ -62,10 +62,16 @@
         font-weight: 700;
         color: var(--text-muted);
         text-decoration: none;
-        transition: color 0.2s ease;
+        padding: 6px 12px;
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        border-radius: 10px;
+        transition: all 0.2s ease;
     }
     .back-btn-link:hover {
         color: var(--primary);
+        border-color: var(--primary);
+        transform: translateX(-2px);
     }
     .breadcrumb-trail {
         font-size: 13px;
@@ -90,6 +96,17 @@
         align-items: center;
         justify-content: space-between;
         gap: 24px;
+        position: relative;
+        overflow: hidden;
+    }
+    .company-header-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #059669 0%, #10b981 50%, #3b82f6 100%);
     }
     .company-header-left {
         display: flex;
@@ -97,20 +114,20 @@
         gap: 20px;
     }
     .company-avatar-box {
-        width: 68px;
-        height: 68px;
+        width: 72px;
+        height: 72px;
         border-radius: 20px;
-        background: linear-gradient(135deg, #0f744c 0%, #10b981 100%);
+        background: linear-gradient(135deg, #059669 0%, #10b981 100%);
         color: #ffffff;
         display: flex;
         align-items: center;
         justify-content: center;
         font-weight: 800;
-        font-size: 24px;
-        box-shadow: 0 8px 16px var(--primary-glow);
+        font-size: 26px;
+        box-shadow: 0 10px 20px var(--primary-glow);
         flex-shrink: 0;
         overflow: hidden;
-        border: 2px solid #ffffff;
+        border: 2.5px solid #ffffff;
     }
     .company-avatar-box img {
         width: 100%;
@@ -143,8 +160,8 @@
         font-weight: 700;
         color: var(--text-subtle);
         background: #f1f5f9;
-        padding: 3px 8px;
-        border-radius: 6px;
+        padding: 3px 10px;
+        border-radius: 8px;
         border: 1px solid #cbd5e1;
     }
 
@@ -155,7 +172,7 @@
         gap: 5px;
         padding: 4px 12px;
         border-radius: 999px;
-        font-size: 10.5px;
+        font-size: 11px;
         font-weight: 800;
         letter-spacing: 0.5px;
         text-transform: uppercase;
@@ -174,9 +191,9 @@
         font-size: 12px;
         font-weight: 700;
     }
-    .status-pill .dot { width: 7px; height: 7px; border-radius: 50%; }
+    .status-pill .dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
     .status-pill.status-active { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
-    .status-pill.status-active .dot { background: var(--success); }
+    .status-pill.status-active .dot { background: var(--success); box-shadow: 0 0 6px var(--success); }
     .status-pill.status-trial { background: var(--warning-bg); color: var(--warning); border: 1px solid var(--warning-border); }
     .status-pill.status-trial .dot { background: var(--warning); }
     .status-pill.status-expired { background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger-border); }
@@ -189,6 +206,43 @@
         flex-wrap: wrap;
     }
 
+    /* BUTTONS */
+    .btn-custom {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-weight: 700;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        font-family: inherit;
+        border: 1px solid transparent;
+    }
+    .btn-sm-custom { padding: 9px 18px; font-size: 13px; }
+    .btn-xs-custom { padding: 6px 14px; font-size: 12px; }
+    .btn-primary-custom {
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        color: #ffffff;
+        box-shadow: 0 4px 12px var(--primary-glow);
+    }
+    .btn-primary-custom:hover {
+        background: linear-gradient(135deg, #047857 0%, #065f46 100%);
+        transform: translateY(-1px);
+        color: #ffffff;
+    }
+    .btn-outline-custom {
+        background: #ffffff;
+        color: var(--text-main);
+        border-color: #cbd5e1;
+    }
+    .btn-outline-custom:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+        background: #f0fdf4;
+    }
+
     /* SUMMARY METRICS GRID (5 CARDS) */
     .metrics-summary-grid {
         display: grid;
@@ -196,20 +250,42 @@
         gap: 16px;
         margin-bottom: 24px;
     }
-    @media (max-width: 1024px) {
-        .metrics-summary-grid { grid-template-columns: repeat(2, 1fr); }
+    @media (max-width: 1200px) {
+        .metrics-summary-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 768px) {
+        .metrics-summary-grid { grid-template-columns: repeat(1, 1fr); }
     }
     .metric-summary-card {
         background: #ffffff;
-        border-radius: 16px;
+        border-radius: 18px;
         border: 1px solid var(--border-color);
-        padding: 20px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-        transition: transform 0.2s ease, border-color 0.2s ease;
+        padding: 22px 20px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+        transition: all 0.25s ease;
+        position: relative;
+        overflow: hidden;
     }
     .metric-summary-card:hover {
         transform: translateY(-3px);
-        border-color: #94a3b8;
+        border-color: var(--primary);
+        box-shadow: 0 10px 25px -5px rgba(5, 150, 105, 0.12);
+    }
+    .metric-summary-card .header-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .metric-summary-card .icon-box {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        background: #f0fdf4;
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
     }
     .metric-summary-card .label {
         font-size: 11px;
@@ -222,14 +298,14 @@
         font-size: 26px;
         font-weight: 800;
         color: var(--text-main);
-        margin-top: 8px;
+        margin-top: 10px;
         line-height: 1.1;
     }
     .metric-summary-card .subtext {
         font-size: 12px;
         color: var(--text-muted);
         font-weight: 600;
-        margin-top: 4px;
+        margin-top: 6px;
     }
 
     /* QUICK ACTIONS BAR */
@@ -237,7 +313,7 @@
         background: #ffffff;
         border: 1px solid var(--border-color);
         border-radius: 16px;
-        padding: 14px 20px;
+        padding: 14px 22px;
         margin-bottom: 24px;
         display: flex;
         align-items: center;
@@ -314,7 +390,7 @@
         border-bottom: 1px solid var(--border-subtle);
     }
     .dashboard-card-title {
-        font-size: 16px;
+        font-size: 16.5px;
         font-weight: 800;
         color: var(--text-main);
         margin: 0;
@@ -367,6 +443,61 @@
         font-size: 18px;
         color: var(--primary);
     }
+
+    /* MODAL BACKDROP */
+    .modal-backdrop-custom {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(4px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        padding: 20px;
+    }
+    .modal-backdrop-custom.open { display: flex; }
+    .modal-dialog-custom {
+        background: #ffffff;
+        border-radius: 20px;
+        border: 1px solid var(--border-color);
+        padding: 28px;
+        max-width: 520px;
+        width: 100%;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    }
+
+    .plan-card-option {
+        background: #f8fafc;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 14px;
+        padding: 16px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .plan-card-option:hover, .plan-card-option.selected {
+        border-color: var(--primary);
+        background: #f0fdf4;
+    }
+
+    .user-avatar-circle {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 13.5px;
+        box-shadow: 0 4px 8px var(--primary-glow);
+        flex-shrink: 0;
+        border: 1.5px solid #ffffff;
+    }
 </style>
 
 @php
@@ -390,8 +521,8 @@
 
     <!-- SUCCESS FLASH ALERT -->
     @if(session('success'))
-        <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 14px; padding: 14px 20px; margin-bottom: 24px; color: #15803d; font-size: 13.5px; font-weight: 700; display: flex; align-items: center; gap: 10px;">
-            <i class="bx bx-check-circle" style="font-size: 22px;"></i> {{ session('success') }}
+        <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 14px; padding: 14px 20px; margin-bottom: 24px; color: #047857; font-size: 13.5px; font-weight: 700; display: flex; align-items: center; gap: 10px;">
+            <i class="bx bx-check-circle" style="font-size: 22px; color: #10b981;"></i> {{ session('success') }}
         </div>
     @endif
 
@@ -438,7 +569,7 @@
             </button>
             <form method="POST" action="{{ route('super-admin.companies.enter', $company) }}" style="margin: 0;">
                 @csrf
-                <button type="submit" class="btn-custom btn-outline-custom btn-sm-custom" style="color: #d97706; border-color: rgba(245, 158, 11, 0.4);">
+                <button type="submit" class="btn-custom btn-outline-custom btn-sm-custom" style="color: #d97706; border-color: rgba(245, 158, 11, 0.4); background: #fffbeb;">
                     <i class="bx bx-log-in-circle"></i> Impersonate Context
                 </button>
             </form>
@@ -448,30 +579,55 @@
     <!-- SUMMARY METRICS ROW (5 CARDS) -->
     <div class="metrics-summary-grid">
         <div class="metric-summary-card">
-            <div class="label">USERS</div>
+            <div class="header-row">
+                <div class="label">USERS</div>
+                <div class="icon-box"><i class="bx bx-group"></i></div>
+            </div>
             <div class="value">{{ $totalUsersCount ?? 0 }}</div>
-            <div class="subtext">Active users</div>
+            <div class="subtext">Active company users</div>
         </div>
+
         <div class="metric-summary-card">
-            <div class="label">ADMINS</div>
+            <div class="header-row">
+                <div class="label">ADMINS</div>
+                <div class="icon-box" style="background: #eff6ff; color: #2563eb;"><i class="bx bx-user-pin"></i></div>
+            </div>
             <div class="value">{{ $adminsCount ?? 0 }}</div>
             <div class="subtext">Company admins</div>
         </div>
+
         <div class="metric-summary-card">
-            <div class="label">STORAGE</div>
+            <div class="header-row">
+                <div class="label">STORAGE</div>
+                <div class="icon-box" style="background: #f5f3ff; color: #7c3aed;"><i class="bx bx-hard-drive"></i></div>
+            </div>
             <div class="value">0%</div>
             <div class="subtext">0 MB / {{ $company->max_storage_mb ?? 10000 }} MB</div>
         </div>
+
         <div class="metric-summary-card">
-            <div class="label">DATABASE</div>
-            <div class="value" style="color: {{ ($dbConnected ?? true) ? 'var(--success)' : 'var(--danger)' }}; font-size: 20px;">
-                ● {{ ($dbConnected ?? true) ? 'Healthy' : 'Offline' }}
+            <div class="header-row">
+                <div class="label">DATABASE</div>
+                <div class="icon-box" style="background: {{ ($dbConnected ?? true) ? '#ecfdf5' : '#fef2f2' }}; color: {{ ($dbConnected ?? true) ? 'var(--success)' : 'var(--danger)' }};">
+                    <i class="bx bx-data"></i>
+                </div>
             </div>
-            <div class="subtext">{{ $dbLatency ?? 0 }}ms response</div>
+            <div class="value" style="color: {{ ($dbConnected ?? true) ? 'var(--success)' : 'var(--danger)' }}; font-size: 20px; display: flex; align-items: center; gap: 8px;">
+                <span class="status-pill {{ ($dbConnected ?? true) ? 'status-active' : 'status-expired' }}" style="padding: 2px 8px;">
+                    <span class="dot"></span> {{ ($dbConnected ?? true) ? 'Healthy' : 'Offline' }}
+                </span>
+            </div>
+            <div class="subtext">{{ $dbLatency ?? 0 }}ms response latency</div>
         </div>
+
         <div class="metric-summary-card">
-            <div class="label">SUBSCRIPTION</div>
-            <div class="value" style="font-size: 20px;">{{ $rawPlan }}</div>
+            <div class="header-row">
+                <div class="label">SUBSCRIPTION</div>
+                <div class="icon-box" style="background: #fffbeb; color: #d97706;"><i class="bx bx-layer"></i></div>
+            </div>
+            <div class="value" style="font-size: 20px;">
+                <span class="plan-badge plan-{{ $planClass }}">{{ $rawPlan }}</span>
+            </div>
             <div class="subtext">
                 @if($rawPlan === 'DIAMOND') ₹19,999 / mo
                 @elseif($rawPlan === 'PLATINUM') ₹9,999 / mo
@@ -483,7 +639,7 @@
 
     <!-- QUICK ACTIONS TOOLBAR BAR -->
     <div class="quick-actions-bar">
-        <span style="font-size: 12px; font-weight: 800; color: var(--text-subtle); text-transform: uppercase; margin-right: 4px;">Quick Actions:</span>
+        <span style="font-size: 11px; font-weight: 800; color: var(--text-subtle); text-transform: uppercase; margin-right: 4px; letter-spacing: 0.5px;">Quick Actions:</span>
         <button class="btn-custom btn-outline-custom btn-xs-custom tab-jump-trigger" data-jump-tab="tab-settings"><i class="bx bx-edit"></i> Edit Company</button>
         <button class="btn-custom btn-outline-custom btn-xs-custom trigger-plan-modal"><i class="bx bx-layer"></i> Manage Subscription</button>
         <button class="btn-custom btn-outline-custom btn-xs-custom tab-jump-trigger" data-jump-tab="tab-users"><i class="bx bx-group"></i> View Users</button>
@@ -497,8 +653,8 @@
     <div class="nav-tabs-wrapper">
         <div class="nav-tabs-scroll">
             <button class="tab-btn active" data-tab="tab-overview"><i class="bx bx-grid-alt"></i> Overview</button>
-            <button class="tab-btn" data-tab="tab-users"><i class="bx bx-group"></i> Users</button>
-            <button class="tab-btn" data-tab="tab-admins"><i class="bx bx-user-pin"></i> Admins</button>
+            <button class="tab-btn" data-tab="tab-users"><i class="bx bx-group"></i> Users ({{ $tenantUsers->count() }})</button>
+            <button class="tab-btn" data-tab="tab-admins"><i class="bx bx-user-pin"></i> Admins ({{ $tenantAdmins->count() }})</button>
             <button class="tab-btn" data-tab="tab-subscription"><i class="bx bx-layer"></i> Subscription</button>
             <button class="tab-btn" data-tab="tab-billing"><i class="bx bx-receipt"></i> Billing</button>
             <button class="tab-btn" data-tab="tab-usage"><i class="bx bx-pie-chart-alt-2"></i> Usage</button>
@@ -539,7 +695,7 @@
                     </div>
                     <div class="info-item">
                         <div class="label">DATABASE</div>
-                        <div class="val" style="font-family: monospace; color: #0369a1;">{{ $company->db_name }}</div>
+                        <div class="val" style="font-family: monospace; color: #0369a1; background: #e0f2fe; padding: 2px 8px; border-radius: 6px; display: inline-block;">{{ $company->db_name }}</div>
                     </div>
                     <div class="info-item">
                         <div class="label">CREATED</div>
@@ -551,6 +707,28 @@
                             <span class="status-pill {{ $statusPillClass }}">
                                 <span class="dot"></span> {{ ucfirst($company->status ?? 'Active') }}
                             </span>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="label">LOGIN EMAIL</div>
+                        <div class="val" style="color: var(--primary); font-weight: 700;">
+                            {{ $companyLoginEmail ?: ($company->email ?? 'N/A') }}
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="label">PASSWORD</div>
+                        <div class="val" style="display: flex; align-items: center; gap: 8px;">
+                            <span id="companyPasswordDisplay" data-raw-password="{{ $companyPassword }}" style="font-family: monospace; font-weight: 700; background: #f1f5f9; padding: 2px 8px; border-radius: 6px; border: 1px solid #cbd5e1; color: var(--text-main);">
+                                {{ $companyPassword ? str_repeat('•', min(strlen($companyPassword), 10)) : 'N/A' }}
+                            </span>
+                            @if($companyPassword)
+                                <button type="button" id="btnToggleCompanyPassword" onclick="toggleCompanyPassword()" title="Show/Hide Password" style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; padding: 2px 6px; cursor: pointer; color: var(--text-muted); display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s ease;">
+                                    <i class="bx bx-show" id="passwordEyeIcon" style="font-size: 16px;"></i>
+                                </button>
+                                <button type="button" onclick="copyCompanyPassword('{{ addslashes($companyPassword) }}', this)" title="Copy Password" style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; padding: 2px 6px; cursor: pointer; color: var(--text-muted); display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s ease;">
+                                    <i class="bx bx-copy" style="font-size: 16px;"></i>
+                                </button>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -567,7 +745,7 @@
                         <div style="display: flex; align-items: center; gap: 12px;">
                             <div class="telemetry-icon-box"><i class="bx bx-data"></i></div>
                             <div>
-                                <strong style="font-size: 13.5px; color: var(--text-main);">DATABASE</strong>
+                                <strong style="font-size: 13.5px; color: var(--text-main);">DATABASE TARGET</strong>
                                 <div style="font-size: 11.5px; color: var(--success); font-weight: 700;">● Healthy</div>
                             </div>
                         </div>
@@ -625,75 +803,105 @@
             <div class="dashboard-card-header">
                 <h3 class="dashboard-card-title"><i class="bx bx-group" style="color: var(--primary);"></i> Tenant Users Directory ({{ $tenantUsers->count() }})</h3>
             </div>
-            <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
-                <thead>
-                    <tr style="border-bottom: 2px solid #cbd5e1; text-align: left; color: var(--text-subtle); background: #f8fafc;">
-                        <th style="padding: 12px;">User</th>
-                        <th style="padding: 12px;">Role</th>
-                        <th style="padding: 12px;">Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($tenantUsers as $u)
-                        <tr style="border-bottom: 1px solid var(--border-subtle);">
-                            <td style="padding: 12px; display: flex; align-items: center; gap: 12px;">
-                                @if($u->profile_image)
-                                    <img src="{{ asset($u->profile_image) }}" alt="{{ $u->name }}" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 1px solid #cbd5e1;" />
-                                @else
-                                    <div style="width: 36px; height: 36px; border-radius: 50%; background: #e2e8f0; color: #475569; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px;">
-                                        {{ strtoupper(substr($u->name, 0, 2)) }}
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                    <thead>
+                        <tr style="border-bottom: 2px solid #cbd5e1; text-align: left; color: var(--text-subtle); background: #f8fafc;">
+                            <th style="padding: 14px 16px; font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">User</th>
+                            <th style="padding: 14px 16px; font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Role</th>
+                            <th style="padding: 14px 16px; font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($tenantUsers as $u)
+                            <tr style="border-bottom: 1px solid var(--border-subtle); transition: background 0.15s ease;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+                                <td style="padding: 14px 16px;">
+                                    <div style="display: flex; align-items: center; gap: 12px;">
+                                        @if(!empty($u->profile_image) && file_exists(public_path($u->profile_image)))
+                                            <img src="{{ asset($u->profile_image) }}" alt="{{ $u->name }}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1.5px solid #cbd5e1;" />
+                                        @else
+                                            <div class="user-avatar-circle">
+                                                {{ strtoupper(substr($u->name ?? 'U', 0, 2)) }}
+                                            </div>
+                                        @endif
+                                        <div>
+                                            <strong style="font-size: 14px; color: var(--text-main);">{{ $u->name }}</strong><br>
+                                            <span style="color: var(--text-subtle); font-size: 12px;">{{ $u->email }}</span>
+                                        </div>
                                     </div>
-                                @endif
-                                <div>
-                                    <strong>{{ $u->name }}</strong><br>
-                                    <small style="color: var(--text-subtle);">{{ $u->email }}</small>
-                                </div>
-                            </td>
-                            <td style="padding: 12px;">
-                                <span style="text-transform: capitalize; font-weight: 700; background: #f1f5f9; padding: 4px 10px; border-radius: 6px; border: 1px solid #cbd5e1;">{{ $u->role ?? 'User' }}</span>
-                            </td>
-                            <td style="padding: 12px;">
-                                <span class="status-pill {{ $u->is_active ? 'status-active' : 'status-expired' }}">
-                                    <span class="dot"></span> {{ $u->is_active ? 'Active' : 'Inactive' }}
-                                </span>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="3" style="padding: 24px; text-align: center; color: var(--text-subtle);">No tenant users found in database.</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
+                                </td>
+                                <td style="padding: 14px 16px;">
+                                    @php
+                                        $roleLabel = ucfirst($u->role ?? 'User');
+                                        $rolePillBg = match(strtolower($u->role ?? '')) {
+                                            'admin', 'superadmin' => '#eff6ff',
+                                            'developer', 'dev' => '#ecfdf5',
+                                            'hr', 'manager' => '#fffbeb',
+                                            default => '#f1f5f9',
+                                        };
+                                        $rolePillColor = match(strtolower($u->role ?? '')) {
+                                            'admin', 'superadmin' => '#2563eb',
+                                            'developer', 'dev' => '#059669',
+                                            'hr', 'manager' => '#b45309',
+                                            default => '#475569',
+                                        };
+                                    @endphp
+                                    <span style="font-weight: 800; font-size: 11.5px; background: {{ $rolePillBg }}; color: {{ $rolePillColor }}; padding: 4px 12px; border-radius: 999px; border: 1px solid rgba(0,0,0,0.05); display: inline-block;">
+                                        {{ $roleLabel }}
+                                    </span>
+                                </td>
+                                <td style="padding: 14px 16px;">
+                                    <span class="status-pill {{ ($u->is_active ?? true) ? 'status-active' : 'status-expired' }}">
+                                        <span class="dot"></span> {{ ($u->is_active ?? true) ? 'Active' : 'Inactive' }}
+                                    </span>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="3" style="padding: 32px; text-align: center; color: var(--text-subtle);">
+                                    <i class="bx bx-group" style="font-size: 36px; color: #cbd5e1; margin-bottom: 8px;"></i><br>
+                                    No tenant users found in database.
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
     <!-- TAB 3: COMPANY ADMINISTRATORS -->
     <div class="workspace-tab-content" id="tab-admins">
         <div class="dashboard-card">
-            <h3 class="dashboard-card-title" style="margin-bottom: 18px;"><i class="bx bx-user-pin" style="color: var(--primary);"></i> Company Administrators ({{ $tenantAdmins->count() }})</h3>
-            <div style="display: flex; flex-direction: column; gap: 12px;">
+            <h3 class="dashboard-card-title" style="margin-bottom: 20px;"><i class="bx bx-user-pin" style="color: var(--primary);"></i> Company Administrators ({{ $tenantAdmins->count() }})</h3>
+            <div style="display: flex; flex-direction: column; gap: 14px;">
                 @forelse($tenantAdmins as $admin)
-                    <div style="font-size: 14px; padding: 16px 20px; background: #f8fafc; border: 1px solid var(--border-color); border-radius: 14px; display: flex; justify-content: space-between; align-items: center;">
-                        <div style="display: flex; align-items: center; gap: 14px;">
-                            @if($admin->profile_image)
-                                <img src="{{ asset($admin->profile_image) }}" alt="{{ $admin->name }}" style="width: 46px; height: 46px; border-radius: 50%; object-fit: cover; border: 1px solid #cbd5e1;" />
+                    <div style="font-size: 14px; padding: 18px 22px; background: #f8fafc; border: 1px solid var(--border-color); border-radius: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+                        <div style="display: flex; align-items: center; gap: 16px;">
+                            @if(!empty($admin->profile_image) && file_exists(public_path($admin->profile_image)))
+                                <img src="{{ asset($admin->profile_image) }}" alt="{{ $admin->name }}" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover; border: 2px solid #cbd5e1;" />
                             @else
-                                <div style="width: 46px; height: 46px; border-radius: 50%; background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px;">
-                                    {{ strtoupper(substr($admin->name, 0, 2)) }}
+                                <div style="width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #059669 0%, #10b981 100%); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 17px; box-shadow: 0 4px 10px var(--primary-glow);">
+                                    {{ strtoupper(substr($admin->name ?? 'A', 0, 2)) }}
                                 </div>
                             @endif
                             <div>
-                                <strong style="font-size: 15px; color: var(--text-main);">{{ $admin->name }}</strong> <span style="color: var(--text-muted); font-size: 13px;">({{ $admin->email }})</span>
-                                <div style="font-size: 12px; color: var(--text-subtle); margin-top: 2px;">Primary Administrator • Full Access Control Permissions</div>
+                                <strong style="font-size: 15.5px; color: var(--text-main);">{{ $admin->name }}</strong> 
+                                <span style="color: var(--text-muted); font-size: 13px; font-weight: 600;">({{ $admin->email }})</span>
+                                <div style="font-size: 12px; color: var(--text-subtle); margin-top: 3px; font-weight: 600;">
+                                    Primary Company Administrator • Full Access Control Permissions
+                                </div>
                             </div>
                         </div>
-                        <span class="status-pill {{ $admin->is_active ? 'status-active' : 'status-expired' }}">
-                            <span class="dot"></span> {{ $admin->is_active ? 'Active' : 'Inactive' }}
+                        <span class="status-pill {{ ($admin->is_active ?? true) ? 'status-active' : 'status-expired' }}">
+                            <span class="dot"></span> {{ ($admin->is_active ?? true) ? 'Active' : 'Inactive' }}
                         </span>
                     </div>
                 @empty
-                    <div style="padding: 24px; text-align: center; color: var(--text-subtle);">No admin accounts found in tenant database.</div>
+                    <div style="padding: 32px; text-align: center; color: var(--text-subtle);">
+                        <i class="bx bx-user-x" style="font-size: 36px; color: #cbd5e1; margin-bottom: 8px;"></i><br>
+                        No admin accounts found in tenant database.
+                    </div>
                 @endforelse
             </div>
         </div>
@@ -706,29 +914,29 @@
                 <h3 class="dashboard-card-title"><i class="bx bx-layer" style="color: var(--primary);"></i> Manage Subscription Tier</h3>
                 <button class="btn-custom btn-primary-custom btn-sm-custom trigger-plan-modal"><i class="bx bx-layer"></i> Change Subscription Plan</button>
             </div>
-            <div style="font-size: 14px; color: var(--text-muted); margin-bottom: 20px;">
+            <div style="font-size: 14px; color: var(--text-muted); margin-bottom: 20px; font-weight: 600;">
                 Current Active Subscription: <span class="plan-badge plan-{{ $planClass }}">{{ $rawPlan }}</span>
             </div>
-            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;">
-                <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 14px; padding: 16px; text-align: center;">
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
+                <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 16px; padding: 20px; text-align: center;">
                     <span class="plan-badge plan-free">FREE</span>
-                    <div style="font-size: 18px; font-weight: 800; margin: 8px 0; color: var(--text-main);">₹0 / mo</div>
-                    <div style="font-size: 12px; color: var(--text-subtle);">Up to 5 Users • 5GB Storage</div>
+                    <div style="font-size: 20px; font-weight: 800; margin: 10px 0; color: var(--text-main);">₹0 / mo</div>
+                    <div style="font-size: 12px; color: var(--text-subtle); font-weight: 600;">Up to 5 Users • 5GB Storage</div>
                 </div>
-                <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 14px; padding: 16px; text-align: center;">
+                <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 16px; padding: 20px; text-align: center;">
                     <span class="plan-badge plan-gold">GOLD</span>
-                    <div style="font-size: 18px; font-weight: 800; margin: 8px 0; color: #b45309;">₹4,999 / mo</div>
-                    <div style="font-size: 12px; color: #b45309;">Up to 25 Users • 25GB Storage</div>
+                    <div style="font-size: 20px; font-weight: 800; margin: 10px 0; color: #b45309;">₹4,999 / mo</div>
+                    <div style="font-size: 12px; color: #b45309; font-weight: 600;">Up to 25 Users • 25GB Storage</div>
                 </div>
-                <div style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 14px; padding: 16px; text-align: center;">
+                <div style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 16px; padding: 20px; text-align: center;">
                     <span class="plan-badge plan-platinum">PLATINUM</span>
-                    <div style="font-size: 18px; font-weight: 800; margin: 8px 0; color: #0284c7;">₹9,999 / mo</div>
-                    <div style="font-size: 12px; color: #0284c7;">Up to 100 Users • 100GB Storage</div>
+                    <div style="font-size: 20px; font-weight: 800; margin: 10px 0; color: #0284c7;">₹9,999 / mo</div>
+                    <div style="font-size: 12px; color: #0284c7; font-weight: 600;">Up to 100 Users • 100GB Storage</div>
                 </div>
-                <div style="background: #f5f3ff; border: 1px solid #ddd6fe; border-radius: 14px; padding: 16px; text-align: center;">
+                <div style="background: #f5f3ff; border: 1px solid #ddd6fe; border-radius: 16px; padding: 20px; text-align: center;">
                     <span class="plan-badge plan-diamond">DIAMOND</span>
-                    <div style="font-size: 18px; font-weight: 800; margin: 8px 0; color: #6d28d9;">₹19,999 / mo</div>
-                    <div style="font-size: 12px; color: #6d28d9;">Unlimited Users • Priority Support</div>
+                    <div style="font-size: 20px; font-weight: 800; margin: 10px 0; color: #6d28d9;">₹19,999 / mo</div>
+                    <div style="font-size: 12px; color: #6d28d9; font-weight: 600;">Unlimited Users • Priority Support</div>
                 </div>
             </div>
         </div>
@@ -737,20 +945,20 @@
     <!-- TAB 5: BILLING & INVOICES -->
     <div class="workspace-tab-content" id="tab-billing">
         <div class="dashboard-card">
-            <h3 class="dashboard-card-title" style="margin-bottom: 16px;"><i class="bx bx-receipt" style="color: var(--primary);"></i> Billing &amp; Invoices</h3>
+            <h3 class="dashboard-card-title" style="margin-bottom: 18px;"><i class="bx bx-receipt" style="color: var(--primary);"></i> Billing &amp; Invoices</h3>
             <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
                 <thead>
                     <tr style="border-bottom: 2px solid #cbd5e1; text-align: left; background: #f8fafc;">
-                        <th style="padding: 10px;">Invoice #</th>
-                        <th style="padding: 10px;">Date</th>
-                        <th style="padding: 10px;">Plan Tier</th>
-                        <th style="padding: 10px;">Amount</th>
-                        <th style="padding: 10px;">Status</th>
+                        <th style="padding: 12px;">Invoice #</th>
+                        <th style="padding: 12px;">Date</th>
+                        <th style="padding: 12px;">Plan Tier</th>
+                        <th style="padding: 12px;">Amount</th>
+                        <th style="padding: 12px;">Status</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr style="border-bottom: 1px solid var(--border-subtle);">
-                        <td style="padding: 12px; font-weight: 700; font-family: monospace;">INV-2026-001</td>
+                        <td style="padding: 12px; font-weight: 700; font-family: monospace; color: #0284c7;">INV-2026-001</td>
                         <td style="padding: 12px; color: var(--text-muted);">Aug 01, 2026</td>
                         <td style="padding: 12px;"><span class="plan-badge plan-{{ $planClass }}">{{ $rawPlan }}</span></td>
                         <td style="padding: 12px; font-weight: 800;">₹0.00</td>
@@ -764,13 +972,13 @@
     <!-- TAB 6: USAGE ANALYTICS -->
     <div class="workspace-tab-content" id="tab-usage">
         <div class="dashboard-card">
-            <h3 class="dashboard-card-title" style="margin-bottom: 16px;"><i class="bx bx-pie-chart-alt-2" style="color: var(--primary);"></i> Resource Consumption &amp; Quotas</h3>
+            <h3 class="dashboard-card-title" style="margin-bottom: 18px;"><i class="bx bx-pie-chart-alt-2" style="color: var(--primary);"></i> Resource Consumption &amp; Quotas</h3>
             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
-                <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 14px; padding: 20px; text-align: center;">
-                    <div style="font-size: 28px; font-weight: 800; color: var(--text-main);">{{ $totalUsersCount ?? 0 }} / 100</div>
+                <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 16px; padding: 22px; text-align: center;">
+                    <div style="font-size: 28px; font-weight: 800; color: var(--text-main);">{{ $totalUsersCount ?? 0 }} / {{ $company->max_users ?? 100 }}</div>
                     <div style="font-size: 12.5px; color: var(--text-muted); font-weight: 600; margin-top: 4px;">Active Tenant User Accounts</div>
                 </div>
-                <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 14px; padding: 20px; text-align: center;">
+                <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 16px; padding: 22px; text-align: center;">
                     <div style="font-size: 28px; font-weight: 800; color: var(--text-main);">0 MB / {{ $company->max_storage_mb ?? 10000 }} MB</div>
                     <div style="font-size: 12.5px; color: var(--text-muted); font-weight: 600; margin-top: 4px;">Allocated Database Disk Storage</div>
                 </div>
@@ -781,11 +989,11 @@
     <!-- TAB 7: ACTIVITY LOG -->
     <div class="workspace-tab-content" id="tab-activity">
         <div class="dashboard-card">
-            <h3 class="dashboard-card-title" style="margin-bottom: 16px;"><i class="bx bx-history" style="color: var(--primary);"></i> Tenant Activity Log</h3>
+            <h3 class="dashboard-card-title" style="margin-bottom: 18px;"><i class="bx bx-history" style="color: var(--primary);"></i> Tenant Activity Log</h3>
             <div style="font-size: 13.5px; color: var(--text-muted);">
-                <div style="padding: 12px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
-                    <div><strong>Tenant Workspace Created</strong> — Database <code style="font-family: monospace;">{{ $company->db_name }}</code> provisioned.</div>
-                    <span style="font-size: 12px; color: var(--text-subtle);">Aug 12, 2026</span>
+                <div style="padding: 14px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+                    <div><strong>Tenant Workspace Created</strong> — Database <code style="font-family: monospace; color: #0369a1; background: #e0f2fe; padding: 2px 6px; border-radius: 4px;">{{ $company->db_name }}</code> provisioned.</div>
+                    <span style="font-size: 12px; color: var(--text-subtle); font-weight: 600;">Aug 12, 2026</span>
                 </div>
             </div>
         </div>
@@ -795,16 +1003,16 @@
     <div class="workspace-tab-content" id="tab-audit">
         <div class="dashboard-card">
             <h3 class="dashboard-card-title" style="margin-bottom: 16px;"><i class="bx bx-shield-quarter" style="color: var(--primary);"></i> Security Audit Trail</h3>
-            <p style="font-size: 13px; color: var(--text-muted);">Audit log compliance events for company ID #{{ $company->id }}.</p>
+            <p style="font-size: 13px; color: var(--text-muted); font-weight: 600;">Audit log compliance events for company ID #{{ $company->id }}.</p>
         </div>
     </div>
 
     <!-- TAB 9: DATABASE TELEMETRY -->
     <div class="workspace-tab-content" id="tab-database">
         <div class="dashboard-card">
-            <h3 class="dashboard-card-title" style="margin-bottom: 16px;"><i class="bx bx-data" style="color: var(--primary);"></i> Database Telemetry &amp; Connection Target</h3>
-            <div style="font-size: 14px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 14px; padding: 20px;">
-                Target Database: <code style="color: #0369a1; background: #e0f2fe; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-family: monospace;">{{ $company->db_name }}</code><br><br>
+            <h3 class="dashboard-card-title" style="margin-bottom: 18px;"><i class="bx bx-data" style="color: var(--primary);"></i> Database Telemetry &amp; Connection Target</h3>
+            <div style="font-size: 14px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 16px; padding: 22px;">
+                Target Database: <code style="color: #0369a1; background: #e0f2fe; padding: 4px 12px; border-radius: 8px; font-weight: 800; font-family: monospace;">{{ $company->db_name }}</code><br><br>
                 Connection Status: <span class="status-pill status-active"><span class="dot"></span> Connected ({{ $dbLatency ?? 0 }}ms)</span><br><br>
                 Database Charset: <strong>utf8mb4_general_ci</strong>
             </div>
@@ -818,7 +1026,7 @@
                 <h3 class="dashboard-card-title"><i class="bx bx-archive" style="color: var(--primary);"></i> Automated Database Backups</h3>
                 <button class="btn-custom btn-outline-custom btn-sm-custom">Run Manual Backup</button>
             </div>
-            <div style="font-size: 13.5px; color: var(--text-muted);">Last verified snapshot: <strong>Today, 10:32 AM (2.4 MB)</strong></div>
+            <div style="font-size: 13.5px; color: var(--text-muted); font-weight: 600;">Last verified snapshot: <strong>Today, 10:32 AM (2.4 MB)</strong></div>
         </div>
     </div>
 
@@ -829,7 +1037,7 @@
                 <h3 class="dashboard-card-title"><i class="bx bx-git-repo-forked" style="color: var(--primary);"></i> Schema Migrations History</h3>
                 <button class="btn-custom btn-outline-custom btn-sm-custom">Run Migrations</button>
             </div>
-            <div style="font-size: 13.5px; color: var(--text-muted);">Migration Version: <strong>v1.8.2 (Up to date - 0 pending)</strong></div>
+            <div style="font-size: 13.5px; color: var(--text-muted); font-weight: 600;">Migration Version: <strong>v1.8.2 (Up to date - 0 pending)</strong></div>
         </div>
     </div>
 
@@ -943,7 +1151,7 @@
                     <span class="plan-badge plan-free">FREE</span>
                     <strong style="font-size: 14px; color: var(--text-main);">₹0 / mo</strong>
                 </div>
-                <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Up to 5 Users • 5GB Storage</div>
+                <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px; font-weight: 600;">Up to 5 Users • 5GB Storage</div>
             </div>
 
             <div class="plan-card-option" data-plan="gold">
@@ -951,7 +1159,7 @@
                     <span class="plan-badge plan-gold">GOLD</span>
                     <strong style="font-size: 14px; color: var(--text-main);">₹4,999 / mo</strong>
                 </div>
-                <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Up to 25 Users • 25GB Storage</div>
+                <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px; font-weight: 600;">Up to 25 Users • 25GB Storage</div>
             </div>
 
             <div class="plan-card-option" data-plan="platinum">
@@ -959,7 +1167,7 @@
                     <span class="plan-badge plan-platinum">PLATINUM</span>
                     <strong style="font-size: 14px; color: var(--text-main);">₹9,999 / mo</strong>
                 </div>
-                <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Up to 100 Users • 100GB Storage</div>
+                <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px; font-weight: 600;">Up to 100 Users • 100GB Storage</div>
             </div>
 
             <div class="plan-card-option selected" data-plan="diamond">
@@ -967,7 +1175,7 @@
                     <span class="plan-badge plan-diamond">DIAMOND</span>
                     <strong style="font-size: 14px; color: var(--text-main);">₹19,999 / mo</strong>
                 </div>
-                <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Unlimited Users • Priority Support</div>
+                <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px; font-weight: 600;">Unlimited Users • Priority Support</div>
             </div>
         </div>
 
@@ -1035,6 +1243,58 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+function toggleCompanyPassword() {
+    const pwdDisplay = document.getElementById('companyPasswordDisplay');
+    const eyeIcon = document.getElementById('passwordEyeIcon');
+    if (!pwdDisplay) return;
+
+    const rawPassword = pwdDisplay.getAttribute('data-raw-password') || '';
+    const isMasked = pwdDisplay.getAttribute('data-is-masked') !== 'false';
+
+    if (isMasked) {
+        pwdDisplay.textContent = rawPassword;
+        pwdDisplay.setAttribute('data-is-masked', 'false');
+        if (eyeIcon) {
+            eyeIcon.classList.remove('bx-show');
+            eyeIcon.classList.add('bx-hide');
+        }
+    } else {
+        pwdDisplay.textContent = '•'.repeat(Math.min(rawPassword.length || 8, 10));
+        pwdDisplay.setAttribute('data-is-masked', 'true');
+        if (eyeIcon) {
+            eyeIcon.classList.remove('bx-hide');
+            eyeIcon.classList.add('bx-show');
+        }
+    }
+}
+
+function copyCompanyPassword(passwordText, btnEl) {
+    if (!passwordText) return;
+    navigator.clipboard.writeText(passwordText).then(() => {
+        if (btnEl) {
+            const originalHtml = btnEl.innerHTML;
+            btnEl.innerHTML = '<i class="bx bx-check" style="font-size: 16px; color: var(--primary);"></i>';
+            setTimeout(() => {
+                btnEl.innerHTML = originalHtml;
+            }, 1500);
+        }
+    }).catch(err => {
+        const tempInput = document.createElement('textarea');
+        tempInput.value = passwordText;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        document.execCommand('copy');
+        document.body.removeChild(tempInput);
+        if (btnEl) {
+            const originalHtml = btnEl.innerHTML;
+            btnEl.innerHTML = '<i class="bx bx-check" style="font-size: 16px; color: var(--primary);"></i>';
+            setTimeout(() => {
+                btnEl.innerHTML = originalHtml;
+            }, 1500);
+        }
+    });
+}
 </script>
 @endpush
 @endsection

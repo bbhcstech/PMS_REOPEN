@@ -12,7 +12,10 @@
                 <h5 class="mb-1">Payroll</h5>
                 <small class="text-muted">Enterprise payroll, payslips, rules, reports, and audit history.</small>
             </div>
-            <a href="{{ route('payroll.cycles.index') }}" class="btn btn-primary">Payroll Cycles</a>
+            <div class="d-flex gap-2">
+                <a href="{{ route('payroll.processing') }}" class="btn btn-primary fw-bold shadow-sm"><i class="bx bx-calculator me-1"></i>Open Payroll Processing</a>
+                <a href="{{ route('payroll.cycles.index') }}" class="btn btn-outline-secondary">Payroll Cycles</a>
+            </div>
         </div>
         <div class="card-body">
             <div class="row g-3">
