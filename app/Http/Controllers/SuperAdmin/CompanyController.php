@@ -227,6 +227,8 @@ class CompanyController extends Controller
             ['name' => 'Notifications', 'slug' => 'notifications', 'category' => 'CORE PLATFORM', 'icon' => 'bx-bell', 'description' => 'System alerts and messaging feed.'],
             ['name' => 'Organization Directory', 'slug' => 'organization', 'category' => 'CORE PLATFORM', 'icon' => 'bx-sitemap', 'description' => 'Company structure and hierarchy.'],
             ['name' => 'My Documents', 'slug' => 'my-documents', 'category' => 'CORE PLATFORM', 'icon' => 'bx-file', 'description' => 'Personal and employee document repository.'],
+            ['name' => 'Community', 'slug' => 'community', 'category' => 'CORE PLATFORM', 'icon' => 'bx-chat', 'description' => 'Company-wide group messaging and announcements channel.'],
+            ['name' => 'Events', 'slug' => 'events', 'category' => 'CORE PLATFORM', 'icon' => 'bx-calendar-event', 'description' => 'Company events, celebrations, and calendar activities.'],
 
             // HR & People
             ['name' => 'HR Management', 'slug' => 'hr', 'category' => 'HR & PEOPLE', 'icon' => 'bx-user-check', 'description' => 'Core HR workflows and admin controls.'],
@@ -325,7 +327,7 @@ class CompanyController extends Controller
             } catch (\Throwable $e) {}
         }
 
-        // Auto-sync any custom modules from tenant modules table into central database
+        // Auto-sync any custom modules from tenant modules table or new sidebar features into central database
         try {
             $tenantModules = \App\Models\Module::get();
             foreach ($tenantModules as $tm) {
@@ -341,6 +343,34 @@ class CompanyController extends Controller
                             'sort_order' => $tm->sort_order ?? 99,
                         ]
                     );
+                }
+            }
+        } catch (\Throwable $e) {}
+
+        // Dynamic Auto-Discovery: Scan sidebar layout file to ensure any newly added tenant feature appears automatically in Super Admin
+        try {
+            $manuFile = resource_path('views/admin/layout/manu.blade.php');
+            if (file_exists($manuFile)) {
+                $manuContent = file_get_contents($manuFile);
+                preg_match_all('/data-sidebar-key=["\']([^"\']+)["\']/', $manuContent, $matches);
+                if (! empty($matches[1])) {
+                    foreach (array_unique($matches[1]) as $sidebarKey) {
+                        $slug = strtolower(trim($sidebarKey));
+                        if ($slug && strlen($slug) > 1) {
+                            $name = ucwords(str_replace(['-', '_'], ' ', $slug));
+                            \App\Models\Module::on('central')->firstOrCreate(
+                                ['slug' => $slug],
+                                [
+                                    'name' => $name,
+                                    'category' => 'CORE PLATFORM',
+                                    'icon' => 'bx-cube',
+                                    'description' => "Company {$name} feature module.",
+                                    'is_active' => true,
+                                    'sort_order' => 80,
+                                ]
+                            );
+                        }
+                    }
                 }
             }
         } catch (\Throwable $e) {}
@@ -448,11 +478,38 @@ class CompanyController extends Controller
     }
 
     /**
+     * Get tenant database prefix (supports cPanel prefix and TENANT_DB_PREFIX env).
+     */
+    public function getTenantDbPrefix(): string
+    {
+        $prefix = env('TENANT_DB_PREFIX');
+        if ($prefix !== null && $prefix !== '') {
+            return $prefix;
+        }
+
+        // Auto-detect cPanel prefix from central or default database name (e.g. thesmart_lara319 -> thesmart_)
+        $dbName = (string) (config('database.connections.central.database') ?: config('database.connections.mysql.database', ''));
+        if (str_contains($dbName, '_')) {
+            $parts = explode('_', $dbName);
+            return $parts[0] . '_';
+        }
+
+        $dbUser = (string) (config('database.connections.central.username') ?: config('database.connections.mysql.username', ''));
+        if (str_contains($dbUser, '_')) {
+            $parts = explode('_', $dbUser);
+            return $parts[0] . '_';
+        }
+
+        return 'pms_';
+    }
+
+    /**
      * Show form to create a new tenant company.
      */
     public function create(): View
     {
-        return view('superadmin.companies.create');
+        $dbPrefix = $this->getTenantDbPrefix();
+        return view('superadmin.companies.create', compact('dbPrefix'));
     }
 
     /**
@@ -478,7 +535,13 @@ class CompanyController extends Controller
 
         $rawSlug = strtolower(trim($data['slug']));
         $slug = preg_replace('/[^a-z0-9_]/', '', $rawSlug);
-        $dbName = 'pms_' . $slug;
+        
+        $dbPrefix = $this->getTenantDbPrefix();
+        if ($dbPrefix && str_starts_with($slug, $dbPrefix)) {
+            $dbName = $slug;
+        } else {
+            $dbName = $dbPrefix . $slug;
+        }
 
         // Check if DB name or company code already exists in central registry
         $existing = Company::on('central')->where('db_name', $dbName)
@@ -517,14 +580,52 @@ class CompanyController extends Controller
             $adminProfileImagePath = 'uploads/admin_avatars/' . $filename;
         }
 
-        // 1. Create physical MySQL database matching utf8mb4_general_ci charset
+        // 1. Create or verify physical MySQL database matching utf8mb4_general_ci charset
+        $dbVerified = false;
         try {
             $pdo = DB::connection('central')->getPdo();
             $pdo->exec("CREATE DATABASE IF NOT EXISTS `{$dbName}` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci");
+            $dbVerified = true;
         } catch (\Throwable $e) {
-            return back()->withErrors([
-                'error' => "Failed to create database '{$dbName}': " . $e->getMessage(),
-            ])->withInput();
+            // On shared hosting (cPanel), MySQL user might not have CREATE DATABASE SQL privilege.
+            // Check if database was already created in cPanel MySQL Databases
+            try {
+                $baseConn = config('database.connections.central') ?: (config('database.connections.tenant') ?: config('database.connections.mysql'));
+                config([
+                    'database.connections.test_tenant' => array_merge($baseConn, [
+                        'database' => $dbName,
+                    ])
+                ]);
+                DB::purge('test_tenant');
+                DB::connection('test_tenant')->getPdo();
+                $dbVerified = true;
+            } catch (\Throwable $ex) {
+                try {
+                    $baseConn = config('database.connections.tenant') ?: config('database.connections.mysql');
+                    config([
+                        'database.connections.test_tenant' => array_merge($baseConn, [
+                            'database' => $dbName,
+                        ])
+                    ]);
+                    DB::purge('test_tenant');
+                    DB::connection('test_tenant')->getPdo();
+                    $dbVerified = true;
+                } catch (\Throwable $ex2) {
+                    $dbVerified = false;
+                }
+            }
+
+            if (! $dbVerified) {
+                $tenantUser = config('database.connections.tenant.username') ?: config('database.connections.mysql.username', 'thesmart_lara319');
+                return back()->withErrors([
+                    'error' => "Cannot create MySQL database '{$dbName}' automatically due to cPanel shared hosting privileges.\n\n" .
+                               "To complete provisioning:\n" .
+                               "1. Go to your cPanel -> 'MySQL Databases'.\n" .
+                               "2. Under 'Create New Database', create: '{$dbName}'\n" .
+                               "3. Under 'Add User To Database', select user '{$tenantUser}' and database '{$dbName}', check 'ALL PRIVILEGES' and save.\n" .
+                               "4. Submit this form again — PMS will automatically migrate and configure your company!",
+                ])->withInput();
+            }
         }
 
         // 2. Register Company in central database
@@ -751,7 +852,7 @@ class CompanyController extends Controller
     {
         session()->forget(['current_company_db', 'current_company_id', 'current_company_name']);
 
-        $defaultDb = env('DB_DATABASE', 'pms_last');
+        $defaultDb = config('database.connections.tenant.database') ?: config('database.connections.mysql.database');
         config([
             'database.connections.tenant.database' => $defaultDb,
             'database.connections.mysql.database'  => $defaultDb,
@@ -1123,16 +1224,6 @@ class CompanyController extends Controller
             $company = Company::on('central')->find($id) ?? \App\Models\Company::find($id);
 
             if ($company) {
-                // Block extending subscription if company is currently SUSPENDED
-                if (strtolower($company->status ?? '') === 'suspended' || (method_exists($company, 'isSuspended') && $company->isSuspended())) {
-                    if ($request->wantsJson()) {
-                        return response()->json([
-                            'success' => false,
-                            'message' => "Cannot extend subscription for '{$company->name}' because this company is SUSPENDED. Please activate the company first."
-                        ], 422);
-                    }
-                    return back()->withErrors(['error' => "Cannot extend subscription for '{$company->name}' because this company is SUSPENDED. Please activate the company first."]);
-                }
                 $sub = \App\Models\Central\Subscription::on('central')
                     ->where('company_id', $company->id)
                     ->orderBy('id', 'desc')
@@ -1167,6 +1258,16 @@ class CompanyController extends Controller
                     'status'        => 'active',
                     'trial_ends_at' => $newEndsAt,
                 ]);
+
+                try {
+                    $tenantComp = \App\Models\Company::find($company->id);
+                    if ($tenantComp) {
+                        $tenantComp->update([
+                            'status'        => 'active',
+                            'trial_ends_at' => $newEndsAt,
+                        ]);
+                    }
+                } catch (\Throwable $e) {}
 
                 // Log Audit Action
                 try {
@@ -2851,6 +2952,50 @@ class CompanyController extends Controller
         // Build master list of system & tenant alerts
         $rawAlerts = [];
         $idCounter = 1;
+
+        // 0. Real Database Alerts & Notifications from CentralNotification table
+        if (class_exists(\App\Models\Central\CentralNotification::class)) {
+            try {
+                $dbNotifications = \App\Models\Central\CentralNotification::on('central')
+                    ->where(function ($q) {
+                        $q->whereNull('target_audience')
+                          ->orWhereIn('target_audience', ['super_admin', 'both', 'all']);
+                    })
+                    ->with('company')
+                    ->latest()
+                    ->take(50)
+                    ->get();
+
+                foreach ($dbNotifications as $dNotif) {
+                    $comp = $dNotif->company;
+                    $logoUrl = null;
+                    if ($comp && !empty($comp->logo)) {
+                        if (file_exists(public_path($comp->logo))) {
+                            $logoUrl = asset($comp->logo);
+                        } elseif (file_exists(public_path('user-uploads/app-logo/' . $comp->logo))) {
+                            $logoUrl = asset('user-uploads/app-logo/' . $comp->logo);
+                        }
+                    }
+
+                    $rawAlerts[] = [
+                        'id'               => $dNotif->id,
+                        'title'            => $dNotif->title,
+                        'description'      => $dNotif->message,
+                        'category'         => $dNotif->related_module ?: 'company',
+                        'severity'         => $dNotif->severity ?: 'info',
+                        'status'           => $dNotif->is_read ? 'read' : 'unread',
+                        'action_required'  => in_array($dNotif->severity, ['warning', 'critical'], true),
+                        'company_id'       => $dNotif->company_id,
+                        'company_name'     => $comp?->name ?? 'Tenant Company',
+                        'tenant_code'      => $comp?->company_code ?? ($dNotif->company_id ? 'TEN-' . str_pad($dNotif->company_id, 3, '0', STR_PAD_LEFT) : 'SYSTEM'),
+                        'logo_url'         => $logoUrl,
+                        'action_url'       => $dNotif->action_url,
+                        'created_at'       => $dNotif->created_at ? $dNotif->created_at->diffForHumans() : 'Just now',
+                        'timestamp'        => $dNotif->created_at ? $dNotif->created_at->format('Y-m-d H:i:s') : now()->format('Y-m-d H:i:s'),
+                    ];
+                }
+            } catch (\Throwable $ex) {}
+        }
 
         // 1. Subscription Expiration Intelligence Alerts (Generated from Company Data)
         foreach ($companies as $idx => $comp) {

@@ -543,6 +543,16 @@
                 </div>
 
                 <div class="p-4 p-md-5">
+                    @if($isSettingsReadOnly)
+                        <div class="alert d-flex align-items-center mb-4 rounded-3 border-0 shadow-sm" style="background: linear-gradient(135deg, #eff6ff, #dbeafe); color: #1e40af; border-left: 4px solid #3b82f6 !important; padding: 14px 18px;">
+                            <i class="fas fa-eye me-3 fs-3 text-primary"></i>
+                            <div>
+                                <strong class="d-block text-primary fw-bold" style="font-size: 14px;">View-Only Mode</strong>
+                                <span style="font-size: 13px; color: #1e3a8a;">You are viewing localization and regional display settings in read-only mode. Only Administrators have permission to modify currency, timezone, and date/time formats.</span>
+                            </div>
+                        </div>
+                    @endif
+
                     <form method="POST" action="{{ route('admin.settings.localization.update') }}">
                         @csrf
 
@@ -557,7 +567,7 @@
                                 <label class="form-label-custom">Default Currency Code <span class="req-asterisk">*</span></label>
                                 <div class="input-group input-group-custom">
                                     <span class="input-group-text"><i class="fas fa-dollar-sign"></i></span>
-                                    <select name="currency" class="form-select" required>
+                                    <select name="currency" class="form-select" {{ $isSettingsReadOnly ? 'disabled' : 'required' }}>
                                         <option value="USD" {{ ($settings['currency'] ?? '') == 'USD' ? 'selected' : '' }}>USD ($)</option>
                                         <option value="EUR" {{ ($settings['currency'] ?? '') == 'EUR' ? 'selected' : '' }}>EUR (€)</option>
                                         <option value="GBP" {{ ($settings['currency'] ?? '') == 'GBP' ? 'selected' : '' }}>GBP (£)</option>
@@ -586,7 +596,7 @@
                                 <label class="form-label-custom">Symbol Position <span class="req-asterisk">*</span></label>
                                 <div class="input-group input-group-custom">
                                     <span class="input-group-text"><i class="fas fa-align-left"></i></span>
-                                    <select name="currency_position" class="form-select" required>
+                                    <select name="currency_position" class="form-select" {{ $isSettingsReadOnly ? 'disabled' : 'required' }}>
                                         <option value="left" {{ ($settings['currency_position'] ?? '') == 'left' ? 'selected' : '' }}>Left ({{ $currSym }}100)</option>
                                         <option value="right" {{ ($settings['currency_position'] ?? '') == 'right' ? 'selected' : '' }}>Right (100{{ $currSym }})</option>
                                     </select>
@@ -605,7 +615,7 @@
                                 <label class="form-label-custom">System Timezone <span class="req-asterisk">*</span></label>
                                 <div class="input-group input-group-custom">
                                     <span class="input-group-text"><i class="fas fa-globe-americas"></i></span>
-                                    <select name="timezone" class="form-select" required>
+                                    <select name="timezone" class="form-select" {{ $isSettingsReadOnly ? 'disabled' : 'required' }}>
                                         <option value="UTC" {{ ($settings['timezone'] ?? '') == 'UTC' ? 'selected' : '' }}>UTC (Coordinated Universal Time)</option>
                                         <option value="Asia/Dhaka" {{ ($settings['timezone'] ?? '') == 'Asia/Dhaka' ? 'selected' : '' }}>Asia/Dhaka (GMT+6)</option>
                                         <option value="Asia/Kolkata" {{ ($settings['timezone'] ?? '') == 'Asia/Kolkata' ? 'selected' : '' }}>Asia/Kolkata (GMT+5:30)</option>
@@ -620,7 +630,7 @@
                                 <label class="form-label-custom">Default System Language <span class="req-asterisk">*</span></label>
                                 <div class="input-group input-group-custom">
                                     <span class="input-group-text"><i class="fas fa-language"></i></span>
-                                    <select name="language" class="form-select" required>
+                                    <select name="language" class="form-select" {{ $isSettingsReadOnly ? 'disabled' : 'required' }}>
                                         <option value="en" {{ ($settings['language'] ?? '') == 'en' ? 'selected' : '' }}>English</option>
                                         <option value="bn" {{ ($settings['language'] ?? '') == 'bn' ? 'selected' : '' }}>Bengali</option>
                                         <option value="es" {{ ($settings['language'] ?? '') == 'es' ? 'selected' : '' }}>Spanish</option>
@@ -641,7 +651,7 @@
                                 <label class="form-label-custom">Date Display Format <span class="req-asterisk">*</span></label>
                                 <div class="input-group input-group-custom">
                                     <span class="input-group-text"><i class="fas fa-calendar-day"></i></span>
-                                    <select name="date_format" class="form-select" required>
+                                    <select name="date_format" class="form-select" {{ $isSettingsReadOnly ? 'disabled' : 'required' }}>
                                         <option value="Y-m-d" {{ ($settings['date_format'] ?? '') == 'Y-m-d' ? 'selected' : '' }}>YYYY-MM-DD (2026-08-12)</option>
                                         <option value="d-m-Y" {{ ($settings['date_format'] ?? '') == 'd-m-Y' ? 'selected' : '' }}>DD-MM-YYYY (12-08-2026)</option>
                                         <option value="m/d/Y" {{ ($settings['date_format'] ?? '') == 'm/d/Y' ? 'selected' : '' }}>MM/DD/YYYY (08/12/2026)</option>
@@ -655,7 +665,7 @@
                                 <label class="form-label-custom">Time Display Format <span class="req-asterisk">*</span></label>
                                 <div class="input-group input-group-custom">
                                     <span class="input-group-text"><i class="fas fa-clock"></i></span>
-                                    <select name="time_format" class="form-select" required>
+                                    <select name="time_format" class="form-select" {{ $isSettingsReadOnly ? 'disabled' : 'required' }}>
                                         <option value="h:i A" {{ ($settings['time_format'] ?? '') == 'h:i A' ? 'selected' : '' }}>12-Hour Format (02:30 PM)</option>
                                         <option value="H:i" {{ ($settings['time_format'] ?? '') == 'H:i' ? 'selected' : '' }}>24-Hour Format (14:30)</option>
                                     </select>
@@ -665,10 +675,15 @@
 
                         <!-- Form Action Buttons -->
                         <div class="mt-5 pt-4 border-top d-flex justify-content-end">
-                            <button type="submit" class="btn-save-address">
-                                <i class="fas fa-save me-1.5"></i> Save Localization Settings
-                            </button>
-                        </div>
+                            @if($isSettingsReadOnly)
+                                <span class="badge rounded-pill px-3.5 py-2 fw-bold" style="background: #f1f5f9; color: #64748b; font-size: 13px; border: 1px solid #cbd5e1;">
+                                    <i class="fas fa-lock me-1.5 text-muted"></i> Read-Only (Admin Managed)
+                                </span>
+                            @else
+                                <button type="submit" class="btn-save-address">
+                                    <i class="fas fa-save me-1.5"></i> Save Localization Settings
+                                </button>
+                            @endif
                     </form>
                 </div>
             </div>

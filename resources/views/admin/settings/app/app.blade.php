@@ -158,13 +158,25 @@
                     <p class="mb-0">Manage all application settings dynamically</p>
                 </div>
                 <div class="col-md-6 text-end">
-                    <button type="button" class="btn btn-light me-2" data-bs-toggle="modal" data-bs-target="#addFieldModal">
-                        <i class="bi bi-plus-circle me-1"></i> Add New Field
-                    </button>
+                    @if(!$isSettingsReadOnly)
+                        <button type="button" class="btn btn-light me-2" data-bs-toggle="modal" data-bs-target="#addFieldModal">
+                            <i class="bi bi-plus-circle me-1"></i> Add New Field
+                        </button>
+                    @endif
                     <a href="{{ url()->current() }}" class="btn btn-outline-light">Refresh</a>
                 </div>
             </div>
         </div>
+
+        @if($isSettingsReadOnly)
+            <div class="alert d-flex align-items-center mb-4 rounded-3 border-0 shadow-sm" style="background: linear-gradient(135deg, #eff6ff, #dbeafe); color: #1e40af; border-left: 4px solid #3b82f6 !important; padding: 14px 18px;">
+                <i class="bi bi-eye me-3 fs-3 text-primary"></i>
+                <div>
+                    <strong class="d-block text-primary fw-bold" style="font-size: 14px;">View-Only Mode</strong>
+                    <span style="font-size: 13px; color: #1e3a8a;">You are viewing application configurations in read-only mode. Only Administrators have permission to modify app settings.</span>
+                </div>
+            </div>
+        @endif
 
         <!-- Navigation Tabs (as per your image) -->
         <div class="nav-tabs-custom">
@@ -233,7 +245,7 @@
                                             <input type="hidden" name="settings[{{ $setting->id }}]" value="">
 
                                             @if($setting->type === 'select')
-                                                <select name="settings[{{ $setting->id }}]" class="form-select">
+                                                <select name="settings[{{ $setting->id }}]" class="form-select" {{ $isSettingsReadOnly ? 'disabled' : '' }}>
                                                     <option value="">-- Select --</option>
                                                     @if($setting->options && is_array($setting->options))
                                                         @foreach($setting->options as $option)
@@ -251,7 +263,8 @@
                                                     <input class="form-check-input" type="checkbox"
                                                            name="settings[{{ $setting->id }}]"
                                                            value="1" id="setting_{{ $setting->id }}"
-                                                           {{ $setting->value == 1 ? 'checked' : '' }}>
+                                                           {{ $setting->value == 1 ? 'checked' : '' }}
+                                                           {{ $isSettingsReadOnly ? 'disabled' : '' }}>
                                                     <label class="form-check-label" for="setting_{{ $setting->id }}">
                                                         {{ $setting->value == 1 ? 'Enabled' : 'Disabled' }}
                                                     </label>
@@ -261,7 +274,8 @@
                                                 <textarea name="settings[{{ $setting->id }}]"
                                                           class="form-control"
                                                           rows="3"
-                                                          placeholder="{{ $setting->placeholder }}">{{ $setting->value }}</textarea>
+                                                          placeholder="{{ $setting->placeholder }}"
+                                                          {{ $isSettingsReadOnly ? 'readonly' : '' }}>{{ $setting->value }}</textarea>
 
                                             @else
                                                 <input type="{{ $setting->type }}"
@@ -270,7 +284,8 @@
                                                        value="{{ $setting->value }}"
                                                        placeholder="{{ $setting->placeholder }}"
                                                        @if($setting->min_value) min="{{ $setting->min_value }}" @endif
-                                                       @if($setting->max_value) max="{{ $setting->max_value }}" @endif>
+                                                       @if($setting->max_value) max="{{ $setting->max_value }}" @endif
+                                                       {{ $isSettingsReadOnly ? 'readonly' : '' }}>
                                             @endif
 
                                             @if($setting->placeholder && $setting->type !== 'textarea')
@@ -290,9 +305,15 @@
 
                 <!-- Save Button -->
                 <div class="text-end mt-4">
-                    <button type="submit" class="btn btn-success">
-                        <i class="bi bi-save me-1"></i> Save All Changes
-                    </button>
+                    @if($isSettingsReadOnly)
+                        <span class="badge rounded-pill px-3.5 py-2 fw-bold" style="background: #f1f5f9; color: #64748b; font-size: 13px; border: 1px solid #cbd5e1;">
+                            <i class="bi bi-lock me-1.5 text-muted"></i> Read-Only (Admin Managed)
+                        </span>
+                    @else
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-save me-1"></i> Save All Changes
+                        </button>
+                    @endif
                 </div>
             @else
                 <div class="empty-section">

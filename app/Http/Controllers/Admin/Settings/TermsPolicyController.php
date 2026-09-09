@@ -24,6 +24,10 @@ class TermsPolicyController extends Controller
 
     public function update(Request $request): RedirectResponse
     {
+        if (auth()->user()?->role !== 'admin') {
+            abort(403, 'Unauthorized. Only administrators can update terms and policy.');
+        }
+
         $validated = $request->validate([
             'legal_terms_title' => ['required', 'string', 'max:255'],
             'legal_terms_content' => ['required', 'string', 'min:20'],
@@ -33,6 +37,19 @@ class TermsPolicyController extends Controller
         $this->saveSetting('legal_terms_title', 'Terms Page Title', $validated['legal_terms_title'], 'text', 10);
         $this->saveSetting('legal_terms_content', 'Terms & Conditions Content', $validated['legal_terms_content'], 'textarea', 20);
         $this->saveSetting('legal_terms_effective_date', 'Effective Date', $validated['legal_terms_effective_date'] ?? null, 'date', 30);
+
+        // Broadcast notification to Admin, HR, Manager, and Employees
+        \App\Services\SystemNotificationService::notifyAllRoles(
+            'Terms & Policy Updated',
+            'Company terms and conditions policy has been updated by ' . (auth()->user()?->name ?? 'Admin') . '.',
+            route('admin.settings.terms-policy'),
+            [
+                'type' => 'setting_update',
+                'setting_module' => 'terms-policy',
+                'icon' => 'fa-file-contract',
+                'color' => 'primary',
+            ]
+        );
 
         return back()->with('success', 'Terms & Conditions updated successfully.');
     }

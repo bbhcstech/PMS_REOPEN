@@ -62,10 +62,46 @@ class PayrollModuleSeeder extends Seeder
             );
         }
 
-        $allPayrollSlugs = Module::where('slug', 'payroll')
-            ->orWhere('parent_id', $parent->id)
-            ->pluck('slug')
-            ->all();
+        $allPayrollSlugs = array_merge(['payroll'], array_column($modules, 1));
+
+        // Sync payroll modules to tenant database modules table as well
+        $tenantParent = \Illuminate\Support\Facades\DB::connection('tenant')->table('modules')->where('slug', 'payroll')->first();
+        $tenantParentId = $tenantParent?->id;
+        if (! $tenantParentId) {
+            $tenantParentId = \Illuminate\Support\Facades\DB::connection('tenant')->table('modules')->insertGetId([
+                'name' => 'Payroll',
+                'slug' => 'payroll',
+                'icon' => 'bx bx-wallet',
+                'description' => 'Enterprise payroll processing, payslips, rules, reports, and audit history.',
+                'route_name' => 'payroll.index',
+                'route_prefix' => 'payroll',
+                'is_core' => 1,
+                'is_active' => 1,
+                'sort_order' => 190,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        foreach ($modules as [$name, $slug, $routeName, $sortOrder]) {
+            $existingTenantMod = \Illuminate\Support\Facades\DB::connection('tenant')->table('modules')->where('slug', $slug)->first();
+            if (! $existingTenantMod) {
+                \Illuminate\Support\Facades\DB::connection('tenant')->table('modules')->insert([
+                    'name' => $name,
+                    'slug' => $slug,
+                    'icon' => 'bx bx-chevron-right',
+                    'description' => $name . ' payroll module',
+                    'route_name' => $routeName,
+                    'route_prefix' => 'payroll',
+                    'parent_id' => $tenantParentId,
+                    'is_core' => 0,
+                    'is_active' => 1,
+                    'sort_order' => $sortOrder,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+        }
 
         $roleRules = [
             'admin' => [
@@ -86,8 +122,12 @@ class PayrollModuleSeeder extends Seeder
             ],
         ];
 
+        $tenantPayrollModules = \Illuminate\Support\Facades\DB::connection('tenant')->table('modules')
+            ->whereIn('slug', $allPayrollSlugs)
+            ->get();
+
         foreach (['admin', 'manager', 'hr', 'employee'] as $role) {
-            foreach (Module::whereIn('slug', $allPayrollSlugs)->get() as $module) {
+            foreach ($tenantPayrollModules as $module) {
                 $enabled = in_array($module->slug, $roleRules[$role]['slugs'], true);
                 $flags = $enabled ? $roleRules[$role]['flags'] : [];
 

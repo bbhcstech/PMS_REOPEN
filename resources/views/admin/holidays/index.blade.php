@@ -675,70 +675,9 @@
         border-color: rgba(16, 185, 129, 0.08);
     }
 
+    /* Hide visible DataTables export toolbar because Export dropdown is in header */
     .holiday-list-page .dataTables_wrapper .dt-buttons {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        flex-wrap: wrap;
-        margin: 0 0 16px;
-        padding: 8px;
-        border: 1px solid rgba(16, 185, 129, 0.14);
-        border-radius: 16px;
-        background: #f7fcf9;
-    }
-
-    .holiday-list-page .dataTables_wrapper .dt-buttons .dt-button {
-        min-height: 42px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 !important;
-        padding: 9px 16px !important;
-        border: 1px solid rgba(16, 185, 129, 0.18) !important;
-        border-radius: 12px !important;
-        background: #fff !important;
-        color: #0f744c !important;
-        box-shadow: 0 4px 12px -10px rgba(5, 150, 105, 0.7);
-        font-size: 0.95rem !important;
-        font-weight: 750 !important;
-        line-height: 1.2 !important;
-        transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .holiday-list-page .dataTables_wrapper .dt-buttons .dt-button span {
-        display: inline-flex;
-        align-items: center;
-    }
-
-    .holiday-list-page .dataTables_wrapper .dt-buttons .dt-button i {
-        width: 20px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1rem;
-        margin-right: 8px;
-    }
-
-    .holiday-list-page .dataTables_wrapper .dt-buttons .dt-button:hover,
-    .holiday-list-page .dataTables_wrapper .dt-buttons .dt-button:focus {
-        border-color: #10b981 !important;
-        background: linear-gradient(145deg, #34d399, #059669) !important;
-        color: #fff !important;
-        box-shadow: 0 9px 20px -12px rgba(5, 150, 105, 0.8);
-        transform: translateY(-1px);
-    }
-
-    .holiday-list-page .dataTables_wrapper .buttons-excel { background: #ecfdf5 !important; }
-    .holiday-list-page .dataTables_wrapper .buttons-csv { background: #f0fdf4 !important; }
-    .holiday-list-page .dataTables_wrapper .buttons-pdf {
-        color: #b91c1c !important;
-        background: #fff7f7 !important;
-        border-color: rgba(239, 68, 68, 0.18) !important;
-    }
-    .holiday-list-page .dataTables_wrapper .buttons-print {
-        color: #315f75 !important;
-        background: #f4fbff !important;
-        border-color: rgba(49, 95, 117, 0.18) !important;
+        display: none !important;
     }
 
     .btn-success {
@@ -1622,14 +1561,6 @@
             width: 100%;
         }
 
-        .holiday-list-page .dataTables_wrapper .dt-buttons {
-            width: 100%;
-        }
-
-        .holiday-list-page .dataTables_wrapper .dt-buttons .dt-button {
-            flex: 1 1 120px;
-        }
-
         .holiday-table tbody td {
             padding: 10px 12px;
             font-size: 0.8rem;
@@ -1895,17 +1826,6 @@
 
     html[data-pms-theme="dark"] .holiday-list-page .export-item:hover small {
         color: #34d399;
-    }
-
-    html[data-pms-theme="dark"] .holiday-list-page .dataTables_wrapper .dt-buttons {
-        border-color: rgba(122, 240, 181, 0.16);
-        background: #142a20;
-    }
-
-    html[data-pms-theme="dark"] .holiday-list-page .dataTables_wrapper .dt-buttons .dt-button {
-        border-color: rgba(122, 240, 181, 0.18) !important;
-        background: #183026 !important;
-        color: #d9f1e4 !important;
     }
 
     html[data-pms-theme="dark"] .stat-card {
