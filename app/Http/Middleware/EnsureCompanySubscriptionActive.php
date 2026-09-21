@@ -45,43 +45,44 @@ class EnsureCompanySubscriptionActive
                 // Execute real-time dynamic expiration check
                 $subService->checkRealtimeExpiration($company);
 
-            // Refresh central company model to get fresh status
-            $centralComp = Company::on('central')->find($company->id) ?? $company;
+                // Refresh central company model to get fresh status
+                $centralComp = Company::on('central')->find($company->id) ?? $company;
 
-            $isSuspended = strtolower((string)($centralComp->status ?? '')) === 'suspended'
-                || $subService->isSuspended($centralComp)
-                || $subService->isExpired($centralComp);
+                $isSuspended = strtolower((string)($centralComp->status ?? '')) === 'suspended'
+                    || $subService->isSuspended($centralComp)
+                    || $subService->isExpired($centralComp);
 
-            if ($isSuspended) {
-                $routeName = (string) $request->route()?->getName();
+                if ($isSuspended) {
+                    $routeName = (string) $request->route()?->getName();
 
-                // If company subscription is finished/suspended, strictly allow ONLY:
-                // 1. Notification section routes
-                // 2. Subscription suspended & renewal/assignment routes
-                // 3. Auth logout/login routes
-                $isAllowedWhenSuspended = (
-                    $routeName === 'subscription.suspended' ||
-                    $routeName === 'logout' ||
-                    $routeName === 'login' ||
-                    str_starts_with($routeName, 'notifications.') ||
-                    str_starts_with($routeName, 'admin.company-notifications.') ||
-                    str_starts_with($routeName, 'super-admin.subscriptions.') ||
-                    str_starts_with($routeName, 'superadmin.subscriptions.') ||
-                    str_starts_with($routeName, 'subscriptions.')
-                );
+                    // If company subscription is finished/suspended, strictly allow ONLY:
+                    // 1. Notification section routes
+                    // 2. Subscription suspended & renewal/assignment routes
+                    // 3. Auth logout/login routes
+                    $isAllowedWhenSuspended = (
+                        $routeName === 'subscription.suspended' ||
+                        $routeName === 'logout' ||
+                        $routeName === 'login' ||
+                        str_starts_with($routeName, 'notifications.') ||
+                        str_starts_with($routeName, 'admin.company-notifications.') ||
+                        str_starts_with($routeName, 'super-admin.subscriptions.') ||
+                        str_starts_with($routeName, 'superadmin.subscriptions.') ||
+                        str_starts_with($routeName, 'subscriptions.')
+                    );
 
-                if (!$isAllowedWhenSuspended) {
-                    if ($request->expectsJson() || $request->is('api/*')) {
-                        return response()->json([
-                            'error'               => 'Your subscription has expired and your organization access is restricted until Super Admin extends your subscription.',
-                            'subscription_status' => 'suspended',
-                            'company'             => $centralComp->name ?? 'Organization',
-                        ], 402);
+                    if (!$isAllowedWhenSuspended) {
+                        if ($request->expectsJson() || $request->is('api/*')) {
+                            return response()->json([
+                                'error'               => 'Your subscription has expired and your organization access is restricted until Super Admin extends your subscription.',
+                                'subscription_status' => 'suspended',
+                                'company'             => $centralComp->name ?? 'Organization',
+                            ], 402);
+                        }
+
+                        return redirect()->route('subscription.suspended');
                     }
-
-                    return redirect()->route('subscription.suspended');
                 }
-            }
+            } catch (\Throwable $e) {}
         }
 
         return $next($request);
