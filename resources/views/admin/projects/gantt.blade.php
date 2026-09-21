@@ -712,6 +712,194 @@
         margin: 0 !important;
         overflow: auto !important;
     }
+
+    /* ===== GANTT TEMPLATE DARK MODE STYLES ===== */
+    html[data-pms-theme="dark"] .gantt-template-page,
+    html[data-bs-theme="dark"] .gantt-template-page,
+    html[data-theme="dark"] .gantt-template-page {
+        background: transparent !important;
+    }
+
+    html[data-pms-theme="dark"] .gantt-template-card,
+    html[data-bs-theme="dark"] .gantt-template-card,
+    html[data-theme="dark"] .gantt-template-card {
+        background: #0F1530 !important;
+        border: 1px solid rgba(238, 241, 251, 0.09) !important;
+        box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.35) !important;
+    }
+
+    html[data-pms-theme="dark"] .template-title,
+    html[data-bs-theme="dark"] .template-title,
+    html[data-theme="dark"] .template-title {
+        color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .brand-badge,
+    html[data-bs-theme="dark"] .brand-badge,
+    html[data-theme="dark"] .brand-badge {
+        background: #141B3D !important;
+        color: #60A5FA !important;
+        border: 1px solid rgba(238, 241, 251, 0.14) !important;
+    }
+
+    html[data-pms-theme="dark"] .btn-primary-custom,
+    html[data-bs-theme="dark"] .btn-primary-custom,
+    html[data-theme="dark"] .btn-primary-custom {
+        background: #2F6BFF !important;
+        border: 1px solid #2F6BFF !important;
+        color: #FFFFFF !important;
+        box-shadow: 0 4px 12px rgba(47, 107, 255, 0.25) !important;
+    }
+
+    html[data-pms-theme="dark"] .btn-primary-custom:hover,
+    html[data-bs-theme="dark"] .btn-primary-custom:hover,
+    html[data-theme="dark"] .btn-primary-custom:hover {
+        background: #1E4FCC !important;
+        border-color: #1E4FCC !important;
+        color: #FFFFFF !important;
+    }
+
+    html[data-pms-theme="dark"] .btn-outline-custom,
+    html[data-bs-theme="dark"] .btn-outline-custom,
+    html[data-theme="dark"] .btn-outline-custom {
+        background: #141B3D !important;
+        border: 1px solid rgba(238, 241, 251, 0.16) !important;
+        color: #CBD5E1 !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+    }
+
+    html[data-pms-theme="dark"] .btn-outline-custom:hover,
+    html[data-bs-theme="dark"] .btn-outline-custom:hover,
+    html[data-theme="dark"] .btn-outline-custom:hover {
+        background: #1A2247 !important;
+        border-color: #2F6BFF !important;
+        color: #FFFFFF !important;
+    }
+
+    html[data-pms-theme="dark"] .header-actions .btn i,
+    html[data-bs-theme="dark"] .header-actions .btn i,
+    html[data-theme="dark"] .header-actions .btn i {
+        color: inherit !important;
+    }
+
+    html[data-pms-theme="dark"] .gantt-matrix-wrapper,
+    html[data-bs-theme="dark"] .gantt-matrix-wrapper,
+    html[data-theme="dark"] .gantt-matrix-wrapper {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+    }
+
+    html[data-pms-theme="dark"] .th-level,
+    html[data-pms-theme="dark"] .th-task,
+    html[data-pms-theme="dark"] .th-start,
+    html[data-pms-theme="dark"] .th-end,
+    html[data-pms-theme="dark"] .th-visual,
+    html[data-bs-theme="dark"] .th-level,
+    html[data-bs-theme="dark"] .th-task,
+    html[data-bs-theme="dark"] .th-start,
+    html[data-bs-theme="dark"] .th-end,
+    html[data-bs-theme="dark"] .th-visual {
+        background: #141B3D !important;
+        color: #EEF1FB !important;
+        border-right-color: rgba(238, 241, 251, 0.1) !important;
+        border-bottom-color: rgba(238, 241, 251, 0.1) !important;
+    }
+
+    html[data-pms-theme="dark"] .month-soft, html[data-bs-theme="dark"] .month-soft {
+        background: #1E3A8A !important;
+        color: #93C5FD !important;
+        border-bottom-color: rgba(238, 241, 251, 0.1) !important;
+    }
+
+    html[data-pms-theme="dark"] .month-medium, html[data-bs-theme="dark"] .month-medium {
+        background: #1D4ED8 !important;
+        color: #DBEAFE !important;
+        border-bottom-color: rgba(238, 241, 251, 0.1) !important;
+    }
+
+    html[data-pms-theme="dark"] .month-dark, html[data-bs-theme="dark"] .month-dark {
+        background: #2563EB !important;
+        color: #FFFFFF !important;
+        border-bottom-color: rgba(238, 241, 251, 0.1) !important;
+    }
+
+    html[data-pms-theme="dark"] .header-row-days th,
+    html[data-bs-theme="dark"] .header-row-days th {
+        background: #17204D !important;
+        color: #CBD5E1 !important;
+        border-bottom: 2px solid rgba(238, 241, 251, 0.12) !important;
+        border-right: 1px solid rgba(238, 241, 251, 0.08) !important;
+    }
+
+    html[data-pms-theme="dark"] .matrix-row,
+    html[data-bs-theme="dark"] .matrix-row {
+        border-bottom: 1px solid rgba(238, 241, 251, 0.06) !important;
+    }
+
+    html[data-pms-theme="dark"] .matrix-row:hover,
+    html[data-bs-theme="dark"] .matrix-row:hover {
+        background: rgba(47, 107, 255, 0.08) !important;
+    }
+
+    html[data-pms-theme="dark"] .td-level,
+    html[data-bs-theme="dark"] .td-level {
+        color: #9AA3C7 !important;
+        border-right: 1px solid rgba(238, 241, 251, 0.06) !important;
+    }
+
+    html[data-pms-theme="dark"] .td-task,
+    html[data-bs-theme="dark"] .td-task {
+        color: #CBD5E1 !important;
+        border-right: 1px solid rgba(238, 241, 251, 0.06) !important;
+    }
+
+    html[data-pms-theme="dark"] .matrix-row.level-1 .td-task,
+    html[data-bs-theme="dark"] .matrix-row.level-1 .td-task {
+        color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .td-start,
+    html[data-pms-theme="dark"] .td-end,
+    html[data-bs-theme="dark"] .td-start,
+    html[data-bs-theme="dark"] .td-end {
+        color: #9AA3C7 !important;
+        border-right: 1px solid rgba(238, 241, 251, 0.06) !important;
+    }
+
+    html[data-pms-theme="dark"] .td-visual,
+    html[data-bs-theme="dark"] .td-visual {
+        border-right: 2px solid rgba(238, 241, 251, 0.12) !important;
+    }
+
+    html[data-pms-theme="dark"] .td-timeline,
+    html[data-bs-theme="dark"] .td-timeline {
+        background: #0F1530 !important;
+    }
+
+    html[data-pms-theme="dark"] .grid-col-line,
+    html[data-bs-theme="dark"] .grid-col-line {
+        border-right: 1px solid rgba(238, 241, 251, 0.05) !important;
+    }
+
+    html[data-pms-theme="dark"] .icon-group,
+    html[data-bs-theme="dark"] .icon-group {
+        border-color: #60A5FA !important;
+    }
+
+    html[data-pms-theme="dark"] .icon-task,
+    html[data-bs-theme="dark"] .icon-task {
+        background: #60A5FA !important;
+    }
+
+    html[data-pms-theme="dark"] .icon-milestone,
+    html[data-bs-theme="dark"] .icon-milestone {
+        background: #F59E0B !important;
+    }
+
+    html[data-pms-theme="dark"] .gantt-template-card.is-fullscreen,
+    html[data-bs-theme="dark"] .gantt-template-card.is-fullscreen {
+        background: #070B1A !important;
+    }
 </style>
 
 @push('scripts')

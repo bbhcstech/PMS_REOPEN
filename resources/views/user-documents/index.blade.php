@@ -111,6 +111,209 @@
         color: #ffffff !important;
         box-shadow: 0 8px 22px -4px rgba(5, 150, 105, 0.45) !important;
     }
+
+    /* Helper classes for theme consistency */
+    .doc-panel-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+    }
+    .doc-file-preview {
+        background-color: #f8fafc;
+    }
+    .doc-title {
+        color: #0f172a;
+    }
+    .doc-filename {
+        color: #0f172a;
+    }
+    .doc-table-head {
+        background: linear-gradient(90deg, #ecfdf5, #f0fdf4);
+        color: #0a2e1f;
+    }
+
+    /* --------------------------------------------------------------------------
+       DARK MODE ENGINE FOR MY OFFICIAL DOCUMENTS
+       -------------------------------------------------------------------------- */
+    html[data-pms-theme="dark"] .user-docs-page {
+        background: #070B1A !important;
+        color: #CBD5E1 !important;
+    }
+
+    /* 1. Header / Hero Card */
+    html[data-pms-theme="dark"] .header-card-elevated {
+        background: #0F1530 !important;
+        border: 1px solid rgba(238, 241, 251, 0.09) !important;
+        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5) !important;
+    }
+    html[data-pms-theme="dark"] .header-card-elevated h1,
+    html[data-pms-theme="dark"] .header-card-elevated .text-dark {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .header-card-elevated .text-muted,
+    html[data-pms-theme="dark"] .header-card-elevated p {
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] .header-card-elevated strong {
+        color: #6EE7B7 !important;
+    }
+    html[data-pms-theme="dark"] .badge.bg-success-subtle {
+        background: rgba(16, 185, 129, 0.18) !important;
+        color: #6EE7B7 !important;
+        border: 1px solid rgba(16, 185, 129, 0.35) !important;
+    }
+
+    /* 2. Main Content & Panel Cards */
+    html[data-pms-theme="dark"] .doc-panel-card,
+    html[data-pms-theme="dark"] .user-docs-shell .card {
+        background: #0F1530 !important;
+        border: 1px solid rgba(238, 241, 251, 0.09) !important;
+        box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.4) !important;
+        color: #CBD5E1 !important;
+    }
+    html[data-pms-theme="dark"] .user-docs-shell h5.text-dark {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .user-docs-shell label.text-dark {
+        color: #EEF1FB !important;
+    }
+
+    /* 3. Form Inputs */
+    html[data-pms-theme="dark"] .user-docs-shell .form-control,
+    html[data-pms-theme="dark"] .user-docs-shell .form-select {
+        background-color: #141B3D !important;
+        border: 1px solid rgba(238, 241, 251, 0.16) !important;
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .user-docs-shell .form-control::placeholder {
+        color: #6B739A !important;
+    }
+    html[data-pms-theme="dark"] .user-docs-shell .input-group-text {
+        background-color: #1A2247 !important;
+        border: 1px solid rgba(238, 241, 251, 0.16) !important;
+        color: #9AA3C7 !important;
+    }
+
+    /* 4. Navigation Pills & Tabs */
+    html[data-pms-theme="dark"] .doc-nav-pills {
+        background: #0F1530 !important;
+        border: 1px solid rgba(238, 241, 251, 0.09) !important;
+        box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.45) !important;
+    }
+    html[data-pms-theme="dark"] .doc-tab-btn {
+        color: #CBD5E1 !important;
+        -webkit-text-fill-color: #CBD5E1 !important;
+        background: transparent !important;
+    }
+    html[data-pms-theme="dark"] .doc-tab-btn:hover:not(.active) {
+        background: #141B3D !important;
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .doc-tab-btn.active {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        box-shadow: 0 8px 22px -4px rgba(5, 150, 105, 0.45) !important;
+    }
+
+    /* 5. Document Slot Cards */
+    html[data-pms-theme="dark"] .doc-slot-card {
+        background: #0F1530 !important;
+        border: 1px solid rgba(238, 241, 251, 0.09) !important;
+        box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.4) !important;
+    }
+    html[data-pms-theme="dark"] .doc-slot-card:hover {
+        border-color: rgba(16, 185, 129, 0.45) !important;
+        box-shadow: 0 14px 35px -5px rgba(0, 0, 0, 0.6) !important;
+    }
+    html[data-pms-theme="dark"] .doc-slot-card .doc-title,
+    html[data-pms-theme="dark"] .doc-slot-card .text-dark {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .doc-slot-card .doc-file-preview,
+    html[data-pms-theme="dark"] .doc-slot-card .bg-light {
+        background: #141B3D !important;
+        border: 1px solid rgba(238, 241, 251, 0.1) !important;
+    }
+    html[data-pms-theme="dark"] .doc-slot-card .doc-filename {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .doc-slot-card .text-muted {
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] .btn-show-doc-info {
+        background: #141B3D !important;
+        border: 1px solid rgba(6, 182, 212, 0.4) !important;
+        color: #67E8F9 !important;
+    }
+    html[data-pms-theme="dark"] .btn-show-doc-info:hover {
+        background: rgba(6, 182, 212, 0.2) !important;
+        color: #FFFFFF !important;
+    }
+    html[data-pms-theme="dark"] .doc-slot-card .btn-outline-success {
+        background: rgba(16, 185, 129, 0.16) !important;
+        border: 1px solid rgba(16, 185, 129, 0.4) !important;
+        color: #6EE7B7 !important;
+    }
+    html[data-pms-theme="dark"] .doc-slot-card .btn-outline-success:hover {
+        background: #10B981 !important;
+        color: #FFFFFF !important;
+    }
+    html[data-pms-theme="dark"] .doc-slot-card .btn-outline-danger {
+        background: rgba(239, 68, 68, 0.16) !important;
+        border: 1px solid rgba(239, 68, 68, 0.4) !important;
+        color: #FCA5A5 !important;
+    }
+    html[data-pms-theme="dark"] .doc-slot-card .btn-outline-danger:hover {
+        background: #EF4444 !important;
+        color: #FFFFFF !important;
+    }
+
+    /* 6. Repository Table */
+    html[data-pms-theme="dark"] .doc-table-head,
+    html[data-pms-theme="dark"] .user-docs-shell thead,
+    html[data-pms-theme="dark"] .user-docs-shell thead th {
+        background: #141B3D !important;
+        color: #EEF1FB !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .user-docs-shell .table {
+        color: #CBD5E1 !important;
+    }
+    html[data-pms-theme="dark"] .user-docs-shell .table tbody tr td {
+        background: transparent !important;
+        border-bottom: 1px solid rgba(238, 241, 251, 0.06) !important;
+        color: #CBD5E1 !important;
+    }
+    html[data-pms-theme="dark"] .user-docs-shell .table tbody tr:hover td {
+        background: rgba(47, 107, 255, 0.06) !important;
+    }
+    html[data-pms-theme="dark"] .user-docs-shell .table .text-dark {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .user-docs-shell .table-responsive {
+        border-color: rgba(238, 241, 251, 0.09) !important;
+    }
+
+    /* 7. Modal Access History */
+    html[data-pms-theme="dark"] #globalDocInfoModal .modal-content {
+        background: #0F1530 !important;
+        border: 1px solid rgba(238, 241, 251, 0.12) !important;
+        color: #CBD5E1 !important;
+    }
+    html[data-pms-theme="dark"] #globalDocInfoModal .bg-light {
+        background: #141B3D !important;
+        border: 1px solid rgba(238, 241, 251, 0.1) !important;
+        color: #CBD5E1 !important;
+    }
+    html[data-pms-theme="dark"] #globalDocInfoModal .list-group-item {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.08) !important;
+        color: #CBD5E1 !important;
+    }
+    html[data-pms-theme="dark"] #globalDocInfoModal .list-group-item .text-dark {
+        color: #EEF1FB !important;
+    }
 </style>
 @endpush
 
@@ -155,7 +358,7 @@
         @endif
 
         <!-- Upload Any Document Card -->
-        <div class="card rounded-4 border-0 shadow-sm mb-4 p-4" style="background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px);">
+        <div class="card doc-panel-card rounded-4 border-0 shadow-sm mb-4 p-4">
             <h5 class="fw-bold text-dark mb-3"><i class="fas fa-cloud-upload-alt text-emerald-600 me-2"></i> Upload New Document</h5>
             <form method="POST" action="{{ route('my-documents.upload') }}" enctype="multipart/form-data">
                 @csrf
@@ -203,7 +406,7 @@
 
             <!-- TAB 1: My Documents -->
             <div class="tab-pane fade {{ $activeTab !== 'employee' ? 'show active' : '' }}" id="my-docs-pane" role="tabpanel">
-                <div class="card rounded-4 border-0 shadow-sm p-4" style="background: rgba(255, 255, 255, 0.95);">
+                <div class="card doc-panel-card rounded-4 border-0 shadow-sm p-4">
                     <h5 class="fw-bold text-dark mb-4"><i class="fas fa-folder-open text-emerald-600 me-2"></i> My Uploaded Files</h5>
 
                     @if($myDocs->count() > 0)
@@ -213,7 +416,7 @@
                                     <div class="doc-slot-card p-4">
                                         <div>
                                             <div class="d-flex justify-content-between align-items-start mb-3">
-                                                <div class="fw-bold text-dark fs-6 text-truncate" title="{{ $doc->document_type }}">
+                                                <div class="fw-bold doc-title text-dark fs-6 text-truncate" title="{{ $doc->document_type }}">
                                                     <i class="fas fa-file-invoice text-emerald-600 me-1.5"></i> {{ $doc->document_type }}
                                                 </div>
                                                 
@@ -228,8 +431,8 @@
                                                 </button>
                                             </div>
 
-                                            <div class="p-3 bg-light rounded-4 border mb-3">
-                                                <div class="fw-bold text-dark text-truncate" title="{{ $doc->file_name }}">
+                                            <div class="p-3 bg-light doc-file-preview rounded-4 border mb-3">
+                                                <div class="fw-bold doc-filename text-dark text-truncate" title="{{ $doc->file_name }}">
                                                     <i class="fas fa-paperclip me-1 text-emerald-600"></i> {{ $doc->file_name }}
                                                 </div>
                                                 <div class="small text-muted mt-1 d-flex justify-content-between">
@@ -268,7 +471,7 @@
             <!-- TAB 2: Role Storage Databases Repository (For HR, Manager, Admin) -->
             @if(in_array($userRole, ['admin', 'hr', 'manager']))
                 <div class="tab-pane fade {{ $activeTab === 'employee' ? 'show active' : '' }}" id="emp-docs-pane" role="tabpanel">
-                    <div class="card rounded-4 border-0 shadow-sm p-4" style="background: rgba(255, 255, 255, 0.95);">
+                    <div class="card doc-panel-card rounded-4 border-0 shadow-sm p-4">
                         
                         <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
                             <div>
@@ -292,13 +495,13 @@
                                         <option value="">All Accessible Databases</option>
                                         <option value="employee" {{ request('role_type') === 'employee' ? 'selected' : '' }}>Employee Database</option>
                                         @if(in_array($userRole, ['admin', 'hr', 'manager']))
-                                            <option value="hr" {{ request('role_type') === 'hr' ? 'selected' : '' }}>HR Database</option>
+                                             <option value="hr" {{ request('role_type') === 'hr' ? 'selected' : '' }}>HR Database</option>
                                         @endif
                                         @if(in_array($userRole, ['admin', 'hr', 'manager']))
-                                            <option value="manager" {{ request('role_type') === 'manager' ? 'selected' : '' }}>Manager Database</option>
+                                             <option value="manager" {{ request('role_type') === 'manager' ? 'selected' : '' }}>Manager Database</option>
                                         @endif
                                         @if($userRole === 'admin')
-                                            <option value="admin" {{ request('role_type') === 'admin' ? 'selected' : '' }}>Admin Database</option>
+                                             <option value="admin" {{ request('role_type') === 'admin' ? 'selected' : '' }}>Admin Database</option>
                                         @endif
                                     </select>
                                 </div>
@@ -311,7 +514,7 @@
                         <!-- Repository Table -->
                         <div class="table-responsive rounded-4 border border-emerald-subtle shadow-sm">
                             <table class="table table-hover align-middle mb-0">
-                                <thead style="background: linear-gradient(90deg, #ecfdf5, #f0fdf4); color: #0a2e1f;">
+                                <thead class="doc-table-head">
                                     <tr>
                                         <th class="py-3 px-4 fw-bold">Staff Details</th>
                                         <th class="py-3 px-4 fw-bold">Document Title</th>

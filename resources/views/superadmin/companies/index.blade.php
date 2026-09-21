@@ -10,25 +10,25 @@
        DESIGN TOKENS — Luxury Emerald & Slate Theme
        ============================================================ */
     :root {
-        --emerald-primary: #0f744c;
-        --emerald-dark: #073a26;
-        --emerald-deep: #05291b;
-        --emerald-light: #10b981;
-        --emerald-soft: #e4f3eb;
-        --emerald-glow: rgba(16, 185, 129, 0.25);
-        --purple-accent: #7c3aed;
-        --blue-accent: #2563eb;
-        --amber-accent: #f59e0b;
-        --rose-accent: #ef4444;
+        --emerald-primary: #2F6BFF;
+        --emerald-dark: #1E4FCC;
+        --emerald-deep: #070B1A;
+        --emerald-light: #22D3EE;
+        --emerald-soft: rgba(47, 107, 255, 0.08);
+        --emerald-glow: rgba(47, 107, 255, 0.25);
+        --purple-accent: #8B5CF6;
+        --blue-accent: #2F6BFF;
+        --amber-accent: #F59E0B;
+        --rose-accent: #EF4444;
 
-        --slate-dark: #0f172a;
+        --slate-dark: #10142C;
         --slate-body: #334155;
-        --slate-muted: #64748b;
-        --slate-light: #f8fafc;
+        --slate-muted: #545D82;
+        --slate-light: #F6F7FC;
 
-        --card-shadow-sm: 0 10px 25px -5px rgba(0, 0, 0, 0.04), 0 4px 10px rgba(0, 0, 0, 0.02);
-        --card-shadow-md: 0 20px 45px -10px rgba(15, 116, 76, 0.08), 0 6px 18px rgba(0, 0, 0, 0.03);
-        --card-shadow-lg: 0 30px 70px -15px rgba(15, 116, 76, 0.16), 0 12px 30px rgba(0, 0, 0, 0.05);
+        --card-shadow-sm: 0 10px 25px -5px rgba(16, 24, 60, 0.04), 0 4px 10px rgba(16, 24, 60, 0.02);
+        --card-shadow-md: 0 20px 45px -10px rgba(47, 107, 255, 0.08), 0 6px 18px rgba(16, 24, 60, 0.03);
+        --card-shadow-lg: 0 30px 70px -15px rgba(47, 107, 255, 0.16), 0 12px 30px rgba(16, 24, 60, 0.05);
 
         --radius: 24px;
         --radius-sm: 14px;
@@ -50,6 +50,25 @@
         --plan-diamond-bg: #f5f3ff;
         --plan-diamond-text: #6d28d9;
         --plan-diamond-border: #ddd6fe;
+    }
+
+    html[data-pms-theme="dark"],
+    html[data-theme="dark"] {
+        --emerald-primary: #2F6BFF;
+        --emerald-dark: #1E4FCC;
+        --emerald-deep: #070B1A;
+        --emerald-light: #22D3EE;
+        --emerald-soft: rgba(47, 107, 255, 0.18);
+        --emerald-glow: rgba(47, 107, 255, 0.35);
+
+        --slate-dark: #EEF1FB;
+        --slate-body: #CBD5E1;
+        --slate-muted: #9AA3C7;
+        --slate-light: #141B3D;
+
+        --card-shadow-sm: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        --card-shadow-md: 0 20px 45px -10px rgba(0, 0, 0, 0.45);
+        --card-shadow-lg: 0 30px 70px -15px rgba(0, 0, 0, 0.6);
     }
 
     /* ===== PAGE HEADER (Breadcrumb + Title + Actions) ===== */
@@ -937,7 +956,77 @@
         from { transform: translateX(30px); opacity: 0; }
         to { transform: translateX(0); opacity: 1; }
     }
-</style>
+
+    /* Companies View Dark Mode Overrides */
+    html[data-pms-theme="dark"] .kpi-card,
+    html[data-theme="dark"] .kpi-card,
+    html[data-pms-theme="dark"] .analytics-card,
+    html[data-theme="dark"] .analytics-card,
+    html[data-pms-theme="dark"] .toolbar,
+    html[data-theme="dark"] .toolbar,
+    html[data-pms-theme="dark"] .table-wrap,
+    html[data-theme="dark"] .table-wrap {
+        background: var(--bg-surface);
+        border-color: var(--border-subtle);
+    }
+    html[data-pms-theme="dark"] .toolbar .search-wrap,
+    html[data-theme="dark"] .toolbar .search-wrap {
+        background: var(--bg-surface-subtle);
+    }
+    html[data-pms-theme="dark"] .toolbar .search-wrap input,
+    html[data-theme="dark"] .toolbar .search-wrap input {
+        color: var(--slate-dark);
+    }
+    html[data-pms-theme="dark"] .toolbar .filter-group select,
+    html[data-theme="dark"] .toolbar .filter-group select {
+        background-color: var(--bg-surface-subtle);
+        border-color: var(--border-subtle);
+        color: var(--slate-dark);
+    }
+    html[data-pms-theme="dark"] table.company-table thead,
+    html[data-theme="dark"] table.company-table thead {
+        background: var(--bg-surface-subtle);
+    }
+    html[data-pms-theme="dark"] table.company-table thead th,
+    html[data-theme="dark"] table.company-table thead th {
+        color: var(--slate-muted);
+        border-bottom-color: var(--border-subtle);
+        border-right-color: var(--border-subtle);
+    }
+    html[data-pms-theme="dark"] table.company-table tbody tr:nth-child(even),
+    html[data-theme="dark"] table.company-table tbody tr:nth-child(even) {
+        background: rgba(255, 255, 255, 0.02);
+    }
+    html[data-pms-theme="dark"] table.company-table tbody tr:hover,
+    html[data-theme="dark"] table.company-table tbody tr:hover {
+        background: rgba(47, 107, 255, 0.1);
+    }
+    html[data-pms-theme="dark"] table.company-table tbody td,
+    html[data-theme="dark"] table.company-table tbody td {
+        border-bottom-color: var(--border-subtle);
+        border-right-color: var(--border-subtle);
+        color: var(--slate-body);
+    }
+    html[data-pms-theme="dark"] .dropdown-menu-custom,
+    html[data-theme="dark"] .dropdown-menu-custom {
+        background: var(--bg-surface);
+        border-color: var(--border-strong);
+    }
+    html[data-pms-theme="dark"] .dropdown-menu-custom a,
+    html[data-pms-theme="dark"] .dropdown-menu-custom button,
+    html[data-theme="dark"] .dropdown-menu-custom a,
+    html[data-theme="dark"] .dropdown-menu-custom button {
+        color: var(--slate-body);
+    }
+    html[data-pms-theme="dark"] .modal-dialog-custom,
+    html[data-theme="dark"] .modal-dialog-custom,
+    html[data-pms-theme="dark"] .detail-drawer,
+    html[data-theme="dark"] .detail-drawer {
+        background: var(--bg-surface);
+        color: var(--slate-dark);
+        border-color: var(--border-strong);
+    }
+  </style>
 
 <!-- PAGE CONTROL TOOLBAR -->
 <div class="page-header" style="justify-content: flex-end; margin-bottom: 20px;">

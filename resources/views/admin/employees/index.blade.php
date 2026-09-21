@@ -50,8 +50,8 @@
     @endphp
 
     {{-- Header Section --}}
-    <div class="header-section animate-fadeIn !rounded-[22px] !p-4 sm:!p-5 lg:!p-6">
-        <div class="header-content !flex !flex-col !gap-4 lg:!flex-row lg:!items-center lg:!justify-between">
+    <div class="header-section animate-fadeIn !rounded-[22px] !p-4 sm:!p-5 lg:!p-6" style="position: relative !important; z-index: 1050 !important; overflow: visible !important;">
+        <div class="header-content !flex !flex-col !gap-4 lg:!flex-row lg:!items-center lg:!justify-between" style="position: relative !important; z-index: 1050 !important; overflow: visible !important;">
             <div class="title-wrapper !flex !items-center !gap-3 sm:!gap-4">
                 <div class="icon-circle animate-float !shrink-0">
                     <i class="fas fa-users"></i>
@@ -61,25 +61,24 @@
                     <p class="subtitle !mt-1 !text-sm sm:!text-base">Manage all employees, their details, and permissions</p>
                 </div>
             </div>
-            <div class="action-buttons !flex !w-full !flex-wrap !items-center !gap-2 sm:!gap-3 lg:!w-auto lg:!justify-end">
+            <div class="action-buttons !flex !w-full !flex-wrap !items-center !gap-2 sm:!gap-3 lg:!w-auto lg:!justify-end" style="position: relative !important; z-index: 1050 !important; overflow: visible !important;">
                 <!-- Quick Actions Dropdown -->
-                <div class="quick-actions">
-                    <div class="dropdown">
-                        <button class="btn btn-outline-light dropdown-toggle !w-full !justify-center sm:!w-auto" type="button" data-bs-toggle="dropdown">
+                <div class="quick-actions" style="position: relative !important; z-index: 1060 !important; overflow: visible !important;">
+                    <div class="dropdown" style="position: relative !important; z-index: 1060 !important; overflow: visible !important;">
+                        <button class="btn btn-outline-light dropdown-toggle !w-full !justify-center sm:!w-auto" type="button" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false">
                             <i class="fas fa-bolt me-2"></i>Quick Actions
                         </button>
-                        <ul class="dropdown-menu dropdown-menu-end">
+                        <ul class="dropdown-menu" style="position: absolute !important; top: 100% !important; bottom: auto !important; left: 0 !important; right: auto !important; margin-top: 0.5rem !important; min-width: 220px !important; transform: none !important; z-index: 999999 !important;">
                             <li><a class="dropdown-item" href="{{ route('employees.archive') }}"><i class="fas fa-box-archive me-2 text-success"></i>Archived Employees</a></li>
                             <li><a class="dropdown-item" href="#" id="bulkDeleteTrigger"><i class="fas fa-box-archive me-2 text-danger"></i>Archive Inactive</a></li>
-                            <li><hr class="dropdown-divider"></li>
                         </ul>
                     </div>
                 </div>
 
                 <!-- Archived Employees Button -->
-                <a href="{{ route('employees.archive') }}" class="btn btn-archive-employees !min-w-[150px] !justify-center">
-                    <i class="fas fa-box-archive me-2"></i>
-                    <span>Archived</span>
+                <a href="{{ route('employees.archive') }}" class="btn btn-archive-employees !min-w-[150px] !justify-center" style="background: var(--pms-archive-btn-bg, #ffffff) !important; border: 1px solid var(--pms-archive-btn-border, rgba(15, 116, 76, 0.18)) !important; color: var(--pms-archive-btn-color, #0f744c) !important; -webkit-text-fill-color: var(--pms-archive-btn-color, #0f744c) !important;">
+                    <i class="fas fa-box-archive me-2" style="color: var(--pms-archive-btn-icon, #0f744c) !important; -webkit-text-fill-color: var(--pms-archive-btn-icon, #0f744c) !important;"></i>
+                    <span class="btn-archive-text" style="color: var(--pms-archive-btn-color, #0f744c) !important; -webkit-text-fill-color: var(--pms-archive-btn-color, #0f744c) !important;">Archived</span>
                 </a>
 
                 <!-- Add Employee Button -->
@@ -98,9 +97,9 @@
     </div>
 
     {{-- Stats Cards - 5 Cards Perfect Alignment with Animation --}}
-    <div class="stats-grid !grid !grid-cols-1 !gap-3 sm:!grid-cols-2 sm:!gap-4 xl:!grid-cols-4 xl:!gap-5">
+    <div class="stats-grid !grid !grid-cols-1 !gap-3 sm:!grid-cols-2 sm:!gap-4 xl:!grid-cols-4 xl:!gap-5" style="position: relative !important; z-index: 1 !important;">
         <!-- Total Employees Card -->
-        <div class="stat-card total animate-slideUp" style="animation-delay: 0.1s;">
+        <div class="stat-card total animate-slideUp" style="animation-delay: 0.1s; position: relative !important; z-index: 1 !important;">
             <div class="stat-icon">
                 <i class="fas fa-users"></i>
             </div>
@@ -112,7 +111,7 @@
         </div>
 
         <!-- Active Employees Card -->
-        <div class="stat-card active animate-slideUp" style="animation-delay: 0.2s;">
+        <div class="stat-card active animate-slideUp" style="animation-delay: 0.2s; position: relative !important; z-index: 1 !important;">
             <div class="stat-icon">
                 <i class="fas fa-user-check"></i>
             </div>
@@ -124,7 +123,7 @@
         </div>
 
         <!-- Inactive Employees Card -->
-        <div class="stat-card inactive animate-slideUp" style="animation-delay: 0.3s;">
+        <div class="stat-card inactive animate-slideUp" style="animation-delay: 0.3s; position: relative !important; z-index: 1 !important;">
             <div class="stat-icon">
                 <i class="fas fa-user-slash"></i>
             </div>
@@ -136,7 +135,7 @@
         </div>
 
         <!-- On Notice Card -->
-        <div class="stat-card notice animate-slideUp" style="animation-delay: 0.4s;">
+        <div class="stat-card notice animate-slideUp" style="animation-delay: 0.4s; position: relative !important; z-index: 1 !important;">
             <div class="stat-icon">
                 <i class="fas fa-clock"></i>
             </div>
@@ -150,10 +149,12 @@
 
     @if(auth()->user()?->normalizedRole() === 'admin')
     {{-- Company Selector - SaaS company workspace filter --}}
-    <div class="company-switcher-grid !grid !grid-cols-1 !gap-3 sm:!grid-cols-2 lg:!grid-cols-3 2xl:!grid-cols-6 !mb-5">
+    <div class="company-switcher-grid !grid !grid-cols-1 !gap-3 sm:!grid-cols-2 lg:!grid-cols-3 2xl:!grid-cols-6 !mb-5" style="position: relative !important; z-index: 1 !important;">
         <a href="{{ route('employees.index', request()->except(['company_id', 'page'])) }}"
            class="company-switch-card {{ empty($selectedCompanyId) ? 'active' : '' }}">
-            <span class="company-switch-icon"><i class="fas fa-layer-group"></i></span>
+            <span class="company-switch-icon" style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important;">
+                <i class="fas fa-layer-group" style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important;"></i>
+            </span>
             <span class="company-switch-meta">
                 <strong>All Companies</strong>
                 <small>{{ $companyStats->sum('employees') }} employees</small>
@@ -166,11 +167,11 @@
             @endphp
             <a href="{{ route('employees.index', $companyQuery) }}"
                class="company-switch-card {{ (string) $selectedCompanyId === (string) $company->id ? 'active' : '' }}">
-                <span class="company-switch-icon">
+                <span class="company-switch-icon" style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important;">
                     @if($company->logo)
                         <img src="{{ asset($company->logo) }}" alt="{{ $company->name }}">
                     @else
-                        {{ strtoupper(substr($company->short_name ?: $company->company_code ?: $company->name, 0, 2)) }}
+                        <span style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important;">{{ strtoupper(substr($company->short_name ?: $company->company_code ?: $company->name, 0, 2)) }}</span>
                     @endif
                 </span>
                 <span class="company-switch-meta">
@@ -465,14 +466,14 @@
                 </div>
                 <div class="title-text">
                     <h3>Employee List</h3>
-                    <span class="employee-count">{{ $visibleEmployees->count() }} employees</span>
+                    <span class="employee-count" style="color: var(--emp-count-color, #6b4e9e) !important; -webkit-text-fill-color: var(--emp-count-color, #6b4e9e) !important; font-weight: 600;">{{ $visibleEmployees->count() }} employees</span>
                 </div>
             </div>
             <div class="table-actions !flex !w-full !flex-wrap !items-center !gap-2 sm:!w-auto sm:!justify-end">
                 <button id="btn-bulk-delete" class="btn btn-bulk-delete !justify-center" disabled>
                     <i class="fas fa-box-archive me-2"></i>Archive Inactive
                 </button>
-                <span id="bulk-selected-count" class="selected-badge !inline-flex !justify-center">0 selected</span>
+                <span id="bulk-selected-count" class="selected-badge !inline-flex !justify-center" style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important;">0 selected</span>
             </div>
         </div>
 
@@ -542,7 +543,7 @@
                                     @endif
                                     <div class="employee-details">
                                         <h6 class="employee-name">{{ $employee->name }}</h6>
-                                        <span class="employee-designation">{{ $employee->employeeDetail?->designation?->name ?? '-' }}</span>
+                                        <span class="employee-designation" style="color: var(--emp-designation-color, #64748b) !important; -webkit-text-fill-color: var(--emp-designation-color, #64748b) !important;">{{ $employee->employeeDetail?->designation?->name ?? '-' }}</span>
                                         <div class="employee-badges">
                                             @php
                                                 $detail = $employee->employeeDetail;
@@ -575,9 +576,9 @@
                             </td>
                             <td>
                                 <span class="employee-company-chip">
-                                    <span class="employee-company-logo">
+                                    <span class="employee-company-logo" style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important;">
                                         @if($employee->company?->logo)
-                                            <img src="{{ asset($employee->company->logo) }}" alt="{{ $employee->company->name }}">
+                                             <img src="{{ asset($employee->company->logo) }}" alt="{{ $employee->company->name }}">
                                         @else
                                             {{ strtoupper(substr($employee->company?->short_name ?: $employee->company?->company_code ?: $employee->company?->name ?: 'NA', 0, 2)) }}
                                         @endif
@@ -595,9 +596,9 @@
                             </td>
                             <td>
                                 <div class="role-info">
-                                    <span class="role-name">{{ $employee->employeeDetail?->designation?->name ?? '-' }}</span>
-                                    <span class="reports-to">
-                                        <i class="fas fa-user-friends"></i>
+                                    <span class="role-name" style="color: var(--emp-role-color, #1f2937) !important; -webkit-text-fill-color: var(--emp-role-color, #1f2937) !important;">{{ $employee->employeeDetail?->designation?->name ?? '-' }}</span>
+                                    <span class="reports-to" style="color: var(--emp-reports-color, #64748b) !important; -webkit-text-fill-color: var(--emp-reports-color, #64748b) !important;">
+                                        <i class="fas fa-user-friends" style="color: #22D3EE !important; -webkit-text-fill-color: #22D3EE !important;"></i>
                                         {{ $employee->employeeDetail?->reportingTo?->name ?? 'N/A' }}
                                     </span>
                                 </div>
@@ -606,15 +607,15 @@
                                 @if($employee->employeeDetail?->status === 'Active')
                                     <span class="status-badge status-active">
                                         <span class="status-dot"></span>
-                                        Active
+                                        <span class="status-text">Active</span>
                                     </span>
                                 @elseif($employee->employeeDetail?->status === 'Inactive')
                                     <span class="status-badge status-inactive">
                                         <span class="status-dot"></span>
-                                        Inactive
+                                        <span class="status-text">Inactive</span>
                                     </span>
                                 @else
-                                    <span class="status-badge status-unknown">N/A</span>
+                                    <span class="status-badge status-unknown"><span class="status-text">N/A</span></span>
                                 @endif
                             </td>
                             <td>
@@ -677,21 +678,21 @@
         <div class="table-footer !flex !flex-col !gap-4 !p-4 sm:!p-5 lg:!flex-row lg:!items-center lg:!justify-between">
             <div class="footer-left !flex !w-full !justify-center lg:!w-auto lg:!justify-start">
                 <div class="show-entries !flex !flex-wrap !items-center !justify-center !gap-2">
-                    <span>Show</span>
-                    <select class="form-select form-select-sm" id="showEntries">
+                    <span style="color: var(--emp-footer-text, #4b5563) !important; -webkit-text-fill-color: var(--emp-footer-text, #4b5563) !important; font-weight: 600;">Show</span>
+                    <select class="form-select form-select-sm" id="showEntries" style="background-color: var(--emp-footer-select-bg, #ffffff) !important; color: var(--emp-footer-select-color, #1f2937) !important; -webkit-text-fill-color: var(--emp-footer-select-color, #1f2937) !important; border-color: var(--emp-footer-select-border, #e0d7ff) !important;">
                         <option value="10" {{ request('per_page', 10) == 10 ? 'selected' : '' }}>10</option>
-                        <option value="20" {{ request('per_page') == 20 ? 'selected' : '' }}>20</option>
-                        <option value="30" {{ request('per_page') == 30 ? 'selected' : '' }}>30</option>
-                        <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50</option>
-                        <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100</option>
+                        <option value="20" {{ request('per_page', 20) == 20 ? 'selected' : '' }}>20</option>
+                        <option value="30" {{ request('per_page', 30) == 30 ? 'selected' : '' }}>30</option>
+                        <option value="50" {{ request('per_page', 50) == 50 ? 'selected' : '' }}>50</option>
+                        <option value="100" {{ request('per_page', 100) == 100 ? 'selected' : '' }}>100</option>
                     </select>
-                    <span>entries</span>
+                    <span style="color: var(--emp-footer-text, #4b5563) !important; -webkit-text-fill-color: var(--emp-footer-text, #4b5563) !important; font-weight: 600;">entries</span>
                 </div>
             </div>
 
             @if(method_exists($employees, 'total'))
             <div class="footer-center !flex !w-full !justify-center !text-center lg:!w-auto">
-                <span class="pagination-info">
+                <span class="pagination-info" style="color: var(--emp-footer-text, #4b5563) !important; -webkit-text-fill-color: var(--emp-footer-text, #4b5563) !important; font-weight: 600;">
                     Showing {{ ($employees->currentPage() - 1) * $employees->perPage() + 1 }}
                     - {{ min($employees->currentPage() * $employees->perPage(), $employees->total()) }}
                     of {{ $employees->total() }}
@@ -755,6 +756,36 @@
 
 {{-- LIGHT PURPLE THEME - SOFT & ANIMATED --}}
 <style>
+    /* ===== BITROXIA THEME TOKENS FOR EMPLOYEE DIRECTORY ===== */
+    :root {
+        --emp-designation-color: #64748B;
+        --emp-role-color: #1F2937;
+        --emp-reports-color: #64748B;
+        --emp-count-color: #6b4e9e;
+        --emp-footer-text: #4b5563;
+        --emp-footer-select-bg: #ffffff;
+        --emp-footer-select-color: #1f2937;
+        --emp-footer-select-border: #e0d7ff;
+    }
+
+    html[data-pms-theme="dark"],
+    html[data-bs-theme="dark"],
+    html[data-theme="dark"],
+    html.dark,
+    body[data-pms-theme="dark"],
+    body[data-bs-theme="dark"],
+    body.dark,
+    [data-pms-theme="dark"] {
+        --emp-designation-color: #CBD5E1 !important;
+        --emp-role-color: #FFFFFF !important;
+        --emp-reports-color: #94A3B8 !important;
+        --emp-count-color: #a7f3d0 !important;
+        --emp-footer-text: #CBD5E1 !important;
+        --emp-footer-select-bg: #14281e !important;
+        --emp-footer-select-color: #f8fffb !important;
+        --emp-footer-select-border: rgba(122, 240, 181, 0.35) !important;
+    }
+
     /* ===== LIGHT PURPLE THEME - SOFT, ANIMATED & EYE-FRIENDLY ===== */
 
     /* Main Background - Light Purple Gradient */
@@ -1358,7 +1389,7 @@
 
     .employee-count {
         font-size: 0.8rem;
-        color: #6b4e9e;
+        color: var(--emp-count-color, #6b4e9e);
     }
 
     .table-actions {
@@ -1545,10 +1576,11 @@
     }
 
     .employee-designation {
-        font-size: 0.8rem;
-        color: #6b7280;
+        font-size: 0.82rem;
+        color: var(--emp-designation-color, #64748b);
         display: block;
         margin-bottom: 6px;
+        font-weight: 500;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -1604,14 +1636,25 @@
     .company-switch-icon,
     .employee-company-logo {
         align-items: center;
-        background: linear-gradient(135deg, #0f744c, #22c55e);
+        background: linear-gradient(135deg, #0f744c, #22c55e) !important;
         border-radius: 14px;
-        color: #ffffff;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
         display: inline-flex;
         flex: 0 0 auto;
         font-weight: 900;
         justify-content: center;
         overflow: hidden;
+    }
+
+    .company-switch-card .company-switch-icon,
+    .company-switch-card .company-switch-icon *,
+    .company-switch-card .company-switch-icon i,
+    .company-switch-icon i,
+    .company-switch-icon svg {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        fill: #ffffff !important;
     }
 
     .company-switch-icon {
@@ -1766,7 +1809,7 @@
 
     .role-name {
         font-weight: 600;
-        color: #1f2937;
+        color: var(--emp-role-color, #1f2937);
         font-size: 0.9rem;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -1775,7 +1818,7 @@
 
     .reports-to {
         font-size: 0.8rem;
-        color: #6b7280;
+        color: var(--emp-reports-color, #64748b);
         display: flex;
         align-items: center;
         gap: 5px;
@@ -2236,26 +2279,55 @@
         overflow: visible !important;
     }
 
-    .employee-dashboard .quick-actions {
-        display: inline-flex !important;
-        position: relative !important;
-        top: auto !important;
-        z-index: 25 !important;
+    .employee-dashboard {
+        --pms-archive-btn-bg: #ffffff;
+        --pms-archive-btn-color: #0f744c;
+        --pms-archive-btn-border: rgba(15, 116, 76, 0.18);
+        --pms-archive-btn-icon: #0f744c;
     }
 
+    .employee-dashboard .header-section {
+        position: relative !important;
+        z-index: 1050 !important;
+        overflow: visible !important;
+    }
+
+    .employee-dashboard .header-content,
+    .employee-dashboard .action-buttons {
+        position: relative !important;
+        z-index: 1050 !important;
+        overflow: visible !important;
+    }
+
+    .employee-dashboard .quick-actions,
     .employee-dashboard .quick-actions .dropdown {
         display: inline-flex !important;
         position: relative !important;
-        z-index: 30 !important;
+        top: auto !important;
+        z-index: 1060 !important;
+        overflow: visible !important;
     }
 
     .employee-dashboard .quick-actions .dropdown-menu {
-        left: auto !important;
-        margin-top: 0.45rem !important;
-        min-width: 210px !important;
-        right: 0 !important;
+        position: absolute !important;
+        top: 100% !important;
+        bottom: auto !important;
+        left: 0 !important;
+        right: auto !important;
+        margin-top: 0.5rem !important;
+        min-width: 220px !important;
         transform: none !important;
-        z-index: 4000 !important;
+        z-index: 999999 !important;
+    }
+
+    .employee-dashboard .stats-grid {
+        position: relative !important;
+        z-index: 1 !important;
+    }
+
+    .employee-dashboard .stat-card {
+        position: relative !important;
+        z-index: 1 !important;
     }
 
     .employee-dashboard a.btn.btn-add,
@@ -2276,17 +2348,23 @@
     }
 
     .employee-dashboard .btn-archive-employees {
-        border: 1px solid rgba(15, 116, 76, 0.18) !important;
-        background: #ffffff !important;
-        color: #0f744c !important;
-        -webkit-text-fill-color: #0f744c !important;
+        border: 1px solid var(--pms-archive-btn-border, rgba(15, 116, 76, 0.18)) !important;
+        background: var(--pms-archive-btn-bg, #ffffff) !important;
+        color: var(--pms-archive-btn-color, #0f744c) !important;
+        -webkit-text-fill-color: var(--pms-archive-btn-color, #0f744c) !important;
         box-shadow: 0 10px 20px rgba(22, 39, 30, 0.07) !important;
     }
 
-    .employee-dashboard .btn-archive-employees i,
-    .employee-dashboard .btn-archive-employees span {
-        color: #0f744c !important;
-        -webkit-text-fill-color: #0f744c !important;
+    .employee-dashboard .btn-archive-employees i {
+        color: var(--pms-archive-btn-icon, #0f744c) !important;
+        -webkit-text-fill-color: var(--pms-archive-btn-icon, #0f744c) !important;
+        font-weight: 900 !important;
+    }
+
+    .employee-dashboard .btn-archive-employees span,
+    .employee-dashboard .btn-archive-text {
+        color: var(--pms-archive-btn-color, #0f744c) !important;
+        -webkit-text-fill-color: var(--pms-archive-btn-color, #0f744c) !important;
         font-weight: 900 !important;
     }
 
@@ -2294,6 +2372,12 @@
         border-color: #0f744c !important;
         background: #edf8f2 !important;
         transform: translateY(-2px) !important;
+    }
+
+    .employee-dashboard .btn-archive-employees:hover span,
+    .employee-dashboard .btn-archive-employees:hover .btn-archive-text {
+        color: var(--pms-archive-btn-color, #0f744c) !important;
+        -webkit-text-fill-color: var(--pms-archive-btn-color, #0f744c) !important;
     }
 
     .employee-dashboard .quick-actions .dropdown-toggle {
@@ -2739,17 +2823,198 @@
         -webkit-text-fill-color: #ffffff !important;
     }
 
-    html[data-pms-theme="dark"] .employee-dashboard .btn-archive-employees {
-        border-color: rgba(122, 240, 181, 0.24) !important;
+    /* Header Action Buttons (Quick Actions & Archived) in Dark Mode */
+    html[data-pms-theme="dark"] .employee-dashboard .quick-actions .dropdown-toggle,
+    html[data-bs-theme="dark"] .employee-dashboard .quick-actions .dropdown-toggle,
+    html[data-theme="dark"] .employee-dashboard .quick-actions .dropdown-toggle,
+    html[data-pms-theme="dark"] .employee-dashboard .btn-outline-light,
+    html[data-bs-theme="dark"] .employee-dashboard .btn-outline-light,
+    html[data-theme="dark"] .employee-dashboard .btn-outline-light {
+        border: 1px solid rgba(122, 240, 181, 0.3) !important;
         background: #183026 !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25) !important;
+    }
+
+    html[data-pms-theme="dark"] .employee-dashboard .quick-actions .dropdown-toggle *,
+    html[data-bs-theme="dark"] .employee-dashboard .quick-actions .dropdown-toggle *,
+    html[data-theme="dark"] .employee-dashboard .quick-actions .dropdown-toggle * {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    html[data-pms-theme="dark"] .employee-dashboard .quick-actions .dropdown-toggle i,
+    html[data-bs-theme="dark"] .employee-dashboard .quick-actions .dropdown-toggle i,
+    html[data-theme="dark"] .employee-dashboard .quick-actions .dropdown-toggle i {
         color: #7af0b5 !important;
         -webkit-text-fill-color: #7af0b5 !important;
     }
 
-    html[data-pms-theme="dark"] .employee-dashboard .btn-archive-employees i,
-    html[data-pms-theme="dark"] .employee-dashboard .btn-archive-employees span {
+    html[data-pms-theme="dark"] .employee-dashboard .dropdown-menu,
+    html[data-bs-theme="dark"] .employee-dashboard .dropdown-menu,
+    html[data-theme="dark"] .employee-dashboard .dropdown-menu {
+        background: #102119 !important;
+        border: 1px solid rgba(122, 240, 181, 0.25) !important;
+        box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5) !important;
+    }
+
+    html[data-pms-theme="dark"] .employee-dashboard .dropdown-item,
+    html[data-bs-theme="dark"] .employee-dashboard .dropdown-item,
+    html[data-theme="dark"] .employee-dashboard .dropdown-item {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    html[data-pms-theme="dark"] .employee-dashboard .dropdown-item:hover,
+    html[data-bs-theme="dark"] .employee-dashboard .dropdown-item:hover,
+    html[data-theme="dark"] .employee-dashboard .dropdown-item:hover {
+        background: rgba(64, 212, 140, 0.15) !important;
         color: #7af0b5 !important;
         -webkit-text-fill-color: #7af0b5 !important;
+    }
+
+    html[data-pms-theme="dark"] .employee-dashboard .dropdown-divider,
+    html[data-bs-theme="dark"] .employee-dashboard .dropdown-divider,
+    html[data-theme="dark"] .employee-dashboard .dropdown-divider {
+        border-top: 1px solid rgba(122, 240, 181, 0.15) !important;
+    }
+
+    html[data-pms-theme="dark"] .employee-dashboard,
+    html[data-bs-theme="dark"] .employee-dashboard,
+    html[data-theme="dark"] .employee-dashboard,
+    html.dark .employee-dashboard,
+    body[data-pms-theme="dark"] .employee-dashboard,
+    body[data-bs-theme="dark"] .employee-dashboard,
+    body.dark .employee-dashboard,
+    [data-pms-theme="dark"] .employee-dashboard,
+    [data-bs-theme="dark"] .employee-dashboard,
+    .dark .employee-dashboard {
+        --pms-archive-btn-bg: #183026 !important;
+        --pms-archive-btn-color: #ffffff !important;
+        --pms-archive-btn-border: rgba(122, 240, 181, 0.32) !important;
+        --pms-archive-btn-icon: #7af0b5 !important;
+    }
+
+    html[data-pms-theme="dark"] .employee-dashboard .btn-archive-employees,
+    html[data-bs-theme="dark"] .employee-dashboard .btn-archive-employees,
+    html[data-theme="dark"] .employee-dashboard .btn-archive-employees,
+    html.dark .employee-dashboard .btn-archive-employees,
+    body[data-pms-theme="dark"] .employee-dashboard .btn-archive-employees,
+    body[data-bs-theme="dark"] .employee-dashboard .btn-archive-employees,
+    body.dark .employee-dashboard .btn-archive-employees,
+    html[data-pms-theme="dark"] .employee-dashboard a.btn-archive-employees,
+    html[data-bs-theme="dark"] .employee-dashboard a.btn-archive-employees,
+    html[data-theme="dark"] .employee-dashboard a.btn-archive-employees,
+    html[data-pms-theme="dark"] a.btn-archive-employees,
+    html[data-bs-theme="dark"] a.btn-archive-employees,
+    html[data-theme="dark"] a.btn-archive-employees {
+        border: 1px solid rgba(122, 240, 181, 0.32) !important;
+        background: #183026 !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25) !important;
+    }
+
+    html[data-pms-theme="dark"] .employee-dashboard .btn-archive-employees *,
+    html[data-bs-theme="dark"] .employee-dashboard .btn-archive-employees *,
+    html[data-theme="dark"] .employee-dashboard .btn-archive-employees *,
+    html.dark .employee-dashboard .btn-archive-employees *,
+    body[data-pms-theme="dark"] .employee-dashboard .btn-archive-employees *,
+    body[data-bs-theme="dark"] .employee-dashboard .btn-archive-employees *,
+    body.dark .employee-dashboard .btn-archive-employees *,
+    html[data-pms-theme="dark"] .employee-dashboard .btn-archive-employees span,
+    html[data-bs-theme="dark"] .employee-dashboard .btn-archive-employees span,
+    html[data-theme="dark"] .employee-dashboard .btn-archive-employees span,
+    html.dark .employee-dashboard .btn-archive-employees span,
+    body[data-pms-theme="dark"] .employee-dashboard .btn-archive-employees span,
+    body[data-bs-theme="dark"] .employee-dashboard .btn-archive-employees span,
+    body.dark .employee-dashboard .btn-archive-employees span,
+    html[data-pms-theme="dark"] .employee-dashboard .btn-archive-text,
+    html[data-bs-theme="dark"] .employee-dashboard .btn-archive-text,
+    html[data-theme="dark"] .employee-dashboard .btn-archive-text,
+    html.dark .employee-dashboard .btn-archive-text,
+    body[data-pms-theme="dark"] .employee-dashboard .btn-archive-text,
+    body[data-bs-theme="dark"] .employee-dashboard .btn-archive-text,
+    body.dark .employee-dashboard .btn-archive-text,
+    html[data-pms-theme="dark"] .btn-archive-text,
+    html[data-bs-theme="dark"] .btn-archive-text,
+    html[data-theme="dark"] .btn-archive-text,
+    html[data-pms-theme="dark"] a.btn-archive-employees span,
+    html[data-bs-theme="dark"] a.btn-archive-employees span,
+    html[data-theme="dark"] a.btn-archive-employees span {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        font-weight: 800 !important;
+    }
+
+    html[data-pms-theme="dark"] .employee-dashboard .btn-archive-employees i,
+    html[data-bs-theme="dark"] .employee-dashboard .btn-archive-employees i,
+    html[data-theme="dark"] .employee-dashboard .btn-archive-employees i,
+    html.dark .employee-dashboard .btn-archive-employees i,
+    body[data-pms-theme="dark"] .employee-dashboard .btn-archive-employees i,
+    body[data-bs-theme="dark"] .employee-dashboard .btn-archive-employees i,
+    body.dark .employee-dashboard .btn-archive-employees i,
+    html[data-pms-theme="dark"] a.btn-archive-employees i,
+    html[data-bs-theme="dark"] a.btn-archive-employees i,
+    html[data-theme="dark"] a.btn-archive-employees i {
+        color: #7af0b5 !important;
+        -webkit-text-fill-color: #7af0b5 !important;
+    }
+
+    html[data-pms-theme="dark"] .employee-dashboard .btn-archive-employees:hover,
+    html[data-bs-theme="dark"] .employee-dashboard .btn-archive-employees:hover,
+    html[data-theme="dark"] .employee-dashboard .btn-archive-employees:hover,
+    html.dark .employee-dashboard .btn-archive-employees:hover,
+    body[data-pms-theme="dark"] .employee-dashboard .btn-archive-employees:hover,
+    body[data-bs-theme="dark"] .employee-dashboard .btn-archive-employees:hover,
+    body.dark .employee-dashboard .btn-archive-employees:hover,
+    html[data-pms-theme="dark"] a.btn-archive-employees:hover,
+    html[data-bs-theme="dark"] a.btn-archive-employees:hover,
+    html[data-theme="dark"] a.btn-archive-employees:hover {
+        border-color: rgba(122, 240, 181, 0.5) !important;
+        background: #1f3e31 !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        transform: translateY(-2px) !important;
+    }
+
+    html[data-pms-theme="dark"] .employee-dashboard .btn-archive-employees:hover span,
+    html[data-bs-theme="dark"] .employee-dashboard .btn-archive-employees:hover span,
+    html[data-theme="dark"] .employee-dashboard .btn-archive-employees:hover span,
+    html.dark .employee-dashboard .btn-archive-employees:hover span,
+    body[data-pms-theme="dark"] .employee-dashboard .btn-archive-employees:hover span,
+    body[data-bs-theme="dark"] .employee-dashboard .btn-archive-employees:hover span,
+    body.dark .employee-dashboard .btn-archive-employees:hover span,
+    html[data-pms-theme="dark"] .employee-dashboard .btn-archive-employees:hover .btn-archive-text,
+    html[data-bs-theme="dark"] .employee-dashboard .btn-archive-employees:hover .btn-archive-text,
+    html[data-theme="dark"] .employee-dashboard .btn-archive-employees:hover .btn-archive-text,
+    html[data-pms-theme="dark"] a.btn-archive-employees:hover span,
+    html[data-bs-theme="dark"] a.btn-archive-employees:hover span,
+    html[data-theme="dark"] a.btn-archive-employees:hover span,
+    html[data-pms-theme="dark"] .btn-archive-employees:hover .btn-archive-text,
+    html[data-bs-theme="dark"] .btn-archive-employees:hover .btn-archive-text,
+    html[data-theme="dark"] .btn-archive-employees:hover .btn-archive-text {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    /* Selected Badge in Dark Mode */
+    html[data-pms-theme="dark"] .employee-dashboard .employee-filter-polish .selected-badge,
+    html[data-bs-theme="dark"] .employee-dashboard .employee-filter-polish .selected-badge,
+    html[data-theme="dark"] .employee-dashboard .employee-filter-polish .selected-badge,
+    html[data-pms-theme="dark"] .employee-dashboard .selected-badge,
+    html[data-bs-theme="dark"] .employee-dashboard .selected-badge,
+    html[data-theme="dark"] .employee-dashboard .selected-badge,
+    html[data-pms-theme="dark"] #export-selected-count,
+    html[data-bs-theme="dark"] #export-selected-count,
+    html[data-theme="dark"] #export-selected-count {
+        background: rgba(64, 212, 140, 0.14) !important;
+        border: 1px solid rgba(122, 240, 181, 0.35) !important;
+        color: #7af0b5 !important;
+        -webkit-text-fill-color: #7af0b5 !important;
+        font-weight: 750 !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
     }
 
     @media (max-width: 640px) {
@@ -2901,30 +3166,171 @@
         font-weight: 850 !important;
     }
 
-    html[data-pms-theme="dark"] .employee-dashboard {
+    html[data-pms-theme="dark"] .employee-dashboard,
+    html[data-bs-theme="dark"] .employee-dashboard,
+    html[data-theme="dark"] .employee-dashboard {
         background: linear-gradient(145deg, #07130d, #102119) !important;
     }
 
     html[data-pms-theme="dark"] .employee-dashboard .header-section,
+    html[data-bs-theme="dark"] .employee-dashboard .header-section,
+    html[data-theme="dark"] .employee-dashboard .header-section,
     html[data-pms-theme="dark"] .employee-dashboard .stat-card,
-    html[data-pms-theme="dark"] .employee-dashboard .table-card {
+    html[data-bs-theme="dark"] .employee-dashboard .stat-card,
+    html[data-theme="dark"] .employee-dashboard .stat-card,
+    html[data-pms-theme="dark"] .employee-dashboard .table-card,
+    html[data-bs-theme="dark"] .employee-dashboard .table-card,
+    html[data-theme="dark"] .employee-dashboard .table-card {
         background: #102119 !important;
         border-color: rgba(122, 240, 181, 0.18) !important;
     }
 
     html[data-pms-theme="dark"] .employee-dashboard .header-section h1,
+    html[data-bs-theme="dark"] .employee-dashboard .header-section h1,
+    html[data-theme="dark"] .employee-dashboard .header-section h1,
     html[data-pms-theme="dark"] .employee-dashboard .stat-value,
+    html[data-bs-theme="dark"] .employee-dashboard .stat-value,
+    html[data-theme="dark"] .employee-dashboard .stat-value,
     html[data-pms-theme="dark"] .employee-dashboard .table-card h3,
-    html[data-pms-theme="dark"] .employee-dashboard .table strong {
+    html[data-bs-theme="dark"] .employee-dashboard .table-card h3,
+    html[data-theme="dark"] .employee-dashboard .table-card h3,
+    html[data-pms-theme="dark"] .employee-dashboard .table strong,
+    html[data-bs-theme="dark"] .employee-dashboard .table strong,
+    html[data-theme="dark"] .employee-dashboard .table strong {
         color: #ffffff !important;
         -webkit-text-fill-color: #ffffff !important;
     }
 
     html[data-pms-theme="dark"] .employee-dashboard .subtitle,
-    html[data-pms-theme="dark"] .employee-dashboard .stat-label,
-    html[data-pms-theme="dark"] .employee-dashboard .table td {
+    html[data-bs-theme="dark"] .employee-dashboard .subtitle,
+    html[data-theme="dark"] .employee-dashboard .subtitle,
+    html[data-pms-theme="dark"] .employee-dashboard .table td,
+    html[data-bs-theme="dark"] .employee-dashboard .table td,
+    html[data-theme="dark"] .employee-dashboard .table td {
         color: #d9f1e4 !important;
         -webkit-text-fill-color: #d9f1e4 !important;
+    }
+
+    /* Stat card labels - crisp light mint for high contrast and perfect readability in dark mode */
+    html[data-pms-theme="dark"] .employee-dashboard .stat-card .stat-label,
+    html[data-bs-theme="dark"] .employee-dashboard .stat-card .stat-label,
+    html[data-theme="dark"] .employee-dashboard .stat-card .stat-label,
+    html[data-pms-theme="dark"] .employee-dashboard .stat-label,
+    html[data-bs-theme="dark"] .employee-dashboard .stat-label,
+    html[data-theme="dark"] .employee-dashboard .stat-label {
+        color: #a7f3d0 !important;
+        -webkit-text-fill-color: #a7f3d0 !important;
+        font-weight: 800 !important;
+        letter-spacing: 0.5px !important;
+        opacity: 0.95 !important;
+    }
+
+    /* Company Switcher Cards in Dark Mode */
+    html[data-pms-theme="dark"] .company-switch-card,
+    html[data-bs-theme="dark"] .company-switch-card,
+    html[data-theme="dark"] .company-switch-card {
+        background: #102119 !important;
+        border: 1px solid rgba(122, 240, 181, 0.2) !important;
+        box-shadow: 0 14px 34px rgba(0, 0, 0, 0.25) !important;
+        color: #ffffff !important;
+    }
+
+    html[data-pms-theme="dark"] .company-switch-card:hover,
+    html[data-bs-theme="dark"] .company-switch-card:hover,
+    html[data-theme="dark"] .company-switch-card:hover {
+        background: #142b21 !important;
+        border-color: rgba(122, 240, 181, 0.38) !important;
+        box-shadow: 0 18px 40px rgba(0, 0, 0, 0.4) !important;
+        color: #ffffff !important;
+        transform: translateY(-2px);
+    }
+
+    html[data-pms-theme="dark"] .company-switch-card.active,
+    html[data-bs-theme="dark"] .company-switch-card.active,
+    html[data-theme="dark"] .company-switch-card.active {
+        background: linear-gradient(135deg, #132a20 0%, #1a382c 100%) !important;
+        border: 1px solid rgba(122, 240, 181, 0.45) !important;
+        box-shadow: 0 0 24px rgba(52, 211, 153, 0.2) !important;
+    }
+
+    html[data-pms-theme="dark"] .company-switch-meta strong,
+    html[data-bs-theme="dark"] .company-switch-meta strong,
+    html[data-theme="dark"] .company-switch-meta strong {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        font-weight: 800 !important;
+    }
+
+    html[data-pms-theme="dark"] .company-switch-meta small,
+    html[data-bs-theme="dark"] .company-switch-meta small,
+    html[data-theme="dark"] .company-switch-meta small {
+        color: #a7f3d0 !important;
+        -webkit-text-fill-color: #a7f3d0 !important;
+        font-weight: 600 !important;
+    }
+
+    html[data-pms-theme="dark"] .company-switch-icon,
+    html[data-bs-theme="dark"] .company-switch-icon,
+    html[data-theme="dark"] .company-switch-icon,
+    html.dark .company-switch-icon,
+    body[data-pms-theme="dark"] .company-switch-icon,
+    body[data-bs-theme="dark"] .company-switch-icon,
+    body.dark .company-switch-icon,
+    html[data-pms-theme="dark"] .company-switch-card .company-switch-icon,
+    html[data-bs-theme="dark"] .company-switch-card .company-switch-icon,
+    html[data-theme="dark"] .company-switch-card .company-switch-icon,
+    html.dark .company-switch-card .company-switch-icon,
+    body[data-pms-theme="dark"] .company-switch-card .company-switch-icon,
+    body[data-bs-theme="dark"] .company-switch-card .company-switch-icon,
+    body.dark .company-switch-card .company-switch-icon,
+    html[data-pms-theme="dark"] .company-switch-card .company-switch-icon *,
+    html[data-bs-theme="dark"] .company-switch-card .company-switch-icon *,
+    html[data-theme="dark"] .company-switch-card .company-switch-icon *,
+    html.dark .company-switch-card .company-switch-icon *,
+    body[data-pms-theme="dark"] .company-switch-card .company-switch-icon *,
+    body[data-bs-theme="dark"] .company-switch-card .company-switch-icon *,
+    body.dark .company-switch-card .company-switch-icon *,
+    html[data-pms-theme="dark"] .company-switch-card .company-switch-icon i,
+    html[data-bs-theme="dark"] .company-switch-card .company-switch-icon i,
+    html[data-theme="dark"] .company-switch-card .company-switch-icon i,
+    html[data-pms-theme="dark"] .company-switch-card .company-switch-icon span,
+    html[data-bs-theme="dark"] .company-switch-card .company-switch-icon span,
+    html[data-theme="dark"] .company-switch-card .company-switch-icon span {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        fill: #ffffff !important;
+    }
+
+    html[data-pms-theme="dark"] .company-module-rail,
+    html[data-bs-theme="dark"] .company-module-rail,
+    html[data-theme="dark"] .company-module-rail {
+        background: #102119 !important;
+        border: 1px solid rgba(122, 240, 181, 0.18) !important;
+        box-shadow: 0 14px 34px rgba(0, 0, 0, 0.25) !important;
+    }
+
+    html[data-pms-theme="dark"] .company-module-rail span,
+    html[data-bs-theme="dark"] .company-module-rail span,
+    html[data-theme="dark"] .company-module-rail span {
+        color: #a7f3d0 !important;
+        -webkit-text-fill-color: #a7f3d0 !important;
+    }
+
+    html[data-pms-theme="dark"] .company-module-rail a,
+    html[data-bs-theme="dark"] .company-module-rail a,
+    html[data-theme="dark"] .company-module-rail a {
+        background: #183026 !important;
+        border: 1px solid rgba(122, 240, 181, 0.22) !important;
+        color: #7af0b5 !important;
+        -webkit-text-fill-color: #7af0b5 !important;
+    }
+
+    html[data-pms-theme="dark"] .company-module-rail a:hover,
+    html[data-bs-theme="dark"] .company-module-rail a:hover,
+    html[data-theme="dark"] .company-module-rail a:hover {
+        background: #1f3e31 !important;
+        color: #a7f3d0 !important;
+        -webkit-text-fill-color: #a7f3d0 !important;
     }
 
     /* ===== Employee list row gap: same distance for every row ===== */
@@ -3014,6 +3420,764 @@
         .employee-dashboard .employee-list-table .employee-info {
             min-height: 48px !important;
         }
+    }
+
+    :root {
+        --emp-count-color: #6b4e9e;
+        --emp-footer-text: #4b5563;
+        --emp-footer-select-bg: #ffffff;
+        --emp-footer-select-color: #1f2937;
+        --emp-footer-select-border: #e0d7ff;
+    }
+
+    html[data-pms-theme="dark"],
+    html[data-bs-theme="dark"],
+    html[data-theme="dark"],
+    html.dark,
+    body[data-pms-theme="dark"],
+    body[data-bs-theme="dark"],
+    body.dark,
+    [data-pms-theme="dark"],
+    [data-bs-theme="dark"],
+    .dark {
+        --emp-count-color: #a7f3d0;
+        --emp-footer-text: #CBD5E1;
+        --emp-footer-select-bg: #14281e;
+        --emp-footer-select-color: #f8fffb;
+        --emp-footer-select-border: rgba(122, 240, 181, 0.35);
+    }
+
+    /* ===== EMPLOYEE LIST TABLE & CONTROLS - DARK MODE ENHANCEMENTS ===== */
+    /* 0. Employee Count Subtitle ("5 employees") */
+    html[data-pms-theme="dark"] .employee-dashboard .employee-count,
+    html[data-bs-theme="dark"] .employee-dashboard .employee-count,
+    html[data-theme="dark"] .employee-dashboard .employee-count,
+    html.dark .employee-dashboard .employee-count,
+    body[data-pms-theme="dark"] .employee-dashboard .employee-count,
+    body[data-bs-theme="dark"] .employee-dashboard .employee-count,
+    body.dark .employee-dashboard .employee-count,
+    [data-pms-theme="dark"] .employee-dashboard .employee-count,
+    [data-bs-theme="dark"] .employee-dashboard .employee-count,
+    [data-theme="dark"] .employee-dashboard .employee-count,
+    .dark .employee-dashboard .employee-count {
+        color: #a7f3d0 !important;
+        -webkit-text-fill-color: #a7f3d0 !important;
+        font-weight: 600 !important;
+    }
+
+    /* 0b. Archive Inactive Button in Dark Mode */
+    html[data-pms-theme="dark"] .employee-dashboard .btn-bulk-delete,
+    html[data-bs-theme="dark"] .employee-dashboard .btn-bulk-delete,
+    html[data-theme="dark"] .employee-dashboard .btn-bulk-delete,
+    html.dark .employee-dashboard .btn-bulk-delete,
+    body[data-pms-theme="dark"] .employee-dashboard .btn-bulk-delete,
+    body[data-bs-theme="dark"] .employee-dashboard .btn-bulk-delete,
+    body.dark .employee-dashboard .btn-bulk-delete {
+        background: rgba(239, 68, 68, 0.22) !important;
+        border: 1px solid rgba(248, 113, 113, 0.45) !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        font-weight: 700 !important;
+    }
+    html[data-pms-theme="dark"] .employee-dashboard .btn-bulk-delete:hover:not(:disabled),
+    html[data-bs-theme="dark"] .employee-dashboard .btn-bulk-delete:hover:not(:disabled),
+    html[data-theme="dark"] .employee-dashboard .btn-bulk-delete:hover:not(:disabled) {
+        background: rgba(239, 68, 68, 0.35) !important;
+        border-color: rgba(248, 113, 113, 0.65) !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+    html[data-pms-theme="dark"] .employee-dashboard .btn-bulk-delete:disabled,
+    html[data-bs-theme="dark"] .employee-dashboard .btn-bulk-delete:disabled,
+    html[data-theme="dark"] .employee-dashboard .btn-bulk-delete:disabled {
+        opacity: 0.65 !important;
+        background: rgba(239, 68, 68, 0.18) !important;
+        border-color: rgba(248, 113, 113, 0.3) !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    /* 1. Header Selected Badges */
+    html[data-pms-theme="dark"] .employee-dashboard #bulk-selected-count,
+    html[data-bs-theme="dark"] .employee-dashboard #bulk-selected-count,
+    html[data-theme="dark"] .employee-dashboard #bulk-selected-count,
+    html.dark .employee-dashboard #bulk-selected-count,
+    body[data-pms-theme="dark"] .employee-dashboard #bulk-selected-count,
+    body[data-bs-theme="dark"] .employee-dashboard #bulk-selected-count,
+    body.dark .employee-dashboard #bulk-selected-count,
+    html[data-pms-theme="dark"] .employee-dashboard .table-header .selected-badge,
+    html[data-bs-theme="dark"] .employee-dashboard .table-header .selected-badge,
+    html[data-theme="dark"] .employee-dashboard .table-header .selected-badge,
+    html[data-pms-theme="dark"] .employee-dashboard .selected-badge,
+    html[data-bs-theme="dark"] .employee-dashboard .selected-badge,
+    html[data-theme="dark"] .employee-dashboard .selected-badge {
+        background: rgba(16, 185, 129, 0.2) !important;
+        border: 1px solid rgba(122, 240, 181, 0.45) !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        font-weight: 800 !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    /* 2. Table Tools Bar ("0 rows selected" & "Export" dropdown) */
+    html[data-pms-theme="dark"] .employee-dashboard .pms-table-tools,
+    html[data-bs-theme="dark"] .employee-dashboard .pms-table-tools,
+    html[data-theme="dark"] .employee-dashboard .pms-table-tools,
+    html.dark .employee-dashboard .pms-table-tools,
+    body[data-pms-theme="dark"] .employee-dashboard .pms-table-tools,
+    body[data-bs-theme="dark"] .employee-dashboard .pms-table-tools,
+    body.dark .employee-dashboard .pms-table-tools {
+        background: #0d1a14 !important;
+        border-color: rgba(122, 240, 181, 0.18) !important;
+        color: #ffffff !important;
+    }
+
+    html[data-pms-theme="dark"] .employee-dashboard .pms-table-tools__status,
+    html[data-bs-theme="dark"] .employee-dashboard .pms-table-tools__status,
+    html[data-theme="dark"] .employee-dashboard .pms-table-tools__status,
+    html.dark .employee-dashboard .pms-table-tools__status,
+    body[data-pms-theme="dark"] .employee-dashboard .pms-table-tools__status,
+    body[data-bs-theme="dark"] .employee-dashboard .pms-table-tools__status,
+    body.dark .employee-dashboard .pms-table-tools__status,
+    [data-pms-theme="dark"] .employee-dashboard .pms-table-tools__status,
+    [data-bs-theme="dark"] .employee-dashboard .pms-table-tools__status,
+    [data-theme="dark"] .employee-dashboard .pms-table-tools__status,
+    .dark .employee-dashboard .pms-table-tools__status {
+        color: #f8fffb !important;
+        -webkit-text-fill-color: #f8fffb !important;
+        font-weight: 800 !important;
+        letter-spacing: 0.3px !important;
+    }
+
+    html[data-pms-theme="dark"] .employee-dashboard .pms-table-export__toggle,
+    html[data-bs-theme="dark"] .employee-dashboard .pms-table-export__toggle,
+    html[data-theme="dark"] .employee-dashboard .pms-table-export__toggle,
+    html.dark .employee-dashboard .pms-table-export__toggle,
+    body[data-pms-theme="dark"] .employee-dashboard .pms-table-export__toggle,
+    body[data-bs-theme="dark"] .employee-dashboard .pms-table-export__toggle,
+    body.dark .employee-dashboard .pms-table-export__toggle,
+    html[data-pms-theme="dark"] .employee-dashboard .pms-table-export__toggle span,
+    html[data-bs-theme="dark"] .employee-dashboard .pms-table-export__toggle span,
+    html[data-theme="dark"] .employee-dashboard .pms-table-export__toggle span,
+    html.dark .employee-dashboard .pms-table-export__toggle span,
+    body[data-pms-theme="dark"] .employee-dashboard .pms-table-export__toggle span,
+    body[data-bs-theme="dark"] .employee-dashboard .pms-table-export__toggle span,
+    body.dark .employee-dashboard .pms-table-export__toggle span,
+    html[data-pms-theme="dark"] .employee-dashboard .pms-table-export.is-open .pms-table-export__toggle,
+    html[data-bs-theme="dark"] .employee-dashboard .pms-table-export.is-open .pms-table-export__toggle,
+    html[data-theme="dark"] .employee-dashboard .pms-table-export.is-open .pms-table-export__toggle,
+    html.dark .employee-dashboard .pms-table-export.is-open .pms-table-export__toggle,
+    body[data-pms-theme="dark"] .employee-dashboard .pms-table-export.is-open .pms-table-export__toggle,
+    body[data-bs-theme="dark"] .employee-dashboard .pms-table-export.is-open .pms-table-export__toggle,
+    body.dark .employee-dashboard .pms-table-export.is-open .pms-table-export__toggle,
+    html[data-pms-theme="dark"] .employee-dashboard .pms-table-export.is-open .pms-table-export__toggle span,
+    html[data-bs-theme="dark"] .employee-dashboard .pms-table-export.is-open .pms-table-export__toggle span,
+    html[data-theme="dark"] .employee-dashboard .pms-table-export.is-open .pms-table-export__toggle span,
+    html.dark .employee-dashboard .pms-table-export.is-open .pms-table-export__toggle span,
+    body[data-pms-theme="dark"] .employee-dashboard .pms-table-export.is-open .pms-table-export__toggle span,
+    body[data-bs-theme="dark"] .employee-dashboard .pms-table-export.is-open .pms-table-export__toggle span,
+    body.dark .employee-dashboard .pms-table-export.is-open .pms-table-export__toggle span,
+    html[data-pms-theme="dark"] .pms-table-export__toggle,
+    html[data-pms-theme="dark"] .pms-table-export__toggle span,
+    html[data-pms-theme="dark"] .pms-table-export.is-open .pms-table-export__toggle,
+    html[data-pms-theme="dark"] .pms-table-export.is-open .pms-table-export__toggle span {
+        background: #183026 !important;
+        border: 1px solid rgba(122, 240, 181, 0.35) !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        font-weight: 800 !important;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    html[data-pms-theme="dark"] .employee-dashboard .pms-table-export__toggle svg,
+    html[data-bs-theme="dark"] .employee-dashboard .pms-table-export__toggle svg,
+    html[data-theme="dark"] .employee-dashboard .pms-table-export__toggle svg,
+    html.dark .employee-dashboard .pms-table-export__toggle svg,
+    body[data-pms-theme="dark"] .employee-dashboard .pms-table-export__toggle svg,
+    body[data-bs-theme="dark"] .employee-dashboard .pms-table-export__toggle svg,
+    body.dark .employee-dashboard .pms-table-export__toggle svg {
+        color: #ffffff !important;
+        fill: #ffffff !important;
+        stroke: #ffffff !important;
+    }
+
+    html[data-pms-theme="dark"] .employee-dashboard .pms-table-export__toggle:hover,
+    html[data-bs-theme="dark"] .employee-dashboard .pms-table-export__toggle:hover,
+    html[data-theme="dark"] .employee-dashboard .pms-table-export__toggle:hover,
+    html.dark .employee-dashboard .pms-table-export__toggle:hover,
+    body[data-pms-theme="dark"] .employee-dashboard .pms-table-export__toggle:hover,
+    body[data-bs-theme="dark"] .employee-dashboard .pms-table-export__toggle:hover,
+    body.dark .employee-dashboard .pms-table-export__toggle:hover,
+    html[data-pms-theme="dark"] .employee-dashboard .pms-table-export__toggle:hover span,
+    html[data-bs-theme="dark"] .employee-dashboard .pms-table-export__toggle:hover span,
+    html[data-theme="dark"] .employee-dashboard .pms-table-export__toggle:hover span,
+    html.dark .employee-dashboard .pms-table-export__toggle:hover span,
+    body[data-pms-theme="dark"] .employee-dashboard .pms-table-export__toggle:hover span,
+    body[data-bs-theme="dark"] .employee-dashboard .pms-table-export__toggle:hover span,
+    body.dark .employee-dashboard .pms-table-export__toggle:hover span,
+    html[data-pms-theme="dark"] .pms-table-export__toggle:hover,
+    html[data-pms-theme="dark"] .pms-table-export__toggle:hover span {
+        background: #1f3e31 !important;
+        border-color: rgba(122, 240, 181, 0.6) !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    html[data-pms-theme="dark"] .employee-dashboard .pms-table-export__menu,
+    html[data-bs-theme="dark"] .employee-dashboard .pms-table-export__menu,
+    html[data-theme="dark"] .employee-dashboard .pms-table-export__menu,
+    html.dark .employee-dashboard .pms-table-export__menu,
+    body[data-pms-theme="dark"] .employee-dashboard .pms-table-export__menu,
+    body[data-bs-theme="dark"] .employee-dashboard .pms-table-export__menu,
+    body.dark .employee-dashboard .pms-table-export__menu {
+        background: #102119 !important;
+        border: 1px solid rgba(122, 240, 181, 0.25) !important;
+        box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5) !important;
+    }
+
+    html[data-pms-theme="dark"] .employee-dashboard .pms-table-export__option,
+    html[data-bs-theme="dark"] .employee-dashboard .pms-table-export__option,
+    html[data-theme="dark"] .employee-dashboard .pms-table-export__option,
+    html.dark .employee-dashboard .pms-table-export__option,
+    body[data-pms-theme="dark"] .employee-dashboard .pms-table-export__option,
+    body[data-bs-theme="dark"] .employee-dashboard .pms-table-export__option,
+    body.dark .employee-dashboard .pms-table-export__option,
+    html[data-pms-theme="dark"] .employee-dashboard .pms-table-export__option span,
+    html[data-bs-theme="dark"] .employee-dashboard .pms-table-export__option span,
+    html[data-theme="dark"] .employee-dashboard .pms-table-export__option span,
+    html.dark .employee-dashboard .pms-table-export__option span,
+    body[data-pms-theme="dark"] .employee-dashboard .pms-table-export__option span,
+    body[data-bs-theme="dark"] .employee-dashboard .pms-table-export__option span,
+    body.dark .employee-dashboard .pms-table-export__option span,
+    html[data-pms-theme="dark"] .pms-table-export__option,
+    html[data-pms-theme="dark"] .pms-table-export__option span,
+    html[data-pms-theme="dark"] [data-export-scope="all"],
+    html[data-pms-theme="dark"] [data-export-scope="all"] span,
+    html[data-pms-theme="dark"] [data-export-scope="selected"],
+    html[data-pms-theme="dark"] [data-export-scope="selected"] span {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        font-weight: 700 !important;
+    }
+
+    html[data-pms-theme="dark"] .employee-dashboard .pms-table-export__option:disabled,
+    html[data-bs-theme="dark"] .employee-dashboard .pms-table-export__option:disabled,
+    html[data-theme="dark"] .employee-dashboard .pms-table-export__option:disabled,
+    html.dark .employee-dashboard .pms-table-export__option:disabled,
+    body[data-pms-theme="dark"] .employee-dashboard .pms-table-export__option:disabled,
+    body[data-bs-theme="dark"] .employee-dashboard .pms-table-export__option:disabled,
+    body.dark .employee-dashboard .pms-table-export__option:disabled,
+    html[data-pms-theme="dark"] .employee-dashboard .pms-table-export__option:disabled span,
+    html[data-bs-theme="dark"] .employee-dashboard .pms-table-export__option:disabled span,
+    html[data-theme="dark"] .employee-dashboard .pms-table-export__option:disabled span,
+    html.dark .employee-dashboard .pms-table-export__option:disabled span,
+    body[data-pms-theme="dark"] .employee-dashboard .pms-table-export__option:disabled span,
+    body[data-bs-theme="dark"] .employee-dashboard .pms-table-export__option:disabled span,
+    body.dark .employee-dashboard .pms-table-export__option:disabled span,
+    html[data-pms-theme="dark"] .pms-table-export__option:disabled,
+    html[data-pms-theme="dark"] .pms-table-export__option:disabled span {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        opacity: 0.9 !important;
+    }
+
+    html[data-pms-theme="dark"] .employee-dashboard .pms-table-export__option svg,
+    html[data-bs-theme="dark"] .employee-dashboard .pms-table-export__option svg,
+    html[data-theme="dark"] .employee-dashboard .pms-table-export__option svg,
+    html.dark .employee-dashboard .pms-table-export__option svg,
+    body[data-pms-theme="dark"] .employee-dashboard .pms-table-export__option svg,
+    body[data-bs-theme="dark"] .employee-dashboard .pms-table-export__option svg,
+    body.dark .employee-dashboard .pms-table-export__option svg,
+    html[data-pms-theme="dark"] .pms-table-export__option svg {
+        color: #ffffff !important;
+        fill: #ffffff !important;
+        stroke: #ffffff !important;
+    }
+
+    html[data-pms-theme="dark"] .employee-dashboard .pms-table-export__option:hover,
+    html[data-bs-theme="dark"] .employee-dashboard .pms-table-export__option:hover,
+    html[data-theme="dark"] .employee-dashboard .pms-table-export__option:hover,
+    html.dark .employee-dashboard .pms-table-export__option:hover,
+    body[data-pms-theme="dark"] .employee-dashboard .pms-table-export__option:hover,
+    body[data-bs-theme="dark"] .employee-dashboard .pms-table-export__option:hover,
+    body.dark .employee-dashboard .pms-table-export__option:hover,
+    html[data-pms-theme="dark"] .employee-dashboard .pms-table-export__option:hover span,
+    html[data-bs-theme="dark"] .employee-dashboard .pms-table-export__option:hover span,
+    html[data-theme="dark"] .employee-dashboard .pms-table-export__option:hover span,
+    html.dark .employee-dashboard .pms-table-export__option:hover span,
+    body[data-pms-theme="dark"] .employee-dashboard .pms-table-export__option:hover span,
+    body[data-bs-theme="dark"] .employee-dashboard .pms-table-export__option:hover span,
+    body.dark .employee-dashboard .pms-table-export__option:hover span,
+    html[data-pms-theme="dark"] .pms-table-export__option:hover,
+    html[data-pms-theme="dark"] .pms-table-export__option:hover span {
+        background: rgba(64, 212, 140, 0.15) !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    /* 3. EMP ID Badges */
+    html[data-pms-theme="dark"] .employee-dashboard .employee-id-badge,
+    html[data-bs-theme="dark"] .employee-dashboard .employee-id-badge,
+    html[data-theme="dark"] .employee-dashboard .employee-id-badge,
+    html.dark .employee-dashboard .employee-id-badge,
+    body[data-pms-theme="dark"] .employee-dashboard .employee-id-badge,
+    body[data-bs-theme="dark"] .employee-dashboard .employee-id-badge,
+    body.dark .employee-dashboard .employee-id-badge,
+    html[data-pms-theme="dark"] .employee-dashboard .employee-list-table .employee-id-badge,
+    html[data-bs-theme="dark"] .employee-dashboard .employee-list-table .employee-id-badge,
+    html[data-theme="dark"] .employee-dashboard .employee-list-table .employee-id-badge {
+        background: #183026 !important;
+        border: 1px solid rgba(122, 240, 181, 0.35) !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        font-weight: 800 !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25) !important;
+        letter-spacing: 0.5px !important;
+    }
+
+    /* 4. Company Column Text & Logo */
+    html[data-pms-theme="dark"] .employee-dashboard .employee-company-chip > span:last-child,
+    html[data-bs-theme="dark"] .employee-dashboard .employee-company-chip > span:last-child,
+    html[data-theme="dark"] .employee-dashboard .employee-company-chip > span:last-child,
+    html.dark .employee-dashboard .employee-company-chip > span:last-child,
+    body[data-pms-theme="dark"] .employee-dashboard .employee-company-chip > span:last-child,
+    body[data-bs-theme="dark"] .employee-dashboard .employee-company-chip > span:last-child,
+    body.dark .employee-dashboard .employee-company-chip > span:last-child,
+    html[data-pms-theme="dark"] .employee-dashboard .employee-company-chip span,
+    html[data-bs-theme="dark"] .employee-dashboard .employee-company-chip span,
+    html[data-theme="dark"] .employee-dashboard .employee-company-chip span {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        font-weight: 750 !important;
+    }
+
+    html[data-pms-theme="dark"] .employee-dashboard .employee-company-logo,
+    html[data-bs-theme="dark"] .employee-dashboard .employee-company-logo,
+    html[data-theme="dark"] .employee-dashboard .employee-company-logo,
+    html.dark .employee-dashboard .employee-company-logo,
+    body[data-pms-theme="dark"] .employee-dashboard .employee-company-logo,
+    body[data-bs-theme="dark"] .employee-dashboard .employee-company-logo,
+    body.dark .employee-dashboard .employee-company-logo {
+        background: #183026 !important;
+        border: 1px solid rgba(122, 240, 181, 0.35) !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        font-weight: 900 !important;
+    }
+
+    /* 5. Designation Under Employee Name - HIGH CONTRAST & CRISP */
+    html[data-pms-theme="dark"] .employee-dashboard .employee-designation,
+    html[data-bs-theme="dark"] .employee-dashboard .employee-designation,
+    html[data-theme="dark"] .employee-dashboard .employee-designation,
+    html.dark .employee-dashboard .employee-designation,
+    body[data-pms-theme="dark"] .employee-dashboard .employee-designation,
+    body[data-bs-theme="dark"] .employee-dashboard .employee-designation,
+    body.dark .employee-dashboard .employee-designation,
+    html[data-pms-theme="dark"] .employee-designation,
+    html[data-bs-theme="dark"] .employee-designation,
+    html[data-theme="dark"] .employee-designation,
+    html.dark .employee-designation,
+    body[data-pms-theme="dark"] .employee-designation,
+    body[data-bs-theme="dark"] .employee-designation,
+    body.dark .employee-designation,
+    html[data-pms-theme="dark"] td .employee-designation,
+    html[data-bs-theme="dark"] td .employee-designation,
+    html[data-theme="dark"] td .employee-designation,
+    html.dark td .employee-designation,
+    html[data-pms-theme="dark"] .employee-details span.employee-designation,
+    html[data-bs-theme="dark"] .employee-details span.employee-designation,
+    html[data-theme="dark"] .employee-details span.employee-designation,
+    html.dark .employee-details span.employee-designation {
+        color: #CBD5E1 !important;
+        -webkit-text-fill-color: #CBD5E1 !important;
+        font-weight: 500 !important;
+        opacity: 1 !important;
+    }
+
+    /* 6. Role & Reporting Column - CLEAR & LEGIBLE */
+    html[data-pms-theme="dark"] .employee-dashboard .role-name,
+    html[data-bs-theme="dark"] .employee-dashboard .role-name,
+    html[data-theme="dark"] .employee-dashboard .role-name,
+    html.dark .employee-dashboard .role-name,
+    body[data-pms-theme="dark"] .employee-dashboard .role-name,
+    body[data-bs-theme="dark"] .employee-dashboard .role-name,
+    body.dark .employee-dashboard .role-name,
+    html[data-pms-theme="dark"] .role-name,
+    html[data-bs-theme="dark"] .role-name,
+    html[data-theme="dark"] .role-name,
+    html.dark .role-name,
+    html[data-pms-theme="dark"] td .role-name,
+    html[data-bs-theme="dark"] td .role-name,
+    html[data-theme="dark"] td .role-name,
+    html[data-pms-theme="dark"] .employee-dashboard .role-info,
+    html[data-bs-theme="dark"] .employee-dashboard .role-info,
+    html[data-theme="dark"] .employee-dashboard .role-info,
+    html.dark .employee-dashboard .role-info,
+    body[data-pms-theme="dark"] .employee-dashboard .role-info,
+    body[data-bs-theme="dark"] .employee-dashboard .role-info,
+    body.dark .employee-dashboard .role-info {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        font-weight: 700 !important;
+        font-size: 0.92rem !important;
+    }
+
+    html[data-pms-theme="dark"] .employee-dashboard .reports-to,
+    html[data-bs-theme="dark"] .employee-dashboard .reports-to,
+    html[data-theme="dark"] .employee-dashboard .reports-to,
+    html.dark .employee-dashboard .reports-to,
+    body[data-pms-theme="dark"] .employee-dashboard .reports-to,
+    body[data-bs-theme="dark"] .employee-dashboard .reports-to,
+    body.dark .employee-dashboard .reports-to,
+    html[data-pms-theme="dark"] .reports-to,
+    html[data-bs-theme="dark"] .reports-to,
+    html[data-theme="dark"] .reports-to,
+    html.dark .reports-to,
+    html[data-pms-theme="dark"] td .reports-to,
+    html[data-bs-theme="dark"] td .reports-to,
+    html[data-theme="dark"] td .reports-to,
+    html[data-pms-theme="dark"] .employee-dashboard .reports-to *,
+    html[data-bs-theme="dark"] .employee-dashboard .reports-to *,
+    html[data-theme="dark"] .employee-dashboard .reports-to *,
+    html.dark .employee-dashboard .reports-to *,
+    body[data-pms-theme="dark"] .employee-dashboard .reports-to *,
+    body[data-bs-theme="dark"] .employee-dashboard .reports-to *,
+    body.dark .employee-dashboard .reports-to * {
+        color: #94A3B8 !important;
+        -webkit-text-fill-color: #94A3B8 !important;
+        font-weight: 500 !important;
+        font-size: 0.82rem !important;
+    }
+
+    html[data-pms-theme="dark"] .employee-dashboard .reports-to i,
+    html[data-bs-theme="dark"] .employee-dashboard .reports-to i,
+    html[data-theme="dark"] .employee-dashboard .reports-to i,
+    html.dark .employee-dashboard .reports-to i,
+    body[data-pms-theme="dark"] .employee-dashboard .reports-to i,
+    body[data-bs-theme="dark"] .employee-dashboard .reports-to i,
+    body.dark .employee-dashboard .reports-to i,
+    html[data-pms-theme="dark"] .reports-to i,
+    html[data-bs-theme="dark"] .reports-to i,
+    html[data-theme="dark"] .reports-to i,
+    html.dark .reports-to i {
+        color: #22D3EE !important;
+        -webkit-text-fill-color: #22D3EE !important;
+    }
+
+    /* 7. Status Column Badges */
+    html[data-pms-theme="dark"] .employee-dashboard .status-badge,
+    html[data-bs-theme="dark"] .employee-dashboard .status-badge,
+    html[data-theme="dark"] .employee-dashboard .status-badge,
+    html.dark .employee-dashboard .status-badge,
+    body[data-pms-theme="dark"] .employee-dashboard .status-badge,
+    body[data-bs-theme="dark"] .employee-dashboard .status-badge,
+    body.dark .employee-dashboard .status-badge,
+    html[data-pms-theme="dark"] .status-badge,
+    html[data-bs-theme="dark"] .status-badge,
+    html[data-theme="dark"] .status-badge,
+    html.dark .status-badge,
+    body[data-pms-theme="dark"] .status-badge,
+    body[data-bs-theme="dark"] .status-badge,
+    body.dark .status-badge,
+    html[data-pms-theme="dark"] .status-badge .status-text,
+    html[data-bs-theme="dark"] .status-badge .status-text,
+    html[data-theme="dark"] .status-badge .status-text,
+    html.dark .status-badge .status-text,
+    body[data-pms-theme="dark"] .status-badge .status-text,
+    body[data-bs-theme="dark"] .status-badge .status-text,
+    body.dark .status-badge .status-text {
+        border-radius: 999px !important;
+        padding: 5px 14px !important;
+        font-size: 0.82rem !important;
+        font-weight: 800 !important;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3) !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    html[data-pms-theme="dark"] .employee-dashboard .status-unknown,
+    html[data-bs-theme="dark"] .employee-dashboard .status-unknown,
+    html[data-theme="dark"] .employee-dashboard .status-unknown,
+    html.dark .employee-dashboard .status-unknown,
+    body[data-pms-theme="dark"] .employee-dashboard .status-unknown,
+    body[data-bs-theme="dark"] .employee-dashboard .status-unknown,
+    body.dark .employee-dashboard .status-unknown,
+    html[data-pms-theme="dark"] .status-unknown,
+    html[data-bs-theme="dark"] .status-unknown,
+    html[data-theme="dark"] .status-unknown,
+    html.dark .status-unknown,
+    body[data-pms-theme="dark"] .status-unknown,
+    body[data-bs-theme="dark"] .status-unknown,
+    body.dark .status-unknown,
+    html[data-pms-theme="dark"] .status-unknown .status-text,
+    html[data-bs-theme="dark"] .status-unknown .status-text,
+    html[data-theme="dark"] .status-unknown .status-text,
+    html.dark .status-unknown .status-text,
+    body[data-pms-theme="dark"] .status-unknown .status-text,
+    body[data-bs-theme="dark"] .status-unknown .status-text,
+    body.dark .status-unknown .status-text {
+        background: rgba(148, 163, 184, 0.18) !important;
+        border: 1px solid rgba(203, 213, 225, 0.45) !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        font-weight: 800 !important;
+    }
+
+    html[data-pms-theme="dark"] .employee-dashboard .status-active,
+    html[data-bs-theme="dark"] .employee-dashboard .status-active,
+    html[data-theme="dark"] .employee-dashboard .status-active,
+    html.dark .employee-dashboard .status-active,
+    body[data-pms-theme="dark"] .employee-dashboard .status-active,
+    body[data-bs-theme="dark"] .employee-dashboard .status-active,
+    body.dark .employee-dashboard .status-active,
+    html[data-pms-theme="dark"] .status-active,
+    html[data-bs-theme="dark"] .status-active,
+    html[data-theme="dark"] .status-active,
+    html.dark .status-active,
+    body[data-pms-theme="dark"] .status-active,
+    body[data-bs-theme="dark"] .status-active,
+    body.dark .status-active,
+    html[data-pms-theme="dark"] .status-active .status-text,
+    html[data-bs-theme="dark"] .status-active .status-text,
+    html[data-theme="dark"] .status-active .status-text,
+    html.dark .status-active .status-text,
+    body[data-pms-theme="dark"] .status-active .status-text,
+    body[data-bs-theme="dark"] .status-active .status-text,
+    body.dark .status-active .status-text {
+        background: rgba(16, 185, 129, 0.2) !important;
+        border: 1px solid rgba(52, 211, 153, 0.5) !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        font-weight: 800 !important;
+    }
+
+    html[data-pms-theme="dark"] .employee-dashboard .status-active .status-dot,
+    html[data-bs-theme="dark"] .employee-dashboard .status-active .status-dot,
+    html[data-theme="dark"] .employee-dashboard .status-active .status-dot,
+    html.dark .employee-dashboard .status-active .status-dot,
+    body[data-pms-theme="dark"] .employee-dashboard .status-active .status-dot,
+    body[data-bs-theme="dark"] .employee-dashboard .status-active .status-dot,
+    body.dark .employee-dashboard .status-active .status-dot,
+    html[data-pms-theme="dark"] .status-active .status-dot,
+    html[data-bs-theme="dark"] .status-active .status-dot,
+    html[data-theme="dark"] .status-active .status-dot,
+    html.dark .status-active .status-dot,
+    body[data-pms-theme="dark"] .status-active .status-dot,
+    body[data-bs-theme="dark"] .status-active .status-dot,
+    body.dark .status-active .status-dot {
+        background: #34d399 !important;
+        box-shadow: 0 0 0 2px rgba(52, 211, 153, 0.35) !important;
+    }
+
+    html[data-pms-theme="dark"] .employee-dashboard .status-inactive,
+    html[data-bs-theme="dark"] .employee-dashboard .status-inactive,
+    html[data-theme="dark"] .employee-dashboard .status-inactive,
+    html.dark .employee-dashboard .status-inactive,
+    body[data-pms-theme="dark"] .employee-dashboard .status-inactive,
+    body[data-bs-theme="dark"] .employee-dashboard .status-inactive,
+    body.dark .employee-dashboard .status-inactive,
+    html[data-pms-theme="dark"] .status-inactive,
+    html[data-bs-theme="dark"] .status-inactive,
+    html[data-theme="dark"] .status-inactive,
+    html.dark .status-inactive,
+    body[data-pms-theme="dark"] .status-inactive,
+    body[data-bs-theme="dark"] .status-inactive,
+    body.dark .status-inactive,
+    html[data-pms-theme="dark"] .status-inactive .status-text,
+    html[data-bs-theme="dark"] .status-inactive .status-text,
+    html[data-theme="dark"] .status-inactive .status-text,
+    html.dark .status-inactive .status-text,
+    body[data-pms-theme="dark"] .status-inactive .status-text,
+    body[data-bs-theme="dark"] .status-inactive .status-text,
+    body.dark .status-inactive .status-text {
+        background: rgba(239, 68, 68, 0.2) !important;
+        border: 1px solid rgba(248, 113, 113, 0.5) !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        font-weight: 800 !important;
+    }
+
+    html[data-pms-theme="dark"] .employee-dashboard .status-inactive .status-dot,
+    html[data-bs-theme="dark"] .employee-dashboard .status-inactive .status-dot,
+    html[data-theme="dark"] .employee-dashboard .status-inactive .status-dot,
+    html.dark .employee-dashboard .status-inactive .status-dot,
+    body[data-pms-theme="dark"] .employee-dashboard .status-inactive .status-dot,
+    body[data-bs-theme="dark"] .employee-dashboard .status-inactive .status-dot,
+    body.dark .employee-dashboard .status-inactive .status-dot,
+    html[data-pms-theme="dark"] .status-inactive .status-dot,
+    html[data-bs-theme="dark"] .status-inactive .status-dot,
+    html[data-theme="dark"] .status-inactive .status-dot,
+    html.dark .status-inactive .status-dot,
+    body[data-pms-theme="dark"] .status-inactive .status-dot,
+    body[data-bs-theme="dark"] .status-inactive .status-dot,
+    body.dark .status-inactive .status-dot {
+        background: #f87171 !important;
+        box-shadow: 0 0 0 2px rgba(248, 113, 113, 0.35) !important;
+    }
+
+    /* 8. Table Footer & Pagination Controls in Dark Mode */
+    html[data-pms-theme="dark"] .employee-dashboard .table-footer,
+    html[data-bs-theme="dark"] .employee-dashboard .table-footer,
+    html[data-theme="dark"] .employee-dashboard .table-footer,
+    html.dark .employee-dashboard .table-footer,
+    body[data-pms-theme="dark"] .employee-dashboard .table-footer,
+    body[data-bs-theme="dark"] .employee-dashboard .table-footer,
+    body.dark .employee-dashboard .table-footer,
+    [data-pms-theme="dark"] .employee-dashboard .table-footer,
+    [data-bs-theme="dark"] .employee-dashboard .table-footer,
+    [data-theme="dark"] .employee-dashboard .table-footer,
+    .dark .employee-dashboard .table-footer {
+        background: #0d1a14 !important;
+        border-top: 1px solid rgba(122, 240, 181, 0.18) !important;
+        color: #CBD5E1 !important;
+    }
+
+    html[data-pms-theme="dark"] .employee-dashboard .show-entries,
+    html[data-bs-theme="dark"] .employee-dashboard .show-entries,
+    html[data-theme="dark"] .employee-dashboard .show-entries,
+    html.dark .employee-dashboard .show-entries,
+    body[data-pms-theme="dark"] .employee-dashboard .show-entries,
+    body[data-bs-theme="dark"] .employee-dashboard .show-entries,
+    body.dark .employee-dashboard .show-entries,
+    [data-pms-theme="dark"] .employee-dashboard .show-entries,
+    [data-bs-theme="dark"] .employee-dashboard .show-entries,
+    [data-theme="dark"] .employee-dashboard .show-entries,
+    .dark .employee-dashboard .show-entries,
+    html[data-pms-theme="dark"] .employee-dashboard .show-entries span,
+    html[data-bs-theme="dark"] .employee-dashboard .show-entries span,
+    html[data-theme="dark"] .employee-dashboard .show-entries span,
+    html.dark .employee-dashboard .show-entries span,
+    body[data-pms-theme="dark"] .employee-dashboard .show-entries span,
+    body[data-bs-theme="dark"] .employee-dashboard .show-entries span,
+    body.dark .employee-dashboard .show-entries span,
+    [data-pms-theme="dark"] .employee-dashboard .show-entries span,
+    [data-bs-theme="dark"] .employee-dashboard .show-entries span,
+    [data-theme="dark"] .employee-dashboard .show-entries span,
+    .dark .employee-dashboard .show-entries span {
+        color: #CBD5E1 !important;
+        -webkit-text-fill-color: #CBD5E1 !important;
+        font-weight: 600 !important;
+    }
+
+    html[data-pms-theme="dark"] .employee-dashboard .show-entries select,
+    html[data-bs-theme="dark"] .employee-dashboard .show-entries select,
+    html[data-theme="dark"] .employee-dashboard .show-entries select,
+    html.dark .employee-dashboard .show-entries select,
+    body[data-pms-theme="dark"] .employee-dashboard .show-entries select,
+    body[data-bs-theme="dark"] .employee-dashboard .show-entries select,
+    body.dark .employee-dashboard .show-entries select,
+    html[data-pms-theme="dark"] #showEntries,
+    html[data-bs-theme="dark"] #showEntries,
+    html[data-theme="dark"] #showEntries,
+    html.dark #showEntries,
+    body[data-pms-theme="dark"] #showEntries,
+    body[data-bs-theme="dark"] #showEntries,
+    body.dark #showEntries,
+    [data-pms-theme="dark"] #showEntries,
+    [data-bs-theme="dark"] #showEntries,
+    [data-theme="dark"] #showEntries,
+    .dark #showEntries {
+        background-color: #14281e !important;
+        border: 1px solid rgba(122, 240, 181, 0.35) !important;
+        color: #f8fffb !important;
+        -webkit-text-fill-color: #f8fffb !important;
+        font-weight: 700 !important;
+        border-radius: 10px !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+    }
+
+    html[data-pms-theme="dark"] #showEntries option,
+    html[data-bs-theme="dark"] #showEntries option,
+    html[data-theme="dark"] #showEntries option,
+    html.dark #showEntries option,
+    body[data-pms-theme="dark"] #showEntries option,
+    body[data-bs-theme="dark"] #showEntries option,
+    body.dark #showEntries option,
+    [data-pms-theme="dark"] #showEntries option,
+    [data-bs-theme="dark"] #showEntries option,
+    [data-theme="dark"] #showEntries option,
+    .dark #showEntries option {
+        background-color: #102119 !important;
+        color: #f8fffb !important;
+    }
+
+    html[data-pms-theme="dark"] .employee-dashboard .pagination-info,
+    html[data-bs-theme="dark"] .employee-dashboard .pagination-info,
+    html[data-theme="dark"] .employee-dashboard .pagination-info,
+    html.dark .employee-dashboard .pagination-info,
+    body[data-pms-theme="dark"] .employee-dashboard .pagination-info,
+    body[data-bs-theme="dark"] .employee-dashboard .pagination-info,
+    body.dark .employee-dashboard .pagination-info,
+    [data-pms-theme="dark"] .employee-dashboard .pagination-info,
+    [data-bs-theme="dark"] .employee-dashboard .pagination-info,
+    [data-theme="dark"] .employee-dashboard .pagination-info,
+    .dark .employee-dashboard .pagination-info {
+        color: #CBD5E1 !important;
+        -webkit-text-fill-color: #CBD5E1 !important;
+        font-weight: 600 !important;
+        font-size: 0.9rem !important;
+        letter-spacing: 0.2px !important;
+    }
+
+    html[data-pms-theme="dark"] .employee-dashboard .page-btn,
+    html[data-bs-theme="dark"] .employee-dashboard .page-btn,
+    html[data-theme="dark"] .employee-dashboard .page-btn,
+    html.dark .employee-dashboard .page-btn,
+    body[data-pms-theme="dark"] .employee-dashboard .page-btn,
+    body[data-bs-theme="dark"] .employee-dashboard .page-btn,
+    body.dark .employee-dashboard .page-btn,
+    [data-pms-theme="dark"] .employee-dashboard .page-btn,
+    [data-bs-theme="dark"] .employee-dashboard .page-btn,
+    [data-theme="dark"] .employee-dashboard .page-btn,
+    .dark .employee-dashboard .page-btn {
+        background: #14281e !important;
+        border: 1px solid rgba(122, 240, 181, 0.25) !important;
+        color: #CBD5E1 !important;
+        -webkit-text-fill-color: #CBD5E1 !important;
+        font-weight: 600 !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+    }
+
+    html[data-pms-theme="dark"] .employee-dashboard .page-btn:hover:not(.disabled),
+    html[data-bs-theme="dark"] .employee-dashboard .page-btn:hover:not(.disabled),
+    html[data-theme="dark"] .employee-dashboard .page-btn:hover:not(.disabled),
+    html.dark .employee-dashboard .page-btn:hover:not(.disabled) {
+        background: #1e3d2e !important;
+        border-color: rgba(122, 240, 181, 0.6) !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    html[data-pms-theme="dark"] .employee-dashboard .page-btn.active,
+    html[data-bs-theme="dark"] .employee-dashboard .page-btn.active,
+    html[data-theme="dark"] .employee-dashboard .page-btn.active,
+    html.dark .employee-dashboard .page-btn.active {
+        background: linear-gradient(135deg, #10b981, #059669) !important;
+        border-color: #10b981 !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        font-weight: 800 !important;
+        box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4) !important;
+    }
+
+    html[data-pms-theme="dark"] .employee-dashboard .page-btn.disabled,
+    html[data-bs-theme="dark"] .employee-dashboard .page-btn.disabled,
+    html[data-theme="dark"] .employee-dashboard .page-btn.disabled,
+    html.dark .employee-dashboard .page-btn.disabled {
+        background: rgba(20, 40, 30, 0.5) !important;
+        border-color: rgba(122, 240, 181, 0.12) !important;
+        color: rgba(203, 213, 225, 0.4) !important;
+        -webkit-text-fill-color: rgba(203, 213, 225, 0.4) !important;
+        cursor: not-allowed !important;
+        opacity: 0.6 !important;
+    }
+
+    html[data-pms-theme="dark"] .employee-dashboard .page-dots,
+    html[data-bs-theme="dark"] .employee-dashboard .page-dots,
+    html[data-theme="dark"] .employee-dashboard .page-dots,
+    html.dark .employee-dashboard .page-dots {
+        color: #94A3B8 !important;
+        -webkit-text-fill-color: #94A3B8 !important;
     }
 </style>
 

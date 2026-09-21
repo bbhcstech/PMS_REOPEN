@@ -20,19 +20,20 @@
     $absentToday = max(($totalEmployees ?? 0) - ($todayPresent ?? 0) - ($onLeaveToday ?? 0), 0);
     $roleScale = max($totalEmployees ?? 0, $totalProjects ?? 0, $newEmployees ?? 0, $exits ?? 0, $approvedLeaves ?? 0, $todayPresent ?? 0, $pendingTasks ?? 0, $pendingLeaves ?? 0, 1);
     $rolePieCharts = [
-        ['slug' => 'projects', 'route' => 'projects.index', 'label' => 'Projects', 'value' => $totalProjects ?? 0, 'hint' => ($activeProjects ?? 0) . ' active projects', 'percent' => round((($totalProjects ?? 0) / $roleScale) * 100), 'color' => '#2563eb'],
-        ['slug' => 'tasks', 'route' => 'tasks.index', 'label' => 'Pending Tasks', 'value' => $pendingTasks ?? 0, 'hint' => 'Open work queue', 'percent' => round((($pendingTasks ?? 0) / $roleScale) * 100), 'color' => '#7c3aed'],
-        ['slug' => 'timelogs', 'route' => 'timelogs.index', 'label' => 'Timesheet Hours', 'value' => $totalTimelogHours ?? 0, 'hint' => ($totalTimelogsCount ?? 0) . ' logged entries', 'percent' => min(100, round((($totalTimelogHours ?? 0) / max($roleScale * 8, 1)) * 100)), 'color' => '#10b981'],
-        ['slug' => 'employees', 'route' => 'employees.index', 'label' => 'Employees', 'value' => $totalEmployees ?? 0, 'hint' => 'Total workforce', 'percent' => round((($totalEmployees ?? 0) / $roleScale) * 100), 'color' => '#06b6d4'],
-        ['slug' => 'attendance', 'route' => 'attendance.index', 'label' => 'Presence', 'value' => $todayPresent ?? 0, 'hint' => "{$attendancePercent}% present today", 'percent' => $attendancePercent, 'color' => '#14b8a6'],
-        ['slug' => 'leaves', 'route' => 'leaves.index', 'label' => 'Pending Leaves', 'value' => $pendingLeaves ?? 0, 'hint' => 'Awaiting review', 'percent' => round((($pendingLeaves ?? 0) / $roleScale) * 100), 'color' => '#f59e0b'],
-        ['slug' => 'employees', 'route' => 'employees.index', 'label' => 'New Joiners', 'value' => $newEmployees ?? 0, 'hint' => 'In selected range', 'percent' => round((($newEmployees ?? 0) / $roleScale) * 100), 'color' => '#6366f1'],
-        ['slug' => 'attendance', 'route' => 'attendance.report', 'label' => 'Absent Today', 'value' => $absentToday, 'hint' => 'Not present / leave', 'percent' => $totalEmployees > 0 ? round(($absentToday / $totalEmployees) * 100) : 0, 'color' => '#64748b'],
+        ['slug' => 'projects', 'route' => 'projects.index', 'label' => 'Projects', 'value' => $totalProjects ?? 0, 'hint' => ($activeProjects ?? 0) . ' active projects', 'percent' => round((($totalProjects ?? 0) / $roleScale) * 100), 'color' => '#2F6BFF'],
+        ['slug' => 'tasks', 'route' => 'tasks.index', 'label' => 'Pending Tasks', 'value' => $pendingTasks ?? 0, 'hint' => 'Open work queue', 'percent' => round((($pendingTasks ?? 0) / $roleScale) * 100), 'color' => '#8B5CF6'],
+        ['slug' => 'timelogs', 'route' => 'timelogs.index', 'label' => 'Timesheet Hours', 'value' => $totalTimelogHours ?? 0, 'hint' => ($totalTimelogsCount ?? 0) . ' logged entries', 'percent' => min(100, round((($totalTimelogHours ?? 0) / max($roleScale * 8, 1)) * 100)), 'color' => '#10B981'],
+        ['slug' => 'employees', 'route' => 'employees.index', 'label' => 'Employees', 'value' => $totalEmployees ?? 0, 'hint' => 'Total workforce', 'percent' => round((($totalEmployees ?? 0) / $roleScale) * 100), 'color' => '#22D3EE'],
+        ['slug' => 'attendance', 'route' => 'attendance.index', 'label' => 'Presence', 'value' => $todayPresent ?? 0, 'hint' => "{$attendancePercent}% present today", 'percent' => $attendancePercent, 'color' => '#06B6D4'],
+        ['slug' => 'leaves', 'route' => 'leaves.index', 'label' => 'Pending Leaves', 'value' => $pendingLeaves ?? 0, 'hint' => 'Awaiting review', 'percent' => round((($pendingLeaves ?? 0) / $roleScale) * 100), 'color' => '#F59E0B'],
+        ['slug' => 'employees', 'route' => 'employees.index', 'label' => 'New Joiners', 'value' => $newEmployees ?? 0, 'hint' => 'In selected range', 'percent' => round((($newEmployees ?? 0) / $roleScale) * 100), 'color' => '#6366F1'],
+        ['slug' => 'attendance', 'route' => 'attendance.report', 'label' => 'Absent Today', 'value' => $absentToday, 'hint' => 'Not present / leave', 'percent' => $totalEmployees > 0 ? round(($absentToday / $totalEmployees) * 100) : 0, 'color' => '#64748B'],
     ];
 @endphp
 <style>
     .role-dashboard-shell {
-        background: linear-gradient(135deg, #eef7ff 0%, #f9fafb 52%, #f1f5f9 100%);
+        background: linear-gradient(135deg, rgba(47, 107, 255, 0.04) 0%, var(--bx-bg, #f6f7fc) 52%, rgba(139, 92, 246, 0.04) 100%);
+        border: 1px solid var(--bx-border, rgba(16, 20, 44, 0.08));
         border-radius: 28px;
         margin-bottom: 1.5rem;
         overflow: hidden;
@@ -45,7 +46,7 @@
         inset: -20% -10% auto auto;
         width: 460px;
         height: 460px;
-        background: radial-gradient(circle, rgba(37, 99, 235, .18), transparent 68%);
+        background: radial-gradient(circle, rgba(47, 107, 255, .15), transparent 68%);
         pointer-events: none;
     }
     .role-hero {
@@ -61,9 +62,9 @@
     .role-stat-card,
     .role-feature-card,
     .role-pie-card {
-        background: rgba(255,255,255,.9);
-        border: 1px solid rgba(255,255,255,.75);
-        box-shadow: 0 22px 55px rgba(15, 23, 42, .1);
+        background: var(--bx-surface, rgba(255,255,255,.9));
+        border: 1px solid var(--bx-border, rgba(16, 20, 44, 0.08));
+        box-shadow: 0 12px 32px rgba(15, 23, 42, .05);
         backdrop-filter: blur(16px);
     }
     .role-hero-card {
@@ -71,29 +72,29 @@
         padding: clamp(1.25rem, 3vw, 2.25rem);
     }
     .role-eyebrow {
-        background: rgba(16,185,129,.12);
-        border: 1px solid rgba(16,185,129,.2);
+        background: rgba(47, 107, 255, .1);
+        border: 1px solid rgba(47, 107, 255, .2);
         border-radius: 999px;
-        color: #047857;
+        color: var(--bx-primary, #2F6BFF);
         display: inline-flex;
         font-size: .76rem;
-        font-weight: 900;
+        font-weight: 800;
         letter-spacing: .08em;
         margin-bottom: .9rem;
         padding: .42rem .72rem;
         text-transform: uppercase;
     }
     .role-hero-card h1 {
-        color: #111827;
+        color: var(--bx-ink, #10142C);
         font-size: clamp(1.8rem, 4vw, 3.4rem);
-        font-weight: 900;
-        letter-spacing: 0;
-        line-height: 1.03;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        line-height: 1.05;
         margin: 0 0 .8rem;
     }
     .role-hero-card p {
-        color: #5b6472;
-        font-weight: 700;
+        color: var(--bx-ink-muted, #545D82);
+        font-weight: 600;
         margin: 0;
         max-width: 680px;
     }
@@ -107,25 +108,36 @@
         align-items: center;
         border-radius: 999px;
         display: inline-flex;
-        font-weight: 900;
+        font-weight: 800;
         gap: .45rem;
         min-height: 42px;
-        padding: .7rem 1rem;
+        padding: .7rem 1.1rem;
         text-decoration: none;
+        transition: all .2s ease;
     }
     .role-btn-primary {
-        background: linear-gradient(135deg, #2563eb, #7c3aed);
-        color: #fff;
+        background: linear-gradient(135deg, #1E4FCC, #2F6BFF, #8B5CF6);
+        color: #fff !important;
+        box-shadow: 0 4px 14px rgba(47, 107, 255, 0.3);
+    }
+    .role-btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(47, 107, 255, 0.4);
     }
     .role-btn-light {
-        background: #fff;
-        border: 1px solid rgba(37,99,235,.16);
-        color: #1f2937;
+        background: var(--bx-surface, #fff);
+        border: 1px solid var(--bx-border, rgba(47,107,255,.16));
+        color: var(--bx-ink, #10142C);
+    }
+    .role-btn-light:hover {
+        border-color: var(--bx-primary, #2F6BFF);
+        color: var(--bx-primary, #2F6BFF);
+        transform: translateY(-1px);
     }
     .role-date-filter {
         align-items: center;
-        background: rgba(255,255,255,.75);
-        border: 1px solid rgba(37,99,235,.14);
+        background: var(--bx-surface-2, rgba(255,255,255,.75));
+        border: 1px solid var(--bx-border, rgba(47,107,255,.14));
         border-radius: 18px;
         display: flex;
         flex-wrap: wrap;
@@ -135,13 +147,15 @@
     }
     .role-date-filter label,
     .role-date-filter span {
-        color: #334155;
+        color: var(--bx-ink, #334155);
         font-size: .82rem;
-        font-weight: 900;
+        font-weight: 700;
         margin: 0;
     }
     .role-date-filter .form-control {
-        border-color: rgba(37,99,235,.16);
+        background: var(--bx-surface, #fff);
+        border-color: var(--bx-border, rgba(47,107,255,.16));
+        color: var(--bx-ink, #10142C);
         border-radius: 12px;
         min-height: 38px;
         width: auto;
@@ -156,7 +170,7 @@
     }
     .role-gauge {
         align-items: center;
-        background: conic-gradient(#10b981 0%, #2563eb calc(var(--percent) * 1%), #e5e7eb 0);
+        background: conic-gradient(#10B981 0%, #2F6BFF calc(var(--percent) * 1%), rgba(148, 163, 184, 0.2) 0);
         border-radius: 50%;
         display: flex;
         height: 156px;
@@ -166,16 +180,16 @@
         width: 156px;
     }
     .role-gauge::after {
-        background: #fff;
+        background: var(--bx-surface, #fff);
         border-radius: 50%;
         content: "";
         inset: 18px;
         position: absolute;
     }
     .role-gauge strong {
-        color: #111827;
+        color: var(--bx-ink, #10142C);
         font-size: 2rem;
-        font-weight: 900;
+        font-weight: 800;
         position: relative;
         z-index: 1;
     }
@@ -199,15 +213,15 @@
     .role-stat-card span,
     .role-pie-card p,
     .role-feature-card small {
-        color: #667085;
+        color: var(--bx-ink-muted, #667085);
         font-size: .78rem;
-        font-weight: 800;
+        font-weight: 700;
     }
     .role-stat-card strong {
-        color: #111827;
+        color: var(--bx-ink, #10142C);
         display: block;
         font-size: 2rem;
-        font-weight: 900;
+        font-weight: 800;
         margin-top: .4rem;
     }
     .role-panel {
@@ -225,15 +239,15 @@
         margin-bottom: 1rem;
     }
     .role-panel-head h3 {
-        color: #111827;
+        color: var(--bx-ink, #10142C);
         font-size: 1.05rem;
-        font-weight: 900;
+        font-weight: 800;
         margin: 0;
     }
     .role-panel-head p {
-        color: #667085;
+        color: var(--bx-ink-muted, #667085);
         font-size: .84rem;
-        font-weight: 700;
+        font-weight: 600;
         margin: .2rem 0 0;
     }
     .role-pie-grid {
@@ -248,13 +262,13 @@
     }
     .role-pie-card:hover,
     .role-feature-card:hover {
-        box-shadow: 0 26px 58px rgba(37,99,235,.14);
+        box-shadow: 0 20px 48px rgba(47, 107, 255, .12);
         transform: translateY(-4px);
     }
     .role-donut {
-        --accent: #2563eb;
+        --accent: #2F6BFF;
         align-items: center;
-        background: conic-gradient(var(--accent) calc(var(--percent) * 1%), #e5e7eb 0);
+        background: conic-gradient(var(--accent) calc(var(--percent) * 1%), rgba(148, 163, 184, 0.2) 0);
         border-radius: 50%;
         display: flex;
         height: 118px;
@@ -264,30 +278,30 @@
         width: 118px;
     }
     .role-donut::after {
-        background: #fff;
+        background: var(--bx-surface, #fff);
         border-radius: 50%;
         content: "";
         inset: 15px;
         position: absolute;
     }
     .role-donut strong {
-        color: #111827;
+        color: var(--bx-ink, #10142C);
         font-size: 1.25rem;
-        font-weight: 900;
+        font-weight: 800;
         position: relative;
         z-index: 1;
     }
     .role-pie-card h4 {
-        color: #111827;
+        color: var(--bx-ink, #10142C);
         font-size: .95rem;
-        font-weight: 900;
+        font-weight: 800;
         margin-bottom: .2rem;
     }
     .role-pie-card a {
-        color: #2563eb;
+        color: var(--bx-primary, #2F6BFF);
         display: inline-flex;
         font-size: .8rem;
-        font-weight: 900;
+        font-weight: 800;
         margin-top: .55rem;
         text-decoration: none;
     }
@@ -297,7 +311,7 @@
     .role-feature-card {
         align-items: center;
         border-radius: 18px;
-        color: #111827;
+        color: var(--bx-ink, #10142C);
         display: grid;
         gap: .75rem;
         grid-template-columns: 42px minmax(0, 1fr) auto;
@@ -308,9 +322,9 @@
     }
     .role-feature-card i {
         align-items: center;
-        background: linear-gradient(135deg, rgba(37,99,235,.12), rgba(16,185,129,.12));
+        background: linear-gradient(135deg, rgba(47, 107, 255, .12), rgba(34, 211, 238, .12));
         border-radius: 14px;
-        color: #2563eb;
+        color: var(--bx-primary, #2F6BFF);
         display: inline-flex;
         font-size: 1.25rem;
         height: 42px;
@@ -326,15 +340,15 @@
     }
     .role-feature-card strong {
         font-size: .88rem;
-        font-weight: 900;
+        font-weight: 800;
     }
     .role-feature-card em {
-        background: rgba(37,99,235,.08);
+        background: rgba(47, 107, 255, .08);
         border-radius: 999px;
-        color: #2563eb;
+        color: var(--bx-primary, #2F6BFF);
         font-size: .76rem;
         font-style: normal;
-        font-weight: 900;
+        font-weight: 800;
         padding: .34rem .5rem;
     }
     @keyframes roleFadeUp {
@@ -378,6 +392,55 @@
         .role-date-filter .btn {
             width: 100%;
         }
+    }
+
+    /* HR Dashboard Dark Mode Overrides */
+    html[data-pms-theme="dark"] .role-dashboard-shell,
+    html[data-theme="dark"] .role-dashboard-shell {
+        background: linear-gradient(135deg, #070B1A 0%, #0F1530 52%, #141B3D 100%);
+        border-color: rgba(238, 241, 251, 0.09);
+    }
+    html[data-pms-theme="dark"] .role-hero-card,
+    html[data-pms-theme="dark"] .role-panel,
+    html[data-pms-theme="dark"] .role-stat-card,
+    html[data-pms-theme="dark"] .role-feature-card,
+    html[data-pms-theme="dark"] .role-pie-card,
+    html[data-theme="dark"] .role-hero-card,
+    html[data-theme="dark"] .role-panel,
+    html[data-theme="dark"] .role-stat-card,
+    html[data-theme="dark"] .role-feature-card,
+    html[data-theme="dark"] .role-pie-card {
+        background: var(--bx-surface, #0F1530);
+        border-color: rgba(238, 241, 251, 0.09);
+        box-shadow: 0 12px 32px rgba(0, 0, 0, .35);
+    }
+    html[data-pms-theme="dark"] .role-btn-light,
+    html[data-theme="dark"] .role-btn-light {
+        background: var(--bx-surface-2, #141B3D);
+        border-color: rgba(238, 241, 251, 0.12);
+        color: #EEF1FB;
+    }
+    html[data-pms-theme="dark"] .role-btn-light:hover,
+    html[data-theme="dark"] .role-btn-light:hover {
+        border-color: var(--bx-accent, #22D3EE);
+        color: var(--bx-accent, #22D3EE);
+    }
+    html[data-pms-theme="dark"] .role-date-filter,
+    html[data-theme="dark"] .role-date-filter {
+        background: var(--bx-surface-2, #141B3D);
+        border-color: rgba(238, 241, 251, 0.09);
+    }
+    html[data-pms-theme="dark"] .role-date-filter .form-control,
+    html[data-theme="dark"] .role-date-filter .form-control {
+        background: var(--bx-surface-3, #1A2247);
+        border-color: rgba(238, 241, 251, 0.12);
+        color: #EEF1FB;
+    }
+    html[data-pms-theme="dark"] .card-header.bg-white,
+    html[data-theme="dark"] .card-header.bg-white {
+        background: var(--bx-surface, #0F1530) !important;
+        color: #EEF1FB !important;
+        border-bottom-color: rgba(238, 241, 251, 0.09) !important;
     }
 </style>
 <div class="container-fluid">
@@ -860,7 +923,7 @@
             labels: {!! json_encode($genderCounts->keys()) !!},
             datasets: [{
                 data: {!! json_encode($genderCounts->values()) !!},
-                backgroundColor: ['#fcbf49', '#90be6d', '#577590']
+                backgroundColor: ['#2F6BFF', '#22D3EE', '#8B5CF6']
             }]
         },
         options: {
@@ -875,7 +938,7 @@
             labels: {!! json_encode($roleCounts->keys()) !!},
             datasets: [{
                 data: {!! json_encode($roleCounts->values()) !!},
-                backgroundColor: ['#ff6b6b', '#4ecdc4', '#1a535c']
+                backgroundColor: ['#2F6BFF', '#8B5CF6', '#22D3EE', '#10B981', '#F59E0B']
             }]
         },
         options: {
@@ -895,7 +958,7 @@
         labels: {!! json_encode($departmentWise->map(fn($d) => $d->department_name ?? 'N/A')) !!},
         datasets: [{
             data: {!! json_encode($departmentWise->pluck('total')) !!},
-            backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#8e44ad', '#2ecc71', '#e67e22']
+            backgroundColor: ['#2F6BFF', '#8B5CF6', '#22D3EE', '#10B981', '#F59E0B', '#6366F1']
         }]
     },
     options: {
@@ -912,7 +975,7 @@
             labels: {!! json_encode($designationWise->map(fn($d) => $d->designation->name ?? 'N/A')) !!},
             datasets: [{
                 data: {!! json_encode($designationWise->pluck('total')) !!},
-                backgroundColor: ['#FF9F40', '#36A2EB', '#FF6384', '#4BC0C0', '#9966FF', '#00a65a']
+                backgroundColor: ['#2F6BFF', '#22D3EE', '#8B5CF6', '#10B981', '#F59E0B', '#EC4899']
             }]
         },
         options: {
@@ -948,7 +1011,8 @@
             datasets: [{
                 label: 'Joinings',
                 data: joiningData,
-                backgroundColor: 'rgba(54, 162, 235, 0.7)'
+                backgroundColor: 'rgba(47, 107, 255, 0.85)',
+                borderRadius: 6
             }]
         }
     });
@@ -960,7 +1024,8 @@
             datasets: [{
                 label: 'Attritions',
                 data: exitData,
-                backgroundColor: 'rgba(255, 99, 132, 0.7)'
+                backgroundColor: 'rgba(239, 68, 68, 0.85)',
+                borderRadius: 6
             }]
         }
     });

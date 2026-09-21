@@ -79,8 +79,9 @@
                             <i class="fas fa-id-badge" style="color: #a7f3d0 !important; -webkit-text-fill-color: #a7f3d0 !important;"></i>
                             <span style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; font-weight: 700 !important; background: transparent !important; border: none !important; padding: 0 !important; margin: 0 !important;">{{ $empCode }}</span>
                         </span>
-                        <span class="org-status-pill {{ $status }}" style="padding: 5px 14px; font-size: 0.82rem; font-weight: 800 !important;">
-                            <span class="org-status-dot"></span> {{ ucfirst($status) }}
+                        <span class="org-banner-chip org-status-chip {{ $status }}" style="background: rgba(255, 255, 255, 0.2) !important; border: 1px solid rgba(255, 255, 255, 0.35) !important; padding: 5px 14px !important; font-size: 0.82rem !important; font-weight: 800 !important; display: inline-flex !important; align-items: center !important;">
+                            <span class="org-status-dot" style="background: #34D399 !important; box-shadow: 0 0 8px #34D399 !important; width: 7px !important; height: 7px !important; border-radius: 50% !important; display: inline-block !important; margin-right: 7px !important;"></span>
+                            <span style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; font-weight: 800 !important; background: transparent !important; border: none !important; padding: 0 !important; margin: 0 !important;">{{ ucfirst($status) }}</span>
                         </span>
                     </div>
                 </div>

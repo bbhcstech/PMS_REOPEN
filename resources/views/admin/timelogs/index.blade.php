@@ -44,6 +44,45 @@
         color: #000000 !important;
         border: 1px solid #fdba74 !important;
     }
+
+    html[data-pms-theme="dark"] .status-badge {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .status-badge.completed,
+    html[data-pms-theme="dark"] .status-badge.approved {
+        background-color: rgba(16, 185, 129, 0.2) !important;
+        color: #6EE7B7 !important;
+        border: 1px solid rgba(16, 185, 129, 0.4) !important;
+    }
+    html[data-pms-theme="dark"] .status-badge.doing,
+    html[data-pms-theme="dark"] .status-badge.in-progress,
+    html[data-pms-theme="dark"] .status-badge.inprogress {
+        background-color: rgba(47, 107, 255, 0.2) !important;
+        color: #93C5FD !important;
+        border: 1px solid rgba(47, 107, 255, 0.4) !important;
+    }
+    html[data-pms-theme="dark"] .status-badge.pending {
+        background-color: rgba(245, 158, 11, 0.2) !important;
+        color: #FCD34D !important;
+        border: 1px solid rgba(245, 158, 11, 0.4) !important;
+    }
+    html[data-pms-theme="dark"] .status-badge.to-do,
+    html[data-pms-theme="dark"] .status-badge.todo {
+        background-color: rgba(148, 163, 184, 0.2) !important;
+        color: #CBD5E1 !important;
+        border: 1px solid rgba(148, 163, 184, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .status-badge.incomplete,
+    html[data-pms-theme="dark"] .status-badge.rejected {
+        background-color: rgba(239, 68, 68, 0.2) !important;
+        color: #FCA5A5 !important;
+        border: 1px solid rgba(239, 68, 68, 0.4) !important;
+    }
+    html[data-pms-theme="dark"] .status-badge.waiting-for-approval {
+        background-color: rgba(249, 115, 22, 0.2) !important;
+        color: #FDBA74 !important;
+        border: 1px solid rgba(249, 115, 22, 0.4) !important;
+    }
 </style>
 
 <div class="container-fluid px-4 py-4">
@@ -158,8 +197,7 @@
     <!-- Timesheet Table Card -->
     <div class="card border-0 shadow-sm rounded-4">
         <div class="card-body p-4">
-            <div class="table-responsive">
-                <table id="timelogTable" class="table table-hover align-middle w-100">
+            <table id="timelogTable" class="table table-hover align-middle w-100">
                     <thead class="table-dark">
                         <tr>
                             <th style="width: 40px;"><input type="checkbox" id="selectAllLogs"></th>
@@ -328,7 +366,6 @@
                         @endforeach
                     </tbody>
                 </table>
-            </div>
         </div>
     </div>
 </div>
@@ -345,7 +382,7 @@
 <script>
     $(document).ready(function () {
         $('#timelogTable').DataTable({
-            responsive: true,
+            dom: '<"d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3"lf><"table-responsive"t><"d-flex flex-wrap align-items-center justify-content-between gap-3 mt-3"ip>',
             pageLength: 25,
             lengthMenu: [10, 25, 50, 100],
             language: {

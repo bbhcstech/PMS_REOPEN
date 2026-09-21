@@ -83,15 +83,19 @@ class ReportController extends Controller
     public function financeReport(Request $request)
     {
         $totalIncomes = Payment::sum('amount');
-        $totalExpenses = Expense::where('status', 'approved')->sum('price');
-        if ($totalExpenses == 0) {
+        if (\Illuminate\Support\Facades\Schema::hasColumn('expenses', 'status')) {
+            $totalExpenses = Expense::where('status', 'approved')->sum('price');
+            if ($totalExpenses == 0) {
+                $totalExpenses = Expense::sum('price');
+            }
+        } else {
             $totalExpenses = Expense::sum('price');
         }
         $totalInvoices = Invoice::sum('total');
         $netProfit = $totalIncomes - $totalExpenses;
 
-        $payments = Payment::with(['project', 'invoice'])->latest()->take(50)->get();
-        $expenses = Expense::with(['project', 'user'])->latest()->take(50)->get();
+        $payments = Payment::with('company')->latest()->take(50)->get();
+        $expenses = Expense::with(['project', 'employee'])->latest()->take(50)->get();
 
         return view('admin.reports.finance', compact('totalIncomes', 'totalExpenses', 'totalInvoices', 'netProfit', 'payments', 'expenses'));
     }
@@ -124,9 +128,9 @@ class ReportController extends Controller
      */
     public function expenseReport(Request $request)
     {
-        $query = Expense::with(['project', 'user']);
+        $query = Expense::with(['project', 'employee']);
 
-        if ($request->filled('status')) {
+        if (\Illuminate\Support\Facades\Schema::hasColumn('expenses', 'status') && $request->filled('status')) {
             $query->where('status', $request->status);
         }
         if ($request->filled('start_date') && $request->filled('end_date')) {
@@ -147,7 +151,7 @@ class ReportController extends Controller
      */
     public function dealReport(Request $request)
     {
-        $deals = Deal::with(['category', 'stage', 'leadContact'])->latest()->get();
+        $deals = Deal::with(['category', 'stage', 'lead'])->latest()->get();
         if ($deals->isEmpty()) {
             $deals = Contract::with('client')->latest()->get();
         }
@@ -162,7 +166,7 @@ class ReportController extends Controller
      */
     public function salesReport(Request $request)
     {
-        $query = Payment::with(['invoice', 'project']);
+        $query = Payment::with('company');
 
         if ($request->filled('start_date') && $request->filled('end_date')) {
             $query->whereBetween('created_at', [

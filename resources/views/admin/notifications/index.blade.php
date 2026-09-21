@@ -46,6 +46,275 @@
   .btn-pill-action:hover {
     transform: scale(1.03);
   }
+
+  /* Filter Toolbar & Controls */
+  .notif-filter-card {
+    border-radius: 16px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+  }
+  .notif-select {
+    border-radius: 10px;
+    font-weight: 500;
+    font-size: 13px;
+    background-color: #f8fafc;
+    color: #1e293b;
+    border: 1px solid #e2e8f0;
+  }
+  .notif-filter-btn {
+    border-radius: 10px;
+    font-size: 13px;
+  }
+
+  /* Subscription Embedded Card */
+  .notif-sub-box {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border: 1px solid #e2e8f0;
+  }
+  .notif-sub-divider {
+    height: 28px;
+    width: 1px;
+    background: #cbd5e1;
+  }
+  .notif-sub-label {
+    color: #64748b;
+  }
+  .notif-sub-val-plan {
+    color: #2563eb;
+  }
+  .notif-sub-val-expiry {
+    color: #0f172a;
+  }
+  .notif-inspect-box {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    color: #1e293b;
+  }
+  .notif-empty-card {
+    border-radius: 20px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+  }
+
+  /* KPI Icons Light Defaults */
+  .kpi-icon-total {
+    background: #eff6ff;
+    color: #2563eb;
+  }
+  .kpi-icon-unread {
+    background: #fffbeb;
+    color: #d97706;
+  }
+  .kpi-icon-critical {
+    background: #fef2f2;
+    color: #ef4444;
+  }
+  .kpi-number-unread {
+    color: #d97706;
+  }
+  .kpi-number-critical {
+    color: #ef4444;
+  }
+
+  /* --------------------------------------------------------------------------
+     DARK MODE VISIBILITY RULES FOR COMPANY NOTIFICATION CENTER
+     -------------------------------------------------------------------------- */
+  html[data-pms-theme="dark"] .kpi-stat-card {
+    background: #0F1530 !important;
+    border: 1px solid rgba(238, 241, 251, 0.09) !important;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4) !important;
+  }
+  html[data-pms-theme="dark"] .kpi-stat-card:hover {
+    border-color: rgba(47, 107, 255, 0.4) !important;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.55) !important;
+  }
+  html[data-pms-theme="dark"] .kpi-stat-card .kpi-icon-total {
+    background: rgba(47, 107, 255, 0.18) !important;
+    color: #60A5FA !important;
+  }
+  html[data-pms-theme="dark"] .kpi-stat-card .kpi-icon-unread {
+    background: rgba(245, 158, 11, 0.18) !important;
+    color: #FCD34D !important;
+  }
+  html[data-pms-theme="dark"] .kpi-stat-card .kpi-icon-critical {
+    background: rgba(239, 68, 68, 0.18) !important;
+    color: #FCA5A5 !important;
+  }
+  html[data-pms-theme="dark"] .kpi-stat-card .kpi-number,
+  html[data-pms-theme="dark"] .kpi-stat-card .fs-4 {
+    color: #EEF1FB !important;
+  }
+  html[data-pms-theme="dark"] .kpi-stat-card .kpi-number-unread {
+    color: #FCD34D !important;
+  }
+  html[data-pms-theme="dark"] .kpi-stat-card .kpi-number-critical,
+  html[data-pms-theme="dark"] .kpi-stat-card .text-danger {
+    color: #FCA5A5 !important;
+  }
+  html[data-pms-theme="dark"] .kpi-stat-card .kpi-label,
+  html[data-pms-theme="dark"] .kpi-stat-card .text-muted {
+    color: #9AA3C7 !important;
+  }
+
+  /* Filter Card & Dropdown Selects */
+  html[data-pms-theme="dark"] .notif-filter-card {
+    background: #0F1530 !important;
+    border: 1px solid rgba(238, 241, 251, 0.09) !important;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4) !important;
+  }
+  html[data-pms-theme="dark"] .notif-select,
+  html[data-pms-theme="dark"] .notif-filter-card select,
+  html[data-pms-theme="dark"] select.notif-select {
+    background-color: #141B3D !important;
+    color: #EEF1FB !important;
+    border: 1px solid rgba(238, 241, 251, 0.18) !important;
+  }
+  html[data-pms-theme="dark"] .notif-select:focus,
+  html[data-pms-theme="dark"] .notif-filter-card select:focus {
+    border-color: #2F6BFF !important;
+    box-shadow: 0 0 0 3px rgba(47, 107, 255, 0.28) !important;
+  }
+  html[data-pms-theme="dark"] .notif-select option,
+  html[data-pms-theme="dark"] .notif-filter-card select option,
+  html[data-pms-theme="dark"] select option {
+    background-color: #141B3D !important;
+    color: #EEF1FB !important;
+  }
+  html[data-pms-theme="dark"] .notif-filter-btn {
+    background: #2F6BFF !important;
+    border-color: #2F6BFF !important;
+    color: #FFFFFF !important;
+  }
+  html[data-pms-theme="dark"] .notif-filter-btn:hover {
+    background: #1E4FCC !important;
+    border-color: #1E4FCC !important;
+    box-shadow: 0 4px 12px rgba(47, 107, 255, 0.35) !important;
+  }
+
+  /* Notification Items */
+  html[data-pms-theme="dark"] .notif-card-item {
+    background: #0F1530 !important;
+    border: 1px solid rgba(238, 241, 251, 0.09) !important;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35) !important;
+    color: #CBD5E1 !important;
+  }
+  html[data-pms-theme="dark"] .notif-card-item:hover {
+    border-color: rgba(47, 107, 255, 0.35) !important;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5) !important;
+  }
+  html[data-pms-theme="dark"] .notif-card-unread {
+    background: #141B3D !important;
+    border-color: rgba(47, 107, 255, 0.3) !important;
+  }
+  html[data-pms-theme="dark"] .notif-card-item .notif-title,
+  html[data-pms-theme="dark"] .notif-card-item h5.text-dark {
+    color: #EEF1FB !important;
+  }
+  html[data-pms-theme="dark"] .notif-card-item .notif-message,
+  html[data-pms-theme="dark"] .notif-card-item p.text-secondary {
+    color: #CBD5E1 !important;
+  }
+  html[data-pms-theme="dark"] .notif-card-item .notif-badge-category {
+    background: #1A2247 !important;
+    color: #9AA3C7 !important;
+    border: 1px solid rgba(238, 241, 251, 0.12) !important;
+  }
+  html[data-pms-theme="dark"] .notif-card-item .notif-time,
+  html[data-pms-theme="dark"] .notif-card-item .text-muted {
+    color: #9AA3C7 !important;
+  }
+  html[data-pms-theme="dark"] .notif-card-item .notif-time i {
+    color: #60A5FA !important;
+  }
+
+  /* Action Buttons */
+  html[data-pms-theme="dark"] .notif-btn-inspect,
+  html[data-pms-theme="dark"] .btn-pill-action.btn-outline-secondary {
+    background: #141B3D !important;
+    border: 1px solid rgba(238, 241, 251, 0.2) !important;
+    color: #EEF1FB !important;
+  }
+  html[data-pms-theme="dark"] .notif-btn-inspect:hover,
+  html[data-pms-theme="dark"] .btn-pill-action.btn-outline-secondary:hover {
+    background: #1E295A !important;
+    border-color: #2F6BFF !important;
+    color: #FFFFFF !important;
+  }
+  html[data-pms-theme="dark"] .notif-btn-read,
+  html[data-pms-theme="dark"] .btn-pill-action.btn-outline-dark {
+    background: #141B3D !important;
+    border: 1px solid rgba(238, 241, 251, 0.22) !important;
+    color: #EEF1FB !important;
+  }
+  html[data-pms-theme="dark"] .notif-btn-read:hover,
+  html[data-pms-theme="dark"] .btn-pill-action.btn-outline-dark:hover {
+    background: #1E295A !important;
+    border-color: #2F6BFF !important;
+    color: #60A5FA !important;
+  }
+  html[data-pms-theme="dark"] .notif-btn-resolve,
+  html[data-pms-theme="dark"] .btn-pill-action.btn-outline-success {
+    background: rgba(16, 185, 129, 0.16) !important;
+    border: 1px solid rgba(16, 185, 129, 0.45) !important;
+    color: #6EE7B7 !important;
+  }
+  html[data-pms-theme="dark"] .notif-btn-resolve:hover,
+  html[data-pms-theme="dark"] .btn-pill-action.btn-outline-success:hover {
+    background: #10B981 !important;
+    border-color: #10B981 !important;
+    color: #FFFFFF !important;
+  }
+
+  /* Embedded Subscription Box */
+  html[data-pms-theme="dark"] .notif-sub-box {
+    background: #141B3D !important;
+    border: 1px solid rgba(238, 241, 251, 0.12) !important;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+  }
+  html[data-pms-theme="dark"] .notif-sub-label {
+    color: #9AA3C7 !important;
+  }
+  html[data-pms-theme="dark"] .notif-sub-val-plan {
+    color: #60A5FA !important;
+  }
+  html[data-pms-theme="dark"] .notif-sub-val-expiry {
+    color: #EEF1FB !important;
+  }
+  html[data-pms-theme="dark"] .notif-sub-divider {
+    background: rgba(238, 241, 251, 0.15) !important;
+  }
+
+  /* Inspection Details & Empty State */
+  html[data-pms-theme="dark"] .notif-inspect-box {
+    background: #141B3D !important;
+    border: 1px solid rgba(238, 241, 251, 0.12) !important;
+    color: #CBD5E1 !important;
+  }
+  html[data-pms-theme="dark"] .notif-inspect-box .notif-title,
+  html[data-pms-theme="dark"] .notif-inspect-box .text-dark {
+    color: #EEF1FB !important;
+  }
+  html[data-pms-theme="dark"] .notif-empty-card {
+    background: #0F1530 !important;
+    border: 1px solid rgba(238, 241, 251, 0.09) !important;
+    color: #9AA3C7 !important;
+  }
+  html[data-pms-theme="dark"] .notif-empty-card .notif-title,
+  html[data-pms-theme="dark"] .notif-empty-card .text-dark {
+    color: #EEF1FB !important;
+  }
+
+  /* Mark All Read Button */
+  html[data-pms-theme="dark"] .notif-mark-all-btn {
+    background: #141B3D !important;
+    border: 1px solid rgba(238, 241, 251, 0.2) !important;
+    color: #EEF1FB !important;
+  }
+  html[data-pms-theme="dark"] .notif-mark-all-btn:hover {
+    background: #1A2247 !important;
+    border-color: #2F6BFF !important;
+    color: #60A5FA !important;
+  }
 </style>
 
 <div class="container-fluid px-4 py-4" style="max-width: 1140px;">
@@ -71,7 +340,7 @@
       <div>
         <form method="POST" action="{{ Route::has('notifications.readAll') ? route('notifications.readAll') : route('admin.company-notifications.read-all') }}">
           @csrf
-          <button type="submit" class="btn btn-light fw-bold px-3.5 py-2.5 shadow-sm d-flex align-items-center gap-1.5" style="border-radius: 10px; font-size: 13px; color: #0f172a;">
+          <button type="submit" class="btn btn-light notif-mark-all-btn fw-bold px-3.5 py-2.5 shadow-sm d-flex align-items-center gap-1.5" style="border-radius: 10px; font-size: 13px;">
             <i class="bx bx-check-double fs-5"></i> Mark All Read
           </button>
         </form>
@@ -90,47 +359,47 @@
   <div class="row g-3 mb-4">
     <div class="col-md-4">
       <div class="kpi-stat-card p-3 d-flex align-items-center gap-3">
-        <div class="p-3 rounded-4 fs-3" style="background: #eff6ff; color: #2563eb;">
+        <div class="kpi-icon-box kpi-icon-total p-3 rounded-4 fs-3">
           <i class="bx bx-bell-ring"></i>
         </div>
         <div>
-          <div class="fs-4 fw-bolder text-dark" style="letter-spacing: -0.5px;">{{ number_format($kpis['total']) }}</div>
-          <div class="fs-8 text-muted text-uppercase fw-bold" style="letter-spacing: 0.5px;">Total Notifications</div>
+          <div class="fs-4 fw-bolder kpi-number" style="letter-spacing: -0.5px;">{{ number_format($kpis['total']) }}</div>
+          <div class="fs-8 text-muted text-uppercase fw-bold kpi-label" style="letter-spacing: 0.5px;">Total Notifications</div>
         </div>
       </div>
     </div>
 
     <div class="col-md-4">
       <div class="kpi-stat-card p-3 d-flex align-items-center gap-3">
-        <div class="p-3 rounded-4 fs-3" style="background: #fffbeb; color: #d97706;">
+        <div class="kpi-icon-box kpi-icon-unread p-3 rounded-4 fs-3">
           <i class="bx bx-envelope"></i>
         </div>
         <div>
-          <div class="fs-4 fw-bolder" style="color: #d97706; letter-spacing: -0.5px;">{{ number_format($kpis['unread']) }}</div>
-          <div class="fs-8 text-muted text-uppercase fw-bold" style="letter-spacing: 0.5px;">Unread Messages</div>
+          <div class="fs-4 fw-bolder kpi-number kpi-number-unread" style="letter-spacing: -0.5px;">{{ number_format($kpis['unread']) }}</div>
+          <div class="fs-8 text-muted text-uppercase fw-bold kpi-label" style="letter-spacing: 0.5px;">Unread Messages</div>
         </div>
       </div>
     </div>
 
     <div class="col-md-4">
       <div class="kpi-stat-card p-3 d-flex align-items-center gap-3">
-        <div class="p-3 rounded-4 fs-3" style="background: #fef2f2; color: #ef4444;">
+        <div class="kpi-icon-box kpi-icon-critical p-3 rounded-4 fs-3">
           <i class="bx bx-error-alt"></i>
         </div>
         <div>
-          <div class="fs-4 fw-bolder text-danger" style="letter-spacing: -0.5px;">{{ number_format($kpis['critical']) }}</div>
-          <div class="fs-8 text-muted text-uppercase fw-bold" style="letter-spacing: 0.5px;">Critical Alerts</div>
+          <div class="fs-4 fw-bolder text-danger kpi-number kpi-number-critical" style="letter-spacing: -0.5px;">{{ number_format($kpis['critical']) }}</div>
+          <div class="fs-8 text-muted text-uppercase fw-bold kpi-label" style="letter-spacing: 0.5px;">Critical Alerts</div>
         </div>
       </div>
     </div>
   </div>
 
   <!-- Filter Toolbar -->
-  <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px; background: #ffffff;">
+  <div class="card notif-filter-card border-0 shadow-sm mb-4">
     <div class="card-body p-3">
       <form method="GET" action="{{ Route::has('notifications.all') ? route('notifications.all') : route('admin.company-notifications.index') }}" class="row g-2 align-items-center">
         <div class="col-md-5">
-          <select name="severity" class="form-select border-0 bg-light" style="border-radius: 10px; font-weight: 500; font-size: 13px;" onchange="this.form.submit()">
+          <select name="severity" class="form-select notif-select border-0" onchange="this.form.submit()">
             <option value="">All Severities</option>
             <option value="INFO" {{ request('severity') === 'INFO' ? 'selected' : '' }}>INFO</option>
             <option value="SUCCESS" {{ request('severity') === 'SUCCESS' ? 'selected' : '' }}>SUCCESS</option>
@@ -140,7 +409,7 @@
         </div>
 
         <div class="col-md-5">
-          <select name="status" class="form-select border-0 bg-light" style="border-radius: 10px; font-weight: 500; font-size: 13px;" onchange="this.form.submit()">
+          <select name="status" class="form-select notif-select border-0" onchange="this.form.submit()">
             <option value="">All Statuses</option>
             <option value="unread" {{ request('status') === 'unread' ? 'selected' : '' }}>Unread Only</option>
             <option value="read" {{ request('status') === 'read' ? 'selected' : '' }}>Read Only</option>
@@ -148,7 +417,7 @@
         </div>
 
         <div class="col-md-2 text-end">
-          <button type="submit" class="btn btn-dark w-100 fw-bold shadow-2xs" style="border-radius: 10px; font-size: 13px;">Filter</button>
+          <button type="submit" class="btn btn-dark notif-filter-btn w-100 fw-bold shadow-2xs">Filter</button>
         </div>
       </form>
     </div>
@@ -308,7 +577,7 @@
             </div>
 
             <!-- Category Badge -->
-            <span class="badge px-2.5 py-1.5 text-uppercase" style="background: #f1f5f9; color: #475569; font-weight: 700; font-size: 11px; letter-spacing: 0.5px;">
+            <span class="badge notif-badge-category px-2.5 py-1.5 text-uppercase" style="background: #f1f5f9; color: #475569; font-weight: 700; font-size: 11px; letter-spacing: 0.5px;">
               {{ $categoryUpper }}
             </span>
 
@@ -330,12 +599,12 @@
           </div>
 
           <div class="d-flex align-items-center gap-2">
-            <span class="text-muted me-2" style="font-size: 12.5px;">
+            <span class="notif-time me-2" style="font-size: 12.5px;">
               <i class="bx bx-time-five me-1"></i>{{ $createdAtObj?->diffForHumans() }}
             </span>
 
             <!-- Inspect Button (Toggles collapsible text) -->
-            <button type="button" class="btn btn-sm btn-outline-secondary btn-pill-action" data-bs-toggle="collapse" data-bs-target="#notifInspect-{{ $notifId }}">
+            <button type="button" class="btn btn-sm btn-outline-secondary btn-pill-action notif-btn-inspect" data-bs-toggle="collapse" data-bs-target="#notifInspect-{{ $notifId }}">
               <i class="bx bx-show me-1"></i> Inspect
             </button>
 
@@ -343,7 +612,7 @@
             @if(!$isReadStatus)
               <form method="POST" action="{{ $isCentral ? route('admin.company-notifications.read', $notifId) : route('notifications.read', $notifId) }}" class="d-inline">
                 @csrf
-                <button type="submit" class="btn btn-sm btn-outline-dark btn-pill-action">
+                <button type="submit" class="btn btn-sm btn-outline-dark btn-pill-action notif-btn-read">
                   <i class="bx bx-check me-1"></i> Read
                 </button>
               </form>
@@ -351,7 +620,7 @@
 
             <!-- Resolve / Open Resource Button -->
             @if($actionTargetUrl && $actionTargetUrl !== '#')
-              <a href="{{ $actionTargetUrl }}" class="btn btn-sm btn-outline-success btn-pill-action">
+              <a href="{{ $actionTargetUrl }}" class="btn btn-sm btn-outline-success btn-pill-action notif-btn-resolve">
                 <i class="bx bx-check-circle me-1"></i> Resolve
               </a>
             @endif
@@ -359,39 +628,39 @@
         </div>
 
         <!-- Title -->
-        <h5 class="fw-bold text-dark mb-1" style="font-size: 16px; letter-spacing: -0.2px;">
+        <h5 class="fw-bold notif-title mb-1" style="font-size: 16px; letter-spacing: -0.2px;">
           {{ $rawTitle }}
         </h5>
 
         <!-- Message Body Snippet -->
         @if($rawMessage)
-          <p class="text-secondary mb-2" style="font-size: 13.5px; line-height: 1.5;">
+          <p class="notif-message mb-2" style="font-size: 13.5px; line-height: 1.5;">
             {{ \Illuminate\Support\Str::limit(str_replace(["\n\n", "\n"], " ", $rawMessage), 180) }}
           </p>
         @endif
 
         <!-- Sub-card / Embedded Details Box for Subscriptions -->
         @if($isSubNotif && $companyObj)
-          <div class="p-3 rounded-4 mt-3" style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border: 1px solid #e2e8f0;">
+          <div class="notif-sub-box p-3 rounded-4 mt-3">
             <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
               <div class="d-flex align-items-center gap-4 flex-wrap">
                 <div>
-                  <small class="text-uppercase fw-bold text-muted d-block mb-1" style="font-size: 10.5px; letter-spacing: 0.5px;">CURRENT PLAN</small>
-                  <strong class="fs-6" style="color: #2563eb;">{{ $planName }}</strong>
+                  <small class="text-uppercase fw-bold notif-sub-label d-block mb-1" style="font-size: 10.5px; letter-spacing: 0.5px;">CURRENT PLAN</small>
+                  <strong class="fs-6 notif-sub-val-plan">{{ $planName }}</strong>
                 </div>
 
-                <div style="height: 28px; width: 1px; background: #cbd5e1;" class="d-none d-sm-block"></div>
+                <div class="notif-sub-divider d-none d-sm-block"></div>
 
                 <div>
-                  <small class="text-uppercase fw-bold text-muted d-block mb-1" style="font-size: 10.5px; letter-spacing: 0.5px;">EXPIRY DATE</small>
-                  <strong class="fs-6 text-dark">{{ $expiryDateFmt }}</strong>
+                  <small class="text-uppercase fw-bold notif-sub-label d-block mb-1" style="font-size: 10.5px; letter-spacing: 0.5px;">EXPIRY DATE</small>
+                  <strong class="fs-6 notif-sub-val-expiry">{{ $expiryDateFmt }}</strong>
                 </div>
 
-                <div style="height: 28px; width: 1px; background: #cbd5e1;" class="d-none d-sm-block"></div>
+                <div class="notif-sub-divider d-none d-sm-block"></div>
 
                 <div>
-                  <small class="text-uppercase fw-bold text-muted d-block mb-1" style="font-size: 10.5px; letter-spacing: 0.5px;">DAYS REMAINING</small>
-                  <strong class="fs-6" style="color: {{ $daysColor }};">{{ $daysText }}</strong>
+                  <small class="text-uppercase fw-bold notif-sub-label d-block mb-1" style="font-size: 10.5px; letter-spacing: 0.5px;">DAYS REMAINING</small>
+                  <strong class="fs-6 notif-sub-val-days" style="color: {{ $daysColor }};">{{ $daysText }}</strong>
                 </div>
               </div>
             </div>
@@ -400,16 +669,16 @@
 
         <!-- Collapsible Inspection Details Box -->
         <div class="collapse mt-3" id="notifInspect-{{ $notifId }}">
-          <div class="p-3 border rounded-3 text-dark fs-7" style="line-height: 1.6; white-space: pre-line; background: #ffffff;">
-            <div class="fw-bold text-dark mb-2"><i class="bx bx-file me-1"></i> Notification Details:</div>
+          <div class="notif-inspect-box p-3 rounded-3 fs-7" style="line-height: 1.6; white-space: pre-line;">
+            <div class="fw-bold mb-2 notif-title"><i class="bx bx-file me-1"></i> Notification Details:</div>
             {!! nl2br(e($rawMessage ?: 'No additional message details available.')) !!}
           </div>
         </div>
       </div>
     @empty
-      <div class="card border-0 shadow-sm p-5 text-center text-muted" style="border-radius: 20px; background: #ffffff;">
+      <div class="card notif-empty-card border-0 shadow-sm p-5 text-center text-muted">
         <i class="bx bx-bell-off fs-1 d-block mb-2 opacity-50" style="color: #94a3b8;"></i>
-        <div class="fw-bold fs-6 text-dark">No Notifications</div>
+        <div class="fw-bold fs-6 notif-title">No Notifications</div>
         <p class="fs-7 mb-0">Your company notification feed is currently clear.</p>
       </div>
     @endforelse

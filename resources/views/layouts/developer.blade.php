@@ -12,37 +12,70 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,600&display=swap" rel="stylesheet">
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
 
+    <script>
+        (function () {
+            var theme = localStorage.getItem('pms-theme') || localStorage.getItem('bitroxia-theme');
+            if (!theme) {
+                theme = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+            }
+            document.documentElement.setAttribute('data-pms-theme', theme);
+            document.documentElement.setAttribute('data-theme', theme);
+            document.documentElement.setAttribute('data-bs-theme', theme);
+        })();
+    </script>
+
     <style>
         :root {
-            --bg-base: #f4f6f9;
+            --bg-base: #f6f7fc;
             --bg-surface: #ffffff;
-            --bg-sidebar: #0f172a;
-            --sidebar-border: #1e293b;
-            --sidebar-text: #cbd5e1; /* Lighter high-contrast sidebar text */
-            --sidebar-label: #94a3b8; /* Lighter clear label text */
-            --sidebar-active-bg: rgba(16, 185, 129, 0.16);
-            --sidebar-active-border: rgba(16, 185, 129, 0.35);
-            --sidebar-active-text: #34d399; /* Bright green active link */
-            --primary: #059669;
-            --primary-vibrant: #10b981;
-            --primary-hover: #047857;
-            --primary-light: #ecfdf5;
-            --primary-border: #a7f3d0;
-            --slate-dark: #0f172a;
-            --slate-heading: #1e293b;
+            --bg-sidebar: #070b1a;
+            --sidebar-border: rgba(255, 255, 255, 0.08);
+            --sidebar-text: #cbd5e1;
+            --sidebar-label: #94a3b8;
+            --sidebar-active-bg: rgba(47, 107, 255, 0.18);
+            --sidebar-active-border: rgba(47, 107, 255, 0.35);
+            --sidebar-active-text: #22d3ee;
+            --primary: #2F6BFF;
+            --primary-vibrant: #2F6BFF;
+            --primary-hover: #1E4FCC;
+            --primary-light: rgba(47, 107, 255, 0.08);
+            --primary-border: rgba(47, 107, 255, 0.25);
+            --slate-dark: #10142c;
+            --slate-heading: #10142c;
             --slate-body: #334155;
-            --slate-muted: #64748b;
-            --slate-light: #f8fafc;
+            --slate-muted: #545d82;
+            --slate-light: #f3f5fc;
             --border-color: #cbd5e1;
-            --border-subtle: #e2e8f0;
+            --border-subtle: rgba(16, 20, 44, 0.08);
             --radius-sm: 8px;
             --radius-md: 12px;
             --radius-lg: 16px;
             --radius-xl: 20px;
-            --shadow-xs: 0 1px 3px rgba(15, 23, 42, 0.04);
-            --shadow-sm: 0 3px 8px rgba(15, 23, 42, 0.06);
-            --shadow-md: 0 8px 20px -2px rgba(15, 23, 42, 0.09);
-            --shadow-lg: 0 14px 32px -4px rgba(15, 23, 42, 0.14);
+            --shadow-xs: 0 1px 3px rgba(16, 24, 60, 0.04);
+            --shadow-sm: 0 3px 8px rgba(16, 24, 60, 0.06);
+            --shadow-md: 0 8px 20px -2px rgba(47, 107, 255, 0.08);
+            --shadow-lg: 0 14px 32px -4px rgba(47, 107, 255, 0.12);
+        }
+
+        html[data-pms-theme="dark"],
+        html[data-theme="dark"] {
+            --bg-base: #070B1A;
+            --bg-surface: #0F1530;
+            --bg-sidebar: #070B1A;
+            --sidebar-border: rgba(238, 241, 251, 0.09);
+            --sidebar-text: #EEF1FB;
+            --sidebar-label: #9AA3C7;
+            --slate-dark: #EEF1FB;
+            --slate-heading: #EEF1FB;
+            --slate-body: #CBD5E1;
+            --slate-muted: #9AA3C7;
+            --slate-light: #141B3D;
+            --border-color: rgba(238, 241, 251, 0.12);
+            --border-subtle: rgba(238, 241, 251, 0.08);
+            --shadow-xs: 0 1px 3px rgba(0, 0, 0, 0.2);
+            --shadow-sm: 0 3px 8px rgba(0, 0, 0, 0.25);
+            --shadow-md: 0 8px 20px -2px rgba(0, 0, 0, 0.35);
+            --shadow-lg: 0 14px 32px -4px rgba(0, 0, 0, 0.5);
         }
 
         * {
@@ -228,7 +261,28 @@
         .dev-topbar-right {
             display: flex;
             align-items: center;
-            gap: 20px;
+            gap: 14px;
+        }
+
+        .dev-theme-toggle {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            font-size: 18px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            color: var(--slate-body);
+        }
+        .dev-theme-toggle:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: var(--primary-light);
+            transform: translateY(-1px);
         }
 
         /* USER PROFILE DROPDOWN */
@@ -253,7 +307,7 @@
             width: 42px;
             height: 42px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #059669, #047857);
+            background: linear-gradient(135deg, #1E4FCC, #2F6BFF);
             color: #ffffff;
             display: flex;
             align-items: center;
@@ -264,6 +318,31 @@
             box-shadow: var(--shadow-sm);
             overflow: hidden;
             flex-shrink: 0;
+        }
+
+        /* Developer Layout Dark Mode Overrides */
+        html[data-pms-theme="dark"] .dev-topbar,
+        html[data-theme="dark"] .dev-topbar {
+            background: rgba(15, 21, 48, 0.85);
+            border-color: var(--border-subtle);
+        }
+        html[data-pms-theme="dark"] .user-profile-btn:hover,
+        html[data-theme="dark"] .user-profile-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+        html[data-pms-theme="dark"] .dropdown-menu-box,
+        html[data-theme="dark"] .dropdown-menu-box {
+            background: var(--bg-surface);
+            border-color: var(--border-color);
+        }
+        html[data-pms-theme="dark"] .dropdown-item-link,
+        html[data-theme="dark"] .dropdown-item-link {
+            color: var(--slate-body);
+        }
+        html[data-pms-theme="dark"] .dropdown-item-link:hover,
+        html[data-theme="dark"] .dropdown-item-link:hover {
+            background: var(--primary-light);
+            color: var(--primary);
         }
 
         .user-avatar img {
@@ -403,6 +482,64 @@
             .dev-topbar { padding: 0 16px; }
             .dev-body-content { padding: 20px 16px; }
         }
+
+        /* Bootstrap 5 Pagination Compatibility */
+        .d-none { display: none !important; }
+        .d-flex { display: flex !important; }
+        .justify-content-between { justify-content: space-between !important; }
+        .justify-items-center { justify-items: center !important; }
+        .flex-fill { flex: 1 1 auto !important; }
+        @media (min-width: 576px) {
+            .d-sm-none { display: none !important; }
+            .d-sm-flex { display: flex !important; }
+            .align-items-sm-center { align-items: center !important; }
+            .justify-content-sm-between { justify-content: space-between !important; }
+            .flex-sm-fill { flex: 1 1 auto !important; }
+        }
+        .pagination {
+            display: flex;
+            padding-left: 0;
+            list-style: none;
+            margin: 0;
+            gap: 4px;
+            align-items: center;
+        }
+        .page-item .page-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 32px;
+            height: 32px;
+            padding: 0 10px;
+            border-radius: var(--radius-sm, 8px);
+            border: 1px solid var(--border-color, #cbd5e1);
+            background: #ffffff;
+            color: var(--slate-dark, #0f172a);
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        .page-item.active .page-link {
+            background: var(--primary, #059669);
+            color: #ffffff !important;
+            border-color: var(--primary, #059669);
+        }
+        .page-item.disabled .page-link {
+            opacity: 0.45;
+            pointer-events: none;
+        }
+        .page-item .page-link:hover:not(.active) {
+            background: var(--primary-light, #ecfdf5);
+            color: var(--primary, #059669);
+            border-color: var(--primary-border, #a7f3d0);
+        }
+        nav svg, .pagination svg, .w-5 {
+            width: 1.25rem !important;
+            height: 1.25rem !important;
+            max-width: 1.25rem !important;
+            max-height: 1.25rem !important;
+        }
     </style>
     @yield('styles')
 </head>
@@ -500,6 +637,11 @@
             </div>
 
             <div class="dev-topbar-right">
+                <!-- Theme Switcher -->
+                <button class="dev-theme-toggle" id="btnDevThemeToggle" title="Switch Theme" aria-label="Toggle Theme">
+                    <i class="bx bx-moon" id="devThemeToggleIcon"></i>
+                </button>
+
                 <!-- USER DROPDOWN -->
                 <div style="position: relative;">
                     <button class="user-profile-btn" onclick="toggleUserDropdown(event)">
@@ -569,6 +711,33 @@
                 menu.classList.remove('show');
             }
         });
+
+        // Developer Theme Switcher
+        (function() {
+            const btn = document.getElementById('btnDevThemeToggle');
+            const icon = document.getElementById('devThemeToggleIcon');
+
+            function syncIcon(theme) {
+                if (icon) {
+                    icon.className = theme === 'dark' ? 'bx bx-sun' : 'bx bx-moon';
+                }
+            }
+            const currentTheme = document.documentElement.getAttribute('data-pms-theme') || 'light';
+            syncIcon(currentTheme);
+
+            if (btn) {
+                btn.addEventListener('click', function() {
+                    const activeTheme = document.documentElement.getAttribute('data-pms-theme') || 'light';
+                    const nextTheme = activeTheme === 'dark' ? 'light' : 'dark';
+                    document.documentElement.setAttribute('data-pms-theme', nextTheme);
+                    document.documentElement.setAttribute('data-theme', nextTheme);
+                    document.documentElement.setAttribute('data-bs-theme', nextTheme);
+                    localStorage.setItem('pms-theme', nextTheme);
+                    localStorage.setItem('bitroxia-theme', nextTheme);
+                    syncIcon(nextTheme);
+                });
+            }
+        })();
     </script>
     @yield('scripts')
 </body>

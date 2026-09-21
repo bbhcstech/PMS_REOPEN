@@ -1014,169 +1014,190 @@
 
     /* ===== DARK MODE ===== */
     html[data-pms-theme="dark"] .attendance-container {
-        background: linear-gradient(145deg, #07130d, #102119);
+        background: #070B1A !important;
+        color: #CBD5E1 !important;
     }
 
     html[data-pms-theme="dark"] .header-card,
     html[data-pms-theme="dark"] .stat-card,
+    html[data-pms-theme="dark"] .attendance-container .stat-card,
+    html[data-pms-theme="dark"] .attendance-container .stat-card:first-of-type,
     html[data-pms-theme="dark"] .filter-card,
     html[data-pms-theme="dark"] .tabs-card,
     html[data-pms-theme="dark"] .legend-card,
     html[data-pms-theme="dark"] .table-card {
-        background: rgba(16, 33, 25, 0.95);
-        border-color: rgba(122, 240, 181, 0.15);
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+        color: #CBD5E1 !important;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
     }
 
     html[data-pms-theme="dark"] .header-title h1 {
-        background: linear-gradient(135deg, #60a5fa, #34d399, #22c55e);
-        -webkit-background-clip: text;
-        background-clip: text;
+        background: linear-gradient(135deg, #60a5fa, #38bdf8, #2F6BFF) !important;
+        -webkit-background-clip: text !important;
+        background-clip: text !important;
+        color: transparent !important;
     }
 
     html[data-pms-theme="dark"] .header-title p {
-        color: #d9f1e4;
+        color: #9AA3C7 !important;
     }
 
     html[data-pms-theme="dark"] .stat-info h6,
     html[data-pms-theme="dark"] .filter-header h6,
     html[data-pms-theme="dark"] .table-header h6,
-    html[data-pms-theme="dark"] .legend-title {
-        color: #d9f1e4;
+    html[data-pms-theme="dark"] .legend-title,
+    html[data-pms-theme="dark"] .attendance-container .stat-card h6,
+    html[data-pms-theme="dark"] .attendance-container .stat-card span,
+    html[data-pms-theme="dark"] .attendance-container .stat-card:first-of-type span,
+    html[data-pms-theme="dark"] .attendance-container .stat-card:first-of-type h6 {
+        color: #9AA3C7 !important;
+        -webkit-text-fill-color: #9AA3C7 !important;
     }
 
-    html[data-pms-theme="dark"] .stat-info h3 {
-        color: #ffffff;
+    html[data-pms-theme="dark"] .stat-info h3,
+    html[data-pms-theme="dark"] .attendance-container .stat-card h3,
+    html[data-pms-theme="dark"] .attendance-container .stat-card:first-of-type h3 {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
     }
 
     html[data-pms-theme="dark"] .filter-group label {
-        color: #8ba198;
+        color: #9AA3C7 !important;
     }
 
     html[data-pms-theme="dark"] .filter-group select,
     html[data-pms-theme="dark"] .filter-group input {
-        background: #183026;
-        border-color: rgba(122, 240, 181, 0.2);
-        color: #ffffff;
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.16) !important;
+        color: #EEF1FB !important;
     }
 
     html[data-pms-theme="dark"] .filter-group select:focus,
     html[data-pms-theme="dark"] .filter-group input:focus {
-        border-color: #34d399;
-        box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.12);
+        border-color: #2F6BFF !important;
+        box-shadow: 0 0 0 4px rgba(47, 107, 255, 0.2) !important;
     }
 
     html[data-pms-theme="dark"] .filter-group select option {
-        background: #183026;
-        color: #ffffff;
+        background: #141B3D !important;
+        color: #EEF1FB !important;
     }
 
     html[data-pms-theme="dark"] .nav-tab-btn {
-        background: #183026;
-        color: #d9f1e4;
+        background: #141B3D !important;
+        color: #CBD5E1 !important;
+        border-color: rgba(238, 241, 251, 0.1) !important;
     }
 
     html[data-pms-theme="dark"] .nav-tab-btn:hover {
-        background: #102119;
-        color: #ffffff;
+        background: #1A2247 !important;
+        color: #EEF1FB !important;
     }
 
     html[data-pms-theme="dark"] .nav-tab-btn.active {
-        background: linear-gradient(135deg, #0f744c, #10b981);
-        color: #ffffff;
+        background: #2F6BFF !important;
+        color: #ffffff !important;
+        border-color: #2F6BFF !important;
     }
 
     html[data-pms-theme="dark"] .legend-item {
-        background: #183026;
-        border-color: rgba(122, 240, 181, 0.15);
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.1) !important;
     }
 
     html[data-pms-theme="dark"] .legend-text {
-        color: #d9f1e4;
+        color: #EEF1FB !important;
     }
 
     html[data-pms-theme="dark"] .attendance-table tbody tr {
-        background: #102119;
+        background: #141B3D !important;
     }
 
     html[data-pms-theme="dark"] .attendance-table tbody tr:hover {
-        background: #183026;
+        background: #1A2247 !important;
     }
 
     html[data-pms-theme="dark"] .attendance-table thead th {
-        color: #8ba198;
-        border-color: rgba(122, 240, 181, 0.15);
+        color: #9AA3C7 !important;
+        border-color: rgba(238, 241, 251, 0.08) !important;
     }
 
     html[data-pms-theme="dark"] .attendance-table td {
-        color: #d9f1e4;
+        color: #CBD5E1 !important;
     }
 
     html[data-pms-theme="dark"] .employee-name {
-        color: #ffffff;
+        color: #EEF1FB !important;
     }
 
     html[data-pms-theme="dark"] .employee-dept {
-        color: #8ba198;
+        color: #9AA3C7 !important;
     }
 
     html[data-pms-theme="dark"] .table-header {
-        border-color: rgba(122, 240, 181, 0.15);
+        border-color: rgba(238, 241, 251, 0.08) !important;
     }
 
     html[data-pms-theme="dark"] .footer-note p {
-        color: #8ba198;
+        color: #9AA3C7 !important;
     }
 
-    html[data-pms-theme="dark"] .stat-icon.total {
-        background: linear-gradient(135deg, #312e81, #4f46e5);
-        color: #c7d2fe;
+    html[data-pms-theme="dark"] .stat-icon.total,
+    html[data-pms-theme="dark"] .attendance-container .stat-card:first-of-type .stat-icon.total {
+        background: rgba(47, 107, 255, 0.2) !important;
+        color: #93C5FD !important;
+        -webkit-text-fill-color: #93C5FD !important;
     }
 
     html[data-pms-theme="dark"] .stat-icon.month {
-        background: linear-gradient(135deg, #78350f, #d97706);
-        color: #fcd34d;
+        background: rgba(245, 158, 11, 0.2) !important;
+        color: #FCD34D !important;
+        -webkit-text-fill-color: #FCD34D !important;
     }
 
     html[data-pms-theme="dark"] .stat-icon.year {
-        background: linear-gradient(135deg, #1e3a8a, #1d4ed8);
-        color: #93bbfc;
+        background: rgba(139, 92, 246, 0.2) !important;
+        color: #C4B5FD !important;
+        -webkit-text-fill-color: #C4B5FD !important;
     }
 
     html[data-pms-theme="dark"] .stat-icon.days {
-        background: linear-gradient(135deg, #831843, #be185d);
-        color: #fbcfe8;
+        background: rgba(239, 68, 68, 0.2) !important;
+        color: #FCA5A5 !important;
+        -webkit-text-fill-color: #FCA5A5 !important;
     }
 
     html[data-pms-theme="dark"] .btn-export-menu {
-        background: #183026;
-        color: #d9f1e4;
-        border-color: rgba(122, 240, 181, 0.2);
+        background: #141B3D !important;
+        color: #CBD5E1 !important;
+        border-color: rgba(238, 241, 251, 0.16) !important;
     }
 
     html[data-pms-theme="dark"] .btn-export-menu:hover,
     html[data-pms-theme="dark"] .btn-export-menu:focus {
-        background: #224130;
-        color: #ffffff;
-        border-color: #34d399;
+        background: #1A2247 !important;
+        color: #ffffff !important;
+        border-color: #2F6BFF !important;
     }
 
     html[data-pms-theme="dark"] .attendance-table-actions .dropdown-menu {
-        background: #102119;
-        border-color: rgba(122, 240, 181, 0.15);
-        box-shadow: 0 24px 48px -14px rgba(0, 0, 0, 0.55);
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.14) !important;
+        box-shadow: 0 24px 48px -14px rgba(0, 0, 0, 0.7) !important;
     }
 
     html[data-pms-theme="dark"] .attendance-table-actions .dropdown-item {
-        color: #d9f1e4;
+        color: #CBD5E1 !important;
     }
 
     html[data-pms-theme="dark"] .attendance-table-actions .dropdown-item:hover {
-        background: #183026;
-        color: #7af0b5;
+        background: #141B3D !important;
+        color: #EEF1FB !important;
     }
 
     html[data-pms-theme="dark"] .attendance-table-actions .dropdown-divider {
-        border-color: rgba(122, 240, 181, 0.15);
+        border-color: rgba(238, 241, 251, 0.08) !important;
     }
 </style>
 

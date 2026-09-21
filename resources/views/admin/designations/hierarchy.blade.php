@@ -170,7 +170,7 @@
                     <div class="table-header">
                         <div class="table-title">
                             <div class="table-title-icon">
-                                <i class="fas fa-chart-network"></i>
+                                <i class="fas fa-sitemap"></i>
                             </div>
                             <div>
                                 <h3>Employee Hierarchy</h3>
@@ -309,12 +309,12 @@
     .designation-hierarchy-page .stat-card,
     .designation-hierarchy-page .stat-card:first-of-type,
     .designation-hierarchy-page .stat-card.is-featured {
-        background: #ffffff !important;
+        background: #ffffff;
         padding: 22px;
         border-radius: 22px;
-        border: 1px solid rgba(15, 116, 76, .14) !important;
-        box-shadow: 0 14px 35px rgba(15, 116, 76, .06) !important;
-        color: #0a2e1f !important;
+        border: 1px solid rgba(15, 116, 76, .14);
+        box-shadow: 0 14px 35px rgba(15, 116, 76, .06);
+        color: #0a2e1f;
         display: flex;
         gap: 16px;
         align-items: center;
@@ -1027,6 +1027,592 @@
             align-items: flex-start;
         }
     }
+
+    /* ==========================================================================
+       DESIGNATION HIERARCHY - COMPREHENSIVE DARK MODE SYSTEM
+       ========================================================================== */
+    html[data-pms-theme="dark"] .designation-hierarchy-page,
+    html[data-bs-theme="dark"] .designation-hierarchy-page,
+    html[data-theme="dark"] .designation-hierarchy-page,
+    html.dark .designation-hierarchy-page,
+    body[data-pms-theme="dark"] .designation-hierarchy-page,
+    body[data-bs-theme="dark"] .designation-hierarchy-page,
+    body.dark .designation-hierarchy-page,
+    [data-pms-theme="dark"] .designation-hierarchy-page,
+    [data-theme="dark"] .designation-hierarchy-page,
+    [data-bs-theme="dark"] .designation-hierarchy-page,
+    .dark .designation-hierarchy-page {
+        background: #070B1A !important;
+        color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .designation-hierarchy-page .breadcrumb,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .breadcrumb,
+    html[data-theme="dark"] .designation-hierarchy-page .breadcrumb,
+    html.dark .designation-hierarchy-page .breadcrumb,
+    body[data-pms-theme="dark"] .designation-hierarchy-page .breadcrumb,
+    [data-pms-theme="dark"] .designation-hierarchy-page .breadcrumb,
+    .dark .designation-hierarchy-page .breadcrumb {
+        background: #0F1530 !important;
+        border: 1px solid rgba(122, 240, 181, 0.2) !important;
+        color: #7af0b5 !important;
+    }
+
+    html[data-pms-theme="dark"] .designation-hierarchy-page .header-card,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .header-card,
+    html[data-theme="dark"] .designation-hierarchy-page .header-card,
+    html.dark .designation-hierarchy-page .header-card,
+    body[data-pms-theme="dark"] .designation-hierarchy-page .header-card,
+    [data-pms-theme="dark"] .designation-hierarchy-page .header-card,
+    .dark .designation-hierarchy-page .header-card {
+        background: #0F1530 !important;
+        border: 1px solid rgba(122, 240, 181, 0.2) !important;
+    }
+
+    html[data-pms-theme="dark"] .designation-hierarchy-page .header-card h1,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .header-card h1,
+    html[data-theme="dark"] .designation-hierarchy-page .header-card h1,
+    html.dark .designation-hierarchy-page .header-card h1,
+    body[data-pms-theme="dark"] .designation-hierarchy-page .header-card h1,
+    [data-pms-theme="dark"] .designation-hierarchy-page .header-card h1,
+    .dark .designation-hierarchy-page .header-card h1 {
+        background: linear-gradient(135deg, #ffffff 0%, #7af0b5 100%) !important;
+        background-clip: text !important;
+        -webkit-background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+        color: #ffffff !important;
+    }
+
+    html[data-pms-theme="dark"] .designation-hierarchy-page .header-card p,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .header-card p,
+    html[data-theme="dark"] .designation-hierarchy-page .header-card p,
+    html.dark .designation-hierarchy-page .header-card p,
+    body[data-pms-theme="dark"] .designation-hierarchy-page .header-card p,
+    [data-pms-theme="dark"] .designation-hierarchy-page .header-card p,
+    .dark .designation-hierarchy-page .header-card p {
+        color: #94A3B8 !important;
+        -webkit-text-fill-color: #94A3B8 !important;
+    }
+
+    html[data-pms-theme="dark"] .designation-hierarchy-page .btn-light,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .btn-light,
+    html[data-theme="dark"] .designation-hierarchy-page .btn-light,
+    html.dark .designation-hierarchy-page .btn-light,
+    body[data-pms-theme="dark"] .designation-hierarchy-page .btn-light,
+    [data-pms-theme="dark"] .designation-hierarchy-page .btn-light,
+    .dark .designation-hierarchy-page .btn-light {
+        background: #14281e !important;
+        border: 1px solid rgba(122, 240, 181, 0.35) !important;
+        color: #7af0b5 !important;
+        -webkit-text-fill-color: #7af0b5 !important;
+    }
+
+    html[data-pms-theme="dark"] .designation-hierarchy-page .btn-light:hover,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .btn-light:hover,
+    html[data-theme="dark"] .designation-hierarchy-page .btn-light:hover,
+    html.dark .designation-hierarchy-page .btn-light:hover,
+    body[data-pms-theme="dark"] .designation-hierarchy-page .btn-light:hover,
+    [data-pms-theme="dark"] .designation-hierarchy-page .btn-light:hover,
+    .dark .designation-hierarchy-page .btn-light:hover {
+        background: #1f3e31 !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    /* Stat Cards & Icons in Dark Mode */
+    html[data-pms-theme="dark"] .designation-hierarchy-page .stat-card,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .stat-card,
+    html[data-theme="dark"] .designation-hierarchy-page .stat-card,
+    html.dark .designation-hierarchy-page .stat-card,
+    body[data-pms-theme="dark"] .designation-hierarchy-page .stat-card,
+    [data-pms-theme="dark"] .designation-hierarchy-page .stat-card,
+    .dark .designation-hierarchy-page .stat-card {
+        background: #0F1530 !important;
+        border: 1px solid rgba(122, 240, 181, 0.25) !important;
+        color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .designation-hierarchy-page .stat-card h3,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .stat-card h3,
+    html[data-theme="dark"] .designation-hierarchy-page .stat-card h3,
+    html.dark .designation-hierarchy-page .stat-card h3,
+    body[data-pms-theme="dark"] .designation-hierarchy-page .stat-card h3,
+    [data-pms-theme="dark"] .designation-hierarchy-page .stat-card h3,
+    .dark .designation-hierarchy-page .stat-card h3 {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    html[data-pms-theme="dark"] .designation-hierarchy-page .stat-card span,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .stat-card span,
+    html[data-theme="dark"] .designation-hierarchy-page .stat-card span,
+    html.dark .designation-hierarchy-page .stat-card span,
+    body[data-pms-theme="dark"] .designation-hierarchy-page .stat-card span,
+    [data-pms-theme="dark"] .designation-hierarchy-page .stat-card span,
+    .dark .designation-hierarchy-page .stat-card span {
+        color: #CBD5E1 !important;
+        -webkit-text-fill-color: #CBD5E1 !important;
+    }
+
+    html[data-pms-theme="dark"] .designation-hierarchy-page .stat-sub,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .stat-sub,
+    html[data-theme="dark"] .designation-hierarchy-page .stat-sub,
+    html.dark .designation-hierarchy-page .stat-sub,
+    body[data-pms-theme="dark"] .designation-hierarchy-page .stat-sub,
+    [data-pms-theme="dark"] .designation-hierarchy-page .stat-sub,
+    .dark .designation-hierarchy-page .stat-sub {
+        color: #7af0b5 !important;
+        -webkit-text-fill-color: #7af0b5 !important;
+    }
+
+    /* Stat Card Icons in Dark Mode */
+    html[data-pms-theme="dark"] .designation-hierarchy-page .stat-icon,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .stat-icon,
+    html[data-theme="dark"] .designation-hierarchy-page .stat-icon,
+    html.dark .designation-hierarchy-page .stat-icon,
+    body[data-pms-theme="dark"] .designation-hierarchy-page .stat-icon,
+    [data-pms-theme="dark"] .designation-hierarchy-page .stat-icon,
+    .dark .designation-hierarchy-page .stat-icon,
+    html[data-pms-theme="dark"] .designation-hierarchy-page .stat-card:first-of-type .stat-icon,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .stat-card:first-of-type .stat-icon {
+        background: rgba(16, 185, 129, 0.22) !important;
+        color: #7af0b5 !important;
+        -webkit-text-fill-color: #7af0b5 !important;
+        border: 1px solid rgba(122, 240, 181, 0.4) !important;
+    }
+
+    html[data-pms-theme="dark"] .designation-hierarchy-page .stat-card:nth-child(2) .stat-icon,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .stat-card:nth-child(2) .stat-icon {
+        background: rgba(245, 158, 11, 0.22) !important;
+        color: #fbbf24 !important;
+        -webkit-text-fill-color: #fbbf24 !important;
+        border: 1px solid rgba(245, 158, 11, 0.4) !important;
+    }
+
+    html[data-pms-theme="dark"] .designation-hierarchy-page .stat-card:nth-child(3) .stat-icon,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .stat-card:nth-child(3) .stat-icon {
+        background: rgba(56, 189, 248, 0.22) !important;
+        color: #38bdf8 !important;
+        -webkit-text-fill-color: #38bdf8 !important;
+        border: 1px solid rgba(56, 189, 248, 0.4) !important;
+    }
+
+    html[data-pms-theme="dark"] .designation-hierarchy-page .stat-card:nth-child(4) .stat-icon,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .stat-card:nth-child(4) .stat-icon {
+        background: rgba(168, 85, 247, 0.22) !important;
+        color: #c084fc !important;
+        -webkit-text-fill-color: #c084fc !important;
+        border: 1px solid rgba(168, 85, 247, 0.4) !important;
+    }
+
+    /* Filter Button & Action Buttons */
+    html[data-pms-theme="dark"] .designation-hierarchy-page .btn-filter,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .btn-filter,
+    html[data-theme="dark"] .designation-hierarchy-page .btn-filter,
+    html.dark .designation-hierarchy-page .btn-filter,
+    body[data-pms-theme="dark"] .designation-hierarchy-page .btn-filter,
+    [data-pms-theme="dark"] .designation-hierarchy-page .btn-filter,
+    .dark .designation-hierarchy-page .btn-filter {
+        background: #14281e !important;
+        border: 1px solid rgba(122, 240, 181, 0.35) !important;
+        color: #7af0b5 !important;
+        -webkit-text-fill-color: #7af0b5 !important;
+    }
+
+    html[data-pms-theme="dark"] .designation-hierarchy-page .btn-filter:hover,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .btn-filter:hover {
+        background: #1f3e31 !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    /* Alert Info in Dark Mode */
+    html[data-pms-theme="dark"] .designation-hierarchy-page .alert-info,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .alert-info,
+    html[data-theme="dark"] .designation-hierarchy-page .alert-info,
+    html.dark .designation-hierarchy-page .alert-info,
+    body[data-pms-theme="dark"] .designation-hierarchy-page .alert-info,
+    [data-pms-theme="dark"] .designation-hierarchy-page .alert-info,
+    .dark .designation-hierarchy-page .alert-info {
+        background: #0d1b14 !important;
+        border-left: 4px solid #7af0b5 !important;
+        border: 1px solid rgba(122, 240, 181, 0.2) !important;
+        border-left-width: 4px !important;
+        color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .designation-hierarchy-page .alert-info .alert-icon,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .alert-info .alert-icon {
+        background: rgba(16, 185, 129, 0.25) !important;
+        color: #7af0b5 !important;
+    }
+
+    html[data-pms-theme="dark"] .designation-hierarchy-page .alert-info strong,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .alert-info strong {
+        color: #ffffff !important;
+    }
+
+    html[data-pms-theme="dark"] .designation-hierarchy-page .alert-info p,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .alert-info p {
+        color: #CBD5E1 !important;
+    }
+
+    /* Hierarchy Tree Container in Dark Mode */
+    html[data-pms-theme="dark"] .designation-hierarchy-page .hierarchy-container,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .hierarchy-container,
+    html[data-theme="dark"] .designation-hierarchy-page .hierarchy-container,
+    html.dark .designation-hierarchy-page .hierarchy-container,
+    body[data-pms-theme="dark"] .designation-hierarchy-page .hierarchy-container,
+    [data-pms-theme="dark"] .designation-hierarchy-page .hierarchy-container,
+    .dark .designation-hierarchy-page .hierarchy-container {
+        background: #0F1530 !important;
+        border: 1px solid rgba(122, 240, 181, 0.2) !important;
+    }
+
+    html[data-pms-theme="dark"] .designation-hierarchy-page .level-legend,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .level-legend,
+    html[data-theme="dark"] .designation-hierarchy-page .level-legend,
+    html.dark .designation-hierarchy-page .level-legend,
+    body[data-pms-theme="dark"] .designation-hierarchy-page .level-legend,
+    [data-pms-theme="dark"] .designation-hierarchy-page .level-legend,
+    .dark .designation-hierarchy-page .level-legend {
+        background: #141B3D !important;
+        border-bottom: 1px solid rgba(122, 240, 181, 0.15) !important;
+        color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .designation-hierarchy-page .level-legend span:first-child,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .level-legend span:first-child {
+        color: #7af0b5 !important;
+    }
+
+    html[data-pms-theme="dark"] .designation-hierarchy-page .expand-all-btn,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .expand-all-btn,
+    html[data-theme="dark"] .designation-hierarchy-page .expand-all-btn,
+    html.dark .designation-hierarchy-page .expand-all-btn,
+    body[data-pms-theme="dark"] .designation-hierarchy-page .expand-all-btn,
+    [data-pms-theme="dark"] .designation-hierarchy-page .expand-all-btn,
+    .dark .designation-hierarchy-page .expand-all-btn {
+        background: #14281e !important;
+        color: #7af0b5 !important;
+        border: 1px solid rgba(122, 240, 181, 0.3) !important;
+    }
+
+    html[data-pms-theme="dark"] .designation-hierarchy-page .expand-all-btn:hover,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .expand-all-btn:hover {
+        background: #1f3e31 !important;
+        color: #ffffff !important;
+    }
+
+    /* Cards, Tables & Status Bar */
+    html[data-pms-theme="dark"] .designation-hierarchy-page .table-card,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .table-card,
+    html[data-theme="dark"] .designation-hierarchy-page .table-card,
+    html.dark .designation-hierarchy-page .table-card,
+    body[data-pms-theme="dark"] .designation-hierarchy-page .table-card,
+    [data-pms-theme="dark"] .designation-hierarchy-page .table-card,
+    .dark .designation-hierarchy-page .table-card,
+    html[data-pms-theme="dark"] .designation-hierarchy-page .status-bar,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .status-bar,
+    html[data-theme="dark"] .designation-hierarchy-page .status-bar,
+    html.dark .designation-hierarchy-page .status-bar,
+    body[data-pms-theme="dark"] .designation-hierarchy-page .status-bar,
+    [data-pms-theme="dark"] .designation-hierarchy-page .status-bar,
+    .dark .designation-hierarchy-page .status-bar,
+    html[data-pms-theme="dark"] .designation-hierarchy-page .chart-legend,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .chart-legend,
+    html[data-theme="dark"] .designation-hierarchy-page .chart-legend,
+    html.dark .designation-hierarchy-page .chart-legend,
+    body[data-pms-theme="dark"] .designation-hierarchy-page .chart-legend,
+    [data-pms-theme="dark"] .designation-hierarchy-page .chart-legend,
+    .dark .designation-hierarchy-page .chart-legend {
+        background: #0F1530 !important;
+        border: 1px solid rgba(122, 240, 181, 0.2) !important;
+        color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .designation-hierarchy-page .table-header,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .table-header,
+    html[data-theme="dark"] .designation-hierarchy-page .table-header,
+    html.dark .designation-hierarchy-page .table-header,
+    body[data-pms-theme="dark"] .designation-hierarchy-page .table-header,
+    [data-pms-theme="dark"] .designation-hierarchy-page .table-header,
+    .dark .designation-hierarchy-page .table-header {
+        background: #141B3D !important;
+        border-bottom: 1px solid rgba(122, 240, 181, 0.15) !important;
+    }
+
+    html[data-pms-theme="dark"] .designation-hierarchy-page .table-title-icon,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .table-title-icon,
+    html[data-theme="dark"] .designation-hierarchy-page .table-title-icon,
+    html.dark .designation-hierarchy-page .table-title-icon,
+    body[data-pms-theme="dark"] .designation-hierarchy-page .table-title-icon,
+    body[data-bs-theme="dark"] .designation-hierarchy-page .table-title-icon,
+    body[data-theme="dark"] .designation-hierarchy-page .table-title-icon,
+    body.dark .designation-hierarchy-page .table-title-icon,
+    [data-pms-theme="dark"] .designation-hierarchy-page .table-title-icon,
+    [data-bs-theme="dark"] .designation-hierarchy-page .table-title-icon,
+    [data-theme="dark"] .designation-hierarchy-page .table-title-icon,
+    .dark .designation-hierarchy-page .table-title-icon {
+        background: rgba(16, 185, 129, 0.22) !important;
+        color: #7af0b5 !important;
+        border: 1px solid rgba(122, 240, 181, 0.4) !important;
+    }
+
+    html[data-pms-theme="dark"] .designation-hierarchy-page .table-title-icon i,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .table-title-icon i,
+    html[data-theme="dark"] .designation-hierarchy-page .table-title-icon i,
+    html.dark .designation-hierarchy-page .table-title-icon i,
+    body[data-pms-theme="dark"] .designation-hierarchy-page .table-title-icon i,
+    [data-pms-theme="dark"] .designation-hierarchy-page .table-title-icon i,
+    .dark .designation-hierarchy-page .table-title-icon i {
+        color: #7af0b5 !important;
+        -webkit-text-fill-color: #7af0b5 !important;
+    }
+
+    html[data-pms-theme="dark"] .designation-hierarchy-page .chart-control-btn,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .chart-control-btn,
+    html[data-pms-theme="dark"] .designation-hierarchy-page .chart-controls button,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .chart-controls button {
+        background: #14281e !important;
+        border: 1px solid rgba(122, 240, 181, 0.35) !important;
+        color: #7af0b5 !important;
+    }
+
+    html[data-pms-theme="dark"] .designation-hierarchy-page .chart-control-btn:hover,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .chart-control-btn:hover,
+    html[data-pms-theme="dark"] .designation-hierarchy-page .chart-controls button:hover,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .chart-controls button:hover {
+        background: #1f3e31 !important;
+        color: #ffffff !important;
+    }
+
+    html[data-pms-theme="dark"] .designation-hierarchy-page .table-title h3,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .table-title h3,
+    html[data-theme="dark"] .designation-hierarchy-page .table-title h3,
+    html.dark .designation-hierarchy-page .table-title h3 {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    html[data-pms-theme="dark"] .designation-hierarchy-page .designation-item,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .designation-item,
+    html[data-theme="dark"] .designation-hierarchy-page .designation-item,
+    html.dark .designation-hierarchy-page .designation-item,
+    body[data-pms-theme="dark"] .designation-hierarchy-page .designation-item,
+    [data-pms-theme="dark"] .designation-hierarchy-page .designation-item,
+    .dark .designation-hierarchy-page .designation-item {
+        background: #141B3D !important;
+        border: 1px solid rgba(122, 240, 181, 0.15) !important;
+        color: #ffffff !important;
+    }
+
+    html[data-pms-theme="dark"] .designation-hierarchy-page .designation-icon-small,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .designation-icon-small {
+        background: rgba(16, 185, 129, 0.2) !important;
+        color: #7af0b5 !important;
+    }
+
+    html[data-pms-theme="dark"] .designation-hierarchy-page .designation-name,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .designation-name,
+    html[data-theme="dark"] .designation-hierarchy-page .designation-name,
+    html.dark .designation-hierarchy-page .designation-name {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    html[data-pms-theme="dark"] .designation-hierarchy-page .text-muted,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .text-muted,
+    html[data-theme="dark"] .designation-hierarchy-page .text-muted,
+    html.dark .designation-hierarchy-page .text-muted,
+    html[data-pms-theme="dark"] .designation-hierarchy-page .muted,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .muted,
+    html[data-theme="dark"] .designation-hierarchy-page .muted,
+    html.dark .designation-hierarchy-page .muted {
+        color: #94A3B8 !important;
+        -webkit-text-fill-color: #94A3B8 !important;
+    }
+
+    html[data-pms-theme="dark"] .designation-hierarchy-page .status-item,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .status-item,
+    html[data-theme="dark"] .designation-hierarchy-page .status-item,
+    html.dark .designation-hierarchy-page .status-item {
+        color: #CBD5E1 !important;
+    }
+
+    /* JSCharting Complete Dark Mode Overrides */
+    html[data-pms-theme="dark"] .designation-hierarchy-page .chart-container,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .chart-container,
+    html[data-theme="dark"] .designation-hierarchy-page .chart-container,
+    html.dark .designation-hierarchy-page .chart-container,
+    body[data-pms-theme="dark"] .designation-hierarchy-page .chart-container,
+    body[data-bs-theme="dark"] .designation-hierarchy-page .chart-container,
+    body[data-theme="dark"] .designation-hierarchy-page .chart-container,
+    body.dark .designation-hierarchy-page .chart-container,
+    [data-pms-theme="dark"] .designation-hierarchy-page .chart-container,
+    [data-bs-theme="dark"] .designation-hierarchy-page .chart-container,
+    [data-theme="dark"] .designation-hierarchy-page .chart-container,
+    .dark .designation-hierarchy-page .chart-container,
+    html[data-pms-theme="dark"] #chartDiv,
+    html[data-bs-theme="dark"] #chartDiv,
+    html[data-theme="dark"] #chartDiv,
+    html.dark #chartDiv,
+    body[data-pms-theme="dark"] #chartDiv,
+    body[data-bs-theme="dark"] #chartDiv,
+    body[data-theme="dark"] #chartDiv,
+    body.dark #chartDiv,
+    [data-pms-theme="dark"] #chartDiv,
+    [data-bs-theme="dark"] #chartDiv,
+    [data-theme="dark"] #chartDiv,
+    .dark #chartDiv {
+        background: #0F1530 !important;
+        background-color: #0F1530 !important;
+    }
+
+    html[data-pms-theme="dark"] #chartDiv *,
+    html[data-bs-theme="dark"] #chartDiv *,
+    html[data-theme="dark"] #chartDiv *,
+    html.dark #chartDiv *,
+    body[data-pms-theme="dark"] #chartDiv *,
+    [data-pms-theme="dark"] #chartDiv *,
+    .dark #chartDiv * {
+        background-color: transparent !important;
+    }
+
+    html[data-pms-theme="dark"] #chartDiv svg,
+    html[data-bs-theme="dark"] #chartDiv svg,
+    html[data-theme="dark"] #chartDiv svg,
+    html.dark #chartDiv svg,
+    body[data-pms-theme="dark"] #chartDiv svg,
+    [data-pms-theme="dark"] #chartDiv svg,
+    .dark #chartDiv svg {
+        background: transparent !important;
+        background-color: transparent !important;
+    }
+
+    html[data-pms-theme="dark"] #chartDiv svg > rect,
+    html[data-bs-theme="dark"] #chartDiv svg > rect,
+    html[data-theme="dark"] #chartDiv svg > rect,
+    html.dark #chartDiv svg > rect,
+    body[data-pms-theme="dark"] #chartDiv svg > rect,
+    [data-pms-theme="dark"] #chartDiv svg > rect,
+    .dark #chartDiv svg > rect,
+    html[data-pms-theme="dark"] #chartDiv svg rect[fill="#ffffff"],
+    html[data-bs-theme="dark"] #chartDiv svg rect[fill="#ffffff"],
+    html[data-pms-theme="dark"] #chartDiv svg rect[fill="white"],
+    html[data-bs-theme="dark"] #chartDiv svg rect[fill="white"],
+    html[data-pms-theme="dark"] #chartDiv svg rect[fill="#FAFEEB"],
+    html[data-bs-theme="dark"] #chartDiv svg rect[fill="#FAFEEB"],
+    html[data-pms-theme="dark"] #chartDiv svg rect[fill="#f5fbf7"],
+    html[data-bs-theme="dark"] #chartDiv svg rect[fill="#f5fbf7"] {
+        fill: #0F1530 !important;
+    }
+
+    html[data-pms-theme="dark"] #chartDiv text,
+    html[data-bs-theme="dark"] #chartDiv text,
+    html[data-theme="dark"] #chartDiv text,
+    html.dark #chartDiv text,
+    body[data-pms-theme="dark"] #chartDiv text,
+    [data-pms-theme="dark"] #chartDiv text,
+    .dark #chartDiv text {
+        fill: #ffffff !important;
+        color: #ffffff !important;
+    }
+
+    /* SVG Connector lines & arrows in Dark Mode */
+    html[data-pms-theme="dark"] #chartDiv path[fill="none"],
+    html[data-bs-theme="dark"] #chartDiv path[fill="none"],
+    html[data-theme="dark"] #chartDiv path[fill="none"],
+    html.dark #chartDiv path[fill="none"],
+    body[data-pms-theme="dark"] #chartDiv path[fill="none"],
+    [data-pms-theme="dark"] #chartDiv path[fill="none"],
+    .dark #chartDiv path[fill="none"],
+    html[data-pms-theme="dark"] #chartDiv path[stroke],
+    html[data-bs-theme="dark"] #chartDiv path[stroke],
+    html[data-theme="dark"] #chartDiv path[stroke],
+    html.dark #chartDiv path[stroke],
+    body[data-pms-theme="dark"] #chartDiv path[stroke],
+    [data-pms-theme="dark"] #chartDiv path[stroke],
+    .dark #chartDiv path[stroke] {
+        stroke: #7af0b5 !important;
+        stroke-width: 2.5px !important;
+        stroke-opacity: 1 !important;
+    }
+
+    html[data-pms-theme="dark"] #chartDiv line,
+    html[data-bs-theme="dark"] #chartDiv line,
+    html[data-theme="dark"] #chartDiv line,
+    html.dark #chartDiv line,
+    body[data-pms-theme="dark"] #chartDiv line,
+    [data-pms-theme="dark"] #chartDiv line,
+    .dark #chartDiv line {
+        stroke: #7af0b5 !important;
+        stroke-width: 2.5px !important;
+        stroke-opacity: 1 !important;
+    }
+
+    html[data-pms-theme="dark"] #chartDiv marker path,
+    html[data-bs-theme="dark"] #chartDiv marker path,
+    [data-pms-theme="dark"] #chartDiv marker path {
+        fill: #7af0b5 !important;
+        stroke: #7af0b5 !important;
+    }
+
+    html[data-pms-theme="dark"] .designation-hierarchy-page .legend-header,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .legend-header,
+    html[data-theme="dark"] .designation-hierarchy-page .legend-header,
+    html.dark .designation-hierarchy-page .legend-header {
+        color: #7af0b5 !important;
+    }
+
+    html[data-pms-theme="dark"] .designation-hierarchy-page .card-footer,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .card-footer,
+    html[data-theme="dark"] .designation-hierarchy-page .card-footer,
+    html.dark .designation-hierarchy-page .card-footer {
+        background: #141B3D !important;
+        border-top: 1px solid rgba(122, 240, 181, 0.15) !important;
+    }
+
+    html[data-pms-theme="dark"] .designation-hierarchy-page .dropdown-menu,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .dropdown-menu,
+    [data-pms-theme="dark"] .designation-hierarchy-page .dropdown-menu {
+        background: #0F1530 !important;
+        border: 1px solid rgba(122, 240, 181, 0.25) !important;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5) !important;
+    }
+
+    html[data-pms-theme="dark"] .designation-hierarchy-page .dropdown-item,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .dropdown-item,
+    [data-pms-theme="dark"] .designation-hierarchy-page .dropdown-item {
+        color: #CBD5E1 !important;
+    }
+
+    html[data-pms-theme="dark"] .designation-hierarchy-page .dropdown-item:hover,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .dropdown-item:hover,
+    [data-pms-theme="dark"] .designation-hierarchy-page .dropdown-item:hover {
+        background: #14281e !important;
+        color: #7af0b5 !important;
+    }
+
+    html[data-pms-theme="dark"] .designation-hierarchy-page .btn-outline,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .btn-outline {
+        background: #14281e !important;
+        border: 1px solid rgba(122, 240, 181, 0.35) !important;
+        color: #7af0b5 !important;
+    }
+
+    html[data-pms-theme="dark"] .designation-hierarchy-page .btn-outline:hover,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .btn-outline:hover {
+        background: #1f3e31 !important;
+        color: #ffffff !important;
+    }
+
+    html[data-pms-theme="dark"] .designation-hierarchy-page .status-badge,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .status-badge {
+        background: #0d1b14 !important;
+        color: #7af0b5 !important;
+        border: 1px solid rgba(122, 240, 181, 0.3) !important;
+    }
 </style>
 
 @push('js')
@@ -1204,20 +1790,90 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    function isDarkModeActive() {
+        const html = document.documentElement;
+        const body = document.body;
+        return html.getAttribute('data-pms-theme') === 'dark' ||
+               html.getAttribute('data-bs-theme') === 'dark' ||
+               html.getAttribute('data-theme') === 'dark' ||
+               html.classList.contains('dark') ||
+               body.getAttribute('data-pms-theme') === 'dark' ||
+               body.getAttribute('data-bs-theme') === 'dark' ||
+               body.classList.contains('dark') ||
+               document.querySelector('[data-pms-theme="dark"]') !== null ||
+               document.querySelector('[data-bs-theme="dark"]') !== null;
+    }
+
+    function applyDarkChartFixes() {
+        const isDark = isDarkModeActive();
+        const chartDiv = document.getElementById('chartDiv');
+        if (!chartDiv) return;
+
+        if (isDark) {
+            chartDiv.style.setProperty('background', '#0F1530', 'important');
+            chartDiv.style.setProperty('background-color', '#0F1530', 'important');
+
+            chartDiv.querySelectorAll('div').forEach(el => {
+                el.style.setProperty('background', 'transparent', 'important');
+                el.style.setProperty('background-color', 'transparent', 'important');
+            });
+
+            chartDiv.querySelectorAll('svg').forEach(svg => {
+                svg.style.setProperty('background', 'transparent', 'important');
+                svg.style.setProperty('background-color', 'transparent', 'important');
+            });
+
+            chartDiv.querySelectorAll('rect').forEach(rect => {
+                const fill = rect.getAttribute('fill');
+                if (!fill || fill.toLowerCase() === '#ffffff' || fill.toLowerCase() === 'white' || fill.toLowerCase() === '#fafefb' || fill.toLowerCase() === '#f5fbf7' || fill.includes('255')) {
+                    rect.setAttribute('fill', '#0F1530');
+                    rect.style.setProperty('fill', '#0F1530', 'important');
+                }
+            });
+
+            chartDiv.querySelectorAll('path').forEach(path => {
+                const fill = path.getAttribute('fill');
+                const stroke = path.getAttribute('stroke');
+                if (fill === 'none' || fill === 'transparent' || stroke) {
+                    path.setAttribute('stroke', '#7af0b5');
+                    path.setAttribute('stroke-width', '2.5');
+                    path.style.setProperty('stroke', '#7af0b5', 'important');
+                    path.style.setProperty('stroke-width', '2.5px', 'important');
+                    path.style.setProperty('stroke-opacity', '1', 'important');
+                }
+            });
+
+            chartDiv.querySelectorAll('line').forEach(line => {
+                line.setAttribute('stroke', '#7af0b5');
+                line.setAttribute('stroke-width', '2.5');
+                line.style.setProperty('stroke', '#7af0b5', 'important');
+                line.style.setProperty('stroke-width', '2.5px', 'important');
+            });
+        }
+    }
+
     function initOrganizationalChart(points = chartPoints) {
         if (typeof JSC === 'undefined') {
             console.warn('JScharting not loaded');
             return;
         }
 
+        const isDark = isDarkModeActive();
         latestChartPoints = points;
         chart = JSC.chart('chartDiv', {
             type: 'organizational',
+            box: { fill: isDark ? '#0F1530' : 'transparent' },
+            fill: isDark ? '#0F1530' : 'transparent',
             palette: ['#0f744c', '#10b981', '#3b82f6', '#f59e0b', '#f97316', '#ef4444'],
             defaultSeries: {
                 shape: {
-                    outline: { width: 1, color: 'white' },
+                    outline: { width: 1.5, color: isDark ? '#7af0b5' : 'white' },
                     fill: '#0f744c'
+                },
+                connectorLine: {
+                    color: isDark ? '#7af0b5' : '#0f744c',
+                    width: 2.5,
+                    caps: { end: { type: 'arrow', size: 6 } }
                 },
                 label: {
                     style: { fontSize: 12, color: 'white', fontWeight: '600' },
@@ -1226,11 +1882,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     maxWidth: 120
                 }
             },
-            title: { label: { text: 'Employee Reporting Hierarchy', style: { fontSize: 16, color: '#495057' } } },
+            title: { label: { text: 'Employee Reporting Hierarchy', style: { fontSize: 16, color: isDark ? '#ffffff' : '#495057' } } },
             legend: { visible: false },
             defaultPoint: {
                 tooltip: '<b>%name</b><br>Designation: %level',
-                label_text: '%name'
+                label_text: '%name',
+                connectorLine: {
+                    color: isDark ? '#7af0b5' : '#0f744c',
+                    width: 2.5,
+                    caps: { end: { type: 'arrow', size: 6 } }
+                }
             },
             series: [{
                 name: 'Employees',
@@ -1239,6 +1900,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         applyChartZoom();
+        applyDarkChartFixes();
+        setTimeout(applyDarkChartFixes, 50);
+        setTimeout(applyDarkChartFixes, 300);
+        setTimeout(applyDarkChartFixes, 1000);
     }
 
     function updateOrganizationalChart() {

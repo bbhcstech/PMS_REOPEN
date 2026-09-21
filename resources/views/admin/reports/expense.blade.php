@@ -55,7 +55,7 @@
                                 <td class="fw-bold">#{{ $key + 1 }}</td>
                                 <td><div class="fw-bold text-dark">{{ $exp->item_name }}</div></td>
                                 <td>{{ $exp->project->name ?? 'General Expense' }}</td>
-                                <td>{{ $exp->user->name ?? 'Admin' }}</td>
+                                <td>{{ $exp->employee->name ?? $exp->user->name ?? 'Admin' }}</td>
                                 <td><span class="badge bg-danger-subtle text-danger fw-bold fs-6 px-3 py-1">${{ number_format($exp->price, 2) }}</span></td>
                                 <td><span class="badge bg-success rounded-pill px-3 py-1">{{ ucfirst($exp->status ?? 'Approved') }}</span></td>
                                 <td>{{ $exp->purchase_date ? \Carbon\Carbon::parse($exp->purchase_date)->format('d M Y') : \Carbon\Carbon::parse($exp->created_at)->format('d M Y') }}</td>

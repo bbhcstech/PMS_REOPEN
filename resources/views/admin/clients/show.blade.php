@@ -141,13 +141,73 @@
     .status-in-progress { background-color: #fef3c7 !important; border: 1px solid #fde68a; }
     .status-completed   { background-color: #d1fae5 !important; border: 1px solid #a7f3d0; }
     .status-on-hold     { background-color: #fee2e2 !important; border: 1px solid #fecaca; }
-    .status-not-started { background-color: #e2e8f0 !important; border: 1px solid #cbd5e1; }
-    .status-pending     { background-color: #e0f2fe !important; border: 1px solid #bae6fd; }
+    html[data-pms-theme="dark"] .client-hero-card {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .segmented-tabs-wrapper {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.14) !important;
+    }
+    html[data-pms-theme="dark"] .custom-segmented-pills .nav-link,
+    html[data-pms-theme="dark"] #clientTabs .nav-link,
+    html[data-pms-theme="dark"] #clientTabs .nav-link:not(.active) {
+        color: #CBD5E1 !important;
+        -webkit-text-fill-color: #CBD5E1 !important;
+    }
+    html[data-pms-theme="dark"] .custom-segmented-pills .nav-link i,
+    html[data-pms-theme="dark"] .custom-segmented-pills .nav-link span,
+    html[data-pms-theme="dark"] .custom-segmented-pills .nav-link:not(.active) i,
+    html[data-pms-theme="dark"] .custom-segmented-pills .nav-link:not(.active) span,
+    html[data-pms-theme="dark"] #clientTabs .nav-link:not(.active) i,
+    html[data-pms-theme="dark"] #clientTabs .nav-link:not(.active) span {
+        color: #CBD5E1 !important;
+        -webkit-text-fill-color: #CBD5E1 !important;
+    }
+    html[data-pms-theme="dark"] .custom-segmented-pills .nav-link:hover:not(.active),
+    html[data-pms-theme="dark"] #clientTabs .nav-link:hover:not(.active) {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+        background: #1A2247 !important;
+    }
+    html[data-pms-theme="dark"] .custom-segmented-pills .nav-link:hover:not(.active) i,
+    html[data-pms-theme="dark"] .custom-segmented-pills .nav-link:hover:not(.active) span,
+    html[data-pms-theme="dark"] #clientTabs .nav-link:hover:not(.active) i,
+    html[data-pms-theme="dark"] #clientTabs .nav-link:hover:not(.active) span {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .custom-segmented-pills .nav-link.active,
+    html[data-pms-theme="dark"] #clientTabs .nav-link.active {
+        background: #2F6BFF !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        box-shadow: 0 4px 12px rgba(47, 107, 255, 0.35) !important;
+    }
+    html[data-pms-theme="dark"] .custom-segmented-pills .nav-link .tab-count-badge,
+    html[data-pms-theme="dark"] #clientTabs .nav-link .tab-count-badge {
+        background: #1A2247 !important;
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .client-detail-box {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.1) !important;
+    }
+    html[data-pms-theme="dark"] .client-detail-label {
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] .client-detail-val {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .status-badge-custom {
+        color: #CBD5E1 !important;
+    }
 </style>
 
 <div class="container-xxl flex-grow-1 container-p-y">
     {{-- Header Banner --}}
-    <div class="card border-0 shadow-sm rounded-4 mb-4" style="background: linear-gradient(135deg, #ffffff 0%, #f8fbf9 100%); border: 1px solid rgba(226, 232, 240, 0.85);">
+    <div class="card client-hero-card border-0 shadow-sm rounded-4 mb-4" style="background: linear-gradient(135deg, #ffffff 0%, #f8fbf9 100%); border: 1px solid rgba(226, 232, 240, 0.85);">
         <div class="card-body p-4">
             <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
                 <div class="d-flex align-items-center gap-3">
