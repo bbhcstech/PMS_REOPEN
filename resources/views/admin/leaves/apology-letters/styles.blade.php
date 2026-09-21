@@ -30,4 +30,46 @@
     .empty-state i { font-size: 34px; color: #10b981; margin-bottom: 10px; }
     .pagination-wrap { margin-top: 16px; }
     @media (max-width: 992px) { .leave-page { padding: 18px; } .leave-hero { flex-direction: column; align-items: flex-start; } .filter-grid { grid-template-columns: 1fr; } }
+    html[data-pms-theme="dark"] .leave-page {
+        background: #070B1A !important;
+        color: #CBD5E1 !important;
+    }
+    html[data-pms-theme="dark"] .leave-breadcrumb,
+    html[data-pms-theme="dark"] .leave-hero,
+    html[data-pms-theme="dark"] .filter-panel,
+    html[data-pms-theme="dark"] .table-card {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+    }
+    html[data-pms-theme="dark"] .leave-hero h1,
+    html[data-pms-theme="dark"] .table-head h2 {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .leave-hero p,
+    html[data-pms-theme="dark"] .table-head p,
+    html[data-pms-theme="dark"] label,
+    html[data-pms-theme="dark"] .leave-table th,
+    html[data-pms-theme="dark"] .leave-table small {
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] .form-control {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.16) !important;
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .leave-table td {
+        color: #CBD5E1 !important;
+        border-color: rgba(238, 241, 251, 0.06) !important;
+    }
+    html[data-pms-theme="dark"] .btn-light,
+    html[data-pms-theme="dark"] .btn-secondary {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.16) !important;
+        color: #CBD5E1 !important;
+    }
+    html[data-pms-theme="dark"] .leave-hero-icon {
+        background: rgba(47, 107, 255, 0.2) !important;
+        color: #60A5FA !important;
+    }
 </style>

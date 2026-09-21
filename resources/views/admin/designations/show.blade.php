@@ -962,156 +962,191 @@
 </style>
 
 <style>
-    /* Dark mode support */
-    html[data-pms-theme="dark"] .designation-view-page {
-        background: linear-gradient(135deg, #07130d, #102119);
+    /* ==========================================================================
+       VIEW DESIGNATION DETAILS - COMPREHENSIVE DARK MODE SYSTEM
+       ========================================================================== */
+    html[data-pms-theme="dark"] .designation-view-page,
+    html[data-bs-theme="dark"] .designation-view-page,
+    html[data-theme="dark"] .designation-view-page,
+    html.dark .designation-view-page,
+    body[data-pms-theme="dark"] .designation-view-page,
+    body[data-bs-theme="dark"] .designation-view-page,
+    body.dark .designation-view-page,
+    [data-pms-theme="dark"] .designation-view-page,
+    [data-theme="dark"] .designation-view-page,
+    [data-bs-theme="dark"] .designation-view-page,
+    .dark .designation-view-page {
+        background: #070B1A !important;
+        color: #EEF1FB !important;
     }
 
-    html[data-pms-theme="dark"] .breadcrumb {
-        background: rgba(16, 33, 25, 0.85);
-        border-color: rgba(122, 240, 181, 0.15);
-        color: #d9f1e4;
+    html[data-pms-theme="dark"] .designation-view-page .breadcrumb,
+    html[data-bs-theme="dark"] .designation-view-page .breadcrumb,
+    html[data-theme="dark"] .designation-view-page .breadcrumb,
+    html.dark .designation-view-page .breadcrumb,
+    body[data-pms-theme="dark"] .designation-view-page .breadcrumb,
+    [data-pms-theme="dark"] .designation-view-page .breadcrumb,
+    .dark .designation-view-page .breadcrumb {
+        background: #0F1530 !important;
+        border: 1px solid rgba(122, 240, 181, 0.2) !important;
+        color: #7af0b5 !important;
     }
 
-    html[data-pms-theme="dark"] .breadcrumb i {
-        color: #34d399;
+    html[data-pms-theme="dark"] .designation-view-page .header-card,
+    html[data-bs-theme="dark"] .designation-view-page .header-card,
+    html[data-theme="dark"] .designation-view-page .header-card,
+    html.dark .designation-view-page .header-card,
+    body[data-pms-theme="dark"] .designation-view-page .header-card,
+    [data-pms-theme="dark"] .designation-view-page .header-card,
+    .dark .designation-view-page .header-card {
+        background: #0F1530 !important;
+        border: 1px solid rgba(122, 240, 181, 0.2) !important;
     }
 
-    html[data-pms-theme="dark"] .header-card {
-        background: rgba(16, 33, 25, 0.95);
-        border-color: rgba(122, 240, 181, 0.12);
+    html[data-pms-theme="dark"] .designation-view-page .header-card h1,
+    html[data-bs-theme="dark"] .designation-view-page .header-card h1,
+    html[data-theme="dark"] .designation-view-page .header-card h1,
+    html.dark .designation-view-page .header-card h1,
+    body[data-pms-theme="dark"] .designation-view-page .header-card h1,
+    [data-pms-theme="dark"] .designation-view-page .header-card h1,
+    .dark .designation-view-page .header-card h1 {
+        background: linear-gradient(135deg, #ffffff 0%, #7af0b5 100%) !important;
+        background-clip: text !important;
+        -webkit-background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+        color: #ffffff !important;
     }
 
-    html[data-pms-theme="dark"] .header-card h1 {
-        background: linear-gradient(135deg, #d9f1e4, #34d399);
-        background-clip: text;
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+    html[data-pms-theme="dark"] .designation-view-page .header-card p,
+    html[data-bs-theme="dark"] .designation-view-page .header-card p,
+    html[data-theme="dark"] .designation-view-page .header-card p,
+    html.dark .designation-view-page .header-card p {
+        color: #94A3B8 !important;
+        -webkit-text-fill-color: #94A3B8 !important;
     }
 
-    html[data-pms-theme="dark"] .header-card p {
-        color: #8ba198;
+    html[data-pms-theme="dark"] .designation-view-page .btn-light,
+    html[data-bs-theme="dark"] .designation-view-page .btn-light,
+    html[data-theme="dark"] .designation-view-page .btn-light,
+    html.dark .designation-view-page .btn-light {
+        background: #14281e !important;
+        border: 1px solid rgba(122, 240, 181, 0.35) !important;
+        color: #7af0b5 !important;
+        -webkit-text-fill-color: #7af0b5 !important;
     }
 
-    html[data-pms-theme="dark"] .btn-light {
-        background: #183026;
-        color: #d9f1e4;
-        border-color: rgba(122, 240, 181, 0.15);
+    html[data-pms-theme="dark"] .designation-view-page .btn-light:hover,
+    html[data-bs-theme="dark"] .designation-view-page .btn-light:hover,
+    html[data-theme="dark"] .designation-view-page .btn-light:hover,
+    html.dark .designation-view-page .btn-light:hover {
+        background: #1f3e31 !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
     }
 
-    html[data-pms-theme="dark"] .btn-light:hover {
-        background: #1f3d30;
-        border-color: #34d399;
+    html[data-pms-theme="dark"] .designation-view-page .view-card,
+    html[data-bs-theme="dark"] .designation-view-page .view-card,
+    html[data-theme="dark"] .designation-view-page .view-card,
+    html.dark .designation-view-page .view-card,
+    body[data-pms-theme="dark"] .designation-view-page .view-card,
+    [data-pms-theme="dark"] .designation-view-page .view-card,
+    .dark .designation-view-page .view-card,
+    html[data-pms-theme="dark"] .designation-view-page .related-card,
+    html[data-bs-theme="dark"] .designation-view-page .related-card,
+    html[data-theme="dark"] .designation-view-page .related-card,
+    html.dark .designation-view-page .related-card {
+        background: #0F1530 !important;
+        border: 1px solid rgba(122, 240, 181, 0.2) !important;
     }
 
-    html[data-pms-theme="dark"] .view-card {
-        background: #102119;
-        border-color: rgba(122, 240, 181, 0.08);
+    html[data-pms-theme="dark"] .designation-view-page .view-status-bar,
+    html[data-bs-theme="dark"] .designation-view-page .view-status-bar,
+    html[data-theme="dark"] .designation-view-page .view-status-bar,
+    html.dark .designation-view-page .view-status-bar,
+    html[data-pms-theme="dark"] .designation-view-page .view-field,
+    html[data-bs-theme="dark"] .designation-view-page .view-field,
+    html[data-theme="dark"] .designation-view-page .view-field,
+    html.dark .designation-view-page .view-field,
+    html[data-pms-theme="dark"] .designation-view-page .view-footer,
+    html[data-bs-theme="dark"] .designation-view-page .view-footer,
+    html[data-theme="dark"] .designation-view-page .view-footer,
+    html.dark .designation-view-page .view-footer,
+    html[data-pms-theme="dark"] .designation-view-page .related-header,
+    html[data-bs-theme="dark"] .designation-view-page .related-header,
+    html[data-theme="dark"] .designation-view-page .related-header,
+    html.dark .designation-view-page .related-header {
+        background: #141B3D !important;
+        border-color: rgba(122, 240, 181, 0.15) !important;
     }
 
-    html[data-pms-theme="dark"] .view-status-bar {
-        background: #0d1b14;
-        border-color: rgba(122, 240, 181, 0.06);
+    html[data-pms-theme="dark"] .designation-view-page .status-info,
+    html[data-bs-theme="dark"] .designation-view-page .status-info,
+    html[data-theme="dark"] .designation-view-page .status-info,
+    html.dark .designation-view-page .status-info,
+    html[data-pms-theme="dark"] .designation-view-page .field-value,
+    html[data-bs-theme="dark"] .designation-view-page .field-value,
+    html[data-theme="dark"] .designation-view-page .field-value,
+    html.dark .designation-view-page .field-value,
+    html[data-pms-theme="dark"] .designation-view-page .user-name,
+    html[data-bs-theme="dark"] .designation-view-page .user-name,
+    html[data-theme="dark"] .designation-view-page .user-name,
+    html.dark .designation-view-page .user-name,
+    html[data-pms-theme="dark"] .designation-view-page .related-header h5,
+    html[data-bs-theme="dark"] .designation-view-page .related-header h5,
+    html[data-theme="dark"] .designation-view-page .related-header h5,
+    html.dark .designation-view-page .related-header h5,
+    html[data-pms-theme="dark"] .designation-view-page .related-value,
+    html[data-bs-theme="dark"] .designation-view-page .related-value,
+    html[data-theme="dark"] .designation-view-page .related-value,
+    html.dark .designation-view-page .related-value {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
     }
 
-    html[data-pms-theme="dark"] .status-info {
-        color: #d9f1e4;
+    html[data-pms-theme="dark"] .designation-view-page .field-content label,
+    html[data-bs-theme="dark"] .designation-view-page .field-content label,
+    html[data-theme="dark"] .designation-view-page .field-content label,
+    html.dark .designation-view-page .field-content label,
+    html[data-pms-theme="dark"] .designation-view-page .footer-info,
+    html[data-bs-theme="dark"] .designation-view-page .footer-info,
+    html[data-theme="dark"] .designation-view-page .footer-info,
+    html.dark .designation-view-page .footer-info,
+    html[data-pms-theme="dark"] .designation-view-page .related-label,
+    html[data-bs-theme="dark"] .designation-view-page .related-label,
+    html[data-theme="dark"] .designation-view-page .related-label,
+    html.dark .designation-view-page .related-label,
+    html[data-pms-theme="dark"] .designation-view-page .field-hint,
+    html[data-bs-theme="dark"] .designation-view-page .field-hint,
+    html[data-theme="dark"] .designation-view-page .field-hint,
+    html.dark .designation-view-page .field-hint,
+    html[data-pms-theme="dark"] .designation-view-page .text-muted,
+    html[data-bs-theme="dark"] .designation-view-page .text-muted,
+    html[data-theme="dark"] .designation-view-page .text-muted,
+    html.dark .designation-view-page .text-muted {
+        color: #94A3B8 !important;
+        -webkit-text-fill-color: #94A3B8 !important;
     }
 
-    html[data-pms-theme="dark"] .status-badge {
-        background: #183026;
-        color: #34d399;
+    html[data-pms-theme="dark"] .designation-view-page .parent-link,
+    html[data-bs-theme="dark"] .designation-view-page .parent-link,
+    html[data-theme="dark"] .designation-view-page .parent-link,
+    html.dark .designation-view-page .parent-link {
+        color: #7af0b5 !important;
     }
 
-    html[data-pms-theme="dark"] .view-field {
-        background: #0d1b14;
-        border-color: rgba(122, 240, 181, 0.06);
+    html[data-pms-theme="dark"] .designation-view-page .btn-secondary,
+    html[data-bs-theme="dark"] .designation-view-page .btn-secondary,
+    html[data-theme="dark"] .designation-view-page .btn-secondary,
+    html.dark .designation-view-page .btn-secondary {
+        background: #14281e !important;
+        color: #7af0b5 !important;
+        border: 1px solid rgba(122, 240, 181, 0.35) !important;
     }
 
-    html[data-pms-theme="dark"] .view-field:hover {
-        border-color: rgba(122, 240, 181, 0.15);
-    }
-
-    html[data-pms-theme="dark"] .field-content label {
-        color: #8ba198;
-    }
-
-    html[data-pms-theme="dark"] .field-value {
-        color: #d9f1e4;
-    }
-
-    html[data-pms-theme="dark"] .field-hint {
-        color: #6b7280;
-    }
-
-    html[data-pms-theme="dark"] .user-name {
-        color: #d9f1e4;
-    }
-
-    html[data-pms-theme="dark"] .text-muted {
-        color: #6b7280;
-    }
-
-    html[data-pms-theme="dark"] .view-footer {
-        background: #0d1b14;
-        border-color: rgba(122, 240, 181, 0.06);
-    }
-
-    html[data-pms-theme="dark"] .footer-info {
-        color: #8ba198;
-    }
-
-    html[data-pms-theme="dark"] .btn-secondary {
-        background: #183026;
-        color: #d9f1e4;
-        border-color: rgba(122, 240, 181, 0.15);
-    }
-
-    html[data-pms-theme="dark"] .btn-secondary:hover {
-        background: #1f3d30;
-    }
-
-    html[data-pms-theme="dark"] .related-card {
-        background: #102119;
-        border-color: rgba(122, 240, 181, 0.08);
-    }
-
-    html[data-pms-theme="dark"] .related-header {
-        background: #0d1b14;
-        border-color: rgba(122, 240, 181, 0.06);
-    }
-
-    html[data-pms-theme="dark"] .related-header h5 {
-        color: #d9f1e4;
-    }
-
-    html[data-pms-theme="dark"] .related-label {
-        color: #8ba198;
-    }
-
-    html[data-pms-theme="dark"] .related-value {
-        color: #d9f1e4;
-    }
-
-    html[data-pms-theme="dark"] .parent-link {
-        color: #34d399;
-    }
-
-    html[data-pms-theme="dark"] .parent-link:hover {
-        color: #6ee7b7;
-    }
-
-    html[data-pms-theme="dark"] .no-parent {
-        color: #f59e0b;
-    }
-
-    html[data-pms-theme="dark"] .separator {
-        color: #374151;
-    }
-
-    html[data-pms-theme="dark"] .avatar-circle {
-        background: #183026;
-        color: #34d399;
+    html[data-pms-theme="dark"] .designation-view-page .btn-secondary:hover,
+    html[data-bs-theme="dark"] .designation-view-page .btn-secondary:hover {
+        background: #1f3e31 !important;
+        color: #ffffff !important;
     }
 </style>
 

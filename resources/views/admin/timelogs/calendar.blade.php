@@ -96,6 +96,31 @@
         box-shadow: 0 2px 4px rgba(0,0,0,0.08) !important;
         cursor: pointer;
     }
+
+    html[data-pms-theme="dark"] .fc .fc-toolbar-title {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .fc .fc-daygrid-day-number,
+    html[data-pms-theme="dark"] .fc .fc-col-header-cell-cushion {
+        color: #CBD5E1 !important;
+    }
+    html[data-pms-theme="dark"] .fc table,
+    html[data-pms-theme="dark"] .fc td,
+    html[data-pms-theme="dark"] .fc th {
+        border-color: rgba(238, 241, 251, 0.08) !important;
+    }
+    html[data-pms-theme="dark"] .fc .fc-daygrid-day.fc-day-today {
+        background: rgba(47, 107, 255, 0.1) !important;
+    }
+    html[data-pms-theme="dark"] .fc .fc-button-primary {
+        background-color: #2F6BFF !important;
+        border-color: #2F6BFF !important;
+        color: #FFFFFF !important;
+    }
+    html[data-pms-theme="dark"] .fc .fc-button-primary:hover {
+        background-color: #1E4FCC !important;
+        border-color: #1E4FCC !important;
+    }
 </style>
 @endpush
 

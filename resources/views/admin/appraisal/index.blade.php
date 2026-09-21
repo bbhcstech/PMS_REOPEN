@@ -225,6 +225,283 @@
         height: 100%;
         border-radius: 999px;
     }
+
+    /* Dark Mode Overrides */
+    html[data-pms-theme="dark"] .app-header h3 {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .app-header p {
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] .metric-card {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .metric-info h4 {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .metric-info span {
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] .appraisal-shell #appraisalTabs {
+        border-bottom-color: rgba(238, 241, 251, 0.1) !important;
+    }
+    html[data-pms-theme="dark"] .appraisal-shell #appraisalTabs .nav-link {
+        color: #CBD5E1 !important;
+        -webkit-text-fill-color: #CBD5E1 !important;
+    }
+    html[data-pms-theme="dark"] .appraisal-shell #appraisalTabs .nav-link:not(.active):hover {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+        background: #141B3D !important;
+    }
+    html[data-pms-theme="dark"] .appraisal-shell #appraisalTabs .nav-link.active {
+        background: #2F6BFF !important;
+        border-bottom-color: #2F6BFF !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+    html[data-pms-theme="dark"] .app-table-card {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .app-table th {
+        background: #141B3D !important;
+        color: #EEF1FB !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .app-table td {
+        color: #CBD5E1 !important;
+        border-color: rgba(238, 241, 251, 0.06) !important;
+    }
+    html[data-pms-theme="dark"] .score-progress {
+        background: #141B3D !important;
+    }
+
+    /* ===== APPRAISAL TABLE ACTION BUTTONS (HIGH CONTRAST) ===== */
+    .btn-appr-action {
+        width: 36px !important;
+        height: 36px !important;
+        padding: 0 !important;
+        border-radius: 10px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important;
+    }
+    .btn-appr-action:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18) !important;
+    }
+    .btn-appr-action i {
+        font-size: 1.15rem !important;
+    }
+
+    /* View Button */
+    .btn-appr-action.btn-appr-view {
+        background: #e0f2fe !important;
+        border: 1px solid #7dd3fc !important;
+    }
+    .btn-appr-action.btn-appr-view i {
+        color: #0284c7 !important;
+        -webkit-text-fill-color: #0284c7 !important;
+    }
+    .btn-appr-action.btn-appr-view:hover {
+        background: #0284c7 !important;
+        border-color: #0284c7 !important;
+    }
+    .btn-appr-action.btn-appr-view:hover i {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    /* Edit Button */
+    .btn-appr-action.btn-appr-edit {
+        background: #f3e8ff !important;
+        border: 1px solid #c084fc !important;
+    }
+    .btn-appr-action.btn-appr-edit i {
+        color: #7e22ce !important;
+        -webkit-text-fill-color: #7e22ce !important;
+    }
+    .btn-appr-action.btn-appr-edit:hover {
+        background: #7e22ce !important;
+        border-color: #7e22ce !important;
+    }
+    .btn-appr-action.btn-appr-edit:hover i {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    /* Delete Button */
+    .btn-appr-action.btn-appr-delete {
+        background: #ffe4e6 !important;
+        border: 1px solid #fda4af !important;
+    }
+    .btn-appr-action.btn-appr-delete i {
+        color: #e11d48 !important;
+        -webkit-text-fill-color: #e11d48 !important;
+    }
+    .btn-appr-action.btn-appr-delete:hover {
+        background: #e11d48 !important;
+        border-color: #e11d48 !important;
+    }
+    .btn-appr-action.btn-appr-delete:hover i {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    /* ===== DARK MODE MULTI-SELECTOR OVERRIDES ===== */
+    html[data-pms-theme="dark"] .btn-appr-action.btn-appr-view,
+    html[data-bs-theme="dark"] .btn-appr-action.btn-appr-view,
+    html[data-theme="dark"] .btn-appr-action.btn-appr-view,
+    html.dark .btn-appr-action.btn-appr-view,
+    body[data-pms-theme="dark"] .btn-appr-action.btn-appr-view,
+    [data-pms-theme="dark"] .btn-appr-action.btn-appr-view,
+    .dark .btn-appr-action.btn-appr-view {
+        background: rgba(56, 189, 248, 0.22) !important;
+        border: 1.5px solid rgba(56, 189, 248, 0.55) !important;
+        box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .btn-appr-action.btn-appr-view i,
+    html[data-bs-theme="dark"] .btn-appr-action.btn-appr-view i,
+    html[data-theme="dark"] .btn-appr-action.btn-appr-view i,
+    html.dark .btn-appr-action.btn-appr-view i,
+    body[data-pms-theme="dark"] .btn-appr-action.btn-appr-view i,
+    [data-pms-theme="dark"] .btn-appr-action.btn-appr-view i,
+    .dark .btn-appr-action.btn-appr-view i {
+        color: #38bdf8 !important;
+        -webkit-text-fill-color: #38bdf8 !important;
+    }
+    html[data-pms-theme="dark"] .btn-appr-action.btn-appr-view:hover,
+    html[data-bs-theme="dark"] .btn-appr-action.btn-appr-view:hover,
+    html[data-theme="dark"] .btn-appr-action.btn-appr-view:hover,
+    html.dark .btn-appr-action.btn-appr-view:hover,
+    body[data-pms-theme="dark"] .btn-appr-action.btn-appr-view:hover,
+    [data-pms-theme="dark"] .btn-appr-action.btn-appr-view:hover,
+    .dark .btn-appr-action.btn-appr-view:hover {
+        background: #0284c7 !important;
+        border-color: #38bdf8 !important;
+    }
+    html[data-pms-theme="dark"] .btn-appr-action.btn-appr-view:hover i,
+    html[data-bs-theme="dark"] .btn-appr-action.btn-appr-view:hover i,
+    html[data-theme="dark"] .btn-appr-action.btn-appr-view:hover i,
+    html.dark .btn-appr-action.btn-appr-view:hover i,
+    body[data-pms-theme="dark"] .btn-appr-action.btn-appr-view:hover i,
+    [data-pms-theme="dark"] .btn-appr-action.btn-appr-view:hover i,
+    .dark .btn-appr-action.btn-appr-view:hover i {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    html[data-pms-theme="dark"] .btn-appr-action.btn-appr-edit,
+    html[data-bs-theme="dark"] .btn-appr-action.btn-appr-edit,
+    html[data-theme="dark"] .btn-appr-action.btn-appr-edit,
+    html.dark .btn-appr-action.btn-appr-edit,
+    body[data-pms-theme="dark"] .btn-appr-action.btn-appr-edit,
+    [data-pms-theme="dark"] .btn-appr-action.btn-appr-edit,
+    .dark .btn-appr-action.btn-appr-edit {
+        background: rgba(167, 139, 250, 0.22) !important;
+        border: 1.5px solid rgba(167, 139, 250, 0.55) !important;
+        box-shadow: 0 4px 12px rgba(167, 139, 250, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .btn-appr-action.btn-appr-edit i,
+    html[data-bs-theme="dark"] .btn-appr-action.btn-appr-edit i,
+    html[data-theme="dark"] .btn-appr-action.btn-appr-edit i,
+    html.dark .btn-appr-action.btn-appr-edit i,
+    body[data-pms-theme="dark"] .btn-appr-action.btn-appr-edit i,
+    [data-pms-theme="dark"] .btn-appr-action.btn-appr-edit i,
+    .dark .btn-appr-action.btn-appr-edit i {
+        color: #c084fc !important;
+        -webkit-text-fill-color: #c084fc !important;
+    }
+    html[data-pms-theme="dark"] .btn-appr-action.btn-appr-edit:hover,
+    html[data-bs-theme="dark"] .btn-appr-action.btn-appr-edit:hover,
+    html[data-theme="dark"] .btn-appr-action.btn-appr-edit:hover,
+    html.dark .btn-appr-action.btn-appr-edit:hover,
+    body[data-pms-theme="dark"] .btn-appr-action.btn-appr-edit:hover,
+    [data-pms-theme="dark"] .btn-appr-action.btn-appr-edit:hover,
+    .dark .btn-appr-action.btn-appr-edit:hover {
+        background: #7e22ce !important;
+        border-color: #c084fc !important;
+    }
+    html[data-pms-theme="dark"] .btn-appr-action.btn-appr-edit:hover i,
+    html[data-bs-theme="dark"] .btn-appr-action.btn-appr-edit:hover i,
+    html[data-theme="dark"] .btn-appr-action.btn-appr-edit:hover i,
+    html.dark .btn-appr-action.btn-appr-edit:hover i,
+    body[data-pms-theme="dark"] .btn-appr-action.btn-appr-edit:hover i,
+    [data-pms-theme="dark"] .btn-appr-action.btn-appr-edit:hover i,
+    .dark .btn-appr-action.btn-appr-edit:hover i {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    html[data-pms-theme="dark"] .btn-appr-action.btn-appr-delete,
+    html[data-bs-theme="dark"] .btn-appr-action.btn-appr-delete,
+    html[data-theme="dark"] .btn-appr-action.btn-appr-delete,
+    html.dark .btn-appr-action.btn-appr-delete,
+    body[data-pms-theme="dark"] .btn-appr-action.btn-appr-delete,
+    [data-pms-theme="dark"] .btn-appr-action.btn-appr-delete,
+    .dark .btn-appr-action.btn-appr-delete {
+        background: rgba(244, 63, 94, 0.22) !important;
+        border: 1.5px solid rgba(244, 63, 94, 0.55) !important;
+        box-shadow: 0 4px 12px rgba(244, 63, 94, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .btn-appr-action.btn-appr-delete i,
+    html[data-bs-theme="dark"] .btn-appr-action.btn-appr-delete i,
+    html[data-theme="dark"] .btn-appr-action.btn-appr-delete i,
+    html.dark .btn-appr-action.btn-appr-delete i,
+    body[data-pms-theme="dark"] .btn-appr-action.btn-appr-delete i,
+    [data-pms-theme="dark"] .btn-appr-action.btn-appr-delete i,
+    .dark .btn-appr-action.btn-appr-delete i {
+        color: #fb7185 !important;
+        -webkit-text-fill-color: #fb7185 !important;
+    }
+    html[data-pms-theme="dark"] .btn-appr-action.btn-appr-delete:hover,
+    html[data-bs-theme="dark"] .btn-appr-action.btn-appr-delete:hover,
+    html[data-theme="dark"] .btn-appr-action.btn-appr-delete:hover,
+    html.dark .btn-appr-action.btn-appr-delete:hover,
+    body[data-pms-theme="dark"] .btn-appr-action.btn-appr-delete:hover,
+    [data-pms-theme="dark"] .btn-appr-action.btn-appr-delete:hover,
+    .dark .btn-appr-action.btn-appr-delete:hover {
+        background: #e11d48 !important;
+        border-color: #fb7185 !important;
+    }
+    html[data-pms-theme="dark"] .btn-appr-action.btn-appr-delete:hover i,
+    html[data-bs-theme="dark"] .btn-appr-action.btn-appr-delete:hover i,
+    html[data-theme="dark"] .btn-appr-action.btn-appr-delete:hover i,
+    html.dark .btn-appr-action.btn-appr-delete:hover i,
+    body[data-pms-theme="dark"] .btn-appr-action.btn-appr-delete:hover i,
+    [data-pms-theme="dark"] .btn-appr-action.btn-appr-delete:hover i,
+    .dark .btn-appr-action.btn-appr-delete:hover i {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    /* Recommendation badges & text in Dark Mode */
+    html[data-pms-theme="dark"] .appraisal-shell .app-table td .text-dark,
+    html[data-bs-theme="dark"] .appraisal-shell .app-table td .text-dark,
+    html[data-theme="dark"] .appraisal-shell .app-table td .text-dark,
+    html.dark .appraisal-shell .app-table td .text-dark,
+    body[data-pms-theme="dark"] .appraisal-shell .app-table td .text-dark,
+    [data-pms-theme="dark"] .appraisal-shell .app-table td .text-dark,
+    .dark .appraisal-shell .app-table td .text-dark {
+        color: #f8fffb !important;
+        -webkit-text-fill-color: #f8fffb !important;
+    }
+
+    html[data-pms-theme="dark"] .appraisal-shell .app-table td span.badge[style*="background: #f1f5f9"],
+    html[data-bs-theme="dark"] .appraisal-shell .app-table td span.badge[style*="background: #f1f5f9"],
+    html[data-theme="dark"] .appraisal-shell .app-table td span.badge[style*="background: #f1f5f9"],
+    html.dark .appraisal-shell .app-table td span.badge[style*="background: #f1f5f9"],
+    body[data-pms-theme="dark"] .appraisal-shell .app-table td span.badge[style*="background: #f1f5f9"],
+    [data-pms-theme="dark"] .appraisal-shell .app-table td span.badge[style*="background: #f1f5f9"],
+    .dark .appraisal-shell .app-table td span.badge[style*="background: #f1f5f9"] {
+        background: rgba(255, 255, 255, 0.08) !important;
+        color: #e2e8f0 !important;
+        border-color: rgba(255, 255, 255, 0.18) !important;
+    }
 </style>
 
 <div class="container-xxl flex-grow-1 container-p-y appraisal-shell">
@@ -425,19 +702,19 @@
                                     </span>
                                 </td>
                                 <td class="text-end">
-                                    <div class="d-inline-flex align-items-center gap-1 justify-content-end">
-                                        <button class="btn btn-sm btn-icon btn-light" type="button" data-bs-toggle="modal" data-bs-target="#viewAppraisalModal-{{ $appr->id }}" title="View Full Breakdown Card">
-                                            <i class="bx bx-show text-info"></i>
+                                    <div class="d-inline-flex align-items-center gap-1.5 justify-content-end">
+                                        <button class="btn btn-sm btn-appr-action btn-appr-view" type="button" data-bs-toggle="modal" data-bs-target="#viewAppraisalModal-{{ $appr->id }}" title="View Full Breakdown Card">
+                                            <i class="bx bx-show"></i>
                                         </button>
                                         @if(auth()->user()?->role === 'admin' || auth()->user()?->role === 'hr')
-                                        <button class="btn btn-sm btn-icon btn-light" type="button" data-bs-toggle="modal" data-bs-target="#editAppraisalModal-{{ $appr->id }}" title="Edit Scores">
-                                            <i class="bx bx-edit text-primary"></i>
+                                        <button class="btn btn-sm btn-appr-action btn-appr-edit" type="button" data-bs-toggle="modal" data-bs-target="#editAppraisalModal-{{ $appr->id }}" title="Edit Scores">
+                                            <i class="bx bx-edit"></i>
                                         </button>
                                         <form method="POST" action="{{ route('appraisal.destroy', $appr->id) }}" class="d-inline-block" onsubmit="return confirm('Are you sure you want to delete this appraisal record?')">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-icon btn-light" title="Delete Entry">
-                                                <i class="bx bx-trash text-danger"></i>
+                                            <button type="submit" class="btn btn-sm btn-appr-action btn-appr-delete" title="Delete Entry">
+                                                <i class="bx bx-trash"></i>
                                             </button>
                                         </form>
                                         @endif

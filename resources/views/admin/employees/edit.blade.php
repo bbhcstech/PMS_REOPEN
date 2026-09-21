@@ -614,9 +614,11 @@
             color: white;
         }
 
-        /* Dark Mode Support */
-        html[data-pms-theme="dark"] .container-fluid {
-            color: #ffffff;
+        /* Dark Mode Support (Bitroxia Design System) */
+        html[data-pms-theme="dark"] .container-fluid,
+        html[data-bs-theme="dark"] .container-fluid,
+        html[data-theme="dark"] .container-fluid {
+            color: #EEF1FB;
         }
 
         .page-header-enterprise .header-title h1,
@@ -629,6 +631,336 @@
         .page-header-enterprise .header-title h1,
         .page-header-enterprise .header-title p {
             font-weight: 800 !important;
+        }
+
+        /* Card & Headers in Dark Mode */
+        html[data-pms-theme="dark"] .card-premium,
+        html[data-bs-theme="dark"] .card-premium,
+        html[data-theme="dark"] .card-premium {
+            background: #0F1530 !important;
+            border-color: rgba(238, 241, 251, 0.09) !important;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35) !important;
+        }
+
+        html[data-pms-theme="dark"] .card-header-premium,
+        html[data-bs-theme="dark"] .card-header-premium,
+        html[data-theme="dark"] .card-header-premium {
+            background: #141B3D !important;
+            border-bottom: 1px solid rgba(238, 241, 251, 0.08) !important;
+        }
+
+        html[data-pms-theme="dark"] .card-header-premium h5,
+        html[data-bs-theme="dark"] .card-header-premium h5,
+        html[data-theme="dark"] .card-header-premium h5 {
+            color: #EEF1FB !important;
+            -webkit-text-fill-color: #EEF1FB !important;
+        }
+
+        html[data-pms-theme="dark"] .section-title,
+        html[data-bs-theme="dark"] .section-title,
+        html[data-theme="dark"] .section-title {
+            background: #141B3D !important;
+            border: 1px solid rgba(238, 241, 251, 0.09) !important;
+            color: #EEF1FB !important;
+            -webkit-text-fill-color: #EEF1FB !important;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25) !important;
+        }
+
+        html[data-pms-theme="dark"] .section-title i,
+        html[data-bs-theme="dark"] .section-title i,
+        html[data-theme="dark"] .section-title i {
+            color: #34D399 !important;
+            -webkit-text-fill-color: #34D399 !important;
+        }
+
+        /* Form Labels & Badges */
+        html[data-pms-theme="dark"] .form-label-premium,
+        html[data-bs-theme="dark"] .form-label-premium,
+        html[data-theme="dark"] .form-label-premium {
+            color: #EEF1FB !important;
+            -webkit-text-fill-color: #EEF1FB !important;
+        }
+
+        html[data-pms-theme="dark"] .form-label-premium i,
+        html[data-bs-theme="dark"] .form-label-premium i,
+        html[data-theme="dark"] .form-label-premium i {
+            color: #38BDF8 !important;
+            -webkit-text-fill-color: #38BDF8 !important;
+        }
+
+        html[data-pms-theme="dark"] .optional-badge,
+        html[data-bs-theme="dark"] .optional-badge,
+        html[data-theme="dark"] .optional-badge {
+            background: rgba(238, 241, 251, 0.08) !important;
+            border: 1px solid rgba(238, 241, 251, 0.16) !important;
+            color: #9AA3C7 !important;
+            -webkit-text-fill-color: #9AA3C7 !important;
+        }
+
+        html[data-pms-theme="dark"] .mandatory-badge,
+        html[data-bs-theme="dark"] .mandatory-badge,
+        html[data-theme="dark"] .mandatory-badge {
+            background: rgba(239, 68, 68, 0.18) !important;
+            border: 1px solid rgba(239, 68, 68, 0.35) !important;
+            color: #F87171 !important;
+            -webkit-text-fill-color: #F87171 !important;
+        }
+
+        /* Form Controls */
+        html[data-pms-theme="dark"] .form-control-premium,
+        html[data-pms-theme="dark"] .form-select-premium,
+        html[data-bs-theme="dark"] .form-control-premium,
+        html[data-bs-theme="dark"] .form-select-premium,
+        html[data-theme="dark"] .form-control-premium,
+        html[data-theme="dark"] .form-select-premium {
+            background: #141B3D !important;
+            border: 1.5px solid rgba(238, 241, 251, 0.16) !important;
+            color: #EEF1FB !important;
+            -webkit-text-fill-color: #EEF1FB !important;
+        }
+
+        html[data-pms-theme="dark"] .form-control-premium:focus,
+        html[data-pms-theme="dark"] .form-select-premium:focus,
+        html[data-bs-theme="dark"] .form-control-premium:focus,
+        html[data-bs-theme="dark"] .form-select-premium:focus,
+        html[data-theme="dark"] .form-control-premium:focus,
+        html[data-theme="dark"] .form-select-premium:focus {
+            border-color: #2F6BFF !important;
+            box-shadow: 0 0 0 4px rgba(47, 107, 255, 0.25) !important;
+        }
+
+        html[data-pms-theme="dark"] .input-group-premium,
+        html[data-bs-theme="dark"] .input-group-premium,
+        html[data-theme="dark"] .input-group-premium {
+            background: #141B3D !important;
+            border-color: rgba(238, 241, 251, 0.16) !important;
+        }
+
+        html[data-pms-theme="dark"] .form-check-label,
+        html[data-bs-theme="dark"] .form-check-label,
+        html[data-theme="dark"] .form-check-label {
+            color: #CBD5E1 !important;
+            -webkit-text-fill-color: #CBD5E1 !important;
+        }
+
+        /* Directory Profile Box in Dark Mode */
+        html[data-pms-theme="dark"] .directory-profile-box,
+        html[data-bs-theme="dark"] .directory-profile-box,
+        html[data-theme="dark"] .directory-profile-box {
+            background: #0F1530 !important;
+            border: 1px solid rgba(238, 241, 251, 0.12) !important;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4) !important;
+        }
+
+        html[data-pms-theme="dark"] .directory-profile-head span,
+        html[data-bs-theme="dark"] .directory-profile-head span,
+        html[data-theme="dark"] .directory-profile-head span {
+            color: #34D399 !important;
+            -webkit-text-fill-color: #34D399 !important;
+        }
+
+        html[data-pms-theme="dark"] .directory-profile-head span i,
+        html[data-bs-theme="dark"] .directory-profile-head span i,
+        html[data-theme="dark"] .directory-profile-head span i {
+            color: #34D399 !important;
+            -webkit-text-fill-color: #34D399 !important;
+        }
+
+        html[data-pms-theme="dark"] .directory-profile-head p,
+        html[data-bs-theme="dark"] .directory-profile-head p,
+        html[data-theme="dark"] .directory-profile-head p {
+            color: #9AA3C7 !important;
+            -webkit-text-fill-color: #9AA3C7 !important;
+        }
+
+        html[data-pms-theme="dark"] .directory-profile-box .form-label-premium,
+        html[data-bs-theme="dark"] .directory-profile-box .form-label-premium,
+        html[data-theme="dark"] .directory-profile-box .form-label-premium {
+            color: #EEF1FB !important;
+            -webkit-text-fill-color: #EEF1FB !important;
+        }
+
+        html[data-pms-theme="dark"] .directory-profile-box .form-label-premium i,
+        html[data-bs-theme="dark"] .directory-profile-box .form-label-premium i,
+        html[data-theme="dark"] .directory-profile-box .form-label-premium i {
+            color: #38BDF8 !important;
+            -webkit-text-fill-color: #38BDF8 !important;
+        }
+
+        html[data-pms-theme="dark"] .directory-profile-box .optional-badge,
+        html[data-bs-theme="dark"] .directory-profile-box .optional-badge,
+        html[data-theme="dark"] .directory-profile-box .optional-badge {
+            background: rgba(238, 241, 251, 0.08) !important;
+            border: 1px solid rgba(238, 241, 251, 0.16) !important;
+            color: #9AA3C7 !important;
+            -webkit-text-fill-color: #9AA3C7 !important;
+        }
+
+        html[data-pms-theme="dark"] .directory-profile-box .form-control-premium,
+        html[data-bs-theme="dark"] .directory-profile-box .form-control-premium,
+        html[data-theme="dark"] .directory-profile-box .form-control-premium {
+            background: #141B3D !important;
+            border-color: rgba(238, 241, 251, 0.16) !important;
+            color: #EEF1FB !important;
+            -webkit-text-fill-color: #EEF1FB !important;
+        }
+
+        html[data-pms-theme="dark"] .directory-profile-box .form-control-premium::placeholder,
+        html[data-bs-theme="dark"] .directory-profile-box .form-control-premium::placeholder,
+        html[data-theme="dark"] .directory-profile-box .form-control-premium::placeholder {
+            color: #6B739A !important;
+            -webkit-text-fill-color: #6B739A !important;
+        }
+
+        /* File Upload Inputs in Dark Mode (Profile Picture, CV, etc.) */
+        html[data-pms-theme="dark"] #profile_picture,
+        html[data-bs-theme="dark"] #profile_picture,
+        html[data-theme="dark"] #profile_picture,
+        html[data-pms-theme="dark"] input[type="file"].form-control-premium,
+        html[data-bs-theme="dark"] input[type="file"].form-control-premium,
+        html[data-theme="dark"] input[type="file"].form-control-premium,
+        html[data-pms-theme="dark"] input[type="file"],
+        html[data-bs-theme="dark"] input[type="file"],
+        html[data-theme="dark"] input[type="file"] {
+            background-color: #141B3D !important;
+            background: #141B3D !important;
+            border: 1.5px solid rgba(238, 241, 251, 0.16) !important;
+            color: #CBD5E1 !important;
+            -webkit-text-fill-color: #CBD5E1 !important;
+        }
+
+        html[data-pms-theme="dark"] input[type="file"].form-control-premium::file-selector-button,
+        html[data-bs-theme="dark"] input[type="file"].form-control-premium::file-selector-button,
+        html[data-theme="dark"] input[type="file"].form-control-premium::file-selector-button,
+        html[data-pms-theme="dark"] input[type="file"]::file-selector-button,
+        html[data-bs-theme="dark"] input[type="file"]::file-selector-button,
+        html[data-theme="dark"] input[type="file"]::file-selector-button {
+            background: #1A2247 !important;
+            color: #EEF1FB !important;
+            -webkit-text-fill-color: #EEF1FB !important;
+            border: 1px solid rgba(238, 241, 251, 0.25) !important;
+            border-radius: 8px !important;
+            padding: 5px 14px !important;
+            margin-right: 12px !important;
+            font-weight: 600 !important;
+            font-size: 0.82rem !important;
+            cursor: pointer !important;
+            transition: all 0.2s ease !important;
+        }
+
+        html[data-pms-theme="dark"] input[type="file"].form-control-premium::-webkit-file-upload-button,
+        html[data-bs-theme="dark"] input[type="file"].form-control-premium::-webkit-file-upload-button,
+        html[data-theme="dark"] input[type="file"].form-control-premium::-webkit-file-upload-button,
+        html[data-pms-theme="dark"] input[type="file"]::-webkit-file-upload-button,
+        html[data-bs-theme="dark"] input[type="file"]::-webkit-file-upload-button,
+        html[data-theme="dark"] input[type="file"]::-webkit-file-upload-button {
+            background: #1A2247 !important;
+            color: #EEF1FB !important;
+            -webkit-text-fill-color: #EEF1FB !important;
+            border: 1px solid rgba(238, 241, 251, 0.25) !important;
+            border-radius: 8px !important;
+            padding: 5px 14px !important;
+            margin-right: 12px !important;
+            font-weight: 600 !important;
+            font-size: 0.82rem !important;
+            cursor: pointer !important;
+            transition: all 0.2s ease !important;
+        }
+
+        html[data-pms-theme="dark"] input[type="file"].form-control-premium::file-selector-button:hover,
+        html[data-bs-theme="dark"] input[type="file"].form-control-premium::file-selector-button:hover,
+        html[data-theme="dark"] input[type="file"].form-control-premium::file-selector-button:hover,
+        html[data-pms-theme="dark"] input[type="file"]::file-selector-button:hover,
+        html[data-bs-theme="dark"] input[type="file"]::file-selector-button:hover,
+        html[data-theme="dark"] input[type="file"]::file-selector-button:hover {
+            background: #232E5E !important;
+            color: #FFFFFF !important;
+            -webkit-text-fill-color: #FFFFFF !important;
+            border-color: #2F6BFF !important;
+        }
+
+        html[data-pms-theme="dark"] input[type="file"].form-control-premium::-webkit-file-upload-button:hover,
+        html[data-bs-theme="dark"] input[type="file"].form-control-premium::-webkit-file-upload-button:hover,
+        html[data-theme="dark"] input[type="file"].form-control-premium::-webkit-file-upload-button:hover,
+        html[data-pms-theme="dark"] input[type="file"]::-webkit-file-upload-button:hover,
+        html[data-bs-theme="dark"] input[type="file"]::-webkit-file-upload-button:hover,
+        html[data-theme="dark"] input[type="file"]::-webkit-file-upload-button:hover {
+            background: #232E5E !important;
+            color: #FFFFFF !important;
+            -webkit-text-fill-color: #FFFFFF !important;
+            border-color: #2F6BFF !important;
+        }
+
+        /* Current image / document link */
+        html[data-pms-theme="dark"] small.text-muted,
+        html[data-bs-theme="dark"] small.text-muted,
+        html[data-theme="dark"] small.text-muted {
+            color: #9AA3C7 !important;
+            -webkit-text-fill-color: #9AA3C7 !important;
+        }
+
+        html[data-pms-theme="dark"] small.text-muted a,
+        html[data-bs-theme="dark"] small.text-muted a,
+        html[data-theme="dark"] small.text-muted a {
+            color: #34D399 !important;
+            -webkit-text-fill-color: #34D399 !important;
+            font-weight: 700 !important;
+        }
+
+        /* Cancel / Discard Action Button */
+        html[data-pms-theme="dark"] .btn-cancel,
+        html[data-bs-theme="dark"] .btn-cancel,
+        html[data-theme="dark"] .btn-cancel {
+            background: #141B3D !important;
+            border: 2px solid rgba(238, 241, 251, 0.16) !important;
+            color: #CBD5E1 !important;
+            -webkit-text-fill-color: #CBD5E1 !important;
+        }
+
+        html[data-pms-theme="dark"] .btn-cancel i,
+        html[data-bs-theme="dark"] .btn-cancel i,
+        html[data-theme="dark"] .btn-cancel i {
+            color: #9AA3C7 !important;
+            -webkit-text-fill-color: #9AA3C7 !important;
+        }
+
+        html[data-pms-theme="dark"] .btn-cancel:hover,
+        html[data-bs-theme="dark"] .btn-cancel:hover,
+        html[data-theme="dark"] .btn-cancel:hover {
+            background: #1A2247 !important;
+            border-color: rgba(239, 68, 68, 0.5) !important;
+            color: #F87171 !important;
+            -webkit-text-fill-color: #F87171 !important;
+        }
+
+        html[data-pms-theme="dark"] .btn-cancel:hover i,
+        html[data-bs-theme="dark"] .btn-cancel:hover i,
+        html[data-theme="dark"] .btn-cancel:hover i {
+            color: #F87171 !important;
+            -webkit-text-fill-color: #F87171 !important;
+        }
+
+        /* Modals in Dark Mode */
+        html[data-pms-theme="dark"] .modal-content-premium,
+        html[data-bs-theme="dark"] .modal-content-premium,
+        html[data-theme="dark"] .modal-content-premium {
+            background: #0F1530 !important;
+            border-color: rgba(238, 241, 251, 0.12) !important;
+            color: #EEF1FB !important;
+        }
+
+        html[data-pms-theme="dark"] .modal-header-premium,
+        html[data-bs-theme="dark"] .modal-header-premium,
+        html[data-theme="dark"] .modal-header-premium {
+            background: #141B3D !important;
+            border-bottom-color: rgba(238, 241, 251, 0.08) !important;
+        }
+
+        html[data-pms-theme="dark"] .modal-title-premium,
+        html[data-bs-theme="dark"] .modal-title-premium,
+        html[data-theme="dark"] .modal-title-premium {
+            color: #EEF1FB !important;
+            -webkit-text-fill-color: #EEF1FB !important;
         }
     </style>
 

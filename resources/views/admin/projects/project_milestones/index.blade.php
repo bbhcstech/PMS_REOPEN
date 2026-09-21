@@ -182,7 +182,7 @@
                         <i class="fas fa-flag-checkered text-primary me-2"></i>
                         Create New Milestone
                     </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div class="row g-3">
@@ -898,15 +898,75 @@
     }
 
     .modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
         background: linear-gradient(135deg, #ffffff, #f5fbf7);
         border-bottom: 1px solid rgba(15, 116, 76, .1);
         padding: 20px 24px;
+        position: relative;
     }
 
     .modal-header .modal-title {
         font-weight: 700;
         font-size: 1.2rem;
         color: #07130d;
+        margin: 0;
+        display: flex;
+        align-items: center;
+    }
+
+    .modal-header .btn-close,
+    .modal .modal-header .btn-close {
+        position: static !important;
+        top: auto !important;
+        right: auto !important;
+        bottom: auto !important;
+        left: auto !important;
+        inset: auto !important;
+        transform: none !important;
+        margin: 0 0 0 auto !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 34px !important;
+        height: 34px !important;
+        min-width: 34px !important;
+        min-height: 34px !important;
+        padding: 0 !important;
+        border-radius: 10px !important;
+        background-color: rgba(15, 23, 42, 0.06) !important;
+        border: 1px solid rgba(15, 23, 42, 0.08) !important;
+        box-shadow: none !important;
+        color: #475569 !important;
+        opacity: 0.85 !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+        z-index: 5 !important;
+    }
+
+    .modal-header .btn-close:hover,
+    .modal-header .btn-close:focus,
+    .modal-header .btn-close:active,
+    .modal .modal-header .btn-close:hover,
+    .modal .modal-header .btn-close:focus,
+    .modal .modal-header .btn-close:active {
+        transform: scale(1.05) !important;
+        opacity: 1 !important;
+        background-color: rgba(239, 68, 68, 0.12) !important;
+        border-color: rgba(239, 68, 68, 0.28) !important;
+        color: #ef4444 !important;
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15) !important;
+    }
+
+    .modal-header .btn-close::before,
+    .modal .modal-header .btn-close::before {
+        display: block !important;
+        background-color: currentColor !important;
+        width: 12px !important;
+        height: 12px !important;
+        mask-size: contain !important;
+        -webkit-mask-size: contain !important;
     }
 
     .modal-body {
@@ -1005,29 +1065,84 @@
             margin: 10px;
         }
     }
+
+    /* Modal Dark Mode Theme */
+    html[data-pms-theme="dark"] .modal-content {
+        background: #0F1530 !important;
+        border: 1px solid rgba(238, 241, 251, 0.12) !important;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7) !important;
+    }
+
+    html[data-pms-theme="dark"] .modal-header {
+        background: #141B3D !important;
+        border-bottom-color: rgba(238, 241, 251, 0.09) !important;
+    }
+
+    html[data-pms-theme="dark"] .modal-header .modal-title {
+        color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .modal-header .btn-close,
+    html[data-pms-theme="dark"] .modal .modal-header .btn-close {
+        background-color: rgba(238, 241, 251, 0.08) !important;
+        border: 1px solid rgba(238, 241, 251, 0.14) !important;
+        color: #CBD5E1 !important;
+        filter: none !important;
+        opacity: 0.85 !important;
+    }
+
+    html[data-pms-theme="dark"] .modal-header .btn-close:hover,
+    html[data-pms-theme="dark"] .modal-header .btn-close:focus,
+    html[data-pms-theme="dark"] .modal-header .btn-close:active,
+    html[data-pms-theme="dark"] .modal .modal-header .btn-close:hover,
+    html[data-pms-theme="dark"] .modal .modal-header .btn-close:focus,
+    html[data-pms-theme="dark"] .modal .modal-header .btn-close:active {
+        background-color: rgba(239, 68, 68, 0.22) !important;
+        border-color: rgba(239, 68, 68, 0.45) !important;
+        color: #FCA5A5 !important;
+        opacity: 1 !important;
+        transform: scale(1.05) !important;
+        box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3) !important;
+    }
+
+    html[data-pms-theme="dark"] .modal-header .btn-close::before,
+    html[data-pms-theme="dark"] .modal .modal-header .btn-close::before {
+        background-color: currentColor !important;
+    }
 </style>
 @endpush
 
 @push('js')
 <script>
     $(document).ready(function () {
-        // Initialize DataTable
-        $('#mileTable').DataTable({
-            dom: 'rftip',
-            responsive: true,
-            pageLength: 10,
-            lengthMenu: [10, 25, 50, 100],
-            language: {
-                search: "_INPUT_",
-                searchPlaceholder: "Search milestones..."
-            }
-        });
+        if (window.jQuery && jQuery.fn && jQuery.fn.dataTable) {
+            jQuery.fn.dataTable.ext.errMode = 'none';
+        }
+
+        const $mileTable = $('#mileTable');
+        const hasDataRows = $mileTable.find('tbody tr').length > 0 && !$mileTable.find('tbody tr td[colspan]').length;
+
+        // Initialize DataTable only when valid data rows exist
+        if (hasDataRows) {
+            $mileTable.DataTable({
+                dom: 'rftip',
+                responsive: true,
+                pageLength: 10,
+                lengthMenu: [10, 25, 50, 100],
+                language: {
+                    search: "_INPUT_",
+                    searchPlaceholder: "Search milestones..."
+                }
+            });
+        }
 
         // Custom search handler
         const searchInput = document.getElementById('milestoneSearch');
         if (searchInput) {
             searchInput.addEventListener('keyup', function() {
-                $('#mileTable').DataTable().search(this.value).draw();
+                if ($.fn.DataTable && $.fn.DataTable.isDataTable('#mileTable')) {
+                    $('#mileTable').DataTable().search(this.value).draw();
+                }
             });
         }
     });

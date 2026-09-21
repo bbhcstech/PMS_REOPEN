@@ -24,8 +24,13 @@
     <meta name="description" content="" />
     <script>
       (function () {
-        var theme = localStorage.getItem('pms-theme') || 'light';
+        var theme = localStorage.getItem('pms-theme') || localStorage.getItem('bitroxia-theme');
+        if (!theme) {
+          theme = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+        }
         document.documentElement.setAttribute('data-pms-theme', theme);
+        document.documentElement.setAttribute('data-theme', theme);
+        document.documentElement.setAttribute('data-bs-theme', theme);
       })();
     </script>
 
@@ -41,7 +46,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&family=Public+Sans:wght@400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&family=Public+Sans:wght@400;500;600;700&display=swap"
       rel="stylesheet" />
 
     <link rel="stylesheet" href="{{ asset('admin/assets/vendor/fonts/iconify-icons.css')}}" />
@@ -52,6 +57,10 @@
     <link rel="stylesheet" href="{{ asset('admin/assets/vendor/css/core.css')}}" />
     <link rel="stylesheet" href="{{ asset('admin/assets/css/demo.css')}}" />
     <link rel="stylesheet" href="{{ asset('admin/assets/css/pms-refresh.css') }}?v={{ $adminRefreshVersion }}" />
+    @php
+      $adminThemeVersion = file_exists(public_path('admin/assets/css/pms-bitroxia-theme.css')) ? filemtime(public_path('admin/assets/css/pms-bitroxia-theme.css')) : time();
+    @endphp
+    <link rel="stylesheet" href="{{ asset('admin/assets/css/pms-bitroxia-theme.css') }}?v={{ $adminThemeVersion }}" />
 
     <!-- Vendors CSS -->
 

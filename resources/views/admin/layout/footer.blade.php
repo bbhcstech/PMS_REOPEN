@@ -11,6 +11,10 @@
   );
 @endphp
 <link rel="stylesheet" href="{{ asset('admin/assets/css/pms-table-tools.css') }}?v={{ $adminTableToolsVersion }}">
+@php
+  $adminThemeVersion = file_exists(public_path('admin/assets/css/pms-bitroxia-theme.css')) ? filemtime(public_path('admin/assets/css/pms-bitroxia-theme.css')) : time();
+@endphp
+<link rel="stylesheet" href="{{ asset('admin/assets/css/pms-bitroxia-theme.css') }}?v={{ $adminThemeVersion }}">
 
 <!-- Footer -->
             <footer class="content-footer footer bg-footer-theme">
@@ -89,6 +93,11 @@
 
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script>
+      if (window.jQuery && jQuery.fn && jQuery.fn.dataTable) {
+        jQuery.fn.dataTable.ext.errMode = 'none';
+      }
+    </script>
 
 
 
@@ -108,7 +117,10 @@
 
             function applyTheme(theme) {
               root.setAttribute('data-pms-theme', theme);
+              root.setAttribute('data-theme', theme);
+              root.setAttribute('data-bs-theme', theme);
               localStorage.setItem('pms-theme', theme);
+              localStorage.setItem('bitroxia-theme', theme);
               toggles.forEach(function (button) {
                 var icon = button.querySelector('.theme-toggle-icon');
                 button.setAttribute('aria-label', theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
@@ -168,5 +180,9 @@
         @stack('js')
         @stack('scripts')  <!-- ✅ Correct way to render pushed scripts -->
         <script src="{{ asset('admin/assets/js/pms-table-tools.js') }}?v={{ $adminTableToolsVersion }}"></script>
-          </body>
-        </html>
+        @php
+          $adminThemeVersion = file_exists(public_path('admin/assets/css/pms-bitroxia-theme.css')) ? filemtime(public_path('admin/assets/css/pms-bitroxia-theme.css')) : time();
+        @endphp
+        <link rel="stylesheet" href="{{ asset('admin/assets/css/pms-bitroxia-theme.css') }}?v={{ $adminThemeVersion }}" />
+      </body>
+    </html>

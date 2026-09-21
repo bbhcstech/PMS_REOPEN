@@ -45,7 +45,7 @@
       left: 0;
       right: 0;
       height: 4px;
-      background: linear-gradient(90deg, #073a26, #0f744c, #10b981, #2563eb, #7c3aed);
+      background: linear-gradient(90deg, #1E4FCC, #2F6BFF, #8B5CF6, #22D3EE);
       background-size: 300% 300%;
       animation: gradientShift 6s ease infinite;
     }
@@ -59,7 +59,7 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: linear-gradient(135deg, #073a26 0%, #0f744c 100%);
+      background: linear-gradient(135deg, #1E4FCC 0%, #2F6BFF 100%);
       color: #ffffff !important;
       padding: 4px 12px;
       border-radius: 999px;
@@ -68,7 +68,7 @@
       letter-spacing: 0.8px;
       text-transform: uppercase;
       margin-bottom: 8px;
-      box-shadow: 0 4px 12px rgba(15, 116, 76, 0.2);
+      box-shadow: 0 4px 12px rgba(47, 107, 255, 0.25);
     }
 
     .welcome-section .left .greeting {
@@ -850,6 +850,83 @@
 
     @media (max-width: 1200px) {
       .charts-row, .activity-row { grid-template-columns: 1fr; }
+    }
+
+    /* Super Admin Dashboard Dark Mode Overrides */
+    html[data-pms-theme="dark"] .welcome-section,
+    html[data-theme="dark"] .welcome-section {
+      background: linear-gradient(135deg, rgba(15, 21, 48, 0.96) 0%, rgba(20, 27, 61, 0.92) 100%);
+      border-color: var(--border-subtle);
+      box-shadow: 0 16px 45px -10px rgba(0, 0, 0, 0.4);
+    }
+    html[data-pms-theme="dark"] .welcome-section .right .date,
+    html[data-theme="dark"] .welcome-section .right .date {
+      background: var(--bg-surface-subtle);
+      border-color: var(--border-subtle);
+      color: var(--text-muted);
+    }
+    html[data-pms-theme="dark"] .kpi-card,
+    html[data-theme="dark"] .kpi-card,
+    html[data-pms-theme="dark"] .chart-card,
+    html[data-theme="dark"] .chart-card,
+    html[data-pms-theme="dark"] .activity-card,
+    html[data-theme="dark"] .activity-card,
+    html[data-pms-theme="dark"] .table-card,
+    html[data-theme="dark"] .table-card {
+      background: var(--bg-surface);
+      border-color: var(--border-subtle);
+    }
+    html[data-pms-theme="dark"] .health-item,
+    html[data-theme="dark"] .health-item {
+      background: var(--bg-surface-subtle);
+      border-color: var(--border-subtle);
+    }
+    html[data-pms-theme="dark"] .btn-outline,
+    html[data-theme="dark"] .btn-outline {
+      border-color: var(--border-subtle);
+      color: var(--text-body);
+    }
+    html[data-pms-theme="dark"] .btn-secondary,
+    html[data-theme="dark"] .btn-secondary {
+      background: var(--bg-surface-subtle);
+      border-color: var(--border-subtle);
+      color: var(--text-main);
+    }
+    html[data-pms-theme="dark"] .modal,
+    html[data-theme="dark"] .modal {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-strong);
+    }
+    html[data-pms-theme="dark"] .form-group input,
+    html[data-pms-theme="dark"] .form-group select,
+    html[data-theme="dark"] .form-group input,
+    html[data-theme="dark"] .form-group select {
+      background: var(--bg-surface-subtle);
+      border-color: var(--border-subtle);
+      color: var(--text-main);
+    }
+    html[data-pms-theme="dark"] .dropdown-menu,
+    html[data-theme="dark"] .dropdown-menu {
+      background: var(--bg-surface);
+      border-color: var(--border-strong);
+    }
+    html[data-pms-theme="dark"] .dropdown-item,
+    html[data-theme="dark"] .dropdown-item {
+      color: var(--text-body);
+    }
+    html[data-pms-theme="dark"] .table-responsive table,
+    html[data-theme="dark"] .table-responsive table {
+      color: var(--text-body);
+    }
+    html[data-pms-theme="dark"] th,
+    html[data-theme="dark"] th {
+      color: var(--text-muted);
+      border-bottom-color: var(--border-subtle);
+    }
+    html[data-pms-theme="dark"] td,
+    html[data-theme="dark"] td {
+      border-bottom-color: var(--border-subtle);
+      color: var(--text-body);
     }
   </style>
 
@@ -1740,7 +1817,7 @@
             datasets: [{
               label: 'Companies',
               data: planCounts.length ? planCounts : [8, 6, 4],
-              backgroundColor: ['#0f744c', '#10b981', '#7c3aed', '#2563eb', '#f59e0b'],
+              backgroundColor: ['#2F6BFF', '#8B5CF6', '#22D3EE', '#10B981', '#F59E0B'],
               borderRadius: 8,
               borderSkipped: false,
             }]
