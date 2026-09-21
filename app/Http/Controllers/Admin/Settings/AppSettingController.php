@@ -153,6 +153,10 @@ class AppSettingController extends Controller
      */
     public function update(Request $request)
     {
+        if (auth()->user()?->role !== 'admin') {
+            abort(403, 'Unauthorized. Only administrators can update app settings.');
+        }
+
         if (!$request->has('settings')) {
             return back()->with('success', 'No changes found.');
         }
@@ -179,6 +183,19 @@ class AppSettingController extends Controller
             ]);
         }
 
+        // Broadcast notification to Admin, HR, Manager, and Employees
+        \App\Services\SystemNotificationService::notifyAllRoles(
+            'System & App Settings Updated',
+            'System configuration and application preferences have been updated by ' . (auth()->user()?->name ?? 'Admin') . '.',
+            route('admin.settings.app'),
+            [
+                'type' => 'setting_update',
+                'setting_module' => 'app-settings',
+                'icon' => 'fa-sliders',
+                'color' => 'primary',
+            ]
+        );
+
         return back()->with('success', 'Settings updated successfully!');
     }
 
@@ -187,6 +204,10 @@ class AppSettingController extends Controller
      */
     public function addField(Request $request)
     {
+        if (auth()->user()?->role !== 'admin') {
+            abort(403, 'Unauthorized. Only administrators can add dynamic fields.');
+        }
+
         $request->validate([
             'key' => 'required|string|unique:app_settings,key',
             'label' => 'required|string',

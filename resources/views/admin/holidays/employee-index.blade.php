@@ -168,24 +168,10 @@
     .employee-reason { font-weight: 900; }
     .employee-badge { display: inline-flex; padding: 7px 10px; border-radius: 999px; font-weight: 900; font-size: .8rem; }
     .employee-badge.weekly { background: #d1fae5; color: #047857; } .employee-badge.special { background: #dbeafe; color: #1d4ed8; }
-    .employee-holiday-page .dataTables_wrapper .dt-buttons { display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 0 0 16px; padding: 8px; border: 1px solid rgba(16,185,129,.14); border-radius: 16px; background: #f7fcf9; }
-    .employee-holiday-page .dataTables_wrapper .dt-buttons .dt-button { min-height: 42px; margin: 0 !important; padding: 9px 16px !important; border: 1px solid rgba(16,185,129,.18) !important; border-radius: 12px !important; background: #fff !important; color: #0f744c !important; box-shadow: 0 4px 12px -10px rgba(5,150,105,.7); font-size: .95rem !important; font-weight: 750 !important; line-height: 1.2 !important; transition: border-color .2s ease, background .2s ease, color .2s ease, transform .2s ease, box-shadow .2s ease; }
-    .employee-holiday-page .dataTables_wrapper .dt-buttons .dt-button span { display: inline-flex; align-items: center; gap: 8px; }
-    .employee-holiday-page .dataTables_wrapper .dt-buttons .dt-button span::before { display: inline-flex; align-items: center; justify-content: center; width: 20px; font-family: "Font Awesome 5 Free"; font-size: 1rem; font-weight: 900; }
-    .employee-holiday-page .dataTables_wrapper .buttons-copy span::before { content: "\f0c5"; }
-    .employee-holiday-page .dataTables_wrapper .buttons-csv span::before { content: "\f6dd"; }
-    .employee-holiday-page .dataTables_wrapper .buttons-excel span::before { content: "\f1c3"; }
-    .employee-holiday-page .dataTables_wrapper .buttons-pdf span::before { content: "\f1c1"; }
-    .employee-holiday-page .dataTables_wrapper .buttons-print span::before { content: "\f02f"; }
-    .employee-holiday-page .dataTables_wrapper .dt-buttons .dt-button:hover, .employee-holiday-page .dataTables_wrapper .dt-buttons .dt-button:focus { border-color: #10b981 !important; background: linear-gradient(145deg, #34d399, #059669) !important; color: #fff !important; box-shadow: 0 9px 20px -12px rgba(5,150,105,.8); transform: translateY(-1px); }
-    .employee-holiday-page .dataTables_wrapper .buttons-excel { background: #ecfdf5 !important; }
-    .employee-holiday-page .dataTables_wrapper .buttons-csv { background: #f0fdf4 !important; }
-    .employee-holiday-page .dataTables_wrapper .buttons-pdf { color: #b91c1c !important; background: #fff7f7 !important; border-color: rgba(239,68,68,.18) !important; }
-    .employee-holiday-page .dataTables_wrapper .buttons-print { color: #315f75 !important; background: #f4fbff !important; border-color: rgba(49,95,117,.18) !important; }
-    html[data-pms-theme="dark"] .employee-holiday-page .dataTables_wrapper .dt-buttons { border-color: rgba(122,240,181,.16); background: #142a20; }
-    html[data-pms-theme="dark"] .employee-holiday-page .dataTables_wrapper .dt-buttons .dt-button { border-color: rgba(122,240,181,.18) !important; background: #183026 !important; color: #d9f1e4 !important; }
+    /* Hide visible DataTables export toolbar because Export dropdown is in header */
+    .employee-holiday-page .dataTables_wrapper .dt-buttons { display: none !important; }
     @keyframes holidayRise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
-    @media (max-width: 768px) { .employee-holiday-hero, .employee-holiday-panel-head { flex-direction: column; align-items: flex-start; } .employee-holiday-filter, .employee-holiday-filter > div, .employee-holiday-filter .form-select, .employee-holiday-filter .btn { width: 100%; } .employee-holiday-page .dataTables_wrapper .dt-buttons { width: 100%; } .employee-holiday-page .dataTables_wrapper .dt-buttons .dt-button { flex: 1 1 120px; justify-content: center; } }
+    @media (max-width: 768px) { .employee-holiday-hero, .employee-holiday-panel-head { flex-direction: column; align-items: flex-start; } .employee-holiday-filter, .employee-holiday-filter > div, .employee-holiday-filter .form-select, .employee-holiday-filter .btn { width: 100%; } }
 </style>
 @endsection
 

@@ -5,6 +5,7 @@ namespace App\Http\Requests\Auth;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -51,12 +52,28 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        // ============================================
-        // FIX: DEVELOPER & EMPLOYEE AUTHENTICATION LOOKUP & CHECKS
-        // ============================================
-
         $inputEmail = strtolower(trim($this->string('email')));
         $inputPassword = (string) $this->string('password');
+
+        $defaultTenantDb = config('database.connections.tenant.database')
+            ?: (config('database.connections.mysql.database') ?: env('DB_DATABASE', 'thesmart_lara319'));
+
+        // 0. Check SuperAdmin in central database
+        try {
+            if (class_exists(\App\Models\Central\SuperAdmin::class)) {
+                $superAdmin = \App\Models\Central\SuperAdmin::on('central')->where('email', $inputEmail)->first();
+                if ($superAdmin && \Illuminate\Support\Facades\Hash::check($inputPassword, $superAdmin->password)) {
+                    \Illuminate\Support\Facades\Auth::guard('super_admin')->login($superAdmin, $this->boolean('remember'));
+                    $webUser = User::on('tenant')->where('email', $inputEmail)->first()
+                        ?? User::on('mysql')->where('email', $inputEmail)->first();
+                    if ($webUser) {
+                        \Illuminate\Support\Facades\Auth::guard('web')->login($webUser, $this->boolean('remember'));
+                    }
+                    RateLimiter::clear($this->throttleKey());
+                    return;
+                }
+            }
+        } catch (\Throwable $e) {}
 
         // Look up central company if input email/code matches
         $centralCompany = null;
@@ -91,18 +108,31 @@ class LoginRequest extends FormRequest
         if ($centralCompany && !empty($centralCompany->db_name)) {
             $companyEmail = strtolower($centralCompany->email);
 
-            // Set dynamic tenant DB connection for this company login
-            config([
-                'database.connections.tenant.database' => $centralCompany->db_name,
-                'database.connections.mysql.database'  => $centralCompany->db_name,
-            ]);
-            \Illuminate\Support\Facades\DB::purge('tenant');
-            \Illuminate\Support\Facades\DB::purge('mysql');
-            session([
-                'current_company_db'   => $centralCompany->db_name,
-                'current_company_id'   => $centralCompany->id,
-                'current_company_name' => $centralCompany->name,
-            ]);
+            // Set dynamic tenant DB connection for this company login with PDO validation
+            $targetDb = $centralCompany->db_name;
+            try {
+                config([
+                    'database.connections.tenant.database' => $targetDb,
+                    'database.connections.mysql.database'  => $targetDb,
+                ]);
+                DB::purge('tenant');
+                DB::purge('mysql');
+                DB::connection('tenant')->getPdo();
+
+                session([
+                    'current_company_db'   => $targetDb,
+                    'current_company_id'   => $centralCompany->id,
+                    'current_company_name' => $centralCompany->name,
+                ]);
+            } catch (\Throwable $e) {
+                // Fall back to default tenant DB if custom tenant DB cannot be connected
+                config([
+                    'database.connections.tenant.database' => $defaultTenantDb,
+                    'database.connections.mysql.database'  => $defaultTenantDb,
+                ]);
+                DB::purge('tenant');
+                DB::purge('mysql');
+            }
 
             if (app()->bound(\App\Services\CompanyContext::class)) {
                 app(\App\Services\CompanyContext::class)->reset();
@@ -177,11 +207,30 @@ class LoginRequest extends FormRequest
                 $centralCompany->password = $inputPassword;
                 $centralCompany->save();
             }
-        } else {
-            // Search tenant databases to locate company DB for user
+        }
+
+        // Locate user: first check active/default tenant connection
+        $user = null;
+        try {
+            $hasPersonalEmailCol = \Illuminate\Support\Facades\Schema::connection('tenant')->hasColumn('users', 'personal_email');
+            $userQuery = User::on('tenant')->where('email', $inputEmail);
+            if ($centralCompany) {
+                $userQuery->orWhere('email', strtolower($centralCompany->email));
+            }
+            if ($hasPersonalEmailCol) {
+                $userQuery->orWhere('personal_email', $inputEmail);
+            }
+            $user = $userQuery->first();
+        } catch (\Throwable $e) {}
+
+        // If not found in current connection and no centralCompany, search other tenant databases
+        if (! $user && ! $centralCompany) {
             try {
                 $allCompanies = \App\Models\Central\Company::on('central')->whereNotNull('db_name')->get();
                 foreach ($allCompanies as $comp) {
+                    if (empty($comp->db_name) || $comp->db_name === $defaultTenantDb) {
+                        continue;
+                    }
                     try {
                         config(['database.connections.tenant.database' => $comp->db_name]);
                         \Illuminate\Support\Facades\DB::purge('tenant');
@@ -194,6 +243,7 @@ class LoginRequest extends FormRequest
                         $foundUser = $tUserQuery->first();
                         if ($foundUser) {
                             $centralCompany = $comp;
+                            $user = $foundUser;
                             session([
                                 'current_company_db'   => $comp->db_name,
                                 'current_company_id'   => $comp->id,
@@ -203,33 +253,54 @@ class LoginRequest extends FormRequest
                         }
                     } catch (\Throwable $e) {}
                 }
+
+                // If not found in any other database, restore default tenant DB
+                if (! $user) {
+                    config(['database.connections.tenant.database' => $defaultTenantDb]);
+                    \Illuminate\Support\Facades\DB::purge('tenant');
+                }
             } catch (\Throwable $e) {}
         }
 
-        // Check if user exists by email or personal_email
-        $hasPersonalEmailCol = false;
-        try {
-            $hasPersonalEmailCol = \Illuminate\Support\Facades\Schema::connection('tenant')->hasColumn('users', 'personal_email');
-        } catch (\Throwable $e) {
+        if (! $user) {
+            // Check if user exists by email or personal_email
+            $hasPersonalEmailCol = false;
             try {
-                $hasPersonalEmailCol = \Illuminate\Support\Facades\Schema::hasColumn('users', 'personal_email');
-            } catch (\Throwable $e) {}
-        }
+                $hasPersonalEmailCol = \Illuminate\Support\Facades\Schema::connection('tenant')->hasColumn('users', 'personal_email');
+            } catch (\Throwable $e) {
+                try {
+                    $hasPersonalEmailCol = \Illuminate\Support\Facades\Schema::hasColumn('users', 'personal_email');
+                } catch (\Throwable $e) {}
+            }
 
-        $userQuery = User::where('email', $inputEmail);
-        if ($centralCompany && !empty($centralCompany->email)) {
-            $userQuery->orWhere('email', strtolower($centralCompany->email));
+            $userQuery = User::where('email', $inputEmail);
+            if ($centralCompany && !empty($centralCompany->email)) {
+                $userQuery->orWhere('email', strtolower($centralCompany->email));
+            }
+            if ($hasPersonalEmailCol) {
+                $userQuery->orWhere('personal_email', $inputEmail);
+            }
+            $user = $userQuery->first();
         }
-        if ($hasPersonalEmailCol) {
-            $userQuery->orWhere('personal_email', $inputEmail);
-        }
-        $user = $userQuery->first();
 
         if ($user) {
-            // Sync password hash if input password or raw_password matches
-            if (!\Illuminate\Support\Facades\Hash::check($inputPassword, $user->password)) {
+            // Self-healing: If raw_password matches input or if stored password is plain text
+            if (!empty($user->raw_password) && $user->raw_password === $inputPassword) {
+                if (!\Illuminate\Support\Facades\Hash::check($inputPassword, $user->password)) {
+                    $user->password = \Illuminate\Support\Facades\Hash::make($inputPassword);
+                    $user->save();
+                }
+            } elseif ($user->password === $inputPassword) {
+                // Plain text password migration
                 $user->password = \Illuminate\Support\Facades\Hash::make($inputPassword);
                 $user->raw_password = $inputPassword;
+                $user->save();
+            }
+
+            // Ensure login_allowed and is_active are enabled if not explicitly blocked
+            if ($user->login_allowed === null) {
+                $user->login_allowed = true;
+                $user->is_active = true;
                 $user->save();
             }
 

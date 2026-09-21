@@ -83,12 +83,11 @@ class ReportController extends Controller
     public function financeReport(Request $request)
     {
         $totalIncomes = Payment::sum('amount');
-        if (\Illuminate\Support\Facades\Schema::hasColumn('expenses', 'status')) {
-            $totalExpenses = Expense::where('status', 'approved')->sum('price');
-            if ($totalExpenses == 0) {
-                $totalExpenses = Expense::sum('price');
-            }
-        } else {
+        $totalExpenses = \Illuminate\Support\Facades\Schema::hasColumn('expenses', 'status')
+            ? Expense::where('status', 'approved')->sum('price')
+            : Expense::sum('price');
+
+        if ($totalExpenses == 0) {
             $totalExpenses = Expense::sum('price');
         }
         $totalInvoices = Invoice::sum('total');
@@ -130,7 +129,7 @@ class ReportController extends Controller
     {
         $query = Expense::with(['project', 'employee']);
 
-        if (\Illuminate\Support\Facades\Schema::hasColumn('expenses', 'status') && $request->filled('status')) {
+        if ($request->filled('status') && \Illuminate\Support\Facades\Schema::hasColumn('expenses', 'status')) {
             $query->where('status', $request->status);
         }
         if ($request->filled('start_date') && $request->filled('end_date')) {

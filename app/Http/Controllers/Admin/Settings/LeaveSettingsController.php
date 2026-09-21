@@ -15,6 +15,10 @@ class LeaveSettingsController extends Controller
 
     public function update(Request $request)
     {
+        if (auth()->user()?->role !== 'admin') {
+            abort(403, 'Unauthorized. Only administrators can update leave settings.');
+        }
+
         $request->validate([
             'annual_casual_leave' => 'required|numeric|min:0',
             'annual_sick_leave' => 'required|numeric|min:0',
@@ -42,6 +46,19 @@ class LeaveSettingsController extends Controller
                 ]
             );
         }
+
+        // Broadcast notification to Admin, HR, Manager, and Employees
+        \App\Services\SystemNotificationService::notifyAllRoles(
+            'Leave Policy & Settings Updated',
+            'Company leave policies, allowances, and carry-forward rules have been updated by ' . (auth()->user()?->name ?? 'Admin') . '.',
+            route('admin.settings.leave'),
+            [
+                'type' => 'setting_update',
+                'setting_module' => 'leave-settings',
+                'icon' => 'fa-time-five',
+                'color' => 'success',
+            ]
+        );
 
         return back()->with('success', 'Leave settings updated successfully!');
     }

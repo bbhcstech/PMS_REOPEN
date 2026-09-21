@@ -500,6 +500,16 @@
                 </div>
 
                 <div class="p-4 p-md-5">
+                    @if($isSettingsReadOnly)
+                        <div class="alert d-flex align-items-center mb-4 rounded-3 border-0 shadow-sm" style="background: linear-gradient(135deg, #eff6ff, #dbeafe); color: #1e40af; border-left: 4px solid #3b82f6 !important; padding: 14px 18px;">
+                            <i class="fas fa-eye me-3 fs-3 text-primary"></i>
+                            <div>
+                                <strong class="d-block text-primary fw-bold" style="font-size: 14px;">View-Only Mode</strong>
+                                <span style="font-size: 13px; color: #1e3a8a;">You are viewing notification preferences in read-only mode. Only Administrators have permission to modify alert rules and communication channels.</span>
+                            </div>
+                        </div>
+                    @endif
+
                     <form method="POST" action="{{ route('admin.settings.notification.update') }}">
                         @csrf
 
@@ -514,9 +524,9 @@
                                 <div class="policy-switch-box">
                                     <div class="form-check form-switch m-0 d-flex align-items-center gap-3 w-100">
                                         <input class="form-check-input flex-shrink-0" type="checkbox" name="email_notifications" value="1" id="emailNotifSwitch"
-                                            style="width: 2.8em; height: 1.4em; cursor: pointer;"
-                                            {{ $emailNotif ? 'checked' : '' }}>
-                                        <label class="form-check-label fw-bold text-dark mb-0" for="emailNotifSwitch" style="cursor: pointer;">
+                                            style="width: 2.8em; height: 1.4em; cursor: {{ $isSettingsReadOnly ? 'default' : 'pointer' }};"
+                                            {{ $emailNotif ? 'checked' : '' }} {{ $isSettingsReadOnly ? 'disabled' : '' }}>
+                                        <label class="form-check-label fw-bold text-dark mb-0" for="emailNotifSwitch" style="cursor: {{ $isSettingsReadOnly ? 'default' : 'pointer' }};">
                                             Enable Email Notification Channel
                                             <small class="d-block text-muted fw-normal mt-0.5" style="font-size: 0.82rem;">Send automated system emails for critical updates and events.</small>
                                         </label>
@@ -529,9 +539,9 @@
                                 <div class="policy-switch-box">
                                     <div class="form-check form-switch m-0 d-flex align-items-center gap-3 w-100">
                                         <input class="form-check-input flex-shrink-0" type="checkbox" name="system_notifications" value="1" id="sysNotifSwitch"
-                                            style="width: 2.8em; height: 1.4em; cursor: pointer;"
-                                            {{ $sysNotif ? 'checked' : '' }}>
-                                        <label class="form-check-label fw-bold text-dark mb-0" for="sysNotifSwitch" style="cursor: pointer;">
+                                            style="width: 2.8em; height: 1.4em; cursor: {{ $isSettingsReadOnly ? 'default' : 'pointer' }};"
+                                            {{ $sysNotif ? 'checked' : '' }} {{ $isSettingsReadOnly ? 'disabled' : '' }}>
+                                        <label class="form-check-label fw-bold text-dark mb-0" for="sysNotifSwitch" style="cursor: {{ $isSettingsReadOnly ? 'default' : 'pointer' }};">
                                             Enable In-App Bell Notifications
                                             <small class="d-block text-muted fw-normal mt-0.5" style="font-size: 0.82rem;">Display real-time notification badges in user header bar.</small>
                                         </label>
@@ -544,9 +554,9 @@
                                 <div class="policy-switch-box">
                                     <div class="form-check form-switch m-0 d-flex align-items-center gap-3 w-100">
                                         <input class="form-check-input flex-shrink-0" type="checkbox" name="task_assignment_alert" value="1" id="taskAlertSwitch"
-                                            style="width: 2.8em; height: 1.4em; cursor: pointer;"
-                                            {{ $taskAlert ? 'checked' : '' }}>
-                                        <label class="form-check-label fw-bold text-dark mb-0" for="taskAlertSwitch" style="cursor: pointer;">
+                                            style="width: 2.8em; height: 1.4em; cursor: {{ $isSettingsReadOnly ? 'default' : 'pointer' }};"
+                                            {{ $taskAlert ? 'checked' : '' }} {{ $isSettingsReadOnly ? 'disabled' : '' }}>
+                                        <label class="form-check-label fw-bold text-dark mb-0" for="taskAlertSwitch" style="cursor: {{ $isSettingsReadOnly ? 'default' : 'pointer' }};">
                                             Task Assignment Alerts
                                             <small class="d-block text-muted fw-normal mt-0.5" style="font-size: 0.82rem;">Notify team members immediately when assigned a new task.</small>
                                         </label>
@@ -559,9 +569,9 @@
                                 <div class="policy-switch-box">
                                     <div class="form-check form-switch m-0 d-flex align-items-center gap-3 w-100">
                                         <input class="form-check-input flex-shrink-0" type="checkbox" name="leave_request_alert" value="1" id="leaveAlertSwitch"
-                                            style="width: 2.8em; height: 1.4em; cursor: pointer;"
-                                            {{ $leaveAlert ? 'checked' : '' }}>
-                                        <label class="form-check-label fw-bold text-dark mb-0" for="leaveAlertSwitch" style="cursor: pointer;">
+                                            style="width: 2.8em; height: 1.4em; cursor: {{ $isSettingsReadOnly ? 'default' : 'pointer' }};"
+                                            {{ $leaveAlert ? 'checked' : '' }} {{ $isSettingsReadOnly ? 'disabled' : '' }}>
+                                        <label class="form-check-label fw-bold text-dark mb-0" for="leaveAlertSwitch" style="cursor: {{ $isSettingsReadOnly ? 'default' : 'pointer' }};">
                                             Leave Application Alerts
                                             <small class="d-block text-muted fw-normal mt-0.5" style="font-size: 0.82rem;">Notify managers when an employee submits or cancels leave.</small>
                                         </label>
@@ -574,9 +584,9 @@
                                 <div class="policy-switch-box">
                                     <div class="form-check form-switch m-0 d-flex align-items-center gap-3 w-100">
                                         <input class="form-check-input flex-shrink-0" type="checkbox" name="attendance_reminder" value="1" id="attReminderSwitch"
-                                            style="width: 2.8em; height: 1.4em; cursor: pointer;"
-                                            {{ $attReminder ? 'checked' : '' }}>
-                                        <label class="form-check-label fw-bold text-dark mb-0" for="attReminderSwitch" style="cursor: pointer;">
+                                            style="width: 2.8em; height: 1.4em; cursor: {{ $isSettingsReadOnly ? 'default' : 'pointer' }};"
+                                            {{ $attReminder ? 'checked' : '' }} {{ $isSettingsReadOnly ? 'disabled' : '' }}>
+                                        <label class="form-check-label fw-bold text-dark mb-0" for="attReminderSwitch" style="cursor: {{ $isSettingsReadOnly ? 'default' : 'pointer' }};">
                                             Daily Clock-In / Out Reminders
                                             <small class="d-block text-muted fw-normal mt-0.5" style="font-size: 0.82rem;">Send automated reminders if employee forgets to clock in.</small>
                                         </label>
@@ -589,9 +599,9 @@
                                 <div class="policy-switch-box">
                                     <div class="form-check form-switch m-0 d-flex align-items-center gap-3 w-100">
                                         <input class="form-check-input flex-shrink-0" type="checkbox" name="daily_summary_digest" value="1" id="digestSwitch"
-                                            style="width: 2.8em; height: 1.4em; cursor: pointer;"
-                                            {{ $digest ? 'checked' : '' }}>
-                                        <label class="form-check-label fw-bold text-dark mb-0" for="digestSwitch" style="cursor: pointer;">
+                                            style="width: 2.8em; height: 1.4em; cursor: {{ $isSettingsReadOnly ? 'default' : 'pointer' }};"
+                                            {{ $digest ? 'checked' : '' }} {{ $isSettingsReadOnly ? 'disabled' : '' }}>
+                                        <label class="form-check-label fw-bold text-dark mb-0" for="digestSwitch" style="cursor: {{ $isSettingsReadOnly ? 'default' : 'pointer' }};">
                                             Admin Daily Activity Summary Digest
                                             <small class="d-block text-muted fw-normal mt-0.5" style="font-size: 0.82rem;">Send a daily summary email of attendance and completed tasks.</small>
                                         </label>
@@ -602,10 +612,15 @@
 
                         <!-- Form Action Buttons -->
                         <div class="mt-5 pt-4 border-top d-flex justify-content-end">
-                            <button type="submit" class="btn-save-address">
-                                <i class="fas fa-save me-1.5"></i> Save Notification Settings
-                            </button>
-                        </div>
+                            @if($isSettingsReadOnly)
+                                <span class="badge rounded-pill px-3.5 py-2 fw-bold" style="background: #f1f5f9; color: #64748b; font-size: 13px; border: 1px solid #cbd5e1;">
+                                    <i class="fas fa-lock me-1.5 text-muted"></i> Read-Only (Admin Managed)
+                                </span>
+                            @else
+                                <button type="submit" class="btn-save-address">
+                                    <i class="fas fa-save me-1.5"></i> Save Notification Settings
+                                </button>
+                            @endif
                     </form>
                 </div>
             </div>

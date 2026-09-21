@@ -95,23 +95,27 @@ use App\Http\Controllers\CommunityMessageController;
 
 Route::middleware(['auth'])->group(function () {
     // Community Message Module Routes
-    Route::get('/community', [CommunityMessageController::class, 'index'])->name('community.index');
-    Route::get('/community/messages', [CommunityMessageController::class, 'fetchMessages'])->name('community.messages');
-    Route::post('/community/messages', [CommunityMessageController::class, 'store'])->name('community.store');
-    Route::put('/community/messages/{id}', [CommunityMessageController::class, 'update'])->name('community.update');
-    Route::delete('/community/messages/{id}', [CommunityMessageController::class, 'destroy'])->name('community.destroy');
-    Route::post('/community/messages/{id}/react', [CommunityMessageController::class, 'react'])->name('community.react');
-    Route::post('/community/messages/{id}/pin', [CommunityMessageController::class, 'togglePin'])->name('community.pin');
+    Route::middleware(['feature:community'])->group(function () {
+        Route::get('/community', [CommunityMessageController::class, 'index'])->name('community.index');
+        Route::get('/community/messages', [CommunityMessageController::class, 'fetchMessages'])->name('community.messages');
+        Route::post('/community/messages', [CommunityMessageController::class, 'store'])->name('community.store');
+        Route::put('/community/messages/{id}', [CommunityMessageController::class, 'update'])->name('community.update');
+        Route::delete('/community/messages/{id}', [CommunityMessageController::class, 'destroy'])->name('community.destroy');
+        Route::post('/community/messages/{id}/react', [CommunityMessageController::class, 'react'])->name('community.react');
+        Route::post('/community/messages/{id}/pin', [CommunityMessageController::class, 'togglePin'])->name('community.pin');
+    });
 
     // Company Events Module Routes
-    Route::get('/events', [EventController::class, 'index'])->name('events.index');
-    Route::get('/events/calendar-data', [EventController::class, 'calendarData'])->name('events.calendar-data');
-    Route::post('/events', [EventController::class, 'store'])->name('events.store');
-    Route::get('/events/{id}', [EventController::class, 'show'])->name('events.show');
-    Route::put('/events/{id}', [EventController::class, 'update'])->name('events.update');
-    Route::delete('/events/{id}', [EventController::class, 'destroy'])->name('events.destroy');
-    Route::post('/events/{id}/publish', [EventController::class, 'publish'])->name('events.publish');
-    Route::post('/events/{id}/cancel', [EventController::class, 'cancel'])->name('events.cancel');
+    Route::middleware(['feature:events'])->group(function () {
+        Route::get('/events', [EventController::class, 'index'])->name('events.index');
+        Route::get('/events/calendar-data', [EventController::class, 'calendarData'])->name('events.calendar-data');
+        Route::post('/events', [EventController::class, 'store'])->name('events.store');
+        Route::get('/events/{id}', [EventController::class, 'show'])->name('events.show');
+        Route::put('/events/{id}', [EventController::class, 'update'])->name('events.update');
+        Route::delete('/events/{id}', [EventController::class, 'destroy'])->name('events.destroy');
+        Route::post('/events/{id}/publish', [EventController::class, 'publish'])->name('events.publish');
+        Route::post('/events/{id}/cancel', [EventController::class, 'cancel'])->name('events.cancel');
+    });
     Route::post('/events/{id}/rsvp', [EventController::class, 'rsvp'])->name('events.rsvp');
 
     // Event Memories / Gallery Photo Routes
@@ -163,11 +167,6 @@ Route::get('attendance/export/excel', [AttendanceExport::class, 'exportExcel'])
 
 Route::get('attendance/export/pdf', [AttendanceExport::class, 'exportPdf'])
     ->name('attendance.export.pdf');
-
-// Add this route for bulk delete
-Route::delete('designations/bulk-delete', [DesignationController::class, 'bulkDelete'])->name('designations.bulk-delete');
-
-
 
 Route::get('attendance/filter', [App\Http\Controllers\AttendanceController::class, 'filter'])->name('attendance.filter');
 
@@ -367,12 +366,14 @@ Route::get('/manager-login', function () {
 })->middleware('guest')->name('manager.login');
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
-    ->middleware(['auth', 'verified', 'module.access'])
+    ->middleware(['auth', 'module.access'])
     ->name('dashboard');
 
 Route::middleware(['auth', 'verified'])->prefix('superadmin')->name('superadmin.')->group(function () {
     Route::get('/', [SuperAdminController::class, 'dashboard'])->name('dashboard');
     Route::get('/subscriptions', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'subscriptions'])->name('subscriptions.index');
+    Route::post('/subscriptions', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'assignPlan'])->name('subscriptions.store');
+    Route::post('/subscriptions/store', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'assignPlan']);
     Route::post('/plans/toggle-module', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'togglePlanModule'])->name('plans.toggle-module');
     Route::post('/subscriptions/assign', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'assignPlan'])->name('subscriptions.assign');
     Route::post('/subscriptions/toggle-override', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'toggleCompanyOverride'])->name('subscriptions.toggle-override');
@@ -492,11 +493,8 @@ Route::prefix('company')->name('company.')->group(function () {
 
 
 
-// Simple logout that clears custom session key
-Route::get('/logout', function () {
-    Session::forget('auth_id');
-    return redirect()->route('home');
-})->name('logout');
+// Simple GET logout
+Route::get('/logout', [\App\Http\Controllers\Auth\AuthenticatedSessionController::class, 'destroy'])->name('logout.get');
 
 /*
 |--------------------------------------------------------------------------
@@ -641,11 +639,8 @@ Route::middleware(['auth', 'module.access'])->group(function () {
         ->name('designations.restore');
 
     // Bulk delete designations
-Route::post('designations/bulk-delete', [DesignationController::class, 'bulkDelete'])
-    ->name('designations.bulk-delete');
-
-Route::resource('designations', DesignationController::class);
-
+    Route::post('designations/bulk-delete', [DesignationController::class, 'bulkDelete'])
+        ->name('designations.bulk-delete');
 
     // Ajax create designation from employee form
     Route::post('/designations/ajax-store', [EmployeeController::class, 'storeDesignation'])
@@ -688,7 +683,6 @@ Route::resource('designations', DesignationController::class);
         ->name('employees.restore');
 
     Route::resource('employees', EmployeeController::class);
-    Route::get('employees/{id}', [EmployeeController::class, 'show'])->name('employees.show');
 
 
     // Add this route in your routes/web.php file
@@ -753,36 +747,10 @@ Route::resource('designations', DesignationController::class);
     Route::post('/attendance/settings', [AttendanceController::class, 'updateSettings'])->name('attendance.settings.update');
 
     // Remove this duplicate ↓ (same name + same controller)
-    // Route::get('/admin/attendance/filter', [AttendanceController::class, 'filter'])->name('attendance.filter');
-
-    // Create / Store
-    Route::get('/attendance/create', [AttendanceController::class, 'create'])->name('attendance.create');
-    Route::post('/attendance/store', [AttendanceController::class, 'store'])->name('attendance.store');
-
-    // Old single-user report
-    Route::get('/attendance-report', [AttendanceController::class, 'attendanceReport'])->name('attendance.report');
-
     // Archive
     Route::get('/attendance/archive', [AttendanceController::class, 'archive'])->name('attendance.archive');
     Route::post('/attendance/{id}/restore', [AttendanceController::class, 'restore'])->name('attendance.restore');
-
-    // Exports (keep your URL & names exactly SAME)
-    Route::get('/attendance-export-excel', [AttendanceController::class, 'exportExcel'])->name('attendance.export.excel');
-    Route::get('/attendance-export-pdf',   [AttendanceController::class, 'exportPdf'])->name('attendance.export.pdf');
-
-    // Edit
-    Route::get('attendance/edit', [AttendanceController::class, 'edit'])->name('attendance.edit');
-    Route::put('attendance/{attendance}', [AttendanceController::class, 'update'])->name('attendance.update');
     Route::post('/attendance/month/archive', [AttendanceController::class, 'archiveMonth'])->name('attendance.month.archive');
-
-    // Map view
-    Route::get('/attendance/today/map', [AttendanceController::class, 'todayAttendanceByMap'])->name('attendance.today.map');
-
-    // Member-wise view
-    Route::get('/attendance/member', [AttendanceController::class, 'byMember'])->name('attendance.byMember');
-
-    // By-hour view
-    Route::get('/by-hour', [AttendanceController::class, 'byHour'])->name('attendance.byHour');
 });
 
     /*
@@ -1134,12 +1102,10 @@ Route::get('/my-awards', [AwardController::class, 'myAwards'])->name('awards.my-
     Route::post('/ticket-groups/store', [TicketController::class, 'storeGroup'])->name('ticket-groups.store');
     Route::get('/ticket-groups/fetch', [TicketController::class, 'fetchGroups'])->name('ticket-groups.fetch');
     Route::delete('/ticket-groups/{id}', [TicketController::class, 'destroygroup'])->name('ticket-groups.destroy');
-    Route::get('/tickets/{ticket}', [TicketController::class, 'show'])->name('tickets.show');
     Route::post('/tickets/{id}/reply', [TicketController::class, 'reply'])->name('tickets.reply');
     Route::put('/tickets/{id}/update-details', [TicketController::class, 'updateDetails'])->name('tickets.updateDetails');
     Route::post('/tickets/{id}/reopen', [TicketController::class, 'reopen'])->name('tickets.reopen');
     Route::post('/tickets/{id}/log-time', [TicketController::class, 'logTime'])->name('tickets.logTime');
-    Route::get('/admin/tickets', [TicketController::class, 'index'])->name('tickets.index');
     Route::post('tickets/bulk-action', [TicketController::class, 'bulkAction'])->name('tickets.bulk-action');
 
     /*
@@ -1155,6 +1121,7 @@ Route::get('/my-awards', [AwardController::class, 'myAwards'])->name('awards.my-
     */
     Route::get('/products', [ProductController::class, 'index'])->name('products.index');
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+    Route::get('/orders/{id}/items', [OrderController::class, 'getItems'])->name('orders.items');
     Route::post('/orders/bulk-payment-status', [OrderController::class, 'bulkUpdatePaymentStatus'])->name('orders.bulk-payment-status');
     Route::post('/orders/{id}/payment-status', [OrderController::class, 'updatePaymentStatus'])->name('orders.update-payment-status');
 

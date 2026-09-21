@@ -192,6 +192,265 @@
    .header-icon-box i {
        color: inherit;
        font-size: 1.15rem;
+   }
+
+   /* ===================== SEARCH FIELD CONTROL ===================== */
+   @media (max-width: 992px) {
+       #layout-navbar input[type="text"] {
+           display: none !important;
+       }
+   }
+
+   /* ===================== MOBILE / TABLET FINAL FIX ===================== */
+   @media (max-width: 992px) {
+
+       #layout-navbar {
+           padding: 0.5rem 0.75rem;
+       }
+
+       #layout-navbar .navbar-nav,
+       #layout-navbar .navbar-nav-right {
+           flex-direction: row !important;
+           flex-wrap: nowrap !important;
+           align-items: center;
+       }
+
+       #layout-navbar .navbar-nav > *,
+       #layout-navbar .navbar-nav-right > * {
+           flex: 0 0 auto;
+       }
+
+       /* hide username only, keep avatar */
+       .dropdown-user .d-md-block {
+           display: none !important;
+       }
+   }
+
+   /* ===================== EXTRA SAFETY ===================== */
+   .layout-menu {
+       transition: transform 0.3s ease;
+       background: linear-gradient(135deg, var(--white-pure) 0%, var(--white-soft) 100%);
+       border-right: 1px solid rgba(124, 58, 237, 0.1);
+   }
+
+   .layout-menu-active .layout-menu {
+       transform: translateX(0);
+   }
+
+   /* ===================== MENU THEME - PURPLE & WHITE ===================== */
+   .bg-menu-theme {
+       background: linear-gradient(135deg, var(--white-pure) 0%, var(--white-soft) 100%) !important;
+   }
+
+   .app-brand {
+       background: var(--white-pure);
+       border-bottom: 1px solid rgba(124, 58, 237, 0.1);
+   }
+
+   .app-brand-text {
+       color: var(--purple-primary) !important;
+       font-weight: 800 !important;
+   }
+
+   .app-brand-logo.demo {
+       width: 42px;
+       height: 42px;
+       border-radius: 12px;
+       overflow: hidden;
+       display: inline-flex;
+       align-items: center;
+       justify-content: center;
+       flex: 0 0 auto;
+       box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+       background: #ffffff;
+       padding: 4px;
+   }
+
+   .app-brand-logo.demo img {
+       max-width: 100%;
+       max-height: 100%;
+       width: auto;
+       height: auto;
+       object-fit: contain;
+       display: block;
+   }
+
+    .app-brand-text.demo {
+        max-width: 175px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 1.05rem !important;
+        font-weight: 800 !important;
+        line-height: 1.25;
+        letter-spacing: -0.01em !important;
+        background: linear-gradient(135deg, #0569ff, #13d5e7 50%, #8f25ff);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent !important;
+        color: transparent !important;
+    }
+
+   .menu-inner .menu-item .menu-link {
+       color: var(--text-dark);
+       transition: all 0.2s ease;
+   }
+
+   .menu-inner .menu-item .menu-link i {
+       color: var(--purple-primary);
+   }
+
+   .menu-inner .menu-item:hover > .menu-link {
+       background-color: var(--purple-hover);
+       color: var(--purple-primary);
+   }
+
+   .menu-inner .menu-item.active > .menu-link {
+       background: var(--purple-gradient);
+       color: var(--white-pure);
+       box-shadow: 0 4px 12px rgba(15, 116, 76, 0.16);
+   }
+
+   .menu-inner .menu-item.active > .menu-link i {
+       color: var(--white-pure);
+   }
+
+   .menu-inner .menu-item.active:not(.open) > .menu-link {
+       position: relative;
+       overflow: hidden;
+       animation: sidebarActiveGlow 1.8s ease-in-out infinite;
+   }
+
+   .menu-inner .menu-item.active:not(.open) > .menu-link::after {
+       content: "";
+       position: absolute;
+       right: 12px;
+       top: 50%;
+       width: 8px;
+       height: 8px;
+       border-radius: 999px;
+       background: #ffffff;
+       box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.9);
+       transform: translateY(-50%);
+       animation: sidebarActiveDot 1.25s ease-in-out infinite;
+   }
+
+    @keyframes sidebarActiveGlow {
+        0%, 100% {
+            box-shadow: 0 4px 12px rgba(15, 116, 76, 0.16);
+        }
+        50% {
+            box-shadow: 0 6px 16px rgba(15, 116, 76, 0.24);
+        }
+    }
+
+   @keyframes sidebarActiveDot {
+       0% {
+           box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.9);
+       }
+       70% {
+           box-shadow: 0 0 0 8px rgba(255, 255, 255, 0);
+       }
+       100% {
+           box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+       }
+   }
+
+   .menu-inner .menu-item.open > .menu-link {
+       background-color: var(--purple-hover);
+       color: var(--purple-primary);
+   }
+
+   .menu-sub {
+       background: rgba(124, 58, 237, 0.02);
+   }
+
+   .menu-sub .menu-item .menu-link {
+       color: var(--text-soft);
+   }
+
+   .menu-sub .menu-item:hover .menu-link {
+       color: var(--purple-primary);
+       background-color: var(--purple-hover);
+   }
+
+   .menu-sub .menu-item.active .menu-link {
+       color: var(--purple-primary);
+       font-weight: 700;
+       background: linear-gradient(90deg, var(--purple-soft) 0%, rgba(124, 58, 237, 0.05) 100%);
+       border-left: 3px solid var(--purple-primary);
+   }
+
+   .menu-divider {
+       border-color: rgba(124, 58, 237, 0.1) !important;
+   }
+
+   /* Dropdown Menu Purple Theme */
+   .dropdown-menu {
+       border: 1px solid rgba(124, 58, 237, 0.1);
+       box-shadow: var(--shadow-purple);
+   }
+
+   .dropdown-item:hover {
+       background-color: var(--purple-hover);
+       color: var(--purple-primary);
+   }
+
+   .dropdown-item i {
+       color: var(--purple-primary);
+   }
+
+   /* Badge Purple Theme */
+   .badge.bg-danger {
+       background: var(--purple-gradient) !important;
+       color: var(--white-pure);
+   }
+
+   /* Form Controls Purple Theme */
+   .form-control:focus,
+   .form-select:focus {
+       border-color: var(--purple-light);
+       box-shadow: 0 0 0 0.25rem rgba(124, 58, 237, 0.1);
+   }
+
+   .btn-primary {
+       background: var(--purple-gradient) !important;
+       border: none !important;
+       color: var(--white-pure) !important;
+   }
+
+   .btn-primary:hover {
+       background: linear-gradient(135deg, var(--purple-dark) 0%, var(--purple-primary) 100%) !important;
+       box-shadow: var(--shadow-purple);
+   }
+
+   .btn-outline-primary {
+       border-color: var(--purple-primary) !important;
+       color: var(--purple-primary) !important;
+   }
+
+   .btn-outline-primary:hover {
+       background: var(--purple-gradient) !important;
+       color: var(--white-pure) !important;
+   }
+
+   /* Text Colors */
+   .text-primary {
+       color: var(--purple-primary) !important;
+   }
+
+   .text-dark {
+       color: var(--text-dark) !important;
+   }
+
+   .text-muted {
+       color: var(--text-soft) !important;
+   }
+
+   /* Links */
+   a {
+       color: var(--purple-primary);
+>>>>>>> 6d97a43b6294c8b9d5b01ac69fbdaa2c7b5bf49b
        transition: color 0.2s ease;
    }
 
@@ -899,9 +1158,13 @@
     $canSeeModule = fn (string $slug) => auth()->user()?->canViewModule($slug) ?? false;
     $canAnyModule = fn (array $slugs) => collect($slugs)->contains(fn ($slug) => $canSeeModule($slug));
     $isEmployeeUser = strtolower((string) auth()->user()?->role) === 'employee';
-    $userId = auth()->id();
-    $navbarNotifications = auth()->user()->notifications()->latest()->take(8)->get();
-    $navbarUnreadCount = auth()->user()->unreadNotifications()->count();
+    try {
+        $navbarNotifications = auth()->user()->notifications()->latest()->take(8)->get();
+        $navbarUnreadCount = auth()->user()->unreadNotifications()->count();
+    } catch (\Throwable $e) {
+        $navbarNotifications = collect();
+        $navbarUnreadCount = 0;
+    }
     $sidebarNotificationItems = SidebarNotificationService::forUser(auth()->user());
     $assignedWorkProjects = collect();
     $assignedWorkTasks = collect();
@@ -1059,20 +1322,12 @@
             </li>
             @endif
 
+            @if($canSeeModule('my-documents') || $canSeeModule('documents'))
             <!-- My Documents -->
             <li class="menu-item {{ request()->routeIs('my-documents.*') ? 'active' : '' }}">
               <a href="{{ route('my-documents.index') }}" class="menu-link" data-sidebar-key="my-documents">
                   <i class="menu-icon tf-icons bx bx-file"></i>
                   <div class="text-truncate" data-i18n="My Documents">My Documents</div>
-              </a>
-            </li>
-
-            <!-- My Projects (for Employee) -->
-            @if($isEmployeeUser || $canSeeModule('projects'))
-            <li class="menu-item {{ (request()->routeIs('projects.*') && !request()->routeIs('projects.tasks.*') && !request()->routeIs('projects.timelogs.*')) ? 'active' : '' }}">
-              <a href="{{ route('projects.index') }}" class="menu-link" data-sidebar-key="my-projects">
-                  <i class="menu-icon tf-icons bx bx-briefcase-alt-2"></i>
-                  <div class="text-truncate" data-i18n="My Projects">My Projects</div>
               </a>
             </li>
             @endif
@@ -1087,7 +1342,7 @@
             @endif
 
             <!-- Events -->
-            @if($canSeeModule('events') || (auth()->check() && auth()->user()->normalizedRole() !== 'superadmin'))
+            @if($canSeeModule('events'))
             <li class="menu-item {{ request()->routeIs('events.*') ? 'active' : '' }}">
               <a href="{{ route('events.index') }}" class="menu-link" data-sidebar-key="events">
                   <i class="menu-icon tf-icons bx bx-calendar-event"></i>
@@ -1097,7 +1352,7 @@
             @endif
 
             <!-- Community Message -->
-            @if(auth()->check() && auth()->user()->normalizedRole() !== 'superadmin')
+            @if($canSeeModule('community'))
             <li class="menu-item {{ request()->routeIs('community.*') ? 'active' : '' }}">
               <a href="{{ route('community.index') }}" class="menu-link" data-sidebar-key="community">
                   <i class="menu-icon tf-icons bx bx-chat"></i>
@@ -1159,6 +1414,7 @@
                                 <div class="text-truncate" data-i18n="Without menu">Designation</div>
                             </a>
                         </li>
+                    @endif
 
  <!-- Department with Submenu -->
                   @if($canSeeModule('departments'))
@@ -1180,7 +1436,6 @@
                     </ul>
                   </li>
                   @endif
-                @endif
 
 
                      @if($canSeeModule('attendance'))
@@ -1194,17 +1449,6 @@
                     @endif
 
 
-<!--
-                @if(auth()->user()->role === 'admin')
-                <li class="menu-item {{ request()->routeIs('attendance.report') ? 'active open' : '' }}">
-                  <a href="{{ route('attendance.report') }}" class="menu-link">
-                    <div class="text-truncate" data-i18n="Without menu">Attendance Report</div>
-                  </a>
-                </li>
-                 @endif -->
-
-
-
                 @if($canSeeModule('leaves'))
                 <li class="menu-item {{ request()->routeIs('leaves.*') ? 'active' : '' }}">
                 <a href="{{ route('leaves.index') }}" class="menu-link" data-sidebar-key="leaves">
@@ -1213,14 +1457,6 @@
                 </li>
                 @endif
 
-
-                <!-- @if(auth()->user()->role === 'admin')
-                <li class="menu-item {{ request()->routeIs('admin.leave.report') ? 'active open' : '' }}">
-                <a href="{{ route('admin.leave.report') }}" class="menu-link">
-                    <div class="text-truncate" data-i18n="Without navbar">Leaves Report</div>
-                </a>
-                </li>
-                @endif -->
 
                 {{-- Employee Holiday View --}}
                 @if($canSeeModule('holidays'))
@@ -1337,7 +1573,7 @@
             <li class="menu-item {{ request()->routeIs('collaborating-companies.*') ? 'active' : '' }}">
                 <a href="{{ route('collaborating-companies.index') }}" class="menu-link" data-sidebar-key="collaborating-companies">
                     <i class="menu-icon tf-icons bx bx-buildings"></i>
-                    <div class="text-truncate">Collaborating Companies</div>
+                    <div class="text-truncate">Collab Companies</div>
                 </a>
             </li>
             @endif
@@ -1345,13 +1581,13 @@
             @if($canSeeModule('clients'))
             <li class="menu-item {{ request()->routeIs('clients.*') ? 'active' : '' }}">
                 <a href="{{ route('clients.index') }}" class="menu-link" data-sidebar-key="clients">
-                    <i class="menu-icon tf-icons bx bx-user-voice"></i>
+                    <i class="menu-icon tf-icons bx bx-user"></i>
                     <div class="text-truncate">Client</div>
                 </a>
             </li>
             @endif
 
-            @if(($canSeeModule('work') || in_array(strtolower((string) auth()->user()?->role), ['admin', 'manager', 'hr'], true)) && ($canAnyModule(['projects', 'tasks', 'timelogs', 'timesheets']) || in_array(strtolower((string) auth()->user()?->role), ['admin', 'manager', 'hr'], true)))
+            @if($canSeeModule('work') && $canAnyModule(['projects', 'tasks', 'timelogs', 'timesheets']))
             <li class="menu-item {{ request()->routeIs('projects.*') ||
                 request()->routeIs('tasks.*') || request()->routeIs('users.tasks.*') ||
                 request()->routeIs('timelogs.*') || request()->routeIs('task-timer.*') ||
@@ -1363,7 +1599,7 @@
                 </a>
 
                 <ul class="menu-sub">
-                    @if($canSeeModule('projects') || in_array(strtolower((string) auth()->user()?->role), ['admin', 'manager', 'hr'], true))
+                    @if($canSeeModule('projects'))
                         <li class="menu-item {{ (request()->routeIs('projects.*') && !request()->routeIs('projects.tasks.*') && !request()->routeIs('projects.timelogs.*')) ? 'active' : '' }}">
                             <a href="{{ route('projects.index') }}" class="menu-link" data-sidebar-key="projects">
                                 <div class="text-truncate" data-i18n="Landing">Projects</div>
@@ -1371,7 +1607,7 @@
                         </li>
                     @endif
 
-                    @if($canSeeModule('tasks') || in_array(strtolower((string) auth()->user()?->role), ['admin', 'manager', 'hr'], true))
+                    @if($canSeeModule('tasks'))
                     <li class="menu-item {{ request()->routeIs('tasks.*') || request()->routeIs('projects.tasks.*') || request()->routeIs('users.tasks.*') || request()->routeIs('task-timer.*') ? 'active' : '' }}">
                         <a href="{{ route('tasks.index') }}" class="menu-link" data-sidebar-key="tasks">
                             <div class="text-truncate" data-i18n="Pricing">Tasks</div>
@@ -1379,28 +1615,12 @@
                     </li>
                     @endif
 
-                    @if($canSeeModule('timelogs') || $canSeeModule('timesheets') || in_array(strtolower((string) auth()->user()?->role), ['admin', 'manager', 'hr'], true))
+                    @if($canSeeModule('timelogs') || $canSeeModule('timesheets'))
                         <li class="menu-item {{ request()->routeIs('timelogs.*') || request()->routeIs('projects.timelogs.*') ? 'active' : '' }}">
                             <a href="{{ route('timelogs.index') }}" class="menu-link" data-sidebar-key="timelogs">
                                 <div class="text-truncate" data-i18n="Payment">Timesheet</div>
                             </a>
                         </li>
-                    @endif
-
-                    <!-- Contracts Section - Admin Only -->
-
-                    <!-- @if(auth()->user()->role === 'admin')
-                         <li class="menu-item {{ request()->routeIs('admin.contracts.*') ? 'active open' : '' }}">
-                            <a href="{{ route('admin.contracts.index') }}" class="menu-link">
-                                <div class="text-truncate" data-i18n="Contracts">Contracts</div>
-                            </a>
-                        </li>
-
-                        <li class="menu-item {{ request()->routeIs('admin.contract-templates.*') ? 'active open' : '' }}">
-                            <a href="{{ route('admin.contract-templates.index') }}" class="menu-link">
-                                <div class="text-truncate" data-i18n="Contract Templates">Contract Templates</div>
-                            </a>
-                        </li> -->
                     @endif
                 </ul>
             </li>
@@ -1543,6 +1763,7 @@
                     </li>
                 @endif
 
+                @if($canSeeModule('products'))
                 <!-- Products -->
                 <li class="menu-item {{ request()->routeIs('products.*') ? 'active' : '' }}">
                     <a href="{{ route('products.index') }}" class="menu-link" data-sidebar-key="products">
@@ -1550,7 +1771,9 @@
                         <div class="text-truncate" data-i18n="Products">Products</div>
                     </a>
                 </li>
+                @endif
 
+                @if($canSeeModule('orders'))
                 <!-- Orders -->
                 <li class="menu-item {{ request()->routeIs('orders.*') ? 'active' : '' }}">
                     <a href="{{ route('orders.index') }}" class="menu-link" data-sidebar-key="orders">
@@ -1558,6 +1781,7 @@
                         <div class="text-truncate" data-i18n="Orders">Orders</div>
                     </a>
                 </li>
+                @endif
 
                 <!-- //ticket section . -->
 
@@ -1964,16 +2188,16 @@
                 <div class="navbar-nav align-items-center ms-auto d-flex">
 
                   <!-- Small search -->
-                  <div class="nav-item d-flex align-items-center me-3" style="width: 200px;" title="Saerch">
-                    <i class="bx bx-search icon-md me-2" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#searchModal"></i>
+                  <div class="nav-item navbar-search-wrapper d-flex align-items-center me-2 me-sm-3" title="Search">
+                    <i class="bx bx-search icon-md me-1 me-sm-2" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#searchModal"></i>
                     <input
                       type="text"
-                      class="form-control border-0 shadow-none ps-1 ps-sm-2"
+                      class="form-control border-0 shadow-none ps-1 ps-sm-2 d-none d-md-inline-block"
                       placeholder="Search..."
                       data-bs-toggle="modal"
                       data-bs-target="#searchModal"
                       readonly
-                      style="cursor: pointer; height: 32px; font-size: 14px;" />
+                      style="cursor: pointer; height: 32px; font-size: 14px; width: 170px;" />
                   </div>
 
                   <!-- Sticky Note Icon -->
@@ -2249,8 +2473,9 @@
                                 </li>
 
 
-                                <li class="notification-dropdown-foot">
-                                    <a href="{{ route('notifications.all') }}" class="btn btn-sm btn-primary rounded-pill flex-grow-1">View all</a>
+                                <li class="notification-dropdown-foot d-flex gap-2 p-2.5">
+                                    <a href="{{ route('notifications.all') }}" class="btn btn-sm btn-primary rounded-pill flex-grow-1">View All</a>
+                                    <a href="{{ route('notifications.all', ['filter' => 'unread']) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">Unread ({{ $navbarUnreadCount }})</a>
                                 </li>
                             </ul>
                         </li>

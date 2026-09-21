@@ -690,13 +690,17 @@
                         </div>
 
                         <!-- Form Action Buttons -->
-                        @if($isAdmin)
-                            <div class="mt-5 pt-4 border-top d-flex justify-content-end">
+                        <div class="mt-5 pt-4 border-top d-flex justify-content-end">
+                            @if(! $isAdmin || $isSettingsReadOnly)
+                                <span class="badge rounded-pill px-3.5 py-2 fw-bold" style="background: #f1f5f9; color: #64748b; font-size: 13px; border: 1px solid #cbd5e1;">
+                                    <i class="fas fa-lock me-1.5 text-muted"></i> Read-Only (Admin Managed)
+                                </span>
+                            @else
                                 <button type="submit" class="btn-save-address">
                                     <i class="fas fa-save me-1.5"></i> Save Work Schedule
                                 </button>
-                            </div>
-                        @endif
+                            @endif
+                        </div>
                     </form>
                 </div>
             </div>

@@ -22,6 +22,15 @@
         font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
         letter-spacing: -0.01em;
     }
+    .btn-primary,
+    .btn-primary *,
+    .btn-primary i,
+    .btn-primary i[class^="bx"],
+    .btn-primary i[class*=" bx"] {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        opacity: 1 !important;
+    }
 </style>
 
 <div class="container-fluid px-4 py-4">

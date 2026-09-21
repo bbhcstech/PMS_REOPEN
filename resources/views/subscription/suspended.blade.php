@@ -191,7 +191,7 @@
                             <li class="mb-2"><i class="bx bx-check text-success me-2"></i>{{ $plan->max_storage_mb >= 1024 ? ($plan->max_storage_mb / 1024) . ' GB' : $plan->max_storage_mb . ' MB' }} Storage</li>
                         </ul>
 
-                        <form action="{{ route('super-admin.subscriptions.store') }}" method="POST">
+                        <form action="{{ Route::has('super-admin.subscriptions.store') ? route('super-admin.subscriptions.store') : (Route::has('super-admin.subscriptions.assign') ? route('super-admin.subscriptions.assign') : (Route::has('superadmin.subscriptions.store') ? route('superadmin.subscriptions.store') : (Route::has('subscriptions.store') ? route('subscriptions.store') : route('subscriptions.assign')))) }}" method="POST">
                             @csrf
                             <input type="hidden" name="company_id" value="{{ $company->id }}">
                             <input type="hidden" name="plan_id" value="{{ $plan->id }}">

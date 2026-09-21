@@ -308,6 +308,16 @@
                         </div>
 
                         <div class="p-4 p-md-5">
+                            @if($isSettingsReadOnly)
+                                <div class="alert d-flex align-items-center mb-4 rounded-3 border-0 shadow-sm" style="background: linear-gradient(135deg, #eff6ff, #dbeafe); color: #1e40af; border-left: 4px solid #3b82f6 !important; padding: 14px 18px;">
+                                    <i class="fas fa-eye me-3 fs-3 text-primary"></i>
+                                    <div>
+                                        <strong class="d-block text-primary fw-bold" style="font-size: 14px;">View-Only Mode</strong>
+                                        <span style="font-size: 13px; color: #1e3a8a;">You are viewing document system file rules in read-only mode. Only Administrators have permission to modify upload limits and permitted formats.</span>
+                                    </div>
+                                </div>
+                            @endif
+
                             <form method="POST" action="{{ route('admin.settings.document.update') }}">
                                 @csrf
                                 
@@ -315,7 +325,7 @@
                                     <label class="form-label-custom">Maximum File Size Limit (MB) <span class="text-danger">*</span></label>
                                     <div class="input-group input-group-custom">
                                         <span class="input-group-text"><i class="fas fa-weight-hanging"></i></span>
-                                        <input type="number" name="max_file_size_mb" class="form-control" value="{{ $settings['max_file_size_mb'] ?? '10' }}" min="1" max="100" required>
+                                        <input type="number" name="max_file_size_mb" class="form-control" value="{{ $settings['max_file_size_mb'] ?? '10' }}" min="1" max="100" {{ $isSettingsReadOnly ? 'readonly' : 'required' }}>
                                         <span class="input-group-text bg-white text-muted fw-bold border-0 pe-3">MB</span>
                                     </div>
                                     <small class="text-muted mt-1.5 d-block"><i class="fas fa-info-circle text-emerald-600 me-1"></i> Recommended setting: 10 MB per uploaded document.</small>
@@ -325,7 +335,7 @@
                                     <label class="form-label-custom">Allowed Extensions (Comma Separated) <span class="text-danger">*</span></label>
                                     <div class="input-group input-group-custom">
                                         <span class="input-group-text"><i class="fas fa-file-code"></i></span>
-                                        <input type="text" name="allowed_extensions" class="form-control" value="{{ $settings['allowed_extensions'] ?? 'pdf,png,jpg,jpeg,doc,docx' }}" required>
+                                        <input type="text" name="allowed_extensions" class="form-control" value="{{ $settings['allowed_extensions'] ?? 'pdf,png,jpg,jpeg,doc,docx' }}" {{ $isSettingsReadOnly ? 'readonly' : 'required' }}>
                                     </div>
                                     
                                     <!-- Extension Preview Badges -->
@@ -338,9 +348,15 @@
                                 </div>
 
                                 <div class="pt-4 border-top d-flex justify-content-end">
-                                    <button type="submit" class="btn-save-rules">
-                                        <i class="fas fa-save me-2"></i> Save Upload Rules
-                                    </button>
+                                    @if($isSettingsReadOnly)
+                                        <span class="badge rounded-pill px-3.5 py-2 fw-bold" style="background: #f1f5f9; color: #64748b; font-size: 13px; border: 1px solid #cbd5e1;">
+                                            <i class="fas fa-lock me-1.5 text-muted"></i> Read-Only (Admin Managed)
+                                        </span>
+                                    @else
+                                        <button type="submit" class="btn-save-rules">
+                                            <i class="fas fa-save me-2"></i> Save Upload Rules
+                                        </button>
+                                    @endif
                                 </div>
                             </form>
                         </div>
