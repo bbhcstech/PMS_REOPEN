@@ -20,6 +20,7 @@
         --bg-surface: #ffffff;
         --bg-subtle: #f8fafc;
         --border-color: #e2e8f0;
+        --gauge-track: #e2e8f0;
         --text-main: #0f172a;
         --text-muted: #475569;
         --text-subtle: #64748b;
@@ -186,7 +187,7 @@
         width: 80px;
         height: 80px;
         border-radius: 50%;
-        background: conic-gradient(var(--success) 0% 98.7%, #e2e8f0 98.7% 100%);
+        background: conic-gradient(var(--success) 0% 98.7%, var(--gauge-track) 98.7% 100%);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -201,7 +202,7 @@
         width: 64px;
         height: 64px;
         border-radius: 50%;
-        background: #ffffff;
+        background: var(--bg-surface);
     }
 
     .hero-score-value {
@@ -387,7 +388,8 @@
         justify-content: space-between;
         font-size: 12px;
         color: var(--text-muted);
-        background: #f8fafc;
+        background: var(--bg-subtle);
+        border: 1px solid var(--border-color);
         padding: 8px 12px;
         border-radius: var(--radius-sm);
         margin-top: 10px;
@@ -591,10 +593,298 @@
         background: #f8fafc;
     }
 
-    .drawer-body {
-        padding: 24px;
-        overflow-y: auto;
-        flex: 1;
+    /* ============================================================
+       DARK THEME ARCHITECTURE FOR SYSTEM HEALTH
+       ============================================================ */
+    html[data-pms-theme="dark"],
+    html[data-theme="dark"],
+    html[data-bs-theme="dark"] {
+        --bg-surface: #0F1530;
+        --bg-subtle: #141B3D;
+        --bg-hover: #1A2247;
+        --border-color: rgba(238, 241, 251, 0.09);
+        --text-main: #EEF1FB;
+        --text-muted: #CBD5E1;
+        --text-subtle: #9AA3C7;
+        --primary: #2F6BFF;
+        --primary-light: rgba(47, 107, 255, 0.15);
+        --success-light: rgba(16, 185, 129, 0.15);
+        --warning-light: rgba(245, 158, 11, 0.15);
+        --danger-light: rgba(239, 68, 68, 0.15);
+        --purple-light: rgba(139, 92, 246, 0.15);
+        --gauge-track: rgba(238, 241, 251, 0.08);
+    }
+
+    /* Hero Platform Health Score Ring & Breakdown */
+    html[data-pms-theme="dark"] .hero-score-ring::after,
+    html[data-theme="dark"] .hero-score-ring::after,
+    html[data-bs-theme="dark"] .hero-score-ring::after {
+        background: #0F1530 !important;
+    }
+    html[data-pms-theme="dark"] .hero-score-value,
+    html[data-theme="dark"] .hero-score-value,
+    html[data-bs-theme="dark"] .hero-score-value {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .breakdown-track,
+    html[data-theme="dark"] .breakdown-track,
+    html[data-bs-theme="dark"] .breakdown-track {
+        background: rgba(238, 241, 251, 0.1) !important;
+    }
+
+    html[data-pms-theme="dark"] .kpi-card,
+    html[data-theme="dark"] .kpi-card,
+    html[data-bs-theme="dark"] .kpi-card {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+    }
+
+    html[data-pms-theme="dark"] .service-card,
+    html[data-theme="dark"] .service-card,
+    html[data-bs-theme="dark"] .service-card {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .service-card:hover,
+    html[data-theme="dark"] .service-card:hover,
+    html[data-bs-theme="dark"] .service-card:hover {
+        background: #141B3D !important;
+        border-color: rgba(47, 107, 255, 0.4) !important;
+    }
+    html[data-pms-theme="dark"] .service-metrics-row,
+    html[data-theme="dark"] .service-metrics-row,
+    html[data-bs-theme="dark"] .service-metrics-row {
+        background: #141B3D !important;
+        border: 1px solid rgba(238, 241, 251, 0.08) !important;
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] .service-card:hover .service-metrics-row,
+    html[data-theme="dark"] .service-card:hover .service-metrics-row,
+    html[data-bs-theme="dark"] .service-card:hover .service-metrics-row {
+        background: #1A2247 !important;
+    }
+
+    html[data-pms-theme="dark"] .analytics-card,
+    html[data-theme="dark"] .analytics-card,
+    html[data-bs-theme="dark"] .analytics-card {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+    }
+
+    /* Database Cluster Card & Table (Screenshot 3) */
+    html[data-pms-theme="dark"] .db-cluster-card,
+    html[data-theme="dark"] .db-cluster-card,
+    html[data-bs-theme="dark"] .db-cluster-card {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+    }
+    html[data-pms-theme="dark"] .db-cluster-header,
+    html[data-theme="dark"] .db-cluster-header,
+    html[data-bs-theme="dark"] .db-cluster-header {
+        background: #141B3D !important;
+        border-bottom-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .db-cluster-toolbar,
+    html[data-theme="dark"] .db-cluster-toolbar,
+    html[data-bs-theme="dark"] .db-cluster-toolbar {
+        background: #0F1530 !important;
+        border-bottom-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] #healthEntriesSelect,
+    html[data-theme="dark"] #healthEntriesSelect,
+    html[data-bs-theme="dark"] #healthEntriesSelect {
+        background: #141B3D !important;
+        color: #EEF1FB !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
+    }
+    html[data-pms-theme="dark"] #tenantDbSearchInput,
+    html[data-theme="dark"] #tenantDbSearchInput,
+    html[data-bs-theme="dark"] #tenantDbSearchInput {
+        background: #141B3D !important;
+        color: #EEF1FB !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
+    }
+    html[data-pms-theme="dark"] #dbExportMenu,
+    html[data-theme="dark"] #dbExportMenu,
+    html[data-bs-theme="dark"] #dbExportMenu {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
+    }
+    html[data-pms-theme="dark"] #dbExportMenu a,
+    html[data-theme="dark"] #dbExportMenu a,
+    html[data-bs-theme="dark"] #dbExportMenu a {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] #dbExportMenu a:hover,
+    html[data-theme="dark"] #dbExportMenu a:hover,
+    html[data-bs-theme="dark"] #dbExportMenu a:hover {
+        background: #1A2247 !important;
+    }
+
+    html[data-pms-theme="dark"] .grid-table thead tr,
+    html[data-theme="dark"] .grid-table thead tr,
+    html[data-bs-theme="dark"] .grid-table thead tr {
+        background: #141B3D !important;
+    }
+    html[data-pms-theme="dark"] .grid-table th,
+    html[data-theme="dark"] .grid-table th,
+    html[data-bs-theme="dark"] .grid-table th {
+        background: #141B3D !important;
+        color: #9AA3C7 !important;
+        border-bottom-color: rgba(238, 241, 251, 0.09) !important;
+        border-right-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .grid-table td,
+    html[data-theme="dark"] .grid-table td,
+    html[data-bs-theme="dark"] .grid-table td {
+        border-bottom-color: rgba(238, 241, 251, 0.09) !important;
+        border-right-color: rgba(238, 241, 251, 0.09) !important;
+        color: #CBD5E1 !important;
+    }
+    html[data-pms-theme="dark"] .grid-table tbody tr:hover,
+    html[data-theme="dark"] .grid-table tbody tr:hover,
+    html[data-bs-theme="dark"] .grid-table tbody tr:hover {
+        background: #1A2247 !important;
+    }
+
+    /* Active Incidents & Alerts (Screenshot 4) */
+    html[data-pms-theme="dark"] .incident-item-row,
+    html[data-theme="dark"] .incident-item-row,
+    html[data-bs-theme="dark"] .incident-item-row {
+        background: #141B3D !important;
+    }
+    html[data-pms-theme="dark"] .incident-id-badge,
+    html[data-theme="dark"] .incident-id-badge,
+    html[data-bs-theme="dark"] .incident-id-badge {
+        color: #9AA3C7 !important;
+    }
+
+    /* Header Auto Refresh Control */
+    html[data-pms-theme="dark"] .auto-refresh-box,
+    html[data-theme="dark"] .auto-refresh-box,
+    html[data-bs-theme="dark"] .auto-refresh-box {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] #autoRefreshSelect,
+    html[data-theme="dark"] #autoRefreshSelect,
+    html[data-bs-theme="dark"] #autoRefreshSelect {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] #autoRefreshSelect option,
+    html[data-theme="dark"] #autoRefreshSelect option,
+    html[data-bs-theme="dark"] #autoRefreshSelect option {
+        background: #0F1530 !important;
+        color: #EEF1FB !important;
+    }
+
+    /* Latency Chart Time Range Pills */
+    html[data-pms-theme="dark"] .time-range-pills,
+    html[data-theme="dark"] .time-range-pills,
+    html[data-bs-theme="dark"] .time-range-pills {
+        background: #141B3D !important;
+        border: 1px solid rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .time-pill,
+    html[data-theme="dark"] .time-pill,
+    html[data-bs-theme="dark"] .time-pill {
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] .time-pill:hover,
+    html[data-theme="dark"] .time-pill:hover,
+    html[data-bs-theme="dark"] .time-pill:hover {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .time-pill.active,
+    html[data-theme="dark"] .time-pill.active,
+    html[data-bs-theme="dark"] .time-pill.active {
+        background: #2F6BFF !important;
+        color: #ffffff !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    /* System Resource Load Gauges (4 Cards) */
+    html[data-pms-theme="dark"] .load-gauge-card,
+    html[data-theme="dark"] .load-gauge-card,
+    html[data-bs-theme="dark"] .load-gauge-card {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .gauge-ring::after,
+    html[data-theme="dark"] .gauge-ring::after,
+    html[data-bs-theme="dark"] .gauge-ring::after {
+        background: #141B3D !important;
+    }
+    html[data-pms-theme="dark"] .gauge-val,
+    html[data-theme="dark"] .gauge-val,
+    html[data-bs-theme="dark"] .gauge-val {
+        color: #EEF1FB !important;
+    }
+
+    /* Database Cluster Table Footer */
+    html[data-pms-theme="dark"] .db-table-footer,
+    html[data-theme="dark"] .db-table-footer,
+    html[data-bs-theme="dark"] .db-table-footer {
+        background: #141B3D !important;
+        border-top-color: rgba(238, 241, 251, 0.09) !important;
+        color: #9AA3C7 !important;
+    }
+
+    /* Buttons */
+    html[data-pms-theme="dark"] .btn-action-secondary,
+    html[data-theme="dark"] .btn-action-secondary,
+    html[data-bs-theme="dark"] .btn-action-secondary {
+        background: #141B3D !important;
+        color: #EEF1FB !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .btn-action-secondary:hover,
+    html[data-theme="dark"] .btn-action-secondary:hover,
+    html[data-bs-theme="dark"] .btn-action-secondary:hover {
+        background: #1A2247 !important;
+        border-color: rgba(47, 107, 255, 0.4) !important;
+        color: #38bdf8 !important;
+    }
+
+    /* Drawer */
+    html[data-pms-theme="dark"] .drawer-panel,
+    html[data-theme="dark"] .drawer-panel,
+    html[data-bs-theme="dark"] .drawer-panel {
+        background: #0F1530 !important;
+        color: #EEF1FB !important;
+        border-left: 1px solid rgba(238, 241, 251, 0.09);
+    }
+    html[data-pms-theme="dark"] .drawer-header,
+    html[data-theme="dark"] .drawer-header,
+    html[data-bs-theme="dark"] .drawer-header {
+        background: #141B3D !important;
+        border-bottom-color: rgba(238, 241, 251, 0.09) !important;
+    }
+
+    /* Tenant Diagnostics Modal */
+    html[data-pms-theme="dark"] .diag-modal-box,
+    html[data-theme="dark"] .diag-modal-box,
+    html[data-bs-theme="dark"] .diag-modal-box {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .diag-modal-header,
+    html[data-theme="dark"] .diag-modal-header,
+    html[data-bs-theme="dark"] .diag-modal-header {
+        background: #141B3D !important;
+        border-bottom-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .diag-modal-footer,
+    html[data-theme="dark"] .diag-modal-footer,
+    html[data-bs-theme="dark"] .diag-modal-footer {
+        background: #141B3D !important;
+        border-top-color: rgba(238, 241, 251, 0.09) !important;
     }
 </style>
 @endpush
@@ -625,7 +915,7 @@
             </span>
 
             <!-- Auto Refresh Selector -->
-            <div style="display: flex; align-items: center; gap: 6px; background: #ffffff; border: 1px solid var(--border-color); padding: 4px 10px; border-radius: var(--radius-md); font-size: 12px; font-weight: 600; color: var(--text-muted);">
+            <div class="auto-refresh-box" style="display: flex; align-items: center; gap: 6px; background: var(--bg-surface); border: 1px solid var(--border-color); padding: 4px 10px; border-radius: var(--radius-md); font-size: 12px; font-weight: 600; color: var(--text-muted);">
                 <i class="fas fa-arrows-rotate" style="color: var(--primary);"></i>
                 <span>Auto Refresh:</span>
                 <select id="autoRefreshSelect" style="border: none; background: transparent; font-weight: 700; color: var(--text-main); outline: none; cursor: pointer;">
@@ -652,7 +942,7 @@
     <!-- 2. HERO GLOBAL PLATFORM HEALTH SCORE -->
     <div class="hero-score-card">
         <div class="hero-score-left">
-            <div class="hero-score-ring">
+            <div class="hero-score-ring" style="background: conic-gradient(var(--success) 0% {{ $globalScore }}%, var(--gauge-track, rgba(238, 241, 251, 0.08)) {{ $globalScore }}% 100%);">
                 <span class="hero-score-value">{{ $globalScore }}%</span>
             </div>
             <div>
@@ -878,7 +1168,7 @@
             <div class="load-gauges-grid">
                 <!-- CPU -->
                 <div class="load-gauge-card">
-                    <div class="gauge-ring" style="background: conic-gradient(var(--primary) 0% {{ $systemLoad['cpu_pct'] }}%, #e2e8f0 {{ $systemLoad['cpu_pct'] }}% 100%);">
+                    <div class="gauge-ring" style="background: conic-gradient(var(--primary) 0% {{ $systemLoad['cpu_pct'] }}%, var(--gauge-track, rgba(238, 241, 251, 0.08)) {{ $systemLoad['cpu_pct'] }}% 100%);">
                         <span class="gauge-val">{{ $systemLoad['cpu_pct'] }}%</span>
                     </div>
                     <strong style="font-size: 12px; color: var(--text-main);">CPU Utilization</strong>
@@ -887,7 +1177,7 @@
 
                 <!-- Memory -->
                 <div class="load-gauge-card">
-                    <div class="gauge-ring" style="background: conic-gradient(var(--purple) 0% {{ $systemLoad['memory_pct'] }}%, #e2e8f0 {{ $systemLoad['memory_pct'] }}% 100%);">
+                    <div class="gauge-ring" style="background: conic-gradient(var(--purple) 0% {{ $systemLoad['memory_pct'] }}%, var(--gauge-track, rgba(238, 241, 251, 0.08)) {{ $systemLoad['memory_pct'] }}% 100%);">
                         <span class="gauge-val">{{ $systemLoad['memory_pct'] }}%</span>
                     </div>
                     <strong style="font-size: 12px; color: var(--text-main);">RAM Memory</strong>
@@ -896,7 +1186,7 @@
 
                 <!-- Disk Storage -->
                 <div class="load-gauge-card">
-                    <div class="gauge-ring" style="background: conic-gradient(var(--warning) 0% {{ $systemLoad['disk_pct'] }}%, #e2e8f0 {{ $systemLoad['disk_pct'] }}% 100%);">
+                    <div class="gauge-ring" style="background: conic-gradient(var(--warning) 0% {{ $systemLoad['disk_pct'] }}%, var(--gauge-track, rgba(238, 241, 251, 0.08)) {{ $systemLoad['disk_pct'] }}% 100%);">
                         <span class="gauge-val">{{ $systemLoad['disk_pct'] }}%</span>
                     </div>
                     <strong style="font-size: 12px; color: var(--text-main);">Disk Storage</strong>
@@ -905,7 +1195,7 @@
 
                 <!-- Network -->
                 <div class="load-gauge-card">
-                    <div class="gauge-ring" style="background: conic-gradient(var(--success) 0% {{ $systemLoad['network_pct'] }}%, #e2e8f0 {{ $systemLoad['network_pct'] }}% 100%);">
+                    <div class="gauge-ring" style="background: conic-gradient(var(--success) 0% {{ $systemLoad['network_pct'] }}%, var(--gauge-track, rgba(238, 241, 251, 0.08)) {{ $systemLoad['network_pct'] }}% 100%);">
                         <span class="gauge-val">{{ $systemLoad['network_pct'] }}%</span>
                     </div>
                     <strong style="font-size: 12px; color: var(--text-main);">Network Bandwidth</strong>
@@ -916,8 +1206,8 @@
     </div>
 
     <!-- 6. DATABASE HEALTH & TENANT CONNECTIONS GRID TABLE -->
-    <div style="background: var(--bg-surface); border-radius: var(--radius-lg); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); overflow: hidden; margin-bottom: 28px;">
-        <div style="padding: 16px 20px; background: #f8fafc; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+    <div class="db-cluster-card" style="background: var(--bg-surface); border-radius: var(--radius-lg); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); overflow: hidden; margin-bottom: 28px;">
+        <div class="db-cluster-header" style="padding: 16px 20px; background: var(--bg-subtle); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
             <div>
                 <strong style="font-size: 15px; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
                     <i class="fas fa-database" style="color: var(--primary);"></i>
@@ -933,7 +1223,7 @@
         </div>
 
         <!-- Table Toolbar Controls (Show Entries, Search, Export Dropdown) -->
-        <div style="padding: 12px 20px; background: #ffffff; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+        <div class="db-cluster-toolbar" style="padding: 12px 20px; background: var(--bg-surface); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
             <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
                 <!-- Show Entries Dropdown -->
                 <div style="display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--text-muted); font-weight: 600;">
@@ -959,11 +1249,11 @@
                 <button class="btn-action-secondary" id="dbExportDropdownBtn" style="padding: 5px 12px; font-size: 12px;">
                     <i class="fas fa-file-export" style="color: var(--primary);"></i> Export <i class="fas fa-chevron-down" style="font-size: 9px; margin-left: 4px;"></i>
                 </button>
-                <div id="dbExportMenu" style="display: none; position: absolute; right: 0; top: 100%; margin-top: 4px; background: #ffffff; border: 1px solid var(--border-color); border-radius: var(--radius-md); box-shadow: var(--shadow-md); z-index: 50; min-width: 140px; overflow: hidden;">
-                    <a href="#" id="exportDbCsvBtn" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; font-size: 12.5px; font-weight: 600; color: var(--text-main); text-decoration: none;" onmouseover="this.style.background='#f8fafc';" onmouseout="this.style.background='transparent';">
+                <div id="dbExportMenu" style="display: none; position: absolute; right: 0; top: 100%; margin-top: 4px; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); box-shadow: var(--shadow-md); z-index: 50; min-width: 140px; overflow: hidden;">
+                    <a href="#" id="exportDbCsvBtn" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; font-size: 12.5px; font-weight: 600; color: var(--text-main); text-decoration: none;" onmouseover="this.style.background='var(--bg-subtle)';" onmouseout="this.style.background='transparent';">
                         <i class="fas fa-file-csv" style="color: #059669;"></i> Export CSV
                     </a>
-                    <a href="#" id="exportDbPdfBtn" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; font-size: 12.5px; font-weight: 600; color: var(--text-main); text-decoration: none;" onmouseover="this.style.background='#f8fafc';" onmouseout="this.style.background='transparent';">
+                    <a href="#" id="exportDbPdfBtn" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; font-size: 12.5px; font-weight: 600; color: var(--text-main); text-decoration: none;" onmouseover="this.style.background='var(--bg-subtle)';" onmouseout="this.style.background='transparent';">
                         <i class="fas fa-file-pdf" style="color: #dc2626;"></i> Export PDF
                     </a>
                 </div>
@@ -999,7 +1289,7 @@
                         <!-- Company with Logo Image -->
                         <td>
                             <div style="display: flex; align-items: center; gap: 10px;">
-                                <div style="width: 32px; height: 32px; border-radius: 8px; background: #f1f5f9; color: #334155; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12px; overflow: hidden; flex-shrink: 0; border: 1px solid var(--border-color);">
+                                <div style="width: 32px; height: 32px; border-radius: 8px; background: var(--bg-subtle); color: var(--text-main); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12px; overflow: hidden; flex-shrink: 0; border: 1px solid var(--border-color);">
                                     @if(!empty($th['logo_url']))
                                         <img src="{{ $th['logo_url'] }}" alt="{{ $th['name'] }}" style="width: 100%; height: 100%; object-fit: cover;" />
                                     @else
@@ -1014,7 +1304,7 @@
 
                         <!-- Tenant ID -->
                         <td>
-                            <span style="font-family: monospace; font-size: 11.5px; font-weight: 700; background: #f1f5f9; color: #475569; padding: 2px 8px; border-radius: 4px;">
+                            <span style="font-family: monospace; font-size: 11.5px; font-weight: 700; background: var(--bg-subtle); color: var(--text-muted); padding: 2px 8px; border-radius: 4px; border: 1px solid var(--border-color);">
                                 {{ $th['code'] }}
                             </span>
                         </td>
@@ -1077,7 +1367,7 @@
         </div>
 
         <!-- Table Footer / Pagination -->
-        <div style="padding: 12px 20px; background: #f8fafc; border-top: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; font-size: 12.5px;">
+        <div class="db-table-footer" style="padding: 12px 20px; background: var(--bg-subtle); border-top: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; font-size: 12.5px;">
             <div style="color: var(--text-muted); font-weight: 500;" id="healthTableInfo">
                 Showing 1 to {{ count($tenantHealthData) }} of {{ count($tenantHealthData) }} database environments
             </div>
@@ -1177,10 +1467,10 @@
             </div>
             <div style="display: flex; flex-direction: column; gap: 12px;">
                 @forelse($incidents as $inc)
-                <div style="display: flex; align-items: flex-start; gap: 12px; padding: 12px; background: var(--bg-subtle); border-radius: 8px; border-left: 3px solid {{ $inc['severity'] === 'warning' ? 'var(--warning)' : 'var(--primary)' }};">
+                <div class="incident-item-row" style="display: flex; align-items: flex-start; gap: 12px; padding: 12px; background: var(--bg-subtle); border-radius: 8px; border-left: 3px solid {{ $inc['severity'] === 'warning' ? 'var(--warning)' : 'var(--primary)' }};">
                     <div style="flex: 1;">
                         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 2px;">
-                            <span style="font-family: monospace; font-size: 11px; font-weight: 800; color: #475569;">{{ $inc['id'] }}</span>
+                            <span class="incident-id-badge" style="font-family: monospace; font-size: 11px; font-weight: 800; color: #475569;">{{ $inc['id'] }}</span>
                             <strong style="font-size: 12.5px; color: var(--text-main);">{{ $inc['title'] }}</strong>
                         </div>
                         <div style="font-size: 11px; color: var(--text-subtle);">Target: {{ $inc['company'] }} • {{ $inc['service'] }} • {{ $inc['detected'] }}</div>
@@ -1257,12 +1547,19 @@
             <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px;" id="drawerChecksList">
                 <div style="display: flex; justify-content: space-between; padding: 8px 10px; background: var(--bg-subtle); border-radius: 6px; border: 1px solid var(--border-color);">
                     <span><strong style="color: var(--text-main);">Connection check passed</strong></span>
+                    <span style="color: var(--success); font-weight: 700;">OK</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- 10. TENANT DATABASE DIAGNOSTICS MODAL -->
 <div class="drawer-overlay" id="tenantDiagnosticsModal" style="align-items: center; justify-content: center; z-index: 1050;">
-    <div style="background: #ffffff; border-radius: var(--radius-lg); width: 620px; max-width: 92vw; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column; box-shadow: var(--shadow-lg); border: 1px solid var(--border-color);">
-        <div style="padding: 18px 24px; background: #f8fafc; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between;">
+    <div class="diag-modal-box" style="background: var(--bg-surface); border-radius: var(--radius-lg); width: 620px; max-width: 92vw; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column; box-shadow: var(--shadow-lg); border: 1px solid var(--border-color);">
+        <div class="diag-modal-header" style="padding: 18px 24px; background: var(--bg-subtle); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between;">
             <div style="display: flex; align-items: center; gap: 12px;">
-                <div id="diagLogoBox" style="width: 40px; height: 40px; border-radius: 10px; background: #f1f5f9; color: #334155; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; overflow: hidden; border: 1px solid var(--border-color); flex-shrink: 0;">
+                <div id="diagLogoBox" style="width: 40px; height: 40px; border-radius: 10px; background: var(--bg-subtle); color: var(--text-main); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; overflow: hidden; border: 1px solid var(--border-color); flex-shrink: 0;">
                     SB
                 </div>
                 <div>
@@ -1298,7 +1595,7 @@
 
             <!-- Diagnostics Execution Console -->
             <h4 style="font-size: 12px; font-weight: 800; color: var(--text-subtle); text-transform: uppercase; margin: 0 0 10px 0;">Diagnostic Suite Execution Log</h4>
-            <div style="background: #0f172a; color: #f8fafc; border-radius: 8px; padding: 14px; font-family: monospace; font-size: 12px; line-height: 1.6; max-height: 220px; overflow-y: auto;" id="diagConsoleLog">
+            <div style="background: #070B1A; color: #f8fafc; border-radius: 8px; padding: 14px; font-family: monospace; font-size: 12px; line-height: 1.6; max-height: 220px; overflow-y: auto; border: 1px solid var(--border-color);" id="diagConsoleLog">
                 <div><span style="color: #64748b;">[00:00.01]</span> <span style="color: #38bdf8;">PING</span> Connecting to tenant database host... <strong style="color: #4ade80;">[ PASSED ]</strong></div>
                 <div><span style="color: #64748b;">[00:00.04]</span> <span style="color: #38bdf8;">POOL</span> Verifying PDO connection pool load... <strong style="color: #4ade80;">[ PASSED - 42% Load ]</strong></div>
                 <div><span style="color: #64748b;">[00:00.08]</span> <span style="color: #38bdf8;">SCHEMA</span> Validating 48 tenant table schemas... <strong style="color: #4ade80;">[ PASSED - Valid ]</strong></div>
@@ -1307,7 +1604,7 @@
             </div>
         </div>
 
-        <div style="padding: 14px 24px; background: #f8fafc; border-top: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between;">
+        <div class="diag-modal-footer" style="padding: 14px 24px; background: var(--bg-subtle); border-top: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between;">
             <button class="btn-action-secondary" id="retestDiagBtn" style="font-size: 12px;">
                 <i class="fas fa-arrows-rotate"></i> Re-Run Diagnostics
             </button>

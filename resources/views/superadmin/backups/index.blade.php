@@ -457,6 +457,326 @@
         font-size: 11.5px;
         font-weight: 700;
     }
+
+    /* ============================================================
+       DARK THEME OVERRIDES FOR BACKUPS DASHBOARD
+       ============================================================ */
+    html[data-pms-theme="dark"],
+    html[data-theme="dark"],
+    html[data-bs-theme="dark"] {
+        --primary: #2F6BFF;
+        --primary-hover: #1E4FCC;
+        --primary-ring: rgba(47, 107, 255, 0.35);
+        --success: #34d399;
+        --warning: #fbbf24;
+        --danger: #f87171;
+        --bg-surface: #0F1530;
+        --border-color: rgba(238, 241, 251, 0.09);
+        --text-main: #EEF1FB;
+        --text-muted: #9AA3C7;
+        --text-subtle: #6B739A;
+        --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+        --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.3);
+        --shadow-md: 0 10px 25px rgba(0, 0, 0, 0.45);
+    }
+
+    /* Common elements */
+    .backup-table-row {
+        transition: background 0.15s ease;
+    }
+    .backup-table-row:hover {
+        background: #f8fafc;
+    }
+    .backup-table-footer {
+        background: #f8fafc;
+        border-top: 1px solid var(--border-color);
+    }
+    .history-table thead tr {
+        background: #f8fafc;
+        border-bottom: 1px solid var(--border-color);
+    }
+    .history-table tr {
+        transition: background 0.15s ease;
+    }
+    .history-table tbody tr:hover {
+        background: #f8fafc;
+    }
+
+    /* Dark Mode Specific Overrides */
+    html[data-pms-theme="dark"] .header-panel,
+    html[data-theme="dark"] .header-panel,
+    html[data-bs-theme="dark"] .header-panel {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    html[data-pms-theme="dark"] .header-status-badge,
+    html[data-theme="dark"] .header-status-badge,
+    html[data-bs-theme="dark"] .header-status-badge {
+        background: rgba(16, 185, 129, 0.15) !important;
+        color: #34d399 !important;
+        border-color: rgba(52, 211, 153, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .header-status-badge .pulse-dot,
+    html[data-theme="dark"] .header-status-badge .pulse-dot,
+    html[data-bs-theme="dark"] .header-status-badge .pulse-dot {
+        background: #34d399 !important;
+        box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.25) !important;
+    }
+
+    html[data-pms-theme="dark"] .btn-action-secondary,
+    html[data-theme="dark"] .btn-action-secondary,
+    html[data-bs-theme="dark"] .btn-action-secondary {
+        background: #141B3D !important;
+        color: #EEF1FB !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .btn-action-secondary:hover,
+    html[data-theme="dark"] .btn-action-secondary:hover,
+    html[data-bs-theme="dark"] .btn-action-secondary:hover {
+        background: #1A2247 !important;
+        border-color: rgba(47, 107, 255, 0.4) !important;
+        color: #38bdf8 !important;
+    }
+    html[data-pms-theme="dark"] .btn-action-secondary:disabled,
+    html[data-theme="dark"] .btn-action-secondary:disabled,
+    html[data-bs-theme="dark"] .btn-action-secondary:disabled {
+        opacity: 0.4 !important;
+        background: #0F1530 !important;
+        color: #6B739A !important;
+        border-color: rgba(238, 241, 251, 0.06) !important;
+    }
+
+    html[data-pms-theme="dark"] .kpi-card,
+    html[data-theme="dark"] .kpi-card,
+    html[data-bs-theme="dark"] .kpi-card {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .kpi-card:hover,
+    html[data-theme="dark"] .kpi-card:hover,
+    html[data-bs-theme="dark"] .kpi-card:hover {
+        border-color: rgba(47, 107, 255, 0.35) !important;
+    }
+    html[data-pms-theme="dark"] .icon-pill-total,
+    html[data-theme="dark"] .icon-pill-total { background: rgba(47, 107, 255, 0.15) !important; color: #60a5fa !important; }
+    html[data-pms-theme="dark"] .icon-pill-healthy,
+    html[data-theme="dark"] .icon-pill-healthy { background: rgba(16, 185, 129, 0.15) !important; color: #34d399 !important; }
+    html[data-pms-theme="dark"] .icon-pill-due,
+    html[data-theme="dark"] .icon-pill-due { background: rgba(245, 158, 11, 0.15) !important; color: #fbbf24 !important; }
+    html[data-pms-theme="dark"] .icon-pill-failed,
+    html[data-theme="dark"] .icon-pill-failed { background: rgba(239, 68, 68, 0.15) !important; color: #f87171 !important; }
+    html[data-pms-theme="dark"] .icon-pill-storage,
+    html[data-theme="dark"] .icon-pill-storage { background: rgba(139, 92, 246, 0.15) !important; color: #a78bfa !important; }
+
+    html[data-pms-theme="dark"] .health-overview-panel,
+    html[data-theme="dark"] .health-overview-panel,
+    html[data-bs-theme="dark"] .health-overview-panel {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .health-progress-bar,
+    html[data-theme="dark"] .health-progress-bar {
+        background: #141B3D !important;
+    }
+
+    html[data-pms-theme="dark"] .backups-toolbar,
+    html[data-theme="dark"] .backups-toolbar,
+    html[data-bs-theme="dark"] .backups-toolbar {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .search-box input,
+    html[data-theme="dark"] .search-box input,
+    html[data-bs-theme="dark"] .search-box input {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .search-box input::placeholder,
+    html[data-theme="dark"] .search-box input::placeholder {
+        color: #6B739A !important;
+    }
+    html[data-pms-theme="dark"] .filter-select,
+    html[data-theme="dark"] .filter-select,
+    html[data-bs-theme="dark"] .filter-select {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .filter-select option,
+    html[data-theme="dark"] .filter-select option {
+        background: #0F1530 !important;
+        color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .backups-table-wrap,
+    html[data-theme="dark"] .backups-table-wrap,
+    html[data-bs-theme="dark"] .backups-table-wrap {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .grid-table,
+    html[data-theme="dark"] .grid-table,
+    html[data-bs-theme="dark"] .grid-table {
+        border-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .grid-table th,
+    html[data-theme="dark"] .grid-table th,
+    html[data-bs-theme="dark"] .grid-table th {
+        background: #141B3D !important;
+        color: #9AA3C7 !important;
+        border-bottom-color: rgba(238, 241, 251, 0.09) !important;
+        border-right-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .grid-table td,
+    html[data-theme="dark"] .grid-table td,
+    html[data-bs-theme="dark"] .grid-table td {
+        border-bottom-color: rgba(238, 241, 251, 0.09) !important;
+        border-right-color: rgba(238, 241, 251, 0.09) !important;
+        color: #CBD5E1 !important;
+    }
+    html[data-pms-theme="dark"] .backup-table-row:hover,
+    html[data-theme="dark"] .backup-table-row:hover,
+    html[data-bs-theme="dark"] .backup-table-row:hover {
+        background: #1A2247 !important;
+    }
+    html[data-pms-theme="dark"] .tenant-code-badge,
+    html[data-theme="dark"] .tenant-code-badge {
+        background: #141B3D !important;
+        color: #38bdf8 !important;
+        border: 1px solid rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .company-avatar-box,
+    html[data-theme="dark"] .company-avatar-box {
+        background: #141B3D !important;
+        color: #EEF1FB !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+    }
+
+    /* Badges */
+    html[data-pms-theme="dark"] .badge-status-healthy,
+    html[data-theme="dark"] .badge-status-healthy {
+        background: rgba(16, 185, 129, 0.15) !important;
+        color: #34d399 !important;
+        border-color: rgba(52, 211, 153, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .badge-status-duesoon,
+    html[data-theme="dark"] .badge-status-duesoon {
+        background: rgba(245, 158, 11, 0.15) !important;
+        color: #fbbf24 !important;
+        border-color: rgba(251, 191, 36, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .badge-status-failed,
+    html[data-theme="dark"] .badge-status-failed {
+        background: rgba(239, 68, 68, 0.15) !important;
+        color: #f87171 !important;
+        border-color: rgba(248, 113, 113, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .badge-status-never,
+    html[data-theme="dark"] .badge-status-never {
+        background: #141B3D !important;
+        color: #9AA3C7 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .backup-table-footer,
+    html[data-theme="dark"] .backup-table-footer,
+    html[data-bs-theme="dark"] .backup-table-footer {
+        background: #141B3D !important;
+        border-top-color: rgba(238, 241, 251, 0.09) !important;
+        color: #9AA3C7 !important;
+    }
+
+    /* Historical backup logs section */
+    html[data-pms-theme="dark"] #backupHistorySection,
+    html[data-theme="dark"] #backupHistorySection,
+    html[data-bs-theme="dark"] #backupHistorySection {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .history-table thead tr,
+    html[data-theme="dark"] .history-table thead tr,
+    html[data-bs-theme="dark"] .history-table thead tr {
+        background: #141B3D !important;
+        border-bottom-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .history-table th,
+    html[data-theme="dark"] .history-table th,
+    html[data-bs-theme="dark"] .history-table th {
+        background: #141B3D !important;
+        color: #9AA3C7 !important;
+        border-bottom-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .history-table tr,
+    html[data-theme="dark"] .history-table tr,
+    html[data-bs-theme="dark"] .history-table tr {
+        border-bottom-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .history-table td,
+    html[data-theme="dark"] .history-table td,
+    html[data-bs-theme="dark"] .history-table td {
+        border-bottom-color: rgba(238, 241, 251, 0.09) !important;
+        color: #CBD5E1 !important;
+    }
+    html[data-pms-theme="dark"] .history-table tbody tr:hover,
+    html[data-theme="dark"] .history-table tbody tr:hover,
+    html[data-bs-theme="dark"] .history-table tbody tr:hover {
+        background: #1A2247 !important;
+    }
+
+    /* Drawer & Modal Overrides */
+    html[data-pms-theme="dark"] .drawer-panel,
+    html[data-theme="dark"] .drawer-panel,
+    html[data-bs-theme="dark"] .drawer-panel {
+        background: #0F1530 !important;
+        color: #EEF1FB !important;
+        border-left: 1px solid rgba(238, 241, 251, 0.09);
+    }
+    html[data-pms-theme="dark"] .drawer-header,
+    html[data-theme="dark"] .drawer-header,
+    html[data-bs-theme="dark"] .drawer-header {
+        background: #141B3D !important;
+        border-bottom-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .drawer-footer,
+    html[data-theme="dark"] .drawer-footer,
+    html[data-bs-theme="dark"] .drawer-footer {
+        background: #141B3D !important;
+        border-top-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .drawer-card-subtle,
+    html[data-theme="dark"] .drawer-card-subtle,
+    html[data-bs-theme="dark"] .drawer-card-subtle {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .modal-box,
+    html[data-theme="dark"] .modal-box,
+    html[data-bs-theme="dark"] .modal-box {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.16) !important;
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .modal-subtle-box,
+    html[data-theme="dark"] .modal-subtle-box,
+    html[data-bs-theme="dark"] .modal-subtle-box {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] #createBackupDescription,
+    html[data-theme="dark"] #createBackupDescription,
+    html[data-bs-theme="dark"] #createBackupDescription {
+        background: #141B3D !important;
+        color: #EEF1FB !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
+    }
 </style>
 
 <div class="backups-container">
@@ -659,7 +979,7 @@
     </div>
 
     <!-- 5. TENANT BACKUP STATUS DATA TABLE -->
-    <div style="background: var(--bg-surface); border-radius: var(--radius-lg); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); overflow: hidden; margin-bottom: 24px;">
+    <div class="backups-table-wrap" style="background: var(--bg-surface); border-radius: var(--radius-lg); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); overflow: hidden; margin-bottom: 24px;">
         <div style="overflow-x: auto;">
             <table class="grid-table" id="tenantBackupsTable">
                 <thead>
@@ -681,7 +1001,7 @@
                 </thead>
                 <tbody>
                     @forelse($tenantBackupData as $row)
-                    <tr class="backup-table-row" data-company-id="{{ $row['company_id'] }}" data-status="{{ $row['status'] }}" style="transition: background 0.15s;" onmouseover="this.style.background='#f8fafc';" onmouseout="this.style.background='transparent';">
+                    <tr class="backup-table-row" data-company-id="{{ $row['company_id'] }}" data-status="{{ $row['status'] }}" style="transition: background 0.15s;">
                         <!-- Checkbox -->
                         <td style="text-align: center;">
                             <input type="checkbox" class="row-backup-checkbox" value="{{ $row['company_id'] }}" style="cursor: pointer;" />
@@ -690,7 +1010,7 @@
                         <!-- Company -->
                         <td>
                             <div style="display: flex; align-items: center; gap: 10px;">
-                                <div style="width: 34px; height: 34px; border-radius: 8px; background: #f1f5f9; color: #334155; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12.5px; overflow: hidden; flex-shrink: 0; border: 1px solid var(--border-color);">
+                                <div class="company-avatar-box" style="width: 34px; height: 34px; border-radius: 8px; background: var(--bg-surface-subtle); color: var(--text-main); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12.5px; overflow: hidden; flex-shrink: 0; border: 1px solid var(--border-color);">
                                     @if(!empty($row['logo_url']))
                                         <img src="{{ $row['logo_url'] }}" alt="{{ $row['name'] }}" style="width: 100%; height: 100%; object-fit: cover;" />
                                     @else
@@ -706,7 +1026,7 @@
 
                         <!-- Tenant ID -->
                         <td>
-                            <span style="font-family: monospace; font-size: 12px; font-weight: 700; background: #f1f5f9; color: #475569; padding: 3px 8px; border-radius: 6px;">
+                            <span class="tenant-code-badge" style="font-family: monospace; font-size: 12px; font-weight: 700; padding: 3px 8px; border-radius: 6px;">
                                 {{ $row['code'] }}
                             </span>
                         </td>
@@ -801,7 +1121,7 @@
         </div>
 
         <!-- Table Footer -->
-        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 14px 20px; background: #f8fafc; border-top: 1px solid var(--border-color); font-size: 13px;">
+        <div class="backup-table-footer" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 14px 20px; font-size: 13px;">
             <div style="color: var(--text-muted); font-weight: 500;">
                 Showing 1 to {{ count($tenantBackupData) }} of {{ count($tenantBackupData) }} tenant backup environments
             </div>
@@ -828,14 +1148,14 @@
                         </div>
                     </div>
                 </div>
-                <button class="btn-action-secondary" id="closeDrawerBtn" style="padding: 8px 12px; border: none; box-shadow: none; border-radius: 50%; background: #ffffff;">
+                <button class="btn-action-secondary" id="closeDrawerBtn" style="padding: 8px 12px; border: none; box-shadow: none; border-radius: 50%; background: transparent;">
                     <i class="fas fa-xmark" style="font-size: 18px;"></i>
                 </button>
             </div>
 
             <div class="drawer-body">
                 <!-- DATABASE OVERVIEW SUMMARY -->
-                <div style="background: #f8fafc; border-radius: 14px; border: 1px solid var(--border-color); padding: 18px; box-shadow: var(--shadow-xs);">
+                <div class="drawer-card-subtle" style="background: var(--bg-surface-subtle); border-radius: 14px; border: 1px solid var(--border-color); padding: 18px; box-shadow: var(--shadow-xs);">
                     <div style="font-size: 11px; font-weight: 800; color: var(--text-subtle); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 12px;">
                         DATABASE CONNECTION &amp; SPECS
                     </div>
@@ -856,7 +1176,7 @@
                 </div>
 
                 <!-- BACKUP INFORMATION CARD -->
-                <div style="border: 1px solid var(--border-color); border-radius: 14px; background: #ffffff; padding: 18px; box-shadow: var(--shadow-xs);">
+                <div class="drawer-card-subtle" style="border: 1px solid var(--border-color); border-radius: 14px; background: var(--bg-surface-subtle); padding: 18px; box-shadow: var(--shadow-xs);">
                     <div style="font-size: 11px; font-weight: 800; color: var(--text-subtle); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 12px;">
                         BACKUP ARCHIVE INFORMATION
                     </div>
@@ -881,7 +1201,7 @@
                 </div>
 
                 <!-- SCHEDULE & RETENTION POLICY -->
-                <div style="border: 1px solid var(--border-color); border-radius: 14px; background: #ffffff; padding: 18px; box-shadow: var(--shadow-xs);">
+                <div class="drawer-card-subtle" style="border: 1px solid var(--border-color); border-radius: 14px; background: var(--bg-surface-subtle); padding: 18px; box-shadow: var(--shadow-xs);">
                     <div style="font-size: 11px; font-weight: 800; color: var(--text-subtle); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 12px;">
                         BACKUP SCHEDULE &amp; RETENTION
                     </div>
@@ -906,7 +1226,7 @@
                 </div>
 
                 <!-- BACKUP STORAGE PROGRESS -->
-                <div style="background: #ffffff; border: 1px solid var(--border-color); border-radius: 14px; padding: 18px; box-shadow: var(--shadow-xs);">
+                <div class="drawer-card-subtle" style="background: var(--bg-surface-subtle); border: 1px solid var(--border-color); border-radius: 14px; padding: 18px; box-shadow: var(--shadow-xs);">
                     <div style="font-size: 11px; font-weight: 800; color: var(--text-subtle); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px;">
                         BACKUP STORAGE CAPACITY
                     </div>
@@ -1012,7 +1332,7 @@
                 <strong>CRITICAL SAFETY WARNING:</strong> This operation will overwrite the current active database schema and data records for tenant <strong id="restoreModalCompanyName">Company</strong> with data from backup file <code id="restoreModalFileName" style="font-size: 11px;">backup.sql</code>.
             </div>
 
-            <div style="font-size: 13px; color: var(--text-main); margin-bottom: 16px; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+            <div style="font-size: 13px; color: var(--text-main); margin-bottom: 16px; background: var(--bg-surface-subtle); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
                 <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
                     <span>Target Database:</span>
                     <strong style="font-family: monospace;" id="restoreModalDbName">pms_db</strong>
@@ -1103,15 +1423,15 @@
         </div>
 
         <div style="overflow-x: auto;">
-            <table style="width: 100%; border-collapse: collapse; font-size: 12.5px;">
+            <table class="history-table" style="width: 100%; border-collapse: collapse; font-size: 12.5px;">
                 <thead>
-                    <tr style="background: #f8fafc; border-bottom: 1px solid var(--border-color);">
-                        <th style="padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 800; color: var(--text-subtle); text-transform: uppercase;">Backup Filename</th>
-                        <th style="padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 800; color: var(--text-subtle); text-transform: uppercase;">Database Name</th>
-                        <th style="padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 800; color: var(--text-subtle); text-transform: uppercase;">Size</th>
-                        <th style="padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 800; color: var(--text-subtle); text-transform: uppercase;">Created At</th>
-                        <th style="padding: 10px 14px; text-align: center; font-size: 11px; font-weight: 800; color: var(--text-subtle); text-transform: uppercase;">Status</th>
-                        <th style="padding: 10px 14px; text-align: right; font-size: 11px; font-weight: 800; color: var(--text-subtle); text-transform: uppercase;">Actions</th>
+                    <tr style="border-bottom: 1px solid var(--border-color);">
+                        <th style="padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 800; text-transform: uppercase;">Backup Filename</th>
+                        <th style="padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 800; text-transform: uppercase;">Database Name</th>
+                        <th style="padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 800; text-transform: uppercase;">Size</th>
+                        <th style="padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 800; text-transform: uppercase;">Created At</th>
+                        <th style="padding: 10px 14px; text-align: center; font-size: 11px; font-weight: 800; text-transform: uppercase;">Status</th>
+                        <th style="padding: 10px 14px; text-align: right; font-size: 11px; font-weight: 800; text-transform: uppercase;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
