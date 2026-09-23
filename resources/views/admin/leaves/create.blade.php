@@ -180,6 +180,55 @@
     .check-row { display: flex; gap: 16px; flex-wrap: wrap; margin: 6px 0 18px; }
     .check-row label { display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; border: 1px solid #dbe7e1; border-radius: 12px; text-transform: none; font-size: .9rem; color: #172033; cursor: pointer; }
     .form-actions { display: flex; justify-content: flex-end; gap: 12px; padding-top: 18px; margin-top: 18px; border-top: 1px solid rgba(16,185,129,.1); }
+    /* ===== DARK MODE ===== */
+    html[data-pms-theme="dark"] .leave-form-page { background: #070B1A !important; color: #d9f1e4 !important; }
+    html[data-pms-theme="dark"] .leave-breadcrumb,
+    html[data-pms-theme="dark"] .leave-form-hero,
+    html[data-pms-theme="dark"] .policy-notice,
+    html[data-pms-theme="dark"] .balance-strip,
+    html[data-pms-theme="dark"] .form-card {
+        background: rgba(16, 33, 25, 0.92) !important;
+        border-color: rgba(122, 240, 181, 0.15) !important;
+        color: #d9f1e4 !important;
+        box-shadow: 0 16px 36px -20px rgba(0, 0, 0, 0.6) !important;
+    }
+    html[data-pms-theme="dark"] .leave-breadcrumb { color: #34d399 !important; -webkit-text-fill-color: #34d399 !important; }
+    html[data-pms-theme="dark"] .leave-form-hero h1 { color: #d9f1e4 !important; -webkit-text-fill-color: #d9f1e4 !important; }
+    html[data-pms-theme="dark"] .leave-form-hero p { color: #8ba198 !important; -webkit-text-fill-color: #8ba198 !important; }
+    html[data-pms-theme="dark"] .leave-form-page .btn-light,
+    html[data-pms-theme="dark"] .leave-form-page .btn-secondary {
+        background: #183026 !important;
+        color: #d9f1e4 !important;
+        -webkit-text-fill-color: #d9f1e4 !important;
+        border-color: rgba(122, 240, 181, 0.2) !important;
+    }
+    html[data-pms-theme="dark"] .leave-form-page .btn-light:hover,
+    html[data-pms-theme="dark"] .leave-form-page .btn-secondary:hover {
+        background: #1f3d30 !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        border-color: #34d399 !important;
+    }
+    html[data-pms-theme="dark"] .policy-notice { background: rgba(16, 33, 25, 0.85) !important; border-color: rgba(122, 240, 181, 0.15) !important; }
+    html[data-pms-theme="dark"] .policy-notice i { background: rgba(16, 185, 129, 0.2) !important; color: #34d399 !important; -webkit-text-fill-color: #34d399 !important; border: 1px solid rgba(52, 211, 153, 0.3) !important; }
+    html[data-pms-theme="dark"] .policy-notice p { color: #d9f1e4 !important; -webkit-text-fill-color: #d9f1e4 !important; }
+    html[data-pms-theme="dark"] .balance-strip div { background: #102119 !important; border: 1px solid rgba(122, 240, 181, 0.12) !important; }
+    html[data-pms-theme="dark"] .balance-strip span { color: #8ba198 !important; -webkit-text-fill-color: #8ba198 !important; }
+    html[data-pms-theme="dark"] .balance-strip strong { color: #d9f1e4 !important; -webkit-text-fill-color: #d9f1e4 !important; }
+    html[data-pms-theme="dark"] .leave-form-page label { color: #8ba198 !important; -webkit-text-fill-color: #8ba198 !important; }
+    html[data-pms-theme="dark"] .leave-form-page .form-control {
+        background: #102119 !important;
+        border-color: rgba(122, 240, 181, 0.2) !important;
+        color: #d9f1e4 !important;
+        -webkit-text-fill-color: #d9f1e4 !important;
+    }
+    html[data-pms-theme="dark"] .leave-form-page .form-control:focus {
+        border-color: #34d399 !important;
+        box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.15) !important;
+    }
+    html[data-pms-theme="dark"] .leave-form-page select.form-control option { background: #102119 !important; color: #d9f1e4 !important; }
+    html[data-pms-theme="dark"] .check-row label { background: #102119 !important; border-color: rgba(122, 240, 181, 0.15) !important; color: #d9f1e4 !important; -webkit-text-fill-color: #d9f1e4 !important; }
+    html[data-pms-theme="dark"] .form-actions { border-top-color: rgba(122, 240, 181, 0.12) !important; }
     @media (max-width: 992px) { .leave-form-page { padding: 18px; } .leave-form-hero { flex-direction: column; align-items: flex-start; } .form-grid, .form-grid.two, .balance-strip { grid-template-columns: 1fr; } }
 </style>
 

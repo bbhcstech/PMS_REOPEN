@@ -63,13 +63,13 @@
                     @endif
 
                     <a href="{{ $isAdmin ? route('holidays.index', ['year' => $selectedYear]) : route('employee.holidays', ['year' => $selectedYear]) }}" class="btn-action-pill text-decoration-none">
-                        <i class="fas fa-list-ul me-1.5"></i> List View
+                        <i class="fas fa-list-ul me-2 mr-2"></i><span>List View</span>
                     </a>
                     <a href="{{ route('holidays.export', ['year' => $selectedYear]) }}" class="btn-action-pill text-decoration-none">
-                        <i class="fas fa-file-excel me-1.5"></i> Export
+                        <i class="fas fa-file-excel me-2 mr-2"></i><span>Export</span>
                     </a>
                     <button type="button" class="btn-action-pill" id="calendarScreenshotBtn">
-                        <i class="fas fa-camera me-1.5"></i> Screenshot
+                        <i class="fas fa-camera me-2 mr-2"></i><span>Screenshot</span>
                     </button>
                 </div>
             </div>
@@ -275,8 +275,14 @@
         box-shadow: 0 4px 14px rgba(5, 150, 105, 0.1);
         display: inline-flex;
         align-items: center;
+        gap: 8px !important;
         height: 44px;
         cursor: pointer;
+    }
+
+    .btn-action-pill i {
+        margin-right: 8px !important;
+        display: inline-block;
     }
 
     .btn-action-pill:hover {
@@ -381,28 +387,44 @@
     }
 
     .stat-icon.total,
-    .holiday-calendar-page .stat-card:first-of-type .stat-icon.total {
+    .stat-icon.total i,
+    .stat-icon.total *,
+    .holiday-calendar-page .stat-card:first-of-type .stat-icon.total,
+    .holiday-calendar-page .stat-card:first-of-type .stat-icon.total i,
+    .holiday-calendar-page .stat-card:first-of-type .stat-icon.total * {
         background: linear-gradient(145deg, #d1fae5, #a7f3d0) !important;
         color: #059669 !important;
         -webkit-text-fill-color: #059669 !important;
     }
 
     .stat-icon.special,
-    .holiday-calendar-page .stat-card .stat-icon.special {
+    .stat-icon.special i,
+    .stat-icon.special *,
+    .holiday-calendar-page .stat-card .stat-icon.special,
+    .holiday-calendar-page .stat-card .stat-icon.special i,
+    .holiday-calendar-page .stat-card .stat-icon.special * {
         background: linear-gradient(145deg, #e0f2fe, #bae6fd) !important;
         color: #0284c7 !important;
         -webkit-text-fill-color: #0284c7 !important;
     }
 
     .stat-icon.weekly,
-    .holiday-calendar-page .stat-card .stat-icon.weekly {
+    .stat-icon.weekly i,
+    .stat-icon.weekly *,
+    .holiday-calendar-page .stat-card .stat-icon.weekly,
+    .holiday-calendar-page .stat-card .stat-icon.weekly i,
+    .holiday-calendar-page .stat-card .stat-icon.weekly * {
         background: linear-gradient(145deg, #fef3c7, #fde68a) !important;
         color: #d97706 !important;
         -webkit-text-fill-color: #d97706 !important;
     }
 
     .stat-icon.months,
-    .holiday-calendar-page .stat-card .stat-icon.months {
+    .stat-icon.months i,
+    .stat-icon.months *,
+    .holiday-calendar-page .stat-card .stat-icon.months,
+    .holiday-calendar-page .stat-card .stat-icon.months i,
+    .holiday-calendar-page .stat-card .stat-icon.months * {
         background: linear-gradient(145deg, #e0e7ff, #c7d2fe) !important;
         color: #4f46e5 !important;
         -webkit-text-fill-color: #4f46e5 !important;
@@ -504,8 +526,17 @@
         cursor: pointer;
         box-shadow: 0 4px 12px rgba(5, 150, 105, 0.15) !important;
         background: linear-gradient(145deg, #d1fae5, #a7f3d0) !important;
-        color: #065f46 !important;
+        color: #044e33 !important;
+        -webkit-text-fill-color: #044e33 !important;
         transition: transform 0.2s ease !important;
+    }
+
+    .fc-event *,
+    .fc-event strong,
+    .fc-event small,
+    .fc-event div {
+        color: #044e33 !important;
+        -webkit-text-fill-color: #044e33 !important;
     }
 
     .fc-event:hover {
@@ -558,6 +589,447 @@
         .stats-grid {
             grid-template-columns: 1fr;
         }
+    }
+
+    /* ===== DARK MODE OVERRIDES ===== */
+    html[data-pms-theme="dark"] .holiday-calendar-page,
+    html[data-bs-theme="dark"] .holiday-calendar-page,
+    html[data-theme="dark"] .holiday-calendar-page,
+    html.dark .holiday-calendar-page,
+    body[data-pms-theme="dark"] .holiday-calendar-page,
+    body[data-bs-theme="dark"] .holiday-calendar-page,
+    body[data-topbar="dark"] .holiday-calendar-page,
+    body[data-sidebar="dark"] .holiday-calendar-page,
+    body[data-layout-mode="dark"] .holiday-calendar-page,
+    body.dark-mode .holiday-calendar-page,
+    body.dark .holiday-calendar-page,
+    [data-pms-theme="dark"] .holiday-calendar-page,
+    [data-theme="dark"] .holiday-calendar-page,
+    [data-bs-theme="dark"] .holiday-calendar-page,
+    .dark .holiday-calendar-page {
+        background: #070B1A !important;
+        color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .holiday-calendar-page .breadcrumb-custom,
+    html[data-bs-theme="dark"] .holiday-calendar-page .breadcrumb-custom,
+    body[data-pms-theme="dark"] .holiday-calendar-page .breadcrumb-custom,
+    body[data-bs-theme="dark"] .holiday-calendar-page .breadcrumb-custom,
+    body[data-topbar="dark"] .holiday-calendar-page .breadcrumb-custom,
+    body[data-sidebar="dark"] .holiday-calendar-page .breadcrumb-custom,
+    body[data-layout-mode="dark"] .holiday-calendar-page .breadcrumb-custom,
+    body.dark-mode .holiday-calendar-page .breadcrumb-custom,
+    body.dark .holiday-calendar-page .breadcrumb-custom {
+        color: #94a3b8 !important;
+    }
+
+    html[data-pms-theme="dark"] .holiday-calendar-page .breadcrumb-custom a,
+    html[data-bs-theme="dark"] .holiday-calendar-page .breadcrumb-custom a,
+    body[data-pms-theme="dark"] .holiday-calendar-page .breadcrumb-custom a,
+    body[data-bs-theme="dark"] .holiday-calendar-page .breadcrumb-custom a,
+    body[data-topbar="dark"] .holiday-calendar-page .breadcrumb-custom a,
+    body[data-sidebar="dark"] .holiday-calendar-page .breadcrumb-custom a,
+    body[data-layout-mode="dark"] .holiday-calendar-page .breadcrumb-custom a,
+    body.dark-mode .holiday-calendar-page .breadcrumb-custom a,
+    body.dark .holiday-calendar-page .breadcrumb-custom a {
+        color: #34d399 !important;
+    }
+
+    /* Branches Header in Dark Mode */
+    html[data-pms-theme="dark"] .branches-header,
+    html[data-bs-theme="dark"] .branches-header,
+    html[data-theme="dark"] .branches-header,
+    html.dark .branches-header,
+    body[data-pms-theme="dark"] .branches-header,
+    body[data-bs-theme="dark"] .branches-header,
+    body[data-topbar="dark"] .branches-header,
+    body[data-sidebar="dark"] .branches-header,
+    body[data-layout-mode="dark"] .branches-header,
+    body.dark-mode .branches-header,
+    body.dark .branches-header,
+    [data-pms-theme="dark"] .branches-header,
+    [data-theme="dark"] .branches-header,
+    [data-bs-theme="dark"] .branches-header,
+    .dark .branches-header {
+        background: #0F1530 !important;
+        border: 1px solid rgba(16, 185, 129, 0.2) !important;
+        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5) !important;
+    }
+
+    html[data-pms-theme="dark"] .branches-header .header-title h1,
+    html[data-bs-theme="dark"] .branches-header .header-title h1,
+    body[data-pms-theme="dark"] .branches-header .header-title h1,
+    body[data-bs-theme="dark"] .branches-header .header-title h1,
+    body[data-topbar="dark"] .branches-header .header-title h1,
+    body[data-sidebar="dark"] .branches-header .header-title h1,
+    body[data-layout-mode="dark"] .branches-header .header-title h1,
+    body.dark-mode .branches-header .header-title h1,
+    body.dark .branches-header .header-title h1 {
+        background: linear-gradient(135deg, #ffffff, #34d399) !important;
+        -webkit-background-clip: text !important;
+        background-clip: text !important;
+        color: transparent !important;
+        -webkit-text-fill-color: transparent !important;
+    }
+
+    html[data-pms-theme="dark"] .branches-header .header-title p,
+    html[data-bs-theme="dark"] .branches-header .header-title p,
+    body[data-pms-theme="dark"] .branches-header .header-title p,
+    body[data-bs-theme="dark"] .branches-header .header-title p,
+    body[data-topbar="dark"] .branches-header .header-title p,
+    body[data-sidebar="dark"] .branches-header .header-title p,
+    body[data-layout-mode="dark"] .branches-header .header-title p,
+    body.dark-mode .branches-header .header-title p,
+    body.dark .branches-header .header-title p {
+        color: #94a3b8 !important;
+        -webkit-text-fill-color: #94a3b8 !important;
+    }
+
+    /* Year Dropdown in Dark Mode */
+    html[data-pms-theme="dark"] .input-group-custom,
+    html[data-bs-theme="dark"] .input-group-custom,
+    body[data-pms-theme="dark"] .input-group-custom,
+    body[data-bs-theme="dark"] .input-group-custom,
+    body[data-topbar="dark"] .input-group-custom,
+    body[data-sidebar="dark"] .input-group-custom,
+    body[data-layout-mode="dark"] .input-group-custom,
+    body.dark-mode .input-group-custom,
+    body.dark .input-group-custom {
+        background-color: #182246 !important;
+        border-color: rgba(16, 185, 129, 0.3) !important;
+    }
+
+    html[data-pms-theme="dark"] .input-group-custom select,
+    html[data-bs-theme="dark"] .input-group-custom select,
+    body[data-pms-theme="dark"] .input-group-custom select,
+    body[data-bs-theme="dark"] .input-group-custom select,
+    body[data-topbar="dark"] .input-group-custom select,
+    body[data-sidebar="dark"] .input-group-custom select,
+    body[data-layout-mode="dark"] .input-group-custom select,
+    body.dark-mode .input-group-custom select,
+    body.dark .input-group-custom select {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        background-color: #182246 !important;
+    }
+
+    /* Highlighted Action Buttons (List View, Export, Screenshot) in Dark Mode */
+    html[data-pms-theme="dark"] .btn-action-pill,
+    html[data-bs-theme="dark"] .btn-action-pill,
+    html[data-theme="dark"] .btn-action-pill,
+    html.dark .btn-action-pill,
+    body[data-pms-theme="dark"] .btn-action-pill,
+    body[data-bs-theme="dark"] .btn-action-pill,
+    body[data-topbar="dark"] .btn-action-pill,
+    body[data-sidebar="dark"] .btn-action-pill,
+    body[data-layout-mode="dark"] .btn-action-pill,
+    body.dark-mode .btn-action-pill,
+    body.dark .btn-action-pill,
+    [data-pms-theme="dark"] .btn-action-pill,
+    [data-theme="dark"] .btn-action-pill,
+    [data-bs-theme="dark"] .btn-action-pill,
+    .dark .btn-action-pill {
+        background-color: rgba(16, 185, 129, 0.2) !important;
+        border: 1px solid rgba(52, 211, 153, 0.45) !important;
+        color: #34d399 !important;
+        -webkit-text-fill-color: #34d399 !important;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    html[data-pms-theme="dark"] .btn-action-pill *,
+    html[data-bs-theme="dark"] .btn-action-pill *,
+    html[data-theme="dark"] .btn-action-pill *,
+    html.dark .btn-action-pill *,
+    body[data-pms-theme="dark"] .btn-action-pill *,
+    body[data-bs-theme="dark"] .btn-action-pill *,
+    body[data-topbar="dark"] .btn-action-pill *,
+    body[data-sidebar="dark"] .btn-action-pill *,
+    body[data-layout-mode="dark"] .btn-action-pill *,
+    body.dark-mode .btn-action-pill *,
+    body.dark .btn-action-pill *,
+    [data-pms-theme="dark"] .btn-action-pill *,
+    [data-theme="dark"] .btn-action-pill *,
+    [data-bs-theme="dark"] .btn-action-pill *,
+    .dark .btn-action-pill * {
+        color: #34d399 !important;
+        -webkit-text-fill-color: #34d399 !important;
+    }
+
+    html[data-pms-theme="dark"] .btn-action-pill:hover,
+    html[data-bs-theme="dark"] .btn-action-pill:hover,
+    html[data-theme="dark"] .btn-action-pill:hover,
+    html.dark .btn-action-pill:hover,
+    body[data-pms-theme="dark"] .btn-action-pill:hover,
+    body[data-bs-theme="dark"] .btn-action-pill:hover,
+    body[data-topbar="dark"] .btn-action-pill:hover,
+    body[data-sidebar="dark"] .btn-action-pill:hover,
+    body[data-layout-mode="dark"] .btn-action-pill:hover,
+    body.dark-mode .btn-action-pill:hover,
+    body.dark .btn-action-pill:hover,
+    [data-pms-theme="dark"] .btn-action-pill:hover,
+    [data-theme="dark"] .btn-action-pill:hover,
+    [data-bs-theme="dark"] .btn-action-pill:hover,
+    .dark .btn-action-pill:hover {
+        background-color: rgba(16, 185, 129, 0.4) !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    html[data-pms-theme="dark"] .btn-action-pill:hover *,
+    html[data-bs-theme="dark"] .btn-action-pill:hover *,
+    html[data-theme="dark"] .btn-action-pill:hover *,
+    html.dark .btn-action-pill:hover *,
+    body[data-pms-theme="dark"] .btn-action-pill:hover *,
+    body[data-bs-theme="dark"] .btn-action-pill:hover *,
+    body[data-topbar="dark"] .btn-action-pill:hover *,
+    body[data-sidebar="dark"] .btn-action-pill:hover *,
+    body[data-layout-mode="dark"] .btn-action-pill:hover *,
+    body.dark-mode .btn-action-pill:hover *,
+    body.dark .btn-action-pill:hover *,
+    [data-pms-theme="dark"] .btn-action-pill:hover *,
+    [data-theme="dark"] .btn-action-pill:hover *,
+    [data-bs-theme="dark"] .btn-action-pill:hover *,
+    .dark .btn-action-pill:hover * {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    /* Highlighted Stat Cards (Total Holidays & all stat cards) in Dark Mode */
+    html[data-pms-theme="dark"] .holiday-calendar-page .stat-card,
+    html[data-pms-theme="dark"] .holiday-calendar-page .stat-card:first-of-type,
+    html[data-bs-theme="dark"] .holiday-calendar-page .stat-card,
+    html[data-bs-theme="dark"] .holiday-calendar-page .stat-card:first-of-type,
+    html[data-theme="dark"] .holiday-calendar-page .stat-card,
+    html[data-theme="dark"] .holiday-calendar-page .stat-card:first-of-type,
+    html.dark .holiday-calendar-page .stat-card,
+    html.dark .holiday-calendar-page .stat-card:first-of-type,
+    body[data-pms-theme="dark"] .holiday-calendar-page .stat-card,
+    body[data-pms-theme="dark"] .holiday-calendar-page .stat-card:first-of-type,
+    body[data-bs-theme="dark"] .holiday-calendar-page .stat-card,
+    body[data-bs-theme="dark"] .holiday-calendar-page .stat-card:first-of-type,
+    body[data-topbar="dark"] .holiday-calendar-page .stat-card,
+    body[data-topbar="dark"] .holiday-calendar-page .stat-card:first-of-type,
+    body[data-sidebar="dark"] .holiday-calendar-page .stat-card,
+    body[data-sidebar="dark"] .holiday-calendar-page .stat-card:first-of-type,
+    body[data-layout-mode="dark"] .holiday-calendar-page .stat-card,
+    body[data-layout-mode="dark"] .holiday-calendar-page .stat-card:first-of-type,
+    body.dark-mode .holiday-calendar-page .stat-card,
+    body.dark-mode .holiday-calendar-page .stat-card:first-of-type,
+    body.dark .holiday-calendar-page .stat-card,
+    body.dark .holiday-calendar-page .stat-card:first-of-type,
+    [data-pms-theme="dark"] .holiday-calendar-page .stat-card,
+    [data-pms-theme="dark"] .holiday-calendar-page .stat-card:first-of-type,
+    [data-theme="dark"] .holiday-calendar-page .stat-card,
+    [data-theme="dark"] .holiday-calendar-page .stat-card:first-of-type,
+    [data-bs-theme="dark"] .holiday-calendar-page .stat-card,
+    [data-bs-theme="dark"] .holiday-calendar-page .stat-card:first-of-type,
+    .dark .holiday-calendar-page .stat-card,
+    .dark .holiday-calendar-page .stat-card:first-of-type {
+        background: #0F1530 !important;
+        border: 1px solid rgba(16, 185, 129, 0.2) !important;
+        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5) !important;
+        color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .holiday-calendar-page .stat-card h3,
+    html[data-pms-theme="dark"] .holiday-calendar-page .stat-card:first-of-type h3,
+    html[data-bs-theme="dark"] .holiday-calendar-page .stat-card h3,
+    html[data-bs-theme="dark"] .holiday-calendar-page .stat-card:first-of-type h3,
+    html[data-theme="dark"] .holiday-calendar-page .stat-card h3,
+    html[data-theme="dark"] .holiday-calendar-page .stat-card:first-of-type h3,
+    html.dark .holiday-calendar-page .stat-card h3,
+    html.dark .holiday-calendar-page .stat-card:first-of-type h3,
+    body[data-pms-theme="dark"] .holiday-calendar-page .stat-card h3,
+    body[data-pms-theme="dark"] .holiday-calendar-page .stat-card:first-of-type h3,
+    body[data-bs-theme="dark"] .holiday-calendar-page .stat-card h3,
+    body[data-bs-theme="dark"] .holiday-calendar-page .stat-card:first-of-type h3,
+    body[data-topbar="dark"] .holiday-calendar-page .stat-card h3,
+    body[data-topbar="dark"] .holiday-calendar-page .stat-card:first-of-type h3,
+    body[data-sidebar="dark"] .holiday-calendar-page .stat-card h3,
+    body[data-sidebar="dark"] .holiday-calendar-page .stat-card:first-of-type h3,
+    body[data-layout-mode="dark"] .holiday-calendar-page .stat-card h3,
+    body[data-layout-mode="dark"] .holiday-calendar-page .stat-card:first-of-type h3,
+    body.dark-mode .holiday-calendar-page .stat-card h3,
+    body.dark-mode .holiday-calendar-page .stat-card:first-of-type h3,
+    body.dark .holiday-calendar-page .stat-card h3,
+    body.dark .holiday-calendar-page .stat-card:first-of-type h3,
+    [data-pms-theme="dark"] .holiday-calendar-page .stat-card h3,
+    [data-pms-theme="dark"] .holiday-calendar-page .stat-card:first-of-type h3,
+    [data-theme="dark"] .holiday-calendar-page .stat-card h3,
+    [data-theme="dark"] .holiday-calendar-page .stat-card:first-of-type h3,
+    [data-bs-theme="dark"] .holiday-calendar-page .stat-card h3,
+    [data-bs-theme="dark"] .holiday-calendar-page .stat-card:first-of-type h3,
+    .dark .holiday-calendar-page .stat-card h3,
+    .dark .holiday-calendar-page .stat-card:first-of-type h3 {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    html[data-pms-theme="dark"] .holiday-calendar-page .stat-card h6,
+    html[data-pms-theme="dark"] .holiday-calendar-page .stat-card:first-of-type h6,
+    html[data-bs-theme="dark"] .holiday-calendar-page .stat-card h6,
+    html[data-bs-theme="dark"] .holiday-calendar-page .stat-card:first-of-type h6,
+    html[data-theme="dark"] .holiday-calendar-page .stat-card h6,
+    html[data-theme="dark"] .holiday-calendar-page .stat-card:first-of-type h6,
+    html.dark .holiday-calendar-page .stat-card h6,
+    html.dark .holiday-calendar-page .stat-card:first-of-type h6,
+    body[data-pms-theme="dark"] .holiday-calendar-page .stat-card h6,
+    body[data-pms-theme="dark"] .holiday-calendar-page .stat-card:first-of-type h6,
+    body[data-bs-theme="dark"] .holiday-calendar-page .stat-card h6,
+    body[data-bs-theme="dark"] .holiday-calendar-page .stat-card:first-of-type h6,
+    body[data-topbar="dark"] .holiday-calendar-page .stat-card h6,
+    body[data-topbar="dark"] .holiday-calendar-page .stat-card:first-of-type h6,
+    body[data-sidebar="dark"] .holiday-calendar-page .stat-card h6,
+    body[data-sidebar="dark"] .holiday-calendar-page .stat-card:first-of-type h6,
+    body[data-layout-mode="dark"] .holiday-calendar-page .stat-card h6,
+    body[data-layout-mode="dark"] .holiday-calendar-page .stat-card:first-of-type h6,
+    body.dark-mode .holiday-calendar-page .stat-card h6,
+    body.dark-mode .holiday-calendar-page .stat-card:first-of-type h6,
+    body.dark .holiday-calendar-page .stat-card h6,
+    body.dark .holiday-calendar-page .stat-card:first-of-type h6,
+    [data-pms-theme="dark"] .holiday-calendar-page .stat-card h6,
+    [data-pms-theme="dark"] .holiday-calendar-page .stat-card:first-of-type h6,
+    [data-theme="dark"] .holiday-calendar-page .stat-card h6,
+    [data-theme="dark"] .holiday-calendar-page .stat-card:first-of-type h6,
+    [data-bs-theme="dark"] .holiday-calendar-page .stat-card h6,
+    [data-bs-theme="dark"] .holiday-calendar-page .stat-card:first-of-type h6,
+    .dark .holiday-calendar-page .stat-card h6,
+    .dark .holiday-calendar-page .stat-card:first-of-type h6 {
+        color: #94a3b8 !important;
+        -webkit-text-fill-color: #94a3b8 !important;
+    }
+
+    /* Stat Card Icons in Dark Mode */
+    html[data-pms-theme="dark"] .stat-icon.total,
+    html[data-bs-theme="dark"] .stat-icon.total,
+    body[data-pms-theme="dark"] .stat-icon.total,
+    body[data-bs-theme="dark"] .stat-icon.total,
+    body[data-topbar="dark"] .stat-icon.total,
+    body[data-sidebar="dark"] .stat-icon.total,
+    body[data-layout-mode="dark"] .stat-icon.total,
+    body.dark-mode .stat-icon.total,
+    body.dark .stat-icon.total,
+    [data-pms-theme="dark"] .stat-icon.total,
+    .holiday-calendar-page .stat-card:first-of-type .stat-icon.total {
+        background: rgba(16, 185, 129, 0.2) !important;
+        color: #34d399 !important;
+        -webkit-text-fill-color: #34d399 !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon.total *,
+    html[data-bs-theme="dark"] .stat-icon.total *,
+    body[data-pms-theme="dark"] .stat-icon.total *,
+    body[data-bs-theme="dark"] .stat-icon.total *,
+    body[data-topbar="dark"] .stat-icon.total *,
+    body[data-sidebar="dark"] .stat-icon.total *,
+    body[data-layout-mode="dark"] .stat-icon.total *,
+    body.dark-mode .stat-icon.total *,
+    body.dark .stat-icon.total *,
+    [data-pms-theme="dark"] .stat-icon.total *,
+    .holiday-calendar-page .stat-card:first-of-type .stat-icon.total * {
+        color: #34d399 !important;
+        -webkit-text-fill-color: #34d399 !important;
+    }
+
+    /* FullCalendar Elevate Box in Dark Mode */
+    html[data-pms-theme="dark"] .address-card-elevated,
+    html[data-bs-theme="dark"] .address-card-elevated,
+    html[data-theme="dark"] .address-card-elevated,
+    html.dark .address-card-elevated,
+    body[data-pms-theme="dark"] .address-card-elevated,
+    body[data-bs-theme="dark"] .address-card-elevated,
+    body[data-topbar="dark"] .address-card-elevated,
+    body[data-sidebar="dark"] .address-card-elevated,
+    body[data-layout-mode="dark"] .address-card-elevated,
+    body.dark-mode .address-card-elevated,
+    body.dark .address-card-elevated,
+    [data-pms-theme="dark"] .address-card-elevated,
+    [data-theme="dark"] .address-card-elevated,
+    [data-bs-theme="dark"] .address-card-elevated,
+    .dark .address-card-elevated {
+        background: #0F1530 !important;
+        border: 1px solid rgba(16, 185, 129, 0.2) !important;
+        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5) !important;
+    }
+
+    html[data-pms-theme="dark"] .fc .fc-toolbar-title,
+    html[data-bs-theme="dark"] .fc .fc-toolbar-title,
+    body[data-pms-theme="dark"] .fc .fc-toolbar-title,
+    body[data-bs-theme="dark"] .fc .fc-toolbar-title,
+    body[data-topbar="dark"] .fc .fc-toolbar-title,
+    body[data-sidebar="dark"] .fc .fc-toolbar-title,
+    body[data-layout-mode="dark"] .fc .fc-toolbar-title,
+    body.dark-mode .fc .fc-toolbar-title,
+    body.dark .fc .fc-toolbar-title {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    html[data-pms-theme="dark"] .fc-col-header-cell,
+    html[data-bs-theme="dark"] .fc-col-header-cell,
+    body[data-pms-theme="dark"] .fc-col-header-cell,
+    body[data-bs-theme="dark"] .fc-col-header-cell,
+    body[data-topbar="dark"] .fc-col-header-cell,
+    body[data-sidebar="dark"] .fc-col-header-cell,
+    body[data-layout-mode="dark"] .fc-col-header-cell,
+    body.dark-mode .fc-col-header-cell,
+    body.dark .fc-col-header-cell {
+        background: #182246 !important;
+        color: #34d399 !important;
+        -webkit-text-fill-color: #34d399 !important;
+    }
+
+    html[data-pms-theme="dark"] .fc-daygrid-day-number,
+    html[data-bs-theme="dark"] .fc-daygrid-day-number,
+    body[data-pms-theme="dark"] .fc-daygrid-day-number,
+    body[data-bs-theme="dark"] .fc-daygrid-day-number,
+    body[data-topbar="dark"] .fc-daygrid-day-number,
+    body[data-sidebar="dark"] .fc-daygrid-day-number,
+    body[data-layout-mode="dark"] .fc-daygrid-day-number,
+    body.dark-mode .fc-daygrid-day-number,
+    body.dark .fc-daygrid-day-number {
+        color: #e2e8f0 !important;
+        -webkit-text-fill-color: #e2e8f0 !important;
+    }
+
+    /* FullCalendar Event Pills text visibility in Dark Mode */
+    html[data-pms-theme="dark"] .fc-event,
+    html[data-bs-theme="dark"] .fc-event,
+    html[data-theme="dark"] .fc-event,
+    html.dark .fc-event,
+    body[data-pms-theme="dark"] .fc-event,
+    body[data-bs-theme="dark"] .fc-event,
+    body[data-topbar="dark"] .fc-event,
+    body[data-sidebar="dark"] .fc-event,
+    body[data-layout-mode="dark"] .fc-event,
+    body.dark-mode .fc-event,
+    body.dark .fc-event,
+    [data-pms-theme="dark"] .fc-event,
+    [data-theme="dark"] .fc-event,
+    [data-bs-theme="dark"] .fc-event,
+    .dark .fc-event {
+        background: linear-gradient(145deg, #d1fae5, #a7f3d0) !important;
+        color: #044e33 !important;
+        -webkit-text-fill-color: #044e33 !important;
+    }
+
+    html[data-pms-theme="dark"] .fc-event *,
+    html[data-bs-theme="dark"] .fc-event *,
+    html[data-theme="dark"] .fc-event *,
+    html.dark .fc-event *,
+    body[data-pms-theme="dark"] .fc-event *,
+    body[data-bs-theme="dark"] .fc-event *,
+    body[data-topbar="dark"] .fc-event *,
+    body[data-sidebar="dark"] .fc-event *,
+    body[data-layout-mode="dark"] .fc-event *,
+    body.dark-mode .fc-event *,
+    body.dark .fc-event *,
+    [data-pms-theme="dark"] .fc-event *,
+    [data-theme="dark"] .fc-event *,
+    [data-bs-theme="dark"] .fc-event *,
+    .dark .fc-event * {
+        color: #044e33 !important;
+        -webkit-text-fill-color: #044e33 !important;
     }
 </style>
 @endsection

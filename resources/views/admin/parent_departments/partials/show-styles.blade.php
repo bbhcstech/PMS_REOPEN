@@ -623,4 +623,533 @@
             padding: 6px 14px;
         }
     }
+
+    /* ==========================================
+       DARK MODE SUPPORT FOR VIEW / DETAILS PAGE
+       ========================================== */
+    html[data-pms-theme="dark"] .department-view-page,
+    html[data-bs-theme="dark"] .department-view-page,
+    html[data-theme="dark"] .department-view-page,
+    html.dark .department-view-page,
+    body[data-pms-theme="dark"] .department-view-page,
+    body[data-bs-theme="dark"] .department-view-page,
+    body[data-theme="dark"] .department-view-page,
+    body.dark .department-view-page,
+    body.dark-mode .department-view-page {
+        background: linear-gradient(135deg, #07130d 0%, #102119 50%, #07130d 100%);
+        color: #d9f1e4;
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .breadcrumb,
+    html[data-bs-theme="dark"] .department-view-page .breadcrumb,
+    html[data-theme="dark"] .department-view-page .breadcrumb,
+    html.dark .department-view-page .breadcrumb,
+    body[data-pms-theme="dark"] .department-view-page .breadcrumb,
+    body[data-bs-theme="dark"] .department-view-page .breadcrumb,
+    body[data-theme="dark"] .department-view-page .breadcrumb,
+    body.dark .department-view-page .breadcrumb,
+    body.dark-mode .department-view-page .breadcrumb {
+        background: rgba(16, 33, 25, 0.85);
+        border-color: rgba(122, 240, 181, 0.15);
+        color: #d9f1e4;
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .breadcrumb i,
+    html[data-bs-theme="dark"] .department-view-page .breadcrumb i,
+    html[data-theme="dark"] .department-view-page .breadcrumb i,
+    html.dark .department-view-page .breadcrumb i,
+    body[data-pms-theme="dark"] .department-view-page .breadcrumb i,
+    body[data-bs-theme="dark"] .department-view-page .breadcrumb i,
+    body[data-theme="dark"] .department-view-page .breadcrumb i,
+    body.dark .department-view-page .breadcrumb i,
+    body.dark-mode .department-view-page .breadcrumb i {
+        color: #34d399;
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .header-card,
+    html[data-bs-theme="dark"] .department-view-page .header-card,
+    html[data-theme="dark"] .department-view-page .header-card,
+    html.dark .department-view-page .header-card,
+    body[data-pms-theme="dark"] .department-view-page .header-card,
+    body[data-bs-theme="dark"] .department-view-page .header-card,
+    body[data-theme="dark"] .department-view-page .header-card,
+    body.dark .department-view-page .header-card,
+    body.dark-mode .department-view-page .header-card {
+        background: rgba(16, 33, 25, 0.95);
+        border-color: rgba(122, 240, 181, 0.12);
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .header-card h1,
+    html[data-bs-theme="dark"] .department-view-page .header-card h1,
+    html[data-theme="dark"] .department-view-page .header-card h1,
+    html.dark .department-view-page .header-card h1,
+    body[data-pms-theme="dark"] .department-view-page .header-card h1,
+    body[data-bs-theme="dark"] .department-view-page .header-card h1,
+    body[data-theme="dark"] .department-view-page .header-card h1,
+    body.dark .department-view-page .header-card h1,
+    body.dark-mode .department-view-page .header-card h1 {
+        background: linear-gradient(135deg, #d9f1e4, #34d399);
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .header-card p,
+    html[data-bs-theme="dark"] .department-view-page .header-card p,
+    html[data-theme="dark"] .department-view-page .header-card p,
+    html.dark .department-view-page .header-card p,
+    body[data-pms-theme="dark"] .department-view-page .header-card p,
+    body[data-bs-theme="dark"] .department-view-page .header-card p,
+    body[data-theme="dark"] .department-view-page .header-card p,
+    body.dark .department-view-page .header-card p,
+    body.dark-mode .department-view-page .header-card p {
+        color: #8ba198;
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .btn-light,
+    html[data-bs-theme="dark"] .department-view-page .btn-light,
+    html[data-theme="dark"] .department-view-page .btn-light,
+    html.dark .department-view-page .btn-light,
+    body[data-pms-theme="dark"] .department-view-page .btn-light,
+    body[data-bs-theme="dark"] .department-view-page .btn-light,
+    body[data-theme="dark"] .department-view-page .btn-light,
+    body.dark .department-view-page .btn-light,
+    body.dark-mode .department-view-page .btn-light {
+        background: #183026;
+        color: #d9f1e4;
+        border-color: rgba(122, 240, 181, 0.15);
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .btn-light:hover,
+    html[data-bs-theme="dark"] .department-view-page .btn-light:hover,
+    html[data-theme="dark"] .department-view-page .btn-light:hover,
+    html.dark .department-view-page .btn-light:hover,
+    body[data-pms-theme="dark"] .department-view-page .btn-light:hover,
+    body[data-bs-theme="dark"] .department-view-page .btn-light:hover,
+    body[data-theme="dark"] .department-view-page .btn-light:hover,
+    body.dark .department-view-page .btn-light:hover,
+    body.dark-mode .department-view-page .btn-light:hover {
+        background: #1f3d30;
+        border-color: #34d399;
+        color: #d9f1e4;
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .btn-secondary,
+    html[data-bs-theme="dark"] .department-view-page .btn-secondary,
+    html[data-theme="dark"] .department-view-page .btn-secondary,
+    html.dark .department-view-page .btn-secondary,
+    body[data-pms-theme="dark"] .department-view-page .btn-secondary,
+    body[data-bs-theme="dark"] .department-view-page .btn-secondary,
+    body[data-theme="dark"] .department-view-page .btn-secondary,
+    body.dark .department-view-page .btn-secondary,
+    body.dark-mode .department-view-page .btn-secondary {
+        background: #183026;
+        color: #d9f1e4;
+        border-color: rgba(122, 240, 181, 0.15);
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .btn-secondary:hover,
+    html[data-bs-theme="dark"] .department-view-page .btn-secondary:hover,
+    html[data-theme="dark"] .department-view-page .btn-secondary:hover,
+    html.dark .department-view-page .btn-secondary:hover,
+    body[data-pms-theme="dark"] .department-view-page .btn-secondary:hover,
+    body[data-bs-theme="dark"] .department-view-page .btn-secondary:hover,
+    body[data-theme="dark"] .department-view-page .btn-secondary:hover,
+    body.dark .department-view-page .btn-secondary:hover,
+    body.dark-mode .department-view-page .btn-secondary:hover {
+        background: #1f3d30;
+        color: #d9f1e4;
+    }
+
+    /* Main View Card & Fields in Dark Mode */
+    html[data-pms-theme="dark"] .department-view-page .view-card,
+    html[data-bs-theme="dark"] .department-view-page .view-card,
+    html[data-theme="dark"] .department-view-page .view-card,
+    html.dark .department-view-page .view-card,
+    body[data-pms-theme="dark"] .department-view-page .view-card,
+    body[data-bs-theme="dark"] .department-view-page .view-card,
+    body[data-theme="dark"] .department-view-page .view-card,
+    body.dark .department-view-page .view-card,
+    body.dark-mode .department-view-page .view-card {
+        background: #102119;
+        border-color: rgba(122, 240, 181, 0.1);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .view-status-bar,
+    html[data-bs-theme="dark"] .department-view-page .view-status-bar,
+    html[data-theme="dark"] .department-view-page .view-status-bar,
+    html.dark .department-view-page .view-status-bar,
+    body[data-pms-theme="dark"] .department-view-page .view-status-bar,
+    body[data-bs-theme="dark"] .department-view-page .view-status-bar,
+    body[data-theme="dark"] .department-view-page .view-status-bar,
+    body.dark .department-view-page .view-status-bar,
+    body.dark-mode .department-view-page .view-status-bar {
+        background: linear-gradient(135deg, #0d1b14, #12281e);
+        border-bottom-color: rgba(122, 240, 181, 0.08);
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .status-info,
+    html[data-bs-theme="dark"] .department-view-page .status-info,
+    html[data-theme="dark"] .department-view-page .status-info,
+    html.dark .department-view-page .status-info,
+    body[data-pms-theme="dark"] .department-view-page .status-info,
+    body[data-bs-theme="dark"] .department-view-page .status-info,
+    body[data-theme="dark"] .department-view-page .status-info,
+    body.dark .department-view-page .status-info,
+    body.dark-mode .department-view-page .status-info {
+        color: #d9f1e4;
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .status-badge,
+    html[data-bs-theme="dark"] .department-view-page .status-badge,
+    html[data-theme="dark"] .department-view-page .status-badge,
+    html.dark .department-view-page .status-badge,
+    body[data-pms-theme="dark"] .department-view-page .status-badge,
+    body[data-bs-theme="dark"] .department-view-page .status-badge,
+    body[data-theme="dark"] .department-view-page .status-badge,
+    body.dark .department-view-page .status-badge,
+    body.dark-mode .department-view-page .status-badge {
+        background: linear-gradient(145deg, rgba(16, 185, 129, 0.25), rgba(5, 150, 105, 0.4));
+        color: #34d399;
+        border: 1px solid rgba(52, 211, 153, 0.3);
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .status-badge.archived,
+    html[data-bs-theme="dark"] .department-view-page .status-badge.archived,
+    html[data-theme="dark"] .department-view-page .status-badge.archived,
+    html.dark .department-view-page .status-badge.archived,
+    body[data-pms-theme="dark"] .department-view-page .status-badge.archived,
+    body[data-bs-theme="dark"] .department-view-page .status-badge.archived,
+    body[data-theme="dark"] .department-view-page .status-badge.archived,
+    body.dark .department-view-page .status-badge.archived,
+    body.dark-mode .department-view-page .status-badge.archived {
+        background: linear-gradient(145deg, rgba(245, 158, 11, 0.25), rgba(217, 119, 6, 0.4));
+        color: #fbbf24;
+        border: 1px solid rgba(251, 191, 36, 0.3);
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .view-field,
+    html[data-bs-theme="dark"] .department-view-page .view-field,
+    html[data-theme="dark"] .department-view-page .view-field,
+    html.dark .department-view-page .view-field,
+    body[data-pms-theme="dark"] .department-view-page .view-field,
+    body[data-bs-theme="dark"] .department-view-page .view-field,
+    body[data-theme="dark"] .department-view-page .view-field,
+    body.dark .department-view-page .view-field,
+    body.dark-mode .department-view-page .view-field {
+        background: #0d1b14;
+        border-color: rgba(122, 240, 181, 0.08);
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .view-field:hover,
+    html[data-bs-theme="dark"] .department-view-page .view-field:hover,
+    html[data-theme="dark"] .department-view-page .view-field:hover,
+    html.dark .department-view-page .view-field:hover,
+    body[data-pms-theme="dark"] .department-view-page .view-field:hover,
+    body[data-bs-theme="dark"] .department-view-page .view-field:hover,
+    body[data-theme="dark"] .department-view-page .view-field:hover,
+    body.dark .department-view-page .view-field:hover,
+    body.dark-mode .department-view-page .view-field:hover {
+        border-color: rgba(122, 240, 181, 0.2);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .field-content label,
+    html[data-bs-theme="dark"] .department-view-page .field-content label,
+    html[data-theme="dark"] .department-view-page .field-content label,
+    html.dark .department-view-page .field-content label,
+    body[data-pms-theme="dark"] .department-view-page .field-content label,
+    body[data-bs-theme="dark"] .department-view-page .field-content label,
+    body[data-theme="dark"] .department-view-page .field-content label,
+    body.dark .department-view-page .field-content label,
+    body.dark-mode .department-view-page .field-content label {
+        color: #8ba198;
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .field-value,
+    html[data-bs-theme="dark"] .department-view-page .field-value,
+    html[data-theme="dark"] .department-view-page .field-value,
+    html.dark .department-view-page .field-value,
+    body[data-pms-theme="dark"] .department-view-page .field-value,
+    body[data-bs-theme="dark"] .department-view-page .field-value,
+    body[data-theme="dark"] .department-view-page .field-value,
+    body.dark .department-view-page .field-value,
+    body.dark-mode .department-view-page .field-value {
+        color: #ffffff !important;
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .user-name,
+    html[data-bs-theme="dark"] .department-view-page .user-name,
+    html[data-theme="dark"] .department-view-page .user-name,
+    html.dark .department-view-page .user-name,
+    body[data-pms-theme="dark"] .department-view-page .user-name,
+    body[data-bs-theme="dark"] .department-view-page .user-name,
+    body[data-theme="dark"] .department-view-page .user-name,
+    body.dark .department-view-page .user-name,
+    body.dark-mode .department-view-page .user-name {
+        color: #ffffff !important;
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .text-muted,
+    html[data-bs-theme="dark"] .department-view-page .text-muted,
+    html[data-theme="dark"] .department-view-page .text-muted,
+    html.dark .department-view-page .text-muted,
+    body[data-pms-theme="dark"] .department-view-page .text-muted,
+    body[data-bs-theme="dark"] .department-view-page .text-muted,
+    body[data-theme="dark"] .department-view-page .text-muted,
+    body.dark .department-view-page .text-muted,
+    body.dark-mode .department-view-page .text-muted {
+        color: #8ba198 !important;
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .field-hint,
+    html[data-bs-theme="dark"] .department-view-page .field-hint,
+    html[data-theme="dark"] .department-view-page .field-hint,
+    html.dark .department-view-page .field-hint,
+    body[data-pms-theme="dark"] .department-view-page .field-hint,
+    body[data-bs-theme="dark"] .department-view-page .field-hint,
+    body[data-theme="dark"] .department-view-page .field-hint,
+    body.dark .department-view-page .field-hint,
+    body.dark-mode .department-view-page .field-hint {
+        color: #6b7280;
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .count-badge,
+    html[data-bs-theme="dark"] .department-view-page .count-badge,
+    html[data-theme="dark"] .department-view-page .count-badge,
+    html.dark .department-view-page .count-badge,
+    body[data-pms-theme="dark"] .department-view-page .count-badge,
+    body[data-bs-theme="dark"] .department-view-page .count-badge,
+    body[data-theme="dark"] .department-view-page .count-badge,
+    body.dark .department-view-page .count-badge,
+    body.dark-mode .department-view-page .count-badge {
+        background: linear-gradient(145deg, rgba(16, 185, 129, 0.25), rgba(5, 150, 105, 0.4));
+        color: #34d399;
+        border: 1px solid rgba(52, 211, 153, 0.3);
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .avatar-circle,
+    html[data-bs-theme="dark"] .department-view-page .avatar-circle,
+    html[data-theme="dark"] .department-view-page .avatar-circle,
+    html.dark .department-view-page .avatar-circle,
+    body[data-pms-theme="dark"] .department-view-page .avatar-circle,
+    body[data-bs-theme="dark"] .department-view-page .avatar-circle,
+    body[data-theme="dark"] .department-view-page .avatar-circle,
+    body.dark .department-view-page .avatar-circle,
+    body.dark-mode .department-view-page .avatar-circle {
+        background: linear-gradient(145deg, rgba(16, 185, 129, 0.3), rgba(5, 150, 105, 0.5));
+        color: #34d399;
+        border: 1px solid rgba(52, 211, 153, 0.4);
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .parent-link,
+    html[data-bs-theme="dark"] .department-view-page .parent-link,
+    html[data-theme="dark"] .department-view-page .parent-link,
+    html.dark .department-view-page .parent-link,
+    body[data-pms-theme="dark"] .department-view-page .parent-link,
+    body[data-bs-theme="dark"] .department-view-page .parent-link,
+    body[data-theme="dark"] .department-view-page .parent-link,
+    body.dark .department-view-page .parent-link,
+    body.dark-mode .department-view-page .parent-link {
+        color: #34d399;
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .no-parent,
+    html[data-bs-theme="dark"] .department-view-page .no-parent,
+    html[data-theme="dark"] .department-view-page .no-parent,
+    html.dark .department-view-page .no-parent,
+    body[data-pms-theme="dark"] .department-view-page .no-parent,
+    body[data-bs-theme="dark"] .department-view-page .no-parent,
+    body[data-theme="dark"] .department-view-page .no-parent,
+    body.dark .department-view-page .no-parent,
+    body.dark-mode .department-view-page .no-parent {
+        color: #fbbf24;
+    }
+
+    /* Field Icon Styling in Dark Mode */
+    html[data-pms-theme="dark"] .department-view-page .view-field:nth-child(1) .field-icon,
+    html[data-bs-theme="dark"] .department-view-page .view-field:nth-child(1) .field-icon,
+    html[data-theme="dark"] .department-view-page .view-field:nth-child(1) .field-icon,
+    html.dark .department-view-page .view-field:nth-child(1) .field-icon,
+    body[data-pms-theme="dark"] .department-view-page .view-field:nth-child(1) .field-icon,
+    body[data-bs-theme="dark"] .department-view-page .view-field:nth-child(1) .field-icon,
+    body[data-theme="dark"] .department-view-page .view-field:nth-child(1) .field-icon,
+    body.dark .department-view-page .view-field:nth-child(1) .field-icon,
+    body.dark-mode .department-view-page .view-field:nth-child(1) .field-icon {
+        background: linear-gradient(145deg, rgba(16, 185, 129, 0.3), rgba(5, 150, 105, 0.5)) !important;
+        color: #34d399 !important;
+        border: 1px solid rgba(52, 211, 153, 0.4) !important;
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .view-field:nth-child(2) .field-icon,
+    html[data-bs-theme="dark"] .department-view-page .view-field:nth-child(2) .field-icon,
+    html[data-theme="dark"] .department-view-page .view-field:nth-child(2) .field-icon,
+    html.dark .department-view-page .view-field:nth-child(2) .field-icon,
+    body[data-pms-theme="dark"] .department-view-page .view-field:nth-child(2) .field-icon,
+    body[data-bs-theme="dark"] .department-view-page .view-field:nth-child(2) .field-icon,
+    body[data-theme="dark"] .department-view-page .view-field:nth-child(2) .field-icon,
+    body.dark .department-view-page .view-field:nth-child(2) .field-icon,
+    body.dark-mode .department-view-page .view-field:nth-child(2) .field-icon {
+        background: linear-gradient(145deg, rgba(56, 189, 248, 0.3), rgba(2, 132, 199, 0.5)) !important;
+        color: #38bdf8 !important;
+        border: 1px solid rgba(56, 189, 248, 0.4) !important;
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .view-field:nth-child(3) .field-icon,
+    html[data-bs-theme="dark"] .department-view-page .view-field:nth-child(3) .field-icon,
+    html[data-theme="dark"] .department-view-page .view-field:nth-child(3) .field-icon,
+    html.dark .department-view-page .view-field:nth-child(3) .field-icon,
+    body[data-pms-theme="dark"] .department-view-page .view-field:nth-child(3) .field-icon,
+    body[data-bs-theme="dark"] .department-view-page .view-field:nth-child(3) .field-icon,
+    body[data-theme="dark"] .department-view-page .view-field:nth-child(3) .field-icon,
+    body.dark .department-view-page .view-field:nth-child(3) .field-icon,
+    body.dark-mode .department-view-page .view-field:nth-child(3) .field-icon {
+        background: linear-gradient(145deg, rgba(245, 158, 11, 0.3), rgba(217, 119, 6, 0.5)) !important;
+        color: #fbbf24 !important;
+        border: 1px solid rgba(251, 191, 36, 0.4) !important;
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .view-field:nth-child(4) .field-icon,
+    html[data-bs-theme="dark"] .department-view-page .view-field:nth-child(4) .field-icon,
+    html[data-theme="dark"] .department-view-page .view-field:nth-child(4) .field-icon,
+    html.dark .department-view-page .view-field:nth-child(4) .field-icon,
+    body[data-pms-theme="dark"] .department-view-page .view-field:nth-child(4) .field-icon,
+    body[data-bs-theme="dark"] .department-view-page .view-field:nth-child(4) .field-icon,
+    body[data-theme="dark"] .department-view-page .view-field:nth-child(4) .field-icon,
+    body.dark .department-view-page .view-field:nth-child(4) .field-icon,
+    body.dark-mode .department-view-page .view-field:nth-child(4) .field-icon {
+        background: linear-gradient(145deg, rgba(99, 102, 241, 0.3), rgba(79, 70, 229, 0.5)) !important;
+        color: #818cf8 !important;
+        border: 1px solid rgba(129, 140, 248, 0.4) !important;
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .view-field:nth-child(5) .field-icon,
+    html[data-bs-theme="dark"] .department-view-page .view-field:nth-child(5) .field-icon,
+    html[data-theme="dark"] .department-view-page .view-field:nth-child(5) .field-icon,
+    html.dark .department-view-page .view-field:nth-child(5) .field-icon,
+    body[data-pms-theme="dark"] .department-view-page .view-field:nth-child(5) .field-icon,
+    body[data-bs-theme="dark"] .department-view-page .view-field:nth-child(5) .field-icon,
+    body[data-theme="dark"] .department-view-page .view-field:nth-child(5) .field-icon,
+    body.dark .department-view-page .view-field:nth-child(5) .field-icon,
+    body.dark-mode .department-view-page .view-field:nth-child(5) .field-icon {
+        background: linear-gradient(145deg, rgba(236, 72, 153, 0.3), rgba(219, 39, 119, 0.5)) !important;
+        color: #f472b6 !important;
+        border: 1px solid rgba(244, 114, 182, 0.4) !important;
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .view-field:nth-child(6) .field-icon,
+    html[data-bs-theme="dark"] .department-view-page .view-field:nth-child(6) .field-icon,
+    html[data-theme="dark"] .department-view-page .view-field:nth-child(6) .field-icon,
+    html.dark .department-view-page .view-field:nth-child(6) .field-icon,
+    body[data-pms-theme="dark"] .department-view-page .view-field:nth-child(6) .field-icon,
+    body[data-bs-theme="dark"] .department-view-page .view-field:nth-child(6) .field-icon,
+    body[data-theme="dark"] .department-view-page .view-field:nth-child(6) .field-icon,
+    body.dark .department-view-page .view-field:nth-child(6) .field-icon,
+    body.dark-mode .department-view-page .view-field:nth-child(6) .field-icon {
+        background: linear-gradient(145deg, rgba(6, 182, 212, 0.3), rgba(8, 145, 178, 0.5)) !important;
+        color: #22d3ee !important;
+        border: 1px solid rgba(34, 211, 238, 0.4) !important;
+    }
+
+    /* Footer & Structure Information Card in Dark Mode */
+    html[data-pms-theme="dark"] .department-view-page .view-footer,
+    html[data-bs-theme="dark"] .department-view-page .view-footer,
+    html[data-theme="dark"] .department-view-page .view-footer,
+    html.dark .department-view-page .view-footer,
+    body[data-pms-theme="dark"] .department-view-page .view-footer,
+    body[data-bs-theme="dark"] .department-view-page .view-footer,
+    body[data-theme="dark"] .department-view-page .view-footer,
+    body.dark .department-view-page .view-footer,
+    body.dark-mode .department-view-page .view-footer {
+        background: #0d1b14;
+        border-top-color: rgba(122, 240, 181, 0.08);
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .footer-info,
+    html[data-bs-theme="dark"] .department-view-page .footer-info,
+    html[data-theme="dark"] .department-view-page .footer-info,
+    html.dark .department-view-page .footer-info,
+    body[data-pms-theme="dark"] .department-view-page .footer-info,
+    body[data-bs-theme="dark"] .department-view-page .footer-info,
+    body[data-theme="dark"] .department-view-page .footer-info,
+    body.dark .department-view-page .footer-info,
+    body.dark-mode .department-view-page .footer-info {
+        color: #8ba198;
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .separator,
+    html[data-bs-theme="dark"] .department-view-page .separator,
+    html[data-theme="dark"] .department-view-page .separator,
+    html.dark .department-view-page .separator,
+    body[data-pms-theme="dark"] .department-view-page .separator,
+    body[data-bs-theme="dark"] .department-view-page .separator,
+    body[data-theme="dark"] .department-view-page .separator,
+    body.dark .department-view-page .separator,
+    body.dark-mode .department-view-page .separator {
+        color: rgba(122, 240, 181, 0.2);
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .related-card,
+    html[data-bs-theme="dark"] .department-view-page .related-card,
+    html[data-theme="dark"] .department-view-page .related-card,
+    html.dark .department-view-page .related-card,
+    body[data-pms-theme="dark"] .department-view-page .related-card,
+    body[data-bs-theme="dark"] .department-view-page .related-card,
+    body[data-theme="dark"] .department-view-page .related-card,
+    body.dark .department-view-page .related-card,
+    body.dark-mode .department-view-page .related-card {
+        background: #102119;
+        border-color: rgba(122, 240, 181, 0.1);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .related-header,
+    html[data-bs-theme="dark"] .department-view-page .related-header,
+    html[data-theme="dark"] .department-view-page .related-header,
+    html.dark .department-view-page .related-header,
+    body[data-pms-theme="dark"] .department-view-page .related-header,
+    body[data-bs-theme="dark"] .department-view-page .related-header,
+    body[data-theme="dark"] .department-view-page .related-header,
+    body.dark .department-view-page .related-header,
+    body.dark-mode .department-view-page .related-header {
+        background: linear-gradient(135deg, #0d1b14, #12281e);
+        border-bottom-color: rgba(122, 240, 181, 0.08);
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .related-header h5,
+    html[data-bs-theme="dark"] .department-view-page .related-header h5,
+    html[data-theme="dark"] .department-view-page .related-header h5,
+    html.dark .department-view-page .related-header h5,
+    body[data-pms-theme="dark"] .department-view-page .related-header h5,
+    body[data-bs-theme="dark"] .department-view-page .related-header h5,
+    body[data-theme="dark"] .department-view-page .related-header h5,
+    body.dark .department-view-page .related-header h5,
+    body.dark-mode .department-view-page .related-header h5 {
+        color: #ffffff !important;
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .related-label,
+    html[data-bs-theme="dark"] .department-view-page .related-label,
+    html[data-theme="dark"] .department-view-page .related-label,
+    html.dark .department-view-page .related-label,
+    body[data-pms-theme="dark"] .department-view-page .related-label,
+    body[data-bs-theme="dark"] .department-view-page .related-label,
+    body[data-theme="dark"] .department-view-page .related-label,
+    body.dark .department-view-page .related-label,
+    body.dark-mode .department-view-page .related-label {
+        color: #8ba198;
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .related-value,
+    html[data-bs-theme="dark"] .department-view-page .related-value,
+    html[data-theme="dark"] .department-view-page .related-value,
+    html.dark .department-view-page .related-value,
+    body[data-pms-theme="dark"] .department-view-page .related-value,
+    body[data-bs-theme="dark"] .department-view-page .related-value,
+    body[data-theme="dark"] .department-view-page .related-value,
+    body.dark .department-view-page .related-value,
+    body.dark-mode .department-view-page .related-value {
+        color: #ffffff !important;
+    }
 </style>
