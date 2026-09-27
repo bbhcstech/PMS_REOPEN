@@ -110,13 +110,23 @@
         height: 58px;
         border-radius: 20px;
         background: linear-gradient(145deg, #34d399, #059669);
-        color: white;
+        color: #ffffff !important;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 1.6rem;
         box-shadow: 0 8px 20px -4px rgba(5, 150, 105, 0.35);
         flex-shrink: 0;
+    }
+
+    .header-icon-badge i,
+    .header-icon-badge svg,
+    .header-icon-badge [class*="fa"] {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        background: transparent !important;
+        opacity: 1 !important;
+        visibility: visible !important;
     }
 
     .header-title h1 {
@@ -171,10 +181,10 @@
 
     /* ===== STATS GRID ===== */
     .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 1.25rem;
-        margin-bottom: 2rem;
+        display: grid !important;
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 1.25rem !important;
+        margin-bottom: 2rem !important;
     }
 
     .stat-card,
@@ -254,11 +264,47 @@
         -webkit-text-fill-color: #059669 !important;
     }
 
+    .stat-icon.mailer i,
+    .stat-icon.mailer svg,
+    .stat-icon.mailer [class*="fa"],
+    .email-settings-page .stat-card .stat-icon.mailer i,
+    .email-settings-page .stat-card .stat-icon.mailer svg,
+    .email-settings-page .stat-card .stat-icon.mailer [class*="fa"],
+    .email-settings-page .stat-card:first-of-type .stat-icon.mailer i,
+    .email-settings-page .stat-card:first-of-type .stat-icon.mailer svg,
+    .email-settings-page .stat-card:first-of-type .stat-icon.mailer [class*="fa"] {
+        background: transparent !important;
+        background-color: transparent !important;
+        color: #059669 !important;
+        -webkit-text-fill-color: #059669 !important;
+        fill: #059669 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
     .stat-icon.host,
     .email-settings-page .stat-card .stat-icon.host {
         background: linear-gradient(145deg, #e0f2fe, #bae6fd) !important;
         color: #0284c7 !important;
         -webkit-text-fill-color: #0284c7 !important;
+    }
+
+    .stat-icon.host i,
+    .stat-icon.host svg,
+    .stat-icon.host [class*="fa"],
+    .email-settings-page .stat-card .stat-icon.host i,
+    .email-settings-page .stat-card .stat-icon.host svg,
+    .email-settings-page .stat-card .stat-icon.host [class*="fa"],
+    .email-settings-page .stat-card:first-of-type .stat-icon.host i,
+    .email-settings-page .stat-card:first-of-type .stat-icon.host svg,
+    .email-settings-page .stat-card:first-of-type .stat-icon.host [class*="fa"] {
+        background: transparent !important;
+        background-color: transparent !important;
+        color: #0284c7 !important;
+        -webkit-text-fill-color: #0284c7 !important;
+        fill: #0284c7 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
     }
 
     .stat-icon.encryption,
@@ -268,11 +314,47 @@
         -webkit-text-fill-color: #d97706 !important;
     }
 
+    .stat-icon.encryption i,
+    .stat-icon.encryption svg,
+    .stat-icon.encryption [class*="fa"],
+    .email-settings-page .stat-card .stat-icon.encryption i,
+    .email-settings-page .stat-card .stat-icon.encryption svg,
+    .email-settings-page .stat-card .stat-icon.encryption [class*="fa"],
+    .email-settings-page .stat-card:first-of-type .stat-icon.encryption i,
+    .email-settings-page .stat-card:first-of-type .stat-icon.encryption svg,
+    .email-settings-page .stat-card:first-of-type .stat-icon.encryption [class*="fa"] {
+        background: transparent !important;
+        background-color: transparent !important;
+        color: #d97706 !important;
+        -webkit-text-fill-color: #d97706 !important;
+        fill: #d97706 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
     .stat-icon.sender,
     .email-settings-page .stat-card .stat-icon.sender {
         background: linear-gradient(145deg, #e0e7ff, #c7d2fe) !important;
         color: #4f46e5 !important;
         -webkit-text-fill-color: #4f46e5 !important;
+    }
+
+    .stat-icon.sender i,
+    .stat-icon.sender svg,
+    .stat-icon.sender [class*="fa"],
+    .email-settings-page .stat-card .stat-icon.sender i,
+    .email-settings-page .stat-card .stat-icon.sender svg,
+    .email-settings-page .stat-card .stat-icon.sender [class*="fa"],
+    .email-settings-page .stat-card:first-of-type .stat-icon.sender i,
+    .email-settings-page .stat-card:first-of-type .stat-icon.sender svg,
+    .email-settings-page .stat-card:first-of-type .stat-icon.sender [class*="fa"] {
+        background: transparent !important;
+        background-color: transparent !important;
+        color: #4f46e5 !important;
+        -webkit-text-fill-color: #4f46e5 !important;
+        fill: #4f46e5 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
     }
 
     .stat-info h6 {
@@ -441,20 +523,260 @@
         font-weight: 800;
     }
 
-    @media (max-width: 1200px) {
-        .stats-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
+    /* ===== DARK MODE SUPPORT ===== */
+    html[data-pms-theme="dark"] .email-settings-page,
+    html[data-theme="dark"] .email-settings-page,
+    html[data-bs-theme="dark"] .email-settings-page,
+    body[data-pms-theme="dark"] .email-settings-page,
+    body[data-theme="dark"] .email-settings-page,
+    body[data-bs-theme="dark"] .email-settings-page,
+    [data-pms-theme="dark"] .email-settings-page,
+    [data-theme="dark"] .email-settings-page,
+    [data-bs-theme="dark"] .email-settings-page,
+    .dark-mode .email-settings-page {
+        background: #0b0f19 !important;
+        color: #e2e8f0 !important;
     }
 
-    @media (max-width: 768px) {
-        .email-settings-page {
-            padding: 1.25rem 1rem;
-        }
+    html[data-pms-theme="dark"] .branches-header,
+    html[data-theme="dark"] .branches-header,
+    html[data-bs-theme="dark"] .branches-header,
+    body[data-pms-theme="dark"] .branches-header,
+    body[data-theme="dark"] .branches-header,
+    body[data-bs-theme="dark"] .branches-header,
+    [data-pms-theme="dark"] .branches-header,
+    [data-theme="dark"] .branches-header,
+    [data-bs-theme="dark"] .branches-header,
+    html[data-pms-theme="dark"] .address-card-elevated,
+    html[data-theme="dark"] .address-card-elevated,
+    html[data-bs-theme="dark"] .address-card-elevated,
+    body[data-pms-theme="dark"] .address-card-elevated,
+    body[data-theme="dark"] .address-card-elevated,
+    body[data-bs-theme="dark"] .address-card-elevated,
+    [data-pms-theme="dark"] .address-card-elevated,
+    [data-theme="dark"] .address-card-elevated,
+    [data-bs-theme="dark"] .address-card-elevated,
+    .dark-mode .branches-header,
+    .dark-mode .address-card-elevated {
+        background: #111827 !important;
+        border-color: rgba(255, 255, 255, 0.08) !important;
+        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.4) !important;
+    }
 
-        .stats-grid {
-            grid-template-columns: 1fr;
-        }
+    html[data-pms-theme="dark"] .card-header-custom,
+    html[data-bs-theme="dark"] .card-header-custom,
+    body[data-pms-theme="dark"] .card-header-custom,
+    [data-pms-theme="dark"] .card-header-custom {
+        border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+    }
+
+    html[data-pms-theme="dark"] .card-header-custom h5,
+    html[data-bs-theme="dark"] .card-header-custom h5,
+    body[data-pms-theme="dark"] .card-header-custom h5,
+    [data-pms-theme="dark"] .card-header-custom h5,
+    html[data-pms-theme="dark"] .header-title h1,
+    html[data-bs-theme="dark"] .header-title h1,
+    body[data-pms-theme="dark"] .header-title h1,
+    [data-pms-theme="dark"] .header-title h1 {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+        background: none !important;
+    }
+
+    html[data-pms-theme="dark"] .header-title p,
+    html[data-bs-theme="dark"] .header-title p,
+    body[data-pms-theme="dark"] .header-title p,
+    [data-pms-theme="dark"] .header-title p,
+    html[data-pms-theme="dark"] .card-header-custom .text-muted,
+    html[data-bs-theme="dark"] .card-header-custom .text-muted,
+    body[data-pms-theme="dark"] .card-header-custom .text-muted,
+    [data-pms-theme="dark"] .card-header-custom .text-muted {
+        color: #94a3b8 !important;
+        -webkit-text-fill-color: #94a3b8 !important;
+    }
+
+    /* Back to Settings Button in Dark Mode */
+    html[data-pms-theme="dark"] .btn-back-settings,
+    html[data-theme="dark"] .btn-back-settings,
+    html[data-bs-theme="dark"] .btn-back-settings,
+    body[data-pms-theme="dark"] .btn-back-settings,
+    body[data-theme="dark"] .btn-back-settings,
+    body[data-bs-theme="dark"] .btn-back-settings,
+    [data-pms-theme="dark"] .btn-back-settings,
+    [data-theme="dark"] .btn-back-settings,
+    [data-bs-theme="dark"] .btn-back-settings,
+    .dark-mode .btn-back-settings {
+        background-color: #1e293b !important;
+        background: #1e293b !important;
+        border-color: rgba(52, 211, 153, 0.35) !important;
+        color: #34d399 !important;
+        -webkit-text-fill-color: #34d399 !important;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2) !important;
+    }
+
+    html[data-pms-theme="dark"] .btn-back-settings i,
+    html[data-theme="dark"] .btn-back-settings i,
+    html[data-bs-theme="dark"] .btn-back-settings i,
+    body[data-pms-theme="dark"] .btn-back-settings i,
+    body[data-theme="dark"] .btn-back-settings i,
+    body[data-bs-theme="dark"] .btn-back-settings i,
+    [data-pms-theme="dark"] .btn-back-settings i,
+    [data-theme="dark"] .btn-back-settings i,
+    [data-bs-theme="dark"] .btn-back-settings i,
+    .dark-mode .btn-back-settings i,
+    html[data-pms-theme="dark"] .btn-back-settings .back-arrow-icon,
+    html[data-theme="dark"] .btn-back-settings .back-arrow-icon,
+    [data-pms-theme="dark"] .btn-back-settings .back-arrow-icon {
+        color: #34d399 !important;
+        -webkit-text-fill-color: #34d399 !important;
+    }
+
+    html[data-pms-theme="dark"] .btn-back-settings:hover,
+    html[data-theme="dark"] .btn-back-settings:hover,
+    html[data-bs-theme="dark"] .btn-back-settings:hover,
+    body[data-pms-theme="dark"] .btn-back-settings:hover,
+    body[data-theme="dark"] .btn-back-settings:hover,
+    body[data-bs-theme="dark"] .btn-back-settings:hover,
+    [data-pms-theme="dark"] .btn-back-settings:hover,
+    [data-theme="dark"] .btn-back-settings:hover,
+    [data-bs-theme="dark"] .btn-back-settings:hover,
+    .dark-mode .btn-back-settings:hover {
+        background-color: #0f172a !important;
+        background: #0f172a !important;
+        border-color: rgba(52, 211, 153, 0.6) !important;
+        color: #6ee7b7 !important;
+        -webkit-text-fill-color: #6ee7b7 !important;
+    }
+
+    /* Stat Cards in Dark Mode */
+    html[data-pms-theme="dark"] .email-settings-page .stat-card,
+    html[data-theme="dark"] .email-settings-page .stat-card,
+    html[data-bs-theme="dark"] .email-settings-page .stat-card,
+    body[data-pms-theme="dark"] .email-settings-page .stat-card,
+    body[data-theme="dark"] .email-settings-page .stat-card,
+    body[data-bs-theme="dark"] .email-settings-page .stat-card,
+    [data-pms-theme="dark"] .email-settings-page .stat-card,
+    [data-theme="dark"] .email-settings-page .stat-card,
+    [data-bs-theme="dark"] .email-settings-page .stat-card,
+    html[data-pms-theme="dark"] .email-settings-page .stat-card:first-of-type,
+    html[data-theme="dark"] .email-settings-page .stat-card:first-of-type,
+    html[data-bs-theme="dark"] .email-settings-page .stat-card:first-of-type,
+    body[data-pms-theme="dark"] .email-settings-page .stat-card:first-of-type,
+    body[data-theme="dark"] .email-settings-page .stat-card:first-of-type,
+    body[data-bs-theme="dark"] .email-settings-page .stat-card:first-of-type,
+    [data-pms-theme="dark"] .email-settings-page .stat-card:first-of-type,
+    [data-theme="dark"] .email-settings-page .stat-card:first-of-type,
+    [data-bs-theme="dark"] .email-settings-page .stat-card:first-of-type,
+    html[data-pms-theme="dark"] .stat-card,
+    html[data-theme="dark"] .stat-card,
+    html[data-bs-theme="dark"] .stat-card,
+    html[data-pms-theme="dark"] .stat-card:first-of-type,
+    html[data-theme="dark"] .stat-card:first-of-type,
+    html[data-bs-theme="dark"] .stat-card:first-of-type,
+    .dark-mode .stat-card,
+    .dark-mode .stat-card:first-of-type {
+        background: #171e2e !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.3) !important;
+        color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .email-settings-page .stat-card h3,
+    html[data-theme="dark"] .email-settings-page .stat-card h3,
+    html[data-bs-theme="dark"] .email-settings-page .stat-card h3,
+    body[data-pms-theme="dark"] .email-settings-page .stat-card h3,
+    body[data-theme="dark"] .email-settings-page .stat-card h3,
+    body[data-bs-theme="dark"] .email-settings-page .stat-card h3,
+    [data-pms-theme="dark"] .email-settings-page .stat-card h3,
+    [data-theme="dark"] .email-settings-page .stat-card h3,
+    [data-bs-theme="dark"] .email-settings-page .stat-card h3,
+    html[data-pms-theme="dark"] .email-settings-page .stat-card:first-of-type h3,
+    html[data-theme="dark"] .email-settings-page .stat-card:first-of-type h3,
+    html[data-bs-theme="dark"] .email-settings-page .stat-card:first-of-type h3,
+    body[data-pms-theme="dark"] .email-settings-page .stat-card:first-of-type h3,
+    body[data-theme="dark"] .email-settings-page .stat-card:first-of-type h3,
+    body[data-bs-theme="dark"] .email-settings-page .stat-card:first-of-type h3,
+    [data-pms-theme="dark"] .email-settings-page .stat-card:first-of-type h3,
+    [data-theme="dark"] .email-settings-page .stat-card:first-of-type h3,
+    [data-bs-theme="dark"] .email-settings-page .stat-card:first-of-type h3,
+    .dark-mode .stat-card h3 {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .email-settings-page .stat-card h6,
+    html[data-theme="dark"] .email-settings-page .stat-card h6,
+    html[data-bs-theme="dark"] .email-settings-page .stat-card h6,
+    body[data-pms-theme="dark"] .email-settings-page .stat-card h6,
+    body[data-theme="dark"] .email-settings-page .stat-card h6,
+    body[data-bs-theme="dark"] .email-settings-page .stat-card h6,
+    [data-pms-theme="dark"] .email-settings-page .stat-card h6,
+    [data-theme="dark"] .email-settings-page .stat-card h6,
+    [data-bs-theme="dark"] .email-settings-page .stat-card h6,
+    html[data-pms-theme="dark"] .email-settings-page .stat-card:first-of-type h6,
+    html[data-theme="dark"] .email-settings-page .stat-card:first-of-type h6,
+    html[data-bs-theme="dark"] .email-settings-page .stat-card:first-of-type h6,
+    body[data-pms-theme="dark"] .email-settings-page .stat-card:first-of-type h6,
+    body[data-theme="dark"] .email-settings-page .stat-card:first-of-type h6,
+    body[data-bs-theme="dark"] .email-settings-page .stat-card:first-of-type h6,
+    [data-pms-theme="dark"] .email-settings-page .stat-card:first-of-type h6,
+    [data-theme="dark"] .email-settings-page .stat-card:first-of-type h6,
+    [data-bs-theme="dark"] .email-settings-page .stat-card:first-of-type h6,
+    .dark-mode .stat-card h6 {
+        color: #94a3b8 !important;
+        -webkit-text-fill-color: #94a3b8 !important;
+    }
+
+    /* Form Controls, Inputs & Selects in Dark Mode */
+    html[data-pms-theme="dark"] .input-group-custom,
+    html[data-theme="dark"] .input-group-custom,
+    html[data-bs-theme="dark"] .input-group-custom,
+    body[data-pms-theme="dark"] .input-group-custom,
+    body[data-theme="dark"] .input-group-custom,
+    body[data-bs-theme="dark"] .input-group-custom,
+    [data-pms-theme="dark"] .input-group-custom,
+    [data-theme="dark"] .input-group-custom,
+    [data-bs-theme="dark"] .input-group-custom,
+    .dark-mode .input-group-custom {
+        background-color: #1a2234 !important;
+        border-color: rgba(255, 255, 255, 0.12) !important;
+    }
+
+    html[data-pms-theme="dark"] .input-group-custom .form-control,
+    html[data-theme="dark"] .input-group-custom .form-control,
+    html[data-bs-theme="dark"] .input-group-custom .form-control,
+    html[data-pms-theme="dark"] .input-group-custom .form-select,
+    html[data-theme="dark"] .input-group-custom .form-select,
+    html[data-bs-theme="dark"] .input-group-custom .form-select,
+    [data-pms-theme="dark"] .input-group-custom .form-control,
+    [data-pms-theme="dark"] .input-group-custom .form-select {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .form-label-custom,
+    html[data-theme="dark"] .form-label-custom,
+    html[data-bs-theme="dark"] .form-label-custom,
+    [data-pms-theme="dark"] .form-label-custom {
+        color: #e2e8f0 !important;
+        -webkit-text-fill-color: #e2e8f0 !important;
+    }
+
+    html[data-pms-theme="dark"] .section-badge,
+    html[data-bs-theme="dark"] .section-badge,
+    body[data-pms-theme="dark"] .section-badge,
+    [data-pms-theme="dark"] .section-badge {
+        background: rgba(16, 185, 129, 0.15) !important;
+        color: #34d399 !important;
+        border-color: rgba(52, 211, 153, 0.3) !important;
+    }
+
+    html[data-pms-theme="dark"] .section-badge i,
+    html[data-theme="dark"] .section-badge i,
+    html[data-bs-theme="dark"] .section-badge i,
+    [data-pms-theme="dark"] .section-badge i {
+        color: #34d399 !important;
+        -webkit-text-fill-color: #34d399 !important;
     }
 </style>
 @endpush

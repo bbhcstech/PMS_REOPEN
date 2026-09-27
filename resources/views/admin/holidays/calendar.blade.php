@@ -245,6 +245,15 @@
         flex-shrink: 0;
     }
 
+    .header-icon-badge i,
+    .header-icon-badge svg,
+    .header-icon-badge [class*="fa"] {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
     .header-title h1 {
         font-size: 1.95rem;
         font-weight: 800;

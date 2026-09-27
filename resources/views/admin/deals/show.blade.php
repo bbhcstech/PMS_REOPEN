@@ -38,6 +38,111 @@
     background: #ef4444;
     color: #ffffff;
 }
+
+/* Dark Mode Support for Visual Pipeline Stepper */
+html[data-pms-theme="dark"] .pipeline-progress,
+html[data-bs-theme="dark"] .pipeline-progress,
+html[data-theme="dark"] .pipeline-progress,
+body[data-pms-theme="dark"] .pipeline-progress,
+[data-pms-theme="dark"] .pipeline-progress {
+    background: #0F1530 !important;
+    border-color: rgba(238, 241, 251, 0.15) !important;
+}
+
+html[data-pms-theme="dark"] .pipeline-step,
+html[data-bs-theme="dark"] .pipeline-step,
+html[data-theme="dark"] .pipeline-step,
+body[data-pms-theme="dark"] .pipeline-step,
+[data-pms-theme="dark"] .pipeline-step {
+    background: #141B3D !important;
+    border-right-color: rgba(238, 241, 251, 0.12) !important;
+    color: #94a3b8 !important;
+    -webkit-text-fill-color: #94a3b8 !important;
+}
+
+html[data-pms-theme="dark"] .pipeline-step span,
+html[data-bs-theme="dark"] .pipeline-step span,
+html[data-theme="dark"] .pipeline-step span,
+body[data-pms-theme="dark"] .pipeline-step span,
+[data-pms-theme="dark"] .pipeline-step span {
+    color: #cbd5e1 !important;
+    -webkit-text-fill-color: #cbd5e1 !important;
+}
+
+html[data-pms-theme="dark"] .pipeline-step small,
+html[data-bs-theme="dark"] .pipeline-step small,
+html[data-theme="dark"] .pipeline-step small,
+body[data-pms-theme="dark"] .pipeline-step small,
+[data-pms-theme="dark"] .pipeline-step small {
+    color: #64748b !important;
+    -webkit-text-fill-color: #64748b !important;
+}
+
+html[data-pms-theme="dark"] .pipeline-step.active,
+html[data-bs-theme="dark"] .pipeline-step.active,
+html[data-theme="dark"] .pipeline-step.active,
+body[data-pms-theme="dark"] .pipeline-step.active,
+[data-pms-theme="dark"] .pipeline-step.active {
+    background: #2563eb !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+html[data-pms-theme="dark"] .pipeline-step.active span,
+html[data-pms-theme="dark"] .pipeline-step.active small,
+html[data-bs-theme="dark"] .pipeline-step.active span,
+html[data-bs-theme="dark"] .pipeline-step.active small,
+body[data-pms-theme="dark"] .pipeline-step.active span,
+body[data-pms-theme="dark"] .pipeline-step.active small,
+[data-pms-theme="dark"] .pipeline-step.active span,
+[data-pms-theme="dark"] .pipeline-step.active small {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+html[data-pms-theme="dark"] .pipeline-step.completed,
+html[data-bs-theme="dark"] .pipeline-step.completed,
+html[data-theme="dark"] .pipeline-step.completed,
+body[data-pms-theme="dark"] .pipeline-step.completed,
+[data-pms-theme="dark"] .pipeline-step.completed {
+    background: #059669 !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+html[data-pms-theme="dark"] .pipeline-step.completed span,
+html[data-pms-theme="dark"] .pipeline-step.completed small,
+html[data-bs-theme="dark"] .pipeline-step.completed span,
+html[data-bs-theme="dark"] .pipeline-step.completed small,
+body[data-pms-theme="dark"] .pipeline-step.completed span,
+body[data-pms-theme="dark"] .pipeline-step.completed small,
+[data-pms-theme="dark"] .pipeline-step.completed span,
+[data-pms-theme="dark"] .pipeline-step.completed small {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+html[data-pms-theme="dark"] .pipeline-step.lost,
+html[data-bs-theme="dark"] .pipeline-step.lost,
+html[data-theme="dark"] .pipeline-step.lost,
+body[data-pms-theme="dark"] .pipeline-step.lost,
+[data-pms-theme="dark"] .pipeline-step.lost {
+    background: #dc2626 !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+html[data-pms-theme="dark"] .pipeline-step.lost span,
+html[data-pms-theme="dark"] .pipeline-step.lost small,
+html[data-bs-theme="dark"] .pipeline-step.lost span,
+html[data-bs-theme="dark"] .pipeline-step.lost small,
+body[data-pms-theme="dark"] .pipeline-step.lost span,
+body[data-pms-theme="dark"] .pipeline-step.lost small,
+[data-pms-theme="dark"] .pipeline-step.lost span,
+[data-pms-theme="dark"] .pipeline-step.lost small {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
 </style>
 
 <div class="container-fluid py-3">
