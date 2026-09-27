@@ -35,10 +35,12 @@ class EmployeeController extends Controller
     protected function ensureAdmin()
     {
         $user = auth()->user();
-        if (! $user || ! in_array(($user->role ?? ''), ['admin', 'hr'], true)) {
+        $role = $user ? strtolower((string) ($user->role ?? '')) : '';
+        if (! $user || ! in_array($role, ['admin', 'hr', 'manager', 'administrator', 'superadmin'], true)) {
             abort(403, 'Unauthorized');
         }
     }
+
 
     // ===========================================================
     // ===== REPORTING-TO INTEGRITY : subordinate check helper ===

@@ -82,9 +82,7 @@ class EnsureCompanySubscriptionActive
                         return redirect()->route('subscription.suspended');
                     }
                 }
-            } catch (\Throwable $e) {
-                // Silently handle or log any subscription evaluation exceptions
-            }
+            } catch (\Throwable $e) {}
         }
 
         return $next($request);

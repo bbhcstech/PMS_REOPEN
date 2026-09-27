@@ -111,5 +111,89 @@ document.addEventListener('DOMContentLoaded', function () {
     .btn-primary { background: linear-gradient(145deg, #34d399, #059669); color: #fff; }
     .btn-light, .btn-secondary { background: #f0f9f4; color: #0f744c; border: 1px solid rgba(16,185,129,.18); }
     @media (max-width: 992px) { .leave-form-page { padding: 18px; } .leave-form-hero, .form-grid.two { grid-template-columns: 1fr; flex-direction: column; align-items: flex-start; } }
+
+    /* Dark mode support */
+    html[data-pms-theme="dark"] .leave-form-page,
+    html[data-theme="dark"] .leave-form-page,
+    html[data-bs-theme="dark"] .leave-form-page,
+    body[data-pms-theme="dark"] .leave-form-page,
+    body.dark-mode .leave-form-page {
+        background: linear-gradient(135deg, #07130d, #102119) !important;
+        color: #d9f1e4 !important;
+    }
+    html[data-pms-theme="dark"] .leave-breadcrumb,
+    html[data-pms-theme="dark"] .leave-form-hero,
+    html[data-pms-theme="dark"] .form-card,
+    html[data-theme="dark"] .leave-breadcrumb,
+    html[data-theme="dark"] .leave-form-hero,
+    html[data-theme="dark"] .form-card,
+    html[data-bs-theme="dark"] .leave-breadcrumb,
+    html[data-bs-theme="dark"] .leave-form-hero,
+    html[data-bs-theme="dark"] .form-card,
+    body[data-pms-theme="dark"] .leave-breadcrumb,
+    body[data-pms-theme="dark"] .leave-form-hero,
+    body[data-pms-theme="dark"] .form-card,
+    body.dark-mode .leave-breadcrumb,
+    body.dark-mode .leave-form-hero,
+    body.dark-mode .form-card {
+        background: rgba(16, 33, 25, 0.95) !important;
+        border-color: rgba(122, 240, 181, 0.15) !important;
+        box-shadow: 0 16px 36px -20px rgba(0, 0, 0, 0.5) !important;
+        color: #d9f1e4 !important;
+    }
+    html[data-pms-theme="dark"] .leave-breadcrumb i,
+    html[data-theme="dark"] .leave-breadcrumb i,
+    html[data-bs-theme="dark"] .leave-breadcrumb i,
+    body[data-pms-theme="dark"] .leave-breadcrumb i,
+    body.dark-mode .leave-breadcrumb i {
+        color: #34d399 !important;
+    }
+    html[data-pms-theme="dark"] .leave-form-hero h1,
+    html[data-pms-theme="dark"] .form-card h3,
+    html[data-theme="dark"] .leave-form-hero h1,
+    html[data-theme="dark"] .form-card h3,
+    html[data-bs-theme="dark"] .leave-form-hero h1,
+    html[data-bs-theme="dark"] .form-card h3,
+    body[data-pms-theme="dark"] .leave-form-hero h1,
+    body[data-pms-theme="dark"] .form-card h3,
+    body.dark-mode .leave-form-hero h1,
+    body.dark-mode .form-card h3 {
+        color: #d9f1e4 !important;
+    }
+    html[data-pms-theme="dark"] .leave-form-hero p,
+    html[data-pms-theme="dark"] label,
+    html[data-theme="dark"] .leave-form-hero p,
+    html[data-theme="dark"] label,
+    html[data-bs-theme="dark"] .leave-form-hero p,
+    html[data-bs-theme="dark"] label,
+    body[data-pms-theme="dark"] .leave-form-hero p,
+    body[data-pms-theme="dark"] label,
+    body.dark-mode .leave-form-hero p,
+    body.dark-mode label {
+        color: #8ba198 !important;
+    }
+    html[data-pms-theme="dark"] .form-control,
+    html[data-theme="dark"] .form-control,
+    html[data-bs-theme="dark"] .form-control,
+    body[data-pms-theme="dark"] .form-control,
+    body.dark-mode .form-control {
+        background-color: #102119 !important;
+        border-color: rgba(122, 240, 181, 0.2) !important;
+        color: #d9f1e4 !important;
+    }
+    html[data-pms-theme="dark"] .btn-light,
+    html[data-pms-theme="dark"] .btn-secondary,
+    html[data-theme="dark"] .btn-light,
+    html[data-theme="dark"] .btn-secondary,
+    html[data-bs-theme="dark"] .btn-light,
+    html[data-bs-theme="dark"] .btn-secondary,
+    body[data-pms-theme="dark"] .btn-light,
+    body[data-pms-theme="dark"] .btn-secondary,
+    body.dark-mode .btn-light,
+    body.dark-mode .btn-secondary {
+        background: #183026 !important;
+        color: #d9f1e4 !important;
+        border-color: rgba(122, 240, 181, 0.2) !important;
+    }
 </style>
 @endsection
