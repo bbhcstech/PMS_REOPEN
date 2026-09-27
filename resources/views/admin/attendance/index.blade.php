@@ -186,7 +186,18 @@
         font-weight: 700;
         font-size: 1rem;
         transition: var(--spring-transition);
-        border: 1px solid rgba(16, 185, 129, 0.2);
+        border: 1px solid rgba(16, 185, 129, 0.25) !important;
+    }
+
+    .btn-archive *,
+    .btn-archive i,
+    .btn-archive svg,
+    .btn-archive [class*="fa"],
+    .btn-archive span {
+        color: #0f744c !important;
+        -webkit-text-fill-color: #0f744c !important;
+        opacity: 1 !important;
+        visibility: visible !important;
     }
 
     .btn-archive:hover {
@@ -492,7 +503,7 @@
         -webkit-text-fill-color: white !important;
         padding: 0.6rem 1.5rem;
         border-radius: 40px;
-        border: none;
+        border: 1.5px solid #cbd5e1 !important;
         font-weight: 700;
         font-size: 1.05rem;
         cursor: pointer;
@@ -502,10 +513,15 @@
         gap: 0.5rem;
         min-height: 44px;
         text-decoration: none;
-        box-shadow: 0 4px 15px rgba(100, 116, 139, 0.2);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
     }
 
-    .btn-reset:hover {
+    .btn-reset:hover,
+    .attendance-container .btn-reset:hover {
+        background: #e2e8f0 !important;
+        color: #0f172a !important;
+        -webkit-text-fill-color: #0f172a !important;
+        border-color: #94a3b8 !important;
         transform: translateY(-2px);
         box-shadow: 0 8px 25px rgba(100, 116, 139, 0.3);
         color: white !important;
@@ -535,7 +551,8 @@
         gap: 0.5rem;
     }
 
-    .nav-tab-btn {
+    .nav-tab-btn,
+    .attendance-container .nav-tab-btn {
         display: inline-flex;
         align-items: center;
         gap: 0.5rem;
@@ -548,7 +565,7 @@
         background: #f1f5f9;
         text-decoration: none;
         transition: var(--spring-transition);
-        border: 2px solid transparent;
+        border: 2px solid #e2e8f0 !important;
     }
 
     .nav-tab-btn:hover {
@@ -1465,6 +1482,8 @@
         background: rgba(239, 68, 68, 0.2) !important;
         color: #FCA5A5 !important;
         -webkit-text-fill-color: #FCA5A5 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
     }
 
     html[data-pms-theme="dark"] .btn-export-menu,
@@ -1536,6 +1555,89 @@
     [data-theme="dark"] .attendance-table-actions .dropdown-divider,
     body.dark-mode .attendance-table-actions .dropdown-divider {
         border-color: rgba(238, 241, 251, 0.08) !important;
+    }
+
+    /* Archived Button in Dark Mode */
+    html[data-pms-theme="dark"] .btn-archive,
+    html[data-theme="dark"] .btn-archive,
+    html[data-bs-theme="dark"] .btn-archive,
+    body[data-pms-theme="dark"] .btn-archive,
+    body[data-theme="dark"] .btn-archive,
+    body[data-bs-theme="dark"] .btn-archive,
+    [data-pms-theme="dark"] .btn-archive,
+    [data-theme="dark"] .btn-archive,
+    [data-bs-theme="dark"] .btn-archive,
+    .dark-mode .btn-archive,
+    html[data-pms-theme="dark"] .attendance-container .btn-archive,
+    html[data-theme="dark"] .attendance-container .btn-archive,
+    html[data-bs-theme="dark"] .attendance-container .btn-archive,
+    body[data-pms-theme="dark"] .attendance-container .btn-archive,
+    body[data-theme="dark"] .attendance-container .btn-archive,
+    body[data-bs-theme="dark"] .attendance-container .btn-archive,
+    [data-pms-theme="dark"] .attendance-container .btn-archive,
+    [data-theme="dark"] .attendance-container .btn-archive,
+    [data-bs-theme="dark"] .attendance-container .btn-archive,
+    .dark-mode .attendance-container .btn-archive {
+        background: #1e293b !important;
+        border: 1px solid rgba(52, 211, 153, 0.35) !important;
+        color: #34d399 !important;
+        -webkit-text-fill-color: #34d399 !important;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    html[data-pms-theme="dark"] .btn-archive *,
+    html[data-pms-theme="dark"] .btn-archive i,
+    html[data-pms-theme="dark"] .btn-archive svg,
+    html[data-pms-theme="dark"] .btn-archive [class*="fa"],
+    html[data-pms-theme="dark"] .btn-archive span,
+    html[data-theme="dark"] .btn-archive i,
+    html[data-theme="dark"] .btn-archive svg,
+    html[data-theme="dark"] .btn-archive [class*="fa"],
+    html[data-bs-theme="dark"] .btn-archive i,
+    body[data-pms-theme="dark"] .btn-archive i,
+    body[data-theme="dark"] .btn-archive i,
+    [data-pms-theme="dark"] .btn-archive i,
+    [data-theme="dark"] .btn-archive i,
+    .dark-mode .btn-archive i,
+    html[data-pms-theme="dark"] .attendance-container .btn-archive i,
+    html[data-theme="dark"] .attendance-container .btn-archive i,
+    html[data-bs-theme="dark"] .attendance-container .btn-archive i,
+    body[data-pms-theme="dark"] .attendance-container .btn-archive i,
+    body[data-theme="dark"] .attendance-container .btn-archive i,
+    [data-pms-theme="dark"] .attendance-container .btn-archive i,
+    [data-theme="dark"] .attendance-container .btn-archive i,
+    .dark-mode .attendance-container .btn-archive i {
+        color: #34d399 !important;
+        -webkit-text-fill-color: #34d399 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    html[data-pms-theme="dark"] .btn-archive:hover,
+    html[data-theme="dark"] .btn-archive:hover,
+    html[data-bs-theme="dark"] .btn-archive:hover,
+    body[data-pms-theme="dark"] .btn-archive:hover,
+    body[data-theme="dark"] .btn-archive:hover,
+    body[data-bs-theme="dark"] .btn-archive:hover,
+    [data-pms-theme="dark"] .btn-archive:hover,
+    [data-theme="dark"] .btn-archive:hover,
+    [data-bs-theme="dark"] .btn-archive:hover,
+    .dark-mode .btn-archive:hover,
+    html[data-pms-theme="dark"] .attendance-container .btn-archive:hover,
+    html[data-theme="dark"] .attendance-container .btn-archive:hover,
+    html[data-bs-theme="dark"] .attendance-container .btn-archive:hover,
+    body[data-pms-theme="dark"] .attendance-container .btn-archive:hover,
+    body[data-theme="dark"] .attendance-container .btn-archive:hover,
+    body[data-bs-theme="dark"] .attendance-container .btn-archive:hover,
+    [data-pms-theme="dark"] .attendance-container .btn-archive:hover,
+    [data-theme="dark"] .attendance-container .btn-archive:hover,
+    [data-bs-theme="dark"] .attendance-container .btn-archive:hover,
+    .dark-mode .attendance-container .btn-archive:hover {
+        background: #0f172a !important;
+        border-color: #34d399 !important;
+        color: #6ee7b7 !important;
+        -webkit-text-fill-color: #6ee7b7 !important;
+        transform: translateY(-2px);
     }
 </style>
 

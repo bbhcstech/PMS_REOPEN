@@ -27,6 +27,29 @@ use Illuminate\Support\Str;
 class AttendanceController extends Controller
 {
     /**
+     * Role Helper Methods (Case-insensitive & SuperAdmin aware)
+     */
+    private function isAdminUser($user): bool
+    {
+        if (!$user) return false;
+        $role = strtolower((string) ($user->role ?? ''));
+        return in_array($role, ['admin', 'superadmin', 'administrator'], true);
+    }
+
+    private function isManagerOrHrUser($user): bool
+    {
+        if (!$user) return false;
+        $role = strtolower((string) ($user->role ?? ''));
+        return in_array($role, ['manager', 'hr'], true);
+    }
+
+    private function isEmployeeUser($user): bool
+    {
+        if (!$user) return false;
+        return !$this->isAdminUser($user) && !$this->isManagerOrHrUser($user);
+    }
+
+    /**
      * Convert seconds to HH:MM or HH:MM:SS
      */
     private function secondsToHhmm(int $seconds, bool $showSeconds = false): string
@@ -325,9 +348,8 @@ class AttendanceController extends Controller
     {
         $user = Auth::user();
 
-        // Check if user has access
-        if (!in_array($user->role, ['admin', 'manager', 'hr', 'employee'])) {
-            abort(403, 'Unauthorized access');
+        if (!$user) {
+            abort(401, 'Unauthenticated access');
         }
 
         $month = (int) ($request->filled('month') ? $request->month : now()->month);
@@ -352,8 +374,11 @@ class AttendanceController extends Controller
             ->toArray();
 
         // Step 2: load users and attendances based on role
-        if ($user->role === 'admin') {
-            $usersQuery = User::with('employeeDetail')->where('role', 'employee');
+        if ($this->isAdminUser($user)) {
+            $usersQuery = User::with('employeeDetail')->where(function ($q) {
+                $q->whereIn(DB::raw('LOWER(role)'), ['employee', 'staff'])
+                  ->orWhereNull('role');
+            });
 
             if ($companyId) {
                 $usersQuery->where('company_id', $companyId);
@@ -382,9 +407,8 @@ class AttendanceController extends Controller
                 ->whereMonth('date', $month)
                 ->whereYear('date', $year)
                 ->get();
-        } elseif (in_array($user->role, ['manager', 'hr'], true)) {
+        } elseif ($this->isManagerOrHrUser($user)) {
             $usersQuery = User::with('employeeDetail')
-                ->where('role', 'employee')
                 ->whereIn('id', $user->visibleEmployeeIds());
 
             if ($userId) {
@@ -496,9 +520,10 @@ class AttendanceController extends Controller
         }
 
         // Only admin gets these data
-        $departments = $user->role == 'admin' ? Department::get() : collect();
-        $designations = $user->role == 'admin' ? Designation::all() : collect();
-        $archivedCount = $user->role == 'admin' ? Attendance::whereNotNull('archived_at')->count() : 0;
+        $isAdmin = $this->isAdminUser($user);
+        $departments = $isAdmin ? Department::get() : collect();
+        $designations = $isAdmin ? Designation::all() : collect();
+        $archivedCount = $isAdmin ? Attendance::whereNotNull('archived_at')->count() : 0;
 
         // calculate period totals for the displayed period and users
         $periodTotals = $this->calculatePeriodTotals($users, $attendanceMap, $startDate, $endDate);
@@ -610,8 +635,8 @@ class AttendanceController extends Controller
     {
         $user = Auth::user();
 
-        if (!in_array($user->role, ['admin', 'employee'])) {
-            abort(403, 'Unauthorized');
+        if (!$user) {
+            abort(401, 'Unauthenticated');
         }
 
         $month = (int) ($request->filled('month') ? $request->input('month') : now()->month);
@@ -630,29 +655,40 @@ class AttendanceController extends Controller
                 return [Carbon::parse($holiday->date)->format('Y-m-d') => $holiday->occassion ?? $holiday->title ?? 'Holiday'];
             })->toArray();
 
-        // base users query
-        $usersQuery = User::with('employeeDetail')->where('role', 'employee');
+        $isAdmin = $this->isAdminUser($user);
+        $isManagerOrHr = $this->isManagerOrHrUser($user);
 
-        if ($user->role === 'employee') {
+        if ($isAdmin) {
+            $usersQuery = User::with('employeeDetail')->where(function ($q) {
+                $q->whereIn(DB::raw('LOWER(role)'), ['employee', 'staff'])
+                  ->orWhereNull('role');
+            });
+
+            if ($userId) {
+                $usersQuery->where('id', (int) $userId);
+            }
+
+            if ($department_id) {
+                $usersQuery->whereHas('employeeDetail', function ($q) use ($department_id) {
+                    $q->where('department_id', $department_id);
+                });
+            }
+
+            if ($designation_id) {
+                $usersQuery->whereHas('employeeDetail', function ($q) use ($designation_id) {
+                    $q->where('designation_id', $designation_id);
+                });
+            }
+        } elseif ($isManagerOrHr) {
+            $usersQuery = User::with('employeeDetail')
+                ->whereIn('id', $user->visibleEmployeeIds());
+
+            if ($userId) {
+                $usersQuery->where('id', (int) $userId);
+            }
+        } else {
             // Employee can only see their own data
-            $usersQuery->where('id', $user->id);
-        } elseif ($userId && $user->role === 'admin') {
-            // Admin can filter by specific user
-            $usersQuery->where('id', (int) $userId);
-        }
-
-        // Department filter - only for admin
-        if ($department_id && $user->role === 'admin') {
-            $usersQuery->whereHas('employeeDetail', function ($q) use ($department_id) {
-                $q->where('department_id', $department_id);
-            });
-        }
-
-        // Designation filter - only for admin
-        if ($designation_id && $user->role === 'admin') {
-            $usersQuery->whereHas('employeeDetail', function ($q) use ($designation_id) {
-                $q->where('designation_id', $designation_id);
-            });
+            $usersQuery = User::with('employeeDetail')->where('id', $user->id);
         }
 
         $users = $usersQuery->orderBy('name')->get();
@@ -662,7 +698,7 @@ class AttendanceController extends Controller
         // if no users, still return empty table
         if ($users->isEmpty()) {
             $attendanceMap = [];
-            $designations = $user->role === 'admin' ? Designation::all() : collect();
+            $designations = $isAdmin ? Designation::all() : collect();
 
             $html = view('admin.attendance.table', compact(
                 'users',

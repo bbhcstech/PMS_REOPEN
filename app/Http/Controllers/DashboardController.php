@@ -1057,8 +1057,7 @@ public function hrindex(Request $request)
 
 
 
-        $departmentWise = DB::table('employee_details')
-            ->leftJoin('departments', 'employee_details.department_id', '=', 'departments.id')
+        $departmentWise = EmployeeDetail::leftJoin('departments', 'employee_details.department_id', '=', 'departments.id')
             ->select('departments.dpt_name as department_name', DB::raw('COUNT(*) as total'))
             ->groupBy('departments.dpt_name')
             ->get();
@@ -1089,7 +1088,7 @@ public function hrindex(Request $request)
             ->take(5)
             ->get();
 
-        $activities = DB::table('project_activity')
+        $activities = DB::connection('tenant')->table('project_activity')
             ->join('projects', 'projects.id', '=', 'project_activity.project_id')
             ->select(
                 'project_activity.activity',

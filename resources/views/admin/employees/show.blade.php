@@ -832,16 +832,32 @@
         }
 
         html[data-pms-theme="dark"] .btn-header-enterprise,
-        html[data-pms-theme="dark"] .btn-print {
+        html[data-bs-theme="dark"] .btn-header-enterprise,
+        html[data-theme="dark"] .btn-header-enterprise,
+        body[data-pms-theme="dark"] .btn-header-enterprise,
+        [data-pms-theme="dark"] .btn-header-enterprise,
+        html[data-pms-theme="dark"] .btn-print,
+        html[data-bs-theme="dark"] .btn-print,
+        html[data-theme="dark"] .btn-print,
+        body[data-pms-theme="dark"] .btn-print,
+        [data-pms-theme="dark"] .btn-print {
             background: rgba(255, 255, 255, 0.08) !important;
             border-color: rgba(122, 240, 181, 0.24) !important;
-            color: var(--text-main) !important;
-            -webkit-text-fill-color: var(--text-main) !important;
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
             box-shadow: var(--shadow-soft) !important;
         }
 
         html[data-pms-theme="dark"] .btn-header-enterprise:hover,
-        html[data-pms-theme="dark"] .btn-print:hover {
+        html[data-bs-theme="dark"] .btn-header-enterprise:hover,
+        html[data-theme="dark"] .btn-header-enterprise:hover,
+        body[data-pms-theme="dark"] .btn-header-enterprise:hover,
+        [data-pms-theme="dark"] .btn-header-enterprise:hover,
+        html[data-pms-theme="dark"] .btn-print:hover,
+        html[data-bs-theme="dark"] .btn-print:hover,
+        html[data-theme="dark"] .btn-print:hover,
+        body[data-pms-theme="dark"] .btn-print:hover,
+        [data-pms-theme="dark"] .btn-print:hover {
             background: var(--grad-bg-hover) !important;
             border-color: rgba(122, 240, 181, 0.42) !important;
             color: #ffffff !important;
@@ -849,7 +865,15 @@
         }
 
         html[data-pms-theme="dark"] .btn-header-enterprise i,
-        html[data-pms-theme="dark"] .btn-print i {
+        html[data-bs-theme="dark"] .btn-header-enterprise i,
+        html[data-theme="dark"] .btn-header-enterprise i,
+        body[data-pms-theme="dark"] .btn-header-enterprise i,
+        [data-pms-theme="dark"] .btn-header-enterprise i,
+        html[data-pms-theme="dark"] .btn-print i,
+        html[data-bs-theme="dark"] .btn-print i,
+        html[data-theme="dark"] .btn-print i,
+        body[data-pms-theme="dark"] .btn-print i,
+        [data-pms-theme="dark"] .btn-print i {
             color: inherit !important;
             -webkit-text-fill-color: inherit !important;
         }

@@ -169,6 +169,119 @@
         display: inline-block;
     }
 
+    /* Dark Mode Support for Back to Branches Button */
+    html[data-pms-theme="dark"] .btn-back-settings,
+    html[data-bs-theme="dark"] .btn-back-settings,
+    body[data-pms-theme="dark"] .btn-back-settings,
+    [data-pms-theme="dark"] .btn-back-settings {
+        background-color: #183026 !important;
+        border-color: rgba(225, 255, 240, 0.2) !important;
+        color: #40d48c !important;
+        -webkit-text-fill-color: #40d48c !important;
+    }
+
+    html[data-pms-theme="dark"] .btn-back-settings .back-arrow-icon,
+    html[data-bs-theme="dark"] .btn-back-settings .back-arrow-icon,
+    body[data-pms-theme="dark"] .btn-back-settings .back-arrow-icon,
+    [data-pms-theme="dark"] .btn-back-settings .back-arrow-icon {
+        color: #40d48c !important;
+        -webkit-text-fill-color: #40d48c !important;
+    }
+
+    html[data-pms-theme="dark"] .btn-back-settings:hover,
+    html[data-bs-theme="dark"] .btn-back-settings:hover,
+    body[data-pms-theme="dark"] .btn-back-settings:hover,
+    [data-pms-theme="dark"] .btn-back-settings:hover {
+        background-color: #0f744c !important;
+        border-color: #0f744c !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    html[data-pms-theme="dark"] .btn-back-settings:hover .back-arrow-icon,
+    html[data-bs-theme="dark"] .btn-back-settings:hover .back-arrow-icon,
+    body[data-pms-theme="dark"] .btn-back-settings:hover .back-arrow-icon,
+    [data-pms-theme="dark"] .btn-back-settings:hover .back-arrow-icon {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    /* Default Toggle Box & Cancel Button */
+    .default-toggle-box {
+        background: #f0fdf4;
+        border: 1px solid rgba(16, 185, 129, 0.25);
+        border-radius: 16px;
+        padding: 1rem 1.25rem;
+        transition: all 0.25s ease;
+    }
+
+    .default-toggle-box label {
+        color: #0a2e1f !important;
+        -webkit-text-fill-color: #0a2e1f !important;
+    }
+
+    .default-toggle-box .text-muted {
+        color: #4b5563 !important;
+        -webkit-text-fill-color: #4b5563 !important;
+    }
+
+    .btn-cancel-custom {
+        background: #f1f5f9;
+        color: #475569 !important;
+        -webkit-text-fill-color: #475569 !important;
+        border: 1px solid #cbd5e1;
+        transition: all 0.2s ease;
+    }
+
+    .btn-cancel-custom:hover {
+        background: #e2e8f0;
+        color: #1e293b !important;
+    }
+
+    /* Dark Mode Support for Default Toggle Box & Cancel Button */
+    html[data-pms-theme="dark"] .default-toggle-box,
+    html[data-bs-theme="dark"] .default-toggle-box,
+    body[data-pms-theme="dark"] .default-toggle-box,
+    [data-pms-theme="dark"] .default-toggle-box {
+        background: rgba(16, 185, 129, 0.12) !important;
+        border: 1px solid rgba(52, 211, 153, 0.3) !important;
+    }
+
+    html[data-pms-theme="dark"] .default-toggle-box label,
+    html[data-bs-theme="dark"] .default-toggle-box label,
+    body[data-pms-theme="dark"] .default-toggle-box label,
+    [data-pms-theme="dark"] .default-toggle-box label {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .default-toggle-box .text-muted,
+    html[data-bs-theme="dark"] .default-toggle-box .text-muted,
+    body[data-pms-theme="dark"] .default-toggle-box .text-muted,
+    [data-pms-theme="dark"] .default-toggle-box .text-muted {
+        color: #94a3b8 !important;
+        -webkit-text-fill-color: #94a3b8 !important;
+    }
+
+    html[data-pms-theme="dark"] .btn-cancel-custom,
+    html[data-bs-theme="dark"] .btn-cancel-custom,
+    body[data-pms-theme="dark"] .btn-cancel-custom,
+    [data-pms-theme="dark"] .btn-cancel-custom {
+        background: #1e293b !important;
+        color: #cbd5e1 !important;
+        -webkit-text-fill-color: #cbd5e1 !important;
+        border: 1px solid rgba(238, 241, 251, 0.15) !important;
+    }
+
+    html[data-pms-theme="dark"] .btn-cancel-custom:hover,
+    html[data-bs-theme="dark"] .btn-cancel-custom:hover,
+    body[data-pms-theme="dark"] .btn-cancel-custom:hover,
+    [data-pms-theme="dark"] .btn-cancel-custom:hover {
+        background: #334155 !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
     /* ===== FORM CARD & INPUTS ===== */
     .address-card-elevated {
         background: rgba(255, 255, 255, 0.95);
@@ -575,14 +688,14 @@
 
                                     <!-- Is Default Checkbox -->
                                     <div class="col-md-12">
-                                        <div class="p-3.5 rounded-4 d-flex align-items-center gap-3" style="background: #f0fdf4; border: 1px solid rgba(16, 185, 129, 0.25);">
+                                        <div class="default-toggle-box p-3.5 rounded-4 d-flex align-items-center gap-3">
                                             <div class="form-check form-switch mb-0">
                                                 <input class="form-check-input fs-5" type="checkbox"
                                                        id="is_default" name="is_default" value="1"
                                                        {{ old('is_default', $businessAddress->is_default) ? 'checked' : '' }}>
                                             </div>
                                             <div>
-                                                <label class="form-check-label fw-bold mb-0" for="is_default" style="color: #0a2e1f;">
+                                                <label class="form-check-label fw-bold mb-0" for="is_default">
                                                     Set as default primary branch address
                                                 </label>
                                                 <div class="text-muted small">If enabled, this location will be designated as the primary head office address.</div>
@@ -593,7 +706,7 @@
 
                                 <!-- Form Action Buttons -->
                                 <div class="mt-5 pt-4 border-top d-flex align-items-center justify-content-between flex-wrap gap-2">
-                                    <a href="{{ route('admin.settings.business-address.index') }}" class="btn rounded-pill px-4 fw-bold" style="background: #f1f5f9; color: #475569;">
+                                    <a href="{{ route('admin.settings.business-address.index') }}" class="btn btn-cancel-custom rounded-pill px-4 fw-bold">
                                         Cancel
                                     </a>
                                     <button type="submit" class="btn-save-address">

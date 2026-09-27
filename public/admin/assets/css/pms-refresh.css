@@ -953,7 +953,7 @@ html[data-pms-theme="dark"] .page-link {
 .stat-icon svg {
   color: #ffffff !important;
   -webkit-text-fill-color: #ffffff !important;
-  background-color: #ffffff !important;
+  background-color: transparent !important;
   fill: #ffffff !important;
   opacity: 1 !important;
   visibility: visible !important;
@@ -978,7 +978,7 @@ html[data-pms-theme="dark"] .page-link {
 .stat-card.is-featured .stat-icon svg {
   color: #ffffff !important;
   -webkit-text-fill-color: #ffffff !important;
-  background-color: #ffffff !important;
+  background-color: transparent !important;
   fill: #ffffff !important;
   opacity: 1 !important;
   visibility: visible !important;
@@ -4007,6 +4007,47 @@ html[data-pms-theme="dark"] .show-container .btn-header-enterprise i,
 html[data-pms-theme="dark"] .show-container .btn-print i {
   color: inherit !important;
   -webkit-text-fill-color: inherit !important;
+}
+
+html[data-pms-theme="dark"] .page-header-enterprise .btn-header-enterprise,
+html[data-bs-theme="dark"] .page-header-enterprise .btn-header-enterprise,
+html[data-theme="dark"] .page-header-enterprise .btn-header-enterprise,
+body[data-pms-theme="dark"] .page-header-enterprise .btn-header-enterprise,
+[data-pms-theme="dark"] .page-header-enterprise .btn-header-enterprise {
+  background: rgba(255, 255, 255, 0.15) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+html[data-pms-theme="dark"] .page-header-enterprise .btn-header-enterprise i,
+html[data-bs-theme="dark"] .page-header-enterprise .btn-header-enterprise i,
+html[data-theme="dark"] .page-header-enterprise .btn-header-enterprise i,
+body[data-pms-theme="dark"] .page-header-enterprise .btn-header-enterprise i,
+[data-pms-theme="dark"] .page-header-enterprise .btn-header-enterprise i {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+html[data-pms-theme="dark"] .page-header-enterprise .btn-header-enterprise:hover,
+html[data-bs-theme="dark"] .page-header-enterprise .btn-header-enterprise:hover,
+html[data-theme="dark"] .page-header-enterprise .btn-header-enterprise:hover,
+body[data-pms-theme="dark"] .page-header-enterprise .btn-header-enterprise:hover,
+[data-pms-theme="dark"] .page-header-enterprise .btn-header-enterprise:hover {
+  background: #ffffff !important;
+  border-color: #ffffff !important;
+  color: #0f744c !important;
+  -webkit-text-fill-color: #0f744c !important;
+  box-shadow: 0 15px 30px -8px rgba(0, 0, 0, 0.25) !important;
+}
+
+html[data-pms-theme="dark"] .page-header-enterprise .btn-header-enterprise:hover i,
+html[data-bs-theme="dark"] .page-header-enterprise .btn-header-enterprise:hover i,
+html[data-theme="dark"] .page-header-enterprise .btn-header-enterprise:hover i,
+body[data-pms-theme="dark"] .page-header-enterprise .btn-header-enterprise:hover i,
+[data-pms-theme="dark"] .page-header-enterprise .btn-header-enterprise:hover i {
+  color: #0f744c !important;
+  -webkit-text-fill-color: #0f744c !important;
 }
 
 html[data-pms-theme="dark"] .show-container .quick-info-list li {

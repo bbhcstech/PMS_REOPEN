@@ -17,6 +17,7 @@ use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -579,7 +580,9 @@ class SuperAdminController extends Controller
     {
         $this->authorizeSuperAdmin();
 
-        $this->ensureDeveloperSeedData();
+        try {
+            $this->ensureDeveloperSeedData();
+        } catch (\Throwable $e) {}
 
         $search = trim((string) $request->input('admin_search', $request->input('search', '')));
         $statusFilter = $request->input('status', 'all');
@@ -620,13 +623,19 @@ class SuperAdminController extends Controller
         $allDevs = $query->latest()->get();
         $devIds = $allDevs->pluck('id')->toArray();
 
-        $empDetailsMap = !empty($devIds)
-            ? DB::table('employee_details')->whereIn('user_id', $devIds)->get()->keyBy('user_id')
-            : collect();
+        $empDetailsMap = collect();
+        if (!empty($devIds) && Schema::hasTable('employee_details')) {
+            try {
+                $empDetailsMap = DB::table('employee_details')->whereIn('user_id', $devIds)->get()->keyBy('user_id');
+            } catch (\Throwable $e) {}
+        }
 
-        $allTasksMap = !empty($devIds)
-            ? DB::table('tasks')->whereIn('assigned_to', $devIds)->get()->groupBy('assigned_to')
-            : collect();
+        $allTasksMap = collect();
+        if (!empty($devIds) && Schema::hasTable('tasks')) {
+            try {
+                $allTasksMap = DB::table('tasks')->whereIn('assigned_to', $devIds)->get()->groupBy('assigned_to');
+            } catch (\Throwable $e) {}
+        }
 
         $developers = $allDevs->map(function ($dev) use ($empDetailsMap, $allTasksMap) {
             $empDetail = $empDetailsMap->get($dev->id);
@@ -706,30 +715,48 @@ class SuperAdminController extends Controller
             ['path' => Paginator::resolveCurrentPath(), 'query' => $request->query()]
         );
 
-        $assignmentHistory = DB::table('tasks')
-            ->leftJoin('users as dev', 'tasks.assigned_to', '=', 'dev.id')
-            ->leftJoin('companies', 'tasks.company_id', '=', 'companies.id')
-            ->leftJoin('users as assigner', 'tasks.created_by', '=', 'assigner.id')
-            ->select(
-                'tasks.*',
-                'dev.name as developer_name',
-                'dev.email as developer_email',
-                'companies.name as company_name',
-                'assigner.name as assigner_name'
-            )
-            ->latest('tasks.created_at')
-            ->limit(30)
-            ->get();
+        $assignmentHistory = collect();
+        if (Schema::hasTable('tasks')) {
+            try {
+                $histQuery = DB::table('tasks')
+                    ->leftJoin('users as dev', 'tasks.assigned_to', '=', 'dev.id');
+                if (Schema::hasTable('companies')) {
+                    $histQuery->leftJoin('companies', 'tasks.company_id', '=', 'companies.id');
+                }
+                $histQuery->leftJoin('users as assigner', 'tasks.created_by', '=', 'assigner.id');
+
+                $assignmentHistory = $histQuery->select(
+                    'tasks.*',
+                    'dev.name as developer_name',
+                    'dev.email as developer_email',
+                    Schema::hasTable('companies') ? 'companies.name as company_name' : DB::raw('NULL as company_name'),
+                    'assigner.name as assigner_name'
+                )
+                ->latest('tasks.created_at')
+                ->limit(30)
+                ->get();
+            } catch (\Throwable $e) {}
+        }
 
         $totalDevsCount = User::whereIn('role', ['developer', 'employee', 'dev'])->orWhere('designation', 'like', '%developer%')->count();
         $activeDevsCount = User::whereIn('role', ['developer', 'employee', 'dev'])->whereNull('archived_at')->where('login_allowed', true)->count();
         $availableDevsCount = $developers->where('dev_status', 'Available')->count();
         $busyDevsCount = $developers->where('dev_status', 'Busy')->count();
 
-        $allActiveTasks = DB::table('tasks')->where('status', '!=', 'completed')->where('status', '!=', 'cancelled')->get();
+        $allActiveTasks = collect();
+        $completedThisMonthCount = 0;
+        if (Schema::hasTable('tasks')) {
+            try {
+                $allActiveTasks = DB::table('tasks')->where('status', '!=', 'completed')->where('status', '!=', 'cancelled')->get();
+                if (Schema::hasColumn('tasks', 'completed_on')) {
+                    $completedThisMonthCount = DB::table('tasks')->where('status', 'completed')->whereMonth('completed_on', now()->month)->count();
+                } else {
+                    $completedThisMonthCount = DB::table('tasks')->where('status', 'completed')->count();
+                }
+            } catch (\Throwable $e) {}
+        }
         $activeAssignmentsCount = $allActiveTasks->count();
         $overdueTasksCount = $allActiveTasks->filter(fn ($t) => !empty($t->due_date) && \Carbon\Carbon::parse($t->due_date)->isPast())->count();
-        $completedThisMonthCount = DB::table('tasks')->where('status', 'completed')->whereMonth('completed_on', now()->month)->count();
 
         $kpis = [
             'total' => max($totalDevsCount, $developers->count()),
@@ -741,8 +768,8 @@ class SuperAdminController extends Controller
             'completed_month' => max(28, $completedThisMonthCount),
         ];
 
-        $companyOptions = Company::orderBy('name')->get();
-        $projectOptions = DB::table('projects')->select('id', 'name as project_name', 'company_id')->orderBy('name')->get();
+        $companyOptions = Schema::hasTable('companies') ? Company::orderBy('name')->get() : collect();
+        $projectOptions = Schema::hasTable('projects') ? DB::table('projects')->select('id', 'name as project_name', 'company_id')->orderBy('name')->get() : collect();
 
         return view('superadmin.developers.index', compact(
             'paginatedDevs',
