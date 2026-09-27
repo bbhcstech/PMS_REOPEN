@@ -230,6 +230,218 @@
     html[data-pms-theme="dark"] .check-row label { background: #102119 !important; border-color: rgba(122, 240, 181, 0.15) !important; color: #d9f1e4 !important; -webkit-text-fill-color: #d9f1e4 !important; }
     html[data-pms-theme="dark"] .form-actions { border-top-color: rgba(122, 240, 181, 0.12) !important; }
     @media (max-width: 992px) { .leave-form-page { padding: 18px; } .leave-form-hero { flex-direction: column; align-items: flex-start; } .form-grid, .form-grid.two, .balance-strip { grid-template-columns: 1fr; } }
+
+    /* Dark mode support */
+    html[data-pms-theme="dark"] .leave-form-page,
+    html[data-theme="dark"] .leave-form-page,
+    html[data-bs-theme="dark"] .leave-form-page,
+    body[data-pms-theme="dark"] .leave-form-page,
+    body.dark-mode .leave-form-page {
+        background: linear-gradient(135deg, #07130d, #102119) !important;
+        color: #d9f1e4 !important;
+    }
+    html[data-pms-theme="dark"] .leave-breadcrumb,
+    html[data-pms-theme="dark"] .leave-form-hero,
+    html[data-pms-theme="dark"] .policy-notice,
+    html[data-pms-theme="dark"] .balance-strip,
+    html[data-pms-theme="dark"] .form-card,
+    html[data-theme="dark"] .leave-breadcrumb,
+    html[data-theme="dark"] .leave-form-hero,
+    html[data-theme="dark"] .policy-notice,
+    html[data-theme="dark"] .balance-strip,
+    html[data-theme="dark"] .form-card,
+    html[data-bs-theme="dark"] .leave-breadcrumb,
+    html[data-bs-theme="dark"] .leave-form-hero,
+    html[data-bs-theme="dark"] .policy-notice,
+    html[data-bs-theme="dark"] .balance-strip,
+    html[data-bs-theme="dark"] .form-card,
+    body[data-pms-theme="dark"] .leave-breadcrumb,
+    body[data-pms-theme="dark"] .leave-form-hero,
+    body[data-pms-theme="dark"] .policy-notice,
+    body[data-pms-theme="dark"] .balance-strip,
+    body[data-pms-theme="dark"] .form-card,
+    body.dark-mode .leave-breadcrumb,
+    body.dark-mode .leave-form-hero,
+    body.dark-mode .policy-notice,
+    body.dark-mode .balance-strip,
+    body.dark-mode .form-card {
+        background: rgba(16, 33, 25, 0.95) !important;
+        border-color: rgba(122, 240, 181, 0.15) !important;
+        box-shadow: 0 16px 36px -20px rgba(0, 0, 0, 0.5) !important;
+        color: #d9f1e4 !important;
+    }
+    html[data-pms-theme="dark"] .leave-breadcrumb i,
+    html[data-theme="dark"] .leave-breadcrumb i,
+    html[data-bs-theme="dark"] .leave-breadcrumb i,
+    body[data-pms-theme="dark"] .leave-breadcrumb i,
+    body.dark-mode .leave-breadcrumb i {
+        color: #34d399 !important;
+    }
+    html[data-pms-theme="dark"] .leave-form-hero h1,
+    html[data-theme="dark"] .leave-form-hero h1,
+    html[data-bs-theme="dark"] .leave-form-hero h1,
+    body[data-pms-theme="dark"] .leave-form-hero h1,
+    body.dark-mode .leave-form-hero h1 {
+        color: #d9f1e4 !important;
+    }
+    html[data-pms-theme="dark"] .leave-form-hero p,
+    html[data-theme="dark"] .leave-form-hero p,
+    html[data-bs-theme="dark"] .leave-form-hero p,
+    body[data-pms-theme="dark"] .leave-form-hero p,
+    body.dark-mode .leave-form-hero p {
+        color: #8ba198 !important;
+    }
+    html[data-pms-theme="dark"] .leave-form-page .btn-light,
+    html[data-pms-theme="dark"] .leave-form-page .btn-secondary,
+    html[data-theme="dark"] .leave-form-page .btn-light,
+    html[data-theme="dark"] .leave-form-page .btn-secondary,
+    html[data-bs-theme="dark"] .leave-form-page .btn-light,
+    html[data-bs-theme="dark"] .leave-form-page .btn-secondary,
+    body[data-pms-theme="dark"] .leave-form-page .btn-light,
+    body[data-pms-theme="dark"] .leave-form-page .btn-secondary,
+    body.dark-mode .leave-form-page .btn-light,
+    body.dark-mode .leave-form-page .btn-secondary {
+        background: #183026 !important;
+        color: #d9f1e4 !important;
+        border-color: rgba(122, 240, 181, 0.2) !important;
+    }
+    html[data-pms-theme="dark"] .leave-form-page .btn-light:hover,
+    html[data-pms-theme="dark"] .leave-form-page .btn-secondary:hover,
+    html[data-theme="dark"] .leave-form-page .btn-light:hover,
+    html[data-theme="dark"] .leave-form-page .btn-secondary:hover,
+    html[data-bs-theme="dark"] .leave-form-page .btn-light:hover,
+    html[data-bs-theme="dark"] .leave-form-page .btn-secondary:hover,
+    body[data-pms-theme="dark"] .leave-form-page .btn-light:hover,
+    body[data-pms-theme="dark"] .leave-form-page .btn-secondary:hover,
+    body.dark-mode .leave-form-page .btn-light:hover,
+    body.dark-mode .leave-form-page .btn-secondary:hover {
+        background: #1f3d30 !important;
+        border-color: #34d399 !important;
+        color: #ffffff !important;
+    }
+    html[data-pms-theme="dark"] .policy-notice p,
+    html[data-theme="dark"] .policy-notice p,
+    html[data-bs-theme="dark"] .policy-notice p,
+    body[data-pms-theme="dark"] .policy-notice p,
+    body.dark-mode .policy-notice p {
+        color: #8ba198 !important;
+    }
+    html[data-pms-theme="dark"] .policy-notice i,
+    html[data-theme="dark"] .policy-notice i,
+    html[data-bs-theme="dark"] .policy-notice i,
+    body[data-pms-theme="dark"] .policy-notice i,
+    body.dark-mode .policy-notice i {
+        background: #183026 !important;
+        color: #34d399 !important;
+    }
+    html[data-pms-theme="dark"] .balance-strip div,
+    html[data-theme="dark"] .balance-strip div,
+    html[data-bs-theme="dark"] .balance-strip div,
+    body[data-pms-theme="dark"] .balance-strip div,
+    body.dark-mode .balance-strip div {
+        background: #0d1b14 !important;
+        border: 1px solid rgba(122, 240, 181, 0.12) !important;
+    }
+    html[data-pms-theme="dark"] .balance-strip span,
+    html[data-theme="dark"] .balance-strip span,
+    html[data-bs-theme="dark"] .balance-strip span,
+    body[data-pms-theme="dark"] .balance-strip span,
+    body.dark-mode .balance-strip span {
+        color: #8ba198 !important;
+    }
+    html[data-pms-theme="dark"] .balance-strip strong,
+    html[data-theme="dark"] .balance-strip strong,
+    html[data-bs-theme="dark"] .balance-strip strong,
+    body[data-pms-theme="dark"] .balance-strip strong,
+    body.dark-mode .balance-strip strong {
+        color: #d9f1e4 !important;
+    }
+    html[data-pms-theme="dark"] .leave-form-page label,
+    html[data-theme="dark"] .leave-form-page label,
+    html[data-bs-theme="dark"] .leave-form-page label,
+    body[data-pms-theme="dark"] .leave-form-page label,
+    body.dark-mode .leave-form-page label {
+        color: #8ba198 !important;
+    }
+    html[data-pms-theme="dark"] .leave-form-page .form-control,
+    html[data-theme="dark"] .leave-form-page .form-control,
+    html[data-bs-theme="dark"] .leave-form-page .form-control,
+    body[data-pms-theme="dark"] .leave-form-page .form-control,
+    body.dark-mode .leave-form-page .form-control {
+        background-color: #102119 !important;
+        border-color: rgba(122, 240, 181, 0.2) !important;
+        color: #d9f1e4 !important;
+    }
+    html[data-pms-theme="dark"] .leave-form-page .form-control:focus,
+    html[data-theme="dark"] .leave-form-page .form-control:focus,
+    html[data-bs-theme="dark"] .leave-form-page .form-control:focus,
+    body[data-pms-theme="dark"] .leave-form-page .form-control:focus,
+    body.dark-mode .leave-form-page .form-control:focus {
+        border-color: #34d399 !important;
+        box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.15) !important;
+        background-color: #102119 !important;
+        color: #d9f1e4 !important;
+    }
+    html[data-pms-theme="dark"] .leave-form-page .form-control[readonly],
+    html[data-theme="dark"] .leave-form-page .form-control[readonly],
+    html[data-bs-theme="dark"] .leave-form-page .form-control[readonly],
+    body[data-pms-theme="dark"] .leave-form-page .form-control[readonly],
+    body.dark-mode .leave-form-page .form-control[readonly] {
+        background-color: #0b1712 !important;
+        color: #8ba198 !important;
+    }
+    html[data-pms-theme="dark"] .leave-form-page select option,
+    html[data-theme="dark"] .leave-form-page select option,
+    html[data-bs-theme="dark"] .leave-form-page select option,
+    body[data-pms-theme="dark"] .leave-form-page select option,
+    body.dark-mode .leave-form-page select option {
+        background-color: #102119 !important;
+        color: #d9f1e4 !important;
+    }
+    html[data-pms-theme="dark"] .leave-form-page input[type="date"]::-webkit-calendar-picker-indicator,
+    html[data-theme="dark"] .leave-form-page input[type="date"]::-webkit-calendar-picker-indicator,
+    html[data-bs-theme="dark"] .leave-form-page input[type="date"]::-webkit-calendar-picker-indicator,
+    body[data-pms-theme="dark"] .leave-form-page input[type="date"]::-webkit-calendar-picker-indicator,
+    body.dark-mode .leave-form-page input[type="date"]::-webkit-calendar-picker-indicator {
+        filter: invert(1);
+    }
+    html[data-pms-theme="dark"] .check-row label,
+    html[data-theme="dark"] .check-row label,
+    html[data-bs-theme="dark"] .check-row label,
+    body[data-pms-theme="dark"] .check-row label,
+    body.dark-mode .check-row label {
+        border-color: rgba(122, 240, 181, 0.2) !important;
+        color: #d9f1e4 !important;
+        background-color: #102119 !important;
+    }
+    html[data-pms-theme="dark"] .form-actions,
+    html[data-theme="dark"] .form-actions,
+    html[data-bs-theme="dark"] .form-actions,
+    body[data-pms-theme="dark"] .form-actions,
+    body.dark-mode .form-actions {
+        border-top-color: rgba(122, 240, 181, 0.15) !important;
+    }
+    html[data-pms-theme="dark"] .leave-form-page small,
+    html[data-pms-theme="dark"] .leave-form-page small a,
+    html[data-theme="dark"] .leave-form-page small,
+    html[data-theme="dark"] .leave-form-page small a,
+    html[data-bs-theme="dark"] .leave-form-page small,
+    html[data-bs-theme="dark"] .leave-form-page small a,
+    body[data-pms-theme="dark"] .leave-form-page small,
+    body[data-pms-theme="dark"] .leave-form-page small a,
+    body.dark-mode .leave-form-page small,
+    body.dark-mode .leave-form-page small a {
+        color: #34d399 !important;
+    }
+    html[data-pms-theme="dark"] .leave-form-page .alert-danger,
+    html[data-theme="dark"] .leave-form-page .alert-danger,
+    html[data-bs-theme="dark"] .leave-form-page .alert-danger,
+    body[data-pms-theme="dark"] .leave-form-page .alert-danger,
+    body.dark-mode .leave-form-page .alert-danger {
+        background-color: #2a1215 !important;
+        border-color: #5c1d24 !important;
+        color: #fca5a5 !important;
+    }
 </style>
 
 @push('js')

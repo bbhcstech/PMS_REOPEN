@@ -1864,7 +1864,412 @@
             max-width: calc(100vw - 48px);
         }
     }
+
+    /* =============================================
+       DARK MODE STYLES FOR SUB DEPARTMENT INDEX
+       ============================================= */
+    html[data-pms-theme="dark"] .sub-department-page,
+    html[data-theme="dark"] .sub-department-page,
+    html[data-bs-theme="dark"] .sub-department-page {
+        background: #091510 !important;
+        color: #e2e8f0 !important;
+    }
+
+    html[data-pms-theme="dark"] .sub-department-page::before,
+    html[data-theme="dark"] .sub-department-page::before,
+    html[data-bs-theme="dark"] .sub-department-page::before {
+        background: radial-gradient(circle at 0% 0%, rgba(16, 185, 129, 0.06) 0%, transparent 50%),
+                    radial-gradient(circle at 100% 100%, rgba(52, 211, 153, 0.04) 0%, transparent 50%);
+    }
+
+    html[data-pms-theme="dark"] .sub-department-page .breadcrumb,
+    html[data-theme="dark"] .sub-department-page .breadcrumb,
+    html[data-bs-theme="dark"] .sub-department-page .breadcrumb {
+        background: rgba(16, 33, 25, 0.85) !important;
+        border-color: rgba(225, 255, 240, 0.12) !important;
+        color: #40d48c !important;
+    }
+
+    html[data-pms-theme="dark"] .sub-department-page .header-card,
+    html[data-theme="dark"] .sub-department-page .header-card,
+    html[data-bs-theme="dark"] .sub-department-page .header-card {
+        background: #102119 !important;
+        border-color: rgba(225, 255, 240, 0.12) !important;
+        box-shadow: 0 16px 36px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    html[data-pms-theme="dark"] .sub-department-page .header-card h1,
+    html[data-theme="dark"] .sub-department-page .header-card h1,
+    html[data-bs-theme="dark"] .sub-department-page .header-card h1 {
+        background: linear-gradient(135deg, #ffffff, #a7f3d0) !important;
+        background-clip: text !important;
+        -webkit-background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+    }
+
+    html[data-pms-theme="dark"] .sub-department-page .header-card p,
+    html[data-theme="dark"] .sub-department-page .header-card p,
+    html[data-bs-theme="dark"] .sub-department-page .header-card p {
+        color: #94a3b8 !important;
+    }
+
+    html[data-pms-theme="dark"] .sub-department-page .btn-light,
+    html[data-theme="dark"] .sub-department-page .btn-light,
+    html[data-bs-theme="dark"] .sub-department-page .btn-light {
+        background: #183026 !important;
+        color: #e2e8f0 !important;
+        border-color: rgba(225, 255, 240, 0.15) !important;
+    }
+
+    html[data-pms-theme="dark"] .sub-department-page .btn-light:hover,
+    html[data-theme="dark"] .sub-department-page .btn-light:hover,
+    html[data-bs-theme="dark"] .sub-department-page .btn-light:hover {
+        background: #204033 !important;
+        color: #ffffff !important;
+        border-color: #40d48c !important;
+    }
+
+    /* Stat Cards Dark Mode */
+    html[data-pms-theme="dark"] .sub-department-page .stat-card,
+    html[data-theme="dark"] .sub-department-page .stat-card,
+    html[data-bs-theme="dark"] .sub-department-page .stat-card,
+    html[data-pms-theme="dark"] .sub-department-page .stat-card:first-of-type,
+    html[data-theme="dark"] .sub-department-page .stat-card:first-of-type,
+    html[data-bs-theme="dark"] .sub-department-page .stat-card:first-of-type {
+        background: #102119 !important;
+        border-color: rgba(225, 255, 240, 0.12) !important;
+        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.3) !important;
+        color: #f8fafc !important;
+    }
+
+    html[data-pms-theme="dark"] .sub-department-page .stat-card h3,
+    html[data-theme="dark"] .sub-department-page .stat-card h3,
+    html[data-bs-theme="dark"] .sub-department-page .stat-card h3,
+    html[data-pms-theme="dark"] .sub-department-page .stat-card:first-of-type h3,
+    html[data-theme="dark"] .sub-department-page .stat-card:first-of-type h3,
+    html[data-bs-theme="dark"] .sub-department-page .stat-card:first-of-type h3 {
+        color: #f8fafc !important;
+        -webkit-text-fill-color: #f8fafc !important;
+    }
+
+    html[data-pms-theme="dark"] .sub-department-page .stat-card span,
+    html[data-theme="dark"] .sub-department-page .stat-card span,
+    html[data-bs-theme="dark"] .sub-department-page .stat-card span,
+    html[data-pms-theme="dark"] .sub-department-page .stat-card:first-of-type span,
+    html[data-theme="dark"] .sub-department-page .stat-card:first-of-type span,
+    html[data-bs-theme="dark"] .sub-department-page .stat-card:first-of-type span {
+        color: #94a3b8 !important;
+        -webkit-text-fill-color: #94a3b8 !important;
+    }
+
+    html[data-pms-theme="dark"] .sub-department-page .stat-sub,
+    html[data-theme="dark"] .sub-department-page .stat-sub,
+    html[data-bs-theme="dark"] .sub-department-page .stat-sub,
+    html[data-pms-theme="dark"] .sub-department-page .stat-card:first-of-type .stat-sub,
+    html[data-theme="dark"] .sub-department-page .stat-card:first-of-type .stat-sub,
+    html[data-bs-theme="dark"] .sub-department-page .stat-card:first-of-type .stat-sub {
+        color: #64748b !important;
+        -webkit-text-fill-color: #64748b !important;
+    }
+
+    /* Table Card & Header Dark Mode */
+    html[data-pms-theme="dark"] .sub-department-page .table-card,
+    html[data-theme="dark"] .sub-department-page .table-card,
+    html[data-bs-theme="dark"] .sub-department-page .table-card {
+        background: #102119 !important;
+        border-color: rgba(225, 255, 240, 0.12) !important;
+        box-shadow: 0 16px 36px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    html[data-pms-theme="dark"] .sub-department-page .table-header,
+    html[data-theme="dark"] .sub-department-page .table-header,
+    html[data-bs-theme="dark"] .sub-department-page .table-header {
+        background: #162c22 !important;
+        border-bottom-color: rgba(225, 255, 240, 0.1) !important;
+    }
+
+    html[data-pms-theme="dark"] .sub-department-page .table-title h3,
+    html[data-theme="dark"] .sub-department-page .table-title h3,
+    html[data-bs-theme="dark"] .sub-department-page .table-title h3 {
+        color: #f8fafc !important;
+    }
+
+    html[data-pms-theme="dark"] .sub-department-page .table-title .muted,
+    html[data-theme="dark"] .sub-department-page .table-title .muted,
+    html[data-bs-theme="dark"] .sub-department-page .table-title .muted {
+        color: #94a3b8 !important;
+    }
+
+    html[data-pms-theme="dark"] .sub-department-page .search-box input,
+    html[data-theme="dark"] .sub-department-page .search-box input,
+    html[data-bs-theme="dark"] .sub-department-page .search-box input {
+        background: #183026 !important;
+        border-color: rgba(225, 255, 240, 0.15) !important;
+        color: #f8fafc !important;
+    }
+
+    html[data-pms-theme="dark"] .sub-department-page .search-box input::placeholder,
+    html[data-theme="dark"] .sub-department-page .search-box input::placeholder,
+    html[data-bs-theme="dark"] .sub-department-page .search-box input::placeholder {
+        color: #64748b !important;
+    }
+
+    /* Table Rows & Cells Dark Mode */
+    html[data-pms-theme="dark"] .sub-department-page .department-list-table thead th,
+    html[data-theme="dark"] .sub-department-page .department-list-table thead th,
+    html[data-bs-theme="dark"] .sub-department-page .department-list-table thead th {
+        color: #94a3b8 !important;
+        border-bottom-color: rgba(225, 255, 240, 0.1) !important;
+    }
+
+    html[data-pms-theme="dark"] .sub-department-page .department-list-table tbody td,
+    html[data-theme="dark"] .sub-department-page .department-list-table tbody td,
+    html[data-bs-theme="dark"] .sub-department-page .department-list-table tbody td {
+        background: #183026 !important;
+        border-top-color: rgba(225, 255, 240, 0.08) !important;
+        border-bottom-color: rgba(225, 255, 240, 0.08) !important;
+        color: #e2e8f0 !important;
+    }
+
+    html[data-pms-theme="dark"] .sub-department-page .department-list-table tbody td:first-child,
+    html[data-theme="dark"] .sub-department-page .department-list-table tbody td:first-child,
+    html[data-bs-theme="dark"] .sub-department-page .department-list-table tbody td:first-child {
+        border-left-color: rgba(225, 255, 240, 0.08) !important;
+    }
+
+    html[data-pms-theme="dark"] .sub-department-page .department-list-table tbody td:last-child,
+    html[data-theme="dark"] .sub-department-page .department-list-table tbody td:last-child,
+    html[data-bs-theme="dark"] .sub-department-page .department-list-table tbody td:last-child {
+        border-right-color: rgba(225, 255, 240, 0.08) !important;
+    }
+
+    html[data-pms-theme="dark"] .sub-department-page .department-list-table tbody tr:hover td,
+    html[data-theme="dark"] .sub-department-page .department-list-table tbody tr:hover td,
+    html[data-bs-theme="dark"] .sub-department-page .department-list-table tbody tr:hover td {
+        background: #1e3a2f !important;
+        border-color: rgba(64, 212, 140, 0.3) !important;
+    }
+
+    /* Icon Containers Dark Theme Fix */
+    html[data-pms-theme="dark"] .sub-department-page .mini-icon,
+    html[data-theme="dark"] .sub-department-page .mini-icon,
+    html[data-bs-theme="dark"] .sub-department-page .mini-icon {
+        background: rgba(16, 185, 129, 0.2) !important;
+        border: 1px solid rgba(52, 211, 153, 0.35) !important;
+        color: #34d399 !important;
+    }
+
+    html[data-pms-theme="dark"] .sub-department-page .mini-icon i,
+    html[data-theme="dark"] .sub-department-page .mini-icon i,
+    html[data-bs-theme="dark"] .sub-department-page .mini-icon i,
+    html[data-pms-theme="dark"] .sub-department-page .mini-icon svg,
+    html[data-theme="dark"] .sub-department-page .mini-icon svg,
+    html[data-bs-theme="dark"] .sub-department-page .mini-icon svg {
+        color: #34d399 !important;
+        -webkit-text-fill-color: #34d399 !important;
+    }
+
+    html[data-pms-theme="dark"] .sub-department-page .header-icon,
+    html[data-theme="dark"] .sub-department-page .header-icon,
+    html[data-bs-theme="dark"] .sub-department-page .header-icon,
+    html[data-pms-theme="dark"] .sub-department-page .table-title-icon,
+    html[data-theme="dark"] .sub-department-page .table-title-icon,
+    html[data-bs-theme="dark"] .sub-department-page .table-title-icon {
+        background: rgba(16, 185, 129, 0.2) !important;
+        border: 1px solid rgba(52, 211, 153, 0.35) !important;
+        color: #34d399 !important;
+    }
+
+    html[data-pms-theme="dark"] .sub-department-page .header-icon i,
+    html[data-theme="dark"] .sub-department-page .header-icon i,
+    html[data-bs-theme="dark"] .sub-department-page .header-icon i,
+    html[data-pms-theme="dark"] .sub-department-page .table-title-icon i,
+    html[data-theme="dark"] .sub-department-page .table-title-icon i,
+    html[data-bs-theme="dark"] .sub-department-page .table-title-icon i {
+        color: #34d399 !important;
+        -webkit-text-fill-color: #34d399 !important;
+    }
+
+    html[data-pms-theme="dark"] .sub-department-page .stat-card:nth-child(1) .stat-icon,
+    html[data-theme="dark"] .sub-department-page .stat-card:nth-child(1) .stat-icon,
+    html[data-bs-theme="dark"] .sub-department-page .stat-card:nth-child(1) .stat-icon {
+        background: rgba(16, 185, 129, 0.2) !important;
+        border: 1px solid rgba(52, 211, 153, 0.35) !important;
+        color: #34d399 !important;
+    }
+    html[data-pms-theme="dark"] .sub-department-page .stat-card:nth-child(1) .stat-icon i,
+    html[data-theme="dark"] .sub-department-page .stat-card:nth-child(1) .stat-icon i,
+    html[data-bs-theme="dark"] .sub-department-page .stat-card:nth-child(1) .stat-icon i {
+        color: #34d399 !important;
+        -webkit-text-fill-color: #34d399 !important;
+    }
+
+    html[data-pms-theme="dark"] .sub-department-page .stat-card:nth-child(2) .stat-icon,
+    html[data-theme="dark"] .sub-department-page .stat-card:nth-child(2) .stat-icon,
+    html[data-bs-theme="dark"] .sub-department-page .stat-card:nth-child(2) .stat-icon {
+        background: rgba(2, 132, 199, 0.2) !important;
+        border: 1px solid rgba(56, 189, 248, 0.35) !important;
+        color: #38bdf8 !important;
+    }
+    html[data-pms-theme="dark"] .sub-department-page .stat-card:nth-child(2) .stat-icon i,
+    html[data-theme="dark"] .sub-department-page .stat-card:nth-child(2) .stat-icon i,
+    html[data-bs-theme="dark"] .sub-department-page .stat-card:nth-child(2) .stat-icon i {
+        color: #38bdf8 !important;
+        -webkit-text-fill-color: #38bdf8 !important;
+    }
+
+    html[data-pms-theme="dark"] .sub-department-page .stat-card:nth-child(3) .stat-icon,
+    html[data-theme="dark"] .sub-department-page .stat-card:nth-child(3) .stat-icon,
+    html[data-bs-theme="dark"] .sub-department-page .stat-card:nth-child(3) .stat-icon {
+        background: rgba(79, 70, 229, 0.2) !important;
+        border: 1px solid rgba(129, 140, 248, 0.35) !important;
+        color: #818cf8 !important;
+    }
+    html[data-pms-theme="dark"] .sub-department-page .stat-card:nth-child(3) .stat-icon i,
+    html[data-theme="dark"] .sub-department-page .stat-card:nth-child(3) .stat-icon i,
+    html[data-bs-theme="dark"] .sub-department-page .stat-card:nth-child(3) .stat-icon i {
+        color: #818cf8 !important;
+        -webkit-text-fill-color: #818cf8 !important;
+    }
+
+    html[data-pms-theme="dark"] .sub-department-page .stat-card:nth-child(4) .stat-icon,
+    html[data-theme="dark"] .sub-department-page .stat-card:nth-child(4) .stat-icon,
+    html[data-bs-theme="dark"] .sub-department-page .stat-card:nth-child(4) .stat-icon {
+        background: rgba(217, 119, 6, 0.2) !important;
+        border: 1px solid rgba(251, 191, 36, 0.35) !important;
+        color: #fbbf24 !important;
+    }
+    html[data-pms-theme="dark"] .sub-department-page .stat-card:nth-child(4) .stat-icon i,
+    html[data-theme="dark"] .sub-department-page .stat-card:nth-child(4) .stat-icon i,
+    html[data-bs-theme="dark"] .sub-department-page .stat-card:nth-child(4) .stat-icon i {
+        color: #fbbf24 !important;
+        -webkit-text-fill-color: #fbbf24 !important;
+    }
+
+    html[data-pms-theme="dark"] .sub-department-page .department-code,
+    html[data-theme="dark"] .sub-department-page .department-code,
+    html[data-bs-theme="dark"] .sub-department-page .department-code {
+        color: #40d48c !important;
+    }
+
+    html[data-pms-theme="dark"] .sub-department-page .department-name,
+    html[data-theme="dark"] .sub-department-page .department-name,
+    html[data-bs-theme="dark"] .sub-department-page .department-name,
+    html[data-pms-theme="dark"] .sub-department-page .department-number,
+    html[data-theme="dark"] .sub-department-page .department-number,
+    html[data-bs-theme="dark"] .sub-department-page .department-number {
+        color: #f8fafc !important;
+    }
+
+    html[data-pms-theme="dark"] .sub-department-page .parent-name,
+    html[data-theme="dark"] .sub-department-page .parent-name,
+    html[data-bs-theme="dark"] .sub-department-page .parent-name {
+        color: #60a5fa !important;
+    }
+
+    html[data-pms-theme="dark"] .sub-department-page .action-btn,
+    html[data-theme="dark"] .sub-department-page .action-btn,
+    html[data-bs-theme="dark"] .sub-department-page .action-btn {
+        background: #183026 !important;
+        color: #cbd5e1 !important;
+    }
+
+    html[data-pms-theme="dark"] .sub-department-page .action-btn:hover,
+    html[data-theme="dark"] .sub-department-page .action-btn:hover,
+    html[data-bs-theme="dark"] .sub-department-page .action-btn:hover {
+        background: #204033 !important;
+        color: #40d48c !important;
+    }
+
+    html[data-pms-theme="dark"] .sub-department-page .dropdown-menu,
+    html[data-theme="dark"] .sub-department-page .dropdown-menu,
+    html[data-bs-theme="dark"] .sub-department-page .dropdown-menu {
+        background: #183026 !important;
+        border-color: rgba(225, 255, 240, 0.15) !important;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4) !important;
+    }
+
+    html[data-pms-theme="dark"] .sub-department-page .dropdown-item,
+    html[data-theme="dark"] .sub-department-page .dropdown-item,
+    html[data-bs-theme="dark"] .sub-department-page .dropdown-item {
+        color: #e2e8f0 !important;
+    }
+
+    html[data-pms-theme="dark"] .sub-department-page .dropdown-item:hover,
+    html[data-theme="dark"] .sub-department-page .dropdown-item:hover,
+    html[data-bs-theme="dark"] .sub-department-page .dropdown-item:hover {
+        background: #204033 !important;
+        color: #40d48c !important;
+    }
+
+    /* Pagination Footer Dark Mode (Fixes Image 2 Footer) */
+    html[data-pms-theme="dark"] .sub-department-page .footer,
+    html[data-theme="dark"] .sub-department-page .footer,
+    html[data-bs-theme="dark"] .sub-department-page .footer {
+        background: #162c22 !important;
+        border-top-color: rgba(225, 255, 240, 0.1) !important;
+        color: #94a3b8 !important;
+    }
+
+    html[data-pms-theme="dark"] .sub-department-page .footer .show-entries select,
+    html[data-theme="dark"] .sub-department-page .footer .show-entries select,
+    html[data-bs-theme="dark"] .sub-department-page .footer .show-entries select {
+        background: #183026 !important;
+        border-color: rgba(225, 255, 240, 0.15) !important;
+        color: #f8fafc !important;
+    }
+
+    html[data-pms-theme="dark"] .sub-department-page .footer .page-btn,
+    html[data-theme="dark"] .sub-department-page .footer .page-btn,
+    html[data-bs-theme="dark"] .sub-department-page .footer .page-btn {
+        background: #183026 !important;
+        border-color: rgba(225, 255, 240, 0.15) !important;
+        color: #cbd5e1 !important;
+    }
+
+    html[data-pms-theme="dark"] .sub-department-page .footer .page-btn:hover:not(.disabled),
+    html[data-theme="dark"] .sub-department-page .footer .page-btn:hover:not(.disabled),
+    html[data-bs-theme="dark"] .sub-department-page .footer .page-btn:hover:not(.disabled) {
+        background: #204033 !important;
+        color: #40d48c !important;
+        border-color: #40d48c !important;
+    }
+
+    html[data-pms-theme="dark"] .sub-department-page .footer .page-btn.active,
+    html[data-theme="dark"] .sub-department-page .footer .page-btn.active,
+    html[data-bs-theme="dark"] .sub-department-page .footer .page-btn.active {
+        background: linear-gradient(145deg, #34d399, #059669) !important;
+        color: white !important;
+    }
+
+    html[data-pms-theme="dark"] .sub-department-page .footer .page-btn.disabled,
+    html[data-theme="dark"] .sub-department-page .footer .page-btn.disabled,
+    html[data-bs-theme="dark"] .sub-department-page .footer .page-btn.disabled {
+        background: #12241c !important;
+        color: #64748b !important;
+    }
+
+    /* Legend Card Dark Mode */
+    html[data-pms-theme="dark"] .sub-department-page .legend-card,
+    html[data-theme="dark"] .sub-department-page .legend-card,
+    html[data-bs-theme="dark"] .sub-department-page .legend-card {
+        background: #102119 !important;
+        border-color: rgba(225, 255, 240, 0.12) !important;
+    }
+
+    html[data-pms-theme="dark"] .sub-department-page .legend-title,
+    html[data-theme="dark"] .sub-department-page .legend-title,
+    html[data-bs-theme="dark"] .sub-department-page .legend-title {
+        color: #f8fafc !important;
+    }
+
+    html[data-pms-theme="dark"] .sub-department-page .legend-item,
+    html[data-theme="dark"] .sub-department-page .legend-item,
+    html[data-bs-theme="dark"] .sub-department-page .legend-item {
+        color: #94a3b8 !important;
+    }
 </style>
+
 
 @push('js')
 <script>
