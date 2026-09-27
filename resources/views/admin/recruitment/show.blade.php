@@ -108,6 +108,84 @@
     .btn-rec-outline i {
         color: var(--rec-green-700) !important;
     }
+
+    /* Dark Mode Adjustments */
+    html[data-pms-theme="dark"] .rec-header-card,
+    html[data-bs-theme="dark"] .rec-header-card,
+    html[data-theme="dark"] .rec-header-card,
+    html.dark .rec-header-card,
+    body[data-pms-theme="dark"] .rec-header-card,
+    html[data-pms-theme="dark"] .card,
+    html[data-bs-theme="dark"] .card,
+    html[data-theme="dark"] .card,
+    html.dark .card,
+    body[data-pms-theme="dark"] .card {
+        background: #102119 !important;
+        border-color: rgba(122, 240, 181, 0.18) !important;
+    }
+
+    html[data-pms-theme="dark"] .rec-header-card h3,
+    html[data-bs-theme="dark"] .rec-header-card h3,
+    html[data-theme="dark"] .rec-header-card h3,
+    html[data-pms-theme="dark"] .card h5,
+    html[data-bs-theme="dark"] .card h5,
+    html[data-theme="dark"] .card h5,
+    html[data-pms-theme="dark"] .card strong,
+    html[data-bs-theme="dark"] .card strong,
+    html[data-theme="dark"] .card strong,
+    html[data-pms-theme="dark"] .card dd,
+    html[data-bs-theme="dark"] .card dd,
+    html[data-theme="dark"] .card dd,
+    html[data-pms-theme="dark"] .text-dark,
+    html[data-bs-theme="dark"] .text-dark,
+    html[data-theme="dark"] .text-dark {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    html[data-pms-theme="dark"] .bg-light,
+    html[data-bs-theme="dark"] .bg-light,
+    html[data-theme="dark"] .bg-light {
+        background: #183026 !important;
+        border-color: rgba(122, 240, 181, 0.18) !important;
+        color: #ffffff !important;
+    }
+
+    html[data-pms-theme="dark"] .text-secondary,
+    html[data-bs-theme="dark"] .text-secondary,
+    html[data-theme="dark"] .text-secondary {
+        color: #CBD5E1 !important;
+        -webkit-text-fill-color: #CBD5E1 !important;
+    }
+
+    html[data-pms-theme="dark"] .text-muted,
+    html[data-bs-theme="dark"] .text-muted,
+    html[data-theme="dark"] .text-muted,
+    html[data-pms-theme="dark"] .card dt,
+    html[data-bs-theme="dark"] .card dt,
+    html[data-theme="dark"] .card dt {
+        color: #a7f3d0 !important;
+        -webkit-text-fill-color: #a7f3d0 !important;
+    }
+
+    html[data-pms-theme="dark"] .btn-rec-outline,
+    html[data-bs-theme="dark"] .btn-rec-outline,
+    html[data-theme="dark"] .btn-rec-outline {
+        background: #14281e !important;
+        color: #7af0b5 !important;
+        -webkit-text-fill-color: #7af0b5 !important;
+        border: 1px solid rgba(122, 240, 181, 0.35) !important;
+    }
+
+    html[data-pms-theme="dark"] .btn-rec-outline *,
+    html[data-bs-theme="dark"] .btn-rec-outline *,
+    html[data-theme="dark"] .btn-rec-outline *,
+    html[data-pms-theme="dark"] .btn-rec-outline i,
+    html[data-bs-theme="dark"] .btn-rec-outline i,
+    html[data-theme="dark"] .btn-rec-outline i {
+        color: #7af0b5 !important;
+        -webkit-text-fill-color: #7af0b5 !important;
+    }
 </style>
 
 <div class="container-xxl flex-grow-1 container-p-y rec-detail-shell">

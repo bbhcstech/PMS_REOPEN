@@ -169,6 +169,43 @@
         display: inline-block;
     }
 
+    /* Dark Mode Support for Back to Settings Button */
+    html[data-pms-theme="dark"] .btn-back-settings,
+    html[data-bs-theme="dark"] .btn-back-settings,
+    body[data-pms-theme="dark"] .btn-back-settings,
+    [data-pms-theme="dark"] .btn-back-settings {
+        background-color: #183026 !important;
+        border-color: rgba(225, 255, 240, 0.2) !important;
+        color: #40d48c !important;
+        -webkit-text-fill-color: #40d48c !important;
+    }
+
+    html[data-pms-theme="dark"] .btn-back-settings .back-arrow-icon,
+    html[data-bs-theme="dark"] .btn-back-settings .back-arrow-icon,
+    body[data-pms-theme="dark"] .btn-back-settings .back-arrow-icon,
+    [data-pms-theme="dark"] .btn-back-settings .back-arrow-icon {
+        color: #40d48c !important;
+        -webkit-text-fill-color: #40d48c !important;
+    }
+
+    html[data-pms-theme="dark"] .btn-back-settings:hover,
+    html[data-bs-theme="dark"] .btn-back-settings:hover,
+    body[data-pms-theme="dark"] .btn-back-settings:hover,
+    [data-pms-theme="dark"] .btn-back-settings:hover {
+        background-color: #0f744c !important;
+        border-color: #0f744c !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    html[data-pms-theme="dark"] .btn-back-settings:hover .back-arrow-icon,
+    html[data-bs-theme="dark"] .btn-back-settings:hover .back-arrow-icon,
+    body[data-pms-theme="dark"] .btn-back-settings:hover .back-arrow-icon,
+    [data-pms-theme="dark"] .btn-back-settings:hover .back-arrow-icon {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
     /* ===== STATS GRID ===== */
     .stats-grid {
         display: grid;
@@ -247,16 +284,33 @@
         flex-shrink: 0;
     }
 
+    .stat-icon i,
+    .org-details-page .stat-card .stat-icon i {
+        font-size: 1.5rem;
+        color: inherit !important;
+        -webkit-text-fill-color: currentColor !important;
+    }
+
     .stat-icon.industry,
+    .org-details-page .stat-card .stat-icon.industry,
     .org-details-page .stat-card:first-of-type .stat-icon.industry {
         background: linear-gradient(145deg, #d1fae5, #a7f3d0) !important;
-        color: #059669 !important;
-        -webkit-text-fill-color: #059669 !important;
+    }
+
+    .stat-icon.industry i,
+    .org-details-page .stat-card .stat-icon.industry i,
+    .org-details-page .stat-card:first-of-type .stat-icon.industry i {
+        color: #047857 !important;
+        -webkit-text-fill-color: #047857 !important;
     }
 
     .stat-icon.size,
     .org-details-page .stat-card .stat-icon.size {
         background: linear-gradient(145deg, #e0f2fe, #bae6fd) !important;
+    }
+
+    .stat-icon.size i,
+    .org-details-page .stat-card .stat-icon.size i {
         color: #0284c7 !important;
         -webkit-text-fill-color: #0284c7 !important;
     }
@@ -264,6 +318,10 @@
     .stat-icon.tax,
     .org-details-page .stat-card .stat-icon.tax {
         background: linear-gradient(145deg, #fef3c7, #fde68a) !important;
+    }
+
+    .stat-icon.tax i,
+    .org-details-page .stat-card .stat-icon.tax i {
         color: #d97706 !important;
         -webkit-text-fill-color: #d97706 !important;
     }
@@ -271,8 +329,85 @@
     .stat-icon.year,
     .org-details-page .stat-card .stat-icon.year {
         background: linear-gradient(145deg, #e0e7ff, #c7d2fe) !important;
+    }
+
+    .stat-icon.year i,
+    .org-details-page .stat-card .stat-icon.year i {
         color: #4f46e5 !important;
         -webkit-text-fill-color: #4f46e5 !important;
+    }
+
+    /* Dark Mode Support for Executive Summary Stats Cards */
+    html[data-pms-theme="dark"] .stat-card,
+    html[data-bs-theme="dark"] .stat-card,
+    body[data-pms-theme="dark"] .stat-card,
+    [data-pms-theme="dark"] .stat-card {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-card h3,
+    html[data-bs-theme="dark"] .stat-card h3,
+    body[data-pms-theme="dark"] .stat-card h3,
+    [data-pms-theme="dark"] .stat-card h3 {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-card h6,
+    html[data-bs-theme="dark"] .stat-card h6,
+    body[data-pms-theme="dark"] .stat-card h6,
+    [data-pms-theme="dark"] .stat-card h6 {
+        color: #94a3b8 !important;
+        -webkit-text-fill-color: #94a3b8 !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon.industry,
+    html[data-bs-theme="dark"] .stat-icon.industry,
+    [data-pms-theme="dark"] .stat-icon.industry {
+        background: rgba(16, 185, 129, 0.2) !important;
+    }
+    html[data-pms-theme="dark"] .stat-icon.industry i,
+    html[data-bs-theme="dark"] .stat-icon.industry i,
+    [data-pms-theme="dark"] .stat-icon.industry i {
+        color: #34d399 !important;
+        -webkit-text-fill-color: #34d399 !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon.size,
+    html[data-bs-theme="dark"] .stat-icon.size,
+    [data-pms-theme="dark"] .stat-icon.size {
+        background: rgba(14, 165, 233, 0.2) !important;
+    }
+    html[data-pms-theme="dark"] .stat-icon.size i,
+    html[data-bs-theme="dark"] .stat-icon.size i,
+    [data-pms-theme="dark"] .stat-icon.size i {
+        color: #38bdf8 !important;
+        -webkit-text-fill-color: #38bdf8 !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon.tax,
+    html[data-bs-theme="dark"] .stat-icon.tax,
+    [data-pms-theme="dark"] .stat-icon.tax {
+        background: rgba(245, 158, 11, 0.2) !important;
+    }
+    html[data-pms-theme="dark"] .stat-icon.tax i,
+    html[data-bs-theme="dark"] .stat-icon.tax i,
+    [data-pms-theme="dark"] .stat-icon.tax i {
+        color: #fbbf24 !important;
+        -webkit-text-fill-color: #fbbf24 !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon.year,
+    html[data-bs-theme="dark"] .stat-icon.year,
+    [data-pms-theme="dark"] .stat-icon.year {
+        background: rgba(99, 102, 241, 0.2) !important;
+    }
+    html[data-pms-theme="dark"] .stat-icon.year i,
+    html[data-bs-theme="dark"] .stat-icon.year i,
+    [data-pms-theme="dark"] .stat-icon.year i {
+        color: #818cf8 !important;
+        -webkit-text-fill-color: #818cf8 !important;
     }
 
     .stat-info h6 {

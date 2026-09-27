@@ -95,23 +95,27 @@ use App\Http\Controllers\CommunityMessageController;
 
 Route::middleware(['auth'])->group(function () {
     // Community Message Module Routes
-    Route::get('/community', [CommunityMessageController::class, 'index'])->name('community.index');
-    Route::get('/community/messages', [CommunityMessageController::class, 'fetchMessages'])->name('community.messages');
-    Route::post('/community/messages', [CommunityMessageController::class, 'store'])->name('community.store');
-    Route::put('/community/messages/{id}', [CommunityMessageController::class, 'update'])->name('community.update');
-    Route::delete('/community/messages/{id}', [CommunityMessageController::class, 'destroy'])->name('community.destroy');
-    Route::post('/community/messages/{id}/react', [CommunityMessageController::class, 'react'])->name('community.react');
-    Route::post('/community/messages/{id}/pin', [CommunityMessageController::class, 'togglePin'])->name('community.pin');
+    Route::middleware(['feature:community'])->group(function () {
+        Route::get('/community', [CommunityMessageController::class, 'index'])->name('community.index');
+        Route::get('/community/messages', [CommunityMessageController::class, 'fetchMessages'])->name('community.messages');
+        Route::post('/community/messages', [CommunityMessageController::class, 'store'])->name('community.store');
+        Route::put('/community/messages/{id}', [CommunityMessageController::class, 'update'])->name('community.update');
+        Route::delete('/community/messages/{id}', [CommunityMessageController::class, 'destroy'])->name('community.destroy');
+        Route::post('/community/messages/{id}/react', [CommunityMessageController::class, 'react'])->name('community.react');
+        Route::post('/community/messages/{id}/pin', [CommunityMessageController::class, 'togglePin'])->name('community.pin');
+    });
 
     // Company Events Module Routes
-    Route::get('/events', [EventController::class, 'index'])->name('events.index');
-    Route::get('/events/calendar-data', [EventController::class, 'calendarData'])->name('events.calendar-data');
-    Route::post('/events', [EventController::class, 'store'])->name('events.store');
-    Route::get('/events/{id}', [EventController::class, 'show'])->name('events.show');
-    Route::put('/events/{id}', [EventController::class, 'update'])->name('events.update');
-    Route::delete('/events/{id}', [EventController::class, 'destroy'])->name('events.destroy');
-    Route::post('/events/{id}/publish', [EventController::class, 'publish'])->name('events.publish');
-    Route::post('/events/{id}/cancel', [EventController::class, 'cancel'])->name('events.cancel');
+    Route::middleware(['feature:events'])->group(function () {
+        Route::get('/events', [EventController::class, 'index'])->name('events.index');
+        Route::get('/events/calendar-data', [EventController::class, 'calendarData'])->name('events.calendar-data');
+        Route::post('/events', [EventController::class, 'store'])->name('events.store');
+        Route::get('/events/{id}', [EventController::class, 'show'])->name('events.show');
+        Route::put('/events/{id}', [EventController::class, 'update'])->name('events.update');
+        Route::delete('/events/{id}', [EventController::class, 'destroy'])->name('events.destroy');
+        Route::post('/events/{id}/publish', [EventController::class, 'publish'])->name('events.publish');
+        Route::post('/events/{id}/cancel', [EventController::class, 'cancel'])->name('events.cancel');
+    });
     Route::post('/events/{id}/rsvp', [EventController::class, 'rsvp'])->name('events.rsvp');
 
     // Event Memories / Gallery Photo Routes
@@ -368,6 +372,8 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
 Route::middleware(['auth', 'verified'])->prefix('superadmin')->name('superadmin.')->group(function () {
     Route::get('/', [SuperAdminController::class, 'dashboard'])->name('dashboard');
     Route::get('/subscriptions', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'subscriptions'])->name('subscriptions.index');
+    Route::post('/subscriptions', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'assignPlan'])->name('subscriptions.store');
+    Route::post('/subscriptions/store', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'assignPlan']);
     Route::post('/plans/toggle-module', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'togglePlanModule'])->name('plans.toggle-module');
     Route::post('/subscriptions/assign', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'assignPlan'])->name('subscriptions.assign');
     Route::post('/subscriptions/toggle-override', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'toggleCompanyOverride'])->name('subscriptions.toggle-override');
@@ -561,40 +567,7 @@ Route::middleware(['auth', 'module.access'])->group(function () {
     Route::get('/letterhead/{company}/download', [LetterheadController::class, 'download'])->name('letterhead.download');
     Route::delete('/letterhead/{company}/delete', [LetterheadController::class, 'destroyLegacy'])->name('letterhead.delete');
 
-    Route::prefix('payroll')->name('payroll.')->group(function () {
-        Route::get('/', [PayrollController::class, 'index'])->name('index');
-
-        Route::get('/architectures', [PayrollController::class, 'architectures'])->name('architectures.index');
-        Route::post('/architectures', [PayrollController::class, 'storeArchitecture'])->name('architectures.store');
-        Route::patch('/architectures/{architecture}/activate', [PayrollController::class, 'activateArchitecture'])->name('architectures.activate');
-
-        Route::get('/salary-structures', [PayrollController::class, 'salaryStructures'])->name('salary-structures.index');
-        Route::post('/salary-structures', [PayrollController::class, 'storeSalaryStructure'])->name('salary-structures.store');
-        Route::post('/salary-components', [PayrollController::class, 'storeSalaryComponent'])->name('salary-components.store');
-
-        Route::get('/deduction-rules', [PayrollController::class, 'deductionRules'])->name('deduction-rules.index');
-        Route::post('/deduction-rules', [PayrollController::class, 'storeDeductionRule'])->name('deduction-rules.store');
-        Route::get('/bonus-rules', [PayrollController::class, 'bonusRules'])->name('bonus-rules.index');
-        Route::post('/bonus-rules', [PayrollController::class, 'storeBonusRule'])->name('bonus-rules.store');
-        Route::get('/tax-rules', [PayrollController::class, 'taxRules'])->name('tax-rules.index');
-        Route::post('/tax-rules', [PayrollController::class, 'storeTaxRule'])->name('tax-rules.store');
-        Route::get('/overtime-rules', [PayrollController::class, 'overtimeRules'])->name('overtime-rules.index');
-        Route::post('/overtime-rules', [PayrollController::class, 'storeOvertimeRule'])->name('overtime-rules.store');
-
-        Route::get('/cycles', [PayrollController::class, 'cycles'])->name('cycles.index');
-        Route::post('/cycles', [PayrollController::class, 'storeCycle'])->name('cycles.store');
-        Route::post('/cycles/{cycle}/process', [PayrollController::class, 'process'])->name('cycles.process');
-
-        Route::get('/payslips', [PayrollController::class, 'payslips'])->name('payslips.index');
-        Route::get('/reports', [PayrollController::class, 'reports'])->name('reports.index');
-        Route::get('/audit-logs', [PayrollController::class, 'auditLogs'])->name('audit-logs.index');
-
-        Route::get('/policies', [PayrollController::class, 'policies'])->name('policies.index');
-        Route::get('/settings', [PayrollController::class, 'settings'])->name('settings.index');
-        Route::get('/import-export', [PayrollController::class, 'importExport'])->name('import-export.index');
-        Route::get('/archive', [PayrollController::class, 'archive'])->name('archive.index');
-        Route::get('/formula-builder', [PayrollController::class, 'formulaBuilder'])->name('formula-builder.index');
-    });
+    // Payroll routes moved to standalone group below (line ~1226)
 
     Route::get('/organization', [OrganizationDirectoryController::class, 'index'])->name('organization.index');
     Route::get('/organization/employees/{employee}', [OrganizationDirectoryController::class, 'show'])->name('organization.show');
@@ -1183,6 +1156,95 @@ Route::post('leads/contacts/convert', [LeadContactController::class, 'convertToC
 Route::get('/leads/contacts/export', [LeadContactController::class, 'export'])->name('leads.contacts.export');
 Route::get('leads/contacts/template', [LeadContactController::class, 'downloadTemplate'])->name('leads.contacts.template');
 Route::post('leads/contacts/import', [LeadContactController::class, 'import'])->name('leads.contacts.import');
+
+Route::middleware(['auth'])->prefix('payroll')->name('payroll.')->group(function () {
+    Route::get('/', [PayrollController::class, 'index'])->name('index');
+
+    // ── Payroll Processing ─────────────────────────────────────────────
+    Route::get('/processing', [PayrollController::class, 'processing'])->name('processing');
+    Route::post('/calculate', [PayrollController::class, 'calculate'])->name('calculate');
+    Route::post('/{payroll}/finalize', [PayrollController::class, 'finalize'])->name('finalize');
+    Route::post('/{payroll}/recalculate', [PayrollController::class, 'recalculate'])->name('recalculate');
+    Route::get('/{payroll}/export', [PayrollController::class, 'export'])->name('export');
+    Route::post('/{payroll}/generate-payslips', [PayrollController::class, 'generatePayslipsForRun'])->name('generate-payslips');
+
+    // ── Payroll Architectures ──────────────────────────────────────────
+    Route::get('/architectures', [PayrollController::class, 'architectures'])->name('architectures.index');
+    Route::post('/architectures', [PayrollController::class, 'storeArchitecture'])->name('architectures.store');
+    Route::patch('/architectures/{architecture}/activate', [PayrollController::class, 'activateArchitecture'])->name('architectures.activate');
+    Route::delete('/architectures/{architecture}', [PayrollController::class, 'destroyArchitecture'])->name('architectures.destroy');
+
+    // ── Salary Structures ──────────────────────────────────────────────
+    Route::get('/salary-structures', [PayrollController::class, 'salaryStructures'])->name('salary-structures.index');
+    Route::post('/salary-structures', [PayrollController::class, 'storeSalaryStructure'])->name('salary-structures.store');
+    Route::post('/salary-components', [PayrollController::class, 'storeSalaryComponent'])->name('salary-components.store');
+    Route::delete('/salary-components/{component}', [PayrollController::class, 'destroySalaryComponent'])->name('salary-components.destroy');
+
+    // ── Payroll Policy Rules ───────────────────────────────────────────
+    Route::get('/deduction-rules', [PayrollController::class, 'deductionRules'])->name('deduction-rules.index');
+    Route::post('/deduction-rules', [PayrollController::class, 'storeDeductionRule'])->name('deduction-rules.store');
+    Route::delete('/deduction-rules/{rule}', [PayrollController::class, 'destroyDeductionRule'])->name('deduction-rules.destroy');
+
+    Route::get('/bonus-rules', [PayrollController::class, 'bonusRules'])->name('bonus-rules.index');
+    Route::post('/bonus-rules', [PayrollController::class, 'storeBonusRule'])->name('bonus-rules.store');
+    Route::delete('/bonus-rules/{rule}', [PayrollController::class, 'destroyBonusRule'])->name('bonus-rules.destroy');
+
+    Route::get('/tax-rules', [PayrollController::class, 'taxRules'])->name('tax-rules.index');
+    Route::post('/tax-rules', [PayrollController::class, 'storeTaxRule'])->name('tax-rules.store');
+    Route::delete('/tax-rules/{rule}', [PayrollController::class, 'destroyTaxRule'])->name('tax-rules.destroy');
+
+    Route::get('/overtime-rules', [PayrollController::class, 'overtimeRules'])->name('overtime-rules.index');
+    Route::post('/overtime-rules', [PayrollController::class, 'storeOvertimeRule'])->name('overtime-rules.store');
+    Route::delete('/overtime-rules/{rule}', [PayrollController::class, 'destroyOvertimeRule'])->name('overtime-rules.destroy');
+
+    // ── Payroll Cycles ─────────────────────────────────────────────────
+    Route::get('/cycles', [PayrollController::class, 'cycles'])->name('cycles.index');
+    Route::post('/cycles', [PayrollController::class, 'storeCycle'])->name('cycles.store');
+    Route::post('/cycles/{cycle}/process', [PayrollController::class, 'process'])->name('cycles.process');
+    Route::patch('/cycles/{cycle}/status', [PayrollController::class, 'updateCycleStatus'])->name('cycles.status');
+    Route::delete('/cycles/{cycle}', [PayrollController::class, 'destroyCycle'])->name('cycles.destroy');
+
+    // ── Payslips ───────────────────────────────────────────────────────
+    Route::get('/payslips', [PayrollController::class, 'payslips'])->name('payslips.index');
+    Route::get('/payslips/{payslip}', [PayrollController::class, 'viewPayslip'])->name('payslips.view');
+    Route::get('/payslips/{payslip}/print', [PayrollController::class, 'printPayslip'])->name('payslips.print');
+    Route::post('/payslips/{payslip}/send', [PayrollController::class, 'sendPayslipSingle'])->name('payslips.send');
+
+    // ── Reports ────────────────────────────────────────────────────────
+    Route::get('/reports', [PayrollController::class, 'reports'])->name('reports.index');
+    Route::get('/reports/export', [PayrollController::class, 'exportReport'])->name('reports.export');
+
+    // ── Audit Logs ─────────────────────────────────────────────────────
+    Route::get('/audit-logs', [PayrollController::class, 'auditLogs'])->name('audit-logs.index');
+
+    // ── Policies (Full CRUD via PayrollPolicyController) ───────────────
+    Route::get('/policies', [\App\Http\Controllers\PayrollPolicyController::class, 'index'])->name('policies.index');
+    Route::post('/policies', [\App\Http\Controllers\PayrollPolicyController::class, 'store'])->name('policies.store');
+    Route::put('/policies/{policy}', [\App\Http\Controllers\PayrollPolicyController::class, 'update'])->name('policies.update');
+    Route::post('/policies/{policy}/duplicate', [\App\Http\Controllers\PayrollPolicyController::class, 'duplicate'])->name('policies.duplicate');
+    Route::patch('/policies/{policy}/toggle-status', [\App\Http\Controllers\PayrollPolicyController::class, 'toggleStatus'])->name('policies.toggle-status');
+    Route::get('/policies/{policy}/history', [\App\Http\Controllers\PayrollPolicyController::class, 'history'])->name('policies.history');
+    Route::post('/policies/simulate', [\App\Http\Controllers\PayrollPolicyController::class, 'simulate'])->name('policies.simulate');
+
+    // ── Formula Builder ────────────────────────────────────────────────
+    Route::get('/formula-builder', [PayrollController::class, 'formulaBuilder'])->name('formula-builder.index');
+    Route::post('/formula-builder', [PayrollController::class, 'storeFormula'])->name('formula-builder.store');
+    Route::post('/formula-builder/validate', [PayrollController::class, 'validateFormula'])->name('formula-builder.validate');
+    Route::delete('/formula-builder/{formula}', [PayrollController::class, 'destroyFormula'])->name('formula-builder.destroy');
+
+    // ── Import / Export ────────────────────────────────────────────────
+    Route::get('/import-export', [PayrollController::class, 'importExport'])->name('import-export.index');
+    Route::post('/import-export/import', [PayrollController::class, 'importPayroll'])->name('import-export.import');
+    Route::get('/import-export/export-csv', [PayrollController::class, 'exportCsv'])->name('import-export.export-csv');
+    Route::get('/import-export/template', [PayrollController::class, 'downloadTemplate'])->name('import-export.template');
+
+    // ── Archive ────────────────────────────────────────────────────────
+    Route::get('/archive', [PayrollController::class, 'archive'])->name('archive.index');
+    Route::post('/archive/{payroll}', [PayrollController::class, 'archivePayroll'])->name('archive.store');
+
+    // ── Settings ───────────────────────────────────────────────────────
+    Route::get('/settings', [PayrollController::class, 'settings'])->name('settings.index');
+});
 
 // Deal Routes - IMPORTANT: Exact routes FIRST
 Route::get('admin/deals/index', [DealController::class, 'index'])->name('admin.deals.index');

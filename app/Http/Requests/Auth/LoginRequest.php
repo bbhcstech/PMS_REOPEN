@@ -75,13 +75,35 @@ class LoginRequest extends FormRequest
             }
         } catch (\Throwable $e) {}
 
+        // Look up central company if input email/code matches
         $centralCompany = null;
         try {
             $centralCompany = \App\Models\Central\Company::on('central')
                 ->where('email', $inputEmail)
                 ->orWhere('company_code', strtoupper($inputEmail))
+                ->orWhere('domain', $inputEmail)
+                ->orWhere('subdomain', $inputEmail)
                 ->first();
         } catch (\Throwable $e) {}
+
+        // First, check if user exists by email or personal_email
+        $user = null;
+        try {
+            $hasPersonalEmail = \Illuminate\Support\Facades\Schema::hasColumn('users', 'personal_email');
+            $user = User::where(function ($query) use ($inputEmail, $hasPersonalEmail) {
+                $query->where('email', $inputEmail);
+                if ($hasPersonalEmail) {
+                    $query->orWhere('personal_email', $inputEmail);
+                }
+            })->first();
+        } catch (\Throwable $e) {}
+
+        // If central company not found yet, check via user's company_id
+        if (! $centralCompany && $user && !empty($user->company_id)) {
+            try {
+                $centralCompany = \App\Models\Central\Company::on('central')->find($user->company_id);
+            } catch (\Throwable $e) {}
+        }
 
         if ($centralCompany && !empty($centralCompany->db_name)) {
             $companyEmail = strtolower($centralCompany->email);
@@ -220,6 +242,7 @@ class LoginRequest extends FormRequest
                         }
                         $foundUser = $tUserQuery->first();
                         if ($foundUser) {
+                            $centralCompany = $comp;
                             $user = $foundUser;
                             session([
                                 'current_company_db'   => $comp->db_name,
@@ -230,13 +253,34 @@ class LoginRequest extends FormRequest
                         }
                     } catch (\Throwable $e) {}
                 }
-            } catch (\Throwable $e) {}
 
-            // If not found in any other database, restore default tenant DB
-            if (! $user) {
-                config(['database.connections.tenant.database' => $defaultTenantDb]);
-                \Illuminate\Support\Facades\DB::purge('tenant');
+                // If not found in any other database, restore default tenant DB
+                if (! $user) {
+                    config(['database.connections.tenant.database' => $defaultTenantDb]);
+                    \Illuminate\Support\Facades\DB::purge('tenant');
+                }
+            } catch (\Throwable $e) {}
+        }
+
+        if (! $user) {
+            // Check if user exists by email or personal_email
+            $hasPersonalEmailCol = false;
+            try {
+                $hasPersonalEmailCol = \Illuminate\Support\Facades\Schema::connection('tenant')->hasColumn('users', 'personal_email');
+            } catch (\Throwable $e) {
+                try {
+                    $hasPersonalEmailCol = \Illuminate\Support\Facades\Schema::hasColumn('users', 'personal_email');
+                } catch (\Throwable $e) {}
             }
+
+            $userQuery = User::where('email', $inputEmail);
+            if ($centralCompany && !empty($centralCompany->email)) {
+                $userQuery->orWhere('email', strtolower($centralCompany->email));
+            }
+            if ($hasPersonalEmailCol) {
+                $userQuery->orWhere('personal_email', $inputEmail);
+            }
+            $user = $userQuery->first();
         }
 
         if ($user) {
@@ -278,7 +322,7 @@ class LoginRequest extends FormRequest
 
         if (! Auth::attempt($attemptCredentials, $this->boolean('remember'))) {
             // Fallback attempt with central company email if input was company_code or domain
-            if ($centralCompany && strtolower($centralCompany->email) !== $inputEmail) {
+            if ($centralCompany && !empty($centralCompany->email) && strtolower($centralCompany->email) !== $inputEmail) {
                 $attemptCredentials['email'] = strtolower($centralCompany->email);
                 if (Auth::attempt($attemptCredentials, $this->boolean('remember'))) {
                     RateLimiter::clear($this->throttleKey());

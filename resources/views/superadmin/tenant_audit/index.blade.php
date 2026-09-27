@@ -824,6 +824,214 @@
         margin-left: auto;
         margin-right: auto;
     }
+    /* ============================================================
+       DARK THEME ARCHITECTURE FOR ACTIVITY LOGS
+       ============================================================ */
+    html[data-pms-theme="dark"],
+    html[data-theme="dark"],
+    html[data-bs-theme="dark"] {
+        --bg-surface: #0F1530;
+        --bg-subtle: #141B3D;
+        --bg-hover: #1A2247;
+        --border-color: rgba(238, 241, 251, 0.09);
+        --border-subtle: rgba(238, 241, 251, 0.12);
+        --text-main: #EEF1FB;
+        --text-muted: #CBD5E1;
+        --text-subtle: #9AA3C7;
+        --primary: #2F6BFF;
+        --primary-light: rgba(47, 107, 255, 0.15);
+        --primary-border: rgba(47, 107, 255, 0.35);
+        --success-light: rgba(16, 185, 129, 0.15);
+        --success-border: rgba(52, 211, 153, 0.3);
+        --warning-light: rgba(245, 158, 11, 0.15);
+        --warning-border: rgba(251, 191, 36, 0.3);
+        --danger-light: rgba(239, 68, 68, 0.15);
+        --danger-border: rgba(248, 113, 113, 0.3);
+        --purple-light: rgba(139, 92, 246, 0.15);
+        --purple-border: rgba(167, 139, 250, 0.3);
+        --cyan-light: rgba(6, 182, 212, 0.15);
+    }
+
+    html[data-pms-theme="dark"] .page-header-box,
+    html[data-theme="dark"] .page-header-box,
+    html[data-bs-theme="dark"] .page-header-box {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    html[data-pms-theme="dark"] .kpi-card,
+    html[data-theme="dark"] .kpi-card,
+    html[data-bs-theme="dark"] .kpi-card {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+    }
+    html[data-pms-theme="dark"] .kpi-card:hover,
+    html[data-theme="dark"] .kpi-card:hover,
+    html[data-bs-theme="dark"] .kpi-card:hover {
+        border-color: rgba(47, 107, 255, 0.4) !important;
+    }
+    html[data-pms-theme="dark"] .kpi-card.active-kpi-filter,
+    html[data-theme="dark"] .kpi-card.active-kpi-filter,
+    html[data-bs-theme="dark"] .kpi-card.active-kpi-filter {
+        background: #141B3D !important;
+        border-color: #2F6BFF !important;
+        box-shadow: 0 0 0 2px rgba(47, 107, 255, 0.35) !important;
+    }
+
+    html[data-pms-theme="dark"] .filter-panel-box,
+    html[data-theme="dark"] .filter-panel-box,
+    html[data-bs-theme="dark"] .filter-panel-box {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+    }
+    html[data-pms-theme="dark"] .filter-select,
+    html[data-theme="dark"] .filter-select,
+    html[data-bs-theme="dark"] .filter-select {
+        background: #141B3D !important;
+        color: #EEF1FB !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
+    }
+    html[data-pms-theme="dark"] .filter-select option,
+    html[data-theme="dark"] .filter-select option {
+        background: #0F1530 !important;
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .search-input,
+    html[data-theme="dark"] .search-input,
+    html[data-bs-theme="dark"] .search-input {
+        background: #141B3D !important;
+        color: #EEF1FB !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
+    }
+
+    html[data-pms-theme="dark"] .table-card,
+    html[data-theme="dark"] .table-card,
+    html[data-bs-theme="dark"] .table-card {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .grid-table,
+    html[data-theme="dark"] .grid-table,
+    html[data-bs-theme="dark"] .grid-table {
+        border-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .grid-table th,
+    html[data-theme="dark"] .grid-table th,
+    html[data-bs-theme="dark"] .grid-table th {
+        background: #141B3D !important;
+        color: #9AA3C7 !important;
+        border-bottom-color: rgba(238, 241, 251, 0.09) !important;
+        border-right-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .grid-table td,
+    html[data-theme="dark"] .grid-table td,
+    html[data-bs-theme="dark"] .grid-table td {
+        border-bottom-color: rgba(238, 241, 251, 0.09) !important;
+        border-right-color: rgba(238, 241, 251, 0.09) !important;
+        color: #CBD5E1 !important;
+    }
+    html[data-pms-theme="dark"] .grid-table tbody tr:hover,
+    html[data-theme="dark"] .grid-table tbody tr:hover,
+    html[data-bs-theme="dark"] .grid-table tbody tr:hover {
+        background: #1A2247 !important;
+    }
+
+    html[data-pms-theme="dark"] .table-pagination-bar,
+    html[data-theme="dark"] .table-pagination-bar,
+    html[data-bs-theme="dark"] .table-pagination-bar {
+        background: #141B3D !important;
+        border-top-color: rgba(238, 241, 251, 0.09) !important;
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] .page-num-btn,
+    html[data-theme="dark"] .page-num-btn,
+    html[data-bs-theme="dark"] .page-num-btn {
+        background: #0F1530 !important;
+        color: #EEF1FB !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
+    }
+    html[data-pms-theme="dark"] .page-num-btn:hover:not(:disabled),
+    html[data-theme="dark"] .page-num-btn:hover:not(:disabled),
+    html[data-bs-theme="dark"] .page-num-btn:hover:not(:disabled) {
+        background: #1A2247 !important;
+        color: #38bdf8 !important;
+        border-color: #2F6BFF !important;
+    }
+    html[data-pms-theme="dark"] .page-num-btn.active,
+    html[data-theme="dark"] .page-num-btn.active,
+    html[data-bs-theme="dark"] .page-num-btn.active {
+        background: #2F6BFF !important;
+        color: #ffffff !important;
+        border-color: #2F6BFF !important;
+    }
+
+    html[data-pms-theme="dark"] .btn-action-secondary,
+    html[data-theme="dark"] .btn-action-secondary,
+    html[data-bs-theme="dark"] .btn-action-secondary {
+        background: #141B3D !important;
+        color: #EEF1FB !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .btn-action-secondary:hover,
+    html[data-theme="dark"] .btn-action-secondary:hover,
+    html[data-bs-theme="dark"] .btn-action-secondary:hover {
+        background: #1A2247 !important;
+        border-color: rgba(47, 107, 255, 0.4) !important;
+        color: #38bdf8 !important;
+    }
+
+    /* Audit Safeguard Box (Screenshot 2) */
+    html[data-pms-theme="dark"] .audit-safeguard-box,
+    html[data-theme="dark"] .audit-safeguard-box,
+    html[data-bs-theme="dark"] .audit-safeguard-box {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .audit-safeguard-icon,
+    html[data-theme="dark"] .audit-safeguard-icon,
+    html[data-bs-theme="dark"] .audit-safeguard-icon {
+        background: rgba(47, 107, 255, 0.15) !important;
+        color: #38bdf8 !important;
+    }
+
+    /* Drawer & Modal */
+    html[data-pms-theme="dark"] .drawer-panel,
+    html[data-theme="dark"] .drawer-panel,
+    html[data-bs-theme="dark"] .drawer-panel {
+        background: #0F1530 !important;
+        color: #EEF1FB !important;
+        border-left: 1px solid rgba(238, 241, 251, 0.09);
+    }
+    html[data-pms-theme="dark"] .drawer-header,
+    html[data-theme="dark"] .drawer-header,
+    html[data-bs-theme="dark"] .drawer-header {
+        background: #141B3D !important;
+        border-bottom-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .modal-box,
+    html[data-theme="dark"] .modal-box,
+    html[data-bs-theme="dark"] .modal-box {
+        background: #0F1530 !important;
+        color: #EEF1FB !important;
+        border-color: rgba(238, 241, 251, 0.16) !important;
+    }
+    html[data-pms-theme="dark"] .modal-header,
+    html[data-theme="dark"] .modal-header,
+    html[data-bs-theme="dark"] .modal-header {
+        background: #141B3D !important;
+        border-bottom-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .modal-footer,
+    html[data-theme="dark"] .modal-footer,
+    html[data-bs-theme="dark"] .modal-footer {
+        background: #141B3D !important;
+        border-top-color: rgba(238, 241, 251, 0.09) !important;
+    }
 </style>
 @endpush
 
@@ -1248,9 +1456,9 @@
     </div>
 
     <!-- 5. AUDIT INTEGRITY INFORMATION -->
-    <div style="background: var(--bg-surface); border-radius: var(--radius-lg); border: 1px solid var(--border-color); padding: 18px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; box-shadow: var(--shadow-sm);">
+    <div class="audit-safeguard-box" style="background: var(--bg-surface); border-radius: var(--radius-lg); border: 1px solid var(--border-color); padding: 18px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; box-shadow: var(--shadow-sm);">
         <div style="display: flex; align-items: center; gap: 14px;">
-            <div style="width: 42px; height: 42px; border-radius: 10px; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 22px;">
+            <div class="audit-safeguard-icon" style="width: 42px; height: 42px; border-radius: 10px; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 22px;">
                 <i class="bx bx-shield-check"></i>
             </div>
             <div>

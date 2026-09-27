@@ -952,109 +952,184 @@
         }
     }
 
-    /* Dark Mode Support */
+    /* Dark Mode Support (Bitroxia Design System) */
     html[data-pms-theme="dark"] .archived-projects-page {
-        background: linear-gradient(145deg, #07130d, #102119);
+        background: #070B1A !important;
+        color: #CBD5E1 !important;
     }
 
-    html[data-pms-theme="dark"] .breadcrumb,
+    html[data-pms-theme="dark"] .breadcrumb {
+        background: transparent !important;
+        border-color: rgba(238, 241, 251, 0.08) !important;
+        color: #9AA3C7 !important;
+    }
+
     html[data-pms-theme="dark"] .header-card,
     html[data-pms-theme="dark"] .content-card,
     html[data-pms-theme="dark"] .stat-card,
     html[data-pms-theme="dark"] .status-bar {
-        background: #102119;
-        border-color: rgba(122, 240, 181, .18);
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+        box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.35) !important;
     }
 
     html[data-pms-theme="dark"] .header-card h1,
     html[data-pms-theme="dark"] .table-title h4,
     html[data-pms-theme="dark"] .project-name,
     html[data-pms-theme="dark"] .stat-card h3,
-    html[data-pms-theme="dark"] .client-cell span {
-        color: #ffffff;
+    html[data-pms-theme="dark"] .client-cell span,
+    html[data-pms-theme="dark"] .client-cell .client-name {
+        color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .header-card p,
+    html[data-pms-theme="dark"] .stat-card span,
+    html[data-pms-theme="dark"] .stat-sub,
+    html[data-pms-theme="dark"] .table-title .muted {
+        color: #9AA3C7 !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon {
+        background: #141B3D !important;
+        color: #60A5FA !important;
+    }
+
+    html[data-pms-theme="dark"] .header-actions .btn-outline {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.16) !important;
+        color: #CBD5E1 !important;
+    }
+
+    html[data-pms-theme="dark"] .header-actions .btn-outline:hover {
+        background: #1A2247 !important;
+        color: #FFFFFF !important;
+        border-color: #2F6BFF !important;
+    }
+
+    html[data-pms-theme="dark"] .archive-table th {
+        background: #141B3D !important;
+        color: #9AA3C7 !important;
+        border-bottom: 2px solid rgba(238, 241, 251, 0.1) !important;
+    }
+
+    html[data-pms-theme="dark"] .archive-table th i {
+        color: #60A5FA !important;
     }
 
     html[data-pms-theme="dark"] .archive-table tbody td {
-        background: #102119;
-        border-color: rgba(122, 240, 181, .08);
+        background: #0F1530 !important;
+        border-top: 1px solid rgba(238, 241, 251, 0.08) !important;
+        border-bottom: 1px solid rgba(238, 241, 251, 0.08) !important;
+        color: #CBD5E1 !important;
+    }
+
+    html[data-pms-theme="dark"] .archive-table tbody td:first-child {
+        border-left: 1px solid rgba(238, 241, 251, 0.08) !important;
+        border-radius: 14px 0 0 14px !important;
+    }
+
+    html[data-pms-theme="dark"] .archive-table tbody td:last-child {
+        border-right: 1px solid rgba(238, 241, 251, 0.08) !important;
+        border-radius: 0 14px 14px 0 !important;
     }
 
     html[data-pms-theme="dark"] .archive-table tbody tr:hover td {
-        background: #183026;
-        border-color: rgba(122, 240, 181, .16);
+        background: #141B3D !important;
+        border-color: rgba(47, 107, 255, 0.35) !important;
     }
 
     html[data-pms-theme="dark"] .search-box input {
-        background: #183026;
-        color: #ffffff;
-        border-color: rgba(122, 240, 181, .18);
+        background: #141B3D !important;
+        color: #EEF1FB !important;
+        border-color: rgba(238, 241, 251, 0.16) !important;
+    }
+
+    html[data-pms-theme="dark"] .search-box i {
+        color: #60A5FA !important;
     }
 
     html[data-pms-theme="dark"] .table-header,
     html[data-pms-theme="dark"] .table-footer {
-        background: #142a20;
-        border-color: rgba(122, 240, 181, .16);
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.1) !important;
     }
 
     html[data-pms-theme="dark"] .project-icon {
-        background: rgba(122, 240, 181, .15);
-        color: #7af0b5;
+        background: #141B3D !important;
+        color: #60A5FA !important;
+        border: 1px solid rgba(47, 107, 255, 0.25) !important;
     }
 
-    html[data-pms-theme="dark"] .member-avatar {
-        background: rgba(122, 240, 181, .15);
-        color: #7af0b5;
+    html[data-pms-theme="dark"] .project-code {
+        color: #9AA3C7 !important;
     }
 
+    html[data-pms-theme="dark"] .member-avatar,
     html[data-pms-theme="dark"] .client-avatar {
-        background: rgba(122, 240, 181, .15);
-        color: #7af0b5;
+        background: #141B3D !important;
+        color: #60A5FA !important;
+        border: 1px solid rgba(47, 107, 255, 0.25) !important;
     }
 
     html[data-pms-theme="dark"] .action-btn {
-        background: #183026;
-        color: #7af0b5;
+        background: #141B3D !important;
+        color: #EEF1FB !important;
+        border: 1px solid rgba(238, 241, 251, 0.12) !important;
+    }
+
+    html[data-pms-theme="dark"] .action-btn:hover {
+        background: #1A2247 !important;
+        color: #60A5FA !important;
+        border-color: #2F6BFF !important;
     }
 
     html[data-pms-theme="dark"] .action-btn.delete-btn {
-        background: rgba(239, 68, 68, .15);
-        color: #f87171;
+        background: rgba(239, 68, 68, 0.18) !important;
+        color: #FCA5A5 !important;
+        border: 1px solid rgba(239, 68, 68, 0.3) !important;
     }
 
     html[data-pms-theme="dark"] .action-btn.delete-btn:hover {
-        background: rgba(239, 68, 68, .25);
-    }
-
-    html[data-pms-theme="dark"] .archive-table thead th {
-        color: #b7d5c4;
+        background: rgba(239, 68, 68, 0.28) !important;
     }
 
     html[data-pms-theme="dark"] .progress-bar {
-        background: #183026;
+        background: #141B3D !important;
     }
 </style>
 
 @push('scripts')
 <script>
 $(document).ready(function () {
-    // Initialize DataTable
-    $('#archive-projects-table').DataTable({
-        dom: 'Bfrtip',
-        buttons: ['excel'],
-        responsive: true,
-        pageLength: 10,
-        lengthMenu: [10, 25, 50, 100],
-        language: {
-            search: "_INPUT_",
-            searchPlaceholder: "Search archived projects..."
-        }
-    });
+    if (window.jQuery && jQuery.fn && jQuery.fn.dataTable) {
+        jQuery.fn.dataTable.ext.errMode = 'none';
+    }
+
+    const $archiveTable = $('#archive-projects-table');
+    const hasDataRows = $archiveTable.find('tbody tr').length > 0 && !$archiveTable.find('tbody tr td[colspan]').length;
+
+    // Initialize DataTable only when valid data rows exist
+    if (hasDataRows) {
+        $archiveTable.DataTable({
+            dom: 'Bfrtip',
+            buttons: ['excel'],
+            responsive: true,
+            pageLength: 10,
+            lengthMenu: [10, 25, 50, 100],
+            language: {
+                search: "_INPUT_",
+                searchPlaceholder: "Search archived projects..."
+            }
+        });
+    }
 
     // Custom search handler
     const searchInput = document.getElementById('archiveSearch');
     if (searchInput) {
         searchInput.addEventListener('keyup', function() {
-            $('#archive-projects-table').DataTable().search(this.value).draw();
+            if ($.fn.DataTable && $.fn.DataTable.isDataTable('#archive-projects-table')) {
+                $('#archive-projects-table').DataTable().search(this.value).draw();
+            }
         });
     }
 });

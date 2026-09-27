@@ -20,6 +20,22 @@
         --tsk-shadow-hover: 0 20px 40px -10px rgba(15, 116, 76, 0.14);
     }
 
+    html[data-pms-theme="dark"] {
+        --tsk-primary: #2F6BFF;
+        --tsk-primary-hover: #1E4FCC;
+        --tsk-primary-light: #60A5FA;
+        --tsk-primary-soft: rgba(47, 107, 255, 0.15);
+        --tsk-slate-dark: #EEF1FB;
+        --tsk-slate-body: #CBD5E1;
+        --tsk-slate-muted: #9AA3C7;
+        --tsk-slate-light: #141B3D;
+        --tsk-border: rgba(238, 241, 251, 0.12);
+        --tsk-card-bg: #0F1530;
+        --tsk-shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.35);
+        --tsk-shadow: 0 12px 30px -8px rgba(0, 0, 0, 0.45);
+        --tsk-shadow-hover: 0 20px 40px -10px rgba(0, 0, 0, 0.6);
+    }
+
     .task-page-shell {
         padding: 1.25rem 0 3rem;
         font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
@@ -397,9 +413,199 @@
         padding: 0.85rem 0;
         border-bottom: 1px solid #f1f5f9;
     }
-    .update-timeline-item:last-child {
-        border-bottom: none;
-        padding-bottom: 0;
+    /* ===== TASK SHOW DARK MODE ENGINE ===== */
+    html[data-pms-theme="dark"] .task-page-shell {
+        color: #CBD5E1;
+    }
+    html[data-pms-theme="dark"] .task-breadcrumb .breadcrumb-item a {
+        color: #9AA3C7;
+    }
+    html[data-pms-theme="dark"] .task-breadcrumb .breadcrumb-item.active {
+        color: #60A5FA;
+    }
+    html[data-pms-theme="dark"] .task-hero-card {
+        background: linear-gradient(135deg, #0F1530 0%, #141B3D 100%) !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
+        box-shadow: 0 12px 30px -8px rgba(0, 0, 0, 0.45) !important;
+    }
+    html[data-pms-theme="dark"] .task-hero-card::after {
+        background: radial-gradient(circle, rgba(47, 107, 255, 0.15) 0%, rgba(15, 21, 48, 0) 70%) !important;
+    }
+    html[data-pms-theme="dark"] .task-hero-title {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .task-code-badge {
+        background: rgba(47, 107, 255, 0.2) !important;
+        color: #60A5FA !important;
+        border-color: rgba(47, 107, 255, 0.4) !important;
+    }
+    html[data-pms-theme="dark"] .task-metric-box {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.1) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35) !important;
+    }
+    html[data-pms-theme="dark"] .task-metric-box .metric-label {
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] .task-metric-box .metric-val {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .task-card {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.1) !important;
+        box-shadow: 0 12px 30px -8px rgba(0, 0, 0, 0.45) !important;
+    }
+    html[data-pms-theme="dark"] .task-card-header {
+        background: #141B3D !important;
+        border-bottom-color: rgba(238, 241, 251, 0.1) !important;
+    }
+    html[data-pms-theme="dark"] .task-card-header h5 {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .detail-item {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.1) !important;
+    }
+    html[data-pms-theme="dark"] .detail-label {
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] .detail-value {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .user-pill {
+        background: #141B3D !important;
+        color: #EEF1FB !important;
+        border: 1px solid rgba(238, 241, 251, 0.12) !important;
+    }
+    html[data-pms-theme="dark"] .task-nav-pills {
+        border-bottom-color: rgba(238, 241, 251, 0.12) !important;
+    }
+    html[data-pms-theme="dark"] .task-nav-pills .nav-link {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.14) !important;
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] .task-nav-pills .nav-link:hover {
+        background: #1A2247 !important;
+        color: #EEF1FB !important;
+        border-color: #2F6BFF !important;
+    }
+    html[data-pms-theme="dark"] .task-nav-pills .nav-link.active {
+        background: #2F6BFF !important;
+        color: #FFFFFF !important;
+        border-color: #2F6BFF !important;
+        box-shadow: 0 4px 14px rgba(47, 107, 255, 0.35) !important;
+    }
+    html[data-pms-theme="dark"] .btn-tsk-outline {
+        background: #141B3D !important;
+        color: #60A5FA !important;
+        border-color: rgba(47, 107, 255, 0.35) !important;
+    }
+    html[data-pms-theme="dark"] .btn-tsk-outline:hover {
+        background: #2F6BFF !important;
+        color: #FFFFFF !important;
+        border-color: #2F6BFF !important;
+    }
+    html[data-pms-theme="dark"] .status-pill {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .status-pill.completed {
+        background: rgba(16, 185, 129, 0.22) !important;
+        color: #6EE7B7 !important;
+        border: 1px solid rgba(16, 185, 129, 0.45) !important;
+    }
+    html[data-pms-theme="dark"] .status-pill.doing,
+    html[data-pms-theme="dark"] .status-pill.in-progress {
+        background: rgba(6, 182, 212, 0.22) !important;
+        color: #67E8F9 !important;
+        border: 1px solid rgba(6, 182, 212, 0.45) !important;
+    }
+    html[data-pms-theme="dark"] .status-pill.to-do {
+        background: rgba(99, 102, 241, 0.22) !important;
+        color: #A5B4FC !important;
+        border: 1px solid rgba(99, 102, 241, 0.45) !important;
+    }
+    html[data-pms-theme="dark"] .status-pill.waiting-for-approval {
+        background: rgba(245, 158, 11, 0.22) !important;
+        color: #FCD34D !important;
+        border: 1px solid rgba(245, 158, 11, 0.45) !important;
+    }
+    html[data-pms-theme="dark"] .status-pill.incomplete {
+        background: rgba(239, 68, 68, 0.22) !important;
+        color: #FCA5A5 !important;
+        border: 1px solid rgba(239, 68, 68, 0.45) !important;
+    }
+    html[data-pms-theme="dark"] .task-progress-bar {
+        background: #1A2247 !important;
+    }
+    html[data-pms-theme="dark"] .update-timeline-item {
+        border-bottom-color: rgba(238, 241, 251, 0.08) !important;
+    }
+    html[data-pms-theme="dark"] .update-timeline-item strong {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .update-timeline-item small {
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] .bg-light {
+        background: #141B3D !important;
+        color: #EEF1FB !important;
+        border-color: rgba(238, 241, 251, 0.1) !important;
+    }
+    html[data-pms-theme="dark"] .bg-white {
+        background: #0F1530 !important;
+        color: #EEF1FB !important;
+        border-color: rgba(238, 241, 251, 0.1) !important;
+    }
+    html[data-pms-theme="dark"] .text-dark {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .text-muted {
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] .text-secondary {
+        color: #CBD5E1 !important;
+    }
+    html[data-pms-theme="dark"] .btn-light {
+        background: #141B3D !important;
+        color: #EEF1FB !important;
+        border-color: rgba(238, 241, 251, 0.14) !important;
+    }
+    html[data-pms-theme="dark"] .dropdown-menu {
+        background: #0F1530 !important;
+        border: 1px solid rgba(238, 241, 251, 0.14) !important;
+        box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6) !important;
+    }
+    html[data-pms-theme="dark"] .dropdown-item {
+        color: #CBD5E1 !important;
+    }
+    html[data-pms-theme="dark"] .dropdown-item:hover {
+        background: #141B3D !important;
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .modal-content {
+        background: #0F1530 !important;
+        border: 1px solid rgba(238, 241, 251, 0.12) !important;
+        color: #CBD5E1 !important;
+    }
+    html[data-pms-theme="dark"] .modal-header,
+    html[data-pms-theme="dark"] .modal-footer {
+        border-color: rgba(238, 241, 251, 0.1) !important;
+    }
+    html[data-pms-theme="dark"] .modal-title {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .table thead.table-light th {
+        background: #141B3D !important;
+        color: #9AA3C7 !important;
+        border-bottom-color: rgba(238, 241, 251, 0.1) !important;
+    }
+    html[data-pms-theme="dark"] .table td {
+        border-bottom-color: rgba(238, 241, 251, 0.06) !important;
+        color: #CBD5E1 !important;
+    }
+    html[data-pms-theme="dark"] .table-hover tbody tr:hover td {
+        background: rgba(47, 107, 255, 0.08) !important;
     }
 </style>
 

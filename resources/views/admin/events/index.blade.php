@@ -577,6 +577,95 @@
     .photo-action-btn i {
         color: #ffffff !important;
     }
+
+    /* ==========================================================================
+       DARK MODE STYLES FOR EVENTS & EVENT MODAL
+       ========================================================================== */
+    html[data-pms-theme="dark"] .form-section-title,
+    html[data-bs-theme="dark"] .form-section-title,
+    html[data-theme="dark"] .form-section-title {
+        background: rgba(16, 185, 129, 0.12) !important;
+        border: 1px solid rgba(52, 211, 153, 0.25) !important;
+        border-left: 4px solid #34D399 !important;
+        color: #34D399 !important;
+        -webkit-text-fill-color: #34D399 !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+    }
+
+    html[data-pms-theme="dark"] .form-section-title i,
+    html[data-bs-theme="dark"] .form-section-title i,
+    html[data-theme="dark"] .form-section-title i {
+        color: #34D399 !important;
+        -webkit-text-fill-color: #34D399 !important;
+    }
+
+    html[data-pms-theme="dark"] .premium-label,
+    html[data-bs-theme="dark"] .premium-label,
+    html[data-theme="dark"] .premium-label {
+        color: #CBD5E1 !important;
+        -webkit-text-fill-color: #CBD5E1 !important;
+    }
+
+    html[data-pms-theme="dark"] .premium-input,
+    html[data-bs-theme="dark"] .premium-input,
+    html[data-theme="dark"] .premium-input,
+    html[data-pms-theme="dark"] .premium-select,
+    html[data-bs-theme="dark"] .premium-select,
+    html[data-theme="dark"] .premium-select {
+        background-color: #141B3D !important;
+        background: #141B3D !important;
+        border: 1.5px solid rgba(238, 241, 251, 0.16) !important;
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .premium-input:focus,
+    html[data-bs-theme="dark"] .premium-input:focus,
+    html[data-theme="dark"] .premium-input:focus,
+    html[data-pms-theme="dark"] .premium-select:focus,
+    html[data-bs-theme="dark"] .premium-select:focus,
+    html[data-theme="dark"] .premium-select:focus {
+        border-color: #34D399 !important;
+        box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.2) !important;
+    }
+
+    html[data-pms-theme="dark"] #eventModal .modal-content,
+    html[data-bs-theme="dark"] #eventModal .modal-content,
+    html[data-theme="dark"] #eventModal .modal-content {
+        background: #0F1530 !important;
+        border: 1px solid rgba(238, 241, 251, 0.12) !important;
+    }
+
+    html[data-pms-theme="dark"] #eventModal .modal-footer,
+    html[data-bs-theme="dark"] #eventModal .modal-footer,
+    html[data-theme="dark"] #eventModal .modal-footer {
+        background: #0B1026 !important;
+        border-top: 1px solid rgba(238, 241, 251, 0.09) !important;
+    }
+
+    html[data-pms-theme="dark"] #eventBannerInput::file-selector-button,
+    html[data-bs-theme="dark"] #eventBannerInput::file-selector-button,
+    html[data-theme="dark"] #eventBannerInput::file-selector-button {
+        background: #1A2247 !important;
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+        border: 1px solid rgba(238, 241, 251, 0.25) !important;
+        border-radius: 8px !important;
+        padding: 4px 12px !important;
+        font-weight: 600 !important;
+    }
+
+    html[data-pms-theme="dark"] #eventBannerInput::-webkit-file-upload-button,
+    html[data-bs-theme="dark"] #eventBannerInput::-webkit-file-upload-button,
+    html[data-theme="dark"] #eventBannerInput::-webkit-file-upload-button {
+        background: #1A2247 !important;
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+        border: 1px solid rgba(238, 241, 251, 0.25) !important;
+        border-radius: 8px !important;
+        padding: 4px 12px !important;
+        font-weight: 600 !important;
+    }
 </style>
 @endpush
 

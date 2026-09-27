@@ -51,8 +51,8 @@
                         @foreach($deals as $key => $deal)
                             <tr>
                                 <td class="fw-bold">#{{ $key + 1 }}</td>
-                                <td><div class="fw-bold text-dark">{{ $deal->title ?? $deal->subject ?? 'Client Deal' }}</div></td>
-                                <td>{{ $deal->leadContact->client_name ?? $deal->client->name ?? 'Client' }}</td>
+                                <td><div class="fw-bold text-dark">{{ $deal->deal_name ?? $deal->title ?? $deal->subject ?? 'Client Deal' }}</div></td>
+                                <td>{{ $deal->leadContact->contact_name ?? $deal->lead->contact_name ?? $deal->lead_name ?? $deal->client->name ?? 'Client' }}</td>
                                 <td><span class="badge bg-success-subtle text-success fw-bold fs-6 px-3 py-1">${{ number_format($deal->value ?? $deal->amount ?? 0, 2) }}</span></td>
                                 <td><span class="badge bg-primary rounded-pill px-3 py-1">{{ ucfirst($deal->stage->name ?? $deal->status ?? 'Active') }}</span></td>
                             </tr>

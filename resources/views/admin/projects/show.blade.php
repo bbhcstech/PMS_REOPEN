@@ -1131,5 +1131,210 @@
         .details-dl { grid-template-columns: 1fr; }
         .dl-row.full-width { grid-column: span 1; }
     }
+
+    /* ===== PROJECT OVERVIEW DARK MODE ===== */
+    html[data-pms-theme="dark"] .project-overview-page {
+        background: #070B1A !important;
+        color: #CBD5E1 !important;
+    }
+    html[data-pms-theme="dark"] .overview-stat-card,
+    html[data-pms-theme="dark"] .overview-card {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+        box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.35) !important;
+    }
+    html[data-pms-theme="dark"] .overview-card-header {
+        background: #141B3D !important;
+        border-bottom-color: rgba(238, 241, 251, 0.1) !important;
+    }
+    html[data-pms-theme="dark"] .overview-card-header h2 {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .stat-label {
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] .stat-number {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .stat-subtext {
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] .details-dl dt {
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] .details-dl dd {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .mini-list-row {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.1) !important;
+        color: #CBD5E1 !important;
+    }
+    html[data-pms-theme="dark"] .mini-row-title {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .timeline-content {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.1) !important;
+        color: #CBD5E1 !important;
+    }
+    html[data-pms-theme="dark"] .mini-gantt-preview {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.1) !important;
+    }
+    html[data-pms-theme="dark"] .btn-outline-teal {
+        background: #141B3D !important;
+        border-color: rgba(47, 107, 255, 0.35) !important;
+        color: #60A5FA !important;
+    }
+    html[data-pms-theme="dark"] .btn-outline-teal:hover {
+        background: #2F6BFF !important;
+        color: #FFFFFF !important;
+        border-color: #2F6BFF !important;
+    }
+
+    /* Stat Icon Wrappers (KPI Cards) */
+    html[data-pms-theme="dark"] .stat-icon-wrapper.icon-tasks {
+        background: rgba(47, 107, 255, 0.18) !important;
+        color: #60A5FA !important;
+        border: 1px solid rgba(47, 107, 255, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .stat-icon-wrapper.icon-progress {
+        background: rgba(16, 185, 129, 0.18) !important;
+        color: #34D399 !important;
+        border: 1px solid rgba(16, 185, 129, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .stat-icon-wrapper.icon-time {
+        background: rgba(245, 158, 11, 0.18) !important;
+        color: #FBBF24 !important;
+        border: 1px solid rgba(245, 158, 11, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .stat-icon-wrapper.icon-expenses {
+        background: rgba(168, 85, 247, 0.18) !important;
+        color: #C084FC !important;
+        border: 1px solid rgba(168, 85, 247, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .stat-progress-bar {
+        background: #141B3D !important;
+    }
+
+    /* Project Details Badges & Pills */
+    html[data-pms-theme="dark"] .badge-code {
+        background: #141B3D !important;
+        color: #60A5FA !important;
+        border: 1px solid rgba(47, 107, 255, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .project-priority-pill.priority-low {
+        background: rgba(16, 185, 129, 0.18) !important;
+        color: #6EE7B7 !important;
+        border: 1px solid rgba(16, 185, 129, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .project-priority-pill.priority-medium {
+        background: rgba(245, 158, 11, 0.18) !important;
+        color: #FCD34D !important;
+        border: 1px solid rgba(245, 158, 11, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .project-priority-pill.priority-high {
+        background: rgba(249, 115, 22, 0.18) !important;
+        color: #FDBA74 !important;
+        border: 1px solid rgba(249, 115, 22, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .project-priority-pill.priority-critical {
+        background: rgba(239, 68, 68, 0.22) !important;
+        color: #FCA5A5 !important;
+        border: 1px solid rgba(239, 68, 68, 0.35) !important;
+    }
+
+    html[data-pms-theme="dark"] .project-status-pill.status-completed {
+        background: rgba(16, 185, 129, 0.18) !important;
+        color: #6EE7B7 !important;
+        border: 1px solid rgba(16, 185, 129, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .project-status-pill.status-in-progress,
+    html[data-pms-theme="dark"] .project-status-pill.status-in_progress {
+        background: rgba(47, 107, 255, 0.18) !important;
+        color: #93C5FD !important;
+        border: 1px solid rgba(47, 107, 255, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .project-status-pill.status-pending,
+    html[data-pms-theme="dark"] .project-status-pill.status-not-started {
+        background: #141B3D !important;
+        color: #EEF1FB !important;
+        border: 1px solid rgba(238, 241, 251, 0.2) !important;
+    }
+    html[data-pms-theme="dark"] .project-status-pill.status-on-hold,
+    html[data-pms-theme="dark"] .project-status-pill.status-delayed {
+        background: rgba(239, 68, 68, 0.18) !important;
+        color: #FCA5A5 !important;
+        border: 1px solid rgba(239, 68, 68, 0.3) !important;
+    }
+
+    /* Members List Cards & Meta */
+    html[data-pms-theme="dark"] .project-member-item {
+        background: #141B3D !important;
+        border: 1px solid rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .project-member-item:hover {
+        background: #1A2247 !important;
+        border-color: rgba(47, 107, 255, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .member-name {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .member-subtext {
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] .member-avatar-circle {
+        background: #1A2247 !important;
+        color: #60A5FA !important;
+        border: 1px solid rgba(47, 107, 255, 0.25) !important;
+    }
+    html[data-pms-theme="dark"] .member-role-badge .badge {
+        background: #0F1530 !important;
+        color: #CBD5E1 !important;
+        border: 1px solid rgba(238, 241, 251, 0.14) !important;
+    }
+
+    /* Common Card Header Icons & Links */
+    html[data-pms-theme="dark"] .header-icon {
+        background: #141B3D !important;
+        color: #60A5FA !important;
+        border: 1px solid rgba(47, 107, 255, 0.2) !important;
+    }
+    html[data-pms-theme="dark"] .feature-view-all {
+        color: #60A5FA !important;
+    }
+    html[data-pms-theme="dark"] .feature-view-all:hover {
+        color: #93C5FD !important;
+    }
+
+    /* Bootstrap Utility Overrides Inside Page */
+    html[data-pms-theme="dark"] .project-overview-page .bg-light {
+        background-color: #141B3D !important;
+        color: #EEF1FB !important;
+        border-color: rgba(238, 241, 251, 0.1) !important;
+    }
+    html[data-pms-theme="dark"] .project-overview-page .text-dark {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .project-overview-page .badge.bg-light {
+        background-color: #141B3D !important;
+        color: #EEF1FB !important;
+        border-color: rgba(238, 241, 251, 0.14) !important;
+    }
+    html[data-pms-theme="dark"] .project-overview-page .badge.bg-danger-subtle {
+        background-color: rgba(239, 68, 68, 0.2) !important;
+        color: #FCA5A5 !important;
+        border-color: rgba(239, 68, 68, 0.35) !important;
+    }
+    html[data-pms-theme="dark"] .project-overview-page .mini-milestone-box,
+    html[data-pms-theme="dark"] .project-overview-page .mini-gantt-preview {
+        background-color: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.1) !important;
+    }
+    html[data-pms-theme="dark"] .project-overview-page .mini-note-card {
+        background-color: rgba(245, 158, 11, 0.12) !important;
+        border-color: rgba(245, 158, 11, 0.28) !important;
+    }
 </style>
 @endsection

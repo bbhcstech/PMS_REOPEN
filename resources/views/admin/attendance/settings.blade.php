@@ -119,6 +119,15 @@
         flex-shrink: 0;
     }
 
+    .header-icon-badge i,
+    .header-icon-badge svg,
+    .header-icon-badge [class*="fa"] {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
     .header-title h1 {
         font-size: 1.95rem;
         font-weight: 800;
@@ -151,6 +160,13 @@
         align-items: center;
         gap: 8px;
         text-decoration: none;
+    }
+
+    .btn-manage-requests i,
+    .btn-manage-requests svg,
+    .btn-manage-requests [class*="fa"] {
+        color: #059669 !important;
+        -webkit-text-fill-color: #059669 !important;
     }
 
     .btn-manage-requests:hover {
@@ -269,32 +285,69 @@
         flex-shrink: 0;
     }
 
-    .stat-icon.start,
-    .attendance-settings-page .stat-card:first-of-type .stat-icon.start {
+    .stat-icon.start {
         background: linear-gradient(145deg, #d1fae5, #a7f3d0) !important;
-        color: #059669 !important;
-        -webkit-text-fill-color: #059669 !important;
+        border: 1px solid rgba(16, 185, 129, 0.25) !important;
     }
 
-    .stat-icon.late,
-    .attendance-settings-page .stat-card .stat-icon.late {
+    .stat-icon.start i,
+    .stat-icon.start svg,
+    .stat-icon.start [class*="fa"],
+    .attendance-settings-page .stat-card .stat-icon.start i,
+    .attendance-settings-page .stat-card:first-of-type .stat-icon.start i {
+        background: transparent !important;
+        color: #047857 !important;
+        -webkit-text-fill-color: #047857 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    .stat-icon.late {
         background: linear-gradient(145deg, #e0f2fe, #bae6fd) !important;
-        color: #0284c7 !important;
-        -webkit-text-fill-color: #0284c7 !important;
+        border: 1px solid rgba(56, 189, 248, 0.25) !important;
     }
 
-    .stat-icon.halfday,
-    .attendance-settings-page .stat-card .stat-icon.halfday {
+    .stat-icon.late i,
+    .stat-icon.late svg,
+    .stat-icon.late [class*="fa"],
+    .attendance-settings-page .stat-card .stat-icon.late i {
+        background: transparent !important;
+        color: #0369a1 !important;
+        -webkit-text-fill-color: #0369a1 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    .stat-icon.halfday {
         background: linear-gradient(145deg, #fef3c7, #fde68a) !important;
-        color: #d97706 !important;
-        -webkit-text-fill-color: #d97706 !important;
+        border: 1px solid rgba(251, 191, 36, 0.25) !important;
     }
 
-    .stat-icon.dayoff,
-    .attendance-settings-page .stat-card .stat-icon.dayoff {
+    .stat-icon.halfday i,
+    .stat-icon.halfday svg,
+    .stat-icon.halfday [class*="fa"],
+    .attendance-settings-page .stat-card .stat-icon.halfday i {
+        background: transparent !important;
+        color: #b45309 !important;
+        -webkit-text-fill-color: #b45309 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    .stat-icon.dayoff {
         background: linear-gradient(145deg, #e0e7ff, #c7d2fe) !important;
-        color: #4f46e5 !important;
-        -webkit-text-fill-color: #4f46e5 !important;
+        border: 1px solid rgba(129, 140, 248, 0.25) !important;
+    }
+
+    .stat-icon.dayoff i,
+    .stat-icon.dayoff svg,
+    .stat-icon.dayoff [class*="fa"],
+    .attendance-settings-page .stat-card .stat-icon.dayoff i {
+        background: transparent !important;
+        color: #3730a3 !important;
+        -webkit-text-fill-color: #3730a3 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
     }
 
     .stat-info h6 {
@@ -346,6 +399,26 @@
         flex-shrink: 0;
     }
 
+    .card-header-avatar i,
+    .card-header-avatar svg,
+    .card-header-avatar [class*="fa"] {
+        color: #059669 !important;
+        -webkit-text-fill-color: #059669 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    .card-header-avatar i.text-white,
+    .card-header-avatar .text-white,
+    .card-header-avatar[style*="background"] i,
+    .card-header-avatar[style*="background"] svg,
+    .card-header-avatar[style*="background"] [class*="fa"] {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
     .section-badge {
         display: inline-flex;
         align-items: center;
@@ -359,6 +432,15 @@
         letter-spacing: 0.03em;
         border: 1px solid rgba(5, 150, 105, 0.2);
         margin-bottom: 1.25rem;
+    }
+
+    .section-badge i,
+    .section-badge svg,
+    .section-badge [class*="fa"] {
+        color: #059669 !important;
+        -webkit-text-fill-color: #059669 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
     }
 
     .form-label-custom {
@@ -435,20 +517,463 @@
         font-weight: 800;
     }
 
-    @media (max-width: 1200px) {
-        .stats-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
+    /* ===== DARK MODE SUPPORT ===== */
+    html[data-pms-theme="dark"] .attendance-settings-page,
+    html[data-theme="dark"] .attendance-settings-page,
+    html[data-bs-theme="dark"] .attendance-settings-page,
+    body[data-pms-theme="dark"] .attendance-settings-page,
+    body[data-theme="dark"] .attendance-settings-page,
+    body[data-bs-theme="dark"] .attendance-settings-page,
+    [data-pms-theme="dark"] .attendance-settings-page,
+    [data-theme="dark"] .attendance-settings-page,
+    [data-bs-theme="dark"] .attendance-settings-page,
+    .dark-mode .attendance-settings-page {
+        background: #0b0f19 !important;
+        color: #e2e8f0 !important;
     }
 
-    @media (max-width: 768px) {
-        .attendance-settings-page {
-            padding: 1.25rem 1rem;
-        }
+    html[data-pms-theme="dark"] .branches-header,
+    html[data-theme="dark"] .branches-header,
+    html[data-bs-theme="dark"] .branches-header,
+    body[data-pms-theme="dark"] .branches-header,
+    body[data-theme="dark"] .branches-header,
+    body[data-bs-theme="dark"] .branches-header,
+    [data-pms-theme="dark"] .branches-header,
+    [data-theme="dark"] .branches-header,
+    [data-bs-theme="dark"] .branches-header,
+    html[data-pms-theme="dark"] .address-card-elevated,
+    html[data-theme="dark"] .address-card-elevated,
+    html[data-bs-theme="dark"] .address-card-elevated,
+    body[data-pms-theme="dark"] .address-card-elevated,
+    body[data-theme="dark"] .address-card-elevated,
+    body[data-bs-theme="dark"] .address-card-elevated,
+    [data-pms-theme="dark"] .address-card-elevated,
+    [data-theme="dark"] .address-card-elevated,
+    [data-bs-theme="dark"] .address-card-elevated,
+    .dark-mode .branches-header,
+    .dark-mode .address-card-elevated {
+        background: #111827 !important;
+        border-color: rgba(255, 255, 255, 0.08) !important;
+        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.4) !important;
+    }
 
-        .stats-grid {
-            grid-template-columns: 1fr;
-        }
+    html[data-pms-theme="dark"] .card-header-custom,
+    html[data-bs-theme="dark"] .card-header-custom,
+    body[data-pms-theme="dark"] .card-header-custom,
+    [data-pms-theme="dark"] .card-header-custom {
+        border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+    }
+
+    html[data-pms-theme="dark"] .card-header-custom h5,
+    html[data-bs-theme="dark"] .card-header-custom h5,
+    body[data-pms-theme="dark"] .card-header-custom h5,
+    [data-pms-theme="dark"] .card-header-custom h5,
+    html[data-pms-theme="dark"] .header-title h1,
+    html[data-bs-theme="dark"] .header-title h1,
+    body[data-pms-theme="dark"] .header-title h1,
+    [data-pms-theme="dark"] .header-title h1 {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+        background: none !important;
+    }
+
+    html[data-pms-theme="dark"] .header-title p,
+    html[data-bs-theme="dark"] .header-title p,
+    body[data-pms-theme="dark"] .header-title p,
+    [data-pms-theme="dark"] .header-title p,
+    html[data-pms-theme="dark"] .card-header-custom .text-muted,
+    html[data-bs-theme="dark"] .card-header-custom .text-muted,
+    body[data-pms-theme="dark"] .card-header-custom .text-muted,
+    [data-pms-theme="dark"] .card-header-custom .text-muted {
+        color: #94a3b8 !important;
+        -webkit-text-fill-color: #94a3b8 !important;
+    }
+
+    /* Stat Cards in Dark Mode */
+    html[data-pms-theme="dark"] .attendance-settings-page .stat-card,
+    html[data-theme="dark"] .attendance-settings-page .stat-card,
+    html[data-bs-theme="dark"] .attendance-settings-page .stat-card,
+    body[data-pms-theme="dark"] .attendance-settings-page .stat-card,
+    body[data-theme="dark"] .attendance-settings-page .stat-card,
+    body[data-bs-theme="dark"] .attendance-settings-page .stat-card,
+    [data-pms-theme="dark"] .attendance-settings-page .stat-card,
+    [data-theme="dark"] .attendance-settings-page .stat-card,
+    [data-bs-theme="dark"] .attendance-settings-page .stat-card,
+    html[data-pms-theme="dark"] .attendance-settings-page .stat-card:first-of-type,
+    html[data-theme="dark"] .attendance-settings-page .stat-card:first-of-type,
+    html[data-bs-theme="dark"] .attendance-settings-page .stat-card:first-of-type,
+    body[data-pms-theme="dark"] .attendance-settings-page .stat-card:first-of-type,
+    body[data-theme="dark"] .attendance-settings-page .stat-card:first-of-type,
+    body[data-bs-theme="dark"] .attendance-settings-page .stat-card:first-of-type,
+    [data-pms-theme="dark"] .attendance-settings-page .stat-card:first-of-type,
+    [data-theme="dark"] .attendance-settings-page .stat-card:first-of-type,
+    [data-bs-theme="dark"] .attendance-settings-page .stat-card:first-of-type,
+    html[data-pms-theme="dark"] .stat-card,
+    html[data-theme="dark"] .stat-card,
+    html[data-bs-theme="dark"] .stat-card,
+    html[data-pms-theme="dark"] .stat-card:first-of-type,
+    html[data-theme="dark"] .stat-card:first-of-type,
+    html[data-bs-theme="dark"] .stat-card:first-of-type,
+    .dark-mode .stat-card,
+    .dark-mode .stat-card:first-of-type {
+        background: #171e2e !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.3) !important;
+        color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .attendance-settings-page .stat-card h3,
+    html[data-theme="dark"] .attendance-settings-page .stat-card h3,
+    html[data-bs-theme="dark"] .attendance-settings-page .stat-card h3,
+    body[data-pms-theme="dark"] .attendance-settings-page .stat-card h3,
+    body[data-theme="dark"] .attendance-settings-page .stat-card h3,
+    body[data-bs-theme="dark"] .attendance-settings-page .stat-card h3,
+    [data-pms-theme="dark"] .attendance-settings-page .stat-card h3,
+    [data-theme="dark"] .attendance-settings-page .stat-card h3,
+    [data-bs-theme="dark"] .attendance-settings-page .stat-card h3,
+    html[data-pms-theme="dark"] .attendance-settings-page .stat-card:first-of-type h3,
+    html[data-theme="dark"] .attendance-settings-page .stat-card:first-of-type h3,
+    html[data-bs-theme="dark"] .attendance-settings-page .stat-card:first-of-type h3,
+    body[data-pms-theme="dark"] .attendance-settings-page .stat-card:first-of-type h3,
+    body[data-theme="dark"] .attendance-settings-page .stat-card:first-of-type h3,
+    body[data-bs-theme="dark"] .attendance-settings-page .stat-card:first-of-type h3,
+    [data-pms-theme="dark"] .attendance-settings-page .stat-card:first-of-type h3,
+    [data-theme="dark"] .attendance-settings-page .stat-card:first-of-type h3,
+    [data-bs-theme="dark"] .attendance-settings-page .stat-card:first-of-type h3,
+    .dark-mode .stat-card h3 {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .attendance-settings-page .stat-card h6,
+    html[data-theme="dark"] .attendance-settings-page .stat-card h6,
+    html[data-bs-theme="dark"] .attendance-settings-page .stat-card h6,
+    body[data-pms-theme="dark"] .attendance-settings-page .stat-card h6,
+    body[data-theme="dark"] .attendance-settings-page .stat-card h6,
+    body[data-bs-theme="dark"] .attendance-settings-page .stat-card h6,
+    [data-pms-theme="dark"] .attendance-settings-page .stat-card h6,
+    [data-theme="dark"] .attendance-settings-page .stat-card h6,
+    [data-bs-theme="dark"] .attendance-settings-page .stat-card h6,
+    html[data-pms-theme="dark"] .attendance-settings-page .stat-card:first-of-type h6,
+    html[data-theme="dark"] .attendance-settings-page .stat-card:first-of-type h6,
+    html[data-bs-theme="dark"] .attendance-settings-page .stat-card:first-of-type h6,
+    body[data-pms-theme="dark"] .attendance-settings-page .stat-card:first-of-type h6,
+    body[data-theme="dark"] .attendance-settings-page .stat-card:first-of-type h6,
+    body[data-bs-theme="dark"] .attendance-settings-page .stat-card:first-of-type h6,
+    [data-pms-theme="dark"] .attendance-settings-page .stat-card:first-of-type h6,
+    [data-theme="dark"] .attendance-settings-page .stat-card:first-of-type h6,
+    [data-bs-theme="dark"] .attendance-settings-page .stat-card:first-of-type h6,
+    .dark-mode .stat-card h6 {
+        color: #94a3b8 !important;
+        -webkit-text-fill-color: #94a3b8 !important;
+    }
+
+    /* Stat Card Icons in Dark Mode */
+    html[data-pms-theme="dark"] .stat-icon.start,
+    html[data-theme="dark"] .stat-icon.start,
+    html[data-bs-theme="dark"] .stat-icon.start,
+    body[data-pms-theme="dark"] .stat-icon.start,
+    body[data-theme="dark"] .stat-icon.start,
+    body[data-bs-theme="dark"] .stat-icon.start,
+    [data-pms-theme="dark"] .stat-icon.start,
+    [data-theme="dark"] .stat-icon.start,
+    [data-bs-theme="dark"] .stat-icon.start,
+    .dark-mode .stat-icon.start {
+        background: rgba(16, 185, 129, 0.25) !important;
+        border: 1px solid rgba(52, 211, 153, 0.35) !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon.start i,
+    html[data-pms-theme="dark"] .stat-icon.start svg,
+    html[data-pms-theme="dark"] .stat-icon.start [class*="fa"],
+    html[data-theme="dark"] .stat-icon.start i,
+    html[data-theme="dark"] .stat-icon.start svg,
+    html[data-theme="dark"] .stat-icon.start [class*="fa"],
+    html[data-bs-theme="dark"] .stat-icon.start i,
+    html[data-bs-theme="dark"] .stat-icon.start svg,
+    html[data-bs-theme="dark"] .stat-icon.start [class*="fa"],
+    body[data-pms-theme="dark"] .stat-icon.start i,
+    body[data-theme="dark"] .stat-icon.start i,
+    body[data-bs-theme="dark"] .stat-icon.start i,
+    [data-pms-theme="dark"] .stat-icon.start i,
+    [data-theme="dark"] .stat-icon.start i,
+    [data-bs-theme="dark"] .stat-icon.start i,
+    .dark-mode .stat-icon.start i,
+    .dark-mode .stat-icon.start svg,
+    .dark-mode .stat-icon.start [class*="fa"],
+    [data-pms-theme="dark"] .attendance-settings-page .stat-card .stat-icon.start i,
+    [data-pms-theme="dark"] .attendance-settings-page .stat-card:first-of-type .stat-icon.start i,
+    [data-theme="dark"] .attendance-settings-page .stat-card .stat-icon.start i,
+    [data-theme="dark"] .attendance-settings-page .stat-card:first-of-type .stat-icon.start i,
+    [data-bs-theme="dark"] .attendance-settings-page .stat-card .stat-icon.start i,
+    [data-bs-theme="dark"] .attendance-settings-page .stat-card:first-of-type .stat-icon.start i,
+    .dark-mode .attendance-settings-page .stat-card .stat-icon.start i,
+    .dark-mode .attendance-settings-page .stat-card:first-of-type .stat-icon.start i {
+        background: transparent !important;
+        color: #34d399 !important;
+        -webkit-text-fill-color: #34d399 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon.late,
+    html[data-theme="dark"] .stat-icon.late,
+    html[data-bs-theme="dark"] .stat-icon.late,
+    body[data-pms-theme="dark"] .stat-icon.late,
+    body[data-theme="dark"] .stat-icon.late,
+    body[data-bs-theme="dark"] .stat-icon.late,
+    [data-pms-theme="dark"] .stat-icon.late,
+    [data-theme="dark"] .stat-icon.late,
+    [data-bs-theme="dark"] .stat-icon.late,
+    .dark-mode .stat-icon.late {
+        background: rgba(56, 189, 248, 0.25) !important;
+        border: 1px solid rgba(56, 189, 248, 0.35) !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon.late i,
+    html[data-pms-theme="dark"] .stat-icon.late svg,
+    html[data-pms-theme="dark"] .stat-icon.late [class*="fa"],
+    html[data-theme="dark"] .stat-icon.late i,
+    html[data-theme="dark"] .stat-icon.late svg,
+    html[data-theme="dark"] .stat-icon.late [class*="fa"],
+    html[data-bs-theme="dark"] .stat-icon.late i,
+    html[data-bs-theme="dark"] .stat-icon.late svg,
+    html[data-bs-theme="dark"] .stat-icon.late [class*="fa"],
+    body[data-pms-theme="dark"] .stat-icon.late i,
+    body[data-theme="dark"] .stat-icon.late i,
+    body[data-bs-theme="dark"] .stat-icon.late i,
+    [data-pms-theme="dark"] .stat-icon.late i,
+    [data-theme="dark"] .stat-icon.late i,
+    [data-bs-theme="dark"] .stat-icon.late i,
+    .dark-mode .stat-icon.late i,
+    .dark-mode .stat-icon.late svg,
+    .dark-mode .stat-icon.late [class*="fa"],
+    [data-pms-theme="dark"] .attendance-settings-page .stat-card .stat-icon.late i,
+    [data-theme="dark"] .attendance-settings-page .stat-card .stat-icon.late i,
+    [data-bs-theme="dark"] .attendance-settings-page .stat-card .stat-icon.late i,
+    .dark-mode .attendance-settings-page .stat-card .stat-icon.late i {
+        background: transparent !important;
+        color: #38bdf8 !important;
+        -webkit-text-fill-color: #38bdf8 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon.halfday,
+    html[data-theme="dark"] .stat-icon.halfday,
+    html[data-bs-theme="dark"] .stat-icon.halfday,
+    body[data-pms-theme="dark"] .stat-icon.halfday,
+    body[data-theme="dark"] .stat-icon.halfday,
+    body[data-bs-theme="dark"] .stat-icon.halfday,
+    [data-pms-theme="dark"] .stat-icon.halfday,
+    [data-theme="dark"] .stat-icon.halfday,
+    [data-bs-theme="dark"] .stat-icon.halfday,
+    .dark-mode .stat-icon.halfday {
+        background: rgba(251, 191, 36, 0.25) !important;
+        border: 1px solid rgba(251, 191, 36, 0.35) !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon.halfday i,
+    html[data-pms-theme="dark"] .stat-icon.halfday svg,
+    html[data-pms-theme="dark"] .stat-icon.halfday [class*="fa"],
+    html[data-theme="dark"] .stat-icon.halfday i,
+    html[data-theme="dark"] .stat-icon.halfday svg,
+    html[data-theme="dark"] .stat-icon.halfday [class*="fa"],
+    html[data-bs-theme="dark"] .stat-icon.halfday i,
+    html[data-bs-theme="dark"] .stat-icon.halfday svg,
+    html[data-bs-theme="dark"] .stat-icon.halfday [class*="fa"],
+    body[data-pms-theme="dark"] .stat-icon.halfday i,
+    body[data-theme="dark"] .stat-icon.halfday i,
+    body[data-bs-theme="dark"] .stat-icon.halfday i,
+    [data-pms-theme="dark"] .stat-icon.halfday i,
+    [data-theme="dark"] .stat-icon.halfday i,
+    [data-bs-theme="dark"] .stat-icon.halfday i,
+    .dark-mode .stat-icon.halfday i,
+    .dark-mode .stat-icon.halfday svg,
+    .dark-mode .stat-icon.halfday [class*="fa"],
+    [data-pms-theme="dark"] .attendance-settings-page .stat-card .stat-icon.halfday i,
+    [data-theme="dark"] .attendance-settings-page .stat-card .stat-icon.halfday i,
+    [data-bs-theme="dark"] .attendance-settings-page .stat-card .stat-icon.halfday i,
+    .dark-mode .attendance-settings-page .stat-card .stat-icon.halfday i {
+        background: transparent !important;
+        color: #fbbf24 !important;
+        -webkit-text-fill-color: #fbbf24 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon.dayoff,
+    html[data-theme="dark"] .stat-icon.dayoff,
+    html[data-bs-theme="dark"] .stat-icon.dayoff,
+    body[data-pms-theme="dark"] .stat-icon.dayoff,
+    body[data-theme="dark"] .stat-icon.dayoff,
+    body[data-bs-theme="dark"] .stat-icon.dayoff,
+    [data-pms-theme="dark"] .stat-icon.dayoff,
+    [data-theme="dark"] .stat-icon.dayoff,
+    [data-bs-theme="dark"] .stat-icon.dayoff,
+    .dark-mode .stat-icon.dayoff {
+        background: rgba(129, 140, 248, 0.25) !important;
+        border: 1px solid rgba(129, 140, 248, 0.35) !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon.dayoff i,
+    html[data-pms-theme="dark"] .stat-icon.dayoff svg,
+    html[data-pms-theme="dark"] .stat-icon.dayoff [class*="fa"],
+    html[data-theme="dark"] .stat-icon.dayoff i,
+    html[data-theme="dark"] .stat-icon.dayoff svg,
+    html[data-theme="dark"] .stat-icon.dayoff [class*="fa"],
+    html[data-bs-theme="dark"] .stat-icon.dayoff i,
+    html[data-bs-theme="dark"] .stat-icon.dayoff svg,
+    html[data-bs-theme="dark"] .stat-icon.dayoff [class*="fa"],
+    body[data-pms-theme="dark"] .stat-icon.dayoff i,
+    body[data-theme="dark"] .stat-icon.dayoff i,
+    body[data-bs-theme="dark"] .stat-icon.dayoff i,
+    [data-pms-theme="dark"] .stat-icon.dayoff i,
+    [data-theme="dark"] .stat-icon.dayoff i,
+    [data-bs-theme="dark"] .stat-icon.dayoff i,
+    .dark-mode .stat-icon.dayoff i,
+    .dark-mode .stat-icon.dayoff svg,
+    .dark-mode .stat-icon.dayoff [class*="fa"],
+    [data-pms-theme="dark"] .attendance-settings-page .stat-card .stat-icon.dayoff i,
+    [data-theme="dark"] .attendance-settings-page .stat-card .stat-icon.dayoff i,
+    [data-bs-theme="dark"] .attendance-settings-page .stat-card .stat-icon.dayoff i,
+    .dark-mode .attendance-settings-page .stat-card .stat-icon.dayoff i {
+        background: transparent !important;
+        color: #a5b4fc !important;
+        -webkit-text-fill-color: #a5b4fc !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    /* Section Badge & Form Controls in Dark Mode */
+    html[data-pms-theme="dark"] .section-badge,
+    html[data-bs-theme="dark"] .section-badge,
+    body[data-pms-theme="dark"] .section-badge,
+    [data-pms-theme="dark"] .section-badge {
+        background: rgba(16, 185, 129, 0.15) !important;
+        color: #34d399 !important;
+        border-color: rgba(52, 211, 153, 0.3) !important;
+    }
+
+    html[data-pms-theme="dark"] .section-badge i,
+    html[data-theme="dark"] .section-badge i,
+    html[data-bs-theme="dark"] .section-badge i,
+    [data-pms-theme="dark"] .section-badge i {
+        color: #34d399 !important;
+        -webkit-text-fill-color: #34d399 !important;
+    }
+
+    html[data-pms-theme="dark"] .card-header-avatar:not([style*="background"]),
+    html[data-theme="dark"] .card-header-avatar:not([style*="background"]),
+    html[data-bs-theme="dark"] .card-header-avatar:not([style*="background"]),
+    [data-pms-theme="dark"] .card-header-avatar:not([style*="background"]) {
+        background: rgba(16, 185, 129, 0.2) !important;
+        color: #34d399 !important;
+    }
+
+    html[data-pms-theme="dark"] .card-header-avatar:not([style*="background"]) i,
+    html[data-theme="dark"] .card-header-avatar:not([style*="background"]) i,
+    html[data-bs-theme="dark"] .card-header-avatar:not([style*="background"]) i,
+    [data-pms-theme="dark"] .card-header-avatar:not([style*="background"]) i {
+        color: #34d399 !important;
+        -webkit-text-fill-color: #34d399 !important;
+    }
+
+    html[data-pms-theme="dark"] .form-label-custom,
+    html[data-bs-theme="dark"] .form-label-custom,
+    body[data-pms-theme="dark"] .form-label-custom,
+    [data-pms-theme="dark"] .form-label-custom {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .input-group-custom,
+    html[data-bs-theme="dark"] .input-group-custom,
+    body[data-pms-theme="dark"] .input-group-custom,
+    [data-pms-theme="dark"] .input-group-custom {
+        background-color: #1e293b !important;
+        border-color: rgba(255, 255, 255, 0.12) !important;
+        color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .input-group-custom .form-control,
+    html[data-bs-theme="dark"] .input-group-custom .form-control,
+    body[data-pms-theme="dark"] .input-group-custom .form-control,
+    [data-pms-theme="dark"] .input-group-custom .form-control,
+    html[data-pms-theme="dark"] .input-group-custom .form-select,
+    html[data-bs-theme="dark"] .input-group-custom .form-select,
+    body[data-pms-theme="dark"] .input-group-custom .form-select,
+    [data-pms-theme="dark"] .input-group-custom .form-select {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+        background-color: transparent !important;
+    }
+
+    html[data-pms-theme="dark"] .btn-manage-requests,
+    html[data-theme="dark"] .btn-manage-requests,
+    html[data-bs-theme="dark"] .btn-manage-requests,
+    body[data-pms-theme="dark"] .btn-manage-requests,
+    body[data-theme="dark"] .btn-manage-requests,
+    body[data-bs-theme="dark"] .btn-manage-requests,
+    [data-pms-theme="dark"] .btn-manage-requests,
+    [data-theme="dark"] .btn-manage-requests,
+    [data-bs-theme="dark"] .btn-manage-requests,
+    .dark-mode .btn-manage-requests,
+    html[data-pms-theme="dark"] .btn-back-settings,
+    html[data-theme="dark"] .btn-back-settings,
+    html[data-bs-theme="dark"] .btn-back-settings,
+    body[data-pms-theme="dark"] .btn-back-settings,
+    body[data-theme="dark"] .btn-back-settings,
+    body[data-bs-theme="dark"] .btn-back-settings,
+    [data-pms-theme="dark"] .btn-back-settings,
+    [data-theme="dark"] .btn-back-settings,
+    [data-bs-theme="dark"] .btn-back-settings,
+    .dark-mode .btn-back-settings {
+        background-color: #1e293b !important;
+        border-color: rgba(52, 211, 153, 0.35) !important;
+        color: #34d399 !important;
+        -webkit-text-fill-color: #34d399 !important;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2) !important;
+    }
+
+    html[data-pms-theme="dark"] .btn-manage-requests i,
+    html[data-pms-theme="dark"] .btn-manage-requests svg,
+    html[data-pms-theme="dark"] .btn-manage-requests [class*="fa"],
+    html[data-theme="dark"] .btn-manage-requests i,
+    html[data-theme="dark"] .btn-manage-requests svg,
+    html[data-theme="dark"] .btn-manage-requests [class*="fa"],
+    html[data-bs-theme="dark"] .btn-manage-requests i,
+    html[data-bs-theme="dark"] .btn-manage-requests svg,
+    html[data-bs-theme="dark"] .btn-manage-requests [class*="fa"],
+    body[data-pms-theme="dark"] .btn-manage-requests i,
+    body[data-theme="dark"] .btn-manage-requests i,
+    body[data-bs-theme="dark"] .btn-manage-requests i,
+    [data-pms-theme="dark"] .btn-manage-requests i,
+    [data-theme="dark"] .btn-manage-requests i,
+    [data-bs-theme="dark"] .btn-manage-requests i,
+    .dark-mode .btn-manage-requests i,
+    .dark-mode .btn-manage-requests svg,
+    .dark-mode .btn-manage-requests [class*="fa"],
+    html[data-pms-theme="dark"] .btn-back-settings i,
+    html[data-pms-theme="dark"] .btn-back-settings svg,
+    html[data-pms-theme="dark"] .btn-back-settings [class*="fa"],
+    html[data-theme="dark"] .btn-back-settings i,
+    html[data-theme="dark"] .btn-back-settings svg,
+    html[data-theme="dark"] .btn-back-settings [class*="fa"],
+    html[data-bs-theme="dark"] .btn-back-settings i,
+    html[data-bs-theme="dark"] .btn-back-settings svg,
+    html[data-bs-theme="dark"] .btn-back-settings [class*="fa"],
+    body[data-pms-theme="dark"] .btn-back-settings i,
+    body[data-theme="dark"] .btn-back-settings i,
+    body[data-bs-theme="dark"] .btn-back-settings i,
+    [data-pms-theme="dark"] .btn-back-settings i,
+    [data-theme="dark"] .btn-back-settings i,
+    [data-bs-theme="dark"] .btn-back-settings i,
+    .dark-mode .btn-back-settings i,
+    .dark-mode .btn-back-settings svg,
+    .dark-mode .btn-back-settings [class*="fa"] {
+        color: #34d399 !important;
+        -webkit-text-fill-color: #34d399 !important;
     }
 </style>
 @endpush

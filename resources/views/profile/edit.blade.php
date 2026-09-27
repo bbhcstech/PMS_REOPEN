@@ -20,13 +20,13 @@
           @if(Auth::user()->role === 'admin')
 
           <a href="{{route('dashboard')}}" class="logo d-flex align-items-center">
-            <img src="{{ asset('logo.png') }}?v={{ $logoVersion }}" alt="">
+            <img src="{{ asset('logo.png') }}?v={{ $logoVersion }}" alt="" style="max-height: 32px; width: auto; object-fit: contain;">
             <span class="d-none d-lg-block">Micro Poem Admin</span>
           </a>
           @elseif(Auth::user()->role === 'manager')
 
           <a href="{{route('manager.dashboard')}}" class="logo d-flex align-items-center">
-            <img src="{{ asset('logo.png') }}?v={{ $logoVersion }}" alt="">
+            <img src="{{ asset('logo.png') }}?v={{ $logoVersion }}" alt="" style="max-height: 32px; width: auto; object-fit: contain;">
             <span class="d-none d-lg-block">Micro Poem Manager</span>
           </a>
 

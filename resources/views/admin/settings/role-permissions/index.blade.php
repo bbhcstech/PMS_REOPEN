@@ -119,6 +119,18 @@
         flex-shrink: 0;
     }
 
+    .header-icon-badge i,
+    .header-icon-badge svg,
+    .header-icon-badge [class*="fa"] {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        background: transparent !important;
+        background-color: transparent !important;
+        fill: #ffffff !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
     .header-title h1 {
         font-size: 1.95rem;
         font-weight: 800;
@@ -171,10 +183,10 @@
 
     /* ===== STATS GRID ===== */
     .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 1.25rem;
-        margin-bottom: 2rem;
+        display: grid !important;
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 1.25rem !important;
+        margin-bottom: 2rem !important;
     }
 
     .stat-card,
@@ -186,9 +198,9 @@
         padding: 1.5rem;
         border: 1px solid rgba(16, 185, 129, 0.14) !important;
         box-shadow: 0 10px 30px -10px rgba(16, 185, 129, 0.08) !important;
-        display: flex;
-        align-items: center;
-        gap: 1.25rem;
+        display: flex !important;
+        align-items: center !important;
+        gap: 1.25rem !important;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         position: relative;
         overflow: hidden;
@@ -254,11 +266,47 @@
         -webkit-text-fill-color: #059669 !important;
     }
 
+    .stat-icon.roleactive i,
+    .stat-icon.roleactive svg,
+    .stat-icon.roleactive [class*="fa"],
+    .role-permission-page .stat-card .stat-icon.roleactive i,
+    .role-permission-page .stat-card .stat-icon.roleactive svg,
+    .role-permission-page .stat-card .stat-icon.roleactive [class*="fa"],
+    .role-permission-page .stat-card:first-of-type .stat-icon.roleactive i,
+    .role-permission-page .stat-card:first-of-type .stat-icon.roleactive svg,
+    .role-permission-page .stat-card:first-of-type .stat-icon.roleactive [class*="fa"] {
+        background: transparent !important;
+        background-color: transparent !important;
+        color: #059669 !important;
+        -webkit-text-fill-color: #059669 !important;
+        fill: #059669 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
     .stat-icon.totroles,
     .role-permission-page .stat-card .stat-icon.totroles {
         background: linear-gradient(145deg, #e0f2fe, #bae6fd) !important;
         color: #0284c7 !important;
         -webkit-text-fill-color: #0284c7 !important;
+    }
+
+    .stat-icon.totroles i,
+    .stat-icon.totroles svg,
+    .stat-icon.totroles [class*="fa"],
+    .role-permission-page .stat-card .stat-icon.totroles i,
+    .role-permission-page .stat-card .stat-icon.totroles svg,
+    .role-permission-page .stat-card .stat-icon.totroles [class*="fa"],
+    .role-permission-page .stat-card:first-of-type .stat-icon.totroles i,
+    .role-permission-page .stat-card:first-of-type .stat-icon.totroles svg,
+    .role-permission-page .stat-card:first-of-type .stat-icon.totroles [class*="fa"] {
+        background: transparent !important;
+        background-color: transparent !important;
+        color: #0284c7 !important;
+        -webkit-text-fill-color: #0284c7 !important;
+        fill: #0284c7 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
     }
 
     .stat-icon.totmodules,
@@ -268,11 +316,47 @@
         -webkit-text-fill-color: #d97706 !important;
     }
 
+    .stat-icon.totmodules i,
+    .stat-icon.totmodules svg,
+    .stat-icon.totmodules [class*="fa"],
+    .role-permission-page .stat-card .stat-icon.totmodules i,
+    .role-permission-page .stat-card .stat-icon.totmodules svg,
+    .role-permission-page .stat-card .stat-icon.totmodules [class*="fa"],
+    .role-permission-page .stat-card:first-of-type .stat-icon.totmodules i,
+    .role-permission-page .stat-card:first-of-type .stat-icon.totmodules svg,
+    .role-permission-page .stat-card:first-of-type .stat-icon.totmodules [class*="fa"] {
+        background: transparent !important;
+        background-color: transparent !important;
+        color: #d97706 !important;
+        -webkit-text-fill-color: #d97706 !important;
+        fill: #d97706 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
     .stat-icon.actions,
     .role-permission-page .stat-card .stat-icon.actions {
         background: linear-gradient(145deg, #e0e7ff, #c7d2fe) !important;
         color: #4f46e5 !important;
         -webkit-text-fill-color: #4f46e5 !important;
+    }
+
+    .stat-icon.actions i,
+    .stat-icon.actions svg,
+    .stat-icon.actions [class*="fa"],
+    .role-permission-page .stat-card .stat-icon.actions i,
+    .role-permission-page .stat-card .stat-icon.actions svg,
+    .role-permission-page .stat-card .stat-icon.actions [class*="fa"],
+    .role-permission-page .stat-card:first-of-type .stat-icon.actions i,
+    .role-permission-page .stat-card:first-of-type .stat-icon.actions svg,
+    .role-permission-page .stat-card:first-of-type .stat-icon.actions [class*="fa"] {
+        background: transparent !important;
+        background-color: transparent !important;
+        color: #4f46e5 !important;
+        -webkit-text-fill-color: #4f46e5 !important;
+        fill: #4f46e5 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
     }
 
     .stat-info h6 {
@@ -325,6 +409,18 @@
         padding-left: 18px;
         padding-right: 12px;
         font-size: 1.1rem;
+    }
+
+    .input-group-custom .input-group-text i,
+    .input-group-custom .input-group-text svg,
+    .input-group-custom .input-group-text [class*="fa"] {
+        color: #059669 !important;
+        -webkit-text-fill-color: #059669 !important;
+        background: transparent !important;
+        background-color: transparent !important;
+        fill: #059669 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
     }
 
     .input-group-custom .form-select {
@@ -380,6 +476,18 @@
         justify-content: center;
         font-size: 1.35rem;
         flex-shrink: 0;
+    }
+
+    .card-header-avatar i,
+    .card-header-avatar svg,
+    .card-header-avatar [class*="fa"] {
+        color: #059669 !important;
+        -webkit-text-fill-color: #059669 !important;
+        background: transparent !important;
+        background-color: transparent !important;
+        fill: #059669 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
     }
 
     .matrix-table {
@@ -466,7 +574,7 @@
 
     @media (max-width: 1200px) {
         .stats-grid {
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(2, 1fr) !important;
         }
     }
 
@@ -476,8 +584,523 @@
         }
 
         .stats-grid {
-            grid-template-columns: 1fr;
+            grid-template-columns: 1fr !important;
         }
+    }
+
+    /* ===== DARK MODE SUPPORT ===== */
+    html[data-pms-theme="dark"] .role-permission-page,
+    html[data-theme="dark"] .role-permission-page,
+    html[data-bs-theme="dark"] .role-permission-page,
+    body[data-pms-theme="dark"] .role-permission-page,
+    body[data-theme="dark"] .role-permission-page,
+    body[data-bs-theme="dark"] .role-permission-page,
+    [data-pms-theme="dark"] .role-permission-page,
+    [data-theme="dark"] .role-permission-page,
+    [data-bs-theme="dark"] .role-permission-page,
+    .dark-mode .role-permission-page {
+        background: #0b0f19 !important;
+        color: #e2e8f0 !important;
+    }
+
+    html[data-pms-theme="dark"] .branches-header,
+    html[data-theme="dark"] .branches-header,
+    html[data-bs-theme="dark"] .branches-header,
+    body[data-pms-theme="dark"] .branches-header,
+    body[data-theme="dark"] .branches-header,
+    body[data-bs-theme="dark"] .branches-header,
+    [data-pms-theme="dark"] .branches-header,
+    [data-theme="dark"] .branches-header,
+    [data-bs-theme="dark"] .branches-header,
+    html[data-pms-theme="dark"] .role-select-card,
+    html[data-theme="dark"] .role-select-card,
+    html[data-bs-theme="dark"] .role-select-card,
+    body[data-pms-theme="dark"] .role-select-card,
+    body[data-theme="dark"] .role-select-card,
+    body[data-bs-theme="dark"] .role-select-card,
+    [data-pms-theme="dark"] .role-select-card,
+    [data-theme="dark"] .role-select-card,
+    [data-bs-theme="dark"] .role-select-card,
+    html[data-pms-theme="dark"] .address-card-elevated,
+    html[data-theme="dark"] .address-card-elevated,
+    html[data-bs-theme="dark"] .address-card-elevated,
+    body[data-pms-theme="dark"] .address-card-elevated,
+    body[data-theme="dark"] .address-card-elevated,
+    body[data-bs-theme="dark"] .address-card-elevated,
+    [data-pms-theme="dark"] .address-card-elevated,
+    [data-theme="dark"] .address-card-elevated,
+    [data-bs-theme="dark"] .address-card-elevated,
+    .dark-mode .branches-header,
+    .dark-mode .role-select-card,
+    .dark-mode .address-card-elevated {
+        background: #111827 !important;
+        border-color: rgba(255, 255, 255, 0.08) !important;
+        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.4) !important;
+    }
+
+    html[data-pms-theme="dark"] .card-header-custom,
+    html[data-bs-theme="dark"] .card-header-custom,
+    body[data-pms-theme="dark"] .card-header-custom,
+    [data-pms-theme="dark"] .card-header-custom {
+        border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+    }
+
+    html[data-pms-theme="dark"] .card-header-custom h5,
+    html[data-bs-theme="dark"] .card-header-custom h5,
+    body[data-pms-theme="dark"] .card-header-custom h5,
+    [data-pms-theme="dark"] .card-header-custom h5,
+    html[data-pms-theme="dark"] .header-title h1,
+    html[data-bs-theme="dark"] .header-title h1,
+    body[data-pms-theme="dark"] .header-title h1,
+    [data-pms-theme="dark"] .header-title h1 {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+        background: none !important;
+    }
+
+    html[data-pms-theme="dark"] .header-title p,
+    html[data-bs-theme="dark"] .header-title p,
+    body[data-pms-theme="dark"] .header-title p,
+    [data-pms-theme="dark"] .header-title p,
+    html[data-pms-theme="dark"] .card-header-custom .text-muted,
+    html[data-bs-theme="dark"] .card-header-custom .text-muted,
+    body[data-pms-theme="dark"] .card-header-custom .text-muted,
+    [data-pms-theme="dark"] .card-header-custom .text-muted {
+        color: #94a3b8 !important;
+        -webkit-text-fill-color: #94a3b8 !important;
+    }
+
+    html[data-pms-theme="dark"] .btn-back-settings,
+    html[data-theme="dark"] .btn-back-settings,
+    html[data-bs-theme="dark"] .btn-back-settings,
+    body[data-pms-theme="dark"] .btn-back-settings,
+    body[data-theme="dark"] .btn-back-settings,
+    body[data-bs-theme="dark"] .btn-back-settings,
+    [data-pms-theme="dark"] .btn-back-settings,
+    [data-theme="dark"] .btn-back-settings,
+    [data-bs-theme="dark"] .btn-back-settings,
+    .dark-mode .btn-back-settings {
+        background-color: #1e293b !important;
+        background: #1e293b !important;
+        border-color: rgba(52, 211, 153, 0.35) !important;
+        color: #34d399 !important;
+        -webkit-text-fill-color: #34d399 !important;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2) !important;
+    }
+
+    html[data-pms-theme="dark"] .btn-back-settings i,
+    html[data-theme="dark"] .btn-back-settings i,
+    [data-pms-theme="dark"] .btn-back-settings i {
+        color: #34d399 !important;
+        -webkit-text-fill-color: #34d399 !important;
+    }
+
+    /* Stat Cards in Dark Mode */
+    html[data-pms-theme="dark"] .role-permission-page .stat-card,
+    html[data-theme="dark"] .role-permission-page .stat-card,
+    html[data-bs-theme="dark"] .role-permission-page .stat-card,
+    body[data-pms-theme="dark"] .role-permission-page .stat-card,
+    body[data-theme="dark"] .role-permission-page .stat-card,
+    body[data-bs-theme="dark"] .role-permission-page .stat-card,
+    [data-pms-theme="dark"] .role-permission-page .stat-card,
+    [data-theme="dark"] .role-permission-page .stat-card,
+    [data-bs-theme="dark"] .role-permission-page .stat-card,
+    html[data-pms-theme="dark"] .role-permission-page .stat-card:first-of-type,
+    html[data-theme="dark"] .role-permission-page .stat-card:first-of-type,
+    html[data-bs-theme="dark"] .role-permission-page .stat-card:first-of-type,
+    body[data-pms-theme="dark"] .role-permission-page .stat-card:first-of-type,
+    body[data-theme="dark"] .role-permission-page .stat-card:first-of-type,
+    body[data-bs-theme="dark"] .role-permission-page .stat-card:first-of-type,
+    [data-pms-theme="dark"] .role-permission-page .stat-card:first-of-type,
+    [data-theme="dark"] .role-permission-page .stat-card:first-of-type,
+    [data-bs-theme="dark"] .role-permission-page .stat-card:first-of-type,
+    html[data-pms-theme="dark"] .stat-card,
+    html[data-theme="dark"] .stat-card,
+    html[data-bs-theme="dark"] .stat-card,
+    html[data-pms-theme="dark"] .stat-card:first-of-type,
+    html[data-theme="dark"] .stat-card:first-of-type,
+    html[data-bs-theme="dark"] .stat-card:first-of-type,
+    .dark-mode .stat-card,
+    .dark-mode .stat-card:first-of-type {
+        background: #171e2e !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.3) !important;
+        color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .role-permission-page .stat-card h3,
+    html[data-theme="dark"] .role-permission-page .stat-card h3,
+    html[data-bs-theme="dark"] .role-permission-page .stat-card h3,
+    body[data-pms-theme="dark"] .role-permission-page .stat-card h3,
+    body[data-theme="dark"] .role-permission-page .stat-card h3,
+    body[data-bs-theme="dark"] .role-permission-page .stat-card h3,
+    [data-pms-theme="dark"] .role-permission-page .stat-card h3,
+    [data-theme="dark"] .role-permission-page .stat-card h3,
+    [data-bs-theme="dark"] .role-permission-page .stat-card h3,
+    html[data-pms-theme="dark"] .role-permission-page .stat-card:first-of-type h3,
+    html[data-theme="dark"] .role-permission-page .stat-card:first-of-type h3,
+    html[data-bs-theme="dark"] .role-permission-page .stat-card:first-of-type h3,
+    body[data-pms-theme="dark"] .role-permission-page .stat-card:first-of-type h3,
+    body[data-theme="dark"] .role-permission-page .stat-card:first-of-type h3,
+    body[data-bs-theme="dark"] .role-permission-page .stat-card:first-of-type h3,
+    [data-pms-theme="dark"] .role-permission-page .stat-card:first-of-type h3,
+    [data-theme="dark"] .role-permission-page .stat-card:first-of-type h3,
+    [data-bs-theme="dark"] .role-permission-page .stat-card:first-of-type h3,
+    .dark-mode .stat-card h3 {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .role-permission-page .stat-card h6,
+    html[data-theme="dark"] .role-permission-page .stat-card h6,
+    html[data-bs-theme="dark"] .role-permission-page .stat-card h6,
+    body[data-pms-theme="dark"] .role-permission-page .stat-card h6,
+    body[data-theme="dark"] .role-permission-page .stat-card h6,
+    body[data-bs-theme="dark"] .role-permission-page .stat-card h6,
+    [data-pms-theme="dark"] .role-permission-page .stat-card h6,
+    [data-theme="dark"] .role-permission-page .stat-card h6,
+    [data-bs-theme="dark"] .role-permission-page .stat-card h6,
+    html[data-pms-theme="dark"] .role-permission-page .stat-card:first-of-type h6,
+    html[data-theme="dark"] .role-permission-page .stat-card:first-of-type h6,
+    html[data-bs-theme="dark"] .role-permission-page .stat-card:first-of-type h6,
+    body[data-pms-theme="dark"] .role-permission-page .stat-card:first-of-type h6,
+    body[data-theme="dark"] .role-permission-page .stat-card:first-of-type h6,
+    body[data-bs-theme="dark"] .role-permission-page .stat-card:first-of-type h6,
+    [data-pms-theme="dark"] .role-permission-page .stat-card:first-of-type h6,
+    [data-theme="dark"] .role-permission-page .stat-card:first-of-type h6,
+    [data-bs-theme="dark"] .role-permission-page .stat-card:first-of-type h6,
+    .dark-mode .stat-card h6 {
+        color: #94a3b8 !important;
+        -webkit-text-fill-color: #94a3b8 !important;
+    }
+
+    /* Dark Mode Stat Icons */
+    html[data-pms-theme="dark"] .stat-icon.roleactive,
+    html[data-theme="dark"] .stat-icon.roleactive,
+    html[data-bs-theme="dark"] .stat-icon.roleactive,
+    body[data-pms-theme="dark"] .stat-icon.roleactive,
+    body[data-theme="dark"] .stat-icon.roleactive,
+    body[data-bs-theme="dark"] .stat-icon.roleactive,
+    [data-pms-theme="dark"] .stat-icon.roleactive,
+    [data-theme="dark"] .stat-icon.roleactive,
+    [data-bs-theme="dark"] .stat-icon.roleactive,
+    .dark-mode .stat-icon.roleactive,
+    [data-pms-theme="dark"] .role-permission-page .stat-card .stat-icon.roleactive,
+    [data-pms-theme="dark"] .role-permission-page .stat-card:first-of-type .stat-icon.roleactive,
+    [data-theme="dark"] .role-permission-page .stat-card .stat-icon.roleactive,
+    [data-theme="dark"] .role-permission-page .stat-card:first-of-type .stat-icon.roleactive,
+    [data-bs-theme="dark"] .role-permission-page .stat-card .stat-icon.roleactive,
+    [data-bs-theme="dark"] .role-permission-page .stat-card:first-of-type .stat-icon.roleactive,
+    html[data-pms-theme="dark"] .role-permission-page .stat-card .stat-icon.roleactive,
+    html[data-pms-theme="dark"] .role-permission-page .stat-card:first-of-type .stat-icon.roleactive,
+    html[data-theme="dark"] .role-permission-page .stat-card .stat-icon.roleactive,
+    html[data-theme="dark"] .role-permission-page .stat-card:first-of-type .stat-icon.roleactive,
+    html[data-bs-theme="dark"] .role-permission-page .stat-card .stat-icon.roleactive,
+    html[data-bs-theme="dark"] .role-permission-page .stat-card:first-of-type .stat-icon.roleactive {
+        background: rgba(16, 185, 129, 0.25) !important;
+        background-image: none !important;
+        border: 1px solid rgba(52, 211, 153, 0.4) !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon.roleactive i,
+    html[data-pms-theme="dark"] .stat-icon.roleactive svg,
+    html[data-pms-theme="dark"] .stat-icon.roleactive [class*="fa"],
+    html[data-theme="dark"] .stat-icon.roleactive i,
+    html[data-theme="dark"] .stat-icon.roleactive svg,
+    html[data-theme="dark"] .stat-icon.roleactive [class*="fa"],
+    html[data-bs-theme="dark"] .stat-icon.roleactive i,
+    html[data-bs-theme="dark"] .stat-icon.roleactive svg,
+    html[data-bs-theme="dark"] .stat-icon.roleactive [class*="fa"],
+    body[data-pms-theme="dark"] .stat-icon.roleactive i,
+    body[data-theme="dark"] .stat-icon.roleactive i,
+    body[data-bs-theme="dark"] .stat-icon.roleactive i,
+    [data-pms-theme="dark"] .stat-icon.roleactive i,
+    [data-theme="dark"] .stat-icon.roleactive i,
+    [data-bs-theme="dark"] .stat-icon.roleactive i,
+    .dark-mode .stat-icon.roleactive i,
+    .dark-mode .stat-icon.roleactive svg,
+    .dark-mode .stat-icon.roleactive [class*="fa"],
+    html[data-pms-theme="dark"] .role-permission-page .stat-card .stat-icon.roleactive i,
+    html[data-pms-theme="dark"] .role-permission-page .stat-card:first-of-type .stat-icon.roleactive i,
+    html[data-theme="dark"] .role-permission-page .stat-card .stat-icon.roleactive i,
+    html[data-theme="dark"] .role-permission-page .stat-card:first-of-type .stat-icon.roleactive i,
+    html[data-bs-theme="dark"] .role-permission-page .stat-card .stat-icon.roleactive i,
+    html[data-bs-theme="dark"] .role-permission-page .stat-card:first-of-type .stat-icon.roleactive i,
+    body[data-pms-theme="dark"] .role-permission-page .stat-card .stat-icon.roleactive i,
+    body[data-pms-theme="dark"] .role-permission-page .stat-card:first-of-type .stat-icon.roleactive i,
+    body[data-theme="dark"] .role-permission-page .stat-card .stat-icon.roleactive i,
+    body[data-theme="dark"] .role-permission-page .stat-card:first-of-type .stat-icon.roleactive i,
+    body[data-bs-theme="dark"] .role-permission-page .stat-card .stat-icon.roleactive i,
+    body[data-bs-theme="dark"] .role-permission-page .stat-card:first-of-type .stat-icon.roleactive i,
+    [data-pms-theme="dark"] .role-permission-page .stat-card .stat-icon.roleactive i,
+    [data-pms-theme="dark"] .role-permission-page .stat-card:first-of-type .stat-icon.roleactive i,
+    [data-theme="dark"] .role-permission-page .stat-card .stat-icon.roleactive i,
+    [data-theme="dark"] .role-permission-page .stat-card:first-of-type .stat-icon.roleactive i,
+    [data-bs-theme="dark"] .role-permission-page .stat-card .stat-icon.roleactive i,
+    [data-bs-theme="dark"] .role-permission-page .stat-card:first-of-type .stat-icon.roleactive i,
+    .dark-mode .role-permission-page .stat-card .stat-icon.roleactive i,
+    .dark-mode .role-permission-page .stat-card:first-of-type .stat-icon.roleactive i {
+        background: transparent !important;
+        background-image: none !important;
+        color: #34d399 !important;
+        -webkit-text-fill-color: #34d399 !important;
+        fill: #34d399 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon.totroles,
+    html[data-theme="dark"] .stat-icon.totroles,
+    html[data-bs-theme="dark"] .stat-icon.totroles,
+    body[data-pms-theme="dark"] .stat-icon.totroles,
+    body[data-theme="dark"] .stat-icon.totroles,
+    body[data-bs-theme="dark"] .stat-icon.totroles,
+    [data-pms-theme="dark"] .stat-icon.totroles,
+    [data-theme="dark"] .stat-icon.totroles,
+    [data-bs-theme="dark"] .stat-icon.totroles,
+    .dark-mode .stat-icon.totroles,
+    [data-pms-theme="dark"] .role-permission-page .stat-card .stat-icon.totroles,
+    [data-theme="dark"] .role-permission-page .stat-card .stat-icon.totroles,
+    [data-bs-theme="dark"] .role-permission-page .stat-card .stat-icon.totroles,
+    html[data-pms-theme="dark"] .role-permission-page .stat-card .stat-icon.totroles,
+    html[data-theme="dark"] .role-permission-page .stat-card .stat-icon.totroles,
+    html[data-bs-theme="dark"] .role-permission-page .stat-card .stat-icon.totroles {
+        background: rgba(56, 189, 248, 0.25) !important;
+        background-image: none !important;
+        border: 1px solid rgba(56, 189, 248, 0.4) !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon.totroles i,
+    html[data-pms-theme="dark"] .stat-icon.totroles svg,
+    html[data-pms-theme="dark"] .stat-icon.totroles [class*="fa"],
+    html[data-theme="dark"] .stat-icon.totroles i,
+    html[data-theme="dark"] .stat-icon.totroles svg,
+    html[data-theme="dark"] .stat-icon.totroles [class*="fa"],
+    html[data-bs-theme="dark"] .stat-icon.totroles i,
+    html[data-bs-theme="dark"] .stat-icon.totroles svg,
+    html[data-bs-theme="dark"] .stat-icon.totroles [class*="fa"],
+    body[data-pms-theme="dark"] .stat-icon.totroles i,
+    body[data-theme="dark"] .stat-icon.totroles i,
+    body[data-bs-theme="dark"] .stat-icon.totroles i,
+    [data-pms-theme="dark"] .stat-icon.totroles i,
+    [data-theme="dark"] .stat-icon.totroles i,
+    [data-bs-theme="dark"] .stat-icon.totroles i,
+    .dark-mode .stat-icon.totroles i,
+    .dark-mode .stat-icon.totroles svg,
+    .dark-mode .stat-icon.totroles [class*="fa"],
+    html[data-pms-theme="dark"] .role-permission-page .stat-card .stat-icon.totroles i,
+    html[data-theme="dark"] .role-permission-page .stat-card .stat-icon.totroles i,
+    html[data-bs-theme="dark"] .role-permission-page .stat-card .stat-icon.totroles i,
+    body[data-pms-theme="dark"] .role-permission-page .stat-card .stat-icon.totroles i,
+    body[data-theme="dark"] .role-permission-page .stat-card .stat-icon.totroles i,
+    body[data-bs-theme="dark"] .role-permission-page .stat-card .stat-icon.totroles i,
+    [data-pms-theme="dark"] .role-permission-page .stat-card .stat-icon.totroles i,
+    [data-theme="dark"] .role-permission-page .stat-card .stat-icon.totroles i,
+    [data-bs-theme="dark"] .role-permission-page .stat-card .stat-icon.totroles i,
+    .dark-mode .role-permission-page .stat-card .stat-icon.totroles i {
+        background: transparent !important;
+        background-image: none !important;
+        color: #38bdf8 !important;
+        -webkit-text-fill-color: #38bdf8 !important;
+        fill: #38bdf8 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon.totmodules,
+    html[data-theme="dark"] .stat-icon.totmodules,
+    html[data-bs-theme="dark"] .stat-icon.totmodules,
+    body[data-pms-theme="dark"] .stat-icon.totmodules,
+    body[data-theme="dark"] .stat-icon.totmodules,
+    body[data-bs-theme="dark"] .stat-icon.totmodules,
+    [data-pms-theme="dark"] .stat-icon.totmodules,
+    [data-theme="dark"] .stat-icon.totmodules,
+    [data-bs-theme="dark"] .stat-icon.totmodules,
+    .dark-mode .stat-icon.totmodules,
+    [data-pms-theme="dark"] .role-permission-page .stat-card .stat-icon.totmodules,
+    [data-theme="dark"] .role-permission-page .stat-card .stat-icon.totmodules,
+    [data-bs-theme="dark"] .role-permission-page .stat-card .stat-icon.totmodules,
+    html[data-pms-theme="dark"] .role-permission-page .stat-card .stat-icon.totmodules,
+    html[data-theme="dark"] .role-permission-page .stat-card .stat-icon.totmodules,
+    html[data-bs-theme="dark"] .role-permission-page .stat-card .stat-icon.totmodules {
+        background: rgba(251, 191, 36, 0.25) !important;
+        background-image: none !important;
+        border: 1px solid rgba(251, 191, 36, 0.4) !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon.totmodules i,
+    html[data-pms-theme="dark"] .stat-icon.totmodules svg,
+    html[data-pms-theme="dark"] .stat-icon.totmodules [class*="fa"],
+    html[data-theme="dark"] .stat-icon.totmodules i,
+    html[data-theme="dark"] .stat-icon.totmodules svg,
+    html[data-theme="dark"] .stat-icon.totmodules [class*="fa"],
+    html[data-bs-theme="dark"] .stat-icon.totmodules i,
+    html[data-bs-theme="dark"] .stat-icon.totmodules svg,
+    html[data-bs-theme="dark"] .stat-icon.totmodules [class*="fa"],
+    body[data-pms-theme="dark"] .stat-icon.totmodules i,
+    body[data-theme="dark"] .stat-icon.totmodules i,
+    body[data-bs-theme="dark"] .stat-icon.totmodules i,
+    [data-pms-theme="dark"] .stat-icon.totmodules i,
+    [data-theme="dark"] .stat-icon.totmodules i,
+    [data-bs-theme="dark"] .stat-icon.totmodules i,
+    .dark-mode .stat-icon.totmodules i,
+    .dark-mode .stat-icon.totmodules svg,
+    .dark-mode .stat-icon.totmodules [class*="fa"],
+    html[data-pms-theme="dark"] .role-permission-page .stat-card .stat-icon.totmodules i,
+    html[data-theme="dark"] .role-permission-page .stat-card .stat-icon.totmodules i,
+    html[data-bs-theme="dark"] .role-permission-page .stat-card .stat-icon.totmodules i,
+    body[data-pms-theme="dark"] .role-permission-page .stat-card .stat-icon.totmodules i,
+    body[data-theme="dark"] .role-permission-page .stat-card .stat-icon.totmodules i,
+    body[data-bs-theme="dark"] .role-permission-page .stat-card .stat-icon.totmodules i,
+    [data-pms-theme="dark"] .role-permission-page .stat-card .stat-icon.totmodules i,
+    [data-theme="dark"] .role-permission-page .stat-card .stat-icon.totmodules i,
+    [data-bs-theme="dark"] .role-permission-page .stat-card .stat-icon.totmodules i,
+    .dark-mode .role-permission-page .stat-card .stat-icon.totmodules i {
+        background: transparent !important;
+        background-image: none !important;
+        color: #fbbf24 !important;
+        -webkit-text-fill-color: #fbbf24 !important;
+        fill: #fbbf24 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon.actions,
+    html[data-theme="dark"] .stat-icon.actions,
+    html[data-bs-theme="dark"] .stat-icon.actions,
+    body[data-pms-theme="dark"] .stat-icon.actions,
+    body[data-theme="dark"] .stat-icon.actions,
+    body[data-bs-theme="dark"] .stat-icon.actions,
+    [data-pms-theme="dark"] .stat-icon.actions,
+    [data-theme="dark"] .stat-icon.actions,
+    [data-bs-theme="dark"] .stat-icon.actions,
+    .dark-mode .stat-icon.actions,
+    [data-pms-theme="dark"] .role-permission-page .stat-card .stat-icon.actions,
+    [data-theme="dark"] .role-permission-page .stat-card .stat-icon.actions,
+    [data-bs-theme="dark"] .role-permission-page .stat-card .stat-icon.actions,
+    html[data-pms-theme="dark"] .role-permission-page .stat-card .stat-icon.actions,
+    html[data-theme="dark"] .role-permission-page .stat-card .stat-icon.actions,
+    html[data-bs-theme="dark"] .role-permission-page .stat-card .stat-icon.actions {
+        background: rgba(129, 140, 248, 0.25) !important;
+        background-image: none !important;
+        border: 1px solid rgba(129, 140, 248, 0.4) !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon.actions i,
+    html[data-pms-theme="dark"] .stat-icon.actions svg,
+    html[data-pms-theme="dark"] .stat-icon.actions [class*="fa"],
+    html[data-theme="dark"] .stat-icon.actions i,
+    html[data-theme="dark"] .stat-icon.actions svg,
+    html[data-theme="dark"] .stat-icon.actions [class*="fa"],
+    html[data-bs-theme="dark"] .stat-icon.actions i,
+    html[data-bs-theme="dark"] .stat-icon.actions svg,
+    html[data-bs-theme="dark"] .stat-icon.actions [class*="fa"],
+    body[data-pms-theme="dark"] .stat-icon.actions i,
+    body[data-theme="dark"] .stat-icon.actions i,
+    body[data-bs-theme="dark"] .stat-icon.actions i,
+    [data-pms-theme="dark"] .stat-icon.actions i,
+    [data-theme="dark"] .stat-icon.actions i,
+    [data-bs-theme="dark"] .stat-icon.actions i,
+    .dark-mode .stat-icon.actions i,
+    .dark-mode .stat-icon.actions svg,
+    .dark-mode .stat-icon.actions [class*="fa"],
+    html[data-pms-theme="dark"] .role-permission-page .stat-card .stat-icon.actions i,
+    html[data-theme="dark"] .role-permission-page .stat-card .stat-icon.actions i,
+    html[data-bs-theme="dark"] .role-permission-page .stat-card .stat-icon.actions i,
+    body[data-pms-theme="dark"] .role-permission-page .stat-card .stat-icon.actions i,
+    body[data-theme="dark"] .role-permission-page .stat-card .stat-icon.actions i,
+    body[data-bs-theme="dark"] .role-permission-page .stat-card .stat-icon.actions i,
+    [data-pms-theme="dark"] .role-permission-page .stat-card .stat-icon.actions i,
+    [data-theme="dark"] .role-permission-page .stat-card .stat-icon.actions i,
+    [data-bs-theme="dark"] .role-permission-page .stat-card .stat-icon.actions i,
+    .dark-mode .role-permission-page .stat-card .stat-icon.actions i {
+        background: transparent !important;
+        background-image: none !important;
+        color: #a5b4fc !important;
+        -webkit-text-fill-color: #a5b4fc !important;
+        fill: #a5b4fc !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    /* Form Controls & Select Cards in Dark Mode */
+    html[data-pms-theme="dark"] .input-group-custom,
+    html[data-theme="dark"] .input-group-custom,
+    html[data-bs-theme="dark"] .input-group-custom,
+    [data-pms-theme="dark"] .input-group-custom {
+        background-color: #1a2234 !important;
+        border-color: rgba(255, 255, 255, 0.12) !important;
+    }
+
+    html[data-pms-theme="dark"] .input-group-custom .form-select,
+    html[data-theme="dark"] .input-group-custom .form-select,
+    [data-pms-theme="dark"] .input-group-custom .form-select {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .input-group-custom .input-group-text i,
+    html[data-theme="dark"] .input-group-custom .input-group-text i,
+    [data-pms-theme="dark"] .input-group-custom .input-group-text i {
+        color: #34d399 !important;
+        -webkit-text-fill-color: #34d399 !important;
+    }
+
+    html[data-pms-theme="dark"] .role-select-card label,
+    html[data-theme="dark"] .role-select-card label,
+    [data-pms-theme="dark"] .role-select-card label,
+    html[data-pms-theme="dark"] .role-select-card span,
+    html[data-theme="dark"] .role-select-card span,
+    [data-pms-theme="dark"] .role-select-card span {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .role-select-card small,
+    html[data-theme="dark"] .role-select-card small,
+    [data-pms-theme="dark"] .role-select-card small,
+    html[data-pms-theme="dark"] .role-select-card .text-muted,
+    html[data-theme="dark"] .role-select-card .text-muted,
+    [data-pms-theme="dark"] .role-select-card .text-muted {
+        color: #94a3b8 !important;
+        -webkit-text-fill-color: #94a3b8 !important;
+    }
+
+    /* Matrix Table in Dark Mode */
+    html[data-pms-theme="dark"] .matrix-table th,
+    html[data-theme="dark"] .matrix-table th,
+    [data-pms-theme="dark"] .matrix-table th {
+        background: #1e293b !important;
+        color: #34d399 !important;
+        -webkit-text-fill-color: #34d399 !important;
+        border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+    }
+
+    html[data-pms-theme="dark"] .matrix-table td,
+    html[data-theme="dark"] .matrix-table td,
+    [data-pms-theme="dark"] .matrix-table td {
+        border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+        color: #e2e8f0 !important;
+    }
+
+    html[data-pms-theme="dark"] .module-title-box strong,
+    html[data-theme="dark"] .module-title-box strong,
+    [data-pms-theme="dark"] .module-title-box strong {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .module-title-box small,
+    html[data-theme="dark"] .module-title-box small,
+    [data-pms-theme="dark"] .module-title-box small {
+        color: #94a3b8 !important;
+        -webkit-text-fill-color: #94a3b8 !important;
+    }
+
+    html[data-pms-theme="dark"] .matrix-table tr:hover td,
+    html[data-theme="dark"] .matrix-table tr:hover td,
+    [data-pms-theme="dark"] .matrix-table tr:hover td {
+        background-color: rgba(255, 255, 255, 0.03) !important;
     }
 </style>
 @endpush

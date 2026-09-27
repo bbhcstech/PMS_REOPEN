@@ -201,7 +201,8 @@ class OrganizationDirectoryController extends Controller
 
     private function ensureDirectoryManager(): void
     {
-        abort_unless(in_array(auth()->user()?->role, ['admin', 'hr'], true), 403);
+        $role = strtolower((string) (auth()->user()?->role ?? ''));
+        abort_unless(in_array($role, ['admin', 'hr', 'manager', 'administrator', 'superadmin'], true), 403);
     }
 
     private function storeEmployeeCv(Request $request, ?string $oldPath = null): ?string

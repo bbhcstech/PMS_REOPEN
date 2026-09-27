@@ -265,6 +265,33 @@
     .plan-card-item.theme-platinum { border-color: var(--plan-platinum-border); background: linear-gradient(180deg, #ffffff 0%, #f7fcff 100%); }
     .plan-card-item.theme-diamond { border-color: var(--plan-diamond-border); background: linear-gradient(180deg, #ffffff 0%, #faf8ff 100%); }
 
+    /* Dark Mode: Ensure all plan cards adopt the dark surface background like the Free card */
+    html[data-pms-theme="dark"] .plan-card-item,
+    html[data-theme="dark"] .plan-card-item,
+    html[data-bs-theme="dark"] .plan-card-item {
+        background: var(--bg-surface);
+    }
+    html[data-pms-theme="dark"] .plan-card-item.theme-gold,
+    html[data-theme="dark"] .plan-card-item.theme-gold,
+    html[data-bs-theme="dark"] .plan-card-item.theme-gold,
+    html[data-pms-theme="dark"] .plan-card-item.theme-platinum,
+    html[data-theme="dark"] .plan-card-item.theme-platinum,
+    html[data-bs-theme="dark"] .plan-card-item.theme-platinum,
+    html[data-pms-theme="dark"] .plan-card-item.theme-diamond,
+    html[data-theme="dark"] .plan-card-item.theme-diamond,
+    html[data-bs-theme="dark"] .plan-card-item.theme-diamond {
+        background: var(--bg-surface);
+    }
+
+    @media (prefers-color-scheme: dark) {
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .plan-card-item,
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .plan-card-item.theme-gold,
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .plan-card-item.theme-platinum,
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .plan-card-item.theme-diamond {
+            background: var(--bg-surface);
+        }
+    }
+
     .popular-ribbon {
         position: absolute;
         top: 10px;
@@ -609,6 +636,224 @@
         background: #f1f5f9;
         color: #2563eb;
     }
+
+    /* Dark Mode: Toolbar Search Input */
+    html[data-pms-theme="dark"] .search-input-wrap input,
+    html[data-theme="dark"] .search-input-wrap input,
+    html[data-bs-theme="dark"] .search-input-wrap input {
+        background: var(--bg-surface-subtle, #141B3D);
+        border-color: var(--border-strong, rgba(238, 241, 251, 0.14));
+        color: var(--text-main, #EEF1FB);
+    }
+    html[data-pms-theme="dark"] .search-input-wrap input:focus,
+    html[data-theme="dark"] .search-input-wrap input:focus,
+    html[data-bs-theme="dark"] .search-input-wrap input:focus {
+        background: var(--bg-surface-hover, #1A2247);
+        border-color: var(--primary, #2F6BFF);
+        box-shadow: 0 0 0 3px rgba(47, 107, 255, 0.25);
+    }
+    html[data-pms-theme="dark"] .search-input-wrap input::placeholder,
+    html[data-theme="dark"] .search-input-wrap input::placeholder,
+    html[data-bs-theme="dark"] .search-input-wrap input::placeholder {
+        color: var(--text-light, #6B739A);
+    }
+    html[data-pms-theme="dark"] .search-input-wrap i,
+    html[data-theme="dark"] .search-input-wrap i,
+    html[data-bs-theme="dark"] .search-input-wrap i {
+        color: var(--text-light, #6B739A);
+    }
+
+    /* Dark Mode: Outline Buttons (Export Button & Plan Cards View Details) */
+    html[data-pms-theme="dark"] .btn-outline-custom,
+    html[data-theme="dark"] .btn-outline-custom,
+    html[data-bs-theme="dark"] .btn-outline-custom {
+        background: var(--bg-surface-subtle, #141B3D);
+        border-color: var(--border-strong, rgba(238, 241, 251, 0.14));
+        color: var(--text-main, #EEF1FB);
+    }
+    html[data-pms-theme="dark"] .btn-outline-custom:hover,
+    html[data-theme="dark"] .btn-outline-custom:hover,
+    html[data-bs-theme="dark"] .btn-outline-custom:hover,
+    html[data-pms-theme="dark"] .btn-outline-custom:focus,
+    html[data-theme="dark"] .btn-outline-custom:focus,
+    html[data-bs-theme="dark"] .btn-outline-custom:focus {
+        background: var(--bg-surface-hover, #1A2247);
+        border-color: var(--primary, #2F6BFF);
+        color: #ffffff;
+        box-shadow: 0 4px 14px rgba(47, 107, 255, 0.22);
+    }
+
+    /* Dark Mode: Export Dropdown Menu & Items */
+    html[data-pms-theme="dark"] .export-dropdown-menu,
+    html[data-theme="dark"] .export-dropdown-menu,
+    html[data-bs-theme="dark"] .export-dropdown-menu {
+        background: var(--bg-surface, #0F1530);
+        border-color: var(--border-subtle, rgba(238, 241, 251, 0.12));
+        box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.06);
+    }
+    html[data-pms-theme="dark"] .export-dropdown-item,
+    html[data-theme="dark"] .export-dropdown-item,
+    html[data-bs-theme="dark"] .export-dropdown-item {
+        color: var(--text-main, #EEF1FB);
+    }
+    html[data-pms-theme="dark"] .export-dropdown-item:hover,
+    html[data-theme="dark"] .export-dropdown-item:hover,
+    html[data-bs-theme="dark"] .export-dropdown-item:hover {
+        background: var(--bg-surface-hover, #1A2247);
+        color: var(--primary, #2F6BFF);
+    }
+
+    /* Dark Mode: Impersonation Banner */
+    html[data-pms-theme="dark"] .impersonation-banner-box,
+    html[data-theme="dark"] .impersonation-banner-box,
+    html[data-bs-theme="dark"] .impersonation-banner-box {
+        background: rgba(245, 158, 11, 0.1) !important;
+        border-color: rgba(245, 158, 11, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .impersonation-banner-box strong,
+    html[data-theme="dark"] .impersonation-banner-box strong,
+    html[data-bs-theme="dark"] .impersonation-banner-box strong {
+        color: #fbbf24 !important;
+    }
+    html[data-pms-theme="dark"] .impersonation-banner-box i.fa-right-to-bracket,
+    html[data-theme="dark"] .impersonation-banner-box i.fa-right-to-bracket,
+    html[data-bs-theme="dark"] .impersonation-banner-box i.fa-right-to-bracket {
+        color: #f59e0b !important;
+    }
+    html[data-pms-theme="dark"] .impersonation-db-code,
+    html[data-theme="dark"] .impersonation-db-code,
+    html[data-bs-theme="dark"] .impersonation-db-code {
+        background: rgba(245, 158, 11, 0.18) !important;
+        color: #fde68a !important;
+        border: 1px solid rgba(245, 158, 11, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .impersonation-leave-btn,
+    html[data-theme="dark"] .impersonation-leave-btn,
+    html[data-bs-theme="dark"] .impersonation-leave-btn {
+        background: rgba(245, 158, 11, 0.12) !important;
+        color: #fbbf24 !important;
+        border-color: rgba(245, 158, 11, 0.35) !important;
+    }
+    html[data-pms-theme="dark"] .impersonation-leave-btn:hover,
+    html[data-theme="dark"] .impersonation-leave-btn:hover,
+    html[data-bs-theme="dark"] .impersonation-leave-btn:hover {
+        background: rgba(245, 158, 11, 0.25) !important;
+        border-color: #f59e0b !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 14px rgba(245, 158, 11, 0.25) !important;
+    }
+
+    /* Dark Mode: Matrix Table & Row Hover */
+    html[data-pms-theme="dark"] .comparison-card,
+    html[data-theme="dark"] .comparison-card,
+    html[data-bs-theme="dark"] .comparison-card {
+        background: var(--bg-surface, #0F1530);
+        border-color: var(--border-subtle, rgba(238, 241, 251, 0.12));
+    }
+    html[data-pms-theme="dark"] table.matrix-table th,
+    html[data-theme="dark"] table.matrix-table th,
+    html[data-bs-theme="dark"] table.matrix-table th {
+        background: var(--bg-surface-subtle, #141B3D);
+        border-color: var(--border-subtle, rgba(238, 241, 251, 0.12));
+        color: var(--text-light, #9AA3C7);
+    }
+    html[data-pms-theme="dark"] table.matrix-table td,
+    html[data-theme="dark"] table.matrix-table td,
+    html[data-bs-theme="dark"] table.matrix-table td {
+        border-color: var(--border-subtle, rgba(238, 241, 251, 0.08));
+        color: var(--text-body, #CBD5E1);
+    }
+    html[data-pms-theme="dark"] table.matrix-table tr:hover,
+    html[data-theme="dark"] table.matrix-table tr:hover,
+    html[data-bs-theme="dark"] table.matrix-table tr:hover,
+    html[data-pms-theme="dark"] table.matrix-table tbody tr:hover td,
+    html[data-theme="dark"] table.matrix-table tbody tr:hover td,
+    html[data-bs-theme="dark"] table.matrix-table tbody tr:hover td {
+        background: var(--bg-surface-hover, #1A2247) !important;
+        color: var(--text-main, #EEF1FB);
+    }
+
+    @media (prefers-color-scheme: dark) {
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .search-input-wrap input {
+            background: var(--bg-surface-subtle, #141B3D);
+            border-color: var(--border-strong, rgba(238, 241, 251, 0.14));
+            color: var(--text-main, #EEF1FB);
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .search-input-wrap input:focus {
+            background: var(--bg-surface-hover, #1A2247);
+            border-color: var(--primary, #2F6BFF);
+            box-shadow: 0 0 0 3px rgba(47, 107, 255, 0.25);
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .search-input-wrap input::placeholder,
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .search-input-wrap i {
+            color: var(--text-light, #6B739A);
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .btn-outline-custom {
+            background: var(--bg-surface-subtle, #141B3D);
+            border-color: var(--border-strong, rgba(238, 241, 251, 0.14));
+            color: var(--text-main, #EEF1FB);
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .btn-outline-custom:hover {
+            background: var(--bg-surface-hover, #1A2247);
+            border-color: var(--primary, #2F6BFF);
+            color: #ffffff;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .export-dropdown-menu {
+            background: var(--bg-surface, #0F1530);
+            border-color: var(--border-subtle, rgba(238, 241, 251, 0.12));
+            box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.06);
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .export-dropdown-item {
+            color: var(--text-main, #EEF1FB);
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .export-dropdown-item:hover {
+            background: var(--bg-surface-hover, #1A2247);
+            color: var(--primary, #2F6BFF);
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .impersonation-banner-box {
+            background: rgba(245, 158, 11, 0.1) !important;
+            border-color: rgba(245, 158, 11, 0.3) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .impersonation-banner-box strong {
+            color: #fbbf24 !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .impersonation-banner-box i.fa-right-to-bracket {
+            color: #f59e0b !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .impersonation-db-code {
+            background: rgba(245, 158, 11, 0.18) !important;
+            color: #fde68a !important;
+            border: 1px solid rgba(245, 158, 11, 0.3) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .impersonation-leave-btn {
+            background: rgba(245, 158, 11, 0.12) !important;
+            color: #fbbf24 !important;
+            border-color: rgba(245, 158, 11, 0.35) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .impersonation-leave-btn:hover {
+            background: rgba(245, 158, 11, 0.25) !important;
+            border-color: #f59e0b !important;
+            color: #ffffff !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .comparison-card {
+            background: var(--bg-surface, #0F1530);
+            border-color: var(--border-subtle, rgba(238, 241, 251, 0.12));
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) table.matrix-table th {
+            background: var(--bg-surface-subtle, #141B3D);
+            border-color: var(--border-subtle, rgba(238, 241, 251, 0.12));
+            color: var(--text-light, #9AA3C7);
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) table.matrix-table td {
+            border-color: var(--border-subtle, rgba(238, 241, 251, 0.08));
+            color: var(--text-body, #CBD5E1);
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) table.matrix-table tr:hover,
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) table.matrix-table tbody tr:hover td {
+            background: var(--bg-surface-hover, #1A2247) !important;
+            color: var(--text-main, #EEF1FB);
+        }
+    }
 </style>
 
 <!-- PAGE CONTROL TOOLBAR -->
@@ -638,19 +883,19 @@
 </div>
 
 @if($currentCompanyDb)
-<div style="background: var(--warning-bg); border: 1px solid var(--warning-border); border-radius: var(--radius-lg); padding: 14px 20px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between;">
+<div class="impersonation-banner-box" style="background: var(--warning-bg); border: 1px solid var(--warning-border); border-radius: var(--radius-lg); padding: 14px 20px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between;">
     <div style="display: flex; align-items: center; gap: 12px;">
         <i class="fas fa-right-to-bracket" style="font-size: 20px; color: var(--warning);"></i>
         <div>
             <strong style="color: var(--warning); font-size: 14px;">Active Tenant Impersonation Session</strong>
             <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
-                Session Database: <code style="background: #fff; padding: 2px 6px; border-radius: 4px; font-family: monospace;">{{ $currentCompanyDb }}</code>
+                Session Database: <code class="impersonation-db-code" style="background: #fff; padding: 2px 6px; border-radius: 4px; font-family: monospace;">{{ $currentCompanyDb }}</code>
             </div>
         </div>
     </div>
     <form method="POST" action="{{ route('super-admin.leave-impersonation') }}" style="margin: 0;">
         @csrf
-        <button type="submit" class="btn-custom btn-outline-custom btn-xs-custom" style="color: var(--warning); border-color: var(--warning-border);">
+        <button type="submit" class="btn-custom btn-outline-custom btn-xs-custom impersonation-leave-btn" style="color: var(--warning); border-color: var(--warning-border);">
             <i class="fas fa-arrow-left"></i> Leave Impersonation
         </button>
     </form>

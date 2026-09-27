@@ -200,10 +200,10 @@
 
     /* ===== STATS GRID ===== */
     .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 1.25rem;
-        margin-bottom: 2rem;
+        display: grid !important;
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 1.25rem !important;
+        margin-bottom: 2rem !important;
     }
 
     .stat-card,
@@ -283,10 +283,30 @@
         -webkit-text-fill-color: #059669 !important;
     }
 
+    .stat-icon.doc i, .stat-icon.doc svg, .stat-icon.doc [class*="fa"],
+    .terms-policy-page .stat-card .stat-icon.doc i,
+    .terms-policy-page .stat-card .stat-icon.doc svg,
+    .terms-policy-page .stat-card:first-of-type .stat-icon.doc i,
+    .terms-policy-page .stat-card:first-of-type .stat-icon.doc svg {
+        background-color: transparent !important;
+        color: #059669 !important;
+        fill: #059669 !important;
+        -webkit-text-fill-color: #059669 !important;
+    }
+
     .stat-icon.date,
     .terms-policy-page .stat-card .stat-icon.date {
         background: linear-gradient(145deg, #e0f2fe, #bae6fd) !important;
         color: #0284c7 !important;
+        -webkit-text-fill-color: #0284c7 !important;
+    }
+
+    .stat-icon.date i, .stat-icon.date svg, .stat-icon.date [class*="fa"],
+    .terms-policy-page .stat-card .stat-icon.date i,
+    .terms-policy-page .stat-card .stat-icon.date svg {
+        background-color: transparent !important;
+        color: #0284c7 !important;
+        fill: #0284c7 !important;
         -webkit-text-fill-color: #0284c7 !important;
     }
 
@@ -297,11 +317,56 @@
         -webkit-text-fill-color: #d97706 !important;
     }
 
+    .stat-icon.access i, .stat-icon.access svg, .stat-icon.access [class*="fa"],
+    .terms-policy-page .stat-card .stat-icon.access i,
+    .terms-policy-page .stat-card .stat-icon.access svg {
+        background-color: transparent !important;
+        color: #d97706 !important;
+        fill: #d97706 !important;
+        -webkit-text-fill-color: #d97706 !important;
+    }
+
     .stat-icon.length,
     .terms-policy-page .stat-card .stat-icon.length {
         background: linear-gradient(145deg, #e0e7ff, #c7d2fe) !important;
         color: #4f46e5 !important;
         -webkit-text-fill-color: #4f46e5 !important;
+    }
+
+    .stat-icon.length i, .stat-icon.length svg, .stat-icon.length [class*="fa"],
+    .terms-policy-page .stat-card .stat-icon.length i,
+    .terms-policy-page .stat-card .stat-icon.length svg {
+        background-color: transparent !important;
+        color: #4f46e5 !important;
+        fill: #4f46e5 !important;
+        -webkit-text-fill-color: #4f46e5 !important;
+    }
+
+    .header-icon-badge i,
+    .header-icon-badge svg,
+    .header-icon-badge [class*="fa"] {
+        background-color: transparent !important;
+        color: #ffffff !important;
+        fill: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    .btn-view-public i,
+    .btn-view-public svg,
+    .btn-view-public [class*="fa"] {
+        background-color: transparent !important;
+        color: #ffffff !important;
+        fill: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    .card-header-avatar i,
+    .card-header-avatar svg,
+    .card-header-avatar [class*="fa"] {
+        background-color: transparent !important;
+        color: #059669 !important;
+        fill: #059669 !important;
+        -webkit-text-fill-color: #059669 !important;
     }
 
     .stat-info h6 {
@@ -464,9 +529,140 @@
         font-weight: 800;
     }
 
+    /* Dark Mode Overrides */
+    [data-theme="dark"] .terms-policy-page,
+    body.dark-mode .terms-policy-page {
+        background: #0f172a !important;
+        color: #f8fafc !important;
+    }
+
+    [data-theme="dark"] .branches-header,
+    [data-theme="dark"] .stat-card,
+    [data-theme="dark"] .address-card-elevated,
+    body.dark-mode .branches-header,
+    body.dark-mode .stat-card,
+    body.dark-mode .address-card-elevated {
+        background: #1e293b !important;
+        border-color: #334155 !important;
+        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    [data-theme="dark"] .header-title h1,
+    body.dark-mode .header-title h1 {
+        background: linear-gradient(135deg, #34d399, #10b981) !important;
+        -webkit-background-clip: text !important;
+        background-clip: text !important;
+        color: transparent !important;
+    }
+
+    [data-theme="dark"] .header-title p,
+    [data-theme="dark"] .breadcrumb-custom,
+    [data-theme="dark"] .stat-info h6,
+    [data-theme="dark"] .text-muted,
+    body.dark-mode .header-title p,
+    body.dark-mode .breadcrumb-custom,
+    body.dark-mode .stat-info h6,
+    body.dark-mode .text-muted {
+        color: #94a3b8 !important;
+    }
+
+    [data-theme="dark"] .stat-info h3,
+    [data-theme="dark"] .form-label-custom,
+    [data-theme="dark"] .card-header-custom h5,
+    body.dark-mode .stat-info h3,
+    body.dark-mode .form-label-custom,
+    body.dark-mode .card-header-custom h5 {
+        color: #f8fafc !important;
+        -webkit-text-fill-color: #f8fafc !important;
+    }
+
+    [data-theme="dark"] .btn-back-settings,
+    body.dark-mode .btn-back-settings {
+        background-color: #334155 !important;
+        border-color: #475569 !important;
+        color: #34d399 !important;
+    }
+
+    [data-theme="dark"] .btn-back-settings:hover,
+    body.dark-mode .btn-back-settings:hover {
+        background-color: #475569 !important;
+        color: #6ee7b7 !important;
+    }
+
+    [data-theme="dark"] .input-group-custom,
+    [data-theme="dark"] .textarea-custom,
+    body.dark-mode .input-group-custom,
+    body.dark-mode .textarea-custom {
+        background-color: #0f172a !important;
+        border-color: #334155 !important;
+        color: #f8fafc !important;
+    }
+
+    [data-theme="dark"] .input-group-custom .form-control,
+    body.dark-mode .input-group-custom .form-control {
+        color: #f8fafc !important;
+        background-color: transparent !important;
+    }
+
+    [data-theme="dark"] .stat-icon.doc,
+    body.dark-mode .stat-icon.doc {
+        background: rgba(16, 185, 129, 0.2) !important;
+    }
+
+    [data-theme="dark"] .stat-icon.doc i,
+    [data-theme="dark"] .stat-icon.doc svg,
+    body.dark-mode .stat-icon.doc i,
+    body.dark-mode .stat-icon.doc svg {
+        color: #34d399 !important;
+        fill: #34d399 !important;
+        -webkit-text-fill-color: #34d399 !important;
+    }
+
+    [data-theme="dark"] .stat-icon.date,
+    body.dark-mode .stat-icon.date {
+        background: rgba(2, 132, 199, 0.2) !important;
+    }
+
+    [data-theme="dark"] .stat-icon.date i,
+    [data-theme="dark"] .stat-icon.date svg,
+    body.dark-mode .stat-icon.date i,
+    body.dark-mode .stat-icon.date svg {
+        color: #38bdf8 !important;
+        fill: #38bdf8 !important;
+        -webkit-text-fill-color: #38bdf8 !important;
+    }
+
+    [data-theme="dark"] .stat-icon.access,
+    body.dark-mode .stat-icon.access {
+        background: rgba(217, 119, 6, 0.2) !important;
+    }
+
+    [data-theme="dark"] .stat-icon.access i,
+    [data-theme="dark"] .stat-icon.access svg,
+    body.dark-mode .stat-icon.access i,
+    body.dark-mode .stat-icon.access svg {
+        color: #fbbf24 !important;
+        fill: #fbbf24 !important;
+        -webkit-text-fill-color: #fbbf24 !important;
+    }
+
+    [data-theme="dark"] .stat-icon.length,
+    body.dark-mode .stat-icon.length {
+        background: rgba(79, 70, 229, 0.2) !important;
+    }
+
+    [data-theme="dark"] .stat-icon.length i,
+    [data-theme="dark"] .stat-icon.length svg,
+    body.dark-mode .stat-icon.length i,
+    body.dark-mode .stat-icon.length svg {
+        color: #818cf8 !important;
+        fill: #818cf8 !important;
+        -webkit-text-fill-color: #818cf8 !important;
+    }
+
     @media (max-width: 1200px) {
         .stats-grid {
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(2, 1fr) !important;
         }
     }
 
@@ -476,7 +672,7 @@
         }
 
         .stats-grid {
-            grid-template-columns: 1fr;
+            grid-template-columns: 1fr !important;
         }
     }
 </style>

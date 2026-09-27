@@ -171,10 +171,10 @@
 
     /* ===== STATS GRID ===== */
     .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 1.25rem;
-        margin-bottom: 2rem;
+        display: grid !important;
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 1.25rem !important;
+        margin-bottom: 2rem !important;
     }
 
     .stat-card,
@@ -254,11 +254,47 @@
         -webkit-text-fill-color: #059669 !important;
     }
 
+    .stat-icon.email i,
+    .stat-icon.email svg,
+    .stat-icon.email [class*="fa"],
+    .notification-settings-page .stat-card .stat-icon.email i,
+    .notification-settings-page .stat-card .stat-icon.email svg,
+    .notification-settings-page .stat-card .stat-icon.email [class*="fa"],
+    .notification-settings-page .stat-card:first-of-type .stat-icon.email i,
+    .notification-settings-page .stat-card:first-of-type .stat-icon.email svg,
+    .notification-settings-page .stat-card:first-of-type .stat-icon.email [class*="fa"] {
+        background: transparent !important;
+        background-color: transparent !important;
+        color: #059669 !important;
+        -webkit-text-fill-color: #059669 !important;
+        fill: #059669 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
     .stat-icon.bell,
     .notification-settings-page .stat-card .stat-icon.bell {
         background: linear-gradient(145deg, #e0f2fe, #bae6fd) !important;
         color: #0284c7 !important;
         -webkit-text-fill-color: #0284c7 !important;
+    }
+
+    .stat-icon.bell i,
+    .stat-icon.bell svg,
+    .stat-icon.bell [class*="fa"],
+    .notification-settings-page .stat-card .stat-icon.bell i,
+    .notification-settings-page .stat-card .stat-icon.bell svg,
+    .notification-settings-page .stat-card .stat-icon.bell [class*="fa"],
+    .notification-settings-page .stat-card:first-of-type .stat-icon.bell i,
+    .notification-settings-page .stat-card:first-of-type .stat-icon.bell svg,
+    .notification-settings-page .stat-card:first-of-type .stat-icon.bell [class*="fa"] {
+        background: transparent !important;
+        background-color: transparent !important;
+        color: #0284c7 !important;
+        -webkit-text-fill-color: #0284c7 !important;
+        fill: #0284c7 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
     }
 
     .stat-icon.clock,
@@ -268,11 +304,556 @@
         -webkit-text-fill-color: #d97706 !important;
     }
 
+    .stat-icon.clock i,
+    .stat-icon.clock svg,
+    .stat-icon.clock [class*="fa"],
+    .notification-settings-page .stat-card .stat-icon.clock i,
+    .notification-settings-page .stat-card .stat-icon.clock svg,
+    .notification-settings-page .stat-card .stat-icon.clock [class*="fa"],
+    .notification-settings-page .stat-card:first-of-type .stat-icon.clock i,
+    .notification-settings-page .stat-card:first-of-type .stat-icon.clock svg,
+    .notification-settings-page .stat-card:first-of-type .stat-icon.clock [class*="fa"] {
+        background: transparent !important;
+        background-color: transparent !important;
+        color: #d97706 !important;
+        -webkit-text-fill-color: #d97706 !important;
+        fill: #d97706 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
     .stat-icon.digest,
     .notification-settings-page .stat-card .stat-icon.digest {
         background: linear-gradient(145deg, #e0e7ff, #c7d2fe) !important;
         color: #4f46e5 !important;
         -webkit-text-fill-color: #4f46e5 !important;
+    }
+
+    .stat-icon.digest i,
+    .stat-icon.digest svg,
+    .stat-icon.digest [class*="fa"],
+    .notification-settings-page .stat-card .stat-icon.digest i,
+    .notification-settings-page .stat-card .stat-icon.digest svg,
+    .notification-settings-page .stat-card .stat-icon.digest [class*="fa"],
+    .notification-settings-page .stat-card:first-of-type .stat-icon.digest i,
+    .notification-settings-page .stat-card:first-of-type .stat-icon.digest svg,
+    .notification-settings-page .stat-card:first-of-type .stat-icon.digest [class*="fa"] {
+        background: transparent !important;
+        background-color: transparent !important;
+        color: #4f46e5 !important;
+        -webkit-text-fill-color: #4f46e5 !important;
+        fill: #4f46e5 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    /* Policy Switch Box Light Mode */
+    .policy-switch-box label,
+    .policy-switch-box .form-check-label {
+        color: #0a2e1f !important;
+        -webkit-text-fill-color: #0a2e1f !important;
+    }
+
+    /* ===== DARK MODE SUPPORT ===== */
+    html[data-pms-theme="dark"] .notification-settings-page,
+    html[data-theme="dark"] .notification-settings-page,
+    html[data-bs-theme="dark"] .notification-settings-page,
+    body[data-pms-theme="dark"] .notification-settings-page,
+    body[data-theme="dark"] .notification-settings-page,
+    body[data-bs-theme="dark"] .notification-settings-page,
+    [data-pms-theme="dark"] .notification-settings-page,
+    [data-theme="dark"] .notification-settings-page,
+    [data-bs-theme="dark"] .notification-settings-page,
+    .dark-mode .notification-settings-page {
+        background: #0b0f19 !important;
+        color: #e2e8f0 !important;
+    }
+
+    html[data-pms-theme="dark"] .branches-header,
+    html[data-theme="dark"] .branches-header,
+    html[data-bs-theme="dark"] .branches-header,
+    body[data-pms-theme="dark"] .branches-header,
+    body[data-theme="dark"] .branches-header,
+    body[data-bs-theme="dark"] .branches-header,
+    [data-pms-theme="dark"] .branches-header,
+    [data-theme="dark"] .branches-header,
+    [data-bs-theme="dark"] .branches-header,
+    html[data-pms-theme="dark"] .address-card-elevated,
+    html[data-theme="dark"] .address-card-elevated,
+    html[data-bs-theme="dark"] .address-card-elevated,
+    body[data-pms-theme="dark"] .address-card-elevated,
+    body[data-theme="dark"] .address-card-elevated,
+    body[data-bs-theme="dark"] .address-card-elevated,
+    [data-pms-theme="dark"] .address-card-elevated,
+    [data-theme="dark"] .address-card-elevated,
+    [data-bs-theme="dark"] .address-card-elevated,
+    .dark-mode .branches-header,
+    .dark-mode .address-card-elevated {
+        background: #111827 !important;
+        border-color: rgba(255, 255, 255, 0.08) !important;
+        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.4) !important;
+    }
+
+    html[data-pms-theme="dark"] .card-header-custom,
+    html[data-bs-theme="dark"] .card-header-custom,
+    body[data-pms-theme="dark"] .card-header-custom,
+    [data-pms-theme="dark"] .card-header-custom {
+        border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+    }
+
+    html[data-pms-theme="dark"] .card-header-custom h5,
+    html[data-bs-theme="dark"] .card-header-custom h5,
+    body[data-pms-theme="dark"] .card-header-custom h5,
+    [data-pms-theme="dark"] .card-header-custom h5,
+    html[data-pms-theme="dark"] .header-title h1,
+    html[data-bs-theme="dark"] .header-title h1,
+    body[data-pms-theme="dark"] .header-title h1,
+    [data-pms-theme="dark"] .header-title h1 {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+        background: none !important;
+    }
+
+    html[data-pms-theme="dark"] .header-title p,
+    html[data-bs-theme="dark"] .header-title p,
+    body[data-pms-theme="dark"] .header-title p,
+    [data-pms-theme="dark"] .header-title p,
+    html[data-pms-theme="dark"] .card-header-custom .text-muted,
+    html[data-bs-theme="dark"] .card-header-custom .text-muted,
+    body[data-pms-theme="dark"] .card-header-custom .text-muted,
+    [data-pms-theme="dark"] .card-header-custom .text-muted {
+        color: #94a3b8 !important;
+        -webkit-text-fill-color: #94a3b8 !important;
+    }
+
+    /* Stat Cards in Dark Mode */
+    html[data-pms-theme="dark"] .notification-settings-page .stat-card,
+    html[data-theme="dark"] .notification-settings-page .stat-card,
+    html[data-bs-theme="dark"] .notification-settings-page .stat-card,
+    body[data-pms-theme="dark"] .notification-settings-page .stat-card,
+    body[data-theme="dark"] .notification-settings-page .stat-card,
+    body[data-bs-theme="dark"] .notification-settings-page .stat-card,
+    [data-pms-theme="dark"] .notification-settings-page .stat-card,
+    [data-theme="dark"] .notification-settings-page .stat-card,
+    [data-bs-theme="dark"] .notification-settings-page .stat-card,
+    html[data-pms-theme="dark"] .notification-settings-page .stat-card:first-of-type,
+    html[data-theme="dark"] .notification-settings-page .stat-card:first-of-type,
+    html[data-bs-theme="dark"] .notification-settings-page .stat-card:first-of-type,
+    body[data-pms-theme="dark"] .notification-settings-page .stat-card:first-of-type,
+    body[data-theme="dark"] .notification-settings-page .stat-card:first-of-type,
+    body[data-bs-theme="dark"] .notification-settings-page .stat-card:first-of-type,
+    [data-pms-theme="dark"] .notification-settings-page .stat-card:first-of-type,
+    [data-theme="dark"] .notification-settings-page .stat-card:first-of-type,
+    [data-bs-theme="dark"] .notification-settings-page .stat-card:first-of-type,
+    html[data-pms-theme="dark"] .stat-card,
+    html[data-theme="dark"] .stat-card,
+    html[data-bs-theme="dark"] .stat-card,
+    html[data-pms-theme="dark"] .stat-card:first-of-type,
+    html[data-theme="dark"] .stat-card:first-of-type,
+    html[data-bs-theme="dark"] .stat-card:first-of-type,
+    .dark-mode .stat-card,
+    .dark-mode .stat-card:first-of-type {
+        background: #171e2e !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.3) !important;
+        color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .notification-settings-page .stat-card h3,
+    html[data-theme="dark"] .notification-settings-page .stat-card h3,
+    html[data-bs-theme="dark"] .notification-settings-page .stat-card h3,
+    body[data-pms-theme="dark"] .notification-settings-page .stat-card h3,
+    body[data-theme="dark"] .notification-settings-page .stat-card h3,
+    body[data-bs-theme="dark"] .notification-settings-page .stat-card h3,
+    [data-pms-theme="dark"] .notification-settings-page .stat-card h3,
+    [data-theme="dark"] .notification-settings-page .stat-card h3,
+    [data-bs-theme="dark"] .notification-settings-page .stat-card h3,
+    html[data-pms-theme="dark"] .notification-settings-page .stat-card:first-of-type h3,
+    html[data-theme="dark"] .notification-settings-page .stat-card:first-of-type h3,
+    html[data-bs-theme="dark"] .notification-settings-page .stat-card:first-of-type h3,
+    body[data-pms-theme="dark"] .notification-settings-page .stat-card:first-of-type h3,
+    body[data-theme="dark"] .notification-settings-page .stat-card:first-of-type h3,
+    body[data-bs-theme="dark"] .notification-settings-page .stat-card:first-of-type h3,
+    [data-pms-theme="dark"] .notification-settings-page .stat-card:first-of-type h3,
+    [data-theme="dark"] .notification-settings-page .stat-card:first-of-type h3,
+    [data-bs-theme="dark"] .notification-settings-page .stat-card:first-of-type h3,
+    .dark-mode .stat-card h3 {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .notification-settings-page .stat-card h6,
+    html[data-theme="dark"] .notification-settings-page .stat-card h6,
+    html[data-bs-theme="dark"] .notification-settings-page .stat-card h6,
+    body[data-pms-theme="dark"] .notification-settings-page .stat-card h6,
+    body[data-theme="dark"] .notification-settings-page .stat-card h6,
+    body[data-bs-theme="dark"] .notification-settings-page .stat-card h6,
+    [data-pms-theme="dark"] .notification-settings-page .stat-card h6,
+    [data-theme="dark"] .notification-settings-page .stat-card h6,
+    [data-bs-theme="dark"] .notification-settings-page .stat-card h6,
+    html[data-pms-theme="dark"] .notification-settings-page .stat-card:first-of-type h6,
+    html[data-theme="dark"] .notification-settings-page .stat-card:first-of-type h6,
+    html[data-bs-theme="dark"] .notification-settings-page .stat-card:first-of-type h6,
+    body[data-pms-theme="dark"] .notification-settings-page .stat-card:first-of-type h6,
+    body[data-theme="dark"] .notification-settings-page .stat-card:first-of-type h6,
+    body[data-bs-theme="dark"] .notification-settings-page .stat-card:first-of-type h6,
+    [data-pms-theme="dark"] .notification-settings-page .stat-card:first-of-type h6,
+    [data-theme="dark"] .notification-settings-page .stat-card:first-of-type h6,
+    [data-bs-theme="dark"] .notification-settings-page .stat-card:first-of-type h6,
+    .dark-mode .stat-card h6 {
+        color: #94a3b8 !important;
+        -webkit-text-fill-color: #94a3b8 !important;
+    }
+
+    /* Stat Card Icons in Dark Mode */
+    html[data-pms-theme="dark"] .stat-icon.email,
+    html[data-theme="dark"] .stat-icon.email,
+    html[data-bs-theme="dark"] .stat-icon.email,
+    body[data-pms-theme="dark"] .stat-icon.email,
+    body[data-theme="dark"] .stat-icon.email,
+    body[data-bs-theme="dark"] .stat-icon.email,
+    [data-pms-theme="dark"] .stat-icon.email,
+    [data-theme="dark"] .stat-icon.email,
+    [data-bs-theme="dark"] .stat-icon.email,
+    .dark-mode .stat-icon.email,
+    [data-pms-theme="dark"] .notification-settings-page .stat-card .stat-icon.email,
+    [data-pms-theme="dark"] .notification-settings-page .stat-card:first-of-type .stat-icon.email,
+    [data-theme="dark"] .notification-settings-page .stat-card .stat-icon.email,
+    [data-theme="dark"] .notification-settings-page .stat-card:first-of-type .stat-icon.email,
+    [data-bs-theme="dark"] .notification-settings-page .stat-card .stat-icon.email,
+    [data-bs-theme="dark"] .notification-settings-page .stat-card:first-of-type .stat-icon.email,
+    html[data-pms-theme="dark"] .notification-settings-page .stat-card .stat-icon.email,
+    html[data-pms-theme="dark"] .notification-settings-page .stat-card:first-of-type .stat-icon.email,
+    html[data-theme="dark"] .notification-settings-page .stat-card .stat-icon.email,
+    html[data-theme="dark"] .notification-settings-page .stat-card:first-of-type .stat-icon.email,
+    html[data-bs-theme="dark"] .notification-settings-page .stat-card .stat-icon.email,
+    html[data-bs-theme="dark"] .notification-settings-page .stat-card:first-of-type .stat-icon.email {
+        background: rgba(16, 185, 129, 0.25) !important;
+        background-image: none !important;
+        border: 1px solid rgba(52, 211, 153, 0.4) !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon.email i,
+    html[data-pms-theme="dark"] .stat-icon.email svg,
+    html[data-pms-theme="dark"] .stat-icon.email [class*="fa"],
+    html[data-theme="dark"] .stat-icon.email i,
+    html[data-theme="dark"] .stat-icon.email svg,
+    html[data-theme="dark"] .stat-icon.email [class*="fa"],
+    html[data-bs-theme="dark"] .stat-icon.email i,
+    html[data-bs-theme="dark"] .stat-icon.email svg,
+    html[data-bs-theme="dark"] .stat-icon.email [class*="fa"],
+    body[data-pms-theme="dark"] .stat-icon.email i,
+    body[data-theme="dark"] .stat-icon.email i,
+    body[data-bs-theme="dark"] .stat-icon.email i,
+    [data-pms-theme="dark"] .stat-icon.email i,
+    [data-theme="dark"] .stat-icon.email i,
+    [data-bs-theme="dark"] .stat-icon.email i,
+    .dark-mode .stat-icon.email i,
+    .dark-mode .stat-icon.email svg,
+    .dark-mode .stat-icon.email [class*="fa"],
+    html[data-pms-theme="dark"] .notification-settings-page .stat-card .stat-icon.email i,
+    html[data-pms-theme="dark"] .notification-settings-page .stat-card:first-of-type .stat-icon.email i,
+    html[data-theme="dark"] .notification-settings-page .stat-card .stat-icon.email i,
+    html[data-theme="dark"] .notification-settings-page .stat-card:first-of-type .stat-icon.email i,
+    html[data-bs-theme="dark"] .notification-settings-page .stat-card .stat-icon.email i,
+    html[data-bs-theme="dark"] .notification-settings-page .stat-card:first-of-type .stat-icon.email i,
+    body[data-pms-theme="dark"] .notification-settings-page .stat-card .stat-icon.email i,
+    body[data-pms-theme="dark"] .notification-settings-page .stat-card:first-of-type .stat-icon.email i,
+    body[data-theme="dark"] .notification-settings-page .stat-card .stat-icon.email i,
+    body[data-theme="dark"] .notification-settings-page .stat-card:first-of-type .stat-icon.email i,
+    body[data-bs-theme="dark"] .notification-settings-page .stat-card .stat-icon.email i,
+    body[data-bs-theme="dark"] .notification-settings-page .stat-card:first-of-type .stat-icon.email i,
+    [data-pms-theme="dark"] .notification-settings-page .stat-card .stat-icon.email i,
+    [data-pms-theme="dark"] .notification-settings-page .stat-card:first-of-type .stat-icon.email i,
+    [data-theme="dark"] .notification-settings-page .stat-card .stat-icon.email i,
+    [data-theme="dark"] .notification-settings-page .stat-card:first-of-type .stat-icon.email i,
+    [data-bs-theme="dark"] .notification-settings-page .stat-card .stat-icon.email i,
+    [data-bs-theme="dark"] .notification-settings-page .stat-card:first-of-type .stat-icon.email i,
+    .dark-mode .notification-settings-page .stat-card .stat-icon.email i,
+    .dark-mode .notification-settings-page .stat-card:first-of-type .stat-icon.email i {
+        background: transparent !important;
+        background-image: none !important;
+        color: #34d399 !important;
+        -webkit-text-fill-color: #34d399 !important;
+        fill: #34d399 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon.bell,
+    html[data-theme="dark"] .stat-icon.bell,
+    html[data-bs-theme="dark"] .stat-icon.bell,
+    body[data-pms-theme="dark"] .stat-icon.bell,
+    body[data-theme="dark"] .stat-icon.bell,
+    body[data-bs-theme="dark"] .stat-icon.bell,
+    [data-pms-theme="dark"] .stat-icon.bell,
+    [data-theme="dark"] .stat-icon.bell,
+    [data-bs-theme="dark"] .stat-icon.bell,
+    .dark-mode .stat-icon.bell,
+    [data-pms-theme="dark"] .notification-settings-page .stat-card .stat-icon.bell,
+    [data-theme="dark"] .notification-settings-page .stat-card .stat-icon.bell,
+    [data-bs-theme="dark"] .notification-settings-page .stat-card .stat-icon.bell,
+    html[data-pms-theme="dark"] .notification-settings-page .stat-card .stat-icon.bell,
+    html[data-theme="dark"] .notification-settings-page .stat-card .stat-icon.bell,
+    html[data-bs-theme="dark"] .notification-settings-page .stat-card .stat-icon.bell {
+        background: rgba(56, 189, 248, 0.25) !important;
+        background-image: none !important;
+        border: 1px solid rgba(56, 189, 248, 0.4) !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon.bell i,
+    html[data-pms-theme="dark"] .stat-icon.bell svg,
+    html[data-pms-theme="dark"] .stat-icon.bell [class*="fa"],
+    html[data-theme="dark"] .stat-icon.bell i,
+    html[data-theme="dark"] .stat-icon.bell svg,
+    html[data-theme="dark"] .stat-icon.bell [class*="fa"],
+    html[data-bs-theme="dark"] .stat-icon.bell i,
+    html[data-bs-theme="dark"] .stat-icon.bell svg,
+    html[data-bs-theme="dark"] .stat-icon.bell [class*="fa"],
+    body[data-pms-theme="dark"] .stat-icon.bell i,
+    body[data-theme="dark"] .stat-icon.bell i,
+    body[data-bs-theme="dark"] .stat-icon.bell i,
+    [data-pms-theme="dark"] .stat-icon.bell i,
+    [data-theme="dark"] .stat-icon.bell i,
+    [data-bs-theme="dark"] .stat-icon.bell i,
+    .dark-mode .stat-icon.bell i,
+    .dark-mode .stat-icon.bell svg,
+    .dark-mode .stat-icon.bell [class*="fa"],
+    html[data-pms-theme="dark"] .notification-settings-page .stat-card .stat-icon.bell i,
+    html[data-theme="dark"] .notification-settings-page .stat-card .stat-icon.bell i,
+    html[data-bs-theme="dark"] .notification-settings-page .stat-card .stat-icon.bell i,
+    body[data-pms-theme="dark"] .notification-settings-page .stat-card .stat-icon.bell i,
+    body[data-theme="dark"] .notification-settings-page .stat-card .stat-icon.bell i,
+    body[data-bs-theme="dark"] .notification-settings-page .stat-card .stat-icon.bell i,
+    [data-pms-theme="dark"] .notification-settings-page .stat-card .stat-icon.bell i,
+    [data-theme="dark"] .notification-settings-page .stat-card .stat-icon.bell i,
+    [data-bs-theme="dark"] .notification-settings-page .stat-card .stat-icon.bell i,
+    .dark-mode .notification-settings-page .stat-card .stat-icon.bell i {
+        background: transparent !important;
+        background-image: none !important;
+        color: #38bdf8 !important;
+        -webkit-text-fill-color: #38bdf8 !important;
+        fill: #38bdf8 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon.clock,
+    html[data-theme="dark"] .stat-icon.clock,
+    html[data-bs-theme="dark"] .stat-icon.clock,
+    body[data-pms-theme="dark"] .stat-icon.clock,
+    body[data-theme="dark"] .stat-icon.clock,
+    body[data-bs-theme="dark"] .stat-icon.clock,
+    [data-pms-theme="dark"] .stat-icon.clock,
+    [data-theme="dark"] .stat-icon.clock,
+    [data-bs-theme="dark"] .stat-icon.clock,
+    .dark-mode .stat-icon.clock,
+    [data-pms-theme="dark"] .notification-settings-page .stat-card .stat-icon.clock,
+    [data-theme="dark"] .notification-settings-page .stat-card .stat-icon.clock,
+    [data-bs-theme="dark"] .notification-settings-page .stat-card .stat-icon.clock,
+    html[data-pms-theme="dark"] .notification-settings-page .stat-card .stat-icon.clock,
+    html[data-theme="dark"] .notification-settings-page .stat-card .stat-icon.clock,
+    html[data-bs-theme="dark"] .notification-settings-page .stat-card .stat-icon.clock {
+        background: rgba(251, 191, 36, 0.25) !important;
+        background-image: none !important;
+        border: 1px solid rgba(251, 191, 36, 0.4) !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon.clock i,
+    html[data-pms-theme="dark"] .stat-icon.clock svg,
+    html[data-pms-theme="dark"] .stat-icon.clock [class*="fa"],
+    html[data-theme="dark"] .stat-icon.clock i,
+    html[data-theme="dark"] .stat-icon.clock svg,
+    html[data-theme="dark"] .stat-icon.clock [class*="fa"],
+    html[data-bs-theme="dark"] .stat-icon.clock i,
+    html[data-bs-theme="dark"] .stat-icon.clock svg,
+    html[data-bs-theme="dark"] .stat-icon.clock [class*="fa"],
+    body[data-pms-theme="dark"] .stat-icon.clock i,
+    body[data-theme="dark"] .stat-icon.clock i,
+    body[data-bs-theme="dark"] .stat-icon.clock i,
+    [data-pms-theme="dark"] .stat-icon.clock i,
+    [data-theme="dark"] .stat-icon.clock i,
+    [data-bs-theme="dark"] .stat-icon.clock i,
+    .dark-mode .stat-icon.clock i,
+    .dark-mode .stat-icon.clock svg,
+    .dark-mode .stat-icon.clock [class*="fa"],
+    html[data-pms-theme="dark"] .notification-settings-page .stat-card .stat-icon.clock i,
+    html[data-theme="dark"] .notification-settings-page .stat-card .stat-icon.clock i,
+    html[data-bs-theme="dark"] .notification-settings-page .stat-card .stat-icon.clock i,
+    body[data-pms-theme="dark"] .notification-settings-page .stat-card .stat-icon.clock i,
+    body[data-theme="dark"] .notification-settings-page .stat-card .stat-icon.clock i,
+    body[data-bs-theme="dark"] .notification-settings-page .stat-card .stat-icon.clock i,
+    [data-pms-theme="dark"] .notification-settings-page .stat-card .stat-icon.clock i,
+    [data-theme="dark"] .notification-settings-page .stat-card .stat-icon.clock i,
+    [data-bs-theme="dark"] .notification-settings-page .stat-card .stat-icon.clock i,
+    .dark-mode .notification-settings-page .stat-card .stat-icon.clock i {
+        background: transparent !important;
+        background-image: none !important;
+        color: #fbbf24 !important;
+        -webkit-text-fill-color: #fbbf24 !important;
+        fill: #fbbf24 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon.digest,
+    html[data-theme="dark"] .stat-icon.digest,
+    html[data-bs-theme="dark"] .stat-icon.digest,
+    body[data-pms-theme="dark"] .stat-icon.digest,
+    body[data-theme="dark"] .stat-icon.digest,
+    body[data-bs-theme="dark"] .stat-icon.digest,
+    [data-pms-theme="dark"] .stat-icon.digest,
+    [data-theme="dark"] .stat-icon.digest,
+    [data-bs-theme="dark"] .stat-icon.digest,
+    .dark-mode .stat-icon.digest,
+    [data-pms-theme="dark"] .notification-settings-page .stat-card .stat-icon.digest,
+    [data-theme="dark"] .notification-settings-page .stat-card .stat-icon.digest,
+    [data-bs-theme="dark"] .notification-settings-page .stat-card .stat-icon.digest,
+    html[data-pms-theme="dark"] .notification-settings-page .stat-card .stat-icon.digest,
+    html[data-theme="dark"] .notification-settings-page .stat-card .stat-icon.digest,
+    html[data-bs-theme="dark"] .notification-settings-page .stat-card .stat-icon.digest {
+        background: rgba(129, 140, 248, 0.25) !important;
+        background-image: none !important;
+        border: 1px solid rgba(129, 140, 248, 0.4) !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon.digest i,
+    html[data-pms-theme="dark"] .stat-icon.digest svg,
+    html[data-pms-theme="dark"] .stat-icon.digest [class*="fa"],
+    html[data-theme="dark"] .stat-icon.digest i,
+    html[data-theme="dark"] .stat-icon.digest svg,
+    html[data-theme="dark"] .stat-icon.digest [class*="fa"],
+    html[data-bs-theme="dark"] .stat-icon.digest i,
+    html[data-bs-theme="dark"] .stat-icon.digest svg,
+    html[data-bs-theme="dark"] .stat-icon.digest [class*="fa"],
+    body[data-pms-theme="dark"] .stat-icon.digest i,
+    body[data-theme="dark"] .stat-icon.digest i,
+    body[data-bs-theme="dark"] .stat-icon.digest i,
+    [data-pms-theme="dark"] .stat-icon.digest i,
+    [data-theme="dark"] .stat-icon.digest i,
+    [data-bs-theme="dark"] .stat-icon.digest i,
+    .dark-mode .stat-icon.digest i,
+    .dark-mode .stat-icon.digest svg,
+    .dark-mode .stat-icon.digest [class*="fa"],
+    html[data-pms-theme="dark"] .notification-settings-page .stat-card .stat-icon.digest i,
+    html[data-theme="dark"] .notification-settings-page .stat-card .stat-icon.digest i,
+    html[data-bs-theme="dark"] .notification-settings-page .stat-card .stat-icon.digest i,
+    body[data-pms-theme="dark"] .notification-settings-page .stat-card .stat-icon.digest i,
+    body[data-theme="dark"] .notification-settings-page .stat-card .stat-icon.digest i,
+    body[data-bs-theme="dark"] .notification-settings-page .stat-card .stat-icon.digest i,
+    [data-pms-theme="dark"] .notification-settings-page .stat-card .stat-icon.digest i,
+    [data-theme="dark"] .notification-settings-page .stat-card .stat-icon.digest i,
+    [data-bs-theme="dark"] .notification-settings-page .stat-card .stat-icon.digest i,
+    .dark-mode .notification-settings-page .stat-card .stat-icon.digest i {
+        background: transparent !important;
+        background-image: none !important;
+        color: #a5b4fc !important;
+        -webkit-text-fill-color: #a5b4fc !important;
+        fill: #a5b4fc !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    /* Section Badge & Form Controls in Dark Mode */
+    html[data-pms-theme="dark"] .section-badge,
+    html[data-bs-theme="dark"] .section-badge,
+    body[data-pms-theme="dark"] .section-badge,
+    [data-pms-theme="dark"] .section-badge {
+        background: rgba(16, 185, 129, 0.15) !important;
+        color: #34d399 !important;
+        border-color: rgba(52, 211, 153, 0.3) !important;
+    }
+
+    html[data-pms-theme="dark"] .section-badge i,
+    html[data-theme="dark"] .section-badge i,
+    html[data-bs-theme="dark"] .section-badge i,
+    [data-pms-theme="dark"] .section-badge i {
+        color: #34d399 !important;
+        -webkit-text-fill-color: #34d399 !important;
+    }
+
+    html[data-pms-theme="dark"] .card-header-avatar:not([style*="background"]),
+    html[data-theme="dark"] .card-header-avatar:not([style*="background"]),
+    html[data-bs-theme="dark"] .card-header-avatar:not([style*="background"]),
+    [data-pms-theme="dark"] .card-header-avatar:not([style*="background"]) {
+        background: rgba(16, 185, 129, 0.2) !important;
+        color: #34d399 !important;
+    }
+
+    html[data-pms-theme="dark"] .card-header-avatar:not([style*="background"]) i,
+    html[data-theme="dark"] .card-header-avatar:not([style*="background"]) i,
+    html[data-bs-theme="dark"] .card-header-avatar:not([style*="background"]) i,
+    [data-pms-theme="dark"] .card-header-avatar:not([style*="background"]) i {
+        color: #34d399 !important;
+        -webkit-text-fill-color: #34d399 !important;
+    }
+
+    html[data-pms-theme="dark"] .btn-back-settings,
+    html[data-theme="dark"] .btn-back-settings,
+    html[data-bs-theme="dark"] .btn-back-settings,
+    body[data-pms-theme="dark"] .btn-back-settings,
+    body[data-theme="dark"] .btn-back-settings,
+    body[data-bs-theme="dark"] .btn-back-settings,
+    [data-pms-theme="dark"] .btn-back-settings,
+    [data-theme="dark"] .btn-back-settings,
+    [data-bs-theme="dark"] .btn-back-settings,
+    .dark-mode .btn-back-settings {
+        background-color: #1e293b !important;
+        border-color: rgba(52, 211, 153, 0.35) !important;
+        color: #34d399 !important;
+        -webkit-text-fill-color: #34d399 !important;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2) !important;
+    }
+
+    html[data-pms-theme="dark"] .policy-switch-box,
+    html[data-theme="dark"] .policy-switch-box,
+    html[data-bs-theme="dark"] .policy-switch-box,
+    body[data-pms-theme="dark"] .policy-switch-box,
+    body[data-theme="dark"] .policy-switch-box,
+    body[data-bs-theme="dark"] .policy-switch-box,
+    [data-pms-theme="dark"] .policy-switch-box,
+    [data-theme="dark"] .policy-switch-box,
+    [data-bs-theme="dark"] .policy-switch-box,
+    .dark-mode .policy-switch-box {
+        background: #171e2e !important;
+        background-color: #171e2e !important;
+        border-color: rgba(255, 255, 255, 0.12) !important;
+    }
+
+    html[data-pms-theme="dark"] .policy-switch-box label,
+    html[data-theme="dark"] .policy-switch-box label,
+    html[data-bs-theme="dark"] .policy-switch-box label,
+    body[data-pms-theme="dark"] .policy-switch-box label,
+    body[data-theme="dark"] .policy-switch-box label,
+    body[data-bs-theme="dark"] .policy-switch-box label,
+    [data-pms-theme="dark"] .policy-switch-box label,
+    [data-theme="dark"] .policy-switch-box label,
+    [data-bs-theme="dark"] .policy-switch-box label,
+    .dark-mode .policy-switch-box label,
+    html[data-pms-theme="dark"] .policy-switch-box .form-check-label,
+    html[data-theme="dark"] .policy-switch-box .form-check-label,
+    html[data-bs-theme="dark"] .policy-switch-box .form-check-label,
+    body[data-pms-theme="dark"] .policy-switch-box .form-check-label,
+    body[data-theme="dark"] .policy-switch-box .form-check-label,
+    body[data-bs-theme="dark"] .policy-switch-box .form-check-label,
+    [data-pms-theme="dark"] .policy-switch-box .form-check-label,
+    [data-theme="dark"] .policy-switch-box .form-check-label,
+    [data-bs-theme="dark"] .policy-switch-box .form-check-label,
+    .dark-mode .policy-switch-box .form-check-label,
+    html[data-pms-theme="dark"] .policy-switch-box .text-dark,
+    html[data-theme="dark"] .policy-switch-box .text-dark,
+    html[data-bs-theme="dark"] .policy-switch-box .text-dark,
+    body[data-pms-theme="dark"] .policy-switch-box .text-dark,
+    body[data-theme="dark"] .policy-switch-box .text-dark,
+    body[data-bs-theme="dark"] .policy-switch-box .text-dark,
+    [data-pms-theme="dark"] .policy-switch-box .text-dark,
+    [data-theme="dark"] .policy-switch-box .text-dark,
+    [data-bs-theme="dark"] .policy-switch-box .text-dark,
+    .dark-mode .policy-switch-box .text-dark {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+        opacity: 1 !important;
+        visibility: visible !important;
     }
 
     .stat-info h6 {

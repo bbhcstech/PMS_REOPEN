@@ -443,6 +443,118 @@
         border-color: #0f766e;
         color: #0f766e;
     }
+
+    /* ===== TASK BOARD DARK MODE ===== */
+    html[data-pms-theme="dark"] .project-taskboard-page {
+        background: #070B1A !important;
+        color: #CBD5E1 !important;
+    }
+    html[data-pms-theme="dark"] .board-header-bar {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+        box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.35) !important;
+    }
+    html[data-pms-theme="dark"] .board-header-bar h4 {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .board-header-bar p {
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] .board-icon-badge {
+        background: rgba(47, 107, 255, 0.2) !important;
+        color: #60A5FA !important;
+        border: 1px solid rgba(47, 107, 255, 0.35) !important;
+    }
+    html[data-pms-theme="dark"] .kanban-column-card {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .kanban-column-header {
+        background: #141B3D !important;
+        color: #EEF1FB !important;
+        border-bottom: 1px solid rgba(238, 241, 251, 0.1) !important;
+    }
+    html[data-pms-theme="dark"] .header-status-waiting-for-approval {
+        background: rgba(245, 158, 11, 0.2) !important;
+        color: #FCD34D !important;
+    }
+    html[data-pms-theme="dark"] .header-status-to-do {
+        background: rgba(99, 102, 241, 0.2) !important;
+        color: #A5B4FC !important;
+    }
+    html[data-pms-theme="dark"] .header-status-doing {
+        background: rgba(6, 182, 212, 0.2) !important;
+        color: #67E8F9 !important;
+    }
+    html[data-pms-theme="dark"] .header-status-incomplete {
+        background: rgba(239, 68, 68, 0.2) !important;
+        color: #FCA5A5 !important;
+    }
+    html[data-pms-theme="dark"] .header-status-completed {
+        background: rgba(16, 185, 129, 0.2) !important;
+        color: #6EE7B7 !important;
+    }
+    html[data-pms-theme="dark"] .kanban-task-card {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25) !important;
+    }
+    html[data-pms-theme="dark"] .kanban-task-card:hover {
+        border-color: #2F6BFF !important;
+        background: #182046 !important;
+    }
+    html[data-pms-theme="dark"] .task-card-title {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .task-card-title:hover {
+        color: #60A5FA !important;
+    }
+    html[data-pms-theme="dark"] .task-card-desc {
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] .task-code-badge {
+        background: #0F1530 !important;
+        color: #60A5FA !important;
+        border-color: rgba(47, 107, 255, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .task-priority-badge.priority-low {
+        background: rgba(16, 185, 129, 0.2) !important;
+        color: #6EE7B7 !important;
+    }
+    html[data-pms-theme="dark"] .task-priority-badge.priority-medium {
+        background: rgba(245, 158, 11, 0.2) !important;
+        color: #FCD34D !important;
+    }
+    html[data-pms-theme="dark"] .task-priority-badge.priority-high {
+        background: rgba(249, 115, 22, 0.2) !important;
+        color: #FDBA74 !important;
+    }
+    html[data-pms-theme="dark"] .task-priority-badge.priority-critical {
+        background: rgba(239, 68, 68, 0.2) !important;
+        color: #FCA5A5 !important;
+    }
+    html[data-pms-theme="dark"] .kanban-task-list.drag-over {
+        background-color: rgba(47, 107, 255, 0.15) !important;
+    }
+    html[data-pms-theme="dark"] .kanban-column-footer {
+        background: #0F1530 !important;
+        border-top-color: rgba(238, 241, 251, 0.08) !important;
+    }
+    html[data-pms-theme="dark"] .btn-quick-add-task {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.14) !important;
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] .btn-quick-add-task:hover {
+        background: #1A2247 !important;
+        color: #60A5FA !important;
+        border-color: #2F6BFF !important;
+    }
+    html[data-pms-theme="dark"] .btn-outline-secondary {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.16) !important;
+        color: #CBD5E1 !important;
+    }
 </style>
 
 @push('js')

@@ -265,12 +265,14 @@
     min-width: 0;
   }
   .attendance-employee-meta strong {
-    color: #0f172a;
+    color: #0f172a !important;
+    -webkit-text-fill-color: #0f172a !important;
     font-size: 1.12rem;
     line-height: 1.2;
   }
   .attendance-employee-meta small {
-    color: #64748b;
+    color: #475569 !important;
+    -webkit-text-fill-color: #475569 !important;
     font-size: 0.96rem;
     line-height: 1.2;
   }
@@ -290,10 +292,16 @@
     align-items: center;
     justify-content: center;
     gap: 0.38rem;
-    color: #ffffff;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
     font-size: 0.92rem;
     font-weight: 800;
     transition: all 0.2s ease;
+  }
+  .attendance-action-btn i,
+  .attendance-action-btn span {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
   }
   .attendance-action-btn:disabled {
     cursor: not-allowed;
@@ -306,13 +314,13 @@
     box-shadow: 0 8px 18px rgba(15, 23, 42, 0.16);
   }
   .attendance-action-btn.view {
-    background: #2563eb;
+    background: #2563eb !important;
   }
   .attendance-action-btn.edit {
-    background: #f59e0b;
+    background: #f59e0b !important;
   }
   .attendance-action-btn.archive {
-    background: #64748b;
+    background: #64748b !important;
   }
   .attendance-status-icon {
     width: 34px;
@@ -321,38 +329,44 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: #ffffff;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
     font-size: 1rem;
     font-weight: 800;
     box-shadow: 0 5px 14px rgba(15, 23, 42, 0.12);
   }
+  .attendance-status-icon i {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+  }
   .attendance-status-icon.present {
-    background: #22c55e;
+    background: #22c55e !important;
   }
   .attendance-status-icon.absent {
-    background: #ef4444;
+    background: #ef4444 !important;
   }
   .attendance-status-icon.late {
-    background: #f59e0b;
+    background: #f59e0b !important;
   }
   .attendance-status-icon.halfday {
-    background: #8b5cf6;
+    background: #8b5cf6 !important;
   }
   .attendance-status-icon.holiday {
-    background: #e67e22;
+    background: #e67e22 !important;
   }
   .attendance-status-icon.dayoff {
-    background: #3b82f6;
+    background: #3b82f6 !important;
   }
   .attendance-status-icon.leave {
-    background: #06b6d4;
+    background: #06b6d4 !important;
   }
   .attendance-status-icon.wfh {
-    background: #14b8a6;
+    background: #14b8a6 !important;
   }
   .attendance-status-icon.empty {
-    background: #e2e8f0;
-    color: #64748b;
+    background: #e2e8f0 !important;
+    color: #475569 !important;
+    -webkit-text-fill-color: #475569 !important;
     box-shadow: none;
   }
   .attendance-table td a .attendance-status-icon {
@@ -383,13 +397,15 @@
   }
   .attendance-month-profile h5 {
     margin: 0;
-    color: #0f172a;
+    color: #0f172a !important;
+    -webkit-text-fill-color: #0f172a !important;
     font-weight: 800;
     font-size: 1.25rem;
   }
   .attendance-month-profile p {
     margin: 0.2rem 0 0;
-    color: #64748b;
+    color: #475569 !important;
+    -webkit-text-fill-color: #475569 !important;
     font-weight: 600;
     font-size: 1rem;
   }
@@ -399,14 +415,16 @@
     border-spacing: 0 0.45rem;
   }
   .attendance-month-table th {
-    color: #64748b;
+    color: #475569 !important;
+    -webkit-text-fill-color: #475569 !important;
     font-size: 0.95rem;
     text-transform: uppercase;
     padding: 0.65rem;
   }
   .attendance-month-table td {
     background: #ffffff;
-    color: #1e293b;
+    color: #1e293b !important;
+    -webkit-text-fill-color: #1e293b !important;
     padding: 0.85rem;
     font-size: 1rem;
     border-top: 1px solid #eef2f7;
@@ -424,8 +442,9 @@
     border: 0;
     border-radius: 999px;
     padding: 0.45rem 0.9rem;
-    background: #fff7ed;
-    color: #c2410c;
+    background: #fff7ed !important;
+    color: #c2410c !important;
+    -webkit-text-fill-color: #c2410c !important;
     font-weight: 800;
     font-size: 0.95rem;
   }
@@ -466,31 +485,102 @@
     opacity: 0.48 !important;
     z-index: 2050 !important;
   }
-  html[data-pms-theme="dark"] .attendance-employee-meta strong {
-    color: #ffffff;
+
+  /* Dark mode overrides for table */
+  html[data-pms-theme="dark"] .attendance-table th,
+  html[data-theme="dark"] .attendance-table th,
+  html[data-bs-theme="dark"] .attendance-table th,
+  [data-pms-theme="dark"] .attendance-table th,
+  [data-theme="dark"] .attendance-table th,
+  body.dark-mode .attendance-table th {
+    background-color: #0F1530 !important;
+    color: #9AA3C7 !important;
+    -webkit-text-fill-color: #9AA3C7 !important;
   }
-  html[data-pms-theme="dark"] .attendance-employee-meta small {
-    color: #8ba198;
+  html[data-pms-theme="dark"] .attendance-table td,
+  html[data-theme="dark"] .attendance-table td,
+  html[data-bs-theme="dark"] .attendance-table td,
+  [data-pms-theme="dark"] .attendance-table td,
+  [data-theme="dark"] .attendance-table td,
+  body.dark-mode .attendance-table td {
+    background-color: #141B3D !important;
+    color: #CBD5E1 !important;
+    -webkit-text-fill-color: #CBD5E1 !important;
   }
-  html[data-pms-theme="dark"] .attendance-employee-photo {
-    border-color: #183026;
-    background: #183026;
+  html[data-pms-theme="dark"] .attendance-employee-meta strong,
+  html[data-theme="dark"] .attendance-employee-meta strong,
+  html[data-bs-theme="dark"] .attendance-employee-meta strong,
+  [data-pms-theme="dark"] .attendance-employee-meta strong,
+  [data-theme="dark"] .attendance-employee-meta strong,
+  body.dark-mode .attendance-employee-meta strong {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
   }
-  html[data-pms-theme="dark"] .attendance-month-summary {
-    background: #07130d;
+  html[data-pms-theme="dark"] .attendance-employee-meta small,
+  html[data-theme="dark"] .attendance-employee-meta small,
+  html[data-bs-theme="dark"] .attendance-employee-meta small,
+  [data-pms-theme="dark"] .attendance-employee-meta small,
+  [data-theme="dark"] .attendance-employee-meta small,
+  body.dark-mode .attendance-employee-meta small {
+    color: #9AA3C7 !important;
+    -webkit-text-fill-color: #9AA3C7 !important;
+  }
+  html[data-pms-theme="dark"] .attendance-employee-photo,
+  html[data-theme="dark"] .attendance-employee-photo,
+  html[data-bs-theme="dark"] .attendance-employee-photo,
+  [data-pms-theme="dark"] .attendance-employee-photo,
+  [data-theme="dark"] .attendance-employee-photo,
+  body.dark-mode .attendance-employee-photo {
+    border-color: #183026 !important;
+    background: #183026 !important;
+  }
+  html[data-pms-theme="dark"] .attendance-month-summary,
+  html[data-theme="dark"] .attendance-month-summary,
+  html[data-bs-theme="dark"] .attendance-month-summary,
+  [data-pms-theme="dark"] .attendance-month-summary,
+  [data-theme="dark"] .attendance-month-summary,
+  body.dark-mode .attendance-month-summary {
+    background: #07130d !important;
   }
   html[data-pms-theme="dark"] .attendance-month-profile,
-  html[data-pms-theme="dark"] .attendance-month-table td {
-    background: #102119;
-    border-color: rgba(122, 240, 181, 0.15);
+  html[data-theme="dark"] .attendance-month-profile,
+  html[data-bs-theme="dark"] .attendance-month-profile,
+  [data-pms-theme="dark"] .attendance-month-profile,
+  [data-theme="dark"] .attendance-month-profile,
+  body.dark-mode .attendance-month-profile,
+  html[data-pms-theme="dark"] .attendance-month-table td,
+  html[data-theme="dark"] .attendance-month-table td,
+  html[data-bs-theme="dark"] .attendance-month-table td,
+  [data-pms-theme="dark"] .attendance-month-table td,
+  [data-theme="dark"] .attendance-month-table td,
+  body.dark-mode .attendance-month-table td {
+    background: #102119 !important;
+    border-color: rgba(122, 240, 181, 0.15) !important;
   }
   html[data-pms-theme="dark"] .attendance-month-profile h5,
-  html[data-pms-theme="dark"] .attendance-month-table td {
-    color: #ffffff;
+  html[data-theme="dark"] .attendance-month-profile h5,
+  html[data-bs-theme="dark"] .attendance-month-profile h5,
+  [data-pms-theme="dark"] .attendance-month-profile h5,
+  [data-theme="dark"] .attendance-month-profile h5,
+  body.dark-mode .attendance-month-profile h5,
+  html[data-pms-theme="dark"] .attendance-month-table td,
+  html[data-theme="dark"] .attendance-month-table td,
+  html[data-bs-theme="dark"] .attendance-month-table td,
+  [data-pms-theme="dark"] .attendance-month-table td,
+  [data-theme="dark"] .attendance-month-table td,
+  body.dark-mode .attendance-month-table td {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
   }
-  html[data-pms-theme="dark"] .attendance-status-icon.empty {
-    background: #183026;
-    color: #8ba198;
+  html[data-pms-theme="dark"] .attendance-status-icon.empty,
+  html[data-theme="dark"] .attendance-status-icon.empty,
+  html[data-bs-theme="dark"] .attendance-status-icon.empty,
+  [data-pms-theme="dark"] .attendance-status-icon.empty,
+  [data-theme="dark"] .attendance-status-icon.empty,
+  body.dark-mode .attendance-status-icon.empty {
+    background: #183026 !important;
+    color: #8ba198 !important;
+    -webkit-text-fill-color: #8ba198 !important;
   }
 </style>
 

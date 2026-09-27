@@ -1014,23 +1014,34 @@
 @push('js')
 <script>
     $(document).ready(function () {
-        // Initialize DataTable
-        $('#memberTable').DataTable({
-            dom: 'rftip',
-            responsive: true,
-            pageLength: 10,
-            lengthMenu: [10, 25, 50, 100],
-            language: {
-                search: "_INPUT_",
-                searchPlaceholder: "Search members..."
-            }
-        });
+        if (window.jQuery && jQuery.fn && jQuery.fn.dataTable) {
+            jQuery.fn.dataTable.ext.errMode = 'none';
+        }
+
+        const $memberTable = $('#memberTable');
+        const hasDataRows = $memberTable.find('tbody tr').length > 0 && !$memberTable.find('tbody tr td[colspan]').length;
+
+        // Initialize DataTable only when valid data rows exist
+        if (hasDataRows) {
+            $memberTable.DataTable({
+                dom: 'rftip',
+                responsive: true,
+                pageLength: 10,
+                lengthMenu: [10, 25, 50, 100],
+                language: {
+                    search: "_INPUT_",
+                    searchPlaceholder: "Search members..."
+                }
+            });
+        }
 
         // Custom search handler
         const searchInput = document.getElementById('memberSearch');
         if (searchInput) {
             searchInput.addEventListener('keyup', function() {
-                $('#memberTable').DataTable().search(this.value).draw();
+                if ($.fn.DataTable && $.fn.DataTable.isDataTable('#memberTable')) {
+                    $('#memberTable').DataTable().search(this.value).draw();
+                }
             });
         }
     });

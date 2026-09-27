@@ -742,6 +742,136 @@
     html[data-pms-theme="dark"] .legend-item {
         color: #d9f1e4;
     }
+
+    /* ApexCharts Toolbar & Controls in Dark Mode */
+    html[data-pms-theme="dark"] .apexcharts-toolbar,
+    html[data-theme="dark"] .apexcharts-toolbar {
+        background: #142a20 !important;
+        border: 1px solid rgba(122, 240, 181, 0.3) !important;
+        border-radius: 12px !important;
+        padding: 4px 8px !important;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45) !important;
+        gap: 4px !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+
+    html[data-pms-theme="dark"] .apexcharts-toolbar > div,
+    html[data-theme="dark"] .apexcharts-toolbar > div {
+        border-radius: 6px !important;
+        padding: 2px !important;
+        margin: 0 1px !important;
+        transition: all 0.2s ease !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 24px !important;
+        height: 24px !important;
+        cursor: pointer !important;
+    }
+
+    html[data-pms-theme="dark"] .apexcharts-toolbar > div:hover,
+    html[data-theme="dark"] .apexcharts-toolbar > div:hover {
+        background: rgba(122, 240, 181, 0.2) !important;
+    }
+
+    html[data-pms-theme="dark"] .apexcharts-toolbar > div.apexcharts-selected,
+    html[data-theme="dark"] .apexcharts-toolbar > div.apexcharts-selected {
+        background: rgba(52, 211, 153, 0.25) !important;
+    }
+
+    html[data-pms-theme="dark"] .apexcharts-toolbar svg,
+    html[data-theme="dark"] .apexcharts-toolbar svg {
+        fill: #7af0b5 !important;
+        stroke: #7af0b5 !important;
+        transition: all 0.2s ease !important;
+    }
+
+    html[data-pms-theme="dark"] .apexcharts-toolbar > div:hover svg,
+    html[data-theme="dark"] .apexcharts-toolbar > div:hover svg {
+        fill: #ffffff !important;
+        stroke: #ffffff !important;
+    }
+
+    html[data-pms-theme="dark"] .apexcharts-toolbar > div.apexcharts-selected svg,
+    html[data-theme="dark"] .apexcharts-toolbar > div.apexcharts-selected svg {
+        fill: #34d399 !important;
+        stroke: #34d399 !important;
+    }
+
+    /* Pan icon outline handling */
+    html[data-pms-theme="dark"] .apexcharts-pan-icon svg,
+    html[data-theme="dark"] .apexcharts-pan-icon svg {
+        fill: transparent !important;
+        stroke: #7af0b5 !important;
+        stroke-width: 2 !important;
+    }
+
+    html[data-pms-theme="dark"] .apexcharts-pan-icon:hover svg,
+    html[data-theme="dark"] .apexcharts-pan-icon:hover svg {
+        fill: transparent !important;
+        stroke: #ffffff !important;
+    }
+
+    html[data-pms-theme="dark"] .apexcharts-pan-icon.apexcharts-selected svg,
+    html[data-theme="dark"] .apexcharts-pan-icon.apexcharts-selected svg {
+        fill: transparent !important;
+        stroke: #34d399 !important;
+    }
+
+    /* Zoom in/out icon paths */
+    html[data-pms-theme="dark"] .apexcharts-zoomin-icon svg,
+    html[data-pms-theme="dark"] .apexcharts-zoomout-icon svg,
+    html[data-theme="dark"] .apexcharts-zoomin-icon svg,
+    html[data-theme="dark"] .apexcharts-zoomout-icon svg {
+        fill: #7af0b5 !important;
+        stroke: #7af0b5 !important;
+    }
+
+    /* Dropdown export menu */
+    html[data-pms-theme="dark"] .apexcharts-menu,
+    html[data-theme="dark"] .apexcharts-menu {
+        background: #142a20 !important;
+        border: 1px solid rgba(122, 240, 181, 0.28) !important;
+        border-radius: 12px !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6) !important;
+        color: #d9f1e4 !important;
+        padding: 6px !important;
+    }
+
+    html[data-pms-theme="dark"] .apexcharts-menu .apexcharts-menu-item,
+    html[data-theme="dark"] .apexcharts-menu .apexcharts-menu-item {
+        color: #d9f1e4 !important;
+        padding: 8px 14px !important;
+        font-size: 13px !important;
+        font-weight: 500 !important;
+        border-radius: 8px !important;
+        transition: all 0.15s ease !important;
+    }
+
+    html[data-pms-theme="dark"] .apexcharts-menu .apexcharts-menu-item:hover,
+    html[data-theme="dark"] .apexcharts-menu .apexcharts-menu-item:hover {
+        background: rgba(122, 240, 181, 0.18) !important;
+        color: #ffffff !important;
+    }
+
+    /* Tooltip */
+    html[data-pms-theme="dark"] .apexcharts-tooltip,
+    html[data-theme="dark"] .apexcharts-tooltip {
+        background: #142a20 !important;
+        border: 1px solid rgba(122, 240, 181, 0.25) !important;
+        color: #ffffff !important;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5) !important;
+        border-radius: 10px !important;
+    }
+
+    html[data-pms-theme="dark"] .apexcharts-tooltip-title,
+    html[data-theme="dark"] .apexcharts-tooltip-title {
+        background: #183026 !important;
+        border-bottom: 1px solid rgba(122, 240, 181, 0.18) !important;
+        color: #7af0b5 !important;
+        font-weight: 600 !important;
+    }
 </style>
 
 @section('scripts')
@@ -946,6 +1076,9 @@
             const gridColor = isDark ? 'rgba(122, 240, 181, 0.15)' : '#e5e7eb';
 
             chart.updateOptions({
+                theme: {
+                    mode: isDark ? 'dark' : 'light'
+                },
                 grid: {
                     borderColor: gridColor
                 },
@@ -994,6 +1127,11 @@
             attributes: true,
             attributeFilter: ['data-pms-theme']
         });
+
+        // Initialize theme on page load if dark mode is active
+        if (document.documentElement.getAttribute('data-pms-theme') === 'dark') {
+            updateChartTheme();
+        }
     });
 </script>
 @endsection
