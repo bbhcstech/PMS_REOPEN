@@ -55,7 +55,8 @@ class SetTenantConnection
         }
 
         $currentTenantDb = config('database.connections.tenant.database');
-        if ($tenantDb && $tenantDb !== $currentTenantDb) {
+        $currentMysqlDb  = config('database.connections.mysql.database');
+        if ($tenantDb && ($tenantDb !== $currentTenantDb || $tenantDb !== $currentMysqlDb)) {
             try {
                 config([
                     'database.connections.tenant.database' => $tenantDb,
@@ -65,6 +66,7 @@ class SetTenantConnection
                 DB::purge('mysql');
                 // Test PDO connection
                 DB::connection('tenant')->getPdo();
+                DB::connection('mysql')->getPdo();
             } catch (\Throwable $e) {
                 // If tenant DB cannot be connected to, fall back safely to default database
                 config([

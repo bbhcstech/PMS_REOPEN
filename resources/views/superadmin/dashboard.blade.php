@@ -852,6 +852,106 @@
       .charts-row, .activity-row { grid-template-columns: 1fr; }
     }
 
+    /* TABLE TOOLBAR & CONTROLS */
+    .table-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 20px;
+      background: rgba(248, 250, 252, 0.95);
+      border-bottom: 1px solid rgba(203, 213, 225, 0.8);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .table-select {
+      padding: 6px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--slate-dark);
+      background: #ffffff;
+      cursor: pointer;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .table-search-input {
+      padding: 6px 14px 6px 36px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      width: 220px;
+      background: #ffffff;
+      color: var(--slate-dark);
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .table-footer-bar {
+      padding: 14px 20px;
+      border-top: 1px solid rgba(203, 213, 225, 0.8);
+      background: var(--slate-light);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    /* PLAN CARDS */
+    .catalog-plan-card {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(8px);
+      border-radius: 20px;
+      border: 1px solid rgba(226, 232, 240, 0.85);
+      padding: 20px;
+      box-shadow: var(--card-shadow-sm);
+      transition: all 0.25s ease;
+    }
+
+    .catalog-plan-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--card-shadow-md);
+    }
+
+    /* HEALTH PILLS */
+    .audit-health-pill {
+      background: rgba(255, 255, 255, 0.92);
+      border-radius: 16px;
+      border: 1px solid rgba(226, 232, 240, 0.85);
+      padding: 16px 20px;
+      flex: 1;
+      min-width: 150px;
+      box-shadow: var(--card-shadow-sm);
+      transition: all 0.25s ease;
+    }
+
+    /* BADGES */
+    .db-badge-pill {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: #0369a1;
+      background: #e0f2fe;
+      padding: 3px 8px;
+      border-radius: 6px;
+      border: 1px solid #bae6fd;
+      display: inline-block;
+    }
+
+    .connection-code-badge {
+      font-family: var(--font-mono);
+      background: var(--slate-light);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      color: var(--slate-body);
+      border: 1px solid rgba(226, 232, 240, 0.8);
+      display: inline-block;
+    }
+
     /* Super Admin Dashboard Dark Mode Overrides */
     html[data-pms-theme="dark"] .welcome-section,
     html[data-theme="dark"] .welcome-section {
@@ -872,9 +972,13 @@
     html[data-pms-theme="dark"] .activity-card,
     html[data-theme="dark"] .activity-card,
     html[data-pms-theme="dark"] .table-card,
-    html[data-theme="dark"] .table-card {
-      background: var(--bg-surface);
-      border-color: var(--border-subtle);
+    html[data-theme="dark"] .table-card,
+    html[data-pms-theme="dark"] .table-wrap,
+    html[data-theme="dark"] .table-wrap,
+    html[data-bs-theme="dark"] .table-wrap {
+      background: var(--bg-surface) !important;
+      border-color: var(--border-subtle) !important;
+      box-shadow: var(--card-shadow-sm);
     }
     html[data-pms-theme="dark"] .health-item,
     html[data-theme="dark"] .health-item {
@@ -917,6 +1021,180 @@
     html[data-pms-theme="dark"] .table-responsive table,
     html[data-theme="dark"] .table-responsive table {
       color: var(--text-body);
+    }
+    html[data-pms-theme="dark"] .table-wrap th,
+    html[data-theme="dark"] .table-wrap th,
+    html[data-bs-theme="dark"] .table-wrap th,
+    html[data-pms-theme="dark"] .table-compact th,
+    html[data-theme="dark"] .table-compact th,
+    html[data-bs-theme="dark"] .table-compact th {
+      background: var(--bg-surface-subtle) !important;
+      color: var(--text-muted) !important;
+      border-bottom-color: var(--border-subtle) !important;
+      border-right-color: var(--border-subtle) !important;
+    }
+    html[data-pms-theme="dark"] .table-wrap td,
+    html[data-theme="dark"] .table-wrap td,
+    html[data-bs-theme="dark"] .table-wrap td,
+    html[data-pms-theme="dark"] .table-compact td,
+    html[data-theme="dark"] .table-compact td,
+    html[data-bs-theme="dark"] .table-compact td {
+      border-bottom-color: var(--border-subtle) !important;
+      border-right-color: var(--border-subtle) !important;
+      color: var(--text-body) !important;
+      background: transparent !important;
+    }
+    html[data-pms-theme="dark"] .table-wrap tr:hover,
+    html[data-theme="dark"] .table-wrap tr:hover,
+    html[data-pms-theme="dark"] .table-compact tr:hover,
+    html[data-theme="dark"] .table-compact tr:hover {
+      background: var(--bg-surface-hover) !important;
+    }
+    html[data-pms-theme="dark"] .table-toolbar,
+    html[data-theme="dark"] .table-toolbar,
+    html[data-bs-theme="dark"] .table-toolbar {
+      background: var(--bg-surface-subtle) !important;
+      border-bottom-color: var(--border-subtle) !important;
+    }
+    html[data-pms-theme="dark"] .table-select,
+    html[data-theme="dark"] .table-select,
+    html[data-bs-theme="dark"] .table-select,
+    html[data-pms-theme="dark"] .table-search-input,
+    html[data-theme="dark"] .table-search-input,
+    html[data-bs-theme="dark"] .table-search-input {
+      background: var(--bg-surface) !important;
+      border-color: var(--border-subtle) !important;
+      color: var(--text-main) !important;
+    }
+    html[data-pms-theme="dark"] .table-search-input::placeholder,
+    html[data-theme="dark"] .table-search-input::placeholder {
+      color: var(--text-light) !important;
+    }
+    html[data-pms-theme="dark"] .table-footer-bar,
+    html[data-theme="dark"] .table-footer-bar,
+    html[data-bs-theme="dark"] .table-footer-bar {
+      background: var(--bg-surface-subtle) !important;
+      border-top-color: var(--border-subtle) !important;
+      color: var(--text-muted) !important;
+    }
+    html[data-pms-theme="dark"] .catalog-plan-card,
+    html[data-theme="dark"] .catalog-plan-card,
+    html[data-bs-theme="dark"] .catalog-plan-card {
+      background: var(--bg-surface) !important;
+      border-color: var(--border-subtle) !important;
+      box-shadow: var(--card-shadow-sm) !important;
+    }
+    html[data-pms-theme="dark"] .catalog-plan-card:hover,
+    html[data-theme="dark"] .catalog-plan-card:hover,
+    html[data-bs-theme="dark"] .catalog-plan-card:hover {
+      border-color: rgba(47, 107, 255, 0.4) !important;
+      background: var(--bg-surface-hover) !important;
+      box-shadow: var(--card-shadow-md) !important;
+    }
+    html[data-pms-theme="dark"] .audit-health-pill,
+    html[data-theme="dark"] .audit-health-pill,
+    html[data-bs-theme="dark"] .audit-health-pill {
+      background: var(--bg-surface) !important;
+      border-color: var(--border-subtle) !important;
+      box-shadow: var(--card-shadow-sm) !important;
+    }
+    html[data-pms-theme="dark"] .audit-health-pill:hover,
+    html[data-theme="dark"] .audit-health-pill:hover,
+    html[data-bs-theme="dark"] .audit-health-pill:hover {
+      background: var(--bg-surface-hover) !important;
+      border-color: rgba(47, 107, 255, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .audit-health-pill .health-green,
+    html[data-theme="dark"] .audit-health-pill .health-green,
+    html[data-bs-theme="dark"] .audit-health-pill .health-green {
+      color: #34d399 !important;
+    }
+    html[data-pms-theme="dark"] .audit-health-pill .health-amber,
+    html[data-theme="dark"] .audit-health-pill .health-amber,
+    html[data-bs-theme="dark"] .audit-health-pill .health-amber {
+      color: #fbbf24 !important;
+    }
+    html[data-pms-theme="dark"] .audit-health-pill .health-blue,
+    html[data-theme="dark"] .audit-health-pill .health-blue,
+    html[data-bs-theme="dark"] .audit-health-pill .health-blue {
+      color: #38bdf8 !important;
+    }
+    html[data-pms-theme="dark"] .plan-feature-text,
+    html[data-theme="dark"] .plan-feature-text,
+    html[data-bs-theme="dark"] .plan-feature-text {
+      color: #38bdf8 !important;
+    }
+    html[data-pms-theme="dark"] .db-badge-pill,
+    html[data-theme="dark"] .db-badge-pill,
+    html[data-bs-theme="dark"] .db-badge-pill {
+      color: #38bdf8 !important;
+      background: rgba(56, 189, 248, 0.12) !important;
+      border-color: rgba(56, 189, 248, 0.25) !important;
+    }
+    html[data-pms-theme="dark"] .connection-code-badge,
+    html[data-theme="dark"] .connection-code-badge,
+    html[data-bs-theme="dark"] .connection-code-badge {
+      background: var(--bg-surface-subtle) !important;
+      color: var(--text-main) !important;
+      border-color: var(--border-subtle) !important;
+    }
+    html[data-pms-theme="dark"] .status-badge.success,
+    html[data-theme="dark"] .status-badge.success,
+    html[data-bs-theme="dark"] .status-badge.success {
+      background: rgba(16, 185, 129, 0.18) !important;
+      color: #34d399 !important;
+      border: 1px solid rgba(52, 211, 153, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .status-badge.info,
+    html[data-theme="dark"] .status-badge.info,
+    html[data-bs-theme="dark"] .status-badge.info {
+      background: rgba(59, 130, 246, 0.18) !important;
+      color: #60a5fa !important;
+      border: 1px solid rgba(96, 165, 250, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .status-badge.warning,
+    html[data-theme="dark"] .status-badge.warning,
+    html[data-bs-theme="dark"] .status-badge.warning {
+      background: rgba(245, 158, 11, 0.18) !important;
+      color: #fbbf24 !important;
+      border: 1px solid rgba(251, 191, 36, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .status-badge.critical,
+    html[data-theme="dark"] .status-badge.critical,
+    html[data-bs-theme="dark"] .status-badge.critical {
+      background: rgba(239, 68, 68, 0.18) !important;
+      color: #f87171 !important;
+      border: 1px solid rgba(248, 113, 113, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .dropdown-toggle,
+    html[data-theme="dark"] .dropdown-toggle,
+    html[data-bs-theme="dark"] .dropdown-toggle {
+      border-color: var(--border-subtle) !important;
+      color: var(--text-muted) !important;
+    }
+    html[data-pms-theme="dark"] .dropdown-item:hover,
+    html[data-theme="dark"] .dropdown-item:hover,
+    html[data-bs-theme="dark"] .dropdown-item:hover {
+      background: var(--bg-surface-hover) !important;
+      color: var(--text-main) !important;
+    }
+    html[data-pms-theme="dark"] .form-group textarea,
+    html[data-theme="dark"] .form-group textarea,
+    html[data-bs-theme="dark"] .form-group textarea {
+      background: var(--bg-surface-subtle) !important;
+      border-color: var(--border-subtle) !important;
+      color: var(--text-main) !important;
+    }
+    html[data-pms-theme="dark"] .drag-drop-zone,
+    html[data-theme="dark"] .drag-drop-zone,
+    html[data-bs-theme="dark"] .drag-drop-zone {
+      background: var(--bg-surface-subtle) !important;
+      border-color: var(--border-subtle) !important;
+    }
+    html[data-pms-theme="dark"] .drag-drop-zone .default-text div,
+    html[data-theme="dark"] .drag-drop-zone .default-text div,
+    html[data-bs-theme="dark"] .drag-drop-zone .default-text div {
+      color: var(--text-muted) !important;
     }
     html[data-pms-theme="dark"] th,
     html[data-theme="dark"] th {
@@ -1278,21 +1556,21 @@
     </div>
   </div>
 
-  <div class="table-wrap" style="border: 1px solid rgba(203, 213, 225, 0.8); border-radius: 20px; overflow: hidden;">
-    <div style="display:flex; justify-content:space-between; align-items:center; padding: 14px 20px; background: rgba(248, 250, 252, 0.95); border-bottom: 1px solid rgba(203, 213, 225, 0.8); flex-wrap: wrap; gap: 12px;">
+  <div class="table-wrap" style="border-radius: 20px; overflow: hidden;">
+    <div class="table-toolbar">
       <div style="display:flex; align-items:center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--slate-body);">
         <span>Show</span>
-        <select id="entriesPerPageSelect" onchange="changeEntriesPerPage(this.value)" style="padding: 6px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; font-weight: 700; color: var(--slate-dark); background: #fff; cursor: pointer; outline: none;">
+        <select id="entriesPerPageSelect" class="table-select" onchange="changeEntriesPerPage(this.value)">
           <option value="10" {{ request('per_page', 10) == 10 ? 'selected' : '' }}>10</option>
-          <option value="25" {{ request('per_page') == 25 ? 'selected' : '' }}>25</option>
-          <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50</option>
-          <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100</option>
+          <option value="25" {{ request('per_page', 25) == 25 ? 'selected' : '' }}>25</option>
+          <option value="50" {{ request('per_page', 50) == 50 ? 'selected' : '' }}>50</option>
+          <option value="100" {{ request('per_page', 100) == 100 ? 'selected' : '' }}>100</option>
         </select>
         <span>entries</span>
       </div>
       <div style="position: relative;">
         <i class="bx bx-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--slate-muted); font-size: 17px;"></i>
-        <input type="text" id="dashboardTableSearch" placeholder="Search companies..." onkeyup="filterDashboardCompanies()" style="padding: 6px 14px 6px 36px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; font-weight: 500; width: 220px; background: #fff; outline: none; transition: border-color 0.2s ease;" />
+        <input type="text" id="dashboardTableSearch" class="table-search-input" placeholder="Search companies..." onkeyup="filterDashboardCompanies()" />
       </div>
     </div>
 
@@ -1333,7 +1611,7 @@
             <td>
               <div style="display:flex; align-items:center; gap:12px;">
                 @if($logoUrl)
-                  <img src="{{ $logoUrl }}" alt="{{ $company->name }}" style="width:36px; height:36px; border-radius:10px; object-fit:cover; border:1px solid rgba(203, 213, 225, 0.8); flex-shrink:0;" />
+                  <img src="{{ $logoUrl }}" alt="{{ $company->name }}" style="width:36px; height:36px; border-radius:10px; object-fit:cover; border:1px solid var(--border-subtle); flex-shrink:0;" />
                 @else
                   <div style="width:36px; height:36px; border-radius:10px; background: linear-gradient(135deg, var(--slate-dark), var(--emerald-dark)); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px; flex-shrink:0;">
                     {{ strtoupper(substr($company->name, 0, 2)) }}
@@ -1346,12 +1624,12 @@
               </div>
             </td>
             <td>
-              <code style="font-family:var(--font-mono); background:var(--slate-light); padding:3px 8px; border-radius:6px; font-size:12px; color:var(--slate-body); border:1px solid rgba(226,232,240,0.8);">
+              <code class="connection-code-badge">
                 {{ $company->subdomain ?? $company->company_code ?? strtolower(str_replace(' ', '', $company->name)) }}
               </code>
             </td>
             <td>
-              <span style="font-family:var(--font-mono); font-size:11px; color:#0369a1; background:#e0f2fe; padding:3px 8px; border-radius:6px; border:1px solid #bae6fd;">
+              <span class="db-badge-pill">
                 {{ $company->db_name ?? ('pms_' . strtolower(str_replace(' ', '', $company->name))) }}
               </span>
             </td>
@@ -1409,7 +1687,7 @@
         @endforelse
       </tbody>
     </table>
-    <div style="padding: 14px 20px; border-top: 1px solid rgba(203, 213, 225, 0.8); background: var(--slate-light); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+    <div class="table-footer-bar">
       <div style="font-size: 12.5px; font-weight: 600; color: var(--slate-muted);">
         @if(method_exists($companies, 'total'))
           Showing {{ $companies->firstItem() ?? 0 }} to {{ $companies->lastItem() ?? 0 }} of {{ $companies->total() }} entries
@@ -1448,19 +1726,19 @@
   </div>
   <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:28px;">
     @forelse($plans as $plan)
-      <div style="background:rgba(255,255,255,0.92); backdrop-filter:blur(8px); border-radius:20px; border:1px solid rgba(226,232,240,0.85); padding:20px; box-shadow:var(--card-shadow-sm); transition:all 0.25s ease;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='var(--card-shadow-md)';" onmouseout="this.style.transform='none'; this.style.boxShadow='var(--card-shadow-sm)';">
+      <div class="catalog-plan-card">
         <div style="font-size:11px; font-weight:700; color:var(--slate-muted); text-transform:uppercase; letter-spacing:0.5px;">{{ $plan->name }} Plan</div>
         <div style="font-size:26px; font-weight:900; color:var(--slate-dark); margin: 4px 0;">${{ number_format($plan->monthly_price, 0) }}<span style="font-size:13px; font-weight:600; color:var(--slate-muted);">/mo</span></div>
-        <div style="font-size:12px; color:var(--emerald-primary); font-weight:700; display:flex; align-items:center; gap:4px;">
+        <div class="plan-feature-text" style="font-size:12px; color:var(--emerald-primary); font-weight:700; display:flex; align-items:center; gap:4px;">
           <i class="bx bx-check-circle"></i> 
           {{ $plan->max_users > 0 ? $plan->max_users . ' users max' : 'Unlimited users' }}
         </div>
       </div>
     @empty
-      <div style="background:rgba(255,255,255,0.92); border-radius:20px; border:1px solid rgba(226,232,240,0.85); padding:20px;">
+      <div class="catalog-plan-card">
         <div style="font-size:11px; font-weight:700; color:var(--slate-muted); text-transform:uppercase;">Starter Plan</div>
         <div style="font-size:26px; font-weight:900; color:var(--slate-dark); margin: 4px 0;">$49<span style="font-size:13px; font-weight:600; color:var(--slate-muted);">/mo</span></div>
-        <div style="font-size:12px; color:var(--emerald-primary); font-weight:700;"><i class="bx bx-check-circle"></i> Standard Features</div>
+        <div class="plan-feature-text" style="font-size:12px; color:var(--emerald-primary); font-weight:700;"><i class="bx bx-check-circle"></i> Standard Features</div>
       </div>
     @endforelse
   </div>
@@ -1478,7 +1756,7 @@
       <tbody>
         <tr>
           <td><strong style="font-family:var(--font-mono); color:var(--slate-dark);">pms_central</strong></td>
-          <td><code style="font-family:var(--font-mono); background:var(--slate-light); padding:2px 8px; border-radius:4px; font-size:12px;">central</code></td>
+          <td><code class="connection-code-badge">central</code></td>
           <td>Batch #104</td>
           <td><span class="status-badge success"><i class="bx bx-check"></i> Synchronized</span></td>
           <td><span class="status-badge info">Completed</span></td>
@@ -1486,7 +1764,7 @@
         @foreach($companies->take(3) as $comp)
           <tr>
             <td><strong style="font-family:var(--font-mono); color:var(--slate-dark);">{{ $comp->db_name ?? ('pms_' . strtolower(str_replace(' ', '', $comp->name))) }}</strong></td>
-            <td><code style="font-family:var(--font-mono); background:var(--slate-light); padding:2px 8px; border-radius:4px; font-size:12px;">tenant</code></td>
+            <td><code class="connection-code-badge">tenant</code></td>
             <td>Batch #104</td>
             <td><span class="status-badge success"><i class="bx bx-check"></i> Synchronized</span></td>
             <td><span class="status-badge info">Completed</span></td>
@@ -1529,17 +1807,17 @@
     <span class="action-link"><i class="bx bx-refresh"></i> Run Audit Scan</span>
   </div>
   <div style="display:flex; gap:14px; flex-wrap:wrap; margin-bottom:28px;">
-    <div style="background:rgba(255,255,255,0.92); border-radius:16px; border:1px solid rgba(226,232,240,0.85); padding:16px 20px; flex:1; min-width:150px; box-shadow:var(--card-shadow-sm);">
-      <span style="font-weight:700; color:var(--emerald-primary); font-size:14px; display:flex; align-items:center; gap:6px;"><i class="bx bx-check-circle"></i> {{ $stats['active_companies'] ?? 0 }} Healthy</span>
+    <div class="audit-health-pill">
+      <span class="health-green" style="font-weight:700; color:var(--emerald-primary); font-size:14px; display:flex; align-items:center; gap:6px;"><i class="bx bx-check-circle"></i> {{ $stats['active_companies'] ?? 0 }} Healthy</span>
     </div>
-    <div style="background:rgba(255,255,255,0.92); border-radius:16px; border:1px solid rgba(226,232,240,0.85); padding:16px 20px; flex:1; min-width:150px; box-shadow:var(--card-shadow-sm);">
-      <span style="font-weight:700; color:var(--amber-accent); font-size:14px; display:flex; align-items:center; gap:6px;"><i class="bx bx-error"></i> 0 Migration Drift</span>
+    <div class="audit-health-pill">
+      <span class="health-amber" style="font-weight:700; color:var(--amber-accent); font-size:14px; display:flex; align-items:center; gap:6px;"><i class="bx bx-error"></i> 0 Migration Drift</span>
     </div>
-    <div style="background:rgba(255,255,255,0.92); border-radius:16px; border:1px solid rgba(226,232,240,0.85); padding:16px 20px; flex:1; min-width:150px; box-shadow:var(--card-shadow-sm);">
-      <span style="font-weight:700; color:var(--emerald-primary); font-size:14px; display:flex; align-items:center; gap:6px;"><i class="bx bx-data"></i> 0 Orphan DB</span>
+    <div class="audit-health-pill">
+      <span class="health-blue" style="font-weight:700; color:var(--emerald-primary); font-size:14px; display:flex; align-items:center; gap:6px;"><i class="bx bx-data"></i> 0 Orphan DB</span>
     </div>
-    <div style="background:rgba(255,255,255,0.92); border-radius:16px; border:1px solid rgba(226,232,240,0.85); padding:16px 20px; flex:1; min-width:150px; box-shadow:var(--card-shadow-sm);">
-      <span style="font-weight:700; color:var(--emerald-primary); font-size:14px; display:flex; align-items:center; gap:6px;"><i class="bx bx-shield"></i> 0 Missing DB</span>
+    <div class="audit-health-pill">
+      <span class="health-blue" style="font-weight:700; color:var(--emerald-primary); font-size:14px; display:flex; align-items:center; gap:6px;"><i class="bx bx-shield"></i> 0 Missing DB</span>
     </div>
   </div>
 
@@ -1557,7 +1835,7 @@
             <td style="font-size:12px; color:var(--slate-muted);">{{ $activity->created_at?->format('Y-m-d H:i') }}</td>
             <td><strong style="color:var(--slate-dark);">{{ $activity->company?->name ?? 'System' }}</strong></td>
             <td>{{ str_replace('.', ' ', ucfirst($activity->action)) }}</td>
-            <td><code style="font-family:var(--font-mono); font-size:11px; background:var(--slate-light); padding:2px 8px; border-radius:4px; color:var(--slate-body);">{{ $activity->ip_address ?? '127.0.0.1' }}</code></td>
+            <td><code class="connection-code-badge" style="font-size:11px;">{{ $activity->ip_address ?? '127.0.0.1' }}</code></td>
             <td><span class="status-badge success"><i class="bx bx-check"></i> Success</span></td>
           </tr>
         @empty

@@ -1026,6 +1026,151 @@
         color: var(--slate-dark);
         border-color: var(--border-strong);
     }
+
+    /* Dark Mode: Buttons & Controls */
+    html[data-pms-theme="dark"] .btn-outline-custom,
+    html[data-theme="dark"] .btn-outline-custom,
+    html[data-bs-theme="dark"] .btn-outline-custom {
+        background: var(--bg-surface-subtle, #141B3D) !important;
+        border-color: var(--border-strong, rgba(238, 241, 251, 0.14)) !important;
+        color: var(--text-main, #EEF1FB) !important;
+    }
+    html[data-pms-theme="dark"] .btn-outline-custom:hover,
+    html[data-theme="dark"] .btn-outline-custom:hover,
+    html[data-bs-theme="dark"] .btn-outline-custom:hover,
+    html[data-pms-theme="dark"] .btn-outline-custom:focus,
+    html[data-theme="dark"] .btn-outline-custom:focus,
+    html[data-bs-theme="dark"] .btn-outline-custom:focus {
+        background: var(--bg-surface-hover, #1A2247) !important;
+        border-color: var(--primary, #2F6BFF) !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 14px rgba(47, 107, 255, 0.22);
+    }
+    html[data-pms-theme="dark"] .btn-outline-custom:disabled,
+    html[data-theme="dark"] .btn-outline-custom:disabled,
+    html[data-bs-theme="dark"] .btn-outline-custom:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+        background: var(--bg-surface-subtle, #141B3D) !important;
+        border-color: var(--border-subtle, rgba(238, 241, 251, 0.08)) !important;
+        color: var(--text-muted, #9AA3C7) !important;
+        box-shadow: none !important;
+        transform: none !important;
+    }
+
+    /* Dark Mode: Impersonation Banner Components */
+    html[data-pms-theme="dark"] .impersonation-db-code,
+    html[data-theme="dark"] .impersonation-db-code,
+    html[data-bs-theme="dark"] .impersonation-db-code {
+        background: rgba(245, 158, 11, 0.18) !important;
+        color: #fde68a !important;
+        border: 1px solid rgba(245, 158, 11, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .impersonation-leave-btn,
+    html[data-theme="dark"] .impersonation-leave-btn,
+    html[data-bs-theme="dark"] .impersonation-leave-btn {
+        background: rgba(245, 158, 11, 0.12) !important;
+        color: var(--amber-accent, #fbbf24) !important;
+        border-color: rgba(245, 158, 11, 0.35) !important;
+    }
+    html[data-pms-theme="dark"] .impersonation-leave-btn:hover,
+    html[data-theme="dark"] .impersonation-leave-btn:hover,
+    html[data-bs-theme="dark"] .impersonation-leave-btn:hover {
+        background: rgba(245, 158, 11, 0.25) !important;
+        border-color: #f59e0b !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 14px rgba(245, 158, 11, 0.25) !important;
+    }
+
+    /* Dark Mode: Show Entries Dropdown */
+    html[data-pms-theme="dark"] .entries-select-box,
+    html[data-theme="dark"] .entries-select-box,
+    html[data-bs-theme="dark"] .entries-select-box,
+    html[data-pms-theme="dark"] #entriesPerPageSelect,
+    html[data-theme="dark"] #entriesPerPageSelect,
+    html[data-bs-theme="dark"] #entriesPerPageSelect {
+        background: var(--bg-surface-subtle, #141B3D) !important;
+        border-color: var(--border-subtle, rgba(238, 241, 251, 0.14)) !important;
+        color: var(--text-main, #EEF1FB) !important;
+    }
+    html[data-pms-theme="dark"] .entries-select-box option,
+    html[data-theme="dark"] .entries-select-box option,
+    html[data-bs-theme="dark"] .entries-select-box option {
+        background: var(--bg-surface, #0F1530);
+        color: var(--text-main, #EEF1FB);
+    }
+
+    /* Dark Mode: Table Pagination Footer */
+    html[data-pms-theme="dark"] .table-pagination-footer,
+    html[data-theme="dark"] .table-pagination-footer,
+    html[data-bs-theme="dark"] .table-pagination-footer {
+        background: var(--bg-surface, #0F1530) !important;
+        border-color: var(--border-subtle, rgba(238, 241, 251, 0.12)) !important;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35) !important;
+    }
+    html[data-pms-theme="dark"] .table-pagination-footer .pagination-info,
+    html[data-theme="dark"] .table-pagination-footer .pagination-info,
+    html[data-bs-theme="dark"] .table-pagination-footer .pagination-info {
+        color: var(--text-muted, #9AA3C7) !important;
+    }
+    html[data-pms-theme="dark"] .table-pagination-footer .pagination-info span,
+    html[data-theme="dark"] .table-pagination-footer .pagination-info span,
+    html[data-bs-theme="dark"] .table-pagination-footer .pagination-info span {
+        color: var(--text-main, #EEF1FB) !important;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .btn-outline-custom {
+            background: var(--bg-surface-subtle, #141B3D) !important;
+            border-color: var(--border-strong, rgba(238, 241, 251, 0.14)) !important;
+            color: var(--text-main, #EEF1FB) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .btn-outline-custom:hover {
+            background: var(--bg-surface-hover, #1A2247) !important;
+            border-color: var(--primary, #2F6BFF) !important;
+            color: #ffffff !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .btn-outline-custom:disabled {
+            opacity: 0.45;
+            background: var(--bg-surface-subtle, #141B3D) !important;
+            color: var(--text-muted, #9AA3C7) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .impersonation-db-code {
+            background: rgba(245, 158, 11, 0.18) !important;
+            color: #fde68a !important;
+            border: 1px solid rgba(245, 158, 11, 0.3) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .impersonation-leave-btn {
+            background: rgba(245, 158, 11, 0.12) !important;
+            color: var(--amber-accent, #fbbf24) !important;
+            border-color: rgba(245, 158, 11, 0.35) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .impersonation-leave-btn:hover {
+            background: rgba(245, 158, 11, 0.25) !important;
+            border-color: #f59e0b !important;
+            color: #ffffff !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .entries-select-box,
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) #entriesPerPageSelect {
+            background: var(--bg-surface-subtle, #141B3D) !important;
+            border-color: var(--border-subtle, rgba(238, 241, 251, 0.14)) !important;
+            color: var(--text-main, #EEF1FB) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .entries-select-box option {
+            background: var(--bg-surface, #0F1530);
+            color: var(--text-main, #EEF1FB);
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .table-pagination-footer {
+            background: var(--bg-surface, #0F1530) !important;
+            border-color: var(--border-subtle, rgba(238, 241, 251, 0.12)) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .table-pagination-footer .pagination-info {
+            color: var(--text-muted, #9AA3C7) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .table-pagination-footer .pagination-info span {
+            color: var(--text-main, #EEF1FB) !important;
+        }
+    }
   </style>
 
 <!-- PAGE CONTROL TOOLBAR -->
@@ -1059,13 +1204,13 @@
         <div>
             <strong style="color: var(--amber-accent); font-size: 14px;">Active Tenant Impersonation Session</strong>
             <div style="font-size: 12px; color: var(--slate-muted); margin-top: 2px;">
-                Session Database: <code style="background: #fff; padding: 2px 6px; border-radius: 4px; font-family: monospace;">{{ $currentCompanyDb }}</code>
+                Session Database: <code class="impersonation-db-code" style="background: #fff; padding: 2px 6px; border-radius: 4px; font-family: monospace;">{{ $currentCompanyDb }}</code>
             </div>
         </div>
     </div>
     <form method="POST" action="{{ route('super-admin.leave-impersonation') }}" style="margin: 0;">
         @csrf
-        <button type="submit" class="btn-custom btn-outline-custom btn-sm-custom" style="color: var(--amber-accent); border-color: rgba(245, 158, 11, 0.3);">
+        <button type="submit" class="btn-custom btn-outline-custom btn-sm-custom impersonation-leave-btn" style="color: var(--amber-accent); border-color: rgba(245, 158, 11, 0.3);">
             <i class="bx bx-log-out-circle"></i> Leave Impersonation
         </button>
     </form>
@@ -1308,7 +1453,7 @@
     <!-- Show Entries Dropdown (10, 20, 30, 40, 50) -->
     <div class="entries-selector-wrap" style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--slate-muted); margin-left: auto;">
         <span>Show</span>
-        <select id="entriesPerPageSelect" style="padding: 5px 12px; border-radius: 8px; border: 1px solid rgba(226, 232, 240, 0.9); font-weight: 700; color: var(--slate-dark); background: #f8fafc; cursor: pointer; outline: none;">
+        <select id="entriesPerPageSelect" class="entries-select-box" style="padding: 5px 12px; border-radius: 8px; border: 1px solid rgba(226, 232, 240, 0.9); font-weight: 700; color: var(--slate-dark); background: #f8fafc; cursor: pointer; outline: none;">
             <option value="10" selected>10</option>
             <option value="20">20</option>
             <option value="30">30</option>

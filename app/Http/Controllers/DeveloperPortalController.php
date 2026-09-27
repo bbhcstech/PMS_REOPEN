@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
 
 class DeveloperPortalController extends Controller
@@ -90,7 +91,7 @@ class DeveloperPortalController extends Controller
     {
         $dev = $this->getDevUser();
         $devUserIds = $this->getDevUserIds();
-        $empDetail = DB::table('employee_details')->whereIn('user_id', $devUserIds)->first();
+        $empDetail = Schema::hasTable('employee_details') ? DB::table('employee_details')->whereIn('user_id', $devUserIds)->first() : null;
 
         // Real Tasks Query for Logged-In Developer
         $allDevTasks = DB::table('tasks')
@@ -325,7 +326,7 @@ class DeveloperPortalController extends Controller
     {
         $dev = $this->getDevUser();
         $devUserIds = $this->getDevUserIds();
-        $empDetail = DB::table('employee_details')->whereIn('user_id', $devUserIds)->first();
+        $empDetail = Schema::hasTable('employee_details') ? DB::table('employee_details')->whereIn('user_id', $devUserIds)->first() : null;
 
         $allTasks = DB::table('tasks')
             ->whereIn('assigned_to', $devUserIds)
