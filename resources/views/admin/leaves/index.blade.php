@@ -2027,13 +2027,53 @@
         border-color: #34d399;
     }
 
-    html[data-pms-theme="dark"] .policy-notice {
-        background: rgba(16, 33, 25, 0.85);
-        border-color: rgba(122, 240, 181, 0.12);
+    html[data-pms-theme="dark"] .policy-notice,
+    html[data-theme="dark"] .policy-notice,
+    html[data-bs-theme="dark"] .policy-notice,
+    [data-pms-theme="dark"] .policy-notice,
+    [data-theme="dark"] .policy-notice,
+    body.dark-mode .policy-notice {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
     }
 
-    html[data-pms-theme="dark"] .policy-notice p {
-        color: #8ba198;
+    html[data-pms-theme="dark"] .policy-notice p,
+    html[data-theme="dark"] .policy-notice p,
+    html[data-bs-theme="dark"] .policy-notice p,
+    [data-pms-theme="dark"] .policy-notice p,
+    [data-theme="dark"] .policy-notice p,
+    body.dark-mode .policy-notice p {
+        color: #CBD5E1 !important;
+        -webkit-text-fill-color: #CBD5E1 !important;
+    }
+
+    html[data-pms-theme="dark"] .notice-icon,
+    html[data-theme="dark"] .notice-icon,
+    html[data-bs-theme="dark"] .notice-icon,
+    [data-pms-theme="dark"] .notice-icon,
+    [data-theme="dark"] .notice-icon,
+    body.dark-mode .notice-icon {
+        background: rgba(37, 99, 235, 0.25) !important;
+        border: 1px solid rgba(147, 197, 253, 0.35) !important;
+        color: #60a5fa !important;
+        -webkit-text-fill-color: #60a5fa !important;
+        filter: none !important;
+    }
+
+    html[data-pms-theme="dark"] .notice-icon i,
+    html[data-theme="dark"] .notice-icon i,
+    html[data-bs-theme="dark"] .notice-icon i,
+    [data-pms-theme="dark"] .notice-icon i,
+    [data-theme="dark"] .notice-icon i,
+    body.dark-mode .notice-icon i,
+    html[data-pms-theme="dark"] .policy-notice i,
+    html[data-theme="dark"] .policy-notice i,
+    html[data-bs-theme="dark"] .policy-notice i,
+    [data-pms-theme="dark"] .policy-notice i,
+    [data-theme="dark"] .policy-notice i,
+    body.dark-mode .policy-notice i {
+        color: #60a5fa !important;
+        -webkit-text-fill-color: #60a5fa !important;
     }
 
     html[data-pms-theme="dark"] .stat-card {

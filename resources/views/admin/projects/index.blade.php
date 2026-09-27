@@ -2051,243 +2051,313 @@
         text-align: center;
     }
 
-    /* ===== PROJECTS INDEX DARK MODE ===== */
-    html[data-pms-theme="dark"] .projects-page {
+    /* ===== PROJECTS INDEX & MODALS DARK MODE ===== */
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page {
         background: #070B1A !important;
         color: #CBD5E1 !important;
     }
-    html[data-pms-theme="dark"] .projects-page .breadcrumb {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .breadcrumb {
         background: transparent !important;
         border-color: rgba(238, 241, 251, 0.08) !important;
         color: #9AA3C7 !important;
     }
-    html[data-pms-theme="dark"] .projects-page .header-card,
-    html[data-pms-theme="dark"] .projects-page .filter-panel,
-    html[data-pms-theme="dark"] .projects-page .table-card,
-    html[data-pms-theme="dark"] .projects-page .stat-card,
-    html[data-pms-theme="dark"] .projects-page .status-bar {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .header-card,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .filter-panel,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .table-card,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .stat-card,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .status-bar,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .toolbar {
         background: #0F1530 !important;
         border-color: rgba(238, 241, 251, 0.09) !important;
         box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.35) !important;
     }
-    html[data-pms-theme="dark"] .projects-page .header-card h1 {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .header-card h1 {
         color: #EEF1FB !important;
     }
-    html[data-pms-theme="dark"] .projects-page .header-card p {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .header-card p {
         color: #9AA3C7 !important;
     }
-    html[data-pms-theme="dark"] .projects-page .header-actions .btn-icon,
-    html[data-pms-theme="dark"] .projects-page .view-toggle .view-btn {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .header-actions .btn-icon,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .view-toggle .view-btn {
         background: #141B3D !important;
         border-color: rgba(238, 241, 251, 0.14) !important;
         color: #CBD5E1 !important;
     }
-    html[data-pms-theme="dark"] .projects-page .header-actions .btn-icon:hover,
-    html[data-pms-theme="dark"] .projects-page .view-toggle .view-btn:hover,
-    html[data-pms-theme="dark"] .projects-page .view-toggle .view-btn.active {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .header-actions .btn-icon:hover,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .view-toggle .view-btn:hover,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .view-toggle .view-btn.active {
         background: #1A2247 !important;
         border-color: #2F6BFF !important;
         color: #60A5FA !important;
     }
-    html[data-pms-theme="dark"] .projects-page .view-toggle {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .view-toggle {
         background: #0F1530 !important;
         border-color: rgba(238, 241, 251, 0.09) !important;
     }
-    html[data-pms-theme="dark"] .projects-page .filter-group label {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .filter-group label,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .form-label {
         color: #EEF1FB !important;
     }
-    html[data-pms-theme="dark"] .projects-page .filter-group .form-control,
-    html[data-pms-theme="dark"] .projects-page .filter-group .form-select,
-    html[data-pms-theme="dark"] .projects-page .status-select {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .filter-group .form-control,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .filter-group .form-select,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .status-select,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .modal-content .form-control,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .modal-content .form-select {
         background: #141B3D !important;
         border-color: rgba(238, 241, 251, 0.16) !important;
         color: #EEF1FB !important;
     }
-    html[data-pms-theme="dark"] .projects-page .filter-actions .btn-outline {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .form-select option {
+        background: #141B3D !important;
+        color: #EEF1FB !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .filter-actions .btn-outline {
         background: #141B3D !important;
         border-color: rgba(238, 241, 251, 0.16) !important;
         color: #CBD5E1 !important;
     }
-    html[data-pms-theme="dark"] .projects-page .filter-actions .btn-outline:hover {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .filter-actions .btn-outline:hover {
         background: #1A2247 !important;
         color: #FFFFFF !important;
         border-color: #2F6BFF !important;
     }
-    html[data-pms-theme="dark"] .projects-page .stat-card h3,
-    html[data-pms-theme="dark"] .projects-page .status-bar span {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .stat-card h3,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .status-bar span,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .status-item span {
         color: #EEF1FB !important;
     }
-    html[data-pms-theme="dark"] .projects-page .stat-card span,
-    html[data-pms-theme="dark"] .projects-page .progress-text {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .stat-card span,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .status-item,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .progress-text {
         color: #9AA3C7 !important;
     }
-    html[data-pms-theme="dark"] .projects-page .table-header {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .table-header {
         background: #141B3D !important;
         border-bottom-color: rgba(238, 241, 251, 0.1) !important;
     }
-    html[data-pms-theme="dark"] .projects-page .table-title h4 {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .table-title h4 {
         color: #EEF1FB !important;
     }
-    html[data-pms-theme="dark"] .projects-page .project-table th {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .project-table th {
         background: #141B3D !important;
         color: #9AA3C7 !important;
         border-bottom: 2px solid rgba(238, 241, 251, 0.1) !important;
     }
-    html[data-pms-theme="dark"] .projects-page .project-table th i {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .project-table th i {
         color: #60A5FA !important;
     }
-    html[data-pms-theme="dark"] .projects-page .project-table tbody td {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .project-table tbody td {
         background: #0F1530 !important;
         border-top: 1px solid rgba(238, 241, 251, 0.08) !important;
         border-bottom: 1px solid rgba(238, 241, 251, 0.08) !important;
         color: #CBD5E1 !important;
     }
-    html[data-pms-theme="dark"] .projects-page .project-table tbody td:first-child {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .project-table tbody td:first-child {
         border-left: 1px solid rgba(238, 241, 251, 0.08) !important;
         border-radius: 14px 0 0 14px !important;
     }
-    html[data-pms-theme="dark"] .projects-page .project-table tbody td:last-child {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .project-table tbody td:last-child {
         border-right: 1px solid rgba(238, 241, 251, 0.08) !important;
         border-radius: 0 14px 14px 0 !important;
     }
-    html[data-pms-theme="dark"] .projects-page .project-table tbody tr:hover td {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .project-table tbody tr:hover td {
         background: #141B3D !important;
         border-color: rgba(47, 107, 255, 0.35) !important;
     }
-    html[data-pms-theme="dark"] .projects-page .project-name {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .project-name {
         color: #EEF1FB !important;
     }
-    html[data-pms-theme="dark"] .projects-page .project-name:hover {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .project-name:hover {
         color: #60A5FA !important;
     }
-    html[data-pms-theme="dark"] .projects-page .sub-text,
-    html[data-pms-theme="dark"] .projects-page .empty-text {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .sub-text,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .empty-text {
         color: #9AA3C7 !important;
     }
-    html[data-pms-theme="dark"] .projects-page .date-cell {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .date-cell {
         color: #CBD5E1 !important;
     }
-    html[data-pms-theme="dark"] .projects-page .date-cell i {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .date-cell i {
         color: #60A5FA !important;
     }
-    html[data-pms-theme="dark"] .projects-page .date-cell.overdue {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .date-cell.overdue {
         color: #FCA5A5 !important;
     }
-    html[data-pms-theme="dark"] .projects-page .overdue-badge {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .overdue-badge {
         background: rgba(239, 68, 68, 0.18) !important;
         color: #FCA5A5 !important;
         border: 1px solid rgba(239, 68, 68, 0.35) !important;
     }
-    html[data-pms-theme="dark"] .projects-page .client-cell .client-avatar {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .client-cell .client-avatar {
         background: #141B3D !important;
         color: #60A5FA !important;
         border: 1px solid rgba(47, 107, 255, 0.25) !important;
     }
-    html[data-pms-theme="dark"] .projects-page .client-cell .client-name {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .client-cell .client-name {
         color: #EEF1FB !important;
     }
-    html[data-pms-theme="dark"] .projects-page .client-cell small,
-    html[data-pms-theme="dark"] .projects-page .client-cell .text-muted {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .client-cell small,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .client-cell .text-muted {
         color: #9AA3C7 !important;
     }
-    html[data-pms-theme="dark"] .projects-page .members-cell .avatar {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .members-cell .avatar {
         background: #141B3D !important;
         color: #EEF1FB !important;
         border: 2px solid #0F1530 !important;
     }
-    html[data-pms-theme="dark"] .projects-page .members-cell .avatar.more {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .members-cell .avatar.more {
         background: #1A2247 !important;
         color: #60A5FA !important;
     }
-    html[data-pms-theme="dark"] .projects-page .project-desc {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .project-desc {
         color: #9AA3C7 !important;
     }
-    html[data-pms-theme="dark"] .projects-page .code-badge,
-    html[data-pms-theme="dark"] .projects-page .project-code {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .code-badge,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .project-code {
         background: #141B3D !important;
         color: #60A5FA !important;
         border: 1px solid rgba(47, 107, 255, 0.3) !important;
     }
-    html[data-pms-theme="dark"] .projects-page .project-action-dropdown .dropdown-menu,
-    html[data-pms-theme="dark"] .projects-page .dropdown-menu {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .project-action-dropdown .dropdown-menu,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .dropdown-menu,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) body > .project-floating-action-menu {
         background: #0F1530 !important;
         border: 1px solid rgba(238, 241, 251, 0.14) !important;
         box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6) !important;
     }
-    html[data-pms-theme="dark"] .projects-page .dropdown-header {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .dropdown-header {
         color: #EEF1FB !important;
         border-bottom: 1px solid rgba(238, 241, 251, 0.08) !important;
     }
-    html[data-pms-theme="dark"] .projects-page .dropdown-divider {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .dropdown-divider {
         border-top: 1px solid rgba(238, 241, 251, 0.08) !important;
     }
-    html[data-pms-theme="dark"] .projects-page .project-action-dropdown .dropdown-item,
-    html[data-pms-theme="dark"] .projects-page .dropdown-item {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .project-action-dropdown .dropdown-item,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .dropdown-item,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) body > .project-floating-action-menu .dropdown-item {
         color: #CBD5E1 !important;
     }
-    html[data-pms-theme="dark"] .projects-page .project-action-dropdown .dropdown-item:hover,
-    html[data-pms-theme="dark"] .projects-page .dropdown-item:hover {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .project-action-dropdown .dropdown-item:hover,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .dropdown-item:hover,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) body > .project-floating-action-menu .dropdown-item:hover {
         background: #141B3D !important;
         color: #EEF1FB !important;
     }
-    html[data-pms-theme="dark"] .projects-page .dropdown-item i {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .dropdown-item i,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) body > .project-floating-action-menu .dropdown-item i {
         color: #60A5FA !important;
     }
-    html[data-pms-theme="dark"] .projects-page .action-btn {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .action-btn {
         background: #141B3D !important;
         color: #EEF1FB !important;
         border: 1px solid rgba(238, 241, 251, 0.12) !important;
     }
-    html[data-pms-theme="dark"] .projects-page .action-btn:hover {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .action-btn:hover {
         background: #1A2247 !important;
         color: #60A5FA !important;
         border-color: #2F6BFF !important;
     }
-    html[data-pms-theme="dark"] .projects-page .progress-bar {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .progress-bar {
         background: #141B3D !important;
     }
-    html[data-pms-theme="dark"] .projects-page .progress-text {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .progress-text {
         color: #EEF1FB !important;
     }
-    html[data-pms-theme="dark"] .projects-page .latest-update-cell strong {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .latest-update-cell strong {
         color: #EEF1FB !important;
     }
-    html[data-pms-theme="dark"] .projects-page .latest-update-cell span {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .latest-update-cell span {
         color: #9AA3C7 !important;
     }
-    html[data-pms-theme="dark"] .projects-page .priority-pill.low {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .priority-pill.low {
         background: rgba(59, 130, 246, 0.18) !important;
         color: #93C5FD !important;
         border: 1px solid rgba(59, 130, 246, 0.3) !important;
     }
-    html[data-pms-theme="dark"] .projects-page .priority-pill.medium {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .priority-pill.medium {
         background: rgba(245, 158, 11, 0.18) !important;
         color: #FCD34D !important;
         border: 1px solid rgba(245, 158, 11, 0.3) !important;
     }
-    html[data-pms-theme="dark"] .projects-page .priority-pill.high {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .priority-pill.high {
         background: rgba(249, 115, 22, 0.18) !important;
         color: #FDBA74 !important;
         border: 1px solid rgba(249, 115, 22, 0.3) !important;
     }
-    html[data-pms-theme="dark"] .projects-page .priority-pill.critical {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .priority-pill.critical {
         background: rgba(239, 68, 68, 0.18) !important;
         color: #FCA5A5 !important;
         border: 1px solid rgba(239, 68, 68, 0.3) !important;
     }
-    html[data-pms-theme="dark"] .projects-page .client-cell [style*="color: #1e40af"] {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .client-cell [style*="color: #1e40af"] {
         color: #EEF1FB !important;
     }
-    html[data-pms-theme="dark"] .projects-page .client-cell [style*="background: #eff6ff"] {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .client-cell [style*="background: #eff6ff"] {
         background: #141B3D !important;
         color: #60A5FA !important;
         border-color: rgba(47, 107, 255, 0.25) !important;
     }
-    html[data-pms-theme="dark"] .projects-page .form-check-input,
-    html[data-pms-theme="dark"] .projects-page .pms-table-select__input,
-    html[data-pms-theme="dark"] .projects-page input[type="checkbox"] {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .form-check-input,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .pms-table-select__input,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page input[type="checkbox"] {
         background-color: #141B3D !important;
         border: 2px solid rgba(238, 241, 251, 0.25) !important;
+    }
+
+    /* ===== MODALS DARK MODE FIX (TEMPLATES, DUPLICATE, IMPORT) ===== */
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .modal-content {
+        background-color: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.14) !important;
+        color: #EEF1FB !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .modal-header {
+        background: #141B3D !important;
+        border-bottom-color: rgba(238, 241, 251, 0.1) !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .modal-header .modal-title {
+        color: #EEF1FB !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .modal-header .btn-close {
+        filter: invert(1) grayscale(100%) brightness(200%) !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .modal-footer {
+        background: #141B3D !important;
+        border-top-color: rgba(238, 241, 251, 0.1) !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .template-item {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .template-item:hover {
+        background: #1A2247 !important;
+        border-color: #2F6BFF !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .template-item strong {
+        color: #EEF1FB !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .template-item span {
+        color: #9AA3C7 !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .copy-options label {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
+        color: #EEF1FB !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .copy-options label:hover {
+        background: #1A2247 !important;
+        border-color: #2F6BFF !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .copy-options label i {
+        color: #60A5FA !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .import-note {
+        color: #9AA3C7 !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .empty-state h5 {
+        color: #60A5FA !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .empty-state p {
+        color: #9AA3C7 !important;
     }
 </style>
 

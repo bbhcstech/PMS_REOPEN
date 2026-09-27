@@ -223,8 +223,9 @@ class AttendanceController extends Controller
     {
         $user = Auth::user();
 
-        // Only admin can export
-        if ($user->role !== 'admin') {
+        // Only admin / authorized roles can export
+        $userRole = strtolower((string) ($user->role ?? ''));
+        if (! in_array($userRole, ['admin', 'superadmin', 'hr', 'manager', 'developer'], true)) {
             return redirect()->route('attendance.index')
                 ->with('error', 'You do not have permission to export data.');
         }
@@ -1058,8 +1059,9 @@ class AttendanceController extends Controller
     {
         $user = Auth::user();
 
-        // Only admin can access reports
-        if ($user->role !== 'admin') {
+        // Only authorized admin / management roles can access reports
+        $userRole = strtolower((string) ($user->role ?? ''));
+        if (! in_array($userRole, ['admin', 'superadmin', 'hr', 'manager', 'developer'], true)) {
             return redirect()->route('attendance.index')
                 ->with('error', 'You do not have permission to access reports.');
         }
@@ -1068,7 +1070,12 @@ class AttendanceController extends Controller
         $year  = (int) ($request->year ?? now()->year);
         $daysInMonth = Carbon::create($year, $month)->daysInMonth;
 
-        $users = User::where('role', 'employee')->get();
+        if (in_array($userRole, ['manager', 'hr'], true) && method_exists($user, 'visibleEmployeeIds')) {
+            $visibleIds = $user->visibleEmployeeIds();
+            $users = User::where('role', 'employee')->whereIn('id', $visibleIds)->get();
+        } else {
+            $users = User::where('role', 'employee')->get();
+        }
 
         $input = $request->user_id;
 
@@ -1181,8 +1188,9 @@ class AttendanceController extends Controller
     {
         $user = Auth::user();
 
-        // Only admin can export
-        if ($user->role !== 'admin') {
+        // Only authorized admin / management roles can export
+        $userRole = strtolower((string) ($user->role ?? ''));
+        if (! in_array($userRole, ['admin', 'superadmin', 'hr', 'manager', 'developer'], true)) {
             abort(403, 'Unauthorized access');
         }
 
@@ -1203,8 +1211,9 @@ class AttendanceController extends Controller
     {
         $user = Auth::user();
 
-        // Only admin can export
-        if ($user->role !== 'admin') {
+        // Only authorized admin / management roles can export
+        $userRole = strtolower((string) ($user->role ?? ''));
+        if (! in_array($userRole, ['admin', 'superadmin', 'hr', 'manager', 'developer'], true)) {
             abort(403, 'Unauthorized access');
         }
 
@@ -1219,8 +1228,9 @@ class AttendanceController extends Controller
     {
         $user = Auth::user();
 
-        // Only admin can access by member view
-        if ($user->role !== 'admin') {
+        // Only authorized admin / management roles can access by member view
+        $userRole = strtolower((string) ($user->role ?? ''));
+        if (! in_array($userRole, ['admin', 'superadmin', 'hr', 'manager', 'developer'], true)) {
             return redirect()->route('attendance.index')
                 ->with('error', 'You do not have permission to access this page.');
         }
@@ -1317,8 +1327,9 @@ class AttendanceController extends Controller
     {
         $user = Auth::user();
 
-        // Only admin can access location view
-        if ($user->role !== 'admin') {
+        // Only authorized admin / management roles can access location view
+        $userRole = strtolower((string) ($user->role ?? ''));
+        if (! in_array($userRole, ['admin', 'superadmin', 'hr', 'manager', 'developer'], true)) {
             return redirect()->route('attendance.index')
                 ->with('error', 'You do not have permission to access this page.');
         }

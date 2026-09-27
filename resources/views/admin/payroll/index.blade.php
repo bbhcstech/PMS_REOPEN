@@ -3,6 +3,166 @@
 @section('title', 'Payroll Dashboard')
 
 @section('content')
+<style>
+/* Payroll Dashboard Custom Styling for Light & Dark Mode */
+.btn-payroll-processing {
+    background-color: #ffffff !important;
+    color: #4f46e5 !important;
+    border: 1.5px solid #cbd5e1 !important;
+    font-weight: 700 !important;
+    transition: all 0.2s ease;
+}
+.btn-payroll-processing i {
+    color: #4f46e5 !important;
+}
+.btn-payroll-processing:hover {
+    background-color: #f8fafc !important;
+    color: #3730a3 !important;
+    border-color: #94a3b8 !important;
+}
+
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"], body.dark, [data-bs-theme="dark"]) .btn-payroll-processing {
+    background-color: #1e1b4b !important;
+    color: #ffffff !important;
+    border: 1.5px solid #6366f1 !important;
+}
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"], body.dark, [data-bs-theme="dark"]) .btn-payroll-processing i {
+    color: #a5b4fc !important;
+}
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"], body.dark, [data-bs-theme="dark"]) .btn-payroll-processing:hover {
+    background-color: #312e81 !important;
+    color: #ffffff !important;
+    border-color: #818cf8 !important;
+}
+
+.btn-payroll-cycles {
+    background-color: #4f46e5 !important;
+    color: #ffffff !important;
+    border: 1.5px solid #4338ca !important;
+    font-weight: 700 !important;
+    transition: all 0.2s ease;
+}
+.btn-payroll-cycles i {
+    color: #ffffff !important;
+}
+.btn-payroll-cycles:hover {
+    background-color: #4338ca !important;
+    color: #ffffff !important;
+    border-color: #3730a3 !important;
+}
+
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"], body.dark, [data-bs-theme="dark"]) .btn-payroll-cycles {
+    background-color: #6366f1 !important;
+    color: #ffffff !important;
+    border: 1.5px solid #818cf8 !important;
+}
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"], body.dark, [data-bs-theme="dark"]) .btn-payroll-cycles i {
+    color: #ffffff !important;
+}
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"], body.dark, [data-bs-theme="dark"]) .btn-payroll-cycles:hover {
+    background-color: #4f46e5 !important;
+    color: #ffffff !important;
+    border-color: #a5b4fc !important;
+}
+
+.payroll-kpi-val {
+    color: #0f172a;
+}
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"], body.dark, [data-bs-theme="dark"]) .payroll-kpi-val {
+    color: #f8fafc !important;
+}
+
+/* Overview Summary Cards */
+.payroll-summary-card {
+    padding: 0.875rem 1rem;
+    border-radius: 0.75rem;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+/* Gross Box */
+.payroll-summary-gross {
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+}
+.payroll-summary-gross .summary-label {
+    color: #64748b;
+    font-size: 0.8125rem;
+    font-weight: 600;
+}
+.payroll-summary-gross .summary-val {
+    color: #0f172a;
+    font-weight: 700;
+}
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"], body.dark, [data-bs-theme="dark"]) .payroll-summary-gross {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.12);
+}
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"], body.dark, [data-bs-theme="dark"]) .payroll-summary-gross .summary-label {
+    color: #94a3b8 !important;
+}
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"], body.dark, [data-bs-theme="dark"]) .payroll-summary-gross .summary-val {
+    color: #f8fafc !important;
+}
+
+/* Deductions Box */
+.payroll-summary-deductions {
+    background-color: #fef9ee;
+    border: 1px solid #fef3c7;
+}
+.payroll-summary-deductions .summary-label {
+    color: #b45309;
+    font-size: 0.8125rem;
+    font-weight: 600;
+}
+.payroll-summary-deductions .summary-val {
+    color: #d97706;
+    font-weight: 700;
+}
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"], body.dark, [data-bs-theme="dark"]) .payroll-summary-deductions {
+    background-color: rgba(245, 158, 11, 0.15);
+    border-color: rgba(245, 158, 11, 0.3);
+}
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"], body.dark, [data-bs-theme="dark"]) .payroll-summary-deductions .summary-label {
+    color: #fcd34d !important;
+}
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"], body.dark, [data-bs-theme="dark"]) .payroll-summary-deductions .summary-val {
+    color: #fbbf24 !important;
+}
+
+/* Net Box */
+.payroll-summary-net {
+    background-color: #f0fdf4;
+    border: 1px solid #dcfce7;
+}
+.payroll-summary-net .summary-label {
+    color: #15803d;
+    font-size: 0.8125rem;
+    font-weight: 600;
+}
+.payroll-summary-net .summary-val {
+    color: #16a34a;
+    font-weight: 700;
+}
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"], body.dark, [data-bs-theme="dark"]) .payroll-summary-net {
+    background-color: rgba(16, 185, 129, 0.15);
+    border-color: rgba(16, 185, 129, 0.3);
+}
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"], body.dark, [data-bs-theme="dark"]) .payroll-summary-net .summary-label {
+    color: #6ee7b7 !important;
+}
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"], body.dark, [data-bs-theme="dark"]) .payroll-summary-net .summary-val {
+    color: #34d399 !important;
+}
+
+/* Table Head Overrides */
+.payroll-table-head {
+    background-color: #f8fafc;
+}
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"], body.dark, [data-bs-theme="dark"]) .payroll-table-head {
+    background-color: rgba(255, 255, 255, 0.04) !important;
+}
+</style>
 <div class="container-xxl flex-grow-1 container-p-y">
 
     @if(session('success'))
@@ -34,10 +194,10 @@
                     </div>
                 </div>
                 <div class="d-flex gap-2 flex-wrap">
-                    <a href="{{ route('payroll.processing') }}" class="btn btn-light fw-bold shadow-sm">
+                    <a href="{{ route('payroll.processing') }}" class="btn btn-payroll-processing shadow-sm">
                         <i class="bx bx-calculator me-1"></i> Open Processing
                     </a>
-                    <a href="{{ route('payroll.cycles.index') }}" class="btn fw-semibold" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);">
+                    <a href="{{ route('payroll.cycles.index') }}" class="btn btn-payroll-cycles shadow-sm">
                         <i class="bx bx-refresh me-1"></i> Payroll Cycles
                     </a>
                 </div>
@@ -53,11 +213,11 @@
                 <div class="card-body p-3">
                     <div class="d-flex align-items-center justify-content-between mb-2">
                         <span class="text-muted small fw-bold text-uppercase" style="letter-spacing:.05em;">Architecture</span>
-                        <div class="avatar avatar-sm rounded-3 d-flex align-items-center justify-content-center" style="background:#eef2ff;">
+                        <div class="avatar avatar-sm rounded-3 d-flex align-items-center justify-content-center" style="background:rgba(79,70,229,0.15);">
                             <i class="bx bx-building fs-5 text-primary"></i>
                         </div>
                     </div>
-                    <h5 class="fw-bold mb-0 text-dark">{{ $activeArchitecture?->name ?? 'Not Set' }}</h5>
+                    <h5 class="fw-bold mb-0 payroll-kpi-val">{{ $activeArchitecture?->name ?? 'Not Set' }}</h5>
                     <small class="text-muted">{{ $activeArchitecture ? 'v'.$activeArchitecture->version.' — Active' : 'Configure in Architectures' }}</small>
                 </div>
             </div>
@@ -69,11 +229,11 @@
                 <div class="card-body p-3">
                     <div class="d-flex align-items-center justify-content-between mb-2">
                         <span class="text-muted small fw-bold text-uppercase" style="letter-spacing:.05em;">Payroll Cycles</span>
-                        <div class="avatar avatar-sm rounded-3 d-flex align-items-center justify-content-center" style="background:#d1fae5;">
+                        <div class="avatar avatar-sm rounded-3 d-flex align-items-center justify-content-center" style="background:rgba(16,185,129,0.15);">
                             <i class="bx bx-calendar-check fs-5 text-success"></i>
                         </div>
                     </div>
-                    <h3 class="fw-bold mb-0 text-dark">{{ $cycles->count() }}</h3>
+                    <h3 class="fw-bold mb-0 payroll-kpi-val">{{ $cycles->count() }}</h3>
                     <small class="text-muted">Recent payroll cycles</small>
                 </div>
             </div>
@@ -85,11 +245,11 @@
                 <div class="card-body p-3">
                     <div class="d-flex align-items-center justify-content-between mb-2">
                         <span class="text-muted small fw-bold text-uppercase" style="letter-spacing:.05em;">Payslips</span>
-                        <div class="avatar avatar-sm rounded-3 d-flex align-items-center justify-content-center" style="background:#fef3c7;">
+                        <div class="avatar avatar-sm rounded-3 d-flex align-items-center justify-content-center" style="background:rgba(245,158,11,0.15);">
                             <i class="bx bx-receipt fs-5 text-warning"></i>
                         </div>
                     </div>
-                    <h3 class="fw-bold mb-0 text-dark">{{ number_format($payslipCount) }}</h3>
+                    <h3 class="fw-bold mb-0 payroll-kpi-val">{{ number_format($payslipCount) }}</h3>
                     <small class="text-muted">Total payslips generated</small>
                 </div>
             </div>
@@ -101,11 +261,11 @@
                 <div class="card-body p-3">
                     <div class="d-flex align-items-center justify-content-between mb-2">
                         <span class="text-muted small fw-bold text-uppercase" style="letter-spacing:.05em;">History Records</span>
-                        <div class="avatar avatar-sm rounded-3 d-flex align-items-center justify-content-center" style="background:#fee2e2;">
+                        <div class="avatar avatar-sm rounded-3 d-flex align-items-center justify-content-center" style="background:rgba(239,68,68,0.15);">
                             <i class="bx bx-history fs-5 text-danger"></i>
                         </div>
                     </div>
-                    <h3 class="fw-bold mb-0 text-dark">{{ number_format($historyCount) }}</h3>
+                    <h3 class="fw-bold mb-0 payroll-kpi-val">{{ number_format($historyCount) }}</h3>
                     <small class="text-muted">Employee payroll records</small>
                 </div>
             </div>
@@ -134,21 +294,21 @@
                     {{-- Summary Row --}}
                     <div class="row g-3 mb-4">
                         <div class="col-4">
-                            <div class="p-3 rounded-3 text-center" style="background:#f8fafc;">
-                                <div class="text-muted small mb-1">Total Gross</div>
-                                <div class="fw-bold fs-6 text-dark">₹{{ number_format($grossTotal, 0) }}</div>
+                            <div class="payroll-summary-card payroll-summary-gross">
+                                <div class="summary-label mb-1">Total Gross</div>
+                                <div class="summary-val fs-6">₹{{ number_format($grossTotal, 0) }}</div>
                             </div>
                         </div>
                         <div class="col-4">
-                            <div class="p-3 rounded-3 text-center" style="background:#fef9ee;">
-                                <div class="text-muted small mb-1">Total Deductions</div>
-                                <div class="fw-bold fs-6 text-warning">₹{{ number_format($deductionTotal, 0) }}</div>
+                            <div class="payroll-summary-card payroll-summary-deductions">
+                                <div class="summary-label mb-1">Total Deductions</div>
+                                <div class="summary-val fs-6">₹{{ number_format($deductionTotal, 0) }}</div>
                             </div>
                         </div>
                         <div class="col-4">
-                            <div class="p-3 rounded-3 text-center" style="background:#f0fdf4;">
-                                <div class="text-muted small mb-1">Total Net Pay</div>
-                                <div class="fw-bold fs-6 text-success">₹{{ number_format($netTotal, 0) }}</div>
+                            <div class="payroll-summary-card payroll-summary-net">
+                                <div class="summary-label mb-1">Total Net Pay</div>
+                                <div class="summary-val fs-6">₹{{ number_format($netTotal, 0) }}</div>
                             </div>
                         </div>
                     </div>
@@ -258,7 +418,7 @@
         </div>
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead style="background:#f8fafc;font-size:12px;">
+                <thead class="payroll-table-head" style="font-size:12px;">
                     <tr class="text-muted">
                         <th class="px-4 fw-semibold text-uppercase">Name</th>
                         <th class="fw-semibold text-uppercase">Type</th>

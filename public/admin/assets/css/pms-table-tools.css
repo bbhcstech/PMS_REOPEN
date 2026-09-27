@@ -567,6 +567,73 @@ body.dark .pms-table-export__option:disabled span {
   opacity: 0.88 !important;
 }
 
+/* Explicit Light Mode Table Export Toggle & Dropdown Text Contrast Rules */
+html:not([data-pms-theme="dark"]):not([data-theme="dark"]):not([data-bs-theme="dark"]) .pms-table-export__toggle,
+html:not([data-pms-theme="dark"]):not([data-theme="dark"]):not([data-bs-theme="dark"]) .pms-table-export__toggle *,
+html[data-pms-theme="light"] .pms-table-export__toggle,
+html[data-pms-theme="light"] .pms-table-export__toggle *,
+html[data-theme="light"] .pms-table-export__toggle,
+html[data-theme="light"] .pms-table-export__toggle * {
+  color: #047857 !important;
+  -webkit-text-fill-color: #047857 !important;
+}
+
+html:not([data-pms-theme="dark"]):not([data-theme="dark"]):not([data-bs-theme="dark"]) .pms-table-export__toggle:hover,
+html:not([data-pms-theme="dark"]):not([data-theme="dark"]):not([data-bs-theme="dark"]) .pms-table-export__toggle:hover *,
+html[data-pms-theme="light"] .pms-table-export__toggle:hover,
+html[data-pms-theme="light"] .pms-table-export__toggle:hover *,
+html[data-theme="light"] .pms-table-export__toggle:hover,
+html[data-theme="light"] .pms-table-export__toggle:hover * {
+  color: #065f46 !important;
+  -webkit-text-fill-color: #065f46 !important;
+}
+
+html:not([data-pms-theme="dark"]):not([data-theme="dark"]):not([data-bs-theme="dark"]) .pms-table-export__menu,
+html[data-pms-theme="light"] .pms-table-export__menu,
+html[data-theme="light"] .pms-table-export__menu,
+html:not([data-pms-theme="dark"]):not([data-theme="dark"]):not([data-bs-theme="dark"]) .dropdown-menu,
+html:not([data-pms-theme="dark"]):not([data-theme="dark"]):not([data-bs-theme="dark"]) .export-dropdown-menu,
+html[data-pms-theme="light"] .dropdown-menu,
+html[data-theme="light"] .dropdown-menu {
+  background: #ffffff !important;
+  border-color: rgba(15, 23, 42, 0.12) !important;
+  box-shadow: 0 14px 35px rgba(15, 23, 42, 0.15) !important;
+}
+
+html:not([data-pms-theme="dark"]):not([data-theme="dark"]):not([data-bs-theme="dark"]) .pms-table-export__option,
+html:not([data-pms-theme="dark"]):not([data-theme="dark"]):not([data-bs-theme="dark"]) .pms-table-export__option *,
+html:not([data-pms-theme="dark"]):not([data-theme="dark"]):not([data-bs-theme="dark"]) .dropdown-item,
+html:not([data-pms-theme="dark"]):not([data-theme="dark"]):not([data-bs-theme="dark"]) .dropdown-item *,
+html:not([data-pms-theme="dark"]):not([data-theme="dark"]):not([data-bs-theme="dark"]) .dropdown-menu a,
+html:not([data-pms-theme="dark"]):not([data-theme="dark"]):not([data-bs-theme="dark"]) .dropdown-menu button,
+html:not([data-pms-theme="dark"]):not([data-theme="dark"]):not([data-bs-theme="dark"]) .dropdown-menu span,
+html[data-pms-theme="light"] .pms-table-export__option,
+html[data-pms-theme="light"] .pms-table-export__option *,
+html[data-pms-theme="light"] .dropdown-item,
+html[data-pms-theme="light"] .dropdown-item *,
+html[data-theme="light"] .pms-table-export__option,
+html[data-theme="light"] .pms-table-export__option *,
+html[data-theme="light"] .dropdown-item,
+html[data-theme="light"] .dropdown-item * {
+  color: #1e293b !important;
+  -webkit-text-fill-color: #1e293b !important;
+}
+
+html:not([data-pms-theme="dark"]):not([data-theme="dark"]):not([data-bs-theme="dark"]) .pms-table-export__option:hover,
+html:not([data-pms-theme="dark"]):not([data-theme="dark"]):not([data-bs-theme="dark"]) .pms-table-export__option:hover *,
+html:not([data-pms-theme="dark"]):not([data-theme="dark"]):not([data-bs-theme="dark"]) .dropdown-item:hover,
+html:not([data-pms-theme="dark"]):not([data-theme="dark"]):not([data-bs-theme="dark"]) .dropdown-item:hover *,
+html[data-pms-theme="light"] .pms-table-export__option:hover,
+html[data-pms-theme="light"] .pms-table-export__option:hover *,
+html[data-pms-theme="light"] .dropdown-item:hover,
+html[data-theme="light"] .pms-table-export__option:hover,
+html[data-theme="light"] .pms-table-export__option:hover *,
+html[data-theme="light"] .dropdown-item:hover {
+  background: #ecfdf5 !important;
+  color: #047857 !important;
+  -webkit-text-fill-color: #047857 !important;
+}
+
 @keyframes pmsExportMenuIn {
   from { opacity: 0; transform: translateY(-5px) scale(0.98); }
   to { opacity: 1; transform: translateY(0) scale(1); }
