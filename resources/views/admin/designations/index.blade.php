@@ -539,6 +539,88 @@
         box-shadow: 0 12px 28px -8px rgba(5, 150, 105, 0.45);
     }
 
+    /* DataTables Export & Dropdown Buttons in Light Mode */
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark) .dt-buttons,
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark) .dt-buttons button,
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark) button.dt-button,
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark) a.dt-button,
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark) .buttons-collection,
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark) .dt-button,
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark) div.dt-buttons button {
+        background: #f0f9f4 !important;
+        border: 1px solid rgba(16, 185, 129, 0.3) !important;
+        color: #059669 !important;
+        -webkit-text-fill-color: #059669 !important;
+        border-radius: 30px !important;
+        padding: 6px 18px !important;
+        font-weight: 700 !important;
+        font-size: 0.85rem !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        box-shadow: 0 2px 6px rgba(16, 185, 129, 0.08) !important;
+        transition: all 0.25s ease !important;
+    }
+
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark) .dt-buttons button *,
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark) button.dt-button *,
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark) a.dt-button *,
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark) .buttons-collection *,
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark) .dt-button *,
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark) div.dt-buttons button * {
+        color: #059669 !important;
+        -webkit-text-fill-color: #059669 !important;
+    }
+
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark) .dt-buttons button:hover,
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark) button.dt-button:hover,
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark) a.dt-button:hover,
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark) .buttons-collection:hover,
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark) .dt-button:hover {
+        background: linear-gradient(145deg, #34d399, #059669) !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        border-color: #059669 !important;
+        box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25) !important;
+    }
+
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark) .dt-buttons button:hover *,
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark) button.dt-button:hover *,
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark) a.dt-button:hover *,
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark) .buttons-collection:hover *,
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark) .dt-button:hover * {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark) .dt-button-collection,
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark) div.dt-button-collection {
+        background: #ffffff !important;
+        border: 1px solid rgba(16, 185, 129, 0.2) !important;
+        border-radius: 16px !important;
+        padding: 8px !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark) .dt-button-collection .dt-button,
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark) div.dt-button-collection a.dt-button,
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark) div.dt-button-collection button.dt-button {
+        background: transparent !important;
+        color: #0a2e1f !important;
+        -webkit-text-fill-color: #0a2e1f !important;
+        border-radius: 10px !important;
+        padding: 8px 16px !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark) .dt-button-collection .dt-button:hover,
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark) div.dt-button-collection a.dt-button:hover {
+        background: #f0f9f4 !important;
+        color: #059669 !important;
+        -webkit-text-fill-color: #059669 !important;
+    }
+
     /* Stats Cards */
     .stats {
         display: grid;
@@ -547,9 +629,9 @@
         margin-bottom: 32px;
     }
 
-    .designation-page .stat-card,
-    .designation-page .stat-card:first-of-type,
-    .designation-page .stat-card.is-featured {
+    html:not([data-pms-theme="dark"]) .designation-page .stat-card,
+    html:not([data-pms-theme="dark"]) .designation-page .stat-card:first-of-type,
+    html:not([data-pms-theme="dark"]) .designation-page .stat-card.is-featured {
         background: #ffffff !important;
         padding: 24px;
         border-radius: 24px;
@@ -613,6 +695,7 @@
         color: #059669 !important;
         -webkit-text-fill-color: #059669 !important;
         background: transparent !important;
+        background-color: transparent !important;
     }
 
     .designation-page .stat-card:nth-child(2) .stat-icon {
@@ -625,6 +708,7 @@
         color: #0284c7 !important;
         -webkit-text-fill-color: #0284c7 !important;
         background: transparent !important;
+        background-color: transparent !important;
     }
 
     .designation-page .stat-card:nth-child(3) .stat-icon {
@@ -637,6 +721,7 @@
         color: #d97706 !important;
         -webkit-text-fill-color: #d97706 !important;
         background: transparent !important;
+        background-color: transparent !important;
     }
 
     .designation-page .stat-card:nth-child(4) .stat-icon {
@@ -649,11 +734,12 @@
         color: #4f46e5 !important;
         -webkit-text-fill-color: #4f46e5 !important;
         background: transparent !important;
+        background-color: transparent !important;
     }
 
-    .designation-page .stat-card h3,
-    .designation-page .stat-card:first-of-type h3,
-    .designation-page .stat-card:first-of-type .stat-value {
+    html:not([data-pms-theme="dark"]) .designation-page .stat-card h3,
+    html:not([data-pms-theme="dark"]) .designation-page .stat-card:first-of-type h3,
+    html:not([data-pms-theme="dark"]) .designation-page .stat-card:first-of-type .stat-value {
         font-size: 32px;
         font-weight: 800;
         color: #0a2e1f !important;
@@ -662,9 +748,9 @@
         line-height: 1;
     }
 
-    .designation-page .stat-card span,
-    .designation-page .stat-card:first-of-type span,
-    .designation-page .stat-card:first-of-type .stat-title {
+    html:not([data-pms-theme="dark"]) .designation-page .stat-card span,
+    html:not([data-pms-theme="dark"]) .designation-page .stat-card:first-of-type span,
+    html:not([data-pms-theme="dark"]) .designation-page .stat-card:first-of-type .stat-title {
         color: #4b5563 !important;
         -webkit-text-fill-color: #4b5563 !important;
         font-size: 12px;
@@ -673,9 +759,9 @@
         letter-spacing: 0.5px;
     }
 
-    .designation-page .stat-sub,
-    .designation-page .stat-card:first-of-type .stat-sub,
-    .designation-page .stat-card:first-of-type .stat-trend {
+    html:not([data-pms-theme="dark"]) .designation-page .stat-sub,
+    html:not([data-pms-theme="dark"]) .designation-page .stat-card:first-of-type .stat-sub,
+    html:not([data-pms-theme="dark"]) .designation-page .stat-card:first-of-type .stat-trend {
         font-size: 11px;
         color: #6b7280 !important;
         -webkit-text-fill-color: #6b7280 !important;
@@ -1874,40 +1960,80 @@
     html[data-bs-theme="dark"] .designation-page .stat-card:nth-child(1) .stat-icon,
     html[data-theme="dark"] .designation-page .stat-card:nth-child(1) .stat-icon,
     html.dark .designation-page .stat-card:nth-child(1) .stat-icon {
-        background: rgba(16, 185, 129, 0.22) !important;
-        color: #7af0b5 !important;
-        -webkit-text-fill-color: #7af0b5 !important;
-        border: 1px solid rgba(122, 240, 181, 0.4) !important;
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.35) 0%, rgba(5, 150, 105, 0.55) 100%) !important;
+        color: #a7f3d0 !important;
+        -webkit-text-fill-color: #a7f3d0 !important;
+        border: 1.5px solid rgba(122, 240, 181, 0.7) !important;
+        box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35) !important;
+    }
+    html[data-pms-theme="dark"] .designation-page .stat-card:nth-child(1) .stat-icon *,
+    html[data-bs-theme="dark"] .designation-page .stat-card:nth-child(1) .stat-icon *,
+    html[data-theme="dark"] .designation-page .stat-card:nth-child(1) .stat-icon *,
+    html.dark .designation-page .stat-card:nth-child(1) .stat-icon * {
+        background: transparent !important;
+        background-image: none !important;
+        color: #a7f3d0 !important;
+        -webkit-text-fill-color: #a7f3d0 !important;
     }
 
     html[data-pms-theme="dark"] .designation-page .stat-card:nth-child(2) .stat-icon,
     html[data-bs-theme="dark"] .designation-page .stat-card:nth-child(2) .stat-icon,
     html[data-theme="dark"] .designation-page .stat-card:nth-child(2) .stat-icon,
     html.dark .designation-page .stat-card:nth-child(2) .stat-icon {
-        background: rgba(56, 189, 248, 0.22) !important;
-        color: #38bdf8 !important;
-        -webkit-text-fill-color: #38bdf8 !important;
-        border: 1px solid rgba(56, 189, 248, 0.4) !important;
+        background: linear-gradient(135deg, rgba(56, 189, 248, 0.35) 0%, rgba(2, 132, 199, 0.55) 100%) !important;
+        color: #bae6fd !important;
+        -webkit-text-fill-color: #bae6fd !important;
+        border: 1.5px solid rgba(56, 189, 248, 0.7) !important;
+        box-shadow: 0 6px 20px rgba(56, 189, 248, 0.35) !important;
+    }
+    html[data-pms-theme="dark"] .designation-page .stat-card:nth-child(2) .stat-icon *,
+    html[data-bs-theme="dark"] .designation-page .stat-card:nth-child(2) .stat-icon *,
+    html[data-theme="dark"] .designation-page .stat-card:nth-child(2) .stat-icon *,
+    html.dark .designation-page .stat-card:nth-child(2) .stat-icon * {
+        background: transparent !important;
+        background-image: none !important;
+        color: #bae6fd !important;
+        -webkit-text-fill-color: #bae6fd !important;
     }
 
     html[data-pms-theme="dark"] .designation-page .stat-card:nth-child(3) .stat-icon,
     html[data-bs-theme="dark"] .designation-page .stat-card:nth-child(3) .stat-icon,
     html[data-theme="dark"] .designation-page .stat-card:nth-child(3) .stat-icon,
     html.dark .designation-page .stat-card:nth-child(3) .stat-icon {
-        background: rgba(245, 158, 11, 0.22) !important;
-        color: #fbbf24 !important;
-        -webkit-text-fill-color: #fbbf24 !important;
-        border: 1px solid rgba(245, 158, 11, 0.4) !important;
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.35) 0%, rgba(217, 119, 6, 0.55) 100%) !important;
+        color: #fef08a !important;
+        -webkit-text-fill-color: #fef08a !important;
+        border: 1.5px solid rgba(251, 191, 36, 0.7) !important;
+        box-shadow: 0 6px 20px rgba(245, 158, 11, 0.35) !important;
+    }
+    html[data-pms-theme="dark"] .designation-page .stat-card:nth-child(3) .stat-icon *,
+    html[data-bs-theme="dark"] .designation-page .stat-card:nth-child(3) .stat-icon *,
+    html[data-theme="dark"] .designation-page .stat-card:nth-child(3) .stat-icon *,
+    html.dark .designation-page .stat-card:nth-child(3) .stat-icon * {
+        background: transparent !important;
+        background-image: none !important;
+        color: #fef08a !important;
+        -webkit-text-fill-color: #fef08a !important;
     }
 
     html[data-pms-theme="dark"] .designation-page .stat-card:nth-child(4) .stat-icon,
     html[data-bs-theme="dark"] .designation-page .stat-card:nth-child(4) .stat-icon,
     html[data-theme="dark"] .designation-page .stat-card:nth-child(4) .stat-icon,
     html.dark .designation-page .stat-card:nth-child(4) .stat-icon {
-        background: rgba(129, 140, 248, 0.22) !important;
-        color: #818cf8 !important;
-        -webkit-text-fill-color: #818cf8 !important;
-        border: 1px solid rgba(129, 140, 248, 0.4) !important;
+        background: linear-gradient(135deg, rgba(129, 140, 248, 0.35) 0%, rgba(79, 70, 229, 0.55) 100%) !important;
+        color: #c7d2fe !important;
+        -webkit-text-fill-color: #c7d2fe !important;
+        border: 1.5px solid rgba(122, 240, 181, 0.7) !important;
+        box-shadow: 0 6px 20px rgba(129, 140, 248, 0.35) !important;
+    }
+    html[data-pms-theme="dark"] .designation-page .stat-card:nth-child(4) .stat-icon *,
+    html[data-bs-theme="dark"] .designation-page .stat-card:nth-child(4) .stat-icon *,
+    html[data-theme="dark"] .designation-page .stat-card:nth-child(4) .stat-icon *,
+    html.dark .designation-page .stat-card:nth-child(4) .stat-icon * {
+        background: transparent !important;
+        background-image: none !important;
+        color: #c7d2fe !important;
+        -webkit-text-fill-color: #c7d2fe !important;
     }
 
     /* Main Table Card in Dark Mode */

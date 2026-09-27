@@ -13,7 +13,7 @@
     .filter-grid { display: grid; grid-template-columns: repeat(3, minmax(180px, 1fr)); gap: 16px; align-items: end; }
     label { color: #667085; text-transform: uppercase; font-size: .76rem; font-weight: 900; margin-bottom: 6px; }
     .form-control { min-height: 44px; border-radius: 12px; border: 1px solid #dbe7e1; font-weight: 650; }
-    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border-radius: 12px; min-height: 40px; font-weight: 900; border: 0; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border-radius: 12px; min-height: 40px; font-weight: 900; border: 0; white-space: nowrap !important; flex-shrink: 0 !important; }
     .btn-primary { background: linear-gradient(145deg, #34d399, #059669); color: #fff; }
     .btn-light, .btn-secondary { background: #f0f9f4; color: #0f744c; border: 1px solid rgba(16,185,129,.18); }
     .table-head { display: flex; justify-content: space-between; gap: 16px; margin-bottom: 16px; align-items: center; }
@@ -21,7 +21,33 @@
     .checkbox-col { width: 44px; text-align: center; }
     .leave-table th { color: #667085; font-size: .78rem; text-transform: uppercase; }
     .leave-table td { vertical-align: middle; font-weight: 650; }
-    .leave-table small { display: block; color: #667085; }
+    .leave-table td.text-end { white-space: nowrap !important; text-align: right; width: 1%; }
+    .leave-table .action-buttons,
+    .action-buttons {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: flex-end !important;
+        gap: 8px !important;
+        white-space: nowrap !important;
+        flex-wrap: nowrap !important;
+    }
+    .leave-table .action-buttons form,
+    .action-buttons form {
+        margin: 0 !important;
+        display: inline-flex !important;
+    }
+    .leave-table .btn-sm {
+        min-height: 36px;
+        padding: 6px 14px;
+        font-size: .82rem;
+        border-radius: 999px;
+        white-space: nowrap;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        line-height: 1.2;
+    }
     .status-badge { display: inline-flex; padding: 6px 10px; border-radius: 999px; font-size: .75rem; font-weight: 900; color: #fff; }
     .status-badge.pending { background: #f59e0b; }
     .status-badge.approved { background: #10b981; }
@@ -67,6 +93,12 @@
         background: #141B3D !important;
         border-color: rgba(238, 241, 251, 0.16) !important;
         color: #CBD5E1 !important;
+    }
+    html[data-pms-theme="dark"] .btn-light:hover,
+    html[data-pms-theme="dark"] .btn-secondary:hover {
+        background: #1C2652 !important;
+        border-color: rgba(96, 165, 250, 0.4) !important;
+        color: #FFFFFF !important;
     }
     html[data-pms-theme="dark"] .leave-hero-icon {
         background: rgba(47, 107, 255, 0.2) !important;

@@ -233,17 +233,191 @@ function resolveModuleIcon(?string $icon): string {
 
     /* Action Buttons */
     .btn-icon-action {
-        width: 32px;
-        height: 32px;
-        padding: 0;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 6px;
-        transition: all 0.2s ease;
+        width: 34px !important;
+        height: 34px !important;
+        padding: 0 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border-radius: 8px !important;
+        transition: all 0.2s ease !important;
+        border: none !important;
+        cursor: pointer !important;
     }
+
     .btn-icon-action:hover {
-        transform: translateY(-1px);
+        transform: translateY(-2px) !important;
+    }
+
+    .btn-icon-action i,
+    .btn-icon-action svg,
+    .btn-icon-action [class*="bx"],
+    .btn-icon-action [class*="fa"] {
+        background-color: transparent !important;
+        background: transparent !important;
+        font-size: 1.15rem !important;
+        line-height: 1 !important;
+    }
+
+    /* Primary Edit Action Button */
+    .btn-icon-action.btn-label-primary {
+        background-color: #e0e7ff !important;
+        color: #4f46e5 !important;
+        border: 1px solid rgba(79, 70, 229, 0.25) !important;
+    }
+    .btn-icon-action.btn-label-primary i,
+    .btn-icon-action.btn-label-primary svg,
+    .btn-icon-action.btn-label-primary [class*="bx"] {
+        color: #4f46e5 !important;
+        fill: #4f46e5 !important;
+        -webkit-text-fill-color: #4f46e5 !important;
+    }
+    .btn-icon-action.btn-label-primary:hover {
+        background-color: #4f46e5 !important;
+        color: #ffffff !important;
+    }
+    .btn-icon-action.btn-label-primary:hover i,
+    .btn-icon-action.btn-label-primary:hover svg,
+    .btn-icon-action.btn-label-primary:hover [class*="bx"] {
+        color: #ffffff !important;
+        fill: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    /* Danger Delete Action Button */
+    .btn-icon-action.btn-label-danger {
+        background-color: #fee2e2 !important;
+        color: #dc2626 !important;
+        border: 1px solid rgba(220, 38, 38, 0.25) !important;
+    }
+    .btn-icon-action.btn-label-danger i,
+    .btn-icon-action.btn-label-danger svg,
+    .btn-icon-action.btn-label-danger [class*="bx"] {
+        color: #dc2626 !important;
+        fill: #dc2626 !important;
+        -webkit-text-fill-color: #dc2626 !important;
+    }
+    .btn-icon-action.btn-label-danger:hover {
+        background-color: #dc2626 !important;
+        color: #ffffff !important;
+    }
+    .btn-icon-action.btn-label-danger:hover i,
+    .btn-icon-action.btn-label-danger:hover svg,
+    .btn-icon-action.btn-label-danger:hover [class*="bx"] {
+        color: #ffffff !important;
+        fill: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    /* Secondary Disabled/Lock Action Button */
+    .btn-icon-action.btn-label-secondary {
+        background-color: #f1f5f9 !important;
+        color: #64748b !important;
+        border: 1px solid rgba(100, 116, 139, 0.2) !important;
+        opacity: 0.7 !important;
+    }
+    .btn-icon-action.btn-label-secondary i,
+    .btn-icon-action.btn-label-secondary svg,
+    .btn-icon-action.btn-label-secondary [class*="bx"] {
+        color: #64748b !important;
+        fill: #64748b !important;
+        -webkit-text-fill-color: #64748b !important;
+    }
+
+    /* Primary Header Button Icon */
+    .btn-mm-primary i,
+    .btn-mm-primary svg,
+    .btn-mm-primary [class*="bx"],
+    .btn-mm-primary [class*="fa"] {
+        background-color: transparent !important;
+        background: transparent !important;
+        color: #ffffff !important;
+        fill: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    /* Stat Cards Icon Wrappers & Sub-Icons */
+    .mm-stat-card .mm-icon-wrapper i,
+    .mm-stat-card .mm-icon-wrapper svg,
+    .mm-stat-card .mm-icon-wrapper [class*="bx"],
+    .mm-stat-card .mm-icon-wrapper [class*="fa"] {
+        background-color: transparent !important;
+        background: transparent !important;
+        -webkit-text-fill-color: initial !important;
+    }
+
+    .col-sm-6:nth-child(1) .mm-stat-card .mm-icon-wrapper {
+        background: rgba(15, 116, 76, 0.14) !important;
+    }
+    .col-sm-6:nth-child(1) .mm-stat-card .mm-icon-wrapper i,
+    .col-sm-6:nth-child(1) .mm-stat-card .mm-icon-wrapper [class*="bx"] {
+        color: #0f744c !important;
+        fill: #0f744c !important;
+        -webkit-text-fill-color: #0f744c !important;
+    }
+
+    .col-sm-6:nth-child(2) .mm-stat-card .mm-icon-wrapper {
+        background: rgba(16, 185, 129, 0.16) !important;
+    }
+    .col-sm-6:nth-child(2) .mm-stat-card .mm-icon-wrapper i,
+    .col-sm-6:nth-child(2) .mm-stat-card .mm-icon-wrapper [class*="bx"] {
+        color: #10b981 !important;
+        fill: #10b981 !important;
+        -webkit-text-fill-color: #10b981 !important;
+    }
+
+    .col-sm-6:nth-child(3) .mm-stat-card .mm-icon-wrapper {
+        background: rgba(3, 195, 236, 0.16) !important;
+    }
+    .col-sm-6:nth-child(3) .mm-stat-card .mm-icon-wrapper i,
+    .col-sm-6:nth-child(3) .mm-stat-card .mm-icon-wrapper [class*="bx"] {
+        color: #03c3ec !important;
+        fill: #03c3ec !important;
+        -webkit-text-fill-color: #03c3ec !important;
+    }
+
+    .col-sm-6:nth-child(4) .mm-stat-card .mm-icon-wrapper {
+        background: rgba(255, 171, 0, 0.16) !important;
+    }
+    .col-sm-6:nth-child(4) .mm-stat-card .mm-icon-wrapper i,
+    .col-sm-6:nth-child(4) .mm-stat-card .mm-icon-wrapper [class*="bx"] {
+        color: #d97706 !important;
+        fill: #d97706 !important;
+        -webkit-text-fill-color: #d97706 !important;
+    }
+
+    /* Module Details Table Icons */
+    .mm-table td i,
+    .mm-table td svg,
+    .mm-table td [class*="bx"] {
+        background-color: transparent !important;
+    }
+
+    .mm-table td .btn-icon-action.btn-label-primary i,
+    .mm-table td .btn-icon-action.btn-label-primary svg,
+    .mm-table td .btn-icon-action.btn-label-primary [class*="bx"] {
+        background-color: transparent !important;
+        color: #4f46e5 !important;
+        fill: #4f46e5 !important;
+        -webkit-text-fill-color: #4f46e5 !important;
+    }
+
+    .mm-table td .btn-icon-action.btn-label-danger i,
+    .mm-table td .btn-icon-action.btn-label-danger svg,
+    .mm-table td .btn-icon-action.btn-label-danger [class*="bx"] {
+        background-color: transparent !important;
+        color: #dc2626 !important;
+        fill: #dc2626 !important;
+        -webkit-text-fill-color: #dc2626 !important;
+    }
+
+    .mm-table td .btn-icon-action.btn-label-secondary i,
+    .mm-table td .btn-icon-action.btn-label-secondary svg,
+    .mm-table td .btn-icon-action.btn-label-secondary [class*="bx"] {
+        background-color: transparent !important;
+        color: #64748b !important;
+        fill: #64748b !important;
+        -webkit-text-fill-color: #64748b !important;
     }
 
     /* Toast Notification Animation */
@@ -252,6 +426,79 @@ function resolveModuleIcon(?string $icon): string {
         border-radius: 8px;
         background: #f0fdf4;
         animation: mmFadeSlideUp 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    /* Dark Mode Overrides */
+    [data-theme="dark"] .mm-card-main,
+    [data-theme="dark"] .mm-stat-card,
+    body.dark-mode .mm-card-main,
+    body.dark-mode .mm-stat-card {
+        background-color: #1e293b !important;
+        border-color: #334155 !important;
+        color: #f8fafc !important;
+    }
+
+    [data-theme="dark"] .mm-table thead th,
+    body.dark-mode .mm-table thead th {
+        background-color: #0f172a !important;
+        color: #94a3b8 !important;
+        border-color: #334155 !important;
+    }
+
+    [data-theme="dark"] .mm-table tbody td,
+    body.dark-mode .mm-table tbody td {
+        border-color: #334155 !important;
+        color: #f8fafc !important;
+    }
+
+    [data-theme="dark"] .mm-table tbody tr:hover,
+    body.dark-mode .mm-table tbody tr:hover {
+        background-color: rgba(51, 65, 85, 0.4) !important;
+    }
+
+    [data-theme="dark"] .btn-icon-action.btn-label-primary,
+    body.dark-mode .btn-icon-action.btn-label-primary {
+        background-color: rgba(79, 70, 229, 0.25) !important;
+        color: #818cf8 !important;
+        border-color: rgba(129, 140, 248, 0.4) !important;
+    }
+    [data-theme="dark"] .btn-icon-action.btn-label-primary i,
+    [data-theme="dark"] .btn-icon-action.btn-label-primary svg,
+    body.dark-mode .btn-icon-action.btn-label-primary i,
+    body.dark-mode .btn-icon-action.btn-label-primary svg {
+        color: #818cf8 !important;
+        fill: #818cf8 !important;
+        -webkit-text-fill-color: #818cf8 !important;
+    }
+
+    [data-theme="dark"] .btn-icon-action.btn-label-danger,
+    body.dark-mode .btn-icon-action.btn-label-danger {
+        background-color: rgba(220, 38, 38, 0.25) !important;
+        color: #f87171 !important;
+        border-color: rgba(248, 113, 113, 0.4) !important;
+    }
+    [data-theme="dark"] .btn-icon-action.btn-label-danger i,
+    [data-theme="dark"] .btn-icon-action.btn-label-danger svg,
+    body.dark-mode .btn-icon-action.btn-label-danger i,
+    body.dark-mode .btn-icon-action.btn-label-danger svg {
+        color: #f87171 !important;
+        fill: #f87171 !important;
+        -webkit-text-fill-color: #f87171 !important;
+    }
+
+    [data-theme="dark"] .btn-icon-action.btn-label-secondary,
+    body.dark-mode .btn-icon-action.btn-label-secondary {
+        background-color: rgba(100, 116, 139, 0.25) !important;
+        color: #94a3b8 !important;
+        border-color: rgba(148, 163, 184, 0.4) !important;
+    }
+    [data-theme="dark"] .btn-icon-action.btn-label-secondary i,
+    [data-theme="dark"] .btn-icon-action.btn-label-secondary svg,
+    body.dark-mode .btn-icon-action.btn-label-secondary i,
+    body.dark-mode .btn-icon-action.btn-label-secondary svg {
+        color: #94a3b8 !important;
+        fill: #94a3b8 !important;
+        -webkit-text-fill-color: #94a3b8 !important;
     }
 </style>
 

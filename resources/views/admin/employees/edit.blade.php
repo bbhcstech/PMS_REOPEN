@@ -246,11 +246,22 @@
             left: 200%;
         }
 
+        .btn-header-enterprise i {
+            color: inherit;
+            -webkit-text-fill-color: inherit;
+        }
+
         .btn-header-enterprise:hover {
             transform: translateY(-3px) scale(1.02);
             background: white;
             color: var(--primary);
+            -webkit-text-fill-color: var(--primary);
             box-shadow: 0 15px 30px -8px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-header-enterprise:hover i {
+            color: var(--primary);
+            -webkit-text-fill-color: var(--primary);
         }
 
         /* ALERTS */
@@ -961,6 +972,48 @@
         html[data-theme="dark"] .modal-title-premium {
             color: #EEF1FB !important;
             -webkit-text-fill-color: #EEF1FB !important;
+        }
+
+        /* Dark Mode Header Button Fix */
+        html[data-pms-theme="dark"] .btn-header-enterprise,
+        html[data-bs-theme="dark"] .btn-header-enterprise,
+        html[data-theme="dark"] .btn-header-enterprise,
+        body[data-pms-theme="dark"] .btn-header-enterprise,
+        [data-pms-theme="dark"] .btn-header-enterprise {
+            background: rgba(255, 255, 255, 0.15) !important;
+            border-color: rgba(255, 255, 255, 0.3) !important;
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
+        }
+
+        html[data-pms-theme="dark"] .btn-header-enterprise i,
+        html[data-bs-theme="dark"] .btn-header-enterprise i,
+        html[data-theme="dark"] .btn-header-enterprise i,
+        body[data-pms-theme="dark"] .btn-header-enterprise i,
+        [data-pms-theme="dark"] .btn-header-enterprise i {
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
+        }
+
+        html[data-pms-theme="dark"] .btn-header-enterprise:hover,
+        html[data-bs-theme="dark"] .btn-header-enterprise:hover,
+        html[data-theme="dark"] .btn-header-enterprise:hover,
+        body[data-pms-theme="dark"] .btn-header-enterprise:hover,
+        [data-pms-theme="dark"] .btn-header-enterprise:hover {
+            background: #ffffff !important;
+            border-color: #ffffff !important;
+            color: #0f744c !important;
+            -webkit-text-fill-color: #0f744c !important;
+            box-shadow: 0 15px 30px -8px rgba(0, 0, 0, 0.25) !important;
+        }
+
+        html[data-pms-theme="dark"] .btn-header-enterprise:hover i,
+        html[data-bs-theme="dark"] .btn-header-enterprise:hover i,
+        html[data-theme="dark"] .btn-header-enterprise:hover i,
+        body[data-pms-theme="dark"] .btn-header-enterprise:hover i,
+        [data-pms-theme="dark"] .btn-header-enterprise:hover i {
+            color: #0f744c !important;
+            -webkit-text-fill-color: #0f744c !important;
         }
     </style>
 

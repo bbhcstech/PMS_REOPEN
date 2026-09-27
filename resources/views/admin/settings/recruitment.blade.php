@@ -119,6 +119,15 @@
         flex-shrink: 0;
     }
 
+    .header-icon-badge i,
+    .header-icon-badge svg,
+    .header-icon-badge [class*="fa"] {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
     .header-title h1 {
         font-size: 1.95rem;
         font-weight: 800;
@@ -247,32 +256,69 @@
         flex-shrink: 0;
     }
 
-    .stat-icon.categories,
-    .recruitment-settings-page .stat-card:first-of-type .stat-icon.categories {
+    .stat-icon.categories {
         background: linear-gradient(145deg, #d1fae5, #a7f3d0) !important;
-        color: #059669 !important;
-        -webkit-text-fill-color: #059669 !important;
+        border: 1px solid rgba(16, 185, 129, 0.25) !important;
     }
 
-    .stat-icon.stages,
-    .recruitment-settings-page .stat-card .stat-icon.stages {
+    .stat-icon.categories i,
+    .stat-icon.categories svg,
+    .stat-icon.categories [class*="fa"],
+    .recruitment-settings-page .stat-card .stat-icon.categories i,
+    .recruitment-settings-page .stat-card:first-of-type .stat-icon.categories i {
+        background: transparent !important;
+        color: #047857 !important;
+        -webkit-text-fill-color: #047857 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    .stat-icon.stages {
         background: linear-gradient(145deg, #e0f2fe, #bae6fd) !important;
-        color: #0284c7 !important;
-        -webkit-text-fill-color: #0284c7 !important;
+        border: 1px solid rgba(56, 189, 248, 0.25) !important;
     }
 
-    .stat-icon.resumesize,
-    .recruitment-settings-page .stat-card .stat-icon.resumesize {
+    .stat-icon.stages i,
+    .stat-icon.stages svg,
+    .stat-icon.stages [class*="fa"],
+    .recruitment-settings-page .stat-card .stat-icon.stages i {
+        background: transparent !important;
+        color: #0369a1 !important;
+        -webkit-text-fill-color: #0369a1 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    .stat-icon.resumesize {
         background: linear-gradient(145deg, #fef3c7, #fde68a) !important;
-        color: #d97706 !important;
-        -webkit-text-fill-color: #d97706 !important;
+        border: 1px solid rgba(251, 191, 36, 0.25) !important;
     }
 
-    .stat-icon.autoreply,
-    .recruitment-settings-page .stat-card .stat-icon.autoreply {
+    .stat-icon.resumesize i,
+    .stat-icon.resumesize svg,
+    .stat-icon.resumesize [class*="fa"],
+    .recruitment-settings-page .stat-card .stat-icon.resumesize i {
+        background: transparent !important;
+        color: #b45309 !important;
+        -webkit-text-fill-color: #b45309 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    .stat-icon.autoreply {
         background: linear-gradient(145deg, #e0e7ff, #c7d2fe) !important;
-        color: #4f46e5 !important;
-        -webkit-text-fill-color: #4f46e5 !important;
+        border: 1px solid rgba(129, 140, 248, 0.25) !important;
+    }
+
+    .stat-icon.autoreply i,
+    .stat-icon.autoreply svg,
+    .stat-icon.autoreply [class*="fa"],
+    .recruitment-settings-page .stat-card .stat-icon.autoreply i {
+        background: transparent !important;
+        color: #3730a3 !important;
+        -webkit-text-fill-color: #3730a3 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
     }
 
     .stat-info h6 {
@@ -324,6 +370,26 @@
         flex-shrink: 0;
     }
 
+    .card-header-avatar i,
+    .card-header-avatar svg,
+    .card-header-avatar [class*="fa"] {
+        color: #059669 !important;
+        -webkit-text-fill-color: #059669 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    .card-header-avatar i.text-white,
+    .card-header-avatar .text-white,
+    .card-header-avatar[style*="background"] i,
+    .card-header-avatar[style*="background"] svg,
+    .card-header-avatar[style*="background"] [class*="fa"] {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
     .section-badge {
         display: inline-flex;
         align-items: center;
@@ -337,6 +403,15 @@
         letter-spacing: 0.03em;
         border: 1px solid rgba(5, 150, 105, 0.2);
         margin-bottom: 1.25rem;
+    }
+
+    .section-badge i,
+    .section-badge svg,
+    .section-badge [class*="fa"] {
+        color: #059669 !important;
+        -webkit-text-fill-color: #059669 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
     }
 
     .form-label-custom {
@@ -452,20 +527,441 @@
         font-weight: 800;
     }
 
-    @media (max-width: 1200px) {
-        .stats-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
+    /* ===== DARK MODE SUPPORT ===== */
+    html[data-pms-theme="dark"] .recruitment-settings-page,
+    html[data-theme="dark"] .recruitment-settings-page,
+    html[data-bs-theme="dark"] .recruitment-settings-page,
+    body[data-pms-theme="dark"] .recruitment-settings-page,
+    body[data-theme="dark"] .recruitment-settings-page,
+    body[data-bs-theme="dark"] .recruitment-settings-page,
+    [data-pms-theme="dark"] .recruitment-settings-page,
+    [data-theme="dark"] .recruitment-settings-page,
+    [data-bs-theme="dark"] .recruitment-settings-page,
+    .dark-mode .recruitment-settings-page {
+        background: #0b0f19 !important;
+        color: #e2e8f0 !important;
     }
 
-    @media (max-width: 768px) {
-        .recruitment-settings-page {
-            padding: 1.25rem 1rem;
-        }
+    html[data-pms-theme="dark"] .branches-header,
+    html[data-theme="dark"] .branches-header,
+    html[data-bs-theme="dark"] .branches-header,
+    body[data-pms-theme="dark"] .branches-header,
+    body[data-theme="dark"] .branches-header,
+    body[data-bs-theme="dark"] .branches-header,
+    [data-pms-theme="dark"] .branches-header,
+    [data-theme="dark"] .branches-header,
+    [data-bs-theme="dark"] .branches-header,
+    html[data-pms-theme="dark"] .address-card-elevated,
+    html[data-theme="dark"] .address-card-elevated,
+    html[data-bs-theme="dark"] .address-card-elevated,
+    body[data-pms-theme="dark"] .address-card-elevated,
+    body[data-theme="dark"] .address-card-elevated,
+    body[data-bs-theme="dark"] .address-card-elevated,
+    [data-pms-theme="dark"] .address-card-elevated,
+    [data-theme="dark"] .address-card-elevated,
+    [data-bs-theme="dark"] .address-card-elevated,
+    .dark-mode .branches-header,
+    .dark-mode .address-card-elevated {
+        background: #111827 !important;
+        border-color: rgba(255, 255, 255, 0.08) !important;
+        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.4) !important;
+    }
 
-        .stats-grid {
-            grid-template-columns: 1fr;
-        }
+    html[data-pms-theme="dark"] .card-header-custom,
+    html[data-bs-theme="dark"] .card-header-custom,
+    body[data-pms-theme="dark"] .card-header-custom,
+    [data-pms-theme="dark"] .card-header-custom {
+        border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+    }
+
+    html[data-pms-theme="dark"] .card-header-custom h5,
+    html[data-bs-theme="dark"] .card-header-custom h5,
+    body[data-pms-theme="dark"] .card-header-custom h5,
+    [data-pms-theme="dark"] .card-header-custom h5,
+    html[data-pms-theme="dark"] .header-title h1,
+    html[data-bs-theme="dark"] .header-title h1,
+    body[data-pms-theme="dark"] .header-title h1,
+    [data-pms-theme="dark"] .header-title h1 {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+        background: none !important;
+    }
+
+    html[data-pms-theme="dark"] .header-title p,
+    html[data-bs-theme="dark"] .header-title p,
+    body[data-pms-theme="dark"] .header-title p,
+    [data-pms-theme="dark"] .header-title p,
+    html[data-pms-theme="dark"] .card-header-custom .text-muted,
+    html[data-bs-theme="dark"] .card-header-custom .text-muted,
+    body[data-pms-theme="dark"] .card-header-custom .text-muted,
+    [data-pms-theme="dark"] .card-header-custom .text-muted {
+        color: #94a3b8 !important;
+        -webkit-text-fill-color: #94a3b8 !important;
+    }
+
+    /* Stat Cards in Dark Mode */
+    html[data-pms-theme="dark"] .recruitment-settings-page .stat-card,
+    html[data-theme="dark"] .recruitment-settings-page .stat-card,
+    html[data-bs-theme="dark"] .recruitment-settings-page .stat-card,
+    body[data-pms-theme="dark"] .recruitment-settings-page .stat-card,
+    body[data-theme="dark"] .recruitment-settings-page .stat-card,
+    body[data-bs-theme="dark"] .recruitment-settings-page .stat-card,
+    [data-pms-theme="dark"] .recruitment-settings-page .stat-card,
+    [data-theme="dark"] .recruitment-settings-page .stat-card,
+    [data-bs-theme="dark"] .recruitment-settings-page .stat-card,
+    html[data-pms-theme="dark"] .recruitment-settings-page .stat-card:first-of-type,
+    html[data-theme="dark"] .recruitment-settings-page .stat-card:first-of-type,
+    html[data-bs-theme="dark"] .recruitment-settings-page .stat-card:first-of-type,
+    body[data-pms-theme="dark"] .recruitment-settings-page .stat-card:first-of-type,
+    body[data-theme="dark"] .recruitment-settings-page .stat-card:first-of-type,
+    body[data-bs-theme="dark"] .recruitment-settings-page .stat-card:first-of-type,
+    [data-pms-theme="dark"] .recruitment-settings-page .stat-card:first-of-type,
+    [data-theme="dark"] .recruitment-settings-page .stat-card:first-of-type,
+    [data-bs-theme="dark"] .recruitment-settings-page .stat-card:first-of-type,
+    html[data-pms-theme="dark"] .stat-card,
+    html[data-theme="dark"] .stat-card,
+    html[data-bs-theme="dark"] .stat-card,
+    html[data-pms-theme="dark"] .stat-card:first-of-type,
+    html[data-theme="dark"] .stat-card:first-of-type,
+    html[data-bs-theme="dark"] .stat-card:first-of-type,
+    .dark-mode .stat-card,
+    .dark-mode .stat-card:first-of-type {
+        background: #171e2e !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.3) !important;
+        color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .recruitment-settings-page .stat-card h3,
+    html[data-theme="dark"] .recruitment-settings-page .stat-card h3,
+    html[data-bs-theme="dark"] .recruitment-settings-page .stat-card h3,
+    body[data-pms-theme="dark"] .recruitment-settings-page .stat-card h3,
+    body[data-theme="dark"] .recruitment-settings-page .stat-card h3,
+    body[data-bs-theme="dark"] .recruitment-settings-page .stat-card h3,
+    [data-pms-theme="dark"] .recruitment-settings-page .stat-card h3,
+    [data-theme="dark"] .recruitment-settings-page .stat-card h3,
+    [data-bs-theme="dark"] .recruitment-settings-page .stat-card h3,
+    html[data-pms-theme="dark"] .recruitment-settings-page .stat-card:first-of-type h3,
+    html[data-theme="dark"] .recruitment-settings-page .stat-card:first-of-type h3,
+    html[data-bs-theme="dark"] .recruitment-settings-page .stat-card:first-of-type h3,
+    body[data-pms-theme="dark"] .recruitment-settings-page .stat-card:first-of-type h3,
+    body[data-theme="dark"] .recruitment-settings-page .stat-card:first-of-type h3,
+    body[data-bs-theme="dark"] .recruitment-settings-page .stat-card:first-of-type h3,
+    [data-pms-theme="dark"] .recruitment-settings-page .stat-card:first-of-type h3,
+    [data-theme="dark"] .recruitment-settings-page .stat-card:first-of-type h3,
+    [data-bs-theme="dark"] .recruitment-settings-page .stat-card:first-of-type h3,
+    .dark-mode .stat-card h3 {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .recruitment-settings-page .stat-card h6,
+    html[data-theme="dark"] .recruitment-settings-page .stat-card h6,
+    html[data-bs-theme="dark"] .recruitment-settings-page .stat-card h6,
+    body[data-pms-theme="dark"] .recruitment-settings-page .stat-card h6,
+    body[data-theme="dark"] .recruitment-settings-page .stat-card h6,
+    body[data-bs-theme="dark"] .recruitment-settings-page .stat-card h6,
+    [data-pms-theme="dark"] .recruitment-settings-page .stat-card h6,
+    [data-theme="dark"] .recruitment-settings-page .stat-card h6,
+    [data-bs-theme="dark"] .recruitment-settings-page .stat-card h6,
+    html[data-pms-theme="dark"] .recruitment-settings-page .stat-card:first-of-type h6,
+    html[data-theme="dark"] .recruitment-settings-page .stat-card:first-of-type h6,
+    html[data-bs-theme="dark"] .recruitment-settings-page .stat-card:first-of-type h6,
+    body[data-pms-theme="dark"] .recruitment-settings-page .stat-card:first-of-type h6,
+    body[data-theme="dark"] .recruitment-settings-page .stat-card:first-of-type h6,
+    body[data-bs-theme="dark"] .recruitment-settings-page .stat-card:first-of-type h6,
+    [data-pms-theme="dark"] .recruitment-settings-page .stat-card:first-of-type h6,
+    [data-theme="dark"] .recruitment-settings-page .stat-card:first-of-type h6,
+    [data-bs-theme="dark"] .recruitment-settings-page .stat-card:first-of-type h6,
+    .dark-mode .stat-card h6 {
+        color: #94a3b8 !important;
+        -webkit-text-fill-color: #94a3b8 !important;
+    }
+
+    /* Stat Card Icons in Dark Mode */
+    html[data-pms-theme="dark"] .stat-icon.categories,
+    html[data-theme="dark"] .stat-icon.categories,
+    html[data-bs-theme="dark"] .stat-icon.categories,
+    body[data-pms-theme="dark"] .stat-icon.categories,
+    body[data-theme="dark"] .stat-icon.categories,
+    body[data-bs-theme="dark"] .stat-icon.categories,
+    [data-pms-theme="dark"] .stat-icon.categories,
+    [data-theme="dark"] .stat-icon.categories,
+    [data-bs-theme="dark"] .stat-icon.categories,
+    .dark-mode .stat-icon.categories {
+        background: rgba(16, 185, 129, 0.25) !important;
+        border: 1px solid rgba(52, 211, 153, 0.35) !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon.categories i,
+    html[data-pms-theme="dark"] .stat-icon.categories svg,
+    html[data-pms-theme="dark"] .stat-icon.categories [class*="fa"],
+    html[data-theme="dark"] .stat-icon.categories i,
+    html[data-theme="dark"] .stat-icon.categories svg,
+    html[data-theme="dark"] .stat-icon.categories [class*="fa"],
+    html[data-bs-theme="dark"] .stat-icon.categories i,
+    html[data-bs-theme="dark"] .stat-icon.categories svg,
+    html[data-bs-theme="dark"] .stat-icon.categories [class*="fa"],
+    body[data-pms-theme="dark"] .stat-icon.categories i,
+    body[data-theme="dark"] .stat-icon.categories i,
+    body[data-bs-theme="dark"] .stat-icon.categories i,
+    [data-pms-theme="dark"] .stat-icon.categories i,
+    [data-theme="dark"] .stat-icon.categories i,
+    [data-bs-theme="dark"] .stat-icon.categories i,
+    .dark-mode .stat-icon.categories i,
+    .dark-mode .stat-icon.categories svg,
+    .dark-mode .stat-icon.categories [class*="fa"],
+    [data-pms-theme="dark"] .recruitment-settings-page .stat-card .stat-icon.categories i,
+    [data-pms-theme="dark"] .recruitment-settings-page .stat-card:first-of-type .stat-icon.categories i,
+    [data-theme="dark"] .recruitment-settings-page .stat-card .stat-icon.categories i,
+    [data-theme="dark"] .recruitment-settings-page .stat-card:first-of-type .stat-icon.categories i,
+    [data-bs-theme="dark"] .recruitment-settings-page .stat-card .stat-icon.categories i,
+    [data-bs-theme="dark"] .recruitment-settings-page .stat-card:first-of-type .stat-icon.categories i,
+    .dark-mode .recruitment-settings-page .stat-card .stat-icon.categories i,
+    .dark-mode .recruitment-settings-page .stat-card:first-of-type .stat-icon.categories i {
+        background: transparent !important;
+        color: #34d399 !important;
+        -webkit-text-fill-color: #34d399 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon.stages,
+    html[data-theme="dark"] .stat-icon.stages,
+    html[data-bs-theme="dark"] .stat-icon.stages,
+    body[data-pms-theme="dark"] .stat-icon.stages,
+    body[data-theme="dark"] .stat-icon.stages,
+    body[data-bs-theme="dark"] .stat-icon.stages,
+    [data-pms-theme="dark"] .stat-icon.stages,
+    [data-theme="dark"] .stat-icon.stages,
+    [data-bs-theme="dark"] .stat-icon.stages,
+    .dark-mode .stat-icon.stages {
+        background: rgba(56, 189, 248, 0.25) !important;
+        border: 1px solid rgba(56, 189, 248, 0.35) !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon.stages i,
+    html[data-pms-theme="dark"] .stat-icon.stages svg,
+    html[data-pms-theme="dark"] .stat-icon.stages [class*="fa"],
+    html[data-theme="dark"] .stat-icon.stages i,
+    html[data-theme="dark"] .stat-icon.stages svg,
+    html[data-theme="dark"] .stat-icon.stages [class*="fa"],
+    html[data-bs-theme="dark"] .stat-icon.stages i,
+    html[data-bs-theme="dark"] .stat-icon.stages svg,
+    html[data-bs-theme="dark"] .stat-icon.stages [class*="fa"],
+    body[data-pms-theme="dark"] .stat-icon.stages i,
+    body[data-theme="dark"] .stat-icon.stages i,
+    body[data-bs-theme="dark"] .stat-icon.stages i,
+    [data-pms-theme="dark"] .stat-icon.stages i,
+    [data-theme="dark"] .stat-icon.stages i,
+    [data-bs-theme="dark"] .stat-icon.stages i,
+    .dark-mode .stat-icon.stages i,
+    .dark-mode .stat-icon.stages svg,
+    .dark-mode .stat-icon.stages [class*="fa"],
+    [data-pms-theme="dark"] .recruitment-settings-page .stat-card .stat-icon.stages i,
+    [data-theme="dark"] .recruitment-settings-page .stat-card .stat-icon.stages i,
+    [data-bs-theme="dark"] .recruitment-settings-page .stat-card .stat-icon.stages i,
+    .dark-mode .recruitment-settings-page .stat-card .stat-icon.stages i {
+        background: transparent !important;
+        color: #38bdf8 !important;
+        -webkit-text-fill-color: #38bdf8 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon.resumesize,
+    html[data-theme="dark"] .stat-icon.resumesize,
+    html[data-bs-theme="dark"] .stat-icon.resumesize,
+    body[data-pms-theme="dark"] .stat-icon.resumesize,
+    body[data-theme="dark"] .stat-icon.resumesize,
+    body[data-bs-theme="dark"] .stat-icon.resumesize,
+    [data-pms-theme="dark"] .stat-icon.resumesize,
+    [data-theme="dark"] .stat-icon.resumesize,
+    [data-bs-theme="dark"] .stat-icon.resumesize,
+    .dark-mode .stat-icon.resumesize {
+        background: rgba(251, 191, 36, 0.25) !important;
+        border: 1px solid rgba(251, 191, 36, 0.35) !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon.resumesize i,
+    html[data-pms-theme="dark"] .stat-icon.resumesize svg,
+    html[data-pms-theme="dark"] .stat-icon.resumesize [class*="fa"],
+    html[data-theme="dark"] .stat-icon.resumesize i,
+    html[data-theme="dark"] .stat-icon.resumesize svg,
+    html[data-theme="dark"] .stat-icon.resumesize [class*="fa"],
+    html[data-bs-theme="dark"] .stat-icon.resumesize i,
+    html[data-bs-theme="dark"] .stat-icon.resumesize svg,
+    html[data-bs-theme="dark"] .stat-icon.resumesize [class*="fa"],
+    body[data-pms-theme="dark"] .stat-icon.resumesize i,
+    body[data-theme="dark"] .stat-icon.resumesize i,
+    body[data-bs-theme="dark"] .stat-icon.resumesize i,
+    [data-pms-theme="dark"] .stat-icon.resumesize i,
+    [data-theme="dark"] .stat-icon.resumesize i,
+    [data-bs-theme="dark"] .stat-icon.resumesize i,
+    .dark-mode .stat-icon.resumesize i,
+    .dark-mode .stat-icon.resumesize svg,
+    .dark-mode .stat-icon.resumesize [class*="fa"],
+    [data-pms-theme="dark"] .recruitment-settings-page .stat-card .stat-icon.resumesize i,
+    [data-theme="dark"] .recruitment-settings-page .stat-card .stat-icon.resumesize i,
+    [data-bs-theme="dark"] .recruitment-settings-page .stat-card .stat-icon.resumesize i,
+    .dark-mode .recruitment-settings-page .stat-card .stat-icon.resumesize i {
+        background: transparent !important;
+        color: #fbbf24 !important;
+        -webkit-text-fill-color: #fbbf24 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon.autoreply,
+    html[data-theme="dark"] .stat-icon.autoreply,
+    html[data-bs-theme="dark"] .stat-icon.autoreply,
+    body[data-pms-theme="dark"] .stat-icon.autoreply,
+    body[data-theme="dark"] .stat-icon.autoreply,
+    body[data-bs-theme="dark"] .stat-icon.autoreply,
+    [data-pms-theme="dark"] .stat-icon.autoreply,
+    [data-theme="dark"] .stat-icon.autoreply,
+    [data-bs-theme="dark"] .stat-icon.autoreply,
+    .dark-mode .stat-icon.autoreply {
+        background: rgba(129, 140, 248, 0.25) !important;
+        border: 1px solid rgba(129, 140, 248, 0.35) !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon.autoreply i,
+    html[data-pms-theme="dark"] .stat-icon.autoreply svg,
+    html[data-pms-theme="dark"] .stat-icon.autoreply [class*="fa"],
+    html[data-theme="dark"] .stat-icon.autoreply i,
+    html[data-theme="dark"] .stat-icon.autoreply svg,
+    html[data-theme="dark"] .stat-icon.autoreply [class*="fa"],
+    html[data-bs-theme="dark"] .stat-icon.autoreply i,
+    html[data-bs-theme="dark"] .stat-icon.autoreply svg,
+    html[data-bs-theme="dark"] .stat-icon.autoreply [class*="fa"],
+    body[data-pms-theme="dark"] .stat-icon.autoreply i,
+    body[data-theme="dark"] .stat-icon.autoreply i,
+    body[data-bs-theme="dark"] .stat-icon.autoreply i,
+    [data-pms-theme="dark"] .stat-icon.autoreply i,
+    [data-theme="dark"] .stat-icon.autoreply i,
+    [data-bs-theme="dark"] .stat-icon.autoreply i,
+    .dark-mode .stat-icon.autoreply i,
+    .dark-mode .stat-icon.autoreply svg,
+    .dark-mode .stat-icon.autoreply [class*="fa"],
+    [data-pms-theme="dark"] .recruitment-settings-page .stat-card .stat-icon.autoreply i,
+    [data-theme="dark"] .recruitment-settings-page .stat-card .stat-icon.autoreply i,
+    [data-bs-theme="dark"] .recruitment-settings-page .stat-card .stat-icon.autoreply i,
+    .dark-mode .recruitment-settings-page .stat-card .stat-icon.autoreply i {
+        background: transparent !important;
+        color: #a5b4fc !important;
+        -webkit-text-fill-color: #a5b4fc !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    /* Section Badge & Form Controls in Dark Mode */
+    html[data-pms-theme="dark"] .section-badge,
+    html[data-bs-theme="dark"] .section-badge,
+    body[data-pms-theme="dark"] .section-badge,
+    [data-pms-theme="dark"] .section-badge {
+        background: rgba(16, 185, 129, 0.15) !important;
+        color: #34d399 !important;
+        border-color: rgba(52, 211, 153, 0.3) !important;
+    }
+
+    html[data-pms-theme="dark"] .section-badge i,
+    html[data-theme="dark"] .section-badge i,
+    html[data-bs-theme="dark"] .section-badge i,
+    [data-pms-theme="dark"] .section-badge i {
+        color: #34d399 !important;
+        -webkit-text-fill-color: #34d399 !important;
+    }
+
+    html[data-pms-theme="dark"] .card-header-avatar:not([style*="background"]),
+    html[data-theme="dark"] .card-header-avatar:not([style*="background"]),
+    html[data-bs-theme="dark"] .card-header-avatar:not([style*="background"]),
+    [data-pms-theme="dark"] .card-header-avatar:not([style*="background"]) {
+        background: rgba(16, 185, 129, 0.2) !important;
+        color: #34d399 !important;
+    }
+
+    html[data-pms-theme="dark"] .card-header-avatar:not([style*="background"]) i,
+    html[data-theme="dark"] .card-header-avatar:not([style*="background"]) i,
+    html[data-bs-theme="dark"] .card-header-avatar:not([style*="background"]) i,
+    [data-pms-theme="dark"] .card-header-avatar:not([style*="background"]) i {
+        color: #34d399 !important;
+        -webkit-text-fill-color: #34d399 !important;
+    }
+
+    html[data-pms-theme="dark"] .form-label-custom,
+    html[data-bs-theme="dark"] .form-label-custom,
+    body[data-pms-theme="dark"] .form-label-custom,
+    [data-pms-theme="dark"] .form-label-custom {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .input-group-custom,
+    html[data-bs-theme="dark"] .input-group-custom,
+    body[data-pms-theme="dark"] .input-group-custom,
+    [data-pms-theme="dark"] .input-group-custom,
+    html[data-pms-theme="dark"] .textarea-custom,
+    html[data-bs-theme="dark"] .textarea-custom,
+    body[data-pms-theme="dark"] .textarea-custom,
+    [data-pms-theme="dark"] .textarea-custom,
+    html[data-pms-theme="dark"] .policy-switch-box,
+    html[data-bs-theme="dark"] .policy-switch-box,
+    body[data-pms-theme="dark"] .policy-switch-box,
+    [data-pms-theme="dark"] .policy-switch-box {
+        background-color: #1e293b !important;
+        border-color: rgba(255, 255, 255, 0.12) !important;
+        color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .input-group-custom .form-control,
+    html[data-bs-theme="dark"] .input-group-custom .form-control,
+    body[data-pms-theme="dark"] .input-group-custom .form-control,
+    [data-pms-theme="dark"] .input-group-custom .form-control,
+    html[data-pms-theme="dark"] .input-group-custom .form-select,
+    html[data-bs-theme="dark"] .input-group-custom .form-select,
+    body[data-pms-theme="dark"] .input-group-custom .form-select,
+    [data-pms-theme="dark"] .input-group-custom .form-select,
+    html[data-pms-theme="dark"] .textarea-custom,
+    html[data-bs-theme="dark"] .textarea-custom,
+    body[data-pms-theme="dark"] .textarea-custom,
+    [data-pms-theme="dark"] .textarea-custom {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+        background-color: transparent !important;
+    }
+
+    html[data-pms-theme="dark"] .policy-switch-box label,
+    html[data-bs-theme="dark"] .policy-switch-box label,
+    body[data-pms-theme="dark"] .policy-switch-box label,
+    [data-pms-theme="dark"] .policy-switch-box label {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .policy-switch-box .text-muted,
+    html[data-bs-theme="dark"] .policy-switch-box .text-muted,
+    body[data-pms-theme="dark"] .policy-switch-box .text-muted,
+    [data-pms-theme="dark"] .policy-switch-box .text-muted {
+        color: #94a3b8 !important;
+        -webkit-text-fill-color: #94a3b8 !important;
+    }
+
+    html[data-pms-theme="dark"] .btn-back-settings,
+    html[data-theme="dark"] .btn-back-settings,
+    html[data-bs-theme="dark"] .btn-back-settings,
+    body[data-pms-theme="dark"] .btn-back-settings,
+    body[data-theme="dark"] .btn-back-settings,
+    body[data-bs-theme="dark"] .btn-back-settings,
+    [data-pms-theme="dark"] .btn-back-settings,
+    [data-theme="dark"] .btn-back-settings,
+    [data-bs-theme="dark"] .btn-back-settings,
+    .dark-mode .btn-back-settings {
+        background-color: #1e293b !important;
+        border-color: rgba(52, 211, 153, 0.35) !important;
+        color: #34d399 !important;
+        -webkit-text-fill-color: #34d399 !important;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2) !important;
     }
 </style>
 @endpush

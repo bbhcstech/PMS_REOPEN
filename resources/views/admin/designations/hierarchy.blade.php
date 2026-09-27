@@ -306,15 +306,15 @@
         margin-bottom: 28px;
     }
 
-    .designation-hierarchy-page .stat-card,
-    .designation-hierarchy-page .stat-card:first-of-type,
-    .designation-hierarchy-page .stat-card.is-featured {
-        background: #ffffff;
+    html:not([data-pms-theme="dark"]) .designation-hierarchy-page .stat-card,
+    html:not([data-pms-theme="dark"]) .designation-hierarchy-page .stat-card:first-of-type,
+    html:not([data-pms-theme="dark"]) .designation-hierarchy-page .stat-card.is-featured {
+        background: #ffffff !important;
         padding: 22px;
         border-radius: 22px;
-        border: 1px solid rgba(15, 116, 76, .14);
-        box-shadow: 0 14px 35px rgba(15, 116, 76, .06);
-        color: #0a2e1f;
+        border: 1px solid rgba(15, 116, 76, .14) !important;
+        box-shadow: 0 14px 35px rgba(15, 116, 76, .06) !important;
+        color: #0a2e1f !important;
         display: flex;
         gap: 16px;
         align-items: center;
@@ -347,10 +347,33 @@
         flex-shrink: 0;
     }
 
+    .designation-hierarchy-page .stat-icon i,
+    .designation-hierarchy-page .stat-icon .fa,
+    .designation-hierarchy-page .stat-icon [class*="fa-"],
+    .designation-hierarchy-page .stat-card:first-of-type .stat-icon i,
+    .designation-hierarchy-page .stat-card:first-of-type .stat-icon .fa,
+    .designation-hierarchy-page .stat-card:first-of-type .stat-icon [class*="fa-"] {
+        color: #0f744c !important;
+        -webkit-text-fill-color: #0f744c !important;
+        background: transparent !important;
+        background-color: transparent !important;
+        display: inline-block !important;
+    }
+
     .designation-hierarchy-page .stat-card:nth-child(2) .stat-icon {
         background: linear-gradient(145deg, #fef3c7, #fde68a) !important;
         color: #d97706 !important;
         -webkit-text-fill-color: #d97706 !important;
+    }
+
+    .designation-hierarchy-page .stat-card:nth-child(2) .stat-icon i,
+    .designation-hierarchy-page .stat-card:nth-child(2) .stat-icon .fa,
+    .designation-hierarchy-page .stat-card:nth-child(2) .stat-icon [class*="fa-"] {
+        color: #d97706 !important;
+        -webkit-text-fill-color: #d97706 !important;
+        background: transparent !important;
+        background-color: transparent !important;
+        display: inline-block !important;
     }
 
     .designation-hierarchy-page .stat-card:nth-child(3) .stat-icon {
@@ -359,15 +382,35 @@
         -webkit-text-fill-color: #0284c7 !important;
     }
 
+    .designation-hierarchy-page .stat-card:nth-child(3) .stat-icon i,
+    .designation-hierarchy-page .stat-card:nth-child(3) .stat-icon .fa,
+    .designation-hierarchy-page .stat-card:nth-child(3) .stat-icon [class*="fa-"] {
+        color: #0284c7 !important;
+        -webkit-text-fill-color: #0284c7 !important;
+        background: transparent !important;
+        background-color: transparent !important;
+        display: inline-block !important;
+    }
+
     .designation-hierarchy-page .stat-card:nth-child(4) .stat-icon {
         background: linear-gradient(145deg, #e0e7ff, #c7d2fe) !important;
         color: #4f46e5 !important;
         -webkit-text-fill-color: #4f46e5 !important;
     }
 
-    .designation-hierarchy-page .stat-card h3,
-    .designation-hierarchy-page .stat-card:first-of-type h3,
-    .designation-hierarchy-page .stat-card:first-of-type .stat-value {
+    .designation-hierarchy-page .stat-card:nth-child(4) .stat-icon i,
+    .designation-hierarchy-page .stat-card:nth-child(4) .stat-icon .fa,
+    .designation-hierarchy-page .stat-card:nth-child(4) .stat-icon [class*="fa-"] {
+        color: #4f46e5 !important;
+        -webkit-text-fill-color: #4f46e5 !important;
+        background: transparent !important;
+        background-color: transparent !important;
+        display: inline-block !important;
+    }
+
+    html:not([data-pms-theme="dark"]) .designation-hierarchy-page .stat-card h3,
+    html:not([data-pms-theme="dark"]) .designation-hierarchy-page .stat-card:first-of-type h3,
+    html:not([data-pms-theme="dark"]) .designation-hierarchy-page .stat-card:first-of-type .stat-value {
         font-size: 28px;
         font-weight: 800;
         color: #0a2e1f !important;
@@ -375,9 +418,9 @@
         margin-bottom: 4px;
     }
 
-    .designation-hierarchy-page .stat-card span,
-    .designation-hierarchy-page .stat-card:first-of-type span,
-    .designation-hierarchy-page .stat-card:first-of-type .stat-title {
+    html:not([data-pms-theme="dark"]) .designation-hierarchy-page .stat-card span,
+    html:not([data-pms-theme="dark"]) .designation-hierarchy-page .stat-card:first-of-type span,
+    html:not([data-pms-theme="dark"]) .designation-hierarchy-page .stat-card:first-of-type .stat-title {
         color: #4b5563 !important;
         -webkit-text-fill-color: #4b5563 !important;
         font-size: 13px;
@@ -385,8 +428,8 @@
         text-transform: uppercase;
     }
 
-    .designation-hierarchy-page .stat-sub,
-    .designation-hierarchy-page .stat-card:first-of-type .stat-sub {
+    html:not([data-pms-theme="dark"]) .designation-hierarchy-page .stat-sub,
+    html:not([data-pms-theme="dark"]) .designation-hierarchy-page .stat-card:first-of-type .stat-sub {
         font-size: 11px;
         color: #6b7280 !important;
         -webkit-text-fill-color: #6b7280 !important;

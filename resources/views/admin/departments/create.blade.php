@@ -342,16 +342,19 @@
         transition: all 0.3s ease;
     }
 
+    .form-field:nth-of-type(1) .field-icon,
     .form-field:nth-child(1) .field-icon {
         background: linear-gradient(145deg, #d1fae5, #a7f3d0);
         color: #059669;
     }
 
+    .form-field:nth-of-type(2) .field-icon,
     .form-field:nth-child(2) .field-icon {
         background: linear-gradient(145deg, #dbeafe, #bfdbfe);
         color: #2563eb;
     }
 
+    .form-field:nth-of-type(3) .field-icon,
     .form-field:nth-child(3) .field-icon {
         background: linear-gradient(145deg, #fef3c7, #fde68a);
         color: #d97706;
@@ -744,8 +747,92 @@
         border-color: rgba(122, 240, 181, 0.06);
     }
 
-    html[data-pms-theme="dark"] .form-field:focus-within {
+    html[data-pms-theme="dark"] .form-field:focus-within,
+    html[data-bs-theme="dark"] .form-field:focus-within,
+    html[data-theme="dark"] .form-field:focus-within,
+    html.dark .form-field:focus-within,
+    body[data-pms-theme="dark"] .form-field:focus-within,
+    body[data-bs-theme="dark"] .form-field:focus-within,
+    body[data-theme="dark"] .form-field:focus-within,
+    body.dark .form-field:focus-within,
+    body.dark-mode .form-field:focus-within {
         border-color: rgba(122, 240, 181, 0.15);
+    }
+
+    /* Dark Mode Field Icon Logos */
+    html[data-pms-theme="dark"] .form-field:nth-of-type(1) .field-icon,
+    html[data-pms-theme="dark"] .form-field:nth-child(1) .field-icon,
+    html[data-bs-theme="dark"] .form-field:nth-of-type(1) .field-icon,
+    html[data-bs-theme="dark"] .form-field:nth-child(1) .field-icon,
+    html[data-theme="dark"] .form-field:nth-of-type(1) .field-icon,
+    html[data-theme="dark"] .form-field:nth-child(1) .field-icon,
+    html.dark .form-field:nth-of-type(1) .field-icon,
+    html.dark .form-field:nth-child(1) .field-icon,
+    body[data-pms-theme="dark"] .form-field:nth-of-type(1) .field-icon,
+    body[data-pms-theme="dark"] .form-field:nth-child(1) .field-icon,
+    body[data-bs-theme="dark"] .form-field:nth-of-type(1) .field-icon,
+    body[data-bs-theme="dark"] .form-field:nth-child(1) .field-icon,
+    body[data-theme="dark"] .form-field:nth-of-type(1) .field-icon,
+    body[data-theme="dark"] .form-field:nth-child(1) .field-icon,
+    body.dark .form-field:nth-of-type(1) .field-icon,
+    body.dark .form-field:nth-child(1) .field-icon,
+    body.dark-mode .form-field:nth-of-type(1) .field-icon,
+    body.dark-mode .form-field:nth-child(1) .field-icon {
+        background: linear-gradient(145deg, rgba(16, 185, 129, 0.3), rgba(5, 150, 105, 0.5)) !important;
+        border: 1px solid rgba(52, 211, 153, 0.4) !important;
+        color: #34d399 !important;
+        -webkit-text-fill-color: #34d399 !important;
+        box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25) !important;
+    }
+
+    html[data-pms-theme="dark"] .form-field:nth-of-type(2) .field-icon,
+    html[data-pms-theme="dark"] .form-field:nth-child(2) .field-icon,
+    html[data-bs-theme="dark"] .form-field:nth-of-type(2) .field-icon,
+    html[data-bs-theme="dark"] .form-field:nth-child(2) .field-icon,
+    html[data-theme="dark"] .form-field:nth-of-type(2) .field-icon,
+    html[data-theme="dark"] .form-field:nth-child(2) .field-icon,
+    html.dark .form-field:nth-of-type(2) .field-icon,
+    html.dark .form-field:nth-child(2) .field-icon,
+    body[data-pms-theme="dark"] .form-field:nth-of-type(2) .field-icon,
+    body[data-pms-theme="dark"] .form-field:nth-child(2) .field-icon,
+    body[data-bs-theme="dark"] .form-field:nth-of-type(2) .field-icon,
+    body[data-bs-theme="dark"] .form-field:nth-child(2) .field-icon,
+    body[data-theme="dark"] .form-field:nth-of-type(2) .field-icon,
+    body[data-theme="dark"] .form-field:nth-child(2) .field-icon,
+    body.dark .form-field:nth-of-type(2) .field-icon,
+    body.dark .form-field:nth-child(2) .field-icon,
+    body.dark-mode .form-field:nth-of-type(2) .field-icon,
+    body.dark-mode .form-field:nth-child(2) .field-icon {
+        background: linear-gradient(145deg, rgba(56, 189, 248, 0.3), rgba(2, 132, 199, 0.5)) !important;
+        border: 1px solid rgba(56, 189, 248, 0.4) !important;
+        color: #38bdf8 !important;
+        -webkit-text-fill-color: #38bdf8 !important;
+        box-shadow: 0 4px 14px rgba(56, 189, 248, 0.25) !important;
+    }
+
+    html[data-pms-theme="dark"] .form-field:nth-of-type(3) .field-icon,
+    html[data-pms-theme="dark"] .form-field:nth-child(3) .field-icon,
+    html[data-bs-theme="dark"] .form-field:nth-of-type(3) .field-icon,
+    html[data-bs-theme="dark"] .form-field:nth-child(3) .field-icon,
+    html[data-theme="dark"] .form-field:nth-of-type(3) .field-icon,
+    html[data-theme="dark"] .form-field:nth-child(3) .field-icon,
+    html.dark .form-field:nth-of-type(3) .field-icon,
+    html.dark .form-field:nth-child(3) .field-icon,
+    body[data-pms-theme="dark"] .form-field:nth-of-type(3) .field-icon,
+    body[data-pms-theme="dark"] .form-field:nth-child(3) .field-icon,
+    body[data-bs-theme="dark"] .form-field:nth-of-type(3) .field-icon,
+    body[data-bs-theme="dark"] .form-field:nth-child(3) .field-icon,
+    body[data-theme="dark"] .form-field:nth-of-type(3) .field-icon,
+    body[data-theme="dark"] .form-field:nth-child(3) .field-icon,
+    body.dark .form-field:nth-of-type(3) .field-icon,
+    body.dark .form-field:nth-child(3) .field-icon,
+    body.dark-mode .form-field:nth-of-type(3) .field-icon,
+    body.dark-mode .form-field:nth-child(3) .field-icon {
+        background: linear-gradient(145deg, rgba(245, 158, 11, 0.3), rgba(217, 119, 6, 0.5)) !important;
+        border: 1px solid rgba(251, 191, 36, 0.4) !important;
+        color: #fbbf24 !important;
+        -webkit-text-fill-color: #fbbf24 !important;
+        box-shadow: 0 4px 14px rgba(245, 158, 11, 0.25) !important;
     }
 
     html[data-pms-theme="dark"] .field-content label {

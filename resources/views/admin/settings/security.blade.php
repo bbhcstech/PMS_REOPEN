@@ -110,7 +110,7 @@
         height: 58px;
         border-radius: 20px;
         background: linear-gradient(145deg, #34d399, #059669);
-        color: white;
+        color: #ffffff !important;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -119,62 +119,124 @@
         flex-shrink: 0;
     }
 
-    .header-title h1 {
-        font-size: 1.95rem;
-        font-weight: 800;
-        background: linear-gradient(135deg, #0a2e1f, #059669, #10b981);
-        -webkit-background-clip: text;
-        background-clip: text;
-        color: transparent;
-        margin: 0 0 0.2rem 0;
-        letter-spacing: -0.03em;
+    .header-icon-badge i,
+    .header-icon-badge svg,
+    .header-icon-badge [class*="fa"] {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        background: transparent !important;
+        background-color: transparent !important;
+        fill: #ffffff !important;
+        opacity: 1 !important;
+        visibility: visible !important;
     }
 
-    .header-title p {
-        color: #64748b;
-        font-size: 0.9rem;
-        font-weight: 500;
-        margin: 0;
-    }
-
-    .btn-back-settings {
-        background-color: #ffffff;
-        border: 1px solid rgba(16, 185, 129, 0.25);
-        color: #0f744c !important;
-        font-weight: 700;
-        font-size: 0.9rem;
-        border-radius: 40px;
-        padding: 0.65rem 1.4rem;
-        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        text-decoration: none;
-    }
-
-    .btn-back-settings:hover {
-        background-color: #e6f3ec;
+    .stat-icon.pass,
+    .security-settings-page .stat-card:first-of-type .stat-icon.pass {
+        background: linear-gradient(145deg, #d1fae5, #a7f3d0) !important;
         color: #059669 !important;
-        border-color: rgba(16, 185, 129, 0.4);
-        transform: translateY(-2px);
+        -webkit-text-fill-color: #059669 !important;
     }
 
-    .btn-back-settings:hover .back-arrow-icon {
-        transform: translateX(-4px);
+    .stat-icon.pass i,
+    .stat-icon.pass svg,
+    .stat-icon.pass [class*="fa"],
+    .security-settings-page .stat-card .stat-icon.pass i,
+    .security-settings-page .stat-card .stat-icon.pass svg,
+    .security-settings-page .stat-card .stat-icon.pass [class*="fa"],
+    .security-settings-page .stat-card:first-of-type .stat-icon.pass i,
+    .security-settings-page .stat-card:first-of-type .stat-icon.pass svg,
+    .security-settings-page .stat-card:first-of-type .stat-icon.pass [class*="fa"] {
+        background: transparent !important;
+        background-color: transparent !important;
+        color: #059669 !important;
+        -webkit-text-fill-color: #059669 !important;
+        fill: #059669 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
     }
 
-    .back-arrow-icon {
-        transition: transform 0.25s ease;
-        display: inline-block;
+    .stat-icon.session,
+    .security-settings-page .stat-card .stat-icon.session {
+        background: linear-gradient(145deg, #e0f2fe, #bae6fd) !important;
+        color: #0284c7 !important;
+        -webkit-text-fill-color: #0284c7 !important;
     }
 
-    /* ===== STATS GRID ===== */
+    .stat-icon.session i,
+    .stat-icon.session svg,
+    .stat-icon.session [class*="fa"],
+    .security-settings-page .stat-card .stat-icon.session i,
+    .security-settings-page .stat-card .stat-icon.session svg,
+    .security-settings-page .stat-card .stat-icon.session [class*="fa"],
+    .security-settings-page .stat-card:first-of-type .stat-icon.session i,
+    .security-settings-page .stat-card:first-of-type .stat-icon.session svg,
+    .security-settings-page .stat-card:first-of-type .stat-icon.session [class*="fa"] {
+        background: transparent !important;
+        background-color: transparent !important;
+        color: #0284c7 !important;
+        -webkit-text-fill-color: #0284c7 !important;
+        fill: #0284c7 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    .stat-icon.lockout,
+    .security-settings-page .stat-card .stat-icon.lockout {
+        background: linear-gradient(145deg, #fef3c7, #fde68a) !important;
+        color: #d97706 !important;
+        -webkit-text-fill-color: #d97706 !important;
+    }
+
+    .stat-icon.lockout i,
+    .stat-icon.lockout svg,
+    .stat-icon.lockout [class*="fa"],
+    .security-settings-page .stat-card .stat-icon.lockout i,
+    .security-settings-page .stat-card .stat-icon.lockout svg,
+    .security-settings-page .stat-card .stat-icon.lockout [class*="fa"],
+    .security-settings-page .stat-card:first-of-type .stat-icon.lockout i,
+    .security-settings-page .stat-card:first-of-type .stat-icon.lockout svg,
+    .security-settings-page .stat-card:first-of-type .stat-icon.lockout [class*="fa"] {
+        background: transparent !important;
+        background-color: transparent !important;
+        color: #d97706 !important;
+        -webkit-text-fill-color: #d97706 !important;
+        fill: #d97706 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    .stat-icon.twofa,
+    .security-settings-page .stat-card .stat-icon.twofa {
+        background: linear-gradient(145deg, #e0e7ff, #c7d2fe) !important;
+        color: #4f46e5 !important;
+        -webkit-text-fill-color: #4f46e5 !important;
+    }
+
+    .stat-icon.twofa i,
+    .stat-icon.twofa svg,
+    .stat-icon.twofa [class*="fa"],
+    .security-settings-page .stat-card .stat-icon.twofa i,
+    .security-settings-page .stat-card .stat-icon.twofa svg,
+    .security-settings-page .stat-card .stat-icon.twofa [class*="fa"],
+    .security-settings-page .stat-card:first-of-type .stat-icon.twofa i,
+    .security-settings-page .stat-card:first-of-type .stat-icon.twofa svg,
+    .security-settings-page .stat-card:first-of-type .stat-icon.twofa [class*="fa"] {
+        background: transparent !important;
+        background-color: transparent !important;
+        color: #4f46e5 !important;
+        -webkit-text-fill-color: #4f46e5 !important;
+        fill: #4f46e5 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    /* ===== STATS GRID LAYOUT ===== */
     .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 1.25rem;
-        margin-bottom: 2rem;
+        display: grid !important;
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 1.25rem !important;
+        margin-bottom: 2rem !important;
     }
 
     .stat-card,
@@ -186,54 +248,13 @@
         padding: 1.5rem;
         border: 1px solid rgba(16, 185, 129, 0.14) !important;
         box-shadow: 0 10px 30px -10px rgba(16, 185, 129, 0.08) !important;
-        display: flex;
-        align-items: center;
-        gap: 1.25rem;
+        display: flex !important;
+        align-items: center !important;
+        gap: 1.25rem !important;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         position: relative;
         overflow: hidden;
         color: #0a2e1f !important;
-    }
-
-    .security-settings-page .stat-card:first-of-type *,
-    .security-settings-page .stat-card * {
-        -webkit-text-fill-color: initial;
-    }
-
-    .security-settings-page .stat-card h3,
-    .security-settings-page .stat-card:first-of-type h3 {
-        color: #0a2e1f !important;
-        -webkit-text-fill-color: #0a2e1f !important;
-    }
-
-    .security-settings-page .stat-card h6,
-    .security-settings-page .stat-card span,
-    .security-settings-page .stat-card:first-of-type span,
-    .security-settings-page .stat-card:first-of-type h6 {
-        color: #64748b !important;
-        -webkit-text-fill-color: #64748b !important;
-    }
-
-    .stat-card::after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 3px;
-        background: linear-gradient(90deg, #34d399, #059669);
-        transform: scaleX(0);
-        transition: transform 0.3s ease;
-    }
-
-    .stat-card:hover::after {
-        transform: scaleX(1);
-    }
-
-    .stat-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 20px 35px -12px rgba(16, 185, 129, 0.15) !important;
-        border-color: rgba(16, 185, 129, 0.25) !important;
     }
 
     .stat-icon {
@@ -245,34 +266,6 @@
         justify-content: center;
         font-size: 1.5rem;
         flex-shrink: 0;
-    }
-
-    .stat-icon.pass,
-    .security-settings-page .stat-card:first-of-type .stat-icon.pass {
-        background: linear-gradient(145deg, #d1fae5, #a7f3d0) !important;
-        color: #059669 !important;
-        -webkit-text-fill-color: #059669 !important;
-    }
-
-    .stat-icon.session,
-    .security-settings-page .stat-card .stat-icon.session {
-        background: linear-gradient(145deg, #e0f2fe, #bae6fd) !important;
-        color: #0284c7 !important;
-        -webkit-text-fill-color: #0284c7 !important;
-    }
-
-    .stat-icon.lockout,
-    .security-settings-page .stat-card .stat-icon.lockout {
-        background: linear-gradient(145deg, #fef3c7, #fde68a) !important;
-        color: #d97706 !important;
-        -webkit-text-fill-color: #d97706 !important;
-    }
-
-    .stat-icon.twofa,
-    .security-settings-page .stat-card .stat-icon.twofa {
-        background: linear-gradient(145deg, #e0e7ff, #c7d2fe) !important;
-        color: #4f46e5 !important;
-        -webkit-text-fill-color: #4f46e5 !important;
     }
 
     .stat-info h6 {
@@ -322,6 +315,18 @@
         justify-content: center;
         font-size: 1.35rem;
         flex-shrink: 0;
+    }
+
+    .card-header-avatar i,
+    .card-header-avatar svg,
+    .card-header-avatar [class*="fa"] {
+        color: #059669 !important;
+        -webkit-text-fill-color: #059669 !important;
+        background: transparent !important;
+        background-color: transparent !important;
+        fill: #059669 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
     }
 
     .section-badge {
@@ -446,6 +451,487 @@
         .stats-grid {
             grid-template-columns: 1fr;
         }
+    }
+    /* ===== DARK MODE SUPPORT ===== */
+    html[data-pms-theme="dark"] .security-settings-page,
+    html[data-theme="dark"] .security-settings-page,
+    html[data-bs-theme="dark"] .security-settings-page,
+    body[data-pms-theme="dark"] .security-settings-page,
+    body[data-theme="dark"] .security-settings-page,
+    body[data-bs-theme="dark"] .security-settings-page,
+    [data-pms-theme="dark"] .security-settings-page,
+    [data-theme="dark"] .security-settings-page,
+    [data-bs-theme="dark"] .security-settings-page,
+    .dark-mode .security-settings-page {
+        background: #0b0f19 !important;
+        color: #e2e8f0 !important;
+    }
+
+    html[data-pms-theme="dark"] .branches-header,
+    html[data-theme="dark"] .branches-header,
+    html[data-bs-theme="dark"] .branches-header,
+    body[data-pms-theme="dark"] .branches-header,
+    body[data-theme="dark"] .branches-header,
+    body[data-bs-theme="dark"] .branches-header,
+    [data-pms-theme="dark"] .branches-header,
+    [data-theme="dark"] .branches-header,
+    [data-bs-theme="dark"] .branches-header,
+    html[data-pms-theme="dark"] .address-card-elevated,
+    html[data-theme="dark"] .address-card-elevated,
+    html[data-bs-theme="dark"] .address-card-elevated,
+    body[data-pms-theme="dark"] .address-card-elevated,
+    body[data-theme="dark"] .address-card-elevated,
+    body[data-bs-theme="dark"] .address-card-elevated,
+    [data-pms-theme="dark"] .address-card-elevated,
+    [data-theme="dark"] .address-card-elevated,
+    [data-bs-theme="dark"] .address-card-elevated,
+    .dark-mode .branches-header,
+    .dark-mode .address-card-elevated {
+        background: #111827 !important;
+        border-color: rgba(255, 255, 255, 0.08) !important;
+        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.4) !important;
+    }
+
+    html[data-pms-theme="dark"] .card-header-custom,
+    html[data-bs-theme="dark"] .card-header-custom,
+    body[data-pms-theme="dark"] .card-header-custom,
+    [data-pms-theme="dark"] .card-header-custom {
+        border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+    }
+
+    html[data-pms-theme="dark"] .card-header-custom h5,
+    html[data-bs-theme="dark"] .card-header-custom h5,
+    body[data-pms-theme="dark"] .card-header-custom h5,
+    [data-pms-theme="dark"] .card-header-custom h5,
+    html[data-pms-theme="dark"] .header-title h1,
+    html[data-bs-theme="dark"] .header-title h1,
+    body[data-pms-theme="dark"] .header-title h1,
+    [data-pms-theme="dark"] .header-title h1 {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+        background: none !important;
+    }
+
+    html[data-pms-theme="dark"] .header-title p,
+    html[data-bs-theme="dark"] .header-title p,
+    body[data-pms-theme="dark"] .header-title p,
+    [data-pms-theme="dark"] .header-title p,
+    html[data-pms-theme="dark"] .card-header-custom .text-muted,
+    html[data-bs-theme="dark"] .card-header-custom .text-muted,
+    body[data-pms-theme="dark"] .card-header-custom .text-muted,
+    [data-pms-theme="dark"] .card-header-custom .text-muted {
+        color: #94a3b8 !important;
+        -webkit-text-fill-color: #94a3b8 !important;
+    }
+
+    html[data-pms-theme="dark"] .btn-back-settings,
+    html[data-theme="dark"] .btn-back-settings,
+    html[data-bs-theme="dark"] .btn-back-settings,
+    body[data-pms-theme="dark"] .btn-back-settings,
+    body[data-theme="dark"] .btn-back-settings,
+    body[data-bs-theme="dark"] .btn-back-settings,
+    [data-pms-theme="dark"] .btn-back-settings,
+    [data-theme="dark"] .btn-back-settings,
+    [data-bs-theme="dark"] .btn-back-settings,
+    .dark-mode .btn-back-settings {
+        background-color: #1e293b !important;
+        background: #1e293b !important;
+        border-color: rgba(52, 211, 153, 0.35) !important;
+        color: #34d399 !important;
+        -webkit-text-fill-color: #34d399 !important;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2) !important;
+    }
+
+    html[data-pms-theme="dark"] .btn-back-settings i,
+    html[data-theme="dark"] .btn-back-settings i,
+    [data-pms-theme="dark"] .btn-back-settings i {
+        color: #34d399 !important;
+        -webkit-text-fill-color: #34d399 !important;
+    }
+
+    /* Stat Cards in Dark Mode */
+    html[data-pms-theme="dark"] .security-settings-page .stat-card,
+    html[data-theme="dark"] .security-settings-page .stat-card,
+    html[data-bs-theme="dark"] .security-settings-page .stat-card,
+    body[data-pms-theme="dark"] .security-settings-page .stat-card,
+    body[data-theme="dark"] .security-settings-page .stat-card,
+    body[data-bs-theme="dark"] .security-settings-page .stat-card,
+    [data-pms-theme="dark"] .security-settings-page .stat-card,
+    [data-theme="dark"] .security-settings-page .stat-card,
+    [data-bs-theme="dark"] .security-settings-page .stat-card,
+    html[data-pms-theme="dark"] .security-settings-page .stat-card:first-of-type,
+    html[data-theme="dark"] .security-settings-page .stat-card:first-of-type,
+    html[data-bs-theme="dark"] .security-settings-page .stat-card:first-of-type,
+    body[data-pms-theme="dark"] .security-settings-page .stat-card:first-of-type,
+    body[data-theme="dark"] .security-settings-page .stat-card:first-of-type,
+    body[data-bs-theme="dark"] .security-settings-page .stat-card:first-of-type,
+    [data-pms-theme="dark"] .security-settings-page .stat-card:first-of-type,
+    [data-theme="dark"] .security-settings-page .stat-card:first-of-type,
+    [data-bs-theme="dark"] .security-settings-page .stat-card:first-of-type,
+    html[data-pms-theme="dark"] .stat-card,
+    html[data-theme="dark"] .stat-card,
+    html[data-bs-theme="dark"] .stat-card,
+    html[data-pms-theme="dark"] .stat-card:first-of-type,
+    html[data-theme="dark"] .stat-card:first-of-type,
+    html[data-bs-theme="dark"] .stat-card:first-of-type,
+    .dark-mode .stat-card,
+    .dark-mode .stat-card:first-of-type {
+        background: #171e2e !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.3) !important;
+        color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .security-settings-page .stat-card h3,
+    html[data-theme="dark"] .security-settings-page .stat-card h3,
+    html[data-bs-theme="dark"] .security-settings-page .stat-card h3,
+    body[data-pms-theme="dark"] .security-settings-page .stat-card h3,
+    body[data-theme="dark"] .security-settings-page .stat-card h3,
+    body[data-bs-theme="dark"] .security-settings-page .stat-card h3,
+    [data-pms-theme="dark"] .security-settings-page .stat-card h3,
+    [data-theme="dark"] .security-settings-page .stat-card h3,
+    [data-bs-theme="dark"] .security-settings-page .stat-card h3,
+    html[data-pms-theme="dark"] .security-settings-page .stat-card:first-of-type h3,
+    html[data-theme="dark"] .security-settings-page .stat-card:first-of-type h3,
+    html[data-bs-theme="dark"] .security-settings-page .stat-card:first-of-type h3,
+    body[data-pms-theme="dark"] .security-settings-page .stat-card:first-of-type h3,
+    body[data-theme="dark"] .security-settings-page .stat-card:first-of-type h3,
+    body[data-bs-theme="dark"] .security-settings-page .stat-card:first-of-type h3,
+    [data-pms-theme="dark"] .security-settings-page .stat-card:first-of-type h3,
+    [data-theme="dark"] .security-settings-page .stat-card:first-of-type h3,
+    [data-bs-theme="dark"] .security-settings-page .stat-card:first-of-type h3,
+    .dark-mode .stat-card h3 {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .security-settings-page .stat-card h6,
+    html[data-theme="dark"] .security-settings-page .stat-card h6,
+    html[data-bs-theme="dark"] .security-settings-page .stat-card h6,
+    body[data-pms-theme="dark"] .security-settings-page .stat-card h6,
+    body[data-theme="dark"] .security-settings-page .stat-card h6,
+    body[data-bs-theme="dark"] .security-settings-page .stat-card h6,
+    [data-pms-theme="dark"] .security-settings-page .stat-card h6,
+    [data-theme="dark"] .security-settings-page .stat-card h6,
+    [data-bs-theme="dark"] .security-settings-page .stat-card h6,
+    html[data-pms-theme="dark"] .security-settings-page .stat-card:first-of-type h6,
+    html[data-theme="dark"] .security-settings-page .stat-card:first-of-type h6,
+    html[data-bs-theme="dark"] .security-settings-page .stat-card:first-of-type h6,
+    body[data-pms-theme="dark"] .security-settings-page .stat-card:first-of-type h6,
+    body[data-theme="dark"] .security-settings-page .stat-card:first-of-type h6,
+    body[data-bs-theme="dark"] .security-settings-page .stat-card:first-of-type h6,
+    [data-pms-theme="dark"] .security-settings-page .stat-card:first-of-type h6,
+    [data-theme="dark"] .security-settings-page .stat-card:first-of-type h6,
+    [data-bs-theme="dark"] .security-settings-page .stat-card:first-of-type h6,
+    .dark-mode .stat-card h6 {
+        color: #94a3b8 !important;
+        -webkit-text-fill-color: #94a3b8 !important;
+    }
+
+    /* Dark Mode Stat Icons */
+    html[data-pms-theme="dark"] .stat-icon.pass,
+    html[data-theme="dark"] .stat-icon.pass,
+    html[data-bs-theme="dark"] .stat-icon.pass,
+    body[data-pms-theme="dark"] .stat-icon.pass,
+    body[data-theme="dark"] .stat-icon.pass,
+    body[data-bs-theme="dark"] .stat-icon.pass,
+    [data-pms-theme="dark"] .stat-icon.pass,
+    [data-theme="dark"] .stat-icon.pass,
+    [data-bs-theme="dark"] .stat-icon.pass,
+    .dark-mode .stat-icon.pass,
+    [data-pms-theme="dark"] .security-settings-page .stat-card .stat-icon.pass,
+    [data-pms-theme="dark"] .security-settings-page .stat-card:first-of-type .stat-icon.pass,
+    [data-theme="dark"] .security-settings-page .stat-card .stat-icon.pass,
+    [data-theme="dark"] .security-settings-page .stat-card:first-of-type .stat-icon.pass,
+    [data-bs-theme="dark"] .security-settings-page .stat-card .stat-icon.pass,
+    [data-bs-theme="dark"] .security-settings-page .stat-card:first-of-type .stat-icon.pass,
+    html[data-pms-theme="dark"] .security-settings-page .stat-card .stat-icon.pass,
+    html[data-pms-theme="dark"] .security-settings-page .stat-card:first-of-type .stat-icon.pass,
+    html[data-theme="dark"] .security-settings-page .stat-card .stat-icon.pass,
+    html[data-theme="dark"] .security-settings-page .stat-card:first-of-type .stat-icon.pass,
+    html[data-bs-theme="dark"] .security-settings-page .stat-card .stat-icon.pass,
+    html[data-bs-theme="dark"] .security-settings-page .stat-card:first-of-type .stat-icon.pass {
+        background: rgba(16, 185, 129, 0.25) !important;
+        background-image: none !important;
+        border: 1px solid rgba(52, 211, 153, 0.4) !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon.pass i,
+    html[data-pms-theme="dark"] .stat-icon.pass svg,
+    html[data-pms-theme="dark"] .stat-icon.pass [class*="fa"],
+    html[data-theme="dark"] .stat-icon.pass i,
+    html[data-theme="dark"] .stat-icon.pass svg,
+    html[data-theme="dark"] .stat-icon.pass [class*="fa"],
+    html[data-bs-theme="dark"] .stat-icon.pass i,
+    html[data-bs-theme="dark"] .stat-icon.pass svg,
+    html[data-bs-theme="dark"] .stat-icon.pass [class*="fa"],
+    body[data-pms-theme="dark"] .stat-icon.pass i,
+    body[data-theme="dark"] .stat-icon.pass i,
+    body[data-bs-theme="dark"] .stat-icon.pass i,
+    [data-pms-theme="dark"] .stat-icon.pass i,
+    [data-theme="dark"] .stat-icon.pass i,
+    [data-bs-theme="dark"] .stat-icon.pass i,
+    .dark-mode .stat-icon.pass i,
+    .dark-mode .stat-icon.pass svg,
+    .dark-mode .stat-icon.pass [class*="fa"],
+    html[data-pms-theme="dark"] .security-settings-page .stat-card .stat-icon.pass i,
+    html[data-pms-theme="dark"] .security-settings-page .stat-card:first-of-type .stat-icon.pass i,
+    html[data-theme="dark"] .security-settings-page .stat-card .stat-icon.pass i,
+    html[data-theme="dark"] .security-settings-page .stat-card:first-of-type .stat-icon.pass i,
+    html[data-bs-theme="dark"] .security-settings-page .stat-card .stat-icon.pass i,
+    html[data-bs-theme="dark"] .security-settings-page .stat-card:first-of-type .stat-icon.pass i,
+    body[data-pms-theme="dark"] .security-settings-page .stat-card .stat-icon.pass i,
+    body[data-pms-theme="dark"] .security-settings-page .stat-card:first-of-type .stat-icon.pass i,
+    body[data-theme="dark"] .security-settings-page .stat-card .stat-icon.pass i,
+    body[data-theme="dark"] .security-settings-page .stat-card:first-of-type .stat-icon.pass i,
+    body[data-bs-theme="dark"] .security-settings-page .stat-card .stat-icon.pass i,
+    body[data-bs-theme="dark"] .security-settings-page .stat-card:first-of-type .stat-icon.pass i,
+    [data-pms-theme="dark"] .security-settings-page .stat-card .stat-icon.pass i,
+    [data-pms-theme="dark"] .security-settings-page .stat-card:first-of-type .stat-icon.pass i,
+    [data-theme="dark"] .security-settings-page .stat-card .stat-icon.pass i,
+    [data-theme="dark"] .security-settings-page .stat-card:first-of-type .stat-icon.pass i,
+    [data-bs-theme="dark"] .security-settings-page .stat-card .stat-icon.pass i,
+    [data-bs-theme="dark"] .security-settings-page .stat-card:first-of-type .stat-icon.pass i,
+    .dark-mode .security-settings-page .stat-card .stat-icon.pass i,
+    .dark-mode .security-settings-page .stat-card:first-of-type .stat-icon.pass i {
+        background: transparent !important;
+        background-image: none !important;
+        color: #34d399 !important;
+        -webkit-text-fill-color: #34d399 !important;
+        fill: #34d399 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon.session,
+    html[data-theme="dark"] .stat-icon.session,
+    html[data-bs-theme="dark"] .stat-icon.session,
+    body[data-pms-theme="dark"] .stat-icon.session,
+    body[data-theme="dark"] .stat-icon.session,
+    body[data-bs-theme="dark"] .stat-icon.session,
+    [data-pms-theme="dark"] .stat-icon.session,
+    [data-theme="dark"] .stat-icon.session,
+    [data-bs-theme="dark"] .stat-icon.session,
+    .dark-mode .stat-icon.session,
+    [data-pms-theme="dark"] .security-settings-page .stat-card .stat-icon.session,
+    [data-theme="dark"] .security-settings-page .stat-card .stat-icon.session,
+    [data-bs-theme="dark"] .security-settings-page .stat-card .stat-icon.session,
+    html[data-pms-theme="dark"] .security-settings-page .stat-card .stat-icon.session,
+    html[data-theme="dark"] .security-settings-page .stat-card .stat-icon.session,
+    html[data-bs-theme="dark"] .security-settings-page .stat-card .stat-icon.session {
+        background: rgba(56, 189, 248, 0.25) !important;
+        background-image: none !important;
+        border: 1px solid rgba(56, 189, 248, 0.4) !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon.session i,
+    html[data-pms-theme="dark"] .stat-icon.session svg,
+    html[data-pms-theme="dark"] .stat-icon.session [class*="fa"],
+    html[data-theme="dark"] .stat-icon.session i,
+    html[data-theme="dark"] .stat-icon.session svg,
+    html[data-theme="dark"] .stat-icon.session [class*="fa"],
+    html[data-bs-theme="dark"] .stat-icon.session i,
+    html[data-bs-theme="dark"] .stat-icon.session svg,
+    html[data-bs-theme="dark"] .stat-icon.session [class*="fa"],
+    body[data-pms-theme="dark"] .stat-icon.session i,
+    body[data-theme="dark"] .stat-icon.session i,
+    body[data-bs-theme="dark"] .stat-icon.session i,
+    [data-pms-theme="dark"] .stat-icon.session i,
+    [data-theme="dark"] .stat-icon.session i,
+    [data-bs-theme="dark"] .stat-icon.session i,
+    .dark-mode .stat-icon.session i,
+    .dark-mode .stat-icon.session svg,
+    .dark-mode .stat-icon.session [class*="fa"],
+    html[data-pms-theme="dark"] .security-settings-page .stat-card .stat-icon.session i,
+    html[data-theme="dark"] .security-settings-page .stat-card .stat-icon.session i,
+    html[data-bs-theme="dark"] .security-settings-page .stat-card .stat-icon.session i,
+    body[data-pms-theme="dark"] .security-settings-page .stat-card .stat-icon.session i,
+    body[data-theme="dark"] .security-settings-page .stat-card .stat-icon.session i,
+    body[data-bs-theme="dark"] .security-settings-page .stat-card .stat-icon.session i,
+    [data-pms-theme="dark"] .security-settings-page .stat-card .stat-icon.session i,
+    [data-theme="dark"] .security-settings-page .stat-card .stat-icon.session i,
+    [data-bs-theme="dark"] .security-settings-page .stat-card .stat-icon.session i,
+    .dark-mode .security-settings-page .stat-card .stat-icon.session i {
+        background: transparent !important;
+        background-image: none !important;
+        color: #38bdf8 !important;
+        -webkit-text-fill-color: #38bdf8 !important;
+        fill: #38bdf8 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon.lockout,
+    html[data-theme="dark"] .stat-icon.lockout,
+    html[data-bs-theme="dark"] .stat-icon.lockout,
+    body[data-pms-theme="dark"] .stat-icon.lockout,
+    body[data-theme="dark"] .stat-icon.lockout,
+    body[data-bs-theme="dark"] .stat-icon.lockout,
+    [data-pms-theme="dark"] .stat-icon.lockout,
+    [data-theme="dark"] .stat-icon.lockout,
+    [data-bs-theme="dark"] .stat-icon.lockout,
+    .dark-mode .stat-icon.lockout,
+    [data-pms-theme="dark"] .security-settings-page .stat-card .stat-icon.lockout,
+    [data-theme="dark"] .security-settings-page .stat-card .stat-icon.lockout,
+    [data-bs-theme="dark"] .security-settings-page .stat-card .stat-icon.lockout,
+    html[data-pms-theme="dark"] .security-settings-page .stat-card .stat-icon.lockout,
+    html[data-theme="dark"] .security-settings-page .stat-card .stat-icon.lockout,
+    html[data-bs-theme="dark"] .security-settings-page .stat-card .stat-icon.lockout {
+        background: rgba(251, 191, 36, 0.25) !important;
+        background-image: none !important;
+        border: 1px solid rgba(251, 191, 36, 0.4) !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon.lockout i,
+    html[data-pms-theme="dark"] .stat-icon.lockout svg,
+    html[data-pms-theme="dark"] .stat-icon.lockout [class*="fa"],
+    html[data-theme="dark"] .stat-icon.lockout i,
+    html[data-theme="dark"] .stat-icon.lockout svg,
+    html[data-theme="dark"] .stat-icon.lockout [class*="fa"],
+    html[data-bs-theme="dark"] .stat-icon.lockout i,
+    html[data-bs-theme="dark"] .stat-icon.lockout svg,
+    html[data-bs-theme="dark"] .stat-icon.lockout [class*="fa"],
+    body[data-pms-theme="dark"] .stat-icon.lockout i,
+    body[data-theme="dark"] .stat-icon.lockout i,
+    body[data-bs-theme="dark"] .stat-icon.lockout i,
+    [data-pms-theme="dark"] .stat-icon.lockout i,
+    [data-theme="dark"] .stat-icon.lockout i,
+    [data-bs-theme="dark"] .stat-icon.lockout i,
+    .dark-mode .stat-icon.lockout i,
+    .dark-mode .stat-icon.lockout svg,
+    .dark-mode .stat-icon.lockout [class*="fa"],
+    html[data-pms-theme="dark"] .security-settings-page .stat-card .stat-icon.lockout i,
+    html[data-theme="dark"] .security-settings-page .stat-card .stat-icon.lockout i,
+    html[data-bs-theme="dark"] .security-settings-page .stat-card .stat-icon.lockout i,
+    body[data-pms-theme="dark"] .security-settings-page .stat-card .stat-icon.lockout i,
+    body[data-theme="dark"] .security-settings-page .stat-card .stat-icon.lockout i,
+    body[data-bs-theme="dark"] .security-settings-page .stat-card .stat-icon.lockout i,
+    [data-pms-theme="dark"] .security-settings-page .stat-card .stat-icon.lockout i,
+    [data-theme="dark"] .security-settings-page .stat-card .stat-icon.lockout i,
+    [data-bs-theme="dark"] .security-settings-page .stat-card .stat-icon.lockout i,
+    .dark-mode .security-settings-page .stat-card .stat-icon.lockout i {
+        background: transparent !important;
+        background-image: none !important;
+        color: #fbbf24 !important;
+        -webkit-text-fill-color: #fbbf24 !important;
+        fill: #fbbf24 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon.twofa,
+    html[data-theme="dark"] .stat-icon.twofa,
+    html[data-bs-theme="dark"] .stat-icon.twofa,
+    body[data-pms-theme="dark"] .stat-icon.twofa,
+    body[data-theme="dark"] .stat-icon.twofa,
+    body[data-bs-theme="dark"] .stat-icon.twofa,
+    [data-pms-theme="dark"] .stat-icon.twofa,
+    [data-theme="dark"] .stat-icon.twofa,
+    [data-bs-theme="dark"] .stat-icon.twofa,
+    .dark-mode .stat-icon.twofa,
+    [data-pms-theme="dark"] .security-settings-page .stat-card .stat-icon.twofa,
+    [data-theme="dark"] .security-settings-page .stat-card .stat-icon.twofa,
+    [data-bs-theme="dark"] .security-settings-page .stat-card .stat-icon.twofa,
+    html[data-pms-theme="dark"] .security-settings-page .stat-card .stat-icon.twofa,
+    html[data-theme="dark"] .security-settings-page .stat-card .stat-icon.twofa,
+    html[data-bs-theme="dark"] .security-settings-page .stat-card .stat-icon.twofa {
+        background: rgba(129, 140, 248, 0.25) !important;
+        background-image: none !important;
+        border: 1px solid rgba(129, 140, 248, 0.4) !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon.twofa i,
+    html[data-pms-theme="dark"] .stat-icon.twofa svg,
+    html[data-pms-theme="dark"] .stat-icon.twofa [class*="fa"],
+    html[data-theme="dark"] .stat-icon.twofa i,
+    html[data-theme="dark"] .stat-icon.twofa svg,
+    html[data-theme="dark"] .stat-icon.twofa [class*="fa"],
+    html[data-bs-theme="dark"] .stat-icon.twofa i,
+    html[data-bs-theme="dark"] .stat-icon.twofa svg,
+    html[data-bs-theme="dark"] .stat-icon.twofa [class*="fa"],
+    body[data-pms-theme="dark"] .stat-icon.twofa i,
+    body[data-theme="dark"] .stat-icon.twofa i,
+    body[data-bs-theme="dark"] .stat-icon.twofa i,
+    [data-pms-theme="dark"] .stat-icon.twofa i,
+    [data-theme="dark"] .stat-icon.twofa i,
+    [data-bs-theme="dark"] .stat-icon.twofa i,
+    .dark-mode .stat-icon.twofa i,
+    .dark-mode .stat-icon.twofa svg,
+    .dark-mode .stat-icon.twofa [class*="fa"],
+    html[data-pms-theme="dark"] .security-settings-page .stat-card .stat-icon.twofa i,
+    html[data-theme="dark"] .security-settings-page .stat-card .stat-icon.twofa i,
+    html[data-bs-theme="dark"] .security-settings-page .stat-card .stat-icon.twofa i,
+    body[data-pms-theme="dark"] .security-settings-page .stat-card .stat-icon.twofa i,
+    body[data-theme="dark"] .security-settings-page .stat-card .stat-icon.twofa i,
+    body[data-bs-theme="dark"] .security-settings-page .stat-card .stat-icon.twofa i,
+    [data-pms-theme="dark"] .security-settings-page .stat-card .stat-icon.twofa i,
+    [data-theme="dark"] .security-settings-page .stat-card .stat-icon.twofa i,
+    [data-bs-theme="dark"] .security-settings-page .stat-card .stat-icon.twofa i,
+    .dark-mode .security-settings-page .stat-card .stat-icon.twofa i {
+        background: transparent !important;
+        background-image: none !important;
+        color: #a5b4fc !important;
+        -webkit-text-fill-color: #a5b4fc !important;
+        fill: #a5b4fc !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    /* Form Controls & Switches in Dark Mode */
+    html[data-pms-theme="dark"] .input-group-custom,
+    html[data-theme="dark"] .input-group-custom,
+    html[data-bs-theme="dark"] .input-group-custom,
+    [data-pms-theme="dark"] .input-group-custom {
+        background-color: #1a2234 !important;
+        border-color: rgba(255, 255, 255, 0.12) !important;
+    }
+
+    html[data-pms-theme="dark"] .input-group-custom .form-control,
+    html[data-theme="dark"] .input-group-custom .form-control,
+    [data-pms-theme="dark"] .input-group-custom .form-control {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .form-label-custom,
+    html[data-theme="dark"] .form-label-custom,
+    [data-pms-theme="dark"] .form-label-custom {
+        color: #e2e8f0 !important;
+        -webkit-text-fill-color: #e2e8f0 !important;
+    }
+
+    html[data-pms-theme="dark"] .section-badge,
+    html[data-bs-theme="dark"] .section-badge,
+    body[data-pms-theme="dark"] .section-badge,
+    [data-pms-theme="dark"] .section-badge {
+        background: rgba(16, 185, 129, 0.15) !important;
+        color: #34d399 !important;
+        border-color: rgba(52, 211, 153, 0.3) !important;
+    }
+
+    html[data-pms-theme="dark"] .section-badge i,
+    html[data-theme="dark"] .section-badge i,
+    html[data-bs-theme="dark"] .section-badge i,
+    [data-pms-theme="dark"] .section-badge i {
+        color: #34d399 !important;
+        -webkit-text-fill-color: #34d399 !important;
+    }
+
+    html[data-pms-theme="dark"] .policy-switch-box,
+    html[data-theme="dark"] .policy-switch-box,
+    [data-pms-theme="dark"] .policy-switch-box {
+        background: #171e2e !important;
+        border-color: rgba(255, 255, 255, 0.12) !important;
+    }
+
+    html[data-pms-theme="dark"] .policy-switch-box label,
+    html[data-theme="dark"] .policy-switch-box label,
+    [data-pms-theme="dark"] .policy-switch-box label,
+    html[data-pms-theme="dark"] .policy-switch-box .form-check-label,
+    html[data-theme="dark"] .policy-switch-box .form-check-label,
+    [data-pms-theme="dark"] .policy-switch-box .form-check-label {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
     }
 </style>
 @endpush

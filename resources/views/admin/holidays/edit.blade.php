@@ -262,6 +262,15 @@
         transition: all 0.3s ease;
     }
 
+    .header-icon i,
+    .header-icon svg,
+    .header-icon [class*="fa"] {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
     .header-card:hover .header-icon {
         transform: scale(1.02);
     }

@@ -336,7 +336,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="{{ $isAdmin ? 9 : 8 }}" class="text-center py-5">
+                            <td colspan="100" class="text-center py-5">
                                 <div class="empty-state"><i class="fas fa-calendar-times"></i><h3>No leave requests found</h3></div>
                             </td>
                         </tr>
@@ -1368,7 +1368,8 @@
         gap: 8px;
         align-items: center;
         justify-content: flex-end;
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
+        white-space: nowrap;
     }
 
     .action-row .btn {
@@ -2028,12 +2029,28 @@
     }
 
     html[data-pms-theme="dark"] .policy-notice {
-        background: rgba(16, 33, 25, 0.85);
-        border-color: rgba(122, 240, 181, 0.12);
+        background: rgba(16, 33, 25, 0.85) !important;
+        border-color: rgba(122, 240, 181, 0.15) !important;
+    }
+
+    html[data-pms-theme="dark"] .notice-icon,
+    html[data-pms-theme="dark"] .policy-notice .notice-icon {
+        background: rgba(16, 185, 129, 0.2) !important;
+        color: #34d399 !important;
+        -webkit-text-fill-color: #34d399 !important;
+        border: 1px solid rgba(52, 211, 153, 0.3) !important;
+    }
+
+    html[data-pms-theme="dark"] .notice-icon i,
+    html[data-pms-theme="dark"] .notice-icon svg,
+    html[data-pms-theme="dark"] .policy-notice .notice-icon i {
+        color: #34d399 !important;
+        -webkit-text-fill-color: #34d399 !important;
     }
 
     html[data-pms-theme="dark"] .policy-notice p {
-        color: #8ba198;
+        color: #d9f1e4 !important;
+        -webkit-text-fill-color: #d9f1e4 !important;
     }
 
     html[data-pms-theme="dark"] .stat-card {
@@ -2299,6 +2316,58 @@
     html[data-pms-theme="dark"] .export-tile:hover {
         border-color: #34d399;
         box-shadow: 0 14px 28px rgba(0, 0, 0, 0.2);
+    }
+
+    html[data-pms-theme="dark"] .export-tile i,
+    html[data-bs-theme="dark"] .export-tile i,
+    html[data-theme="dark"] .export-tile i,
+    html.dark .export-tile i {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 42px !important;
+        height: 42px !important;
+        border-radius: 14px !important;
+    }
+
+    html[data-pms-theme="dark"] .export-tile.copy i,
+    html[data-bs-theme="dark"] .export-tile.copy i,
+    html[data-theme="dark"] .export-tile.copy i {
+        background: rgba(14, 165, 233, 0.22) !important;
+        color: #38bdf8 !important;
+        border: 1px solid rgba(56, 189, 248, 0.35) !important;
+    }
+
+    html[data-pms-theme="dark"] .export-tile.excel i,
+    html[data-bs-theme="dark"] .export-tile.excel i,
+    html[data-theme="dark"] .export-tile.excel i {
+        background: rgba(16, 185, 129, 0.22) !important;
+        color: #34d399 !important;
+        border: 1px solid rgba(52, 211, 153, 0.35) !important;
+    }
+
+    html[data-pms-theme="dark"] .export-tile.csv i,
+    html[data-bs-theme="dark"] .export-tile.csv i,
+    html[data-theme="dark"] .export-tile.csv i {
+        background: rgba(245, 158, 11, 0.22) !important;
+        color: #fbbf24 !important;
+        border: 1px solid rgba(251, 191, 36, 0.35) !important;
+    }
+
+    html[data-pms-theme="dark"] .export-tile.pdf i,
+    html[data-bs-theme="dark"] .export-tile.pdf i,
+    html[data-theme="dark"] .export-tile.pdf i {
+        background: rgba(239, 68, 68, 0.22) !important;
+        color: #f87171 !important;
+        border: 1px solid rgba(248, 113, 113, 0.35) !important;
+    }
+
+    html[data-pms-theme="dark"] .export-tile.print i,
+    html[data-bs-theme="dark"] .export-tile.print i,
+    html[data-theme="dark"] .export-tile.print i {
+        background: rgba(139, 92, 246, 0.22) !important;
+        color: #c084fc !important;
+        border: 1px solid rgba(192, 132, 252, 0.35) !important;
     }
 
     html[data-pms-theme="dark"] .export-copy-status {

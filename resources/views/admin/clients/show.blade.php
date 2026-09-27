@@ -134,13 +134,15 @@
         font-size: 0.78rem;
         font-weight: 700;
         border-radius: 9999px;
-        color: #000000 !important;
         text-transform: capitalize;
         letter-spacing: 0.02em;
     }
-    .status-in-progress { background-color: #fef3c7 !important; border: 1px solid #fde68a; }
-    .status-completed   { background-color: #d1fae5 !important; border: 1px solid #a7f3d0; }
-    .status-on-hold     { background-color: #fee2e2 !important; border: 1px solid #fecaca; }
+    .status-in-progress,
+    .status-pending     { background-color: #fef3c7 !important; color: #b45309 !important; border: 1px solid #fde68a !important; }
+    .status-completed   { background-color: #d1fae5 !important; color: #047857 !important; border: 1px solid #a7f3d0 !important; }
+    .status-on-hold     { background-color: #fee2e2 !important; color: #b91c1c !important; border: 1px solid #fecaca !important; }
+    .status-not-started { background-color: #f1f5f9 !important; color: #475569 !important; border: 1px solid #cbd5e1 !important; }
+
     html[data-pms-theme="dark"] .client-hero-card {
         background: #0F1530 !important;
         border-color: rgba(238, 241, 251, 0.09) !important;
@@ -200,8 +202,35 @@
     html[data-pms-theme="dark"] .client-detail-val {
         color: #EEF1FB !important;
     }
-    html[data-pms-theme="dark"] .status-badge-custom {
-        color: #CBD5E1 !important;
+    html[data-pms-theme="dark"] .status-in-progress,
+    html[data-pms-theme="dark"] .status-pending,
+    html[data-bs-theme="dark"] .status-in-progress,
+    html[data-bs-theme="dark"] .status-pending {
+        background-color: rgba(245, 158, 11, 0.22) !important;
+        color: #fbbf24 !important;
+        -webkit-text-fill-color: #fbbf24 !important;
+        border: 1px solid rgba(251, 191, 36, 0.35) !important;
+    }
+    html[data-pms-theme="dark"] .status-completed,
+    html[data-bs-theme="dark"] .status-completed {
+        background-color: rgba(16, 185, 129, 0.22) !important;
+        color: #34d399 !important;
+        -webkit-text-fill-color: #34d399 !important;
+        border: 1px solid rgba(52, 211, 153, 0.35) !important;
+    }
+    html[data-pms-theme="dark"] .status-on-hold,
+    html[data-bs-theme="dark"] .status-on-hold {
+        background-color: rgba(239, 68, 68, 0.22) !important;
+        color: #f87171 !important;
+        -webkit-text-fill-color: #f87171 !important;
+        border: 1px solid rgba(248, 113, 113, 0.35) !important;
+    }
+    html[data-pms-theme="dark"] .status-not-started,
+    html[data-bs-theme="dark"] .status-not-started {
+        background-color: rgba(148, 163, 184, 0.22) !important;
+        color: #cbd5e1 !important;
+        -webkit-text-fill-color: #cbd5e1 !important;
+        border: 1px solid rgba(203, 213, 225, 0.35) !important;
     }
 </style>
 

@@ -110,6 +110,34 @@ document.addEventListener('DOMContentLoaded', function () {
     .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border-radius: 12px; min-height: 44px; font-weight: 900; border: 0; }
     .btn-primary { background: linear-gradient(145deg, #34d399, #059669); color: #fff; }
     .btn-light, .btn-secondary { background: #f0f9f4; color: #0f744c; border: 1px solid rgba(16,185,129,.18); }
+    /* ===== DARK MODE ===== */
+    html[data-pms-theme="dark"] .leave-form-page { background: #070B1A !important; color: #d9f1e4 !important; }
+    html[data-pms-theme="dark"] .leave-breadcrumb,
+    html[data-pms-theme="dark"] .leave-form-hero,
+    html[data-pms-theme="dark"] .form-card {
+        background: rgba(16, 33, 25, 0.92) !important;
+        border-color: rgba(122, 240, 181, 0.15) !important;
+        color: #d9f1e4 !important;
+        box-shadow: 0 16px 36px -20px rgba(0, 0, 0, 0.6) !important;
+    }
+    html[data-pms-theme="dark"] .leave-breadcrumb { color: #34d399 !important; -webkit-text-fill-color: #34d399 !important; }
+    html[data-pms-theme="dark"] .leave-form-hero h1 { color: #d9f1e4 !important; -webkit-text-fill-color: #d9f1e4 !important; }
+    html[data-pms-theme="dark"] .leave-form-hero p { color: #8ba198 !important; -webkit-text-fill-color: #8ba198 !important; }
+    html[data-pms-theme="dark"] .btn-light,
+    html[data-pms-theme="dark"] .btn-secondary {
+        background: #183026 !important;
+        color: #d9f1e4 !important;
+        -webkit-text-fill-color: #d9f1e4 !important;
+        border-color: rgba(122, 240, 181, 0.2) !important;
+    }
+    html[data-pms-theme="dark"] label { color: #8ba198 !important; -webkit-text-fill-color: #8ba198 !important; }
+    html[data-pms-theme="dark"] .form-control {
+        background: #102119 !important;
+        border-color: rgba(122, 240, 181, 0.2) !important;
+        color: #d9f1e4 !important;
+        -webkit-text-fill-color: #d9f1e4 !important;
+    }
+    html[data-pms-theme="dark"] select.form-control option { background: #102119 !important; color: #d9f1e4 !important; }
     @media (max-width: 992px) { .leave-form-page { padding: 18px; } .leave-form-hero, .form-grid.two { grid-template-columns: 1fr; flex-direction: column; align-items: flex-start; } }
 
     /* Dark mode support */
