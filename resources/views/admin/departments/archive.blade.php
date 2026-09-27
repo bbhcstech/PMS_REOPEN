@@ -438,6 +438,101 @@
             grid-template-columns: 1fr;
         }
     }
+
+    /* ===== DARK MODE OVERRIDES ===== */
+    html[data-pms-theme="dark"] .sub-archive-page,
+    html[data-theme="dark"] .sub-archive-page,
+    html[data-bs-theme="dark"] .sub-archive-page {
+        background: #0b1727;
+        color: #e2e8f0;
+    }
+
+    html[data-pms-theme="dark"] .archive-header,
+    html[data-theme="dark"] .archive-header,
+    html[data-bs-theme="dark"] .archive-header,
+    html[data-pms-theme="dark"] .stat-card,
+    html[data-theme="dark"] .stat-card,
+    html[data-bs-theme="dark"] .stat-card,
+    html[data-pms-theme="dark"] .search-card,
+    html[data-theme="dark"] .search-card,
+    html[data-bs-theme="dark"] .search-card,
+    html[data-pms-theme="dark"] .table-card,
+    html[data-theme="dark"] .table-card,
+    html[data-bs-theme="dark"] .table-card {
+        background: #112236 !important;
+        border-color: #1e3a5f !important;
+    }
+
+    html[data-pms-theme="dark"] .header-title h1,
+    html[data-theme="dark"] .header-title h1,
+    html[data-bs-theme="dark"] .header-title h1,
+    html[data-pms-theme="dark"] .stat-info h3,
+    html[data-theme="dark"] .stat-info h3,
+    html[data-bs-theme="dark"] .stat-info h3,
+    html[data-pms-theme="dark"] .card-header h5,
+    html[data-theme="dark"] .card-header h5,
+    html[data-bs-theme="dark"] .card-header h5,
+    html[data-pms-theme="dark"] .record-title,
+    html[data-theme="dark"] .record-title,
+    html[data-bs-theme="dark"] .record-title {
+        color: #f8fafc !important;
+    }
+
+    html[data-pms-theme="dark"] .header-title p,
+    html[data-theme="dark"] .header-title p,
+    html[data-bs-theme="dark"] .header-title p,
+    html[data-pms-theme="dark"] .stat-info h6,
+    html[data-theme="dark"] .stat-info h6,
+    html[data-bs-theme="dark"] .stat-info h6,
+    html[data-pms-theme="dark"] .record-sub,
+    html[data-theme="dark"] .record-sub,
+    html[data-bs-theme="dark"] .record-sub {
+        color: #94a3b8 !important;
+    }
+
+    html[data-pms-theme="dark"] .search-field input,
+    html[data-theme="dark"] .search-field input,
+    html[data-bs-theme="dark"] .search-field input {
+        background: #0f1d30 !important;
+        border-color: #1e3a5f !important;
+        color: #f8fafc !important;
+    }
+
+    html[data-pms-theme="dark"] .archive-table thead th,
+    html[data-theme="dark"] .archive-table thead th,
+    html[data-bs-theme="dark"] .archive-table thead th {
+        background: #0f1d30 !important;
+        color: #94a3b8 !important;
+        border-bottom-color: #1e3a5f !important;
+    }
+
+    html[data-pms-theme="dark"] .archive-table tbody tr,
+    html[data-theme="dark"] .archive-table tbody tr,
+    html[data-bs-theme="dark"] .archive-table tbody tr {
+        background: #112236 !important;
+        border-bottom-color: #1e3a5f !important;
+    }
+
+    html[data-pms-theme="dark"] .archive-table tbody tr:hover,
+    html[data-theme="dark"] .archive-table tbody tr:hover,
+    html[data-bs-theme="dark"] .archive-table tbody tr:hover {
+        background: #162c46 !important;
+    }
+
+    html[data-pms-theme="dark"] .archive-table td,
+    html[data-theme="dark"] .archive-table td,
+    html[data-bs-theme="dark"] .archive-table td {
+        color: #cbd5e1 !important;
+        border-bottom-color: #1e3a5f !important;
+    }
+
+    html[data-pms-theme="dark"] .pagination-container,
+    html[data-theme="dark"] .pagination-container,
+    html[data-bs-theme="dark"] .pagination-container {
+        background: #0f1d30 !important;
+        color: #cbd5e1 !important;
+        border-top-color: #1e3a5f !important;
+    }
 </style>
 
 <div class="sub-archive-page">

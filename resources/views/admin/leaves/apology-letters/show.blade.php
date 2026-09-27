@@ -93,5 +93,72 @@
     .status-approved { background: #10b981; }
     .status-archived { background: #64748b; }
     @media (max-width: 768px) { .leave-show-page { padding: 18px; } .show-head, .detail-grid { grid-template-columns: 1fr; flex-direction: column; align-items: flex-start; } .detail-card dl { grid-template-columns: 1fr; } }
+
+    /* Dark mode support */
+    html[data-pms-theme="dark"] .leave-show-page,
+    html[data-theme="dark"] .leave-show-page,
+    html[data-bs-theme="dark"] .leave-show-page,
+    body[data-pms-theme="dark"] .leave-show-page,
+    body.dark-mode .leave-show-page {
+        background: linear-gradient(135deg, #07130d, #102119) !important;
+        color: #d9f1e4 !important;
+    }
+    html[data-pms-theme="dark"] .show-head,
+    html[data-pms-theme="dark"] .detail-card,
+    html[data-theme="dark"] .show-head,
+    html[data-theme="dark"] .detail-card,
+    html[data-bs-theme="dark"] .show-head,
+    html[data-bs-theme="dark"] .detail-card,
+    body[data-pms-theme="dark"] .show-head,
+    body[data-pms-theme="dark"] .detail-card,
+    body.dark-mode .show-head,
+    body.dark-mode .detail-card {
+        background: rgba(16, 33, 25, 0.95) !important;
+        border-color: rgba(122, 240, 181, 0.15) !important;
+        box-shadow: 0 16px 36px -20px rgba(0, 0, 0, 0.5) !important;
+        color: #d9f1e4 !important;
+    }
+    html[data-pms-theme="dark"] .show-head h1,
+    html[data-pms-theme="dark"] .detail-card h2,
+    html[data-theme="dark"] .show-head h1,
+    html[data-theme="dark"] .detail-card h2,
+    html[data-bs-theme="dark"] .show-head h1,
+    html[data-bs-theme="dark"] .detail-card h2,
+    body[data-pms-theme="dark"] .show-head h1,
+    body[data-pms-theme="dark"] .detail-card h2,
+    body.dark-mode .show-head h1,
+    body.dark-mode .detail-card h2 {
+        color: #d9f1e4 !important;
+    }
+    html[data-pms-theme="dark"] .show-head p,
+    html[data-pms-theme="dark"] .detail-card dt,
+    html[data-theme="dark"] .show-head p,
+    html[data-theme="dark"] .detail-card dt,
+    html[data-bs-theme="dark"] .show-head p,
+    html[data-bs-theme="dark"] .detail-card dt,
+    body[data-pms-theme="dark"] .show-head p,
+    body[data-pms-theme="dark"] .detail-card dt,
+    body.dark-mode .show-head p,
+    body.dark-mode .detail-card dt {
+        color: #8ba198 !important;
+    }
+    html[data-pms-theme="dark"] .letter-body,
+    html[data-theme="dark"] .letter-body,
+    html[data-bs-theme="dark"] .letter-body,
+    body[data-pms-theme="dark"] .letter-body,
+    body.dark-mode .letter-body {
+        background: #102119 !important;
+        border-color: rgba(122, 240, 181, 0.2) !important;
+        color: #d9f1e4 !important;
+    }
+    html[data-pms-theme="dark"] .btn-light,
+    html[data-theme="dark"] .btn-light,
+    html[data-bs-theme="dark"] .btn-light,
+    body[data-pms-theme="dark"] .btn-light,
+    body.dark-mode .btn-light {
+        background: #183026 !important;
+        color: #d9f1e4 !important;
+        border-color: rgba(122, 240, 181, 0.2) !important;
+    }
 </style>
 @endsection

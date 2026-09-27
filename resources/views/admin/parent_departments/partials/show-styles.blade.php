@@ -623,4 +623,323 @@
             padding: 6px 14px;
         }
     }
+
+    /* =============================================
+       DARK MODE STYLES FOR VIEW DEPARTMENT PAGES
+       ============================================= */
+    html[data-pms-theme="dark"] .department-view-page,
+    html[data-theme="dark"] .department-view-page,
+    html[data-bs-theme="dark"] .department-view-page {
+        background: #091510;
+        color: #e2e8f0;
+    }
+
+    html[data-pms-theme="dark"] .department-view-page::before,
+    html[data-theme="dark"] .department-view-page::before,
+    html[data-bs-theme="dark"] .department-view-page::before {
+        background: radial-gradient(circle at 0% 0%, rgba(16, 185, 129, 0.06) 0%, transparent 50%),
+                    radial-gradient(circle at 100% 100%, rgba(52, 211, 153, 0.04) 0%, transparent 50%);
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .breadcrumb,
+    html[data-theme="dark"] .department-view-page .breadcrumb,
+    html[data-bs-theme="dark"] .department-view-page .breadcrumb {
+        background: rgba(16, 33, 25, 0.85);
+        border-color: rgba(225, 255, 240, 0.12);
+        color: #40d48c;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .header-card,
+    html[data-theme="dark"] .department-view-page .header-card,
+    html[data-bs-theme="dark"] .department-view-page .header-card {
+        background: #102119;
+        border-color: rgba(225, 255, 240, 0.12);
+        box-shadow: 0 16px 36px rgba(0, 0, 0, 0.3);
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .header-card h1,
+    html[data-theme="dark"] .department-view-page .header-card h1,
+    html[data-bs-theme="dark"] .department-view-page .header-card h1 {
+        background: linear-gradient(135deg, #ffffff, #a7f3d0);
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .header-card p,
+    html[data-theme="dark"] .department-view-page .header-card p,
+    html[data-bs-theme="dark"] .department-view-page .header-card p {
+        color: #94a3b8;
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .btn-light,
+    html[data-theme="dark"] .department-view-page .btn-light,
+    html[data-bs-theme="dark"] .department-view-page .btn-light {
+        background: #183026;
+        color: #e2e8f0;
+        border-color: rgba(225, 255, 240, 0.15);
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .btn-light:hover,
+    html[data-theme="dark"] .department-view-page .btn-light:hover,
+    html[data-bs-theme="dark"] .department-view-page .btn-light:hover {
+        background: #204033;
+        color: #ffffff;
+        border-color: #40d48c;
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .btn-secondary,
+    html[data-theme="dark"] .department-view-page .btn-secondary,
+    html[data-bs-theme="dark"] .department-view-page .btn-secondary {
+        background: #183026;
+        color: #cbd5e1;
+        border-color: rgba(225, 255, 240, 0.15);
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .btn-secondary:hover,
+    html[data-theme="dark"] .department-view-page .btn-secondary:hover,
+    html[data-bs-theme="dark"] .department-view-page .btn-secondary:hover {
+        background: #204033;
+        color: #ffffff;
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .view-card,
+    html[data-theme="dark"] .department-view-page .view-card,
+    html[data-bs-theme="dark"] .department-view-page .view-card {
+        background: #102119;
+        border-color: rgba(225, 255, 240, 0.12);
+        box-shadow: 0 16px 36px rgba(0, 0, 0, 0.3);
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .view-status-bar,
+    html[data-theme="dark"] .department-view-page .view-status-bar,
+    html[data-bs-theme="dark"] .department-view-page .view-status-bar {
+        background: #162c22;
+        border-bottom-color: rgba(225, 255, 240, 0.1);
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .status-info,
+    html[data-theme="dark"] .department-view-page .status-info,
+    html[data-bs-theme="dark"] .department-view-page .status-info {
+        color: #f1f5f9;
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .status-badge,
+    html[data-theme="dark"] .department-view-page .status-badge,
+    html[data-bs-theme="dark"] .department-view-page .status-badge {
+        background: linear-gradient(145deg, #064e3b, #047857);
+        color: #a7f3d0;
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .view-field,
+    html[data-theme="dark"] .department-view-page .view-field,
+    html[data-bs-theme="dark"] .department-view-page .view-field {
+        background: #183026;
+        border-color: rgba(225, 255, 240, 0.12);
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .view-field:hover,
+    html[data-theme="dark"] .department-view-page .view-field:hover,
+    html[data-bs-theme="dark"] .department-view-page .view-field:hover {
+        background: #1e3a2f;
+        border-color: rgba(64, 212, 140, 0.3);
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .field-content label,
+    html[data-theme="dark"] .department-view-page .field-content label,
+    html[data-bs-theme="dark"] .department-view-page .field-content label {
+        color: #94a3b8;
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .field-value,
+    html[data-theme="dark"] .department-view-page .field-value,
+    html[data-bs-theme="dark"] .department-view-page .field-value {
+        color: #f8fafc;
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .field-hint,
+    html[data-theme="dark"] .department-view-page .field-hint,
+    html[data-bs-theme="dark"] .department-view-page .field-hint {
+        color: #64748b;
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .user-name,
+    html[data-theme="dark"] .department-view-page .user-name,
+    html[data-bs-theme="dark"] .department-view-page .user-name {
+        color: #f8fafc;
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .text-muted,
+    html[data-theme="dark"] .department-view-page .text-muted,
+    html[data-bs-theme="dark"] .department-view-page .text-muted {
+        color: #94a3b8 !important;
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .view-footer,
+    html[data-theme="dark"] .department-view-page .view-footer,
+    html[data-bs-theme="dark"] .department-view-page .view-footer {
+        background: #162c22;
+        border-top-color: rgba(225, 255, 240, 0.1);
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .footer-info,
+    html[data-theme="dark"] .department-view-page .footer-info,
+    html[data-bs-theme="dark"] .department-view-page .footer-info {
+        color: #94a3b8;
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .related-card,
+    html[data-theme="dark"] .department-view-page .related-card,
+    html[data-bs-theme="dark"] .department-view-page .related-card {
+        background: #102119;
+        border-color: rgba(225, 255, 240, 0.12);
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .related-header,
+    html[data-theme="dark"] .department-view-page .related-header,
+    html[data-bs-theme="dark"] .department-view-page .related-header {
+        background: #162c22;
+        border-bottom-color: rgba(225, 255, 240, 0.1);
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .related-header h5,
+    html[data-theme="dark"] .department-view-page .related-header h5,
+    html[data-bs-theme="dark"] .department-view-page .related-header h5 {
+        color: #f8fafc;
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .related-label,
+    html[data-theme="dark"] .department-view-page .related-label,
+    html[data-bs-theme="dark"] .department-view-page .related-label {
+        color: #94a3b8;
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .related-value,
+    html[data-theme="dark"] .department-view-page .related-value,
+    html[data-bs-theme="dark"] .department-view-page .related-value {
+        color: #f8fafc;
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .count-badge,
+    html[data-theme="dark"] .department-view-page .count-badge,
+    html[data-bs-theme="dark"] .department-view-page .count-badge {
+        background: rgba(16, 185, 129, 0.2) !important;
+        border: 1px solid rgba(52, 211, 153, 0.3) !important;
+        color: #34d399 !important;
+    }
+    html[data-pms-theme="dark"] .department-view-page .count-badge i,
+    html[data-theme="dark"] .department-view-page .count-badge i,
+    html[data-bs-theme="dark"] .department-view-page .count-badge i {
+        color: #34d399 !important;
+        -webkit-text-fill-color: #34d399 !important;
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .avatar-circle,
+    html[data-theme="dark"] .department-view-page .avatar-circle,
+    html[data-bs-theme="dark"] .department-view-page .avatar-circle {
+        background: rgba(16, 185, 129, 0.2) !important;
+        border: 1px solid rgba(52, 211, 153, 0.3) !important;
+        color: #34d399 !important;
+    }
+
+    /* Header & Field Icon Dark Theme Fix */
+    html[data-pms-theme="dark"] .department-view-page .header-icon,
+    html[data-theme="dark"] .department-view-page .header-icon,
+    html[data-bs-theme="dark"] .department-view-page .header-icon {
+        background: rgba(16, 185, 129, 0.2) !important;
+        border: 1px solid rgba(52, 211, 153, 0.35) !important;
+        color: #34d399 !important;
+    }
+    html[data-pms-theme="dark"] .department-view-page .header-icon i,
+    html[data-theme="dark"] .department-view-page .header-icon i,
+    html[data-bs-theme="dark"] .department-view-page .header-icon i {
+        color: #34d399 !important;
+        -webkit-text-fill-color: #34d399 !important;
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .view-field:nth-child(1) .field-icon,
+    html[data-theme="dark"] .department-view-page .view-field:nth-child(1) .field-icon,
+    html[data-bs-theme="dark"] .department-view-page .view-field:nth-child(1) .field-icon {
+        background: rgba(16, 185, 129, 0.2) !important;
+        border: 1px solid rgba(52, 211, 153, 0.35) !important;
+        color: #34d399 !important;
+    }
+    html[data-pms-theme="dark"] .department-view-page .view-field:nth-child(1) .field-icon i,
+    html[data-theme="dark"] .department-view-page .view-field:nth-child(1) .field-icon i,
+    html[data-bs-theme="dark"] .department-view-page .view-field:nth-child(1) .field-icon i {
+        color: #34d399 !important;
+        -webkit-text-fill-color: #34d399 !important;
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .view-field:nth-child(2) .field-icon,
+    html[data-theme="dark"] .department-view-page .view-field:nth-child(2) .field-icon,
+    html[data-bs-theme="dark"] .department-view-page .view-field:nth-child(2) .field-icon {
+        background: rgba(37, 99, 235, 0.2) !important;
+        border: 1px solid rgba(96, 165, 250, 0.35) !important;
+        color: #60a5fa !important;
+    }
+    html[data-pms-theme="dark"] .department-view-page .view-field:nth-child(2) .field-icon i,
+    html[data-theme="dark"] .department-view-page .view-field:nth-child(2) .field-icon i,
+    html[data-bs-theme="dark"] .department-view-page .view-field:nth-child(2) .field-icon i {
+        color: #60a5fa !important;
+        -webkit-text-fill-color: #60a5fa !important;
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .view-field:nth-child(3) .field-icon,
+    html[data-theme="dark"] .department-view-page .view-field:nth-child(3) .field-icon,
+    html[data-bs-theme="dark"] .department-view-page .view-field:nth-child(3) .field-icon {
+        background: rgba(217, 119, 6, 0.2) !important;
+        border: 1px solid rgba(251, 191, 36, 0.35) !important;
+        color: #fbbf24 !important;
+    }
+    html[data-pms-theme="dark"] .department-view-page .view-field:nth-child(3) .field-icon i,
+    html[data-theme="dark"] .department-view-page .view-field:nth-child(3) .field-icon i,
+    html[data-bs-theme="dark"] .department-view-page .view-field:nth-child(3) .field-icon i {
+        color: #fbbf24 !important;
+        -webkit-text-fill-color: #fbbf24 !important;
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .view-field:nth-child(4) .field-icon,
+    html[data-theme="dark"] .department-view-page .view-field:nth-child(4) .field-icon,
+    html[data-bs-theme="dark"] .department-view-page .view-field:nth-child(4) .field-icon {
+        background: rgba(79, 70, 229, 0.2) !important;
+        border: 1px solid rgba(129, 140, 248, 0.35) !important;
+        color: #818cf8 !important;
+    }
+    html[data-pms-theme="dark"] .department-view-page .view-field:nth-child(4) .field-icon i,
+    html[data-theme="dark"] .department-view-page .view-field:nth-child(4) .field-icon i,
+    html[data-bs-theme="dark"] .department-view-page .view-field:nth-child(4) .field-icon i {
+        color: #818cf8 !important;
+        -webkit-text-fill-color: #818cf8 !important;
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .view-field:nth-child(5) .field-icon,
+    html[data-theme="dark"] .department-view-page .view-field:nth-child(5) .field-icon,
+    html[data-bs-theme="dark"] .department-view-page .view-field:nth-child(5) .field-icon {
+        background: rgba(219, 39, 119, 0.2) !important;
+        border: 1px solid rgba(244, 114, 182, 0.35) !important;
+        color: #f472b6 !important;
+    }
+    html[data-pms-theme="dark"] .department-view-page .view-field:nth-child(5) .field-icon i,
+    html[data-theme="dark"] .department-view-page .view-field:nth-child(5) .field-icon i,
+    html[data-bs-theme="dark"] .department-view-page .view-field:nth-child(5) .field-icon i {
+        color: #f472b6 !important;
+        -webkit-text-fill-color: #f472b6 !important;
+    }
+
+    html[data-pms-theme="dark"] .department-view-page .view-field:nth-child(6) .field-icon,
+    html[data-theme="dark"] .department-view-page .view-field:nth-child(6) .field-icon,
+    html[data-bs-theme="dark"] .department-view-page .view-field:nth-child(6) .field-icon {
+        background: rgba(8, 145, 178, 0.2) !important;
+        border: 1px solid rgba(34, 211, 238, 0.35) !important;
+        color: #22d3ee !important;
+    }
+    html[data-pms-theme="dark"] .department-view-page .view-field:nth-child(6) .field-icon i,
+    html[data-theme="dark"] .department-view-page .view-field:nth-child(6) .field-icon i,
+    html[data-bs-theme="dark"] .department-view-page .view-field:nth-child(6) .field-icon i {
+        color: #22d3ee !important;
+        -webkit-text-fill-color: #22d3ee !important;
+    }
 </style>
+
