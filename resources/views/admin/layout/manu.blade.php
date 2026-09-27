@@ -1636,12 +1636,12 @@
                 <ul class="menu-sub">
                     @if($canSeeModule('payroll'))
                         <li class="menu-item {{ request()->routeIs('payroll.index') ? 'active' : '' }}">
-                            <a href="{{ route('payroll.index') }}" class="menu-link"><div>Dashboard</div></a>
+                            <a href="{{ \Illuminate\Support\Facades\Route::has('payroll.index') ? route('payroll.index') : url('/payroll') }}" class="menu-link"><div>Dashboard</div></a>
                         </li>
                     @endif
                     @if($canSeeModule('payroll'))
                         <li class="menu-item {{ request()->routeIs('payroll.processing') ? 'active' : '' }}">
-                            <a href="{{ route('payroll.processing') }}" class="menu-link"><div>Processing</div></a>
+                            <a href="{{ \Illuminate\Support\Facades\Route::has('payroll.processing') ? route('payroll.processing') : url('/payroll/processing') }}" class="menu-link"><div>Processing</div></a>
                         </li>
                     @endif
                     @if($canSeeModule('payroll-architectures'))
