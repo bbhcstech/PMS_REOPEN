@@ -262,11 +262,19 @@ class User extends Authenticatable
             return false;
         }
 
+        $slugsToTest = [$moduleSlug];
+        if (str_starts_with($moduleSlug, 'payroll-')) {
+            $slugsToTest[] = 'payroll';
+        }
+        if (str_contains($moduleSlug, 'reports')) {
+            $slugsToTest[] = 'reports';
+        }
+
         return RolePermission::query()
             ->where('role', $this->normalizedRole())
             ->where($column, true)
-            ->whereHas('module', function ($query) use ($moduleSlug) {
-                $query->where('slug', $moduleSlug)->where('is_active', true);
+            ->whereHas('module', function ($query) use ($slugsToTest) {
+                $query->whereIn('slug', array_unique($slugsToTest))->where('is_active', true);
             })
             ->exists();
     }
