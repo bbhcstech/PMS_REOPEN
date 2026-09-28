@@ -1518,4 +1518,82 @@ class SuperAdminController extends Controller
             }
         }
     }
+
+    public function profile(Request $request): View
+    {
+        $this->authorizeSuperAdmin();
+
+        $saUser = auth('super_admin')->user();
+        $webUser = auth()->user();
+        $user = $saUser ?? $webUser;
+
+        return view('superadmin.profile', compact('user'));
+    }
+
+    public function updateProfile(Request $request): RedirectResponse
+    {
+        $this->authorizeSuperAdmin();
+
+        $saUser = auth('super_admin')->user();
+        $webUser = auth()->user();
+        $user = $saUser ?? $webUser;
+
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255'],
+            'mobile' => ['nullable', 'string', 'max:50'],
+            'gender' => ['nullable', 'string', 'max:20'],
+            'date_of_birth' => ['nullable', 'date'],
+            'marital_status' => ['nullable', 'string', 'max:50'],
+            'country' => ['nullable', 'string', 'max:100'],
+            'language' => ['nullable', 'string', 'max:100'],
+            'address' => ['nullable', 'string'],
+            'about' => ['nullable', 'string'],
+            'email_notifications' => ['nullable', 'boolean'],
+            'google_calendar' => ['nullable', 'boolean'],
+            'profile_image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg,webp', 'max:5120'],
+            'govt_id_card' => ['nullable', 'file', 'mimes:pdf,jpeg,png,jpg', 'max:10240'],
+        ]);
+
+        if ($request->hasFile('profile_image')) {
+            $file = $request->file('profile_image');
+            $dir = public_path('uploads/profile');
+            if (!\Illuminate\Support\Facades\File::exists($dir)) {
+                \Illuminate\Support\Facades\File::makeDirectory($dir, 0755, true);
+            }
+            $filename = time() . '_profile_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $file->move($dir, $filename);
+            $data['image'] = 'uploads/profile/' . $filename;
+            if (\Illuminate\Support\Facades\Schema::hasColumn($user->getTable(), 'profile_image')) {
+                $data['profile_image'] = 'uploads/profile/' . $filename;
+            }
+        }
+
+        if ($request->hasFile('govt_id_card')) {
+            $file = $request->file('govt_id_card');
+            $dir = public_path('uploads/documents');
+            if (!\Illuminate\Support\Facades\File::exists($dir)) {
+                \Illuminate\Support\Facades\File::makeDirectory($dir, 0755, true);
+            }
+            $filename = time() . '_govtid_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $file->move($dir, $filename);
+            $data['govt_id_card'] = 'uploads/documents/' . $filename;
+        }
+
+        $data['email_notifications'] = $request->has('email_notifications');
+        $data['google_calendar'] = $request->has('google_calendar');
+
+        $updateData = [];
+        foreach ($data as $key => $val) {
+            if (\Illuminate\Support\Facades\Schema::hasColumn($user->getTable(), $key)) {
+                $updateData[$key] = $val;
+            }
+        }
+
+        if (!empty($updateData) && $user) {
+            $user->update($updateData);
+        }
+
+        return redirect()->back()->with('success', 'Profile updated successfully.');
+    }
 }
