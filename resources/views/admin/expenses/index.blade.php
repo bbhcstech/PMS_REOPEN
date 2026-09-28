@@ -13,8 +13,8 @@
        
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h4>Expense List</h4>
-    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addExpenseModal">
-        + Add Expense
+    <button class="btn btn-primary px-3 text-nowrap flex-shrink-0" data-bs-toggle="modal" data-bs-target="#addExpenseModal">
+        <i class="fas fa-plus-circle me-1"></i> Add Expense
     </button>
    </div>
 
