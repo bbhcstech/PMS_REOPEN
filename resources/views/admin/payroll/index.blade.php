@@ -145,14 +145,14 @@
     font-weight: 700;
 }
 :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"], body.dark, [data-bs-theme="dark"]) .payroll-summary-net {
-    background-color: rgba(16, 185, 129, 0.15);
-    border-color: rgba(16, 185, 129, 0.3);
+    background-color: rgba(47, 107, 255, 0.15);
+    border-color: rgba(47, 107, 255, 0.3);
 }
 :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"], body.dark, [data-bs-theme="dark"]) .payroll-summary-net .summary-label {
-    color: #6ee7b7 !important;
+    color: #93C5FD !important;
 }
 :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"], body.dark, [data-bs-theme="dark"]) .payroll-summary-net .summary-val {
-    color: #34d399 !important;
+    color: #60A5FA !important;
 }
 
 /* Table Head Overrides */

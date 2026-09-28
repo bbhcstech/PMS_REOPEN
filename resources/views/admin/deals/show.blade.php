@@ -105,7 +105,7 @@ html[data-bs-theme="dark"] .pipeline-step.completed,
 html[data-theme="dark"] .pipeline-step.completed,
 body[data-pms-theme="dark"] .pipeline-step.completed,
 [data-pms-theme="dark"] .pipeline-step.completed {
-    background: #059669 !important;
+    background: #2F6BFF !important;
     color: #ffffff !important;
     -webkit-text-fill-color: #ffffff !important;
 }

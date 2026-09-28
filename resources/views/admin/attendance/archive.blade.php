@@ -55,9 +55,9 @@
     }
 
     .back-button {
-        background: #f0f9f4;
-        color: #0f744c;
-        border: 1px solid rgba(16, 185, 129, 0.2);
+        background: #F8FAFC;
+        color: #2F6BFF;
+        border: 1px solid rgba(47, 107, 255, 0.2);
     }
 
     .search-button {
@@ -95,8 +95,8 @@
     }
 
     .total-badge {
-        background: #ecfdf5;
-        color: #059669;
+        background: #EEF2FF;
+        color: #2F6BFF;
         border-radius: 999px;
         padding: 0.5rem 0.9rem;
         font-weight: 800;

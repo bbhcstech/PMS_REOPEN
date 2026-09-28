@@ -112,8 +112,19 @@
                     <input type="text" id="totalDays" class="form-control" value="{{ old('total_days', $leave->total_days ?? '1') }}" readonly>
                 </div>
                 <div>
-                    <label>Contact During Leave</label>
-                    <input type="text" name="contact_during_leave" class="form-control" value="{{ old('contact_during_leave', $leave->contact_during_leave ?? '') }}" placeholder="Phone/email for urgent contact">
+                    <label>Contact During Leave <span style="color:#6b7280;font-weight:600;font-size:.7rem;text-transform:none;">(with country code)</span></label>
+                    {{-- hidden field submitted to server in E.164 format --}}
+                    <input type="hidden" name="contact_during_leave" id="contactDuringLeaveHidden"
+                           value="{{ old('contact_during_leave', $leave->contact_during_leave ?? '') }}">
+                    <div class="phone-input-wrapper" style="position:relative;">
+                        <input type="tel" id="contactDuringLeavePhone" class="form-control"
+                               placeholder="3XX XXXXXXX"
+                               autocomplete="tel"
+                               style="padding-left:90px;">
+                        <div id="phoneValidIcon" style="display:none;position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:1.1rem;"></div>
+                    </div>
+                    <small id="phoneError" class="text-danger" style="display:none;font-size:.8rem;margin-top:4px;"></small>
+                    <small class="text-muted" style="font-size:.72rem;">Enter number with country code, e.g. +92 300 1234567</small>
                 </div>
                 <div>
                     <label>Attachment</label>
@@ -159,8 +170,8 @@
     .leave-form-page {
         padding: 30px 35px;
         min-height: 100vh;
-        background: var(--bx-bg, linear-gradient(135deg, #f0f9f4, #f7fbff));
-        color: var(--bx-ink, #102119);
+        background: var(--bx-bg, linear-gradient(135deg, #F8FAFC, #f7fbff));
+        color: var(--bx-ink, #0F1530);
         transition: background 0.25s ease, color 0.25s ease;
     }
     .leave-breadcrumb, .leave-form-hero, .policy-notice, .balance-strip, .form-card {
@@ -175,7 +186,7 @@
         align-items: center;
         padding: 12px 18px;
         border-radius: 14px;
-        color: #0f744c;
+        color: #2F6BFF;
         font-weight: 800;
         margin-bottom: 22px;
     }
@@ -192,7 +203,7 @@
         margin: 0 0 6px;
         font-size: 32px;
         font-weight: 900;
-        color: var(--bx-ink, #102119);
+        color: var(--bx-ink, #0F1530);
     }
     .leave-form-hero p, .policy-notice p {
         margin: 0;
@@ -211,22 +222,22 @@
         padding: 0 1.25rem;
     }
     .leave-form-page .btn-primary {
-        background: linear-gradient(145deg, #10B981, #059669);
+        background: linear-gradient(145deg, #4F83FF, #2F6BFF);
         color: #ffffff !important;
-        box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+        box-shadow: 0 4px 14px rgba(47, 107, 255, 0.3);
     }
     .leave-form-page .btn-primary:hover {
-        background: linear-gradient(145deg, #059669, #047857);
-        box-shadow: 0 6px 18px rgba(16, 185, 129, 0.4);
+        background: linear-gradient(145deg, #1E4FCC, #2F6BFF);
+        box-shadow: 0 6px 18px rgba(47, 107, 255, 0.4);
     }
     .leave-form-page .btn-light, .leave-form-page .btn-secondary {
-        background: var(--bx-surface-2, #f0f9f4);
-        color: var(--bx-ink, #0f744c);
-        border: 1px solid var(--bx-border, rgba(16,185,129,.18));
+        background: var(--bx-surface-2, #F8FAFC);
+        color: var(--bx-ink, #2F6BFF);
+        border: 1px solid var(--bx-border, rgba(47,107,255,.18));
     }
     .leave-form-page .btn-light:hover, .leave-form-page .btn-secondary:hover {
-        background: var(--bx-surface-3, #e2f4ea);
-        color: var(--bx-primary, #10B981);
+        background: var(--bx-surface-3, #EEF2FF);
+        color: var(--bx-primary, #2F6BFF);
     }
     .policy-notice {
         display: flex;
@@ -258,7 +269,7 @@
         padding: 12px 14px;
         border-radius: 14px;
         background: var(--bx-surface-2, #f8fafc);
-        border: 1px solid var(--bx-border, rgba(16,185,129,.08));
+        border: 1px solid var(--bx-border, rgba(47,107,255,.08));
     }
     .balance-strip span {
         display: block;
@@ -271,7 +282,7 @@
     .balance-strip strong {
         font-size: 24px;
         font-weight: 900;
-        color: var(--bx-ink, #0a2e1f);
+        color: var(--bx-ink, #0F172A);
     }
     .form-card {
         border-radius: 24px;
@@ -301,7 +312,7 @@
     .leave-form-page .form-control {
         min-height: 46px;
         border-radius: 12px;
-        border: 1px solid var(--bx-border, #dbe7e1);
+        border: 1px solid var(--bx-border, #E2E8F0);
         background: var(--bx-surface, #ffffff);
         color: var(--bx-ink, #10142C);
         font-weight: 600;
@@ -309,8 +320,8 @@
         transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
     }
     .leave-form-page .form-control:focus {
-        border-color: #10B981;
-        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.18);
+        border-color: #2F6BFF;
+        box-shadow: 0 0 0 3px rgba(47, 107, 255, 0.18);
     }
     .check-row {
         display: flex;
@@ -323,7 +334,7 @@
         align-items: center;
         gap: 8px;
         padding: 10px 16px;
-        border: 1px solid var(--bx-border, #dbe7e1);
+        border: 1px solid var(--bx-border, #E2E8F0);
         background: var(--bx-surface-2, #ffffff);
         border-radius: 12px;
         text-transform: none;
@@ -338,7 +349,7 @@
         gap: 12px;
         padding-top: 20px;
         margin-top: 20px;
-        border-top: 1px solid var(--bx-border, rgba(16,185,129,.1));
+        border-top: 1px solid var(--bx-border, rgba(47,107,255,.1));
     }
     @media (max-width: 992px) {
         .leave-form-page { padding: 18px; }
@@ -368,7 +379,7 @@
     }
     html[data-pms-theme="dark"] .leave-breadcrumb,
     html[data-theme="dark"] .leave-breadcrumb {
-        color: #34D399 !important;
+        color: #60A5FA !important;
     }
     html[data-pms-theme="dark"] .leave-form-hero h1,
     html[data-theme="dark"] .leave-form-hero h1 {
@@ -427,8 +438,8 @@
     }
     html[data-pms-theme="dark"] .leave-form-page .form-control:focus,
     html[data-theme="dark"] .leave-form-page .form-control:focus {
-        border-color: #34D399 !important;
-        box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.25) !important;
+        border-color: #60A5FA !important;
+        box-shadow: 0 0 0 3px rgba(79, 131, 255, 0.25) !important;
     }
     html[data-pms-theme="dark"] .check-row label,
     html[data-theme="dark"] .check-row label {
@@ -449,10 +460,151 @@
     html[data-theme="dark"] .leave-form-page .btn-light:hover,
     html[data-theme="dark"] .leave-form-page .btn-secondary:hover {
         background: #1A2247 !important;
-        color: #34D399 !important;
-        border-color: #34D399 !important;
+        color: #60A5FA !important;
+        border-color: #60A5FA !important;
     }
+
+    /* ===== INTL-TEL-INPUT OVERRIDES ===== */
+    .iti { width: 100%; }
+    .iti__flag-container { z-index: 10; }
+    #contactDuringLeavePhone.iti__tel-input {
+        padding-left: 90px !important;
+    }
+    #contactDuringLeavePhone.phone-valid {
+        border-color: #22c55e !important;
+        box-shadow: 0 0 0 3px rgba(34,197,94,0.15) !important;
+    }
+    #contactDuringLeavePhone.phone-invalid {
+        border-color: #ef4444 !important;
+        box-shadow: 0 0 0 3px rgba(239,68,68,0.15) !important;
+    }
+
+    /* ── Dark mode: flag/dial-code button ── */
+    html[data-pms-theme="dark"] .iti__selected-dial-code,
+    html[data-theme="dark"] .iti__selected-dial-code,
+    html[data-bs-theme="dark"] .iti__selected-dial-code,
+    [data-pms-theme="dark"] .iti__selected-dial-code,
+    [data-theme="dark"] .iti__selected-dial-code,
+    body.dark-mode .iti__selected-dial-code {
+        color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .iti__selected-country,
+    html[data-theme="dark"] .iti__selected-country,
+    html[data-bs-theme="dark"] .iti__selected-country,
+    [data-pms-theme="dark"] .iti__selected-country,
+    [data-theme="dark"] .iti__selected-country,
+    body.dark-mode .iti__selected-country {
+        background: #141B3D !important;
+        border-right: 1px solid rgba(238,241,251,0.12) !important;
+    }
+
+    html[data-pms-theme="dark"] .iti__selected-country:hover,
+    html[data-theme="dark"] .iti__selected-country:hover,
+    body.dark-mode .iti__selected-country:hover {
+        background: #1A2247 !important;
+    }
+
+    /* ── Dark mode: dropdown container ── */
+    html[data-pms-theme="dark"] .iti__dropdown-content,
+    html[data-theme="dark"] .iti__dropdown-content,
+    html[data-bs-theme="dark"] .iti__dropdown-content,
+    [data-pms-theme="dark"] .iti__dropdown-content,
+    [data-theme="dark"] .iti__dropdown-content,
+    body.dark-mode .iti__dropdown-content,
+    html[data-pms-theme="dark"] .iti__country-list,
+    html[data-theme="dark"] .iti__country-list,
+    html[data-bs-theme="dark"] .iti__country-list,
+    [data-pms-theme="dark"] .iti__country-list,
+    [data-theme="dark"] .iti__country-list,
+    body.dark-mode .iti__country-list {
+        background: #0F1530 !important;
+        border: 1px solid rgba(238,241,251,0.12) !important;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.5) !important;
+    }
+
+    /* ── Dark mode: search box ── */
+    html[data-pms-theme="dark"] .iti__search-input,
+    html[data-theme="dark"] .iti__search-input,
+    html[data-bs-theme="dark"] .iti__search-input,
+    [data-pms-theme="dark"] .iti__search-input,
+    [data-theme="dark"] .iti__search-input,
+    body.dark-mode .iti__search-input {
+        background: #141B3D !important;
+        border: 1px solid rgba(238,241,251,0.15) !important;
+        color: #EEF1FB !important;
+        border-radius: 8px !important;
+    }
+    html[data-pms-theme="dark"] .iti__search-input::placeholder,
+    html[data-theme="dark"] .iti__search-input::placeholder,
+    body.dark-mode .iti__search-input::placeholder {
+        color: #5A6490 !important;
+    }
+    html[data-pms-theme="dark"] .iti__search-input:focus,
+    html[data-theme="dark"] .iti__search-input:focus,
+    body.dark-mode .iti__search-input:focus {
+        border-color: #60A5FA !important;
+        outline: none !important;
+        box-shadow: 0 0 0 2px rgba(96,165,250,0.2) !important;
+    }
+
+    /* ── Dark mode: country list items ── */
+    html[data-pms-theme="dark"] .iti__country,
+    html[data-theme="dark"] .iti__country,
+    html[data-bs-theme="dark"] .iti__country,
+    [data-pms-theme="dark"] .iti__country,
+    [data-theme="dark"] .iti__country,
+    body.dark-mode .iti__country {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .iti__country:hover,
+    html[data-theme="dark"] .iti__country:hover,
+    body.dark-mode .iti__country:hover {
+        background: #1A2247 !important;
+    }
+    html[data-pms-theme="dark"] .iti__country.iti__highlight,
+    html[data-theme="dark"] .iti__country.iti__highlight,
+    body.dark-mode .iti__country.iti__highlight {
+        background: #1E2A52 !important;
+    }
+    html[data-pms-theme="dark"] .iti__dial-code,
+    html[data-theme="dark"] .iti__dial-code,
+    body.dark-mode .iti__dial-code {
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] .iti__country-name,
+    html[data-theme="dark"] .iti__country-name,
+    body.dark-mode .iti__country-name {
+        color: #EEF1FB !important;
+    }
+
+    /* ── Dark mode: divider ── */
+    html[data-pms-theme="dark"] .iti__divider,
+    html[data-theme="dark"] .iti__divider,
+    body.dark-mode .iti__divider {
+        border-color: rgba(238,241,251,0.1) !important;
+    }
+
+    /* ── Dark mode: the tel input itself ── */
+    html[data-pms-theme="dark"] #contactDuringLeavePhone,
+    html[data-theme="dark"] #contactDuringLeavePhone,
+    body.dark-mode #contactDuringLeavePhone {
+        background: #141B3D !important;
+        color: #EEF1FB !important;
+        border-color: rgba(238,241,251,0.14) !important;
+        color-scheme: dark;
+    }
+    html[data-pms-theme="dark"] #contactDuringLeavePhone::placeholder,
+    html[data-theme="dark"] #contactDuringLeavePhone::placeholder,
+    body.dark-mode #contactDuringLeavePhone::placeholder {
+        color: #5A6490 !important;
+    }
+
 </style>
+
+{{-- intl-tel-input CSS --}}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@23/build/css/intlTelInput.css">
+
 
 @push('js')
 <script>
@@ -483,6 +635,91 @@ document.addEventListener('DOMContentLoaded', function () {
     type && type.addEventListener('change', syncDocumentRequired);
     calculateDays();
     syncDocumentRequired();
+
+    /* ===== INTL-TEL-INPUT PHONE VALIDATION ===== */
+    const phoneInput   = document.getElementById('contactDuringLeavePhone');
+    const hiddenInput  = document.getElementById('contactDuringLeaveHidden');
+    const phoneError   = document.getElementById('phoneError');
+    const phoneIcon    = document.getElementById('phoneValidIcon');
+    const leaveForm    = document.getElementById('leaveForm');
+
+    // Load intl-tel-input dynamically
+    const itiScript = document.createElement('script');
+    itiScript.src = 'https://cdn.jsdelivr.net/npm/intl-tel-input@23/build/js/intlTelInput.min.js';
+    itiScript.onload = function () {
+        const utilsScript = 'https://cdn.jsdelivr.net/npm/intl-tel-input@23/build/js/utils.js';
+
+        const iti = window.intlTelInput(phoneInput, {
+            utilsScript: utilsScript,
+            initialCountry: 'pk',           // default to Pakistan — change to 'auto' if needed
+            separateDialCode: true,
+            preferredCountries: ['pk', 'ae', 'us', 'gb', 'sa', 'in'],
+            placeholderNumberType: 'MOBILE',
+        });
+
+        // Pre-fill if a value already exists (edit mode / old input)
+        const existingVal = hiddenInput.value.trim();
+        if (existingVal) {
+            iti.setNumber(existingVal);
+        }
+
+        function showPhoneState(valid) {
+            phoneInput.classList.toggle('phone-valid', valid);
+            phoneInput.classList.toggle('phone-invalid', !valid && phoneInput.value.trim() !== '');
+            if (valid) {
+                phoneIcon.style.display = 'block';
+                phoneIcon.innerHTML = '<i class="fas fa-check-circle" style="color:#22c55e;"></i>';
+                phoneError.style.display = 'none';
+            } else if (phoneInput.value.trim() === '') {
+                phoneIcon.style.display = 'none';
+                phoneError.style.display = 'none';
+                phoneInput.classList.remove('phone-invalid');
+            } else {
+                phoneIcon.style.display = 'block';
+                phoneIcon.innerHTML = '<i class="fas fa-times-circle" style="color:#ef4444;"></i>';
+                phoneError.style.display = 'block';
+                phoneError.textContent = 'Please enter a valid phone number with country code.';
+            }
+        }
+
+        phoneInput.addEventListener('input', function () {
+            if (phoneInput.value.trim() === '') {
+                showPhoneState(false);
+                hiddenInput.value = '';
+                return;
+            }
+            const valid = iti.isValidNumber();
+            showPhoneState(valid);
+            hiddenInput.value = valid ? iti.getNumber() : '';
+        });
+
+        phoneInput.addEventListener('countrychange', function () {
+            if (phoneInput.value.trim() !== '') {
+                const valid = iti.isValidNumber();
+                showPhoneState(valid);
+                hiddenInput.value = valid ? iti.getNumber() : '';
+            }
+        });
+
+        // Block form submit if phone is filled but invalid
+        if (leaveForm) {
+            leaveForm.addEventListener('submit', function (e) {
+                const rawVal = phoneInput.value.trim();
+                if (rawVal !== '') {
+                    if (!iti.isValidNumber()) {
+                        e.preventDefault();
+                        showPhoneState(false);
+                        phoneInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        return;
+                    }
+                    hiddenInput.value = iti.getNumber(); // ensure E.164 in hidden field
+                } else {
+                    hiddenInput.value = '';
+                }
+            }, true); // capture phase so it fires before other submit handlers
+        }
+    };
+    document.head.appendChild(itiScript);
 });
 </script>
 @endpush

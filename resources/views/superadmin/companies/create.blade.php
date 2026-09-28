@@ -8,8 +8,8 @@
 <style>
   :root {
     --brand-primary: #10b981;
-    --brand-primary-hover: #059669;
-    --brand-glow: rgba(16, 185, 129, 0.2);
+    --brand-primary-hover: #2F6BFF;
+    --brand-glow: rgba(47, 107, 255, 0.2);
     --brand-emerald: #10b981;
     --brand-indigo: #6366f1;
     --brand-purple: #8b5cf6;
@@ -129,9 +129,9 @@
   }
 
   @keyframes pulseGreenDot {
-    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-    70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
-    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(47, 107, 255, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(47, 107, 255, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(47, 107, 255, 0); }
   }
 
   @keyframes shimmerBtn {
@@ -198,7 +198,7 @@
     width: 42px;
     height: 42px;
     border-radius: 12px;
-    background: linear-gradient(135deg, #0f744c 0%, #10b981 100%);
+    background: linear-gradient(135deg, #2F6BFF 0%, #10b981 100%);
     color: #ffffff;
     display: flex;
     align-items: center;
@@ -236,7 +236,7 @@
     top: 24px;
     left: 15%;
     height: 3px;
-    background: linear-gradient(90deg, #0f744c, var(--brand-emerald));
+    background: linear-gradient(90deg, #2F6BFF, var(--brand-emerald));
     z-index: 1;
     border-radius: 999px;
     width: 0%;
@@ -293,7 +293,7 @@
   }
 
   .step-card.active .step-number {
-    background: linear-gradient(135deg, #0f744c, var(--brand-emerald));
+    background: linear-gradient(135deg, #2F6BFF, var(--brand-emerald));
     color: #ffffff;
     border-color: transparent;
     box-shadow: 0 4px 12px var(--brand-glow);
@@ -351,7 +351,7 @@
     width: 44px;
     height: 44px;
     border-radius: 14px;
-    background: rgba(16, 185, 129, 0.12);
+    background: rgba(47, 107, 255, 0.12);
     color: var(--brand-emerald);
     display: flex;
     align-items: center;
@@ -390,7 +390,7 @@
     width: 34px;
     height: 34px;
     border-radius: 10px;
-    background: linear-gradient(135deg, #0f744c, var(--brand-emerald));
+    background: linear-gradient(135deg, #2F6BFF, var(--brand-emerald));
     color: #fff;
     font-weight: 800;
     font-size: 13px;
@@ -639,7 +639,7 @@
 
   .drag-drop-box:hover, .drag-drop-box.dragover {
     border-color: var(--brand-emerald);
-    background: rgba(16, 185, 129, 0.05);
+    background: rgba(47, 107, 255, 0.05);
     box-shadow: 0 8px 20px var(--brand-glow);
     transform: translateY(-2px);
   }
@@ -903,7 +903,7 @@
     width: 36px;
     height: 36px;
     border-radius: 10px;
-    background: rgba(16, 185, 129, 0.12);
+    background: rgba(47, 107, 255, 0.12);
     color: var(--brand-emerald);
     display: flex;
     align-items: center;
@@ -944,7 +944,7 @@
   }
 
   .btn-shimmer-cta {
-    background: linear-gradient(135deg, #0f744c 0%, #10b981 50%, #0f744c 100%);
+    background: linear-gradient(135deg, #2F6BFF 0%, #10b981 50%, #2F6BFF 100%);
     background-size: 200% 100%;
     color: #ffffff;
     border: none;
@@ -963,7 +963,7 @@
   .btn-shimmer-cta:hover {
     animation: shimmerBtn 2s infinite linear;
     transform: translateY(-2px);
-    box-shadow: 0 14px 30px rgba(16, 185, 129, 0.35);
+    box-shadow: 0 14px 30px rgba(47, 107, 255, 0.35);
   }
 
   /* ERROR ALERT */

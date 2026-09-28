@@ -467,7 +467,7 @@
         --primary: #2F6BFF;
         --primary-hover: #1E4FCC;
         --primary-ring: rgba(47, 107, 255, 0.35);
-        --success: #34d399;
+        --success: #60A5FA;
         --warning: #fbbf24;
         --danger: #f87171;
         --bg-surface: #0F1530;
@@ -514,15 +514,15 @@
     html[data-pms-theme="dark"] .header-status-badge,
     html[data-theme="dark"] .header-status-badge,
     html[data-bs-theme="dark"] .header-status-badge {
-        background: rgba(16, 185, 129, 0.15) !important;
-        color: #34d399 !important;
-        border-color: rgba(52, 211, 153, 0.3) !important;
+        background: rgba(47, 107, 255, 0.15) !important;
+        color: #60A5FA !important;
+        border-color: rgba(79, 131, 255, 0.3) !important;
     }
     html[data-pms-theme="dark"] .header-status-badge .pulse-dot,
     html[data-theme="dark"] .header-status-badge .pulse-dot,
     html[data-bs-theme="dark"] .header-status-badge .pulse-dot {
-        background: #34d399 !important;
-        box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.25) !important;
+        background: #60A5FA !important;
+        box-shadow: 0 0 0 3px rgba(79, 131, 255, 0.25) !important;
     }
 
     html[data-pms-theme="dark"] .btn-action-secondary,
@@ -564,7 +564,7 @@
     html[data-pms-theme="dark"] .icon-pill-total,
     html[data-theme="dark"] .icon-pill-total { background: rgba(47, 107, 255, 0.15) !important; color: #60a5fa !important; }
     html[data-pms-theme="dark"] .icon-pill-healthy,
-    html[data-theme="dark"] .icon-pill-healthy { background: rgba(16, 185, 129, 0.15) !important; color: #34d399 !important; }
+    html[data-theme="dark"] .icon-pill-healthy { background: rgba(47, 107, 255, 0.15) !important; color: #60A5FA !important; }
     html[data-pms-theme="dark"] .icon-pill-due,
     html[data-theme="dark"] .icon-pill-due { background: rgba(245, 158, 11, 0.15) !important; color: #fbbf24 !important; }
     html[data-pms-theme="dark"] .icon-pill-failed,
@@ -663,9 +663,9 @@
     /* Badges */
     html[data-pms-theme="dark"] .badge-status-healthy,
     html[data-theme="dark"] .badge-status-healthy {
-        background: rgba(16, 185, 129, 0.15) !important;
-        color: #34d399 !important;
-        border-color: rgba(52, 211, 153, 0.3) !important;
+        background: rgba(47, 107, 255, 0.15) !important;
+        color: #60A5FA !important;
+        border-color: rgba(79, 131, 255, 0.3) !important;
     }
     html[data-pms-theme="dark"] .badge-status-duesoon,
     html[data-theme="dark"] .badge-status-duesoon {

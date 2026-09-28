@@ -10,7 +10,7 @@
     <div class="dev-card" style="margin-bottom: 0; padding: 28px;">
         <div style="display: flex; align-items: center; gap: 24px; flex-wrap: wrap;">
             <div style="position: relative;">
-                <div id="avatarContainer" style="width: 86px; height: 86px; border-radius: 50%; background: linear-gradient(135deg, #059669, #047857); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: 800; border: 3px solid #ffffff; box-shadow: var(--shadow-md); overflow: hidden; flex-shrink: 0;">
+                <div id="avatarContainer" style="width: 86px; height: 86px; border-radius: 50%; background: linear-gradient(135deg, #2F6BFF, #047857); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: 800; border: 3px solid #ffffff; box-shadow: var(--shadow-md); overflow: hidden; flex-shrink: 0;">
                     @if(!empty($dev->profile_image) && file_exists(public_path($dev->profile_image)))
                         <img id="avatarPreview" src="{{ asset($dev->profile_image) }}" alt="{{ $dev->name }}" style="width: 100%; height: 100%; object-fit: cover;">
                     @else
@@ -26,8 +26,8 @@
             <div style="flex: 1; min-width: 260px;">
                 <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
                     <h1 style="font-size: 24px; font-weight: 800; color: var(--slate-dark);">{{ $dev->name }}</h1>
-                    <span style="background: #ecfdf5; color: #059669; font-size: 12px; font-weight: 800; padding: 4px 12px; border-radius: 14px; border: 1px solid #a7f3d0; display: inline-flex; align-items: center; gap: 6px;">
-                        <span style="width: 6px; height: 6px; border-radius: 50%; background: #059669; display: inline-block;"></span>
+                    <span style="background: #EEF2FF; color: #2F6BFF; font-size: 12px; font-weight: 800; padding: 4px 12px; border-radius: 14px; border: 1px solid #C7D2FE; display: inline-flex; align-items: center; gap: 6px;">
+                        <span style="width: 6px; height: 6px; border-radius: 50%; background: #2F6BFF; display: inline-block;"></span>
                         {{ ucfirst($empDetail?->status ?? 'Available') }}
                     </span>
                 </div>
@@ -50,7 +50,7 @@
 
         <div class="dev-card" style="margin-bottom: 0; padding: 20px;">
             <span style="font-size: 11px; font-weight: 800; color: var(--slate-muted); text-transform: uppercase; letter-spacing: 0.6px;">Tasks Completed</span>
-            <div style="font-size: 26px; font-weight: 900; color: #059669; margin-top: 6px; line-height: 1;">{{ $performance['completed'] ?? 0 }} Tasks</div>
+            <div style="font-size: 26px; font-weight: 900; color: #2F6BFF; margin-top: 6px; line-height: 1;">{{ $performance['completed'] ?? 0 }} Tasks</div>
         </div>
 
         <div class="dev-card" style="margin-bottom: 0; padding: 20px;">
@@ -106,7 +106,7 @@
 
                 <div>
                     <span style="color: var(--slate-muted); font-size: 11px; font-weight: 800; display: block; text-transform: uppercase; letter-spacing: 0.5px;">ACCOUNT STATUS</span>
-                    <strong style="color: #059669; font-size: 12px; font-weight: 800;">PERMANENT ACCOUNT &bull; VERIFIED</strong>
+                    <strong style="color: #2F6BFF; font-size: 12px; font-weight: 800;">PERMANENT ACCOUNT &bull; VERIFIED</strong>
                 </div>
             </div>
         </div>

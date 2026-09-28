@@ -5,23 +5,26 @@
 @section('content')
 <style>
     :root {
-        --primary-blue: #1e3a8a;
-        --primary-teal: #0ea5a4;
-        --primary-green: #22c55e;
+        --primary-blue: #2F6BFF;
+        --primary-hover: #1E4FCC;
+        --primary-purple: #8B5CF6;
+        --primary-cyan: #22D3EE;
+        --primary-accent: #22D3EE;
+        --primary-green: #10B981;
         --bg-light: #f8fafc;
-        --glass-border: rgba(255, 255, 255, 0.7);
+        --glass-border: rgba(47, 107, 255, 0.12);
         --card-shadow: 0px 4px 20px rgba(0, 0, 0, 0.02),
             0px 8px 40px rgba(0, 0, 0, 0.04),
-            0px 20px 60px rgba(30, 58, 138, 0.06);
+            0px 20px 60px rgba(47, 107, 255, 0.06);
         --card-shadow-hover: 0px 20px 50px rgba(0, 0, 0, 0.08),
-            0px 30px 80px rgba(30, 58, 138, 0.12);
+            0px 30px 80px rgba(47, 107, 255, 0.12);
         --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         --spring-transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
     /* ===== MAIN CONTAINER ===== */
     .attendance-container {
-        background: linear-gradient(135deg, #f0f9ff 0%, #e6f7f5 50%, #f0fdf4 100%);
+        background: linear-gradient(135deg, #f6f8fe 0%, #f0f4ff 50%, #f5f3ff 100%);
         min-height: calc(100vh - 100px);
         padding: 2rem 1.75rem;
         position: relative;
@@ -43,7 +46,7 @@
         right: -100px;
         width: 500px;
         height: 500px;
-        background: radial-gradient(circle, rgba(30, 58, 138, 0.12) 0%, transparent 70%);
+        background: radial-gradient(circle, rgba(47, 107, 255, 0.12) 0%, transparent 70%);
         animation: orbFloat 20s ease-in-out infinite;
     }
 
@@ -52,7 +55,7 @@
         left: -100px;
         width: 450px;
         height: 450px;
-        background: radial-gradient(circle, rgba(14, 165, 164, 0.1) 0%, transparent 70%);
+        background: radial-gradient(circle, rgba(139, 92, 246, 0.1) 0%, transparent 70%);
         animation: orbFloat 25s ease-in-out infinite reverse;
     }
 
@@ -61,7 +64,7 @@
         left: 50%;
         width: 400px;
         height: 400px;
-        background: radial-gradient(circle, rgba(34, 197, 94, 0.08) 0%, transparent 70%);
+        background: radial-gradient(circle, rgba(34, 211, 238, 0.08) 0%, transparent 70%);
         animation: orbFloat 18s ease-in-out infinite;
         transform: translate(-50%, -50%);
     }
@@ -84,13 +87,13 @@
         -webkit-text-fill-color: #64748b !important;
     }
     .breadcrumb-custom a {
-        color: #059669 !important;
-        -webkit-text-fill-color: #059669 !important;
+        color: #2F6BFF !important;
+        -webkit-text-fill-color: #2F6BFF !important;
     }
 
     /* ===== HEADER CARD ===== */
     .header-card {
-        background: rgba(255, 255, 255, 0.92);
+        background: rgba(255, 255, 255, 0.94);
         backdrop-filter: blur(20px);
         border-radius: 28px;
         padding: 1.75rem 2.25rem;
@@ -108,7 +111,7 @@
 
     .header-card:hover {
         box-shadow: var(--card-shadow-hover);
-        border-color: rgba(14, 165, 164, 0.2);
+        border-color: rgba(47, 107, 255, 0.25);
     }
 
     @keyframes slideDown {
@@ -119,7 +122,7 @@
     .header-title h1 {
         font-size: 2.28rem;
         font-weight: 800;
-        background: linear-gradient(135deg, var(--primary-blue), var(--primary-teal), var(--primary-green));
+        background: linear-gradient(135deg, #2F6BFF, #8B5CF6, #22D3EE);
         -webkit-background-clip: text !important;
         background-clip: text !important;
         -webkit-text-fill-color: transparent !important;
@@ -137,12 +140,12 @@
     }
 
     .header-title p i {
-        color: var(--primary-teal) !important;
-        -webkit-text-fill-color: var(--primary-teal) !important;
+        color: var(--primary-blue) !important;
+        -webkit-text-fill-color: var(--primary-blue) !important;
     }
 
     .btn-add {
-        background: linear-gradient(135deg, var(--primary-teal), var(--primary-green)) !important;
+        background: linear-gradient(135deg, #2F6BFF, #1E4FCC) !important;
         color: white !important;
         -webkit-text-fill-color: white !important;
         padding: 0.7rem 1.6rem;
@@ -152,16 +155,16 @@
         align-items: center;
         gap: 0.6rem;
         font-weight: 600;
-        font-size: 1.12rem;
+        font-size: 1.05rem;
         transition: var(--spring-transition);
         border: none;
         cursor: pointer;
-        box-shadow: 0 4px 15px rgba(14, 165, 164, 0.2);
+        box-shadow: 0 4px 15px rgba(47, 107, 255, 0.25);
     }
 
     .btn-add:hover {
         transform: translateY(-2px);
-        box-shadow: 0 10px 25px rgba(14, 165, 164, 0.35);
+        box-shadow: 0 10px 25px rgba(47, 107, 255, 0.35);
         color: white !important;
         -webkit-text-fill-color: white !important;
     }
@@ -174,9 +177,9 @@
     }
 
     .btn-archive {
-        background: #f0f9f4 !important;
-        color: #0f744c !important;
-        -webkit-text-fill-color: #0f744c !important;
+        background: #EEF2FF !important;
+        color: #2F6BFF !important;
+        -webkit-text-fill-color: #2F6BFF !important;
         padding: 0.7rem 1.35rem;
         border-radius: 16px;
         text-decoration: none;
@@ -186,7 +189,7 @@
         font-weight: 700;
         font-size: 1rem;
         transition: var(--spring-transition);
-        border: 1px solid rgba(16, 185, 129, 0.25) !important;
+        border: 1px solid rgba(47, 107, 255, 0.25) !important;
     }
 
     .btn-archive *,
@@ -194,18 +197,18 @@
     .btn-archive svg,
     .btn-archive [class*="fa"],
     .btn-archive span {
-        color: #0f744c !important;
-        -webkit-text-fill-color: #0f744c !important;
+        color: #2F6BFF !important;
+        -webkit-text-fill-color: #2F6BFF !important;
         opacity: 1 !important;
         visibility: visible !important;
     }
 
     .btn-archive:hover {
-        background: #e6f3ec !important;
-        color: #0f744c !important;
-        -webkit-text-fill-color: #0f744c !important;
+        background: #E0E7FF !important;
+        color: #1E4FCC !important;
+        -webkit-text-fill-color: #1E4FCC !important;
         transform: translateY(-2px);
-        box-shadow: 0 8px 20px -8px rgba(16, 185, 129, 0.25);
+        box-shadow: 0 8px 20px -8px rgba(47, 107, 255, 0.35);
     }
 
     .archive-count-badge {
@@ -277,7 +280,7 @@
         left: 0;
         right: 0;
         height: 3px;
-        background: linear-gradient(90deg, var(--primary-teal), var(--primary-green));
+        background: linear-gradient(90deg, var(--primary-blue), var(--primary-purple));
         transform: scaleX(0);
         transition: transform 0.4s ease;
     }
@@ -299,7 +302,7 @@
     .stat-card:hover {
         transform: translateY(-6px) scale(1.02);
         box-shadow: var(--card-shadow-hover) !important;
-        border-color: rgba(14, 165, 164, 0.15) !important;
+        border-color: rgba(47, 107, 255, 0.25) !important;
     }
 
     .stat-icon {
@@ -410,8 +413,8 @@
     }
 
     .filter-header h6 i {
-        color: var(--primary-teal) !important;
-        -webkit-text-fill-color: var(--primary-teal) !important;
+        color: var(--primary-blue) !important;
+        -webkit-text-fill-color: var(--primary-blue) !important;
         margin-right: 0.5rem;
     }
 
@@ -461,8 +464,8 @@
 
     .filter-group select:focus,
     .filter-group input:focus {
-        border-color: var(--primary-teal);
-        box-shadow: 0 0 0 4px rgba(14, 165, 164, 0.12);
+        border-color: var(--primary-blue);
+        box-shadow: 0 0 0 4px rgba(47, 107, 255, 0.15);
     }
 
     .filter-actions {
@@ -473,7 +476,7 @@
     }
 
     .btn-filter {
-        background: linear-gradient(135deg, var(--primary-blue), var(--primary-teal)) !important;
+        background: linear-gradient(135deg, var(--primary-blue), var(--primary-hover)) !important;
         color: white !important;
         -webkit-text-fill-color: white !important;
         padding: 0.6rem 1.5rem;
@@ -487,12 +490,12 @@
         align-items: center;
         gap: 0.5rem;
         min-height: 44px;
-        box-shadow: 0 4px 15px rgba(14, 165, 164, 0.2);
+        box-shadow: 0 4px 15px rgba(47, 107, 255, 0.25);
     }
 
     .btn-filter:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(14, 165, 164, 0.3);
+        box-shadow: 0 8px 25px rgba(47, 107, 255, 0.35);
         color: white !important;
         -webkit-text-fill-color: white !important;
     }
@@ -576,11 +579,11 @@
     }
 
     .nav-tab-btn.active {
-        background: linear-gradient(135deg, var(--primary-blue), var(--primary-teal)) !important;
+        background: linear-gradient(135deg, var(--primary-blue), var(--primary-hover)) !important;
         color: white !important;
         -webkit-text-fill-color: white !important;
         border-color: transparent;
-        box-shadow: 0 4px 15px rgba(14, 165, 164, 0.25);
+        box-shadow: 0 4px 15px rgba(47, 107, 255, 0.25);
     }
 
     .nav-tab-btn i {
@@ -614,8 +617,8 @@
     }
 
     .legend-title i {
-        color: var(--primary-teal) !important;
-        -webkit-text-fill-color: var(--primary-teal) !important;
+        color: var(--primary-blue) !important;
+        -webkit-text-fill-color: var(--primary-blue) !important;
         margin-right: 0.5rem;
     }
 
@@ -634,13 +637,39 @@
         border-radius: 30px;
         border: 1px solid #e2e8f0;
         transition: var(--transition-smooth);
-        cursor: default;
+        cursor: pointer;
+        user-select: none;
     }
 
     .legend-item:hover {
         transform: translateY(-2px);
-        border-color: var(--primary-teal);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        border-color: var(--primary-blue);
+        box-shadow: 0 4px 12px rgba(47, 107, 255, 0.15);
+    }
+
+    .legend-item.active {
+        border-color: var(--primary-blue) !important;
+        background: rgba(47, 107, 255, 0.08) !important;
+        box-shadow: 0 4px 16px rgba(47, 107, 255, 0.2) !important;
+        transform: translateY(-2px);
+    }
+
+    .legend-item.active .legend-text {
+        color: var(--primary-blue) !important;
+        -webkit-text-fill-color: var(--primary-blue) !important;
+        font-weight: 700;
+    }
+
+    /* Dim rows not matching active filter */
+    .attendance-table tbody tr.legend-filtered-out {
+        opacity: 0.15;
+        filter: grayscale(0.7);
+        transition: opacity 0.3s ease, filter 0.3s ease;
+    }
+    .attendance-table tbody tr.legend-filtered-in {
+        opacity: 1;
+        filter: none;
+        transition: opacity 0.3s ease, filter 0.3s ease;
     }
 
     .legend-icon {
@@ -711,8 +740,8 @@
     }
 
     .table-header h6 i {
-        color: var(--primary-teal) !important;
-        -webkit-text-fill-color: var(--primary-teal) !important;
+        color: var(--primary-blue) !important;
+        -webkit-text-fill-color: var(--primary-blue) !important;
         margin-right: 0.5rem;
     }
 
@@ -734,21 +763,21 @@
         font-size: 1rem;
         font-weight: 800;
         transition: var(--spring-transition);
-        background: #f0f9f4 !important;
-        color: #0f744c !important;
-        -webkit-text-fill-color: #0f744c !important;
-        border: 1px solid rgba(16, 185, 129, 0.2);
+        background: #F8FAFC !important;
+        color: #2F6BFF !important;
+        -webkit-text-fill-color: #2F6BFF !important;
+        border: 1px solid rgba(47, 107, 255, 0.2);
         box-shadow: none;
     }
 
     .btn-export-menu:hover,
     .btn-export-menu:focus {
-        background: #e6f3ec !important;
-        color: #0f744c !important;
-        -webkit-text-fill-color: #0f744c !important;
-        border-color: #34d399;
+        background: #EEF2FF !important;
+        color: #2F6BFF !important;
+        -webkit-text-fill-color: #2F6BFF !important;
+        border-color: #60A5FA;
         transform: translateY(-2px);
-        box-shadow: 0 8px 20px -8px rgba(16, 185, 129, 0.25);
+        box-shadow: 0 8px 20px -8px rgba(47, 107, 255, 0.25);
     }
 
     .attendance-export-dropdown {
@@ -760,10 +789,10 @@
         min-width: 230px;
         margin-top: 10px !important;
         background: #ffffff !important;
-        border: 1px solid rgba(16, 185, 129, 0.18);
+        border: 1px solid rgba(47, 107, 255, 0.18);
         border-radius: 16px;
         padding: 10px;
-        box-shadow: 0 24px 48px -14px rgba(10, 46, 31, 0.28);
+        box-shadow: 0 24px 48px -14px rgba(15, 23, 42, 0.28);
         z-index: 9999 !important;
     }
 
@@ -798,14 +827,14 @@
     }
 
     .attendance-table-actions .dropdown-item:hover {
-        background: #ecfdf5 !important;
-        color: #059669 !important;
-        -webkit-text-fill-color: #059669 !important;
+        background: #EEF2FF !important;
+        color: #2F6BFF !important;
+        -webkit-text-fill-color: #2F6BFF !important;
     }
 
     .attendance-table-actions .dropdown-divider {
         margin: 8px 0;
-        border-color: rgba(16, 185, 129, 0.16);
+        border-color: rgba(47, 107, 255, 0.16);
     }
 
     .attendance-page-export-buttons {
@@ -844,8 +873,8 @@
 
     .attendance-table thead th i {
         margin-right: 4px;
-        color: var(--primary-teal) !important;
-        -webkit-text-fill-color: var(--primary-teal) !important;
+        color: var(--primary-blue) !important;
+        -webkit-text-fill-color: var(--primary-blue) !important;
     }
 
     .attendance-table tbody tr {
@@ -890,7 +919,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: linear-gradient(135deg, var(--primary-blue), var(--primary-teal));
+        background: linear-gradient(135deg, var(--primary-blue), var(--primary-purple));
         color: white !important;
         -webkit-text-fill-color: white !important;
         font-weight: 700;
@@ -957,8 +986,8 @@
     }
 
     .footer-note p i {
-        color: var(--primary-teal) !important;
-        -webkit-text-fill-color: var(--primary-teal) !important;
+        color: var(--primary-blue) !important;
+        -webkit-text-fill-color: var(--primary-blue) !important;
         margin-right: 0.5rem;
     }
 
@@ -973,7 +1002,7 @@
         width: 48px;
         height: 48px;
         border: 4px solid #e2e8f0;
-        border-top-color: var(--primary-teal);
+        border-top-color: var(--primary-blue);
         border-radius: 50%;
         animation: spin 0.8s linear infinite;
     }
@@ -1016,6 +1045,63 @@
         color: #0f172a !important;
         -webkit-text-fill-color: #0f172a !important;
         font-size: 1rem !important;
+    }
+
+    /* Select2 Dark Mode */
+    html[data-pms-theme="dark"] .select2-container--bootstrap-5 .select2-selection,
+    html[data-pms-theme="dark"] .select2-container--default .select2-selection--single,
+    [data-pms-theme="dark"] .select2-container--bootstrap-5 .select2-selection,
+    [data-pms-theme="dark"] .select2-container--default .select2-selection--single,
+    .dark-mode .select2-container--bootstrap-5 .select2-selection,
+    .dark-mode .select2-container--default .select2-selection--single {
+        background-color: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.16) !important;
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .select2-container--bootstrap-5 .select2-selection__rendered,
+    html[data-pms-theme="dark"] .select2-container--default .select2-selection--single .select2-selection__rendered,
+    [data-pms-theme="dark"] .select2-container--bootstrap-5 .select2-selection__rendered,
+    [data-pms-theme="dark"] .select2-container--default .select2-selection--single .select2-selection__rendered,
+    .dark-mode .select2-container--bootstrap-5 .select2-selection__rendered,
+    .dark-mode .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .select2-dropdown,
+    [data-pms-theme="dark"] .select2-dropdown,
+    .dark-mode .select2-dropdown {
+        background-color: #0F1530 !important;
+        border: 1px solid rgba(238, 241, 251, 0.14) !important;
+        box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6) !important;
+    }
+    html[data-pms-theme="dark"] .select2-search__field,
+    [data-pms-theme="dark"] .select2-search__field,
+    .dark-mode .select2-search__field {
+        background-color: #141B3D !important;
+        border: 1px solid rgba(238, 241, 251, 0.16) !important;
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .select2-results__option,
+    [data-pms-theme="dark"] .select2-results__option,
+    .dark-mode .select2-results__option {
+        background-color: transparent !important;
+        color: #CBD5E1 !important;
+        -webkit-text-fill-color: #CBD5E1 !important;
+    }
+    html[data-pms-theme="dark"] .select2-results__option--highlighted,
+    [data-pms-theme="dark"] .select2-results__option--highlighted,
+    .dark-mode .select2-results__option--highlighted {
+        background-color: #2F6BFF !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+    html[data-pms-theme="dark"] .select2-results__option[aria-selected="true"],
+    [data-pms-theme="dark"] .select2-results__option[aria-selected="true"],
+    .dark-mode .select2-results__option[aria-selected="true"] {
+        background-color: #1A2247 !important;
+        color: #22D3EE !important;
+        -webkit-text-fill-color: #22D3EE !important;
     }
 
     /* ===== RESPONSIVE ===== */
@@ -1578,10 +1664,10 @@
     [data-theme="dark"] .attendance-container .btn-archive,
     [data-bs-theme="dark"] .attendance-container .btn-archive,
     .dark-mode .attendance-container .btn-archive {
-        background: #1e293b !important;
-        border: 1px solid rgba(52, 211, 153, 0.35) !important;
-        color: #34d399 !important;
-        -webkit-text-fill-color: #34d399 !important;
+        background: #141B3D !important;
+        border: 1px solid rgba(47, 107, 255, 0.4) !important;
+        color: #93C5FD !important;
+        -webkit-text-fill-color: #93C5FD !important;
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
     }
 
@@ -1607,8 +1693,8 @@
     [data-pms-theme="dark"] .attendance-container .btn-archive i,
     [data-theme="dark"] .attendance-container .btn-archive i,
     .dark-mode .attendance-container .btn-archive i {
-        color: #34d399 !important;
-        -webkit-text-fill-color: #34d399 !important;
+        color: #93C5FD !important;
+        -webkit-text-fill-color: #93C5FD !important;
         opacity: 1 !important;
         visibility: visible !important;
     }
@@ -1633,10 +1719,10 @@
     [data-theme="dark"] .attendance-container .btn-archive:hover,
     [data-bs-theme="dark"] .attendance-container .btn-archive:hover,
     .dark-mode .attendance-container .btn-archive:hover {
-        background: #0f172a !important;
-        border-color: #34d399 !important;
-        color: #6ee7b7 !important;
-        -webkit-text-fill-color: #6ee7b7 !important;
+        background: #1A2247 !important;
+        border-color: #2F6BFF !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
         transform: translateY(-2px);
     }
 </style>
@@ -1647,16 +1733,19 @@
     <div class="ambient-orb orb-3"></div>
 
     <div class="content-wrapper">
-        @php $user = Auth::user(); @endphp
+        @php
+            $user = Auth::user();
+            $canManage = in_array(strtolower((string)($user->role ?? '')), ['admin', 'superadmin', 'administrator', 'hr'], true);
+        @endphp
 
         <!-- ===== BREADCRUMB ===== -->
         <div class="breadcrumb-custom mb-3" style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 600; color: #64748b;">
-            <i class="fas fa-building" style="color: #059669;"></i>
-            <a href="{{ route('admin.settings.index') }}" style="color: #059669; text-decoration: none;">Admin</a>
+            <i class="fas fa-building" style="color: #2F6BFF;"></i>
+            <a href="{{ route('admin.settings.index') }}" style="color: #2F6BFF; text-decoration: none;">Admin</a>
             <span>/</span>
-            <a href="{{ route('admin.settings.index') }}" style="color: #059669; text-decoration: none;">Settings</a>
+            <a href="{{ route('admin.settings.index') }}" style="color: #2F6BFF; text-decoration: none;">Settings</a>
             <span>/</span>
-            <a href="{{ route('attendance.settings') }}" style="color: #059669; text-decoration: none;">Attendance Settings</a>
+            <a href="{{ route('attendance.settings') }}" style="color: #2F6BFF; text-decoration: none;">Attendance Settings</a>
             <span>/</span>
             <span>Attendance Log</span>
         </div>
@@ -1670,7 +1759,7 @@
                 <p><i class="fas fa-info-circle me-1"></i>Monitor and manage employee attendance records</p>
             </div>
 
-            @if($user->role == 'admin')
+            @if($canManage)
                 <div class="header-actions">
                     <a href="{{ route('attendance.archive') }}" class="btn-archive">
                         <i class="fas fa-box-archive"></i> Archived
@@ -1690,7 +1779,7 @@
             <div class="stat-card">
                 <div class="stat-icon total"><i class="fas fa-user-group"></i></div>
                 <div class="stat-info">
-                    <h6>{{ $user->role === 'admin' ? 'Employees Tracked' : 'Employee Tracked' }}</h6>
+                    <h6>{{ $canManage ? 'Employees Tracked' : 'Employee Tracked' }}</h6>
                     <h3 id="attendanceTotalEmployees">{{ count($users) }}</h3>
                 </div>
             </div>
@@ -1732,7 +1821,7 @@
                     <div class="filter-group">
                         <label for="user_id"><i class="fas fa-user me-1"></i>Employee</label>
                         <select name="user_id" id="user_id" class="form-select">
-                            @if($user->role === 'admin')
+                            @if($canManage)
                                 <option value="">All Employees</option>
                                 @foreach($users as $detail)
                                     <option value="{{ $detail->id }}" {{ request('user_id') == $detail->id ? 'selected' : '' }}>
@@ -1746,7 +1835,7 @@
                     </div>
 
                     {{-- Department --}}
-                    @if($user->role == 'admin')
+                    @if($canManage)
                     <div class="filter-group">
                         <label for="department_id"><i class="fas fa-building me-1"></i>Department</label>
                         <select name="department_id" id="department_id" class="form-select">
@@ -1819,7 +1908,7 @@
                 <a href="{{ route('attendance.index') }}" class="nav-tab-btn active">
                     <i class="fas fa-list-ul"></i> Summary
                 </a>
-                @if($user->role === 'admin')
+                @if($canManage)
                     <a href="{{ route('attendance.byMember') }}" class="nav-tab-btn">
                         <i class="fas fa-user"></i> By Member
                     </a>
@@ -1837,37 +1926,41 @@
         <div class="legend-card">
             <div class="legend-title"><i class="fas fa-key"></i>Attendance Status Legend</div>
             <div class="legend-items">
-                <span class="legend-item">
+                <span class="legend-item" data-filter="present" title="Click to filter: Present only">
                     <span class="legend-icon present"><i class="fas fa-check"></i></span>
                     <span class="legend-text">Present</span>
                 </span>
-                <span class="legend-item">
+                <span class="legend-item" data-filter="absent" title="Click to filter: Absent only">
                     <span class="legend-icon absent"><i class="fas fa-times"></i></span>
                     <span class="legend-text">Absent</span>
                 </span>
-                <span class="legend-item">
+                <span class="legend-item" data-filter="late" title="Click to filter: Late only">
                     <span class="legend-icon late"><i class="fas fa-clock"></i></span>
                     <span class="legend-text">Late</span>
                 </span>
-                <span class="legend-item">
+                <span class="legend-item" data-filter="halfday" title="Click to filter: Half Day only">
                     <span class="legend-icon halfday"><i class="fas fa-star-half-alt"></i></span>
                     <span class="legend-text">Half Day</span>
                 </span>
-                <span class="legend-item">
+                <span class="legend-item" data-filter="holiday" title="Click to filter: Holiday only">
                     <span class="legend-icon holiday"><i class="fas fa-star"></i></span>
                     <span class="legend-text">Holiday</span>
                 </span>
-                <span class="legend-item">
+                <span class="legend-item" data-filter="dayoff" title="Click to filter: Day Off only">
                     <span class="legend-icon dayoff"><i class="fas fa-calendar"></i></span>
                     <span class="legend-text">Day Off</span>
                 </span>
-                <span class="legend-item">
+                <span class="legend-item" data-filter="leave" title="Click to filter: On Leave only">
                     <span class="legend-icon leave"><i class="fas fa-plane-departure"></i></span>
                     <span class="legend-text">On Leave</span>
                 </span>
-                <span class="legend-item">
+                <span class="legend-item" data-filter="wfh" title="Click to filter: Work From Home only">
                     <span class="legend-icon wfh"><i class="fas fa-laptop-house"></i></span>
                     <span class="legend-text">Work From Home</span>
+                </span>
+                <span class="legend-item legend-reset" id="legendResetBtn" title="Show all employees" style="display:none;border-color:rgba(239,68,68,0.35);background:rgba(239,68,68,0.06);">
+                    <span class="legend-icon" style="background:#ef4444;"><i class="fas fa-times"></i></span>
+                    <span class="legend-text" style="color:#ef4444!important;-webkit-text-fill-color:#ef4444!important;">Clear Filter</span>
                 </span>
             </div>
         </div>
@@ -1914,6 +2007,26 @@
         </div>
     </div>
 </div>
+
+{{-- ===== ATTENDANCE DETAILS MODAL (persistent – outside AJAX zone) ===== --}}
+<div class="modal fade attendance-details-modal" id="attendanceDetailsModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content attendance-details-modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title">Attendance Details</h5>
+        <button type="button" class="btn-close btn-close-white" data-attendance-modal-close aria-label="Close"></button>
+      </div>
+      <div id="attendanceDetailsBody" class="modal-body attendance-details-modal-body">
+        <div class="text-center py-4">
+          <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-attendance-modal-close>Close</button>
+      </div>
+    </div>
+  </div>
+</div>
 @endsection
 
 @push('js')
@@ -1930,6 +2043,8 @@ document.addEventListener('DOMContentLoaded', function () {
     // DataTable initialization
     function initDataTable() {
         if (typeof $ === 'undefined' || typeof $.fn.DataTable === 'undefined') return;
+
+        $('.attendance-page-export-buttons').remove();
 
         if ($.fn.DataTable.isDataTable('#attendanceTable')) {
             $('#attendanceTable').DataTable().destroy();
@@ -2079,6 +2194,11 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
+        if (typeof $ !== 'undefined' && $.fn.DataTable && $.fn.DataTable.isDataTable('#attendanceTable')) {
+            $('#attendanceTable').DataTable().destroy();
+        }
+        $('.attendance-page-export-buttons').remove();
+
         target.innerHTML = `
             <div class="loading-overlay">
                 <div class="loading-spinner"></div>
@@ -2135,19 +2255,42 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    filterForm.addEventListener('submit', function (e) {
-        e.preventDefault();
-        applyAttendanceFilter(true);
-    });
+    if (typeof $ !== 'undefined') {
+        $('#attendanceFilter').on('submit', function (e) {
+            e.preventDefault();
+            applyAttendanceFilter(true);
+        });
 
-    filterInputs.forEach(function(input) {
-        input.addEventListener('change', function() {
+        $('#attendanceFilter').on('change', 'select, input', function() {
             clearTimeout(filterTimer);
             filterTimer = setTimeout(function() {
                 applyAttendanceFilter(false);
             }, 250);
         });
-    });
+
+        $('#attendanceFilter select').on('select2:select select2:clear', function() {
+            clearTimeout(filterTimer);
+            filterTimer = setTimeout(function() {
+                applyAttendanceFilter(false);
+            }, 250);
+        });
+    } else {
+        if (filterForm) {
+            filterForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                applyAttendanceFilter(true);
+            });
+        }
+
+        filterInputs.forEach(function(input) {
+            input.addEventListener('change', function() {
+                clearTimeout(filterTimer);
+                filterTimer = setTimeout(function() {
+                    applyAttendanceFilter(false);
+                }, 250);
+            });
+        });
+    }
 
     // Notification function
     function showNotification(message, type = 'info') {
@@ -2219,6 +2362,314 @@ document.addEventListener('DOMContentLoaded', function () {
             showNotification(format.toUpperCase() + ' export started.', 'success');
         }
     };
+
+    /* ===== LEGEND CLICK FILTER ===== */
+    (function() {
+        let activeFilter = null;
+
+        function applyLegendFilter(status) {
+            const table = document.querySelector('#attendanceTable tbody');
+            if (!table) return;
+
+            const rows = table.querySelectorAll('tr');
+            rows.forEach(function(row) {
+                row.classList.remove('legend-filtered-in', 'legend-filtered-out');
+                if (status) {
+                    const hasStatus = row.querySelector('.attendance-status-icon.' + status);
+                    if (hasStatus) {
+                        row.classList.add('legend-filtered-in');
+                    } else {
+                        row.classList.add('legend-filtered-out');
+                    }
+                }
+            });
+        }
+
+        function clearLegendFilter() {
+            activeFilter = null;
+            applyLegendFilter(null);
+            document.querySelectorAll('.legend-item').forEach(function(el) {
+                el.classList.remove('active');
+            });
+            const resetBtn = document.getElementById('legendResetBtn');
+            if (resetBtn) resetBtn.style.display = 'none';
+        }
+
+        // Attach to legend items — also re-attach after AJAX reload
+        function attachLegendListeners() {
+            document.querySelectorAll('.legend-item[data-filter]').forEach(function(item) {
+                item.addEventListener('click', function() {
+                    const status = this.getAttribute('data-filter');
+
+                    if (activeFilter === status) {
+                        // Toggle off
+                        clearLegendFilter();
+                        showNotification('Filter cleared — showing all employees.', 'info');
+                        return;
+                    }
+
+                    // Activate this filter
+                    activeFilter = status;
+                    document.querySelectorAll('.legend-item').forEach(function(el) {
+                        el.classList.remove('active');
+                    });
+                    this.classList.add('active');
+
+                    applyLegendFilter(status);
+
+                    const resetBtn = document.getElementById('legendResetBtn');
+                    if (resetBtn) resetBtn.style.display = 'inline-flex';
+
+                    const label = this.querySelector('.legend-text')?.textContent || status;
+                    const visibleCount = document.querySelectorAll('#attendanceTable tbody tr.legend-filtered-in').length;
+                    showNotification(
+                        '<i class="fas fa-filter me-1"></i> Showing <strong>' + visibleCount + '</strong> employee(s) with <strong>' + label + '</strong> status.',
+                        'info'
+                    );
+                });
+            });
+
+            const resetBtn = document.getElementById('legendResetBtn');
+            if (resetBtn) {
+                resetBtn.addEventListener('click', function() {
+                    clearLegendFilter();
+                    showNotification('Filter cleared — showing all employees.', 'info');
+                });
+            }
+        }
+
+        // Initial attach
+        attachLegendListeners();
+
+        // Re-attach after AJAX table reload (applyAttendanceFilter replaces innerHTML)
+        const originalInitDataTable = window.initDataTable || null;
+        const tableContainer = document.getElementById('attendance-table');
+        if (tableContainer) {
+            const observer = new MutationObserver(function() {
+                // Re-apply filter if one was active
+                if (activeFilter) {
+                    setTimeout(function() {
+                        applyLegendFilter(activeFilter);
+                    }, 400);
+                }
+            });
+            observer.observe(tableContainer, { childList: true, subtree: false });
+        }
+    })();
+
+    /* ===== ATTENDANCE MODAL HANDLERS (persistent – survive AJAX reloads) ===== */
+    if (typeof $ !== 'undefined') {
+
+        function getAttendanceModal() {
+            var modalEl = document.getElementById('attendanceDetailsModal');
+            if (!modalEl) return null;
+            if (modalEl.parentElement !== document.body) {
+                document.body.appendChild(modalEl);
+            }
+            return bootstrap.Modal.getOrCreateInstance(modalEl, {
+                backdrop: true, keyboard: true, focus: true
+            });
+        }
+
+        function showAttendanceLoading(message) {
+            $('#attendanceDetailsBody').html(
+                '<div class="text-center py-5">' +
+                    '<div class="spinner-border text-primary" role="status">' +
+                        '<span class="visually-hidden">Loading...</span>' +
+                    '</div>' +
+                    '<p class="mt-3 mb-0 text-muted">' + message + '</p>' +
+                '</div>'
+            );
+        }
+
+        function cleanModalState(force) {
+            if (force || $('.modal.show').length === 0) {
+                $('.modal-backdrop').remove();
+                $('body').removeClass('modal-open').css({ overflow: '', paddingRight: '' });
+                document.body.style.removeProperty('overflow');
+                document.body.style.removeProperty('padding-right');
+            }
+        }
+
+        function closeAttendanceModal() {
+            var modalEl = document.getElementById('attendanceDetailsModal');
+            if (!modalEl) { cleanModalState(true); return; }
+            var modal = bootstrap.Modal.getInstance(modalEl);
+            if (modal) modal.hide();
+            modalEl.classList.remove('show');
+            modalEl.setAttribute('aria-hidden', 'true');
+            modalEl.removeAttribute('aria-modal');
+            modalEl.style.display = 'none';
+            $('#attendanceDetailsBody').html('');
+            cleanModalState(true);
+        }
+
+        function escapeHtml(v) {
+            return String(v ?? '').replace(/[&<>"']/g, function(c) {
+                return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c];
+            });
+        }
+
+        function parsePayload(encoded) {
+            var binary = atob(encoded);
+            var bytes = new Uint8Array(binary.length);
+            for (var i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+            return window.TextDecoder
+                ? JSON.parse(new TextDecoder('utf-8').decode(bytes))
+                : JSON.parse(decodeURIComponent(escape(binary)));
+        }
+
+        function renderMonthDetails(payload, editMode) {
+            var rows = (payload.records || []).map(function(r) {
+                var editBtn = editMode
+                    ? '<button type="button" class="btn btn-sm btn-outline-primary edit-attendance" ' +
+                      'data-attendance-id="' + escapeHtml(r.attendance_id || '') + '" ' +
+                      'data-user-id="' + escapeHtml(payload.user_id) + '" ' +
+                      'data-date="' + escapeHtml(r.date) + '">' +
+                      '<i class="fas fa-pen me-1"></i>Edit</button>'
+                    : '';
+                return '<tr>' +
+                    '<td><strong>' + escapeHtml(r.day) + '</strong><div class="small text-muted">' + escapeHtml(r.date) + '</div></td>' +
+                    '<td>' + escapeHtml(r.status) + '</td>' +
+                    '<td>' + escapeHtml(r.clock_in) + '</td>' +
+                    '<td>' + escapeHtml(r.clock_out) + '</td>' +
+                    '<td>' + escapeHtml(r.total) + '</td>' +
+                    '<td>' + escapeHtml(r.note || '-') + '</td>' +
+                    (editMode ? '<td class="text-center">' + editBtn + '</td>' : '') +
+                    '</tr>';
+            }).join('');
+
+            $('#attendanceDetailsModal .modal-title').text(editMode ? 'Edit Monthly Attendance' : 'Monthly Attendance Details');
+            $('#attendanceDetailsBody').html(
+                '<div class="attendance-month-summary">' +
+                    '<div class="attendance-month-profile">' +
+                        '<img src="' + escapeHtml(payload.photo) + '" alt="' + escapeHtml(payload.name) + '">' +
+                        '<div>' +
+                            '<h5>' + escapeHtml(payload.name) + '</h5>' +
+                            '<p>' + escapeHtml(payload.designation) + ' &nbsp;|&nbsp; ' + escapeHtml(payload.month_name) +
+                            ' &nbsp;|&nbsp; Total: ' + escapeHtml(payload.total_hours) +
+                            ' &nbsp;|&nbsp; Present: ' + escapeHtml(payload.present_count) + '/' + escapeHtml(payload.days_in_month) + '</p>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="table-responsive">' +
+                        '<table class="attendance-month-table">' +
+                            '<thead><tr>' +
+                                '<th>Date</th><th>Status</th><th>Clock In</th><th>Clock Out</th><th>Total</th><th>Note</th>' +
+                                (editMode ? '<th class="text-center">Action</th>' : '') +
+                            '</tr></thead>' +
+                            '<tbody>' + rows + '</tbody>' +
+                        '</table>' +
+                    '</div>' +
+                '</div>'
+            );
+
+            var modal = getAttendanceModal();
+            if (modal) modal.show();
+        }
+
+        // — View month button
+        $(document).off('click.pmsMonthView', '.js-month-view')
+            .on('click.pmsMonthView', '.js-month-view', function () {
+            renderMonthDetails(parsePayload(this.dataset.payload), false);
+        });
+
+        // — Edit month button
+        $(document).off('click.pmsMonthEdit', '.js-month-edit')
+            .on('click.pmsMonthEdit', '.js-month-edit', function () {
+            renderMonthDetails(parsePayload(this.dataset.payload), true);
+        });
+
+        // — Archive month button
+        $(document).off('click.pmsMonthArchive', '.js-month-archive')
+            .on('click.pmsMonthArchive', '.js-month-archive', function () {
+            var btn = $(this);
+            var orig = btn.html();
+            var payload = parsePayload(this.dataset.payload);
+            if (!confirm('Archive attendance for ' + payload.name + ' – ' + payload.month_name + '?\nRecords will move to archive and can be restored later.')) return;
+
+            btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i><span>Archiving…</span>');
+            $.ajax({
+                url: "{{ route('attendance.month.archive') }}",
+                type: 'POST',
+                data: { _token: "{{ csrf_token() }}", user_id: payload.user_id, month: payload.month, year: payload.year },
+                success: function(r) { alert(r.message || 'Archived successfully.'); window.location.reload(); },
+                error:   function(xhr) { alert((xhr.responseJSON && xhr.responseJSON.message) || 'Archive failed.'); },
+                complete: function() { btn.prop('disabled', false).html(orig); }
+            });
+        });
+
+        // — View single attendance (status-icon click)
+        $(document).off('click.pmsAttView', '.view-attendance')
+            .on('click.pmsAttView', '.view-attendance', function (e) {
+            e.preventDefault();
+            var url = "{{ url('attendance/details') }}?attendance_id=" + $(this).data('attendance-id') +
+                      "&user_id=" + $(this).data('user-id') + "&date=" + $(this).data('date');
+            var modal = getAttendanceModal();
+            if (!modal) return;
+            $('#attendanceDetailsModal .modal-title').text('Attendance Details');
+            showAttendanceLoading('Loading attendance details…');
+            modal.show();
+            $.get(url)
+                .done(function(html) { $('#attendanceDetailsBody').html(html); })
+                .fail(function()     { $('#attendanceDetailsBody').html('<div class="alert alert-danger m-4">Error loading attendance details.</div>'); });
+        });
+
+        // — Edit single attendance (absent cell click)
+        $(document).off('click.pmsAttEdit', '.edit-attendance')
+            .on('click.pmsAttEdit', '.edit-attendance', function (e) {
+            e.preventDefault();
+            var url = "{{ url('attendance/edit') }}?attendance_id=" + $(this).data('attendance-id') +
+                      "&user_id=" + $(this).data('user-id') + "&date=" + $(this).data('date');
+            var modal = getAttendanceModal();
+            if (!modal) return;
+            $('#attendanceDetailsModal .modal-title').text('Edit Attendance');
+            showAttendanceLoading('Loading attendance form…');
+            modal.show();
+            $.get(url)
+                .done(function(html) { $('#attendanceDetailsBody').html(html); })
+                .fail(function()     { $('#attendanceDetailsBody').html('<div class="alert alert-danger m-4">Error loading form.</div>'); });
+        });
+
+        // — Inline form submit inside modal
+        $(document).off('submit.pmsAttForm', '#attendanceDetailsModal .attendance-form')
+            .on('submit.pmsAttForm', '#attendanceDetailsModal .attendance-form', function (e) {
+            e.preventDefault();
+            var form = this;
+            var submitBtn = $(form).find('[type="submit"]').first();
+            var orig = submitBtn.html();
+            submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Saving…');
+            $.ajax({
+                url: form.action, type: form.method || 'POST',
+                data: new FormData(form), processData: false, contentType: false,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                success: function() { closeAttendanceModal(); window.location.reload(); },
+                error: function(xhr) {
+                    var msg = (xhr.responseJSON && xhr.responseJSON.message) || 'Unable to save. Please try again.';
+                    $(form).prepend('<div class="alert alert-danger alert-dismissible fade show" role="alert">' + msg +
+                        '<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
+                },
+                complete: function() { submitBtn.prop('disabled', false).html(orig); cleanModalState(); }
+            });
+        });
+
+        // — Modal close handlers
+        $(document).off('click.pmsModalClose', '[data-attendance-modal-close]')
+            .on('click.pmsModalClose', '[data-attendance-modal-close]', function (e) {
+            e.preventDefault(); closeAttendanceModal();
+        });
+
+        $(document).off('hidden.bs.modal.pmsAtt', '#attendanceDetailsModal')
+            .on('hidden.bs.modal.pmsAtt', '#attendanceDetailsModal', function () {
+            $('#attendanceDetailsBody').html(''); cleanModalState(true);
+        });
+
+        $(document).off('keydown.pmsModalEsc')
+            .on('keydown.pmsModalEsc', function (e) {
+            if (e.key === 'Escape' && $('#attendanceDetailsModal').hasClass('show')) closeAttendanceModal();
+        });
+
+    } // end if jQuery
+
 });
 </script>
 @endpush

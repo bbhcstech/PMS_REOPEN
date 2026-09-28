@@ -88,11 +88,11 @@
     /* Selected / Active tab styles - white text and icons */
     .custom-segmented-pills .nav-link.active,
     #clientTabs .nav-link.active {
-        background: #0f744c !important;
+        background: #2F6BFF !important;
         color: #ffffff !important;
         -webkit-text-fill-color: #ffffff !important;
         font-weight: 700 !important;
-        box-shadow: 0 4px 12px rgba(15, 116, 76, 0.25) !important;
+        box-shadow: 0 4px 12px rgba(47, 107, 255, 0.25) !important;
     }
     .custom-segmented-pills .nav-link.active,
     .custom-segmented-pills .nav-link.active *,
@@ -139,7 +139,7 @@
     }
     .status-in-progress,
     .status-pending     { background-color: #fef3c7 !important; color: #b45309 !important; border: 1px solid #fde68a !important; }
-    .status-completed   { background-color: #d1fae5 !important; color: #047857 !important; border: 1px solid #a7f3d0 !important; }
+    .status-completed   { background-color: #E0E7FF !important; color: #2F6BFF !important; border: 1px solid #C7D2FE !important; }
     .status-on-hold     { background-color: #fee2e2 !important; color: #b91c1c !important; border: 1px solid #fecaca !important; }
     .status-not-started { background-color: #f1f5f9 !important; color: #475569 !important; border: 1px solid #cbd5e1 !important; }
 
@@ -213,10 +213,10 @@
     }
     html[data-pms-theme="dark"] .status-completed,
     html[data-bs-theme="dark"] .status-completed {
-        background-color: rgba(16, 185, 129, 0.22) !important;
-        color: #34d399 !important;
-        -webkit-text-fill-color: #34d399 !important;
-        border: 1px solid rgba(52, 211, 153, 0.35) !important;
+        background-color: rgba(47, 107, 255, 0.22) !important;
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
+        border: 1px solid rgba(79, 131, 255, 0.35) !important;
     }
     html[data-pms-theme="dark"] .status-on-hold,
     html[data-bs-theme="dark"] .status-on-hold {
@@ -243,7 +243,7 @@
                     @if($client->profile_picture)
                         <img src="{{ asset($client->profile_picture) }}" alt="{{ $client->name }}" class="rounded-circle border shadow-sm" style="width: 64px; height: 64px; object-fit: cover;">
                     @else
-                        <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold shadow-sm" style="width: 64px; height: 64px; background: linear-gradient(135deg, #0f744c, #10b981); font-size: 1.5rem;">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold shadow-sm" style="width: 64px; height: 64px; background: linear-gradient(135deg, #2F6BFF, #10b981); font-size: 1.5rem;">
                             {{ strtoupper(substr($client->name ?? 'C', 0, 1)) }}
                         </div>
                     @endif

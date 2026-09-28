@@ -6,11 +6,11 @@
 <style>
     .rec-detail-shell {
         --rec-green-900: #071a12;
-        --rec-green-800: #0a2e1f;
-        --rec-green-700: #0f744c;
-        --rec-green-600: #059669;
+        --rec-green-800: #0F172A;
+        --rec-green-700: #2F6BFF;
+        --rec-green-600: #2F6BFF;
         --rec-green-500: #10b981;
-        --rec-border: rgba(15, 116, 76, 0.12);
+        --rec-border: rgba(47, 107, 255, 0.12);
         font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
         padding-bottom: 2.5rem;
     }
@@ -44,7 +44,7 @@
         padding: 1.6rem 2rem;
         margin-bottom: 1.75rem;
         border: 1px solid var(--rec-border);
-        box-shadow: 0 14px 36px -10px rgba(15, 116, 76, 0.08);
+        box-shadow: 0 14px 36px -10px rgba(47, 107, 255, 0.08);
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -60,10 +60,10 @@
         left: 0;
         right: 0;
         height: 4px;
-        background: linear-gradient(90deg, #10b981 0%, #059669 50%, #047857 100%);
+        background: linear-gradient(90deg, #4F83FF 0%, #2F6BFF 50%, #1E3A8A 100%);
     }
     .btn-rec-primary {
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+        background: linear-gradient(135deg, #4F83FF 0%, #2F6BFF 100%) !important;
         color: #ffffff !important;
         border: none !important;
         font-weight: 700;
@@ -74,12 +74,12 @@
         align-items: center;
         gap: 0.45rem;
         white-space: nowrap !important;
-        box-shadow: 0 8px 18px -4px rgba(16, 185, 129, 0.35);
+        box-shadow: 0 8px 18px -4px rgba(47, 107, 255, 0.35);
         transition: all 0.25s ease;
         text-decoration: none;
     }
     .btn-rec-primary:hover {
-        background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+        background: linear-gradient(135deg, #1E4FCC 0%, #2F6BFF 100%) !important;
         color: #ffffff !important;
         transform: translateY(-2px);
     }
@@ -89,7 +89,7 @@
     .btn-rec-outline {
         background: #ffffff;
         color: var(--rec-green-700) !important;
-        border: 1px solid rgba(15, 116, 76, 0.25) !important;
+        border: 1px solid rgba(47, 107, 255, 0.25) !important;
         font-weight: 700;
         font-size: 0.9rem;
         padding: 0.65rem 1.25rem;
@@ -101,7 +101,7 @@
         text-decoration: none;
     }
     .btn-rec-outline:hover {
-        background: #ecfdf5;
+        background: #EEF2FF;
         color: var(--rec-green-800) !important;
         transform: translateY(-2px);
     }
@@ -120,8 +120,8 @@
     html[data-theme="dark"] .card,
     html.dark .card,
     body[data-pms-theme="dark"] .card {
-        background: #102119 !important;
-        border-color: rgba(122, 240, 181, 0.18) !important;
+        background: #0F1530 !important;
+        border-color: rgba(79, 131, 255, 0.18) !important;
     }
 
     html[data-pms-theme="dark"] .rec-header-card h3,
@@ -146,8 +146,8 @@
     html[data-pms-theme="dark"] .bg-light,
     html[data-bs-theme="dark"] .bg-light,
     html[data-theme="dark"] .bg-light {
-        background: #183026 !important;
-        border-color: rgba(122, 240, 181, 0.18) !important;
+        background: #141B3D !important;
+        border-color: rgba(79, 131, 255, 0.18) !important;
         color: #ffffff !important;
     }
 
@@ -164,17 +164,17 @@
     html[data-pms-theme="dark"] .card dt,
     html[data-bs-theme="dark"] .card dt,
     html[data-theme="dark"] .card dt {
-        color: #a7f3d0 !important;
-        -webkit-text-fill-color: #a7f3d0 !important;
+        color: #C7D2FE !important;
+        -webkit-text-fill-color: #C7D2FE !important;
     }
 
     html[data-pms-theme="dark"] .btn-rec-outline,
     html[data-bs-theme="dark"] .btn-rec-outline,
     html[data-theme="dark"] .btn-rec-outline {
-        background: #14281e !important;
-        color: #7af0b5 !important;
-        -webkit-text-fill-color: #7af0b5 !important;
-        border: 1px solid rgba(122, 240, 181, 0.35) !important;
+        background: rgba(47, 107, 255, 0.12) !important;
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
+        border: 1px solid rgba(79, 131, 255, 0.35) !important;
     }
 
     html[data-pms-theme="dark"] .btn-rec-outline *,
@@ -183,8 +183,8 @@
     html[data-pms-theme="dark"] .btn-rec-outline i,
     html[data-bs-theme="dark"] .btn-rec-outline i,
     html[data-theme="dark"] .btn-rec-outline i {
-        color: #7af0b5 !important;
-        -webkit-text-fill-color: #7af0b5 !important;
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
     }
 </style>
 
@@ -203,7 +203,7 @@
     {{-- Elevated Header Card --}}
     <div class="rec-header-card">
         <div class="d-flex align-items-center gap-3">
-            <div style="width: 54px; height: 54px; border-radius: 16px; background: linear-gradient(135deg, #10b981 0%, #047857 100%); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; flex-shrink: 0; box-shadow: 0 8px 20px -4px rgba(5, 150, 105, 0.35);">
+            <div style="width: 54px; height: 54px; border-radius: 16px; background: linear-gradient(135deg, #4F83FF 0%, #2F6BFF 100%); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; flex-shrink: 0; box-shadow: 0 8px 20px -4px rgba(47, 107, 255, 0.35);">
                 <i class="bx bx-briefcase" style="color: #ffffff !important;"></i>
             </div>
             <div>
@@ -250,14 +250,14 @@
 
                     @if($requirement->description)
                     <div class="mb-4">
-                        <h5 class="fw-bold text-dark mb-2"><i class="bx bx-text text-success me-1"></i> Job Description</h5>
+                        <h5 class="fw-bold text-dark mb-2"><i class="bx bx-text text-primary me-1"></i> Job Description</h5>
                         <div class="p-3 bg-light border rounded-3 text-secondary" style="white-space: pre-line;">{{ $requirement->description }}</div>
                     </div>
                     @endif
 
                     @if($requirement->requirements_summary)
                     <div class="mb-3">
-                        <h5 class="fw-bold text-dark mb-2"><i class="bx bx-list-check text-success me-1"></i> Candidate Requirements & Qualifications</h5>
+                        <h5 class="fw-bold text-dark mb-2"><i class="bx bx-list-check text-primary me-1"></i> Candidate Requirements & Qualifications</h5>
                         <div class="p-3 bg-light border rounded-3 text-secondary" style="white-space: pre-line;">{{ $requirement->requirements_summary }}</div>
                     </div>
                     @endif
@@ -267,7 +267,7 @@
 
         <div class="col-lg-4">
             <div class="card border-0 shadow-sm rounded-4 mb-4">
-                <div class="card-header rounded-top-4 p-3" style="background: linear-gradient(135deg, #064e3b 0%, #065f46 50%, #047857 100%); color: #ffffff;">
+                <div class="card-header rounded-top-4 p-3" style="background: linear-gradient(135deg, #1E4FCC 0%, #2F6BFF 50%, #1E3A8A 100%); color: #ffffff;">
                     <h5 class="mb-0 fw-bold" style="color: #ffffff !important;"><i class="bx bx-shield-quarter me-1" style="color: #ffffff !important;"></i> Recruitment Policy</h5>
                     <small class="text-white-50" style="color: rgba(255,255,255,0.8) !important;">{{ $policyCard['code'] }} · {{ $policyCard['status'] }}</small>
                 </div>

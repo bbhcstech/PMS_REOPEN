@@ -15,7 +15,7 @@
         color: #000000 !important;
     }
     .status-badge.completed, .status-badge.approved {
-        background-color: #d1fae5 !important;
+        background-color: #E0E7FF !important;
         color: #000000 !important;
         border: 1px solid #86efac !important;
     }
@@ -50,9 +50,9 @@
     }
     html[data-pms-theme="dark"] .status-badge.completed,
     html[data-pms-theme="dark"] .status-badge.approved {
-        background-color: rgba(16, 185, 129, 0.2) !important;
-        color: #6EE7B7 !important;
-        border: 1px solid rgba(16, 185, 129, 0.4) !important;
+        background-color: rgba(47, 107, 255, 0.2) !important;
+        color: #93C5FD !important;
+        border: 1px solid rgba(47, 107, 255, 0.4) !important;
     }
     html[data-pms-theme="dark"] .status-badge.doing,
     html[data-pms-theme="dark"] .status-badge.in-progress,

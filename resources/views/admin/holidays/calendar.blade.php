@@ -48,7 +48,7 @@
                 <div class="d-flex align-items-center gap-2.5 flex-wrap">
                     <form method="GET" action="{{ route('holidays.calendar') }}" class="d-flex align-items-center gap-2">
                         <div class="input-group-custom" style="min-width: 120px;">
-                            <select name="year" class="form-select border-0 bg-transparent fw-bold" style="height: 44px; color: #0a2e1f;" onchange="this.form.submit()">
+                            <select name="year" class="form-select border-0 bg-transparent fw-bold" style="height: 44px; color: #0F172A;" onchange="this.form.submit()">
                                 @foreach(range(date('Y') - 2, date('Y') + 3) as $year)
                                     <option value="{{ $year }}" {{ (int) $selectedYear === $year ? 'selected' : '' }}>{{ $year }}</option>
                                 @endforeach
@@ -120,7 +120,7 @@
             </div>
 
             <!-- Holiday Details Interactive Drawer/Panel -->
-            <div class="holiday-details-panel d-none mt-4 p-4 address-card-elevated" id="holidayDetailsCard" style="border-left: 5px solid #059669 !important;">
+            <div class="holiday-details-panel d-none mt-4 p-4 address-card-elevated" id="holidayDetailsCard" style="border-left: 5px solid #2F6BFF !important;">
                 <div id="holidayDetailsContent"></div>
             </div>
         </div>
@@ -134,8 +134,8 @@
     .holiday-calendar-page {
         min-height: calc(100vh - 100px);
         padding: 2rem 1.75rem;
-        background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 50%, #f4fbf7 100%);
-        color: #0a2e1f;
+        background: linear-gradient(135deg, #F8FAFC 0%, #EEF2FF 50%, #F8FAFC 100%);
+        color: #0F172A;
     }
 
     .holiday-calendar-shell {
@@ -159,7 +159,7 @@
         right: -100px;
         width: 500px;
         height: 500px;
-        background: radial-gradient(circle, rgba(52, 211, 153, 0.12) 0%, transparent 70%);
+        background: radial-gradient(circle, rgba(79, 131, 255, 0.12) 0%, transparent 70%);
         animation: orbFloat 20s ease-in-out infinite;
     }
 
@@ -168,7 +168,7 @@
         left: -100px;
         width: 450px;
         height: 450px;
-        background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 70%);
+        background: radial-gradient(circle, rgba(47, 107, 255, 0.1) 0%, transparent 70%);
         animation: orbFloat 25s ease-in-out infinite reverse;
     }
 
@@ -195,13 +195,13 @@
     }
 
     .breadcrumb-custom a {
-        color: #059669;
+        color: #2F6BFF;
         text-decoration: none;
         transition: color 0.2s ease;
     }
 
     .breadcrumb-custom a:hover {
-        color: #047857;
+        color: #1E4FCC;
     }
 
     /* ===== HEADER CARD ===== */
@@ -210,8 +210,8 @@
         backdrop-filter: blur(20px);
         border-radius: 28px;
         padding: 1.75rem 2.25rem;
-        border: 1px solid rgba(16, 185, 129, 0.15);
-        box-shadow: 0 10px 30px -10px rgba(16, 185, 129, 0.08);
+        border: 1px solid rgba(47, 107, 255, 0.15);
+        box-shadow: 0 10px 30px -10px rgba(47, 107, 255, 0.08);
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -235,13 +235,13 @@
         width: 58px;
         height: 58px;
         border-radius: 20px;
-        background: linear-gradient(145deg, #34d399, #059669);
+        background: linear-gradient(145deg, #4F83FF, #2F6BFF);
         color: white;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 1.6rem;
-        box-shadow: 0 8px 20px -4px rgba(5, 150, 105, 0.35);
+        box-shadow: 0 8px 20px -4px rgba(47, 107, 255, 0.35);
         flex-shrink: 0;
     }
 
@@ -257,7 +257,7 @@
     .header-title h1 {
         font-size: 1.95rem;
         font-weight: 800;
-        background: linear-gradient(135deg, #0a2e1f, #059669, #10b981);
+        background: linear-gradient(135deg, #0F172A, #2F6BFF, #10b981);
         -webkit-background-clip: text;
         background-clip: text;
         color: transparent;
@@ -273,15 +273,15 @@
     }
 
     .btn-action-pill {
-        background-color: #ecfdf5;
-        border: 1px solid rgba(16, 185, 129, 0.3);
-        color: #059669 !important;
+        background-color: #EEF2FF;
+        border: 1px solid rgba(47, 107, 255, 0.3);
+        color: #2F6BFF !important;
         font-weight: 700;
         font-size: 0.88rem;
         border-radius: 40px;
         padding: 0.6rem 1.3rem;
         transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        box-shadow: 0 4px 14px rgba(5, 150, 105, 0.1);
+        box-shadow: 0 4px 14px rgba(47, 107, 255, 0.1);
         display: inline-flex;
         align-items: center;
         gap: 8px !important;
@@ -295,26 +295,26 @@
     }
 
     .btn-action-pill:hover {
-        background-color: #d1fae5;
+        background-color: #E0E7FF;
         transform: translateY(-2px);
-        box-shadow: 0 6px 18px rgba(5, 150, 105, 0.2);
+        box-shadow: 0 6px 18px rgba(47, 107, 255, 0.2);
     }
 
     .btn-save-address {
         border-radius: 40px;
         font-weight: 700;
         font-size: 0.9rem;
-        background: linear-gradient(145deg, #34d399, #059669);
+        background: linear-gradient(145deg, #4F83FF, #2F6BFF);
         color: white !important;
         border: none;
-        box-shadow: 0 6px 20px -4px rgba(5, 150, 105, 0.35);
+        box-shadow: 0 6px 20px -4px rgba(47, 107, 255, 0.35);
         transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         cursor: pointer;
     }
 
     .btn-save-address:hover {
         transform: translateY(-2px) scale(1.02);
-        box-shadow: 0 10px 28px -4px rgba(5, 150, 105, 0.45);
+        box-shadow: 0 10px 28px -4px rgba(47, 107, 255, 0.45);
         color: white !important;
     }
 
@@ -332,15 +332,15 @@
         backdrop-filter: blur(20px);
         border-radius: 24px;
         padding: 1.5rem;
-        border: 1px solid rgba(16, 185, 129, 0.14) !important;
-        box-shadow: 0 10px 30px -10px rgba(16, 185, 129, 0.08) !important;
+        border: 1px solid rgba(47, 107, 255, 0.14) !important;
+        box-shadow: 0 10px 30px -10px rgba(47, 107, 255, 0.08) !important;
         display: flex;
         align-items: center;
         gap: 1.25rem;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         position: relative;
         overflow: hidden;
-        color: #0a2e1f !important;
+        color: #0F172A !important;
     }
 
     .holiday-calendar-page .stat-card:first-of-type *,
@@ -350,8 +350,8 @@
 
     .holiday-calendar-page .stat-card h3,
     .holiday-calendar-page .stat-card:first-of-type h3 {
-        color: #0a2e1f !important;
-        -webkit-text-fill-color: #0a2e1f !important;
+        color: #0F172A !important;
+        -webkit-text-fill-color: #0F172A !important;
     }
 
     .holiday-calendar-page .stat-card h6,
@@ -369,7 +369,7 @@
         left: 0;
         right: 0;
         height: 3px;
-        background: linear-gradient(90deg, #34d399, #059669);
+        background: linear-gradient(90deg, #4F83FF, #2F6BFF);
         transform: scaleX(0);
         transition: transform 0.3s ease;
     }
@@ -380,8 +380,8 @@
 
     .stat-card:hover {
         transform: translateY(-4px);
-        box-shadow: 0 20px 35px -12px rgba(16, 185, 129, 0.15) !important;
-        border-color: rgba(16, 185, 129, 0.25) !important;
+        box-shadow: 0 20px 35px -12px rgba(47, 107, 255, 0.15) !important;
+        border-color: rgba(47, 107, 255, 0.25) !important;
     }
 
     .stat-icon {
@@ -401,9 +401,9 @@
     .holiday-calendar-page .stat-card:first-of-type .stat-icon.total,
     .holiday-calendar-page .stat-card:first-of-type .stat-icon.total i,
     .holiday-calendar-page .stat-card:first-of-type .stat-icon.total * {
-        background: linear-gradient(145deg, #d1fae5, #a7f3d0) !important;
-        color: #059669 !important;
-        -webkit-text-fill-color: #059669 !important;
+        background: linear-gradient(145deg, #EEF2FF, #E0E7FF) !important;
+        color: #2F6BFF !important;
+        -webkit-text-fill-color: #2F6BFF !important;
     }
 
     .stat-icon.special,
@@ -451,7 +451,7 @@
     .stat-info h3 {
         font-size: 1.5rem;
         font-weight: 800;
-        color: #0a2e1f;
+        color: #0F172A;
         margin: 0;
         line-height: 1.2;
     }
@@ -461,31 +461,31 @@
         background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(20px);
         border-radius: 28px;
-        border: 1px solid rgba(16, 185, 129, 0.15);
-        box-shadow: 0 10px 30px -10px rgba(16, 185, 129, 0.08);
+        border: 1px solid rgba(47, 107, 255, 0.15);
+        box-shadow: 0 10px 30px -10px rgba(47, 107, 255, 0.08);
         overflow: hidden;
     }
 
     .fc .fc-toolbar-title {
         font-weight: 800;
         font-size: 1.6rem;
-        color: #0a2e1f;
+        color: #0F172A;
         letter-spacing: -0.02em;
     }
 
     .fc .fc-button-primary {
-        background: linear-gradient(145deg, #34d399, #059669) !important;
+        background: linear-gradient(145deg, #4F83FF, #2F6BFF) !important;
         border: none !important;
         border-radius: 30px !important;
         font-weight: 700 !important;
         padding: 0.5rem 1.2rem !important;
-        box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2) !important;
+        box-shadow: 0 4px 12px rgba(47, 107, 255, 0.2) !important;
         transition: all 0.25s ease !important;
     }
 
     .fc .fc-button-primary:hover {
         transform: translateY(-2px) !important;
-        box-shadow: 0 6px 18px rgba(5, 150, 105, 0.3) !important;
+        box-shadow: 0 6px 18px rgba(47, 107, 255, 0.3) !important;
     }
 
     .fc .fc-button-primary:disabled {
@@ -510,20 +510,20 @@
         background: #f0fdf4;
         padding: 12px 0;
         font-weight: 800;
-        color: #059669;
+        color: #2F6BFF;
         text-transform: uppercase;
         font-size: 0.8rem;
         letter-spacing: 0.05em;
-        border-color: rgba(16, 185, 129, 0.15) !important;
+        border-color: rgba(47, 107, 255, 0.15) !important;
     }
 
     .fc-theme-standard td, .fc-theme-standard th {
-        border-color: rgba(16, 185, 129, 0.12) !important;
+        border-color: rgba(47, 107, 255, 0.12) !important;
     }
 
     .fc-daygrid-day-number {
         font-weight: 800;
-        color: #0a2e1f;
+        color: #0F172A;
         padding: 8px 12px !important;
         font-size: 0.9rem;
     }
@@ -533,8 +533,8 @@
         border-radius: 12px !important;
         padding: 4px 8px !important;
         cursor: pointer;
-        box-shadow: 0 4px 12px rgba(5, 150, 105, 0.15) !important;
-        background: linear-gradient(145deg, #d1fae5, #a7f3d0) !important;
+        box-shadow: 0 4px 12px rgba(47, 107, 255, 0.15) !important;
+        background: linear-gradient(145deg, #EEF2FF, #E0E7FF) !important;
         color: #044e33 !important;
         -webkit-text-fill-color: #044e33 !important;
         transition: transform 0.2s ease !important;
@@ -555,7 +555,7 @@
     .holiday-detail-title {
         font-size: 1.4rem;
         font-weight: 800;
-        color: #0a2e1f;
+        color: #0F172A;
         margin-bottom: 8px;
     }
 
@@ -565,9 +565,9 @@
         border-radius: 40px;
         font-weight: 800;
         font-size: 0.82rem;
-        background: #ecfdf5;
-        color: #059669;
-        border: 1px solid rgba(5, 150, 105, 0.2);
+        background: #EEF2FF;
+        color: #2F6BFF;
+        border: 1px solid rgba(47, 107, 255, 0.2);
     }
 
     .holiday-pill.weekly {
@@ -578,7 +578,7 @@
 
     .input-group-custom {
         border-radius: 40px;
-        border: 1px solid rgba(16, 185, 129, 0.25);
+        border: 1px solid rgba(47, 107, 255, 0.25);
         background-color: #ffffff;
         transition: all 0.25s ease;
         overflow: hidden;
@@ -641,7 +641,7 @@
     body[data-layout-mode="dark"] .holiday-calendar-page .breadcrumb-custom a,
     body.dark-mode .holiday-calendar-page .breadcrumb-custom a,
     body.dark .holiday-calendar-page .breadcrumb-custom a {
-        color: #34d399 !important;
+        color: #60A5FA !important;
     }
 
     /* Branches Header in Dark Mode */
@@ -661,7 +661,7 @@
     [data-bs-theme="dark"] .branches-header,
     .dark .branches-header {
         background: #0F1530 !important;
-        border: 1px solid rgba(16, 185, 129, 0.2) !important;
+        border: 1px solid rgba(47, 107, 255, 0.2) !important;
         box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5) !important;
     }
 
@@ -674,7 +674,7 @@
     body[data-layout-mode="dark"] .branches-header .header-title h1,
     body.dark-mode .branches-header .header-title h1,
     body.dark .branches-header .header-title h1 {
-        background: linear-gradient(135deg, #ffffff, #34d399) !important;
+        background: linear-gradient(135deg, #ffffff, #60A5FA) !important;
         -webkit-background-clip: text !important;
         background-clip: text !important;
         color: transparent !important;
@@ -705,7 +705,7 @@
     body.dark-mode .input-group-custom,
     body.dark .input-group-custom {
         background-color: #182246 !important;
-        border-color: rgba(16, 185, 129, 0.3) !important;
+        border-color: rgba(47, 107, 255, 0.3) !important;
     }
 
     html[data-pms-theme="dark"] .input-group-custom select,
@@ -738,10 +738,10 @@
     [data-theme="dark"] .btn-action-pill,
     [data-bs-theme="dark"] .btn-action-pill,
     .dark .btn-action-pill {
-        background-color: rgba(16, 185, 129, 0.2) !important;
-        border: 1px solid rgba(52, 211, 153, 0.45) !important;
-        color: #34d399 !important;
-        -webkit-text-fill-color: #34d399 !important;
+        background-color: rgba(47, 107, 255, 0.2) !important;
+        border: 1px solid rgba(79, 131, 255, 0.45) !important;
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
         box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3) !important;
     }
 
@@ -760,8 +760,8 @@
     [data-theme="dark"] .btn-action-pill *,
     [data-bs-theme="dark"] .btn-action-pill *,
     .dark .btn-action-pill * {
-        color: #34d399 !important;
-        -webkit-text-fill-color: #34d399 !important;
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
     }
 
     html[data-pms-theme="dark"] .btn-action-pill:hover,
@@ -779,7 +779,7 @@
     [data-theme="dark"] .btn-action-pill:hover,
     [data-bs-theme="dark"] .btn-action-pill:hover,
     .dark .btn-action-pill:hover {
-        background-color: rgba(16, 185, 129, 0.4) !important;
+        background-color: rgba(47, 107, 255, 0.4) !important;
         color: #ffffff !important;
         -webkit-text-fill-color: #ffffff !important;
     }
@@ -835,7 +835,7 @@
     .dark .holiday-calendar-page .stat-card,
     .dark .holiday-calendar-page .stat-card:first-of-type {
         background: #0F1530 !important;
-        border: 1px solid rgba(16, 185, 129, 0.2) !important;
+        border: 1px solid rgba(47, 107, 255, 0.2) !important;
         box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5) !important;
         color: #EEF1FB !important;
     }
@@ -920,9 +920,9 @@
     body.dark .stat-icon.total,
     [data-pms-theme="dark"] .stat-icon.total,
     .holiday-calendar-page .stat-card:first-of-type .stat-icon.total {
-        background: rgba(16, 185, 129, 0.2) !important;
-        color: #34d399 !important;
-        -webkit-text-fill-color: #34d399 !important;
+        background: rgba(47, 107, 255, 0.2) !important;
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
     }
 
     html[data-pms-theme="dark"] .stat-icon.total *,
@@ -936,8 +936,8 @@
     body.dark .stat-icon.total *,
     [data-pms-theme="dark"] .stat-icon.total *,
     .holiday-calendar-page .stat-card:first-of-type .stat-icon.total * {
-        color: #34d399 !important;
-        -webkit-text-fill-color: #34d399 !important;
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
     }
 
     /* FullCalendar Elevate Box in Dark Mode */
@@ -957,7 +957,7 @@
     [data-bs-theme="dark"] .address-card-elevated,
     .dark .address-card-elevated {
         background: #0F1530 !important;
-        border: 1px solid rgba(16, 185, 129, 0.2) !important;
+        border: 1px solid rgba(47, 107, 255, 0.2) !important;
         box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5) !important;
     }
 
@@ -984,8 +984,8 @@
     body.dark-mode .fc-col-header-cell,
     body.dark .fc-col-header-cell {
         background: #182246 !important;
-        color: #34d399 !important;
-        -webkit-text-fill-color: #34d399 !important;
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
     }
 
     html[data-pms-theme="dark"] .fc-daygrid-day-number,
@@ -1017,7 +1017,7 @@
     [data-theme="dark"] .fc-event,
     [data-bs-theme="dark"] .fc-event,
     .dark .fc-event {
-        background: linear-gradient(145deg, #d1fae5, #a7f3d0) !important;
+        background: linear-gradient(145deg, #EEF2FF, #E0E7FF) !important;
         color: #044e33 !important;
         -webkit-text-fill-color: #044e33 !important;
     }
@@ -1098,15 +1098,15 @@
             canvas.width = width; canvas.height = height;
             const ctx = canvas.getContext('2d');
             ctx.fillStyle = '#f0fdf4'; ctx.fillRect(0, 0, width, height);
-            ctx.fillStyle = '#059669'; ctx.fillRect(0, 0, width, 100);
+            ctx.fillStyle = '#2F6BFF'; ctx.fillRect(0, 0, width, 100);
             ctx.fillStyle = '#fff'; ctx.font = 'bold 34px Arial'; ctx.fillText('Holiday Calendar {{ $selectedYear }}', 36, 60);
-            ctx.fillStyle = '#0a2e1f'; ctx.font = 'bold 16px Arial';
+            ctx.fillStyle = '#0F172A'; ctx.font = 'bold 16px Arial';
             ['Date', 'Day', 'Reason', 'Type'].forEach((head, i) => ctx.fillText(head, [40, 190, 360, 980][i], 135));
             ctx.font = '14px Arial';
             rows.forEach((row, index) => {
                 const y = 168 + index * rowHeight;
-                ctx.fillStyle = index % 2 ? '#ffffff' : '#ecfdf5'; ctx.fillRect(30, y - 24, 1140, 34);
-                ctx.fillStyle = '#0a2e1f';
+                ctx.fillStyle = index % 2 ? '#ffffff' : '#EEF2FF'; ctx.fillRect(30, y - 24, 1140, 34);
+                ctx.fillStyle = '#0F172A';
                 ctx.fillText(row.date, 40, y);
                 ctx.fillText(row.day, 190, y);
                 ctx.fillText(String(row.title).slice(0, 70), 360, y);

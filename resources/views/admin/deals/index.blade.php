@@ -31,7 +31,7 @@
 }
 .crm-kpi-icon.text-success,
 .crm-kpi-icon.bg-success {
-    background-color: rgba(16, 185, 129, 0.15) !important;
+    background-color: rgba(47, 107, 255, 0.15) !important;
     color: #10b981 !important;
 }
 .crm-kpi-icon.text-success i,
@@ -246,8 +246,8 @@ body[data-pms-theme="dark"] .top-bar .form-select,
     transition: all 0.2s ease;
 }
 html[data-pms-theme="dark"] .premium-table-card {
-    background: #102119;
-    border-color: rgba(225, 255, 240, 0.12);
+    background: #0F1530;
+    border-color: rgba(79, 131, 255, 0.12);
 }
 .premium-table {
     margin-bottom: 0;
@@ -260,8 +260,8 @@ html[data-pms-theme="dark"] .premium-table-card {
     border-bottom: 2px solid #cbd5e1;
 }
 html[data-pms-theme="dark"] .premium-table thead tr {
-    background-color: #183026;
-    border-bottom-color: rgba(225, 255, 240, 0.15);
+    background-color: #141B3D;
+    border-bottom-color: rgba(79, 131, 255, 0.15);
 }
 .premium-table th {
     font-size: 0.73rem;
@@ -279,21 +279,21 @@ html[data-pms-theme="dark"] .premium-table thead tr {
 }
 html[data-pms-theme="dark"] .premium-table th {
     color: #cbd5e1;
-    border-bottom-color: rgba(225, 255, 240, 0.15);
-    border-right-color: rgba(225, 255, 240, 0.1);
+    border-bottom-color: rgba(79, 131, 255, 0.15);
+    border-right-color: rgba(79, 131, 255, 0.1);
 }
 .premium-table tbody tr {
     border-bottom: 1px solid #e2e8f0;
     transition: background-color 0.15s ease-in-out;
 }
 html[data-pms-theme="dark"] .premium-table tbody tr {
-    border-bottom-color: rgba(225, 255, 240, 0.08);
+    border-bottom-color: rgba(79, 131, 255, 0.08);
 }
 .premium-table tbody tr:hover {
     background-color: #f8fafc;
 }
 html[data-pms-theme="dark"] .premium-table tbody tr:hover {
-    background-color: #162a21;
+    background-color: #141B3D;
 }
 .premium-table td {
     padding: 1.1rem 1.1rem;
@@ -308,8 +308,8 @@ html[data-pms-theme="dark"] .premium-table tbody tr:hover {
 }
 html[data-pms-theme="dark"] .premium-table td {
     color: #e2e8f0;
-    border-bottom-color: rgba(225, 255, 240, 0.08);
-    border-right-color: rgba(225, 255, 240, 0.1);
+    border-bottom-color: rgba(79, 131, 255, 0.08);
+    border-right-color: rgba(79, 131, 255, 0.1);
 }
 .badge-pill-priority-urgent {
     background-color: #fee2e2;
@@ -410,12 +410,12 @@ body[data-pms-theme="dark"] .badge-pill-priority-low,
     border-color: #cbd5e1;
 }
 html[data-pms-theme="dark"] .btn-action-circle {
-    background-color: #183026;
-    border-color: rgba(225, 255, 240, 0.15);
+    background-color: #141B3D;
+    border-color: rgba(79, 131, 255, 0.15);
     color: #cbd5e1;
 }
 html[data-pms-theme="dark"] .btn-action-circle:hover {
-    background-color: #204033;
+    background-color: rgba(79, 131, 255, 0.2);
     color: #ffffff;
 }
 .dropdown-menu-premium {
@@ -425,8 +425,8 @@ html[data-pms-theme="dark"] .btn-action-circle:hover {
     padding: 0.5rem;
 }
 html[data-pms-theme="dark"] .dropdown-menu-premium {
-    background: #102119;
-    border-color: rgba(225, 255, 240, 0.15);
+    background: #0F1530;
+    border-color: rgba(79, 131, 255, 0.15);
 }
 .dropdown-menu-premium .dropdown-item {
     border-radius: 8px;
@@ -444,7 +444,7 @@ html[data-pms-theme="dark"] .dropdown-menu-premium .dropdown-item {
     color: #cbd5e1;
 }
 html[data-pms-theme="dark"] .dropdown-menu-premium .dropdown-item:hover {
-    background-color: #183026;
+    background-color: #141B3D;
     color: #ffffff;
 }
 .premium-table-footer {
@@ -456,8 +456,8 @@ html[data-pms-theme="dark"] .dropdown-menu-premium .dropdown-item:hover {
     font-weight: 600;
 }
 html[data-pms-theme="dark"] .premium-table-footer {
-    background-color: #14281e;
-    border-top-color: rgba(225, 255, 240, 0.08);
+    background-color: #141B3D;
+    border-top-color: rgba(79, 131, 255, 0.08);
     color: #94a3b8;
 }
 </style>
@@ -467,7 +467,7 @@ html[data-pms-theme="dark"] .premium-table-footer {
     {{-- HEADER --}}
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h4 class="fw-bold mb-1" style="color: #0f172a;"><i class="fas fa-handshake me-2 text-success"></i>Deals & Sales Pipeline</h4>
+            <h4 class="fw-bold mb-1" style="color: #0f172a;"><i class="fas fa-handshake me-2 text-primary"></i>Deals & Sales Pipeline</h4>
             <p class="text-muted small mb-0">Track pipeline stages, deal probabilities, weighted values, and close rates</p>
         </div>
         <div class="d-flex gap-2">
@@ -675,7 +675,7 @@ html[data-pms-theme="dark"] .premium-table-footer {
                                 <td><span class="fw-semibold text-secondary" style="font-size: 0.88rem;">{{ $dl->company_name ?: 'N/A' }}</span></td>
                                 <td class="fw-bold text-success" style="font-size: 0.9rem;">{{ $dl->currency }} {{ number_format($dl->value, 2) }}</td>
                                 <td class="text-center">
-                                    <span class="badge-pill-source text-primary" style="border-color: rgba(15, 116, 76, 0.2);">
+                                    <span class="badge-pill-source text-primary" style="border-color: rgba(47, 107, 255, 0.2);">
                                         <i class="fas fa-layer-group me-1"></i>{{ $dl->stage->name ?? 'N/A' }} ({{ $dl->probability }}%)
                                     </span>
                                 </td>
