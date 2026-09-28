@@ -131,7 +131,8 @@
         gap: 0.5rem;
     }
 
-    .nav-tab-btn {
+    .nav-tab-btn,
+    .attendance-container .nav-tab-btn {
         display: inline-flex;
         align-items: center;
         gap: 0.4rem;
@@ -139,28 +140,43 @@
         border-radius: 40px;
         font-weight: 600;
         font-size: 1.05rem;
-        color: #475569;
-        background: #f1f5f9;
+        color: #475569 !important;
+        -webkit-text-fill-color: #475569 !important;
+        background: #f1f5f9 !important;
         text-decoration: none;
         transition: var(--spring-transition);
-        border: 2px solid transparent;
+        border: 2px solid #e2e8f0 !important;
     }
 
-    .nav-tab-btn:hover {
-        background: #e2e8f0;
-        color: #0f172a;
+    .nav-tab-btn:hover,
+    .attendance-container .nav-tab-btn:hover {
+        background: #e2e8f0 !important;
+        color: #0f172a !important;
+        -webkit-text-fill-color: #0f172a !important;
+        border-color: #cbd5e1 !important;
         transform: translateY(-2px);
     }
 
-    .nav-tab-btn.active {
-        background: linear-gradient(135deg, var(--primary-blue), var(--primary-teal));
-        color: white;
-        border-color: transparent;
-        box-shadow: 0 4px 15px rgba(14, 165, 164, 0.25);
+    .nav-tab-btn.active,
+    .attendance-container .nav-tab-btn.active {
+        background: linear-gradient(135deg, #1e3a8a, #0ea5a4) !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        border-color: transparent !important;
+        box-shadow: 0 4px 15px rgba(14, 165, 164, 0.3) !important;
+    }
+
+    .nav-tab-btn.active *,
+    .attendance-container .nav-tab-btn.active i,
+    .attendance-container .nav-tab-btn.active span {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
     }
 
     .nav-tab-btn i {
         font-size: 0.9rem;
+        color: inherit !important;
+        -webkit-text-fill-color: inherit !important;
     }
 
     /* ===== FILTER CARD ===== */
@@ -279,12 +295,14 @@
         box-shadow: 0 8px 25px rgba(14, 165, 164, 0.3);
     }
 
-    .btn-reset {
-        background: linear-gradient(135deg, #64748b, #475569);
-        color: white;
+    .btn-reset,
+    .attendance-container .btn-reset {
+        background: #f1f5f9 !important;
+        color: #475569 !important;
+        -webkit-text-fill-color: #475569 !important;
         padding: 0.65rem 1.75rem;
         border-radius: 40px;
-        border: none;
+        border: 1.5px solid #cbd5e1 !important;
         font-weight: 700;
         font-size: 1.02rem;
         cursor: pointer;
@@ -294,13 +312,23 @@
         gap: 0.5rem;
         min-height: 46px;
         text-decoration: none;
-        box-shadow: 0 4px 15px rgba(100, 116, 139, 0.2);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
     }
 
-    .btn-reset:hover {
+    .btn-reset:hover,
+    .attendance-container .btn-reset:hover {
+        background: #e2e8f0 !important;
+        color: #0f172a !important;
+        -webkit-text-fill-color: #0f172a !important;
+        border-color: #94a3b8 !important;
         transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(100, 116, 139, 0.3);
-        color: white;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .btn-reset *,
+    .attendance-container .btn-reset i {
+        color: inherit !important;
+        -webkit-text-fill-color: inherit !important;
     }
 
     /* ===== TABLE CARD ===== */
@@ -1198,6 +1226,30 @@
     html[data-pms-theme="dark"] .filter-group .form-control option {
         background: #183026;
         color: #ffffff;
+    }
+
+    html[data-pms-theme="dark"] .btn-reset,
+    html[data-pms-theme="dark"] .attendance-container .btn-reset {
+        background: #141B3D !important;
+        color: #CBD5E1 !important;
+        -webkit-text-fill-color: #CBD5E1 !important;
+        border: 1px solid rgba(238, 241, 251, 0.16) !important;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    html[data-pms-theme="dark"] .btn-reset:hover,
+    html[data-pms-theme="dark"] .attendance-container .btn-reset:hover {
+        background: #1A2247 !important;
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+        border-color: rgba(238, 241, 251, 0.3) !important;
+        transform: translateY(-2px);
+    }
+
+    html[data-pms-theme="dark"] .btn-reset *,
+    html[data-pms-theme="dark"] .attendance-container .btn-reset i {
+        color: inherit !important;
+        -webkit-text-fill-color: inherit !important;
     }
 
     html[data-pms-theme="dark"] .nav-tab-btn {

@@ -336,7 +336,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="{{ $isAdmin ? 9 : 8 }}" class="text-center py-5">
+                            <td colspan="100" class="text-center py-5">
                                 <div class="empty-state"><i class="fas fa-calendar-times"></i><h3>No leave requests found</h3></div>
                             </td>
                         </tr>
@@ -1368,7 +1368,8 @@
         gap: 8px;
         align-items: center;
         justify-content: flex-end;
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
+        white-space: nowrap;
     }
 
     .action-row .btn {
@@ -2027,13 +2028,53 @@
         border-color: #34d399;
     }
 
-    html[data-pms-theme="dark"] .policy-notice {
-        background: rgba(16, 33, 25, 0.85);
-        border-color: rgba(122, 240, 181, 0.12);
+    html[data-pms-theme="dark"] .policy-notice,
+    html[data-theme="dark"] .policy-notice,
+    html[data-bs-theme="dark"] .policy-notice,
+    [data-pms-theme="dark"] .policy-notice,
+    [data-theme="dark"] .policy-notice,
+    body.dark-mode .policy-notice {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
     }
 
-    html[data-pms-theme="dark"] .policy-notice p {
-        color: #8ba198;
+    html[data-pms-theme="dark"] .policy-notice p,
+    html[data-theme="dark"] .policy-notice p,
+    html[data-bs-theme="dark"] .policy-notice p,
+    [data-pms-theme="dark"] .policy-notice p,
+    [data-theme="dark"] .policy-notice p,
+    body.dark-mode .policy-notice p {
+        color: #CBD5E1 !important;
+        -webkit-text-fill-color: #CBD5E1 !important;
+    }
+
+    html[data-pms-theme="dark"] .notice-icon,
+    html[data-theme="dark"] .notice-icon,
+    html[data-bs-theme="dark"] .notice-icon,
+    [data-pms-theme="dark"] .notice-icon,
+    [data-theme="dark"] .notice-icon,
+    body.dark-mode .notice-icon {
+        background: rgba(37, 99, 235, 0.25) !important;
+        border: 1px solid rgba(147, 197, 253, 0.35) !important;
+        color: #60a5fa !important;
+        -webkit-text-fill-color: #60a5fa !important;
+        filter: none !important;
+    }
+
+    html[data-pms-theme="dark"] .notice-icon i,
+    html[data-theme="dark"] .notice-icon i,
+    html[data-bs-theme="dark"] .notice-icon i,
+    [data-pms-theme="dark"] .notice-icon i,
+    [data-theme="dark"] .notice-icon i,
+    body.dark-mode .notice-icon i,
+    html[data-pms-theme="dark"] .policy-notice i,
+    html[data-theme="dark"] .policy-notice i,
+    html[data-bs-theme="dark"] .policy-notice i,
+    [data-pms-theme="dark"] .policy-notice i,
+    [data-theme="dark"] .policy-notice i,
+    body.dark-mode .policy-notice i {
+        color: #60a5fa !important;
+        -webkit-text-fill-color: #60a5fa !important;
     }
 
     html[data-pms-theme="dark"] .stat-card {
@@ -2299,6 +2340,58 @@
     html[data-pms-theme="dark"] .export-tile:hover {
         border-color: #34d399;
         box-shadow: 0 14px 28px rgba(0, 0, 0, 0.2);
+    }
+
+    html[data-pms-theme="dark"] .export-tile i,
+    html[data-bs-theme="dark"] .export-tile i,
+    html[data-theme="dark"] .export-tile i,
+    html.dark .export-tile i {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 42px !important;
+        height: 42px !important;
+        border-radius: 14px !important;
+    }
+
+    html[data-pms-theme="dark"] .export-tile.copy i,
+    html[data-bs-theme="dark"] .export-tile.copy i,
+    html[data-theme="dark"] .export-tile.copy i {
+        background: rgba(14, 165, 233, 0.22) !important;
+        color: #38bdf8 !important;
+        border: 1px solid rgba(56, 189, 248, 0.35) !important;
+    }
+
+    html[data-pms-theme="dark"] .export-tile.excel i,
+    html[data-bs-theme="dark"] .export-tile.excel i,
+    html[data-theme="dark"] .export-tile.excel i {
+        background: rgba(16, 185, 129, 0.22) !important;
+        color: #34d399 !important;
+        border: 1px solid rgba(52, 211, 153, 0.35) !important;
+    }
+
+    html[data-pms-theme="dark"] .export-tile.csv i,
+    html[data-bs-theme="dark"] .export-tile.csv i,
+    html[data-theme="dark"] .export-tile.csv i {
+        background: rgba(245, 158, 11, 0.22) !important;
+        color: #fbbf24 !important;
+        border: 1px solid rgba(251, 191, 36, 0.35) !important;
+    }
+
+    html[data-pms-theme="dark"] .export-tile.pdf i,
+    html[data-bs-theme="dark"] .export-tile.pdf i,
+    html[data-theme="dark"] .export-tile.pdf i {
+        background: rgba(239, 68, 68, 0.22) !important;
+        color: #f87171 !important;
+        border: 1px solid rgba(248, 113, 113, 0.35) !important;
+    }
+
+    html[data-pms-theme="dark"] .export-tile.print i,
+    html[data-bs-theme="dark"] .export-tile.print i,
+    html[data-theme="dark"] .export-tile.print i {
+        background: rgba(139, 92, 246, 0.22) !important;
+        color: #c084fc !important;
+        border: 1px solid rgba(192, 132, 252, 0.35) !important;
     }
 
     html[data-pms-theme="dark"] .export-copy-status {

@@ -497,6 +497,15 @@
         transition: all 0.3s ease;
     }
 
+    .header-icon i,
+    .header-icon svg,
+    .header-icon [class*="fa"] {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
     .header-card:hover .header-icon {
         transform: scale(1.02);
     }
@@ -867,31 +876,63 @@
     }
 
     .stat-icon.total,
-    .holiday-list-page .stat-card:first-of-type .stat-icon.total {
+    .stat-icon.total i,
+    .stat-icon.total svg,
+    .stat-icon.total [class*="fa"],
+    .holiday-list-page .stat-card:first-of-type .stat-icon.total,
+    .holiday-list-page .stat-card:first-of-type .stat-icon.total i,
+    .holiday-list-page .stat-card:first-of-type .stat-icon.total svg,
+    .holiday-list-page .stat-card:first-of-type .stat-icon.total [class*="fa"] {
         background: linear-gradient(145deg, #d1fae5, #a7f3d0) !important;
         color: #059669 !important;
         -webkit-text-fill-color: #059669 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
     }
 
     .stat-icon.weekly,
-    .holiday-list-page .stat-card .stat-icon.weekly {
+    .stat-icon.weekly i,
+    .stat-icon.weekly svg,
+    .stat-icon.weekly [class*="fa"],
+    .holiday-list-page .stat-card .stat-icon.weekly,
+    .holiday-list-page .stat-card .stat-icon.weekly i,
+    .holiday-list-page .stat-card .stat-icon.weekly svg,
+    .holiday-list-page .stat-card .stat-icon.weekly [class*="fa"] {
         background: linear-gradient(145deg, #dbeafe, #bfdbfe) !important;
         color: #2563eb !important;
         -webkit-text-fill-color: #2563eb !important;
+        opacity: 1 !important;
+        visibility: visible !important;
     }
 
     .stat-icon.special,
-    .holiday-list-page .stat-card .stat-icon.special {
+    .stat-icon.special i,
+    .stat-icon.special svg,
+    .stat-icon.special [class*="fa"],
+    .holiday-list-page .stat-card .stat-icon.special,
+    .holiday-list-page .stat-card .stat-icon.special i,
+    .holiday-list-page .stat-card .stat-icon.special svg,
+    .holiday-list-page .stat-card .stat-icon.special [class*="fa"] {
         background: linear-gradient(145deg, #fef3c7, #fde68a) !important;
         color: #d97706 !important;
         -webkit-text-fill-color: #d97706 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
     }
 
     .stat-icon.months,
-    .holiday-list-page .stat-card .stat-icon.months {
+    .stat-icon.months i,
+    .stat-icon.months svg,
+    .stat-icon.months [class*="fa"],
+    .holiday-list-page .stat-card .stat-icon.months,
+    .holiday-list-page .stat-card .stat-icon.months i,
+    .holiday-list-page .stat-card .stat-icon.months svg,
+    .holiday-list-page .stat-card .stat-icon.months [class*="fa"] {
         background: linear-gradient(145deg, #ede9fe, #c4b5fd) !important;
         color: #7c3aed !important;
         -webkit-text-fill-color: #7c3aed !important;
+        opacity: 1 !important;
+        visibility: visible !important;
     }
 
     .stat-label {
@@ -1144,6 +1185,15 @@
         align-items: center;
         justify-content: center;
         font-size: 1.2rem;
+    }
+
+    .table-title-icon i,
+    .table-title-icon svg,
+    .table-title-icon [class*="fa"] {
+        color: #059669 !important;
+        -webkit-text-fill-color: #059669 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
     }
 
     .table-title h5 {

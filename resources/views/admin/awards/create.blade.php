@@ -4,6 +4,14 @@
 @section('content')
 <div class="container py-4">
 
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="mb-0 fw-bold">Add Appreciation</h4>
+        <a href="{{ route('awards.index') }}" class="btn btn-outline-primary btn-sm px-3 rounded-pill d-inline-flex align-items-center gap-2">
+            <i class="bi bi-arrow-left"></i>
+            <span>Back to Recognition</span>
+        </a>
+    </div>
+
     @if($errors->any())
         <div class="alert alert-danger">
             <ul class="mb-0">

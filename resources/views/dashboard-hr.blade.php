@@ -135,30 +135,105 @@
         transform: translateY(-1px);
     }
     .role-date-filter {
-        align-items: center;
-        background: var(--bx-surface-2, rgba(255,255,255,.75));
-        border: 1px solid var(--bx-border, rgba(47,107,255,.14));
-        border-radius: 18px;
-        display: flex;
+        align-items: center !important;
+        background: var(--bx-surface-2, rgba(255,255,255,.85));
+        border: 1px solid var(--bx-border, rgba(47,107,255,.16));
+        border-radius: 16px;
+        display: inline-flex !important;
         flex-wrap: wrap;
-        gap: .55rem;
-        margin-top: 1rem;
-        padding: .7rem;
+        gap: 0.75rem;
+        margin-top: 1.25rem;
+        padding: 0.5rem 0.85rem;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+        max-width: 100%;
     }
-    .role-date-filter label,
-    .role-date-filter span {
-        color: var(--bx-ink, #334155);
-        font-size: .82rem;
-        font-weight: 700;
-        margin: 0;
-    }
-    .role-date-filter .form-control {
-        background: var(--bx-surface, #fff);
-        border-color: var(--bx-border, rgba(47,107,255,.16));
+    .role-date-label {
         color: var(--bx-ink, #10142C);
-        border-radius: 12px;
-        min-height: 38px;
-        width: auto;
+        font-size: 0.85rem;
+        font-weight: 700;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        height: 38px !important;
+        line-height: 1 !important;
+        margin: 0 !important;
+        white-space: nowrap;
+    }
+    .role-date-label i {
+        font-size: 1.1rem !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        line-height: 1 !important;
+        margin-right: 0.35rem !important;
+        margin-bottom: 1px;
+    }
+    .role-date-inputs {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        height: 38px !important;
+    }
+    .role-date-input {
+        background: var(--bx-surface, #fff);
+        border: 1px solid var(--bx-border, rgba(47,107,255,.2));
+        color: var(--bx-ink, #10142C);
+        border-radius: 10px;
+        height: 38px !important;
+        padding: 0 0.75rem !important;
+        font-size: 0.85rem;
+        font-weight: 600;
+        outline: none;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        display: inline-flex !important;
+        align-items: center !important;
+        line-height: 38px !important;
+    }
+    .role-date-input:focus {
+        border-color: var(--bx-primary, #2F6BFF);
+        box-shadow: 0 0 0 3px rgba(47, 107, 255, 0.15);
+    }
+    .role-date-separator {
+        color: var(--bx-ink-muted, #64748B);
+        font-size: 0.82rem;
+        font-weight: 700;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        height: 38px !important;
+        line-height: 1 !important;
+        margin: 0 !important;
+    }
+    .role-date-btn {
+        background: linear-gradient(135deg, #2F6BFF, #1E4FCC);
+        border: none;
+        color: #FFFFFF !important;
+        border-radius: 10px;
+        height: 38px !important;
+        padding: 0 1.25rem !important;
+        font-size: 0.85rem;
+        font-weight: 700;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 0.4rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 3px 10px rgba(47, 107, 255, 0.3);
+        white-space: nowrap;
+        line-height: 1 !important;
+    }
+    .role-date-btn i {
+        font-size: 1rem !important;
+        line-height: 1 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+    }
+    .role-date-btn:hover {
+        background: linear-gradient(135deg, #1E4FCC, #163BA0);
+        transform: translateY(-1px);
+        box-shadow: 0 5px 14px rgba(47, 107, 255, 0.4);
     }
     .role-focus-card {
         border-radius: 24px;
@@ -387,9 +462,15 @@
             align-items: flex-start;
             flex-direction: column;
         }
-        .role-date-filter,
-        .role-date-filter .form-control,
-        .role-date-filter .btn {
+        .role-date-filter {
+            width: 100%;
+            justify-content: space-between;
+        }
+        .role-date-inputs {
+            width: 100%;
+        }
+        .role-date-input,
+        .role-date-btn {
             width: 100%;
         }
     }
@@ -427,14 +508,29 @@
     }
     html[data-pms-theme="dark"] .role-date-filter,
     html[data-theme="dark"] .role-date-filter {
-        background: var(--bx-surface-2, #141B3D);
-        border-color: rgba(238, 241, 251, 0.09);
+        background: rgba(20, 27, 61, 0.85);
+        border-color: rgba(238, 241, 251, 0.14);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
     }
-    html[data-pms-theme="dark"] .role-date-filter .form-control,
-    html[data-theme="dark"] .role-date-filter .form-control {
-        background: var(--bx-surface-3, #1A2247);
-        border-color: rgba(238, 241, 251, 0.12);
-        color: #EEF1FB;
+    html[data-pms-theme="dark"] .role-date-label,
+    html[data-theme="dark"] .role-date-label {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .role-date-separator,
+    html[data-theme="dark"] .role-date-separator {
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] .role-date-input,
+    html[data-theme="dark"] .role-date-input {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.18) !important;
+        color: #EEF1FB !important;
+        color-scheme: dark;
+    }
+    html[data-pms-theme="dark"] .role-date-input:focus,
+    html[data-theme="dark"] .role-date-input:focus {
+        border-color: #2F6BFF !important;
+        box-shadow: 0 0 0 3px rgba(47, 107, 255, 0.25) !important;
     }
     html[data-pms-theme="dark"] .card-header.bg-white,
     html[data-theme="dark"] .card-header.bg-white {
@@ -478,11 +574,15 @@
                     @endif
                 </div>
                 <form method="GET" class="role-date-filter">
-                    <label>Date Range</label>
-                    <input type="date" name="start_date" class="form-control form-control-sm" value="{{ $startDate }}">
-                    <span>to</span>
-                    <input type="date" name="end_date" class="form-control form-control-sm" value="{{ $endDate }}">
-                    <button type="submit" class="btn btn-sm btn-primary">Filter</button>
+                    <span class="role-date-label"><i class="bx bx-calendar me-1"></i> Date Range</span>
+                    <div class="role-date-inputs">
+                        <input type="date" name="start_date" class="role-date-input" value="{{ $startDate }}">
+                        <span class="role-date-separator">to</span>
+                        <input type="date" name="end_date" class="role-date-input" value="{{ $endDate }}">
+                    </div>
+                    <button type="submit" class="role-date-btn">
+                        <i class="bx bx-filter-alt"></i> Filter
+                    </button>
                 </form>
             </div>
             <div class="role-panel role-focus-card">

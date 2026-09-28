@@ -119,6 +119,15 @@
         flex-shrink: 0;
     }
 
+    .header-icon-badge i,
+    .header-icon-badge svg,
+    .header-icon-badge [class*="fa"] {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
     .header-title h1 {
         font-size: 1.95rem;
         font-weight: 800;
@@ -171,10 +180,10 @@
 
     /* ===== STATS GRID ===== */
     .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 1.25rem;
-        margin-bottom: 2rem;
+        display: grid !important;
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 1.25rem !important;
+        margin-bottom: 2rem !important;
     }
 
     .stat-card,
@@ -254,11 +263,49 @@
         -webkit-text-fill-color: #059669 !important;
     }
 
+    .stat-icon.days i,
+    .stat-icon.days svg,
+    .stat-icon.days [class*="fa"],
+    .stat-icon.days [class*="bx"],
+    .work-schedule-page .stat-card .stat-icon.days i,
+    .work-schedule-page .stat-card .stat-icon.days svg,
+    .work-schedule-page .stat-card .stat-icon.days [class*="fa"],
+    .work-schedule-page .stat-card:first-of-type .stat-icon.days i,
+    .work-schedule-page .stat-card:first-of-type .stat-icon.days svg,
+    .work-schedule-page .stat-card:first-of-type .stat-icon.days [class*="fa"] {
+        background: transparent !important;
+        background-color: transparent !important;
+        color: #059669 !important;
+        -webkit-text-fill-color: #059669 !important;
+        fill: #059669 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
     .stat-icon.hours,
     .work-schedule-page .stat-card .stat-icon.hours {
         background: linear-gradient(145deg, #e0f2fe, #bae6fd) !important;
         color: #0284c7 !important;
         -webkit-text-fill-color: #0284c7 !important;
+    }
+
+    .stat-icon.hours i,
+    .stat-icon.hours svg,
+    .stat-icon.hours [class*="fa"],
+    .stat-icon.hours [class*="bx"],
+    .work-schedule-page .stat-card .stat-icon.hours i,
+    .work-schedule-page .stat-card .stat-icon.hours svg,
+    .work-schedule-page .stat-card .stat-icon.hours [class*="fa"],
+    .work-schedule-page .stat-card:first-of-type .stat-icon.hours i,
+    .work-schedule-page .stat-card:first-of-type .stat-icon.hours svg,
+    .work-schedule-page .stat-card:first-of-type .stat-icon.hours [class*="fa"] {
+        background: transparent !important;
+        background-color: transparent !important;
+        color: #0284c7 !important;
+        -webkit-text-fill-color: #0284c7 !important;
+        fill: #0284c7 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
     }
 
     .stat-icon.break,
@@ -268,11 +315,49 @@
         -webkit-text-fill-color: #d97706 !important;
     }
 
+    .stat-icon.break i,
+    .stat-icon.break svg,
+    .stat-icon.break [class*="fa"],
+    .stat-icon.break [class*="bx"],
+    .work-schedule-page .stat-card .stat-icon.break i,
+    .work-schedule-page .stat-card .stat-icon.break svg,
+    .work-schedule-page .stat-card .stat-icon.break [class*="fa"],
+    .work-schedule-page .stat-card:first-of-type .stat-icon.break i,
+    .work-schedule-page .stat-card:first-of-type .stat-icon.break svg,
+    .work-schedule-page .stat-card:first-of-type .stat-icon.break [class*="fa"] {
+        background: transparent !important;
+        background-color: transparent !important;
+        color: #d97706 !important;
+        -webkit-text-fill-color: #d97706 !important;
+        fill: #d97706 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
     .stat-icon.roster,
     .work-schedule-page .stat-card .stat-icon.roster {
         background: linear-gradient(145deg, #e0e7ff, #c7d2fe) !important;
         color: #4f46e5 !important;
         -webkit-text-fill-color: #4f46e5 !important;
+    }
+
+    .stat-icon.roster i,
+    .stat-icon.roster svg,
+    .stat-icon.roster [class*="fa"],
+    .stat-icon.roster [class*="bx"],
+    .work-schedule-page .stat-card .stat-icon.roster i,
+    .work-schedule-page .stat-card .stat-icon.roster svg,
+    .work-schedule-page .stat-card .stat-icon.roster [class*="fa"],
+    .work-schedule-page .stat-card:first-of-type .stat-icon.roster i,
+    .work-schedule-page .stat-card:first-of-type .stat-icon.roster svg,
+    .work-schedule-page .stat-card:first-of-type .stat-icon.roster [class*="fa"] {
+        background: transparent !important;
+        background-color: transparent !important;
+        color: #4f46e5 !important;
+        -webkit-text-fill-color: #4f46e5 !important;
+        fill: #4f46e5 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
     }
 
     .stat-info h6 {
@@ -324,6 +409,26 @@
         flex-shrink: 0;
     }
 
+    .card-header-avatar i,
+    .card-header-avatar svg,
+    .card-header-avatar [class*="fa"] {
+        color: #059669 !important;
+        -webkit-text-fill-color: #059669 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    .card-header-avatar i.text-white,
+    .card-header-avatar .text-white,
+    .card-header-avatar[style*="background"] i,
+    .card-header-avatar[style*="background"] svg,
+    .card-header-avatar[style*="background"] [class*="fa"] {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
     .section-badge {
         display: inline-flex;
         align-items: center;
@@ -337,6 +442,15 @@
         letter-spacing: 0.03em;
         border: 1px solid rgba(5, 150, 105, 0.2);
         margin-bottom: 1.25rem;
+    }
+
+    .section-badge i,
+    .section-badge svg,
+    .section-badge [class*="fa"] {
+        color: #059669 !important;
+        -webkit-text-fill-color: #059669 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
     }
 
     /* Days Pill Grid */
@@ -484,11 +598,505 @@
         .stats-grid {
             grid-template-columns: 1fr;
         }
+    }
+
     .mode-radio:checked + label {
         background: linear-gradient(135deg, #10b981, #059669) !important;
         border-color: #059669 !important;
         color: #ffffff !important;
         box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3) !important;
+    }
+
+    /* ===== DARK MODE SUPPORT ===== */
+    html[data-pms-theme="dark"] .work-schedule-page,
+    html[data-theme="dark"] .work-schedule-page,
+    html[data-bs-theme="dark"] .work-schedule-page,
+    body[data-pms-theme="dark"] .work-schedule-page,
+    body[data-theme="dark"] .work-schedule-page,
+    body[data-bs-theme="dark"] .work-schedule-page,
+    [data-pms-theme="dark"] .work-schedule-page,
+    [data-theme="dark"] .work-schedule-page,
+    [data-bs-theme="dark"] .work-schedule-page,
+    .dark-mode .work-schedule-page {
+        background: #0b0f19 !important;
+        color: #e2e8f0 !important;
+    }
+
+    html[data-pms-theme="dark"] .branches-header,
+    html[data-theme="dark"] .branches-header,
+    html[data-bs-theme="dark"] .branches-header,
+    body[data-pms-theme="dark"] .branches-header,
+    body[data-theme="dark"] .branches-header,
+    body[data-bs-theme="dark"] .branches-header,
+    [data-pms-theme="dark"] .branches-header,
+    [data-theme="dark"] .branches-header,
+    [data-bs-theme="dark"] .branches-header,
+    html[data-pms-theme="dark"] .address-card-elevated,
+    html[data-theme="dark"] .address-card-elevated,
+    html[data-bs-theme="dark"] .address-card-elevated,
+    body[data-pms-theme="dark"] .address-card-elevated,
+    body[data-theme="dark"] .address-card-elevated,
+    body[data-bs-theme="dark"] .address-card-elevated,
+    [data-pms-theme="dark"] .address-card-elevated,
+    [data-theme="dark"] .address-card-elevated,
+    [data-bs-theme="dark"] .address-card-elevated,
+    .dark-mode .branches-header,
+    .dark-mode .address-card-elevated {
+        background: #111827 !important;
+        border-color: rgba(255, 255, 255, 0.08) !important;
+        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.4) !important;
+    }
+
+    html[data-pms-theme="dark"] .card-header-custom,
+    html[data-bs-theme="dark"] .card-header-custom,
+    body[data-pms-theme="dark"] .card-header-custom,
+    [data-pms-theme="dark"] .card-header-custom {
+        border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+    }
+
+    html[data-pms-theme="dark"] .card-header-custom h5,
+    html[data-bs-theme="dark"] .card-header-custom h5,
+    body[data-pms-theme="dark"] .card-header-custom h5,
+    [data-pms-theme="dark"] .card-header-custom h5,
+    html[data-pms-theme="dark"] .header-title h1,
+    html[data-bs-theme="dark"] .header-title h1,
+    body[data-pms-theme="dark"] .header-title h1,
+    [data-pms-theme="dark"] .header-title h1 {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+        background: none !important;
+    }
+
+    html[data-pms-theme="dark"] .header-title p,
+    html[data-bs-theme="dark"] .header-title p,
+    body[data-pms-theme="dark"] .header-title p,
+    [data-pms-theme="dark"] .header-title p,
+    html[data-pms-theme="dark"] .card-header-custom .text-muted,
+    html[data-bs-theme="dark"] .card-header-custom .text-muted,
+    body[data-pms-theme="dark"] .card-header-custom .text-muted,
+    [data-pms-theme="dark"] .card-header-custom .text-muted {
+        color: #94a3b8 !important;
+        -webkit-text-fill-color: #94a3b8 !important;
+    }
+
+    /* Stat Cards in Dark Mode */
+    html[data-pms-theme="dark"] .work-schedule-page .stat-card,
+    html[data-theme="dark"] .work-schedule-page .stat-card,
+    html[data-bs-theme="dark"] .work-schedule-page .stat-card,
+    body[data-pms-theme="dark"] .work-schedule-page .stat-card,
+    body[data-theme="dark"] .work-schedule-page .stat-card,
+    body[data-bs-theme="dark"] .work-schedule-page .stat-card,
+    [data-pms-theme="dark"] .work-schedule-page .stat-card,
+    [data-theme="dark"] .work-schedule-page .stat-card,
+    [data-bs-theme="dark"] .work-schedule-page .stat-card,
+    html[data-pms-theme="dark"] .work-schedule-page .stat-card:first-of-type,
+    html[data-theme="dark"] .work-schedule-page .stat-card:first-of-type,
+    html[data-bs-theme="dark"] .work-schedule-page .stat-card:first-of-type,
+    body[data-pms-theme="dark"] .work-schedule-page .stat-card:first-of-type,
+    body[data-theme="dark"] .work-schedule-page .stat-card:first-of-type,
+    body[data-bs-theme="dark"] .work-schedule-page .stat-card:first-of-type,
+    [data-pms-theme="dark"] .work-schedule-page .stat-card:first-of-type,
+    [data-theme="dark"] .work-schedule-page .stat-card:first-of-type,
+    [data-bs-theme="dark"] .work-schedule-page .stat-card:first-of-type,
+    html[data-pms-theme="dark"] .stat-card,
+    html[data-theme="dark"] .stat-card,
+    html[data-bs-theme="dark"] .stat-card,
+    html[data-pms-theme="dark"] .stat-card:first-of-type,
+    html[data-theme="dark"] .stat-card:first-of-type,
+    html[data-bs-theme="dark"] .stat-card:first-of-type,
+    .dark-mode .stat-card,
+    .dark-mode .stat-card:first-of-type {
+        background: #171e2e !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.3) !important;
+        color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .work-schedule-page .stat-card h3,
+    html[data-theme="dark"] .work-schedule-page .stat-card h3,
+    html[data-bs-theme="dark"] .work-schedule-page .stat-card h3,
+    body[data-pms-theme="dark"] .work-schedule-page .stat-card h3,
+    body[data-theme="dark"] .work-schedule-page .stat-card h3,
+    body[data-bs-theme="dark"] .work-schedule-page .stat-card h3,
+    [data-pms-theme="dark"] .work-schedule-page .stat-card h3,
+    [data-theme="dark"] .work-schedule-page .stat-card h3,
+    [data-bs-theme="dark"] .work-schedule-page .stat-card h3,
+    html[data-pms-theme="dark"] .work-schedule-page .stat-card:first-of-type h3,
+    html[data-theme="dark"] .work-schedule-page .stat-card:first-of-type h3,
+    html[data-bs-theme="dark"] .work-schedule-page .stat-card:first-of-type h3,
+    body[data-pms-theme="dark"] .work-schedule-page .stat-card:first-of-type h3,
+    body[data-theme="dark"] .work-schedule-page .stat-card:first-of-type h3,
+    body[data-bs-theme="dark"] .work-schedule-page .stat-card:first-of-type h3,
+    [data-pms-theme="dark"] .work-schedule-page .stat-card:first-of-type h3,
+    [data-theme="dark"] .work-schedule-page .stat-card:first-of-type h3,
+    [data-bs-theme="dark"] .work-schedule-page .stat-card:first-of-type h3,
+    .dark-mode .stat-card h3 {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .work-schedule-page .stat-card h6,
+    html[data-theme="dark"] .work-schedule-page .stat-card h6,
+    html[data-bs-theme="dark"] .work-schedule-page .stat-card h6,
+    body[data-pms-theme="dark"] .work-schedule-page .stat-card h6,
+    body[data-theme="dark"] .work-schedule-page .stat-card h6,
+    body[data-bs-theme="dark"] .work-schedule-page .stat-card h6,
+    [data-pms-theme="dark"] .work-schedule-page .stat-card h6,
+    [data-theme="dark"] .work-schedule-page .stat-card h6,
+    [data-bs-theme="dark"] .work-schedule-page .stat-card h6,
+    html[data-pms-theme="dark"] .work-schedule-page .stat-card:first-of-type h6,
+    html[data-theme="dark"] .work-schedule-page .stat-card:first-of-type h6,
+    html[data-bs-theme="dark"] .work-schedule-page .stat-card:first-of-type h6,
+    body[data-pms-theme="dark"] .work-schedule-page .stat-card:first-of-type h6,
+    body[data-theme="dark"] .work-schedule-page .stat-card:first-of-type h6,
+    body[data-bs-theme="dark"] .work-schedule-page .stat-card:first-of-type h6,
+    [data-pms-theme="dark"] .work-schedule-page .stat-card:first-of-type h6,
+    [data-theme="dark"] .work-schedule-page .stat-card:first-of-type h6,
+    [data-bs-theme="dark"] .work-schedule-page .stat-card:first-of-type h6,
+    .dark-mode .stat-card h6 {
+        color: #94a3b8 !important;
+        -webkit-text-fill-color: #94a3b8 !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon.days,
+    html[data-theme="dark"] .stat-icon.days,
+    html[data-bs-theme="dark"] .stat-icon.days,
+    [data-pms-theme="dark"] .stat-icon.days,
+    [data-theme="dark"] .stat-icon.days,
+    .dark-mode .stat-icon.days {
+        background: rgba(16, 185, 129, 0.2) !important;
+        color: #34d399 !important;
+        -webkit-text-fill-color: #34d399 !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon.days i,
+    html[data-theme="dark"] .stat-icon.days i,
+    html[data-bs-theme="dark"] .stat-icon.days i,
+    [data-pms-theme="dark"] .stat-icon.days i,
+    [data-theme="dark"] .stat-icon.days i,
+    .dark-mode .stat-icon.days i {
+        color: #34d399 !important;
+        -webkit-text-fill-color: #34d399 !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon.hours,
+    html[data-theme="dark"] .stat-icon.hours,
+    [data-pms-theme="dark"] .stat-icon.hours,
+    [data-theme="dark"] .stat-icon.hours,
+    .dark-mode .stat-icon.hours {
+        background: rgba(56, 189, 248, 0.2) !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon.hours i,
+    html[data-theme="dark"] .stat-icon.hours i,
+    html[data-bs-theme="dark"] .stat-icon.hours i,
+    [data-pms-theme="dark"] .stat-icon.hours i,
+    [data-theme="dark"] .stat-icon.hours i,
+    .dark-mode .stat-icon.hours i {
+        color: #38bdf8 !important;
+        -webkit-text-fill-color: #38bdf8 !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon.break,
+    html[data-theme="dark"] .stat-icon.break,
+    [data-pms-theme="dark"] .stat-icon.break,
+    [data-theme="dark"] .stat-icon.break,
+    .dark-mode .stat-icon.break {
+        background: rgba(251, 191, 36, 0.2) !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon.break i,
+    html[data-theme="dark"] .stat-icon.break i,
+    html[data-bs-theme="dark"] .stat-icon.break i,
+    [data-pms-theme="dark"] .stat-icon.break i,
+    [data-theme="dark"] .stat-icon.break i,
+    .dark-mode .stat-icon.break i {
+        color: #fbbf24 !important;
+        -webkit-text-fill-color: #fbbf24 !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon.roster,
+    html[data-theme="dark"] .stat-icon.roster,
+    [data-pms-theme="dark"] .stat-icon.roster,
+    [data-theme="dark"] .stat-icon.roster,
+    .dark-mode .stat-icon.roster {
+        background: rgba(129, 140, 248, 0.2) !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon.roster i,
+    html[data-theme="dark"] .stat-icon.roster i,
+    html[data-bs-theme="dark"] .stat-icon.roster i,
+    [data-pms-theme="dark"] .stat-icon.roster i,
+    [data-theme="dark"] .stat-icon.roster i,
+    .dark-mode .stat-icon.roster i {
+        color: #a5b4fc !important;
+        -webkit-text-fill-color: #a5b4fc !important;
+    }
+
+    /* Days Pill Items in Dark Mode */
+    html[data-pms-theme="dark"] .day-pill-label,
+    html[data-theme="dark"] .day-pill-label,
+    html[data-bs-theme="dark"] .day-pill-label,
+    body[data-pms-theme="dark"] .day-pill-label,
+    body[data-theme="dark"] .day-pill-label,
+    body[data-bs-theme="dark"] .day-pill-label,
+    [data-pms-theme="dark"] .day-pill-label,
+    [data-theme="dark"] .day-pill-label,
+    [data-bs-theme="dark"] .day-pill-label,
+    .dark-mode .day-pill-label {
+        background: #1e293b !important;
+        border: 1px solid rgba(255, 255, 255, 0.12) !important;
+        color: #cbd5e1 !important;
+        -webkit-text-fill-color: #cbd5e1 !important;
+    }
+
+    html[data-pms-theme="dark"] .day-pill-label i,
+    html[data-theme="dark"] .day-pill-label i,
+    html[data-bs-theme="dark"] .day-pill-label i,
+    body[data-pms-theme="dark"] .day-pill-label i,
+    body[data-theme="dark"] .day-pill-label i,
+    [data-pms-theme="dark"] .day-pill-label i,
+    [data-theme="dark"] .day-pill-label i,
+    [data-bs-theme="dark"] .day-pill-label i,
+    .dark-mode .day-pill-label i {
+        color: #64748b !important;
+        -webkit-text-fill-color: #64748b !important;
+    }
+
+    html[data-pms-theme="dark"] .day-pill-label:hover,
+    html[data-theme="dark"] .day-pill-label:hover,
+    html[data-bs-theme="dark"] .day-pill-label:hover,
+    body[data-pms-theme="dark"] .day-pill-label:hover,
+    body[data-theme="dark"] .day-pill-label:hover,
+    [data-pms-theme="dark"] .day-pill-label:hover,
+    [data-theme="dark"] .day-pill-label:hover,
+    [data-bs-theme="dark"] .day-pill-label:hover,
+    .dark-mode .day-pill-label:hover {
+        background: #334155 !important;
+        border-color: #34d399 !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    html[data-pms-theme="dark"] .day-pill-input:checked + .day-pill-label,
+    html[data-theme="dark"] .day-pill-input:checked + .day-pill-label,
+    html[data-bs-theme="dark"] .day-pill-input:checked + .day-pill-label,
+    body[data-pms-theme="dark"] .day-pill-input:checked + .day-pill-label,
+    body[data-theme="dark"] .day-pill-input:checked + .day-pill-label,
+    [data-pms-theme="dark"] .day-pill-input:checked + .day-pill-label,
+    [data-theme="dark"] .day-pill-input:checked + .day-pill-label,
+    [data-bs-theme="dark"] .day-pill-input:checked + .day-pill-label,
+    .dark-mode .day-pill-input:checked + .day-pill-label {
+        background: rgba(16, 185, 129, 0.22) !important;
+        border-color: #34d399 !important;
+        color: #34d399 !important;
+        -webkit-text-fill-color: #34d399 !important;
+        box-shadow: 0 4px 14px rgba(52, 211, 153, 0.2) !important;
+    }
+
+    html[data-pms-theme="dark"] .day-pill-input:checked + .day-pill-label i,
+    html[data-theme="dark"] .day-pill-input:checked + .day-pill-label i,
+    html[data-bs-theme="dark"] .day-pill-input:checked + .day-pill-label i,
+    body[data-pms-theme="dark"] .day-pill-input:checked + .day-pill-label i,
+    body[data-theme="dark"] .day-pill-input:checked + .day-pill-label i,
+    [data-pms-theme="dark"] .day-pill-input:checked + .day-pill-label i,
+    [data-theme="dark"] .day-pill-input:checked + .day-pill-label i,
+    [data-bs-theme="dark"] .day-pill-input:checked + .day-pill-label i,
+    .dark-mode .day-pill-input:checked + .day-pill-label i {
+        color: #34d399 !important;
+        -webkit-text-fill-color: #34d399 !important;
+    }
+
+    /* Switch / Toggle Box Container in Dark Mode */
+    html[data-pms-theme="dark"] .switch-box-container,
+    html[data-bs-theme="dark"] .switch-box-container,
+    body[data-pms-theme="dark"] .switch-box-container,
+    [data-pms-theme="dark"] .switch-box-container {
+        background: rgba(16, 185, 129, 0.12) !important;
+        border: 1px solid rgba(52, 211, 153, 0.3) !important;
+    }
+
+    html[data-pms-theme="dark"] .switch-box-container label,
+    html[data-bs-theme="dark"] .switch-box-container label,
+    body[data-pms-theme="dark"] .switch-box-container label,
+    [data-pms-theme="dark"] .switch-box-container label {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .switch-box-container .text-muted,
+    html[data-bs-theme="dark"] .switch-box-container .text-muted,
+    body[data-pms-theme="dark"] .switch-box-container .text-muted,
+    [data-pms-theme="dark"] .switch-box-container .text-muted {
+        color: #94a3b8 !important;
+        -webkit-text-fill-color: #94a3b8 !important;
+    }
+
+    /* Form Labels, Inputs, Badges */
+    html[data-pms-theme="dark"] .form-label-custom,
+    html[data-bs-theme="dark"] .form-label-custom,
+    body[data-pms-theme="dark"] .form-label-custom,
+    [data-pms-theme="dark"] .form-label-custom {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .input-group-custom,
+    html[data-bs-theme="dark"] .input-group-custom,
+    body[data-pms-theme="dark"] .input-group-custom,
+    [data-pms-theme="dark"] .input-group-custom {
+        background-color: #1e293b !important;
+        border-color: rgba(255, 255, 255, 0.12) !important;
+    }
+
+    html[data-pms-theme="dark"] .input-group-custom .form-control,
+    html[data-bs-theme="dark"] .input-group-custom .form-control,
+    body[data-pms-theme="dark"] .input-group-custom .form-control,
+    [data-pms-theme="dark"] .input-group-custom .form-control,
+    html[data-pms-theme="dark"] .input-group-custom .form-select,
+    html[data-bs-theme="dark"] .input-group-custom .form-select,
+    body[data-pms-theme="dark"] .input-group-custom .form-select,
+    [data-pms-theme="dark"] .input-group-custom .form-select {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+        background-color: transparent !important;
+    }
+
+    html[data-pms-theme="dark"] .section-badge,
+    html[data-bs-theme="dark"] .section-badge,
+    body[data-pms-theme="dark"] .section-badge,
+    [data-pms-theme="dark"] .section-badge {
+        background: rgba(16, 185, 129, 0.15) !important;
+        color: #34d399 !important;
+        border-color: rgba(52, 211, 153, 0.3) !important;
+    }
+
+    html[data-pms-theme="dark"] .section-badge i,
+    html[data-theme="dark"] .section-badge i,
+    html[data-bs-theme="dark"] .section-badge i,
+    [data-pms-theme="dark"] .section-badge i {
+        color: #34d399 !important;
+        -webkit-text-fill-color: #34d399 !important;
+    }
+
+    html[data-pms-theme="dark"] .card-header-avatar:not([style*="background"]),
+    html[data-theme="dark"] .card-header-avatar:not([style*="background"]),
+    html[data-bs-theme="dark"] .card-header-avatar:not([style*="background"]),
+    [data-pms-theme="dark"] .card-header-avatar:not([style*="background"]) {
+        background: rgba(16, 185, 129, 0.2) !important;
+        color: #34d399 !important;
+    }
+
+    html[data-pms-theme="dark"] .card-header-avatar:not([style*="background"]) i,
+    html[data-theme="dark"] .card-header-avatar:not([style*="background"]) i,
+    html[data-bs-theme="dark"] .card-header-avatar:not([style*="background"]) i,
+    [data-pms-theme="dark"] .card-header-avatar:not([style*="background"]) i {
+        color: #34d399 !important;
+        -webkit-text-fill-color: #34d399 !important;
+    }
+
+    /* Back to Settings Button in Dark Mode */
+    html[data-pms-theme="dark"] .btn-back-settings,
+    html[data-theme="dark"] .btn-back-settings,
+    html[data-bs-theme="dark"] .btn-back-settings,
+    body[data-pms-theme="dark"] .btn-back-settings,
+    body[data-theme="dark"] .btn-back-settings,
+    body[data-bs-theme="dark"] .btn-back-settings,
+    [data-pms-theme="dark"] .btn-back-settings,
+    [data-theme="dark"] .btn-back-settings,
+    [data-bs-theme="dark"] .btn-back-settings,
+    .dark-mode .btn-back-settings {
+        background-color: #1e293b !important;
+        border-color: rgba(52, 211, 153, 0.35) !important;
+        color: #34d399 !important;
+        -webkit-text-fill-color: #34d399 !important;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2) !important;
+    }
+
+    html[data-pms-theme="dark"] .btn-back-settings .back-arrow-icon,
+    html[data-theme="dark"] .btn-back-settings .back-arrow-icon,
+    html[data-bs-theme="dark"] .btn-back-settings .back-arrow-icon,
+    [data-pms-theme="dark"] .btn-back-settings .back-arrow-icon,
+    [data-theme="dark"] .btn-back-settings .back-arrow-icon,
+    .dark-mode .btn-back-settings .back-arrow-icon {
+        color: #34d399 !important;
+        -webkit-text-fill-color: #34d399 !important;
+    }
+
+    html[data-pms-theme="dark"] .btn-back-settings:hover,
+    html[data-theme="dark"] .btn-back-settings:hover,
+    html[data-bs-theme="dark"] .btn-back-settings:hover,
+    body[data-pms-theme="dark"] .btn-back-settings:hover,
+    body[data-theme="dark"] .btn-back-settings:hover,
+    body[data-bs-theme="dark"] .btn-back-settings:hover,
+    [data-pms-theme="dark"] .btn-back-settings:hover,
+    [data-theme="dark"] .btn-back-settings:hover,
+    [data-bs-theme="dark"] .btn-back-settings:hover,
+    .dark-mode .btn-back-settings:hover {
+        background-color: #059669 !important;
+        border-color: #10b981 !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    html[data-pms-theme="dark"] .btn-back-settings:hover .back-arrow-icon,
+    html[data-theme="dark"] .btn-back-settings:hover .back-arrow-icon,
+    html[data-bs-theme="dark"] .btn-back-settings:hover .back-arrow-icon,
+    [data-pms-theme="dark"] .btn-back-settings:hover .back-arrow-icon,
+    [data-theme="dark"] .btn-back-settings:hover .back-arrow-icon,
+    .dark-mode .btn-back-settings:hover .back-arrow-icon {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    /* Tables & Text in Dark Mode */
+    html[data-pms-theme="dark"] .table,
+    html[data-theme="dark"] .table,
+    html[data-bs-theme="dark"] .table,
+    [data-pms-theme="dark"] .table,
+    [data-theme="dark"] .table,
+    .dark-mode .table {
+        color: #cbd5e1 !important;
+    }
+
+    html[data-pms-theme="dark"] .table thead,
+    html[data-theme="dark"] .table thead,
+    html[data-bs-theme="dark"] .table thead,
+    [data-pms-theme="dark"] .table thead,
+    [data-theme="dark"] .table thead,
+    .dark-mode .table thead {
+        background: #1e293b !important;
+    }
+
+    html[data-pms-theme="dark"] .table thead th,
+    html[data-theme="dark"] .table thead th,
+    html[data-bs-theme="dark"] .table thead th,
+    [data-pms-theme="dark"] .table thead th,
+    [data-theme="dark"] .table thead th,
+    .dark-mode .table thead th {
+        color: #e2e8f0 !important;
+        -webkit-text-fill-color: #e2e8f0 !important;
+        border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+    }
+
+    html[data-pms-theme="dark"] .table td,
+    html[data-theme="dark"] .table td,
+    html[data-bs-theme="dark"] .table td,
+    [data-pms-theme="dark"] .table td,
+    [data-theme="dark"] .table td,
+    .dark-mode .table td {
+        border-color: rgba(255, 255, 255, 0.06) !important;
+        color: #cbd5e1 !important;
+    }
+
+    html[data-pms-theme="dark"] .table .text-dark,
+    html[data-theme="dark"] .table .text-dark,
+    html[data-bs-theme="dark"] .table .text-dark,
+    [data-pms-theme="dark"] .table .text-dark,
+    [data-theme="dark"] .table .text-dark,
+    .dark-mode .table .text-dark {
+        color: #e2e8f0 !important;
+        -webkit-text-fill-color: #e2e8f0 !important;
     }
 </style>
 @endpush
@@ -600,7 +1208,7 @@
                         <i class="fas fa-business-time"></i>
                     </div>
                     <div>
-                        <h5 class="mb-0 fw-bold fs-5" style="color: #0a2e1f;">Working Days & Shift Timings</h5>
+                        <h5 class="mb-0 fw-bold fs-5">Working Days & Shift Timings</h5>
                         <small class="text-muted">Set company-wide standard shift and operating hours</small>
                     </div>
                 </div>
@@ -680,7 +1288,7 @@
                                     <div class="form-check form-switch mb-0 d-flex align-items-center gap-3">
                                         <input class="form-check-input ms-0" type="checkbox" name="shift_enabled" value="1" id="shiftSwitch" style="width: 44px; height: 24px; cursor: pointer;"
                                             {{ ($settings['shift_enabled'] ?? '0') == '1' ? 'checked' : '' }} {{ ! $isAdmin ? 'disabled' : '' }}>
-                                        <label class="form-check-label fw-bold text-dark mb-0" for="shiftSwitch" style="font-size: 0.95rem; cursor: pointer;">
+                                        <label class="form-check-label fw-bold mb-0" for="shiftSwitch" style="font-size: 0.95rem; cursor: pointer;">
                                             Enable Multiple Shift Scheduling & Rostering
                                             <small class="d-block text-muted fw-normal" style="font-size: 0.82rem;">Allows assigning different morning, evening, or night shifts per employee department.</small>
                                         </label>

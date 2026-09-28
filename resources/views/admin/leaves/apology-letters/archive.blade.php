@@ -89,16 +89,18 @@
                             <td><span class="status-badge archived">{{ ucfirst($letter->status) }}</span></td>
                             <td>{{ $letter->archived_at?->format('d M Y h:i A') }}</td>
                             <td class="text-end">
-                                <a href="{{ route('leaves.apology-letters.show', $letter->id) }}" class="btn btn-sm btn-light"><i class="fas fa-eye"></i> View</a>
-                                <form method="POST" action="{{ route('leaves.apology-letters.restore', $letter->id) }}" class="d-inline" onsubmit="return confirm('Restore this apology letter?');">
-                                    @csrf
-                                    <button class="btn btn-sm btn-primary" type="submit"><i class="fas fa-rotate-left"></i> Restore</button>
-                                </form>
+                                <div class="action-buttons">
+                                    <a href="{{ route('leaves.apology-letters.show', $letter->id) }}" class="btn btn-sm btn-light"><i class="fas fa-eye"></i> View</a>
+                                    <form method="POST" action="{{ route('leaves.apology-letters.restore', $letter->id) }}" class="d-inline" onsubmit="return confirm('Restore this apology letter?');">
+                                        @csrf
+                                        <button class="btn btn-sm btn-primary" type="submit"><i class="fas fa-rotate-left"></i> Restore</button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="{{ $isAdmin ? 7 : 6 }}" class="text-center py-5">
+                            <td colspan="100" class="text-center py-5">
                                 <div class="empty-state"><i class="fas fa-box-open"></i><h3>No archived apology letters found</h3></div>
                             </td>
                         </tr>

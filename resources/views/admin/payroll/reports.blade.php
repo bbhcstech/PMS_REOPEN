@@ -3,6 +3,38 @@
 @section('title', 'Payroll Reports')
 
 @section('content')
+<style>
+/* Payroll Reports Custom Theme Styling */
+.payroll-table-head,
+.payroll-table-foot {
+    background-color: #f8fafc;
+}
+.payroll-table-foot td {
+    color: #0f172a;
+}
+.payroll-report-card {
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+.payroll-report-card:hover {
+    background-color: #f8fafc;
+}
+
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"], body.dark, [data-bs-theme="dark"]) .payroll-table-head,
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"], body.dark, [data-bs-theme="dark"]) .payroll-table-foot {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"], body.dark, [data-bs-theme="dark"]) .payroll-table-foot td {
+    color: #f8fafc !important;
+}
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"], body.dark, [data-bs-theme="dark"]) .payroll-table-foot .text-muted {
+    color: #cbd5e1 !important;
+}
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"], body.dark, [data-bs-theme="dark"]) .payroll-report-card:hover {
+    background-color: rgba(255, 255, 255, 0.06) !important;
+}
+</style>
 <div class="container-xxl flex-grow-1 container-p-y">
 
     {{-- Header --}}
@@ -74,7 +106,7 @@
                 ]; @endphp
                 @foreach($reportTypes as $r)
                     <div class="col-xl-3 col-md-4 col-6">
-                        <div class="border rounded-3 p-3 d-flex align-items-center gap-3 h-100" style="transition:.2s;cursor:pointer;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background=''">
+                        <div class="border rounded-3 p-3 d-flex align-items-center gap-3 h-100 payroll-report-card">
                             <div class="avatar avatar-sm rounded-3 d-flex align-items-center justify-content-center" style="background:var(--bs-{{ $r['color'] }}-light,#eef2ff);min-width:36px;">
                                 <i class="bx {{ $r['icon'] }} text-{{ $r['color'] }}"></i>
                             </div>
@@ -99,7 +131,7 @@
         </div>
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0" id="reportTable">
-                <thead style="background:#f8fafc;font-size:12px;">
+                <thead class="payroll-table-head" style="font-size:12px;">
                     <tr class="text-muted">
                         <th class="px-4 fw-semibold text-uppercase">Period</th>
                         <th class="fw-semibold text-uppercase">Status</th>
@@ -135,7 +167,7 @@
                     @endforelse
                 </tbody>
                 @if($payrolls->isNotEmpty())
-                    <tfoot style="background:#f8fafc;">
+                    <tfoot class="payroll-table-foot">
                         <tr class="fw-bold">
                             <td class="px-4 text-muted small" colspan="2">Totals</td>
                             <td class="text-end small">₹{{ number_format($totalGross, 2) }}</td>

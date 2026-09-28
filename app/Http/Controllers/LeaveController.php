@@ -47,7 +47,10 @@ class LeaveController extends Controller
         if (! $isAdmin) {
             $query->where('user_id', Auth::id());
         } elseif ($companyId) {
-            $query->whereHas('user', fn ($userQuery) => $userQuery->where('company_id', $companyId));
+            $query->where(function ($q) use ($companyId) {
+                $q->whereHas('user', fn ($userQuery) => $userQuery->where('company_id', $companyId))
+                  ->orWhere('company_id', $companyId);
+            });
         }
 
         if ($isAdmin && $request->filled('employee')) {
@@ -843,7 +846,10 @@ class LeaveController extends Controller
         if (! $this->isAdmin()) {
             $query->where('user_id', Auth::id());
         } elseif ($companyId = $this->selectedCompanyId($request)) {
-            $query->whereHas('user', fn ($userQuery) => $userQuery->where('company_id', $companyId));
+            $query->where(function ($q) use ($companyId) {
+                $q->whereHas('user', fn ($userQuery) => $userQuery->where('company_id', $companyId))
+                  ->orWhere('company_id', $companyId);
+            });
         }
         if ($this->isAdmin() && $request->filled('employee')) {
             $query->where('user_id', $request->employee);
