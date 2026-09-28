@@ -468,7 +468,6 @@
     .archive-selected-badge {
         background: rgba(47, 107, 255, 0.1);
         color: #2F6BFF;
-        -webkit-text-fill-color: #2F6BFF;
         padding: 0.35rem 1rem;
         border-radius: 40px;
         font-size: 0.8rem;
@@ -805,6 +804,8 @@
         border: 1px solid rgba(79, 131, 255, 0.24) !important;
     }
 
+    #archive-selected-count.archive-selected-badge,
+    #archive-selected-count,
     html[data-pms-theme="dark"] .archive-selected-badge,
     html[data-theme="dark"] .archive-selected-badge,
     html[data-bs-theme="dark"] .archive-selected-badge,
@@ -819,7 +820,7 @@
     body.dark-mode .archive-selected-badge,
     .dark-mode .archive-selected-badge,
     .dark .archive-selected-badge {
-        background: rgba(79, 131, 255, 0.22) !important;
+        background: rgba(79, 131, 255, 0.25) !important;
         color: #93C5FD !important;
         -webkit-text-fill-color: #93C5FD !important;
         border: 1px solid rgba(147, 197, 253, 0.35) !important;
