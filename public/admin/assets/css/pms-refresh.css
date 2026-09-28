@@ -7687,3 +7687,94 @@ body {
   opacity: 0 !important;
   pointer-events: none !important;
 }
+
+/* RSVP Box & Segmented Control Dark Mode Support */
+html[data-pms-theme="dark"] .rsvp-box,
+html[data-bs-theme="dark"] .rsvp-box,
+html[data-theme="dark"] .rsvp-box,
+body.dark-mode .rsvp-box,
+.dark-mode .rsvp-box {
+  background: #141B3D !important;
+  border: 1px solid rgba(238, 241, 251, 0.12) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25) !important;
+}
+
+html[data-pms-theme="dark"] .rsvp-box .text-dark,
+html[data-bs-theme="dark"] .rsvp-box .text-dark,
+html[data-theme="dark"] .rsvp-box .text-dark,
+body.dark-mode .rsvp-box .text-dark,
+.dark-mode .rsvp-box .text-dark {
+  color: #EEF1FB !important;
+  -webkit-text-fill-color: #EEF1FB !important;
+}
+
+html[data-pms-theme="dark"] .rsvp-count-badge,
+html[data-bs-theme="dark"] .rsvp-count-badge,
+html[data-theme="dark"] .rsvp-count-badge,
+body.dark-mode .rsvp-count-badge,
+.dark-mode .rsvp-count-badge {
+  background: rgba(22, 163, 74, 0.2) !important;
+  color: #4ade80 !important;
+  border: 1px solid rgba(74, 222, 128, 0.3) !important;
+}
+
+html[data-pms-theme="dark"] .rsvp-segmented-bar,
+html[data-bs-theme="dark"] .rsvp-segmented-bar,
+html[data-theme="dark"] .rsvp-segmented-bar,
+body.dark-mode .rsvp-segmented-bar,
+.dark-mode .rsvp-segmented-bar {
+  background: #0B1026 !important;
+  border: 1px solid rgba(238, 241, 251, 0.08) !important;
+}
+
+html[data-pms-theme="dark"] .rsvp-segment-btn,
+html[data-bs-theme="dark"] .rsvp-segment-btn,
+html[data-theme="dark"] .rsvp-segment-btn,
+body.dark-mode .rsvp-segment-btn,
+.dark-mode .rsvp-segment-btn {
+  color: #94A3B8 !important;
+  -webkit-text-fill-color: #94A3B8 !important;
+}
+
+html[data-pms-theme="dark"] .rsvp-segment-btn:hover:not(.active-going):not(.active-maybe):not(.active-not_going),
+html[data-bs-theme="dark"] .rsvp-segment-btn:hover:not(.active-going):not(.active-maybe):not(.active-not_going),
+html[data-theme="dark"] .rsvp-segment-btn:hover:not(.active-going):not(.active-maybe):not(.active-not_going),
+body.dark-mode .rsvp-segment-btn:hover:not(.active-going):not(.active-maybe):not(.active-not_going),
+.dark-mode .rsvp-segment-btn:hover:not(.active-going):not(.active-maybe):not(.active-not_going) {
+  color: #EEF1FB !important;
+  -webkit-text-fill-color: #EEF1FB !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+html[data-pms-theme="dark"] .rsvp-segment-btn.active-going,
+html[data-bs-theme="dark"] .rsvp-segment-btn.active-going,
+html[data-theme="dark"] .rsvp-segment-btn.active-going,
+body.dark-mode .rsvp-segment-btn.active-going,
+.dark-mode .rsvp-segment-btn.active-going {
+  background: #0D6E46 !important;
+  color: #FFFFFF !important;
+  -webkit-text-fill-color: #FFFFFF !important;
+  box-shadow: 0 3px 10px rgba(13, 110, 70, 0.5) !important;
+}
+
+html[data-pms-theme="dark"] .rsvp-segment-btn.active-maybe,
+html[data-bs-theme="dark"] .rsvp-segment-btn.active-maybe,
+html[data-theme="dark"] .rsvp-segment-btn.active-maybe,
+body.dark-mode .rsvp-segment-btn.active-maybe,
+.dark-mode .rsvp-segment-btn.active-maybe {
+  background: #D97706 !important;
+  color: #FFFFFF !important;
+  -webkit-text-fill-color: #FFFFFF !important;
+  box-shadow: 0 3px 10px rgba(217, 119, 6, 0.5) !important;
+}
+
+html[data-pms-theme="dark"] .rsvp-segment-btn.active-not_going,
+html[data-bs-theme="dark"] .rsvp-segment-btn.active-not_going,
+html[data-theme="dark"] .rsvp-segment-btn.active-not_going,
+body.dark-mode .rsvp-segment-btn.active-not_going,
+.dark-mode .rsvp-segment-btn.active-not_going {
+  background: #DC2626 !important;
+  color: #FFFFFF !important;
+  -webkit-text-fill-color: #FFFFFF !important;
+  box-shadow: 0 3px 10px rgba(220, 38, 38, 0.5) !important;
+}
