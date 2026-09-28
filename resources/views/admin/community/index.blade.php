@@ -363,22 +363,35 @@
         top: 8px;
         right: 8px;
         opacity: 0;
+        pointer-events: none;
         transition: opacity 0.2s ease;
+        z-index: 5;
     }
-    .msg-content-card:hover .msg-action-trigger {
+    .msg-content-card:hover .msg-action-trigger,
+    .msg-action-trigger.show,
+    .msg-action-trigger:focus-within {
         opacity: 1;
+        pointer-events: auto;
     }
     .msg-action-btn {
-        width: 26px;
-        height: 26px;
+        width: 28px;
+        height: 28px;
         border-radius: 50%;
-        background: #f1f5f9;
-        border: none;
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
         color: #64748b;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.1rem;
+        font-size: 1.15rem;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+    .msg-action-btn:hover {
+        background: #f1f5f9;
+        color: #0f744c;
+        border-color: #0f744c;
     }
 
     /* COMPOSER BAR */

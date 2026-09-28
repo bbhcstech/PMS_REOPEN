@@ -57,8 +57,26 @@
        opacity: 1 !important;
    }
 
-   .modal { z-index: 1050; }
-   .modal-backdrop { z-index: 1040; }
+   .modal-backdrop {
+       z-index: 10040 !important;
+   }
+
+   .modal {
+       z-index: 10050 !important;
+       padding-top: 0 !important;
+   }
+
+   .modal-dialog {
+       z-index: 10051 !important;
+       margin-top: 1.75rem !important;
+       margin-bottom: 1.75rem !important;
+   }
+
+   .modal-dialog-centered {
+       min-height: calc(100% - 3.5rem) !important;
+       margin-top: 1.75rem !important;
+       margin-bottom: 1.75rem !important;
+   }
 
    .modal-content {
        background-color: var(--bx-surface) !important;
@@ -92,6 +110,8 @@
 
    /* ===================== TOP NAVBAR ===================== */
    #layout-navbar {
+       position: relative;
+       z-index: 1030 !important;
        display: flex;
        flex-wrap: nowrap !important;
        align-items: center;

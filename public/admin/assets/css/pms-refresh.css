@@ -770,8 +770,29 @@ html[data-theme="dark"] .btn-secondary {
   color: var(--pms-primary) !important;
 }
 
+#layout-navbar,
+.layout-navbar {
+  position: relative;
+  z-index: 1030 !important;
+}
+
+.modal-backdrop {
+  z-index: 10040 !important;
+}
+
 .modal-backdrop.show {
   opacity: 0.45 !important;
+}
+
+.modal {
+  z-index: 10050 !important;
+  padding-top: 0 !important;
+}
+
+.modal-dialog {
+  z-index: 10051 !important;
+  margin-top: 1.75rem !important;
+  margin-bottom: 1.75rem !important;
 }
 
 .footer {
@@ -7654,4 +7675,15 @@ body {
     padding: 0.5rem 0.85rem !important;
     font-size: 0.85rem !important;
   }
+}
+
+/* Permanently remove floating scroll controls & bottom-right floating widgets */
+.pms-scroll-controls,
+.pms-scroll-btn,
+#pmsScrollTop,
+#pmsScrollBottom {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
