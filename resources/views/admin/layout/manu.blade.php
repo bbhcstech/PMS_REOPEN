@@ -1225,6 +1225,20 @@
            display: none !important;
        }
    }
+    /* Global Fix: Ensure all inline Add buttons (in input groups & flex containers) have ample size, minimum width, and never squish */
+    .d-flex > button,
+    .input-group > button,
+    .d-flex > .btn,
+    .input-group > .btn {
+        flex-shrink: 0 !important;
+        white-space: nowrap !important;
+        min-width: 76px;
+        padding-left: 0.9rem !important;
+        padding-right: 0.9rem !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
 </style>
 @php
     $adminRefreshVersion = file_exists(public_path('admin/assets/css/pms-refresh.css')) ? filemtime(public_path('admin/assets/css/pms-refresh.css')) : time();

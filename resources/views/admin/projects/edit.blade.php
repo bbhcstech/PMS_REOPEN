@@ -166,8 +166,8 @@
                                         </option>
                                     @endforeach
                                 </select>
-                                <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#catModal">
-                                    <i class="fas fa-plus"></i>
+                                <button type="button" class="btn btn-outline-secondary flex-shrink-0 text-nowrap px-3" data-bs-toggle="modal" data-bs-target="#catModal" style="white-space: nowrap; min-width: 75px;">
+                                    <i class="fas fa-plus me-1"></i> Add
                                 </button>
                             </div>
                         </div>
