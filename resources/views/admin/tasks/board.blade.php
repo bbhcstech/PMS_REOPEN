@@ -491,8 +491,8 @@
         color: #FCA5A5 !important;
     }
     html[data-pms-theme="dark"] .header-status-completed {
-        background: rgba(16, 185, 129, 0.2) !important;
-        color: #6EE7B7 !important;
+        background: rgba(47, 107, 255, 0.2) !important;
+        color: #93C5FD !important;
     }
     html[data-pms-theme="dark"] .kanban-task-card {
         background: #141B3D !important;
@@ -518,8 +518,8 @@
         border-color: rgba(47, 107, 255, 0.3) !important;
     }
     html[data-pms-theme="dark"] .task-priority-badge.priority-low {
-        background: rgba(16, 185, 129, 0.2) !important;
-        color: #6EE7B7 !important;
+        background: rgba(47, 107, 255, 0.2) !important;
+        color: #93C5FD !important;
     }
     html[data-pms-theme="dark"] .task-priority-badge.priority-medium {
         background: rgba(245, 158, 11, 0.2) !important;

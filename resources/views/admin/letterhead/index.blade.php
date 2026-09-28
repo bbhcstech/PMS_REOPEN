@@ -7,11 +7,11 @@
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap');
 
     .lh-mgmt-shell {
-        --lh-primary: #0f744c;
+        --lh-primary: #2F6BFF;
         --lh-primary-hover: #0a5c3a;
         --lh-emerald: #10b981;
-        --lh-emerald-soft: #ecfdf5;
-        --lh-emerald-border: rgba(16, 185, 129, 0.25);
+        --lh-emerald-soft: #EEF2FF;
+        --lh-emerald-border: rgba(47, 107, 255, 0.25);
         --lh-slate-900: #0f172a;
         --lh-slate-700: #334155;
         --lh-slate-500: #64748b;
@@ -19,8 +19,8 @@
         --lh-slate-100: #f8fafc;
         --lh-card-bg: #ffffff;
         --lh-card-border: rgba(226, 232, 240, 0.85);
-        --lh-shadow: 0 10px 30px -5px rgba(15, 116, 76, 0.06), 0 4px 12px rgba(0, 0, 0, 0.03);
-        --lh-shadow-hover: 0 20px 40px -10px rgba(15, 116, 76, 0.12), 0 6px 16px rgba(0, 0, 0, 0.05);
+        --lh-shadow: 0 10px 30px -5px rgba(47, 107, 255, 0.06), 0 4px 12px rgba(0, 0, 0, 0.03);
+        --lh-shadow-hover: 0 20px 40px -10px rgba(47, 107, 255, 0.12), 0 6px 16px rgba(0, 0, 0, 0.05);
 
         font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         padding-bottom: 3rem;
@@ -88,7 +88,7 @@
         left: 0;
         right: 0;
         height: 4px;
-        background: linear-gradient(90deg, #10b981 0%, #0f744c 50%, #047857 100%);
+        background: linear-gradient(90deg, #4F83FF 0%, #2F6BFF 50%, #1E3A8A 100%);
     }
     .lh-banner-left {
         display: flex;
@@ -99,13 +99,13 @@
         width: 54px;
         height: 54px;
         border-radius: 16px;
-        background: linear-gradient(135deg, #10b981 0%, #0f744c 100%);
+        background: linear-gradient(135deg, #10b981 0%, #2F6BFF 100%);
         color: #ffffff !important;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 1.75rem;
-        box-shadow: 0 8px 18px -4px rgba(16, 185, 129, 0.4);
+        box-shadow: 0 8px 18px -4px rgba(47, 107, 255, 0.4);
         flex-shrink: 0;
     }
     .lh-banner-icon i {
@@ -139,13 +139,13 @@
         height: 7px;
         border-radius: 50%;
         background-color: #10b981;
-        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+        box-shadow: 0 0 0 0 rgba(47, 107, 255, 0.7);
         animation: lhPulse 2s infinite;
     }
     @keyframes lhPulse {
-        0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-        70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
-        100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(47, 107, 255, 0.7); }
+        70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(47, 107, 255, 0); }
+        100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(47, 107, 255, 0); }
     }
     .lh-banner-subtitle {
         color: var(--lh-slate-500);
@@ -164,7 +164,7 @@
         fill: #ffffff !important;
     }
     .btn-lh-emerald {
-        background: linear-gradient(135deg, #10b981 0%, #0f744c 100%) !important;
+        background: linear-gradient(135deg, #10b981 0%, #2F6BFF 100%) !important;
         border: none !important;
         padding: 0.65rem 1.4rem;
         border-radius: 999px;
@@ -173,14 +173,14 @@
         display: inline-flex;
         align-items: center;
         gap: 0.5rem;
-        box-shadow: 0 6px 18px rgba(16, 185, 129, 0.35);
+        box-shadow: 0 6px 18px rgba(47, 107, 255, 0.35);
         transition: all 0.25s ease;
         text-decoration: none;
         cursor: pointer;
     }
     .btn-lh-emerald:hover {
         transform: translateY(-2px);
-        box-shadow: 0 10px 24px rgba(16, 185, 129, 0.45);
+        box-shadow: 0 10px 24px rgba(47, 107, 255, 0.45);
     }
 
     /* ===== SUMMARY STATS CARDS ===== */
@@ -253,7 +253,7 @@
     }
     .lh-search-input:focus {
         border-color: var(--lh-emerald);
-        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+        box-shadow: 0 0 0 3px rgba(47, 107, 255, 0.15);
     }
     .lh-select {
         border-radius: 999px;
@@ -265,7 +265,7 @@
     }
     .lh-select:focus {
         border-color: var(--lh-emerald);
-        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+        box-shadow: 0 0 0 3px rgba(47, 107, 255, 0.15);
     }
 
     /* ===== TABLE CARD ===== */
@@ -303,7 +303,7 @@
         border-bottom: 1px solid #edf2f7;
     }
     .lh-table tbody tr:hover {
-        background: rgba(16, 185, 129, 0.03);
+        background: rgba(47, 107, 255, 0.03);
     }
     .lh-table tbody td {
         padding: 1.1rem 1.25rem;
@@ -331,14 +331,14 @@
         width: 44px;
         height: 44px;
         border-radius: 12px;
-        background: linear-gradient(135deg, #10b981 0%, #0f744c 100%);
+        background: linear-gradient(135deg, #10b981 0%, #2F6BFF 100%);
         color: #ffffff;
         display: flex;
         align-items: center;
         justify-content: center;
         font-weight: 800;
         font-size: 1.1rem;
-        box-shadow: 0 4px 10px rgba(16, 185, 129, 0.25);
+        box-shadow: 0 4px 10px rgba(47, 107, 255, 0.25);
     }
     .lh-title-text {
         font-weight: 800;
@@ -383,7 +383,7 @@
         font-weight: 800;
         text-transform: capitalize;
     }
-    .lh-status-pill.active { background: rgba(16, 185, 129, 0.12); color: #047857; border: 1px solid rgba(16, 185, 129, 0.25); }
+    .lh-status-pill.active { background: rgba(47, 107, 255, 0.12); color: #2F6BFF; border: 1px solid rgba(47, 107, 255, 0.25); }
     .lh-status-pill.draft { background: rgba(100, 116, 139, 0.12); color: #475569; border: 1px solid rgba(100, 116, 139, 0.25); }
     .lh-status-pill.inactive { background: rgba(245, 158, 11, 0.12); color: #b45309; border: 1px solid rgba(245, 158, 11, 0.25); }
     .lh-status-pill.archived { background: rgba(239, 68, 68, 0.12); color: #b91c1c; border: 1px solid rgba(239, 68, 68, 0.25); }
@@ -520,7 +520,7 @@
         white-space: nowrap;
     }
     .lh-live-header {
-        border-bottom: 2px solid #0f744c;
+        border-bottom: 2px solid #2F6BFF;
         padding-bottom: 10px;
         margin-bottom: 16px;
         position: relative;
@@ -583,7 +583,7 @@
     }
     html[data-pms-theme="dark"] .lh-breadcrumb a,
     html[data-bs-theme="dark"] .lh-breadcrumb a {
-        color: #34d399 !important;
+        color: #60A5FA !important;
     }
 
     html[data-pms-theme="dark"] .lh-header-banner,
@@ -602,10 +602,10 @@
     }
     html[data-pms-theme="dark"] .lh-live-pill,
     html[data-bs-theme="dark"] .lh-live-pill {
-        background: rgba(16, 185, 129, 0.18) !important;
-        color: #34d399 !important;
-        -webkit-text-fill-color: #34d399 !important;
-        border-color: rgba(52, 211, 153, 0.35) !important;
+        background: rgba(47, 107, 255, 0.18) !important;
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
+        border-color: rgba(79, 131, 255, 0.35) !important;
     }
 
     html[data-pms-theme="dark"] .lh-metric-box,
@@ -629,8 +629,8 @@
     }
     html[data-pms-theme="dark"] .lh-metric-icon.active,
     html[data-bs-theme="dark"] .lh-metric-icon.active {
-        background: rgba(52, 211, 153, 0.18) !important;
-        color: #34d399 !important;
+        background: rgba(79, 131, 255, 0.18) !important;
+        color: #60A5FA !important;
     }
     html[data-pms-theme="dark"] .lh-metric-icon.default,
     html[data-bs-theme="dark"] .lh-metric-icon.default {
@@ -713,10 +713,10 @@
     /* Type Badges in Dark Mode */
     html[data-pms-theme="dark"] .lh-type-badge.company,
     html[data-bs-theme="dark"] .lh-type-badge.company {
-        background: rgba(16, 185, 129, 0.18) !important;
-        color: #34d399 !important;
-        -webkit-text-fill-color: #34d399 !important;
-        border: 1px solid rgba(52, 211, 153, 0.35) !important;
+        background: rgba(47, 107, 255, 0.18) !important;
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
+        border: 1px solid rgba(79, 131, 255, 0.35) !important;
     }
     html[data-pms-theme="dark"] .lh-type-badge.branch,
     html[data-bs-theme="dark"] .lh-type-badge.branch {
@@ -750,10 +750,10 @@
     /* Status Pills in Dark Mode */
     html[data-pms-theme="dark"] .lh-status-pill.active,
     html[data-bs-theme="dark"] .lh-status-pill.active {
-        background: rgba(16, 185, 129, 0.18) !important;
-        color: #34d399 !important;
-        -webkit-text-fill-color: #34d399 !important;
-        border: 1px solid rgba(52, 211, 153, 0.35) !important;
+        background: rgba(47, 107, 255, 0.18) !important;
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
+        border: 1px solid rgba(79, 131, 255, 0.35) !important;
     }
     html[data-pms-theme="dark"] .lh-status-pill.draft,
     html[data-bs-theme="dark"] .lh-status-pill.draft {
@@ -800,7 +800,7 @@
     html[data-pms-theme="dark"] .lh-action-btn:hover,
     html[data-bs-theme="dark"] .lh-action-btn:hover {
         background: #1A2247 !important;
-        color: #34d399 !important;
+        color: #60A5FA !important;
         border-color: #10b981 !important;
     }
     html[data-pms-theme="dark"] .lh-dropdown-menu,
@@ -847,8 +847,8 @@
     }
     html[data-pms-theme="dark"] .lh-form-nav .nav-link.active,
     html[data-bs-theme="dark"] .lh-form-nav .nav-link.active {
-        color: #34d399 !important;
-        border-bottom-color: #34d399 !important;
+        color: #60A5FA !important;
+        border-bottom-color: #60A5FA !important;
     }
 </style>
 
@@ -1461,8 +1461,8 @@
                                         <div class="col-md-4">
                                             <label class="form-label fw-bold text-dark">Border Color</label>
                                             <div class="d-flex align-items-center gap-2">
-                                                <input type="color" name="header_border_color" id="f_header_border_color" class="color-swatch-picker" value="#0f744c" oninput="syncLivePreview()">
-                                                <input type="text" id="f_header_border_color_text" class="form-control form-control-sm rounded-3" value="#0f744c" readonly>
+                                                <input type="color" name="header_border_color" id="f_header_border_color" class="color-swatch-picker" value="#2F6BFF" oninput="syncLivePreview()">
+                                                <input type="text" id="f_header_border_color_text" class="form-control form-control-sm rounded-3" value="#2F6BFF" readonly>
                                             </div>
                                         </div>
                                     </div>
@@ -1569,8 +1569,8 @@
                                         <div class="col-md-6">
                                             <label class="form-label fw-bold text-dark">Primary Brand Color</label>
                                             <div class="d-flex align-items-center gap-3">
-                                                <input type="color" name="primary_color" id="f_primary_color" class="color-swatch-picker" value="#0f744c" oninput="syncLivePreview()">
-                                                <input type="text" id="f_primary_color_text" class="form-control rounded-3" value="#0f744c" readonly>
+                                                <input type="color" name="primary_color" id="f_primary_color" class="color-swatch-picker" value="#2F6BFF" oninput="syncLivePreview()">
+                                                <input type="text" id="f_primary_color_text" class="form-control rounded-3" value="#2F6BFF" readonly>
                                             </div>
                                             <small class="text-muted">Applied to Header title, Borders & Accent titles</small>
                                         </div>
@@ -1612,7 +1612,7 @@
                                             <div class="d-flex align-items-center gap-2" id="liveLogoLeftWrap">
                                                 <img src="" id="liveLogoImg" class="d-none" style="max-height: 44px; max-width: 100px; object-fit: contain;">
                                                 <div>
-                                                    <div class="fw-extrabold text-dark" id="liveOrgName" style="font-size: 11pt; color: #0f744c; line-height: 1.2;">Bitroxia Solutions Ltd.</div>
+                                                    <div class="fw-extrabold text-dark" id="liveOrgName" style="font-size: 11pt; color: #2F6BFF; line-height: 1.2;">Bitroxia Solutions Ltd.</div>
                                                     <div class="text-muted" id="liveTagline" style="font-size: 7pt;">Enterprise Project & HR Management</div>
                                                 </div>
                                             </div>
@@ -1634,7 +1634,7 @@
                                             Director of Operations<br>
                                             Apex Global Systems Ltd.
                                         </div>
-                                        <div class="fw-bold mb-2" id="liveSubject" style="font-size: 8pt; color: #0f744c; text-decoration: underline;">
+                                        <div class="fw-bold mb-2" id="liveSubject" style="font-size: 8pt; color: #2F6BFF; text-decoration: underline;">
                                             Subject: Formal Strategic Communication & Official Notification
                                         </div>
                                         <p style="margin-bottom: 6px;">
@@ -1865,8 +1865,8 @@
                 document.getElementById('f_header_alignment').value = lh.header_alignment || 'left';
                 document.getElementById('f_header_border_style').value = lh.header_border_style || 'solid';
                 document.getElementById('f_header_border_thickness').value = lh.header_border_thickness || 2;
-                document.getElementById('f_header_border_color').value = lh.header_border_color || '#0f744c';
-                document.getElementById('f_header_border_color_text').value = lh.header_border_color || '#0f744c';
+                document.getElementById('f_header_border_color').value = lh.header_border_color || '#2F6BFF';
+                document.getElementById('f_header_border_color_text').value = lh.header_border_color || '#2F6BFF';
 
                 document.getElementById('f_footer_content').value = lh.footer_content || '';
                 document.getElementById('f_footer_text').value = lh.footer_text || '';
@@ -1887,8 +1887,8 @@
                 document.getElementById('f_watermark_opacity').value = lh.watermark_opacity || 0.08;
                 document.getElementById('val_wm_opacity').textContent = Math.round((lh.watermark_opacity || 0.08) * 100);
 
-                document.getElementById('f_primary_color').value = lh.primary_color || '#0f744c';
-                document.getElementById('f_primary_color_text').value = lh.primary_color || '#0f744c';
+                document.getElementById('f_primary_color').value = lh.primary_color || '#2F6BFF';
+                document.getElementById('f_primary_color_text').value = lh.primary_color || '#2F6BFF';
                 document.getElementById('f_secondary_color').value = lh.secondary_color || '#10b981';
                 document.getElementById('f_secondary_color_text').value = lh.secondary_color || '#10b981';
 
@@ -2057,7 +2057,7 @@
 
         const footerContent = document.getElementById('f_footer_content').value || (orgName + ' • ' + address);
         const footerText = document.getElementById('f_footer_text').value || 'Official communication issued by corporate systems.';
-        const primaryColor = document.getElementById('f_primary_color').value || '#0f744c';
+        const primaryColor = document.getElementById('f_primary_color').value || '#2F6BFF';
         const headerBorderColor = document.getElementById('f_header_border_color').value || primaryColor;
         const footerBorderColor = document.getElementById('f_footer_border_color').value || '#e2e8f0';
 

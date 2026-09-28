@@ -17,7 +17,7 @@
       background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(246, 250, 247, 0.94) 100%);
       border: 1px solid rgba(226, 232, 240, 0.95);
       border-radius: 24px;
-      box-shadow: 0 16px 45px -10px rgba(15, 116, 76, 0.1), 0 4px 14px rgba(0, 0, 0, 0.03);
+      box-shadow: 0 16px 45px -10px rgba(47, 107, 255, 0.1), 0 4px 14px rgba(0, 0, 0, 0.03);
       backdrop-filter: blur(24px);
       -webkit-backdrop-filter: blur(24px);
       padding: 24px 32px;
@@ -35,7 +35,7 @@
 
     .welcome-section:hover {
       transform: translateY(-2px);
-      box-shadow: 0 22px 55px -10px rgba(15, 116, 76, 0.14);
+      box-shadow: 0 22px 55px -10px rgba(47, 107, 255, 0.14);
     }
 
     .welcome-section::before {
@@ -125,7 +125,7 @@
       background: var(--emerald-soft);
       padding: 8px 16px;
       border-radius: 999px;
-      border: 1px solid rgba(15, 116, 76, 0.2);
+      border: 1px solid rgba(47, 107, 255, 0.2);
     }
 
     .welcome-section .right .status-badge .dot {
@@ -134,7 +134,7 @@
       border-radius: 50%;
       background: var(--emerald-light);
       display: inline-block;
-      box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25);
+      box-shadow: 0 0 0 2px rgba(47, 107, 255, 0.25);
     }
 
     .welcome-section .right .actions {
@@ -163,12 +163,12 @@
     .btn-primary {
       background: linear-gradient(135deg, var(--emerald-dark), var(--emerald-primary), var(--emerald-light));
       color: #fff;
-      box-shadow: 0 8px 24px rgba(15, 116, 76, 0.3);
+      box-shadow: 0 8px 24px rgba(47, 107, 255, 0.3);
     }
 
     .btn-primary:hover {
       transform: translateY(-2px);
-      box-shadow: 0 14px 32px rgba(15, 116, 76, 0.4);
+      box-shadow: 0 14px 32px rgba(47, 107, 255, 0.4);
     }
 
     .btn-outline {
@@ -226,7 +226,7 @@
     }
 
     .kpi-card:hover {
-      border-color: rgba(15, 116, 76, 0.25);
+      border-color: rgba(47, 107, 255, 0.25);
       box-shadow: var(--card-shadow-lg);
       transform: translateY(-4px);
     }
@@ -373,7 +373,7 @@
     }
 
     .chart-card:hover {
-      border-color: rgba(15, 116, 76, 0.2);
+      border-color: rgba(47, 107, 255, 0.2);
       box-shadow: var(--card-shadow-md);
     }
 
@@ -420,7 +420,7 @@
     .chart-card .card-header .actions .btn-chart:hover {
       background: var(--emerald-soft);
       color: var(--emerald-primary);
-      border-color: rgba(15, 116, 76, 0.2);
+      border-color: rgba(47, 107, 255, 0.2);
     }
 
     .chart-card .chart-wrap {
@@ -506,7 +506,7 @@
     }
 
     .health-item:hover {
-      border-color: rgba(15, 116, 76, 0.2);
+      border-color: rgba(47, 107, 255, 0.2);
       box-shadow: var(--card-shadow-sm);
     }
 
@@ -556,7 +556,7 @@
     }
 
     .activity-card:hover {
-      border-color: rgba(15, 116, 76, 0.15);
+      border-color: rgba(47, 107, 255, 0.15);
       box-shadow: var(--card-shadow-md);
     }
 
@@ -699,7 +699,7 @@
     }
 
     .table-wrap tr:hover, .table-compact tr:hover {
-      background: rgba(15, 116, 76, 0.03);
+      background: rgba(47, 107, 255, 0.03);
     }
 
     /* Actions Dropdown */
@@ -1107,7 +1107,7 @@
     html[data-pms-theme="dark"] .audit-health-pill .health-green,
     html[data-theme="dark"] .audit-health-pill .health-green,
     html[data-bs-theme="dark"] .audit-health-pill .health-green {
-      color: #34d399 !important;
+      color: #60A5FA !important;
     }
     html[data-pms-theme="dark"] .audit-health-pill .health-amber,
     html[data-theme="dark"] .audit-health-pill .health-amber,
@@ -1141,9 +1141,9 @@
     html[data-pms-theme="dark"] .status-badge.success,
     html[data-theme="dark"] .status-badge.success,
     html[data-bs-theme="dark"] .status-badge.success {
-      background: rgba(16, 185, 129, 0.18) !important;
-      color: #34d399 !important;
-      border: 1px solid rgba(52, 211, 153, 0.3) !important;
+      background: rgba(47, 107, 255, 0.18) !important;
+      color: #60A5FA !important;
+      border: 1px solid rgba(79, 131, 255, 0.3) !important;
     }
     html[data-pms-theme="dark"] .status-badge.info,
     html[data-theme="dark"] .status-badge.info,

@@ -284,10 +284,10 @@ document.getElementById('validateBtn').addEventListener('click', function() {
         const area = document.getElementById('resultArea');
         area.classList.remove('d-none');
         if (data.valid) {
-            area.style.background = 'linear-gradient(135deg,#ecfdf5,#d1fae5)';
+            area.style.background = 'linear-gradient(135deg,#EEF2FF,#E0E7FF)';
             area.style.border = '2px solid #10b981';
             area.querySelector('.result-value').textContent = '₹ ' + Number(data.result).toLocaleString('en-IN', {minimumFractionDigits:2});
-            area.querySelector('.result-value').style.color = '#059669';
+            area.querySelector('.result-value').style.color = '#2F6BFF';
             area.querySelector('.result-error').textContent = '';
             // Also set the save modal formula
             document.getElementById('saveFormula').value = formula;

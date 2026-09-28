@@ -452,8 +452,8 @@
 
     .sidebar-nav a.active .badge,
     .sidebar-nav .nav-item.active .badge {
-      background: rgba(15, 116, 76, 0.4);
-      color: #6ee7b7;
+      background: rgba(47, 107, 255, 0.4);
+      color: #93C5FD;
     }
 
     .sidebar-footer {
@@ -481,7 +481,7 @@
       border-radius: 50%;
       background: var(--emerald-light);
       display: inline-block;
-      box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+      box-shadow: 0 0 0 2px rgba(47, 107, 255, 0.2);
     }
 
     .sidebar-footer .version {
@@ -688,7 +688,7 @@
       background: rgba(255, 255, 255, 0.98);
       border-radius: 16px;
       border: 1px solid rgba(226, 232, 240, 0.85);
-      box-shadow: 0 20px 50px -10px rgba(15, 116, 76, 0.15), 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 20px 50px -10px rgba(47, 107, 255, 0.15), 0 10px 25px -5px rgba(0, 0, 0, 0.08);
       width: 380px;
       max-width: 90vw;
       display: none;
@@ -704,7 +704,7 @@
 
     .notif-dropdown-header {
       padding: 14px 18px;
-      background: linear-gradient(135deg, #073a26 0%, #0f744c 100%);
+      background: linear-gradient(135deg, #073a26 0%, #2F6BFF 100%);
       color: #fff;
       display: flex;
       align-items: center;
@@ -791,8 +791,8 @@
     .notif-company-tag {
       font-size: 10.5px;
       font-weight: 700;
-      color: #0f744c;
-      background: #e4f3eb;
+      color: #2F6BFF;
+      background: #EEF2FF;
       padding: 1px 7px;
       border-radius: 6px;
       white-space: nowrap;
@@ -1061,7 +1061,7 @@
     .flash-alert.success {
       background: var(--emerald-soft);
       color: var(--emerald-primary);
-      border: 1px solid rgba(15, 116, 76, 0.2);
+      border: 1px solid rgba(47, 107, 255, 0.2);
     }
 
     .flash-alert.error {
@@ -1427,7 +1427,7 @@
                   $sevBg = match($sNotif->severity ?? 'info') {
                       'critical', 'danger' => 'rgba(239, 68, 68, 0.1)',
                       'warning' => 'rgba(245, 158, 11, 0.1)',
-                      'success' => 'rgba(16, 185, 129, 0.1)',
+                      'success' => 'rgba(47, 107, 255, 0.1)',
                       default => 'rgba(59, 130, 246, 0.1)',
                   };
                   $notifIcon = match($sNotif->type ?? '') {

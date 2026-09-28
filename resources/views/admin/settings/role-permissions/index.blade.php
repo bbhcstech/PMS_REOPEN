@@ -7,8 +7,8 @@
     .role-permission-page {
         min-height: calc(100vh - 100px);
         padding: 2rem 1.75rem;
-        background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 50%, #f4fbf7 100%);
-        color: #0a2e1f;
+        background: linear-gradient(135deg, #F8FAFC 0%, #EEF2FF 50%, #F8FAFC 100%);
+        color: #0F172A;
     }
 
     .role-permission-shell {
@@ -32,7 +32,7 @@
         right: -100px;
         width: 500px;
         height: 500px;
-        background: radial-gradient(circle, rgba(52, 211, 153, 0.12) 0%, transparent 70%);
+        background: radial-gradient(circle, rgba(79, 131, 255, 0.12) 0%, transparent 70%);
         animation: orbFloat 20s ease-in-out infinite;
     }
 
@@ -41,7 +41,7 @@
         left: -100px;
         width: 450px;
         height: 450px;
-        background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 70%);
+        background: radial-gradient(circle, rgba(47, 107, 255, 0.1) 0%, transparent 70%);
         animation: orbFloat 25s ease-in-out infinite reverse;
     }
 
@@ -68,13 +68,13 @@
     }
 
     .breadcrumb-custom a {
-        color: #059669;
+        color: #2F6BFF;
         text-decoration: none;
         transition: color 0.2s ease;
     }
 
     .breadcrumb-custom a:hover {
-        color: #047857;
+        color: #1E4FCC;
     }
 
     /* ===== HEADER CARD ===== */
@@ -84,8 +84,8 @@
         border-radius: 28px;
         padding: 1.75rem 2.25rem;
         margin-bottom: 2rem;
-        border: 1px solid rgba(16, 185, 129, 0.15);
-        box-shadow: 0 10px 30px -10px rgba(16, 185, 129, 0.08);
+        border: 1px solid rgba(47, 107, 255, 0.15);
+        box-shadow: 0 10px 30px -10px rgba(47, 107, 255, 0.08);
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -109,13 +109,13 @@
         width: 58px;
         height: 58px;
         border-radius: 20px;
-        background: linear-gradient(145deg, #34d399, #059669);
+        background: linear-gradient(145deg, #4F83FF, #2F6BFF);
         color: white;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 1.6rem;
-        box-shadow: 0 8px 20px -4px rgba(5, 150, 105, 0.35);
+        box-shadow: 0 8px 20px -4px rgba(47, 107, 255, 0.35);
         flex-shrink: 0;
     }
 
@@ -134,7 +134,7 @@
     .header-title h1 {
         font-size: 1.95rem;
         font-weight: 800;
-        background: linear-gradient(135deg, #0a2e1f, #059669, #10b981);
+        background: linear-gradient(135deg, #0F172A, #2F6BFF, #10b981);
         -webkit-background-clip: text;
         background-clip: text;
         color: transparent;
@@ -151,8 +151,8 @@
 
     .btn-back-settings {
         background-color: #ffffff;
-        border: 1px solid rgba(16, 185, 129, 0.25);
-        color: #0f744c !important;
+        border: 1px solid rgba(47, 107, 255, 0.25);
+        color: #2F6BFF !important;
         font-weight: 700;
         font-size: 0.9rem;
         border-radius: 40px;
@@ -166,9 +166,9 @@
     }
 
     .btn-back-settings:hover {
-        background-color: #e6f3ec;
-        color: #059669 !important;
-        border-color: rgba(16, 185, 129, 0.4);
+        background-color: #EEF2FF;
+        color: #2F6BFF !important;
+        border-color: rgba(47, 107, 255, 0.4);
         transform: translateY(-2px);
     }
 
@@ -196,15 +196,15 @@
         backdrop-filter: blur(20px);
         border-radius: 24px;
         padding: 1.5rem;
-        border: 1px solid rgba(16, 185, 129, 0.14) !important;
-        box-shadow: 0 10px 30px -10px rgba(16, 185, 129, 0.08) !important;
+        border: 1px solid rgba(47, 107, 255, 0.14) !important;
+        box-shadow: 0 10px 30px -10px rgba(47, 107, 255, 0.08) !important;
         display: flex !important;
         align-items: center !important;
         gap: 1.25rem !important;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         position: relative;
         overflow: hidden;
-        color: #0a2e1f !important;
+        color: #0F172A !important;
     }
 
     .role-permission-page .stat-card:first-of-type *,
@@ -214,8 +214,8 @@
 
     .role-permission-page .stat-card h3,
     .role-permission-page .stat-card:first-of-type h3 {
-        color: #0a2e1f !important;
-        -webkit-text-fill-color: #0a2e1f !important;
+        color: #0F172A !important;
+        -webkit-text-fill-color: #0F172A !important;
     }
 
     .role-permission-page .stat-card h6,
@@ -233,7 +233,7 @@
         left: 0;
         right: 0;
         height: 3px;
-        background: linear-gradient(90deg, #34d399, #059669);
+        background: linear-gradient(90deg, #4F83FF, #2F6BFF);
         transform: scaleX(0);
         transition: transform 0.3s ease;
     }
@@ -244,8 +244,8 @@
 
     .stat-card:hover {
         transform: translateY(-4px);
-        box-shadow: 0 20px 35px -12px rgba(16, 185, 129, 0.15) !important;
-        border-color: rgba(16, 185, 129, 0.25) !important;
+        box-shadow: 0 20px 35px -12px rgba(47, 107, 255, 0.15) !important;
+        border-color: rgba(47, 107, 255, 0.25) !important;
     }
 
     .stat-icon {
@@ -261,9 +261,9 @@
 
     .stat-icon.roleactive,
     .role-permission-page .stat-card:first-of-type .stat-icon.roleactive {
-        background: linear-gradient(145deg, #d1fae5, #a7f3d0) !important;
-        color: #059669 !important;
-        -webkit-text-fill-color: #059669 !important;
+        background: linear-gradient(145deg, #EEF2FF, #E0E7FF) !important;
+        color: #2F6BFF !important;
+        -webkit-text-fill-color: #2F6BFF !important;
     }
 
     .stat-icon.roleactive i,
@@ -277,9 +277,9 @@
     .role-permission-page .stat-card:first-of-type .stat-icon.roleactive [class*="fa"] {
         background: transparent !important;
         background-color: transparent !important;
-        color: #059669 !important;
-        -webkit-text-fill-color: #059669 !important;
-        fill: #059669 !important;
+        color: #2F6BFF !important;
+        -webkit-text-fill-color: #2F6BFF !important;
+        fill: #2F6BFF !important;
         opacity: 1 !important;
         visibility: visible !important;
     }
@@ -371,7 +371,7 @@
     .stat-info h3 {
         font-size: 1.25rem;
         font-weight: 800;
-        color: #0a2e1f;
+        color: #0F172A;
         margin: 0;
         line-height: 1.2;
     }
@@ -383,29 +383,29 @@
         border-radius: 24px;
         padding: 1.5rem 2.25rem;
         margin-bottom: 2rem;
-        border: 1px solid rgba(16, 185, 129, 0.15);
-        box-shadow: 0 10px 30px -10px rgba(16, 185, 129, 0.08);
+        border: 1px solid rgba(47, 107, 255, 0.15);
+        box-shadow: 0 10px 30px -10px rgba(47, 107, 255, 0.08);
     }
 
     .input-group-custom {
         border-radius: 16px;
-        border: 1px solid rgba(16, 185, 129, 0.2);
+        border: 1px solid rgba(47, 107, 255, 0.2);
         background-color: #fafefb;
         transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         overflow: hidden;
     }
 
     .input-group-custom:focus-within {
-        border-color: #34d399;
+        border-color: #60A5FA;
         background-color: #ffffff;
-        box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.15);
+        box-shadow: 0 0 0 4px rgba(79, 131, 255, 0.15);
         transform: translateY(-1px);
     }
 
     .input-group-custom .input-group-text {
         background-color: transparent;
         border: none;
-        color: #059669;
+        color: #2F6BFF;
         padding-left: 18px;
         padding-right: 12px;
         font-size: 1.1rem;
@@ -414,11 +414,11 @@
     .input-group-custom .input-group-text i,
     .input-group-custom .input-group-text svg,
     .input-group-custom .input-group-text [class*="fa"] {
-        color: #059669 !important;
-        -webkit-text-fill-color: #059669 !important;
+        color: #2F6BFF !important;
+        -webkit-text-fill-color: #2F6BFF !important;
         background: transparent !important;
         background-color: transparent !important;
-        fill: #059669 !important;
+        fill: #2F6BFF !important;
         opacity: 1 !important;
         visibility: visible !important;
     }
@@ -428,7 +428,7 @@
         background-color: transparent;
         font-size: 0.95rem;
         font-weight: 700;
-        color: #0a2e1f;
+        color: #0F172A;
         padding-right: 18px;
         height: 50px;
     }
@@ -443,14 +443,14 @@
         background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(20px);
         border-radius: 28px;
-        border: 1px solid rgba(16, 185, 129, 0.15);
-        box-shadow: 0 10px 30px -10px rgba(16, 185, 129, 0.08);
+        border: 1px solid rgba(47, 107, 255, 0.15);
+        box-shadow: 0 10px 30px -10px rgba(47, 107, 255, 0.08);
         overflow: hidden;
     }
 
     .card-header-custom {
         padding: 1.5rem 2.25rem;
-        border-bottom: 1px solid rgba(16, 185, 129, 0.12);
+        border-bottom: 1px solid rgba(47, 107, 255, 0.12);
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -469,8 +469,8 @@
         width: 48px;
         height: 48px;
         border-radius: 16px;
-        background: linear-gradient(145deg, #d1fae5, #a7f3d0);
-        color: #059669;
+        background: linear-gradient(145deg, #EEF2FF, #E0E7FF);
+        color: #2F6BFF;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -481,11 +481,11 @@
     .card-header-avatar i,
     .card-header-avatar svg,
     .card-header-avatar [class*="fa"] {
-        color: #059669 !important;
-        -webkit-text-fill-color: #059669 !important;
+        color: #2F6BFF !important;
+        -webkit-text-fill-color: #2F6BFF !important;
         background: transparent !important;
         background-color: transparent !important;
-        fill: #059669 !important;
+        fill: #2F6BFF !important;
         opacity: 1 !important;
         visibility: visible !important;
     }
@@ -498,20 +498,20 @@
     }
 
     .matrix-table th {
-        background: linear-gradient(90deg, #ecfdf5, #f0fdf4);
+        background: linear-gradient(90deg, #EEF2FF, #F8FAFC);
         color: #065f46;
         font-size: 0.78rem;
         font-weight: 800;
         text-transform: uppercase;
         letter-spacing: 0.06em;
         padding: 1.1rem 1.25rem;
-        border-bottom: 1px solid rgba(16, 185, 129, 0.2);
+        border-bottom: 1px solid rgba(47, 107, 255, 0.2);
     }
 
     .matrix-table td {
         padding: 1rem 1.25rem;
         vertical-align: middle;
-        border-bottom: 1px solid rgba(16, 185, 129, 0.08);
+        border-bottom: 1px solid rgba(47, 107, 255, 0.08);
         transition: background-color 0.2s ease;
     }
 
@@ -527,7 +527,7 @@
     .module-title-box strong {
         font-size: 0.95rem;
         font-weight: 700;
-        color: #0a2e1f;
+        color: #0F172A;
     }
 
     .module-title-box small {
@@ -541,15 +541,15 @@
         width: 20px;
         height: 20px;
         border-radius: 6px;
-        border: 2px solid rgba(16, 185, 129, 0.35);
-        accent-color: #059669;
+        border: 2px solid rgba(47, 107, 255, 0.35);
+        accent-color: #2F6BFF;
         cursor: pointer;
         transition: all 0.2s ease;
     }
 
     .perm-checkbox:hover {
         transform: scale(1.15);
-        border-color: #34d399;
+        border-color: #60A5FA;
     }
 
     .btn-save-address {
@@ -558,17 +558,17 @@
         font-weight: 700;
         font-size: 0.95rem;
         padding: 0 32px;
-        background: linear-gradient(145deg, #34d399, #059669);
+        background: linear-gradient(145deg, #4F83FF, #2F6BFF);
         color: white !important;
         border: none;
-        box-shadow: 0 6px 20px -4px rgba(5, 150, 105, 0.35);
+        box-shadow: 0 6px 20px -4px rgba(47, 107, 255, 0.35);
         transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         cursor: pointer;
     }
 
     .btn-save-address:hover {
         transform: translateY(-2px) scale(1.02);
-        box-shadow: 0 10px 28px -4px rgba(5, 150, 105, 0.45);
+        box-shadow: 0 10px 28px -4px rgba(47, 107, 255, 0.45);
         color: white !important;
     }
 
@@ -682,17 +682,17 @@
     .dark-mode .btn-back-settings {
         background-color: #1e293b !important;
         background: #1e293b !important;
-        border-color: rgba(52, 211, 153, 0.35) !important;
-        color: #34d399 !important;
-        -webkit-text-fill-color: #34d399 !important;
+        border-color: rgba(79, 131, 255, 0.35) !important;
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
         box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2) !important;
     }
 
     html[data-pms-theme="dark"] .btn-back-settings i,
     html[data-theme="dark"] .btn-back-settings i,
     [data-pms-theme="dark"] .btn-back-settings i {
-        color: #34d399 !important;
-        -webkit-text-fill-color: #34d399 !important;
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
     }
 
     /* Stat Cards in Dark Mode */
@@ -797,9 +797,9 @@
     html[data-theme="dark"] .role-permission-page .stat-card:first-of-type .stat-icon.roleactive,
     html[data-bs-theme="dark"] .role-permission-page .stat-card .stat-icon.roleactive,
     html[data-bs-theme="dark"] .role-permission-page .stat-card:first-of-type .stat-icon.roleactive {
-        background: rgba(16, 185, 129, 0.25) !important;
+        background: rgba(47, 107, 255, 0.25) !important;
         background-image: none !important;
-        border: 1px solid rgba(52, 211, 153, 0.4) !important;
+        border: 1px solid rgba(79, 131, 255, 0.4) !important;
     }
 
     html[data-pms-theme="dark"] .stat-icon.roleactive i,
@@ -842,9 +842,9 @@
     .dark-mode .role-permission-page .stat-card:first-of-type .stat-icon.roleactive i {
         background: transparent !important;
         background-image: none !important;
-        color: #34d399 !important;
-        -webkit-text-fill-color: #34d399 !important;
-        fill: #34d399 !important;
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
+        fill: #60A5FA !important;
         opacity: 1 !important;
         visibility: visible !important;
     }
@@ -1042,8 +1042,8 @@
     html[data-pms-theme="dark"] .input-group-custom .input-group-text i,
     html[data-theme="dark"] .input-group-custom .input-group-text i,
     [data-pms-theme="dark"] .input-group-custom .input-group-text i {
-        color: #34d399 !important;
-        -webkit-text-fill-color: #34d399 !important;
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
     }
 
     html[data-pms-theme="dark"] .role-select-card label,
@@ -1071,8 +1071,8 @@
     html[data-theme="dark"] .matrix-table th,
     [data-pms-theme="dark"] .matrix-table th {
         background: #1e293b !important;
-        color: #34d399 !important;
-        -webkit-text-fill-color: #34d399 !important;
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
         border-bottom-color: rgba(255, 255, 255, 0.08) !important;
     }
 
@@ -1193,7 +1193,7 @@
                 <form method="GET" action="{{ route('admin.role-permissions.index') }}">
                     <div class="row align-items-center g-3">
                         <div class="col-md-5 col-lg-4">
-                            <label class="form-label fw-bold text-dark mb-1.5" style="font-size: 0.9rem;"><i class="fas fa-sliders me-1.5" style="color: #059669;"></i>Select Role to Modify Permissions</label>
+                            <label class="form-label fw-bold text-dark mb-1.5" style="font-size: 0.9rem;"><i class="fas fa-sliders me-1.5" style="color: #2F6BFF;"></i>Select Role to Modify Permissions</label>
                             <div class="input-group input-group-custom">
                                 <span class="input-group-text"><i class="fas fa-user-tag"></i></span>
                                 <select name="role" class="form-select" onchange="this.form.submit()">
@@ -1204,7 +1204,7 @@
                             </div>
                         </div>
                         <div class="col-md-7 col-lg-8">
-                            <small class="text-muted d-block mt-md-4"><i class="fas fa-info-circle me-1" style="color: #059669;"></i>Changing the selected role will dynamically reload module access control capabilities below.</small>
+                            <small class="text-muted d-block mt-md-4"><i class="fas fa-info-circle me-1" style="color: #2F6BFF;"></i>Changing the selected role will dynamically reload module access control capabilities below.</small>
                         </div>
                     </div>
                 </form>
@@ -1222,8 +1222,8 @@
                                 <i class="fas fa-table-cells"></i>
                             </div>
                             <div>
-                                <h5 class="mb-0 fw-bold fs-5" style="color: #0a2e1f;">Module Access Control Matrix</h5>
-                                <small class="text-muted">Grant or revoke granular action privileges for <strong style="color: #059669;">{{ ucfirst($role) }}</strong></small>
+                                <h5 class="mb-0 fw-bold fs-5" style="color: #0F172A;">Module Access Control Matrix</h5>
+                                <small class="text-muted">Grant or revoke granular action privileges for <strong style="color: #2F6BFF;">{{ ucfirst($role) }}</strong></small>
                             </div>
                         </div>
                     </div>
@@ -1245,7 +1245,7 @@
                                         <td>
                                             <div class="module-title-box">
                                                 <strong>{{ $module->name }}</strong>
-                                                @if($module->parent)<small><i class="fas fa-angle-right me-1" style="color: #059669;"></i>{{ $module->parent->name }}</small>@endif
+                                                @if($module->parent)<small><i class="fas fa-angle-right me-1" style="color: #2F6BFF;"></i>{{ $module->parent->name }}</small>@endif
                                             </div>
                                         </td>
                                         @foreach($permissions as $permission)
@@ -1260,7 +1260,7 @@
                     </div>
 
                     <div class="p-4 border-top d-flex justify-content-between align-items-center flex-wrap gap-3" style="background: rgba(248, 250, 252, 0.6);">
-                        <small class="text-muted"><i class="fas fa-shield-halved me-1" style="color: #059669;"></i>Changes will immediately affect users assigned to the <strong>{{ ucfirst($role) }}</strong> role.</small>
+                        <small class="text-muted"><i class="fas fa-shield-halved me-1" style="color: #2F6BFF;"></i>Changes will immediately affect users assigned to the <strong>{{ ucfirst($role) }}</strong> role.</small>
                         <button type="submit" class="btn-save-address">
                             <i class="fas fa-save me-1.5"></i> Save Permissions
                         </button>

@@ -9,7 +9,7 @@
      | EVENT CARD MODERN DESIGN SYSTEM
      | ========================================================================= */
     .event-card {
-        border: 1px solid rgba(15, 116, 76, 0.12);
+        border: 1px solid rgba(47, 107, 255, 0.12);
         border-radius: 18px;
         transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         background: #ffffff;
@@ -18,19 +18,19 @@
     }
     .event-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 14px 35px rgba(15, 116, 76, 0.14);
-        border-color: rgba(15, 116, 76, 0.3);
+        box-shadow: 0 14px 35px rgba(47, 107, 255, 0.14);
+        border-color: rgba(47, 107, 255, 0.3);
     }
     .event-banner-img {
         width: 100%;
         height: 175px;
         object-fit: cover;
-        background: linear-gradient(135deg, #0f744c 0%, #094c32 100%);
+        background: linear-gradient(135deg, #4F83FF 0%, #2F6BFF 100%);
     }
     .event-banner-placeholder {
         width: 100%;
         height: 155px;
-        background: linear-gradient(135deg, #0f744c 0%, #15803d 50%, #047857 100%);
+        background: linear-gradient(135deg, #4F83FF 0%, #2F6BFF 50%, #1E3A8A 100%);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -40,9 +40,9 @@
     
     /* Modern Status Badges */
     .badge-status-published {
-        background-color: #ecfdf5 !important;
+        background-color: #EEF2FF !important;
         color: #065f46 !important;
-        border: 1px solid rgba(16, 185, 129, 0.3) !important;
+        border: 1px solid rgba(47, 107, 255, 0.3) !important;
         font-weight: 700 !important;
         padding: 5px 12px !important;
         border-radius: 20px !important;
@@ -150,7 +150,7 @@
         font-size: 1.1rem;
     }
     .btn-action-icon:hover {
-        background: rgba(15, 116, 76, 0.08);
+        background: rgba(47, 107, 255, 0.08);
         transform: translateY(-1px);
     }
     .btn-action-icon.text-primary:hover {
@@ -160,13 +160,13 @@
         background: rgba(239, 68, 68, 0.1);
     }
     .btn-action-icon.text-success:hover {
-        background: rgba(16, 185, 129, 0.1);
+        background: rgba(47, 107, 255, 0.1);
     }
 
     /* KPI Summary Cards */
     .kpi-card {
         border-radius: 16px;
-        border: 1px solid rgba(15, 116, 76, 0.08);
+        border: 1px solid rgba(47, 107, 255, 0.08);
         background: #ffffff;
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
         transition: transform 0.2s ease;
@@ -190,9 +190,9 @@
         font-weight: 800;
         text-transform: uppercase;
         letter-spacing: 0.6px;
-        color: #0f744c;
+        color: #2F6BFF;
         background: #f0fdf4;
-        border-left: 4px solid #0f744c;
+        border-left: 4px solid #2F6BFF;
         padding: 8px 14px;
         border-radius: 8px;
         margin-bottom: 18px;
@@ -218,8 +218,8 @@
         transition: all 0.2s ease !important;
     }
     .premium-input:focus, .premium-select:focus {
-        border-color: #0f744c !important;
-        box-shadow: 0 0 0 4px rgba(15, 116, 76, 0.15) !important;
+        border-color: #2F6BFF !important;
+        box-shadow: 0 0 0 4px rgba(47, 107, 255, 0.15) !important;
         outline: none !important;
     }
 
@@ -227,7 +227,7 @@
         background: #ffffff;
         padding: 20px;
         border-radius: 16px;
-        border: 1px solid rgba(15, 116, 76, 0.12);
+        border: 1px solid rgba(47, 107, 255, 0.12);
         box-shadow: 0 4px 20px rgba(0,0,0,0.04);
     }
 
@@ -235,7 +235,7 @@
     .events-filter-card {
         border-radius: 16px;
         background: #ffffff;
-        border: 1px solid rgba(15, 116, 76, 0.12);
+        border: 1px solid rgba(47, 107, 255, 0.12);
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
     }
     .events-filter-wrapper {
@@ -287,7 +287,7 @@
     }
     .event-meta-card:hover {
         background: #ffffff;
-        border-color: rgba(15, 116, 76, 0.25);
+        border-color: rgba(47, 107, 255, 0.25);
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
     }
 
@@ -297,15 +297,15 @@
     .gallery-card {
         border-radius: 18px;
         background: #ffffff;
-        border: 1px solid rgba(15, 116, 76, 0.12);
+        border: 1px solid rgba(47, 107, 255, 0.12);
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
         overflow: hidden;
         transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .gallery-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 14px 35px rgba(15, 116, 76, 0.14);
-        border-color: rgba(15, 116, 76, 0.3);
+        box-shadow: 0 14px 35px rgba(47, 107, 255, 0.14);
+        border-color: rgba(47, 107, 255, 0.3);
     }
     .gallery-preview-grid {
         display: grid;
@@ -353,7 +353,7 @@
         cursor: pointer;
     }
     .photo-dropzone:hover, .photo-dropzone.dragover {
-        border-color: #0f744c;
+        border-color: #2F6BFF;
         background: #f0fdf4;
     }
     .upload-preview-grid {
@@ -430,7 +430,7 @@
         height: 48px;
         border-radius: 50%;
         background: #ffffff !important;
-        color: #0f744c !important;
+        color: #2F6BFF !important;
         border: 1.5px solid #cbd5e1 !important;
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15) !important;
         display: flex !important;
@@ -443,9 +443,9 @@
         cursor: pointer;
     }
     .lightbox-nav-btn:hover {
-        background: #0f744c !important;
+        background: #2F6BFF !important;
         color: #ffffff !important;
-        border-color: #0f744c !important;
+        border-color: #2F6BFF !important;
         transform: translateY(-50%) scale(1.1) !important;
     }
     .lightbox-nav-btn i {
@@ -569,7 +569,7 @@
         transition: all 0.2s ease !important;
     }
     .photo-action-btn:hover {
-        background: #0f744c !important;
+        background: #2F6BFF !important;
         color: #ffffff !important;
         border-color: #ffffff !important;
         transform: scale(1.08);
@@ -584,19 +584,19 @@
     html[data-pms-theme="dark"] .form-section-title,
     html[data-bs-theme="dark"] .form-section-title,
     html[data-theme="dark"] .form-section-title {
-        background: rgba(16, 185, 129, 0.12) !important;
-        border: 1px solid rgba(52, 211, 153, 0.25) !important;
-        border-left: 4px solid #34D399 !important;
-        color: #34D399 !important;
-        -webkit-text-fill-color: #34D399 !important;
+        background: rgba(47, 107, 255, 0.12) !important;
+        border: 1px solid rgba(79, 131, 255, 0.25) !important;
+        border-left: 4px solid #60A5FA !important;
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
     }
 
     html[data-pms-theme="dark"] .form-section-title i,
     html[data-bs-theme="dark"] .form-section-title i,
     html[data-theme="dark"] .form-section-title i {
-        color: #34D399 !important;
-        -webkit-text-fill-color: #34D399 !important;
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
     }
 
     html[data-pms-theme="dark"] .premium-label,
@@ -625,8 +625,8 @@
     html[data-pms-theme="dark"] .premium-select:focus,
     html[data-bs-theme="dark"] .premium-select:focus,
     html[data-theme="dark"] .premium-select:focus {
-        border-color: #34D399 !important;
-        box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.2) !important;
+        border-color: #60A5FA !important;
+        box-shadow: 0 0 0 3px rgba(79, 131, 255, 0.2) !important;
     }
 
     html[data-pms-theme="dark"] #eventModal .modal-content,
@@ -1038,7 +1038,7 @@
                             {{-- EVENT MEMORIES PHOTO COUNT BADGE --}}
                             @if($event->photos_count > 0)
                                 <div class="mb-3">
-                                    <button type="button" class="btn btn-sm text-success fw-bold pill border-0 d-inline-flex align-items-center gap-1.5" onclick="showEventDetails({{ $event->id }})" style="background: #ecfdf5; color: #0f744c; padding: 6px 14px; border-radius: 20px;">
+                                    <button type="button" class="btn btn-sm text-success fw-bold pill border-0 d-inline-flex align-items-center gap-1.5" onclick="showEventDetails({{ $event->id }})" style="background: #EEF2FF; color: #2F6BFF; padding: 6px 14px; border-radius: 20px;">
                                         <i class="bx bx-images fs-5"></i> 📷 {{ $event->photos_count }} Event {{ Str::plural('Photo', $event->photos_count) }}
                                     </button>
                                 </div>
@@ -1074,7 +1074,7 @@
                             <div class="pt-2.5 border-top d-flex align-items-center justify-content-between mt-auto">
                                 <div class="d-flex align-items-center gap-2">
                                     <div class="avatar avatar-xs" style="width: 32px; height: 32px;">
-                                        <span class="avatar-initial rounded-circle bg-success text-white fw-bold shadow-sm" style="font-size: 11px; width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #0f744c, #094c32) !important;">
+                                        <span class="avatar-initial rounded-circle bg-primary text-white fw-bold shadow-sm" style="font-size: 11px; width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #4F83FF, #2F6BFF) !important;">
                                             {{ strtoupper(substr($event->organizer?->name ?? 'C', 0, 2)) }}
                                         </span>
                                     </div>
@@ -1202,7 +1202,7 @@
                                 <span class="small fw-semibold text-muted">
                                     Organized by <strong class="text-dark">{{ $event->organizer?->name ?? 'Company' }}</strong>
                                 </span>
-                                <button type="button" class="btn btn-primary btn-sm fw-bold px-3 shadow-sm" style="background: linear-gradient(135deg, #0f744c, #094c32); border: none;">
+                                <button type="button" class="btn btn-primary btn-sm fw-bold px-3 shadow-sm" style="background: linear-gradient(135deg, #4F83FF, #2F6BFF); border: none;">
                                     View Memories
                                 </button>
                             </div>
@@ -1228,7 +1228,7 @@
 <div class="modal fade" id="eventModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content border-0" style="border-radius: 20px; overflow: hidden; box-shadow: 0 15px 50px rgba(0,0,0,0.18);">
-            <div class="modal-header py-3.5 px-4 text-white" style="background: linear-gradient(135deg, #0f744c 0%, #094c32 100%);">
+            <div class="modal-header py-3.5 px-4 text-white" style="background: linear-gradient(135deg, #4F83FF 0%, #2F6BFF 100%);">
                 <h5 class="modal-title fw-bold text-white d-flex align-items-center gap-2" id="eventModalTitle">
                     <i class="bx bx-calendar-plus fs-4"></i> Create Company Event
                 </h5>
@@ -1362,7 +1362,7 @@
 
                 <div class="modal-footer bg-light px-4 py-3 border-top">
                     <button type="button" class="btn btn-label-secondary px-4 fw-semibold" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary px-4 fw-bold shadow-sm" id="btnSubmitForm" style="background: linear-gradient(135deg, #0f744c, #094c32); border: none;">
+                    <button type="submit" class="btn btn-primary px-4 fw-bold shadow-sm" id="btnSubmitForm" style="background: linear-gradient(135deg, #4F83FF, #2F6BFF); border: none;">
                         <i class="bx bx-save me-1"></i> Save Event
                     </button>
                 </div>
@@ -1379,7 +1379,7 @@
         <div class="modal-content border-0" style="border-radius: 18px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.15);">
             <div class="modal-header bg-light py-3 border-bottom">
                 <h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2" id="detailModalTitle">
-                    <i class="bx bx-calendar-event text-success fs-4"></i> Event Details
+                    <i class="bx bx-calendar-event text-primary fs-4"></i> Event Details
                 </h5>
                 <button type="button" class="btn-close-premium" data-bs-dismiss="modal" aria-label="Close">
                     <i class="bx bx-x"></i>
@@ -1402,7 +1402,7 @@
 <div class="modal fade" id="photoUploadModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content border-0" style="border-radius: 20px; overflow: hidden; box-shadow: 0 15px 50px rgba(0,0,0,0.2);">
-            <div class="modal-header text-white" style="background: linear-gradient(135deg, #0f744c 0%, #094c32 100%);">
+            <div class="modal-header text-white" style="background: linear-gradient(135deg, #4F83FF 0%, #2F6BFF 100%);">
                 <h5 class="modal-title fw-bold text-white d-flex align-items-center gap-2">
                     <i class="bx bx-images fs-4"></i> Add Photos to <span id="uploadEventTitle">Event</span>
                 </h5>
@@ -1458,7 +1458,7 @@
 
                 <div class="modal-footer bg-light px-4 py-3">
                     <button type="button" class="btn btn-label-secondary px-4 fw-semibold" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary px-4 fw-bold shadow-sm" id="btnSubmitUpload" disabled style="background: linear-gradient(135deg, #0f744c, #094c32); border: none;">
+                    <button type="submit" class="btn btn-primary px-4 fw-bold shadow-sm" id="btnSubmitUpload" disabled style="background: linear-gradient(135deg, #4F83FF, #2F6BFF); border: none;">
                         <i class="bx bx-upload me-1"></i> Upload Photos
                     </button>
                 </div>
@@ -1824,7 +1824,7 @@
                     <div class="col-sm-6">
                         <div class="event-meta-card p-3 rounded-3 d-flex align-items-center gap-3">
                             <div class="avatar avatar-sm flex-shrink-0" style="width: 42px; height: 42px;">
-                                <span class="avatar-initial rounded-circle bg-success text-white fw-bold shadow-sm" style="font-size: 12px; width: 42px; height: 42px; display: inline-flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #0f744c, #094c32) !important;">
+                                <span class="avatar-initial rounded-circle bg-primary text-white fw-bold shadow-sm" style="font-size: 12px; width: 42px; height: 42px; display: inline-flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #4F83FF, #2F6BFF) !important;">
                                     ${organizerInitials}
                                 </span>
                             </div>
@@ -1851,7 +1851,7 @@
                 {{-- ABOUT EVENT DESCRIPTION --}}
                 <div class="mb-4 p-3.5 rounded-3" style="background: #f8fafc; border: 1px solid #e2e8f0;">
                     <h6 class="fw-bold text-dark mb-2 d-flex align-items-center gap-1.5" style="font-size: 0.95rem;">
-                        <i class="bx bx-align-left text-success"></i> About Event
+                        <i class="bx bx-align-left text-primary"></i> About Event
                     </h6>
                     <p class="text-secondary small mb-0" style="white-space: pre-line; line-height: 1.6; font-size: 0.9rem;">${escapeHtml(e.description || 'No detailed description provided.')}</p>
                 </div>
@@ -1861,13 +1861,13 @@
                     <div class="d-flex align-items-center justify-content-between mb-3">
                         <div>
                             <h6 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2 fs-6">
-                                <i class="bx bx-images text-success fs-5"></i> Event Memories
+                                <i class="bx bx-images text-primary fs-5"></i> Event Memories
                                 <span class="badge bg-success-subtle text-success rounded-pill fw-bold" style="font-size: 11px;">${photos.length} Photos</span>
                             </h6>
                             <span class="text-muted small">Photos and memories from this event</span>
                         </div>
                         ${canManage ? `
-                        <button type="button" class="btn btn-success btn-sm fw-bold px-3 d-inline-flex align-items-center gap-1 rounded-pill shadow-sm" onclick="openUploadModal(${e.id}, '${escapeHtml(e.title)}')" style="background: linear-gradient(135deg, #0f744c, #094c32); border: none;">
+                        <button type="button" class="btn btn-primary btn-sm fw-bold px-3 d-inline-flex align-items-center gap-1 rounded-pill shadow-sm" onclick="openUploadModal(${e.id}, '${escapeHtml(e.title)}')" style="background: linear-gradient(135deg, #4F83FF, #2F6BFF); border: none;">
                             <i class="bx bx-plus"></i> Add Photos
                         </button>` : ''}
                     </div>

@@ -23,26 +23,26 @@
 
         .body { padding: 24px 30px; }
         .section-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 10px; }
-        .earnings { color: #059669; }
+        .earnings { color: #2F6BFF; }
         .deductions { color: #dc2626; }
 
         table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
         .earnings-table td, .deductions-table td { padding: 5px 0; font-size: 13px; border: none; }
         .earnings-table .total td, .deductions-table .total td { border-top: 1.5px solid #e2e8f0; padding-top: 8px; font-weight: 700; font-size: 14px; }
         .text-right { text-align: right; }
-        .text-success-dark { color: #059669; }
+        .text-success-dark { color: #2F6BFF; }
         .text-danger-dark { color: #dc2626; }
 
         .columns { display: flex; gap: 24px; }
         .col-half { flex: 1; }
 
-        .net-pay-box { background: linear-gradient(135deg, #ecfdf5, #d1fae5); border: 2px solid #10b981; border-radius: 10px; text-align: center; padding: 22px; margin: 20px 0; }
+        .net-pay-box { background: linear-gradient(135deg, #EEF2FF, #E0E7FF); border: 2px solid #10b981; border-radius: 10px; text-align: center; padding: 22px; margin: 20px 0; }
         .net-pay-box .label { font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: #64748b; font-weight: 600; margin-bottom: 6px; }
-        .net-pay-box .amount { font-size: 36px; font-weight: 800; color: #059669; }
+        .net-pay-box .amount { font-size: 36px; font-weight: 800; color: #2F6BFF; }
 
         .footer { padding: 16px 30px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; font-size: 11px; color: #94a3b8; background: #f8fafc; border-radius: 0 0 12px 12px; }
         .badge { display: inline-block; padding: 2px 10px; border-radius: 99px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
-        .badge-success { background: #d1fae5; color: #059669; }
+        .badge-success { background: #E0E7FF; color: #2F6BFF; }
         .badge-warning { background: #fef3c7; color: #d97706; }
 
         @media print {

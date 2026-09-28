@@ -1413,7 +1413,7 @@
                     </div>
                 </div>
                 <div class="employee-quick-actions">
-                    <a href="{{ route('my-documents.index') }}" class="employee-quick-action"><span class="employee-icon success" style="background: rgba(16, 185, 129, 0.15); color: #059669;"><i class="bx bx-file"></i></span> My Documents</a>
+                    <a href="{{ route('my-documents.index') }}" class="employee-quick-action"><span class="employee-icon success" style="background: rgba(47, 107, 255, 0.15); color: #2F6BFF;"><i class="bx bx-file"></i></span> My Documents</a>
                     <a href="{{ route('tasks.index') }}" class="employee-quick-action"><span class="employee-icon primary"><i class="bx bx-list-check"></i></span> Tasks</a>
                     <a href="{{ route('projects.index') }}" class="employee-quick-action"><span class="employee-icon success"><i class="bx bx-folder-open"></i></span> Projects</a>
                     <a href="{{ route('tickets.index') }}" class="employee-quick-action"><span class="employee-icon warning"><i class="bx bx-message-square-detail"></i></span> Tickets</a>
@@ -2095,7 +2095,7 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
                     return;
                 }
 
-                const colors = ['#ffffff', '#bbf7d0', '#38bdf8', '#facc15', '#fb7185', '#a7f3d0'];
+                const colors = ['#ffffff', '#bbf7d0', '#38bdf8', '#facc15', '#fb7185', '#C7D2FE'];
                 for (let i = 0; i < 72; i++) {
                     const piece = document.createElement('i');
                     piece.style.left = `${Math.random() * 100}%`;

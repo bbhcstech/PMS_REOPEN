@@ -7,8 +7,8 @@
     .change-pwd-page {
         min-height: calc(100vh - 100px);
         padding: 2rem 1.75rem;
-        background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 50%, #f4fbf7 100%);
-        color: #0a2e1f;
+        background: linear-gradient(135deg, #F8FAFC 0%, #EEF2FF 50%, #F8FAFC 100%);
+        color: #0F172A;
     }
 
     .change-pwd-shell {
@@ -30,7 +30,7 @@
         left: -100px;
         width: 400px;
         height: 400px;
-        background: rgba(16, 185, 129, 0.15);
+        background: rgba(47, 107, 255, 0.15);
     }
 
     .ambient-orb-2 {
@@ -38,7 +38,7 @@
         right: -100px;
         width: 450px;
         height: 450px;
-        background: rgba(5, 150, 105, 0.12);
+        background: rgba(47, 107, 255, 0.12);
     }
 
     .pwd-content-wrapper {
@@ -57,7 +57,7 @@
     }
 
     .breadcrumb-custom a {
-        color: #059669;
+        color: #2F6BFF;
         text-decoration: none;
     }
 
@@ -67,8 +67,8 @@
         border-radius: 28px;
         padding: 1.75rem 2.25rem;
         margin-bottom: 2rem;
-        border: 1px solid rgba(16, 185, 129, 0.15);
-        box-shadow: 0 10px 30px -10px rgba(16, 185, 129, 0.08);
+        border: 1px solid rgba(47, 107, 255, 0.15);
+        box-shadow: 0 10px 30px -10px rgba(47, 107, 255, 0.08);
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -80,13 +80,13 @@
         width: 52px;
         height: 52px;
         border-radius: 18px;
-        background: linear-gradient(135deg, #34d399, #059669);
+        background: linear-gradient(135deg, #60A5FA, #2F6BFF);
         color: white;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 1.5rem;
-        box-shadow: 0 8px 20px -4px rgba(5, 150, 105, 0.4);
+        box-shadow: 0 8px 20px -4px rgba(47, 107, 255, 0.4);
     }
 
     .pwd-header-badge i,
@@ -109,8 +109,8 @@
         padding: 0.65rem 1.4rem;
         border-radius: 40px;
         background: #ffffff;
-        border: 1px solid rgba(16, 185, 129, 0.2);
-        color: #059669;
+        border: 1px solid rgba(47, 107, 255, 0.2);
+        color: #2F6BFF;
         font-weight: 700;
         font-size: 0.88rem;
         text-decoration: none;
@@ -119,9 +119,9 @@
     }
 
     .btn-back-settings:hover {
-        background: #ecfdf5;
-        border-color: #059669;
-        color: #047857;
+        background: #EEF2FF;
+        border-color: #2F6BFF;
+        color: #2F6BFF;
         transform: translateX(-2px);
     }
 
@@ -144,8 +144,8 @@
         backdrop-filter: blur(15px);
         border-radius: 22px !important;
         padding: 1.4rem 1.6rem !important;
-        border: 1px solid rgba(16, 185, 129, 0.18) !important;
-        box-shadow: 0 10px 30px -5px rgba(16, 185, 129, 0.07) !important;
+        border: 1px solid rgba(47, 107, 255, 0.18) !important;
+        box-shadow: 0 10px 30px -5px rgba(47, 107, 255, 0.07) !important;
         display: flex !important;
         align-items: center !important;
         gap: 1.25rem !important;
@@ -161,7 +161,7 @@
         left: 0;
         right: 0;
         height: 4px;
-        background: linear-gradient(90deg, #10b981, #059669);
+        background: linear-gradient(90deg, #10b981, #2F6BFF);
     }
 
     .pwd-stat-icon {
@@ -177,9 +177,9 @@
 
     .pwd-stat-icon.total,
     .change-pwd-page .pwd-stat-card:first-of-type .pwd-stat-icon.total {
-        background: linear-gradient(145deg, #d1fae5, #a7f3d0) !important;
-        color: #059669 !important;
-        -webkit-text-fill-color: #059669 !important;
+        background: linear-gradient(145deg, #EEF2FF, #E0E7FF) !important;
+        color: #2F6BFF !important;
+        -webkit-text-fill-color: #2F6BFF !important;
     }
 
     .pwd-stat-icon.total i,
@@ -190,9 +190,9 @@
     .change-pwd-page .pwd-stat-card:first-of-type .pwd-stat-icon.total i {
         background: transparent !important;
         background-color: transparent !important;
-        color: #059669 !important;
-        -webkit-text-fill-color: #059669 !important;
-        fill: #059669 !important;
+        color: #2F6BFF !important;
+        -webkit-text-fill-color: #2F6BFF !important;
+        fill: #2F6BFF !important;
         opacity: 1 !important;
         visibility: visible !important;
     }
@@ -283,15 +283,15 @@
         background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(20px);
         border-radius: 28px;
-        border: 1px solid rgba(16, 185, 129, 0.18);
-        box-shadow: 0 10px 30px -10px rgba(16, 185, 129, 0.08);
+        border: 1px solid rgba(47, 107, 255, 0.18);
+        box-shadow: 0 10px 30px -10px rgba(47, 107, 255, 0.08);
         overflow: hidden;
         margin-bottom: 2.5rem;
     }
 
     .pwd-card-header {
         padding: 1.5rem 2.25rem;
-        border-bottom: 1px solid rgba(16, 185, 129, 0.12);
+        border-bottom: 1px solid rgba(47, 107, 255, 0.12);
         display: flex;
         align-items: center;
         gap: 1rem;
@@ -301,8 +301,8 @@
         width: 44px;
         height: 44px;
         border-radius: 14px;
-        background: linear-gradient(145deg, #d1fae5, #a7f3d0);
-        color: #059669;
+        background: linear-gradient(145deg, #EEF2FF, #E0E7FF);
+        color: #2F6BFF;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -312,30 +312,30 @@
     .pwd-card-avatar i,
     .pwd-card-avatar svg,
     .pwd-card-avatar [class*="fa"] {
-        color: #059669 !important;
-        -webkit-text-fill-color: #059669 !important;
+        color: #2F6BFF !important;
+        -webkit-text-fill-color: #2F6BFF !important;
         background: transparent !important;
         background-color: transparent !important;
-        fill: #059669 !important;
+        fill: #2F6BFF !important;
         opacity: 1 !important;
         visibility: visible !important;
     }
 
     .btn-submit-pwd {
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        background: linear-gradient(135deg, #4F83FF 0%, #2F6BFF 100%);
         color: #ffffff !important;
         border: none;
         border-radius: 40px;
         padding: 0.75rem 2rem;
         font-weight: 800;
         font-size: 0.95rem;
-        box-shadow: 0 6px 20px -4px rgba(5, 150, 105, 0.4);
+        box-shadow: 0 6px 20px -4px rgba(47, 107, 255, 0.4);
         transition: all 0.25s ease;
     }
 
     .btn-submit-pwd:hover {
         transform: translateY(-2px);
-        box-shadow: 0 10px 25px -4px rgba(5, 150, 105, 0.5);
+        box-shadow: 0 10px 25px -4px rgba(47, 107, 255, 0.5);
     }
 
     /* ===== DARK MODE SUPPORT ===== */
@@ -422,17 +422,17 @@
     .dark-mode .btn-back-settings {
         background-color: #1e293b !important;
         background: #1e293b !important;
-        border-color: rgba(52, 211, 153, 0.35) !important;
-        color: #34d399 !important;
-        -webkit-text-fill-color: #34d399 !important;
+        border-color: rgba(79, 131, 255, 0.35) !important;
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
         box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2) !important;
     }
 
     html[data-pms-theme="dark"] .btn-back-settings i,
     html[data-theme="dark"] .btn-back-settings i,
     [data-pms-theme="dark"] .btn-back-settings i {
-        color: #34d399 !important;
-        -webkit-text-fill-color: #34d399 !important;
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
     }
 
     html[data-pms-theme="dark"] .pwd-stat-card,
@@ -471,17 +471,17 @@
     html[data-pms-theme="dark"] .pwd-stat-icon.total,
     html[data-theme="dark"] .pwd-stat-icon.total,
     [data-pms-theme="dark"] .pwd-stat-icon.total {
-        background: rgba(16, 185, 129, 0.25) !important;
+        background: rgba(47, 107, 255, 0.25) !important;
         background-image: none !important;
-        border: 1px solid rgba(52, 211, 153, 0.4) !important;
+        border: 1px solid rgba(79, 131, 255, 0.4) !important;
     }
 
     html[data-pms-theme="dark"] .pwd-stat-icon.total i,
     html[data-theme="dark"] .pwd-stat-icon.total i,
     [data-pms-theme="dark"] .pwd-stat-icon.total i {
-        color: #34d399 !important;
-        -webkit-text-fill-color: #34d399 !important;
-        fill: #34d399 !important;
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
+        fill: #60A5FA !important;
     }
 
     html[data-pms-theme="dark"] .pwd-stat-icon.hr,

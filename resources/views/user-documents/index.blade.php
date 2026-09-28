@@ -7,8 +7,8 @@
     .user-docs-page {
         min-height: calc(100vh - 100px);
         padding: 2rem 1.75rem;
-        background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 50%, #f4fbf7 100%);
-        color: #0a2e1f;
+        background: linear-gradient(135deg, #F8FAFC 0%, #EEF2FF 50%, #F8FAFC 100%);
+        color: #0F172A;
     }
 
     .user-docs-shell {
@@ -23,16 +23,16 @@
         border-radius: 28px;
         padding: 1.75rem 2.25rem;
         margin-bottom: 2rem;
-        border: 1px solid rgba(16, 185, 129, 0.15);
-        box-shadow: 0 10px 30px -10px rgba(16, 185, 129, 0.08);
+        border: 1px solid rgba(47, 107, 255, 0.15);
+        box-shadow: 0 10px 30px -10px rgba(47, 107, 255, 0.08);
     }
 
     .doc-slot-card {
         background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(15px);
         border-radius: 24px;
-        border: 1px solid rgba(16, 185, 129, 0.18);
-        box-shadow: 0 8px 25px -5px rgba(16, 185, 129, 0.06);
+        border: 1px solid rgba(47, 107, 255, 0.18);
+        box-shadow: 0 8px 25px -5px rgba(47, 107, 255, 0.06);
         transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         height: 100%;
         display: flex;
@@ -41,13 +41,13 @@
 
     .doc-slot-card:hover {
         transform: translateY(-4px);
-        box-shadow: 0 14px 35px -5px rgba(16, 185, 129, 0.12);
-        border-color: #34d399;
+        box-shadow: 0 14px 35px -5px rgba(47, 107, 255, 0.12);
+        border-color: #60A5FA;
     }
 
     .doc-slot-header {
         padding: 1.25rem 1.5rem;
-        border-bottom: 1px solid rgba(16, 185, 129, 0.1);
+        border-bottom: 1px solid rgba(47, 107, 255, 0.1);
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -62,19 +62,19 @@
     }
 
     .btn-upload-submit {
-        background: linear-gradient(145deg, #10b981, #059669);
+        background: linear-gradient(145deg, #4F83FF, #2F6BFF);
         color: white !important;
         border: none;
         border-radius: 30px;
         font-weight: 700;
         padding: 0.6rem 1.4rem;
-        box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);
+        box-shadow: 0 4px 14px rgba(47, 107, 255, 0.3);
         transition: all 0.25s ease;
     }
 
     .btn-upload-submit:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(5, 150, 105, 0.4);
+        box-shadow: 0 8px 20px rgba(47, 107, 255, 0.4);
     }
 
     .doc-nav-pills {
@@ -83,10 +83,10 @@
         gap: 10px !important;
         background: rgba(255, 255, 255, 0.95) !important;
         backdrop-filter: blur(20px) !important;
-        border: 1px solid rgba(16, 185, 129, 0.2) !important;
+        border: 1px solid rgba(47, 107, 255, 0.2) !important;
         padding: 8px 12px !important;
         border-radius: 50px !important;
-        box-shadow: 0 8px 25px -5px rgba(16, 185, 129, 0.08) !important;
+        box-shadow: 0 8px 25px -5px rgba(47, 107, 255, 0.08) !important;
         margin-bottom: 2rem !important;
         list-style: none !important;
     }
@@ -107,9 +107,9 @@
     }
 
     .doc-tab-btn.active {
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+        background: linear-gradient(135deg, #4F83FF 0%, #2F6BFF 100%) !important;
         color: #ffffff !important;
-        box-shadow: 0 8px 22px -4px rgba(5, 150, 105, 0.45) !important;
+        box-shadow: 0 8px 22px -4px rgba(47, 107, 255, 0.45) !important;
     }
 
     /* Helper classes for theme consistency */
@@ -127,8 +127,8 @@
         color: #0f172a;
     }
     .doc-table-head {
-        background: linear-gradient(90deg, #ecfdf5, #f0fdf4);
-        color: #0a2e1f;
+        background: linear-gradient(90deg, #EEF2FF, #F8FAFC);
+        color: #0F172A;
     }
 
     /* --------------------------------------------------------------------------
@@ -154,12 +154,12 @@
         color: #9AA3C7 !important;
     }
     html[data-pms-theme="dark"] .header-card-elevated strong {
-        color: #6EE7B7 !important;
+        color: #93C5FD !important;
     }
     html[data-pms-theme="dark"] .badge.bg-success-subtle {
-        background: rgba(16, 185, 129, 0.18) !important;
-        color: #6EE7B7 !important;
-        border: 1px solid rgba(16, 185, 129, 0.35) !important;
+        background: rgba(47, 107, 255, 0.18) !important;
+        color: #93C5FD !important;
+        border: 1px solid rgba(47, 107, 255, 0.35) !important;
     }
 
     /* 2. Main Content & Panel Cards */
@@ -210,10 +210,10 @@
         -webkit-text-fill-color: #EEF1FB !important;
     }
     html[data-pms-theme="dark"] .doc-tab-btn.active {
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+        background: linear-gradient(135deg, #4F83FF 0%, #2F6BFF 100%) !important;
         color: #ffffff !important;
         -webkit-text-fill-color: #ffffff !important;
-        box-shadow: 0 8px 22px -4px rgba(5, 150, 105, 0.45) !important;
+        box-shadow: 0 8px 22px -4px rgba(47, 107, 255, 0.45) !important;
     }
 
     /* 5. Document Slot Cards */
@@ -223,7 +223,7 @@
         box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.4) !important;
     }
     html[data-pms-theme="dark"] .doc-slot-card:hover {
-        border-color: rgba(16, 185, 129, 0.45) !important;
+        border-color: rgba(47, 107, 255, 0.45) !important;
         box-shadow: 0 14px 35px -5px rgba(0, 0, 0, 0.6) !important;
     }
     html[data-pms-theme="dark"] .doc-slot-card .doc-title,
@@ -251,9 +251,9 @@
         color: #FFFFFF !important;
     }
     html[data-pms-theme="dark"] .doc-slot-card .btn-outline-success {
-        background: rgba(16, 185, 129, 0.16) !important;
-        border: 1px solid rgba(16, 185, 129, 0.4) !important;
-        color: #6EE7B7 !important;
+        background: rgba(47, 107, 255, 0.16) !important;
+        border: 1px solid rgba(47, 107, 255, 0.4) !important;
+        color: #93C5FD !important;
     }
     html[data-pms-theme="dark"] .doc-slot-card .btn-outline-success:hover {
         background: #10B981 !important;
@@ -324,7 +324,7 @@
         <!-- Page Header -->
         <div class="header-card-elevated d-flex justify-content-between align-items-center flex-wrap gap-3">
             <div class="d-flex align-items-center gap-3">
-                <div class="avatar-badge" style="width: 52px; height: 52px; border-radius: 18px; background: linear-gradient(135deg, #10b981, #059669); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; box-shadow: 0 8px 20px -4px rgba(5, 150, 105, 0.4);">
+                <div class="avatar-badge" style="width: 52px; height: 52px; border-radius: 18px; background: linear-gradient(135deg, #4F83FF, #2F6BFF); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; box-shadow: 0 8px 20px -4px rgba(47, 107, 255, 0.4);">
                     <i class="fas fa-file-shield"></i>
                 </div>
                 <div>
@@ -528,7 +528,7 @@
                                         <tr>
                                             <td class="py-3 px-4">
                                                 <div class="d-flex align-items-center gap-3">
-                                                    <div class="avatar-circle" style="width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(135deg, #10b981, #059669); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700;">
+                                                    <div class="avatar-circle" style="width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(135deg, #4F83FF, #2F6BFF); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700;">
                                                         {{ strtoupper(substr($doc->user->name ?? 'U', 0, 2)) }}
                                                     </div>
                                                     <div>

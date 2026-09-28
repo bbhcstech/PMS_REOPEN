@@ -93,14 +93,14 @@
 <style>
     .leave-archive-page {
         padding: 24px 32px;
-        background: linear-gradient(135deg, #f7fbf9, #eef8f2);
+        background: linear-gradient(135deg, #F8FAFC, #EEF2FF);
         min-height: calc(100vh - 80px);
     }
 
     .archive-header,
     .archive-card {
         background: #ffffff;
-        border: 1px solid rgba(16, 185, 129, 0.1);
+        border: 1px solid rgba(47, 107, 255, 0.1);
         border-radius: 18px;
         box-shadow: 0 16px 36px rgba(15, 23, 42, 0.06);
     }
@@ -117,7 +117,7 @@
     .archive-header h1,
     .archive-card-head h2 {
         margin: 0;
-        color: #0a2e1f;
+        color: #0F172A;
         font-weight: 800;
     }
 
@@ -143,13 +143,13 @@
     }
 
     .btn-light {
-        background: #f0f9f4;
-        color: #0f744c;
-        border: 1px solid rgba(16, 185, 129, 0.18);
+        background: #F8FAFC;
+        color: #2F6BFF;
+        border: 1px solid rgba(47, 107, 255, 0.18);
     }
 
     .btn-primary {
-        background: linear-gradient(145deg, #34d399, #059669);
+        background: linear-gradient(145deg, #4F83FF, #2F6BFF);
         color: #ffffff;
     }
 
@@ -163,13 +163,13 @@
         gap: 16px;
         align-items: center;
         padding: 22px 24px;
-        border-bottom: 1px solid rgba(16, 185, 129, 0.08);
+        border-bottom: 1px solid rgba(47, 107, 255, 0.08);
     }
 
     .total-badge {
         border-radius: 999px;
         padding: 8px 14px;
-        background: #ecfdf5;
+        background: #EEF2FF;
         color: #047857;
         font-weight: 800;
         white-space: nowrap;
@@ -181,7 +181,7 @@
         gap: 12px;
         padding: 18px 24px;
         background: #fafefb;
-        border-bottom: 1px solid rgba(16, 185, 129, 0.08);
+        border-bottom: 1px solid rgba(47, 107, 255, 0.08);
     }
 
     .archive-search .form-control {
@@ -242,7 +242,7 @@
 
     .status-badge.approved,
     .pay-badge.paid {
-        background: #d1fae5;
+        background: #E0E7FF;
         color: #047857;
     }
 
@@ -269,14 +269,14 @@
         align-items: center !important;
         justify-content: center !important;
         font-size: 44px;
-        color: #a7f3d0;
+        color: #C7D2FE;
         margin-bottom: 12px;
     }
 
     .empty-state h3 {
         margin: 0;
         font-size: 1.15rem;
-        color: #0f744c;
+        color: #2F6BFF;
         font-weight: 800;
     }
     }
@@ -339,9 +339,9 @@
 
     html[data-pms-theme="dark"] .total-badge,
     html[data-bs-theme="dark"] .total-badge {
-        background: rgba(16, 185, 129, 0.18) !important;
-        color: #34d399 !important;
-        border: 1px solid rgba(52, 211, 153, 0.3) !important;
+        background: rgba(47, 107, 255, 0.18) !important;
+        color: #60A5FA !important;
+        border: 1px solid rgba(79, 131, 255, 0.3) !important;
     }
 
     html[data-pms-theme="dark"] .archive-search,
@@ -413,8 +413,8 @@
     html[data-pms-theme="dark"] .pay-badge.paid,
     html[data-bs-theme="dark"] .status-badge.approved,
     html[data-bs-theme="dark"] .pay-badge.paid {
-        background: rgba(16, 185, 129, 0.2) !important;
-        color: #34d399 !important;
+        background: rgba(47, 107, 255, 0.2) !important;
+        color: #60A5FA !important;
     }
 
     html[data-pms-theme="dark"] .status-badge.rejected,
@@ -445,12 +445,12 @@
     html[data-pms-theme="dark"] .empty-state i,
     html[data-bs-theme="dark"] .empty-state i,
     html[data-theme="dark"] .empty-state i {
-        color: #34d399 !important;
-        background: rgba(16, 185, 129, 0.15) !important;
+        color: #60A5FA !important;
+        background: rgba(47, 107, 255, 0.15) !important;
         width: 60px !important;
         height: 60px !important;
         border-radius: 18px !important;
-        border: 1px solid rgba(52, 211, 153, 0.25) !important;
+        border: 1px solid rgba(79, 131, 255, 0.25) !important;
         margin-bottom: 14px !important;
     }
 

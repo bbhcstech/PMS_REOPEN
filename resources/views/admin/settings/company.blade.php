@@ -7,8 +7,8 @@
     .company-profile-page {
         min-height: calc(100vh - 100px);
         padding: 2rem 1.75rem;
-        background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 50%, #f4fbf7 100%);
-        color: #0a2e1f;
+        background: linear-gradient(135deg, #F8FAFC 0%, #EEF2FF 50%, #F8FAFC 100%);
+        color: #0F172A;
     }
 
     .company-profile-shell {
@@ -32,7 +32,7 @@
         right: -100px;
         width: 500px;
         height: 500px;
-        background: radial-gradient(circle, rgba(52, 211, 153, 0.12) 0%, transparent 70%);
+        background: radial-gradient(circle, rgba(79, 131, 255, 0.12) 0%, transparent 70%);
         animation: orbFloat 20s ease-in-out infinite;
     }
 
@@ -41,7 +41,7 @@
         left: -100px;
         width: 450px;
         height: 450px;
-        background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 70%);
+        background: radial-gradient(circle, rgba(47, 107, 255, 0.1) 0%, transparent 70%);
         animation: orbFloat 25s ease-in-out infinite reverse;
     }
 
@@ -68,13 +68,13 @@
     }
 
     .breadcrumb-custom a {
-        color: #059669;
+        color: #2F6BFF;
         text-decoration: none;
         transition: color 0.2s ease;
     }
 
     .breadcrumb-custom a:hover {
-        color: #047857;
+        color: #1E4FCC;
     }
 
     /* ===== HEADER CARD ===== */
@@ -84,8 +84,8 @@
         border-radius: 28px;
         padding: 1.75rem 2.25rem;
         margin-bottom: 2rem;
-        border: 1px solid rgba(16, 185, 129, 0.15);
-        box-shadow: 0 10px 30px -10px rgba(16, 185, 129, 0.08);
+        border: 1px solid rgba(47, 107, 255, 0.15);
+        box-shadow: 0 10px 30px -10px rgba(47, 107, 255, 0.08);
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -109,20 +109,20 @@
         width: 58px;
         height: 58px;
         border-radius: 20px;
-        background: linear-gradient(145deg, #34d399, #059669);
+        background: linear-gradient(145deg, #4F83FF, #2F6BFF);
         color: white;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 1.6rem;
-        box-shadow: 0 8px 20px -4px rgba(5, 150, 105, 0.35);
+        box-shadow: 0 8px 20px -4px rgba(47, 107, 255, 0.35);
         flex-shrink: 0;
     }
 
     .header-title h1 {
         font-size: 1.95rem;
         font-weight: 800;
-        background: linear-gradient(135deg, #0a2e1f, #059669, #10b981);
+        background: linear-gradient(135deg, #0F172A, #2F6BFF, #10b981);
         -webkit-background-clip: text;
         background-clip: text;
         color: transparent;
@@ -143,12 +143,12 @@
         gap: 8px;
         padding: 0.55rem 1.3rem;
         border-radius: 40px;
-        background: linear-gradient(145deg, #ecfdf5, #d1fae5);
+        background: linear-gradient(145deg, #EEF2FF, #E0E7FF);
         color: #065f46;
         font-size: 0.78rem;
         font-weight: 800;
-        border: 1px solid rgba(5, 150, 105, 0.25);
-        box-shadow: 0 4px 12px rgba(5, 150, 105, 0.12);
+        border: 1px solid rgba(47, 107, 255, 0.25);
+        box-shadow: 0 4px 12px rgba(47, 107, 255, 0.12);
     }
 
     .badge-live-pulse::before {
@@ -157,14 +157,14 @@
         height: 8px;
         border-radius: 50%;
         background-color: #10b981;
-        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+        box-shadow: 0 0 0 0 rgba(47, 107, 255, 0.7);
         animation: pulseGlowGreen 2s infinite;
     }
 
     @keyframes pulseGlowGreen {
-        0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-        70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
-        100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        0% { box-shadow: 0 0 0 0 rgba(47, 107, 255, 0.7); }
+        70% { box-shadow: 0 0 0 8px rgba(47, 107, 255, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(47, 107, 255, 0); }
     }
 
     /* ===== HERO BANNER ===== */
@@ -174,8 +174,8 @@
         border-radius: 28px;
         padding: 1.75rem 2.25rem;
         margin-bottom: 2rem;
-        border: 1px solid rgba(16, 185, 129, 0.15);
-        box-shadow: 0 10px 30px -10px rgba(16, 185, 129, 0.08);
+        border: 1px solid rgba(47, 107, 255, 0.15);
+        box-shadow: 0 10px 30px -10px rgba(47, 107, 255, 0.08);
         position: relative;
         overflow: hidden;
     }
@@ -186,15 +186,15 @@
         height: 100px;
         border-radius: 22px;
         background: #ffffff;
-        box-shadow: 0 10px 25px -5px rgba(5, 150, 105, 0.25);
+        box-shadow: 0 10px 25px -5px rgba(47, 107, 255, 0.25);
         padding: 8px;
-        border: 1px solid rgba(16, 185, 129, 0.2);
+        border: 1px solid rgba(47, 107, 255, 0.2);
         transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
     .company-logo-wrapper:hover {
         transform: scale(1.04);
-        border-color: #34d399;
+        border-color: #60A5FA;
     }
 
     .company-logo-img {
@@ -209,14 +209,14 @@
         background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(20px);
         border-radius: 28px;
-        border: 1px solid rgba(16, 185, 129, 0.15);
-        box-shadow: 0 10px 30px -10px rgba(16, 185, 129, 0.08);
+        border: 1px solid rgba(47, 107, 255, 0.15);
+        box-shadow: 0 10px 30px -10px rgba(47, 107, 255, 0.08);
         overflow: hidden;
     }
 
     .card-header-custom {
         padding: 1.5rem 2.25rem;
-        border-bottom: 1px solid rgba(16, 185, 129, 0.12);
+        border-bottom: 1px solid rgba(47, 107, 255, 0.12);
         display: flex;
         align-items: center;
         gap: 1rem;
@@ -227,8 +227,8 @@
         width: 48px;
         height: 48px;
         border-radius: 16px;
-        background: linear-gradient(145deg, #d1fae5, #a7f3d0);
-        color: #059669;
+        background: linear-gradient(145deg, #EEF2FF, #E0E7FF);
+        color: #2F6BFF;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -242,19 +242,19 @@
         gap: 0.5rem;
         padding: 0.4rem 1rem;
         border-radius: 40px;
-        background: #ecfdf5;
-        color: #059669;
+        background: #EEF2FF;
+        color: #2F6BFF;
         font-weight: 800;
         font-size: 0.82rem;
         letter-spacing: 0.03em;
-        border: 1px solid rgba(5, 150, 105, 0.2);
+        border: 1px solid rgba(47, 107, 255, 0.2);
         margin-bottom: 1.25rem;
     }
 
     .form-label-custom {
         font-size: 0.88rem;
         font-weight: 700;
-        color: #0a2e1f;
+        color: #0F172A;
         margin-bottom: 8px;
         display: flex;
         align-items: center;
@@ -263,23 +263,23 @@
 
     .input-group-custom {
         border-radius: 16px;
-        border: 1px solid rgba(16, 185, 129, 0.2);
+        border: 1px solid rgba(47, 107, 255, 0.2);
         background-color: #fafefb;
         transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         overflow: hidden;
     }
 
     .input-group-custom:focus-within {
-        border-color: #34d399;
+        border-color: #60A5FA;
         background-color: #ffffff;
-        box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.15);
+        box-shadow: 0 0 0 4px rgba(79, 131, 255, 0.15);
         transform: translateY(-1px);
     }
 
     .input-group-custom .input-group-text {
         background-color: transparent;
         border: none;
-        color: #059669;
+        color: #2F6BFF;
         padding-left: 18px;
         padding-right: 12px;
         font-size: 1.1rem;
@@ -290,7 +290,7 @@
         background-color: transparent;
         font-size: 0.92rem;
         font-weight: 600;
-        color: #0a2e1f;
+        color: #0F172A;
         padding-right: 18px;
         height: 50px;
     }
@@ -301,8 +301,8 @@
     }
 
     .logo-upload-dropzone {
-        border: 2px dashed rgba(16, 185, 129, 0.35);
-        background-color: rgba(16, 185, 129, 0.02);
+        border: 2px dashed rgba(47, 107, 255, 0.35);
+        background-color: rgba(47, 107, 255, 0.02);
         border-radius: 20px;
         padding: 28px;
         text-align: center;
@@ -311,8 +311,8 @@
     }
 
     .logo-upload-dropzone:hover, .logo-upload-dropzone.dragover {
-        border-color: #059669;
-        background-color: rgba(16, 185, 129, 0.08);
+        border-color: #2F6BFF;
+        background-color: rgba(47, 107, 255, 0.08);
         transform: translateY(-2px);
     }
 
@@ -320,14 +320,14 @@
         width: 64px;
         height: 64px;
         border-radius: 20px;
-        background: linear-gradient(145deg, #d1fae5, #a7f3d0);
-        color: #059669;
+        background: linear-gradient(145deg, #EEF2FF, #E0E7FF);
+        color: #2F6BFF;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 1.6rem;
         margin: 0 auto;
-        box-shadow: 0 6px 16px -4px rgba(16, 185, 129, 0.25);
+        box-shadow: 0 6px 16px -4px rgba(47, 107, 255, 0.25);
     }
 
     .btn-save-address {
@@ -336,22 +336,22 @@
         font-weight: 700;
         font-size: 0.95rem;
         padding: 0 32px;
-        background: linear-gradient(145deg, #34d399, #059669);
+        background: linear-gradient(145deg, #4F83FF, #2F6BFF);
         color: white !important;
         border: none;
-        box-shadow: 0 6px 20px -4px rgba(5, 150, 105, 0.35);
+        box-shadow: 0 6px 20px -4px rgba(47, 107, 255, 0.35);
         transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         cursor: pointer;
     }
 
     .btn-save-address:hover {
         transform: translateY(-2px) scale(1.02);
-        box-shadow: 0 10px 28px -4px rgba(5, 150, 105, 0.45);
+        box-shadow: 0 10px 28px -4px rgba(47, 107, 255, 0.45);
         color: white !important;
     }
 
     .req-asterisk {
-        color: #059669;
+        color: #2F6BFF;
         font-weight: 800;
     }
 
@@ -365,7 +365,7 @@
         min-width: 145px;
         max-width: 155px;
         flex-shrink: 0;
-        border-right: 1px solid rgba(16, 185, 129, 0.2);
+        border-right: 1px solid rgba(47, 107, 255, 0.2);
     }
 
     .phone-combo-group .select2-container--bootstrap-5 .select2-selection,
@@ -383,7 +383,7 @@
     .phone-combo-group .select2-container--default .select2-selection--single .select2-selection__rendered {
         line-height: 50px !important;
         font-weight: 700;
-        color: #0a2e1f;
+        color: #0F172A;
         font-size: 0.92rem;
         padding-left: 0 !important;
     }
@@ -394,9 +394,9 @@
     }
 
     .select2-dropdown {
-        border: 1px solid rgba(16, 185, 129, 0.25) !important;
+        border: 1px solid rgba(47, 107, 255, 0.25) !important;
         border-radius: 16px !important;
-        box-shadow: 0 14px 34px rgba(10, 46, 31, 0.12) !important;
+        box-shadow: 0 14px 34px rgba(15, 23, 42, 0.12) !important;
         overflow: hidden !important;
         z-index: 1070 !important;
         background: #ffffff !important;
@@ -404,13 +404,13 @@
 
     .select2-search--dropdown .select2-search__field {
         border-radius: 10px !important;
-        border: 1px solid rgba(16, 185, 129, 0.3) !important;
+        border: 1px solid rgba(47, 107, 255, 0.3) !important;
         padding: 8px 12px !important;
         font-size: 0.88rem;
     }
 
     .select2-results__option--highlighted[aria-selected] {
-        background-color: #ecfdf5 !important;
+        background-color: #EEF2FF !important;
         color: #065f46 !important;
     }
 
@@ -484,7 +484,7 @@
                     </div>
                     <div class="col">
                         <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
-                            <h3 class="fw-bold mb-0" style="color: #0a2e1f; font-size: 1.8rem;" id="liveCompanyName">
+                            <h3 class="fw-bold mb-0" style="color: #0F172A; font-size: 1.8rem;" id="liveCompanyName">
                                 {{ $company->company_name ?? 'Your Company Name' }}
                             </h3>
                         </div>
@@ -504,7 +504,7 @@
                     </div>
                     @if($company && $company->company_website)
                     <div class="col-md-auto text-end">
-                        <a href="{{ $company->company_website }}" target="_blank" id="liveCompanyWebsiteBtn" class="btn btn-sm rounded-pill px-3.5 py-2 fw-bold text-decoration-none" style="background: #e6f3ec; color: #0f744c; border: 1px solid rgba(16, 185, 129, 0.25);">
+                        <a href="{{ $company->company_website }}" target="_blank" id="liveCompanyWebsiteBtn" class="btn btn-sm rounded-pill px-3.5 py-2 fw-bold text-decoration-none" style="background: #EEF2FF; color: #2F6BFF; border: 1px solid rgba(47, 107, 255, 0.25);">
                             <i class="fas fa-external-link-alt me-1"></i> Visit Website
                         </a>
                     </div>
@@ -519,7 +519,7 @@
                         <i class="fas fa-id-card"></i>
                     </div>
                     <div>
-                        <h5 class="mb-0 fw-bold fs-5" style="color: #0a2e1f;">Company Profile & Branding Details</h5>
+                        <h5 class="mb-0 fw-bold fs-5" style="color: #0F172A;">Company Profile & Branding Details</h5>
                         <small class="text-muted">Upload organization logo and update official records</small>
                     </div>
                 </div>
@@ -556,18 +556,18 @@
                                         <i class="fas {{ $isSettingsReadOnly ? 'fa-shield-alt text-primary' : 'fa-cloud-upload-alt text-success' }} fs-2"></i>
                                     </div>
                                     <div>
-                                        <h6 class="fw-bold mb-1" style="color: #0a2e1f;">{{ $isSettingsReadOnly ? 'Company Logo (Admin Managed)' : 'Click to upload company logo or drag & drop' }}</h6>
+                                        <h6 class="fw-bold mb-1" style="color: #0F172A;">{{ $isSettingsReadOnly ? 'Company Logo (Admin Managed)' : 'Click to upload company logo or drag & drop' }}</h6>
                                         <p class="text-muted small mb-0">{{ $isSettingsReadOnly ? 'Official company logo asset' : 'Supported formats: PNG, JPG, GIF, SVG, or WEBP (Max 3MB)' }}</p>
                                     </div>
                                     
                                     @if($hasLogo)
-                                        <div id="currentLogoBadge" class="badge rounded-pill mt-2 px-3 py-1.5" style="background: linear-gradient(145deg, #ecfdf5, #d1fae5); color: #065f46; border: 1px solid rgba(5, 150, 105, 0.25);">
-                                            <i class="fas fa-check-circle me-1" style="color: #059669;"></i> Logo is currently set {{ $isSettingsReadOnly ? '' : '(Click to change)' }}
+                                        <div id="currentLogoBadge" class="badge rounded-pill mt-2 px-3 py-1.5" style="background: linear-gradient(145deg, #EEF2FF, #E0E7FF); color: #065f46; border: 1px solid rgba(47, 107, 255, 0.25);">
+                                            <i class="fas fa-check-circle me-1" style="color: #2F6BFF;"></i> Logo is currently set {{ $isSettingsReadOnly ? '' : '(Click to change)' }}
                                         </div>
                                     @endif
 
-                                    <div id="fileSelectedBadge" class="badge rounded-pill mt-2 d-none px-3 py-1.5" style="background: linear-gradient(145deg, #ecfdf5, #d1fae5); color: #065f46; border: 1px solid rgba(5, 150, 105, 0.25);">
-                                        <i class="fas fa-check me-1" style="color: #059669;"></i> <span id="fileNameText">Image ready for update</span>
+                                    <div id="fileSelectedBadge" class="badge rounded-pill mt-2 d-none px-3 py-1.5" style="background: linear-gradient(145deg, #EEF2FF, #E0E7FF); color: #065f46; border: 1px solid rgba(47, 107, 255, 0.25);">
+                                        <i class="fas fa-check me-1" style="color: #2F6BFF;"></i> <span id="fileNameText">Image ready for update</span>
                                     </div>
                                 </div>
                             </label>
@@ -742,7 +742,7 @@
         const country = $(state.element).data("country");
         const code = state.id;
         if (flag) {
-            return $('<span><img src="' + flag + '" width="20" height="14" style="object-fit: cover; border-radius: 2px; margin-right: 8px; vertical-align: middle;"/> ' + country + ' <strong style="color: #059669;">(' + code + ')</strong></span>');
+            return $('<span><img src="' + flag + '" width="20" height="14" style="object-fit: cover; border-radius: 2px; margin-right: 8px; vertical-align: middle;"/> ' + country + ' <strong style="color: #2F6BFF;">(' + code + ')</strong></span>');
         }
         return state.text;
     }

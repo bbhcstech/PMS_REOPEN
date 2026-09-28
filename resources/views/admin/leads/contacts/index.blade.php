@@ -31,7 +31,7 @@
 }
 .crm-kpi-icon.text-success,
 .crm-kpi-icon.bg-success {
-    background-color: rgba(16, 185, 129, 0.15) !important;
+    background-color: rgba(47, 107, 255, 0.15) !important;
     color: #10b981 !important;
 }
 .crm-kpi-icon.text-success i,
@@ -172,7 +172,7 @@
 .badge-status { font-weight: 600; padding: 5px 10px; border-radius: 6px; font-size: 12px; }
 .type-badge { font-size: 11px; padding: 3px 8px; border-radius: 12px; font-weight: 600; text-transform: uppercase; }
 .type-lead { background-color: #fef3c7; color: #92400e; }
-.type-client { background-color: #d1fae5; color: #065f46; }
+.type-client { background-color: #E0E7FF; color: #065f46; }
 
 /* Premium Table UI/UX Styles */
 .premium-table-card {
@@ -184,8 +184,8 @@
     transition: all 0.2s ease;
 }
 html[data-pms-theme="dark"] .premium-table-card {
-    background: #102119;
-    border-color: rgba(225, 255, 240, 0.12);
+    background: #0F1530;
+    border-color: rgba(79, 131, 255, 0.12);
 }
 .premium-table {
     margin-bottom: 0;
@@ -198,8 +198,8 @@ html[data-pms-theme="dark"] .premium-table-card {
     border-bottom: 2px solid #cbd5e1;
 }
 html[data-pms-theme="dark"] .premium-table thead tr {
-    background-color: #183026;
-    border-bottom-color: rgba(225, 255, 240, 0.15);
+    background-color: #141B3D;
+    border-bottom-color: rgba(79, 131, 255, 0.15);
 }
 .premium-table th {
     font-size: 0.73rem;
@@ -217,21 +217,21 @@ html[data-pms-theme="dark"] .premium-table thead tr {
 }
 html[data-pms-theme="dark"] .premium-table th {
     color: #cbd5e1;
-    border-bottom-color: rgba(225, 255, 240, 0.15);
-    border-right-color: rgba(225, 255, 240, 0.1);
+    border-bottom-color: rgba(79, 131, 255, 0.15);
+    border-right-color: rgba(79, 131, 255, 0.1);
 }
 .premium-table tbody tr {
     border-bottom: 1px solid #e2e8f0;
     transition: background-color 0.15s ease-in-out;
 }
 html[data-pms-theme="dark"] .premium-table tbody tr {
-    border-bottom-color: rgba(225, 255, 240, 0.08);
+    border-bottom-color: rgba(79, 131, 255, 0.08);
 }
 .premium-table tbody tr:hover {
     background-color: #f8fafc;
 }
 html[data-pms-theme="dark"] .premium-table tbody tr:hover {
-    background-color: #162a21;
+    background-color: #141B3D;
 }
 .premium-table td {
     padding: 1.1rem 1.1rem;
@@ -246,14 +246,14 @@ html[data-pms-theme="dark"] .premium-table tbody tr:hover {
 }
 html[data-pms-theme="dark"] .premium-table td {
     color: #e2e8f0;
-    border-bottom-color: rgba(225, 255, 240, 0.08);
-    border-right-color: rgba(225, 255, 240, 0.1);
+    border-bottom-color: rgba(79, 131, 255, 0.08);
+    border-right-color: rgba(79, 131, 255, 0.1);
 }
 .avatar-badge-circle {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    background: linear-gradient(135deg, #4F83FF 0%, #2F6BFF 100%);
     color: #ffffff;
     font-weight: 700;
     font-size: 13.5px;
@@ -261,7 +261,7 @@ html[data-pms-theme="dark"] .premium-table td {
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+    box-shadow: 0 2px 8px rgba(47, 107, 255, 0.2);
 }
 .badge-pill-source {
     background-color: #f1f5f9;
@@ -277,9 +277,9 @@ html[data-pms-theme="dark"] .premium-table td {
     white-space: nowrap;
 }
 html[data-pms-theme="dark"] .badge-pill-source {
-    background-color: #183026;
+    background-color: #141B3D;
     color: #cbd5e1;
-    border-color: rgba(225, 255, 240, 0.15);
+    border-color: rgba(79, 131, 255, 0.15);
 }
 .badge-score-very-hot,
 .badge-score-hot,
@@ -398,9 +398,9 @@ html[data-pms-theme="dark"] .badge-pill-source {
     font-weight: 600;
 }
 .badge-pill-status-converted {
-    background-color: #d1fae5;
-    color: #047857;
-    border: 1px solid #a7f3d0;
+    background-color: #E0E7FF;
+    color: #2F6BFF;
+    border: 1px solid #C7D2FE;
     border-radius: 50px;
     padding: 0.35rem 0.95rem;
     font-size: 0.78rem;
@@ -433,12 +433,12 @@ html[data-pms-theme="dark"] .badge-pill-source {
     border-color: #94a3b8;
 }
 html[data-pms-theme="dark"] .btn-action-circle {
-    background-color: #183026;
-    border-color: rgba(225, 255, 240, 0.15);
+    background-color: #141B3D;
+    border-color: rgba(79, 131, 255, 0.15);
     color: #cbd5e1;
 }
 html[data-pms-theme="dark"] .btn-action-circle:hover {
-    background-color: #204033;
+    background-color: rgba(79, 131, 255, 0.2);
     color: #ffffff;
 }
 .dropdown-menu-premium {
@@ -448,8 +448,8 @@ html[data-pms-theme="dark"] .btn-action-circle:hover {
     padding: 0.5rem;
 }
 html[data-pms-theme="dark"] .dropdown-menu-premium {
-    background: #102119;
-    border-color: rgba(225, 255, 240, 0.15);
+    background: #0F1530;
+    border-color: rgba(79, 131, 255, 0.15);
 }
 .dropdown-menu-premium .dropdown-item {
     border-radius: 8px;
@@ -467,7 +467,7 @@ html[data-pms-theme="dark"] .dropdown-menu-premium .dropdown-item {
     color: #cbd5e1;
 }
 html[data-pms-theme="dark"] .dropdown-menu-premium .dropdown-item:hover {
-    background-color: #183026;
+    background-color: #141B3D;
     color: #ffffff;
 }
 .premium-table-footer {
@@ -479,8 +479,8 @@ html[data-pms-theme="dark"] .dropdown-menu-premium .dropdown-item:hover {
     font-weight: 600;
 }
 html[data-pms-theme="dark"] .premium-table-footer {
-    background-color: #14281e;
-    border-top-color: rgba(225, 255, 240, 0.08);
+    background-color: #141B3D;
+    border-top-color: rgba(79, 131, 255, 0.08);
     color: #94a3b8;
 }
 
@@ -784,10 +784,10 @@ html[data-bs-theme="dark"] .badge-pill-status-converted,
 html[data-theme="dark"] .badge-pill-status-converted,
 body[data-pms-theme="dark"] .badge-pill-status-converted,
 [data-pms-theme="dark"] .badge-pill-status-converted {
-    background-color: rgba(16, 185, 129, 0.2) !important;
-    color: #34d399 !important;
-    -webkit-text-fill-color: #34d399 !important;
-    border: 1px solid rgba(52, 211, 153, 0.4) !important;
+    background-color: rgba(47, 107, 255, 0.2) !important;
+    color: #60A5FA !important;
+    -webkit-text-fill-color: #60A5FA !important;
+    border: 1px solid rgba(79, 131, 255, 0.4) !important;
 }
 
 html[data-pms-theme="dark"] .badge-pill-status-lost,

@@ -110,6 +110,12 @@
               root.setAttribute('data-pms-theme', theme);
               root.setAttribute('data-theme', theme);
               root.setAttribute('data-bs-theme', theme);
+              if (document.body) {
+                document.body.setAttribute('data-pms-theme', theme);
+                document.body.setAttribute('data-theme', theme);
+                document.body.setAttribute('data-bs-theme', theme);
+                document.body.classList.toggle('dark-mode', theme === 'dark');
+              }
               localStorage.setItem('pms-theme', theme);
               localStorage.setItem('bitroxia-theme', theme);
               toggles.forEach(function (button) {

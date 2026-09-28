@@ -56,7 +56,7 @@
     @endif
 
     <!-- Profile Executive Hero Banner -->
-    <div class="org-profile-banner" style="background: linear-gradient(135deg, #094c32 0%, #0f744c 65%, #146c47 100%) !important; color: #ffffff !important;">
+    <div class="org-profile-banner" style="background: linear-gradient(135deg, #1E4FCC 0%, #2F6BFF 65%, #1E3A8A 100%) !important; color: #ffffff !important;">
         <div class="org-banner-content">
             <div class="org-profile-user-group">
                 @if($avatar)
@@ -68,19 +68,19 @@
                     <h1 style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; text-shadow: 0 2px 6px rgba(0,0,0,0.3) !important; font-weight: 800 !important;">{{ $employee->name }}</h1>
                     <div class="org-banner-chips">
                         <span class="org-banner-chip" style="background: rgba(255, 255, 255, 0.2) !important; border: 1px solid rgba(255, 255, 255, 0.35) !important;">
-                            <i class="fas fa-briefcase" style="color: #a7f3d0 !important; -webkit-text-fill-color: #a7f3d0 !important;"></i>
+                            <i class="fas fa-briefcase" style="color: #C7D2FE !important; -webkit-text-fill-color: #C7D2FE !important;"></i>
                             <span style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; font-weight: 700 !important; background: transparent !important; border: none !important; padding: 0 !important; margin: 0 !important;">{{ $designationName }}</span>
                         </span>
                         <span class="org-banner-chip" style="background: rgba(255, 255, 255, 0.2) !important; border: 1px solid rgba(255, 255, 255, 0.35) !important;">
-                            <i class="fas fa-building" style="color: #a7f3d0 !important; -webkit-text-fill-color: #a7f3d0 !important;"></i>
+                            <i class="fas fa-building" style="color: #C7D2FE !important; -webkit-text-fill-color: #C7D2FE !important;"></i>
                             <span style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; font-weight: 700 !important; background: transparent !important; border: none !important; padding: 0 !important; margin: 0 !important;">{{ $deptName }}</span>
                         </span>
                         <span class="org-banner-chip" style="background: rgba(255, 255, 255, 0.2) !important; border: 1px solid rgba(255, 255, 255, 0.35) !important;">
-                            <i class="fas fa-id-badge" style="color: #a7f3d0 !important; -webkit-text-fill-color: #a7f3d0 !important;"></i>
+                            <i class="fas fa-id-badge" style="color: #C7D2FE !important; -webkit-text-fill-color: #C7D2FE !important;"></i>
                             <span style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; font-weight: 700 !important; background: transparent !important; border: none !important; padding: 0 !important; margin: 0 !important;">{{ $empCode }}</span>
                         </span>
                         <span class="org-banner-chip org-status-chip {{ $status }}" style="background: rgba(255, 255, 255, 0.2) !important; border: 1px solid rgba(255, 255, 255, 0.35) !important; padding: 5px 14px !important; font-size: 0.82rem !important; font-weight: 800 !important; display: inline-flex !important; align-items: center !important;">
-                            <span class="org-status-dot" style="background: #34D399 !important; box-shadow: 0 0 8px #34D399 !important; width: 7px !important; height: 7px !important; border-radius: 50% !important; display: inline-block !important; margin-right: 7px !important;"></span>
+                            <span class="org-status-dot" style="background: #60A5FA !important; box-shadow: 0 0 8px #60A5FA !important; width: 7px !important; height: 7px !important; border-radius: 50% !important; display: inline-block !important; margin-right: 7px !important;"></span>
                             <span style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; font-weight: 800 !important; background: transparent !important; border: none !important; padding: 0 !important; margin: 0 !important;">{{ ucfirst($status) }}</span>
                         </span>
                     </div>
@@ -89,8 +89,8 @@
 
             <div class="d-flex align-items-center gap-2 flex-wrap">
                 @if($canManageDirectory)
-                    <a href="{{ route('employees.edit', $employee) }}" class="org-btn org-banner-btn-primary" style="background: #ffffff !important; color: #094c32 !important; -webkit-text-fill-color: #094c32 !important; border: 1px solid #ffffff !important; font-weight: 800 !important;">
-                        <i class="fas fa-user-pen" style="color: #094c32 !important; -webkit-text-fill-color: #094c32 !important;"></i> Full HR Edit
+                    <a href="{{ route('employees.edit', $employee) }}" class="org-btn org-banner-btn-primary" style="background: #ffffff !important; color: #2F6BFF !important; -webkit-text-fill-color: #2F6BFF !important; border: 1px solid #ffffff !important; font-weight: 800 !important;">
+                        <i class="fas fa-user-pen" style="color: #2F6BFF !important; -webkit-text-fill-color: #2F6BFF !important;"></i> Full HR Edit
                     </a>
                     <a href="#directory-editor" class="org-btn org-banner-btn-secondary" style="background: rgba(255, 255, 255, 0.2) !important; color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; border: 1px solid rgba(255, 255, 255, 0.4) !important; font-weight: 700 !important;">
                         <i class="fas fa-pen-to-square" style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important;"></i> Edit Public Info

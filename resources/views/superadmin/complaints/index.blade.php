@@ -10,9 +10,9 @@
     --text-primary: #0f172a;
     --text-secondary: #334155;
     --text-muted: #475569;
-    --emerald-main: #0f744c;
+    --emerald-main: #2F6BFF;
     --emerald-light: #10b981;
-    --emerald-soft: #e4f3eb;
+    --emerald-soft: #EEF2FF;
   }
 
   .complaints-wrapper {
@@ -21,12 +21,12 @@
 
   /* Header Card */
   .page-header-card {
-    background: linear-gradient(135deg, #073a26 0%, #0f744c 60%, #10b981 100%);
+    background: linear-gradient(135deg, #073a26 0%, #2F6BFF 60%, #10b981 100%);
     border-radius: 16px;
     padding: 28px 32px;
     color: #ffffff;
     margin-bottom: 24px;
-    box-shadow: 0 15px 35px -5px rgba(15, 116, 76, 0.25);
+    box-shadow: 0 15px 35px -5px rgba(47, 107, 255, 0.25);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -69,7 +69,7 @@
 
   .kpi-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(15, 116, 76, 0.08);
+    box-shadow: 0 10px 25px rgba(47, 107, 255, 0.08);
     border-color: var(--emerald-light);
   }
 
@@ -130,7 +130,7 @@
 
   .form-control-custom:focus {
     border-color: var(--emerald-main);
-    box-shadow: 0 0 0 3px rgba(15, 116, 76, 0.15);
+    box-shadow: 0 0 0 3px rgba(47, 107, 255, 0.15);
   }
 
   /* Data Table */
@@ -160,7 +160,7 @@
   }
 
   .table-responsive::-webkit-scrollbar-thumb {
-    background: #0f744c;
+    background: #2F6BFF;
     border-radius: 6px;
     border: 2px solid #f8fafc;
   }
@@ -231,7 +231,7 @@
   .status-OPEN { background: #eff6ff; color: #1d4ed8; border: 1px solid #93c5fd; }
   .status-IN_PROGRESS { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
   .status-WAITING_FOR_COMPANY { background: #f3e8ff; color: #6b21a8; border: 1px solid #d8b4fe; }
-  .status-RESOLVED { background: #ecfdf5; color: #047857; border: 1px solid #6ee7b7; }
+  .status-RESOLVED { background: #EEF2FF; color: #047857; border: 1px solid #93C5FD; }
   .status-CLOSED { background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; }
   .status-REOPENED { background: #fff1f2; color: #be123c; border: 1px solid #fda4af; }
 
@@ -343,7 +343,7 @@
   .timeline-item.super_admin .timeline-bubble {
     background: var(--emerald-soft);
     color: #073a26;
-    border: 1px solid rgba(15, 116, 76, 0.2);
+    border: 1px solid rgba(47, 107, 255, 0.2);
     border-bottom-right-radius: 2px;
   }
 
@@ -355,7 +355,7 @@
   }
 
   .btn-primary-emerald {
-    background: linear-gradient(135deg, #073a26 0%, #0f744c 100%);
+    background: linear-gradient(135deg, #073a26 0%, #2F6BFF 100%);
     color: #ffffff;
     padding: 8px 16px;
     border-radius: 8px;
@@ -369,7 +369,7 @@
   }
 
   .btn-primary-emerald:hover {
-    box-shadow: 0 6px 16px rgba(15, 116, 76, 0.3);
+    box-shadow: 0 6px 16px rgba(47, 107, 255, 0.3);
     color: #ffffff;
   }
 
@@ -434,7 +434,7 @@
     </div>
 
     <div class="kpi-card">
-      <div class="kpi-icon" style="background: #ecfdf5; color: #059669;">
+      <div class="kpi-icon" style="background: #EEF2FF; color: #2F6BFF;">
         <i class="bx bx-check-circle"></i>
       </div>
       <div>
@@ -542,7 +542,7 @@
 
         <!-- Export Dropdown -->
         <div class="dropdown-export-wrapper" style="position: relative; display: inline-block;">
-          <button type="button" onclick="toggleExportMenu(event)" class="btn-export-dropdown" style="background: #ffffff; border: 1px solid #0f744c; border-radius: 8px; padding: 8px 14px; font-size: 13px; font-weight: 700; color: #0f744c; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; transition: all 0.2s ease;">
+          <button type="button" onclick="toggleExportMenu(event)" class="btn-export-dropdown" style="background: #ffffff; border: 1px solid #2F6BFF; border-radius: 8px; padding: 8px 14px; font-size: 13px; font-weight: 700; color: #2F6BFF; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; transition: all 0.2s ease;">
             <i class="bx bx-export" style="font-size: 16px;"></i> Export <i class="bx bx-chevron-down" style="font-size: 14px;"></i>
           </button>
           <div id="exportMenuDropdown" class="export-dropdown-menu" style="display: none; position: absolute; top: calc(100% + 4px); right: 0; min-width: 150px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.12); z-index: 100; overflow: hidden;">
@@ -603,7 +603,7 @@
                 <input type="checkbox" class="ticket-checkbox custom-checkbox" value="{{ $ticket->id }}" onchange="updateSelectedCount()" />
               </td>
               <td>
-                <a href="javascript:void(0)" onclick="openComplaintDrawer({{ $ticket->id }})" style="font-weight: 800; color: #0f744c; text-decoration: none; border-bottom: 2px solid #10b981; font-size: 13.5px; letter-spacing: -0.2px;">
+                <a href="javascript:void(0)" onclick="openComplaintDrawer({{ $ticket->id }})" style="font-weight: 800; color: #2F6BFF; text-decoration: none; border-bottom: 2px solid #10b981; font-size: 13.5px; letter-spacing: -0.2px;">
                   #{{ $ticket->ticket_id }}
                 </a>
               </td>

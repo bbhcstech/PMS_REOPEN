@@ -11,8 +11,8 @@
     transition: all 0.2s ease;
 }
 html[data-pms-theme="dark"] .form-card-modern {
-    background: #102119;
-    border-color: rgba(225, 255, 240, 0.12);
+    background: #0F1530;
+    border-color: rgba(79, 131, 255, 0.12);
 }
 .form-card-header-modern {
     background: #ffffff;
@@ -22,8 +22,8 @@ html[data-pms-theme="dark"] .form-card-modern {
     border-top-right-radius: 16px;
 }
 html[data-pms-theme="dark"] .form-card-header-modern {
-    background: #102119;
-    border-bottom-color: rgba(225, 255, 240, 0.08);
+    background: #0F1530;
+    border-bottom-color: rgba(79, 131, 255, 0.08);
 }
 .form-label-modern {
     font-size: 0.84rem;
@@ -48,22 +48,22 @@ html[data-pms-theme="dark"] .form-label-modern {
 }
 html[data-pms-theme="dark"] .form-control-modern,
 html[data-pms-theme="dark"] .form-select-modern {
-    background-color: #183026;
-    border-color: rgba(225, 255, 240, 0.15);
+    background-color: #141B3D;
+    border-color: rgba(79, 131, 255, 0.15);
     color: #ffffff;
 }
 .form-control-modern:focus, .form-select-modern:focus {
     background-color: #ffffff;
-    border-color: #0f744c;
-    box-shadow: 0 0 0 3.5px rgba(15, 116, 76, 0.12);
+    border-color: #2F6BFF;
+    box-shadow: 0 0 0 3.5px rgba(47, 107, 255, 0.12);
     color: #0f172a;
     outline: none;
 }
 html[data-pms-theme="dark"] .form-control-modern:focus,
 html[data-pms-theme="dark"] .form-select-modern:focus {
-    background-color: #102119;
-    border-color: #40d48c;
-    box-shadow: 0 0 0 3.5px rgba(64, 212, 140, 0.18);
+    background-color: #0F1530;
+    border-color: #60A5FA;
+    box-shadow: 0 0 0 3.5px rgba(79, 131, 255, 0.18);
     color: #ffffff;
 }
 .form-control-modern::placeholder {
@@ -97,35 +97,35 @@ textarea.form-control-modern {
     color: #0f172a;
 }
 html[data-pms-theme="dark"] .btn-back-pill {
-    background-color: #183026;
-    border-color: rgba(225, 255, 240, 0.2);
+    background-color: #141B3D;
+    border-color: rgba(79, 131, 255, 0.2);
     color: #e2e8f0;
 }
 html[data-pms-theme="dark"] .btn-back-pill:hover {
-    background-color: #204033;
+    background-color: rgba(79, 131, 255, 0.2);
     color: #ffffff;
 }
 .btn-submit-emerald {
-    background: linear-gradient(135deg, #0f744c 0%, #10b981 100%);
+    background: linear-gradient(135deg, #4F83FF 0%, #2F6BFF 100%);
     color: #ffffff;
     border: none;
     border-radius: 10px;
     padding: 0.65rem 1.75rem;
     font-size: 0.9rem;
     font-weight: 600;
-    box-shadow: 0 4px 14px rgba(15, 116, 76, 0.25);
+    box-shadow: 0 4px 14px rgba(47, 107, 255, 0.25);
     transition: all 0.2s ease;
 }
 .btn-submit-emerald:hover {
-    background: linear-gradient(135deg, #094c32 0%, #059669 100%);
+    background: linear-gradient(135deg, #2F6BFF 0%, #1E4FCC 100%);
     color: #ffffff;
-    box-shadow: 0 6px 18px rgba(15, 116, 76, 0.35);
+    box-shadow: 0 6px 18px rgba(47, 107, 255, 0.35);
     transform: translateY(-1px);
 }
 .btn-outline-emerald {
     background: transparent;
-    border: 1.5px solid #0f744c;
-    color: #0f744c;
+    border: 1.5px solid #2F6BFF;
+    color: #2F6BFF;
     border-radius: 10px;
     padding: 0.65rem 1.5rem;
     font-size: 0.9rem;
@@ -133,16 +133,16 @@ html[data-pms-theme="dark"] .btn-back-pill:hover {
     transition: all 0.2s ease;
 }
 .btn-outline-emerald:hover {
-    background: #e4f3eb;
-    color: #094c32;
+    background: #EEF2FF;
+    color: #1E4FCC;
 }
 html[data-pms-theme="dark"] .btn-outline-emerald {
-    border-color: #40d48c;
-    color: #40d48c;
+    border-color: #60A5FA;
+    color: #60A5FA;
 }
 html[data-pms-theme="dark"] .btn-outline-emerald:hover {
-    background: rgba(64, 212, 140, 0.15);
-    color: #7af0b5;
+    background: rgba(79, 131, 255, 0.15);
+    color: #93C5FD;
 }
 .btn-cancel-modern {
     background: #f1f5f9;
@@ -160,12 +160,12 @@ html[data-pms-theme="dark"] .btn-outline-emerald:hover {
     color: #1e293b;
 }
 html[data-pms-theme="dark"] .btn-cancel-modern {
-    background: #183026;
-    border-color: rgba(225, 255, 240, 0.15);
+    background: #141B3D;
+    border-color: rgba(79, 131, 255, 0.15);
     color: #cbd5e1;
 }
 html[data-pms-theme="dark"] .btn-cancel-modern:hover {
-    background: #204033;
+    background: rgba(79, 131, 255, 0.2);
     color: #ffffff;
 }
 </style>
