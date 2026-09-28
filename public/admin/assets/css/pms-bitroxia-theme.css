@@ -6027,3 +6027,36 @@ body[data-pms-theme="dark"] .app-table .btn-icon.btn-light i.text-danger,
   color: #fca5a5 !important;
   -webkit-text-fill-color: #fca5a5 !important;
 }
+
+/* Ensure modal dialog opens above top navbar */
+#layout-navbar,
+.layout-navbar {
+  position: relative;
+  z-index: 1030 !important;
+}
+
+.modal-backdrop {
+  z-index: 10040 !important;
+}
+
+.modal {
+  z-index: 10050 !important;
+  padding-top: 0 !important;
+}
+
+.modal-dialog {
+  z-index: 10051 !important;
+  margin-top: 1.75rem !important;
+  margin-bottom: 1.75rem !important;
+}
+
+/* Permanently remove floating scroll controls & bottom-right floating widgets */
+.pms-scroll-controls,
+.pms-scroll-btn,
+#pmsScrollTop,
+#pmsScrollBottom {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}

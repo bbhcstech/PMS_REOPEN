@@ -39,7 +39,14 @@ class OrganizationDirectoryController extends Controller
                 });
             })
             ->when($request->filled('company_id'), function ($query) use ($request) {
-                $query->where('company_id', $request->company_id);
+                $query->where(function ($q) use ($request) {
+                    $q->where('company_id', $request->company_id)
+                        ->orWhereHas('employeeDetail', fn ($detail) => $detail->where('company_id', $request->company_id))
+                        ->orWhere(function ($subQ) {
+                            $subQ->whereNull('company_id')
+                                 ->whereDoesntHave('employeeDetail', fn ($d) => $d->whereNotNull('company_id'));
+                        });
+                });
             })
             ->when($request->filled('department_id'), function ($query) use ($request) {
                 $query->whereHas('employeeDetail', fn ($detail) => $detail->where('department_id', $request->department_id));
@@ -71,7 +78,7 @@ class OrganizationDirectoryController extends Controller
                 $query->whereHas('employeeDetail', fn ($detail) => $detail->where('reporting_to', $request->reporting_to));
             })
             ->orderBy('name')
-            ->paginate(15)
+            ->paginate((int) $request->input('per_page', 15))
             ->withQueryString();
 
         $totalEmployeesCount = (clone $allEmployeesQuery)->count();
@@ -110,14 +117,66 @@ class OrganizationDirectoryController extends Controller
         $managerUserIds = \App\Models\EmployeeDetail::whereNotNull('reporting_to')->pluck('reporting_to')->unique();
         $managers = User::whereIn('id', $managerUserIds)->orderBy('name')->get();
 
-        $departmentGroups = Department::with(['employeeDetails.user', 'employeeDetails.designation'])
-            ->whereNull('archived_at')
-            ->whereHas('employeeDetails', function ($query) {
-                if (Schema::hasColumn('employee_details', 'status')) {
-                    $query->whereIn('status', ['Active', 'active']);
-                }
-                $query->whereHas('user', fn ($user) => $user->whereNull('archived_at'));
+        $employeeDetailFilter = function ($detailQuery) use ($request) {
+            $detailQuery->whereHas('user', function ($uQuery) use ($request) {
+                $uQuery->where('role', 'employee')
+                    ->whereNull('archived_at')
+                    ->when($request->filled('search'), function ($query) use ($request) {
+                        $search = trim((string) $request->search);
+                        $query->where(function ($q) use ($search) {
+                            $q->where('name', 'like', '%' . $search . '%')
+                                ->orWhere('email', 'like', '%' . $search . '%')
+                                ->orWhereHas('employeeDetail', function ($detail) use ($search) {
+                                    $detail->where('employee_id', 'like', '%' . $search . '%')
+                                        ->orWhere('skills', 'like', '%' . $search . '%')
+                                        ->orWhereHas('department', fn ($department) => $department->where('dpt_name', 'like', '%' . $search . '%'))
+                                        ->orWhereHas('designation', fn ($designation) => $designation->where('name', 'like', '%' . $search . '%'));
+                                });
+                        });
+                    })
+                    ->when($request->filled('company_id'), function ($query) use ($request) {
+                        $query->where(function ($q) use ($request) {
+                            $q->where('company_id', $request->company_id)
+                                ->orWhereHas('employeeDetail', fn ($detail) => $detail->where('company_id', $request->company_id))
+                                ->orWhere(function ($subQ) {
+                                    $subQ->whereNull('company_id')
+                                         ->whereDoesntHave('employeeDetail', fn ($d) => $d->whereNotNull('company_id'));
+                                });
+                        });
+                    });
             })
+            ->when($request->filled('designation_id'), fn ($q) => $q->where('designation_id', $request->designation_id))
+            ->when($request->filled('reporting_to'), fn ($q) => $q->where('reporting_to', $request->reporting_to))
+            ->when($request->filled('status'), function ($q) use ($request) {
+                $status = strtolower($request->status);
+                if ($status === 'active') {
+                    $q->whereIn('status', ['Active', 'active']);
+                } elseif ($status === 'inactive') {
+                    $q->whereIn('status', ['Inactive', 'inactive']);
+                } elseif ($status === 'on_leave') {
+                    $q->where('status', 'on_leave');
+                } elseif ($status === 'suspended') {
+                    $q->whereIn('status', ['Suspended', 'suspended']);
+                }
+            }, function ($q) {
+                if (Schema::hasColumn('employee_details', 'status')) {
+                    $q->whereIn('status', ['Active', 'active']);
+                }
+            });
+        };
+
+        $departmentGroups = Department::query()
+            ->whereNull('archived_at')
+            ->when($request->filled('department_id'), function ($q) use ($request) {
+                $q->where('id', $request->department_id);
+            })
+            ->whereHas('employeeDetails', $employeeDetailFilter)
+            ->with([
+                'employeeDetails' => $employeeDetailFilter,
+                'employeeDetails.user',
+                'employeeDetails.designation',
+                'parent'
+            ])
             ->when(Schema::hasColumn('departments', 'dpt_name'), fn ($q) => $q->orderBy('dpt_name'), fn ($q) => $q->orderBy('id'))
             ->get();
 
