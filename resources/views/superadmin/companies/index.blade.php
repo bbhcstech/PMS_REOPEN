@@ -151,12 +151,12 @@
     .btn-primary-custom {
         background: linear-gradient(135deg, var(--emerald-dark), var(--emerald-primary), var(--emerald-light));
         color: #fff !important;
-        box-shadow: 0 8px 24px rgba(15, 116, 76, 0.3);
+        box-shadow: 0 8px 24px rgba(47, 107, 255, 0.3);
     }
 
     .btn-primary-custom:hover {
         transform: translateY(-2px);
-        box-shadow: 0 14px 32px rgba(15, 116, 76, 0.4);
+        box-shadow: 0 14px 32px rgba(47, 107, 255, 0.4);
         color: #fff !important;
     }
 
@@ -255,7 +255,7 @@
     }
 
     .kpi-card:hover {
-        border-color: rgba(15, 116, 76, 0.25);
+        border-color: rgba(47, 107, 255, 0.25);
         box-shadow: var(--card-shadow-lg);
         transform: translateY(-4px);
     }
@@ -373,7 +373,7 @@
     }
 
     .analytics-card:hover {
-        border-color: rgba(15, 116, 76, 0.2);
+        border-color: rgba(47, 107, 255, 0.2);
         box-shadow: var(--card-shadow-md);
     }
 
@@ -649,7 +649,7 @@
     }
 
     table.company-table tbody tr:hover {
-        background: rgba(15, 116, 76, 0.05);
+        background: rgba(47, 107, 255, 0.05);
     }
 
     table.company-table tbody td {
@@ -791,7 +791,7 @@
     }
 
     .status-pill .dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
-    .status-pill.status-active { background: var(--emerald-soft); color: var(--emerald-primary); border-color: rgba(15, 116, 76, 0.2); }
+    .status-pill.status-active { background: var(--emerald-soft); color: var(--emerald-primary); border-color: rgba(47, 107, 255, 0.2); }
     .status-pill.status-active .dot { background: var(--emerald-light); }
     .status-pill.status-trial { background: rgba(245, 158, 11, 0.1); color: var(--amber-accent); border-color: rgba(245, 158, 11, 0.2); }
     .status-pill.status-trial .dot { background: var(--amber-accent); }
@@ -2261,7 +2261,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // 3. Format header and enforce strict clean logo image sizing (32px x 32px)
             element.innerHTML = `
                 <style>
-                    .pdf-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #0f744c; padding-bottom: 12px; margin-bottom: 16px; }
+                    .pdf-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #2F6BFF; padding-bottom: 12px; margin-bottom: 16px; }
                     .pdf-title { font-size: 18px; font-weight: 800; color: #0f172a; margin: 0; }
                     .pdf-sub { font-size: 11px; color: #64748b; margin: 4px 0 0 0; }
                     .pdf-meta { font-size: 11px; color: #64748b; text-align: right; }
@@ -2278,7 +2278,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     .plan-badge-cell { font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 999px; text-transform: uppercase; display: inline-block; }
                     .status-pill { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 999px; display: inline-block; }
                     .storage-track-bar { width: 80px; height: 6px; background: #e2e8f0; border-radius: 999px; overflow: hidden; margin-bottom: 2px; }
-                    .storage-fill-bar { height: 100%; background: #0f744c; }
+                    .storage-fill-bar { height: 100%; background: #2F6BFF; }
                 </style>
                 <div class="pdf-header">
                     <div>

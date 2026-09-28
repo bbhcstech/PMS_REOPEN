@@ -253,7 +253,7 @@
         padding: 30px 35px;
         min-height: 100vh;
         background: linear-gradient(145deg, #f7fbf9, #eef7f2);
-        color: #07130d;
+        color: #070B1A;
     }
 
     /* Header Card */
@@ -265,8 +265,8 @@
         justify-content: space-between;
         align-items: center;
         gap: 20px;
-        box-shadow: 0 18px 45px rgba(15, 116, 76, .09);
-        border: 1px solid rgba(15, 116, 76, .12);
+        box-shadow: 0 18px 45px rgba(47, 107, 255, .09);
+        border: 1px solid rgba(47, 107, 255, .12);
         margin-bottom: 28px;
     }
 
@@ -279,7 +279,7 @@
     .header-icon {
         width: 65px;
         height: 65px;
-        background: linear-gradient(145deg, #34d399, #10b981);
+        background: linear-gradient(145deg, #60A5FA, #10b981);
         color: white;
         border-radius: 20px;
         display: flex;
@@ -312,9 +312,9 @@
         background: #ffffff !important;
         padding: 22px;
         border-radius: 22px;
-        border: 1px solid rgba(15, 116, 76, .14) !important;
-        box-shadow: 0 14px 35px rgba(15, 116, 76, .06) !important;
-        color: #0a2e1f !important;
+        border: 1px solid rgba(47, 107, 255, .14) !important;
+        box-shadow: 0 14px 35px rgba(47, 107, 255, .06) !important;
+        color: #0F172A !important;
         display: flex;
         gap: 16px;
         align-items: center;
@@ -328,8 +328,8 @@
 
     .designation-hierarchy-page .stat-card:hover {
         transform: translateY(-3px);
-        box-shadow: 0 20px 40px rgba(15, 116, 76, .12) !important;
-        border-color: rgba(16, 185, 129, 0.25) !important;
+        box-shadow: 0 20px 40px rgba(47, 107, 255, .12) !important;
+        border-color: rgba(47, 107, 255, 0.25) !important;
     }
 
     .designation-hierarchy-page .stat-icon,
@@ -341,9 +341,9 @@
         align-items: center;
         justify-content: center;
         font-size: 22px;
-        background: linear-gradient(145deg, #d1fae5, #a7f3d0) !important;
-        color: #0f744c !important;
-        -webkit-text-fill-color: #0f744c !important;
+        background: linear-gradient(145deg, #EEF2FF, #E0E7FF) !important;
+        color: #2F6BFF !important;
+        -webkit-text-fill-color: #2F6BFF !important;
         flex-shrink: 0;
     }
 
@@ -353,8 +353,8 @@
     .designation-hierarchy-page .stat-card:first-of-type .stat-icon i,
     .designation-hierarchy-page .stat-card:first-of-type .stat-icon .fa,
     .designation-hierarchy-page .stat-card:first-of-type .stat-icon [class*="fa-"] {
-        color: #0f744c !important;
-        -webkit-text-fill-color: #0f744c !important;
+        color: #2F6BFF !important;
+        -webkit-text-fill-color: #2F6BFF !important;
         background: transparent !important;
         background-color: transparent !important;
         display: inline-block !important;
@@ -413,8 +413,8 @@
     html:not([data-pms-theme="dark"]) .designation-hierarchy-page .stat-card:first-of-type .stat-value {
         font-size: 28px;
         font-weight: 800;
-        color: #0a2e1f !important;
-        -webkit-text-fill-color: #0a2e1f !important;
+        color: #0F172A !important;
+        -webkit-text-fill-color: #0F172A !important;
         margin-bottom: 4px;
     }
 
@@ -458,25 +458,25 @@
 
     .btn-light {
         background: #edf8f2;
-        color: #0f744c;
-        border: 1px solid rgba(15, 116, 76, .14);
+        color: #2F6BFF;
+        border: 1px solid rgba(47, 107, 255, .14);
     }
 
     .btn-primary {
-        background: linear-gradient(145deg, #34d399, #10b981);
+        background: linear-gradient(145deg, #60A5FA, #10b981);
         color: white;
-        box-shadow: 0 10px 25px rgba(16, 185, 129, .25);
+        box-shadow: 0 10px 25px rgba(47, 107, 255, .25);
     }
 
     .btn-outline {
         background: transparent;
-        border: 1px solid rgba(15, 116, 76, .2);
-        color: #0f744c;
+        border: 1px solid rgba(47, 107, 255, .2);
+        color: #2F6BFF;
     }
 
     .btn-outline:hover {
         background: #edf8f2;
-        border-color: #34d399;
+        border-color: #60A5FA;
     }
 
     .btn:hover {
@@ -484,20 +484,20 @@
     }
 
     .btn-filter {
-        background: #f0f9f4;
-        border: 1px solid rgba(15, 116, 76, .15);
+        background: #F8FAFC;
+        border: 1px solid rgba(47, 107, 255, .15);
         padding: 10px 18px;
         border-radius: 12px;
         font-weight: 600;
-        color: #0f744c;
+        color: #2F6BFF;
     }
 
     /* Table Card */
     .table-card {
         background: white;
         border-radius: 24px;
-        border: 1px solid rgba(15, 116, 76, .12);
-        box-shadow: 0 18px 45px rgba(15, 116, 76, .08);
+        border: 1px solid rgba(47, 107, 255, .12);
+        box-shadow: 0 18px 45px rgba(47, 107, 255, .08);
         overflow: hidden;
         height: 100%;
     }
@@ -510,7 +510,7 @@
         align-items: center;
         gap: 16px;
         flex-wrap: wrap;
-        border-bottom: 1px solid rgba(15, 116, 76, .1);
+        border-bottom: 1px solid rgba(47, 107, 255, .1);
     }
 
     .table-title {
@@ -523,7 +523,7 @@
         width: 44px;
         height: 44px;
         background: #e7f5ee;
-        color: #0f744c;
+        color: #2F6BFF;
         border-radius: 14px;
         display: flex;
         align-items: center;
@@ -539,12 +539,12 @@
 
     .muted {
         font-size: 0.75rem;
-        color: #8ba198;
+        color: #94A3B8;
     }
 
     /* Alert Info */
     .alert-info {
-        background: #ecfdf5;
+        background: #EEF2FF;
         border-left: 4px solid #10b981;
         border-radius: 14px;
         padding: 16px;
@@ -556,12 +556,12 @@
     .alert-icon {
         width: 40px;
         height: 40px;
-        background: #d1fae5;
+        background: #E0E7FF;
         border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #059669;
+        color: #2F6BFF;
         font-size: 1.2rem;
     }
 
@@ -581,14 +581,14 @@
     .hierarchy-container {
         background: #fafefb;
         border-radius: 18px;
-        border: 1px solid rgba(15, 116, 76, .1);
+        border: 1px solid rgba(47, 107, 255, .1);
         overflow: hidden;
     }
 
     .level-legend {
         padding: 14px 20px;
         background: #ffffff;
-        border-bottom: 1px solid rgba(15, 116, 76, .1);
+        border-bottom: 1px solid rgba(47, 107, 255, .1);
         display: flex;
         align-items: center;
         gap: 12px;
@@ -597,7 +597,7 @@
 
     .level-legend span:first-child {
         font-weight: 700;
-        color: #07130d;
+        color: #070B1A;
         font-size: 0.8rem;
     }
 
@@ -610,7 +610,7 @@
     }
 
     .legend-badge.l0 { background: #111827; }
-    .legend-badge.l1 { background: #0f744c; }
+    .legend-badge.l1 { background: #2F6BFF; }
     .legend-badge.l2 { background: #10b981; }
     .legend-badge.l3 { background: #3b82f6; }
     .legend-badge.l4 { background: #f59e0b; }
@@ -619,19 +619,19 @@
 
     .expand-all-btn {
         margin-left: auto;
-        background: #f0f9f4;
+        background: #F8FAFC;
         border: none;
         padding: 6px 14px;
         border-radius: 20px;
         font-size: 0.75rem;
         font-weight: 600;
-        color: #0f744c;
+        color: #2F6BFF;
         cursor: pointer;
         transition: all 0.2s;
     }
 
     .expand-all-btn:hover {
-        background: #d1fae5;
+        background: #E0E7FF;
     }
 
     /* Hierarchy Tree */
@@ -655,7 +655,7 @@
         margin-left: 35px;
         margin-top: 8px;
         padding-left: 20px;
-        border-left: 2px solid #d1fae5;
+        border-left: 2px solid #E0E7FF;
         position: relative;
     }
 
@@ -673,8 +673,8 @@
     }
 
     .designation-item:hover {
-        border-color: #34d399;
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1);
+        border-color: #60A5FA;
+        box-shadow: 0 4px 12px rgba(47, 107, 255, 0.1);
     }
 
     .designation-item.dragging {
@@ -692,7 +692,7 @@
     }
 
     .drag-handle:hover {
-        color: #0f744c;
+        color: #2F6BFF;
         background: #edf8f2;
     }
 
@@ -711,7 +711,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #0f744c;
+        color: #2F6BFF;
     }
 
     .designation-details {
@@ -720,12 +720,12 @@
 
     .designation-name {
         font-weight: 700;
-        color: #07130d;
+        color: #070B1A;
     }
 
     .designation-parent {
         font-size: 0.7rem;
-        color: #8ba198;
+        color: #94A3B8;
     }
 
     .designation-level {
@@ -740,14 +740,14 @@
         background: none;
         border: none;
         cursor: pointer;
-        color: #8ba198;
+        color: #94A3B8;
         padding: 6px;
         border-radius: 6px;
     }
 
     .toggle-children:hover {
         background: #edf8f2;
-        color: #0f744c;
+        color: #2F6BFF;
     }
 
     /* Action Footer */
@@ -759,12 +759,12 @@
         flex-wrap: wrap;
         gap: 15px;
         padding-top: 16px;
-        border-top: 1px solid rgba(15, 116, 76, .1);
+        border-top: 1px solid rgba(47, 107, 255, .1);
     }
 
     .info-text {
         font-size: 0.75rem;
-        color: #8ba198;
+        color: #94A3B8;
     }
 
     .info-text i {
@@ -785,8 +785,8 @@
     }
 
     .status-badge {
-        background: #d1fae5;
-        color: #059669;
+        background: #E0E7FF;
+        color: #2F6BFF;
         padding: 6px 14px;
         border-radius: 30px;
         font-size: 0.7rem;
@@ -799,18 +799,18 @@
     }
 
     .chart-control-btn {
-        background: #f0f9f4;
+        background: #F8FAFC;
         border: none;
         width: 36px;
         height: 36px;
         border-radius: 10px;
-        color: #0f744c;
+        color: #2F6BFF;
         cursor: pointer;
         transition: all 0.2s;
     }
 
     .chart-control-btn:hover {
-        background: #d1fae5;
+        background: #E0E7FF;
     }
 
     .chart-controls {
@@ -824,19 +824,19 @@
 
     .chart-controls button {
         background: white;
-        border: 1px solid rgba(15, 116, 76, .15);
+        border: 1px solid rgba(47, 107, 255, .15);
         width: 36px;
         height: 36px;
         border-radius: 10px;
-        color: #0f744c;
+        color: #2F6BFF;
         cursor: pointer;
         transition: all 0.2s;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     }
 
     .chart-controls button:hover {
-        background: #d1fae5;
-        border-color: #34d399;
+        background: #E0E7FF;
+        border-color: #60A5FA;
     }
 
     /* Chart Legend */
@@ -849,13 +849,13 @@
         padding: 12px 16px;
         border-radius: 12px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-        border: 1px solid rgba(15, 116, 76, .1);
+        border: 1px solid rgba(47, 107, 255, .1);
     }
 
     .legend-header {
         font-size: 0.7rem;
         font-weight: 700;
-        color: #07130d;
+        color: #070B1A;
         margin-bottom: 8px;
     }
 
@@ -879,7 +879,7 @@
     }
 
     .legend-color.l0 { background: #111827; }
-    .legend-color.l1 { background: #0f744c; }
+    .legend-color.l1 { background: #2F6BFF; }
     .legend-color.l2 { background: #10b981; }
     .legend-color.l3 { background: #3b82f6; }
     .legend-color.l4 { background: #f59e0b; }
@@ -916,7 +916,7 @@
         width: 40px;
         height: 40px;
         border: 3px solid #e7f5ee;
-        border-top-color: #0f744c;
+        border-top-color: #2F6BFF;
         border-radius: 50%;
         animation: spin 0.8s linear infinite;
     }
@@ -929,7 +929,7 @@
     .card-footer {
         padding: 16px 22px;
         background: #fafefb;
-        border-top: 1px solid rgba(15, 116, 76, .08);
+        border-top: 1px solid rgba(47, 107, 255, .08);
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -939,12 +939,12 @@
 
     .footer-info {
         font-size: 0.7rem;
-        color: #8ba198;
+        color: #94A3B8;
     }
 
     .footer-status {
         font-size: 0.7rem;
-        color: #059669;
+        color: #2F6BFF;
     }
 
     .footer-status i {
@@ -962,7 +962,7 @@
         align-items: center;
         flex-wrap: wrap;
         gap: 15px;
-        border: 1px solid rgba(15, 116, 76, .1);
+        border: 1px solid rgba(47, 107, 255, .1);
     }
 
     .status-item {
@@ -984,24 +984,24 @@
     }
 
     .empty-state i {
-        color: #a7f3d0;
+        color: #C7D2FE;
         margin-bottom: 20px;
     }
 
     .empty-state h5 {
-        color: #0f744c;
+        color: #2F6BFF;
         margin-bottom: 8px;
     }
 
     .empty-state p {
-        color: #8ba198;
+        color: #94A3B8;
         margin-bottom: 20px;
     }
 
     /* Dropdown */
     .dropdown-menu {
         background: white;
-        border: 1px solid rgba(15, 116, 76, .15);
+        border: 1px solid rgba(47, 107, 255, .15);
         border-radius: 14px;
         padding: 8px;
         box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
@@ -1018,8 +1018,8 @@
     }
 
     .dropdown-item:hover {
-        background: #ecfdf5;
-        color: #059669;
+        background: #EEF2FF;
+        color: #2F6BFF;
     }
 
     /* Fullscreen */
@@ -1037,7 +1037,7 @@
 
     /* Level Colors */
     .l0-bg { background: #111827; }
-    .l1-bg { background: #0f744c; }
+    .l1-bg { background: #2F6BFF; }
     .l2-bg { background: #10b981; }
     .l3-bg { background: #3b82f6; }
     .l4-bg { background: #f59e0b; }
@@ -1097,8 +1097,8 @@
     [data-pms-theme="dark"] .designation-hierarchy-page .breadcrumb,
     .dark .designation-hierarchy-page .breadcrumb {
         background: #0F1530 !important;
-        border: 1px solid rgba(122, 240, 181, 0.2) !important;
-        color: #7af0b5 !important;
+        border: 1px solid rgba(79, 131, 255, 0.2) !important;
+        color: #60A5FA !important;
     }
 
     html[data-pms-theme="dark"] .designation-hierarchy-page .header-card,
@@ -1109,7 +1109,7 @@
     [data-pms-theme="dark"] .designation-hierarchy-page .header-card,
     .dark .designation-hierarchy-page .header-card {
         background: #0F1530 !important;
-        border: 1px solid rgba(122, 240, 181, 0.2) !important;
+        border: 1px solid rgba(79, 131, 255, 0.2) !important;
     }
 
     html[data-pms-theme="dark"] .designation-hierarchy-page .header-card h1,
@@ -1119,7 +1119,7 @@
     body[data-pms-theme="dark"] .designation-hierarchy-page .header-card h1,
     [data-pms-theme="dark"] .designation-hierarchy-page .header-card h1,
     .dark .designation-hierarchy-page .header-card h1 {
-        background: linear-gradient(135deg, #ffffff 0%, #7af0b5 100%) !important;
+        background: linear-gradient(135deg, #ffffff 0%, #60A5FA 100%) !important;
         background-clip: text !important;
         -webkit-background-clip: text !important;
         -webkit-text-fill-color: transparent !important;
@@ -1144,10 +1144,10 @@
     body[data-pms-theme="dark"] .designation-hierarchy-page .btn-light,
     [data-pms-theme="dark"] .designation-hierarchy-page .btn-light,
     .dark .designation-hierarchy-page .btn-light {
-        background: #14281e !important;
-        border: 1px solid rgba(122, 240, 181, 0.35) !important;
-        color: #7af0b5 !important;
-        -webkit-text-fill-color: #7af0b5 !important;
+        background: rgba(79, 131, 255, 0.12) !important;
+        border: 1px solid rgba(79, 131, 255, 0.35) !important;
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
     }
 
     html[data-pms-theme="dark"] .designation-hierarchy-page .btn-light:hover,
@@ -1157,7 +1157,7 @@
     body[data-pms-theme="dark"] .designation-hierarchy-page .btn-light:hover,
     [data-pms-theme="dark"] .designation-hierarchy-page .btn-light:hover,
     .dark .designation-hierarchy-page .btn-light:hover {
-        background: #1f3e31 !important;
+        background: rgba(79, 131, 255, 0.25) !important;
         color: #ffffff !important;
         -webkit-text-fill-color: #ffffff !important;
     }
@@ -1171,7 +1171,7 @@
     [data-pms-theme="dark"] .designation-hierarchy-page .stat-card,
     .dark .designation-hierarchy-page .stat-card {
         background: #0F1530 !important;
-        border: 1px solid rgba(122, 240, 181, 0.25) !important;
+        border: 1px solid rgba(79, 131, 255, 0.25) !important;
         color: #EEF1FB !important;
     }
 
@@ -1204,8 +1204,8 @@
     body[data-pms-theme="dark"] .designation-hierarchy-page .stat-sub,
     [data-pms-theme="dark"] .designation-hierarchy-page .stat-sub,
     .dark .designation-hierarchy-page .stat-sub {
-        color: #7af0b5 !important;
-        -webkit-text-fill-color: #7af0b5 !important;
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
     }
 
     /* Stat Card Icons in Dark Mode */
@@ -1218,10 +1218,10 @@
     .dark .designation-hierarchy-page .stat-icon,
     html[data-pms-theme="dark"] .designation-hierarchy-page .stat-card:first-of-type .stat-icon,
     html[data-bs-theme="dark"] .designation-hierarchy-page .stat-card:first-of-type .stat-icon {
-        background: rgba(16, 185, 129, 0.22) !important;
-        color: #7af0b5 !important;
-        -webkit-text-fill-color: #7af0b5 !important;
-        border: 1px solid rgba(122, 240, 181, 0.4) !important;
+        background: rgba(47, 107, 255, 0.22) !important;
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
+        border: 1px solid rgba(79, 131, 255, 0.4) !important;
     }
 
     html[data-pms-theme="dark"] .designation-hierarchy-page .stat-card:nth-child(2) .stat-icon,
@@ -1256,15 +1256,15 @@
     body[data-pms-theme="dark"] .designation-hierarchy-page .btn-filter,
     [data-pms-theme="dark"] .designation-hierarchy-page .btn-filter,
     .dark .designation-hierarchy-page .btn-filter {
-        background: #14281e !important;
-        border: 1px solid rgba(122, 240, 181, 0.35) !important;
-        color: #7af0b5 !important;
-        -webkit-text-fill-color: #7af0b5 !important;
+        background: rgba(79, 131, 255, 0.12) !important;
+        border: 1px solid rgba(79, 131, 255, 0.35) !important;
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
     }
 
     html[data-pms-theme="dark"] .designation-hierarchy-page .btn-filter:hover,
     html[data-bs-theme="dark"] .designation-hierarchy-page .btn-filter:hover {
-        background: #1f3e31 !important;
+        background: rgba(79, 131, 255, 0.25) !important;
         color: #ffffff !important;
         -webkit-text-fill-color: #ffffff !important;
     }
@@ -1277,17 +1277,17 @@
     body[data-pms-theme="dark"] .designation-hierarchy-page .alert-info,
     [data-pms-theme="dark"] .designation-hierarchy-page .alert-info,
     .dark .designation-hierarchy-page .alert-info {
-        background: #0d1b14 !important;
-        border-left: 4px solid #7af0b5 !important;
-        border: 1px solid rgba(122, 240, 181, 0.2) !important;
+        background: rgba(47, 107, 255, 0.1) !important;
+        border-left: 4px solid #2F6BFF !important;
+        border: 1px solid rgba(79, 131, 255, 0.2) !important;
         border-left-width: 4px !important;
         color: #EEF1FB !important;
     }
 
     html[data-pms-theme="dark"] .designation-hierarchy-page .alert-info .alert-icon,
     html[data-bs-theme="dark"] .designation-hierarchy-page .alert-info .alert-icon {
-        background: rgba(16, 185, 129, 0.25) !important;
-        color: #7af0b5 !important;
+        background: rgba(47, 107, 255, 0.25) !important;
+        color: #60A5FA !important;
     }
 
     html[data-pms-theme="dark"] .designation-hierarchy-page .alert-info strong,
@@ -1309,7 +1309,7 @@
     [data-pms-theme="dark"] .designation-hierarchy-page .hierarchy-container,
     .dark .designation-hierarchy-page .hierarchy-container {
         background: #0F1530 !important;
-        border: 1px solid rgba(122, 240, 181, 0.2) !important;
+        border: 1px solid rgba(79, 131, 255, 0.2) !important;
     }
 
     html[data-pms-theme="dark"] .designation-hierarchy-page .level-legend,
@@ -1320,13 +1320,13 @@
     [data-pms-theme="dark"] .designation-hierarchy-page .level-legend,
     .dark .designation-hierarchy-page .level-legend {
         background: #141B3D !important;
-        border-bottom: 1px solid rgba(122, 240, 181, 0.15) !important;
+        border-bottom: 1px solid rgba(79, 131, 255, 0.15) !important;
         color: #EEF1FB !important;
     }
 
     html[data-pms-theme="dark"] .designation-hierarchy-page .level-legend span:first-child,
     html[data-bs-theme="dark"] .designation-hierarchy-page .level-legend span:first-child {
-        color: #7af0b5 !important;
+        color: #60A5FA !important;
     }
 
     html[data-pms-theme="dark"] .designation-hierarchy-page .expand-all-btn,
@@ -1336,14 +1336,14 @@
     body[data-pms-theme="dark"] .designation-hierarchy-page .expand-all-btn,
     [data-pms-theme="dark"] .designation-hierarchy-page .expand-all-btn,
     .dark .designation-hierarchy-page .expand-all-btn {
-        background: #14281e !important;
-        color: #7af0b5 !important;
-        border: 1px solid rgba(122, 240, 181, 0.3) !important;
+        background: rgba(79, 131, 255, 0.12) !important;
+        color: #60A5FA !important;
+        border: 1px solid rgba(79, 131, 255, 0.3) !important;
     }
 
     html[data-pms-theme="dark"] .designation-hierarchy-page .expand-all-btn:hover,
     html[data-bs-theme="dark"] .designation-hierarchy-page .expand-all-btn:hover {
-        background: #1f3e31 !important;
+        background: rgba(79, 131, 255, 0.25) !important;
         color: #ffffff !important;
     }
 
@@ -1370,7 +1370,7 @@
     [data-pms-theme="dark"] .designation-hierarchy-page .chart-legend,
     .dark .designation-hierarchy-page .chart-legend {
         background: #0F1530 !important;
-        border: 1px solid rgba(122, 240, 181, 0.2) !important;
+        border: 1px solid rgba(79, 131, 255, 0.2) !important;
         color: #EEF1FB !important;
     }
 
@@ -1382,7 +1382,7 @@
     [data-pms-theme="dark"] .designation-hierarchy-page .table-header,
     .dark .designation-hierarchy-page .table-header {
         background: #141B3D !important;
-        border-bottom: 1px solid rgba(122, 240, 181, 0.15) !important;
+        border-bottom: 1px solid rgba(79, 131, 255, 0.15) !important;
     }
 
     html[data-pms-theme="dark"] .designation-hierarchy-page .table-title-icon,
@@ -1397,9 +1397,9 @@
     [data-bs-theme="dark"] .designation-hierarchy-page .table-title-icon,
     [data-theme="dark"] .designation-hierarchy-page .table-title-icon,
     .dark .designation-hierarchy-page .table-title-icon {
-        background: rgba(16, 185, 129, 0.22) !important;
-        color: #7af0b5 !important;
-        border: 1px solid rgba(122, 240, 181, 0.4) !important;
+        background: rgba(47, 107, 255, 0.22) !important;
+        color: #60A5FA !important;
+        border: 1px solid rgba(79, 131, 255, 0.4) !important;
     }
 
     html[data-pms-theme="dark"] .designation-hierarchy-page .table-title-icon i,
@@ -1409,24 +1409,24 @@
     body[data-pms-theme="dark"] .designation-hierarchy-page .table-title-icon i,
     [data-pms-theme="dark"] .designation-hierarchy-page .table-title-icon i,
     .dark .designation-hierarchy-page .table-title-icon i {
-        color: #7af0b5 !important;
-        -webkit-text-fill-color: #7af0b5 !important;
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
     }
 
     html[data-pms-theme="dark"] .designation-hierarchy-page .chart-control-btn,
     html[data-bs-theme="dark"] .designation-hierarchy-page .chart-control-btn,
     html[data-pms-theme="dark"] .designation-hierarchy-page .chart-controls button,
     html[data-bs-theme="dark"] .designation-hierarchy-page .chart-controls button {
-        background: #14281e !important;
-        border: 1px solid rgba(122, 240, 181, 0.35) !important;
-        color: #7af0b5 !important;
+        background: rgba(79, 131, 255, 0.12) !important;
+        border: 1px solid rgba(79, 131, 255, 0.35) !important;
+        color: #60A5FA !important;
     }
 
     html[data-pms-theme="dark"] .designation-hierarchy-page .chart-control-btn:hover,
     html[data-bs-theme="dark"] .designation-hierarchy-page .chart-control-btn:hover,
     html[data-pms-theme="dark"] .designation-hierarchy-page .chart-controls button:hover,
     html[data-bs-theme="dark"] .designation-hierarchy-page .chart-controls button:hover {
-        background: #1f3e31 !important;
+        background: rgba(79, 131, 255, 0.25) !important;
         color: #ffffff !important;
     }
 
@@ -1446,14 +1446,14 @@
     [data-pms-theme="dark"] .designation-hierarchy-page .designation-item,
     .dark .designation-hierarchy-page .designation-item {
         background: #141B3D !important;
-        border: 1px solid rgba(122, 240, 181, 0.15) !important;
+        border: 1px solid rgba(79, 131, 255, 0.15) !important;
         color: #ffffff !important;
     }
 
     html[data-pms-theme="dark"] .designation-hierarchy-page .designation-icon-small,
     html[data-bs-theme="dark"] .designation-hierarchy-page .designation-icon-small {
-        background: rgba(16, 185, 129, 0.2) !important;
-        color: #7af0b5 !important;
+        background: rgba(47, 107, 255, 0.2) !important;
+        color: #60A5FA !important;
     }
 
     html[data-pms-theme="dark"] .designation-hierarchy-page .designation-name,
@@ -1577,7 +1577,7 @@
     body[data-pms-theme="dark"] #chartDiv path[stroke],
     [data-pms-theme="dark"] #chartDiv path[stroke],
     .dark #chartDiv path[stroke] {
-        stroke: #7af0b5 !important;
+        stroke: #60A5FA !important;
         stroke-width: 2.5px !important;
         stroke-opacity: 1 !important;
     }
@@ -1589,7 +1589,7 @@
     body[data-pms-theme="dark"] #chartDiv line,
     [data-pms-theme="dark"] #chartDiv line,
     .dark #chartDiv line {
-        stroke: #7af0b5 !important;
+        stroke: #60A5FA !important;
         stroke-width: 2.5px !important;
         stroke-opacity: 1 !important;
     }
@@ -1597,15 +1597,15 @@
     html[data-pms-theme="dark"] #chartDiv marker path,
     html[data-bs-theme="dark"] #chartDiv marker path,
     [data-pms-theme="dark"] #chartDiv marker path {
-        fill: #7af0b5 !important;
-        stroke: #7af0b5 !important;
+        fill: #60A5FA !important;
+        stroke: #60A5FA !important;
     }
 
     html[data-pms-theme="dark"] .designation-hierarchy-page .legend-header,
     html[data-bs-theme="dark"] .designation-hierarchy-page .legend-header,
     html[data-theme="dark"] .designation-hierarchy-page .legend-header,
     html.dark .designation-hierarchy-page .legend-header {
-        color: #7af0b5 !important;
+        color: #60A5FA !important;
     }
 
     html[data-pms-theme="dark"] .designation-hierarchy-page .card-footer,
@@ -1613,14 +1613,14 @@
     html[data-theme="dark"] .designation-hierarchy-page .card-footer,
     html.dark .designation-hierarchy-page .card-footer {
         background: #141B3D !important;
-        border-top: 1px solid rgba(122, 240, 181, 0.15) !important;
+        border-top: 1px solid rgba(79, 131, 255, 0.15) !important;
     }
 
     html[data-pms-theme="dark"] .designation-hierarchy-page .dropdown-menu,
     html[data-bs-theme="dark"] .designation-hierarchy-page .dropdown-menu,
     [data-pms-theme="dark"] .designation-hierarchy-page .dropdown-menu {
         background: #0F1530 !important;
-        border: 1px solid rgba(122, 240, 181, 0.25) !important;
+        border: 1px solid rgba(79, 131, 255, 0.25) !important;
         box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5) !important;
     }
 
@@ -1633,28 +1633,28 @@
     html[data-pms-theme="dark"] .designation-hierarchy-page .dropdown-item:hover,
     html[data-bs-theme="dark"] .designation-hierarchy-page .dropdown-item:hover,
     [data-pms-theme="dark"] .designation-hierarchy-page .dropdown-item:hover {
-        background: #14281e !important;
-        color: #7af0b5 !important;
+        background: rgba(79, 131, 255, 0.15) !important;
+        color: #60A5FA !important;
     }
 
     html[data-pms-theme="dark"] .designation-hierarchy-page .btn-outline,
     html[data-bs-theme="dark"] .designation-hierarchy-page .btn-outline {
-        background: #14281e !important;
-        border: 1px solid rgba(122, 240, 181, 0.35) !important;
-        color: #7af0b5 !important;
+        background: rgba(79, 131, 255, 0.12) !important;
+        border: 1px solid rgba(79, 131, 255, 0.35) !important;
+        color: #60A5FA !important;
     }
 
     html[data-pms-theme="dark"] .designation-hierarchy-page .btn-outline:hover,
     html[data-bs-theme="dark"] .designation-hierarchy-page .btn-outline:hover {
-        background: #1f3e31 !important;
+        background: rgba(79, 131, 255, 0.25) !important;
         color: #ffffff !important;
     }
 
     html[data-pms-theme="dark"] .designation-hierarchy-page .status-badge,
     html[data-bs-theme="dark"] .designation-hierarchy-page .status-badge {
-        background: #0d1b14 !important;
-        color: #7af0b5 !important;
-        border: 1px solid rgba(122, 240, 181, 0.3) !important;
+        background: rgba(79, 131, 255, 0.15) !important;
+        color: #60A5FA !important;
+        border: 1px solid rgba(79, 131, 255, 0.3) !important;
     }
 </style>
 
@@ -1791,7 +1791,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 icon: 'error',
                 title: 'Error!',
                 text: error.message || 'Failed to save hierarchy',
-                confirmButtonColor: '#0f744c'
+                confirmButtonColor: '#2F6BFF'
             });
         })
         .finally(() => {
@@ -1810,7 +1810,7 @@ document.addEventListener('DOMContentLoaded', function() {
             text: 'This will discard all unsaved changes.',
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#0f744c',
+            confirmButtonColor: '#2F6BFF',
             confirmButtonText: 'Yes, reset'
         }).then((result) => {
             if (result.isConfirmed && hierarchyList) {
@@ -1878,18 +1878,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 const fill = path.getAttribute('fill');
                 const stroke = path.getAttribute('stroke');
                 if (fill === 'none' || fill === 'transparent' || stroke) {
-                    path.setAttribute('stroke', '#7af0b5');
+                    path.setAttribute('stroke', '#60A5FA');
                     path.setAttribute('stroke-width', '2.5');
-                    path.style.setProperty('stroke', '#7af0b5', 'important');
+                    path.style.setProperty('stroke', '#60A5FA', 'important');
                     path.style.setProperty('stroke-width', '2.5px', 'important');
                     path.style.setProperty('stroke-opacity', '1', 'important');
                 }
             });
 
             chartDiv.querySelectorAll('line').forEach(line => {
-                line.setAttribute('stroke', '#7af0b5');
+                line.setAttribute('stroke', '#60A5FA');
                 line.setAttribute('stroke-width', '2.5');
-                line.style.setProperty('stroke', '#7af0b5', 'important');
+                line.style.setProperty('stroke', '#60A5FA', 'important');
                 line.style.setProperty('stroke-width', '2.5px', 'important');
             });
         }
@@ -1907,14 +1907,14 @@ document.addEventListener('DOMContentLoaded', function() {
             type: 'organizational',
             box: { fill: isDark ? '#0F1530' : 'transparent' },
             fill: isDark ? '#0F1530' : 'transparent',
-            palette: ['#0f744c', '#10b981', '#3b82f6', '#f59e0b', '#f97316', '#ef4444'],
+            palette: ['#2F6BFF', '#10b981', '#3b82f6', '#f59e0b', '#f97316', '#ef4444'],
             defaultSeries: {
                 shape: {
-                    outline: { width: 1.5, color: isDark ? '#7af0b5' : 'white' },
-                    fill: '#0f744c'
+                    outline: { width: 1.5, color: isDark ? '#60A5FA' : 'white' },
+                    fill: '#2F6BFF'
                 },
                 connectorLine: {
-                    color: isDark ? '#7af0b5' : '#0f744c',
+                    color: isDark ? '#60A5FA' : '#2F6BFF',
                     width: 2.5,
                     caps: { end: { type: 'arrow', size: 6 } }
                 },
@@ -1931,7 +1931,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 tooltip: '<b>%name</b><br>Designation: %level',
                 label_text: '%name',
                 connectorLine: {
-                    color: isDark ? '#7af0b5' : '#0f744c',
+                    color: isDark ? '#60A5FA' : '#2F6BFF',
                     width: 2.5,
                     caps: { end: { type: 'arrow', size: 6 } }
                 }

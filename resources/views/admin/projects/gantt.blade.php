@@ -420,7 +420,7 @@
     }
 
     .btn-primary-custom {
-        background: #0f744c;
+        background: #2F6BFF;
         color: #ffffff;
         font-weight: 600;
         border-radius: 8px;

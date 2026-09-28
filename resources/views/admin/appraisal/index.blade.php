@@ -107,9 +107,9 @@
     .appraisal-shell #appraisalTabs .nav-link.active {
         color: #ffffff !important;
         -webkit-text-fill-color: #ffffff !important;
-        background: var(--pms-primary, #0f744c) !important;
-        border-bottom: 3px solid var(--pms-primary, #0f744c) !important;
-        box-shadow: 0 12px 20px rgba(15, 116, 76, 0.2);
+        background: var(--pms-primary, #2F6BFF) !important;
+        border-bottom: 3px solid var(--pms-primary, #2F6BFF) !important;
+        box-shadow: 0 12px 20px rgba(47, 107, 255, 0.2);
     }
     .appraisal-shell #appraisalTabs .nav-link.active i {
         color: #ffffff !important;
@@ -174,13 +174,13 @@
 
     /* High contrast grade badges */
     .badge-grade-excellent {
-        background-color: #059669 !important;
+        background-color: #2F6BFF !important;
         color: #ffffff !important;
         font-weight: 700 !important;
         font-size: 0.8rem !important;
         padding: 0.4rem 0.85rem !important;
         border-radius: 50px !important;
-        box-shadow: 0 2px 6px rgba(5, 150, 105, 0.25) !important;
+        box-shadow: 0 2px 6px rgba(47, 107, 255, 0.25) !important;
         display: inline-block !important;
     }
     .badge-grade-good {
@@ -487,8 +487,8 @@
     body[data-pms-theme="dark"] .appraisal-shell .app-table td .text-dark,
     [data-pms-theme="dark"] .appraisal-shell .app-table td .text-dark,
     .dark .appraisal-shell .app-table td .text-dark {
-        color: #f8fffb !important;
-        -webkit-text-fill-color: #f8fffb !important;
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
     }
 
     html[data-pms-theme="dark"] .appraisal-shell .app-table td span.badge[style*="background: #f1f5f9"],
@@ -864,9 +864,9 @@
         {{-- TABLE 1: PROJECT WORK APPRAISAL TABLE --}}
         <div class="tab-pane fade" id="project-table-pane" role="tabpanel">
             <div class="app-table-card">
-                <div class="p-3 text-white d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #065f46 0%, #047857 100%);">
+                <div class="p-3 text-white d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #1E4FCC 0%, #2F6BFF 100%);">
                     <h5 class="text-white fw-bold mb-0"><i class="bx bx-folder-open me-1"></i> Table 1: Project Work Performance Appraisal</h5>
-                    <span class="badge bg-white text-dark fw-bold px-3 py-1.5" style="color: #047857 !important;">Weight in Overall Appraisal: 40%</span>
+                    <span class="badge bg-white text-dark fw-bold px-3 py-1.5" style="color: #2F6BFF !important;">Weight in Overall Appraisal: 40%</span>
                 </div>
                 <div class="table-responsive">
                     <table class="table app-table align-middle mb-0">

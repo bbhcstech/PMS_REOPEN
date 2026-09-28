@@ -11,8 +11,8 @@
         --primary-light: #eff6ff;
         --primary-border: #bfdbfe;
         --success: #10b981;
-        --success-light: #ecfdf5;
-        --success-border: #a7f3d0;
+        --success-light: #EEF2FF;
+        --success-border: #C7D2FE;
         --warning: #f59e0b;
         --warning-light: #fffbeb;
         --warning-border: #fde68a;
@@ -125,22 +125,22 @@
         height: 8px;
         border-radius: 50%;
         background: var(--success);
-        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+        box-shadow: 0 0 0 0 rgba(47, 107, 255, 0.7);
         animation: pulseAnimation 2s infinite;
     }
 
     @keyframes pulseAnimation {
         0% {
             transform: scale(0.95);
-            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            box-shadow: 0 0 0 0 rgba(47, 107, 255, 0.7);
         }
         70% {
             transform: scale(1);
-            box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+            box-shadow: 0 0 0 8px rgba(47, 107, 255, 0);
         }
         100% {
             transform: scale(0.95);
-            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+            box-shadow: 0 0 0 0 rgba(47, 107, 255, 0);
         }
     }
 
@@ -656,7 +656,7 @@
 
     .diff-added {
         color: #86efac;
-        background: rgba(16, 185, 129, 0.15);
+        background: rgba(47, 107, 255, 0.15);
         display: block;
         padding: 2px 6px;
         border-radius: 4px;
@@ -841,8 +841,8 @@
         --primary: #2F6BFF;
         --primary-light: rgba(47, 107, 255, 0.15);
         --primary-border: rgba(47, 107, 255, 0.35);
-        --success-light: rgba(16, 185, 129, 0.15);
-        --success-border: rgba(52, 211, 153, 0.3);
+        --success-light: rgba(47, 107, 255, 0.15);
+        --success-border: rgba(79, 131, 255, 0.3);
         --warning-light: rgba(245, 158, 11, 0.15);
         --warning-border: rgba(251, 191, 36, 0.3);
         --danger-light: rgba(239, 68, 68, 0.15);

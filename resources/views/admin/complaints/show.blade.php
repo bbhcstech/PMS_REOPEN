@@ -37,29 +37,29 @@
 }
 
 .chat-msg-other {
-    background-color: #ecfdf5;
-    border: 1px solid #a7f3d0;
-    color: #064e3b;
+    background-color: #EEF2FF;
+    border: 1px solid #C7D2FE;
+    color: #1E293B;
 }
 .chat-msg-other .chat-msg-meta {
-    color: #047857;
+    color: #2F6BFF;
     font-size: 0.75rem;
     font-weight: 700;
 }
 .chat-msg-other .chat-msg-body {
-    color: #064e3b;
+    color: #1E293B;
 }
 
 :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"], body.dark, [data-bs-theme="dark"]) .chat-msg-other {
-    background-color: rgba(16, 185, 129, 0.15) !important;
-    border-color: rgba(16, 185, 129, 0.3) !important;
-    color: #34d399 !important;
+    background-color: rgba(47, 107, 255, 0.15) !important;
+    border-color: rgba(47, 107, 255, 0.3) !important;
+    color: #60A5FA !important;
 }
 :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"], body.dark, [data-bs-theme="dark"]) .chat-msg-other .chat-msg-meta {
-    color: #6ee7b7 !important;
+    color: #93C5FD !important;
 }
 :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"], body.dark, [data-bs-theme="dark"]) .chat-msg-other .chat-msg-body {
-    color: #34d399 !important;
+    color: #60A5FA !important;
 }
 
 :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"], body.dark, [data-bs-theme="dark"]) .complaint-desc-body {

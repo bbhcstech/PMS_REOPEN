@@ -6,22 +6,24 @@
 <style>
     /* ===== PREMIUM ATTENDANCE REPORT STYLES ===== */
     :root {
-        --primary-blue: #1e3a8a;
-        --primary-teal: #0ea5a4;
-        --primary-green: #22c55e;
+        --primary-blue: #2F6BFF;
+        --primary-hover: #1E4FCC;
+        --primary-teal: #2F6BFF;
+        --primary-accent: #22D3EE;
+        --primary-green: #8B5CF6;
         --bg-light: #f8fafc;
         --glass-border: rgba(255, 255, 255, 0.7);
         --card-shadow: 0px 4px 20px rgba(0, 0, 0, 0.02),
             0px 8px 40px rgba(0, 0, 0, 0.04),
-            0px 20px 60px rgba(30, 58, 138, 0.06);
+            0px 20px 60px rgba(47, 107, 255, 0.06);
         --card-shadow-hover: 0px 20px 50px rgba(0, 0, 0, 0.08),
-            0px 30px 80px rgba(30, 58, 138, 0.12);
+            0px 30px 80px rgba(47, 107, 255, 0.12);
         --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         --spring-transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
     .report-container {
-        background: linear-gradient(135deg, #f0f9ff 0%, #e6f7f5 50%, #f0fdf4 100%);
+        background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 50%, #f1f5f9 100%);
         min-height: calc(100vh - 100px);
         padding: 2rem 1.75rem;
         position: relative;
@@ -43,7 +45,7 @@
         right: -100px;
         width: 500px;
         height: 500px;
-        background: radial-gradient(circle, rgba(30, 58, 138, 0.12) 0%, transparent 70%);
+        background: radial-gradient(circle, rgba(47, 107, 255, 0.12) 0%, transparent 70%);
         animation: orbFloat 20s ease-in-out infinite;
     }
 
@@ -52,7 +54,7 @@
         left: -100px;
         width: 450px;
         height: 450px;
-        background: radial-gradient(circle, rgba(14, 165, 164, 0.1) 0%, transparent 70%);
+        background: radial-gradient(circle, rgba(34, 211, 238, 0.1) 0%, transparent 70%);
         animation: orbFloat 25s ease-in-out infinite reverse;
     }
 
@@ -61,7 +63,7 @@
         left: 50%;
         width: 400px;
         height: 400px;
-        background: radial-gradient(circle, rgba(34, 197, 94, 0.08) 0%, transparent 70%);
+        background: radial-gradient(circle, rgba(139, 92, 246, 0.08) 0%, transparent 70%);
         animation: orbFloat 18s ease-in-out infinite;
         transform: translate(-50%, -50%);
     }
@@ -97,7 +99,7 @@
 
     .report-header:hover {
         box-shadow: var(--card-shadow-hover);
-        border-color: rgba(14, 165, 164, 0.2);
+        border-color: rgba(47, 107, 255, 0.2);
     }
 
     @keyframes slideDown {
@@ -108,7 +110,7 @@
     .header-title h1 {
         font-size: 2rem;
         font-weight: 800;
-        background: linear-gradient(135deg, var(--primary-blue), var(--primary-teal), var(--primary-green));
+        background: linear-gradient(135deg, var(--primary-blue), var(--primary-accent), var(--primary-green));
         -webkit-background-clip: text;
         background-clip: text;
         color: transparent;
@@ -124,7 +126,7 @@
     }
 
     .header-title p i {
-        color: var(--primary-teal);
+        color: var(--primary-blue);
     }
 
     /* ===== FILTER CARD ===== */
@@ -210,7 +212,7 @@
     }
 
     .btn-filter {
-        background: linear-gradient(135deg, var(--primary-blue), var(--primary-teal));
+        background: linear-gradient(135deg, #2F6BFF, #1E4FCC);
         color: white;
         padding: 0.65rem 1.75rem;
         border-radius: 40px;
@@ -223,12 +225,12 @@
         align-items: center;
         gap: 0.5rem;
         min-height: 46px;
-        box-shadow: 0 4px 15px rgba(14, 165, 164, 0.2);
+        box-shadow: 0 4px 15px rgba(47, 107, 255, 0.2);
     }
 
     .btn-filter:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(14, 165, 164, 0.3);
+        box-shadow: 0 8px 25px rgba(47, 107, 255, 0.3);
     }
 
     /* ===== SUMMARY CARD ===== */
@@ -302,7 +304,7 @@
         flex-shrink: 0;
     }
 
-    .summary-icon.present { background: #d1fae5; }
+    .summary-icon.present { background: #E0E7FF; }
     .summary-icon.late { background: #fef3c7; }
     .summary-icon.absent { background: #fee2e2; }
     .summary-icon.leave { background: #cffafe; }
@@ -501,7 +503,7 @@
         display: block;
     }
 
-    .attendance-grid td.present { background: #d1fae5; border-color: #86efac; }
+    .attendance-grid td.present { background: #E0E7FF; border-color: #86efac; }
     .attendance-grid td.absent { background: #fee2e2; border-color: #fca5a5; }
     .attendance-grid td.late { background: #fef3c7; border-color: #fcd34d; }
     .attendance-grid td.half_day { background: #ede9fe; border-color: #c4b5fd; }
@@ -644,51 +646,51 @@
 
     /* ===== DARK MODE ===== */
     html[data-pms-theme="dark"] .report-container {
-        background: linear-gradient(145deg, #07130d, #102119);
+        background: linear-gradient(145deg, #070B1A, #0F1530);
     }
 
     html[data-pms-theme="dark"] .report-header,
     html[data-pms-theme="dark"] .filter-card,
     html[data-pms-theme="dark"] .summary-card,
     html[data-pms-theme="dark"] .table-card {
-        background: rgba(16, 33, 25, 0.95);
-        border-color: rgba(122, 240, 181, 0.15);
+        background: rgba(15, 21, 48, 0.95);
+        border-color: rgba(79, 131, 255, 0.15);
     }
 
     html[data-pms-theme="dark"] .header-title h1 {
-        background: linear-gradient(135deg, #60a5fa, #34d399, #22c55e);
+        background: linear-gradient(135deg, #60a5fa, #2F6BFF, #8B5CF6);
         -webkit-background-clip: text;
         background-clip: text;
     }
 
     html[data-pms-theme="dark"] .header-title p {
-        color: #d9f1e4;
+        color: #C7D2FE;
     }
 
     html[data-pms-theme="dark"] .filter-group label {
-        color: #8ba198;
+        color: #94a3b8;
     }
 
     html[data-pms-theme="dark"] .filter-group select {
-        background: #183026;
-        border-color: rgba(122, 240, 181, 0.2);
+        background: #141B3D;
+        border-color: rgba(79, 131, 255, 0.2);
         color: #ffffff;
         background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
     }
 
     html[data-pms-theme="dark"] .filter-group select:focus {
-        border-color: #34d399;
-        box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.12);
+        border-color: #60A5FA;
+        box-shadow: 0 0 0 4px rgba(79, 131, 255, 0.12);
     }
 
     html[data-pms-theme="dark"] .filter-group select option {
-        background: #183026;
+        background: #141B3D;
         color: #ffffff;
     }
 
     html[data-pms-theme="dark"] .summary-item {
-        background: #183026;
-        border-color: rgba(122, 240, 181, 0.15);
+        background: #141B3D;
+        border-color: rgba(79, 131, 255, 0.15);
     }
 
     html[data-pms-theme="dark"] .summary-info .value {
@@ -696,7 +698,7 @@
     }
 
     html[data-pms-theme="dark"] .summary-info .label {
-        color: #8ba198;
+        color: #94a3b8;
     }
 
     html[data-pms-theme="dark"] .summary-header h6 {
@@ -708,13 +710,13 @@
     }
 
     html[data-pms-theme="dark"] .table-header .employee-name {
-        color: #34d399;
+        color: #60A5FA;
     }
 
     html[data-pms-theme="dark"] .attendance-grid th {
-        background: #183026;
-        color: #8ba198;
-        border-color: rgba(122, 240, 181, 0.15);
+        background: #141B3D;
+        color: #94a3b8;
+        border-color: rgba(79, 131, 255, 0.15);
     }
 
     html[data-pms-theme="dark"] .attendance-grid th .day-number {
@@ -726,25 +728,25 @@
     }
 
     html[data-pms-theme="dark"] .attendance-grid td {
-        background: #102119;
-        border-color: rgba(122, 240, 181, 0.12);
+        background: #0F1530;
+        border-color: rgba(79, 131, 255, 0.12);
     }
 
-    html[data-pms-theme="dark"] .attendance-grid td.present { background: #064e3b; border-color: #065f46; }
+    html[data-pms-theme="dark"] .attendance-grid td.present { background: rgba(47, 107, 255, 0.2); border-color: rgba(79, 131, 255, 0.3); }
     html[data-pms-theme="dark"] .attendance-grid td.absent { background: #450a0a; border-color: #7f1d1d; }
     html[data-pms-theme="dark"] .attendance-grid td.late { background: #451a03; border-color: #78350f; }
     html[data-pms-theme="dark"] .attendance-grid td.half_day { background: #2e1065; border-color: #4c1d95; }
     html[data-pms-theme="dark"] .attendance-grid td.leave { background: #164e63; border-color: #155e75; }
     html[data-pms-theme="dark"] .attendance-grid td.holiday { background: #431407; border-color: #7c2d12; }
     html[data-pms-theme="dark"] .attendance-grid td.dayoff { background: #172554; border-color: #1e3a8a; }
-    html[data-pms-theme="dark"] .attendance-grid td.default { background: #102119; border-color: rgba(122, 240, 181, 0.08); }
+    html[data-pms-theme="dark"] .attendance-grid td.default { background: #0F1530; border-color: rgba(79, 131, 255, 0.08); }
 
     html[data-pms-theme="dark"] .empty-state h5 {
         color: #ffffff;
     }
 
     html[data-pms-theme="dark"] .empty-state p {
-        color: #8ba198;
+        color: #94a3b8;
     }
 </style>
 

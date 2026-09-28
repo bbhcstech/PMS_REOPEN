@@ -7,7 +7,7 @@
 <div style="display: flex; flex-direction: column; gap: 24px;">
 
     <!-- HEADER BANNER -->
-    <div style="background: linear-gradient(135deg, #059669 0%, #047857 100%); color: #ffffff; padding: 28px 36px; border-radius: var(--radius-xl); box-shadow: var(--shadow-md); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px;">
+    <div style="background: linear-gradient(135deg, #2F6BFF 0%, #047857 100%); color: #ffffff; padding: 28px 36px; border-radius: var(--radius-xl); box-shadow: var(--shadow-md); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px;">
         <div>
             <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 6px;">
                 <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; font-size: 22px;">
@@ -15,7 +15,7 @@
                 </div>
                 <h1 style="font-size: 24px; font-weight: 800; letter-spacing: -0.5px; color: #ffffff;">Deadlines & Target Delivery Dates</h1>
             </div>
-            <p style="color: #a7f3d0; font-size: 14px; font-weight: 500;">
+            <p style="color: #C7D2FE; font-size: 14px; font-weight: 500;">
                 Calculated in real-time from active assigned tasks requiring delivery across tenant platforms.
             </p>
         </div>
@@ -28,7 +28,7 @@
             <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px;">
                 <div style="flex: 1; min-width: 280px;">
                     <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px; flex-wrap: wrap;">
-                        <span style="font-size: 11px; font-weight: 800; padding: 4px 12px; border-radius: 14px; text-transform: uppercase; letter-spacing: 0.5px; background: {{ $task->deadline_status === 'OVERDUE' ? '#fef2f2' : ($task->deadline_status === 'DUE SOON' ? '#fffbe6' : '#ecfdf5') }}; color: {{ $task->deadline_status === 'OVERDUE' ? '#dc2626' : ($task->deadline_status === 'DUE SOON' ? '#d97706' : '#059669') }}; border: 1px solid {{ $task->deadline_status === 'OVERDUE' ? '#fecaca' : ($task->deadline_status === 'DUE SOON' ? '#ffe58f' : '#a7f3d0') }};">
+                        <span style="font-size: 11px; font-weight: 800; padding: 4px 12px; border-radius: 14px; text-transform: uppercase; letter-spacing: 0.5px; background: {{ $task->deadline_status === 'OVERDUE' ? '#fef2f2' : ($task->deadline_status === 'DUE SOON' ? '#fffbe6' : '#EEF2FF') }}; color: {{ $task->deadline_status === 'OVERDUE' ? '#dc2626' : ($task->deadline_status === 'DUE SOON' ? '#d97706' : '#2F6BFF') }}; border: 1px solid {{ $task->deadline_status === 'OVERDUE' ? '#fecaca' : ($task->deadline_status === 'DUE SOON' ? '#ffe58f' : '#C7D2FE') }};">
                             ● {{ $task->deadline_status }}
                         </span>
                         <span style="font-size: 12px; font-weight: 700; color: var(--slate-muted);">

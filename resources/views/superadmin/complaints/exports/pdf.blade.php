@@ -12,7 +12,7 @@
       padding: 15px;
     }
     .header {
-      border-bottom: 2px solid #0f744c;
+      border-bottom: 2px solid #2F6BFF;
       padding-bottom: 12px;
       margin-bottom: 15px;
     }
@@ -23,7 +23,7 @@
     .header .title {
       font-size: 18px;
       font-weight: bold;
-      color: #0f744c;
+      color: #2F6BFF;
     }
     .header .subtitle {
       font-size: 11px;
@@ -50,7 +50,7 @@
       margin-top: 5px;
     }
     .pdf-table th {
-      background-color: #0f744c;
+      background-color: #2F6BFF;
       color: #ffffff;
       padding: 7px 8px;
       font-weight: bold;
@@ -78,7 +78,7 @@
     .badge-open { background: #eff6ff; color: #1d4ed8; border: 1px solid #93c5fd; }
     .badge-in_progress { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
     .badge-waiting { background: #f3e8ff; color: #6b21a8; border: 1px solid #d8b4fe; }
-    .badge-resolved { background: #ecfdf5; color: #047857; border: 1px solid #6ee7b7; }
+    .badge-resolved { background: #EEF2FF; color: #047857; border: 1px solid #93C5FD; }
     .badge-closed { background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; }
     .badge-critical { background: #ffe4e6; color: #9f1239; border: 1px solid #fecdd3; }
     .badge-high { background: #ffedd5; color: #9a3412; border: 1px solid #fed7aa; }

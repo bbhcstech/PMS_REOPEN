@@ -82,8 +82,8 @@
     .leave-show-page {
         padding: 30px 35px;
         min-height: 100vh;
-        background: var(--bx-bg, linear-gradient(135deg, #f0f9f4, #f7fbff));
-        color: var(--bx-ink, #102119);
+        background: var(--bx-bg, linear-gradient(135deg, #F8FAFC, #f7fbff));
+        color: var(--bx-ink, #0F1530);
         transition: background 0.25s ease, color 0.25s ease;
     }
     .show-head, .detail-card {
@@ -102,7 +102,7 @@
         margin-bottom: 18px;
     }
     .show-head span {
-        color: #0f744c;
+        color: #2F6BFF;
         font-weight: 800;
         font-size: 0.9rem;
     }
@@ -110,7 +110,7 @@
         margin: 8px 0 6px;
         font-size: 32px;
         font-weight: 900;
-        color: var(--bx-ink, #102119);
+        color: var(--bx-ink, #0F1530);
     }
     .show-head p {
         margin: 0;
@@ -128,8 +128,8 @@
         min-height: 40px;
     }
     .leave-show-page .btn-light {
-        background: var(--bx-surface-2, #f0f9f4);
-        color: var(--bx-ink, #0f744c);
+        background: var(--bx-surface-2, #F8FAFC);
+        color: var(--bx-ink, #2F6BFF);
         border: 1px solid var(--bx-border, rgba(16,185,129,.18));
     }
     .leave-show-page .btn-light:hover {
@@ -149,7 +149,7 @@
         font-size: 18px;
         font-weight: 800;
         margin-bottom: 16px;
-        color: var(--bx-ink, #102119);
+        color: var(--bx-ink, #0F1530);
     }
     .detail-card p {
         color: var(--bx-ink-body, #334155);
@@ -170,7 +170,7 @@
     .detail-card dd {
         margin: 0;
         font-weight: 700;
-        color: var(--bx-ink, #102119);
+        color: var(--bx-ink, #0F1530);
     }
     .approval-row {
         display: flex;
@@ -184,7 +184,7 @@
     }
     .approval-row strong {
         display: block;
-        color: var(--bx-ink, #102119);
+        color: var(--bx-ink, #0F1530);
     }
     .approval-row small {
         color: var(--bx-ink-muted, #667085);
@@ -196,23 +196,23 @@
         font-size: 0.8rem;
     }
     .status-pending { background: rgba(245, 158, 11, 0.15); color: #b45309; }
-    .status-approved { background: rgba(16, 185, 129, 0.15); color: #047857; }
+    .status-approved { background: rgba(47, 107, 255, 0.15); color: #2F6BFF; }
     .status-rejected { background: rgba(239, 68, 68, 0.15); color: #b91c1c; }
 
     .detail-card table.table {
-        color: var(--bx-ink, #102119);
-        border-color: var(--bx-border, rgba(16,185,129,.12));
+        color: var(--bx-ink, #0F1530);
+        border-color: var(--bx-border, rgba(47,107,255,.12));
     }
     .detail-card table.table th {
         background: var(--bx-surface-2, #f8fafc);
         color: var(--bx-ink-muted, #667085);
-        border-bottom-color: var(--bx-border, rgba(16,185,129,.12));
+        border-bottom-color: var(--bx-border, rgba(47,107,255,.12));
         font-weight: 800;
         font-size: 0.8rem;
         text-transform: uppercase;
     }
     .detail-card table.table td {
-        color: var(--bx-ink, #102119);
+        color: var(--bx-ink, #0F1530);
         border-bottom-color: var(--bx-border, rgba(16,185,129,.08));
     }
 
@@ -238,7 +238,7 @@
     }
     html[data-pms-theme="dark"] .show-head span,
     html[data-theme="dark"] .show-head span {
-        color: #34D399 !important;
+        color: #60A5FA !important;
     }
     html[data-pms-theme="dark"] .show-head h1,
     html[data-theme="dark"] .show-head h1,
@@ -276,8 +276,8 @@
     html[data-pms-theme="dark"] .leave-show-page .btn-light:hover,
     html[data-theme="dark"] .leave-show-page .btn-light:hover {
         background: #1A2247 !important;
-        color: #34D399 !important;
-        border-color: #34D399 !important;
+        color: #60A5FA !important;
+        border-color: #60A5FA !important;
     }
     html[data-pms-theme="dark"] .status-pending,
     html[data-theme="dark"] .status-pending {
@@ -286,8 +286,8 @@
     }
     html[data-pms-theme="dark"] .status-approved,
     html[data-theme="dark"] .status-approved {
-        background: rgba(16, 185, 129, 0.2) !important;
-        color: #34D399 !important;
+        background: rgba(47, 107, 255, 0.2) !important;
+        color: #60A5FA !important;
     }
     html[data-pms-theme="dark"] .status-rejected,
     html[data-theme="dark"] .status-rejected {

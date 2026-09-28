@@ -1,4 +1,4 @@
-{{-- resources/views/admin/attendance/table.blade.php --}}
+﻿{{-- resources/views/admin/attendance/table.blade.php --}}
 @php $authUser = Auth::user(); @endphp
 
 <div class="table-wrapper position-relative" style="margin-top:12px;">
@@ -7,13 +7,13 @@
       <thead class="table-light">
         <tr>
           <th class="no-export" data-pms-selection-column aria-label="Select rows"></th>
-          <th style="background-color:#f0f0f0; min-width:240px;">Employee</th>
+          <th class="attendance-col-emp" style="min-width:240px;">Employee</th>
           @for($i=1;$i<=$daysInMonth;$i++)
             @php $date = \Carbon\Carbon::createFromDate($year,$month,$i); @endphp
             <th style="font-size:16px; width:56px;">{{ $i }}<br><small>{{ $date->format('D') }}</small></th>
           @endfor
-          <th style="background-color:#f0f0f0; min-width:140px;">Total Hours</th>
-          <th class="no-export" style="background-color:#f0f0f0; min-width:260px;">Actions</th>
+          <th class="attendance-col-hours" style="min-width:140px;">Total Hours</th>
+          <th class="no-export attendance-col-actions" style="min-width:260px;">Actions</th>
         </tr>
       </thead>
 
@@ -21,7 +21,7 @@
         @foreach($users as $user)
           <tr>
             <td class="no-export" data-pms-selection-column></td>
-            <td class="text-start" style="background-color:#f9f9f9; white-space:nowrap;">
+            <td class="text-start attendance-cell-emp" style="white-space:nowrap;">
               <div class="attendance-employee-cell">
                 <img src="{{ $user->profile_image ? asset($user->profile_image) : asset('images/default-avatar.png') }}"
                      alt="{{ $user->name }}"
@@ -130,13 +130,13 @@
               @endphp
 
               <td class="fw-bold">
-                @php $isAdmin = auth()->user()->role === 'admin'; @endphp
+                @php $canEditAttendance = in_array(strtolower((string)(auth()->user()->role ?? '')), ['admin', 'superadmin', 'administrator', 'hr'], true); @endphp
 
                 @if($popupClass === 'view-attendance')
                   <a href="javascript:;" class="view-attendance" data-attendance-id="{{ $attendance->id ?? '' }}" data-user-id="{{ $user->id }}" data-date="{{ $dateKey }}">
                     {!! $symbol !!}
                   </a>
-                @elseif($popupClass === 'edit-attendance' && $isAdmin)
+                @elseif($popupClass === 'edit-attendance' && $canEditAttendance)
                   <a href="javascript:;" class="edit-attendance" data-attendance-id="{{ $attendance->id ?? '' }}" data-user-id="{{ $user->id }}" data-date="{{ $dateKey }}">
                     {!! $symbol !!}
                   </a>
@@ -199,7 +199,7 @@
                   <i class="fas fa-eye"></i>
                   <span>View</span>
                 </button>
-                @if(auth()->user()->role === 'admin')
+                @if($canEditAttendance)
                   <button type="button" class="attendance-action-btn edit js-month-edit" data-payload="{{ $employeeMonthPayloadEncoded }}" title="Edit month records">
                     <i class="fas fa-pen"></i>
                     <span>Edit</span>
@@ -218,25 +218,7 @@
   </div>
 </div>
 
-{{-- Modal: kept here so clicks can open it --}}
-<div class="modal fade attendance-details-modal" id="attendanceDetailsModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
-    <div class="modal-content attendance-details-modal-content">
-      <div class="modal-header bg-primary text-white">
-        <h5 class="modal-title">Attendance Details</h5>
-        <button type="button" class="btn-close" data-attendance-modal-close aria-label="Close"></button>
-      </div>
-      <div id="attendanceDetailsBody" class="modal-body attendance-details-modal-body">
-        <div class="text-center py-4">
-          <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-attendance-modal-close>Close</button>
-      </div>
-    </div>
-  </div>
-</div>
+
 
 {{-- small styles --}}
 <style>
@@ -447,6 +429,14 @@
     -webkit-text-fill-color: #c2410c !important;
     font-weight: 800;
     font-size: 0.95rem;
+  .attendance-col-emp,
+  .attendance-col-hours,
+  .attendance-col-actions {
+    background-color: #f8fafc !important;
+    color: #475569 !important;
+  }
+  .attendance-cell-emp {
+    background-color: #ffffff !important;
   }
   #attendanceDetailsModal {
     z-index: 2060 !important;
@@ -486,7 +476,27 @@
     z-index: 2050 !important;
   }
 
-  /* Dark mode overrides for table */
+  /* Dark mode overrides for table & modal */
+  html[data-pms-theme="dark"] .attendance-col-emp,
+  html[data-pms-theme="dark"] .attendance-col-hours,
+  html[data-pms-theme="dark"] .attendance-col-actions,
+  html[data-theme="dark"] .attendance-col-emp,
+  html[data-theme="dark"] .attendance-col-hours,
+  html[data-theme="dark"] .attendance-col-actions,
+  body.dark-mode .attendance-col-emp,
+  body.dark-mode .attendance-col-hours,
+  body.dark-mode .attendance-col-actions {
+    background-color: #0F1530 !important;
+    color: #9AA3C7 !important;
+    -webkit-text-fill-color: #9AA3C7 !important;
+    border-color: rgba(238, 241, 251, 0.08) !important;
+  }
+  html[data-pms-theme="dark"] .attendance-cell-emp,
+  html[data-theme="dark"] .attendance-cell-emp,
+  body.dark-mode .attendance-cell-emp {
+    background-color: #0F1530 !important;
+    border-color: rgba(238, 241, 251, 0.08) !important;
+  }
   html[data-pms-theme="dark"] .attendance-table th,
   html[data-theme="dark"] .attendance-table th,
   html[data-bs-theme="dark"] .attendance-table th,
@@ -496,6 +506,7 @@
     background-color: #0F1530 !important;
     color: #9AA3C7 !important;
     -webkit-text-fill-color: #9AA3C7 !important;
+    border-color: rgba(238, 241, 251, 0.08) !important;
   }
   html[data-pms-theme="dark"] .attendance-table td,
   html[data-theme="dark"] .attendance-table td,
@@ -506,6 +517,12 @@
     background-color: #141B3D !important;
     color: #CBD5E1 !important;
     -webkit-text-fill-color: #CBD5E1 !important;
+    border-color: rgba(238, 241, 251, 0.08) !important;
+  }
+  html[data-pms-theme="dark"] .attendance-table tbody tr:hover td,
+  html[data-theme="dark"] .attendance-table tbody tr:hover td,
+  body.dark-mode .attendance-table tbody tr:hover td {
+    background-color: #1A2247 !important;
   }
   html[data-pms-theme="dark"] .attendance-employee-meta strong,
   html[data-theme="dark"] .attendance-employee-meta strong,
@@ -513,8 +530,8 @@
   [data-pms-theme="dark"] .attendance-employee-meta strong,
   [data-theme="dark"] .attendance-employee-meta strong,
   body.dark-mode .attendance-employee-meta strong {
-    color: #ffffff !important;
-    -webkit-text-fill-color: #ffffff !important;
+    color: #EEF1FB !important;
+    -webkit-text-fill-color: #EEF1FB !important;
   }
   html[data-pms-theme="dark"] .attendance-employee-meta small,
   html[data-theme="dark"] .attendance-employee-meta small,
@@ -531,8 +548,8 @@
   [data-pms-theme="dark"] .attendance-employee-photo,
   [data-theme="dark"] .attendance-employee-photo,
   body.dark-mode .attendance-employee-photo {
-    border-color: #183026 !important;
-    background: #183026 !important;
+    border-color: rgba(238, 241, 251, 0.16) !important;
+    background: #141B3D !important;
   }
   html[data-pms-theme="dark"] .attendance-month-summary,
   html[data-theme="dark"] .attendance-month-summary,
@@ -540,37 +557,48 @@
   [data-pms-theme="dark"] .attendance-month-summary,
   [data-theme="dark"] .attendance-month-summary,
   body.dark-mode .attendance-month-summary {
-    background: #07130d !important;
+    background: #070B1A !important;
   }
   html[data-pms-theme="dark"] .attendance-month-profile,
   html[data-theme="dark"] .attendance-month-profile,
   html[data-bs-theme="dark"] .attendance-month-profile,
   [data-pms-theme="dark"] .attendance-month-profile,
   [data-theme="dark"] .attendance-month-profile,
-  body.dark-mode .attendance-month-profile,
-  html[data-pms-theme="dark"] .attendance-month-table td,
-  html[data-theme="dark"] .attendance-month-table td,
-  html[data-bs-theme="dark"] .attendance-month-table td,
-  [data-pms-theme="dark"] .attendance-month-table td,
-  [data-theme="dark"] .attendance-month-table td,
-  body.dark-mode .attendance-month-table td {
-    background: #102119 !important;
-    border-color: rgba(122, 240, 181, 0.15) !important;
+  body.dark-mode .attendance-month-profile {
+    background: #0F1530 !important;
+    border-color: rgba(238, 241, 251, 0.1) !important;
   }
   html[data-pms-theme="dark"] .attendance-month-profile h5,
   html[data-theme="dark"] .attendance-month-profile h5,
   html[data-bs-theme="dark"] .attendance-month-profile h5,
   [data-pms-theme="dark"] .attendance-month-profile h5,
   [data-theme="dark"] .attendance-month-profile h5,
-  body.dark-mode .attendance-month-profile h5,
+  body.dark-mode .attendance-month-profile h5 {
+    color: #EEF1FB !important;
+    -webkit-text-fill-color: #EEF1FB !important;
+  }
+  html[data-pms-theme="dark"] .attendance-month-profile p,
+  html[data-theme="dark"] .attendance-month-profile p,
+  body.dark-mode .attendance-month-profile p {
+    color: #9AA3C7 !important;
+    -webkit-text-fill-color: #9AA3C7 !important;
+  }
+  html[data-pms-theme="dark"] .attendance-month-table th,
+  html[data-theme="dark"] .attendance-month-table th,
+  body.dark-mode .attendance-month-table th {
+    color: #9AA3C7 !important;
+    -webkit-text-fill-color: #9AA3C7 !important;
+  }
   html[data-pms-theme="dark"] .attendance-month-table td,
   html[data-theme="dark"] .attendance-month-table td,
   html[data-bs-theme="dark"] .attendance-month-table td,
   [data-pms-theme="dark"] .attendance-month-table td,
   [data-theme="dark"] .attendance-month-table td,
   body.dark-mode .attendance-month-table td {
-    color: #ffffff !important;
-    -webkit-text-fill-color: #ffffff !important;
+    background: #141B3D !important;
+    border-color: rgba(238, 241, 251, 0.08) !important;
+    color: #EEF1FB !important;
+    -webkit-text-fill-color: #EEF1FB !important;
   }
   html[data-pms-theme="dark"] .attendance-status-icon.empty,
   html[data-theme="dark"] .attendance-status-icon.empty,
@@ -578,357 +606,48 @@
   [data-pms-theme="dark"] .attendance-status-icon.empty,
   [data-theme="dark"] .attendance-status-icon.empty,
   body.dark-mode .attendance-status-icon.empty {
-    background: #183026 !important;
-    color: #8ba198 !important;
-    -webkit-text-fill-color: #8ba198 !important;
+    background: #141B3D !important;
+    color: #6B739A !important;
+    -webkit-text-fill-color: #6B739A !important;
+  }
+  /* Dark mode modal fixes */
+  html[data-pms-theme="dark"] #attendanceDetailsModal .attendance-details-modal-content,
+  html[data-theme="dark"] #attendanceDetailsModal .attendance-details-modal-content,
+  body.dark-mode #attendanceDetailsModal .attendance-details-modal-content {
+    background: #0F1530 !important;
+    border: 1px solid rgba(238, 241, 251, 0.12) !important;
+    color: #CBD5E1 !important;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.7) !important;
+  }
+  html[data-pms-theme="dark"] #attendanceDetailsModal .attendance-details-modal-body,
+  html[data-theme="dark"] #attendanceDetailsModal .attendance-details-modal-body,
+  body.dark-mode #attendanceDetailsModal .attendance-details-modal-body {
+    background: #0F1530 !important;
+    color: #CBD5E1 !important;
+  }
+  html[data-pms-theme="dark"] #attendanceDetailsModal .attendance-details-container,
+  html[data-theme="dark"] #attendanceDetailsModal .attendance-details-container,
+  body.dark-mode #attendanceDetailsModal .attendance-details-container {
+    background: #070B1A !important;
+    color: #CBD5E1 !important;
+  }
+  html[data-pms-theme="dark"] #attendanceDetailsModal .modal-header,
+  html[data-theme="dark"] #attendanceDetailsModal .modal-header,
+  body.dark-mode #attendanceDetailsModal .modal-header {
+    background: #141B3D !important;
+    border-bottom: 1px solid rgba(238, 241, 251, 0.09) !important;
+    color: #EEF1FB !important;
+  }
+  html[data-pms-theme="dark"] #attendanceDetailsModal .modal-title,
+  html[data-theme="dark"] #attendanceDetailsModal .modal-title,
+  body.dark-mode #attendanceDetailsModal .modal-title {
+    color: #EEF1FB !important;
+  }
+  html[data-pms-theme="dark"] #attendanceDetailsModal .modal-footer,
+  html[data-theme="dark"] #attendanceDetailsModal .modal-footer,
+  body.dark-mode #attendanceDetailsModal .modal-footer {
+    background: #0F1530 !important;
+    border-top: 1px solid rgba(238, 241, 251, 0.09) !important;
   }
 </style>
 
-@push('js')
-<script>
-$(document).ready(function () {
-    function getAttendanceModal() {
-        var modalEl = document.getElementById('attendanceDetailsModal');
-        if (!modalEl) return null;
-
-        if (modalEl.parentElement !== document.body) {
-            document.body.appendChild(modalEl);
-        }
-
-        return bootstrap.Modal.getOrCreateInstance(modalEl, {
-            backdrop: true,
-            keyboard: true,
-            focus: true
-        });
-    }
-
-    function showAttendanceLoading(message) {
-        $('#attendanceDetailsBody').html(
-            '<div class="text-center py-5 bg-white">' +
-                '<div class="spinner-border text-primary" role="status">' +
-                    '<span class="visually-hidden">Loading...</span>' +
-                '</div>' +
-                '<p class="mt-3 mb-0 text-muted">' + message + '</p>' +
-            '</div>'
-        );
-    }
-
-    function cleanModalState(force = false) {
-        if (force || $('.modal.show').length === 0) {
-            $('.modal-backdrop').remove();
-            $('body').removeClass('modal-open').css({
-                overflow: '',
-                paddingRight: ''
-            });
-            document.body.style.removeProperty('overflow');
-            document.body.style.removeProperty('padding-right');
-        }
-    }
-
-    function closeAttendanceModal() {
-        var modalEl = document.getElementById('attendanceDetailsModal');
-        if (!modalEl) {
-            cleanModalState(true);
-            return;
-        }
-
-        var modal = bootstrap.Modal.getInstance(modalEl);
-        if (modal) {
-            modal.hide();
-        }
-
-        modalEl.classList.remove('show');
-        modalEl.setAttribute('aria-hidden', 'true');
-        modalEl.removeAttribute('aria-modal');
-        modalEl.style.display = 'none';
-        $('#attendanceDetailsBody').html('');
-        $('#editAttendanceModal').remove();
-        cleanModalState(true);
-    }
-
-    function escapeAttendanceHtml(value) {
-        return String(value ?? '').replace(/[&<>"']/g, function(char) {
-            return {
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                '"': '&quot;',
-                "'": '&#039;'
-            }[char];
-        });
-    }
-
-    function parseAttendancePayload(encoded) {
-        var binary = atob(encoded);
-        var bytes = new Uint8Array(binary.length);
-        for (var i = 0; i < binary.length; i++) {
-            bytes[i] = binary.charCodeAt(i);
-        }
-
-        if (window.TextDecoder) {
-            return JSON.parse(new TextDecoder('utf-8').decode(bytes));
-        }
-
-        return JSON.parse(decodeURIComponent(escape(binary)));
-    }
-
-    function renderEmployeeMonthDetails(payload, editMode) {
-        var rows = (payload.records || []).map(function(record) {
-            var editButton = '';
-            if (editMode) {
-                editButton = '<button type="button" class="month-edit-day-btn edit-attendance" ' +
-                    'data-attendance-id="' + escapeAttendanceHtml(record.attendance_id || '') + '" ' +
-                    'data-user-id="' + escapeAttendanceHtml(payload.user_id) + '" ' +
-                    'data-date="' + escapeAttendanceHtml(record.date) + '">' +
-                    '<i class="fas fa-pen me-1"></i>Edit</button>';
-            }
-
-            return '<tr>' +
-                '<td><strong>' + escapeAttendanceHtml(record.day) + '</strong><div class="small text-muted">' + escapeAttendanceHtml(record.date) + '</div></td>' +
-                '<td>' + escapeAttendanceHtml(record.status) + '</td>' +
-                '<td>' + escapeAttendanceHtml(record.clock_in) + '</td>' +
-                '<td>' + escapeAttendanceHtml(record.clock_out) + '</td>' +
-                '<td>' + escapeAttendanceHtml(record.total) + '</td>' +
-                '<td>' + escapeAttendanceHtml(record.note || '-') + '</td>' +
-                (editMode ? '<td class="text-center">' + editButton + '</td>' : '') +
-            '</tr>';
-        }).join('');
-
-        var heading = editMode ? 'Edit Monthly Attendance' : 'Monthly Attendance Details';
-        $('#attendanceDetailsModal .modal-title').text(heading);
-        $('#attendanceDetailsBody').html(
-            '<div class="attendance-month-summary">' +
-                '<div class="attendance-month-profile">' +
-                    '<img src="' + escapeAttendanceHtml(payload.photo) + '" alt="' + escapeAttendanceHtml(payload.name) + '">' +
-                    '<div>' +
-                        '<h5>' + escapeAttendanceHtml(payload.name) + '</h5>' +
-                        '<p>' + escapeAttendanceHtml(payload.designation) + ' | ' + escapeAttendanceHtml(payload.month_name) +
-                        ' | Total: ' + escapeAttendanceHtml(payload.total_hours) +
-                        ' | Present: ' + escapeAttendanceHtml(payload.present_count) + '/' + escapeAttendanceHtml(payload.days_in_month) + '</p>' +
-                    '</div>' +
-                '</div>' +
-                '<div class="table-responsive">' +
-                    '<table class="attendance-month-table">' +
-                        '<thead><tr>' +
-                            '<th>Date</th><th>Status</th><th>Clock In</th><th>Clock Out</th><th>Total</th><th>Note</th>' +
-                            (editMode ? '<th class="text-center">Action</th>' : '') +
-                        '</tr></thead>' +
-                        '<tbody>' + rows + '</tbody>' +
-                    '</table>' +
-                '</div>' +
-            '</div>'
-        );
-
-        var modal = getAttendanceModal();
-        if (modal) {
-            modal.show();
-        }
-    }
-
-    $(document).off('click.attendanceMonthView', '.js-month-view')
-        .on('click.attendanceMonthView', '.js-month-view', function() {
-        renderEmployeeMonthDetails(parseAttendancePayload(this.dataset.payload), false);
-    });
-
-    $(document).off('click.attendanceMonthEdit', '.js-month-edit')
-        .on('click.attendanceMonthEdit', '.js-month-edit', function() {
-        renderEmployeeMonthDetails(parseAttendancePayload(this.dataset.payload), true);
-    });
-
-    $(document).off('click.attendanceMonthArchive', '.js-month-archive')
-        .on('click.attendanceMonthArchive', '.js-month-archive', function() {
-        var archiveButton = $(this);
-        var originalHtml = archiveButton.html();
-        var payload = parseAttendancePayload(this.dataset.payload);
-        var message = 'Archive attendance records for ' + payload.name + ' in ' + payload.month_name + '?\n\nThey will move out of the active attendance table and can be restored later.';
-        if (!confirm(message)) {
-            return;
-        }
-
-        archiveButton.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i><span>Archiving</span>');
-
-        $.ajax({
-            url: "{{ route('attendance.month.archive') }}",
-            type: 'POST',
-            data: {
-                _token: "{{ csrf_token() }}",
-                user_id: payload.user_id,
-                month: payload.month,
-                year: payload.year
-            },
-            success: function(response) {
-                alert(response.message || 'Monthly attendance archived successfully.');
-                window.location.reload();
-            },
-            error: function(xhr) {
-                var message = 'Unable to archive monthly attendance.';
-                if (xhr.responseJSON && xhr.responseJSON.message) {
-                    message = xhr.responseJSON.message;
-                }
-                alert(message);
-            },
-            complete: function() {
-                archiveButton.prop('disabled', false).html(originalHtml);
-            }
-        });
-    });
-
-    $(document).off('hidden.bs.modal.attendanceDetails', '#attendanceDetailsModal')
-        .on('hidden.bs.modal.attendanceDetails', '#attendanceDetailsModal', function () {
-        $('#attendanceDetailsBody').html('');
-        $('#editAttendanceModal').remove();
-        cleanModalState(true);
-    });
-
-    $(document).off('click.attendanceModalClose', '[data-attendance-modal-close]')
-        .on('click.attendanceModalClose', '[data-attendance-modal-close]', function(e) {
-        e.preventDefault();
-        closeAttendanceModal();
-    });
-
-    $(document).off('click.attendanceModalBackdrop', '#attendanceDetailsModal')
-        .on('click.attendanceModalBackdrop', '#attendanceDetailsModal', function(e) {
-        if (e.target === this) {
-            closeAttendanceModal();
-        }
-    });
-
-    $(document).off('keydown.attendanceModalEscape')
-        .on('keydown.attendanceModalEscape', function(e) {
-        if (e.key === 'Escape' && $('#attendanceDetailsModal').hasClass('show')) {
-            closeAttendanceModal();
-        }
-    });
-
-    $(document).off('submit.attendanceModalForm', '#attendanceDetailsModal .attendance-form')
-        .on('submit.attendanceModalForm', '#attendanceDetailsModal .attendance-form', function(e) {
-        e.preventDefault();
-
-        var form = this;
-        var submitButton = $(form).find('[type="submit"]').first();
-        var originalHtml = submitButton.html();
-
-        submitButton.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Saving...');
-
-        $.ajax({
-            url: form.action,
-            type: form.method || 'POST',
-            data: new FormData(form),
-            processData: false,
-            contentType: false,
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-            success: function() {
-                closeAttendanceModal();
-                window.location.reload();
-            },
-            error: function(xhr) {
-                var message = 'Unable to save attendance. Please check the form and try again.';
-                if (xhr.responseJSON && xhr.responseJSON.message) {
-                    message = xhr.responseJSON.message;
-                }
-
-                $(form).prepend('<div class="alert alert-danger alert-dismissible fade show" role="alert">' +
-                    message +
-                    '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
-                '</div>');
-            },
-            complete: function() {
-                submitButton.prop('disabled', false).html(originalHtml);
-                cleanModalState();
-            }
-        });
-    });
-
-    // Filter AJAX submit (optional; fallback to normal GET if disabled)
-    $('#attendanceFilter').on('submit', function(e) {
-        // allow default GET submit, but if you want ajax un-comment below
-        // e.preventDefault();
-        // $.ajax({...})
-    });
-
-    // view attendance modal
-    $(document).off('click.attendanceView', '.view-attendance')
-        .on('click.attendanceView', '.view-attendance', function(e) {
-        e.preventDefault();
-        var attendanceId = $(this).data('attendance-id');
-        var userId = $(this).data('user-id');
-        var date = $(this).data('date');
-
-        var url = "{{ url('attendance/details') }}?attendance_id=" + attendanceId + "&user_id=" + userId + "&date=" + date;
-
-        var modal = getAttendanceModal();
-        if (!modal) return;
-
-        $('#editAttendanceModal').remove();
-        $('#attendanceDetailsModal .modal-title').text('Attendance Details');
-        showAttendanceLoading('Loading attendance details...');
-        modal.show();
-
-        $.ajax({
-            url: url,
-            type: 'GET',
-            success: function(response) {
-                $('#attendanceDetailsBody').html(response);
-            },
-            error: function(xhr) {
-                $('#attendanceDetailsBody').html('<div class="alert alert-danger m-4">Error loading attendance details.</div>');
-            },
-            complete: function() {
-                cleanModalState();
-            }
-        });
-    });
-
-    // edit attendance modal for admins
-    $(document).off('click.attendanceEdit', '.edit-attendance')
-        .on('click.attendanceEdit', '.edit-attendance', function(e) {
-        e.preventDefault();
-        var attendanceId = $(this).data('attendance-id');
-        var userId       = $(this).data('user-id');
-        var date         = $(this).data('date');
-
-        var url = "{{ url('attendance/edit') }}?attendance_id=" + attendanceId + "&user_id=" + userId + "&date=" + date;
-
-        var modal = getAttendanceModal();
-        if (!modal) return;
-
-        $('#editAttendanceModal').remove();
-        $('#attendanceDetailsModal .modal-title').text('Edit Attendance');
-        showAttendanceLoading('Loading attendance form...');
-        modal.show();
-
-        $.ajax({
-            url: url,
-            type: 'GET',
-            success: function(response) {
-                $('#attendanceDetailsBody').html(response);
-            },
-            error: function(xhr) {
-                $('#attendanceDetailsBody').html('<div class="alert alert-danger m-4">Error loading attendance form.</div>');
-            },
-            complete: function() {
-                cleanModalState();
-            }
-        });
-    });
-
-    // tooltips
-    $(function () {
-        $('[data-bs-toggle="tooltip"]').tooltip({
-            trigger: 'hover',
-            placement: 'top'
-        });
-    });
-
-    $(document).ajaxComplete(function () {
-        $('[data-bs-toggle="tooltip"]').tooltip({
-            trigger: 'hover',
-            placement: 'top'
-        });
-    });
-
-});
-</script>
-@endpush

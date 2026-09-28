@@ -131,7 +131,7 @@
             <i class="bx bx-paperclip"></i> Attach File
             <input type="file" name="attachments[]" multiple style="display: none;" onchange="document.getElementById('fileCountNotice').innerText = this.files.length + ' file(s) selected';" />
           </label>
-          <span id="fileCountNotice" style="font-size: 11px; color: #059669; font-weight: 700; margin-left: 6px;"></span>
+          <span id="fileCountNotice" style="font-size: 11px; color: #2F6BFF; font-weight: 700; margin-left: 6px;"></span>
         </div>
 
         <button type="submit" class="btn-primary-emerald">

@@ -1,7 +1,7 @@
 /* Shared admin table export controls and animated grid separators. */
 .pms-table-tools {
-  --pms-table-accent: #059669;
-  --pms-table-line: rgba(5, 150, 105, 0.22);
+  --pms-table-accent: #2F6BFF;
+  --pms-table-line: rgba(47, 107, 255, 0.22);
   align-items: center;
   background: rgba(248, 250, 252, 0.96);
   border: 1px solid rgba(15, 23, 42, 0.07);
@@ -49,7 +49,7 @@
   display: block;
   max-width: 100% !important;
   overflow-x: auto !important;
-  scrollbar-color: rgba(5, 150, 105, 0.48) rgba(15, 23, 42, 0.06);
+  scrollbar-color: rgba(47, 107, 255, 0.48) rgba(15, 23, 42, 0.06);
   scrollbar-width: thin;
   width: 100% !important;
 }
@@ -131,7 +131,7 @@
 .pms-table-export__toggle {
   align-items: center;
   background: #fff;
-  border: 1px solid rgba(5, 150, 105, 0.3);
+  border: 1px solid rgba(47, 107, 255, 0.3);
   border-radius: 10px;
   color: #047857;
   cursor: pointer;
@@ -149,9 +149,9 @@
 .pms-table-export__toggle:hover,
 .pms-table-export__toggle:focus-visible,
 .pms-table-export.is-open .pms-table-export__toggle {
-  background: #ecfdf5;
-  border-color: rgba(5, 150, 105, 0.58);
-  box-shadow: 0 7px 18px rgba(5, 150, 105, 0.13);
+  background: #EEF2FF;
+  border-color: rgba(47, 107, 255, 0.58);
+  box-shadow: 0 7px 18px rgba(47, 107, 255, 0.13);
   color: #065f46;
   outline: none;
   transform: translateY(-1px);
@@ -211,7 +211,7 @@
 
 .pms-table-export__option:hover,
 .pms-table-export__option:focus-visible {
-  background: #ecfdf5;
+  background: #EEF2FF;
   color: #047857;
   outline: none;
 }
@@ -225,7 +225,7 @@
 
 .pms-table-select {
   align-items: center !important;
-  background: rgba(5, 150, 105, 0.035);
+  background: rgba(47, 107, 255, 0.035);
   bottom: 0 !important;
   display: flex !important;
   height: auto !important;
@@ -241,7 +241,7 @@
 
 .pms-table-select::after {
   animation: pmsSelectionColumnLine 7.2s ease-in-out infinite;
-  background-color: rgba(5, 150, 105, 0.24);
+  background-color: rgba(47, 107, 255, 0.24);
   bottom: 0;
   content: '';
   pointer-events: none;
@@ -270,7 +270,7 @@
 }
 
 .pms-table-select__input {
-  accent-color: var(--pms-table-accent, #059669);
+  accent-color: var(--pms-table-accent, #2F6BFF);
   appearance: auto;
   cursor: pointer;
   display: block !important;
@@ -285,7 +285,7 @@
 }
 
 .pms-table-select__input:focus-visible {
-  outline: 2px solid rgba(5, 150, 105, 0.35);
+  outline: 2px solid rgba(47, 107, 255, 0.35);
   outline-offset: 2px;
 }
 
@@ -315,8 +315,8 @@
   letter-spacing: 0.025em;
   padding-bottom: 1rem !important;
   padding-top: 1rem !important;
-  box-shadow: inset -1px 0 rgba(5, 150, 105, 0.1);
-  text-shadow: 0 1px 1px rgba(15, 23, 42, 0.08), 0 0 0 rgba(16, 185, 129, 0);
+  box-shadow: inset -1px 0 rgba(47, 107, 255, 0.1);
+  text-shadow: 0 1px 1px rgba(15, 23, 42, 0.08), 0 0 0 rgba(47, 107, 255, 0);
   text-transform: uppercase;
 }
 
@@ -342,11 +342,11 @@
 
 .pms-exportable-table>thead .pms-table-select {
   background: rgba(236, 253, 245, 0.58);
-  box-shadow: inset -1px 0 rgba(5, 150, 105, 0.16);
+  box-shadow: inset -1px 0 rgba(47, 107, 255, 0.16);
 }
 
 .pms-exportable-table>thead .pms-table-select__input {
-  accent-color: #059669;
+  accent-color: #2F6BFF;
 }
 
 /* The complete grid remains visible and animated even when the table is idle. */
@@ -379,18 +379,18 @@
 .pms-exportable-table>tbody>tr:hover> :is(th, td)::after,
 .pms-exportable-table>tbody>tr.pms-row-selected> :is(th, td)::after,
 .pms-exportable-table>tbody>tr.pms-row-selected> :is(th, td)::before {
-  --pms-table-line: rgba(5, 150, 105, 0.5);
+  --pms-table-line: rgba(47, 107, 255, 0.5);
 }
 
 /* Hover deliberately switches to a faster pulse animation. */
 .pms-exportable-table>tbody>tr:hover> :is(th, td)::after {
   animation: pmsTableHoverVertical 2.2s ease-in-out infinite;
-  background-color: rgba(5, 150, 105, 0.4);
+  background-color: rgba(47, 107, 255, 0.4);
 }
 
 .pms-exportable-table>tbody>tr:hover> :is(th, td)::before {
   animation: pmsTableHoverHorizontal 2.2s ease-in-out infinite;
-  background-color: rgba(5, 150, 105, 0.4);
+  background-color: rgba(47, 107, 255, 0.4);
 }
 
 .pms-exportable-table>tbody>tr:hover>.pms-table-selection-cell>.pms-table-select::after {
@@ -398,7 +398,7 @@
 }
 
 .pms-exportable-table>tbody>tr.pms-row-selected> :is(th, td) {
-  box-shadow: inset 0 0 0 999px rgba(16, 185, 129, 0.055);
+  box-shadow: inset 0 0 0 999px rgba(47, 107, 255, 0.055);
 }
 
 html[data-pms-theme="dark"] .pms-table-tools,
@@ -661,7 +661,7 @@ html[data-pms-theme="light"] .dropdown-item:hover,
 html[data-theme="light"] .pms-table-export__option:hover,
 html[data-theme="light"] .pms-table-export__option:hover *,
 html[data-theme="light"] .dropdown-item:hover {
-  background: #ecfdf5 !important;
+  background: #EEF2FF !important;
   color: #047857 !important;
   -webkit-text-fill-color: #047857 !important;
 }
@@ -697,12 +697,12 @@ html[data-theme="light"] .dropdown-item:hover {
   0%,
   100% {
     color: #263b31;
-    text-shadow: 0 1px 1px rgba(15, 23, 42, 0.08), 0 0 0 rgba(16, 185, 129, 0);
+    text-shadow: 0 1px 1px rgba(15, 23, 42, 0.08), 0 0 0 rgba(47, 107, 255, 0);
   }
 
   50% {
     color: #0f5132;
-    text-shadow: 0 1px 1px rgba(15, 23, 42, 0.06), 0 0 5px rgba(16, 185, 129, 0.22);
+    text-shadow: 0 1px 1px rgba(15, 23, 42, 0.06), 0 0 5px rgba(47, 107, 255, 0.22);
   }
 }
 
@@ -858,8 +858,8 @@ html.dark .pms-table-tools,
 body[data-pms-theme="dark"] .pms-table-tools,
 body[data-bs-theme="dark"] .pms-table-tools,
 body.dark .pms-table-tools {
-  background: #0d1a14 !important;
-  border-color: rgba(122, 240, 181, 0.18) !important;
+  background: #0F1530 !important;
+  border-color: rgba(79, 131, 255, 0.18) !important;
   color: #ffffff !important;
 }
 
@@ -870,7 +870,7 @@ html.dark,
 body[data-pms-theme="dark"],
 body[data-bs-theme="dark"],
 body.dark {
-  --pms-table-tools-status-color: #f8fffb;
+  --pms-table-tools-status-color: #EEF1FB;
 }
 
 html[data-pms-theme="dark"] .pms-table-tools__status,
@@ -884,8 +884,8 @@ body.dark .pms-table-tools__status,
 [data-bs-theme="dark"] .pms-table-tools__status,
 [data-theme="dark"] .pms-table-tools__status,
 .dark .pms-table-tools__status {
-  color: #f8fffb !important;
-  -webkit-text-fill-color: #f8fffb !important;
+  color: #EEF1FB !important;
+  -webkit-text-fill-color: #EEF1FB !important;
   font-weight: 800 !important;
   letter-spacing: 0.3px !important;
 }
@@ -897,8 +897,8 @@ html.dark .pms-table-export__toggle,
 body[data-pms-theme="dark"] .pms-table-export__toggle,
 body[data-bs-theme="dark"] .pms-table-export__toggle,
 body.dark .pms-table-export__toggle {
-  background: #183026 !important;
-  border: 1px solid rgba(122, 240, 181, 0.35) !important;
+  background: #141B3D !important;
+  border: 1px solid rgba(79, 131, 255, 0.35) !important;
   color: #ffffff !important;
   -webkit-text-fill-color: #ffffff !important;
   font-weight: 800 !important;
@@ -924,8 +924,8 @@ html.dark .pms-table-export__toggle:hover,
 body[data-pms-theme="dark"] .pms-table-export__toggle:hover,
 body[data-bs-theme="dark"] .pms-table-export__toggle:hover,
 body.dark .pms-table-export__toggle:hover {
-  background: #1f3e31 !important;
-  border-color: rgba(122, 240, 181, 0.6) !important;
+  background: #1A2247 !important;
+  border-color: rgba(79, 131, 255, 0.6) !important;
   color: #ffffff !important;
   -webkit-text-fill-color: #ffffff !important;
 }
@@ -937,8 +937,8 @@ html.dark .pms-table-export__menu,
 body[data-pms-theme="dark"] .pms-table-export__menu,
 body[data-bs-theme="dark"] .pms-table-export__menu,
 body.dark .pms-table-export__menu {
-  background: #102119 !important;
-  border: 1px solid rgba(122, 240, 181, 0.25) !important;
+  background: #0F1530 !important;
+  border: 1px solid rgba(79, 131, 255, 0.25) !important;
   box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5) !important;
 }
 
@@ -979,7 +979,7 @@ html.dark .pms-table-export__option:hover,
 body[data-pms-theme="dark"] .pms-table-export__option:hover,
 body[data-bs-theme="dark"] .pms-table-export__option:hover,
 body.dark .pms-table-export__option:hover {
-  background: rgba(64, 212, 140, 0.15) !important;
+  background: rgba(79, 131, 255, 0.15) !important;
   color: #ffffff !important;
   -webkit-text-fill-color: #ffffff !important;
 }

@@ -21,7 +21,7 @@
                 <div class="p-3 rounded-4 bg-white border shadow-sm">
                     <div class="d-flex align-items-center justify-content-between mb-2">
                         <div class="d-flex align-items-center gap-2">
-                            <div style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #0f744c, #10b981); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.8rem;">
+                            <div style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #2F6BFF, #10b981); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.8rem;">
                                 {{ strtoupper(substr($comment->user->name ?? 'U', 0, 1)) }}
                             </div>
                             <strong class="text-dark">{{ $comment->user->name ?? 'Unknown' }}</strong>

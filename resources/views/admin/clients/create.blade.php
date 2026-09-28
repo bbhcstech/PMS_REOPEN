@@ -908,7 +908,7 @@
 }
 .stepper-progress-bar {
     height: 100%;
-    background: linear-gradient(90deg, #10b981, #059669);
+    background: linear-gradient(90deg, #10b981, #2F6BFF);
     border-radius: 4px;
     transition: width 0.4s ease;
 }

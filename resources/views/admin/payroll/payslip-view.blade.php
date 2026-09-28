@@ -138,7 +138,7 @@
             </div>
 
             {{-- Net Pay Banner --}}
-            <div class="mx-5 mb-5 p-4 rounded-3 text-center" style="background:linear-gradient(135deg,#ecfdf5,#d1fae5);border:2px solid #10b981;">
+            <div class="mx-5 mb-5 p-4 rounded-3 text-center" style="background:linear-gradient(135deg,#EEF2FF,#E0E7FF);border:2px solid #10b981;">
                 <div class="text-muted small fw-bold text-uppercase mb-1" style="letter-spacing:.1em;">Net Pay</div>
                 <div class="display-5 fw-bold text-success">₹{{ number_format($netPay, 2) }}</div>
                 <div class="text-muted small mt-1">For the period</div>

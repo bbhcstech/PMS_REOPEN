@@ -6,22 +6,24 @@
 <style>
     /* ===== PREMIUM CREATE ATTENDANCE STYLES ===== */
     :root {
-        --primary-blue: #1e3a8a;
-        --primary-teal: #0ea5a4;
-        --primary-green: #22c55e;
+        --primary-blue: #2F6BFF;
+        --primary-hover: #1E4FCC;
+        --primary-teal: #2F6BFF;
+        --primary-accent: #22D3EE;
+        --primary-green: #8B5CF6;
         --bg-light: #f8fafc;
         --glass-border: rgba(255, 255, 255, 0.7);
         --card-shadow: 0px 4px 20px rgba(0, 0, 0, 0.02),
             0px 8px 40px rgba(0, 0, 0, 0.04),
-            0px 20px 60px rgba(30, 58, 138, 0.06);
+            0px 20px 60px rgba(47, 107, 255, 0.06);
         --card-shadow-hover: 0px 20px 50px rgba(0, 0, 0, 0.08),
-            0px 30px 80px rgba(30, 58, 138, 0.12);
+            0px 30px 80px rgba(47, 107, 255, 0.12);
         --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         --spring-transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
     .attendance-create-container {
-        background: linear-gradient(135deg, #f0f9ff 0%, #e6f7f5 50%, #f0fdf4 100%);
+        background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 50%, #f1f5f9 100%);
         min-height: calc(100vh - 100px);
         padding: 2rem 1.75rem;
         position: relative;
@@ -43,7 +45,7 @@
         right: -100px;
         width: 500px;
         height: 500px;
-        background: radial-gradient(circle, rgba(30, 58, 138, 0.12) 0%, transparent 70%);
+        background: radial-gradient(circle, rgba(47, 107, 255, 0.12) 0%, transparent 70%);
         animation: orbFloat 20s ease-in-out infinite;
     }
 
@@ -52,7 +54,7 @@
         left: -100px;
         width: 450px;
         height: 450px;
-        background: radial-gradient(circle, rgba(14, 165, 164, 0.1) 0%, transparent 70%);
+        background: radial-gradient(circle, rgba(34, 211, 238, 0.1) 0%, transparent 70%);
         animation: orbFloat 25s ease-in-out infinite reverse;
     }
 
@@ -61,7 +63,7 @@
         left: 50%;
         width: 400px;
         height: 400px;
-        background: radial-gradient(circle, rgba(34, 197, 94, 0.08) 0%, transparent 70%);
+        background: radial-gradient(circle, rgba(139, 92, 246, 0.08) 0%, transparent 70%);
         animation: orbFloat 18s ease-in-out infinite;
         transform: translate(-50%, -50%);
     }
@@ -97,7 +99,7 @@
 
     .header-card:hover {
         box-shadow: var(--card-shadow-hover);
-        border-color: rgba(14, 165, 164, 0.2);
+        border-color: rgba(47, 107, 255, 0.2);
     }
 
     @keyframes slideDown {
@@ -108,7 +110,7 @@
     .header-title h1 {
         font-size: 2rem;
         font-weight: 800;
-        background: linear-gradient(135deg, var(--primary-blue), var(--primary-teal), var(--primary-green));
+        background: linear-gradient(135deg, var(--primary-blue), var(--primary-accent), var(--primary-green));
         -webkit-background-clip: text;
         background-clip: text;
         color: transparent;
@@ -124,7 +126,7 @@
     }
 
     .header-title p i {
-        color: var(--primary-teal);
+        color: var(--primary-blue);
     }
 
     /* ===== ALERT ===== */
@@ -202,7 +204,7 @@
     }
 
     .form-label i {
-        color: var(--primary-teal);
+        color: var(--primary-blue);
         font-size: 0.8rem;
     }
 
@@ -229,8 +231,8 @@
 
     .form-control:focus,
     .form-select:focus {
-        border-color: var(--primary-teal);
-        box-shadow: 0 0 0 4px rgba(14, 165, 164, 0.12);
+        border-color: var(--primary-blue);
+        box-shadow: 0 0 0 4px rgba(47, 107, 255, 0.12);
     }
 
     .form-control::placeholder {
@@ -291,19 +293,19 @@
     }
 
     .radio-option input[type="radio"] {
-        accent-color: var(--primary-teal);
+        accent-color: var(--primary-blue);
         width: 16px;
         height: 16px;
         cursor: pointer;
     }
 
     .radio-option input[type="radio"]:checked+.radio-label {
-        color: var(--primary-teal);
+        color: var(--primary-blue);
     }
 
     .radio-option:has(input:checked) {
-        background: #d1fae5;
-        border-color: var(--primary-teal);
+        background: #EEF2FF;
+        border-color: var(--primary-blue);
     }
 
     .radio-label {
@@ -334,14 +336,14 @@
         width: 18px;
         height: 18px;
         border-radius: 6px;
-        accent-color: var(--primary-teal);
+        accent-color: var(--primary-blue);
         cursor: pointer;
         flex-shrink: 0;
     }
 
     .checkbox-option:has(input:checked) {
-        border-color: var(--primary-teal);
-        background: #d1fae5;
+        border-color: var(--primary-blue);
+        background: #EEF2FF;
     }
 
     .checkbox-label {
@@ -365,8 +367,8 @@
     }
 
     .bootstrap-select .dropdown-toggle:focus {
-        border-color: var(--primary-teal) !important;
-        box-shadow: 0 0 0 4px rgba(14, 165, 164, 0.12) !important;
+        border-color: var(--primary-blue) !important;
+        box-shadow: 0 0 0 4px rgba(47, 107, 255, 0.12) !important;
     }
 
     .bootstrap-select .dropdown-menu {
@@ -384,12 +386,12 @@
     }
 
     .bootstrap-select .dropdown-menu .dropdown-item:hover {
-        background: #d1fae5 !important;
-        color: #065f46 !important;
+        background: #EEF2FF !important;
+        color: #2F6BFF !important;
     }
 
     .bootstrap-select .dropdown-menu .dropdown-item.active {
-        background: var(--primary-teal) !important;
+        background: var(--primary-blue) !important;
         color: white !important;
     }
 
@@ -421,18 +423,18 @@
     }
 
     .daterangepicker .drp-buttons .btn-primary {
-        background: var(--primary-teal) !important;
-        border-color: var(--primary-teal) !important;
+        background: var(--primary-blue) !important;
+        border-color: var(--primary-blue) !important;
     }
 
     .daterangepicker td.active,
     .daterangepicker td.active:hover {
-        background: var(--primary-teal) !important;
+        background: var(--primary-blue) !important;
     }
 
     .daterangepicker td.in-range {
-        background: #d1fae5 !important;
-        color: #065f46 !important;
+        background: #EEF2FF !important;
+        color: #2F6BFF !important;
     }
 
     /* ===== ACTION BUTTONS ===== */
@@ -450,7 +452,7 @@
         align-items: center;
         gap: 0.6rem;
         padding: 0.8rem 2rem;
-        background: linear-gradient(135deg, var(--primary-teal), var(--primary-green));
+        background: linear-gradient(135deg, #2F6BFF, #1E4FCC);
         color: white;
         border: none;
         border-radius: 40px;
@@ -458,13 +460,13 @@
         font-size: 0.95rem;
         cursor: pointer;
         transition: var(--spring-transition);
-        box-shadow: 0 4px 15px rgba(14, 165, 164, 0.25);
+        box-shadow: 0 4px 15px rgba(47, 107, 255, 0.25);
         text-decoration: none;
     }
 
     .btn-submit:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(14, 165, 164, 0.35);
+        box-shadow: 0 8px 25px rgba(47, 107, 255, 0.35);
         color: white;
     }
 
@@ -601,40 +603,40 @@
 
     /* ===== DARK MODE ===== */
     html[data-pms-theme="dark"] .attendance-create-container {
-        background: linear-gradient(145deg, #07130d, #102119);
+        background: linear-gradient(145deg, #070B1A, #0F1530);
     }
 
     html[data-pms-theme="dark"] .header-card,
     html[data-pms-theme="dark"] .form-card {
-        background: rgba(16, 33, 25, 0.95);
-        border-color: rgba(122, 240, 181, 0.15);
+        background: rgba(15, 21, 48, 0.95);
+        border-color: rgba(79, 131, 255, 0.15);
     }
 
     html[data-pms-theme="dark"] .header-title h1 {
-        background: linear-gradient(135deg, #60a5fa, #34d399, #22c55e);
+        background: linear-gradient(135deg, #60a5fa, #2F6BFF, #8B5CF6);
         -webkit-background-clip: text;
         background-clip: text;
     }
 
     html[data-pms-theme="dark"] .header-title p {
-        color: #d9f1e4;
+        color: #C7D2FE;
     }
 
     html[data-pms-theme="dark"] .form-label {
-        color: #8ba198;
+        color: #94a3b8;
     }
 
     html[data-pms-theme="dark"] .form-control,
     html[data-pms-theme="dark"] .form-select {
-        background: #183026;
-        border-color: rgba(122, 240, 181, 0.2);
+        background: #141B3D;
+        border-color: rgba(79, 131, 255, 0.2);
         color: #ffffff;
     }
 
     html[data-pms-theme="dark"] .form-control:focus,
     html[data-pms-theme="dark"] .form-select:focus {
-        border-color: #34d399;
-        box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.12);
+        border-color: #60A5FA;
+        box-shadow: 0 0 0 4px rgba(79, 131, 255, 0.12);
     }
 
     html[data-pms-theme="dark"] .form-control::placeholder {
@@ -646,90 +648,90 @@
     }
 
     html[data-pms-theme="dark"] .radio-option {
-        background: #183026;
-        border-color: rgba(122, 240, 181, 0.15);
+        background: #141B3D;
+        border-color: rgba(79, 131, 255, 0.15);
     }
 
     html[data-pms-theme="dark"] .radio-option:has(input:checked) {
-        background: #064e3b;
-        border-color: #34d399;
+        background: rgba(47, 107, 255, 0.2);
+        border-color: #60A5FA;
     }
 
     html[data-pms-theme="dark"] .radio-label {
-        color: #d9f1e4;
+        color: #EEF1FB;
     }
 
     html[data-pms-theme="dark"] .checkbox-option {
-        background: #183026;
-        border-color: rgba(122, 240, 181, 0.15);
+        background: #141B3D;
+        border-color: rgba(79, 131, 255, 0.15);
     }
 
     html[data-pms-theme="dark"] .checkbox-option:has(input:checked) {
-        background: #064e3b;
-        border-color: #34d399;
+        background: rgba(47, 107, 255, 0.2);
+        border-color: #60A5FA;
     }
 
     html[data-pms-theme="dark"] .checkbox-label {
-        color: #d9f1e4;
+        color: #EEF1FB;
     }
 
     html[data-pms-theme="dark"] .form-actions {
-        border-color: rgba(122, 240, 181, 0.15);
+        border-color: rgba(79, 131, 255, 0.15);
     }
 
     html[data-pms-theme="dark"] .btn-cancel {
-        background: #183026;
-        color: #d9f1e4;
-        border-color: rgba(122, 240, 181, 0.2);
+        background: #141B3D;
+        color: #EEF1FB;
+        border-color: rgba(79, 131, 255, 0.2);
     }
 
     html[data-pms-theme="dark"] .btn-cancel:hover {
-        background: #102119;
+        background: #0F1530;
         color: #ffffff;
     }
 
     html[data-pms-theme="dark"] .bootstrap-select .dropdown-toggle {
-        background: #183026 !important;
-        border-color: rgba(122, 240, 181, 0.2) !important;
+        background: #141B3D !important;
+        border-color: rgba(79, 131, 255, 0.2) !important;
         color: #ffffff !important;
     }
 
     html[data-pms-theme="dark"] .bootstrap-select .dropdown-toggle:focus {
-        border-color: #34d399 !important;
-        box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.12) !important;
+        border-color: #60A5FA !important;
+        box-shadow: 0 0 0 4px rgba(79, 131, 255, 0.12) !important;
     }
 
     html[data-pms-theme="dark"] .bootstrap-select .dropdown-menu {
-        background: #183026 !important;
-        border-color: rgba(122, 240, 181, 0.2) !important;
+        background: #141B3D !important;
+        border-color: rgba(79, 131, 255, 0.2) !important;
     }
 
     html[data-pms-theme="dark"] .bootstrap-select .dropdown-menu .dropdown-item {
-        color: #d9f1e4 !important;
+        color: #EEF1FB !important;
     }
 
     html[data-pms-theme="dark"] .bootstrap-select .dropdown-menu .dropdown-item:hover {
-        background: #064e3b !important;
-        color: #34d399 !important;
+        background: rgba(47, 107, 255, 0.18) !important;
+        color: #60A5FA !important;
     }
 
     html[data-pms-theme="dark"] .bootstrap-select .dropdown-menu .dropdown-item.active {
-        background: #0f744c !important;
+        background: #2F6BFF !important;
         color: #ffffff !important;
     }
 
     html[data-pms-theme="dark"] .bootstrap-select .dropdown-menu .bs-actionsbox {
-        border-color: rgba(122, 240, 181, 0.15) !important;
+        border-color: rgba(79, 131, 255, 0.15) !important;
     }
 
     html[data-pms-theme="dark"] .daterangepicker {
-        background: #183026 !important;
-        border-color: rgba(122, 240, 181, 0.2) !important;
+        background: #141B3D !important;
+        border-color: rgba(79, 131, 255, 0.2) !important;
     }
 
     html[data-pms-theme="dark"] .daterangepicker .calendar-table {
-        background: #183026 !important;
-        color: #d9f1e4 !important;
+        background: #141B3D !important;
+        color: #EEF1FB !important;
     }
 
     html[data-pms-theme="dark"] .daterangepicker td.off {
@@ -737,29 +739,29 @@
     }
 
     html[data-pms-theme="dark"] .daterangepicker td.in-range {
-        background: #064e3b !important;
-        color: #34d399 !important;
+        background: rgba(47, 107, 255, 0.2) !important;
+        color: #60A5FA !important;
     }
 
     html[data-pms-theme="dark"] .daterangepicker td.active,
     html[data-pms-theme="dark"] .daterangepicker td.active:hover {
-        background: #0f744c !important;
+        background: #2F6BFF !important;
         color: #ffffff !important;
     }
 
     html[data-pms-theme="dark"] .daterangepicker .drp-buttons {
-        border-color: rgba(122, 240, 181, 0.15) !important;
+        border-color: rgba(79, 131, 255, 0.15) !important;
     }
 
     html[data-pms-theme="dark"] .daterangepicker .drp-buttons .btn-primary {
-        background: #0f744c !important;
-        border-color: #0f744c !important;
+        background: #2F6BFF !important;
+        border-color: #2F6BFF !important;
     }
 
     html[data-pms-theme="dark"] .daterangepicker .drp-buttons .btn-default {
-        background: #183026 !important;
-        color: #d9f1e4 !important;
-        border-color: rgba(122, 240, 181, 0.2) !important;
+        background: #141B3D !important;
+        color: #EEF1FB !important;
+        border-color: rgba(79, 131, 255, 0.2) !important;
     }
 
     html[data-pms-theme="dark"] .form-control[type="time"]::-webkit-calendar-picker-indicator {
