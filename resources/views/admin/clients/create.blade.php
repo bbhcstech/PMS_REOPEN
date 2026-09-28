@@ -249,7 +249,7 @@
                                         <option value="{{ $category->id }}" {{ old('client_category_id') == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
                                     @endforeach
                                 </select>
-                                <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#addCategoryModal" title="Add Category">+</button>
+                                <button type="button" class="btn btn-outline-secondary flex-shrink-0 text-nowrap px-3" data-bs-toggle="modal" data-bs-target="#addCategoryModal" title="Add Category" style="white-space: nowrap; min-width: 75px;"><i class="fas fa-plus me-1"></i> Add</button>
                             </div>
                         </div>
                     
@@ -263,7 +263,7 @@
                                         <option value="{{ $sub->id }}" {{ old('client_sub_category_id') == $sub->id ? 'selected' : '' }}>{{ $sub->name }}</option>
                                     @endforeach
                                 </select>
-                                <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#addSubCategoryModal" title="Add Sub Category">+</button>
+                                <button type="button" class="btn btn-outline-secondary flex-shrink-0 text-nowrap px-3" data-bs-toggle="modal" data-bs-target="#addSubCategoryModal" title="Add Sub Category" style="white-space: nowrap; min-width: 75px;"><i class="fas fa-plus me-1"></i> Add</button>
                             </div>
                         </div>
 
@@ -531,7 +531,7 @@
                                         <option value="{{ $pcat->id }}" {{ old('project_category_id') == $pcat->id ? 'selected' : '' }}>{{ $pcat->category_name }}</option>
                                     @endforeach
                                 </select>
-                                <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#addProjectCategoryModal" title="Add Project Category">+</button>
+                                <button type="button" class="btn btn-outline-secondary flex-shrink-0 text-nowrap px-3" data-bs-toggle="modal" data-bs-target="#addProjectCategoryModal" title="Add Project Category" style="white-space: nowrap; min-width: 75px;"><i class="fas fa-plus me-1"></i> Add</button>
                             </div>
                         </div>
 

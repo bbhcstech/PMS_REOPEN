@@ -40,7 +40,7 @@
                           </option>
                       @endforeach
                   </select>
-                  <button type="button" class="btn btn-sm btn-link ms-2" data-bs-toggle="modal" data-bs-target="#addAwardModal">+ Add</button>
+                  <button type="button" class="btn btn-outline-primary flex-shrink-0 text-nowrap px-3 ms-2" data-bs-toggle="modal" data-bs-target="#addAwardModal" style="white-space: nowrap; min-width: 75px;"><i class="fas fa-plus me-1"></i> Add</button>
               </div>
           </div>
 

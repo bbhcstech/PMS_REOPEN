@@ -830,18 +830,15 @@
     }
 
     .dropdown-menu-custom {
-        position: absolute;
-        right: 0;
-        top: 100%;
-        margin-top: 4px;
+        position: fixed;
         background: rgba(255, 255, 255, 0.98);
         border-radius: 12px;
-        border: 1px solid rgba(226, 232, 240, 0.8);
-        box-shadow: var(--card-shadow-lg);
+        border: 1px solid rgba(226, 232, 240, 0.85);
+        box-shadow: 0 14px 40px rgba(15, 23, 42, 0.18), 0 4px 12px rgba(15, 23, 42, 0.08);
         min-width: 220px;
-        padding: 4px 0;
+        padding: 6px 0;
         display: none;
-        z-index: 60;
+        z-index: 999999;
         animation: fadeSlide 0.15s ease;
         backdrop-filter: blur(16px);
     }
@@ -1119,6 +1116,86 @@
         color: var(--text-main, #EEF1FB) !important;
     }
 
+    /* Dark Mode: Change Subscription Plan Modal & Option Cards */
+    html[data-pms-theme="dark"] .modal-backdrop-custom,
+    html[data-theme="dark"] .modal-backdrop-custom,
+    html[data-bs-theme="dark"] .modal-backdrop-custom {
+        background: rgba(7, 11, 26, 0.75);
+    }
+    html[data-pms-theme="dark"] .modal-dialog-custom,
+    html[data-theme="dark"] .modal-dialog-custom,
+    html[data-bs-theme="dark"] .modal-dialog-custom {
+        background: var(--bg-surface, #0F1530) !important;
+        color: var(--text-main, #EEF1FB) !important;
+        border: 1px solid var(--border-strong, rgba(238, 241, 251, 0.14)) !important;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7) !important;
+    }
+    html[data-pms-theme="dark"] .modal-dialog-custom > div:last-child,
+    html[data-theme="dark"] .modal-dialog-custom > div:last-child,
+    html[data-bs-theme="dark"] .modal-dialog-custom > div:last-child {
+        border-top-color: var(--border-subtle, rgba(238, 241, 251, 0.12)) !important;
+    }
+    html[data-pms-theme="dark"] .plan-card-option,
+    html[data-theme="dark"] .plan-card-option,
+    html[data-bs-theme="dark"] .plan-card-option {
+        background: var(--bg-surface-subtle, #141B3D) !important;
+        border: 2px solid var(--border-strong, rgba(238, 241, 251, 0.14)) !important;
+        color: var(--slate-dark, #EEF1FB) !important;
+    }
+    html[data-pms-theme="dark"] .plan-card-option:hover,
+    html[data-theme="dark"] .plan-card-option:hover,
+    html[data-bs-theme="dark"] .plan-card-option:hover {
+        border-color: var(--emerald-primary, #2F6BFF) !important;
+        background: var(--bg-surface-hover, #1A2247) !important;
+    }
+    html[data-pms-theme="dark"] .plan-card-option.selected,
+    html[data-theme="dark"] .plan-card-option.selected,
+    html[data-bs-theme="dark"] .plan-card-option.selected {
+        border-color: var(--emerald-primary, #2F6BFF) !important;
+        background: rgba(47, 107, 255, 0.22) !important;
+        box-shadow: 0 0 0 1px var(--emerald-primary, #2F6BFF) !important;
+    }
+    html[data-pms-theme="dark"] .plan-card-option strong,
+    html[data-theme="dark"] .plan-card-option strong,
+    html[data-bs-theme="dark"] .plan-card-option strong {
+        color: #ffffff !important;
+    }
+    html[data-pms-theme="dark"] .plan-card-option div,
+    html[data-theme="dark"] .plan-card-option div,
+    html[data-bs-theme="dark"] .plan-card-option div {
+        color: var(--slate-muted, #9AA3C7) !important;
+    }
+
+    /* Dark Mode: Plan Badge Pills */
+    html[data-pms-theme="dark"] .plan-badge-cell.plan-free,
+    html[data-theme="dark"] .plan-badge-cell.plan-free,
+    html[data-bs-theme="dark"] .plan-badge-cell.plan-free {
+        background: rgba(241, 245, 249, 0.12) !important;
+        color: #cbd5e1 !important;
+        border: 1px solid rgba(203, 213, 225, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .plan-badge-cell.plan-gold,
+    html[data-theme="dark"] .plan-badge-cell.plan-gold,
+    html[data-bs-theme="dark"] .plan-badge-cell.plan-gold {
+        background: rgba(245, 158, 11, 0.18) !important;
+        color: #fde68a !important;
+        border: 1px solid rgba(245, 158, 11, 0.35) !important;
+    }
+    html[data-pms-theme="dark"] .plan-badge-cell.plan-platinum,
+    html[data-theme="dark"] .plan-badge-cell.plan-platinum,
+    html[data-bs-theme="dark"] .plan-badge-cell.plan-platinum {
+        background: rgba(2, 132, 199, 0.18) !important;
+        color: #bae6fd !important;
+        border: 1px solid rgba(2, 132, 199, 0.35) !important;
+    }
+    html[data-pms-theme="dark"] .plan-badge-cell.plan-diamond,
+    html[data-theme="dark"] .plan-badge-cell.plan-diamond,
+    html[data-bs-theme="dark"] .plan-badge-cell.plan-diamond {
+        background: rgba(109, 40, 217, 0.22) !important;
+        color: #ddd6fe !important;
+        border: 1px solid rgba(139, 92, 246, 0.35) !important;
+    }
+
     @media (prefers-color-scheme: dark) {
         html:not([data-pms-theme="light"]):not([data-theme="light"]) .btn-outline-custom {
             background: var(--bg-surface-subtle, #141B3D) !important;
@@ -1169,6 +1246,54 @@
         }
         html:not([data-pms-theme="light"]):not([data-theme="light"]) .table-pagination-footer .pagination-info span {
             color: var(--text-main, #EEF1FB) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .modal-backdrop-custom {
+            background: rgba(7, 11, 26, 0.75);
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .modal-dialog-custom {
+            background: var(--bg-surface, #0F1530) !important;
+            color: var(--text-main, #EEF1FB) !important;
+            border: 1px solid var(--border-strong, rgba(238, 241, 251, 0.14)) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .plan-card-option {
+            background: var(--bg-surface-subtle, #141B3D) !important;
+            border: 2px solid var(--border-strong, rgba(238, 241, 251, 0.14)) !important;
+            color: var(--slate-dark, #EEF1FB) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .plan-card-option:hover {
+            border-color: var(--emerald-primary, #2F6BFF) !important;
+            background: var(--bg-surface-hover, #1A2247) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .plan-card-option.selected {
+            border-color: var(--emerald-primary, #2F6BFF) !important;
+            background: rgba(47, 107, 255, 0.22) !important;
+            box-shadow: 0 0 0 1px var(--emerald-primary, #2F6BFF) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .plan-card-option strong {
+            color: #ffffff !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .plan-card-option div {
+            color: var(--slate-muted, #9AA3C7) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .plan-badge-cell.plan-free {
+            background: rgba(241, 245, 249, 0.12) !important;
+            color: #cbd5e1 !important;
+            border: 1px solid rgba(203, 213, 225, 0.3) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .plan-badge-cell.plan-gold {
+            background: rgba(245, 158, 11, 0.18) !important;
+            color: #fde68a !important;
+            border: 1px solid rgba(245, 158, 11, 0.35) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .plan-badge-cell.plan-platinum {
+            background: rgba(2, 132, 199, 0.18) !important;
+            color: #bae6fd !important;
+            border: 1px solid rgba(2, 132, 199, 0.35) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .plan-badge-cell.plan-diamond {
+            background: rgba(109, 40, 217, 0.22) !important;
+            color: #ddd6fe !important;
+            border: 1px solid rgba(139, 92, 246, 0.35) !important;
         }
     }
   </style>
@@ -1910,21 +2035,93 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // 5. Action Dropdown Toggle
-    document.querySelectorAll('.dropdown-toggle-trigger').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            const menu = this.nextElementSibling;
-            document.querySelectorAll('.dropdown-menu-custom').forEach(m => {
-                if (m !== menu) m.classList.remove('open');
-            });
-            menu.classList.toggle('open');
+    // 5. Action & Export Dropdown Toggle with Smart Viewport Positioning
+    function positionDropdownMenu(btn, menu) {
+        if (!btn || !menu) return;
+
+        menu.style.position = 'fixed';
+        menu.style.zIndex = '999999';
+        menu.style.visibility = 'hidden';
+        menu.style.display = 'block';
+
+        const rect = btn.getBoundingClientRect();
+        const menuHeight = menu.offsetHeight || 250;
+        const menuWidth = menu.offsetWidth || 220;
+        const viewportHeight = window.innerHeight;
+        const viewportWidth = window.innerWidth;
+
+        // Flip UP if near screen bottom
+        const spaceBelow = viewportHeight - rect.bottom;
+        const spaceAbove = rect.top;
+
+        if (spaceBelow < menuHeight + 12 && spaceAbove > spaceBelow) {
+            menu.style.top = 'auto';
+            menu.style.bottom = Math.max(8, viewportHeight - rect.top + 6) + 'px';
+        } else {
+            menu.style.top = Math.max(8, rect.bottom + 6) + 'px';
+            menu.style.bottom = 'auto';
+        }
+
+        // Align right edge of menu to right edge of trigger button
+        const rightOffset = viewportWidth - rect.right;
+        if (rect.right - menuWidth < 12) {
+            menu.style.left = '12px';
+            menu.style.right = 'auto';
+        } else {
+            menu.style.right = Math.max(12, rightOffset) + 'px';
+            menu.style.left = 'auto';
+        }
+
+        menu.style.visibility = 'visible';
+    }
+
+    function closeAllDropdowns() {
+        document.querySelectorAll('.dropdown-menu-custom').forEach(menu => {
+            menu.classList.remove('open');
+            menu.style.display = '';
         });
+    }
+
+    // Toggle dropdowns with dynamic viewport alignment
+    document.addEventListener('click', function(e) {
+        const toggleBtn = e.target.closest('.dropdown-toggle-trigger') || e.target.closest('#exportDropdownBtn');
+
+        if (toggleBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            let menu = toggleBtn.nextElementSibling;
+            if (toggleBtn.id === 'exportDropdownBtn') {
+                menu = document.getElementById('exportDropdownMenu');
+            }
+
+            if (menu) {
+                const isOpen = menu.classList.contains('open');
+                closeAllDropdowns();
+
+                if (!isOpen) {
+                    menu.classList.add('open');
+                    positionDropdownMenu(toggleBtn, menu);
+                }
+            }
+            return;
+        }
+
+        // Close dropdown when item inside is clicked
+        if (e.target.closest('.dropdown-menu-custom a, .dropdown-menu-custom button')) {
+            closeAllDropdowns();
+            return;
+        }
+
+        // Close dropdown when clicking outside
+        if (!e.target.closest('.dropdown-menu-custom')) {
+            closeAllDropdowns();
+        }
     });
 
-    document.addEventListener('click', function() {
-        document.querySelectorAll('.dropdown-menu-custom').forEach(m => m.classList.remove('open'));
-    });
+    // Close open dropdowns on scroll or resize to prevent detached floating UI
+    window.addEventListener('scroll', closeAllDropdowns, true);
+    window.addEventListener('resize', closeAllDropdowns);
 
     // 6. Plan Change Modal
     const planModal = document.getElementById('planChangeModal');
@@ -1999,22 +2196,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // 8. Export Dropdown & File Handlers (CSV & PDF)
-    const exportDropdownBtn = document.getElementById('exportDropdownBtn');
-    const exportDropdownMenu = document.getElementById('exportDropdownMenu');
     const exportCsvOption = document.getElementById('exportCsvOption');
     const exportPdfOption = document.getElementById('exportPdfOption');
-
-    if (exportDropdownBtn && exportDropdownMenu) {
-        exportDropdownBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            exportDropdownMenu.classList.toggle('open');
-        });
-
-        document.addEventListener('click', function() {
-            exportDropdownMenu.classList.remove('open');
-        });
-    }
 
     // Export CSV Handler
     if (exportCsvOption) {
