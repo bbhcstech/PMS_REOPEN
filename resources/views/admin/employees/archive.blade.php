@@ -798,17 +798,49 @@
     html[data-bs-theme="dark"] .deleted-badge,
     [data-theme="dark"] .deleted-badge,
     [data-pms-theme="dark"] .deleted-badge,
-    body.dark-mode .deleted-badge,
-    html[data-pms-theme="dark"] .archive-selected-badge,
-    html[data-theme="dark"] .archive-selected-badge,
-    html[data-bs-theme="dark"] .archive-selected-badge,
-    [data-theme="dark"] .archive-selected-badge,
-    [data-pms-theme="dark"] .archive-selected-badge,
-    body.dark-mode .archive-selected-badge {
+    body.dark-mode .deleted-badge {
         background: rgba(79, 131, 255, 0.14) !important;
         color: #EEF1FB !important;
         -webkit-text-fill-color: #EEF1FB !important;
         border: 1px solid rgba(79, 131, 255, 0.24) !important;
+    }
+
+    html[data-pms-theme="dark"] .archive-selected-badge,
+    html[data-theme="dark"] .archive-selected-badge,
+    html[data-bs-theme="dark"] .archive-selected-badge,
+    body[data-pms-theme="dark"] .archive-selected-badge,
+    body[data-theme="dark"] .archive-selected-badge,
+    body[data-bs-theme="dark"] .archive-selected-badge,
+    [data-theme="dark"] .archive-selected-badge,
+    [data-pms-theme="dark"] .archive-selected-badge,
+    [data-bs-theme="dark"] .archive-selected-badge,
+    html.dark .archive-selected-badge,
+    body.dark .archive-selected-badge,
+    body.dark-mode .archive-selected-badge,
+    .dark-mode .archive-selected-badge,
+    .dark .archive-selected-badge {
+        background: rgba(79, 131, 255, 0.22) !important;
+        color: #93C5FD !important;
+        -webkit-text-fill-color: #93C5FD !important;
+        border: 1px solid rgba(147, 197, 253, 0.35) !important;
+    }
+
+    html[data-pms-theme="dark"] .archive-show-entries span,
+    html[data-theme="dark"] .archive-show-entries span,
+    html[data-bs-theme="dark"] .archive-show-entries span,
+    body[data-pms-theme="dark"] .archive-show-entries span,
+    body[data-theme="dark"] .archive-show-entries span,
+    body[data-bs-theme="dark"] .archive-show-entries span,
+    [data-theme="dark"] .archive-show-entries span,
+    [data-pms-theme="dark"] .archive-show-entries span,
+    [data-bs-theme="dark"] .archive-show-entries span,
+    html.dark .archive-show-entries span,
+    body.dark .archive-show-entries span,
+    body.dark-mode .archive-show-entries span,
+    .dark-mode .archive-show-entries span,
+    .dark .archive-show-entries span {
+        color: #CBD5E1 !important;
+        -webkit-text-fill-color: #CBD5E1 !important;
     }
 
     html[data-pms-theme="dark"] .archive-status.status-active,
