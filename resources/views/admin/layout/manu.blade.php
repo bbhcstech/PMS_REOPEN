@@ -987,6 +987,109 @@
        color: #64748b;
    }
 
+   /* Sticky Notes Dark Mode Styling */
+   html[data-pms-theme="dark"] .sticky-note-card,
+   html[data-theme="dark"] .sticky-note-card,
+   [data-pms-theme="dark"] .sticky-note-card {
+       color: #EEF1FB !important;
+       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35) !important;
+   }
+
+   html[data-pms-theme="dark"] .sticky-note-card p,
+   html[data-theme="dark"] .sticky-note-card p,
+   [data-pms-theme="dark"] .sticky-note-card p {
+       color: #F8FAFC !important;
+   }
+
+   html[data-pms-theme="dark"] .sticky-note-card .sticky-note-meta,
+   html[data-theme="dark"] .sticky-note-card .sticky-note-meta,
+   [data-pms-theme="dark"] .sticky-note-card .sticky-note-meta {
+       color: rgba(248, 250, 252, 0.75) !important;
+   }
+
+   html[data-pms-theme="dark"] .sticky-note-card.yellow,
+   html[data-theme="dark"] .sticky-note-card.yellow,
+   [data-pms-theme="dark"] .sticky-note-card.yellow {
+       background: linear-gradient(135deg, rgba(245, 158, 11, 0.22), rgba(180, 83, 9, 0.35)) !important;
+       border: 1px solid rgba(245, 158, 11, 0.5) !important;
+   }
+
+   html[data-pms-theme="dark"] .sticky-note-card.blue,
+   html[data-theme="dark"] .sticky-note-card.blue,
+   [data-pms-theme="dark"] .sticky-note-card.blue {
+       background: linear-gradient(135deg, rgba(59, 130, 246, 0.22), rgba(29, 78, 216, 0.35)) !important;
+       border: 1px solid rgba(59, 130, 246, 0.5) !important;
+   }
+
+   html[data-pms-theme="dark"] .sticky-note-card.red,
+   html[data-theme="dark"] .sticky-note-card.red,
+   [data-pms-theme="dark"] .sticky-note-card.red {
+       background: linear-gradient(135deg, rgba(239, 68, 68, 0.22), rgba(185, 28, 28, 0.35)) !important;
+       border: 1px solid rgba(239, 68, 68, 0.5) !important;
+   }
+
+   html[data-pms-theme="dark"] .sticky-note-card.gray,
+   html[data-theme="dark"] .sticky-note-card.gray,
+   [data-pms-theme="dark"] .sticky-note-card.gray {
+       background: linear-gradient(135deg, rgba(148, 163, 184, 0.2), rgba(71, 85, 105, 0.35)) !important;
+       border: 1px solid rgba(148, 163, 184, 0.5) !important;
+   }
+
+   html[data-pms-theme="dark"] .sticky-note-card.purple,
+   html[data-theme="dark"] .sticky-note-card.purple,
+   [data-pms-theme="dark"] .sticky-note-card.purple {
+       background: linear-gradient(135deg, rgba(168, 85, 247, 0.22), rgba(126, 34, 206, 0.35)) !important;
+       border: 1px solid rgba(168, 85, 247, 0.5) !important;
+   }
+
+   html[data-pms-theme="dark"] .sticky-note-card.green,
+   html[data-theme="dark"] .sticky-note-card.green,
+   [data-pms-theme="dark"] .sticky-note-card.green {
+       background: linear-gradient(135deg, rgba(16, 185, 129, 0.22), rgba(4, 120, 87, 0.35)) !important;
+       border: 1px solid rgba(16, 185, 129, 0.5) !important;
+   }
+
+   html[data-pms-theme="dark"] .sticky-note-actions button,
+   html[data-theme="dark"] .sticky-note-actions button,
+   [data-pms-theme="dark"] .sticky-note-actions button {
+       background: rgba(255, 255, 255, 0.15) !important;
+       color: #F8FAFC !important;
+       border: 1px solid rgba(255, 255, 255, 0.25) !important;
+   }
+
+   html[data-pms-theme="dark"] .sticky-note-actions button:hover,
+   html[data-theme="dark"] .sticky-note-actions button:hover,
+   [data-pms-theme="dark"] .sticky-note-actions button:hover {
+       background: rgba(255, 255, 255, 0.35) !important;
+       color: #FFFFFF !important;
+   }
+
+   html[data-pms-theme="dark"] #addNoteModal .form-control,
+   html[data-theme="dark"] #addNoteModal .form-control,
+   [data-pms-theme="dark"] #addNoteModal .form-control,
+   html[data-pms-theme="dark"] #addNoteModal .form-select,
+   html[data-theme="dark"] #addNoteModal .form-select,
+   [data-pms-theme="dark"] #addNoteModal .form-select {
+       background-color: #141B3D !important;
+       color: #EEF1FB !important;
+       border-color: rgba(238, 241, 251, 0.16) !important;
+   }
+
+   html[data-pms-theme="dark"] #addNoteModal .form-label,
+   html[data-theme="dark"] #addNoteModal .form-label,
+   [data-pms-theme="dark"] #addNoteModal .form-label,
+   html[data-pms-theme="dark"] #addNoteModal h6,
+   html[data-theme="dark"] #addNoteModal h6,
+   [data-pms-theme="dark"] #addNoteModal h6 {
+       color: #EEF1FB !important;
+   }
+
+   html[data-pms-theme="dark"] #addNoteModal .btn-close,
+   html[data-theme="dark"] #addNoteModal .btn-close,
+   [data-pms-theme="dark"] #addNoteModal .btn-close {
+       filter: invert(1) grayscale(100%) brightness(200%) !important;
+   }
+
    .sticky-note-actions {
        position: absolute;
        top: 8px;
