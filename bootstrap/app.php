@@ -34,7 +34,17 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions) {
         $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\HttpException $e, \Illuminate\Http\Request $request) {
             if ($e->getStatusCode() === 419) {
-                return redirect()->back()->with('error', 'Your session expired. Please refresh and try again.');
+                if ($request->is('logout') || $request->is('*/logout') || $request->routeIs('logout*')) {
+                    \Illuminate\Support\Facades\Auth::guard('web')->logout();
+                    if (\Illuminate\Support\Facades\Auth::guard('super_admin')->check()) {
+                        \Illuminate\Support\Facades\Auth::guard('super_admin')->logout();
+                    }
+                    \Illuminate\Support\Facades\Auth::logout();
+                    $request->session()->invalidate();
+                    $request->session()->regenerateToken();
+                    return redirect('/login');
+                }
+                return redirect('/login')->with('error', 'Your session expired. Please log in again.');
             }
         });
     })->create();

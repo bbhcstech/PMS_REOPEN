@@ -1411,13 +1411,10 @@
                     </a>
                 </li>
                 <li class="menu-item">
-                    <form method="POST" action="{{ route('logout') }}" id="sidebarSuspendedLogoutForm">
-                        @csrf
-                        <a href="{{ route('logout.get') }}" onclick="event.preventDefault(); document.getElementById('sidebarSuspendedLogoutForm').submit();" class="menu-link text-muted">
-                            <i class="menu-icon tf-icons bx bx-log-out"></i>
-                            <div class="text-truncate">Log Out</div>
-                        </a>
-                    </form>
+                    <a href="{{ route('logout.get') }}" class="menu-link text-muted">
+                        <i class="menu-icon tf-icons bx bx-log-out"></i>
+                        <div class="text-truncate">Log Out</div>
+                    </a>
                 </li>
             @else
 
@@ -2675,12 +2672,9 @@
                     </li>
                     <li>
 
-                      <form method="POST" action="{{ route('logout') }}" id="adminHeaderLogoutForm">
-                            @csrf
-                            <a class="dropdown-item text-danger" href="{{ route('logout.get') }}" onclick="event.preventDefault(); document.getElementById('adminHeaderLogoutForm').submit();">
-                               <i class="icon-base bx bx-power-off icon-md me-3"></i><span>Log Out</span>
-                            </a>
-                        </form>
+                      <a class="dropdown-item text-danger" href="{{ route('logout.get') }}">
+                         <i class="icon-base bx bx-power-off icon-md me-3"></i><span>Log Out</span>
+                      </a>
 
                     </li>
                   </ul>
