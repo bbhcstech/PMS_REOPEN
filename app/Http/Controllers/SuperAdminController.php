@@ -1539,6 +1539,10 @@ class SuperAdminController extends Controller
         // Always get a fresh copy from the DB so saved data shows up immediately
         $user = $saUser ? $saUser->fresh() : ($webUser ? $webUser->fresh() : null);
 
+        if (!$user) {
+            $user = $request->user('super_admin') ?? $request->user();
+        }
+
         return view('superadmin.profile', compact('user'));
     }
 
@@ -1550,29 +1554,40 @@ class SuperAdminController extends Controller
         $webUser = auth()->user();
         $user = $saUser ?? $webUser;
 
+        if (!$user) {
+            return redirect()->route('login')->with('error', 'Please log in to manage your profile.');
+        }
+
         $data = $request->validate([
             'name'                => ['required', 'string', 'max:255'],
-            'email'               => ['required', 'email', 'max:255'],  // uniqueness checked manually below (central connection)
-            'mobile' => ['nullable', 'string', 'max:50'],
-            'gender' => ['nullable', 'string', 'max:20'],
-            'date_of_birth' => ['nullable', 'date'],
-            'marital_status' => ['nullable', 'string', 'max:50'],
-            'country' => ['nullable', 'string', 'max:100'],
-            'language' => ['nullable', 'string', 'max:100'],
-            'address' => ['nullable', 'string'],
-            'about' => ['nullable', 'string'],
+            'email'               => ['required', 'email', 'max:255'],
+            'mobile'              => ['nullable', 'string', 'max:50'],
+            'gender'              => ['nullable', 'string', 'max:20'],
+            'date_of_birth'       => ['nullable', 'date'],
+            'marital_status'      => ['nullable', 'string', 'max:50'],
+            'country'             => ['nullable', 'string', 'max:100'],
+            'language'            => ['nullable', 'string', 'max:100'],
+            'address'             => ['nullable', 'string'],
+            'about'               => ['nullable', 'string'],
             'email_notifications' => ['nullable', 'boolean'],
-            'google_calendar' => ['nullable', 'boolean'],
-            'profile_image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg,webp', 'max:5120'],
+            'google_calendar'     => ['nullable', 'boolean'],
+            'profile_image'       => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg,webp', 'max:5120'],
             'govt_id_card'        => ['nullable', 'file', 'mimes:pdf,jpeg,png,jpg', 'max:10240'],
         ]);
 
-        // Manual email uniqueness on the central connection (Rule::unique doesn't support ->connection() in Laravel 11)
-        $emailTaken = \Illuminate\Support\Facades\DB::connection('central')
-            ->table('super_admins')
-            ->where('email', $data['email'])
-            ->where('id', '!=', $user->id)
-            ->exists();
+        // Email uniqueness check safely matching model guard
+        if ($saUser) {
+            $emailTaken = \Illuminate\Support\Facades\DB::connection('central')
+                ->table('super_admins')
+                ->where('email', $data['email'])
+                ->where('id', '!=', $saUser->id)
+                ->exists();
+        } else {
+            $emailTaken = \Illuminate\Support\Facades\DB::table($user->getTable())
+                ->where('email', $data['email'])
+                ->where('id', '!=', $user->id)
+                ->exists();
+        }
         if ($emailTaken) {
             return back()->withInput()->withErrors(['email' => 'This email is already taken by another administrator.']);
         }
