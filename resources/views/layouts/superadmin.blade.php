@@ -490,6 +490,31 @@
       font-weight: 500;
     }
 
+    .btn-sidebar-logout-footer {
+      margin-top: 10px;
+      width: 100%;
+      padding: 9px 14px;
+      background: rgba(239, 68, 68, 0.14);
+      border: 1px solid rgba(239, 68, 68, 0.32);
+      border-radius: 10px;
+      color: #ef4444;
+      font-weight: 700;
+      font-size: 13.5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-sidebar-logout-footer:hover {
+      background: rgba(239, 68, 68, 0.25);
+      border-color: rgba(239, 68, 68, 0.5);
+      color: #ff6b6b;
+      transform: translateY(-1px);
+    }
+
     /* ============================================================
        MAIN CONTENT
        ============================================================ */
@@ -1070,9 +1095,66 @@
       border: 1px solid rgba(239, 68, 68, 0.2);
     }
 
+    /* Standalone Navbar Logout Button */
+    .btn-navbar-logout {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border-radius: 12px;
+      background: rgba(239, 68, 68, 0.09);
+      border: 1px solid rgba(239, 68, 68, 0.22);
+      color: #ef4444;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      flex-shrink: 0;
+      text-decoration: none;
+    }
+
+    .btn-navbar-logout:hover {
+      background: #ef4444;
+      border-color: #ef4444;
+      color: #ffffff !important;
+      box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);
+      transform: translateY(-1px);
+    }
+
     /* ============================================================
-       RESPONSIVE
+       RESPONSIVE & ALL-DEVICE SCREEN COMPATIBILITY FIXES
        ============================================================ */
+    html, body {
+      overflow-x: hidden !important;
+      max-width: 100vw !important;
+    }
+
+    .main {
+      width: 100%;
+      max-width: 100vw;
+      overflow-x: hidden;
+    }
+
+    /* Auto-responsive table containers */
+    .table-responsive,
+    .table-wrapper,
+    .card-table-wrap {
+      width: 100%;
+      overflow-x: auto !important;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    @media (max-width: 1200px) {
+      .top-header {
+        padding: 14px 24px;
+        margin: 0 -24px 8px;
+      }
+      .grid-4, .kpi-grid, .stats-grid, .metrics-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+      }
+    }
+
     @media (max-width: 992px) {
       :root {
         --sidebar-width: 0px;
@@ -1102,11 +1184,90 @@
 
       .top-header {
         margin: 0 -16px 8px;
-        padding: 14px 16px 16px;
+        padding: 12px 16px;
       }
 
       .hamburger {
         display: flex;
+      }
+
+      .top-header .left .page-title {
+        font-size: 22px;
+      }
+
+      .top-header .center {
+        max-width: 260px;
+        margin: 0 8px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .top-header {
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .top-header .left {
+        flex: 1;
+      }
+
+      .top-header .left .page-title {
+        font-size: 20px;
+      }
+
+      .top-header .left .page-sub {
+        font-size: 11.5px;
+      }
+
+      .top-header .center {
+        order: 3;
+        flex: 1 0 100%;
+        max-width: 100%;
+        margin: 4px 0 0 0;
+      }
+
+      .top-header .right {
+        gap: 6px;
+      }
+
+      .grid-4, .grid-3, .grid-2, .kpi-grid, .stats-grid, .metrics-grid, .form-grid {
+        grid-template-columns: 1fr !important;
+      }
+
+      .header-actions, .filter-actions, .action-bar, .page-header-actions {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        width: 100%;
+      }
+
+      .modal-dialog {
+        margin: 12px !important;
+        max-width: calc(100vw - 24px) !important;
+      }
+
+      .drawer, .offcanvas-drawer, .right-drawer {
+        width: 100% !important;
+        max-width: 100vw !important;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .top-header .right .profile .info {
+        display: none;
+      }
+      .top-header .right .profile {
+        padding: 4px;
+      }
+      .btn-navbar-logout {
+        padding: 6px 10px;
+        font-size: 12px;
+      }
+      .top-header .left .page-title {
+        font-size: 18px;
+      }
+      .content-card, .table-card, .filter-panel, .header-card {
+        padding: 14px !important;
+        border-radius: 14px !important;
       }
     }
 
@@ -1245,7 +1406,7 @@
 
   <!-- SIDEBAR (LUXURY DARK THEME) -->
   <aside class="sidebar" id="sidebar">
-    <div class="sidebar-brand">
+    <a href="{{ Route::has('superadmin.dashboard') ? route('superadmin.dashboard') : (Route::has('super-admin.dashboard') ? route('super-admin.dashboard') : (Route::has('super-admin.companies.index') ? route('super-admin.companies.index') : url('/super-admin'))) }}" class="sidebar-brand" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 12px;" title="Go to Super Admin Dashboard">
       <div class="logo">
         <i class="bx bx-cube-alt"></i>
       </div>
@@ -1253,7 +1414,7 @@
         <div class="brand-name">Super Admin</div>
         <div class="brand-sub">Command Center <span class="status-dot"></span></div>
       </div>
-    </div>
+    </a>
 
     <nav class="sidebar-nav">
       <!-- COMMAND CENTER -->
@@ -1325,6 +1486,11 @@
          class="{{ request()->routeIs('super-admin.developers.*') ? 'active' : '' }}">
         <i class="bx bx-code-alt icon"></i> Developer Management
       </a>
+
+      <!-- ACCOUNT / LOGOUT -->
+      <a href="javascript:void(0);" onclick="document.getElementById('logoutForm').submit();" class="sidebar-logout-link" style="margin-top: 10px; color: #ef4444 !important; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.25);">
+        <i class="bx bx-log-out icon" style="color: #ef4444 !important;"></i> Logout
+      </a>
     </nav>
 
     <div class="sidebar-footer">
@@ -1346,10 +1512,10 @@
         <button class="hamburger" id="hamburgerBtn" title="Toggle Sidebar" aria-label="Toggle Navigation">
           <i class="bx bx-menu"></i>
         </button>
-        <div class="title-wrap">
+        <a href="{{ Route::has('superadmin.dashboard') ? route('superadmin.dashboard') : (Route::has('super-admin.dashboard') ? route('super-admin.dashboard') : (Route::has('super-admin.companies.index') ? route('super-admin.companies.index') : url('/super-admin'))) }}" class="title-wrap" style="text-decoration: none; color: inherit;" title="Go to Super Admin Dashboard">
           <h1 class="page-title">@yield('page_title', 'Dashboard')</h1>
           <div class="page-sub">@yield('page_subtitle', 'Central Command Center')</div>
-        </div>
+        </a>
       </div>
 
       <!-- Header Search -->
@@ -1497,7 +1663,8 @@
               <div class="user-name">{{ $displayName }}</div>
               <div class="user-email">{{ $displayEmail }}</div>
             </div>
-            <a href="#platform-health"><i class="bx bx-slider-alt" style="color:#2563eb;"></i> System Health</a>
+            <a href="{{ Route::has('super-admin.system-health.index') ? route('super-admin.system-health.index') : url('/super-admin/system-health') }}"><i class="bx bx-slider-alt" style="color:#2563eb;"></i> System Health</a>
+            <a href="{{ Route::has('superadmin.profile') ? route('superadmin.profile') : (Route::has('super-admin.profile') ? route('super-admin.profile') : url('/superadmin/profile')) }}"><i class="bx bx-user-circle" style="color:#22d3ee;"></i> My Profile</a>
             <a href="{{ Route::has('super-admin.tenant-audit.index') ? route('super-admin.tenant-audit.index') : url('/super-admin/tenant-audit') }}"><i class="bx bx-shield-alt-2" style="color:#7c3aed;"></i> Audit Activity</a>
             <div class="divider"></div>
             <button type="button" class="dropdown-item danger" onclick="document.getElementById('logoutForm').submit();">
