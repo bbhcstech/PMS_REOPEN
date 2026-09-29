@@ -553,6 +553,17 @@ class SuperAdminController extends Controller
         return back()->with('success', 'Company status updated.');
     }
 
+    public function deleteCompany(Company $company): RedirectResponse
+    {
+        $this->authorizeSuperAdmin();
+
+        $name = $company->name;
+        $this->logAction('company.deleted', $company, ['company_name' => $name]);
+        $company->delete();
+
+        return back()->with('success', "Company '{$name}' deleted successfully.");
+    }
+
     private function logAction(string $action, ?Company $company = null, array $values = []): void
     {
         if (! class_exists(AuditLog::class)) {
@@ -1615,6 +1626,6 @@ class SuperAdminController extends Controller
             }
         }
 
-        return redirect()->route('super-admin.profile')->with('success', 'Profile updated successfully.');
+        return redirect()->back()->with('success', 'Profile updated successfully.');
     }
 }

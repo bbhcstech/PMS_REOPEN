@@ -389,7 +389,7 @@
       <div class="profile-sec-subtitle">Update your account details and personal information.</div>
 
       <!-- FORM -->
-      <form action="{{ route('super-admin.profile.update') }}" method="POST" enctype="multipart/form-data">
+      <form action="{{ Route::has('superadmin.profile.update') ? route('superadmin.profile.update') : (Route::has('super-admin.profile.update') ? route('super-admin.profile.update') : url('/superadmin/profile')) }}" method="POST" enctype="multipart/form-data">
         @csrf
 
         <!-- PROFILE IMAGE UPLOAD -->
