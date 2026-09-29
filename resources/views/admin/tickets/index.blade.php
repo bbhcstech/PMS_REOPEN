@@ -281,8 +281,8 @@
         box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
     }
     .dt-buttons .btn:hover {
-        background: var(--pms-primary-soft, #e4f3eb) !important;
-        color: var(--pms-primary, #0f744c) !important;
+        background: var(--pms-primary-soft, #EEF2FF) !important;
+        color: var(--pms-primary, #2F6BFF) !important;
     }
     .dataTables_filter input {
         border-radius: 50rem !important;
@@ -291,7 +291,7 @@
         outline: none !important;
     }
     .dataTables_paginate .paginate_button.current {
-        background: var(--pms-primary, #0f744c) !important;
+        background: var(--pms-primary, #2F6BFF) !important;
         color: #ffffff !important;
         border-radius: 50rem !important;
         border: none !important;

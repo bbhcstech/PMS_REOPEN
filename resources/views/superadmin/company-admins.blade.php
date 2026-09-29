@@ -11,8 +11,8 @@
         --primary-light: #eff6ff;
         --primary-border: #bfdbfe;
         --success: #10b981;
-        --success-light: #ecfdf5;
-        --success-border: #a7f3d0;
+        --success-light: #EEF2FF;
+        --success-border: #C7D2FE;
         --warning: #f59e0b;
         --warning-light: #fffbeb;
         --warning-border: #fde68a;

@@ -461,9 +461,9 @@
         --text-muted: #9AA3C7;
         --text-subtle: #6B739A;
         
-        --success: #34d399;
-        --success-bg: rgba(16, 185, 129, 0.12);
-        --success-border: rgba(52, 211, 153, 0.25);
+        --success: #60A5FA;
+        --success-bg: rgba(47, 107, 255, 0.12);
+        --success-border: rgba(79, 131, 255, 0.25);
         
         --warning: #fbbf24;
         --warning-bg: rgba(245, 158, 11, 0.12);
@@ -529,15 +529,15 @@
     html[data-pms-theme="dark"] .header-status-badge,
     html[data-theme="dark"] .header-status-badge,
     html[data-bs-theme="dark"] .header-status-badge {
-        background: rgba(16, 185, 129, 0.15) !important;
-        color: #34d399 !important;
-        border-color: rgba(52, 211, 153, 0.3) !important;
+        background: rgba(47, 107, 255, 0.15) !important;
+        color: #60A5FA !important;
+        border-color: rgba(79, 131, 255, 0.3) !important;
     }
     html[data-pms-theme="dark"] .header-status-badge .dot,
     html[data-theme="dark"] .header-status-badge .dot,
     html[data-bs-theme="dark"] .header-status-badge .dot {
-        background: #34d399 !important;
-        box-shadow: 0 0 0 2px rgba(52, 211, 153, 0.25) !important;
+        background: #60A5FA !important;
+        box-shadow: 0 0 0 2px rgba(79, 131, 255, 0.25) !important;
     }
 
     html[data-pms-theme="dark"] .btn-action-secondary,
@@ -606,7 +606,7 @@
     html[data-pms-theme="dark"] .icon-pill-total,
     html[data-theme="dark"] .icon-pill-total { background: rgba(47, 107, 255, 0.15) !important; color: #60a5fa !important; }
     html[data-pms-theme="dark"] .icon-pill-uptodate,
-    html[data-theme="dark"] .icon-pill-uptodate { background: rgba(16, 185, 129, 0.15) !important; color: #34d399 !important; }
+    html[data-theme="dark"] .icon-pill-uptodate { background: rgba(47, 107, 255, 0.15) !important; color: #60A5FA !important; }
     html[data-pms-theme="dark"] .icon-pill-pending,
     html[data-theme="dark"] .icon-pill-pending { background: rgba(245, 158, 11, 0.15) !important; color: #fbbf24 !important; }
     html[data-pms-theme="dark"] .icon-pill-failed,
@@ -699,9 +699,9 @@
     }
     html[data-pms-theme="dark"] .badge-status-uptodate,
     html[data-theme="dark"] .badge-status-uptodate {
-        background: rgba(16, 185, 129, 0.15) !important;
-        color: #34d399 !important;
-        border-color: rgba(52, 211, 153, 0.3) !important;
+        background: rgba(47, 107, 255, 0.15) !important;
+        color: #60A5FA !important;
+        border-color: rgba(79, 131, 255, 0.3) !important;
     }
     html[data-pms-theme="dark"] .badge-status-pending,
     html[data-theme="dark"] .badge-status-pending {
@@ -1113,7 +1113,7 @@
         <div class="drawer-header">
             <div>
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <div style="width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, #0f744c, #10b981); color: #ffffff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px;">
+                    <div style="width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, #2F6BFF, #10b981); color: #ffffff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px;">
                         <i class="fas fa-building"></i>
                     </div>
                     <div>

@@ -237,22 +237,24 @@
 <style>
     /* ===== PREMIUM ATTENDANCE DETAILS STYLES ===== */
     :root {
-        --primary-blue: #1e3a8a;
-        --primary-teal: #0ea5a4;
-        --primary-green: #22c55e;
+        --primary-blue: #2F6BFF;
+        --primary-hover: #1E4FCC;
+        --primary-teal: #2F6BFF;
+        --primary-accent: #22D3EE;
+        --primary-green: #8B5CF6;
         --bg-light: #f8fafc;
         --glass-border: rgba(255, 255, 255, 0.7);
         --card-shadow: 0px 4px 20px rgba(0, 0, 0, 0.02),
             0px 8px 40px rgba(0, 0, 0, 0.04),
-            0px 20px 60px rgba(30, 58, 138, 0.06);
+            0px 20px 60px rgba(47, 107, 255, 0.06);
         --card-shadow-hover: 0px 20px 50px rgba(0, 0, 0, 0.08),
-            0px 30px 80px rgba(30, 58, 138, 0.12);
+            0px 30px 80px rgba(47, 107, 255, 0.12);
         --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         --spring-transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
     .attendance-details-container {
-        background: linear-gradient(135deg, #f0f9ff 0%, #e6f7f5 50%, #f0fdf4 100%);
+        background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 50%, #f1f5f9 100%);
         min-height: calc(100vh - 100px);
         padding: 2rem 1.75rem;
         position: relative;
@@ -273,7 +275,7 @@
         right: -100px;
         width: 500px;
         height: 500px;
-        background: radial-gradient(circle, rgba(30, 58, 138, 0.12) 0%, transparent 70%);
+        background: radial-gradient(circle, rgba(47, 107, 255, 0.12) 0%, transparent 70%);
         animation: orbFloat 20s ease-in-out infinite;
     }
 
@@ -282,7 +284,7 @@
         left: -100px;
         width: 450px;
         height: 450px;
-        background: radial-gradient(circle, rgba(14, 165, 164, 0.1) 0%, transparent 70%);
+        background: radial-gradient(circle, rgba(34, 211, 238, 0.1) 0%, transparent 70%);
         animation: orbFloat 25s ease-in-out infinite reverse;
     }
 
@@ -291,7 +293,7 @@
         left: 50%;
         width: 400px;
         height: 400px;
-        background: radial-gradient(circle, rgba(34, 197, 94, 0.08) 0%, transparent 70%);
+        background: radial-gradient(circle, rgba(139, 92, 246, 0.08) 0%, transparent 70%);
         animation: orbFloat 18s ease-in-out infinite;
         transform: translate(-50%, -50%);
     }
@@ -327,7 +329,7 @@
 
     .info-card:hover {
         box-shadow: var(--card-shadow-hover);
-        border-color: rgba(14, 165, 164, 0.2);
+        border-color: rgba(47, 107, 255, 0.2);
     }
 
     .card-header-custom {
@@ -406,7 +408,7 @@
 
     .summary-card:hover {
         box-shadow: var(--card-shadow-hover);
-        border-color: rgba(14, 165, 164, 0.2);
+        border-color: rgba(47, 107, 255, 0.2);
     }
 
     .summary-header {
@@ -488,7 +490,7 @@
     }
 
     .summary-icon.clock-in {
-        background: #d1fae5;
+        background: #E0E7FF;
         color: #065f46;
     }
 
@@ -538,7 +540,7 @@
     }
 
     .status-badge.present {
-        background: #d1fae5;
+        background: #E0E7FF;
         color: #065f46;
     }
 
@@ -1049,21 +1051,21 @@
 
     /* ===== DARK MODE ===== */
     html[data-pms-theme="dark"] .attendance-details-container {
-        background: linear-gradient(145deg, #07130d, #102119);
+        background: linear-gradient(145deg, #070B1A, #0F1530);
     }
 
     html[data-pms-theme="dark"] .info-card,
     html[data-pms-theme="dark"] .summary-card,
     html[data-pms-theme="dark"] .activity-card {
-        background: rgba(16, 33, 25, 0.95);
-        border-color: rgba(122, 240, 181, 0.15);
+        background: rgba(15, 21, 48, 0.95);
+        border-color: rgba(79, 131, 255, 0.15);
     }
 
     html[data-pms-theme="dark"] .card-header-custom,
     html[data-pms-theme="dark"] .summary-header,
     html[data-pms-theme="dark"] .activity-header {
-        background: linear-gradient(135deg, #183026, #102119);
-        border-color: rgba(122, 240, 181, 0.15);
+        background: linear-gradient(135deg, #141B3D, #0F1530);
+        border-color: rgba(79, 131, 255, 0.15);
     }
 
     html[data-pms-theme="dark"] .card-header-custom h6,
@@ -1073,20 +1075,20 @@
     }
 
     html[data-pms-theme="dark"] .info-label {
-        color: #8ba198;
+        color: #94A3B8;
     }
 
     html[data-pms-theme="dark"] .info-value {
-        color: #d9f1e4;
+        color: #EEF1FB;
     }
 
     html[data-pms-theme="dark"] .info-row {
-        border-color: rgba(122, 240, 181, 0.08);
+        border-color: rgba(79, 131, 255, 0.08);
     }
 
     html[data-pms-theme="dark"] .summary-item {
-        background: #183026;
-        border-color: rgba(122, 240, 181, 0.12);
+        background: #141B3D;
+        border-color: rgba(79, 131, 255, 0.12);
     }
 
     html[data-pms-theme="dark"] .summary-value {
@@ -1094,12 +1096,12 @@
     }
 
     html[data-pms-theme="dark"] .summary-label {
-        color: #8ba198;
+        color: #94A3B8;
     }
 
     html[data-pms-theme="dark"] .summary-icon.clock-in {
         background: #064e3b;
-        color: #34d399;
+        color: #60A5FA;
     }
 
     html[data-pms-theme="dark"] .summary-icon.clock-out {
@@ -1119,7 +1121,7 @@
 
     html[data-pms-theme="dark"] .status-badge.present {
         background: #064e3b;
-        color: #34d399;
+        color: #60A5FA;
     }
 
     html[data-pms-theme="dark"] .status-badge.late {
@@ -1133,85 +1135,85 @@
     }
 
     html[data-pms-theme="dark"] .activity-item {
-        background: #183026;
+        background: #141B3D;
     }
 
     html[data-pms-theme="dark"] .activity-item:hover {
-        background: #102119;
+        background: #0F1530;
     }
 
     html[data-pms-theme="dark"] .activity-type {
-        color: #d9f1e4;
+        color: #EEF1FB;
     }
 
     html[data-pms-theme="dark"] .activity-time {
-        color: #8ba198;
+        color: #94a3b8;
     }
 
     html[data-pms-theme="dark"] .activity-location {
-        color: #8ba198;
+        color: #94a3b8;
     }
 
     html[data-pms-theme="dark"] .activity-duration {
-        background: #102119;
-        color: #8ba198;
+        background: #0F1530;
+        color: #94a3b8;
     }
 
     html[data-pms-theme="dark"] .activity-count {
-        background: #102119;
-        color: #8ba198;
+        background: #0F1530;
+        color: #94a3b8;
     }
 
     html[data-pms-theme="dark"] .btn-action-dropdown {
-        color: #8ba198;
+        color: #94a3b8;
     }
 
     html[data-pms-theme="dark"] .btn-action-dropdown:hover {
-        background: #102119;
+        background: #0F1530;
         color: #ffffff;
     }
 
     html[data-pms-theme="dark"] .dropdown-menu {
-        background: rgba(16, 33, 25, 0.98);
-        border-color: rgba(122, 240, 181, 0.15);
+        background: rgba(15, 21, 48, 0.98);
+        border-color: rgba(79, 131, 255, 0.15);
     }
 
     html[data-pms-theme="dark"] .dropdown-item {
-        color: #d9f1e4;
+        color: #EEF1FB;
     }
 
     html[data-pms-theme="dark"] .dropdown-item i {
-        color: #8ba198;
+        color: #94a3b8;
     }
 
     html[data-pms-theme="dark"] .dropdown-item:hover {
-        background: #183026;
-        color: #34d399;
+        background: #141B3D;
+        color: #60A5FA;
     }
 
     html[data-pms-theme="dark"] .dropdown-divider {
-        border-color: rgba(122, 240, 181, 0.15);
+        border-color: rgba(79, 131, 255, 0.15);
     }
 
     html[data-pms-theme="dark"] .modal-content {
-        background: rgba(16, 33, 25, 0.98);
-        border-color: rgba(122, 240, 181, 0.15);
+        background: rgba(15, 21, 48, 0.98);
+        border-color: rgba(79, 131, 255, 0.15);
     }
 
     html[data-pms-theme="dark"] .modal-header-custom {
-        background: linear-gradient(135deg, #0a5a3a, #0f744c);
+        background: linear-gradient(135deg, #2F6BFF, #1E4FCC);
     }
 
     html[data-pms-theme="dark"] .modal-body-custom {
-        background: #102119;
+        background: #0F1530;
     }
 
     html[data-pms-theme="dark"] .loading-state p {
-        color: #8ba198;
+        color: #94A3B8;
     }
 
     html[data-pms-theme="dark"] .activity-empty {
-        color: #8ba198;
+        color: #94A3B8;
     }
 
     html[data-pms-theme="dark"] .activity-empty i {
@@ -1223,19 +1225,19 @@
     }
 
     html[data-pms-theme="dark"] .activity-timeline::-webkit-scrollbar-track {
-        background: #102119;
+        background: #0F1530;
     }
 
     html[data-pms-theme="dark"] .activity-timeline::-webkit-scrollbar-thumb {
-        background: #34d399;
+        background: #60A5FA;
     }
 
     html[data-pms-theme="dark"] .modal-body-custom::-webkit-scrollbar-track {
-        background: #102119;
+        background: #0F1530;
     }
 
     html[data-pms-theme="dark"] .modal-body-custom::-webkit-scrollbar-thumb {
-        background: #34d399;
+        background: #60A5FA;
     }
 
     /* Z-INDEX FIXES */

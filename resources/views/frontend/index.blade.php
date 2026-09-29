@@ -191,7 +191,7 @@
                 <span class="badge-status review">In Review</span>
               </div>
               <div class="showcase-row">
-                <span class="avatar" style="background:linear-gradient(135deg,#34D399,#6EE7B7)"></span>
+                <span class="avatar" style="background:linear-gradient(135deg,#60A5FA,#93C5FD)"></span>
                 <span class="meta"><b>Payroll sync — August</b><span>HR · Neha Kapoor</span></span>
                 <span class="badge-status done">Completed</span>
               </div>

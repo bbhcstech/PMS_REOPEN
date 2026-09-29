@@ -12,25 +12,25 @@
            ============================================= */
         :root {
             /* Core Palette - Matching Listing Page */
-            --primary: #0f744c;
-            --secondary: #188b5e;
+            --primary: #2F6BFF;
+            --secondary: #1E4FCC;
             --accent: #22c55e;
-            --mint: #d1fae5;
-            --text-main: #07130d;
+            --mint: #E0E7FF;
+            --text-main: #070B1A;
             --text-muted: #52645a;
             --bg-base: #f7fbf9;
             --surface: #ffffff;
 
             /* Gradients */
             --grad-cta: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 40%, var(--accent) 80%, var(--mint) 100%);
-            --grad-bg: linear-gradient(135deg, rgba(15, 116, 76, 0.12) 0%, rgba(24, 139, 94, 0.12) 40%, rgba(34, 197, 94, 0.12) 80%, rgba(209, 250, 229, 0.2) 100%);
-            --grad-bg-hover: linear-gradient(135deg, rgba(15, 116, 76, 0.2) 0%, rgba(24, 139, 94, 0.2) 40%, rgba(34, 197, 94, 0.2) 80%, rgba(209, 250, 229, 0.3) 100%);
+            --grad-bg: linear-gradient(135deg, rgba(47, 107, 255, 0.12) 0%, rgba(24, 139, 94, 0.12) 40%, rgba(34, 197, 94, 0.12) 80%, rgba(209, 250, 229, 0.2) 100%);
+            --grad-bg-hover: linear-gradient(135deg, rgba(47, 107, 255, 0.2) 0%, rgba(24, 139, 94, 0.2) 40%, rgba(34, 197, 94, 0.2) 80%, rgba(209, 250, 229, 0.3) 100%);
 
             /* Glassmorphism */
             --glass-bg: rgba(255, 255, 255, 0.92);
             --glass-border: rgba(255, 255, 255, 1);
-            --shadow-soft: 0 10px 30px -10px rgba(15, 116, 76, 0.08);
-            --shadow-hover: 0 20px 40px -12px rgba(15, 116, 76, 0.2);
+            --shadow-soft: 0 10px 30px -10px rgba(47, 107, 255, 0.08);
+            --shadow-hover: 0 20px 40px -12px rgba(47, 107, 255, 0.2);
 
             /* Motion */
             --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -47,11 +47,11 @@
         }
 
         .directory-profile-box {
-            border: 1px solid rgba(15, 116, 76, .14);
+            border: 1px solid rgba(47, 107, 255, .14);
             background: rgba(255, 255, 255, .94);
             border-radius: 14px;
             padding: 18px;
-            box-shadow: 0 14px 34px rgba(15, 116, 76, .08);
+            box-shadow: 0 14px 34px rgba(47, 107, 255, .08);
         }
 
         .directory-profile-head {
@@ -149,7 +149,7 @@
             border-radius: 24px;
             padding: 2rem 2.5rem;
             margin-bottom: 2rem;
-            box-shadow: 0 20px 40px -10px rgba(15, 116, 76, 0.25);
+            box-shadow: 0 20px 40px -10px rgba(47, 107, 255, 0.25);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -276,7 +276,7 @@
         }
 
         .alert-custom-success {
-            background: #d1fae5;
+            background: #E0E7FF;
             border-left: 4px solid #10b981;
             color: #065f46;
             border-radius: 16px;
@@ -288,7 +288,7 @@
         /* MAIN CARD */
         .card-premium {
             background: var(--surface);
-            border: 1px solid rgba(15, 116, 76, 0.12);
+            border: 1px solid rgba(47, 107, 255, 0.12);
             border-radius: 24px;
             box-shadow: var(--shadow-soft);
             overflow: hidden;
@@ -338,10 +338,10 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
             background: var(--grad-bg);
-            border: 1px solid rgba(15, 116, 76, 0.12);
+            border: 1px solid rgba(47, 107, 255, 0.12);
             border-radius: 16px;
             padding: 1.2rem 2rem;
-            box-shadow: 0 10px 24px -18px rgba(15, 116, 76, 0.45);
+            box-shadow: 0 10px 24px -18px rgba(47, 107, 255, 0.45);
         }
 
         .section-title i {
@@ -389,7 +389,7 @@
         .form-control-premium,
         .form-select-premium {
             background: #ffffff;
-            border: 1.5px solid rgba(15, 116, 76, 0.2);
+            border: 1.5px solid rgba(47, 107, 255, 0.2);
             border-radius: 14px;
             padding: 0.7rem 1.2rem;
             font-size: 0.9rem;
@@ -411,7 +411,7 @@
             display: flex;
             border-radius: 14px;
             overflow: hidden;
-            border: 1.5px solid rgba(15, 116, 76, 0.2);
+            border: 1.5px solid rgba(47, 107, 255, 0.2);
             transition: all 0.3s;
             background: #fff;
         }
@@ -442,7 +442,7 @@
         .password-input-group .btn {
             align-items: center;
             border: none;
-            border-left: 1px solid rgba(15, 116, 76, 0.12);
+            border-left: 1px solid rgba(47, 107, 255, 0.12);
             border-radius: 0;
             color: var(--primary);
             display: inline-flex;
@@ -454,7 +454,7 @@
 
         .password-input-group .btn:hover,
         .password-input-group .btn:focus {
-            background: rgba(15, 116, 76, 0.08);
+            background: rgba(47, 107, 255, 0.08);
             color: var(--primary);
             box-shadow: none;
         }
@@ -472,7 +472,7 @@
         .input-group-premium .mobile-input {
             border: none;
             background: transparent;
-            border-left: 1.5px solid rgba(15, 116, 76, 0.2);
+            border-left: 1.5px solid rgba(47, 107, 255, 0.2);
             border-radius: 0 14px 14px 0;
         }
 
@@ -599,7 +599,7 @@
 
         /* MODAL STYLES */
         .modal-content-premium {
-            border: 1px solid rgba(15, 116, 76, 0.14);
+            border: 1px solid rgba(47, 107, 255, 0.14);
             border-radius: 20px;
             overflow: hidden;
             box-shadow: 0 24px 60px rgba(22, 39, 30, 0.18);
@@ -607,7 +607,7 @@
 
         .modal-header-premium {
             background: linear-gradient(135deg, #f1faf5, #ffffff) !important;
-            border-bottom: 1px solid rgba(15, 116, 76, 0.1);
+            border-bottom: 1px solid rgba(47, 107, 255, 0.1);
             padding: 1.2rem 1.5rem;
         }
 
@@ -680,8 +680,8 @@
         html[data-pms-theme="dark"] .section-title i,
         html[data-bs-theme="dark"] .section-title i,
         html[data-theme="dark"] .section-title i {
-            color: #34D399 !important;
-            -webkit-text-fill-color: #34D399 !important;
+            color: #60A5FA !important;
+            -webkit-text-fill-color: #60A5FA !important;
         }
 
         /* Form Labels & Badges */
@@ -766,15 +766,15 @@
         html[data-pms-theme="dark"] .directory-profile-head span,
         html[data-bs-theme="dark"] .directory-profile-head span,
         html[data-theme="dark"] .directory-profile-head span {
-            color: #34D399 !important;
-            -webkit-text-fill-color: #34D399 !important;
+            color: #60A5FA !important;
+            -webkit-text-fill-color: #60A5FA !important;
         }
 
         html[data-pms-theme="dark"] .directory-profile-head span i,
         html[data-bs-theme="dark"] .directory-profile-head span i,
         html[data-theme="dark"] .directory-profile-head span i {
-            color: #34D399 !important;
-            -webkit-text-fill-color: #34D399 !important;
+            color: #60A5FA !important;
+            -webkit-text-fill-color: #60A5FA !important;
         }
 
         html[data-pms-theme="dark"] .directory-profile-head p,
@@ -913,8 +913,8 @@
         html[data-pms-theme="dark"] small.text-muted a,
         html[data-bs-theme="dark"] small.text-muted a,
         html[data-theme="dark"] small.text-muted a {
-            color: #34D399 !important;
-            -webkit-text-fill-color: #34D399 !important;
+            color: #60A5FA !important;
+            -webkit-text-fill-color: #60A5FA !important;
             font-weight: 700 !important;
         }
 
@@ -1002,8 +1002,8 @@
         [data-pms-theme="dark"] .btn-header-enterprise:hover {
             background: #ffffff !important;
             border-color: #ffffff !important;
-            color: #0f744c !important;
-            -webkit-text-fill-color: #0f744c !important;
+            color: #2F6BFF !important;
+            -webkit-text-fill-color: #2F6BFF !important;
             box-shadow: 0 15px 30px -8px rgba(0, 0, 0, 0.25) !important;
         }
 
@@ -1012,8 +1012,8 @@
         html[data-theme="dark"] .btn-header-enterprise:hover i,
         body[data-pms-theme="dark"] .btn-header-enterprise:hover i,
         [data-pms-theme="dark"] .btn-header-enterprise:hover i {
-            color: #0f744c !important;
-            -webkit-text-fill-color: #0f744c !important;
+            color: #2F6BFF !important;
+            -webkit-text-fill-color: #2F6BFF !important;
         }
     </style>
 
@@ -1736,7 +1736,7 @@
     }
     .select2-container--bootstrap-5 .select2-selection {
         border-radius: 14px !important;
-        border-color: rgba(15, 116, 76, 0.2) !important;
+        border-color: rgba(47, 107, 255, 0.2) !important;
         min-height: 44px;
     }
 </style>

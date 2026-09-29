@@ -5,7 +5,7 @@
 @section('content')
 <style>
     :root {
-        --tsk-primary: #0f744c;
+        --tsk-primary: #2F6BFF;
         --tsk-primary-hover: #0c5d3d;
         --tsk-primary-light: #10b981;
         --tsk-primary-soft: #eaf6f0;
@@ -16,8 +16,8 @@
         --tsk-border: rgba(226, 232, 240, 0.85);
         --tsk-card-bg: #ffffff;
         --tsk-shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.03);
-        --tsk-shadow: 0 12px 30px -8px rgba(15, 116, 76, 0.08), 0 4px 12px rgba(0, 0, 0, 0.03);
-        --tsk-shadow-hover: 0 20px 40px -10px rgba(15, 116, 76, 0.14);
+        --tsk-shadow: 0 12px 30px -8px rgba(47, 107, 255, 0.08), 0 4px 12px rgba(0, 0, 0, 0.03);
+        --tsk-shadow-hover: 0 20px 40px -10px rgba(47, 107, 255, 0.14);
     }
 
     html[data-pms-theme="dark"] {
@@ -77,7 +77,7 @@
         right: 0;
         width: 160px;
         height: 160px;
-        background: radial-gradient(circle, rgba(16, 185, 129, 0.08) 0%, rgba(255, 255, 255, 0) 70%);
+        background: radial-gradient(circle, rgba(47, 107, 255, 0.08) 0%, rgba(255, 255, 255, 0) 70%);
         pointer-events: none;
     }
 
@@ -100,7 +100,7 @@
         font-weight: 800;
         font-size: 0.82rem;
         border-radius: 999px;
-        border: 1px solid rgba(15, 116, 76, 0.2);
+        border: 1px solid rgba(47, 107, 255, 0.2);
     }
 
     /* Quick Metrics Strip */
@@ -271,10 +271,10 @@
         border-color: #cbd5e1;
     }
     .task-nav-pills .nav-link.active {
-        background: linear-gradient(135deg, #0f744c 0%, #10b981 100%) !important;
+        background: linear-gradient(135deg, #2F6BFF 0%, #10b981 100%) !important;
         color: #ffffff !important;
-        border-color: #0f744c;
-        box-shadow: 0 6px 16px rgba(15, 116, 76, 0.25);
+        border-color: #2F6BFF;
+        box-shadow: 0 6px 16px rgba(47, 107, 255, 0.25);
     }
     .task-nav-pills .nav-link.active * {
         color: #ffffff !important;
@@ -282,14 +282,14 @@
 
     /* Action Buttons */
     .btn-tsk-primary {
-        background: linear-gradient(135deg, #0f744c 0%, #10b981 100%);
+        background: linear-gradient(135deg, #2F6BFF 0%, #10b981 100%);
         color: #ffffff !important;
         font-weight: 800;
         font-size: 0.88rem;
         padding: 0.55rem 1.25rem;
         border-radius: 999px;
         border: none;
-        box-shadow: 0 4px 14px rgba(15, 116, 76, 0.25);
+        box-shadow: 0 4px 14px rgba(47, 107, 255, 0.25);
         transition: all 0.2s ease;
         display: inline-flex;
         align-items: center;
@@ -298,7 +298,7 @@
     }
     .btn-tsk-primary:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(15, 116, 76, 0.35);
+        box-shadow: 0 8px 20px rgba(47, 107, 255, 0.35);
         color: #ffffff !important;
     }
     .btn-tsk-primary * {
@@ -306,13 +306,13 @@
     }
 
     .btn-tsk-outline {
-        background: rgba(15, 116, 76, 0.08);
+        background: rgba(47, 107, 255, 0.08);
         color: var(--tsk-primary) !important;
         font-weight: 800;
         font-size: 0.88rem;
         padding: 0.5rem 1.15rem;
         border-radius: 999px;
-        border: 1px solid rgba(15, 116, 76, 0.25);
+        border: 1px solid rgba(47, 107, 255, 0.25);
         transition: all 0.2s ease;
         display: inline-flex;
         align-items: center;
@@ -342,7 +342,7 @@
         color: #000000 !important;
     }
     .status-pill.completed {
-        background: #d1fae5 !important;
+        background: #E0E7FF !important;
         color: #000000 !important;
         border: 1px solid #86efac !important;
     }
@@ -389,9 +389,9 @@
         border: 1px solid rgba(245, 158, 11, 0.25);
     }
     .priority-pill.low {
-        background: rgba(16, 185, 129, 0.12);
-        color: #059669;
-        border: 1px solid rgba(16, 185, 129, 0.25);
+        background: rgba(47, 107, 255, 0.12);
+        color: #2F6BFF;
+        border: 1px solid rgba(47, 107, 255, 0.25);
     }
 
     /* Progress bar custom */
@@ -403,7 +403,7 @@
     }
     .task-progress-fill {
         height: 100%;
-        background: linear-gradient(90deg, #10b981, #059669);
+        background: linear-gradient(90deg, #10b981, #2F6BFF);
         border-radius: 999px;
         transition: width 0.4s ease;
     }
@@ -510,9 +510,9 @@
         color: #EEF1FB !important;
     }
     html[data-pms-theme="dark"] .status-pill.completed {
-        background: rgba(16, 185, 129, 0.22) !important;
-        color: #6EE7B7 !important;
-        border: 1px solid rgba(16, 185, 129, 0.45) !important;
+        background: rgba(47, 107, 255, 0.22) !important;
+        color: #93C5FD !important;
+        border: 1px solid rgba(47, 107, 255, 0.45) !important;
     }
     html[data-pms-theme="dark"] .status-pill.doing,
     html[data-pms-theme="dark"] .status-pill.in-progress {
@@ -624,7 +624,7 @@
 
     {{-- Flash Alerts --}}
     @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show rounded-4 border-0 shadow-sm mb-4" role="alert" style="background: rgba(16, 185, 129, 0.12); color: #047857; border: 1px solid rgba(16, 185, 129, 0.3);">
+        <div class="alert alert-success alert-dismissible fade show rounded-4 border-0 shadow-sm mb-4" role="alert" style="background: rgba(47, 107, 255, 0.12); color: #2F6BFF; border: 1px solid rgba(47, 107, 255, 0.3);">
             <div class="d-flex align-items-center">
                 <i class="bx bx-check-circle fs-4 me-2"></i>
                 <strong>{{ session('success') }}</strong>
@@ -669,7 +669,7 @@
                         <i class="bx bx-check-circle fs-5"></i> Mark as Complete
                     </a>
                 @else
-                    <span class="btn-tsk-outline text-success" style="background: rgba(16, 185, 129, 0.12); border-color: rgba(16, 185, 129, 0.3);">
+                    <span class="btn-tsk-outline text-success" style="background: rgba(47, 107, 255, 0.12); border-color: rgba(47, 107, 255, 0.3);">
                         <i class="bx bx-check-double fs-5"></i> Completed
                     </span>
                 @endif
@@ -742,7 +742,7 @@
     {{-- Quick Metric Cards Strip --}}
     <div class="task-metrics-grid">
         <div class="task-metric-box">
-            <div class="metric-icon-box" style="background: rgba(15, 116, 76, 0.1); color: var(--tsk-primary);">
+            <div class="metric-icon-box" style="background: rgba(47, 107, 255, 0.1); color: var(--tsk-primary);">
                 <i class="bx bx-folder"></i>
             </div>
             <div>
@@ -778,7 +778,7 @@
         </div>
 
         <div class="task-metric-box">
-            <div class="metric-icon-box" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+            <div class="metric-icon-box" style="background: rgba(47, 107, 255, 0.1); color: #10b981;">
                 <i class="bx bx-time-five"></i>
             </div>
             <div>

@@ -708,13 +708,13 @@
 
     /* ===== DARK MODE ===== */
     html[data-pms-theme="dark"] .attendance-table-wrapper {
-        background: rgba(16, 33, 25, 0.95);
-        border-color: rgba(122, 240, 181, 0.15);
+        background: rgba(15, 21, 48, 0.95);
+        border-color: rgba(79, 131, 255, 0.15);
     }
 
     html[data-pms-theme="dark"] .attendance-table thead th {
-        background: linear-gradient(135deg, #183026, #102119);
-        color: #8ba198;
+        background: linear-gradient(135deg, #141B3D, #0F1530);
+        color: #94A3B8;
     }
 
     html[data-pms-theme="dark"] .attendance-table thead th .day-number {
@@ -726,11 +726,11 @@
     }
 
     html[data-pms-theme="dark"] .attendance-table tbody tr:hover td {
-        background: #183026;
+        background: #141B3D;
     }
 
     html[data-pms-theme="dark"] .attendance-table tbody td {
-        border-color: rgba(122, 240, 181, 0.08);
+        border-color: rgba(79, 131, 255, 0.08);
     }
 
     html[data-pms-theme="dark"] .employee-name {
@@ -742,7 +742,7 @@
     }
 
     html[data-pms-theme="dark"] .employee-avatar {
-        background: linear-gradient(135deg, #0f744c, #10b981);
+        background: linear-gradient(135deg, #2F6BFF, #10b981);
     }
 
     html[data-pms-theme="dark"] .status-cell.present { background: rgba(34, 197, 94, 0.12); }
@@ -752,7 +752,7 @@
     html[data-pms-theme="dark"] .status-cell.leave { background: rgba(6, 182, 212, 0.12); }
     html[data-pms-theme="dark"] .status-cell.holiday { background: rgba(230, 126, 34, 0.12); }
 
-    html[data-pms-theme="dark"] .status-icon.present-icon { color: #34d399; }
+    html[data-pms-theme="dark"] .status-icon.present-icon { color: #60A5FA; }
     html[data-pms-theme="dark"] .status-icon.absent-icon { color: #f87171; }
     html[data-pms-theme="dark"] .status-icon.late-icon { color: #fbbf24; }
     html[data-pms-theme="dark"] .status-icon.halfday-icon { color: #a78bfa; }
@@ -761,11 +761,11 @@
     html[data-pms-theme="dark"] .status-icon.default-icon { color: #64748b; }
 
     html[data-pms-theme="dark"] .total-cell {
-        background: rgba(52, 211, 153, 0.06);
+        background: rgba(79, 131, 255, 0.06);
     }
 
     html[data-pms-theme="dark"] .total-hours {
-        color: #34d399;
+        color: #60A5FA;
     }
 
     html[data-pms-theme="dark"] .total-count {
@@ -773,31 +773,31 @@
     }
 
     html[data-pms-theme="dark"] .modal-content {
-        background: #102119;
-        border-color: rgba(122, 240, 181, 0.15);
+        background: #0F1530;
+        border-color: rgba(79, 131, 255, 0.15);
     }
 
     html[data-pms-theme="dark"] .modal-header {
-        background: linear-gradient(135deg, #0a5a3a, #0f744c);
+        background: linear-gradient(135deg, #0a5a3a, #2F6BFF);
     }
 
     html[data-pms-theme="dark"] .modal-body {
-        background: #102119;
+        background: #0F1530;
     }
 
     html[data-pms-theme="dark"] .modal-footer {
-        background: #102119;
-        border-color: rgba(122, 240, 181, 0.15);
+        background: #0F1530;
+        border-color: rgba(79, 131, 255, 0.15);
     }
 
     html[data-pms-theme="dark"] .btn-close-modal {
-        background: #183026;
-        color: #d9f1e4;
-        border-color: rgba(122, 240, 181, 0.2);
+        background: #141B3D;
+        color: #EEF1FB;
+        border-color: rgba(79, 131, 255, 0.2);
     }
 
     html[data-pms-theme="dark"] .btn-close-modal:hover {
-        background: #102119;
+        background: #0F1530;
         color: #ffffff;
     }
 </style>

@@ -13,25 +13,25 @@
                ============================================= */
         :root {
             /* Core Palette - Matching Listing Page */
-            --primary: #0f744c;
-            --secondary: #188b5e;
+            --primary: #2F6BFF;
+            --secondary: #1E4FCC;
             --accent: #22c55e;
-            --mint: #d1fae5;
-            --text-main: #07130d;
+            --mint: #E0E7FF;
+            --text-main: #070B1A;
             --text-muted: #52645a;
             --bg-base: #f7fbf9;
             --surface: #ffffff;
 
             /* Gradients */
             --grad-cta: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 40%, var(--accent) 80%, var(--mint) 100%);
-            --grad-bg: linear-gradient(135deg, rgba(15, 116, 76, 0.12) 0%, rgba(24, 139, 94, 0.12) 40%, rgba(34, 197, 94, 0.12) 80%, rgba(209, 250, 229, 0.2) 100%);
-            --grad-bg-hover: linear-gradient(135deg, rgba(15, 116, 76, 0.2) 0%, rgba(24, 139, 94, 0.2) 40%, rgba(34, 197, 94, 0.2) 80%, rgba(209, 250, 229, 0.3) 100%);
+            --grad-bg: linear-gradient(135deg, rgba(47, 107, 255, 0.12) 0%, rgba(24, 139, 94, 0.12) 40%, rgba(34, 197, 94, 0.12) 80%, rgba(209, 250, 229, 0.2) 100%);
+            --grad-bg-hover: linear-gradient(135deg, rgba(47, 107, 255, 0.2) 0%, rgba(24, 139, 94, 0.2) 40%, rgba(34, 197, 94, 0.2) 80%, rgba(209, 250, 229, 0.3) 100%);
 
             /* Glassmorphism */
             --glass-bg: rgba(255, 255, 255, 0.92);
             --glass-border: rgba(255, 255, 255, 1);
-            --shadow-soft: 0 10px 30px -10px rgba(15, 116, 76, 0.08);
-            --shadow-hover: 0 20px 40px -12px rgba(15, 116, 76, 0.2);
+            --shadow-soft: 0 10px 30px -10px rgba(47, 107, 255, 0.08);
+            --shadow-hover: 0 20px 40px -12px rgba(47, 107, 255, 0.2);
 
             /* State Colors */
             --state-active-bg: rgba(34, 197, 94, 0.1);
@@ -115,7 +115,7 @@
         /* BACK BUTTON */
         .btn-header-enterprise {
             background: var(--surface);
-            border: 1px solid rgba(15, 116, 76, 0.2);
+            border: 1px solid rgba(47, 107, 255, 0.2);
             color: var(--primary);
             -webkit-text-fill-color: var(--primary);
             padding: 0.8rem 1.8rem;
@@ -154,7 +154,7 @@
         /* CARD STYLES */
         .card-premium {
             background: var(--surface);
-            border: 1px solid rgba(15, 116, 76, 0.12);
+            border: 1px solid rgba(47, 107, 255, 0.12);
             border-radius: 24px;
             box-shadow: var(--shadow-soft);
             overflow: hidden;
@@ -166,7 +166,7 @@
 
         .card-premium:hover {
             box-shadow: var(--shadow-hover);
-            border-color: rgba(15, 116, 76, 0.2);
+            border-color: rgba(47, 107, 255, 0.2);
         }
 
         .card-premium:nth-child(1) { animation-delay: 0.1s; }
@@ -246,7 +246,7 @@
             justify-content: center;
             margin: 0 auto 1.5rem;
             border: 4px solid white;
-            box-shadow: 0 15px 30px rgba(15, 116, 76, 0.2);
+            box-shadow: 0 15px 30px rgba(47, 107, 255, 0.2);
             overflow: hidden;
             animation: floatAvatar 6s ease-in-out infinite;
         }
@@ -321,10 +321,10 @@
             gap: 8px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            background: rgba(15, 116, 76, 0.1);
+            background: rgba(47, 107, 255, 0.1);
             color: var(--primary);
             -webkit-text-fill-color: var(--primary);
-            border: 1px solid rgba(15, 116, 76, 0.2);
+            border: 1px solid rgba(47, 107, 255, 0.2);
         }
 
         .designation-badge-large i {
@@ -344,7 +344,7 @@
             padding: 1.5rem;
             background: var(--bg-base);
             border-radius: 20px;
-            border: 1px solid rgba(15, 116, 76, 0.1);
+            border: 1px solid rgba(47, 107, 255, 0.1);
             transition: all 0.3s var(--spring);
         }
 
@@ -402,11 +402,11 @@
         }
 
         .mobile-badge {
-            background: rgba(15, 116, 76, 0.12);
-            color: #0f744c;
-            -webkit-text-fill-color: #0f744c;
+            background: rgba(47, 107, 255, 0.12);
+            color: #2F6BFF;
+            -webkit-text-fill-color: #2F6BFF;
             font-weight: 700;
-            border: 1px solid rgba(15, 116, 76, 0.22);
+            border: 1px solid rgba(47, 107, 255, 0.22);
         }
 
         .employment-badge {
@@ -418,14 +418,14 @@
         }
 
         .skill-tag {
-            background: rgba(15, 116, 76, 0.1);
-            color: #0f744c;
-            -webkit-text-fill-color: #0f744c;
+            background: rgba(47, 107, 255, 0.1);
+            color: #2F6BFF;
+            -webkit-text-fill-color: #2F6BFF;
             padding: 5px 14px;
             border-radius: 20px;
             font-size: 0.75rem;
             font-weight: 700;
-            border: 1px solid rgba(15, 116, 76, 0.18);
+            border: 1px solid rgba(47, 107, 255, 0.18);
             display: inline-block;
             margin: 2px 4px 2px 0;
         }
@@ -453,7 +453,7 @@
             padding: 1.5rem 2rem;
             border-radius: 20px;
             background: var(--grad-bg);
-            border: 1px solid rgba(15, 116, 76, 0.2);
+            border: 1px solid rgba(47, 107, 255, 0.2);
         }
 
         .section-label {
@@ -578,11 +578,11 @@
         .btn-edit {
             background: var(--grad-cta);
             background-size: 200% 200%;
-            box-shadow: 0 10px 20px rgba(15, 116, 76, 0.2);
+            box-shadow: 0 10px 20px rgba(47, 107, 255, 0.2);
         }
 
         .btn-edit:hover {
-            box-shadow: 0 15px 30px rgba(15, 116, 76, 0.3);
+            box-shadow: 0 15px 30px rgba(47, 107, 255, 0.3);
             background-position: 100% 50%;
         }
 
@@ -590,7 +590,7 @@
             background: var(--bg-base);
             color: var(--primary);
             -webkit-text-fill-color: var(--primary);
-            border: 2px dashed rgba(15, 116, 76, 0.3);
+            border: 2px dashed rgba(47, 107, 255, 0.3);
         }
 
         .btn-print i {
@@ -689,36 +689,36 @@
 
         /* DARK MODE — Enterprise Employee View */
         html[data-pms-theme="dark"] {
-            --primary: #7af0b5;
-            --secondary: #40d48c;
-            --accent: #22c55e;
-            --mint: #153f2d;
-            --text-main: #f8fffb;
-            --text-muted: #b9d8c7;
-            --bg-base: #07110d;
-            --surface: rgba(16, 33, 25, 0.96);
-            --grad-cta: linear-gradient(135deg, #0f744c 0%, #188b5e 48%, #35c985 100%);
-            --grad-bg: linear-gradient(135deg, rgba(122, 240, 181, 0.14) 0%, rgba(64, 212, 140, 0.1) 50%, rgba(255, 255, 255, 0.04) 100%);
-            --grad-bg-hover: linear-gradient(135deg, rgba(122, 240, 181, 0.22) 0%, rgba(64, 212, 140, 0.16) 50%, rgba(255, 255, 255, 0.08) 100%);
-            --glass-bg: rgba(16, 33, 25, 0.86);
-            --glass-border: rgba(122, 240, 181, 0.18);
+            --primary: #2F6BFF;
+            --secondary: #8B5CF6;
+            --accent: #22D3EE;
+            --mint: rgba(47, 107, 255, 0.12);
+            --text-main: #FFFFFF;
+            --text-muted: #CBD5E1;
+            --bg-base: #070B1A;
+            --surface: rgba(15, 21, 48, 0.96);
+            --grad-cta: linear-gradient(135deg, #2F6BFF 0%, #1E4FCC 48%, #4F83FF 100%);
+            --grad-bg: linear-gradient(135deg, rgba(79, 131, 255, 0.14) 0%, rgba(139, 92, 246, 0.1) 50%, rgba(255, 255, 255, 0.04) 100%);
+            --grad-bg-hover: linear-gradient(135deg, rgba(79, 131, 255, 0.22) 0%, rgba(139, 92, 246, 0.16) 50%, rgba(255, 255, 255, 0.08) 100%);
+            --glass-bg: rgba(15, 21, 48, 0.86);
+            --glass-border: rgba(79, 131, 255, 0.18);
             --shadow-soft: 0 18px 38px rgba(0, 0, 0, 0.28);
             --shadow-hover: 0 26px 54px rgba(0, 0, 0, 0.38);
-            --state-active-bg: rgba(122, 240, 181, 0.14);
-            --state-active-text: #dfffee;
+            --state-active-bg: rgba(16, 185, 129, 0.14);
+            --state-active-text: #10B981;
             --state-inactive-bg: rgba(255, 123, 123, 0.12);
             --state-inactive-text: #ffd5d5;
         }
 
         html[data-pms-theme="dark"] .ambient-bg {
-            background: #07110d !important;
+            background: #070B1A !important;
         }
 
         html[data-pms-theme="dark"] .ambient-bg::before {
             background:
-                radial-gradient(circle at top right, rgba(122, 240, 181, 0.14), transparent 34rem),
-                radial-gradient(circle at bottom left, rgba(64, 212, 140, 0.1), transparent 28rem),
-                #07110d !important;
+                radial-gradient(circle at top right, rgba(79, 131, 255, 0.14), transparent 34rem),
+                radial-gradient(circle at bottom left, rgba(139, 92, 246, 0.1), transparent 28rem),
+                #070B1A !important;
             opacity: 1;
             filter: blur(42px);
         }
@@ -735,8 +735,8 @@
         html[data-pms-theme="dark"] .info-item,
         html[data-pms-theme="dark"] .audit-item,
         html[data-pms-theme="dark"] .resident-info-section {
-            background: rgba(16, 33, 25, 0.94) !important;
-            border-color: rgba(122, 240, 181, 0.18) !important;
+            background: rgba(15, 21, 48, 0.94) !important;
+            border-color: rgba(79, 131, 255, 0.18) !important;
             color: var(--text-main) !important;
             box-shadow: var(--shadow-soft) !important;
         }
@@ -744,14 +744,14 @@
         html[data-pms-theme="dark"] .card-premium:hover,
         html[data-pms-theme="dark"] .info-item:hover,
         html[data-pms-theme="dark"] .audit-item:hover {
-            background: rgba(20, 49, 36, 0.96) !important;
-            border-color: rgba(122, 240, 181, 0.34) !important;
+            background: rgba(20, 27, 61, 0.96) !important;
+            border-color: rgba(79, 131, 255, 0.34) !important;
             box-shadow: var(--shadow-hover) !important;
         }
 
         html[data-pms-theme="dark"] .card-header-premium {
-            background: linear-gradient(135deg, rgba(122, 240, 181, 0.14), rgba(255, 255, 255, 0.04)) !important;
-            border-bottom-color: rgba(122, 240, 181, 0.16) !important;
+            background: linear-gradient(135deg, rgba(79, 131, 255, 0.14), rgba(255, 255, 255, 0.04)) !important;
+            border-bottom-color: rgba(79, 131, 255, 0.16) !important;
         }
 
         html[data-pms-theme="dark"] .card-header-cta {
@@ -796,7 +796,7 @@
 
         html[data-pms-theme="dark"] .avatar-large {
             border-color: rgba(255, 255, 255, 0.78) !important;
-            box-shadow: 0 18px 36px rgba(64, 212, 140, 0.22) !important;
+            box-shadow: 0 18px 36px rgba(47, 107, 255, 0.22) !important;
         }
 
         html[data-pms-theme="dark"] .avatar-large i {
@@ -809,10 +809,10 @@
         html[data-pms-theme="dark"] .info-badge,
         html[data-pms-theme="dark"] .skill-tag,
         html[data-pms-theme="dark"] .toggle-status {
-            background: rgba(122, 240, 181, 0.13) !important;
-            border: 1px solid rgba(122, 240, 181, 0.26) !important;
-            color: #dfffee !important;
-            -webkit-text-fill-color: #dfffee !important;
+            background: rgba(79, 131, 255, 0.13) !important;
+            border: 1px solid rgba(79, 131, 255, 0.26) !important;
+            color: #EEF2FF !important;
+            -webkit-text-fill-color: #EEF2FF !important;
         }
 
         html[data-pms-theme="dark"] .status-inactive,
@@ -842,7 +842,7 @@
         body[data-pms-theme="dark"] .btn-print,
         [data-pms-theme="dark"] .btn-print {
             background: rgba(255, 255, 255, 0.08) !important;
-            border-color: rgba(122, 240, 181, 0.24) !important;
+            border-color: rgba(79, 131, 255, 0.24) !important;
             color: #ffffff !important;
             -webkit-text-fill-color: #ffffff !important;
             box-shadow: var(--shadow-soft) !important;
@@ -859,7 +859,7 @@
         body[data-pms-theme="dark"] .btn-print:hover,
         [data-pms-theme="dark"] .btn-print:hover {
             background: var(--grad-bg-hover) !important;
-            border-color: rgba(122, 240, 181, 0.42) !important;
+            border-color: rgba(79, 131, 255, 0.42) !important;
             color: #ffffff !important;
             -webkit-text-fill-color: #ffffff !important;
         }
@@ -879,7 +879,7 @@
         }
 
         html[data-pms-theme="dark"] .quick-info-list li {
-            border-bottom-color: rgba(122, 240, 181, 0.16) !important;
+            border-bottom-color: rgba(79, 131, 255, 0.16) !important;
         }
 
         /* PRINT STYLES */
@@ -1145,7 +1145,7 @@
                 </div>
 
                 <div class="card-premium">
-                    <div class="card-header-premium" style="background: var(--bg-base); border-bottom-color: rgba(15, 116, 76, 0.15);">
+                    <div class="card-header-premium" style="background: var(--bg-base); border-bottom-color: rgba(47, 107, 255, 0.15);">
                         <h5 style="color: var(--secondary);"><i class="fas fa-info-circle"></i> Quick Overview</h5>
                     </div>
                     <div class="card-body-premium" style="padding: 1.5rem 2rem;">

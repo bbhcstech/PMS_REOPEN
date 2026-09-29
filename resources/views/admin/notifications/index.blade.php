@@ -254,9 +254,9 @@
   }
   html[data-pms-theme="dark"] .notif-btn-resolve,
   html[data-pms-theme="dark"] .btn-pill-action.btn-outline-success {
-    background: rgba(16, 185, 129, 0.16) !important;
-    border: 1px solid rgba(16, 185, 129, 0.45) !important;
-    color: #6EE7B7 !important;
+    background: rgba(47, 107, 255, 0.16) !important;
+    border: 1px solid rgba(47, 107, 255, 0.45) !important;
+    color: #93C5FD !important;
   }
   html[data-pms-theme="dark"] .notif-btn-resolve:hover,
   html[data-pms-theme="dark"] .btn-pill-action.btn-outline-success:hover {
@@ -505,14 +505,14 @@
         $iconBg = match($severityUpper) {
           'CRITICAL' => '#fee2e2',
           'WARNING'  => '#fef3c7',
-          'SUCCESS'  => '#d1fae5',
+          'SUCCESS'  => '#E0E7FF',
           default    => '#dbeafe'
         };
 
         $iconColor = match($severityUpper) {
           'CRITICAL' => '#ef4444',
           'WARNING'  => '#d97706',
-          'SUCCESS'  => '#059669',
+          'SUCCESS'  => '#2F6BFF',
           default    => '#2563eb'
         };
 

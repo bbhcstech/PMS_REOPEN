@@ -6,10 +6,10 @@
 <style>
     /* CSS Tokens & Custom Styling */
     :root {
-        --primary: #0f744c;
+        --primary: #2F6BFF;
         --primary-hover: #073a26;
-        --primary-light: #e4f3eb;
-        --primary-border: #a7f3d0;
+        --primary-light: #EEF2FF;
+        --primary-border: #C7D2FE;
         --blue-accent: #2563eb;
         --blue-light: #eff6ff;
         --purple-accent: #7c3aed;
@@ -110,14 +110,14 @@
         gap: 8px;
         transition: all 0.2s;
         text-decoration: none;
-        box-shadow: 0 2px 4px rgba(15, 116, 76, 0.2);
+        box-shadow: 0 2px 4px rgba(47, 107, 255, 0.2);
     }
 
     .btn-action-primary:hover {
         background: var(--primary-hover);
         color: #ffffff;
         transform: translateY(-1px);
-        box-shadow: 0 4px 10px rgba(15, 116, 76, 0.3);
+        box-shadow: 0 4px 10px rgba(47, 107, 255, 0.3);
     }
 
     .btn-action-secondary {
@@ -248,7 +248,7 @@
     .search-group input:focus {
         background: #ffffff;
         border-color: var(--primary);
-        box-shadow: 0 0 0 3px rgba(15, 116, 76, 0.15);
+        box-shadow: 0 0 0 3px rgba(47, 107, 255, 0.15);
     }
 
     .search-group i {
@@ -668,7 +668,7 @@
         --bg-surface: #1e293b;
         --bg-subtle: #0f172a;
         --border-color: #334155;
-        --primary-light: rgba(15, 116, 76, 0.25);
+        --primary-light: rgba(47, 107, 255, 0.25);
         --primary-border: #15803d;
         --blue-light: rgba(37, 99, 235, 0.25);
         --purple-light: rgba(124, 58, 237, 0.25);
@@ -1227,12 +1227,12 @@
         <div class="kpi-card" onclick="filterByStatus('available')">
             <div class="kpi-header">
                 <span class="kpi-title">Available</span>
-                <div class="kpi-icon" style="background: #ecfdf5; color: #059669;">
+                <div class="kpi-icon" style="background: #EEF2FF; color: #2F6BFF;">
                     <i class="bx bx-check-circle"></i>
                 </div>
             </div>
             <div class="kpi-val">{{ $kpis['available'] }}</div>
-            <div class="kpi-sub"><i class="bx bx-time" style="color: #059669;"></i> Ready for Tasks</div>
+            <div class="kpi-sub"><i class="bx bx-time" style="color: #2F6BFF;"></i> Ready for Tasks</div>
         </div>
 
         <!-- CURRENTLY WORKING / BUSY -->
@@ -1367,7 +1367,7 @@
                         <i class="bx bx-download" style="font-size: 16px; color: var(--primary);"></i> Export <i class="bx bx-chevron-down"></i>
                     </button>
                     <div id="devExportMenu" class="export-dropdown-menu">
-                        <a href="javascript:void(0)" onclick="exportDevelopersCSV()"><i class="bx bx-file-blank" style="color: #059669;"></i> Export as CSV</a>
+                        <a href="javascript:void(0)" onclick="exportDevelopersCSV()"><i class="bx bx-file-blank" style="color: #2F6BFF;"></i> Export as CSV</a>
                         <a href="javascript:void(0)" onclick="exportDevelopersPDF()"><i class="bx bxs-file-pdf" style="color: #dc2626;"></i> Export as PDF</a>
                     </div>
                 </div>
@@ -1493,7 +1493,7 @@
                                     <i class="bx bx-send"></i>
                                 </button>
                                 <!-- WHATSAPP SHARE -->
-                                <button class="btn-action-secondary" onclick="shareDevWhatsApp('{{ addslashes($dev->name) }}', '{{ $dev->email }}', '{{ $dev->personal_email ?: $dev->email }}', '{{ $dev->phone_number }}', 'DEV-{{ str_pad($dev->id, 3, '0', STR_PAD_LEFT) }}', '{{ $dev->active_tasks_count }}', '{{ addslashes($dev->raw_password ?: 'Developer@123') }}')" style="padding: 5px 8px; font-size: 14px; color: #059669; border-color: #a7f3d0; background: #ecfdf5;" title="Share Credentials & Tasks via WhatsApp">
+                                <button class="btn-action-secondary" onclick="shareDevWhatsApp('{{ addslashes($dev->name) }}', '{{ $dev->email }}', '{{ $dev->personal_email ?: $dev->email }}', '{{ $dev->phone_number }}', 'DEV-{{ str_pad($dev->id, 3, '0', STR_PAD_LEFT) }}', '{{ $dev->active_tasks_count }}', '{{ addslashes($dev->raw_password ?: 'Developer@123') }}')" style="padding: 5px 8px; font-size: 14px; color: #2F6BFF; border-color: #C7D2FE; background: #EEF2FF;" title="Share Credentials & Tasks via WhatsApp">
                                     <i class="bx bxl-whatsapp"></i>
                                 </button>
                                 <!-- EMAIL CREDENTIALS & NOTIFICATION -->
@@ -1561,7 +1561,7 @@
                         <i class="bx bx-download" style="font-size: 16px; color: var(--purple-accent);"></i> Export <i class="bx bx-chevron-down"></i>
                     </button>
                     <div id="historyExportMenu" class="export-dropdown-menu">
-                        <a href="javascript:void(0)" onclick="exportHistoryCSV()"><i class="bx bx-file-blank" style="color: #059669;"></i> Export as CSV</a>
+                        <a href="javascript:void(0)" onclick="exportHistoryCSV()"><i class="bx bx-file-blank" style="color: #2F6BFF;"></i> Export as CSV</a>
                         <a href="javascript:void(0)" onclick="exportHistoryPDF()"><i class="bx bxs-file-pdf" style="color: #dc2626;"></i> Export as PDF</a>
                     </div>
                 </div>
@@ -2068,7 +2068,7 @@
                     <div>
                         <span style="color: var(--slate-muted); font-weight: 700; display: block; font-size: 11px; margin-bottom: 2px;">DEVELOPER LOGIN PASSWORD</span>
                         <div style="display: flex; align-items: center; gap: 6px;">
-                            <input type="password" id="credModalLoginPasswordInput" readonly value="Developer@123" style="font-family: monospace; font-size: 13px; font-weight: 700; color: #059669; border: 1px solid #cbd5e1; border-radius: 6px; padding: 3px 8px; width: 135px; background: #ffffff;">
+                            <input type="password" id="credModalLoginPasswordInput" readonly value="Developer@123" style="font-family: monospace; font-size: 13px; font-weight: 700; color: #2F6BFF; border: 1px solid #cbd5e1; border-radius: 6px; padding: 3px 8px; width: 135px; background: #ffffff;">
                             <button type="button" onclick="togglePasswordVisibility('credModalLoginPasswordInput', this)" class="btn-action-secondary" style="padding: 3px 6px; font-size: 13px; border-color: #cbd5e1;" title="Show/Hide Password">
                                 <i class="bx bx-show"></i>
                             </button>
@@ -2094,7 +2094,7 @@
                     </div>
                     <div>
                         <span style="color: var(--slate-muted); font-weight: 700; font-size: 11px;">PASSWORD SYNC:</span>
-                        <span style="background: #ecfdf5; color: #065f46; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; margin-left: 4px;">Live Auto-Updated</span>
+                        <span style="background: #EEF2FF; color: #065f46; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; margin-left: 4px;">Live Auto-Updated</span>
                     </div>
                 </div>
             </div>
@@ -2125,7 +2125,7 @@
                     <button type="button" id="credMailtoBtn" class="btn-action-secondary" style="padding: 9px; justify-content: center; font-size: 12.5px; color: #2563eb; border-color: #bfdbfe; background: #f0f9ff;">
                         <i class="bx bx-envelope"></i> Open Mail Client
                     </button>
-                    <button type="button" id="credWhatsappBtn" class="btn-action-secondary" style="padding: 9px; justify-content: center; font-size: 12.5px; color: #059669; border-color: #a7f3d0; background: #ecfdf5;">
+                    <button type="button" id="credWhatsappBtn" class="btn-action-secondary" style="padding: 9px; justify-content: center; font-size: 12.5px; color: #2F6BFF; border-color: #C7D2FE; background: #EEF2FF;">
                         <i class="bx bxl-whatsapp"></i> Share on WhatsApp
                     </button>
                 </div>
@@ -2364,8 +2364,8 @@
                 <title>${title} - ${nowStr}</title>
                 <style>
                     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 24px; color: #0f172a; }
-                    .header-box { border-bottom: 2px solid #0f744c; padding-bottom: 12px; margin-bottom: 20px; }
-                    .title { font-size: 22px; font-weight: 800; color: #0f744c; margin: 0 0 4px 0; }
+                    .header-box { border-bottom: 2px solid #2F6BFF; padding-bottom: 12px; margin-bottom: 20px; }
+                    .title { font-size: 22px; font-weight: 800; color: #2F6BFF; margin: 0 0 4px 0; }
                     .subtitle { font-size: 12px; color: #64748b; margin: 0; }
                     .meta-bar { font-size: 11px; color: #64748b; margin-top: 8px; display: flex; justify-content: space-between; }
                     table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 12px; }
@@ -2381,7 +2381,7 @@
             </head>
             <body>
                 <div class="no-print" style="margin-bottom: 16px; text-align: right;">
-                    <button onclick="window.print()" style="background: #0f744c; color: white; border: none; padding: 8px 18px; font-weight: 700; border-radius: 6px; cursor: pointer;">🖨️ Print / Save as PDF</button>
+                    <button onclick="window.print()" style="background: #2F6BFF; color: white; border: none; padding: 8px 18px; font-weight: 700; border-radius: 6px; cursor: pointer;">🖨️ Print / Save as PDF</button>
                 </div>
                 <div class="header-box">
                     <h1 class="title">${title}</h1>
@@ -2784,7 +2784,7 @@
                     const dateStr = new Date(h.created_at).toLocaleString();
                     html += `
                         <div style="display: flex; gap: 14px; position: relative;">
-                            <div style="width: 34px; height: 34px; border-radius: 50%; background: #ecfdf5; color: #059669; display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; border: 1px solid #a7f3d0;">
+                            <div style="width: 34px; height: 34px; border-radius: 50%; background: #EEF2FF; color: #2F6BFF; display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; border: 1px solid #C7D2FE;">
                                 <i class="bx bx-history"></i>
                             </div>
                             <div style="flex: 1; background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px 16px;">

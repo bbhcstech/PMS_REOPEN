@@ -9,7 +9,7 @@
      | EVENT CARD MODERN DESIGN SYSTEM
      | ========================================================================= */
     .event-card {
-        border: 1px solid rgba(15, 116, 76, 0.12);
+        border: 1px solid rgba(47, 107, 255, 0.12);
         border-radius: 18px;
         transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         background: #ffffff;
@@ -18,19 +18,19 @@
     }
     .event-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 14px 35px rgba(15, 116, 76, 0.14);
-        border-color: rgba(15, 116, 76, 0.3);
+        box-shadow: 0 14px 35px rgba(47, 107, 255, 0.14);
+        border-color: rgba(47, 107, 255, 0.3);
     }
     .event-banner-img {
         width: 100%;
         height: 175px;
         object-fit: cover;
-        background: linear-gradient(135deg, #0f744c 0%, #094c32 100%);
+        background: linear-gradient(135deg, #4F83FF 0%, #2F6BFF 100%);
     }
     .event-banner-placeholder {
         width: 100%;
         height: 155px;
-        background: linear-gradient(135deg, #0f744c 0%, #15803d 50%, #047857 100%);
+        background: linear-gradient(135deg, #4F83FF 0%, #2F6BFF 50%, #1E3A8A 100%);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -40,9 +40,9 @@
     
     /* Modern Status Badges */
     .badge-status-published {
-        background-color: #ecfdf5 !important;
+        background-color: #EEF2FF !important;
         color: #065f46 !important;
-        border: 1px solid rgba(16, 185, 129, 0.3) !important;
+        border: 1px solid rgba(47, 107, 255, 0.3) !important;
         font-weight: 700 !important;
         padding: 5px 12px !important;
         border-radius: 20px !important;
@@ -150,7 +150,7 @@
         font-size: 1.1rem;
     }
     .btn-action-icon:hover {
-        background: rgba(15, 116, 76, 0.08);
+        background: rgba(47, 107, 255, 0.08);
         transform: translateY(-1px);
     }
     .btn-action-icon.text-primary:hover {
@@ -160,13 +160,13 @@
         background: rgba(239, 68, 68, 0.1);
     }
     .btn-action-icon.text-success:hover {
-        background: rgba(16, 185, 129, 0.1);
+        background: rgba(47, 107, 255, 0.1);
     }
 
     /* KPI Summary Cards */
     .kpi-card {
         border-radius: 16px;
-        border: 1px solid rgba(15, 116, 76, 0.08);
+        border: 1px solid rgba(47, 107, 255, 0.08);
         background: #ffffff;
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
         transition: transform 0.2s ease;
@@ -190,9 +190,9 @@
         font-weight: 800;
         text-transform: uppercase;
         letter-spacing: 0.6px;
-        color: #0f744c;
+        color: #2F6BFF;
         background: #f0fdf4;
-        border-left: 4px solid #0f744c;
+        border-left: 4px solid #2F6BFF;
         padding: 8px 14px;
         border-radius: 8px;
         margin-bottom: 18px;
@@ -218,8 +218,8 @@
         transition: all 0.2s ease !important;
     }
     .premium-input:focus, .premium-select:focus {
-        border-color: #0f744c !important;
-        box-shadow: 0 0 0 4px rgba(15, 116, 76, 0.15) !important;
+        border-color: #2F6BFF !important;
+        box-shadow: 0 0 0 4px rgba(47, 107, 255, 0.15) !important;
         outline: none !important;
     }
 
@@ -227,7 +227,7 @@
         background: #ffffff;
         padding: 20px;
         border-radius: 16px;
-        border: 1px solid rgba(15, 116, 76, 0.12);
+        border: 1px solid rgba(47, 107, 255, 0.12);
         box-shadow: 0 4px 20px rgba(0,0,0,0.04);
     }
 
@@ -235,7 +235,7 @@
     .events-filter-card {
         border-radius: 16px;
         background: #ffffff;
-        border: 1px solid rgba(15, 116, 76, 0.12);
+        border: 1px solid rgba(47, 107, 255, 0.12);
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
     }
     .events-filter-wrapper {
@@ -287,7 +287,7 @@
     }
     .event-meta-card:hover {
         background: #ffffff;
-        border-color: rgba(15, 116, 76, 0.25);
+        border-color: rgba(47, 107, 255, 0.25);
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
     }
 
@@ -297,15 +297,15 @@
     .gallery-card {
         border-radius: 18px;
         background: #ffffff;
-        border: 1px solid rgba(15, 116, 76, 0.12);
+        border: 1px solid rgba(47, 107, 255, 0.12);
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
         overflow: hidden;
         transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .gallery-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 14px 35px rgba(15, 116, 76, 0.14);
-        border-color: rgba(15, 116, 76, 0.3);
+        box-shadow: 0 14px 35px rgba(47, 107, 255, 0.14);
+        border-color: rgba(47, 107, 255, 0.3);
     }
     .gallery-preview-grid {
         display: grid;
@@ -353,7 +353,7 @@
         cursor: pointer;
     }
     .photo-dropzone:hover, .photo-dropzone.dragover {
-        border-color: #0f744c;
+        border-color: #2F6BFF;
         background: #f0fdf4;
     }
     .upload-preview-grid {
@@ -430,7 +430,7 @@
         height: 48px;
         border-radius: 50%;
         background: #ffffff !important;
-        color: #0f744c !important;
+        color: #2F6BFF !important;
         border: 1.5px solid #cbd5e1 !important;
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15) !important;
         display: flex !important;
@@ -443,9 +443,9 @@
         cursor: pointer;
     }
     .lightbox-nav-btn:hover {
-        background: #0f744c !important;
+        background: #2F6BFF !important;
         color: #ffffff !important;
-        border-color: #0f744c !important;
+        border-color: #2F6BFF !important;
         transform: translateY(-50%) scale(1.1) !important;
     }
     .lightbox-nav-btn i {
@@ -569,7 +569,7 @@
         transition: all 0.2s ease !important;
     }
     .photo-action-btn:hover {
-        background: #0f744c !important;
+        background: #2F6BFF !important;
         color: #ffffff !important;
         border-color: #ffffff !important;
         transform: scale(1.08);
@@ -584,19 +584,19 @@
     html[data-pms-theme="dark"] .form-section-title,
     html[data-bs-theme="dark"] .form-section-title,
     html[data-theme="dark"] .form-section-title {
-        background: rgba(16, 185, 129, 0.12) !important;
-        border: 1px solid rgba(52, 211, 153, 0.25) !important;
-        border-left: 4px solid #34D399 !important;
-        color: #34D399 !important;
-        -webkit-text-fill-color: #34D399 !important;
+        background: rgba(47, 107, 255, 0.12) !important;
+        border: 1px solid rgba(79, 131, 255, 0.25) !important;
+        border-left: 4px solid #60A5FA !important;
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
     }
 
     html[data-pms-theme="dark"] .form-section-title i,
     html[data-bs-theme="dark"] .form-section-title i,
     html[data-theme="dark"] .form-section-title i {
-        color: #34D399 !important;
-        -webkit-text-fill-color: #34D399 !important;
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
     }
 
     html[data-pms-theme="dark"] .premium-label,
@@ -625,8 +625,8 @@
     html[data-pms-theme="dark"] .premium-select:focus,
     html[data-bs-theme="dark"] .premium-select:focus,
     html[data-theme="dark"] .premium-select:focus {
-        border-color: #34D399 !important;
-        box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.2) !important;
+        border-color: #60A5FA !important;
+        box-shadow: 0 0 0 3px rgba(79, 131, 255, 0.2) !important;
     }
 
     html[data-pms-theme="dark"] #eventModal .modal-content,
@@ -665,6 +665,133 @@
         border-radius: 8px !important;
         padding: 4px 12px !important;
         font-weight: 600 !important;
+    }
+
+    /* RSVP Box & Segmented Control Dark Mode Support */
+    html[data-pms-theme="dark"] .rsvp-box,
+    html[data-bs-theme="dark"] .rsvp-box,
+    html[data-theme="dark"] .rsvp-box,
+    body.dark-mode .rsvp-box,
+    .dark-mode .rsvp-box {
+        background: #141B3D !important;
+        border: 1px solid rgba(238, 241, 251, 0.12) !important;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25) !important;
+    }
+
+    html[data-pms-theme="dark"] .rsvp-box .text-dark,
+    html[data-bs-theme="dark"] .rsvp-box .text-dark,
+    html[data-theme="dark"] .rsvp-box .text-dark,
+    body.dark-mode .rsvp-box .text-dark,
+    .dark-mode .rsvp-box .text-dark {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .rsvp-count-badge,
+    html[data-bs-theme="dark"] .rsvp-count-badge,
+    html[data-theme="dark"] .rsvp-count-badge,
+    body.dark-mode .rsvp-count-badge,
+    .dark-mode .rsvp-count-badge {
+        background: rgba(22, 163, 74, 0.2) !important;
+        color: #4ade80 !important;
+        border: 1px solid rgba(74, 222, 128, 0.3) !important;
+    }
+
+    html[data-pms-theme="dark"] .rsvp-segmented-bar,
+    html[data-bs-theme="dark"] .rsvp-segmented-bar,
+    html[data-theme="dark"] .rsvp-segmented-bar,
+    body.dark-mode .rsvp-segmented-bar,
+    .dark-mode .rsvp-segmented-bar {
+        background: #0B1026 !important;
+        border: 1px solid rgba(238, 241, 251, 0.08) !important;
+    }
+
+    html[data-pms-theme="dark"] .rsvp-segment-btn,
+    html[data-bs-theme="dark"] .rsvp-segment-btn,
+    html[data-theme="dark"] .rsvp-segment-btn,
+    body.dark-mode .rsvp-segment-btn,
+    .dark-mode .rsvp-segment-btn {
+        color: #94A3B8 !important;
+        -webkit-text-fill-color: #94A3B8 !important;
+    }
+
+    html[data-pms-theme="dark"] .rsvp-segment-btn:hover:not(.active-going):not(.active-maybe):not(.active-not_going),
+    html[data-bs-theme="dark"] .rsvp-segment-btn:hover:not(.active-going):not(.active-maybe):not(.active-not_going),
+    html[data-theme="dark"] .rsvp-segment-btn:hover:not(.active-going):not(.active-maybe):not(.active-not_going),
+    body.dark-mode .rsvp-segment-btn:hover:not(.active-going):not(.active-maybe):not(.active-not_going),
+    .dark-mode .rsvp-segment-btn:hover:not(.active-going):not(.active-maybe):not(.active-not_going) {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+        background: rgba(255, 255, 255, 0.1) !important;
+    }
+
+    html[data-pms-theme="dark"] .rsvp-segment-btn.active-going,
+    html[data-bs-theme="dark"] .rsvp-segment-btn.active-going,
+    html[data-theme="dark"] .rsvp-segment-btn.active-going,
+    body.dark-mode .rsvp-segment-btn.active-going,
+    .dark-mode .rsvp-segment-btn.active-going {
+        background: #0D6E46 !important;
+        color: #FFFFFF !important;
+        -webkit-text-fill-color: #FFFFFF !important;
+        box-shadow: 0 3px 10px rgba(13, 110, 70, 0.5) !important;
+    }
+
+    html[data-pms-theme="dark"] .rsvp-segment-btn.active-maybe,
+    html[data-bs-theme="dark"] .rsvp-segment-btn.active-maybe,
+    html[data-theme="dark"] .rsvp-segment-btn.active-maybe,
+    body.dark-mode .rsvp-segment-btn.active-maybe,
+    .dark-mode .rsvp-segment-btn.active-maybe {
+        background: #D97706 !important;
+        color: #FFFFFF !important;
+        -webkit-text-fill-color: #FFFFFF !important;
+        box-shadow: 0 3px 10px rgba(217, 119, 6, 0.5) !important;
+    }
+
+    html[data-pms-theme="dark"] .rsvp-segment-btn.active-not_going,
+    html[data-bs-theme="dark"] .rsvp-segment-btn.active-not_going,
+    html[data-theme="dark"] .rsvp-segment-btn.active-not_going,
+    body.dark-mode .rsvp-segment-btn.active-not_going,
+    .dark-mode .rsvp-segment-btn.active-not_going {
+        background: #DC2626 !important;
+        color: #FFFFFF !important;
+        -webkit-text-fill-color: #FFFFFF !important;
+        box-shadow: 0 3px 10px rgba(220, 38, 38, 0.5) !important;
+    }
+
+    html[data-pms-theme="dark"] .rsvp-summary-card,
+    html[data-bs-theme="dark"] .rsvp-summary-card,
+    html[data-theme="dark"] .rsvp-summary-card,
+    body.dark-mode .rsvp-summary-card,
+    .dark-mode .rsvp-summary-card {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
+    }
+
+    html[data-pms-theme="dark"] .rsvp-stat-going,
+    html[data-bs-theme="dark"] .rsvp-stat-going,
+    html[data-theme="dark"] .rsvp-stat-going,
+    body.dark-mode .rsvp-stat-going,
+    .dark-mode .rsvp-stat-going {
+        background-color: rgba(16, 185, 129, 0.12) !important;
+        border-color: rgba(52, 211, 153, 0.25) !important;
+    }
+
+    html[data-pms-theme="dark"] .rsvp-stat-maybe,
+    html[data-bs-theme="dark"] .rsvp-stat-maybe,
+    html[data-theme="dark"] .rsvp-stat-maybe,
+    body.dark-mode .rsvp-stat-maybe,
+    .dark-mode .rsvp-stat-maybe {
+        background-color: rgba(245, 158, 11, 0.12) !important;
+        border-color: rgba(251, 191, 36, 0.25) !important;
+    }
+
+    html[data-pms-theme="dark"] .rsvp-stat-not_going,
+    html[data-bs-theme="dark"] .rsvp-stat-not_going,
+    html[data-theme="dark"] .rsvp-stat-not_going,
+    body.dark-mode .rsvp-stat-not_going,
+    .dark-mode .rsvp-stat-not_going {
+        background-color: rgba(239, 68, 68, 0.12) !important;
+        border-color: rgba(248, 113, 113, 0.25) !important;
     }
 </style>
 @endpush
@@ -911,7 +1038,7 @@
                             {{-- EVENT MEMORIES PHOTO COUNT BADGE --}}
                             @if($event->photos_count > 0)
                                 <div class="mb-3">
-                                    <button type="button" class="btn btn-sm text-success fw-bold pill border-0 d-inline-flex align-items-center gap-1.5" onclick="showEventDetails({{ $event->id }})" style="background: #ecfdf5; color: #0f744c; padding: 6px 14px; border-radius: 20px;">
+                                    <button type="button" class="btn btn-sm text-success fw-bold pill border-0 d-inline-flex align-items-center gap-1.5" onclick="showEventDetails({{ $event->id }})" style="background: #EEF2FF; color: #2F6BFF; padding: 6px 14px; border-radius: 20px;">
                                         <i class="bx bx-images fs-5"></i> 📷 {{ $event->photos_count }} Event {{ Str::plural('Photo', $event->photos_count) }}
                                     </button>
                                 </div>
@@ -924,7 +1051,7 @@
                                         <span class="fw-extrabold text-dark d-flex align-items-center gap-1.5" style="font-size: 0.92rem;">
                                             <i class="bx bx-checkbox-checked text-success fs-5"></i> RSVP:
                                         </span>
-                                        <span class="badge" style="background: #e8f5e9; color: #16a34a; font-weight: 700; font-size: 0.78rem; padding: 6px 12px; border-radius: 20px;">
+                                        <span class="badge rsvp-count-badge" style="background: #e8f5e9; color: #16a34a; font-weight: 700; font-size: 0.78rem; padding: 6px 12px; border-radius: 20px;">
                                             <i class="bx bx-user-check me-1"></i> {{ $event->rsvp_counts['going'] }} Going
                                         </span>
                                     </div>
@@ -947,7 +1074,7 @@
                             <div class="pt-2.5 border-top d-flex align-items-center justify-content-between mt-auto">
                                 <div class="d-flex align-items-center gap-2">
                                     <div class="avatar avatar-xs" style="width: 32px; height: 32px;">
-                                        <span class="avatar-initial rounded-circle bg-success text-white fw-bold shadow-sm" style="font-size: 11px; width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #0f744c, #094c32) !important;">
+                                        <span class="avatar-initial rounded-circle bg-primary text-white fw-bold shadow-sm" style="font-size: 11px; width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #4F83FF, #2F6BFF) !important;">
                                             {{ strtoupper(substr($event->organizer?->name ?? 'C', 0, 2)) }}
                                         </span>
                                     </div>
@@ -1075,7 +1202,7 @@
                                 <span class="small fw-semibold text-muted">
                                     Organized by <strong class="text-dark">{{ $event->organizer?->name ?? 'Company' }}</strong>
                                 </span>
-                                <button type="button" class="btn btn-primary btn-sm fw-bold px-3 shadow-sm" style="background: linear-gradient(135deg, #0f744c, #094c32); border: none;">
+                                <button type="button" class="btn btn-primary btn-sm fw-bold px-3 shadow-sm" style="background: linear-gradient(135deg, #4F83FF, #2F6BFF); border: none;">
                                     View Memories
                                 </button>
                             </div>
@@ -1101,7 +1228,7 @@
 <div class="modal fade" id="eventModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content border-0" style="border-radius: 20px; overflow: hidden; box-shadow: 0 15px 50px rgba(0,0,0,0.18);">
-            <div class="modal-header py-3.5 px-4 text-white" style="background: linear-gradient(135deg, #0f744c 0%, #094c32 100%);">
+            <div class="modal-header py-3.5 px-4 text-white" style="background: linear-gradient(135deg, #4F83FF 0%, #2F6BFF 100%);">
                 <h5 class="modal-title fw-bold text-white d-flex align-items-center gap-2" id="eventModalTitle">
                     <i class="bx bx-calendar-plus fs-4"></i> Create Company Event
                 </h5>
@@ -1110,7 +1237,7 @@
                 </button>
             </div>
 
-            <form id="eventForm" enctype="multipart/form-data" method="POST" action="{{ route('events.store') }}">
+            <form id="eventForm" enctype="multipart/form-data" method="POST" action="{{ route('events.store') }}" onsubmit="return validateEventDateTime();">
                 @csrf
                 <input type="hidden" name="_method" id="formMethod" value="POST">
                 <input type="hidden" name="event_id" id="eventId" value="">
@@ -1160,23 +1287,26 @@
                     <div class="form-section-title">
                         <i class="bx bx-time fs-5"></i> SECTION 2: DATE & TIME
                     </div>
-                    <div class="row g-3 mb-4">
+                    <div class="row g-3 mb-2">
                         <div class="col-md-3 col-6">
                             <label class="form-label premium-label">Start Date <span class="text-danger">*</span></label>
-                            <input type="date" name="start_date" id="eventStartDateInput" class="form-control premium-input" required value="{{ date('Y-m-d') }}">
+                            <input type="date" name="start_date" id="eventStartDateInput" class="form-control premium-input" required value="{{ date('Y-m-d') }}" onchange="validateEventDateTime()" oninput="validateEventDateTime()">
                         </div>
                         <div class="col-md-3 col-6">
                             <label class="form-label premium-label">Start Time</label>
-                            <input type="time" name="start_time" id="eventStartTimeInput" class="form-control premium-input" value="09:00">
+                            <input type="time" name="start_time" id="eventStartTimeInput" class="form-control premium-input" value="09:00" onchange="validateEventDateTime()" oninput="validateEventDateTime()">
                         </div>
                         <div class="col-md-3 col-6">
                             <label class="form-label premium-label">End Date</label>
-                            <input type="date" name="end_date" id="eventEndDateInput" class="form-control premium-input" value="{{ date('Y-m-d') }}">
+                            <input type="date" name="end_date" id="eventEndDateInput" class="form-control premium-input" value="{{ date('Y-m-d') }}" onchange="validateEventDateTime()" oninput="validateEventDateTime()">
                         </div>
                         <div class="col-md-3 col-6">
                             <label class="form-label premium-label">End Time</label>
-                            <input type="time" name="end_time" id="eventEndTimeInput" class="form-control premium-input" value="17:00">
+                            <input type="time" name="end_time" id="eventEndTimeInput" class="form-control premium-input" value="17:00" onchange="validateEventDateTime()" oninput="validateEventDateTime()">
                         </div>
+                    </div>
+                    <div id="dateTimeValidationError" class="alert alert-danger py-2 px-3 small mb-4 d-none" style="border-radius: 10px; font-weight: 600;">
+                        <i class="bx bx-error-circle me-1 fs-6 align-middle"></i> <span id="dateTimeValidationErrorText"></span>
                     </div>
 
                     {{-- SECTION 3: LOCATION --}}
@@ -1232,7 +1362,7 @@
 
                 <div class="modal-footer bg-light px-4 py-3 border-top">
                     <button type="button" class="btn btn-label-secondary px-4 fw-semibold" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary px-4 fw-bold shadow-sm" id="btnSubmitForm" style="background: linear-gradient(135deg, #0f744c, #094c32); border: none;">
+                    <button type="submit" class="btn btn-primary px-4 fw-bold shadow-sm" id="btnSubmitForm" style="background: linear-gradient(135deg, #4F83FF, #2F6BFF); border: none;">
                         <i class="bx bx-save me-1"></i> Save Event
                     </button>
                 </div>
@@ -1249,7 +1379,7 @@
         <div class="modal-content border-0" style="border-radius: 18px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.15);">
             <div class="modal-header bg-light py-3 border-bottom">
                 <h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2" id="detailModalTitle">
-                    <i class="bx bx-calendar-event text-success fs-4"></i> Event Details
+                    <i class="bx bx-calendar-event text-primary fs-4"></i> Event Details
                 </h5>
                 <button type="button" class="btn-close-premium" data-bs-dismiss="modal" aria-label="Close">
                     <i class="bx bx-x"></i>
@@ -1272,7 +1402,7 @@
 <div class="modal fade" id="photoUploadModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content border-0" style="border-radius: 20px; overflow: hidden; box-shadow: 0 15px 50px rgba(0,0,0,0.2);">
-            <div class="modal-header text-white" style="background: linear-gradient(135deg, #0f744c 0%, #094c32 100%);">
+            <div class="modal-header text-white" style="background: linear-gradient(135deg, #4F83FF 0%, #2F6BFF 100%);">
                 <h5 class="modal-title fw-bold text-white d-flex align-items-center gap-2">
                     <i class="bx bx-images fs-4"></i> Add Photos to <span id="uploadEventTitle">Event</span>
                 </h5>
@@ -1328,7 +1458,7 @@
 
                 <div class="modal-footer bg-light px-4 py-3">
                     <button type="button" class="btn btn-label-secondary px-4 fw-semibold" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary px-4 fw-bold shadow-sm" id="btnSubmitUpload" disabled style="background: linear-gradient(135deg, #0f744c, #094c32); border: none;">
+                    <button type="submit" class="btn btn-primary px-4 fw-bold shadow-sm" id="btnSubmitUpload" disabled style="background: linear-gradient(135deg, #4F83FF, #2F6BFF); border: none;">
                         <i class="bx bx-upload me-1"></i> Upload Photos
                     </button>
                 </div>
@@ -1480,6 +1610,56 @@
         }
     }
 
+    function validateEventDateTime() {
+        const startDateInput = document.getElementById('eventStartDateInput');
+        const startTimeInput = document.getElementById('eventStartTimeInput');
+        const endDateInput = document.getElementById('eventEndDateInput');
+        const endTimeInput = document.getElementById('eventEndTimeInput');
+        const errorBox = document.getElementById('dateTimeValidationError');
+        const errorText = document.getElementById('dateTimeValidationErrorText');
+        const submitBtn = document.getElementById('btnSubmitForm');
+
+        if (!startDateInput || !endDateInput) return true;
+
+        const startDate = startDateInput.value;
+        const startTime = startTimeInput ? startTimeInput.value : '';
+        const endDate = endDateInput.value;
+        const endTime = endTimeInput ? endTimeInput.value : '';
+
+        // Reset error state
+        if (errorBox) errorBox.classList.add('d-none');
+        if (errorText) errorText.innerText = '';
+        endDateInput.classList.remove('is-invalid');
+        if (endTimeInput) endTimeInput.classList.remove('is-invalid');
+        if (submitBtn) submitBtn.disabled = false;
+
+        // Set min attribute on end_date based on start_date
+        if (startDate) {
+            endDateInput.min = startDate;
+        }
+
+        if (startDate && endDate) {
+            if (endDate < startDate) {
+                if (errorText) errorText.innerText = 'End Date cannot be earlier than Start Date.';
+                if (errorBox) errorBox.classList.remove('d-none');
+                endDateInput.classList.add('is-invalid');
+                if (submitBtn) submitBtn.disabled = true;
+                return false;
+            }
+
+            if (startDate === endDate && startTime && endTime) {
+                if (endTime <= startTime) {
+                    if (errorText) errorText.innerText = 'End Time must be greater than Start Time when event is on the same day.';
+                    if (errorBox) errorBox.classList.remove('d-none');
+                    if (endTimeInput) endTimeInput.classList.add('is-invalid');
+                    if (submitBtn) submitBtn.disabled = true;
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     function openCreateModal() {
         document.getElementById('eventModalTitle').innerHTML = '<i class="bx bx-calendar-plus fs-4"></i> Create Company Event';
         document.getElementById('eventForm').action = '{{ route("events.store") }}';
@@ -1487,6 +1667,7 @@
         document.getElementById('eventId').value = '';
         document.getElementById('eventForm').reset();
         toggleLocationFields();
+        validateEventDateTime();
 
         const modal = new bootstrap.Modal(document.getElementById('eventModal'));
         modal.show();
@@ -1523,6 +1704,7 @@
             document.getElementById('eventRsvpInput').checked = !!e.rsvp_required;
 
             toggleLocationFields();
+            validateEventDateTime();
 
             const modal = new bootstrap.Modal(document.getElementById('eventModal'));
             modal.show();
@@ -1642,7 +1824,7 @@
                     <div class="col-sm-6">
                         <div class="event-meta-card p-3 rounded-3 d-flex align-items-center gap-3">
                             <div class="avatar avatar-sm flex-shrink-0" style="width: 42px; height: 42px;">
-                                <span class="avatar-initial rounded-circle bg-success text-white fw-bold shadow-sm" style="font-size: 12px; width: 42px; height: 42px; display: inline-flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #0f744c, #094c32) !important;">
+                                <span class="avatar-initial rounded-circle bg-primary text-white fw-bold shadow-sm" style="font-size: 12px; width: 42px; height: 42px; display: inline-flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #4F83FF, #2F6BFF) !important;">
                                     ${organizerInitials}
                                 </span>
                             </div>
@@ -1669,7 +1851,7 @@
                 {{-- ABOUT EVENT DESCRIPTION --}}
                 <div class="mb-4 p-3.5 rounded-3" style="background: #f8fafc; border: 1px solid #e2e8f0;">
                     <h6 class="fw-bold text-dark mb-2 d-flex align-items-center gap-1.5" style="font-size: 0.95rem;">
-                        <i class="bx bx-align-left text-success"></i> About Event
+                        <i class="bx bx-align-left text-primary"></i> About Event
                     </h6>
                     <p class="text-secondary small mb-0" style="white-space: pre-line; line-height: 1.6; font-size: 0.9rem;">${escapeHtml(e.description || 'No detailed description provided.')}</p>
                 </div>
@@ -1679,13 +1861,13 @@
                     <div class="d-flex align-items-center justify-content-between mb-3">
                         <div>
                             <h6 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2 fs-6">
-                                <i class="bx bx-images text-success fs-5"></i> Event Memories
+                                <i class="bx bx-images text-primary fs-5"></i> Event Memories
                                 <span class="badge bg-success-subtle text-success rounded-pill fw-bold" style="font-size: 11px;">${photos.length} Photos</span>
                             </h6>
                             <span class="text-muted small">Photos and memories from this event</span>
                         </div>
                         ${canManage ? `
-                        <button type="button" class="btn btn-success btn-sm fw-bold px-3 d-inline-flex align-items-center gap-1 rounded-pill shadow-sm" onclick="openUploadModal(${e.id}, '${escapeHtml(e.title)}')" style="background: linear-gradient(135deg, #0f744c, #094c32); border: none;">
+                        <button type="button" class="btn btn-primary btn-sm fw-bold px-3 d-inline-flex align-items-center gap-1 rounded-pill shadow-sm" onclick="openUploadModal(${e.id}, '${escapeHtml(e.title)}')" style="background: linear-gradient(135deg, #4F83FF, #2F6BFF); border: none;">
                             <i class="bx bx-plus"></i> Add Photos
                         </button>` : ''}
                     </div>
@@ -1695,25 +1877,25 @@
 
                 {{-- RSVP SUMMARY METRICS --}}
                 ${e.rsvp_required ? `
-                <div class="card border-0 p-3.5 mb-3" style="border-radius: 16px; background: #f8fafc; border: 1px solid #e2e8f0 !important;">
+                <div class="card border-0 p-3.5 mb-3 rsvp-summary-card" style="border-radius: 16px; background: #f8fafc; border: 1px solid #e2e8f0 !important;">
                     <h6 class="fw-bold text-dark mb-3 d-flex align-items-center gap-1.5" style="font-size: 0.95rem;">
                         <i class="bx bx-pie-chart-alt-2 text-primary"></i> RSVP Summary
                     </h6>
                     <div class="row g-3 text-center">
                         <div class="col-4">
-                            <div class="p-3 rounded-3" style="border: 1px solid #d1fae5; background-color: #f0fdf4 !important;">
+                            <div class="p-3 rounded-3 rsvp-stat-going" style="border: 1px solid #d1fae5; background-color: #f0fdf4 !important;">
                                 <span class="d-block small text-success fw-bold uppercase-label" style="font-size: 11px; letter-spacing: 0.5px;">Going</span>
                                 <h3 class="fw-extrabold text-success mb-0 mt-1">${rsvp.going}</h3>
                             </div>
                         </div>
                         <div class="col-4">
-                            <div class="p-3 rounded-3" style="border: 1px solid #fef3c7; background-color: #fffbeb !important;">
+                            <div class="p-3 rounded-3 rsvp-stat-maybe" style="border: 1px solid #fef3c7; background-color: #fffbeb !important;">
                                 <span class="d-block small text-warning fw-bold uppercase-label" style="font-size: 11px; letter-spacing: 0.5px;">Maybe</span>
                                 <h3 class="fw-extrabold text-warning mb-0 mt-1">${rsvp.maybe}</h3>
                             </div>
                         </div>
                         <div class="col-4">
-                            <div class="p-3 rounded-3" style="border: 1px solid #fee2e2; background-color: #fef2f2 !important;">
+                            <div class="p-3 rounded-3 rsvp-stat-not_going" style="border: 1px solid #fee2e2; background-color: #fef2f2 !important;">
                                 <span class="d-block small text-danger fw-bold uppercase-label" style="font-size: 11px; letter-spacing: 0.5px;">Not Going</span>
                                 <h3 class="fw-extrabold text-danger mb-0 mt-1">${rsvp.not_going}</h3>
                             </div>

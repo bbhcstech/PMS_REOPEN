@@ -192,7 +192,7 @@
         border: 1px solid rgba(255, 255, 255, 0.7);
         box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.02),
                     0px 8px 40px rgba(0, 0, 0, 0.04),
-                    0px 20px 60px rgba(30, 58, 138, 0.06);
+                    0px 20px 60px rgba(47, 107, 255, 0.06);
         transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
         max-width: 900px;
         margin: 0 auto;
@@ -200,8 +200,8 @@
 
     .attendance-form:hover {
         box-shadow: 0px 20px 50px rgba(0, 0, 0, 0.08),
-                    0px 30px 80px rgba(30, 58, 138, 0.12);
-        border-color: rgba(14, 165, 164, 0.2);
+                    0px 30px 80px rgba(47, 107, 255, 0.12);
+        border-color: rgba(47, 107, 255, 0.2);
     }
 
     /* ===== EMPLOYEE CARD ===== */
@@ -218,8 +218,8 @@
     }
 
     .employee-card:hover {
-        border-color: var(--primary-teal, #0ea5a4);
-        box-shadow: 0 4px 15px rgba(14, 165, 164, 0.08);
+        border-color: var(--primary-blue, #2F6BFF);
+        box-shadow: 0 4px 15px rgba(47, 107, 255, 0.08);
     }
 
     .employee-avatar-wrapper {
@@ -274,7 +274,7 @@
     }
 
     .employee-meta i {
-        color: var(--primary-teal, #0ea5a4);
+        color: var(--primary-blue, #2F6BFF);
         font-size: 0.75rem;
     }
 
@@ -312,7 +312,7 @@
     }
 
     .form-label i {
-        color: var(--primary-teal, #0ea5a4);
+        color: var(--primary-blue, #2F6BFF);
         font-size: 0.8rem;
     }
 
@@ -343,8 +343,8 @@
     }
 
     .form-field .form-control:focus {
-        border-color: var(--primary-teal, #0ea5a4);
-        box-shadow: 0 0 0 4px rgba(14, 165, 164, 0.12);
+        border-color: var(--primary-blue, #2F6BFF);
+        box-shadow: 0 0 0 4px rgba(47, 107, 255, 0.12);
     }
 
     .form-field .form-control::placeholder {
@@ -369,7 +369,7 @@
     }
 
     .form-field .form-control:focus ~ .field-icon {
-        color: var(--primary-teal, #0ea5a4);
+        color: var(--primary-blue, #2F6BFF);
     }
 
     .form-field .fa-chevron-down.field-icon {
@@ -406,12 +406,12 @@
     }
 
     .radio-option input[type="radio"]:checked + .radio-label {
-        color: var(--primary-teal, #0ea5a4);
+        color: var(--primary-blue, #2F6BFF);
     }
 
     .radio-option:has(input:checked) {
-        background: #d1fae5;
-        border-color: var(--primary-teal, #0ea5a4);
+        background: #EEF2FF;
+        border-color: var(--primary-blue, #2F6BFF);
     }
 
     .radio-label {
@@ -450,13 +450,13 @@
         height: 18px;
         border-radius: 6px;
         border: 2px solid #cbd5e1;
-        accent-color: var(--primary-teal, #0ea5a4);
+        accent-color: var(--primary-blue, #2F6BFF);
         cursor: pointer;
         flex-shrink: 0;
     }
 
     .checkbox-option input[type="checkbox"]:checked {
-        border-color: var(--primary-teal, #0ea5a4);
+        border-color: var(--primary-blue, #2F6BFF);
     }
 
     .checkbox-label {
@@ -467,8 +467,8 @@
     }
 
     .checkbox-option:has(input:checked) {
-        border-color: var(--primary-teal, #0ea5a4);
-        background: #d1fae5;
+        border-color: var(--primary-blue, #2F6BFF);
+        background: #EEF2FF;
     }
 
     /* ===== ACTION BUTTONS ===== */
@@ -485,7 +485,7 @@
         align-items: center;
         gap: 0.6rem;
         padding: 0.8rem 2rem;
-        background: linear-gradient(135deg, var(--primary-teal, #0ea5a4), var(--primary-green, #22c55e));
+        background: linear-gradient(135deg, #2F6BFF, #1E4FCC);
         color: white;
         border: none;
         border-radius: 40px;
@@ -493,13 +493,13 @@
         font-size: 0.95rem;
         cursor: pointer;
         transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-        box-shadow: 0 4px 15px rgba(14, 165, 164, 0.25);
+        box-shadow: 0 4px 15px rgba(47, 107, 255, 0.25);
         text-decoration: none;
     }
 
     .btn-submit:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(14, 165, 164, 0.35);
+        box-shadow: 0 8px 25px rgba(47, 107, 255, 0.35);
     }
 
     .btn-cancel {
@@ -610,13 +610,13 @@
 
     /* ===== DARK MODE ===== */
     html[data-pms-theme="dark"] .attendance-form {
-        background: rgba(16, 33, 25, 0.95);
-        border-color: rgba(122, 240, 181, 0.15);
+        background: rgba(15, 21, 48, 0.95);
+        border-color: rgba(79, 131, 255, 0.15);
     }
 
     html[data-pms-theme="dark"] .employee-card {
-        background: #183026;
-        border-color: rgba(122, 240, 181, 0.15);
+        background: #141B3D;
+        border-color: rgba(79, 131, 255, 0.15);
     }
 
     html[data-pms-theme="dark"] .employee-name {
@@ -624,22 +624,22 @@
     }
 
     html[data-pms-theme="dark"] .employee-meta {
-        color: #8ba198;
+        color: #94a3b8;
     }
 
     html[data-pms-theme="dark"] .form-label {
-        color: #8ba198;
+        color: #94a3b8;
     }
 
     html[data-pms-theme="dark"] .form-field .form-control {
-        background: #183026;
-        border-color: rgba(122, 240, 181, 0.2);
+        background: #141B3D;
+        border-color: rgba(79, 131, 255, 0.2);
         color: #ffffff;
     }
 
     html[data-pms-theme="dark"] .form-field .form-control:focus {
-        border-color: #34d399;
-        box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.12);
+        border-color: #60A5FA;
+        box-shadow: 0 0 0 4px rgba(79, 131, 255, 0.12);
     }
 
     html[data-pms-theme="dark"] .form-field .form-control::placeholder {
@@ -651,54 +651,54 @@
     }
 
     html[data-pms-theme="dark"] .radio-option {
-        background: #183026;
-        border-color: rgba(122, 240, 181, 0.15);
+        background: #141B3D;
+        border-color: rgba(79, 131, 255, 0.15);
     }
 
     html[data-pms-theme="dark"] .radio-option:has(input:checked) {
-        background: #064e3b;
-        border-color: #34d399;
+        background: rgba(47, 107, 255, 0.2);
+        border-color: #60A5FA;
     }
 
     html[data-pms-theme="dark"] .radio-label {
-        color: #d9f1e4;
+        color: #EEF1FB;
     }
 
     html[data-pms-theme="dark"] .checkbox-option {
-        background: #183026;
-        border-color: rgba(122, 240, 181, 0.15);
+        background: #141B3D;
+        border-color: rgba(79, 131, 255, 0.15);
     }
 
     html[data-pms-theme="dark"] .checkbox-option:has(input:checked) {
-        background: #064e3b;
-        border-color: #34d399;
+        background: rgba(47, 107, 255, 0.2);
+        border-color: #60A5FA;
     }
 
     html[data-pms-theme="dark"] .checkbox-label {
-        color: #d9f1e4;
+        color: #EEF1FB;
     }
 
     html[data-pms-theme="dark"] .form-actions {
-        border-color: rgba(122, 240, 181, 0.15);
+        border-color: rgba(79, 131, 255, 0.15);
     }
 
     html[data-pms-theme="dark"] .btn-cancel {
-        background: #183026;
-        color: #d9f1e4;
-        border-color: rgba(122, 240, 181, 0.2);
+        background: #141B3D;
+        color: #EEF1FB;
+        border-color: rgba(79, 131, 255, 0.2);
     }
 
     html[data-pms-theme="dark"] .btn-cancel:hover {
-        background: #102119;
+        background: #0F1530;
         color: #ffffff;
     }
 
     html[data-pms-theme="dark"] .employee-status-dot {
-        border-color: #183026;
+        border-color: #141B3D;
     }
 
     html[data-pms-theme="dark"] .employee-avatar {
-        border-color: #183026;
+        border-color: #141B3D;
     }
 </style>
 

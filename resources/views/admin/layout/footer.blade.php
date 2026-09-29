@@ -36,19 +36,10 @@
       </div>
       <!-- / Layout container -->
 
-      <!-- Overlay -->
-      <div class="layout-overlay"></div>
-    </div>
-    <!-- / Layout wrapper -->
-
-    <div class="pms-scroll-controls" aria-label="Dashboard scroll controls">
-      <button type="button" class="pms-scroll-btn" id="pmsScrollTop" aria-label="Scroll to top">
-        <i class="bx bx-up-arrow-alt"></i>
-      </button>
-      <button type="button" class="pms-scroll-btn pms-scroll-btn-down" id="pmsScrollBottom" aria-label="Scroll to bottom">
-        <i class="bx bx-down-arrow-alt"></i>
-      </button>
-    </div>
+    <!-- Overlay -->
+    <div class="layout-overlay"></div>
+  </div>
+  <!-- / Layout wrapper -->
 
     {{-- <div class="buy-now">
       <a
@@ -119,6 +110,12 @@
               root.setAttribute('data-pms-theme', theme);
               root.setAttribute('data-theme', theme);
               root.setAttribute('data-bs-theme', theme);
+              if (document.body) {
+                document.body.setAttribute('data-pms-theme', theme);
+                document.body.setAttribute('data-theme', theme);
+                document.body.setAttribute('data-bs-theme', theme);
+                document.body.classList.toggle('dark-mode', theme === 'dark');
+              }
               localStorage.setItem('pms-theme', theme);
               localStorage.setItem('bitroxia-theme', theme);
               toggles.forEach(function (button) {
@@ -140,41 +137,7 @@
             });
           })();
         </script>
-        <script>
-          (function () {
-            var topButton = document.getElementById('pmsScrollTop');
-            var bottomButton = document.getElementById('pmsScrollBottom');
 
-            if (!topButton || !bottomButton) return;
-
-            function pageBottomPosition() {
-              return Math.max(
-                document.body.scrollHeight,
-                document.documentElement.scrollHeight
-              );
-            }
-
-            function updateScrollButtons() {
-              var scrollTop = window.scrollY || document.documentElement.scrollTop;
-              var nearBottom = scrollTop + window.innerHeight >= pageBottomPosition() - 140;
-
-              topButton.classList.toggle('is-visible', scrollTop > 120);
-              bottomButton.classList.toggle('is-visible', !nearBottom);
-            }
-
-            topButton.addEventListener('click', function () {
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            });
-
-            bottomButton.addEventListener('click', function () {
-              window.scrollTo({ top: pageBottomPosition(), behavior: 'smooth' });
-            });
-
-            window.addEventListener('scroll', updateScrollButtons, { passive: true });
-            window.addEventListener('resize', updateScrollButtons);
-            updateScrollButtons();
-          })();
-        </script>
         @yield('scripts')
         @yield('js')
         @stack('js')

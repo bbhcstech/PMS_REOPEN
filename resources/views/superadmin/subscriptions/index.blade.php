@@ -1829,15 +1829,15 @@
 
         <div class="drawer-body">
             <!-- HEALTH & EXPIRATION COUNTDOWN BANNER (LUXURY EMERALD SLATE THEMING) -->
-            <div style="background: linear-gradient(135deg, #073a26 0%, #0f744c 100%); padding: 20px; border-radius: var(--radius-lg); color: #ffffff; box-shadow: 0 12px 32px rgba(15, 116, 76, 0.22); border: 1px solid rgba(255, 255, 255, 0.18);">
+            <div style="background: linear-gradient(135deg, #073a26 0%, #2F6BFF 100%); padding: 20px; border-radius: var(--radius-lg); color: #ffffff; box-shadow: 0 12px 32px rgba(47, 107, 255, 0.22); border: 1px solid rgba(255, 255, 255, 0.18);">
                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <span class="plan-badge-cell plan-gold" id="drawerPlanBadge" style="font-size: 12px; padding: 5px 12px; font-weight: 800;">GOLD</span>
                         <span class="status-pill status-active" id="drawerStatusPill"><span class="dot"></span> Active</span>
                     </div>
                     <div style="text-align: right;">
-                        <div style="font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.9px; color: #a7f3d0;">COUNTDOWN</div>
-                        <div style="font-size: 22px; font-weight: 900; color: #34d399; margin-top: 2px;" id="drawerCountdownText">29 DAYS LEFT</div>
+                        <div style="font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.9px; color: #C7D2FE;">COUNTDOWN</div>
+                        <div style="font-size: 22px; font-weight: 900; color: #60A5FA; margin-top: 2px;" id="drawerCountdownText">29 DAYS LEFT</div>
                     </div>
                 </div>
 
@@ -2247,7 +2247,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     const daysLeft = Math.floor(diffMs / (1000 * 60 * 60 * 24));
                     const hoursLeft = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                     countdownEl.innerText = daysLeft + 'd ' + hoursLeft + 'h LEFT';
-                    countdownEl.style.color = daysLeft <= 5 ? '#f59e0b' : '#34d399';
+                    countdownEl.style.color = daysLeft <= 5 ? '#f59e0b' : '#60A5FA';
                 }
             }
 

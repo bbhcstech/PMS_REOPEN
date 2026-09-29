@@ -68,12 +68,12 @@
         color: #1f2937;
     }
     .fc .fc-button-primary {
-        background-color: #0f744c !important;
-        border-color: #0f744c !important;
+        background-color: #2F6BFF !important;
+        border-color: #2F6BFF !important;
         border-radius: 50rem !important;
         padding: 0.4rem 1rem !important;
         font-weight: 600 !important;
-        box-shadow: 0 2px 4px rgba(15, 116, 76, 0.15) !important;
+        box-shadow: 0 2px 4px rgba(47, 107, 255, 0.15) !important;
     }
     .fc .fc-button-primary:hover {
         background-color: #0b593a !important;

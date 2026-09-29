@@ -7,7 +7,7 @@
 <div style="display: flex; flex-direction: column; gap: 24px;">
 
     <!-- GREETING & HERO BANNER -->
-    <div style="background: linear-gradient(135deg, #059669 0%, #047857 50%, #065f46 100%); color: #ffffff; padding: 30px 38px; border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px; box-shadow: var(--shadow-md); position: relative; overflow: hidden;">
+    <div style="background: linear-gradient(135deg, #2F6BFF 0%, #047857 50%, #065f46 100%); color: #ffffff; padding: 30px 38px; border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px; box-shadow: var(--shadow-md); position: relative; overflow: hidden;">
         <!-- Subtle decorative glow element behind hero -->
         <div style="position: absolute; top: -50px; right: -50px; width: 240px; height: 240px; background: radial-gradient(circle, rgba(255,255,255,0.18) 0%, rgba(0,0,0,0) 70%); pointer-events: none;"></div>
 
@@ -15,16 +15,16 @@
             <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 8px; flex-wrap: wrap;">
                 <h1 style="font-size: 26px; font-weight: 800; letter-spacing: -0.5px; color: #ffffff;">Good morning, {{ $dev->name }} 👋</h1>
                 <span style="background: rgba(255, 255, 255, 0.2); color: #ffffff; font-size: 12px; font-weight: 800; padding: 4px 14px; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.35); display: inline-flex; align-items: center; gap: 6px; backdrop-filter: blur(4px);">
-                    <span style="width: 7px; height: 7px; border-radius: 50%; background: #34d399; display: inline-block;"></span>
+                    <span style="width: 7px; height: 7px; border-radius: 50%; background: #60A5FA; display: inline-block;"></span>
                     {{ ucfirst($empDetail?->status ?? 'Available') }}
                 </span>
             </div>
-            <p style="color: #a7f3d0; font-size: 14.5px; font-weight: 500;">Here's an overview of your current development work across tenant platforms.</p>
+            <p style="color: #C7D2FE; font-size: 14.5px; font-weight: 500;">Here's an overview of your current development work across tenant platforms.</p>
         </div>
 
         <div style="position: relative; z-index: 1; display: flex; align-items: center; gap: 12px;">
             <a href="{{ route('developer.my-work') }}" style="background: #ffffff; color: #047857; padding: 11px 22px; border-radius: var(--radius-md); text-decoration: none; font-size: 13.5px; font-weight: 800; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15); transition: all 0.2s ease;" onmouseover="this.style.background='#f0fdf4'; this.style.transform='translateY(-1px)';" onmouseout="this.style.background='#ffffff'; this.style.transform='translateY(0)';">
-                <i class="bx bx-check-square" style="font-size: 19px; color: #059669;"></i> View My Work
+                <i class="bx bx-check-square" style="font-size: 19px; color: #2F6BFF;"></i> View My Work
             </a>
         </div>
     </div>
@@ -75,11 +75,11 @@
             <div class="dev-card" style="padding: 20px 18px; border-left: 4px solid #10b981; margin-bottom: 0; transition: transform 0.2s ease, box-shadow 0.2s ease;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='var(--shadow-md)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='var(--shadow-xs)';">
                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
                     <span style="font-size: 11px; font-weight: 800; color: var(--slate-muted); text-transform: uppercase; letter-spacing: 0.6px;">COMPLETED</span>
-                    <div style="width: 34px; height: 34px; border-radius: 50%; background: #ecfdf5; color: #059669; display: flex; align-items: center; justify-content: center; font-size: 19px; flex-shrink: 0;">
+                    <div style="width: 34px; height: 34px; border-radius: 50%; background: #EEF2FF; color: #2F6BFF; display: flex; align-items: center; justify-content: center; font-size: 19px; flex-shrink: 0;">
                         <i class="bx bx-check-circle"></i>
                     </div>
                 </div>
-                <div style="font-size: 32px; font-weight: 900; color: #059669; line-height: 1; margin-bottom: 6px;">{{ $kpis['completed'] }}</div>
+                <div style="font-size: 32px; font-weight: 900; color: #2F6BFF; line-height: 1; margin-bottom: 6px;">{{ $kpis['completed'] }}</div>
                 <span style="font-size: 11.5px; color: var(--slate-muted); font-weight: 600;">Finished Work</span>
             </div>
         </a>
@@ -222,8 +222,8 @@
                     </div>
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <span style="color: var(--slate-muted); font-weight: 500;">Status:</span>
-                        <strong style="color: #059669; font-weight: 700; display: inline-flex; align-items: center; gap: 5px;">
-                            <span style="width: 6px; height: 6px; border-radius: 50%; background: #059669; display: inline-block;"></span>
+                        <strong style="color: #2F6BFF; font-weight: 700; display: inline-flex; align-items: center; gap: 5px;">
+                            <span style="width: 6px; height: 6px; border-radius: 50%; background: #2F6BFF; display: inline-block;"></span>
                             {{ ucfirst($empDetail?->status ?? 'Available') }}
                         </strong>
                     </div>
@@ -255,7 +255,7 @@
                 <div style="display: flex; flex-direction: column; gap: 10px;">
                     @forelse($recentContributions as $c)
                     <div style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: #f8fafc; border-radius: 10px; border: 1px solid var(--border-color);">
-                        <i class="bx bx-check-circle" style="color: #059669; font-size: 20px; flex-shrink: 0;"></i>
+                        <i class="bx bx-check-circle" style="color: #2F6BFF; font-size: 20px; flex-shrink: 0;"></i>
                         <div style="min-width: 0; flex: 1;">
                             <strong style="font-size: 13px; font-weight: 700; color: var(--slate-heading); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ $c->title }}</strong>
                             <span style="font-size: 11px; color: var(--slate-muted);">Completed {{ \Carbon\Carbon::parse($c->updated_at)->diffForHumans() }}</span>

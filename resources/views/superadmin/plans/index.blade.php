@@ -1524,7 +1524,7 @@
             <div>
                 <div style="font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">SUBSCRIPTION COST</div>
                 <div style="font-size: 26px; font-weight: 800; color: #0f172a; margin-top: 2px;" id="detailsPriceText">₹4,999 <span style="font-size: 13px; font-weight: 600; color: #64748b;">/ month</span></div>
-                <div style="font-size: 12px; color: #059669; font-weight: 700;" id="detailsYearlyText">Billed ₹49,990 / year</div>
+                <div style="font-size: 12px; color: #2F6BFF; font-weight: 700;" id="detailsYearlyText">Billed ₹49,990 / year</div>
             </div>
             <div style="text-align: right;">
                 <div style="font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">TIER STATUS</div>

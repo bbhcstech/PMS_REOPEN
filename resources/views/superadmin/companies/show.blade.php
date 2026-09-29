@@ -10,9 +10,9 @@
        DESIGN TOKENS — LIGHT MODE (DEFAULT)
        ============================================================ */
     :root {
-        --primary: #059669;
+        --primary: #2F6BFF;
         --primary-hover: #047857;
-        --primary-glow: rgba(5, 150, 105, 0.18);
+        --primary-glow: rgba(47, 107, 255, 0.18);
         --bg-main: #f8fafc;
         --bg-surface: #ffffff;
         --bg-subtle: #f8fafc;
@@ -23,8 +23,8 @@
         --text-muted: #475569;
         --text-subtle: #64748b;
         --success: #10b981;
-        --success-bg: #ecfdf5;
-        --success-border: #a7f3d0;
+        --success-bg: #EEF2FF;
+        --success-border: #C7D2FE;
         --warning: #f59e0b;
         --warning-bg: #fffbeb;
         --warning-border: #fde68a;
@@ -71,8 +71,8 @@
         --shadow-card: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
 
         --success: #10b981;
-        --success-bg: rgba(16, 185, 129, 0.15);
-        --success-border: rgba(52, 211, 153, 0.3);
+        --success-bg: rgba(47, 107, 255, 0.15);
+        --success-border: rgba(79, 131, 255, 0.3);
 
         --warning: #f59e0b;
         --warning-bg: rgba(245, 158, 11, 0.15);
@@ -176,7 +176,7 @@
         left: 0;
         right: 0;
         height: 4px;
-        background: linear-gradient(90deg, #059669 0%, #10b981 50%, #3b82f6 100%);
+        background: linear-gradient(90deg, #2F6BFF 0%, #10b981 50%, #3b82f6 100%);
     }
     .company-header-left {
         display: flex;

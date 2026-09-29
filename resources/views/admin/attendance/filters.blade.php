@@ -55,15 +55,15 @@
         border: 1px solid rgba(255, 255, 255, 0.7);
         box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.02),
                     0px 8px 40px rgba(0, 0, 0, 0.04),
-                    0px 20px 60px rgba(30, 58, 138, 0.06);
+                    0px 20px 60px rgba(47, 107, 255, 0.06);
         transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
         max-width: 100%;
     }
 
     .filter-form:hover {
         box-shadow: 0px 20px 50px rgba(0, 0, 0, 0.08),
-                    0px 30px 80px rgba(30, 58, 138, 0.12);
-        border-color: rgba(14, 165, 164, 0.2);
+                    0px 30px 80px rgba(47, 107, 255, 0.12);
+        border-color: rgba(47, 107, 255, 0.2);
     }
 
     .filter-group {
@@ -91,7 +91,7 @@
     }
 
     .filter-label i {
-        color: var(--primary-teal, #0ea5a4);
+        color: var(--primary-blue, #2F6BFF);
         font-size: 0.75rem;
     }
 
@@ -124,8 +124,8 @@
     }
 
     .filter-select:focus {
-        border-color: var(--primary-teal, #0ea5a4);
-        box-shadow: 0 0 0 4px rgba(14, 165, 164, 0.12);
+        border-color: var(--primary-blue, #2F6BFF);
+        box-shadow: 0 0 0 4px rgba(47, 107, 255, 0.12);
     }
 
     .filter-select option {
@@ -145,7 +145,7 @@
     }
 
     .filter-select:focus ~ .filter-icon {
-        color: var(--primary-teal, #0ea5a4);
+        color: var(--primary-blue, #2F6BFF);
         transform: translateY(-50%) rotate(180deg);
     }
 
@@ -155,7 +155,7 @@
         gap: 0.5rem;
         padding: 0.65rem 1.75rem;
         min-height: 46px;
-        background: linear-gradient(135deg, var(--primary-teal, #0ea5a4), var(--primary-green, #22c55e));
+        background: linear-gradient(135deg, #2F6BFF, #1E4FCC);
         color: white;
         border: none;
         border-radius: 40px;
@@ -163,13 +163,13 @@
         font-size: 0.9rem;
         cursor: pointer;
         transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-        box-shadow: 0 4px 15px rgba(14, 165, 164, 0.25);
+        box-shadow: 0 4px 15px rgba(47, 107, 255, 0.25);
         white-space: nowrap;
     }
 
     .filter-btn:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(14, 165, 164, 0.35);
+        box-shadow: 0 8px 25px rgba(47, 107, 255, 0.35);
     }
 
     .filter-btn:active {
@@ -249,35 +249,35 @@
 
     /* ===== DARK MODE ===== */
     html[data-pms-theme="dark"] .filter-form {
-        background: rgba(16, 33, 25, 0.95);
-        border-color: rgba(122, 240, 181, 0.15);
+        background: rgba(15, 21, 48, 0.95);
+        border-color: rgba(79, 131, 255, 0.15);
     }
 
     html[data-pms-theme="dark"] .filter-label {
-        color: #8ba198;
+        color: #94a3b8;
     }
 
     html[data-pms-theme="dark"] .filter-label i {
-        color: #34d399;
+        color: #60A5FA;
     }
 
     html[data-pms-theme="dark"] .filter-select {
-        background: #183026;
-        border-color: rgba(122, 240, 181, 0.2);
+        background: #141B3D;
+        border-color: rgba(79, 131, 255, 0.2);
         color: #ffffff;
     }
 
     html[data-pms-theme="dark"] .filter-select:hover {
-        border-color: rgba(122, 240, 181, 0.3);
+        border-color: rgba(79, 131, 255, 0.3);
     }
 
     html[data-pms-theme="dark"] .filter-select:focus {
-        border-color: #34d399;
-        box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.12);
+        border-color: #60A5FA;
+        box-shadow: 0 0 0 4px rgba(79, 131, 255, 0.12);
     }
 
     html[data-pms-theme="dark"] .filter-select option {
-        background: #183026;
+        background: #141B3D;
         color: #ffffff;
     }
 
@@ -286,15 +286,15 @@
     }
 
     html[data-pms-theme="dark"] .filter-select:focus ~ .filter-icon {
-        color: #34d399;
+        color: #60A5FA;
     }
 
     html[data-pms-theme="dark"] .filter-btn {
-        background: linear-gradient(135deg, #0f744c, #10b981);
-        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.25);
+        background: linear-gradient(135deg, #2F6BFF, #1E4FCC);
+        box-shadow: 0 4px 15px rgba(47, 107, 255, 0.25);
     }
 
     html[data-pms-theme="dark"] .filter-btn:hover {
-        box-shadow: 0 8px 25px rgba(16, 185, 129, 0.35);
+        box-shadow: 0 8px 25px rgba(47, 107, 255, 0.35);
     }
 </style>

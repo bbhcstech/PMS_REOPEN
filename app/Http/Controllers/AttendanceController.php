@@ -43,6 +43,13 @@ class AttendanceController extends Controller
         return in_array($role, ['manager', 'hr'], true);
     }
 
+    private function canManageAttendance($user): bool
+    {
+        if (!$user) return false;
+        $role = strtolower((string) ($user->role ?? ''));
+        return in_array($role, ['admin', 'superadmin', 'administrator', 'hr'], true);
+    }
+
     private function isEmployeeUser($user): bool
     {
         if (!$user) return false;
@@ -374,14 +381,15 @@ class AttendanceController extends Controller
             ->toArray();
 
         // Step 2: load users and attendances based on role
-        if ($this->isAdminUser($user)) {
+        if ($this->isAdminUser($user) || $this->canManageAttendance($user)) {
             $usersQuery = User::with('employeeDetail')->where(function ($q) {
-                $q->whereIn(DB::raw('LOWER(role)'), ['employee', 'staff'])
-                  ->orWhereNull('role');
+                $q->whereNotIn(DB::raw('LOWER(COALESCE(role, ""))'), ['client']);
             });
 
             if ($companyId) {
                 $usersQuery->where('company_id', $companyId);
+            } elseif ($user->company_id && strtolower((string)$user->role) === 'hr') {
+                $usersQuery->where('company_id', $user->company_id);
             }
 
             if ($userId) {
@@ -408,11 +416,24 @@ class AttendanceController extends Controller
                 ->whereYear('date', $year)
                 ->get();
         } elseif ($this->isManagerOrHrUser($user)) {
+            $visibleIds = method_exists($user, 'visibleEmployeeIds') ? $user->visibleEmployeeIds() : collect();
             $usersQuery = User::with('employeeDetail')
-                ->whereIn('id', $user->visibleEmployeeIds());
+                ->whereIn('id', $visibleIds);
 
             if ($userId) {
                 $usersQuery->where('id', (int) $userId);
+            }
+
+            if ($departmentId) {
+                $usersQuery->whereHas('employeeDetail', function ($q) use ($departmentId) {
+                    $q->where('department_id', $departmentId);
+                });
+            }
+
+            if ($designationId) {
+                $usersQuery->whereHas('employeeDetail', function ($q) use ($designationId) {
+                    $q->where('designation_id', $designationId);
+                });
             }
 
             $users = $usersQuery->orderBy('name')->get();
@@ -519,11 +540,12 @@ class AttendanceController extends Controller
             }
         }
 
-        // Only admin gets these data
+        // Admin & HR get these data
         $isAdmin = $this->isAdminUser($user);
-        $departments = $isAdmin ? Department::get() : collect();
-        $designations = $isAdmin ? Designation::all() : collect();
-        $archivedCount = $isAdmin ? Attendance::whereNotNull('archived_at')->count() : 0;
+        $canManage = $this->canManageAttendance($user);
+        $departments = ($isAdmin || $canManage) ? Department::when($user->company_id, fn($q) => $q->where('company_id', $user->company_id))->get() : collect();
+        $designations = ($isAdmin || $canManage) ? Designation::all() : collect();
+        $archivedCount = ($isAdmin || $canManage) ? Attendance::whereNotNull('archived_at')->count() : 0;
 
         // calculate period totals for the displayed period and users
         $periodTotals = $this->calculatePeriodTotals($users, $attendanceMap, $startDate, $endDate);
@@ -656,13 +678,17 @@ class AttendanceController extends Controller
             })->toArray();
 
         $isAdmin = $this->isAdminUser($user);
+        $canManage = $this->canManageAttendance($user);
         $isManagerOrHr = $this->isManagerOrHrUser($user);
 
-        if ($isAdmin) {
+        if ($isAdmin || $canManage) {
             $usersQuery = User::with('employeeDetail')->where(function ($q) {
-                $q->whereIn(DB::raw('LOWER(role)'), ['employee', 'staff'])
-                  ->orWhereNull('role');
+                $q->whereNotIn(DB::raw('LOWER(COALESCE(role, ""))'), ['client']);
             });
+
+            if ($user->company_id && strtolower((string)$user->role) === 'hr') {
+                $usersQuery->where('company_id', $user->company_id);
+            }
 
             if ($userId) {
                 $usersQuery->where('id', (int) $userId);
@@ -680,11 +706,24 @@ class AttendanceController extends Controller
                 });
             }
         } elseif ($isManagerOrHr) {
+            $visibleIds = method_exists($user, 'visibleEmployeeIds') ? $user->visibleEmployeeIds() : collect();
             $usersQuery = User::with('employeeDetail')
-                ->whereIn('id', $user->visibleEmployeeIds());
+                ->whereIn('id', $visibleIds);
 
             if ($userId) {
                 $usersQuery->where('id', (int) $userId);
+            }
+
+            if ($department_id) {
+                $usersQuery->whereHas('employeeDetail', function ($q) use ($department_id) {
+                    $q->where('department_id', $department_id);
+                });
+            }
+
+            if ($designation_id) {
+                $usersQuery->whereHas('employeeDetail', function ($q) use ($designation_id) {
+                    $q->where('designation_id', $designation_id);
+                });
             }
         } else {
             // Employee can only see their own data
@@ -698,7 +737,7 @@ class AttendanceController extends Controller
         // if no users, still return empty table
         if ($users->isEmpty()) {
             $attendanceMap = [];
-            $designations = $isAdmin ? Designation::all() : collect();
+            $designations = ($isAdmin || $canManage) ? Designation::all() : collect();
 
             $html = view('admin.attendance.table', compact(
                 'users',
@@ -773,7 +812,7 @@ class AttendanceController extends Controller
             }
         }
 
-        $designations = $user->role === 'admin' ? Designation::all() : collect();
+        $designations = ($isAdmin || $canManage) ? Designation::all() : collect();
 
         // calculate period totals and pass them to the view used by AJAX
         $periodTotals = $this->calculatePeriodTotals($users, $attendanceMap, $startDate, $endDate);

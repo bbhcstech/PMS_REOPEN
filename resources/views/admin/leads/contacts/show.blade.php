@@ -11,7 +11,7 @@
 
 .lead-header-card {
     background: #ffffff;
-    border: 1px solid rgba(15, 116, 76, 0.12);
+    border: 1px solid rgba(47, 107, 255, 0.12);
     border-radius: 18px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
 }
@@ -20,11 +20,11 @@
     width: 60px;
     height: 60px;
     border-radius: 16px;
-    background: linear-gradient(135deg, #0f744c, #16a34a);
+    background: linear-gradient(135deg, #2F6BFF, #16a34a);
     color: #ffffff;
     font-weight: 800;
     font-size: 22px;
-    box-shadow: 0 8px 18px rgba(15, 116, 76, 0.25);
+    box-shadow: 0 8px 18px rgba(47, 107, 255, 0.25);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -114,9 +114,9 @@
 .lead-nav-tabs button.nav-link.active:focus,
 .lead-nav-tabs .nav-link.active:hover,
 .lead-nav-tabs button.nav-link.active:hover {
-    background: linear-gradient(135deg, #0f744c, #094c32) !important;
+    background: linear-gradient(135deg, #4F83FF, #2F6BFF) !important;
     color: #ffffff !important;
-    box-shadow: 0 8px 20px rgba(15, 116, 76, 0.35) !important;
+    box-shadow: 0 8px 20px rgba(47, 107, 255, 0.35) !important;
 }
 
 /* Force ALL child elements inside active/selected tab to pure white */
@@ -155,12 +155,12 @@
 
 /* Text Highlight / Selection Styles */
 .lead-details-wrapper ::selection {
-    background: #0f744c !important;
+    background: #2F6BFF !important;
     color: #ffffff !important;
 }
 
 .lead-details-wrapper ::-moz-selection {
-    background: #0f744c !important;
+    background: #2F6BFF !important;
     color: #ffffff !important;
 }
 
@@ -190,7 +190,7 @@
     align-items: center;
     justify-content: center;
     font-size: 14px;
-    color: #0f744c;
+    color: #2F6BFF;
     flex-shrink: 0;
 }
 
@@ -212,27 +212,27 @@
 
 /* Metric Callout Box */
 .opportunity-callout-box {
-    background: linear-gradient(135deg, rgba(15, 116, 76, 0.08), rgba(22, 163, 74, 0.04));
-    border: 1px solid rgba(15, 116, 76, 0.2);
+    background: linear-gradient(135deg, rgba(47, 107, 255, 0.08), rgba(139, 92, 246, 0.04));
+    border: 1px solid rgba(47, 107, 255, 0.2);
     border-radius: 16px;
     padding: 18px;
 }
 
 /* Button Refinement */
 .btn-action-primary {
-    background: linear-gradient(135deg, #0f744c, #094c32);
+    background: linear-gradient(135deg, #4F83FF, #2F6BFF);
     color: #ffffff !important;
     border: none;
     border-radius: 12px;
     padding: 8px 16px;
     font-weight: 700;
-    box-shadow: 0 6px 16px rgba(15, 116, 76, 0.22);
+    box-shadow: 0 6px 16px rgba(47, 107, 255, 0.22);
     transition: all 0.2s ease;
 }
 
 .btn-action-primary:hover {
     transform: translateY(-1px);
-    box-shadow: 0 8px 20px rgba(15, 116, 76, 0.3);
+    box-shadow: 0 8px 20px rgba(47, 107, 255, 0.3);
     color: #ffffff !important;
 }
 
@@ -260,13 +260,13 @@
     border-radius: 12px;
     padding: 8px 16px;
     font-weight: 700;
-    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.22);
+    box-shadow: 0 6px 16px rgba(47, 107, 255, 0.22);
     transition: all 0.2s ease;
 }
 
 .btn-action-success:hover {
     transform: translateY(-1px);
-    background: #059669;
+    background: #2F6BFF;
     color: #ffffff !important;
 }
 
@@ -317,8 +317,8 @@
 }
 
 .back-btn-icon:hover {
-    background: #0f744c;
-    border-color: #0f744c;
+    background: #2F6BFF;
+    border-color: #2F6BFF;
     color: #ffffff;
 }
 
@@ -366,25 +366,25 @@ html[data-pms-theme="dark"] .info-field-card,
 html[data-bs-theme="dark"] .info-field-card,
 body[data-pms-theme="dark"] .info-field-card,
 [data-pms-theme="dark"] .info-field-card {
-    background: #102119 !important;
-    border-color: rgba(225, 255, 240, 0.15) !important;
+    background: #0F1530 !important;
+    border-color: rgba(79, 131, 255, 0.15) !important;
 }
 
 html[data-pms-theme="dark"] .lead-nav-tabs,
 html[data-bs-theme="dark"] .lead-nav-tabs,
 body[data-pms-theme="dark"] .lead-nav-tabs,
 [data-pms-theme="dark"] .lead-nav-tabs {
-    background: #183026 !important;
-    border-color: rgba(225, 255, 240, 0.15) !important;
+    background: #141B3D !important;
+    border-color: rgba(79, 131, 255, 0.15) !important;
 }
 
 html[data-pms-theme="dark"] .info-icon-box,
 html[data-bs-theme="dark"] .info-icon-box,
 body[data-pms-theme="dark"] .info-icon-box,
 [data-pms-theme="dark"] .info-icon-box {
-    background: #183026 !important;
-    border-color: rgba(225, 255, 240, 0.15) !important;
-    color: #40d48c !important;
+    background: #141B3D !important;
+    border-color: rgba(79, 131, 255, 0.15) !important;
+    color: #60A5FA !important;
 }
 
 html[data-pms-theme="dark"] .info-value,
@@ -410,9 +410,9 @@ html[data-pms-theme="dark"] .btn-action-outline,
 html[data-bs-theme="dark"] .btn-action-outline,
 body[data-pms-theme="dark"] .btn-action-outline,
 [data-pms-theme="dark"] .btn-action-outline {
-    background: #102119 !important;
+    background: #0F1530 !important;
     color: #ffffff !important;
-    border-color: rgba(225, 255, 240, 0.2) !important;
+    border-color: rgba(79, 131, 255, 0.2) !important;
 }
 
 /* Dark Mode Back Button */
@@ -420,8 +420,8 @@ html[data-pms-theme="dark"] .back-btn-icon,
 html[data-bs-theme="dark"] .back-btn-icon,
 body[data-pms-theme="dark"] .back-btn-icon,
 [data-pms-theme="dark"] .back-btn-icon {
-    background: #183026 !important;
-    border-color: rgba(225, 255, 240, 0.2) !important;
+    background: #141B3D !important;
+    border-color: rgba(79, 131, 255, 0.2) !important;
     color: #ffffff !important;
     -webkit-text-fill-color: #ffffff !important;
 }
@@ -430,8 +430,8 @@ html[data-pms-theme="dark"] .back-btn-icon:hover,
 html[data-bs-theme="dark"] .back-btn-icon:hover,
 body[data-pms-theme="dark"] .back-btn-icon:hover,
 [data-pms-theme="dark"] .back-btn-icon:hover {
-    background: #0f744c !important;
-    border-color: #0f744c !important;
+    background: #2F6BFF !important;
+    border-color: #2F6BFF !important;
     color: #ffffff !important;
     -webkit-text-fill-color: #ffffff !important;
 }
@@ -539,13 +539,13 @@ html[data-pms-theme="dark"] .lead-nav-tabs .nav-link:not(.active)#notes-tab i, [
             'urgent' => 'background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; --badge-dark-bg: rgba(239, 68, 68, 0.2); --badge-dark-color: #fca5a5; --badge-dark-border: rgba(248, 113, 113, 0.4);',
             'high' => 'background: #fffbe6; color: #b45309; border: 1px solid #fef08a; --badge-dark-bg: rgba(245, 158, 11, 0.2); --badge-dark-color: #fcd34d; --badge-dark-border: rgba(251, 191, 36, 0.4);',
             'low' => 'background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; --badge-dark-bg: rgba(148, 163, 184, 0.2); --badge-dark-color: #cbd5e1; --badge-dark-border: rgba(148, 163, 184, 0.4);',
-            default => 'background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; --badge-dark-bg: rgba(16, 185, 129, 0.2); --badge-dark-color: #6ee7b7; --badge-dark-border: rgba(52, 211, 153, 0.4);', // Medium
+            default => 'background: #EEF2FF; color: #2F6BFF; border: 1px solid #C7D2FE; --badge-dark-bg: rgba(47, 107, 255, 0.2); --badge-dark-color: #93C5FD; --badge-dark-border: rgba(79, 131, 255, 0.4);', // Medium
         };
 
         // Status Badge
         $st = strtolower($lead->status ?? 'new');
         $statusStyle = match($st) {
-            'converted' => 'background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; --badge-dark-bg: rgba(16, 185, 129, 0.2); --badge-dark-color: #6ee7b7; --badge-dark-border: rgba(52, 211, 153, 0.4);',
+            'converted' => 'background: #EEF2FF; color: #065f46; border: 1px solid #C7D2FE; --badge-dark-bg: rgba(47, 107, 255, 0.2); --badge-dark-color: #93C5FD; --badge-dark-border: rgba(79, 131, 255, 0.4);',
             'new' => 'background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; --badge-dark-bg: rgba(14, 165, 233, 0.2); --badge-dark-color: #7dd3fc; --badge-dark-border: rgba(56, 189, 248, 0.4);',
             'qualified' => 'background: #f3e8ff; color: #6b21a8; border: 1px solid #e9d5ff; --badge-dark-bg: rgba(168, 85, 247, 0.2); --badge-dark-color: #d8b4fe; --badge-dark-border: rgba(192, 132, 252, 0.4);',
             'contacted', 'in_progress', 'hot' => 'background: #fef9c3; color: #854d0e; border: 1px solid #fef08a; --badge-dark-bg: rgba(245, 158, 11, 0.2); --badge-dark-color: #fcd34d; --badge-dark-border: rgba(251, 191, 36, 0.4);',

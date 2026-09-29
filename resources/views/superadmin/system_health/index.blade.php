@@ -10,7 +10,7 @@
         --primary-hover: #1d4ed8;
         --primary-light: #eff6ff;
         --success: #10b981;
-        --success-light: #ecfdf5;
+        --success-light: #EEF2FF;
         --warning: #f59e0b;
         --warning-light: #fffbeb;
         --danger: #ef4444;
@@ -103,9 +103,9 @@
     }
 
     .status-badge-hero.operational {
-        background: #ecfdf5;
-        color: #059669;
-        border: 1px solid #a7f3d0;
+        background: #EEF2FF;
+        color: #2F6BFF;
+        border: 1px solid #C7D2FE;
     }
 
     .status-badge-hero.outage {
@@ -193,7 +193,7 @@
         justify-content: center;
         position: relative;
         flex-shrink: 0;
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        box-shadow: 0 4px 12px rgba(47, 107, 255, 0.2);
     }
 
     .hero-score-ring::after {
@@ -378,7 +378,7 @@
         gap: 4px;
     }
 
-    .status-operational { background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; }
+    .status-operational { background: #EEF2FF; color: #2F6BFF; border: 1px solid #C7D2FE; }
     .status-degraded { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
     .status-down { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
 
@@ -608,7 +608,7 @@
         --text-subtle: #9AA3C7;
         --primary: #2F6BFF;
         --primary-light: rgba(47, 107, 255, 0.15);
-        --success-light: rgba(16, 185, 129, 0.15);
+        --success-light: rgba(47, 107, 255, 0.15);
         --warning-light: rgba(245, 158, 11, 0.15);
         --danger-light: rgba(239, 68, 68, 0.15);
         --purple-light: rgba(139, 92, 246, 0.15);
@@ -1251,7 +1251,7 @@
                 </button>
                 <div id="dbExportMenu" style="display: none; position: absolute; right: 0; top: 100%; margin-top: 4px; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); box-shadow: var(--shadow-md); z-index: 50; min-width: 140px; overflow: hidden;">
                     <a href="#" id="exportDbCsvBtn" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; font-size: 12.5px; font-weight: 600; color: var(--text-main); text-decoration: none;" onmouseover="this.style.background='var(--bg-subtle)';" onmouseout="this.style.background='transparent';">
-                        <i class="fas fa-file-csv" style="color: #059669;"></i> Export CSV
+                        <i class="fas fa-file-csv" style="color: #2F6BFF;"></i> Export CSV
                     </a>
                     <a href="#" id="exportDbPdfBtn" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; font-size: 12.5px; font-weight: 600; color: var(--text-main); text-decoration: none;" onmouseover="this.style.background='var(--bg-subtle)';" onmouseout="this.style.background='transparent';">
                         <i class="fas fa-file-pdf" style="color: #dc2626;"></i> Export PDF

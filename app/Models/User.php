@@ -299,14 +299,16 @@ class User extends Authenticatable
         }
 
         if ($role === 'hr') {
-            return User::where('role', 'employee')
-                ->when($this->company_id, fn ($query) => $query->where('company_id', $this->company_id))
-                ->where(function ($query) {
-                    $query->where('hr_id', $this->id)
-                        ->orWhere('reports_to_id', $this->id)
-                        ->orWhereHas('employeeDetail', fn ($detail) => $detail->where('reporting_to', $this->id));
-                })
-                ->pluck('id');
+            $scoped = User::where('role', 'employee')
+                ->when($this->company_id, fn ($query) => $query->where('company_id', $this->company_id));
+
+            $assigned = (clone $scoped)->where(function ($query) {
+                $query->where('hr_id', $this->id)
+                    ->orWhere('reports_to_id', $this->id)
+                    ->orWhereHas('employeeDetail', fn ($detail) => $detail->where('reporting_to', $this->id));
+            })->pluck('id');
+
+            return $assigned->isNotEmpty() ? $assigned : $scoped->pluck('id');
         }
 
         if ($role === 'manager') {

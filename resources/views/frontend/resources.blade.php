@@ -148,7 +148,7 @@
       </div>
       <div class="util-grid">
         <div class="util-card">
-          <div class="feature-icon" style="background:linear-gradient(135deg, #34D399, #6EE7B7)">
+          <div class="feature-icon" style="background:linear-gradient(135deg, #60A5FA, #93C5FD)">
             <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.5"/><path d="M5 5l4.5 4.5M19 5l-4.5 4.5M5 19l4.5-4.5M19 19l-4.5-4.5"/></svg>
           </div>
           <h3>Contact Support</h3>
