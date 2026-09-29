@@ -369,7 +369,7 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'module.access'])
     ->name('dashboard');
 
-Route::middleware(['auth', 'verified'])->prefix('superadmin')->name('superadmin.')->group(function () {
+Route::middleware(['auth:super_admin,web'])->prefix('superadmin')->name('superadmin.')->group(function () {
     Route::get('/', [SuperAdminController::class, 'dashboard'])->name('dashboard');
     Route::get('/profile', [SuperAdminController::class, 'profile'])->name('profile');
     Route::post('/profile', [SuperAdminController::class, 'updateProfile'])->name('profile.update');
@@ -379,9 +379,14 @@ Route::middleware(['auth', 'verified'])->prefix('superadmin')->name('superadmin.
     Route::post('/plans/toggle-module', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'togglePlanModule'])->name('plans.toggle-module');
     Route::post('/subscriptions/assign', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'assignPlan'])->name('subscriptions.assign');
     Route::post('/subscriptions/toggle-override', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'toggleCompanyOverride'])->name('subscriptions.toggle-override');
+    Route::get('/companies', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'index'])->name('companies.list');
     Route::get('/companies/directory', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'index'])->name('companies.index');
     Route::get('/companies/create', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'create'])->name('companies.create');
+    Route::get('/companies/{company}', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'show'])->name('companies.show');
     Route::post('/companies', [SuperAdminController::class, 'storeCompany'])->name('companies.store');
+    Route::post('/companies/{company}/enter', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'enter'])->name('companies.enter');
+    Route::post('/companies/{company}/suspend', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'suspend'])->name('companies.suspend');
+    Route::delete('/companies/{company}', [SuperAdminController::class, 'deleteCompany'])->name('companies.delete');
     Route::post('/company-admins', [SuperAdminController::class, 'storeAdmin'])->name('admins.store');
     Route::get('/company-admins', [SuperAdminController::class, 'companyAdmins'])->name('admins.index');
     Route::get('/company-admins/export', [SuperAdminController::class, 'exportAdmins'])->name('admins.export');
@@ -406,8 +411,8 @@ Route::middleware(['auth', 'verified'])->prefix('superadmin')->name('superadmin.
     Route::post('/complaints/{id}/assign', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'assign'])->name('complaints.assign');
 });
 
-// Standalone route aliases for admins.* without prefix
-Route::middleware(['auth', 'verified'])->group(function () {
+// Standalone route aliases for super-admin.* and admins.*
+Route::middleware(['auth:super_admin,web'])->group(function () {
     Route::get('/company-admins/export', [\App\Http\Controllers\SuperAdminController::class, 'exportAdmins'])->name('admins.export');
     Route::get('/company-admins', [\App\Http\Controllers\SuperAdminController::class, 'companyAdmins'])->name('admins.index');
     Route::post('/company-admins', [\App\Http\Controllers\SuperAdminController::class, 'storeAdmin'])->name('admins.store');
@@ -415,6 +420,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('/company-admins/{admin}/archive', [\App\Http\Controllers\SuperAdminController::class, 'archiveAdmin'])->name('admins.archive');
     Route::patch('/company-admins/{admin}/restore', [\App\Http\Controllers\SuperAdminController::class, 'restoreAdmin'])->name('admins.restore');
     Route::delete('/company-admins/{admin}', [\App\Http\Controllers\SuperAdminController::class, 'deleteAdmin'])->name('admins.delete');
+
+    // Fallback and alias routes for super-admin.*
+    Route::get('/super-admin', [SuperAdminController::class, 'dashboard'])->name('super-admin.dashboard');
+    Route::get('/super-admin/profile', [SuperAdminController::class, 'profile'])->name('super-admin.profile');
+    Route::post('/super-admin/profile', [SuperAdminController::class, 'updateProfile'])->name('super-admin.profile.update');
+    Route::get('/super-admin/companies', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'index'])->name('super-admin.companies.index');
+    Route::get('/super-admin/companies/{company}', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'show'])->name('super-admin.companies.show');
+    Route::post('/super-admin/companies/{company}/enter', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'enter'])->name('super-admin.companies.enter');
+    Route::post('/super-admin/companies/{company}/suspend', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'suspend'])->name('super-admin.companies.suspend');
+    Route::delete('/super-admin/companies/{company}', [SuperAdminController::class, 'deleteCompany'])->name('super-admin.companies.delete');
 });
 
 
