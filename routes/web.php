@@ -371,6 +371,8 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
 
 Route::middleware(['auth', 'verified'])->prefix('superadmin')->name('superadmin.')->group(function () {
     Route::get('/', [SuperAdminController::class, 'dashboard'])->name('dashboard');
+    Route::get('/profile', [SuperAdminController::class, 'profile'])->name('profile');
+    Route::post('/profile', [SuperAdminController::class, 'updateProfile'])->name('profile.update');
     Route::get('/subscriptions', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'subscriptions'])->name('subscriptions.index');
     Route::post('/subscriptions', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'assignPlan'])->name('subscriptions.store');
     Route::post('/subscriptions/store', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'assignPlan']);
