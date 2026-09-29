@@ -288,7 +288,7 @@ class User extends Authenticatable
     {
         $role = $this->normalizedRole();
 
-        if ($role === 'admin') {
+        if (in_array($role, ['admin', 'superadmin', 'administrator', 'hr'], true)) {
             return User::where('role', 'employee')
                 ->when($this->company_id, fn ($query) => $query->where('company_id', $this->company_id))
                 ->pluck('id');
@@ -296,17 +296,6 @@ class User extends Authenticatable
 
         if ($role === 'employee') {
             return collect([$this->id]);
-        }
-
-        if ($role === 'hr') {
-            return User::where('role', 'employee')
-                ->when($this->company_id, fn ($query) => $query->where('company_id', $this->company_id))
-                ->where(function ($query) {
-                    $query->where('hr_id', $this->id)
-                        ->orWhere('reports_to_id', $this->id)
-                        ->orWhereHas('employeeDetail', fn ($detail) => $detail->where('reporting_to', $this->id));
-                })
-                ->pluck('id');
         }
 
         if ($role === 'manager') {

@@ -1106,6 +1106,16 @@ public function hrindex(Request $request)
         $projects = Project::whereNull('deleted_at')->orderBy('name')->get();
         $tasks = Task::all();
 
+        $todayStr = now()->toDateString();
+        $attendance = Attendance::where('user_id', Auth::id())
+            ->where('date', $todayStr)
+            ->first();
+        $attendancePolicy = $this->attendancePolicy();
+        $officeLatitude = self::OFFICE_LATITUDE;
+        $officeLongitude = self::OFFICE_LONGITUDE;
+        $officeRadiusMeters = self::OFFICE_RADIUS_METERS;
+        $officeAddress = self::OFFICE_ADDRESS;
+
         return view('dashboard-hr', compact(
             'totalEmployees',
             'activeEmployees',
@@ -1138,7 +1148,13 @@ public function hrindex(Request $request)
             'totalClient',
             'unresolvedTicket',
             'projects',
-            'tasks'
+            'tasks',
+            'attendance',
+            'attendancePolicy',
+            'officeLatitude',
+            'officeLongitude',
+            'officeRadiusMeters',
+            'officeAddress'
         ));
     }
 

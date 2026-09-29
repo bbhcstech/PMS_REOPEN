@@ -117,7 +117,8 @@ class LeaveService
             ->whereIn('status', ['approved'])
             ->where(function ($query) use ($yearStart, $yearEnd) {
                 $query->whereBetween('start_date', [$yearStart, $yearEnd])
-                    ->orWhereBetween('end_date', [$yearStart, $yearEnd]);
+                    ->orWhereBetween('end_date', [$yearStart, $yearEnd])
+                    ->orWhereBetween('date', [$yearStart, $yearEnd]);
             })
             ->orderBy('approved_at')
             ->orderBy('start_date')
@@ -367,9 +368,26 @@ class LeaveService
             return;
         }
 
-        $before = $this->ensureBalance($employee, Carbon::parse($leave->start_date))?->toArray() ?: [];
+        $startDate = $leave->start_date ?: $leave->date ?: ($leave->created_at ? $leave->created_at->toDateString() : now()->toDateString());
+        $endDate = $leave->end_date ?: $startDate;
+
+        $startCarbon = Carbon::parse($startDate)->startOfDay();
+        $endCarbon = Carbon::parse($endDate)->startOfDay();
+        if ($startCarbon->gt($endCarbon)) {
+            $endCarbon = $startCarbon->copy();
+        }
+
+        if (empty($leave->getRawOriginal('start_date')) || empty($leave->getRawOriginal('end_date'))) {
+            $leave->forceFill([
+                'start_date' => $startCarbon->toDateString(),
+                'end_date' => $endCarbon->toDateString(),
+                'date' => $leave->date ? Carbon::parse($leave->date)->toDateString() : $startCarbon->toDateString(),
+            ])->saveQuietly();
+        }
+
+        $before = $this->ensureBalance($employee, $startCarbon)?->toArray() ?: [];
         $balance = LeaveBalance::where('user_id', $employee->id)
-            ->where('leave_year', $leave->leave_year ?: $this->leaveYearDates(Carbon::parse($leave->start_date))['label'])
+            ->where('leave_year', $leave->leave_year ?: $this->leaveYearDates($startCarbon)['label'])
             ->first();
 
         if ($balance) {
@@ -386,11 +404,16 @@ class LeaveService
             $leave->refresh();
         }
 
-        foreach (CarbonPeriod::create($leave->start_date, $leave->end_date) as $date) {
+        $periodStart = ($leave->start_date ? Carbon::parse($leave->start_date) : $startCarbon)->toDateString();
+        $periodEnd = ($leave->end_date ? Carbon::parse($leave->end_date) : $endCarbon)->toDateString();
+
+        foreach (CarbonPeriod::create($periodStart, $periodEnd) as $date) {
             Attendance::updateOrCreate(
                 ['user_id' => $employee->id, 'date' => $date->toDateString()],
                 [
-                    'status' => ((float) ($leave->paid_days ?? 0)) <= 0 ? 'unpaid_leave' : 'leave',
+                    'company_id' => $employee->company_id ?: 1,
+                    'status' => 'leave',
+                    'half_day' => !empty($leave->half_day_flag) ? 'yes' : 'no',
                     'location' => 'Leave',
                     'working_from' => 'Leave',
                 ]
@@ -403,7 +426,7 @@ class LeaveService
             'user_id' => $employee->id,
             'leave_id' => $leave->id,
             'changed_by' => $actor?->id,
-            'leave_year' => $leave->leave_year ?: $this->leaveYearDates(Carbon::parse($leave->start_date))['label'],
+            'leave_year' => $leave->leave_year ?: $this->leaveYearDates($startCarbon)['label'],
             'action' => 'approved',
             'days' => $leave->total_days,
             'before_snapshot' => $before,
@@ -514,9 +537,16 @@ class LeaveService
         $dates = collect([now()]);
 
         Leave::where('user_id', $employee->id)
-            ->whereNotNull('start_date')
-            ->pluck('start_date')
-            ->each(fn ($date) => $dates->push(Carbon::parse($date)));
+            ->where(function ($q) {
+                $q->whereNotNull('start_date')->orWhereNotNull('date');
+            })
+            ->get(['start_date', 'date'])
+            ->each(function ($l) use ($dates) {
+                $d = $l->start_date ?: $l->date;
+                if ($d) {
+                    $dates->push(Carbon::parse($d));
+                }
+            });
 
         LeaveBalance::where('user_id', $employee->id)
             ->pluck('year_start')

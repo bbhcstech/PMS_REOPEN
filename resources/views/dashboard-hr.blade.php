@@ -3,6 +3,8 @@
 @section('content')
 
 @php
+    use Carbon\Carbon;
+
     $defaultStart = now()->format('Y-m-d');
     $defaultEnd = now()->format('Y-m-d');
     $startDate = request('start_date', $defaultStart);
@@ -29,6 +31,15 @@
         ['slug' => 'employees', 'route' => 'employees.index', 'label' => 'New Joiners', 'value' => $newEmployees ?? 0, 'hint' => 'In selected range', 'percent' => round((($newEmployees ?? 0) / $roleScale) * 100), 'color' => '#6366F1'],
         ['slug' => 'attendance', 'route' => 'attendance.report', 'label' => 'Absent Today', 'value' => $absentToday, 'hint' => 'Not present / leave', 'percent' => $totalEmployees > 0 ? round(($absentToday / $totalEmployees) * 100) : 0, 'color' => '#64748B'],
     ];
+
+    $clockInLabel = $attendance && $attendance->clock_in ? Carbon::parse($attendance->clock_in)->format('h:i A') : 'Not Clocked In';
+    $clockOutLabel = $attendance && $attendance->clock_out ? Carbon::parse($attendance->clock_out)->format('h:i A') : 'Pending';
+    $todayStatus = $attendance && $attendance->status ? str_replace('_', ' ', ucfirst($attendance->status)) : 'No Entry';
+    $workedDurationLabel = $attendance && $attendance->clock_in && $attendance->clock_out ? $attendance->total_duration : '00:00:00';
+    $officeLatitude = $officeLatitude ?? 22.49682;
+    $officeLongitude = $officeLongitude ?? 88.39462;
+    $officeRadiusMeters = $officeRadiusMeters ?? 10;
+    $officeAddress = $officeAddress ?? '11 Hospital Link Road, Satavisha Building, Kolkata, West Bengal 700075';
 @endphp
 <style>
     .role-dashboard-shell {
@@ -53,7 +64,7 @@
         align-items: stretch;
         display: grid;
         gap: 1rem;
-        grid-template-columns: minmax(0, 1.35fr) minmax(280px, .65fr);
+        grid-template-columns: minmax(0, 1.4fr) minmax(320px, 1fr) minmax(240px, .65fr);
         position: relative;
         z-index: 1;
     }
@@ -436,6 +447,14 @@
     .role-panel {
         animation: roleFadeUp .65s ease both;
     }
+    @media (max-width: 1399.98px) {
+        .role-hero {
+            grid-template-columns: minmax(0, 1.3fr) minmax(320px, 1fr);
+        }
+        .role-focus-card {
+            grid-column: span 2;
+        }
+    }
     @media (max-width: 1199.98px) {
         .role-stat-grid,
         .role-pie-grid,
@@ -446,6 +465,9 @@
     @media (max-width: 991.98px) {
         .role-hero {
             grid-template-columns: 1fr;
+        }
+        .role-focus-card {
+            grid-column: span 1;
         }
     }
     @media (max-width: 575.98px) {
@@ -473,6 +495,244 @@
         .role-date-btn {
             width: 100%;
         }
+    }
+
+    /* HR Clock in Card & Components */
+    .role-clock-card {
+        border-radius: 24px;
+        padding: clamp(1.25rem, 2.2vw, 1.75rem);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        position: relative;
+        overflow: hidden;
+    }
+    .hr-clock {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        width: 100%;
+    }
+    .hr-clock-time {
+        font-size: 1.75rem;
+        font-weight: 900;
+        line-height: 1.1;
+        color: var(--bx-ink, #10142C);
+        letter-spacing: -0.02em;
+        font-variant-numeric: tabular-nums;
+    }
+    .hr-clock-date {
+        font-size: 0.84rem;
+        font-weight: 700;
+        color: var(--bx-ink-muted, #545D82);
+    }
+    .employee-action-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: 0;
+        border-radius: 12px;
+        padding: 12px 18px;
+        color: #fff;
+        font-weight: 800;
+        font-size: 0.95rem;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        cursor: pointer;
+    }
+    .employee-action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 26px rgba(0, 0, 0, 0.18);
+    }
+    .employee-action-btn.is-in {
+        background: linear-gradient(135deg, #10B981, #059669);
+    }
+    .employee-action-btn.is-out {
+        background: linear-gradient(135deg, #EF4444, #DC2626);
+    }
+    .employee-complete {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border-radius: 12px;
+        padding: 11px 16px;
+        color: #fff !important;
+        background: linear-gradient(135deg, #10B981, #059669);
+        box-shadow: 0 8px 20px rgba(16, 185, 129, 0.24);
+        font-weight: 800;
+    }
+    .clock-requirements {
+        margin-top: 6px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--bx-ink-muted, #545D82);
+    }
+    .clock-status-line {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 4px;
+        color: var(--bx-ink-muted, #545D82);
+    }
+    .clock-status-line.is-error {
+        color: #EF4444 !important;
+    }
+    .clock-attendance-card {
+        margin-top: 10px;
+        width: 100%;
+        padding: 12px;
+        border-radius: 16px;
+        background: rgba(47, 107, 255, 0.04);
+        border: 1px solid rgba(47, 107, 255, 0.12);
+    }
+    .clock-attendance-card img {
+        width: 100%;
+        max-height: 180px;
+        object-fit: cover;
+        border-radius: 10px;
+        border: 1px solid rgba(47, 107, 255, 0.15);
+        margin-bottom: 8px;
+    }
+    .clock-location-note {
+        margin-top: 8px;
+        padding: 8px 10px;
+        border-radius: 10px;
+        background: rgba(47, 107, 255, 0.06);
+        border: 1px solid rgba(47, 107, 255, 0.12);
+        color: var(--bx-ink, #10142C);
+        font-size: 0.78rem;
+        font-weight: 600;
+        line-height: 1.35;
+    }
+    .clock-location-note span {
+        display: block;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--bx-primary, #2F6BFF);
+        font-weight: 800;
+        margin-bottom: 2px;
+    }
+    .clock-policy-warning-text {
+        margin: 6px 0 0;
+        color: #EF4444 !important;
+        font-size: 0.78rem;
+        font-weight: 700;
+        line-height: 1.35;
+    }
+    .clock-live-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        margin-top: 10px;
+    }
+    .clock-live-box {
+        padding: 8px 10px;
+        border-radius: 10px;
+        background: rgba(47, 107, 255, 0.06);
+        border: 1px solid rgba(47, 107, 255, 0.1);
+    }
+    .clock-live-box span {
+        display: block;
+        font-size: 0.7rem;
+        color: var(--bx-ink-muted, #545D82);
+        font-weight: 700;
+        margin-bottom: 2px;
+    }
+    .clock-live-box strong {
+        font-size: 0.96rem;
+        color: var(--bx-primary, #2F6BFF);
+        font-weight: 800;
+    }
+    .clock-camera-modal {
+        position: fixed;
+        inset: 0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 18px;
+        background: rgba(8, 15, 30, 0.75);
+        backdrop-filter: blur(4px);
+        z-index: 9999;
+    }
+    .clock-camera-modal.is-open {
+        display: flex;
+    }
+    .clock-camera-panel {
+        width: min(620px, 100%);
+        background: #fff;
+        border-radius: 20px;
+        box-shadow: 0 28px 80px rgba(0, 0, 0, 0.35);
+        overflow: hidden;
+    }
+    .clock-camera-header,
+    .clock-camera-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 14px 18px;
+        border-bottom: 1px solid rgba(16, 20, 44, 0.08);
+    }
+    .clock-camera-footer {
+        border-top: 1px solid rgba(16, 20, 44, 0.08);
+        border-bottom: 0;
+        flex-wrap: wrap;
+    }
+    .clock-camera-body {
+        padding: 16px;
+        background: #f8fafc;
+    }
+    .clock-camera-preview {
+        width: 100%;
+        aspect-ratio: 4 / 3;
+        background: #0f172a;
+        border-radius: 14px;
+        overflow: hidden;
+    }
+    .clock-camera-preview video,
+    .clock-camera-preview canvas,
+    .clock-camera-preview img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .clock-camera-preview canvas,
+    .clock-camera-preview img {
+        display: none;
+    }
+    .clock-camera-preview.has-photo video {
+        display: none;
+    }
+    .clock-camera-preview.has-photo img {
+        display: block;
+    }
+    .clock-modal-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        border: 0;
+        border-radius: 10px;
+        padding: 9px 14px;
+        font-weight: 800;
+        font-size: 0.85rem;
+        color: #fff;
+        background: #2F6BFF;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .clock-modal-btn:hover {
+        transform: translateY(-1px);
+        opacity: 0.95;
+    }
+    .clock-modal-btn.secondary {
+        background: #64748B;
+    }
+    .clock-modal-btn.danger {
+        background: #EF4444;
+    }
+    .clock-modal-btn.success {
+        background: #10B981;
     }
 
     /* HR Dashboard Dark Mode Overrides */
@@ -538,18 +798,85 @@
         color: #EEF1FB !important;
         border-bottom-color: rgba(238, 241, 251, 0.09) !important;
     }
+    html[data-pms-theme="dark"] .hr-clock-time,
+    html[data-theme="dark"] .hr-clock-time {
+        color: #EEF1FB;
+    }
+    html[data-pms-theme="dark"] .hr-clock-date,
+    html[data-theme="dark"] .hr-clock-date,
+    html[data-pms-theme="dark"] .clock-requirements,
+    html[data-theme="dark"] .clock-requirements,
+    html[data-pms-theme="dark"] .clock-status-line,
+    html[data-theme="dark"] .clock-status-line {
+        color: #9AA3C7;
+    }
+    html[data-pms-theme="dark"] .clock-attendance-card,
+    html[data-theme="dark"] .clock-attendance-card {
+        background: rgba(238, 241, 251, 0.04);
+        border-color: rgba(238, 241, 251, 0.08);
+    }
+    html[data-pms-theme="dark"] .clock-location-note,
+    html[data-theme="dark"] .clock-location-note {
+        background: rgba(238, 241, 251, 0.06);
+        border-color: rgba(238, 241, 251, 0.1);
+        color: #EEF1FB;
+    }
+    html[data-pms-theme="dark"] .clock-live-box,
+    html[data-theme="dark"] .clock-live-box {
+        background: rgba(238, 241, 251, 0.06);
+        border-color: rgba(238, 241, 251, 0.08);
+    }
+    html[data-pms-theme="dark"] .clock-live-box span,
+    html[data-theme="dark"] .clock-live-box span {
+        color: #9AA3C7;
+    }
+    html[data-pms-theme="dark"] .clock-live-box strong,
+    html[data-theme="dark"] .clock-live-box strong {
+        color: #22D3EE;
+    }
+    html[data-pms-theme="dark"] .clock-camera-panel,
+    html[data-theme="dark"] .clock-camera-panel {
+        background: #0F1530;
+        color: #EEF1FB;
+    }
+    html[data-pms-theme="dark"] .clock-camera-header,
+    html[data-pms-theme="dark"] .clock-camera-footer,
+    html[data-theme="dark"] .clock-camera-header,
+    html[data-theme="dark"] .clock-camera-footer {
+        border-color: rgba(238, 241, 251, 0.09);
+    }
+    html[data-pms-theme="dark"] .clock-camera-body,
+    html[data-theme="dark"] .clock-camera-body {
+        background: #070B1A;
+    }
 </style>
 <div class="container-fluid">
 
     <section class="role-dashboard-shell">
+        @if(session('success'))
+            <div class="alert alert-success alert-dismissible fade show mb-3" role="alert">
+                <i class="bx bx-check-circle me-1"></i> {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+        @if(session('error'))
+            <div class="alert alert-danger alert-dismissible fade show mb-3" role="alert">
+                <i class="bx bx-error-circle me-1"></i> {{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+
         <div class="role-hero">
             <div class="role-hero-card">
                 <span class="role-eyebrow">{{ $roleName }} command center</span>
                 <h1>{{ $roleName }} Dashboard</h1>
                 <p>Monitor workforce health, leave flow, attendance, tasks, and HR analytics from one responsive workspace.</p>
                 <div class="role-hero-actions">
+                    @if(Route::has('leaves.create'))
+                        <a href="{{ route('leaves.create') }}" class="role-btn role-btn-primary"><i class="bx bx-calendar-plus"></i> Apply Leave</a>
+                    @endif
                     @if(Route::has('projects.create'))
-                        <a href="{{ route('projects.create') }}" class="role-btn role-btn-primary"><i class="bx bx-plus"></i> Add Project</a>
+                        <a href="{{ route('projects.create') }}" class="role-btn role-btn-light"><i class="bx bx-plus"></i> Add Project</a>
                     @endif
                     @if(Route::has('tasks.create'))
                         <a href="{{ route('tasks.create') }}" class="role-btn role-btn-light"><i class="bx bx-task"></i> New Task</a>
@@ -585,6 +912,93 @@
                     </button>
                 </form>
             </div>
+
+            <!-- HR Clock In/Out Card -->
+            <div class="role-panel role-clock-card" data-server-time="{{ now()->getTimestamp() * 1000 }}">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <span class="role-eyebrow mb-0"><i class="bx bx-time-five me-1"></i> My Attendance</span>
+                    <div class="text-end">
+                        <div class="hr-clock-time employee-time" id="hrClockTime" data-live-clock="time">{{ now()->format('h:i:s A') }}</div>
+                        <div class="hr-clock-date text-muted small" id="hrClockDate" data-live-clock="date">{{ now()->format('l, d M Y') }}</div>
+                    </div>
+                </div>
+
+                <div class="employee-clock hr-clock">
+                    @if ($attendance && $attendance->clock_in && !$attendance->clock_out)
+                        <form method="POST" action="{{ route('dashboard.clockout') }}">
+                            @csrf
+                            <button class="employee-action-btn is-out w-100 justify-content-center" type="submit">
+                                <i class="bx bx-log-out-circle"></i> Clock Out
+                            </button>
+                        </form>
+                    @elseif(!$attendance || !$attendance->clock_in)
+                        <form method="POST" action="{{ route('dashboard.clockin') }}" id="employeeClockInForm">
+                            @csrf
+                            <input type="hidden" name="clock_in_latitude" id="clockInLatitude">
+                            <input type="hidden" name="clock_in_longitude" id="clockInLongitude">
+                            <input type="hidden" name="clock_in_accuracy" id="clockInAccuracy">
+                            <input type="hidden" name="clock_in_address" id="clockInAddress">
+                            <input type="hidden" name="clock_in_selfie" id="clockInSelfie">
+                            <button class="employee-action-btn is-in w-100 justify-content-center" type="submit" id="employeeClockInButton">
+                                <i class="bx bx-log-in-circle"></i> Clock In
+                            </button>
+                        </form>
+                        <div class="clock-requirements" id="clockRequirementStatus">
+                            <div class="clock-status-line"><i class="bx bx-map-pin"></i><span>Share current location to save your clock-in place.</span></div>
+                            <div class="clock-status-line"><i class="bx bx-camera"></i><span>Capture photo to complete clock in.</span></div>
+                        </div>
+                    @else
+                        <span class="employee-complete justify-content-center"><i class="bx bx-check-circle"></i> Shift Completed</span>
+                    @endif
+
+                    @if($attendance && $attendance->clock_in)
+                        <div class="clock-attendance-card">
+                            @if($attendance->clock_in_photo && !$attendance->clock_out)
+                                <img src="{{ asset($attendance->clock_in_photo) }}" alt="Clock in photo">
+                            @endif
+                            @php
+                                $clockInLocationText = $attendance->clock_in_address
+                                    ?: $attendance->location
+                                    ?: (
+                                        $attendance->clock_in_latitude && $attendance->clock_in_longitude
+                                            ? 'Current location: ' . $attendance->clock_in_latitude . ', ' . $attendance->clock_in_longitude
+                                            : null
+                                    );
+                                $clockedInOutsideOffice = strtolower((string) $attendance->work_from_type) === 'field';
+                                $attendanceDateStr = ($attendance->date instanceof \Carbon\Carbon ? $attendance->date->format('Y-m-d') : (string) $attendance->date);
+                            @endphp
+                            @if($clockInLocationText)
+                                <div class="clock-location-note">
+                                    <span>Clock-in location</span>
+                                    {{ $clockInLocationText }}
+                                </div>
+                            @endif
+                            @if($clockedInOutsideOffice)
+                                <p class="clock-policy-warning-text">
+                                    <i class="bx bx-error-circle me-1"></i>
+                                    You did not clock in from the organization area. This may affect your appraisal later. Please maintain the office policy properly.
+                                </p>
+                            @endif
+                            <div class="clock-live-grid">
+                                <div class="clock-live-box">
+                                    <span>IST Time</span>
+                                    <strong id="employeeIstClock">{{ now()->format('h:i:s A') }}</strong>
+                                </div>
+                                <div class="clock-live-box">
+                                    <span>{{ $attendance->clock_out ? 'Worked Time' : 'Working Time' }}</span>
+                                    <strong
+                                        id="employeeWorkTimer"
+                                        data-clock-in="{{ \Carbon\Carbon::parse($attendanceDateStr . ' ' . $attendance->clock_in, config('app.timezone', 'Asia/Kolkata'))->toIso8601String() }}"
+                                        data-clock-out="{{ $attendance->clock_out ? \Carbon\Carbon::parse($attendanceDateStr . ' ' . $attendance->clock_out, config('app.timezone', 'Asia/Kolkata'))->toIso8601String() : '' }}"
+                                        data-fixed-duration="{{ $attendance->clock_out ? $workedDurationLabel : '' }}"
+                                    >{{ $attendance->clock_out ? $workedDurationLabel : '00:00:00' }}</strong>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+            </div>
+
             <div class="role-panel role-focus-card">
                 <div class="role-gauge" style="--percent: {{ max(0, min(100, $attendancePercent)) }};">
                     <strong>{{ $attendancePercent }}%</strong>
@@ -1008,7 +1422,28 @@
         </div>
     </div>
 </div>
-<!-- ============ END LEAVE MANAGEMENT SECTION ============ -->
+    <div class="clock-camera-modal" id="clockCameraModal" aria-hidden="true">
+        <div class="clock-camera-panel">
+            <div class="clock-camera-header">
+                <h5 class="mb-0 fw-bold">Capture Clock In Photo</h5>
+                <button type="button" class="clock-modal-btn danger" id="clockCameraClose"><i class="bx bx-x"></i> Close</button>
+            </div>
+            <div class="clock-camera-body">
+                <div class="clock-camera-preview" id="clockCameraPreview">
+                    <video id="clockCameraVideo" autoplay playsinline muted></video>
+                    <canvas id="clockCameraCanvas"></canvas>
+                    <img id="clockCameraPhoto" alt="Captured clock in photo">
+                </div>
+                <p class="text-muted mt-3 mb-0 small">Take a clear face photo. You can flip camera on mobile, retake, then use photo for clock in.</p>
+            </div>
+            <div class="clock-camera-footer">
+                <button type="button" class="clock-modal-btn secondary" id="clockCameraFlip"><i class="bx bx-refresh"></i> Flip</button>
+                <button type="button" class="clock-modal-btn" id="clockCameraCapture"><i class="bx bx-camera"></i> Capture</button>
+                <button type="button" class="clock-modal-btn secondary" id="clockCameraRetake"><i class="bx bx-undo"></i> Retake</button>
+                <button type="button" class="clock-modal-btn success" id="clockCameraUse"><i class="bx bx-check"></i> Use Photo & Clock In</button>
+            </div>
+        </div>
+    </div>
 
 </div>
 @endsection
@@ -1129,5 +1564,358 @@
             }]
         }
     });
+</script>
+
+<script>
+(function () {
+    const officeLocation = {
+        lat: @json($officeLatitude),
+        lng: @json($officeLongitude),
+        radius: @json($officeRadiusMeters),
+        address: @json($officeAddress)
+    };
+
+    const clockInForm = document.getElementById('employeeClockInForm');
+    const clockInButton = document.getElementById('employeeClockInButton');
+    const requirementStatus = document.getElementById('clockRequirementStatus');
+    const modal = document.getElementById('clockCameraModal');
+    const video = document.getElementById('clockCameraVideo');
+    const canvas = document.getElementById('clockCameraCanvas');
+    const photo = document.getElementById('clockCameraPhoto');
+    const preview = document.getElementById('clockCameraPreview');
+    const closeCamera = document.getElementById('clockCameraClose');
+    const flipCamera = document.getElementById('clockCameraFlip');
+    const captureCamera = document.getElementById('clockCameraCapture');
+    const retakeCamera = document.getElementById('clockCameraRetake');
+    const useCamera = document.getElementById('clockCameraUse');
+    const latitudeInput = document.getElementById('clockInLatitude');
+    const longitudeInput = document.getElementById('clockInLongitude');
+    const accuracyInput = document.getElementById('clockInAccuracy');
+    const addressInput = document.getElementById('clockInAddress');
+    const selfieInput = document.getElementById('clockInSelfie');
+    let cameraStream = null;
+    let cameraFacingMode = 'user';
+    let capturedSelfie = '';
+    let canSubmitClockIn = false;
+
+    const setClockStatus = (message, type = 'info') => {
+        if (!requirementStatus) {
+            return;
+        }
+
+        const icon = type === 'success' ? 'bx-check-circle' : (type === 'error' ? 'bx-error-circle' : 'bx-info-circle');
+        const className = type === 'error' ? 'clock-status-line is-error' : 'clock-status-line';
+        requirementStatus.innerHTML = `<div class="${className}"><i class="bx ${icon}"></i><span>${message}</span></div>`;
+    };
+
+    const distanceInMeters = (lat1, lng1, lat2, lng2) => {
+        const earthRadius = 6371000;
+        const toRad = value => value * Math.PI / 180;
+        const dLat = toRad(lat2 - lat1);
+        const dLng = toRad(lng2 - lng1);
+        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+            + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2))
+            * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+        return earthRadius * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+    };
+
+    const stopCamera = () => {
+        if (cameraStream) {
+            cameraStream.getTracks().forEach(track => track.stop());
+            cameraStream = null;
+        }
+    };
+
+    const startCamera = async () => {
+        stopCamera();
+        capturedSelfie = '';
+        preview?.classList.remove('has-photo');
+
+        cameraStream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: cameraFacingMode, width: { ideal: 1280 }, height: { ideal: 960 } },
+            audio: false
+        });
+
+        if (video) {
+            video.srcObject = cameraStream;
+        }
+    };
+
+    const openCamera = async () => {
+        if (!modal) {
+            return;
+        }
+
+        modal.classList.add('is-open');
+        modal.setAttribute('aria-hidden', 'false');
+        await startCamera();
+    };
+
+    const closeCameraModal = () => {
+        stopCamera();
+        modal?.classList.remove('is-open');
+        modal?.setAttribute('aria-hidden', 'true');
+    };
+
+    const requestLocation = () => new Promise((resolve, reject) => {
+        if (!navigator.geolocation) {
+            reject(new Error('Location is not supported in this browser.'));
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+            enableHighAccuracy: true,
+            timeout: 15000,
+            maximumAge: 0
+        });
+    });
+
+    const compactAddress = address => {
+        if (!address || typeof address !== 'object') {
+            return '';
+        }
+
+        const parts = [
+            address.road,
+            address.neighbourhood || address.suburb || address.quarter,
+            address.city || address.town || address.village || address.municipality,
+            address.county || address.state_district,
+            address.state,
+            address.postcode
+        ];
+
+        return [...new Set(parts.filter(Boolean))]
+            .join(', ')
+            .slice(0, 180);
+    };
+
+    const reverseGeocodeLocation = async (lat, lng) => {
+        const url = new URL('https://nominatim.openstreetmap.org/reverse');
+        url.searchParams.set('format', 'jsonv2');
+        url.searchParams.set('lat', lat);
+        url.searchParams.set('lon', lng);
+        url.searchParams.set('zoom', '18');
+        url.searchParams.set('addressdetails', '1');
+
+        const response = await fetch(url.toString(), {
+            headers: {
+                'Accept': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Location name lookup failed.');
+        }
+
+        const data = await response.json();
+        return compactAddress(data.address) || (data.display_name || '').slice(0, 180);
+    };
+
+    if (clockInForm) {
+        clockInForm.addEventListener('submit', async event => {
+            if (canSubmitClockIn) {
+                return;
+            }
+
+            event.preventDefault();
+
+            try {
+                clockInButton.disabled = true;
+                setClockStatus('Requesting current location permission...', 'info');
+                const position = await requestLocation();
+                const currentLat = position.coords.latitude;
+                const currentLng = position.coords.longitude;
+                const distance = distanceInMeters(officeLocation.lat, officeLocation.lng, currentLat, currentLng);
+                const coordinateLabel = `${currentLat.toFixed(8)}, ${currentLng.toFixed(8)} (${distance.toFixed(1)}m from office)`;
+
+                latitudeInput.value = currentLat.toFixed(8);
+                longitudeInput.value = currentLng.toFixed(8);
+                accuracyInput.value = Math.round(position.coords.accuracy || 0);
+
+                setClockStatus('Finding exact location name...', 'info');
+                try {
+                    const placeName = await reverseGeocodeLocation(currentLat, currentLng);
+                    addressInput.value = placeName
+                        ? `${placeName} | ${coordinateLabel}`
+                        : `Current location: ${coordinateLabel}`;
+                    setClockStatus(`${placeName || 'Location captured'} detected. Opening camera...`, 'success');
+                } catch (lookupError) {
+                    addressInput.value = `Current location: ${coordinateLabel}`;
+                    setClockStatus(`Location captured. Opening camera...`, 'success');
+                }
+
+                await openCamera();
+            } catch (error) {
+                setClockStatus(error.message || 'Please allow current location and camera permission to clock in.', 'error');
+            } finally {
+                clockInButton.disabled = false;
+            }
+        });
+    }
+
+    closeCamera?.addEventListener('click', closeCameraModal);
+
+    flipCamera?.addEventListener('click', async () => {
+        cameraFacingMode = cameraFacingMode === 'user' ? 'environment' : 'user';
+        try {
+            await startCamera();
+        } catch (error) {
+            setClockStatus('Camera flip failed. Please continue with available camera.', 'error');
+        }
+    });
+
+    captureCamera?.addEventListener('click', () => {
+        if (!video || !canvas || !photo) {
+            return;
+        }
+
+        const width = video.videoWidth || 960;
+        const height = video.videoHeight || 720;
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext('2d').drawImage(video, 0, 0, width, height);
+        capturedSelfie = canvas.toDataURL('image/jpeg', 0.88);
+        photo.src = capturedSelfie;
+        preview?.classList.add('has-photo');
+    });
+
+    retakeCamera?.addEventListener('click', () => {
+        capturedSelfie = '';
+        if (photo) {
+            photo.removeAttribute('src');
+        }
+        preview?.classList.remove('has-photo');
+    });
+
+    useCamera?.addEventListener('click', () => {
+        if (!capturedSelfie) {
+            setClockStatus('Please capture your photo before using it.', 'error');
+            return;
+        }
+
+        selfieInput.value = capturedSelfie;
+        canSubmitClockIn = true;
+        setClockStatus('Photo captured. Completing clock in...', 'success');
+        closeCameraModal();
+        clockInForm.submit();
+    });
+
+    const istClock = document.getElementById('employeeIstClock');
+    const workTimer = document.getElementById('employeeWorkTimer');
+    const hrClockTime = document.getElementById('hrClockTime');
+    const hrClockDate = document.getElementById('hrClockDate');
+    const clockCard = document.querySelector('.role-clock-card');
+    const serverTimestamp = clockCard && clockCard.dataset.serverTime ? parseInt(clockCard.dataset.serverTime, 10) : null;
+    const clientTimestamp = Date.now();
+    const serverOffset = serverTimestamp ? (serverTimestamp - clientTimestamp) : 0;
+
+    const formatIstTime = (date, includeSeconds = true) => {
+        try {
+            return new Intl.DateTimeFormat('en-US', {
+                timeZone: 'Asia/Kolkata',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: includeSeconds ? '2-digit' : undefined,
+                hour12: true
+            }).format(date);
+        } catch (e) {
+            let h = date.getHours();
+            const m = String(date.getMinutes()).padStart(2, '0');
+            const s = String(date.getSeconds()).padStart(2, '0');
+            const ampm = h >= 12 ? 'PM' : 'AM';
+            h = h % 12 || 12;
+            const hStr = String(h).padStart(2, '0');
+            return includeSeconds ? `${hStr}:${m}:${s} ${ampm}` : `${hStr}:${m} ${ampm}`;
+        }
+    };
+
+    const formatIstDate = (date) => {
+        try {
+            const parts = new Intl.DateTimeFormat('en-US', {
+                timeZone: 'Asia/Kolkata',
+                weekday: 'long',
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric'
+            }).formatToParts(date);
+
+            let weekday = '', day = '', month = '', year = '';
+            for (const p of parts) {
+                if (p.type === 'weekday') weekday = p.value;
+                else if (p.type === 'day') day = p.value;
+                else if (p.type === 'month') month = p.value;
+                else if (p.type === 'year') year = p.value;
+            }
+            return `${weekday}, ${day} ${month} ${year}`;
+        } catch (e) {
+            return date.toLocaleDateString();
+        }
+    };
+
+    const updateClockWidgets = () => {
+        const now = new Date(Date.now() + serverOffset);
+
+        if (hrClockTime) {
+            hrClockTime.textContent = formatIstTime(now, true);
+        }
+
+        if (hrClockDate) {
+            hrClockDate.textContent = formatIstDate(now);
+        }
+
+        if (istClock) {
+            istClock.textContent = formatIstTime(now, true);
+        }
+
+        document.querySelectorAll('[data-live-clock="time"]').forEach(el => {
+            if (el !== hrClockTime) el.textContent = formatIstTime(now, true);
+        });
+
+        document.querySelectorAll('[data-live-clock="date"]').forEach(el => {
+            if (el !== hrClockDate) el.textContent = formatIstDate(now);
+        });
+
+        if (workTimer && workTimer.dataset.clockIn) {
+            if (workTimer.dataset.fixedDuration) {
+                workTimer.textContent = workTimer.dataset.fixedDuration;
+                return;
+            }
+
+            const started = new Date(workTimer.dataset.clockIn);
+            const ended = workTimer.dataset.clockOut ? new Date(workTimer.dataset.clockOut) : now;
+            if (workTimer.dataset.clockOut && ended < started) {
+                ended.setDate(ended.getDate() + 1);
+            }
+            const diffSeconds = Math.max(0, Math.floor((ended - started) / 1000));
+            const hours = String(Math.floor(diffSeconds / 3600)).padStart(2, '0');
+            const minutes = String(Math.floor((diffSeconds % 3600) / 60)).padStart(2, '0');
+            const seconds = String(diffSeconds % 60).padStart(2, '0');
+            workTimer.textContent = `${hours}:${minutes}:${seconds}`;
+        }
+    };
+
+    updateClockWidgets();
+    setInterval(updateClockWidgets, 1000);
+
+    const loadedDateKey = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Kolkata',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+    }).format(new Date(Date.now() + serverOffset));
+
+    setInterval(() => {
+        const currentDateKey = new Intl.DateTimeFormat('en-CA', {
+            timeZone: 'Asia/Kolkata',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        }).format(new Date(Date.now() + serverOffset));
+
+        if (currentDateKey !== loadedDateKey) {
+            window.location.reload();
+        }
+    }, 60000);
+})();
 </script>
 @endsection

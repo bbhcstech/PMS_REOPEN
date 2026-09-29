@@ -218,25 +218,6 @@
   </div>
 </div>
 
-{{-- Modal: kept here so clicks can open it --}}
-<div class="modal fade attendance-details-modal" id="attendanceDetailsModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
-    <div class="modal-content attendance-details-modal-content">
-      <div class="modal-header bg-primary text-white">
-        <h5 class="modal-title">Attendance Details</h5>
-        <button type="button" class="btn-close" data-attendance-modal-close aria-label="Close"></button>
-      </div>
-      <div id="attendanceDetailsBody" class="modal-body attendance-details-modal-body">
-        <div class="text-center py-4">
-          <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-attendance-modal-close>Close</button>
-      </div>
-    </div>
-  </div>
-</div>
 
 {{-- small styles --}}
 <style>
@@ -589,17 +570,52 @@
 $(document).ready(function () {
     function getAttendanceModal() {
         var modalEl = document.getElementById('attendanceDetailsModal');
-        if (!modalEl) return null;
-
-        if (modalEl.parentElement !== document.body) {
+        if (!modalEl) {
+            modalEl = document.createElement('div');
+            modalEl.className = 'modal fade attendance-details-modal';
+            modalEl.id = 'attendanceDetailsModal';
+            modalEl.tabIndex = -1;
+            modalEl.setAttribute('aria-hidden', 'true');
+            modalEl.innerHTML = '<div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">' +
+                '<div class="modal-content attendance-details-modal-content">' +
+                '<div class="modal-header bg-primary text-white">' +
+                '<h5 class="modal-title">Attendance Details</h5>' +
+                '<button type="button" class="btn-close" data-attendance-modal-close aria-label="Close"></button>' +
+                '</div>' +
+                '<div id="attendanceDetailsBody" class="modal-body attendance-details-modal-body">' +
+                '<div class="text-center py-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>' +
+                '</div>' +
+                '<div class="modal-footer">' +
+                '<button type="button" class="btn btn-secondary" data-attendance-modal-close>Close</button>' +
+                '</div></div></div>';
+            document.body.appendChild(modalEl);
+        } else if (modalEl.parentElement !== document.body) {
             document.body.appendChild(modalEl);
         }
 
-        return bootstrap.Modal.getOrCreateInstance(modalEl, {
-            backdrop: true,
-            keyboard: true,
-            focus: true
-        });
+        if (window.bootstrap && bootstrap.Modal) {
+            if (typeof bootstrap.Modal.getOrCreateInstance === 'function') {
+                return bootstrap.Modal.getOrCreateInstance(modalEl, {
+                    backdrop: true,
+                    keyboard: true,
+                    focus: true
+                });
+            }
+            return new bootstrap.Modal(modalEl, {
+                backdrop: true,
+                keyboard: true,
+                focus: true
+            });
+        }
+
+        if (window.jQuery && typeof $(modalEl).modal === 'function') {
+            return {
+                show: function() { $(modalEl).modal('show'); },
+                hide: function() { $(modalEl).modal('hide'); }
+            };
+        }
+
+        return null;
     }
 
     function showAttendanceLoading(message) {
@@ -632,9 +648,13 @@ $(document).ready(function () {
             return;
         }
 
-        var modal = bootstrap.Modal.getInstance(modalEl);
-        if (modal) {
-            modal.hide();
+        if (window.bootstrap && bootstrap.Modal && typeof bootstrap.Modal.getInstance === 'function') {
+            var modal = bootstrap.Modal.getInstance(modalEl);
+            if (modal) {
+                modal.hide();
+            }
+        } else if (window.jQuery && typeof $(modalEl).modal === 'function') {
+            $(modalEl).modal('hide');
         }
 
         modalEl.classList.remove('show');
@@ -659,17 +679,28 @@ $(document).ready(function () {
     }
 
     function parseAttendancePayload(encoded) {
-        var binary = atob(encoded);
-        var bytes = new Uint8Array(binary.length);
-        for (var i = 0; i < binary.length; i++) {
-            bytes[i] = binary.charCodeAt(i);
+        if (typeof encoded === 'object' && encoded !== null) {
+            return encoded;
         }
-
-        if (window.TextDecoder) {
-            return JSON.parse(new TextDecoder('utf-8').decode(bytes));
+        if (!encoded) {
+            return {};
         }
+        try {
+            var binary = atob(encoded);
+            var bytes = new Uint8Array(binary.length);
+            for (var i = 0; i < binary.length; i++) {
+                bytes[i] = binary.charCodeAt(i);
+            }
 
-        return JSON.parse(decodeURIComponent(escape(binary)));
+            if (window.TextDecoder) {
+                return JSON.parse(new TextDecoder('utf-8').decode(bytes));
+            }
+
+            return JSON.parse(decodeURIComponent(escape(binary)));
+        } catch (e) {
+            console.error('Error parsing attendance payload:', e);
+            return {};
+        }
     }
 
     function renderEmployeeMonthDetails(payload, editMode) {
@@ -726,13 +757,17 @@ $(document).ready(function () {
     }
 
     $(document).off('click.attendanceMonthView', '.js-month-view')
-        .on('click.attendanceMonthView', '.js-month-view', function() {
-        renderEmployeeMonthDetails(parseAttendancePayload(this.dataset.payload), false);
+        .on('click.attendanceMonthView', '.js-month-view', function(e) {
+        if (e) e.preventDefault();
+        var rawPayload = this.dataset?.payload || this.getAttribute('data-payload') || $(this).data('payload') || $(this).attr('data-payload');
+        renderEmployeeMonthDetails(parseAttendancePayload(rawPayload), false);
     });
 
     $(document).off('click.attendanceMonthEdit', '.js-month-edit')
-        .on('click.attendanceMonthEdit', '.js-month-edit', function() {
-        renderEmployeeMonthDetails(parseAttendancePayload(this.dataset.payload), true);
+        .on('click.attendanceMonthEdit', '.js-month-edit', function(e) {
+        if (e) e.preventDefault();
+        var rawPayload = this.dataset?.payload || this.getAttribute('data-payload') || $(this).data('payload') || $(this).attr('data-payload');
+        renderEmployeeMonthDetails(parseAttendancePayload(rawPayload), true);
     });
 
     $(document).off('click.attendanceMonthArchive', '.js-month-archive')

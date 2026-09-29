@@ -474,6 +474,9 @@
         font-size: 0.8rem;
         font-weight: 700;
         border: 1px solid rgba(15, 116, 76, 0.18);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
     }
 
     /* Search */
@@ -798,17 +801,80 @@
     html[data-bs-theme="dark"] .deleted-badge,
     [data-theme="dark"] .deleted-badge,
     [data-pms-theme="dark"] .deleted-badge,
-    body.dark-mode .deleted-badge,
-    html[data-pms-theme="dark"] .archive-selected-badge,
-    html[data-theme="dark"] .archive-selected-badge,
-    html[data-bs-theme="dark"] .archive-selected-badge,
-    [data-theme="dark"] .archive-selected-badge,
-    [data-pms-theme="dark"] .archive-selected-badge,
-    body.dark-mode .archive-selected-badge {
+    body.dark-mode .deleted-badge {
         background: rgba(122, 240, 181, 0.14) !important;
         color: #dfffee !important;
         -webkit-text-fill-color: #dfffee !important;
         border: 1px solid rgba(122, 240, 181, 0.24) !important;
+    }
+
+    /* Selected Records Counter in Dark Mode */
+    html[data-pms-theme="dark"] #archive-selected-count,
+    html[data-bs-theme="dark"] #archive-selected-count,
+    html[data-theme="dark"] #archive-selected-count,
+    html.dark #archive-selected-count,
+    body[data-pms-theme="dark"] #archive-selected-count,
+    body[data-bs-theme="dark"] #archive-selected-count,
+    body[data-theme="dark"] #archive-selected-count,
+    body.dark #archive-selected-count,
+    body.dark-mode #archive-selected-count,
+    [data-pms-theme="dark"] #archive-selected-count,
+    [data-bs-theme="dark"] #archive-selected-count,
+    [data-theme="dark"] #archive-selected-count,
+    .dark #archive-selected-count,
+    html[data-pms-theme="dark"] .archive-selected-badge,
+    html[data-bs-theme="dark"] .archive-selected-badge,
+    html[data-theme="dark"] .archive-selected-badge,
+    html.dark .archive-selected-badge,
+    body[data-pms-theme="dark"] .archive-selected-badge,
+    body[data-bs-theme="dark"] .archive-selected-badge,
+    body[data-theme="dark"] .archive-selected-badge,
+    body.dark .archive-selected-badge,
+    body.dark-mode .archive-selected-badge,
+    [data-pms-theme="dark"] .archive-selected-badge,
+    [data-bs-theme="dark"] .archive-selected-badge,
+    [data-theme="dark"] .archive-selected-badge,
+    .dark .archive-selected-badge,
+    html[data-pms-theme="dark"] .archive-bulk-actions .archive-selected-badge,
+    html[data-bs-theme="dark"] .archive-bulk-actions .archive-selected-badge,
+    html[data-theme="dark"] .archive-bulk-actions .archive-selected-badge,
+    html.dark .archive-bulk-actions .archive-selected-badge,
+    body[data-pms-theme="dark"] .archive-bulk-actions .archive-selected-badge,
+    body[data-bs-theme="dark"] .archive-bulk-actions .archive-selected-badge,
+    body[data-theme="dark"] .archive-bulk-actions .archive-selected-badge,
+    body.dark .archive-bulk-actions .archive-selected-badge,
+    body.dark-mode .archive-bulk-actions .archive-selected-badge,
+    [data-pms-theme="dark"] .archive-bulk-actions .archive-selected-badge,
+    [data-bs-theme="dark"] .archive-bulk-actions .archive-selected-badge,
+    [data-theme="dark"] .archive-bulk-actions .archive-selected-badge,
+    .dark .archive-bulk-actions .archive-selected-badge {
+        background: #14281e !important;
+        background-color: #14281e !important;
+        border: 1px solid rgba(122, 240, 181, 0.45) !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        font-weight: 800 !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35) !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root:not([data-pms-theme="light"]):not([data-theme="light"]):not([data-bs-theme="light"]) #archive-selected-count,
+        :root:not([data-pms-theme="light"]):not([data-theme="light"]):not([data-bs-theme="light"]) .archive-selected-badge,
+        :root:not([data-pms-theme="light"]):not([data-theme="light"]):not([data-bs-theme="light"]) .archive-bulk-actions .archive-selected-badge {
+            background: #14281e !important;
+            background-color: #14281e !important;
+            border: 1px solid rgba(122, 240, 181, 0.45) !important;
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
+            font-weight: 800 !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35) !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
     }
 
     html[data-pms-theme="dark"] .archive-status.status-active,

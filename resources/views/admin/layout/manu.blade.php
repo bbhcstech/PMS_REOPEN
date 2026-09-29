@@ -1564,9 +1564,14 @@
 
 
                 @if($canSeeModule('leaves'))
-                <li class="menu-item {{ request()->routeIs('leaves.*') ? 'active' : '' }}">
+                <li class="menu-item {{ (request()->routeIs('leaves.index') || request()->routeIs('leaves.show') || request()->routeIs('leaves.calendar') || request()->routeIs('leaves.archive') || request()->routeIs('leaves.apology-letters.*')) ? 'active' : '' }}">
                 <a href="{{ route('leaves.index') }}" class="menu-link" data-sidebar-key="leaves">
                     <div class="text-truncate" data-i18n="Without navbar">My Leaves</div>
+                </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('leaves.create') ? 'active' : '' }}">
+                <a href="{{ route('leaves.create') }}" class="menu-link" data-sidebar-key="leaves-apply">
+                    <div class="text-truncate">Apply Leave</div>
                 </a>
                 </li>
                 @endif
