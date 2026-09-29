@@ -463,12 +463,46 @@
         .input-group-premium .country-code-select {
             border: none;
             background: transparent;
-            padding-left: 1rem;
             font-weight: 600;
             color: var(--primary);
-            max-width: 160px;
-            min-width: 145px;
-            border-radius: 14px 0 0 14px;
+        }
+
+        .input-group-premium .select2-container {
+            width: 115px !important;
+            min-width: 115px !important;
+            max-width: 115px !important;
+            flex: 0 0 115px !important;
+        }
+
+        .input-group-premium .select2-container--bootstrap-5 .select2-selection {
+            border: none !important;
+            background: transparent !important;
+            box-shadow: none !important;
+            border-radius: 14px 0 0 14px !important;
+            min-height: 48px !important;
+            height: 100% !important;
+            padding-left: 0.75rem !important;
+            padding-right: 1.5rem !important;
+            display: flex !important;
+            align-items: center !important;
+        }
+
+        .input-group-premium .select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered {
+            padding: 0 !important;
+            margin: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+            color: var(--primary) !important;
+            font-weight: 600 !important;
+            overflow: visible !important;
+            line-height: normal !important;
+            white-space: nowrap !important;
+        }
+
+        .input-group-premium .select2-container--bootstrap-5 .select2-selection--single .select2-selection__arrow {
+            right: 8px !important;
+            top: 50% !important;
+            transform: translateY(-50%) !important;
         }
 
         .input-group-premium .mobile-input {
@@ -476,6 +510,7 @@
             background: transparent;
             border-left: 1.5px solid rgba(47, 107, 255, 0.2);
             border-radius: 0 14px 14px 0;
+            padding-left: 0.85rem;
         }
 
         .input-group-premium .mobile-input:focus {
@@ -761,6 +796,26 @@
         html[data-theme="dark"] .input-group-premium {
             background: #141B3D !important;
             border-color: rgba(238, 241, 251, 0.16) !important;
+        }
+
+        html[data-pms-theme="dark"] .input-group-premium .select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered,
+        html[data-bs-theme="dark"] .input-group-premium .select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered,
+        html[data-theme="dark"] .input-group-premium .select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered {
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
+        }
+
+        html[data-pms-theme="dark"] .input-group-premium .select2-container--bootstrap-5 .select2-selection--single .select2-selection__arrow b,
+        html[data-bs-theme="dark"] .input-group-premium .select2-container--bootstrap-5 .select2-selection--single .select2-selection__arrow b,
+        html[data-theme="dark"] .input-group-premium .select2-container--bootstrap-5 .select2-selection--single .select2-selection__arrow b {
+            border-color: #CBD5E1 transparent transparent transparent !important;
+        }
+
+        html[data-pms-theme="dark"] .input-group-premium .mobile-input,
+        html[data-bs-theme="dark"] .input-group-premium .mobile-input,
+        html[data-theme="dark"] .input-group-premium .mobile-input {
+            border-left-color: rgba(238, 241, 251, 0.16) !important;
+            color: #ffffff !important;
         }
 
         html[data-pms-theme="dark"] .form-check-label,
@@ -1172,10 +1227,10 @@
                         <div class="col-md-4">
                             <label class="form-label-premium">
                                 <span><i class="fas fa-lock"></i> Password</span>
-                                <span class="optional-badge">Optional</span>
+                                <span class="mandatory-badge">Required</span>
                             </label>
                             <div class="input-group-premium password-input-group">
-                                <input type="password" name="password" id="password" class="form-control-premium" autocomplete="off" minlength="8">
+                                <input type="password" name="password" id="password" class="form-control-premium @error('password') is-invalid @enderror" autocomplete="new-password" required minlength="8" placeholder="Enter password">
                                 <button type="button" class="btn btn-outline-secondary toggle-password" title="Show/Hide Password">
                                     <i class="fa fa-eye"></i>
                                 </button>
@@ -1183,7 +1238,8 @@
                                     <i class="fa fa-random"></i>
                                 </button>
                             </div>
-                            <small class="text-muted" style="font-size: 0.7rem;">Leave blank to auto-generate a password. Min 8 characters if setting manually.</small>
+                            <small class="text-muted" style="font-size: 0.72rem;">Min 8 chars: at least 1 uppercase, 1 lowercase, 1 number & 1 special character.</small>
+                            <div id="password-validation-msg" class="text-danger small mt-1 d-none" style="font-size: 0.75rem;"></div>
                             @error('password')
                                 <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
@@ -1326,7 +1382,7 @@
                                             $phoneFlag = $country->flag_url ?? 'https://flagcdn.com/w20/' . $phoneMeta['iso'] . '.png';
                                             $phoneLabel = $country->name . ' (' . $phoneMeta['dial_code'] . ')';
                                         @endphp
-                                        <option value="{{ $phoneMeta['dial_code'] }}" data-country="{{ $country->name }}" data-flag="{{ $phoneFlag }}" {{ $selectedMobileCode === $phoneMeta['dial_code'] && $selectedCountry === $country->name ? 'selected' : '' }}>
+                                        <option value="{{ $phoneMeta['dial_code'] }}" data-country="{{ $country->name }}" data-flag="{{ $phoneFlag }}" data-min-digits="{{ $phoneMeta['min_digits'] }}" data-max-digits="{{ $phoneMeta['max_digits'] }}" {{ $selectedMobileCode === $phoneMeta['dial_code'] && $selectedCountry === $country->name ? 'selected' : '' }}>
                                             {{ $phoneLabel }}
                                         </option>
                                     @endforeach
@@ -1335,7 +1391,7 @@
                                        value="{{ $mobileValue }}" style="border: none;">
                                 <div id="mobile-error" class="invalid-feedback mobile-error d-none"></div>
                             </div>
-                            <small class="text-muted d-block mt-1" style="font-size: 0.7rem;">Select the country code and enter a 10-digit phone number.</small>
+                            <small id="mobile_help_text" class="text-muted d-block mt-1" style="font-size: 0.7rem;">Select the country code and enter a 10-digit phone number.</small>
                             <input type="hidden" name="mobile_with_code" id="mobile_with_code" value="{{ old('mobile_with_code') ?? ($ed->mobile ?? $employee?->mobile ?? '') }}">
                             @error('mobile_country_code')
                                 <div class="invalid-feedback d-block">{{ $message }}</div>
@@ -1871,14 +1927,62 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
+    function generateCompliantPassword(len = 12) {
+        const uppers = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+        const lowers = 'abcdefghijkmnopqrstuvwxyz';
+        const digits = '23456789';
+        const specials = '!@#$%^&*()-_=+';
+        const all = uppers + lowers + digits + specials;
+
+        let pwd = [
+            uppers[Math.floor(Math.random() * uppers.length)],
+            lowers[Math.floor(Math.random() * lowers.length)],
+            digits[Math.floor(Math.random() * digits.length)],
+            specials[Math.floor(Math.random() * specials.length)]
+        ];
+        for (let i = 4; i < len; i++) {
+            pwd.push(all[Math.floor(Math.random() * all.length)]);
+        }
+        return pwd.sort(() => Math.random() - 0.5).join('');
+    }
+
+    function checkPasswordComplexity(val) {
+        if (!val) return 'Password is required.';
+        if (val.length < 8) return 'Password must be at least 8 characters.';
+        if (!/[A-Z]/.test(val)) return 'Password must contain at least 1 uppercase letter.';
+        if (!/[a-z]/.test(val)) return 'Password must contain at least 1 lowercase letter.';
+        if (!/[0-9]/.test(val)) return 'Password must contain at least 1 number.';
+        if (!/[^A-Za-z0-9]/.test(val)) return 'Password must contain at least 1 special character.';
+        return '';
+    }
+
     document.querySelectorAll('.generate-password').forEach(btn => {
         btn.addEventListener('click', function () {
             const passwordField = $el('password');
             if (!passwordField) return;
-            const randomPassword = Math.random().toString(36).slice(-10) + '!A1';
-            passwordField.value = randomPassword;
+            passwordField.value = generateCompliantPassword(12);
+            passwordField.dispatchEvent(new Event('input'));
         });
     });
+
+    const pwdInput = $el('password');
+    if (pwdInput) {
+        pwdInput.addEventListener('input', function () {
+            const err = checkPasswordComplexity(this.value);
+            const msgEl = $el('password-validation-msg');
+            if (msgEl) {
+                if (err) {
+                    msgEl.textContent = err;
+                    msgEl.classList.remove('d-none');
+                    pwdInput.classList.add('is-invalid');
+                } else {
+                    msgEl.textContent = '';
+                    msgEl.classList.add('d-none');
+                    pwdInput.classList.remove('is-invalid');
+                }
+            }
+        });
+    }
 
     const desBtn = $el('openDesignationModalBtn');
     if (desBtn) desBtn.addEventListener('click', function () {
@@ -1929,6 +2033,23 @@ document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('employeeForm');
     if (form) {
         form.addEventListener('submit', function (e) {
+            const pwdField = $el('password');
+            if (pwdField) {
+                const pwdError = checkPasswordComplexity(pwdField.value);
+                if (pwdError) {
+                    e.preventDefault();
+                    pwdField.focus();
+                    pwdField.classList.add('is-invalid');
+                    const msgEl = $el('password-validation-msg');
+                    if (msgEl) {
+                        msgEl.textContent = pwdError;
+                        msgEl.classList.remove('d-none');
+                    }
+                    alert(pwdError);
+                    return false;
+                }
+            }
+
             const dobEl = $el('dob');
             if (dobEl && !dobEl.value) {
                 e.preventDefault();
@@ -1939,23 +2060,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const mobileEl = $el('mobile_only_digits');
             if (mobileEl) {
-                if (mobileEl.classList.contains('is-invalid')) {
+                if (mobileEl.classList.contains('is-invalid') || !validateMobileInput()) {
                     e.preventDefault();
                     mobileEl.focus();
                     alert(($el('mobile-error') && $el('mobile-error').textContent) || 'Please fix the mobile number before submitting.');
                     return false;
                 }
-
-                const m = mobileEl.value.trim();
-                if (!/^[1-9]\d{9}$/.test(m)) {
-                    e.preventDefault();
-                    mobileEl.focus();
-                    alert('Please enter a valid 10-digit mobile number (no leading 0).');
-                    return false;
-                }
                 const hidden = $el('mobile_with_code');
                 const countryCode = $('#mobile_country_code').val() || '+91';
-                if (hidden) hidden.value = countryCode + m;
+                if (hidden) hidden.value = countryCode + mobileEl.value.trim();
             }
 
             const exitDateEl = $el('exit_date');
@@ -2052,19 +2165,71 @@ $(document).ready(function() {
         loadSubDepartments($(this).val(), null);
     });
 
+    function getSelectedMobileDigitRules() {
+        const $opt = $('#mobile_country_code option:selected');
+        let minDigits = parseInt($opt.data('min-digits')) || 10;
+        let maxDigits = parseInt($opt.data('max-digits')) || 10;
+        return { minDigits, maxDigits };
+    }
+
+    function updateMobileValidationRules() {
+        const rules = getSelectedMobileDigitRules();
+        const minDigits = rules.minDigits;
+        const maxDigits = rules.maxDigits;
+        const $mobileInput = $('#mobile_only_digits');
+        $mobileInput.attr('maxlength', maxDigits);
+
+        let helpMsg = '';
+        if (minDigits === maxDigits) {
+            helpMsg = `Select the country code and enter a ${minDigits}-digit phone number.`;
+        } else {
+            helpMsg = `Select the country code and enter a ${minDigits} to ${maxDigits}-digit phone number.`;
+        }
+        $('#mobile_help_text').text(helpMsg);
+    }
+
+    function validateMobileInput() {
+        const $input = $('#mobile_only_digits');
+        const value = $input.val().trim();
+        const $error = $('#mobile-error');
+
+        $error.addClass('d-none').removeClass('d-block').text('');
+        $input.removeClass('is-invalid');
+
+        if (!value) return true;
+
+        const rules = getSelectedMobileDigitRules();
+        const minDigits = rules.minDigits;
+        const maxDigits = rules.maxDigits;
+        const len = value.length;
+        const isDigitsOnly = /^[1-9]\d*$/.test(value);
+
+        let msg = '';
+        if (!isDigitsOnly) {
+            msg = 'Please enter a valid mobile number (digits only, no leading 0).';
+        } else if (len < minDigits || len > maxDigits) {
+            if (minDigits === maxDigits) {
+                msg = `Please enter a valid ${minDigits}-digit mobile number.`;
+            } else {
+                msg = `Please enter a valid ${minDigits} to ${maxDigits}-digit mobile number.`;
+            }
+        }
+
+        if (msg) {
+            $input.addClass('is-invalid');
+            $error.text(msg).removeClass('d-none').addClass('d-block');
+            return false;
+        }
+
+        return true;
+    }
+
     let mobileCheckAjax = null;
     $('#mobile_only_digits').on('blur', function() {
+        if (!validateMobileInput()) return;
+
         const value = $(this).val().trim();
-        $('#mobile-error').addClass('d-none').text('');
-        $(this).removeClass('is-invalid');
-
         if (!value) return;
-
-        if (!/^[1-9]\d{9}$/.test(value)) {
-            $(this).addClass('is-invalid');
-            $('#mobile-error').text('Please enter a valid 10-digit mobile number').removeClass('d-none').addClass('d-block');
-            return;
-        }
 
         const selectedCountryCode = $('#mobile_country_code').val() || '+91';
         $('#mobile_with_code').val(selectedCountryCode + value);
@@ -2208,16 +2373,26 @@ $(document).ready(function() {
         return state.text;
     }
 
-    function formatMobileCode(state) {
+    function formatMobileCodeResult(state) {
         if (!state.id) return state.text;
         const flag = $(state.element).data("flag");
         const country = $(state.element).data("country");
         const code = state.id;
-        const label = country ? country + ' ' + code : state.text;
+        const label = country ? country + ' (' + code + ')' : state.text;
         if (flag) {
-            return $('<span><img src="' + flag + '" width="20" class="me-2"/> ' + label + '</span>');
+            return $('<span><img src="' + flag + '" width="20" height="14" style="object-fit: cover; border-radius: 2px; vertical-align: middle; margin-right: 8px;"/> <span style="vertical-align: middle;">' + label + '</span></span>');
         }
         return label;
+    }
+
+    function formatMobileCodeSelection(state) {
+        if (!state.id) return state.text;
+        const flag = $(state.element).data("flag");
+        const code = state.id;
+        if (flag) {
+            return $('<span><img src="' + flag + '" width="20" height="14" style="object-fit: cover; border-radius: 2px; vertical-align: middle; margin-right: 6px;"/> <span class="country-dial-code" style="font-weight: 600; vertical-align: middle; font-size: 0.95rem;">' + code + '</span></span>');
+        }
+        return $('<span><span class="country-dial-code" style="font-weight: 600; vertical-align: middle; font-size: 0.95rem;">' + code + '</span></span>');
     }
 
     function syncMobileHidden() {
@@ -2249,13 +2424,19 @@ $(document).ready(function() {
     if ($('#mobile_country_code').length) {
         $('#mobile_country_code').select2({
             theme: "bootstrap-5",
-            templateResult: formatMobileCode,
-            templateSelection: formatMobileCode,
-            width: '145px'
+            templateResult: formatMobileCodeResult,
+            templateSelection: formatMobileCodeSelection,
+            width: '115px'
         }).on('change', function () {
+            updateMobileValidationRules();
             syncMobileHidden();
-            $('#mobile_only_digits').trigger('blur');
+            if ($('#mobile_only_digits').val().trim() !== '') {
+                validateMobileInput();
+                $('#mobile_only_digits').trigger('blur');
+            }
         });
+
+        updateMobileValidationRules();
     }
 
     if ($('#language').length) {

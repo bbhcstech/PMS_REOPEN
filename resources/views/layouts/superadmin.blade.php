@@ -2288,6 +2288,8 @@
     </button>
   </nav>
 
+  @include('admin.layout.toasts')
+
   @stack('scripts')
 </body>
 </html>

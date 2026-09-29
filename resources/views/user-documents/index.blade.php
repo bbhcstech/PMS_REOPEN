@@ -94,7 +94,8 @@
     .doc-tab-btn {
         border: 1px solid transparent !important;
         background: transparent !important;
-        color: #475569 !important;
+        color: #0F172A !important;
+        -webkit-text-fill-color: #0F172A !important;
         font-weight: 800 !important;
         font-size: 0.92rem !important;
         border-radius: 40px !important;
@@ -105,11 +106,22 @@
         gap: 8px !important;
         cursor: pointer !important;
     }
+    .doc-tab-btn i,
+    .doc-tab-btn span {
+        color: #0F172A !important;
+        -webkit-text-fill-color: #0F172A !important;
+    }
 
     .doc-tab-btn.active {
         background: linear-gradient(135deg, #4F83FF 0%, #2F6BFF 100%) !important;
         color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
         box-shadow: 0 8px 22px -4px rgba(47, 107, 255, 0.45) !important;
+    }
+    .doc-tab-btn.active i,
+    .doc-tab-btn.active span {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
     }
 
     /* Helper classes for theme consistency */
@@ -446,14 +458,6 @@
                                             <a href="{{ route('my-documents.download', ['type' => $userRole, 'id' => $doc->id]) }}" class="btn btn-sm btn-outline-success w-100 rounded-pill py-2 font-weight-bold">
                                                 <i class="fas fa-download me-1"></i> Download
                                             </a>
-
-                                            <form method="POST" action="{{ route('my-documents.destroy', ['type' => $userRole, 'id' => $doc->id]) }}" onsubmit="return confirm('Delete this uploaded document?');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle p-2" title="Delete Upload">
-                                                    <i class="fas fa-trash-alt"></i>
-                                                </button>
-                                            </form>
                                         </div>
                                     </div>
                                 </div>

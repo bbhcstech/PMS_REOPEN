@@ -321,6 +321,38 @@
         visibility: visible !important;
     }
 
+    .stat-icon.sla {
+        background: linear-gradient(145deg, #dcfce7, #bbf7d0) !important;
+        border: 1px solid rgba(74, 222, 128, 0.25) !important;
+    }
+
+    .stat-icon.sla i,
+    .stat-icon.sla svg,
+    .stat-icon.sla [class*="fa"],
+    .recruitment-settings-page .stat-card .stat-icon.sla i {
+        background: transparent !important;
+        color: #15803d !important;
+        -webkit-text-fill-color: #15803d !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    .stat-icon.probation {
+        background: linear-gradient(145deg, #f3e8ff, #e9d5ff) !important;
+        border: 1px solid rgba(192, 132, 252, 0.25) !important;
+    }
+
+    .stat-icon.probation i,
+    .stat-icon.probation svg,
+    .stat-icon.probation [class*="fa"],
+    .recruitment-settings-page .stat-card .stat-icon.probation i {
+        background: transparent !important;
+        color: #7e22ce !important;
+        -webkit-text-fill-color: #7e22ce !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
     .stat-info h6 {
         font-size: 0.72rem;
         color: #64748b;
@@ -1017,6 +1049,8 @@
                 $stageCount = count(array_filter($stages));
                 $maxSize = $settings['max_resume_size_mb'] ?? '5';
                 $autoReply = ($settings['auto_reply'] ?? '1') == '1';
+                $slaDays = $settings['hiring_sla_days'] ?? '30';
+                $probationMonths = $settings['probation_period_months'] ?? '3';
             @endphp
             <div class="stats-grid">
                 <div class="stat-card">
@@ -1035,6 +1069,24 @@
                     <div class="stat-info">
                         <h6>Pipeline Stages</h6>
                         <h3>{{ $stageCount }} Workflow Stages</h3>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon sla">
+                        <i class="fas fa-business-time"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h6>Hiring SLA Target</h6>
+                        <h3>{{ $slaDays }} Days SLA</h3>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon probation">
+                        <i class="fas fa-user-clock"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h6>Probation Period</h6>
+                        <h3>{{ $probationMonths }} Months</h3>
                     </div>
                 </div>
                 <div class="stat-card">
@@ -1148,6 +1200,39 @@
                                         </label>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+
+                        <!-- Section 3: SLA & Probation Governance -->
+                        <div class="section-badge mt-5">
+                            <i class="fas fa-business-time"></i> Recruitment SLA & Probation Governance
+                        </div>
+
+                        <div class="row g-4">
+                            <!-- Hiring SLA Target (Days) -->
+                            <div class="col-md-6">
+                                <label class="form-label-custom">Hiring SLA Target (Days) <span class="req-asterisk">*</span></label>
+                                <div class="input-group input-group-custom">
+                                    <span class="input-group-text"><i class="fas fa-business-time"></i></span>
+                                    <input type="number" name="hiring_sla_days" class="form-control" min="1" max="365"
+                                        value="{{ old('hiring_sla_days', $settings['hiring_sla_days'] ?? '30') }}"
+                                        {{ $isSettingsReadOnly ? 'readonly' : 'required' }}>
+                                    <span class="input-group-text fw-bold text-dark bg-light">Days</span>
+                                </div>
+                                <small class="text-muted mt-1 d-block"><i class="fas fa-info-circle me-1" style="color: #2F6BFF;"></i>Target timeline (in days) from requirement creation to job offer issue.</small>
+                            </div>
+
+                            <!-- Probation Period (Months) -->
+                            <div class="col-md-6">
+                                <label class="form-label-custom">Standard Probation Period (Months) <span class="req-asterisk">*</span></label>
+                                <div class="input-group input-group-custom">
+                                    <span class="input-group-text"><i class="fas fa-user-clock"></i></span>
+                                    <input type="number" name="probation_period_months" class="form-control" min="0" max="24"
+                                        value="{{ old('probation_period_months', $settings['probation_period_months'] ?? '3') }}"
+                                        {{ $isSettingsReadOnly ? 'readonly' : 'required' }}>
+                                    <span class="input-group-text fw-bold text-dark bg-light">Months</span>
+                                </div>
+                                <small class="text-muted mt-1 d-block"><i class="fas fa-info-circle me-1" style="color: #2F6BFF;"></i>Standard evaluation period assigned to candidates post placement.</small>
                             </div>
                         </div>
 

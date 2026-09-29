@@ -5,7 +5,7 @@
 
 <html
   lang="en"
-  class="layout-menu-fixed layout-compact"
+  class="layout-menu-fixed layout-navbar-fixed layout-compact"
   data-assets-path="admin/assets/"
   data-template="vertical-menu-template-free">
   <head>

@@ -304,16 +304,73 @@
     color: #EEF1FB !important;
   }
 
-  /* Mark All Read Button */
+  /* Mark All Read & Clear All Buttons (Light & Dark Mode) */
+  .notif-mark-all-btn {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #0f172a !important;
+    -webkit-text-fill-color: #0f172a !important;
+  }
+  .notif-mark-all-btn i {
+    color: #2F6BFF !important;
+    -webkit-text-fill-color: #2F6BFF !important;
+  }
+  .notif-mark-all-btn:hover {
+    background: #f8fafc !important;
+    border-color: #2F6BFF !important;
+    color: #2F6BFF !important;
+    -webkit-text-fill-color: #2F6BFF !important;
+  }
+
+  .notif-clear-all-btn {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #0f172a !important;
+    -webkit-text-fill-color: #0f172a !important;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08) !important;
+  }
+  .notif-clear-all-btn i {
+    color: #ef4444 !important;
+    -webkit-text-fill-color: #ef4444 !important;
+  }
+  .notif-clear-all-btn:hover {
+    background: #f8fafc !important;
+    border-color: #ef4444 !important;
+    color: #ef4444 !important;
+    -webkit-text-fill-color: #ef4444 !important;
+  }
+
   html[data-pms-theme="dark"] .notif-mark-all-btn {
     background: #141B3D !important;
     border: 1px solid rgba(238, 241, 251, 0.2) !important;
     color: #EEF1FB !important;
+    -webkit-text-fill-color: #EEF1FB !important;
+  }
+  html[data-pms-theme="dark"] .notif-mark-all-btn i {
+    color: #60A5FA !important;
+    -webkit-text-fill-color: #60A5FA !important;
   }
   html[data-pms-theme="dark"] .notif-mark-all-btn:hover {
     background: #1A2247 !important;
     border-color: #2F6BFF !important;
     color: #60A5FA !important;
+    -webkit-text-fill-color: #60A5FA !important;
+  }
+  html[data-pms-theme="dark"] .notif-clear-all-btn {
+    background: #141B3D !important;
+    border: 1px solid rgba(238, 241, 251, 0.2) !important;
+    color: #EEF1FB !important;
+    -webkit-text-fill-color: #EEF1FB !important;
+  }
+  html[data-pms-theme="dark"] .notif-clear-all-btn i {
+    color: #fca5a5 !important;
+    -webkit-text-fill-color: #fca5a5 !important;
+  }
+  html[data-pms-theme="dark"] .notif-clear-all-btn:hover {
+    background: #1A2247 !important;
+    border-color: #ef4444 !important;
+    color: #fca5a5 !important;
+    -webkit-text-fill-color: #fca5a5 !important;
   }
 </style>
 
@@ -348,8 +405,8 @@
         @if(Route::has('notifications.clearAll'))
           <form method="POST" action="{{ route('notifications.clearAll') }}" onsubmit="return confirm('Are you sure you want to permanently clear all notifications?')">
             @csrf
-            <button type="submit" class="btn btn-outline-light text-white fw-bold px-3.5 py-2.5 shadow-sm d-flex align-items-center gap-1.5" style="border-radius: 10px; font-size: 13px; border-color: rgba(255,255,255,0.25);">
-              <i class="bx bx-trash fs-5 text-danger"></i> Clear All
+            <button type="submit" class="btn notif-clear-all-btn fw-bold px-3.5 py-2.5 shadow-sm d-flex align-items-center gap-1.5" style="border-radius: 10px; font-size: 13px;">
+              <i class="bx bx-trash fs-5"></i> Clear All
             </button>
           </form>
         @endif

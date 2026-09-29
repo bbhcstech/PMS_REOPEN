@@ -473,7 +473,6 @@
                 <button id="btn-bulk-delete" class="btn btn-bulk-delete !justify-center" disabled>
                     <i class="fas fa-box-archive me-2"></i>Archive Inactive
                 </button>
-                <span id="bulk-selected-count" class="selected-badge !inline-flex !justify-center" style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important;">0 selected</span>
             </div>
         </div>
 

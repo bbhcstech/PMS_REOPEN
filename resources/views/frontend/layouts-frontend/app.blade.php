@@ -128,6 +128,8 @@
     <script src="{{ asset('frontend/js/leads.js') }}?v={{ file_exists(public_path('frontend/js/leads.js')) ? filemtime(public_path('frontend/js/leads.js')) : time() }}"></script>
     <script src="{{ asset('frontend/js/main.js') }}?v={{ file_exists(public_path('frontend/js/main.js')) ? filemtime(public_path('frontend/js/main.js')) : time() }}" defer></script>
 
+    @include('admin.layout.toasts')
+
     @stack('scripts')
 </body>
 </html>
