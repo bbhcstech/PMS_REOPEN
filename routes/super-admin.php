@@ -26,6 +26,10 @@ Route::prefix('super-admin')->name('super-admin.')->group(function () {
     Route::middleware(['auth:super_admin,web'])->group(function () {
         Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
+        // Super Admin Profile Management
+        Route::get('/profile', [\App\Http\Controllers\SuperAdminController::class, 'profile'])->name('profile');
+        Route::post('/profile', [\App\Http\Controllers\SuperAdminController::class, 'updateProfile'])->name('profile.update');
+
         // Company management & impersonation
         Route::get('/', [CompanyController::class, 'index']);
         Route::get('/companies', [CompanyController::class, 'index'])->name('companies.index');

@@ -1518,4 +1518,103 @@ class SuperAdminController extends Controller
             }
         }
     }
+
+    public function profile(Request $request): View
+    {
+        $this->authorizeSuperAdmin();
+
+        $saUser = auth('super_admin')->user();
+        $webUser = auth()->user();
+        // Always get a fresh copy from the DB so saved data shows up immediately
+        $user = $saUser ? $saUser->fresh() : ($webUser ? $webUser->fresh() : null);
+
+        return view('superadmin.profile', compact('user'));
+    }
+
+    public function updateProfile(Request $request): RedirectResponse
+    {
+        $this->authorizeSuperAdmin();
+
+        $saUser = auth('super_admin')->user();
+        $webUser = auth()->user();
+        $user = $saUser ?? $webUser;
+
+        $data = $request->validate([
+            'name'                => ['required', 'string', 'max:255'],
+            'email'               => ['required', 'email', 'max:255'],  // uniqueness checked manually below (central connection)
+            'mobile' => ['nullable', 'string', 'max:50'],
+            'gender' => ['nullable', 'string', 'max:20'],
+            'date_of_birth' => ['nullable', 'date'],
+            'marital_status' => ['nullable', 'string', 'max:50'],
+            'country' => ['nullable', 'string', 'max:100'],
+            'language' => ['nullable', 'string', 'max:100'],
+            'address' => ['nullable', 'string'],
+            'about' => ['nullable', 'string'],
+            'email_notifications' => ['nullable', 'boolean'],
+            'google_calendar' => ['nullable', 'boolean'],
+            'profile_image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg,webp', 'max:5120'],
+            'govt_id_card'        => ['nullable', 'file', 'mimes:pdf,jpeg,png,jpg', 'max:10240'],
+        ]);
+
+        // Manual email uniqueness on the central connection (Rule::unique doesn't support ->connection() in Laravel 11)
+        $emailTaken = \Illuminate\Support\Facades\DB::connection('central')
+            ->table('super_admins')
+            ->where('email', $data['email'])
+            ->where('id', '!=', $user->id)
+            ->exists();
+        if ($emailTaken) {
+            return back()->withInput()->withErrors(['email' => 'This email is already taken by another administrator.']);
+        }
+
+        if ($request->hasFile('profile_image')) {
+            $file = $request->file('profile_image');
+            $dir = public_path('uploads/profile');
+            if (!\Illuminate\Support\Facades\File::exists($dir)) {
+                \Illuminate\Support\Facades\File::makeDirectory($dir, 0755, true);
+            }
+            $filename = time() . '_profile_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $file->move($dir, $filename);
+            $data['profile_image'] = 'uploads/profile/' . $filename;
+        } else {
+            // Preserve existing profile image — do not overwrite with null
+            unset($data['profile_image']);
+        }
+
+        if ($request->hasFile('govt_id_card')) {
+            $file = $request->file('govt_id_card');
+            $dir = public_path('uploads/documents');
+            if (!\Illuminate\Support\Facades\File::exists($dir)) {
+                \Illuminate\Support\Facades\File::makeDirectory($dir, 0755, true);
+            }
+            $filename = time() . '_govtid_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $file->move($dir, $filename);
+            $data['govt_id_card'] = 'uploads/documents/' . $filename;
+        } else {
+            unset($data['govt_id_card']);
+        }
+
+        $data['email_notifications'] = $request->has('email_notifications');
+        $data['google_calendar'] = $request->has('google_calendar');
+
+        // Use the model's own connection (central) to get the column list — NOT the default DB facade
+        $schemaBuilder = $user->getConnection()->getSchemaBuilder();
+        $tableColumns  = $schemaBuilder->getColumnListing($user->getTable());
+
+        $updateData = [];
+        foreach ($data as $key => $val) {
+            if (in_array($key, $tableColumns, true)) {
+                $updateData[$key] = $val;
+            }
+        }
+
+        if (!empty($updateData)) {
+            $user->fill($updateData)->save();
+            // Refresh the session so navbar avatar and name reflect changes immediately
+            if ($user instanceof \App\Models\Central\SuperAdmin) {
+                auth('super_admin')->setUser($user->fresh());
+            }
+        }
+
+        return redirect()->route('super-admin.profile')->with('success', 'Profile updated successfully.');
+    }
 }
