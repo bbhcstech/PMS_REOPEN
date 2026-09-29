@@ -19,7 +19,7 @@
 html,
 body {
   max-width: 100%;
-  overflow-x: hidden !important;
+  overflow-x: clip !important;
 }
 
 html {
@@ -31,21 +31,18 @@ body {
 }
 
 .layout-wrapper,
-.layout-container,
+.layout-container {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: clip !important;
+  overflow-y: visible !important;
+}
+
 .layout-page,
 .content-wrapper {
   min-width: 0;
   max-width: 100%;
-}
-
-.layout-wrapper {
-  width: 100%;
-  overflow-x: hidden;
-}
-
-.layout-page,
-.content-wrapper {
-  overflow-x: hidden;
+  overflow: visible !important;
 }
 
 html[data-pms-theme="dark"] {
@@ -321,7 +318,10 @@ html[data-pms-theme="dark"] .app-brand-text.demo {
 }
 
 #layout-navbar {
-  margin: 1.25rem 1.5rem 0;
+  position: sticky !important;
+  top: 0.75rem !important;
+  z-index: 1030 !important;
+  margin: 0.75rem 1.5rem 0;
   width: auto;
   min-height: 72px;
   border: 1px solid var(--pms-border);
@@ -772,7 +772,8 @@ html[data-theme="dark"] .btn-secondary {
 
 #layout-navbar,
 .layout-navbar {
-  position: relative;
+  position: sticky !important;
+  top: 0.75rem !important;
   z-index: 1030 !important;
 }
 
@@ -7413,17 +7414,24 @@ svg.h-5 {
 html,
 body {
   max-width: 100vw;
-  overflow-x: hidden !important;
+  overflow-x: clip !important;
 }
 
 .layout-wrapper,
-.layout-container,
+.layout-container {
+  max-width: 100vw;
+  box-sizing: border-box;
+  overflow-x: clip !important;
+  overflow-y: visible !important;
+}
+
 .layout-page,
 .content-wrapper,
 .container-xxl,
 .container-fluid {
   max-width: 100vw;
   box-sizing: border-box;
+  overflow: visible !important;
 }
 
 /* Fluid Table Responsive Wrappers across all modules */

@@ -57,6 +57,11 @@ class RecruitmentController extends Controller
         // Auto-Generated Recruitment Policy Card Data
         $policyCard = $this->generatePolicyCard();
 
+        $currencies = \Illuminate\Support\Facades\Schema::hasTable('currencies')
+            ? \App\Models\Currency::all()
+            : collect();
+        $defaultCurrencySymbol = AppSetting::valueFor('loc_currency_symbol', '$');
+
         return view('admin.recruitment.index', compact(
             'requirements',
             'departments',
@@ -65,7 +70,9 @@ class RecruitmentController extends Controller
             'totalInProgress',
             'totalPositionsOpen',
             'totalClosed',
-            'policyCard'
+            'policyCard',
+            'currencies',
+            'defaultCurrencySymbol'
         ));
     }
 
@@ -82,6 +89,8 @@ class RecruitmentController extends Controller
             'employment_type' => 'required|string|max:100',
             'experience_required' => 'nullable|string|max:100',
             'salary_range' => 'nullable|string|max:100',
+            'salary_amount' => 'nullable|string|max:100',
+            'salary_currency' => 'nullable|string|max:20',
             'location' => 'nullable|string|max:150',
             'description' => 'nullable|string',
             'requirements_summary' => 'nullable|string',
@@ -91,6 +100,12 @@ class RecruitmentController extends Controller
         if ($request->filled('department_id')) {
             $dept = Department::find($request->department_id);
             $departmentName = $dept?->dpt_name;
+        }
+
+        $salaryRange = $request->salary_range;
+        if (empty($salaryRange) && $request->filled('salary_amount')) {
+            $currencySymbol = $request->input('salary_currency', '$');
+            $salaryRange = trim($currencySymbol . ' ' . $request->salary_amount);
         }
 
         $user = auth()->user();
@@ -103,7 +118,7 @@ class RecruitmentController extends Controller
             'positions' => $request->positions,
             'employment_type' => $request->employment_type,
             'experience_required' => $request->experience_required,
-            'salary_range' => $request->salary_range,
+            'salary_range' => $salaryRange,
             'location' => $request->location ?? 'Headquarters',
             'description' => $request->description,
             'requirements_summary' => $request->requirements_summary,
@@ -201,14 +216,20 @@ class RecruitmentController extends Controller
         $autoReply = AppSetting::valueFor('recruit_auto_reply', '1');
         $maxResumeSize = AppSetting::valueFor('recruit_max_resume_size', '5');
         $allowedFileTypes = AppSetting::valueFor('recruit_allowed_file_types', 'pdf,doc,docx');
+        
+        $probationMonths = AppSetting::valueFor('recruit_probation_period_months', '3');
+        $slaDays = AppSetting::valueFor('recruit_hiring_sla_days', '30');
+
+        $probationStr = AppSetting::valueFor('recruit_probation_period', $probationMonths . ' Months (' . ($probationMonths * 30) . ' Days standard evaluation)');
+        $hiringSlaStr = AppSetting::valueFor('recruit_hiring_sla', $slaDays . ' Days from Requirement posting to Offer');
 
         return [
             'title' => 'Standard Corporate Recruitment & Talent Acquisition Policy',
             'code' => 'POL-REC-' . date('Y'),
             'generated_at' => now()->format('M d, Y'),
             'status' => 'Auto-Generated & Active',
-            'probation_period' => '90 Days (3 Months standard evaluation)',
-            'hiring_sla' => '14 - 30 Business Days from Requirement posting to Offer',
+            'probation_period' => $probationStr,
+            'hiring_sla' => $hiringSlaStr,
             'job_categories' => explode(',', $jobCategories),
             'pipeline_stages' => explode(',', $pipelineStages),
             'auto_reply_enabled' => $autoReply === '1',

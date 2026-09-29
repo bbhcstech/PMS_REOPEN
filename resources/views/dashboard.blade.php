@@ -1296,7 +1296,8 @@
     .stat-icon svg {
         color: #ffffff !important;
         -webkit-text-fill-color: #ffffff !important;
-        background-color: #ffffff !important;
+        background-color: transparent !important;
+        background: transparent !important;
         fill: #ffffff !important;
         opacity: 1 !important;
         font-size: 1.35rem !important;
@@ -1323,7 +1324,8 @@
     .stat-card.is-featured .stat-icon svg {
         color: #ffffff !important;
         -webkit-text-fill-color: #ffffff !important;
-        background-color: #ffffff !important;
+        background-color: transparent !important;
+        background: transparent !important;
         fill: #ffffff !important;
         opacity: 1 !important;
         visibility: visible !important;

@@ -6108,10 +6108,11 @@ body[data-pms-theme="dark"] .app-table .btn-icon.btn-light i.text-danger,
   -webkit-text-fill-color: #fca5a5 !important;
 }
 
-/* Ensure modal dialog opens above top navbar */
+/* Ensure top navbar remains sticky when scrolling */
 #layout-navbar,
 .layout-navbar {
-  position: relative;
+  position: sticky !important;
+  top: 0.75rem !important;
   z-index: 1030 !important;
 }
 
@@ -6139,4 +6140,136 @@ body[data-pms-theme="dark"] .app-table .btn-icon.btn-light i.text-danger,
   visibility: hidden !important;
   opacity: 0 !important;
   pointer-events: none !important;
+}
+
+/* ==========================================================================
+   HIGHLIGHTED / ACTIVE BLUE CARD LOGO & ICON CONTRAST FIX
+   ========================================================================== */
+.card-primary .kpi-icon-box,
+.card-primary .saas-module-icon,
+.card-primary .policy-icon-wrapper,
+.card-primary .card-icon,
+.card-primary .icon-box,
+.bg-primary .kpi-icon-box,
+.bg-primary .saas-module-icon,
+.bg-primary .policy-icon-wrapper,
+.bg-primary .card-icon,
+.bg-primary .icon-box,
+.kpi-blue-active .kpi-icon-box,
+.industry-metric-card.active .kpi-icon-box,
+.role-stat-card.active .kpi-icon-box,
+[style*="background: #2F6BFF"] .kpi-icon-box,
+[style*="background:#2F6BFF"] .kpi-icon-box,
+[style*="background: #2F6BFF"] .saas-module-icon,
+[style*="background:#2F6BFF"] .saas-module-icon,
+[style*="background: #2F6BFF"] .policy-icon-wrapper,
+[style*="background:#2F6BFF"] .policy-icon-wrapper,
+[style*="background: #2F6BFF"] .card-icon,
+[style*="background:#2F6BFF"] .card-icon,
+[style*="background: #2F6BFF"] i,
+[style*="background:#2F6BFF"] i {
+  background: rgba(255, 255, 255, 0.25) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.45) !important;
+  color: #FFFFFF !important;
+  -webkit-text-fill-color: #FFFFFF !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+.card-primary .kpi-icon-box *,
+.card-primary .saas-module-icon *,
+.card-primary .policy-icon-wrapper *,
+.card-primary .card-icon *,
+.card-primary .icon-box *,
+.bg-primary .kpi-icon-box *,
+.bg-primary .saas-module-icon *,
+.bg-primary .policy-icon-wrapper *,
+.bg-primary .card-icon *,
+.bg-primary .icon-box *,
+.kpi-blue-active .kpi-icon-box *,
+.industry-metric-card.active .kpi-icon-box *,
+[style*="background: #2F6BFF"] .kpi-icon-box *,
+[style*="background:#2F6BFF"] .kpi-icon-box *,
+[style*="background: #2F6BFF"] .saas-module-icon *,
+[style*="background:#2F6BFF"] .saas-module-icon *,
+[style*="background: #2F6BFF"] .policy-icon-wrapper *,
+[style*="background:#2F6BFF"] .policy-icon-wrapper *,
+[style*="background: #2F6BFF"] .card-icon *,
+[style*="background:#2F6BFF"] .card-icon * {
+  color: #FFFFFF !important;
+  -webkit-text-fill-color: #FFFFFF !important;
+  fill: #FFFFFF !important;
+}
+
+/* Document navigation tab button text colors in light mode */
+html[data-pms-theme="light"] .doc-tab-btn,
+html[data-theme="light"] .doc-tab-btn,
+.doc-tab-btn {
+  color: #0F172A !important;
+  -webkit-text-fill-color: #0F172A !important;
+}
+html[data-pms-theme="light"] .doc-tab-btn i,
+html[data-theme="light"] .doc-tab-btn i,
+.doc-tab-btn i {
+  color: #0F172A !important;
+  -webkit-text-fill-color: #0F172A !important;
+}
+
+html[data-pms-theme="light"] .doc-tab-btn.active,
+html[data-theme="light"] .doc-tab-btn.active,
+.doc-tab-btn.active {
+  color: #FFFFFF !important;
+  -webkit-text-fill-color: #FFFFFF !important;
+}
+html[data-pms-theme="light"] .doc-tab-btn.active i,
+html[data-theme="light"] .doc-tab-btn.active i,
+.doc-tab-btn.active i {
+  color: #FFFFFF !important;
+  -webkit-text-fill-color: #FFFFFF !important;
+}
+
+/* ==========================================================================
+   STICKY TOP NAVBAR ENGINE
+   ========================================================================== */
+.layout-wrapper,
+.layout-container,
+.layout-page,
+.content-wrapper {
+  overflow: visible !important;
+}
+
+#layout-navbar,
+.layout-navbar {
+  position: sticky !important;
+  top: 0.75rem !important;
+  z-index: 1030 !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  box-shadow: 0 8px 24px -4px rgba(15, 23, 42, 0.08) !important;
+}
+
+html[data-pms-theme="dark"] #layout-navbar,
+html[data-theme="dark"] #layout-navbar,
+html[data-bs-theme="dark"] #layout-navbar {
+  background: rgba(15, 21, 48, 0.92) !important;
+  border-color: rgba(238, 241, 251, 0.12) !important;
+  box-shadow: 0 10px 30px -4px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Notification Header Action Buttons Light Mode Black Text */
+html[data-pms-theme="light"] .notif-clear-all-btn,
+html[data-theme="light"] .notif-clear-all-btn,
+.notif-clear-all-btn {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+  font-weight: 700 !important;
+}
+
+html[data-pms-theme="light"] .notif-clear-all-btn i,
+html[data-theme="light"] .notif-clear-all-btn i,
+.notif-clear-all-btn i {
+  color: #ef4444 !important;
+  -webkit-text-fill-color: #ef4444 !important;
 }

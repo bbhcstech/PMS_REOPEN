@@ -739,6 +739,7 @@
             }
         })();
     </script>
+    @include('admin.layout.toasts')
     @yield('scripts')
 </body>
 </html>
