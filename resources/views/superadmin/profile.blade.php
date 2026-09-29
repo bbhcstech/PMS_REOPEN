@@ -5,6 +5,7 @@
 
 @push('styles')
 <style>
+  /* ===== PROFILE PAGE — THEME-AWARE ===== */
   .profile-container {
     max-width: 1100px;
     margin: 0 auto;
@@ -12,10 +13,10 @@
   }
 
   .profile-card {
-    background: #0f172a;
-    border: 1px solid rgba(255, 255, 255, 0.09);
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
     border-radius: 16px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    box-shadow: var(--card-shadow-md);
     overflow: hidden;
   }
 
@@ -24,22 +25,22 @@
     align-items: center;
     justify-content: space-between;
     padding: 20px 28px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    background: rgba(15, 23, 42, 0.6);
+    border-bottom: 1px solid var(--border-subtle);
+    background: var(--bg-surface-subtle);
   }
 
   .profile-card-title {
     font-size: 18px;
     font-weight: 800;
-    color: #ffffff;
+    color: var(--text-main);
     letter-spacing: -0.2px;
   }
 
   .profile-card-close {
-    color: #94a3b8;
+    color: var(--text-muted);
     font-size: 24px;
     line-height: 1;
-    transition: color 0.2s ease;
+    transition: color 0.2s ease, background 0.2s ease;
     text-decoration: none;
     display: inline-flex;
     align-items: center;
@@ -50,67 +51,28 @@
   }
 
   .profile-card-close:hover {
-    color: #ffffff;
-    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-main);
+    background: var(--bg-surface-hover);
   }
 
   .profile-card-body {
     padding: 28px;
   }
 
-  /* TABS BAR */
-  .profile-tabs-bar {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: #1e293b;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 12px;
-    padding: 6px;
-    margin-bottom: 32px;
-    width: max-content;
-    max-width: 100%;
-  }
-
-  .profile-tab-btn {
-    padding: 8px 22px;
-    font-size: 14px;
-    font-weight: 700;
-    border-radius: 8px;
-    color: #94a3b8;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-
-  .profile-tab-btn.active {
-    background: rgba(37, 99, 235, 0.28);
-    border: 1px solid rgba(59, 130, 246, 0.45);
-    color: #ffffff;
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
-  }
-
-  .profile-tab-btn:hover:not(.active) {
-    color: #f1f5f9;
-    background: rgba(255, 255, 255, 0.05);
-  }
-
-  /* SECTION HEADER */
   .profile-sec-title {
     font-size: 17px;
     font-weight: 700;
-    color: #ffffff;
+    color: var(--text-main);
     margin-bottom: 4px;
   }
 
   .profile-sec-subtitle {
     font-size: 13.5px;
-    color: #94a3b8;
+    color: var(--text-muted);
     margin-bottom: 28px;
   }
 
-  /* AVATAR UPLOAD */
+  /* AVATAR */
   .avatar-upload-wrap {
     display: flex;
     align-items: center;
@@ -123,25 +85,26 @@
     height: 90px;
     border-radius: 50%;
     object-fit: cover;
-    border: 3px solid rgba(59, 130, 246, 0.5);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-    background: #1e293b;
+    border: 3px solid rgba(47, 107, 255, 0.45);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    background: var(--bg-surface-subtle);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 32px;
     font-weight: 800;
-    color: #60a5fa;
+    color: var(--brand-primary);
     flex-shrink: 0;
   }
 
+  /* FILE INPUT */
   .file-input-box {
     flex: 1;
     max-width: 500px;
     display: flex;
     align-items: center;
-    background: #1e293b;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: var(--bg-surface-subtle);
+    border: 1px solid var(--border-strong);
     border-radius: 10px;
     padding: 6px 12px;
     gap: 12px;
@@ -149,26 +112,27 @@
   }
 
   .file-input-box label {
-    background: rgba(255, 255, 255, 0.1);
-    color: #f1f5f9;
+    background: var(--bg-surface-hover);
+    color: var(--text-body);
     padding: 6px 14px;
     border-radius: 6px;
     font-size: 13px;
     font-weight: 600;
     cursor: pointer;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    transition: background 0.2s ease;
+    border: 1px solid var(--border-strong);
+    transition: all 0.2s ease;
     white-space: nowrap;
     margin-bottom: 0;
   }
 
   .file-input-box label:hover {
-    background: rgba(255, 255, 255, 0.18);
+    border-color: var(--brand-primary);
+    color: var(--brand-primary);
   }
 
   .file-input-box span {
     font-size: 13px;
-    color: #94a3b8;
+    color: var(--text-muted);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -199,30 +163,32 @@
     display: block;
     font-size: 13px;
     font-weight: 600;
-    color: #f1f5f9;
+    color: var(--text-body);
     margin-bottom: 8px;
   }
 
+  /* FORM CONTROLS */
   .profile-control {
     width: 100%;
-    background: #1e293b !important;
-    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    background: var(--bg-surface-subtle) !important;
+    border: 1px solid var(--border-strong) !important;
     border-radius: 10px !important;
     padding: 10px 14px !important;
     font-size: 14px !important;
-    color: #ffffff !important;
+    color: var(--text-main) !important;
     outline: none !important;
     transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+    font-family: inherit !important;
   }
 
   .profile-control:focus {
-    border-color: #3b82f6 !important;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25) !important;
+    border-color: var(--brand-primary) !important;
+    box-shadow: 0 0 0 3px var(--emerald-glow) !important;
   }
 
   select.profile-control option {
-    background: #0f172a;
-    color: #ffffff;
+    background: var(--bg-surface);
+    color: var(--text-main);
   }
 
   textarea.profile-control {
@@ -232,7 +198,7 @@
 
   .field-help-text {
     font-size: 12px;
-    color: #94a3b8;
+    color: var(--text-muted);
     margin-top: 6px;
     font-weight: 500;
   }
@@ -260,9 +226,10 @@
     position: relative;
     width: 44px;
     height: 24px;
-    background: #334155;
+    background: var(--bg-surface-hover);
     border-radius: 20px;
     transition: background 0.25s ease;
+    border: 1px solid var(--border-strong);
   }
 
   .toggle-switch::after {
@@ -270,43 +237,43 @@
     position: absolute;
     top: 3px;
     left: 3px;
-    width: 18px;
-    height: 18px;
-    background: #ffffff;
+    width: 16px;
+    height: 16px;
+    background: var(--text-muted);
     border-radius: 50%;
-    transition: transform 0.25s ease;
+    transition: transform 0.25s ease, background 0.25s ease;
   }
 
-  .toggle-checkbox {
-    display: none;
-  }
+  .toggle-checkbox { display: none; }
 
   .toggle-checkbox:checked + .toggle-switch {
-    background: #2563eb;
+    background: var(--brand-primary);
+    border-color: var(--brand-primary);
   }
 
   .toggle-checkbox:checked + .toggle-switch::after {
     transform: translateX(20px);
+    background: #ffffff;
   }
 
   .toggle-label-text {
     font-size: 13.5px;
     font-weight: 600;
-    color: #f1f5f9;
+    color: var(--text-body);
   }
 
-  /* FOOTER ACTION BUTTON */
+  /* FOOTER */
   .profile-form-footer {
     display: flex;
     justify-content: flex-end;
     margin-top: 32px;
     padding-top: 20px;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: 1px solid var(--border-subtle);
     grid-column: 1 / -1;
   }
 
   .btn-save-profile {
-    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    background: linear-gradient(135deg, var(--brand-primary), var(--brand-primary-hover));
     color: #ffffff;
     font-weight: 700;
     font-size: 14px;
@@ -314,17 +281,85 @@
     border-radius: 10px;
     border: none;
     cursor: pointer;
-    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+    box-shadow: 0 4px 14px rgba(47, 107, 255, 0.35);
     transition: all 0.2s ease;
     display: inline-flex;
     align-items: center;
     gap: 8px;
+    font-family: inherit;
   }
 
   .btn-save-profile:hover {
-    background: linear-gradient(135deg, #3b82f6, #2563eb);
     transform: translateY(-1px);
-    box-shadow: 0 6px 18px rgba(37, 99, 235, 0.45);
+    box-shadow: 0 6px 18px rgba(47, 107, 255, 0.45);
+    opacity: 0.9;
+  }
+
+  /* ===== LIGHT THEME EXPLICIT OVERRIDES ===== */
+  html[data-pms-theme="light"] .profile-card,
+  html[data-theme="light"] .profile-card {
+    background: #ffffff;
+    border-color: rgba(16, 20, 44, 0.10);
+    box-shadow: 0 8px 24px -4px rgba(16, 20, 44, 0.06);
+  }
+
+  html[data-pms-theme="light"] .profile-card-header,
+  html[data-theme="light"] .profile-card-header {
+    background: #f8fafc;
+    border-bottom-color: rgba(16, 20, 44, 0.08);
+  }
+
+  html[data-pms-theme="light"] .profile-control,
+  html[data-theme="light"] .profile-control {
+    background: #f8fafc !important;
+    border-color: rgba(16, 20, 44, 0.14) !important;
+    color: #10142C !important;
+  }
+
+  html[data-pms-theme="light"] .profile-control:focus,
+  html[data-theme="light"] .profile-control:focus {
+    border-color: #2F6BFF !important;
+    box-shadow: 0 0 0 3px rgba(47, 107, 255, 0.12) !important;
+  }
+
+  html[data-pms-theme="light"] select.profile-control option,
+  html[data-theme="light"] select.profile-control option {
+    background: #ffffff;
+    color: #10142C;
+  }
+
+  html[data-pms-theme="light"] .file-input-box,
+  html[data-theme="light"] .file-input-box {
+    background: #f1f5f9;
+    border-color: rgba(16, 20, 44, 0.12);
+  }
+
+  html[data-pms-theme="light"] .file-input-box label,
+  html[data-theme="light"] .file-input-box label {
+    background: #e2e8f0;
+    color: #334155;
+    border-color: rgba(16, 20, 44, 0.10);
+  }
+
+  html[data-pms-theme="light"] .toggle-switch,
+  html[data-theme="light"] .toggle-switch {
+    background: #e2e8f0;
+    border-color: rgba(16, 20, 44, 0.12);
+  }
+
+  html[data-pms-theme="light"] .toggle-switch::after,
+  html[data-theme="light"] .toggle-switch::after {
+    background: #94a3b8;
+  }
+
+  html[data-pms-theme="light"] .profile-form-footer,
+  html[data-theme="light"] .profile-form-footer {
+    border-top-color: rgba(16, 20, 44, 0.08);
+  }
+
+  html[data-pms-theme="light"] .avatar-preview,
+  html[data-theme="light"] .avatar-preview {
+    background: #eff6ff;
   }
 </style>
 @endpush
@@ -354,7 +389,7 @@
       <div class="profile-sec-subtitle">Update your account details and personal information.</div>
 
       <!-- FORM -->
-      <form action="{{ Route::has('superadmin.profile.update') ? route('superadmin.profile.update') : (Route::has('super-admin.profile.update') ? route('super-admin.profile.update') : url('/superadmin/profile')) }}" method="POST" enctype="multipart/form-data">
+      <form action="{{ route('super-admin.profile.update') }}" method="POST" enctype="multipart/form-data">
         @csrf
 
         <!-- PROFILE IMAGE UPLOAD -->
@@ -397,8 +432,52 @@
           <!-- MOBILE -->
           <div>
             <label class="profile-label">Mobile</label>
-            <input type="text" name="mobile" class="profile-control" value="{{ old('mobile', $user->mobile ?? '') }}" placeholder="Enter mobile number" />
+            @php
+              $fullMobile = old('mobile', $user->mobile ?? '');
+              $countryCode = '+91';
+              $mobileNum = $fullMobile;
+              // Extract country code if starts with '+'
+              if($fullMobile && preg_match('/^(\+\d{1,4})\s*[-\s]?(.*)$/', $fullMobile, $matches)) {
+                  $countryCode = $matches[1];
+                  $mobileNum = $matches[2];
+              }
+            @endphp
+            <div style="display: flex;">
+              <select id="profile_country_code" class="profile-control" style="width: 100px; flex-shrink: 0; border-top-right-radius: 0; border-bottom-right-radius: 0; border-right: 0; background-position: right 0.25rem center; padding-right: 20px;">
+                <option value="+91" {{ $countryCode == '+91' ? 'selected' : '' }}>+91 (IN)</option>
+                <option value="+1" {{ $countryCode == '+1' ? 'selected' : '' }}>+1 (US)</option>
+                <option value="+44" {{ $countryCode == '+44' ? 'selected' : '' }}>+44 (UK)</option>
+                <option value="+61" {{ $countryCode == '+61' ? 'selected' : '' }}>+61 (AU)</option>
+                <option value="+971" {{ $countryCode == '+971' ? 'selected' : '' }}>+971 (AE)</option>
+                <option value="+81" {{ $countryCode == '+81' ? 'selected' : '' }}>+81 (JP)</option>
+                <option value="+49" {{ $countryCode == '+49' ? 'selected' : '' }}>+49 (DE)</option>
+                <option value="+33" {{ $countryCode == '+33' ? 'selected' : '' }}>+33 (FR)</option>
+              </select>
+              <input type="text" id="profile_mobile_number" class="profile-control" value="{{ $mobileNum }}" placeholder="Enter mobile number" style="border-top-left-radius: 0; border-bottom-left-radius: 0;" />
+              <input type="hidden" name="mobile" id="profile_mobile_hidden" value="{{ $fullMobile }}">
+            </div>
           </div>
+          <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const ccSelect = document.getElementById('profile_country_code');
+                const mobileInput = document.getElementById('profile_mobile_number');
+                const hiddenMobile = document.getElementById('profile_mobile_hidden');
+                
+                function updateMobile() {
+                    const num = mobileInput.value.replace(/[^0-9]/g, '');
+                    if (num === '') {
+                        hiddenMobile.value = '';
+                    } else {
+                        hiddenMobile.value = ccSelect.value + ' ' + num;
+                    }
+                }
+                
+                if (ccSelect && mobileInput) {
+                    ccSelect.addEventListener('change', updateMobile);
+                    mobileInput.addEventListener('input', updateMobile);
+                }
+            });
+          </script>
 
           <!-- GENDER -->
           <div>

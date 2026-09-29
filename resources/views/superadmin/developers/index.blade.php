@@ -657,8 +657,10 @@
     html[data-pms-theme="dark"],
     html[data-theme="dark"],
     html[data-bs-theme="dark"],
+    html.dark,
     body.dark-mode,
-    body.dark {
+    body.dark,
+    .dark {
         --slate-dark: #f8fafc;
         --slate-body: #cbd5e1;
         --slate-muted: #94a3b8;
@@ -677,40 +679,33 @@
     html[data-pms-theme="dark"] .page-header-box,
     html[data-theme="dark"] .page-header-box,
     html[data-bs-theme="dark"] .page-header-box,
+    html.dark .page-header-box,
     body.dark-mode .page-header-box,
     html[data-pms-theme="dark"] .kpi-card,
     html[data-theme="dark"] .kpi-card,
     html[data-bs-theme="dark"] .kpi-card,
+    html.dark .kpi-card,
     body.dark-mode .kpi-card,
     html[data-pms-theme="dark"] .filter-card,
     html[data-theme="dark"] .filter-card,
     html[data-bs-theme="dark"] .filter-card,
+    html.dark .filter-card,
     body.dark-mode .filter-card,
     html[data-pms-theme="dark"] .table-card,
     html[data-theme="dark"] .table-card,
     html[data-bs-theme="dark"] .table-card,
+    html.dark .table-card,
     body.dark-mode .table-card {
         background: #1e293b !important;
         border-color: #334155 !important;
         color: #f8fafc !important;
     }
 
-    html[data-pms-theme="dark"] .table-card > div[style*="background: #f8fafc"],
-    html[data-theme="dark"] .table-card > div[style*="background: #f8fafc"],
-    html[data-bs-theme="dark"] .table-card > div[style*="background: #f8fafc"],
-    body.dark-mode .table-card > div[style*="background: #f8fafc"],
-    html[data-pms-theme="dark"] .table-card > div[style*="background: #ffffff"],
-    html[data-theme="dark"] .table-card > div[style*="background: #ffffff"],
-    html[data-bs-theme="dark"] .table-card > div[style*="background: #ffffff"],
-    body.dark-mode .table-card > div[style*="background: #ffffff"],
-    html[data-pms-theme="dark"] .table-card > div[style*="background:#f8fafc"],
-    html[data-theme="dark"] .table-card > div[style*="background:#f8fafc"],
-    html[data-bs-theme="dark"] .table-card > div[style*="background:#f8fafc"],
-    body.dark-mode .table-card > div[style*="background:#f8fafc"],
-    html[data-pms-theme="dark"] .table-card > div[style*="background:#ffffff"],
-    html[data-theme="dark"] .table-card > div[style*="background:#ffffff"],
-    html[data-bs-theme="dark"] .table-card > div[style*="background:#ffffff"],
-    body.dark-mode .table-card > div[style*="background:#ffffff"] {
+    html[data-pms-theme="dark"] .table-card > div[style*="background"],
+    html[data-theme="dark"] .table-card > div[style*="background"],
+    html[data-bs-theme="dark"] .table-card > div[style*="background"],
+    html.dark .table-card > div[style*="background"],
+    body.dark-mode .table-card > div[style*="background"] {
         background: #0f172a !important;
         border-color: #334155 !important;
     }
@@ -718,6 +713,7 @@
     html[data-pms-theme="dark"] .enterprise-table,
     html[data-theme="dark"] .enterprise-table,
     html[data-bs-theme="dark"] .enterprise-table,
+    html.dark .enterprise-table,
     body.dark-mode .enterprise-table {
         background: #1e293b !important;
         border-color: #334155 !important;
@@ -726,6 +722,7 @@
     html[data-pms-theme="dark"] .enterprise-table th,
     html[data-theme="dark"] .enterprise-table th,
     html[data-bs-theme="dark"] .enterprise-table th,
+    html.dark .enterprise-table th,
     body.dark-mode .enterprise-table th {
         background: #0f172a !important;
         color: #f8fafc !important;
@@ -735,6 +732,7 @@
     html[data-pms-theme="dark"] .enterprise-table td,
     html[data-theme="dark"] .enterprise-table td,
     html[data-bs-theme="dark"] .enterprise-table td,
+    html.dark .enterprise-table td,
     body.dark-mode .enterprise-table td {
         color: #cbd5e1 !important;
         border-color: #334155 !important;
@@ -743,6 +741,7 @@
     html[data-pms-theme="dark"] .enterprise-table td strong,
     html[data-theme="dark"] .enterprise-table td strong,
     html[data-bs-theme="dark"] .enterprise-table td strong,
+    html.dark .enterprise-table td strong,
     body.dark-mode .enterprise-table td strong {
         color: #f8fafc !important;
     }
@@ -750,13 +749,25 @@
     html[data-pms-theme="dark"] .enterprise-table tr:hover td,
     html[data-theme="dark"] .enterprise-table tr:hover td,
     html[data-bs-theme="dark"] .enterprise-table tr:hover td,
+    html.dark .enterprise-table tr:hover td,
     body.dark-mode .enterprise-table tr:hover td {
         background: #334155 !important;
+    }
+
+    html[data-pms-theme="dark"] .enterprise-table select[name="status"],
+    html[data-theme="dark"] .enterprise-table select[name="status"],
+    html[data-bs-theme="dark"] .enterprise-table select[name="status"],
+    html.dark .enterprise-table select[name="status"],
+    body.dark-mode .enterprise-table select[name="status"] {
+        background: #0f172a !important;
+        color: #f8fafc !important;
+        border-color: #334155 !important;
     }
 
     html[data-pms-theme="dark"] .btn-action-secondary,
     html[data-theme="dark"] .btn-action-secondary,
     html[data-bs-theme="dark"] .btn-action-secondary,
+    html.dark .btn-action-secondary,
     body.dark-mode .btn-action-secondary {
         background: #0f172a !important;
         color: #cbd5e1 !important;
@@ -766,6 +777,7 @@
     html[data-pms-theme="dark"] .btn-action-secondary:hover,
     html[data-theme="dark"] .btn-action-secondary:hover,
     html[data-bs-theme="dark"] .btn-action-secondary:hover,
+    html.dark .btn-action-secondary:hover,
     body.dark-mode .btn-action-secondary:hover {
         background: #334155 !important;
         color: #ffffff !important;
@@ -775,14 +787,17 @@
     html[data-pms-theme="dark"] .search-group input,
     html[data-theme="dark"] .search-group input,
     html[data-bs-theme="dark"] .search-group input,
+    html.dark .search-group input,
     body.dark-mode .search-group input,
     html[data-pms-theme="dark"] .filter-selects select,
     html[data-theme="dark"] .filter-selects select,
     html[data-bs-theme="dark"] .filter-selects select,
+    html.dark .filter-selects select,
     body.dark-mode .filter-selects select,
     html[data-pms-theme="dark"] .entries-selector select,
     html[data-theme="dark"] .entries-selector select,
     html[data-bs-theme="dark"] .entries-selector select,
+    html.dark .entries-selector select,
     body.dark-mode .entries-selector select {
         background: #0f172a !important;
         color: #f8fafc !important;
@@ -792,6 +807,7 @@
     html[data-pms-theme="dark"] .export-dropdown-menu,
     html[data-theme="dark"] .export-dropdown-menu,
     html[data-bs-theme="dark"] .export-dropdown-menu,
+    html.dark .export-dropdown-menu,
     body.dark-mode .export-dropdown-menu {
         background: #1e293b !important;
         border-color: #334155 !important;
@@ -801,6 +817,7 @@
     html[data-pms-theme="dark"] .export-dropdown-menu a,
     html[data-theme="dark"] .export-dropdown-menu a,
     html[data-bs-theme="dark"] .export-dropdown-menu a,
+    html.dark .export-dropdown-menu a,
     body.dark-mode .export-dropdown-menu a {
         color: #cbd5e1 !important;
     }
@@ -808,6 +825,7 @@
     html[data-pms-theme="dark"] .export-dropdown-menu a:hover,
     html[data-theme="dark"] .export-dropdown-menu a:hover,
     html[data-bs-theme="dark"] .export-dropdown-menu a:hover,
+    html.dark .export-dropdown-menu a:hover,
     body.dark-mode .export-dropdown-menu a:hover {
         background: #0f172a !important;
         color: #ffffff !important;
@@ -819,6 +837,8 @@
     html[data-theme="dark"] .pagination-wrap nav a.relative,
     html[data-bs-theme="dark"] .pagination-wrap nav span.relative,
     html[data-bs-theme="dark"] .pagination-wrap nav a.relative,
+    html.dark .pagination-wrap nav span.relative,
+    html.dark .pagination-wrap nav a.relative,
     body.dark-mode .pagination-wrap nav span.relative,
     body.dark-mode .pagination-wrap nav a.relative {
         background: #0f172a !important;
@@ -829,19 +849,23 @@
     html[data-pms-theme="dark"] .pagination-wrap nav span[aria-current="page"] span.relative,
     html[data-theme="dark"] .pagination-wrap nav span[aria-current="page"] span.relative,
     html[data-bs-theme="dark"] .pagination-wrap nav span[aria-current="page"] span.relative,
+    html.dark .pagination-wrap nav span[aria-current="page"] span.relative,
     body.dark-mode .pagination-wrap nav span[aria-current="page"] span.relative {
         background: var(--primary) !important;
         color: #ffffff !important;
         border-color: var(--primary) !important;
     }
 
+    /* Drawer & Modal Dialogs */
     html[data-pms-theme="dark"] .drawer-panel,
     html[data-theme="dark"] .drawer-panel,
     html[data-bs-theme="dark"] .drawer-panel,
+    html.dark .drawer-panel,
     body.dark-mode .drawer-panel,
     html[data-pms-theme="dark"] .modal-box,
     html[data-theme="dark"] .modal-box,
     html[data-bs-theme="dark"] .modal-box,
+    html.dark .modal-box,
     body.dark-mode .modal-box {
         background: #1e293b !important;
         color: #f8fafc !important;
@@ -851,51 +875,261 @@
     html[data-pms-theme="dark"] .drawer-header,
     html[data-theme="dark"] .drawer-header,
     html[data-bs-theme="dark"] .drawer-header,
+    html.dark .drawer-header,
     body.dark-mode .drawer-header,
     html[data-pms-theme="dark"] .modal-header,
     html[data-theme="dark"] .modal-header,
     html[data-bs-theme="dark"] .modal-header,
+    html.dark .modal-header,
     body.dark-mode .modal-header,
     html[data-pms-theme="dark"] .modal-footer,
     html[data-theme="dark"] .modal-footer,
     html[data-bs-theme="dark"] .modal-footer,
+    html.dark .modal-footer,
     body.dark-mode .modal-footer {
         background: #0f172a !important;
         border-color: #334155 !important;
     }
 
+    html[data-pms-theme="dark"] .modal-body,
+    html[data-theme="dark"] .modal-body,
+    html[data-bs-theme="dark"] .modal-body,
+    html.dark .modal-body,
+    body.dark-mode .modal-body,
+    html[data-pms-theme="dark"] .drawer-body,
+    html[data-theme="dark"] .drawer-body,
+    html[data-bs-theme="dark"] .drawer-body,
+    html.dark .drawer-body,
+    body.dark-mode .drawer-body {
+        background: #1e293b !important;
+        color: #cbd5e1 !important;
+    }
+
+    html[data-pms-theme="dark"] .modal-body label,
+    html[data-theme="dark"] .modal-body label,
+    html[data-bs-theme="dark"] .modal-body label,
+    html.dark .modal-body label,
+    body.dark-mode .modal-body label,
+    html[data-pms-theme="dark"] .drawer-body label,
+    html[data-theme="dark"] .drawer-body label,
+    html[data-bs-theme="dark"] .drawer-body label,
+    html.dark .drawer-body label,
+    body.dark-mode .drawer-body label {
+        color: #cbd5e1 !important;
+    }
+
     html[data-pms-theme="dark"] .modal-body input,
     html[data-theme="dark"] .modal-body input,
     html[data-bs-theme="dark"] .modal-body input,
+    html.dark .modal-body input,
     body.dark-mode .modal-body input,
     html[data-pms-theme="dark"] .modal-body select,
     html[data-theme="dark"] .modal-body select,
     html[data-bs-theme="dark"] .modal-body select,
+    html.dark .modal-body select,
     body.dark-mode .modal-body select,
     html[data-pms-theme="dark"] .modal-body textarea,
     html[data-theme="dark"] .modal-body textarea,
     html[data-bs-theme="dark"] .modal-body textarea,
+    html.dark .modal-body textarea,
     body.dark-mode .modal-body textarea,
     html[data-pms-theme="dark"] .drawer-body input,
     html[data-theme="dark"] .drawer-body input,
     html[data-bs-theme="dark"] .drawer-body input,
+    html.dark .drawer-body input,
     body.dark-mode .drawer-body input,
     html[data-pms-theme="dark"] .drawer-body select,
     html[data-theme="dark"] .drawer-body select,
     html[data-bs-theme="dark"] .drawer-body select,
+    html.dark .drawer-body select,
     body.dark-mode .drawer-body select,
     html[data-pms-theme="dark"] .drawer-body textarea,
     html[data-theme="dark"] .drawer-body textarea,
     html[data-bs-theme="dark"] .drawer-body textarea,
+    html.dark .drawer-body textarea,
     body.dark-mode .drawer-body textarea {
         background: #0f172a !important;
         color: #f8fafc !important;
         border-color: #334155 !important;
     }
 
+    /* Assign Task Modal Inner Containers */
+    html[data-pms-theme="dark"] #assignWorkModal div[style*="background: #f0fdf4"],
+    html[data-theme="dark"] #assignWorkModal div[style*="background: #f0fdf4"],
+    html[data-bs-theme="dark"] #assignWorkModal div[style*="background: #f0fdf4"],
+    html.dark #assignWorkModal div[style*="background: #f0fdf4"],
+    body.dark-mode #assignWorkModal div[style*="background: #f0fdf4"] {
+        background: rgba(16, 185, 129, 0.15) !important;
+        border-color: rgba(16, 185, 129, 0.3) !important;
+        color: #6ee7b7 !important;
+    }
+
+    html[data-pms-theme="dark"] #manualDevFields,
+    html[data-theme="dark"] #manualDevFields,
+    html[data-bs-theme="dark"] #manualDevFields,
+    html.dark #manualDevFields,
+    body.dark-mode #manualDevFields,
+    html[data-pms-theme="dark"] #devLookupCard,
+    html[data-theme="dark"] #devLookupCard,
+    html[data-bs-theme="dark"] #devLookupCard,
+    html.dark #devLookupCard,
+    body.dark-mode #devLookupCard {
+        background: #0f172a !important;
+        border-color: #334155 !important;
+    }
+
+    html[data-pms-theme="dark"] #devLookupCard #lookupDevName,
+    html[data-theme="dark"] #devLookupCard #lookupDevName,
+    html[data-bs-theme="dark"] #devLookupCard #lookupDevName,
+    html.dark #devLookupCard #lookupDevName,
+    body.dark-mode #devLookupCard #lookupDevName {
+        color: #f8fafc !important;
+    }
+
+    html[data-pms-theme="dark"] #devLookupCard #lookupDevRole,
+    html[data-theme="dark"] #devLookupCard #lookupDevRole,
+    html[data-bs-theme="dark"] #devLookupCard #lookupDevRole,
+    html.dark #devLookupCard #lookupDevRole,
+    body.dark-mode #devLookupCard #lookupDevRole {
+        color: #94a3b8 !important;
+    }
+
+    html[data-pms-theme="dark"] #workloadAlertBanner,
+    html[data-theme="dark"] #workloadAlertBanner,
+    html[data-bs-theme="dark"] #workloadAlertBanner,
+    html.dark #workloadAlertBanner,
+    body.dark-mode #workloadAlertBanner {
+        background: rgba(245, 158, 11, 0.15) !important;
+        border-color: rgba(245, 158, 11, 0.3) !important;
+        color: #fcd34d !important;
+    }
+
+    /* Developer Credentials Modal */
+    html[data-pms-theme="dark"] #devCredentialsModal div[style*="background: #f8fafc"],
+    html[data-pms-theme="dark"] #devCredentialsModal div[style*="background:#f8fafc"],
+    html[data-theme="dark"] #devCredentialsModal div[style*="background: #f8fafc"],
+    html[data-theme="dark"] #devCredentialsModal div[style*="background:#f8fafc"],
+    html[data-bs-theme="dark"] #devCredentialsModal div[style*="background: #f8fafc"],
+    html[data-bs-theme="dark"] #devCredentialsModal div[style*="background:#f8fafc"],
+    html.dark #devCredentialsModal div[style*="background: #f8fafc"],
+    html.dark #devCredentialsModal div[style*="background:#f8fafc"],
+    body.dark-mode #devCredentialsModal div[style*="background: #f8fafc"],
+    body.dark-mode #devCredentialsModal div[style*="background:#f8fafc"] {
+        background: #0f172a !important;
+        border-color: #334155 !important;
+    }
+
+    html[data-pms-theme="dark"] #credModalLoginEmail,
+    html[data-theme="dark"] #credModalLoginEmail,
+    html[data-bs-theme="dark"] #credModalLoginEmail,
+    html.dark #credModalLoginEmail,
+    body.dark-mode #credModalLoginEmail,
+    html[data-pms-theme="dark"] #credModalPhone,
+    html[data-theme="dark"] #credModalPhone,
+    html[data-bs-theme="dark"] #credModalPhone,
+    html.dark #credModalPhone,
+    body.dark-mode #credModalPhone {
+        color: #f8fafc !important;
+    }
+
+    html[data-pms-theme="dark"] #credModalLoginPasswordInput,
+    html[data-theme="dark"] #credModalLoginPasswordInput,
+    html[data-bs-theme="dark"] #credModalLoginPasswordInput,
+    html.dark #credModalLoginPasswordInput,
+    body.dark-mode #credModalLoginPasswordInput {
+        background: #1e293b !important;
+        color: #34d399 !important;
+        border-color: #334155 !important;
+    }
+
+    html[data-pms-theme="dark"] #devCredentialsModal div[style*="border-top: 1px solid #e2e8f0"],
+    html[data-theme="dark"] #devCredentialsModal div[style*="border-top: 1px solid #e2e8f0"],
+    html[data-bs-theme="dark"] #devCredentialsModal div[style*="border-top: 1px solid #e2e8f0"],
+    html.dark #devCredentialsModal div[style*="border-top: 1px solid #e2e8f0"],
+    body.dark-mode #devCredentialsModal div[style*="border-top: 1px solid #e2e8f0"] {
+        border-top-color: #334155 !important;
+    }
+
+    html[data-pms-theme="dark"] #devCredentialsModal div[style*="background: #eff6ff"],
+    html[data-theme="dark"] #devCredentialsModal div[style*="background: #eff6ff"],
+    html[data-bs-theme="dark"] #devCredentialsModal div[style*="background: #eff6ff"],
+    html.dark #devCredentialsModal div[style*="background: #eff6ff"],
+    body.dark-mode #devCredentialsModal div[style*="background: #eff6ff"] {
+        background: rgba(37, 99, 235, 0.15) !important;
+        border-color: rgba(37, 99, 235, 0.3) !important;
+        color: #93c5fd !important;
+    }
+
+    html[data-pms-theme="dark"] #devCredentialsModal button[onclick*="copyTextToClipboard"],
+    html[data-theme="dark"] #devCredentialsModal button[onclick*="copyTextToClipboard"],
+    html[data-bs-theme="dark"] #devCredentialsModal button[onclick*="copyTextToClipboard"],
+    html.dark #devCredentialsModal button[onclick*="copyTextToClipboard"],
+    body.dark-mode #devCredentialsModal button[onclick*="copyTextToClipboard"],
+    html[data-pms-theme="dark"] #credMailtoBtn,
+    html[data-theme="dark"] #credMailtoBtn,
+    html[data-bs-theme="dark"] #credMailtoBtn,
+    html.dark #credMailtoBtn,
+    body.dark-mode #credMailtoBtn {
+        background: #1e293b !important;
+        border-color: #334155 !important;
+        color: #60a5fa !important;
+    }
+
+    /* Task History Modal Timeline */
+    html[data-pms-theme="dark"] #taskHistoryModal div[style*="background: #f8fafc"],
+    html[data-pms-theme="dark"] #taskHistoryModal div[style*="background:#f8fafc"],
+    html[data-theme="dark"] #taskHistoryModal div[style*="background: #f8fafc"],
+    html[data-theme="dark"] #taskHistoryModal div[style*="background:#f8fafc"],
+    html[data-bs-theme="dark"] #taskHistoryModal div[style*="background: #f8fafc"],
+    html[data-bs-theme="dark"] #taskHistoryModal div[style*="background:#f8fafc"],
+    html.dark #taskHistoryModal div[style*="background: #f8fafc"],
+    html.dark #taskHistoryModal div[style*="background:#f8fafc"],
+    body.dark-mode #taskHistoryModal div[style*="background: #f8fafc"],
+    body.dark-mode #taskHistoryModal div[style*="background:#f8fafc"] {
+        background: #0f172a !important;
+        border-color: #334155 !important;
+    }
+
+    html[data-pms-theme="dark"] #taskHistoryModal strong,
+    html[data-theme="dark"] #taskHistoryModal strong,
+    html[data-bs-theme="dark"] #taskHistoryModal strong,
+    html.dark #taskHistoryModal strong,
+    body.dark-mode #taskHistoryModal strong {
+        color: #f8fafc !important;
+    }
+
+    html[data-pms-theme="dark"] #taskHistoryModal div[style*="background: #ecfdf5"],
+    html[data-theme="dark"] #taskHistoryModal div[style*="background: #ecfdf5"],
+    html[data-bs-theme="dark"] #taskHistoryModal div[style*="background: #ecfdf5"],
+    html.dark #taskHistoryModal div[style*="background: #ecfdf5"],
+    body.dark-mode #taskHistoryModal div[style*="background: #ecfdf5"] {
+        background: rgba(16, 185, 129, 0.15) !important;
+        border-color: rgba(16, 185, 129, 0.3) !important;
+        color: #34d399 !important;
+    }
+
+    /* Developer Drawer Dynamic Tasks */
+    html[data-pms-theme="dark"] #drawerDevAssignmentsList > div,
+    html[data-theme="dark"] #drawerDevAssignmentsList > div,
+    html[data-bs-theme="dark"] #drawerDevAssignmentsList > div,
+    html.dark #drawerDevAssignmentsList > div,
+    body.dark-mode #drawerDevAssignmentsList > div {
+        background: #0f172a !important;
+        border-color: #334155 !important;
+    }
+
+    html[data-pms-theme="dark"] #drawerDevAssignmentsList strong,
+    html[data-theme="dark"] #drawerDevAssignmentsList strong,
+    html[data-bs-theme="dark"] #drawerDevAssignmentsList strong,
+    html.dark #drawerDevAssignmentsList strong,
+    body.dark-mode #drawerDevAssignmentsList strong {
+        color: #f8fafc !important;
+    }
+
     html[data-pms-theme="dark"] .badge-inactive,
     html[data-theme="dark"] .badge-inactive,
     html[data-bs-theme="dark"] .badge-inactive,
+    html.dark .badge-inactive,
     body.dark-mode .badge-inactive {
         background: #334155 !important;
         color: #cbd5e1 !important;
@@ -905,6 +1139,7 @@
     html[data-pms-theme="dark"] .skill-tag,
     html[data-theme="dark"] .skill-tag,
     html[data-bs-theme="dark"] .skill-tag,
+    html.dark .skill-tag,
     body.dark-mode .skill-tag {
         background: #0f172a !important;
         color: #cbd5e1 !important;
@@ -914,6 +1149,7 @@
     html[data-pms-theme="dark"] .capacity-bar-wrap,
     html[data-theme="dark"] .capacity-bar-wrap,
     html[data-bs-theme="dark"] .capacity-bar-wrap,
+    html.dark .capacity-bar-wrap,
     body.dark-mode .capacity-bar-wrap {
         background: #334155 !important;
     }
@@ -921,6 +1157,7 @@
     html[data-pms-theme="dark"] h1, html[data-pms-theme="dark"] h2, html[data-pms-theme="dark"] h3, html[data-pms-theme="dark"] h4, html[data-pms-theme="dark"] h5, html[data-pms-theme="dark"] h6,
     html[data-theme="dark"] h1, html[data-theme="dark"] h2, html[data-theme="dark"] h3, html[data-theme="dark"] h4, html[data-theme="dark"] h5, html[data-theme="dark"] h6,
     html[data-bs-theme="dark"] h1, html[data-bs-theme="dark"] h2, html[data-bs-theme="dark"] h3, html[data-bs-theme="dark"] h4, html[data-bs-theme="dark"] h5, html[data-bs-theme="dark"] h6,
+    html.dark h1, html.dark h2, html.dark h3, html.dark h4, html.dark h5, html.dark h6,
     body.dark-mode h1, body.dark-mode h2, body.dark-mode h3, body.dark-mode h4, body.dark-mode h5, body.dark-mode h6 {
         color: #f8fafc !important;
     }
@@ -1552,7 +1789,35 @@
                     </div>
                     <div>
                         <label style="display: block; font-size: 12px; font-weight: 700; color: var(--slate-dark); margin-bottom: 6px;">Phone Number</label>
-                        <input type="text" name="mobile" id="devFormMobile" style="width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 13px;" placeholder="+91 98765 43210">
+                        <div style="display: flex;">
+                            <select id="devFormCountryCode" style="width: 90px; flex-shrink: 0; padding: 9px; border: 1px solid var(--border-color); border-right: 0; border-top-left-radius: var(--radius-md); border-bottom-left-radius: var(--radius-md); font-size: 13px; background-color: var(--bg-surface);">
+                                <option value="+91">+91 (IN)</option>
+                                <option value="+1">+1 (US)</option>
+                                <option value="+44">+44 (UK)</option>
+                                <option value="+61">+61 (AU)</option>
+                                <option value="+971">+971 (AE)</option>
+                                <option value="+81">+81 (JP)</option>
+                                <option value="+49">+49 (DE)</option>
+                                <option value="+33">+33 (FR)</option>
+                            </select>
+                            <input type="text" id="devFormMobileDisplay" style="width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-top-right-radius: var(--radius-md); border-bottom-right-radius: var(--radius-md); font-size: 13px;" placeholder="98765 43210">
+                            <input type="hidden" name="mobile" id="devFormMobile">
+                        </div>
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function() {
+                                const ccDev = document.getElementById('devFormCountryCode');
+                                const mobDev = document.getElementById('devFormMobileDisplay');
+                                const hiddenDev = document.getElementById('devFormMobile');
+                                function updateDevMobile() {
+                                    const num = mobDev.value.replace(/[^0-9]/g, '');
+                                    hiddenDev.value = num ? ccDev.value + ' ' + num : '';
+                                }
+                                if(ccDev && mobDev) {
+                                    ccDev.addEventListener('change', updateDevMobile);
+                                    mobDev.addEventListener('input', updateDevMobile);
+                                }
+                            });
+                        </script>
                     </div>
                 </div>
 
@@ -2339,6 +2604,8 @@
         document.getElementById('devFormName').value = '';
         document.getElementById('devFormEmail').value = '';
         document.getElementById('devFormPersonalEmail').value = '';
+        document.getElementById('devFormCountryCode').value = '+91';
+        document.getElementById('devFormMobileDisplay').value = '';
         document.getElementById('devFormMobile').value = '';
         document.getElementById('devFormRole').value = 'Full Stack Developer';
         document.getElementById('devFormExperience').value = '';
@@ -2364,7 +2631,22 @@
         document.getElementById('devFormName').value = dev.name || '';
         document.getElementById('devFormEmail').value = dev.email || '';
         document.getElementById('devFormPersonalEmail').value = dev.personal_email || dev.email || '';
-        document.getElementById('devFormMobile').value = dev.phone_number || dev.mobile || '';
+        let phoneVal = dev.phone_number || dev.mobile || '';
+        let cc = '+91';
+        let num = phoneVal;
+        let match = phoneVal.match(/^(\+\d{1,4})\s*[-\s]?(.*)$/);
+        if(match) {
+            cc = match[1];
+            num = match[2];
+        } else if(phoneVal.startsWith('+')) {
+            // fallback if it just starts with +
+            cc = phoneVal.substring(0, phoneVal.indexOf(' '));
+            num = phoneVal.substring(phoneVal.indexOf(' ') + 1);
+            if(!cc) { cc = '+91'; num = phoneVal; }
+        }
+        document.getElementById('devFormCountryCode').value = cc;
+        document.getElementById('devFormMobileDisplay').value = num;
+        document.getElementById('devFormMobile').value = phoneVal;
         document.getElementById('devFormRole').value = dev.role_title || dev.designation || 'Full Stack Developer';
         document.getElementById('devFormExperience').value = dev.experience || '';
         document.getElementById('devFormCompany').value = dev.company_id || (dev.company ? dev.company.id : '');
