@@ -11,7 +11,12 @@ class EnsureModuleAccess
 {
     public function handle(Request $request, Closure $next, string $permission = 'view'): Response
     {
-        if (\Illuminate\Support\Facades\Auth::guard('super_admin')->check()) {
+        if (
+            \Illuminate\Support\Facades\Auth::guard('super_admin')->check() ||
+            $request->is('super-admin*') ||
+            $request->is('superadmin*') ||
+            (auth()->check() && in_array(strtolower((string)(auth()->user()->role ?? '')), ['superadmin', 'super-admin', 'super_admin'], true))
+        ) {
             return $next($request);
         }
 

@@ -409,6 +409,29 @@ Route::middleware(['auth:super_admin,web'])->prefix('superadmin')->name('superad
     Route::post('/complaints/{id}/respond', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'respond'])->name('complaints.respond');
     Route::post('/complaints/{id}/status', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'updateStatus'])->name('complaints.status');
     Route::post('/complaints/{id}/assign', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'assign'])->name('complaints.assign');
+    Route::match(['GET', 'POST'], '/clear-cache', function () {
+        try {
+            \Illuminate\Support\Facades\Artisan::call('optimize:clear');
+            \Illuminate\Support\Facades\Artisan::call('route:clear');
+            \Illuminate\Support\Facades\Artisan::call('config:clear');
+            \Illuminate\Support\Facades\Artisan::call('cache:clear');
+            \Illuminate\Support\Facades\Artisan::call('view:clear');
+
+            $cacheDir = base_path('bootstrap/cache');
+            if (is_dir($cacheDir)) {
+                foreach (['routes-v7.php', 'config.php', 'events.php', 'packages.php', 'services.php'] as $f) {
+                    $p = $cacheDir . DIRECTORY_SEPARATOR . $f;
+                    if (file_exists($p)) {
+                        @unlink($p);
+                    }
+                }
+            }
+
+            return redirect()->back()->with('success', 'Production server cache and routes cleared successfully!');
+        } catch (\Throwable $e) {
+            return redirect()->back()->with('error', 'Cache clear error: ' . $e->getMessage());
+        }
+    })->name('clear-cache');
 });
 
 // Standalone route aliases for super-admin.* and admins.*
@@ -430,6 +453,29 @@ Route::middleware(['auth:super_admin,web'])->group(function () {
     Route::post('/super-admin/companies/{company}/enter', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'enter'])->name('super-admin.companies.enter');
     Route::post('/super-admin/companies/{company}/suspend', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'suspend'])->name('super-admin.companies.suspend');
     Route::delete('/super-admin/companies/{company}', [SuperAdminController::class, 'deleteCompany'])->name('super-admin.companies.delete');
+    Route::match(['GET', 'POST'], '/super-admin/clear-cache', function () {
+        try {
+            \Illuminate\Support\Facades\Artisan::call('optimize:clear');
+            \Illuminate\Support\Facades\Artisan::call('route:clear');
+            \Illuminate\Support\Facades\Artisan::call('config:clear');
+            \Illuminate\Support\Facades\Artisan::call('cache:clear');
+            \Illuminate\Support\Facades\Artisan::call('view:clear');
+
+            $cacheDir = base_path('bootstrap/cache');
+            if (is_dir($cacheDir)) {
+                foreach (['routes-v7.php', 'config.php', 'events.php', 'packages.php', 'services.php'] as $f) {
+                    $p = $cacheDir . DIRECTORY_SEPARATOR . $f;
+                    if (file_exists($p)) {
+                        @unlink($p);
+                    }
+                }
+            }
+
+            return redirect()->back()->with('success', 'Production server cache and routes cleared successfully!');
+        } catch (\Throwable $e) {
+            return redirect()->back()->with('error', 'Cache clear error: ' . $e->getMessage());
+        }
+    })->name('super-admin.clear-cache');
 });
 
 
@@ -1511,3 +1557,37 @@ Route::middleware(['auth', 'developer.access'])->prefix('developer')->name('deve
 });
 
 require __DIR__.'/auth.php';
+
+// Production-grade fallback for SuperAdmin routes (ensures zero 404s for profile, companies, and dashboard)
+Route::fallback(function (\Illuminate\Http\Request $request) {
+    $path = trim(strtolower($request->path()), '/');
+
+    // 1. SuperAdmin Profile fallback
+    if (in_array($path, ['superadmin/profile', 'super-admin/profile'], true)) {
+        if (!\Illuminate\Support\Facades\Auth::guard('super_admin')->check() && !auth()->check()) {
+            return redirect()->route('login');
+        }
+        $controller = app(\App\Http\Controllers\SuperAdminController::class);
+        return $request->isMethod('POST')
+            ? $controller->updateProfile($request)
+            : $controller->profile($request);
+    }
+
+    // 2. SuperAdmin Companies fallback
+    if (in_array($path, ['superadmin/companies', 'super-admin/companies', 'superadmin/companies/directory'], true)) {
+        if (!\Illuminate\Support\Facades\Auth::guard('super_admin')->check() && !auth()->check()) {
+            return redirect()->route('login');
+        }
+        return app(\App\Http\Controllers\SuperAdmin\CompanyController::class)->index($request);
+    }
+
+    // 3. SuperAdmin Dashboard fallback
+    if (in_array($path, ['superadmin', 'super-admin'], true)) {
+        if (!\Illuminate\Support\Facades\Auth::guard('super_admin')->check() && !auth()->check()) {
+            return redirect()->route('login');
+        }
+        return app(\App\Http\Controllers\SuperAdminController::class)->dashboard($request);
+    }
+
+    abort(404);
+});
