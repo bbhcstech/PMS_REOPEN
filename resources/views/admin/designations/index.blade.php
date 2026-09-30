@@ -51,9 +51,9 @@
     </div>
 
     @php
-        $levelsCount = $designations->groupBy('level')->count();
-        $topLevelCount = $designations->where('level', '<=', 2)->count();
-        $recentCount = $designations->where('updated_at', '>=', now()->subDays(7))->count();
+        $levelsCount = $levelsCount ?? $designations->groupBy('level')->count();
+        $topLevelCount = $topLevelCount ?? $designations->where('level', '<=', 2)->count();
+        $recentCount = $recentCount ?? $designations->where('updated_at', '>=', now()->subDays(7))->count();
     @endphp
 
     <!-- Stats Cards -->
@@ -196,14 +196,16 @@
                         <td>
                             <div class="designation-info">
                                 <div class="mini-icon">
-                                    <i class="fas fa-badge"></i>
+                                    <i class="fas fa-user-tag"></i>
                                 </div>
                                 <div>
                                     <strong class="designation-name">{{ $designation->name ?? '-' }}</strong>
                                     @if($designation->parent)
-                                    <span class="muted"><i class="fas fa-link"></i> {{ $designation->parent->name }}</span>
+                                        <span class="muted"><i class="fas fa-sitemap"></i> Reports to: <strong>{{ $designation->parent->name }}</strong></span>
+                                    @elseif($designation->level !== null && $designation->level <= 1)
+                                        <span class="muted"><i class="fas fa-crown text-warning"></i> Top-level designation</span>
                                     @else
-                                    <span class="muted"><i class="fas fa-crown"></i> Top-level designation</span>
+                                        <span class="muted"><i class="fas fa-layer-group"></i> Independent (Level {{ $designation->level ?? '-' }})</span>
                                     @endif
                                 </div>
                             </div>

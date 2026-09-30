@@ -164,6 +164,42 @@
                 </div>
             </div>
 
+            <!-- Parent Designation Field -->
+            <div class="form-field">
+                <div class="field-icon">
+                    <i class="fas fa-sitemap"></i>
+                </div>
+                <div class="field-content">
+                    <label for="parent_id">
+                        Parent Designation
+                        <span class="text-muted small">(Optional - select reporting hierarchy)</span>
+                    </label>
+                    <select
+                        id="parent_id"
+                        name="parent_id"
+                        class="form-control @error('parent_id') is-invalid @enderror"
+                    >
+                        <option value="">-- None (Top-Level Designation) --</option>
+                        @foreach($designations as $parentDesig)
+                            <option value="{{ $parentDesig->id }}"
+                                {{ (string) old('parent_id', $designation->parent_id ?? '') === (string) $parentDesig->id ? 'selected' : '' }}>
+                                {{ $parentDesig->name }}
+                                @if(!empty($parentDesig->unique_code))
+                                    ({{ $parentDesig->unique_code }})
+                                @endif
+                                @if($parentDesig->level !== null)
+                                    - Level {{ $parentDesig->level }}
+                                @endif
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('parent_id')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                    <span class="field-hint">Select parent designation this role reports to, or leave empty if top-level</span>
+                </div>
+            </div>
+
             <!-- Level Field -->
             <div class="form-field">
                 <div class="field-icon">

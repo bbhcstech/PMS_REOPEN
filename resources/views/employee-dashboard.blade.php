@@ -1204,14 +1204,15 @@
                     <div class="col-lg-4">
                         <div class="employee-clock" data-server-time="{{ now()->getTimestamp() * 1000 }}">
                             <div class="text-lg-end">
-                                <div class="employee-time" id="employeeHeroTime" data-live-clock="time">{{ now()->format('h:i:s A') }}</div>
-                                <div id="employeeHeroDate" data-live-clock="date">{{ now()->format('l, d M Y') }}</div>
+                                <div class="employee-time" id="employeeLiveTime">{{ now()->format('h:i A') }}</div>
+                                <div id="employeeLiveDate">{{ now()->format('l, d M Y') }}</div>
                             </div>
 
                             @if ($attendance && $attendance->clock_in && !$attendance->clock_out)
-                                <form method="POST" action="{{ route('dashboard.clockout') }}">
+                                <form method="POST" action="{{ route('dashboard.clockout') }}" id="employeeClockOutForm">
                                     @csrf
-                                    <button class="employee-action-btn is-out" type="submit">
+                                    <input type="hidden" name="clock_out_timezone" id="clockOutTimezone">
+                                    <button class="employee-action-btn is-out" type="submit" id="employeeClockOutButton">
                                         <i class="bx bx-log-out-circle"></i> Clock Out
                                     </button>
                                 </form>
@@ -1223,6 +1224,7 @@
                                     <input type="hidden" name="clock_in_accuracy" id="clockInAccuracy">
                                     <input type="hidden" name="clock_in_address" id="clockInAddress">
                                     <input type="hidden" name="clock_in_selfie" id="clockInSelfie">
+                                    <input type="hidden" name="clock_in_timezone" id="clockInTimezone">
                                     <button class="employee-action-btn is-in" type="submit" id="employeeClockInButton">
                                         <i class="bx bx-log-in-circle"></i> Clock In
                                     </button>
@@ -1249,6 +1251,9 @@
                                                     : null
                                             );
                                         $clockedInOutsideOffice = strtolower((string) $attendance->work_from_type) === 'field';
+                                        $defaultTz = config('app.timezone', 'Asia/Kolkata');
+                                        $clockInIsoString = $attendance->clock_in ? \Carbon\Carbon::parse($attendance->date->format('Y-m-d') . ' ' . $attendance->clock_in, $defaultTz)->toIso8601String() : '';
+                                        $clockOutIsoString = $attendance->clock_out ? \Carbon\Carbon::parse($attendance->date->format('Y-m-d') . ' ' . $attendance->clock_out, $defaultTz)->toIso8601String() : '';
                                     @endphp
                                     @if($clockInLocationText)
                                         <div class="clock-location-note">
@@ -1264,15 +1269,15 @@
                                     @endif
                                     <div class="clock-live-grid">
                                         <div class="clock-live-box">
-                                            <span>IST Time</span>
+                                            <span id="employeeClockZoneLabel">IST Time</span>
                                             <strong id="employeeIstClock">{{ now()->format('h:i:s A') }}</strong>
                                         </div>
                                         <div class="clock-live-box">
                                             <span>{{ $attendance->clock_out ? 'Worked Time' : 'Working Time' }}</span>
                                             <strong
                                                 id="employeeWorkTimer"
-                                                data-clock-in="{{ \Carbon\Carbon::parse($attendance->date->format('Y-m-d') . ' ' . $attendance->clock_in, config('app.timezone', 'Asia/Kolkata'))->toIso8601String() }}"
-                                                data-clock-out="{{ $attendance->clock_out ? \Carbon\Carbon::parse($attendance->date->format('Y-m-d') . ' ' . $attendance->clock_out, config('app.timezone', 'Asia/Kolkata'))->toIso8601String() : '' }}"
+                                                data-clock-in="{{ $clockInIsoString }}"
+                                                data-clock-out="{{ $clockOutIsoString }}"
                                                 data-fixed-duration="{{ $attendance->clock_out ? $workedDurationLabel : '' }}"
                                             >{{ $attendance->clock_out ? $workedDurationLabel : '00:00:00' }}</strong>
                                         </div>
@@ -2226,6 +2231,7 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
         const accuracyInput = document.getElementById('clockInAccuracy');
         const addressInput = document.getElementById('clockInAddress');
         const selfieInput = document.getElementById('clockInSelfie');
+        const timezoneInput = document.getElementById('clockInTimezone');
         let cameraStream = null;
         let cameraFacingMode = 'user';
         let capturedSelfie = '';
@@ -2427,25 +2433,61 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
             }
 
             selfieInput.value = capturedSelfie;
+            if (timezoneInput) {
+                timezoneInput.value = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata';
+            }
             canSubmitClockIn = true;
             setClockStatus('Photo captured. Completing clock in...', 'success');
             closeCameraModal();
             clockInForm.submit();
         });
 
+        const clockOutForm = document.getElementById('employeeClockOutForm');
+        if (clockOutForm) {
+            clockOutForm.addEventListener('submit', () => {
+                const clockOutTz = document.getElementById('clockOutTimezone');
+                if (clockOutTz) {
+                    clockOutTz.value = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata';
+                }
+            });
+        }
+
         const istClock = document.getElementById('employeeIstClock');
         const workTimer = document.getElementById('employeeWorkTimer');
-        const heroTime = document.getElementById('employeeHeroTime');
-        const heroDate = document.getElementById('employeeHeroDate');
-        const clockBox = document.querySelector('.employee-clock');
-        const serverTimestamp = clockBox && clockBox.dataset.serverTime ? parseInt(clockBox.dataset.serverTime, 10) : null;
-        const clientTimestamp = Date.now();
-        const serverOffset = serverTimestamp ? (serverTimestamp - clientTimestamp) : 0;
+        const liveTime = document.getElementById('employeeLiveTime');
+        const liveDate = document.getElementById('employeeLiveDate');
+        const clockZoneLabel = document.getElementById('employeeClockZoneLabel');
+        const employeeTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata';
 
-        const formatIstTime = (date, includeSeconds = true) => {
-            try {
-                return new Intl.DateTimeFormat('en-US', {
-                    timeZone: 'Asia/Kolkata',
+        if (clockZoneLabel) {
+            clockZoneLabel.textContent = employeeTimeZone === 'Asia/Kolkata' ? 'IST Time' : `${employeeTimeZone.split('/').pop().replace('_', ' ')} Time`;
+        }
+
+        const updateClockWidgets = () => {
+            const now = new Date();
+
+            if (liveTime) {
+                liveTime.textContent = new Intl.DateTimeFormat('en-IN', {
+                    timeZone: employeeTimeZone,
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true
+                }).format(now);
+            }
+
+            if (liveDate) {
+                liveDate.textContent = new Intl.DateTimeFormat('en-IN', {
+                    timeZone: employeeTimeZone,
+                    weekday: 'long',
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric'
+                }).format(now);
+            }
+
+            if (istClock) {
+                istClock.textContent = new Intl.DateTimeFormat('en-IN', {
+                    timeZone: employeeTimeZone,
                     hour: '2-digit',
                     minute: '2-digit',
                     second: includeSeconds ? '2-digit' : undefined,
@@ -2540,7 +2582,7 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
         scheduleMidnightRefresh();
 
         const loadedDateKey = new Intl.DateTimeFormat('en-CA', {
-            timeZone: 'Asia/Kolkata',
+            timeZone: employeeTimeZone,
             year: 'numeric',
             month: '2-digit',
             day: '2-digit'
@@ -2548,7 +2590,7 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
 
         setInterval(() => {
             const currentDateKey = new Intl.DateTimeFormat('en-CA', {
-                timeZone: 'Asia/Kolkata',
+                timeZone: employeeTimeZone,
                 year: 'numeric',
                 month: '2-digit',
                 day: '2-digit'

@@ -86,12 +86,13 @@ class CountryPhone
             }
         }
 
-        return ['dial_code' => '+91', 'iso' => 'in', 'min_digits' => 6, 'max_digits' => 15, 'name' => 'Default'];
+        return ['dial_code' => '+91', 'iso' => 'in', 'min_digits' => 10, 'max_digits' => 10, 'name' => 'India'];
     }
 
     public static function map(): array
     {
         return [
+            'India' => ['dial_code' => '+91', 'iso' => 'in', 'min_digits' => 10, 'max_digits' => 10],
             'Afghanistan' => ['dial_code' => '+93', 'iso' => 'af', 'min_digits' => 9, 'max_digits' => 9],
             'Albania' => ['dial_code' => '+355', 'iso' => 'al', 'min_digits' => 9, 'max_digits' => 9],
             'Algeria' => ['dial_code' => '+213', 'iso' => 'dz', 'min_digits' => 9, 'max_digits' => 9],
@@ -167,7 +168,6 @@ class CountryPhone
             'Honduras' => ['dial_code' => '+504', 'iso' => 'hn', 'min_digits' => 8, 'max_digits' => 8],
             'Hungary' => ['dial_code' => '+36', 'iso' => 'hu', 'min_digits' => 9, 'max_digits' => 9],
             'Iceland' => ['dial_code' => '+354', 'iso' => 'is', 'min_digits' => 7, 'max_digits' => 7],
-            'India' => ['dial_code' => '+91', 'iso' => 'in', 'min_digits' => 10, 'max_digits' => 10],
             'Indonesia' => ['dial_code' => '+62', 'iso' => 'id', 'min_digits' => 9, 'max_digits' => 12],
             'Iran' => ['dial_code' => '+98', 'iso' => 'ir', 'min_digits' => 10, 'max_digits' => 10],
             'Iraq' => ['dial_code' => '+964', 'iso' => 'iq', 'min_digits' => 10, 'max_digits' => 10],

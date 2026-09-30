@@ -338,6 +338,44 @@
         box-shadow: 0 10px 25px -4px rgba(47, 107, 255, 0.5);
     }
 
+    /* Password Input Wrapper & Visibility Toggle */
+    .pwd-input-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .pwd-input-wrapper .form-control {
+        padding-right: 2.85rem !important;
+    }
+
+    .pwd-input-wrapper .btn-toggle-password {
+        position: absolute;
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        border: none;
+        background: transparent;
+        color: #64748b;
+        padding: 0 1rem;
+        height: 100%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 5;
+        transition: color 0.2s ease, transform 0.15s ease;
+    }
+
+    .pwd-input-wrapper .btn-toggle-password:hover {
+        color: #2F6BFF;
+    }
+
+    .pwd-input-wrapper .btn-toggle-password:focus {
+        outline: none;
+        box-shadow: none;
+    }
+
     /* ===== DARK MODE SUPPORT ===== */
     html[data-pms-theme="dark"] .change-pwd-page,
     html[data-theme="dark"] .change-pwd-page,
@@ -531,6 +569,22 @@
         -webkit-text-fill-color: #fbbf24 !important;
         fill: #fbbf24 !important;
     }
+
+    html[data-pms-theme="dark"] .pwd-input-wrapper .btn-toggle-password,
+    html[data-theme="dark"] .pwd-input-wrapper .btn-toggle-password,
+    html[data-bs-theme="dark"] .pwd-input-wrapper .btn-toggle-password,
+    body[data-pms-theme="dark"] .pwd-input-wrapper .btn-toggle-password,
+    [data-pms-theme="dark"] .pwd-input-wrapper .btn-toggle-password {
+        color: #94a3b8;
+    }
+
+    html[data-pms-theme="dark"] .pwd-input-wrapper .btn-toggle-password:hover,
+    html[data-theme="dark"] .pwd-input-wrapper .btn-toggle-password:hover,
+    html[data-bs-theme="dark"] .pwd-input-wrapper .btn-toggle-password:hover,
+    body[data-pms-theme="dark"] .pwd-input-wrapper .btn-toggle-password:hover,
+    [data-pms-theme="dark"] .pwd-input-wrapper .btn-toggle-password:hover {
+        color: #60A5FA;
+    }
 </style>
 @endpush
 
@@ -650,23 +704,38 @@
                         <div class="row g-4">
                             <div class="col-md-4">
                                 <label class="form-label fw-bold text-dark small"><i class="fas fa-lock me-1 text-emerald-600"></i> Current Password</label>
-                                <input type="password" name="current_password" class="form-control rounded-4 py-2.5 @error('current_password') is-invalid @enderror" placeholder="Enter current password" required>
+                                <div class="pwd-input-wrapper">
+                                    <input type="password" name="current_password" id="current_password" class="form-control rounded-4 py-2.5 @error('current_password') is-invalid @enderror" placeholder="Enter current password" required>
+                                    <button type="button" class="btn-toggle-password" data-target="current_password" title="Show or hide password" aria-label="Toggle password visibility">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
                                 @error('current_password')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
                             </div>
 
                             <div class="col-md-4">
                                 <label class="form-label fw-bold text-dark small"><i class="fas fa-key me-1 text-emerald-600"></i> New Password</label>
-                                <input type="password" name="new_password" class="form-control rounded-4 py-2.5 @error('new_password') is-invalid @enderror" placeholder="Minimum 8 characters" required minlength="8">
+                                <div class="pwd-input-wrapper">
+                                    <input type="password" name="new_password" id="new_password" class="form-control rounded-4 py-2.5 @error('new_password') is-invalid @enderror" placeholder="Minimum 8 characters" required minlength="8">
+                                    <button type="button" class="btn-toggle-password" data-target="new_password" title="Show or hide password" aria-label="Toggle password visibility">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
                                 @error('new_password')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
                             </div>
 
                             <div class="col-md-4">
                                 <label class="form-label fw-bold text-dark small"><i class="fas fa-check-double me-1 text-emerald-600"></i> Confirm New Password</label>
-                                <input type="password" name="new_password_confirmation" class="form-control rounded-4 py-2.5" placeholder="Re-enter new password" required minlength="8">
+                                <div class="pwd-input-wrapper">
+                                    <input type="password" name="new_password_confirmation" id="new_password_confirmation" class="form-control rounded-4 py-2.5" placeholder="Re-enter new password" required minlength="8">
+                                    <button type="button" class="btn-toggle-password" data-target="new_password_confirmation" title="Show or hide password" aria-label="Toggle password visibility">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -718,12 +787,22 @@
 
                             <div class="col-md-3">
                                 <label class="form-label fw-bold text-dark small"><i class="fas fa-key me-1 text-emerald-600"></i> New Password</label>
-                                <input type="password" name="new_password" class="form-control rounded-4 py-2.5" placeholder="Minimum 8 characters" required minlength="8">
+                                <div class="pwd-input-wrapper">
+                                    <input type="password" name="new_password" id="staff_new_password" class="form-control rounded-4 py-2.5" placeholder="Minimum 8 characters" required minlength="8">
+                                    <button type="button" class="btn-toggle-password" data-target="staff_new_password" title="Show or hide password" aria-label="Toggle password visibility">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
                             </div>
 
                             <div class="col-md-3">
                                 <label class="form-label fw-bold text-dark small"><i class="fas fa-check-double me-1 text-emerald-600"></i> Confirm New Password</label>
-                                <input type="password" name="new_password_confirmation" class="form-control rounded-4 py-2.5" placeholder="Re-enter password" required minlength="8">
+                                <div class="pwd-input-wrapper">
+                                    <input type="password" name="new_password_confirmation" id="staff_new_password_confirmation" class="form-control rounded-4 py-2.5" placeholder="Re-enter password" required minlength="8">
+                                    <button type="button" class="btn-toggle-password" data-target="staff_new_password_confirmation" title="Show or hide password" aria-label="Toggle password visibility">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -821,5 +900,32 @@ function selectStaffForPasswordChange(userId) {
         select.focus();
     }
 }
+
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.btn-toggle-password').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('data-target');
+            const input = document.getElementById(targetId);
+            if (!input) return;
+            const icon = this.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                if (icon) {
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                }
+                this.setAttribute('title', 'Hide password');
+            } else {
+                input.type = 'password';
+                if (icon) {
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
+                this.setAttribute('title', 'Show password');
+            }
+        });
+    });
+});
 </script>
 @endsection

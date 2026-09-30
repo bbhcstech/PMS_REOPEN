@@ -25,21 +25,36 @@
                 <label style="font-size: 13px; font-weight: 700; color: var(--slate-heading); display: block; margin-bottom: 8px;">
                     Current Password:
                 </label>
-                <input type="password" name="current_password" required placeholder="••••••••" style="width: 100%; padding: 11px 14px; border-radius: var(--radius-md); font-size: 13.5px; font-weight: 500; outline: none; box-shadow: var(--shadow-xs);">
+                <div style="position: relative; display: flex; align-items: center;">
+                    <input type="password" name="current_password" id="dev_current_password" required placeholder="••••••••" style="width: 100%; padding: 11px 42px 11px 14px; border-radius: var(--radius-md); border: 1px solid var(--border-color); font-size: 13.5px; font-weight: 500; outline: none; box-shadow: var(--shadow-xs); background: var(--bg-surface); color: var(--slate-dark);">
+                    <button type="button" class="btn-dev-toggle-pwd" data-target="dev_current_password" style="position: absolute; right: 8px; background: none; border: none; padding: 6px; cursor: pointer; color: var(--slate-muted); display: flex; align-items: center; justify-content: center; font-size: 18px;" title="Show or hide password" aria-label="Toggle password visibility">
+                        <i class="bx bx-show"></i>
+                    </button>
+                </div>
             </div>
 
             <div>
                 <label style="font-size: 13px; font-weight: 700; color: var(--slate-heading); display: block; margin-bottom: 8px;">
                     New Password:
                 </label>
-                <input type="password" name="new_password" required minlength="8" placeholder="Minimum 8 characters" style="width: 100%; padding: 11px 14px; border-radius: var(--radius-md); font-size: 13.5px; font-weight: 500; outline: none; box-shadow: var(--shadow-xs);">
+                <div style="position: relative; display: flex; align-items: center;">
+                    <input type="password" name="new_password" id="dev_new_password" required minlength="8" placeholder="Minimum 8 characters" style="width: 100%; padding: 11px 42px 11px 14px; border-radius: var(--radius-md); border: 1px solid var(--border-color); font-size: 13.5px; font-weight: 500; outline: none; box-shadow: var(--shadow-xs); background: var(--bg-surface); color: var(--slate-dark);">
+                    <button type="button" class="btn-dev-toggle-pwd" data-target="dev_new_password" style="position: absolute; right: 8px; background: none; border: none; padding: 6px; cursor: pointer; color: var(--slate-muted); display: flex; align-items: center; justify-content: center; font-size: 18px;" title="Show or hide password" aria-label="Toggle password visibility">
+                        <i class="bx bx-show"></i>
+                    </button>
+                </div>
             </div>
 
             <div>
                 <label style="font-size: 13px; font-weight: 700; color: var(--slate-heading); display: block; margin-bottom: 8px;">
                     Confirm New Password:
                 </label>
-                <input type="password" name="new_password_confirmation" required minlength="8" placeholder="Repeat new password" style="width: 100%; padding: 11px 14px; border-radius: var(--radius-md); font-size: 13.5px; font-weight: 500; outline: none; box-shadow: var(--shadow-xs);">
+                <div style="position: relative; display: flex; align-items: center;">
+                    <input type="password" name="new_password_confirmation" id="dev_new_password_confirmation" required minlength="8" placeholder="Repeat new password" style="width: 100%; padding: 11px 42px 11px 14px; border-radius: var(--radius-md); border: 1px solid var(--border-color); font-size: 13.5px; font-weight: 500; outline: none; box-shadow: var(--shadow-xs); background: var(--bg-surface); color: var(--slate-dark);">
+                    <button type="button" class="btn-dev-toggle-pwd" data-target="dev_new_password_confirmation" style="position: absolute; right: 8px; background: none; border: none; padding: 6px; cursor: pointer; color: var(--slate-muted); display: flex; align-items: center; justify-content: center; font-size: 18px;" title="Show or hide password" aria-label="Toggle password visibility">
+                        <i class="bx bx-show"></i>
+                    </button>
+                </div>
             </div>
 
             <div style="padding-top: 10px; display: flex; justify-content: flex-end;">
@@ -51,5 +66,34 @@
     </div>
 
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.btn-dev-toggle-pwd').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('data-target');
+            const input = document.getElementById(targetId);
+            if (!input) return;
+            const icon = this.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                if (icon) {
+                    icon.classList.remove('bx-show');
+                    icon.classList.add('bx-hide');
+                }
+                this.setAttribute('title', 'Hide password');
+            } else {
+                input.type = 'password';
+                if (icon) {
+                    icon.classList.remove('bx-hide');
+                    icon.classList.add('bx-show');
+                }
+                this.setAttribute('title', 'Show password');
+            }
+        });
+    });
+});
+</script>
 @endsection
 

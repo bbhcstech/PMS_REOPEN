@@ -2081,7 +2081,13 @@ class AttendanceController extends Controller
 
         try {
             $response = DB::transaction(function () use ($user, $request) {
-                $today = now()->toDateString();
+                $timezone = $this->resolveEmployeeTimezone(
+                    $request->input('clock_in_timezone') ?? $request->input('timezone'),
+                    $request->filled('clock_in_latitude') ? (float)$request->clock_in_latitude : null,
+                    $request->filled('clock_in_longitude') ? (float)$request->clock_in_longitude : null
+                );
+                $now = Carbon::now($timezone);
+                $today = $now->toDateString();
 
                 // find or create today's attendance row
                 $attendance = Attendance::firstOrCreate(
@@ -2096,7 +2102,7 @@ class AttendanceController extends Controller
 
                 // set clock_in if not already set
                 if (empty($attendance->clock_in)) {
-                    $attendance->clock_in = now()->format('H:i:s');
+                    $attendance->clock_in = $now->format('H:i:s');
                     $attendance->save();
                     $attendance = $this->applyOrganizationAttendanceRules($attendance);
                 } else {
@@ -2161,5 +2167,35 @@ class AttendanceController extends Controller
 
             return redirect()->back()->with('error', 'Failed to record clock-in: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Resolve employee's timezone with respect to location/browser, defaulting to India (Asia/Kolkata).
+     */
+    protected function resolveEmployeeTimezone(?string $clientTz = null, ?float $lat = null, ?float $lng = null): string
+    {
+        // 1. If valid IANA timezone string is provided (e.g. from employee's device/browser)
+        if (!empty($clientTz) && in_array($clientTz, \DateTimeZone::listIdentifiers(), true)) {
+            return $clientTz;
+        }
+
+        // 2. Fallback based on geolocation coordinates if available
+        if ($lat !== null && $lng !== null) {
+            // India bounding box (approx lat 6°N - 37.5°N, lng 68°E - 97.5°E)
+            if ($lat >= 6.0 && $lat <= 37.5 && $lng >= 68.0 && $lng <= 97.5) {
+                return 'Asia/Kolkata';
+            }
+            // UAE / Gulf (approx lat 22°N - 27°N, lng 51°E - 57°E)
+            if ($lat >= 22.0 && $lat <= 27.0 && $lng >= 51.0 && $lng <= 57.0) {
+                return 'Asia/Dubai';
+            }
+            // UK (approx lat 49°N - 61°N, lng -8°W - 2°E)
+            if ($lat >= 49.0 && $lat <= 61.0 && $lng >= -8.0 && $lng <= 2.0) {
+                return 'Europe/London';
+            }
+        }
+
+        // 3. Fallback to app configuration or default to India (Asia/Kolkata)
+        return config('app.timezone') ?: 'Asia/Kolkata';
     }
 }
