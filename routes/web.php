@@ -1203,26 +1203,28 @@ Route::get('/my-awards', [AwardController::class, 'myAwards'])->name('awards.my-
 
 
 /// Lead Contacts Routes
-Route::get('leads/contacts', [LeadContactController::class, 'index'])->name('leads.contacts.index');
-Route::get('leads/contacts/create', [LeadContactController::class, 'create'])->name('leads.contacts.create');
-Route::post('leads/contacts/store', [LeadContactController::class, 'store'])->name('leads.contacts.store');
-Route::post('leads/contacts/check-duplicate', [LeadContactController::class, 'checkDuplicate'])->name('leads.contacts.check-duplicate');
-Route::get('leads/contacts/{id}', [LeadContactController::class, 'show'])->name('leads.contacts.show');
-Route::get('leads/contacts/{id}/edit', [LeadContactController::class, 'edit'])->name('leads.contacts.edit');
-Route::put('leads/contacts/{id}', [LeadContactController::class, 'update'])->name('leads.contacts.update');
-Route::delete('leads/contacts/{id}', [LeadContactController::class, 'destroy'])->name('leads.contacts.destroy');
-Route::post('leads/contacts/{id}/activities', [LeadContactController::class, 'storeActivity'])->name('leads.contacts.activities.store');
-Route::post('leads/contacts/{id}/follow-ups', [LeadContactController::class, 'storeFollowUp'])->name('leads.contacts.follow-ups.store');
+Route::middleware(['auth'])->group(function () {
+    Route::get('leads/contacts', [LeadContactController::class, 'index'])->name('leads.contacts.index');
+    Route::get('leads/contacts/create', [LeadContactController::class, 'create'])->name('leads.contacts.create');
+    Route::post('leads/contacts/store', [LeadContactController::class, 'store'])->name('leads.contacts.store');
+    Route::post('leads/contacts/check-duplicate', [LeadContactController::class, 'checkDuplicate'])->name('leads.contacts.check-duplicate');
+    Route::get('leads/contacts/{id}', [LeadContactController::class, 'show'])->name('leads.contacts.show');
+    Route::get('leads/contacts/{id}/edit', [LeadContactController::class, 'edit'])->name('leads.contacts.edit');
+    Route::put('leads/contacts/{id}', [LeadContactController::class, 'update'])->name('leads.contacts.update');
+    Route::delete('leads/contacts/{id}', [LeadContactController::class, 'destroy'])->name('leads.contacts.destroy');
+    Route::post('leads/contacts/{id}/activities', [LeadContactController::class, 'storeActivity'])->name('leads.contacts.activities.store');
+    Route::post('leads/contacts/{id}/follow-ups', [LeadContactController::class, 'storeFollowUp'])->name('leads.contacts.follow-ups.store');
 
-// Bulk actions
-Route::post('/leads/contacts/bulk-delete', [LeadContactController::class, 'bulkDelete'])
-    ->name('leads.contacts.bulk.delete');
-Route::post('leads/contacts/convert', [LeadContactController::class, 'convertToClient'])->name('leads.contacts.convert');
+    // Bulk actions
+    Route::post('/leads/contacts/bulk-delete', [LeadContactController::class, 'bulkDelete'])
+        ->name('leads.contacts.bulk.delete');
+    Route::post('leads/contacts/convert', [LeadContactController::class, 'convertToClient'])->name('leads.contacts.convert');
 
-// Import/Export
-Route::get('/leads/contacts/export', [LeadContactController::class, 'export'])->name('leads.contacts.export');
-Route::get('leads/contacts/template', [LeadContactController::class, 'downloadTemplate'])->name('leads.contacts.template');
-Route::post('leads/contacts/import', [LeadContactController::class, 'import'])->name('leads.contacts.import');
+    // Import/Export
+    Route::get('/leads/contacts/export', [LeadContactController::class, 'export'])->name('leads.contacts.export');
+    Route::get('leads/contacts/template', [LeadContactController::class, 'downloadTemplate'])->name('leads.contacts.template');
+    Route::post('leads/contacts/import', [LeadContactController::class, 'import'])->name('leads.contacts.import');
+});
 
 Route::middleware(['auth'])->prefix('payroll')->name('payroll.')->group(function () {
     Route::get('/', [PayrollController::class, 'index'])->name('index');

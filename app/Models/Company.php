@@ -98,7 +98,13 @@ class Company extends Model
 
     public function logoUrl(): ?string
     {
-        return $this->logo ? asset($this->logo) : null;
+        if ($this->logo && file_exists(public_path($this->logo))) {
+            return asset($this->logo);
+        }
+        if (file_exists(public_path('logo.png'))) {
+            return asset('logo.png');
+        }
+        return null;
     }
 
     public function faviconUrl(): ?string
