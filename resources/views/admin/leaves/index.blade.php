@@ -313,22 +313,22 @@
                                         <a href="{{ route('leaves.edit', $leave->id) }}" class="btn btn-sm btn-light" title="Edit"><i class="fas fa-pen"></i></a>
                                     @endif
                                     @if($isAdmin)
-                                        <form method="POST" action="{{ route('leaves.updateStatus', $leave->id) }}" class="d-inline">
+                                        <form method="POST" action="{{ route('leaves.updateStatus', $leave->id) }}" class="d-inline" onsubmit="return confirm('Approve this leave request?');">
                                             @csrf
                                             @method('PATCH')
                                             <input type="hidden" name="status" value="approved">
-                                            <button class="btn btn-sm btn-success" title="Approve"><i class="fas fa-check"></i></button>
+                                            <button type="submit" class="btn btn-sm btn-success" title="Approve Leave"><i class="fas fa-check"></i></button>
                                         </form>
-                                        <form method="POST" action="{{ route('leaves.updateStatus', $leave->id) }}" class="d-inline">
+                                        <form method="POST" action="{{ route('leaves.updateStatus', $leave->id) }}" class="d-inline" onsubmit="return confirm('Convert this leave request to unpaid leave?');">
                                             @csrf
                                             @method('PATCH')
                                             <input type="hidden" name="status" value="unpaid">
-                                        <button class="btn btn-sm btn-warning" title="Unpaid"><i class="fas fa-wallet"></i></button>
-                                    </form>
-                                    <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal{{ $leave->id }}" title="Reject"><i class="fas fa-times"></i></button>
+                                            <button type="submit" class="btn btn-sm btn-warning" title="Convert to Unpaid"><i class="fas fa-wallet"></i></button>
+                                        </form>
+                                        <button type="button" class="btn btn-sm btn-danger btn-reject-trigger" data-bs-toggle="modal" data-bs-target="#rejectModal{{ $leave->id }}" data-toggle="modal" data-target="#rejectModal{{ $leave->id }}" data-reject-leave-id="{{ $leave->id }}" title="Reject Leave"><i class="fas fa-times"></i></button>
                                         <form method="POST" action="{{ route('leaves.archive.action', $leave->id) }}" class="d-inline" onsubmit="return confirm('Archive this leave request? It can be restored later.');">
                                             @csrf
-                                            <button class="btn btn-sm btn-secondary" title="Archive"><i class="fas fa-box-archive"></i></button>
+                                            <button type="submit" class="btn btn-sm btn-secondary" title="Archive"><i class="fas fa-box-archive"></i></button>
                                         </form>
                                     @endif
                                 </div>
@@ -349,29 +349,34 @@
 </div>
 
 <!-- Reject Modals -->
+@if($isAdmin)
 @foreach($leaves as $leave)
-<div class="modal fade" id="rejectModal{{ $leave->id }}" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="rejectModal{{ $leave->id }}" tabindex="-1" aria-labelledby="rejectModalLabel{{ $leave->id }}" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <form class="modal-content" method="POST" action="{{ route('leaves.updateStatus', $leave->id) }}">
             @csrf
             @method('PATCH')
             <input type="hidden" name="status" value="rejected">
             <div class="modal-header">
-                <h5 class="modal-title">Reject Leave</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <h5 class="modal-title" id="rejectModalLabel{{ $leave->id }}"><i class="fas fa-times-circle text-danger me-2"></i>Reject Leave Request</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <label class="form-label">Rejection Reason</label>
-                <textarea name="rejection_reason" class="form-control" rows="4" required></textarea>
+                <p class="text-muted mb-3">Are you sure you want to reject the leave request for <strong>{{ $leave->user?->name ?? 'Employee' }}</strong> ({{ number_format((float) $leave->total_days, 1) }} days)?</p>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Rejection Reason <small class="text-muted fw-normal">(optional)</small></label>
+                    <textarea name="rejection_reason" class="form-control" rows="3" placeholder="Provide a reason for rejecting this leave request..."></textarea>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button class="btn btn-danger">Reject</button>
+                <button type="submit" class="btn btn-danger"><i class="fas fa-times me-1"></i> Confirm Reject</button>
             </div>
         </form>
     </div>
 </div>
 @endforeach
+@endif
 
 <!-- Policy Modal -->
 @if($isAdmin)
@@ -1393,6 +1398,42 @@
 
     .action-row .btn-light:hover {
         background: #e5e7eb;
+        transform: translateY(-1px);
+    }
+
+    .action-row .btn-success {
+        background: #10B981;
+        color: #ffffff;
+        border: 1px solid #059669;
+    }
+
+    .action-row .btn-success:hover {
+        background: #059669;
+        color: #ffffff;
+        transform: translateY(-1px);
+    }
+
+    .action-row .btn-warning {
+        background: #F59E0B;
+        color: #ffffff;
+        border: 1px solid #D97706;
+    }
+
+    .action-row .btn-warning:hover {
+        background: #D97706;
+        color: #ffffff;
+        transform: translateY(-1px);
+    }
+
+    .action-row .btn-danger {
+        background: #EF4444;
+        color: #ffffff;
+        border: 1px solid #DC2626;
+    }
+
+    .action-row .btn-danger:hover {
+        background: #DC2626;
+        color: #ffffff;
         transform: translateY(-1px);
     }
 
@@ -2535,6 +2576,21 @@ $(function () {
         }).fail(function () {
             alert('Unable to apply bulk action.');
         });
+    });
+
+    $(document).on('click', '.btn-reject-trigger', function (e) {
+        e.preventDefault();
+        var targetId = $(this).data('bs-target') || $(this).data('target');
+        if (targetId) {
+            var modalEl = document.querySelector(targetId);
+            if (modalEl) {
+                if (window.bootstrap && bootstrap.Modal) {
+                    bootstrap.Modal.getOrCreateInstance(modalEl).show();
+                } else if (window.jQuery && $(modalEl).modal) {
+                    $(modalEl).modal('show');
+                }
+            }
+        }
     });
 });
 </script>

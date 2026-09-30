@@ -37,7 +37,7 @@ class StoreLeaveRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'contact_during_leave.regex' => 'Please enter a valid phone number with country code (e.g. +923001234567).',
+            'contact_during_leave.regex' => 'Please enter a valid phone number with country code (e.g. +919876543210).',
             'contact_during_leave.max'   => 'Contact number must not exceed 25 characters.',
         ];
     }

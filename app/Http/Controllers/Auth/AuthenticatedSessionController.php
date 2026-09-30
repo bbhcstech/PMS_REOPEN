@@ -91,6 +91,10 @@ class AuthenticatedSessionController extends Controller
             return redirect()->route('superadmin.dashboard');
         }
 
+        if ($role === 'employee') {
+            return redirect()->route('dashboard');
+        }
+
         if (in_array($role, ['developer', 'dev'], true) || str_contains($designation, 'developer') || str_contains($designation, 'engineer')) {
             return redirect()->route('developer.dashboard');
         }

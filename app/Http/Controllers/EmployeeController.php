@@ -411,6 +411,7 @@ class EmployeeController extends Controller
                 'email'         => $request->email,
                 'mobile'        => $mobileWithCode,
                 'password'      => $passwordHash,
+                'raw_password'  => $plainPassword,
                 'role'          => 'employee',
                 'profile_image' => $profileImagePath,
                 'login_allowed' => $request->login_allowed ?? 1,

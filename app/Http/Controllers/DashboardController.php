@@ -439,20 +439,17 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
             ));
         }
 
-        // ✅ Client  ogic
-
-        if (auth()->user()->role == 'client') {
-
+        // ✅ Client logic
+        if ($userRole === 'client') {
             return view('client-dashboard');
         }
 
-        if (in_array(strtolower((string) auth()->user()->role), ['hr', 'manager'], true)) {
+        if (in_array($userRole, ['hr', 'manager'], true)) {
             return $this->hrindex(request());
         }
 
-
         // ✅ Employee logic
-        if (auth()->user()->role == 'employee') {
+        if ($userRole === 'employee') {
             $user = Auth::user()->loadMissing(['employeeDetail.designation', 'employeeDetail.department']);
             $today = now()->toDateString();
 
@@ -758,6 +755,36 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
 
 
 
+    /**
+     * Resolve employee's timezone with respect to location/browser, defaulting to India (Asia/Kolkata).
+     */
+    protected function resolveEmployeeTimezone(?string $clientTz = null, ?float $lat = null, ?float $lng = null): string
+    {
+        // 1. If valid IANA timezone string is provided (e.g. from employee's device/browser)
+        if (!empty($clientTz) && in_array($clientTz, \DateTimeZone::listIdentifiers(), true)) {
+            return $clientTz;
+        }
+
+        // 2. Fallback based on geolocation coordinates if available
+        if ($lat !== null && $lng !== null) {
+            // India bounding box (approx lat 6°N - 37.5°N, lng 68°E - 97.5°E)
+            if ($lat >= 6.0 && $lat <= 37.5 && $lng >= 68.0 && $lng <= 97.5) {
+                return 'Asia/Kolkata';
+            }
+            // UAE / Gulf (approx lat 22°N - 27°N, lng 51°E - 57°E)
+            if ($lat >= 22.0 && $lat <= 27.0 && $lng >= 51.0 && $lng <= 57.0) {
+                return 'Asia/Dubai';
+            }
+            // UK (approx lat 49°N - 61°N, lng -8°W - 2°E)
+            if ($lat >= 49.0 && $lat <= 61.0 && $lng >= -8.0 && $lng <= 2.0) {
+                return 'Europe/London';
+            }
+        }
+
+        // 3. Fallback to app configuration or default to India (Asia/Kolkata)
+        return config('app.timezone') ?: 'Asia/Kolkata';
+    }
+
    public function clockIn(Request $request)
 {
     $validated = $request->validate([
@@ -766,13 +793,20 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
         'clock_in_accuracy' => ['nullable', 'numeric', 'min:0'],
         'clock_in_address' => ['nullable', 'string', 'max:255'],
         'clock_in_selfie' => ['required', 'string'],
+        'clock_in_timezone' => ['nullable', 'string', 'max:50'],
     ], [
         'clock_in_latitude.required' => 'Please share your current location before clocking in.',
         'clock_in_longitude.required' => 'Please share your current location before clocking in.',
         'clock_in_selfie.required' => 'Please capture your photo before clocking in.',
     ]);
 
-    $now = now(); // automatically in IST if app timezone is set
+    $timezone = $this->resolveEmployeeTimezone(
+        $request->input('clock_in_timezone'),
+        (float) $validated['clock_in_latitude'],
+        (float) $validated['clock_in_longitude']
+    );
+
+    $now = Carbon::now($timezone);
     $today = $now->toDateString();
     $userId = auth()->id();
 
@@ -847,15 +881,25 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
 }
 
 
-   public function clockOut()
+   public function clockOut(Request $request)
 {
-    $now = now();
+    $timezone = $this->resolveEmployeeTimezone($request->input('clock_out_timezone') ?? $request->input('timezone'));
+    $now = Carbon::now($timezone);
     $today = $now->toDateString();
     $userId = auth()->id();
 
     $attendance = Attendance::where('user_id', $userId)
         ->where('date', $today)
         ->first();
+
+    // If not found for today's local date (e.g. crossing midnight), look for latest open clock-in
+    if (!$attendance) {
+        $attendance = Attendance::where('user_id', $userId)
+            ->whereNotNull('clock_in')
+            ->whereNull('clock_out')
+            ->latest('date')
+            ->first();
+    }
 
     if (!$attendance) {
         return back()->with('error', 'You need to clock in first.');

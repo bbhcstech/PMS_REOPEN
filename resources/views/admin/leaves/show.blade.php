@@ -10,7 +10,24 @@
             <h1>{{ $leave->user?->name ?? 'Employee' }}</h1>
             <p>{{ $leave->type_label }} from {{ optional($leave->start_date)->format('d M Y') }} to {{ optional($leave->end_date)->format('d M Y') }}</p>
         </div>
-        <a href="{{ route('leaves.index') }}" class="btn btn-light"><i class="fas fa-arrow-left"></i> Back</a>
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            @if($isAdmin)
+                <form method="POST" action="{{ route('leaves.updateStatus', $leave->id) }}" class="d-inline" onsubmit="return confirm('Approve this leave request?');">
+                    @csrf
+                    @method('PATCH')
+                    <input type="hidden" name="status" value="approved">
+                    <button type="submit" class="btn btn-success" title="Approve Leave"><i class="fas fa-check me-1"></i> Approve</button>
+                </form>
+                <form method="POST" action="{{ route('leaves.updateStatus', $leave->id) }}" class="d-inline" onsubmit="return confirm('Convert this leave request to unpaid leave?');">
+                    @csrf
+                    @method('PATCH')
+                    <input type="hidden" name="status" value="unpaid">
+                    <button type="submit" class="btn btn-warning text-dark" title="Convert to Unpaid"><i class="fas fa-wallet me-1"></i> Convert to Unpaid</button>
+                </form>
+                <button type="button" class="btn btn-danger btn-reject-trigger" data-bs-toggle="modal" data-bs-target="#rejectModal{{ $leave->id }}" data-toggle="modal" data-target="#rejectModal{{ $leave->id }}" title="Reject Leave"><i class="fas fa-times me-1"></i> Reject</button>
+            @endif
+            <a href="{{ route('leaves.index') }}" class="btn btn-light"><i class="fas fa-arrow-left me-1"></i> Back</a>
+        </div>
     </div>
 
     <div class="detail-grid">
@@ -311,4 +328,53 @@
         border-bottom-color: rgba(238, 241, 251, 0.08) !important;
     }
 </style>
+
+@if($isAdmin)
+<div class="modal fade" id="rejectModal{{ $leave->id }}" tabindex="-1" aria-labelledby="rejectModalLabel{{ $leave->id }}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <form class="modal-content" method="POST" action="{{ route('leaves.updateStatus', $leave->id) }}">
+            @csrf
+            @method('PATCH')
+            <input type="hidden" name="status" value="rejected">
+            <div class="modal-header">
+                <h5 class="modal-title" id="rejectModalLabel{{ $leave->id }}"><i class="fas fa-times-circle text-danger me-2"></i>Reject Leave Request</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted mb-3">Are you sure you want to reject the leave request for <strong>{{ $leave->user?->name ?? 'Employee' }}</strong> ({{ number_format((float) $leave->total_days, 1) }} days)?</p>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Rejection Reason <small class="text-muted fw-normal">(optional)</small></label>
+                    <textarea name="rejection_reason" class="form-control" rows="3" placeholder="Provide a reason for rejecting this leave request..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-danger"><i class="fas fa-times me-1"></i> Confirm Reject</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@push('js')
+<script>
+$(function () {
+    $(document).on('click', '.btn-reject-trigger', function (e) {
+        e.preventDefault();
+        var targetId = $(this).data('bs-target') || $(this).data('target');
+        if (targetId) {
+            var modalEl = document.querySelector(targetId);
+            if (modalEl) {
+                if (window.bootstrap && bootstrap.Modal) {
+                    bootstrap.Modal.getOrCreateInstance(modalEl).show();
+                } else if (window.jQuery && $(modalEl).modal) {
+                    $(modalEl).modal('show');
+                }
+            }
+        }
+    });
+});
+</script>
+@endpush
+@endif
+
 @endsection

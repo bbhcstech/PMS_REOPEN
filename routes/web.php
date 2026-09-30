@@ -894,6 +894,9 @@ Route::get('/my-awards', [AwardController::class, 'myAwards'])->name('awards.my-
     Route::resource('clients', ClientController::class);
     Route::get('/clients/{client}', [ClientController::class, 'show'])->name('clients.show');
     Route::resource('collaborating-companies', CollaboratingCompanyController::class);
+    Route::resource('admin/companies', CompanyManagementController::class)->names('admin.companies');
+    Route::post('admin/companies/{company}/activate', [CompanyManagementController::class, 'activate'])->name('admin.companies.activate');
+    Route::post('admin/companies/{company}/deactivate', [CompanyManagementController::class, 'deactivate'])->name('admin.companies.deactivate');
 
     // client categories
     Route::resource('client-categories', ClientCategoryController::class)->only(['store', 'index']);

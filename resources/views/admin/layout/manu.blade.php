@@ -1295,8 +1295,8 @@
     $canAnyModule = fn (array $slugs) => collect($slugs)->contains(fn ($slug) => $canSeeModule($slug));
     $isEmployeeUser = strtolower((string) auth()->user()?->role) === 'employee';
     try {
-        $navbarNotifications = auth()->user()->notifications()->latest()->take(8)->get();
-        $navbarUnreadCount = auth()->user()->unreadNotifications()->count();
+        $navbarNotifications = auth()->user()?->notifications()->latest()->take(8)->get() ?? collect();
+        $navbarUnreadCount = auth()->user()?->unreadNotifications()->count() ?? 0;
     } catch (\Throwable $e) {
         $navbarNotifications = collect();
         $navbarUnreadCount = 0;

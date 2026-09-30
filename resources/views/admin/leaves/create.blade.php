@@ -118,13 +118,13 @@
                            value="{{ old('contact_during_leave', $leave->contact_during_leave ?? '') }}">
                     <div class="phone-input-wrapper" style="position:relative;">
                         <input type="tel" id="contactDuringLeavePhone" class="form-control"
-                               placeholder="3XX XXXXXXX"
+                               placeholder="98765 43210"
                                autocomplete="tel"
                                style="padding-left:90px;">
                         <div id="phoneValidIcon" style="display:none;position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:1.1rem;"></div>
                     </div>
                     <small id="phoneError" class="text-danger" style="display:none;font-size:.8rem;margin-top:4px;"></small>
-                    <small class="text-muted" style="font-size:.72rem;">Enter number with country code, e.g. +92 300 1234567</small>
+                    <small class="text-muted" style="font-size:.72rem;">Enter number with country code, e.g. +91 98765 43210</small>
                 </div>
                 <div>
                     <label>Attachment</label>
@@ -643,61 +643,106 @@ document.addEventListener('DOMContentLoaded', function () {
     const phoneIcon    = document.getElementById('phoneValidIcon');
     const leaveForm    = document.getElementById('leaveForm');
 
-    // Load intl-tel-input dynamically
-    const itiScript = document.createElement('script');
-    itiScript.src = 'https://cdn.jsdelivr.net/npm/intl-tel-input@23/build/js/intlTelInput.min.js';
-    itiScript.onload = function () {
+    function initPhoneValidation() {
+        if (!phoneInput || !window.intlTelInput) return;
+
         const utilsScript = 'https://cdn.jsdelivr.net/npm/intl-tel-input@23/build/js/utils.js';
 
         const iti = window.intlTelInput(phoneInput, {
             utilsScript: utilsScript,
-            initialCountry: 'pk',           // default to Pakistan — change to 'auto' if needed
+            initialCountry: 'in',           // default to India (+91)
             separateDialCode: true,
-            preferredCountries: ['pk', 'ae', 'us', 'gb', 'sa', 'in'],
+            strictMode: true,               // restrict input characters and limit digits to country maximum
+            preferredCountries: ['in', 'ae', 'us', 'gb', 'sa', 'pk'],
             placeholderNumberType: 'MOBILE',
         });
 
+        function getValidationMessage() {
+            const countryData = iti.getSelectedCountryData();
+            const countryName = countryData.name ? countryData.name.replace(/\s*\(.*?\)\s*/g, '').trim() : 'selected country';
+            const errorCode = iti.getValidationError();
+
+            switch (errorCode) {
+                case 1:
+                    return 'Invalid country code selected.';
+                case 2:
+                    return `Phone number is too short for ${countryName}. Please enter all required digits.`;
+                case 3:
+                    return `Phone number is too long for ${countryName}.`;
+                case 5:
+                    return `Invalid number of digits for ${countryName}.`;
+                case 4:
+                default:
+                    return `Please enter a valid phone number for ${countryName}.`;
+            }
+        }
+
+        function showPhoneState(valid, customMsg) {
+            phoneInput.classList.toggle('phone-valid', valid === true);
+            phoneInput.classList.toggle('phone-invalid', valid === false);
+
+            if (valid === true) {
+                if (phoneIcon) {
+                    phoneIcon.style.display = 'block';
+                    phoneIcon.innerHTML = '<i class="fas fa-check-circle" style="color:#22c55e;"></i>';
+                }
+                if (phoneError) {
+                    phoneError.style.display = 'none';
+                    phoneError.textContent = '';
+                }
+            } else if (valid === false) {
+                if (phoneIcon) {
+                    phoneIcon.style.display = 'block';
+                    phoneIcon.innerHTML = '<i class="fas fa-times-circle" style="color:#ef4444;"></i>';
+                }
+                if (phoneError) {
+                    phoneError.style.display = 'block';
+                    phoneError.textContent = customMsg || getValidationMessage();
+                }
+            } else {
+                // Empty / reset
+                if (phoneIcon) phoneIcon.style.display = 'none';
+                if (phoneError) {
+                    phoneError.style.display = 'none';
+                    phoneError.textContent = '';
+                }
+            }
+        }
+
+        function validatePhone() {
+            const rawVal = phoneInput.value.trim();
+            if (rawVal === '') {
+                showPhoneState(null);
+                if (hiddenInput) hiddenInput.value = '';
+                return true;
+            }
+
+            const valid = iti.isValidNumber();
+            if (valid) {
+                showPhoneState(true);
+                if (hiddenInput) hiddenInput.value = iti.getNumber();
+                return true;
+            } else {
+                showPhoneState(false);
+                if (hiddenInput) hiddenInput.value = '';
+                return false;
+            }
+        }
+
         // Pre-fill if a value already exists (edit mode / old input)
-        const existingVal = hiddenInput.value.trim();
+        const existingVal = hiddenInput ? hiddenInput.value.trim() : '';
         if (existingVal) {
             iti.setNumber(existingVal);
+            validatePhone();
         }
 
-        function showPhoneState(valid) {
-            phoneInput.classList.toggle('phone-valid', valid);
-            phoneInput.classList.toggle('phone-invalid', !valid && phoneInput.value.trim() !== '');
-            if (valid) {
-                phoneIcon.style.display = 'block';
-                phoneIcon.innerHTML = '<i class="fas fa-check-circle" style="color:#22c55e;"></i>';
-                phoneError.style.display = 'none';
-            } else if (phoneInput.value.trim() === '') {
-                phoneIcon.style.display = 'none';
-                phoneError.style.display = 'none';
-                phoneInput.classList.remove('phone-invalid');
-            } else {
-                phoneIcon.style.display = 'block';
-                phoneIcon.innerHTML = '<i class="fas fa-times-circle" style="color:#ef4444;"></i>';
-                phoneError.style.display = 'block';
-                phoneError.textContent = 'Please enter a valid phone number with country code.';
-            }
-        }
-
-        phoneInput.addEventListener('input', function () {
-            if (phoneInput.value.trim() === '') {
-                showPhoneState(false);
-                hiddenInput.value = '';
-                return;
-            }
-            const valid = iti.isValidNumber();
-            showPhoneState(valid);
-            hiddenInput.value = valid ? iti.getNumber() : '';
-        });
-
+        phoneInput.addEventListener('input', validatePhone);
         phoneInput.addEventListener('countrychange', function () {
+            validatePhone();
+        });
+        phoneInput.addEventListener('blur', function () {
             if (phoneInput.value.trim() !== '') {
-                const valid = iti.isValidNumber();
-                showPhoneState(valid);
-                hiddenInput.value = valid ? iti.getNumber() : '';
+                validatePhone();
             }
         });
 
@@ -708,18 +753,29 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (rawVal !== '') {
                     if (!iti.isValidNumber()) {
                         e.preventDefault();
+                        e.stopPropagation();
                         showPhoneState(false);
+                        phoneInput.focus();
                         phoneInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        return;
+                        return false;
                     }
-                    hiddenInput.value = iti.getNumber(); // ensure E.164 in hidden field
+                    if (hiddenInput) hiddenInput.value = iti.getNumber(); // ensure E.164 in hidden field
                 } else {
-                    hiddenInput.value = '';
+                    if (hiddenInput) hiddenInput.value = '';
                 }
             }, true); // capture phase so it fires before other submit handlers
         }
-    };
-    document.head.appendChild(itiScript);
+    }
+
+    // Load intl-tel-input dynamically if not already present
+    if (window.intlTelInput) {
+        initPhoneValidation();
+    } else {
+        const itiScript = document.createElement('script');
+        itiScript.src = 'https://cdn.jsdelivr.net/npm/intl-tel-input@23/build/js/intlTelInput.min.js';
+        itiScript.onload = initPhoneValidation;
+        document.head.appendChild(itiScript);
+    }
 });
 </script>
 @endpush

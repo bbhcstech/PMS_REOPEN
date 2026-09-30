@@ -80,14 +80,19 @@
                     <label>Parent Designation</label>
                     <div class="field-value">
                         @if($designation->parent)
-                            <span class="parent-link">
+                            <a href="{{ route('designations.show', $designation->parent->id) }}" class="parent-link">
                                 <i class="fas fa-link"></i>
                                 {{ $designation->parent->name }}
+                            </a>
+                        @elseif($designation->level !== null && $designation->level <= 1)
+                            <span class="no-parent">
+                                <i class="fas fa-crown text-warning"></i>
+                                Top-level designation
                             </span>
                         @else
-                            <span class="no-parent">
-                                <i class="fas fa-crown"></i>
-                                Top-level designation
+                            <span class="no-parent text-muted">
+                                <i class="fas fa-layer-group"></i>
+                                Direct / Independent (Level {{ $designation->level ?? '-' }})
                             </span>
                         @endif
                     </div>
@@ -210,8 +215,10 @@
                         <a href="{{ route('designations.show', $designation->parent->id) }}" class="parent-link">
                             <i class="fas fa-link"></i> {{ $designation->parent->name }}
                         </a>
+                    @elseif($designation->level !== null && $designation->level <= 1)
+                        <span class="no-parent"><i class="fas fa-crown text-warning"></i> Top-level</span>
                     @else
-                        <span class="no-parent"><i class="fas fa-crown"></i> Top-level</span>
+                        <span class="no-parent text-muted"><i class="fas fa-layer-group"></i> Direct / Independent</span>
                     @endif
                 </span>
             </div>

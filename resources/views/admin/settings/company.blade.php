@@ -362,10 +362,25 @@
     }
 
     .phone-combo-group .country-code-wrapper {
-        min-width: 145px;
+        min-width: 140px;
         max-width: 155px;
         flex-shrink: 0;
         border-right: 1px solid rgba(47, 107, 255, 0.2);
+    }
+
+    .phone-combo-group .country-code-select {
+        height: 50px !important;
+        border: none !important;
+        background-color: transparent !important;
+        font-weight: 700;
+        color: #0F172A;
+        font-size: 0.92rem;
+        cursor: pointer;
+    }
+
+    .country-code-select-dropdown {
+        min-width: 320px !important;
+        max-width: 420px !important;
     }
 
     .phone-combo-group .select2-container--bootstrap-5 .select2-selection,
@@ -494,7 +509,7 @@
                             </span>
                             <span class="text-muted">•</span>
                             <span id="liveCompanyPhone" class="d-flex align-items-center gap-1.5 fw-semibold" style="color: #4b5563;">
-                                <i class="fas fa-phone-alt text-success"></i> {{ $company->company_phone ?? '+1 (234) 567-890' }}
+                                <i class="fas fa-phone-alt text-success"></i> {{ $company->company_phone ?? '+91 98765 43210' }}
                             </span>
                             <span class="text-muted">•</span>
                             <span id="liveCompanyLocation" class="d-flex align-items-center gap-1.5 fw-semibold" style="color: #4b5563;">
@@ -576,9 +591,9 @@
                             @enderror
                         </div>
 
-                        <!-- Section 2: Core Details -->
+                        <!-- Section 2: Company Details -->
                         <div class="section-badge">
-                            <i class="fas fa-info-circle"></i> Official Organization Details
+                            <i class="fas fa-building"></i> Company Details &amp; Organization Records
                         </div>
 
                         <div class="row g-4">
@@ -612,34 +627,47 @@
                                 </div>
                             </div>
 
-                            <!-- Company Phone with All Countries Code -->
+                            <!-- Company Phone with Country Code & Digit Validation -->
                             <div class="col-md-6">
                                 <label class="form-label-custom">Company Phone <span class="req-asterisk">*</span></label>
                                 <div class="input-group input-group-custom phone-combo-group @if($errors->has('company_phone') || $errors->has('company_phone_number') || $errors->has('company_country_code')) border-danger @endif" id="phoneGroup">
                                     <span class="input-group-text"><i class="fas fa-phone-alt"></i></span>
                                     <div class="country-code-wrapper">
                                         <select name="company_country_code" id="company_country_code" class="form-select country-code-select" {{ $isSettingsReadOnly ? 'disabled' : 'required' }}>
+                                            @php
+                                                $currentSelectedDial = old('company_country_code', $selectedCountryCode ?? '+91');
+                                                $currentSelectedCountry = old('company_country_name', $selectedCountry ?? 'India');
+                                            @endphp
                                             @foreach($countryMap as $countryName => $meta)
                                                 @php
                                                     $dialCode = $meta['dial_code'];
                                                     $iso = strtolower($meta['iso']);
                                                     $flag = 'https://flagcdn.com/w20/' . $iso . '.png';
-                                                    $minD = $meta['min_digits'] ?? 6;
-                                                    $maxD = $meta['max_digits'] ?? 15;
-                                                    $isCurrentSelected = (old('company_country_code', $selectedCountryCode) === $dialCode);
+                                                    $minD = $meta['min_digits'] ?? 10;
+                                                    $maxD = $meta['max_digits'] ?? 10;
+                                                    $isCurrentSelected = ($countryName === $currentSelectedCountry || (!$currentSelectedCountry && $currentSelectedDial === $dialCode));
                                                 @endphp
-                                                <option value="{{ $dialCode }}" data-country="{{ $countryName }}" data-flag="{{ $flag }}" data-min-digits="{{ $minD }}" data-max-digits="{{ $maxD }}" {{ $isCurrentSelected ? 'selected' : '' }}>
-                                                    {{ $countryName }} ({{ $dialCode }})
+                                                <option value="{{ $dialCode }}" data-country="{{ $countryName }}" data-flag="{{ $flag }}" data-min-digits="{{ $minD }}" data-max-digits="{{ $maxD }}" data-iso="{{ $iso }}" {{ $isCurrentSelected ? 'selected' : '' }}>
+                                                    {{ $countryName }} ({{ $dialCode }}) - {{ $minD === $maxD ? $minD . ' digits' : $minD . '-' . $maxD . ' digits' }}
                                                 </option>
                                             @endforeach
                                         </select>
                                     </div>
+                                    <input type="hidden" name="company_country_name" id="hidden_country_name" value="{{ old('company_country_name', $selectedCountry ?? 'India') }}">
                                     <input type="text" name="company_phone_number" id="input_company_phone"
                                         class="form-control @error('company_phone_number') is-invalid @enderror @error('company_phone') is-invalid @enderror"
-                                        placeholder="98765 43210"
+                                        placeholder="98765 43210 (10 digits)"
                                         value="{{ old('company_phone_number', $phoneDigits) }}"
                                         {{ $isSettingsReadOnly ? 'readonly' : 'required' }} maxlength="18">
                                     <input type="hidden" name="company_phone" id="hidden_company_phone" value="{{ old('company_phone', $company->company_phone ?? '') }}">
+                                </div>
+                                <div class="d-flex align-items-center justify-content-between mt-1 px-1">
+                                    <small id="phoneRuleHint" class="text-muted" style="font-size: 0.78rem; font-weight: 500;">
+                                        <i class="fas fa-info-circle me-1 text-primary"></i> <span id="phoneRuleText">Required: 10 digits for India (+91)</span>
+                                    </small>
+                                    <small id="phoneDigitCounter" class="badge rounded-pill" style="font-size: 0.72rem; background: #EEF2FF; color: #2F6BFF; border: 1px solid rgba(47, 107, 255, 0.2); transition: all 0.2s ease;">
+                                        <span id="currentDigitCount">0</span>/<span id="requiredDigitCount">10</span> digits
+                                    </small>
                                 </div>
                                 <div id="phoneValidationMsg" class="validation-feedback-pill @if($errors->has('company_phone') || $errors->has('company_phone_number') || $errors->has('company_country_code')) is-visible @endif">
                                     <i class="fas fa-exclamation-circle"></i> <span id="phoneValidationText">{{ $errors->first('company_phone_number') ?: ($errors->first('company_phone') ?: ($errors->first('company_country_code') ?: 'Please enter a valid phone number.')) }}</span>
@@ -692,11 +720,9 @@
                                     </button>
                                 </div>
 
-                                @if($company && $company->id)
-                                    <button type="button" class="btn rounded-pill px-3.5 py-2 fw-bold" style="background: #fef2f2; color: #b91c1c; border: 1px solid rgba(220, 38, 38, 0.25);" data-bs-toggle="modal" data-bs-target="#deleteModal">
-                                        <i class="fas fa-trash-alt me-1"></i> Reset Settings
-                                    </button>
-                                @endif
+                                <button type="button" id="btnOpenResetModal" class="btn rounded-pill px-3.5 py-2 fw-bold" style="background: #fef2f2; color: #b91c1c; border: 1px solid rgba(220, 38, 38, 0.25);" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                                    <i class="fas fa-trash-alt me-1"></i> Reset Settings
+                                </button>
                             @endif
                         </div>
                     </form>
@@ -706,55 +732,62 @@
     </div>
 
     <!-- Reset Confirmation Modal -->
-    @if($company && $company->id)
-    <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-           <form method="POST" action="{{ route('settings.company.destroy') }}">
+           <form method="POST" action="{{ route('settings.company.destroy') }}" id="resetSettingsForm">
                 @csrf
                 @method('DELETE')
 
                 <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
                     <div class="modal-header border-bottom py-3 px-4" style="background: #fef2f2;">
-                        <h5 class="modal-title fw-bold text-danger d-flex align-items-center"><i class="fas fa-exclamation-circle me-2 fs-4"></i>Confirm Reset</h5>
+                        <h5 class="modal-title fw-bold text-danger d-flex align-items-center" id="deleteModalLabel">
+                            <i class="fas fa-exclamation-triangle me-2 fs-4"></i>Confirm Reset Settings
+                        </h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body p-4">
-                        <p class="mb-0 text-secondary">Are you sure you want to reset all company settings? This action will remove your uploaded company logo and restore default profile details.</p>
+                        <p class="mb-2 text-dark fw-semibold">Are you sure you want to reset all company settings?</p>
+                        <p class="mb-0 text-muted small">This action will remove your uploaded company logo, reset official contact phone, website, and office address, and restore default profile details.</p>
                     </div>
                     <div class="modal-footer border-top p-3" style="background: #fafefb;">
                         <button type="button" class="btn rounded-pill px-3.5 fw-bold" style="background: #f1f5f9; color: #475569;" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold">Yes, Reset Settings</button>
+                        <button type="submit" id="btnConfirmReset" class="btn btn-danger rounded-pill px-4 fw-bold">
+                            <i class="fas fa-trash-alt me-1.5"></i> Yes, Reset Settings
+                        </button>
                     </div>
                 </div>
             </form>
         </div>
     </div>
-    @endif
 </div>
 @endsection
 
 @push('scripts')
 <script>
-    // Format Select2 country code options with flag and dial code
+    // Format Select2 country code options with flag, country name, dial code, and digit badge
     function formatCountryCodeOption(state) {
         if (!state.id) return state.text;
-        const flag = $(state.element).data("flag");
-        const country = $(state.element).data("country");
+        const el = state.element;
+        const flag = (el ? $(el).data("flag") : null) || 'https://flagcdn.com/w20/in.png';
+        const country = (el ? $(el).data("country") : null) || state.text;
         const code = state.id;
-        if (flag) {
-            return $('<span><img src="' + flag + '" width="20" height="14" style="object-fit: cover; border-radius: 2px; margin-right: 8px; vertical-align: middle;"/> ' + country + ' <strong style="color: #2F6BFF;">(' + code + ')</strong></span>');
-        }
-        return state.text;
+        const minDigits = el ? $(el).data("min-digits") : null;
+        const maxDigits = el ? $(el).data("max-digits") : null;
+        const digitBadge = minDigits ? ('<span class="badge bg-light text-secondary ms-auto" style="font-size: 0.72rem; border: 1px solid #e2e8f0; font-weight: 600;">' + (minDigits === maxDigits ? minDigits + ' digits' : minDigits + '-' + maxDigits + ' digits') + '</span>') : '';
+
+        return $('<div class="d-flex align-items-center justify-content-between py-1 w-100" style="gap: 8px;"><span><img src="' + flag + '" width="20" height="14" style="object-fit: cover; border-radius: 2px; margin-right: 8px; vertical-align: middle; box-shadow: 0 1px 3px rgba(0,0,0,0.1);"/> ' + country + ' <strong style="color: #2F6BFF;">(' + code + ')</strong></span>' + digitBadge + '</div>');
     }
 
     function formatCountryCodeSelection(state) {
         if (!state.id) return state.text;
-        const flag = $(state.element).data("flag");
-        const code = state.id;
-        if (flag) {
-            return $('<span><img src="' + flag + '" width="18" height="12" style="object-fit: cover; border-radius: 2px; margin-right: 6px; vertical-align: middle;"/> <strong>' + code + '</strong></span>');
+        let el = state.element || document.querySelector('#company_country_code option:checked');
+        let flag = (el ? $(el).data("flag") : null);
+        if (!flag) {
+            const opt = $('#company_country_code option[value="' + state.id + '"]');
+            flag = opt.data('flag') || 'https://flagcdn.com/w20/in.png';
         }
-        return code;
+        const code = state.id || '+91';
+        return $('<span><img src="' + flag + '" width="18" height="12" style="object-fit: cover; border-radius: 2px; margin-right: 6px; vertical-align: middle; box-shadow: 0 1px 2px rgba(0,0,0,0.1);"/> <strong>' + code + '</strong></span>');
     }
 
     // Live logo preview function
@@ -844,11 +877,23 @@
         const websiteText = document.getElementById('websiteValidationText');
 
         function getSelectedCountryDigitRules() {
-            const selectedOption = $('#company_country_code option:selected');
-            const minDigits = parseInt(selectedOption.attr('data-min-digits')) || 6;
-            const maxDigits = parseInt(selectedOption.attr('data-max-digits')) || 15;
-            const country = selectedOption.attr('data-country') || 'Selected Country';
-            const code = $('#company_country_code').val() || '+91';
+            const selectEl = document.getElementById('company_country_code');
+            if (!selectEl) {
+                return { minDigits: 10, maxDigits: 10, country: 'India', code: '+91' };
+            }
+            let selectedOption = null;
+            if (selectEl.selectedIndex >= 0) {
+                selectedOption = selectEl.options[selectEl.selectedIndex];
+            }
+            if (!selectedOption) {
+                selectedOption = selectEl.querySelector('option[value="+91"]') || selectEl.options[0];
+            }
+
+            const minDigits = selectedOption ? (parseInt(selectedOption.getAttribute('data-min-digits')) || 10) : 10;
+            const maxDigits = selectedOption ? (parseInt(selectedOption.getAttribute('data-max-digits')) || 10) : 10;
+            const country = selectedOption ? (selectedOption.getAttribute('data-country') || 'India') : 'India';
+            const code = selectedOption ? (selectedOption.value || '+91') : '+91';
+
             return { minDigits, maxDigits, country, code };
         }
 
@@ -859,21 +904,86 @@
                 : `${rules.minDigits}-${rules.maxDigits} digits`;
 
             if (phoneInput) {
-                phoneInput.placeholder = `e.g. ${expectedDesc} for ${rules.country}`;
-                phoneInput.maxLength = rules.maxDigits + 4;
+                phoneInput.placeholder = (rules.code === '+91')
+                    ? '98765 43210 (10 digits)'
+                    : `e.g. ${expectedDesc} for ${rules.country}`;
+                phoneInput.maxLength = rules.maxDigits + 3; // allow formatting spaces/dashes
+            }
+
+            const ruleText = document.getElementById('phoneRuleText');
+            if (ruleText) {
+                ruleText.textContent = `Required: ${expectedDesc} for ${rules.country} (${rules.code})`;
+            }
+
+            const reqCount = document.getElementById('requiredDigitCount');
+            if (reqCount) {
+                reqCount.textContent = (rules.minDigits === rules.maxDigits) ? rules.minDigits : `${rules.minDigits}-${rules.maxDigits}`;
+            }
+
+            updateDigitCounter();
+        }
+
+        function updateDigitCounter() {
+            const rawDigits = phoneInput ? phoneInput.value : '';
+            const digitsOnly = rawDigits.replace(/\D/g, '');
+            const rules = getSelectedCountryDigitRules();
+            const countEl = document.getElementById('currentDigitCount');
+            const counterBadge = document.getElementById('phoneDigitCounter');
+
+            const isValidLength = (digitsOnly.length >= rules.minDigits && digitsOnly.length <= rules.maxDigits && !/^0+$/.test(digitsOnly));
+            const reqDisplay = (rules.minDigits === rules.maxDigits) ? rules.minDigits : (rules.minDigits + '-' + rules.maxDigits);
+
+            if (counterBadge) {
+                if (digitsOnly.length === 0) {
+                    counterBadge.style.background = '#EEF2FF';
+                    counterBadge.style.color = '#2F6BFF';
+                    counterBadge.style.borderColor = 'rgba(47, 107, 255, 0.2)';
+                    counterBadge.innerHTML = '<span id="currentDigitCount">0</span>/<span id="requiredDigitCount">' + reqDisplay + '</span> digits';
+                } else if (isValidLength) {
+                    counterBadge.style.background = '#ECFDF5';
+                    counterBadge.style.color = '#059669';
+                    counterBadge.style.borderColor = 'rgba(16, 185, 129, 0.3)';
+                    counterBadge.innerHTML = '<i class="fas fa-check-circle me-1 text-success"></i> <span id="currentDigitCount">' + digitsOnly.length + '</span>/<span id="requiredDigitCount">' + reqDisplay + '</span> digits';
+                } else {
+                    counterBadge.style.background = '#FEF2F2';
+                    counterBadge.style.color = '#DC2626';
+                    counterBadge.style.borderColor = 'rgba(220, 38, 38, 0.3)';
+                    counterBadge.innerHTML = '<i class="fas fa-info-circle me-1 text-danger"></i> <span id="currentDigitCount">' + digitsOnly.length + '</span>/<span id="requiredDigitCount">' + reqDisplay + '</span> digits';
+                }
+            } else if (countEl) {
+                countEl.textContent = digitsOnly.length;
             }
         }
 
         // Initialize Select2 on Country Code
-        if ($('#company_country_code').length) {
+        if (window.jQuery && $('#company_country_code').length && $.fn.select2) {
             $('#company_country_code').select2({
                 theme: "bootstrap-5",
                 templateResult: formatCountryCodeOption,
                 templateSelection: formatCountryCodeSelection,
                 width: '100%',
                 dropdownAutoWidth: true,
+                dropdownCssClass: 'country-code-select-dropdown',
                 dropdownParent: $(document.body)
-            }).on('change', function () {
+            }).on('change select2:select', function () {
+                const rules = getSelectedCountryDigitRules();
+                const hiddenName = document.getElementById('hidden_country_name');
+                if (hiddenName) {
+                    hiddenName.value = rules.country;
+                }
+                updatePhoneInputAttributes();
+                syncFullPhone();
+                if (phoneInput && phoneInput.value.trim().length > 0) {
+                    validatePhoneField();
+                }
+            });
+        } else if (countryCodeSelect) {
+            countryCodeSelect.addEventListener('change', function() {
+                const rules = getSelectedCountryDigitRules();
+                const hiddenName = document.getElementById('hidden_country_name');
+                if (hiddenName) {
+                    hiddenName.value = rules.country;
+                }
                 updatePhoneInputAttributes();
                 syncFullPhone();
                 if (phoneInput && phoneInput.value.trim().length > 0) {
@@ -884,14 +994,15 @@
 
         // Phone Sync helper
         function syncFullPhone() {
-            const code = $('#company_country_code').val() || '+91';
+            const rules = getSelectedCountryDigitRules();
+            const code = rules.code || '+91';
             const digits = (phoneInput ? phoneInput.value.trim() : '');
             if (hiddenPhoneInput) {
                 hiddenPhoneInput.value = digits ? (code + ' ' + digits) : '';
             }
             const livePhone = document.getElementById('liveCompanyPhone');
             if (livePhone) {
-                livePhone.innerHTML = '<i class="fas fa-phone-alt text-success"></i> ' + (digits ? (code + ' ' + digits) : '+1 (234) 567-890');
+                livePhone.innerHTML = '<i class="fas fa-phone-alt text-success"></i> ' + (digits ? (code + ' ' + digits) : '+91 98765 43210');
             }
         }
 
@@ -912,11 +1023,13 @@
         }
 
         function validatePhoneField() {
-            const rawDigits = phoneInput ? phoneInput.value.trim() : '';
-            const digits = rawDigits.replace(/\D/g, '');
+            const rawVal = phoneInput ? phoneInput.value.trim() : '';
+            const digits = rawVal.replace(/\D/g, '');
             const rules = getSelectedCountryDigitRules();
 
-            if (!rawDigits) {
+            updateDigitCounter();
+
+            if (!rawVal) {
                 showError(phoneGroup, phoneMsg, phoneText, 'Company phone number is required.');
                 return false;
             }
@@ -924,6 +1037,11 @@
             const expectedDesc = (rules.minDigits === rules.maxDigits)
                 ? `exactly ${rules.minDigits} digits`
                 : `between ${rules.minDigits} and ${rules.maxDigits} digits`;
+
+            if (digits.length === 0 || /^0+$/.test(digits)) {
+                showError(phoneGroup, phoneMsg, phoneText, `Please enter a valid phone number for ${rules.country} (${rules.code}).`);
+                return false;
+            }
 
             if (digits.length < rules.minDigits || digits.length > rules.maxDigits) {
                 showError(phoneGroup, phoneMsg, phoneText, `Phone number for ${rules.country} (${rules.code}) must have ${expectedDesc} (currently entered ${digits.length} digits).`);
@@ -994,15 +1112,57 @@
         }
 
         if (phoneInput) {
-            // Allow only digits, space, hyphen, parentheses, plus
+            // Auto strip country code if user pasted a number with country code like +91 9876543210
+            phoneInput.addEventListener('paste', function(e) {
+                setTimeout(function() {
+                    let val = phoneInput.value.trim();
+                    if (val.startsWith('+')) {
+                        const rules = getSelectedCountryDigitRules();
+                        if (val.startsWith(rules.code)) {
+                            phoneInput.value = val.substring(rules.code.length).trim();
+                        } else {
+                            const selectEl = document.getElementById('company_country_code');
+                            if (selectEl) {
+                                for (let i = 0; i < selectEl.options.length; i++) {
+                                    const dCode = selectEl.options[i].value;
+                                    if (val.startsWith(dCode)) {
+                                        $(selectEl).val(dCode).trigger('change');
+                                        phoneInput.value = val.substring(dCode.length).trim();
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    phoneInput.value = phoneInput.value.replace(/[^0-9\s\-()]/g, '');
+                    syncFullPhone();
+                    updateDigitCounter();
+                    validatePhoneField();
+                }, 10);
+            });
+
+            // Allow only digits, space, hyphen, parentheses
             phoneInput.addEventListener('input', function() {
                 this.value = this.value.replace(/[^0-9\s\-()]/g, '');
                 syncFullPhone();
+                updateDigitCounter();
                 if (phoneMsg && phoneMsg.classList.contains('is-visible')) {
+                    validatePhoneField();
+                } else {
+                    const rawVal = this.value.trim();
+                    const digits = rawVal.replace(/\D/g, '');
+                    const rules = getSelectedCountryDigitRules();
+                    if (digits.length >= rules.minDigits) {
+                        validatePhoneField();
+                    }
+                }
+            });
+
+            phoneInput.addEventListener('blur', function() {
+                if (this.value.trim().length > 0) {
                     validatePhoneField();
                 }
             });
-            phoneInput.addEventListener('blur', validatePhoneField);
         }
 
         if (websiteInput) {
@@ -1048,6 +1208,43 @@
         // Initial setup on load
         updatePhoneInputAttributes();
         syncFullPhone();
+
+        // Ensure Reset Modal is attached to body and opens reliably
+        const resetBtn = document.getElementById('btnOpenResetModal');
+        const deleteModalEl = document.getElementById('deleteModal');
+
+        if (deleteModalEl && deleteModalEl.parentElement !== document.body) {
+            document.body.appendChild(deleteModalEl);
+        }
+
+        if (resetBtn) {
+            resetBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (deleteModalEl) {
+                    if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                        const modal = bootstrap.Modal.getOrCreateInstance(deleteModalEl);
+                        modal.show();
+                    } else if (window.jQuery && $(deleteModalEl).modal) {
+                        $(deleteModalEl).modal('show');
+                    } else {
+                        if (confirm('Are you sure you want to reset all company settings? This action will remove your uploaded company logo and restore default profile details.')) {
+                            document.getElementById('resetSettingsForm').submit();
+                        }
+                    }
+                }
+            });
+        }
+
+        const resetForm = document.getElementById('resetSettingsForm');
+        if (resetForm) {
+            resetForm.addEventListener('submit', function() {
+                const btn = document.getElementById('btnConfirmReset');
+                if (btn) {
+                    btn.disabled = true;
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1.5"></i> Resetting...';
+                }
+            });
+        }
     });
 </script>
 @endpush
