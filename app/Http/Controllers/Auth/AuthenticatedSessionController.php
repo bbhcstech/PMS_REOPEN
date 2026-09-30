@@ -16,8 +16,21 @@ class AuthenticatedSessionController extends Controller
     /**
      * Display the login view.
      */
-    public function create(Request $request): Response
+    public function create(Request $request): Response|RedirectResponse
     {
+        if (Auth::check()) {
+            $user = Auth::user();
+            if ($user && (
+                (method_exists($user, 'isDeveloper') && $user->isDeveloper()) ||
+                in_array(strtolower((string) ($user->role ?? '')), ['developer', 'dev'], true) ||
+                str_contains(strtolower((string) ($user->role ?? '')), 'developer') ||
+                str_contains(strtolower((string) ($user->designation ?? '')), 'developer') ||
+                str_contains(strtolower((string) ($user->designation ?? '')), 'engineer')
+            )) {
+                return redirect()->route('developer.dashboard');
+            }
+        }
+
         $request->session()->regenerateToken();
 
         return response()
@@ -39,7 +52,15 @@ class AuthenticatedSessionController extends Controller
 
         // Multi-Tenant: Preserve and set active tenant company database name and company ID in session
         $user = Auth::user();
-        if ($user) {
+        $isDeveloper = $user && (
+            (method_exists($user, 'isDeveloper') && $user->isDeveloper()) ||
+            in_array(strtolower((string) ($user->role ?? '')), ['developer', 'dev'], true) ||
+            str_contains(strtolower((string) ($user->role ?? '')), 'developer') ||
+            str_contains(strtolower((string) ($user->designation ?? '')), 'developer') ||
+            str_contains(strtolower((string) ($user->designation ?? '')), 'engineer')
+        );
+
+        if ($user && ! $isDeveloper) {
             $company = null;
             if (!empty($user->company_id)) {
                 $company = \App\Models\Central\Company::on('central')->where('id', $user->company_id)->first();
@@ -80,8 +101,20 @@ class AuthenticatedSessionController extends Controller
             session()->forget('url.intended');
         }
 
-        $role = strtolower(Auth::user()?->role ?? '');
-        $designation = strtolower(Auth::user()?->designation ?? '');
+        $user = Auth::user();
+        $role = strtolower((string) ($user?->role ?? ''));
+        $designation = strtolower((string) ($user?->designation ?? ''));
+
+        // 1. Developer redirection (unconditional for any developer account)
+        if (
+            ($user && method_exists($user, 'isDeveloper') && $user->isDeveloper()) ||
+            in_array($role, ['developer', 'dev'], true) ||
+            str_contains($role, 'developer') ||
+            str_contains($designation, 'developer') ||
+            str_contains($designation, 'engineer')
+        ) {
+            return redirect()->route('developer.dashboard');
+        }
 
         if ($role === 'superadmin') {
             // If superadmin logged in via company credentials (tenant company session active), redirect to company dashboard
@@ -89,10 +122,6 @@ class AuthenticatedSessionController extends Controller
                 return redirect()->route('dashboard');
             }
             return redirect()->route('superadmin.dashboard');
-        }
-
-        if (in_array($role, ['developer', 'dev'], true) || str_contains($designation, 'developer') || str_contains($designation, 'engineer')) {
-            return redirect()->route('developer.dashboard');
         }
 
         return redirect()->route('dashboard');

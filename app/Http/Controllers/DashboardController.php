@@ -337,6 +337,17 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
 
     public function index()
     {
+        $user = auth()->user();
+        if ($user && (
+            (method_exists($user, 'isDeveloper') && $user->isDeveloper()) ||
+            in_array(strtolower((string) ($user->role ?? '')), ['developer', 'dev'], true) ||
+            str_contains(strtolower((string) ($user->role ?? '')), 'developer') ||
+            str_contains(strtolower((string) ($user->designation ?? '')), 'developer') ||
+            str_contains(strtolower((string) ($user->designation ?? '')), 'engineer')
+        )) {
+            return redirect()->route('developer.dashboard');
+        }
+
         $userId = Auth::id();
         $userRole = strtolower((string) (auth()->user()?->role ?? ''));
 
@@ -1106,6 +1117,16 @@ public function hrindex(Request $request)
         $projects = Project::whereNull('deleted_at')->orderBy('name')->get();
         $tasks = Task::all();
 
+        $todayStr = now()->toDateString();
+        $attendance = Attendance::where('user_id', Auth::id())
+            ->where('date', $todayStr)
+            ->first();
+        $attendancePolicy = $this->attendancePolicy();
+        $officeLatitude = self::OFFICE_LATITUDE;
+        $officeLongitude = self::OFFICE_LONGITUDE;
+        $officeRadiusMeters = self::OFFICE_RADIUS_METERS;
+        $officeAddress = self::OFFICE_ADDRESS;
+
         return view('dashboard-hr', compact(
             'totalEmployees',
             'activeEmployees',
@@ -1138,7 +1159,13 @@ public function hrindex(Request $request)
             'totalClient',
             'unresolvedTicket',
             'projects',
-            'tasks'
+            'tasks',
+            'attendance',
+            'attendancePolicy',
+            'officeLatitude',
+            'officeLongitude',
+            'officeRadiusMeters',
+            'officeAddress'
         ));
     }
 

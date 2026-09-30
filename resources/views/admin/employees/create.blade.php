@@ -465,44 +465,82 @@
             background: transparent;
             font-weight: 600;
             color: var(--primary);
+            max-width: 160px;
+            min-width: 125px;
+            border-radius: 14px 0 0 14px;
         }
 
-        .input-group-premium .select2-container {
-            width: 115px !important;
-            min-width: 115px !important;
-            max-width: 115px !important;
-            flex: 0 0 115px !important;
+        .input-group-premium .select2-container--bootstrap-5 {
+            width: 125px !important;
+            min-width: 110px;
+            max-width: 135px;
+            flex: 0 0 125px;
         }
 
         .input-group-premium .select2-container--bootstrap-5 .select2-selection {
             border: none !important;
+            border-radius: 14px 0 0 14px !important;
             background: transparent !important;
             box-shadow: none !important;
-            border-radius: 14px 0 0 14px !important;
-            min-height: 48px !important;
             height: 100% !important;
-            padding-left: 0.75rem !important;
-            padding-right: 1.5rem !important;
+            min-height: 48px !important;
             display: flex !important;
             align-items: center !important;
+            padding: 0 0.5rem 0 0.85rem !important;
         }
 
         .input-group-premium .select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered {
-            padding: 0 !important;
-            margin: 0 !important;
             display: flex !important;
             align-items: center !important;
+            padding: 0 !important;
+            line-height: normal !important;
             color: var(--primary) !important;
             font-weight: 600 !important;
-            overflow: visible !important;
-            line-height: normal !important;
+            font-size: 0.92rem;
             white-space: nowrap !important;
+            overflow: visible !important;
         }
 
         .input-group-premium .select2-container--bootstrap-5 .select2-selection--single .select2-selection__arrow {
+            position: absolute !important;
             right: 8px !important;
             top: 50% !important;
             transform: translateY(-50%) !important;
+            height: auto !important;
+        }
+
+        .country-dial-code {
+            font-weight: 700;
+            font-size: 0.92rem;
+            color: var(--primary, #0f744c);
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .country-code-select2-dropdown {
+            min-width: 300px !important;
+            max-width: 380px !important;
+            border-radius: 14px !important;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15) !important;
+            border: 1px solid rgba(15, 116, 76, 0.2) !important;
+            overflow: hidden !important;
+            z-index: 1065 !important;
+        }
+
+        .country-code-select2-dropdown .select2-results__option {
+            padding: 8px 12px !important;
+            font-size: 0.88rem !important;
+        }
+
+        .country-code-select2-dropdown .select2-search--dropdown {
+            padding: 8px 10px !important;
+        }
+
+        .country-code-select2-dropdown .select2-search__field {
+            border-radius: 10px !important;
+            border: 1px solid rgba(15, 116, 76, 0.25) !important;
+            padding: 6px 10px !important;
+            font-size: 0.88rem !important;
         }
 
         .input-group-premium .mobile-input {
@@ -798,24 +836,43 @@
             border-color: rgba(238, 241, 251, 0.16) !important;
         }
 
+        html[data-pms-theme="dark"] .country-dial-code,
+        html[data-bs-theme="dark"] .country-dial-code,
+        html[data-theme="dark"] .country-dial-code,
         html[data-pms-theme="dark"] .input-group-premium .select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered,
         html[data-bs-theme="dark"] .input-group-premium .select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered,
         html[data-theme="dark"] .input-group-premium .select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered {
-            color: #ffffff !important;
-            -webkit-text-fill-color: #ffffff !important;
+            color: #EEF1FB !important;
+            -webkit-text-fill-color: #EEF1FB !important;
         }
 
-        html[data-pms-theme="dark"] .input-group-premium .select2-container--bootstrap-5 .select2-selection--single .select2-selection__arrow b,
-        html[data-bs-theme="dark"] .input-group-premium .select2-container--bootstrap-5 .select2-selection--single .select2-selection__arrow b,
-        html[data-theme="dark"] .input-group-premium .select2-container--bootstrap-5 .select2-selection--single .select2-selection__arrow b {
-            border-color: #CBD5E1 transparent transparent transparent !important;
+        html[data-pms-theme="dark"] .country-code-select2-dropdown,
+        html[data-bs-theme="dark"] .country-code-select2-dropdown,
+        html[data-theme="dark"] .country-code-select2-dropdown {
+            background: #141B3D !important;
+            border-color: rgba(238, 241, 251, 0.16) !important;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5) !important;
         }
 
-        html[data-pms-theme="dark"] .input-group-premium .mobile-input,
-        html[data-bs-theme="dark"] .input-group-premium .mobile-input,
-        html[data-theme="dark"] .input-group-premium .mobile-input {
-            border-left-color: rgba(238, 241, 251, 0.16) !important;
-            color: #ffffff !important;
+        html[data-pms-theme="dark"] .country-code-select2-dropdown .select2-search__field,
+        html[data-bs-theme="dark"] .country-code-select2-dropdown .select2-search__field,
+        html[data-theme="dark"] .country-code-select2-dropdown .select2-search__field {
+            background: #0F1530 !important;
+            border-color: rgba(238, 241, 251, 0.16) !important;
+            color: #EEF1FB !important;
+        }
+
+        html[data-pms-theme="dark"] .country-code-select2-dropdown .select2-results__option,
+        html[data-bs-theme="dark"] .country-code-select2-dropdown .select2-results__option,
+        html[data-theme="dark"] .country-code-select2-dropdown .select2-results__option {
+            color: #EEF1FB !important;
+        }
+
+        html[data-pms-theme="dark"] .country-code-select2-dropdown .select2-results__option--highlighted[aria-selected],
+        html[data-bs-theme="dark"] .country-code-select2-dropdown .select2-results__option--highlighted[aria-selected],
+        html[data-theme="dark"] .country-code-select2-dropdown .select2-results__option--highlighted[aria-selected] {
+            background-color: rgba(47, 107, 255, 0.25) !important;
+            color: #EEF1FB !important;
         }
 
         html[data-pms-theme="dark"] .form-check-label,
@@ -2373,16 +2430,56 @@ $(document).ready(function() {
         return state.text;
     }
 
-    function formatMobileCodeResult(state) {
+    function formatMobileCodeOption(state) {
         if (!state.id) return state.text;
-        const flag = $(state.element).data("flag");
-        const country = $(state.element).data("country");
+        const el = state.element || $('#mobile_country_code option[value="' + state.id + '"]')[0];
+        const flag = $(el).data("flag");
+        const country = $(el).data("country");
         const code = state.id;
-        const label = country ? country + ' (' + code + ')' : state.text;
         if (flag) {
-            return $('<span><img src="' + flag + '" width="20" height="14" style="object-fit: cover; border-radius: 2px; vertical-align: middle; margin-right: 8px;"/> <span style="vertical-align: middle;">' + label + '</span></span>');
+            return $(
+                '<span><img src="' + flag + '" width="20" height="14" style="object-fit: cover; border-radius: 2px; margin-right: 8px; vertical-align: middle;" alt="" /> ' +
+                (country ? country + ' ' : '') +
+                '<strong style="color: #059669;">(' + code + ')</strong></span>'
+            );
         }
-        return label;
+        return state.text;
+    }
+
+    function formatMobileCodeSelection(state) {
+        if (!state.id) return state.text;
+        let flag = null;
+        let code = state.id;
+
+        if (state.element) {
+            flag = $(state.element).data('flag');
+            code = $(state.element).val() || state.id;
+        }
+
+        if (!flag) {
+            const $selectedOption = $('#mobile_country_code option:selected');
+            if ($selectedOption.length && $selectedOption.val() === state.id) {
+                flag = $selectedOption.data('flag');
+            } else {
+                const $matched = $('#mobile_country_code option').filter(function() {
+                    return $(this).val() === state.id;
+                }).first();
+                if ($matched.length) {
+                    flag = $matched.data('flag');
+                }
+            }
+        }
+
+        if (flag) {
+            return $(
+                '<span class="country-code-selection-item d-inline-flex align-items-center">' +
+                    '<img src="' + flag + '" width="20" height="14" style="object-fit: cover; border-radius: 2px; margin-right: 6px; flex-shrink: 0;" alt="" />' +
+                    '<strong class="country-dial-code">' + code + '</strong>' +
+                '</span>'
+            );
+        }
+
+        return $('<span class="country-code-selection-item"><strong class="country-dial-code">' + code + '</strong></span>');
     }
 
     function formatMobileCodeSelection(state) {
@@ -2416,7 +2513,9 @@ $(document).ready(function() {
                 return $(this).data('country') === countryName;
             }).first();
             if (selected.length) {
-                $('#mobile_country_code').val(selected.val()).trigger('change');
+                $('#mobile_country_code option').prop('selected', false);
+                selected.prop('selected', true);
+                $('#mobile_country_code').trigger('change');
             }
         });
     }
@@ -2424,9 +2523,11 @@ $(document).ready(function() {
     if ($('#mobile_country_code').length) {
         $('#mobile_country_code').select2({
             theme: "bootstrap-5",
-            templateResult: formatMobileCodeResult,
+            dropdownCssClass: "country-code-select2-dropdown",
+            templateResult: formatMobileCodeOption,
             templateSelection: formatMobileCodeSelection,
-            width: '115px'
+            width: '125px',
+            dropdownAutoWidth: true
         }).on('change', function () {
             updateMobileValidationRules();
             syncMobileHidden();

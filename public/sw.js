@@ -69,6 +69,9 @@ function isSessionPage(pathname) {
     || pathname === '/logout'
     || pathname.startsWith('/dashboard')
     || pathname.startsWith('/admin')
+    || pathname.startsWith('/developer')
+    || pathname.startsWith('/super-admin')
+    || pathname.startsWith('/superadmin')
     || pathname.startsWith('/hr-login')
     || pathname.startsWith('/manager-login')
     || pathname.startsWith('/profile');
