@@ -2,16 +2,57 @@
 
 namespace App\Support;
 
+use App\Models\Country;
+
 class CountryPhone
 {
+    protected static ?array $dbCache = null;
+
+    protected static function loadDbCache(): array
+    {
+        if (self::$dbCache !== null) {
+            return self::$dbCache;
+        }
+
+        self::$dbCache = [];
+        try {
+            $countries = Country::all();
+            foreach ($countries as $c) {
+                if ($c->phone_code) {
+                    self::$dbCache[$c->name] = [
+                        'dial_code'  => $c->phone_code,
+                        'iso'        => strtolower($c->iso_code ?? 'in'),
+                        'min_digits' => (int) ($c->min_digits ?? 10),
+                        'max_digits' => (int) ($c->max_digits ?? 10),
+                        'flag_url'   => $c->flag_url,
+                    ];
+                }
+            }
+        } catch (\Throwable $e) {}
+
+        return self::$dbCache;
+    }
+
     public static function meta(string $countryName): array
     {
+        $db = self::loadDbCache();
+        if (isset($db[$countryName])) {
+            return $db[$countryName];
+        }
+
         $map = self::map();
         return $map[$countryName] ?? ['dial_code' => '+91', 'iso' => 'in', 'min_digits' => 10, 'max_digits' => 10];
     }
 
     public static function findByDialCode(string $dialCode): ?array
     {
+        $db = self::loadDbCache();
+        foreach ($db as $name => $data) {
+            if ($data['dial_code'] === $dialCode) {
+                return array_merge($data, ['name' => $name]);
+            }
+        }
+
         $map = self::map();
         foreach ($map as $name => $data) {
             if ($data['dial_code'] === $dialCode) {
@@ -23,6 +64,17 @@ class CountryPhone
 
     public static function getDigitRules(string $countryOrCode): array
     {
+        $db = self::loadDbCache();
+        if (isset($db[$countryOrCode])) {
+            return array_merge($db[$countryOrCode], ['name' => $countryOrCode]);
+        }
+
+        foreach ($db as $name => $data) {
+            if ($data['dial_code'] === $countryOrCode) {
+                return array_merge($data, ['name' => $name]);
+            }
+        }
+
         $map = self::map();
         if (isset($map[$countryOrCode])) {
             return array_merge($map[$countryOrCode], ['name' => $countryOrCode]);
