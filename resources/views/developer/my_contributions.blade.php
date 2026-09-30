@@ -30,12 +30,12 @@
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px;">
         <div class="dev-card" style="padding: 20px; text-align: center; margin-bottom: 0;">
             <span style="font-size: 11px; font-weight: 800; color: var(--slate-muted); text-transform: uppercase; letter-spacing: 0.6px; display: block; margin-bottom: 8px;">COMPANIES WORKED WITH</span>
-            <strong style="font-size: 28px; font-weight: 900; color: var(--slate-dark); line-height: 1;">{{ $stats['companies_count'] }}</strong>
+            <strong style="font-size: 28px; font-weight: 900; color: var(--slate-heading); line-height: 1;">{{ $stats['companies_count'] }}</strong>
         </div>
 
         <div class="dev-card" style="padding: 20px; text-align: center; margin-bottom: 0;">
             <span style="font-size: 11px; font-weight: 800; color: var(--slate-muted); text-transform: uppercase; letter-spacing: 0.6px; display: block; margin-bottom: 8px;">PROJECTS WORKED ON</span>
-            <strong style="font-size: 28px; font-weight: 900; color: var(--slate-dark); line-height: 1;">{{ $stats['projects_count'] }}</strong>
+            <strong style="font-size: 28px; font-weight: 900; color: var(--slate-heading); line-height: 1;">{{ $stats['projects_count'] }}</strong>
         </div>
 
         <div class="dev-card" style="padding: 20px; text-align: center; margin-bottom: 0;">
@@ -45,7 +45,7 @@
 
         <div class="dev-card" style="padding: 20px; text-align: center; margin-bottom: 0;">
             <span style="font-size: 11px; font-weight: 800; color: var(--slate-muted); text-transform: uppercase; letter-spacing: 0.6px; display: block; margin-bottom: 8px;">ON HOLD WORK</span>
-            <strong style="font-size: 28px; font-weight: 900; color: #64748b; line-height: 1;">{{ $stats['on_hold'] }}</strong>
+            <strong style="font-size: 28px; font-weight: 900; color: var(--slate-muted); line-height: 1;">{{ $stats['on_hold'] }}</strong>
         </div>
     </div>
 
@@ -54,19 +54,19 @@
 
         <!-- BREAKDOWN BY PROJECT / MODULE -->
         <div class="dev-card" style="margin-bottom: 0; padding: 26px;">
-            <h3 style="font-size: 17px; font-weight: 800; color: var(--slate-dark); margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1px solid var(--border-color);">
+            <h3 style="font-size: 17px; font-weight: 800; color: var(--slate-heading); margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1px solid var(--border-color);">
                 Website / Module Contributions
             </h3>
             <div style="display: flex; flex-direction: column; gap: 16px;">
                 @forelse($projectBreakdown as $pb)
-                <div style="background: #f8fafc; padding: 16px 18px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                <div class="dev-subtle-box" style="padding: 16px 18px; border-radius: var(--radius-md);">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                        <strong style="font-size: 14px; font-weight: 700; color: var(--slate-dark);">{{ $pb['name'] }}</strong>
+                        <strong style="font-size: 14px; font-weight: 700; color: var(--slate-heading);">{{ $pb['name'] }}</strong>
                         <span style="font-size: 12px; font-weight: 800; color: var(--primary); background: var(--primary-light); padding: 3px 12px; border-radius: 14px; border: 1px solid var(--primary-border);">
                             {{ $pb['completed_count'] }} Completed Tasks
                         </span>
                     </div>
-                    <div style="width: 100%; height: 7px; background: #e2e8f0; border-radius: 4px; overflow: hidden;">
+                    <div style="width: 100%; height: 7px; background: var(--border-color); border-radius: 4px; overflow: hidden;">
                         <div style="width: {{ $stats['total_completed'] > 0 ? min(100, round(($pb['completed_count'] / $stats['total_completed']) * 100)) : 0 }}%; height: 100%; background: var(--primary); border-radius: 4px;"></div>
                     </div>
                 </div>
@@ -78,22 +78,22 @@
 
         <!-- BREAKDOWN BY COMPANY -->
         <div class="dev-card" style="margin-bottom: 0; padding: 26px;">
-            <h3 style="font-size: 17px; font-weight: 800; color: var(--slate-dark); margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1px solid var(--border-color);">
+            <h3 style="font-size: 17px; font-weight: 800; color: var(--slate-heading); margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1px solid var(--border-color);">
                 Company Contributions
             </h3>
             <div style="display: flex; flex-direction: column; gap: 14px;">
                 @forelse($companyBreakdown as $cb)
-                <div style="background: #f8fafc; padding: 16px 18px; border-radius: var(--radius-md); border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between;">
+                <div class="dev-subtle-box" style="padding: 16px 18px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: space-between;">
                     <div style="display: flex; align-items: center; gap: 14px;">
-                        <div style="width: 40px; height: 40px; border-radius: 10px; background: #0f172a; color: #ffffff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px;">
+                        <div class="dev-btn-dark" style="width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px;">
                             {{ strtoupper(substr($cb['name'], 0, 2)) }}
                         </div>
                         <div>
-                            <strong style="font-size: 14px; font-weight: 700; color: var(--slate-dark); display: block;">{{ $cb['name'] }}</strong>
+                            <strong style="font-size: 14px; font-weight: 700; color: var(--slate-heading); display: block;">{{ $cb['name'] }}</strong>
                             <span style="font-size: 11.5px; color: var(--slate-muted);">Tenant Company</span>
                         </div>
                     </div>
-                    <span style="font-size: 13px; font-weight: 800; color: #2F6BFF; background: #EEF2FF; padding: 4px 14px; border-radius: 14px; border: 1px solid #C7D2FE;">
+                    <span class="dev-badge-success" style="font-size: 13px; font-weight: 800; padding: 4px 14px; border-radius: 14px;">
                         {{ $cb['completed_count'] }} Tasks
                     </span>
                 </div>
@@ -107,23 +107,23 @@
 
     <!-- CHRONOLOGICAL CONTRIBUTION HISTORY -->
     <div class="dev-card" style="padding: 26px;">
-        <h3 style="font-size: 17px; font-weight: 800; color: var(--slate-dark); margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1px solid var(--border-color);">
+        <h3 style="font-size: 17px; font-weight: 800; color: var(--slate-heading); margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1px solid var(--border-color);">
             Chronological Contribution Timeline
         </h3>
 
         <div style="display: flex; flex-direction: column; gap: 14px;">
             @forelse($contributionHistory as $item)
-            <div style="display: flex; align-items: flex-start; gap: 16px; padding: 16px; background: #f8fafc; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
-                <div style="width: 36px; height: 36px; border-radius: 50%; background: #EEF2FF; color: #2F6BFF; border: 1px solid #C7D2FE; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; margin-top: 2px;">
+            <div class="dev-subtle-box" style="display: flex; align-items: flex-start; gap: 16px; padding: 16px; border-radius: var(--radius-md);">
+                <div class="dev-kpi-icon-green" style="width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; margin-top: 2px;">
                     <i class="bx bx-check-circle"></i>
                 </div>
                 <div style="flex: 1;">
                     <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
-                        <strong style="font-size: 14.5px; font-weight: 800; color: var(--slate-dark);">✓ Completed: {{ $item->title }}</strong>
+                        <strong style="font-size: 14.5px; font-weight: 800; color: var(--slate-heading);">✓ Completed: {{ $item->title }}</strong>
                         <span style="font-size: 12px; font-weight: 700; color: var(--slate-muted);">{{ \Carbon\Carbon::parse($item->updated_at)->format('d M Y · g:i A') }}</span>
                     </div>
                     <span style="font-size: 12.5px; color: var(--slate-muted); margin-top: 4px; display: block;">
-                        Company: <strong>{{ $item->company_name ?? 'Central Platform' }}</strong> &bull; Project: <strong>{{ $item->project_name ?? 'Development Module' }}</strong> &bull; Estimated: <strong>{{ $item->estimate_hours ?? 8 }}h</strong>
+                        Company: <strong style="color: var(--slate-heading);">{{ $item->company_name ?? 'Central Platform' }}</strong> &bull; Project: <strong style="color: var(--slate-heading);">{{ $item->project_name ?? 'Development Module' }}</strong> &bull; Estimated: <strong style="color: var(--slate-heading);">{{ $item->estimate_hours ?? 8 }}h</strong>
                     </span>
                 </div>
             </div>

@@ -18,12 +18,20 @@ class SetTenantConnection
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Bypass tenant DB switching for SuperAdmin routes and authenticated SuperAdmin users
+        // Bypass tenant DB switching for SuperAdmin & Developer routes and authenticated SuperAdmin / Developer users
         if (
             $request->is('super-admin*') ||
             $request->is('superadmin*') ||
+            $request->is('developer*') ||
             \Illuminate\Support\Facades\Auth::guard('super_admin')->check() ||
-            (auth()->check() && in_array(strtolower((string)(auth()->user()->role ?? '')), ['superadmin', 'super-admin', 'super_admin'], true))
+            (auth()->check() && (
+                in_array(strtolower((string)(auth()->user()->role ?? '')), ['superadmin', 'super-admin', 'super_admin'], true) ||
+                (method_exists(auth()->user(), 'isDeveloper') && auth()->user()->isDeveloper()) ||
+                in_array(strtolower((string)(auth()->user()->role ?? '')), ['developer', 'dev'], true) ||
+                str_contains(strtolower((string)(auth()->user()->role ?? '')), 'developer') ||
+                str_contains(strtolower((string)(auth()->user()->designation ?? '')), 'developer') ||
+                str_contains(strtolower((string)(auth()->user()->designation ?? '')), 'engineer')
+            ))
         ) {
             return $next($request);
         }

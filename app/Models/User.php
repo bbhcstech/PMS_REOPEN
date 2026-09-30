@@ -233,6 +233,19 @@ class User extends Authenticatable
         return strtolower((string) $this->role);
     }
 
+    public function isDeveloper(): bool
+    {
+        $role = strtolower((string) ($this->role ?? ''));
+        $designation = strtolower((string) ($this->designation ?? ''));
+
+        return in_array($role, ['developer', 'dev'], true)
+            || str_contains($role, 'developer')
+            || str_contains($designation, 'developer')
+            || str_contains($designation, 'engineer')
+            || str_contains($designation, 'devops')
+            || str_contains($designation, 'qa');
+    }
+
     public function hasModulePermission(string $moduleSlug, string $permission = 'view'): bool
     {
         // Platform Super Admin (central guard) bypasses company feature checks
@@ -473,20 +486,6 @@ class User extends Authenticatable
         return Carbon::now()->diffInDays($nextReset, false);
     }
 
-    /**
-     * Check if user account is a Developer role/designation
-     */
-    public function isDeveloper(): bool
-    {
-        $role = strtolower($this->role ?? '');
-        $designation = strtolower($this->designation ?? '');
-
-        return in_array($role, ['developer', 'dev'], true)
-            || str_contains($designation, 'developer')
-            || str_contains($designation, 'engineer')
-            || str_contains($designation, 'devops')
-            || str_contains($designation, 'qa');
-    }
 
     /**
      * Check if developer has any assigned tasks in the system
@@ -538,6 +537,11 @@ class User extends Authenticatable
         // Archived accounts cannot log in
         if (!empty($this->archived_at)) {
             return false;
+        }
+
+        // Developers with login_allowed can always login to Developer Portal
+        if ($this->isDeveloper()) {
+            return true;
         }
 
         $employeeStatus = $this->employeeDetail ? (string) $this->employeeDetail->status : 'Active';
