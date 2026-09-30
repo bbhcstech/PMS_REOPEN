@@ -1263,7 +1263,19 @@
     $adminRefreshVersion = file_exists(public_path('admin/assets/css/pms-refresh.css')) ? filemtime(public_path('admin/assets/css/pms-refresh.css')) : time();
     $logoVersion = file_exists(public_path('logo.png')) ? filemtime(public_path('logo.png')) : time();
     $companySetting = \App\Models\CompanySetting::first();
-    $brandLogo = $currentCompany?->logo ? asset($currentCompany->logo) : ($companySetting?->company_logo ? asset($companySetting->company_logo) : asset('logo.png') . '?v=' . $logoVersion);
+    $resolvedLogo = null;
+    if (!empty($currentCompany?->logo) && file_exists(public_path($currentCompany->logo))) {
+        $resolvedLogo = asset($currentCompany->logo);
+    } elseif (!empty($companySetting?->company_logo) && file_exists(public_path($companySetting->company_logo))) {
+        $resolvedLogo = asset($companySetting->company_logo);
+    } elseif (file_exists(public_path('logo.png'))) {
+        $resolvedLogo = asset('logo.png') . '?v=' . $logoVersion;
+    } elseif (file_exists(public_path('logos/bitroxia_logo.png'))) {
+        $resolvedLogo = asset('logos/bitroxia_logo.png');
+    } else {
+        $resolvedLogo = asset('logo.png');
+    }
+    $brandLogo = $resolvedLogo;
     $brandName = $currentCompany?->brand_name ?? ($companySetting?->company_name ?? 'Bitroxia');
 @endphp
 <link rel="stylesheet" href="{{ asset('admin/assets/css/pms-refresh.css') }}?v={{ $adminRefreshVersion }}">
@@ -1381,7 +1393,7 @@
           <div class="app-brand demo">
             <a href="{{ route('dashboard') }}" class="app-brand-link">
               <span class="app-brand-logo demo">
-                <img src="{{ $brandLogo }}" alt="{{ $brandName }} logo">
+                <img src="{{ $brandLogo }}" alt="{{ $brandName }} logo" onerror="this.onerror=null;this.src='{{ asset('logo.png') }}';">
               </span>
               <span class="app-brand-text demo menu-text fw-bold ms-2">{{ $brandName }}</span>
             </a>
@@ -2307,7 +2319,7 @@
 
             <a href="{{ route('dashboard') }}" class="mobile-navbar-brand d-xl-none" aria-label="{{ $brandName }} dashboard">
               <span class="mobile-navbar-logo">
-                <img src="{{ $brandLogo }}" alt="">
+                <img src="{{ $brandLogo }}" alt="{{ $brandName }} logo" onerror="this.onerror=null;this.src='{{ asset('logo.png') }}';">
               </span>
             </a>
 
