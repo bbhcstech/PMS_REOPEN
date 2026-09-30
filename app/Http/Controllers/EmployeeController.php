@@ -449,7 +449,7 @@ class EmployeeController extends Controller
             $mobileWithCode = $request->mobile_country_code . $request->mobile;
 
             // Create user
-            $user = User::create([
+            $userData = [
                 'name'          => $request->name,
                 'company_id'    => $request->company_id,
                 'email'         => $request->email,
