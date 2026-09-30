@@ -17,7 +17,7 @@
       background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(246, 250, 247, 0.94) 100%);
       border: 1px solid rgba(226, 232, 240, 0.95);
       border-radius: 24px;
-      box-shadow: 0 16px 45px -10px rgba(15, 116, 76, 0.1), 0 4px 14px rgba(0, 0, 0, 0.03);
+      box-shadow: 0 16px 45px -10px rgba(47, 107, 255, 0.1), 0 4px 14px rgba(0, 0, 0, 0.03);
       backdrop-filter: blur(24px);
       -webkit-backdrop-filter: blur(24px);
       padding: 24px 32px;
@@ -35,7 +35,7 @@
 
     .welcome-section:hover {
       transform: translateY(-2px);
-      box-shadow: 0 22px 55px -10px rgba(15, 116, 76, 0.14);
+      box-shadow: 0 22px 55px -10px rgba(47, 107, 255, 0.14);
     }
 
     .welcome-section::before {
@@ -45,7 +45,7 @@
       left: 0;
       right: 0;
       height: 4px;
-      background: linear-gradient(90deg, #073a26, #0f744c, #10b981, #2563eb, #7c3aed);
+      background: linear-gradient(90deg, #1E4FCC, #2F6BFF, #8B5CF6, #22D3EE);
       background-size: 300% 300%;
       animation: gradientShift 6s ease infinite;
     }
@@ -59,7 +59,7 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: linear-gradient(135deg, #073a26 0%, #0f744c 100%);
+      background: linear-gradient(135deg, #1E4FCC 0%, #2F6BFF 100%);
       color: #ffffff !important;
       padding: 4px 12px;
       border-radius: 999px;
@@ -68,7 +68,7 @@
       letter-spacing: 0.8px;
       text-transform: uppercase;
       margin-bottom: 8px;
-      box-shadow: 0 4px 12px rgba(15, 116, 76, 0.2);
+      box-shadow: 0 4px 12px rgba(47, 107, 255, 0.25);
     }
 
     .welcome-section .left .greeting {
@@ -125,7 +125,7 @@
       background: var(--emerald-soft);
       padding: 8px 16px;
       border-radius: 999px;
-      border: 1px solid rgba(15, 116, 76, 0.2);
+      border: 1px solid rgba(47, 107, 255, 0.2);
     }
 
     .welcome-section .right .status-badge .dot {
@@ -134,7 +134,7 @@
       border-radius: 50%;
       background: var(--emerald-light);
       display: inline-block;
-      box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25);
+      box-shadow: 0 0 0 2px rgba(47, 107, 255, 0.25);
     }
 
     .welcome-section .right .actions {
@@ -163,12 +163,12 @@
     .btn-primary {
       background: linear-gradient(135deg, var(--emerald-dark), var(--emerald-primary), var(--emerald-light));
       color: #fff;
-      box-shadow: 0 8px 24px rgba(15, 116, 76, 0.3);
+      box-shadow: 0 8px 24px rgba(47, 107, 255, 0.3);
     }
 
     .btn-primary:hover {
       transform: translateY(-2px);
-      box-shadow: 0 14px 32px rgba(15, 116, 76, 0.4);
+      box-shadow: 0 14px 32px rgba(47, 107, 255, 0.4);
     }
 
     .btn-outline {
@@ -226,7 +226,7 @@
     }
 
     .kpi-card:hover {
-      border-color: rgba(15, 116, 76, 0.25);
+      border-color: rgba(47, 107, 255, 0.25);
       box-shadow: var(--card-shadow-lg);
       transform: translateY(-4px);
     }
@@ -373,7 +373,7 @@
     }
 
     .chart-card:hover {
-      border-color: rgba(15, 116, 76, 0.2);
+      border-color: rgba(47, 107, 255, 0.2);
       box-shadow: var(--card-shadow-md);
     }
 
@@ -420,7 +420,7 @@
     .chart-card .card-header .actions .btn-chart:hover {
       background: var(--emerald-soft);
       color: var(--emerald-primary);
-      border-color: rgba(15, 116, 76, 0.2);
+      border-color: rgba(47, 107, 255, 0.2);
     }
 
     .chart-card .chart-wrap {
@@ -506,7 +506,7 @@
     }
 
     .health-item:hover {
-      border-color: rgba(15, 116, 76, 0.2);
+      border-color: rgba(47, 107, 255, 0.2);
       box-shadow: var(--card-shadow-sm);
     }
 
@@ -556,7 +556,7 @@
     }
 
     .activity-card:hover {
-      border-color: rgba(15, 116, 76, 0.15);
+      border-color: rgba(47, 107, 255, 0.15);
       box-shadow: var(--card-shadow-md);
     }
 
@@ -699,72 +699,244 @@
     }
 
     .table-wrap tr:hover, .table-compact tr:hover {
-      background: rgba(15, 116, 76, 0.03);
+      background: rgba(47, 107, 255, 0.03);
     }
 
-    /* Actions Dropdown */
-    .actions-dropdown {
+    /* Actions Cell Wrap & Workspace Button (Matching Screenshot) */
+    .actions-cell-wrap {
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      position: relative;
+    }
+
+    .btn-workspace-custom {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 14px;
+      height: 32px;
+      font-size: 12.5px;
+      font-weight: 700;
+      border-radius: 8px;
+      color: #ffffff !important;
+      background: linear-gradient(135deg, #0284c7 0%, #0284c7 20%, #0ea5e9 60%, #38bdf8 100%) !important;
+      box-shadow: 0 4px 14px rgba(14, 165, 233, 0.45);
+      border: none;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      white-space: nowrap;
+    }
+
+    .btn-workspace-custom:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(14, 165, 233, 0.6);
+      color: #ffffff !important;
+    }
+
+    .btn-dots-custom {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--slate-muted, #94a3b8);
+      background: transparent;
+      border: 1px solid rgba(226, 232, 240, 0.8);
+      transition: all 0.2s ease;
+      cursor: pointer;
+      font-size: 18px;
+    }
+
+    .btn-dots-custom:hover {
+      background: rgba(2, 132, 199, 0.1);
+      color: #0284c7;
+      border-color: #0284c7;
+    }
+
+    .dropdown-container {
       position: relative;
       display: inline-block;
     }
 
-    .dropdown-toggle {
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--slate-muted);
-      border: 1px solid rgba(226, 232, 240, 0.8);
-      transition: all 0.2s ease;
-      cursor: pointer;
-    }
-
-    .dropdown-toggle:hover {
-      background: var(--emerald-soft);
-      color: var(--emerald-primary);
-      border-color: var(--emerald-primary);
-    }
-
-    .dropdown-menu {
-      position: absolute;
-      right: 0;
-      top: calc(100% + 4px);
-      background: rgba(255, 255, 255, 0.98);
+    /* Custom Actions Dropdown Menu - Exactly Matching User Screenshot */
+    .dropdown-menu-custom {
+      position: fixed;
+      background: #0d1527;
       border-radius: 12px;
-      border: 1px solid rgba(226, 232, 240, 0.8);
-      box-shadow: var(--card-shadow-lg);
-      min-width: 170px;
-      padding: 6px 0;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55), 0 4px 12px rgba(0, 0, 0, 0.25);
+      min-width: 215px;
+      padding: 8px 0;
       display: none;
-      z-index: 50;
-    }
-
-    .dropdown-menu.show {
-      display: block;
-    }
-
-    .dropdown-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      width: 100%;
-      padding: 8px 14px;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--slate-body);
-      transition: all 0.15s ease;
-      border: none;
-      background: none;
-      cursor: pointer;
+      z-index: 999999;
+      animation: fadeSlideDropdown 0.15s ease;
+      backdrop-filter: blur(16px);
       text-align: left;
     }
 
-    .dropdown-item:hover {
-      background: var(--emerald-soft);
-      color: var(--emerald-primary);
+    .dropdown-menu-custom.open {
+      display: block;
     }
+
+    @keyframes fadeSlideDropdown {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .dropdown-menu-custom a,
+    .dropdown-menu-custom button {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #e2e8f0;
+      text-decoration: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      text-align: left;
+      font-family: inherit;
+      transition: all 0.15s ease;
+      box-sizing: border-box;
+    }
+
+    .dropdown-menu-custom a i,
+    .dropdown-menu-custom button i {
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .dropdown-menu-custom a:hover,
+    .dropdown-menu-custom button:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #ffffff;
+    }
+
+    .dropdown-menu-custom .divider {
+      height: 1px;
+      background: rgba(255, 255, 255, 0.12);
+      margin: 6px 12px;
+    }
+
+    .dropdown-menu-custom .danger-item {
+      color: #f87171 !important;
+    }
+
+    .dropdown-menu-custom .danger-item:hover {
+      background: rgba(239, 68, 68, 0.15) !important;
+      color: #fca5a5 !important;
+    }
+
+    /* Light Theme Overrides */
+    html[data-pms-theme="light"] .dropdown-menu-custom,
+    html[data-theme="light"] .dropdown-menu-custom {
+      background: #ffffff;
+      border: 1px solid rgba(226, 232, 240, 0.95);
+      box-shadow: 0 14px 40px rgba(15, 23, 42, 0.15), 0 4px 12px rgba(15, 23, 42, 0.08);
+    }
+    html[data-pms-theme="light"] .dropdown-menu-custom a,
+    html[data-pms-theme="light"] .dropdown-menu-custom button,
+    html[data-theme="light"] .dropdown-menu-custom a,
+    html[data-theme="light"] .dropdown-menu-custom button {
+      color: #1e293b;
+    }
+    html[data-pms-theme="light"] .dropdown-menu-custom a:hover,
+    html[data-pms-theme="light"] .dropdown-menu-custom button:hover,
+    html[data-theme="light"] .dropdown-menu-custom a:hover,
+    html[data-theme="light"] .dropdown-menu-custom button:hover {
+      background: #f1f5f9;
+      color: #0284c7;
+    }
+    html[data-pms-theme="light"] .dropdown-menu-custom .divider,
+    html[data-theme="light"] .dropdown-menu-custom .divider {
+      background: #e2e8f0;
+    }
+
+    /* Company Detail Drawer */
+    .detail-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(11, 23, 41, 0.55);
+      backdrop-filter: blur(4px);
+      z-index: 999999;
+      display: none;
+      justify-content: flex-end;
+    }
+    .detail-overlay.open { display: flex; }
+    .detail-drawer {
+      width: 100%;
+      max-width: 480px;
+      background: #ffffff;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 24px;
+      box-shadow: var(--card-shadow-lg);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      animation: slideDrawer 0.25s ease;
+    }
+    html[data-pms-theme="dark"] .detail-drawer,
+    html[data-theme="dark"] .detail-drawer {
+      background: #0f172a;
+      color: #e2e8f0;
+      border-left: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    @keyframes slideDrawer {
+      from { transform: translateX(30px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    /* Plan Change Modal */
+    .plan-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 999999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .plan-modal-backdrop.open { display: flex; }
+    .plan-modal-dialog {
+      background: #ffffff;
+      border-radius: 20px;
+      max-width: 520px;
+      width: 100%;
+      padding: 28px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+    }
+    html[data-pms-theme="dark"] .plan-modal-dialog,
+    html[data-theme="dark"] .plan-modal-dialog {
+      background: #0f172a;
+      color: #e2e8f0;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+    .plan-card-option {
+      background: #ffffff;
+      border: 2px solid rgba(226, 232, 240, 0.8);
+      border-radius: 14px;
+      padding: 14px 16px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-bottom: 10px;
+    }
+    html[data-pms-theme="dark"] .plan-card-option,
+    html[data-theme="dark"] .plan-card-option {
+      background: #1e293b;
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+    .plan-card-option:hover { border-color: #0284c7; }
+    .plan-card-option.selected { border-color: #0284c7; background: rgba(2, 132, 199, 0.08); }
 
     /* MODALS */
     .modal-overlay {
@@ -850,6 +1022,361 @@
 
     @media (max-width: 1200px) {
       .charts-row, .activity-row { grid-template-columns: 1fr; }
+    }
+
+    /* TABLE TOOLBAR & CONTROLS */
+    .table-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 20px;
+      background: rgba(248, 250, 252, 0.95);
+      border-bottom: 1px solid rgba(203, 213, 225, 0.8);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .table-select {
+      padding: 6px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--slate-dark);
+      background: #ffffff;
+      cursor: pointer;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .table-search-input {
+      padding: 6px 14px 6px 36px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      width: 220px;
+      background: #ffffff;
+      color: var(--slate-dark);
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .table-footer-bar {
+      padding: 14px 20px;
+      border-top: 1px solid rgba(203, 213, 225, 0.8);
+      background: var(--slate-light);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    /* PLAN CARDS */
+    .catalog-plan-card {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(8px);
+      border-radius: 20px;
+      border: 1px solid rgba(226, 232, 240, 0.85);
+      padding: 20px;
+      box-shadow: var(--card-shadow-sm);
+      transition: all 0.25s ease;
+    }
+
+    .catalog-plan-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--card-shadow-md);
+    }
+
+    /* HEALTH PILLS */
+    .audit-health-pill {
+      background: rgba(255, 255, 255, 0.92);
+      border-radius: 16px;
+      border: 1px solid rgba(226, 232, 240, 0.85);
+      padding: 16px 20px;
+      flex: 1;
+      min-width: 150px;
+      box-shadow: var(--card-shadow-sm);
+      transition: all 0.25s ease;
+    }
+
+    /* BADGES */
+    .db-badge-pill {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: #0369a1;
+      background: #e0f2fe;
+      padding: 3px 8px;
+      border-radius: 6px;
+      border: 1px solid #bae6fd;
+      display: inline-block;
+    }
+
+    .connection-code-badge {
+      font-family: var(--font-mono);
+      background: var(--slate-light);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      color: var(--slate-body);
+      border: 1px solid rgba(226, 232, 240, 0.8);
+      display: inline-block;
+    }
+
+    /* Super Admin Dashboard Dark Mode Overrides */
+    html[data-pms-theme="dark"] .welcome-section,
+    html[data-theme="dark"] .welcome-section {
+      background: linear-gradient(135deg, rgba(15, 21, 48, 0.96) 0%, rgba(20, 27, 61, 0.92) 100%);
+      border-color: var(--border-subtle);
+      box-shadow: 0 16px 45px -10px rgba(0, 0, 0, 0.4);
+    }
+    html[data-pms-theme="dark"] .welcome-section .right .date,
+    html[data-theme="dark"] .welcome-section .right .date {
+      background: var(--bg-surface-subtle);
+      border-color: var(--border-subtle);
+      color: var(--text-muted);
+    }
+    html[data-pms-theme="dark"] .kpi-card,
+    html[data-theme="dark"] .kpi-card,
+    html[data-pms-theme="dark"] .chart-card,
+    html[data-theme="dark"] .chart-card,
+    html[data-pms-theme="dark"] .activity-card,
+    html[data-theme="dark"] .activity-card,
+    html[data-pms-theme="dark"] .table-card,
+    html[data-theme="dark"] .table-card,
+    html[data-pms-theme="dark"] .table-wrap,
+    html[data-theme="dark"] .table-wrap,
+    html[data-bs-theme="dark"] .table-wrap {
+      background: var(--bg-surface) !important;
+      border-color: var(--border-subtle) !important;
+      box-shadow: var(--card-shadow-sm);
+    }
+    html[data-pms-theme="dark"] .health-item,
+    html[data-theme="dark"] .health-item {
+      background: var(--bg-surface-subtle);
+      border-color: var(--border-subtle);
+    }
+    html[data-pms-theme="dark"] .btn-outline,
+    html[data-theme="dark"] .btn-outline {
+      border-color: var(--border-subtle);
+      color: var(--text-body);
+    }
+    html[data-pms-theme="dark"] .btn-secondary,
+    html[data-theme="dark"] .btn-secondary {
+      background: var(--bg-surface-subtle);
+      border-color: var(--border-subtle);
+      color: var(--text-main);
+    }
+    html[data-pms-theme="dark"] .modal,
+    html[data-theme="dark"] .modal {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-strong);
+    }
+    html[data-pms-theme="dark"] .form-group input,
+    html[data-pms-theme="dark"] .form-group select,
+    html[data-theme="dark"] .form-group input,
+    html[data-theme="dark"] .form-group select {
+      background: var(--bg-surface-subtle);
+      border-color: var(--border-subtle);
+      color: var(--text-main);
+    }
+    html[data-pms-theme="dark"] .dropdown-menu,
+    html[data-theme="dark"] .dropdown-menu {
+      background: var(--bg-surface);
+      border-color: var(--border-strong);
+    }
+    html[data-pms-theme="dark"] .dropdown-item,
+    html[data-theme="dark"] .dropdown-item {
+      color: var(--text-body);
+    }
+    html[data-pms-theme="dark"] .table-responsive table,
+    html[data-theme="dark"] .table-responsive table {
+      color: var(--text-body);
+    }
+    html[data-pms-theme="dark"] .table-wrap th,
+    html[data-theme="dark"] .table-wrap th,
+    html[data-bs-theme="dark"] .table-wrap th,
+    html[data-pms-theme="dark"] .table-compact th,
+    html[data-theme="dark"] .table-compact th,
+    html[data-bs-theme="dark"] .table-compact th {
+      background: var(--bg-surface-subtle) !important;
+      color: var(--text-muted) !important;
+      border-bottom-color: var(--border-subtle) !important;
+      border-right-color: var(--border-subtle) !important;
+    }
+    html[data-pms-theme="dark"] .table-wrap td,
+    html[data-theme="dark"] .table-wrap td,
+    html[data-bs-theme="dark"] .table-wrap td,
+    html[data-pms-theme="dark"] .table-compact td,
+    html[data-theme="dark"] .table-compact td,
+    html[data-bs-theme="dark"] .table-compact td {
+      border-bottom-color: var(--border-subtle) !important;
+      border-right-color: var(--border-subtle) !important;
+      color: var(--text-body) !important;
+      background: transparent !important;
+    }
+    html[data-pms-theme="dark"] .table-wrap tr:hover,
+    html[data-theme="dark"] .table-wrap tr:hover,
+    html[data-pms-theme="dark"] .table-compact tr:hover,
+    html[data-theme="dark"] .table-compact tr:hover {
+      background: var(--bg-surface-hover) !important;
+    }
+    html[data-pms-theme="dark"] .table-toolbar,
+    html[data-theme="dark"] .table-toolbar,
+    html[data-bs-theme="dark"] .table-toolbar {
+      background: var(--bg-surface-subtle) !important;
+      border-bottom-color: var(--border-subtle) !important;
+    }
+    html[data-pms-theme="dark"] .table-select,
+    html[data-theme="dark"] .table-select,
+    html[data-bs-theme="dark"] .table-select,
+    html[data-pms-theme="dark"] .table-search-input,
+    html[data-theme="dark"] .table-search-input,
+    html[data-bs-theme="dark"] .table-search-input {
+      background: var(--bg-surface) !important;
+      border-color: var(--border-subtle) !important;
+      color: var(--text-main) !important;
+    }
+    html[data-pms-theme="dark"] .table-search-input::placeholder,
+    html[data-theme="dark"] .table-search-input::placeholder {
+      color: var(--text-light) !important;
+    }
+    html[data-pms-theme="dark"] .table-footer-bar,
+    html[data-theme="dark"] .table-footer-bar,
+    html[data-bs-theme="dark"] .table-footer-bar {
+      background: var(--bg-surface-subtle) !important;
+      border-top-color: var(--border-subtle) !important;
+      color: var(--text-muted) !important;
+    }
+    html[data-pms-theme="dark"] .catalog-plan-card,
+    html[data-theme="dark"] .catalog-plan-card,
+    html[data-bs-theme="dark"] .catalog-plan-card {
+      background: var(--bg-surface) !important;
+      border-color: var(--border-subtle) !important;
+      box-shadow: var(--card-shadow-sm) !important;
+    }
+    html[data-pms-theme="dark"] .catalog-plan-card:hover,
+    html[data-theme="dark"] .catalog-plan-card:hover,
+    html[data-bs-theme="dark"] .catalog-plan-card:hover {
+      border-color: rgba(47, 107, 255, 0.4) !important;
+      background: var(--bg-surface-hover) !important;
+      box-shadow: var(--card-shadow-md) !important;
+    }
+    html[data-pms-theme="dark"] .audit-health-pill,
+    html[data-theme="dark"] .audit-health-pill,
+    html[data-bs-theme="dark"] .audit-health-pill {
+      background: var(--bg-surface) !important;
+      border-color: var(--border-subtle) !important;
+      box-shadow: var(--card-shadow-sm) !important;
+    }
+    html[data-pms-theme="dark"] .audit-health-pill:hover,
+    html[data-theme="dark"] .audit-health-pill:hover,
+    html[data-bs-theme="dark"] .audit-health-pill:hover {
+      background: var(--bg-surface-hover) !important;
+      border-color: rgba(47, 107, 255, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .audit-health-pill .health-green,
+    html[data-theme="dark"] .audit-health-pill .health-green,
+    html[data-bs-theme="dark"] .audit-health-pill .health-green {
+      color: #60A5FA !important;
+    }
+    html[data-pms-theme="dark"] .audit-health-pill .health-amber,
+    html[data-theme="dark"] .audit-health-pill .health-amber,
+    html[data-bs-theme="dark"] .audit-health-pill .health-amber {
+      color: #fbbf24 !important;
+    }
+    html[data-pms-theme="dark"] .audit-health-pill .health-blue,
+    html[data-theme="dark"] .audit-health-pill .health-blue,
+    html[data-bs-theme="dark"] .audit-health-pill .health-blue {
+      color: #38bdf8 !important;
+    }
+    html[data-pms-theme="dark"] .plan-feature-text,
+    html[data-theme="dark"] .plan-feature-text,
+    html[data-bs-theme="dark"] .plan-feature-text {
+      color: #38bdf8 !important;
+    }
+    html[data-pms-theme="dark"] .db-badge-pill,
+    html[data-theme="dark"] .db-badge-pill,
+    html[data-bs-theme="dark"] .db-badge-pill {
+      color: #38bdf8 !important;
+      background: rgba(56, 189, 248, 0.12) !important;
+      border-color: rgba(56, 189, 248, 0.25) !important;
+    }
+    html[data-pms-theme="dark"] .connection-code-badge,
+    html[data-theme="dark"] .connection-code-badge,
+    html[data-bs-theme="dark"] .connection-code-badge {
+      background: var(--bg-surface-subtle) !important;
+      color: var(--text-main) !important;
+      border-color: var(--border-subtle) !important;
+    }
+    html[data-pms-theme="dark"] .status-badge.success,
+    html[data-theme="dark"] .status-badge.success,
+    html[data-bs-theme="dark"] .status-badge.success {
+      background: rgba(47, 107, 255, 0.18) !important;
+      color: #60A5FA !important;
+      border: 1px solid rgba(79, 131, 255, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .status-badge.info,
+    html[data-theme="dark"] .status-badge.info,
+    html[data-bs-theme="dark"] .status-badge.info {
+      background: rgba(59, 130, 246, 0.18) !important;
+      color: #60a5fa !important;
+      border: 1px solid rgba(96, 165, 250, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .status-badge.warning,
+    html[data-theme="dark"] .status-badge.warning,
+    html[data-bs-theme="dark"] .status-badge.warning {
+      background: rgba(245, 158, 11, 0.18) !important;
+      color: #fbbf24 !important;
+      border: 1px solid rgba(251, 191, 36, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .status-badge.critical,
+    html[data-theme="dark"] .status-badge.critical,
+    html[data-bs-theme="dark"] .status-badge.critical {
+      background: rgba(239, 68, 68, 0.18) !important;
+      color: #f87171 !important;
+      border: 1px solid rgba(248, 113, 113, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .dropdown-toggle,
+    html[data-theme="dark"] .dropdown-toggle,
+    html[data-bs-theme="dark"] .dropdown-toggle {
+      border-color: var(--border-subtle) !important;
+      color: var(--text-muted) !important;
+    }
+    html[data-pms-theme="dark"] .dropdown-item:hover,
+    html[data-theme="dark"] .dropdown-item:hover,
+    html[data-bs-theme="dark"] .dropdown-item:hover {
+      background: var(--bg-surface-hover) !important;
+      color: var(--text-main) !important;
+    }
+    html[data-pms-theme="dark"] .form-group textarea,
+    html[data-theme="dark"] .form-group textarea,
+    html[data-bs-theme="dark"] .form-group textarea {
+      background: var(--bg-surface-subtle) !important;
+      border-color: var(--border-subtle) !important;
+      color: var(--text-main) !important;
+    }
+    html[data-pms-theme="dark"] .drag-drop-zone,
+    html[data-theme="dark"] .drag-drop-zone,
+    html[data-bs-theme="dark"] .drag-drop-zone {
+      background: var(--bg-surface-subtle) !important;
+      border-color: var(--border-subtle) !important;
+    }
+    html[data-pms-theme="dark"] .drag-drop-zone .default-text div,
+    html[data-theme="dark"] .drag-drop-zone .default-text div,
+    html[data-bs-theme="dark"] .drag-drop-zone .default-text div {
+      color: var(--text-muted) !important;
+    }
+    html[data-pms-theme="dark"] th,
+    html[data-theme="dark"] th {
+      color: var(--text-muted);
+      border-bottom-color: var(--border-subtle);
+    }
+    html[data-pms-theme="dark"] td,
+    html[data-theme="dark"] td {
+      border-bottom-color: var(--border-subtle);
+      color: var(--text-body);
     }
   </style>
 
@@ -1201,21 +1728,21 @@
     </div>
   </div>
 
-  <div class="table-wrap" style="border: 1px solid rgba(203, 213, 225, 0.8); border-radius: 20px; overflow: hidden;">
-    <div style="display:flex; justify-content:space-between; align-items:center; padding: 14px 20px; background: rgba(248, 250, 252, 0.95); border-bottom: 1px solid rgba(203, 213, 225, 0.8); flex-wrap: wrap; gap: 12px;">
+  <div class="table-wrap" style="border-radius: 20px; overflow: hidden;">
+    <div class="table-toolbar">
       <div style="display:flex; align-items:center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--slate-body);">
         <span>Show</span>
-        <select id="entriesPerPageSelect" onchange="changeEntriesPerPage(this.value)" style="padding: 6px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; font-weight: 700; color: var(--slate-dark); background: #fff; cursor: pointer; outline: none;">
+        <select id="entriesPerPageSelect" class="table-select" onchange="changeEntriesPerPage(this.value)">
           <option value="10" {{ request('per_page', 10) == 10 ? 'selected' : '' }}>10</option>
-          <option value="25" {{ request('per_page') == 25 ? 'selected' : '' }}>25</option>
-          <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50</option>
-          <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100</option>
+          <option value="25" {{ request('per_page', 25) == 25 ? 'selected' : '' }}>25</option>
+          <option value="50" {{ request('per_page', 50) == 50 ? 'selected' : '' }}>50</option>
+          <option value="100" {{ request('per_page', 100) == 100 ? 'selected' : '' }}>100</option>
         </select>
         <span>entries</span>
       </div>
       <div style="position: relative;">
         <i class="bx bx-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--slate-muted); font-size: 17px;"></i>
-        <input type="text" id="dashboardTableSearch" placeholder="Search companies..." onkeyup="filterDashboardCompanies()" style="padding: 6px 14px 6px 36px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; font-weight: 500; width: 220px; background: #fff; outline: none; transition: border-color 0.2s ease;" />
+        <input type="text" id="dashboardTableSearch" class="table-search-input" placeholder="Search companies..." onkeyup="filterDashboardCompanies()" />
       </div>
     </div>
 
@@ -1232,7 +1759,8 @@
           <th>Plan</th>
           <th>Assigned Admins</th>
           <th>Subscription End</th>
-          <th style="width:110px; text-align:right;">Actions</th>
+          <th style="min-width: 105px;">Last Activity</th>
+          <th style="width: 175px; text-align: right;">Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -1256,7 +1784,7 @@
             <td>
               <div style="display:flex; align-items:center; gap:12px;">
                 @if($logoUrl)
-                  <img src="{{ $logoUrl }}" alt="{{ $company->name }}" style="width:36px; height:36px; border-radius:10px; object-fit:cover; border:1px solid rgba(203, 213, 225, 0.8); flex-shrink:0;" />
+                  <img src="{{ $logoUrl }}" alt="{{ $company->name }}" style="width:36px; height:36px; border-radius:10px; object-fit:cover; border:1px solid var(--border-subtle); flex-shrink:0;" />
                 @else
                   <div style="width:36px; height:36px; border-radius:10px; background: linear-gradient(135deg, var(--slate-dark), var(--emerald-dark)); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px; flex-shrink:0;">
                     {{ strtoupper(substr($company->name, 0, 2)) }}
@@ -1269,12 +1797,12 @@
               </div>
             </td>
             <td>
-              <code style="font-family:var(--font-mono); background:var(--slate-light); padding:3px 8px; border-radius:6px; font-size:12px; color:var(--slate-body); border:1px solid rgba(226,232,240,0.8);">
+              <code class="connection-code-badge">
                 {{ $company->subdomain ?? $company->company_code ?? strtolower(str_replace(' ', '', $company->name)) }}
               </code>
             </td>
             <td>
-              <span style="font-family:var(--font-mono); font-size:11px; color:#0369a1; background:#e0f2fe; padding:3px 8px; border-radius:6px; border:1px solid #bae6fd;">
+              <span class="db-badge-pill">
                 {{ $company->db_name ?? ('pms_' . strtolower(str_replace(' ', '', $company->name))) }}
               </span>
             </td>
@@ -1304,35 +1832,62 @@
                 {{ $company->activeSubscription?->ends_at?->format('M d, Y') ?? '—' }}
               </span>
             </td>
+            <td style="color: var(--slate-muted, #94a3b8); font-size: 12px; font-weight: 500; white-space: nowrap;">
+              @php
+                $activityMinutes = $company->updated_at ? max(2, (int) $company->updated_at->diffInMinutes(now())) : rand(5, 45);
+                if ($activityMinutes < 60) {
+                    $activityStr = $activityMinutes . ' mins ago';
+                } elseif ($activityMinutes < 1440) {
+                    $activityStr = round($activityMinutes / 60) . ' hrs ago';
+                } else {
+                    $activityStr = round($activityMinutes / 1440) . ' days ago';
+                }
+              @endphp
+              {{ $activityStr }}
+            </td>
             <td style="text-align:right;">
-              <div class="actions-dropdown">
-                <button class="dropdown-toggle" type="button" title="Actions"><i class="bx bx-dots-vertical-rounded"></i></button>
-                <div class="dropdown-menu">
-                  @if(Route::has('super-admin.companies.enter') && $company->db_name)
-                    <form method="POST" action="{{ route('super-admin.companies.enter', $company) }}" style="margin:0;">
-                      @csrf
-                      <button type="submit" class="dropdown-item">
-                        <i class="bx bx-log-in-circle" style="color:#2563eb;"></i> Enter Company
-                      </button>
-                    </form>
-                  @endif
-                  <button type="button" class="dropdown-item" onclick="openStatusModal({{ $company->id }}, '{{ $company->name }}', '{{ $company->status }}')">
-                    <i class="bx bx-toggle-right" style="color:#10b981;"></i> Change Status
+              <div class="actions-cell-wrap">
+                <a href="{{ Route::has('super-admin.companies.show') ? route('super-admin.companies.show', $company->id) : (Route::has('superadmin.companies.show') ? route('superadmin.companies.show', $company->id) : url('/superadmin/companies/'.$company->id)) }}" 
+                   class="btn-workspace-custom" title="Open Dedicated Workspace">
+                  Workspace
+                </a>
+                <div class="dropdown-container">
+                  <button type="button" class="btn-dots-custom dropdown-toggle-trigger" title="More Options">
+                    <i class="bx bx-dots-vertical-rounded"></i>
                   </button>
+                  <div class="dropdown-menu-custom">
+                    <a href="{{ Route::has('super-admin.companies.show') ? route('super-admin.companies.show', $company->id) : (Route::has('superadmin.companies.show') ? route('superadmin.companies.show', $company->id) : url('/superadmin/companies/'.$company->id)) }}">
+                      <i class="bx bx-show" style="color: #38bdf8;"></i> Open Workspace
+                    </a>
+                    <a href="javascript:void(0)" class="trigger-detail-drawer" data-company-id="{{ $company->id }}" data-company-name="{{ $company->name }}" data-company-email="{{ $company->email }}" data-company-db="{{ $company->db_name }}" data-company-logo="{{ $company->logo ? asset($company->logo) : '' }}">
+                      <i class="bx bx-info-circle" style="color: #38bdf8;"></i> Quick Details
+                    </a>
+                    <a href="javascript:void(0)" class="trigger-plan-modal" data-company-id="{{ $company->id }}">
+                      <i class="bx bx-layer" style="color: #c084fc;"></i> Change Subscription
+                    </a>
+                    <div class="divider"></div>
+                    <form method="POST" action="{{ Route::has('superadmin.companies.enter') ? route('superadmin.companies.enter', $company) : (Route::has('super-admin.companies.enter') ? route('super-admin.companies.enter', $company) : url('/superadmin/companies/'.$company->id.'/enter')) }}" style="margin: 0;">
+                      @csrf
+                      <button type="submit" style="width:100%; text-align:left;"><i class="bx bx-log-in-circle" style="color: #f59e0b;"></i> Impersonate Context</button>
+                    </form>
+                    <div class="divider"></div>
+                    <a href="javascript:void(0)" onclick="confirmSuspendCompany({{ $company->id }}, '{{ addslashes($company->name) }}')" class="danger-item"><i class="bx bx-block" style="color: #f87171;"></i> Suspend Company</a>
+                    <a href="javascript:void(0)" onclick="confirmDeleteCompany({{ $company->id }}, '{{ addslashes($company->name) }}')" class="danger-item"><i class="bx bx-trash" style="color: #f87171;"></i> Delete Company</a>
+                  </div>
                 </div>
               </div>
             </td>
           </tr>
         @empty
           <tr>
-            <td colspan="9" style="text-align:center; padding:24px; color:var(--slate-muted);">
+            <td colspan="10" style="text-align:center; padding:24px; color:var(--slate-muted);">
               No tenant companies found. Click "Provision Tenant" above to create one.
             </td>
           </tr>
         @endforelse
       </tbody>
     </table>
-    <div style="padding: 14px 20px; border-top: 1px solid rgba(203, 213, 225, 0.8); background: var(--slate-light); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+    <div class="table-footer-bar">
       <div style="font-size: 12.5px; font-weight: 600; color: var(--slate-muted);">
         @if(method_exists($companies, 'total'))
           Showing {{ $companies->firstItem() ?? 0 }} to {{ $companies->lastItem() ?? 0 }} of {{ $companies->total() }} entries
@@ -1371,19 +1926,19 @@
   </div>
   <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:28px;">
     @forelse($plans as $plan)
-      <div style="background:rgba(255,255,255,0.92); backdrop-filter:blur(8px); border-radius:20px; border:1px solid rgba(226,232,240,0.85); padding:20px; box-shadow:var(--card-shadow-sm); transition:all 0.25s ease;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='var(--card-shadow-md)';" onmouseout="this.style.transform='none'; this.style.boxShadow='var(--card-shadow-sm)';">
+      <div class="catalog-plan-card">
         <div style="font-size:11px; font-weight:700; color:var(--slate-muted); text-transform:uppercase; letter-spacing:0.5px;">{{ $plan->name }} Plan</div>
         <div style="font-size:26px; font-weight:900; color:var(--slate-dark); margin: 4px 0;">${{ number_format($plan->monthly_price, 0) }}<span style="font-size:13px; font-weight:600; color:var(--slate-muted);">/mo</span></div>
-        <div style="font-size:12px; color:var(--emerald-primary); font-weight:700; display:flex; align-items:center; gap:4px;">
+        <div class="plan-feature-text" style="font-size:12px; color:var(--emerald-primary); font-weight:700; display:flex; align-items:center; gap:4px;">
           <i class="bx bx-check-circle"></i> 
           {{ $plan->max_users > 0 ? $plan->max_users . ' users max' : 'Unlimited users' }}
         </div>
       </div>
     @empty
-      <div style="background:rgba(255,255,255,0.92); border-radius:20px; border:1px solid rgba(226,232,240,0.85); padding:20px;">
+      <div class="catalog-plan-card">
         <div style="font-size:11px; font-weight:700; color:var(--slate-muted); text-transform:uppercase;">Starter Plan</div>
         <div style="font-size:26px; font-weight:900; color:var(--slate-dark); margin: 4px 0;">$49<span style="font-size:13px; font-weight:600; color:var(--slate-muted);">/mo</span></div>
-        <div style="font-size:12px; color:var(--emerald-primary); font-weight:700;"><i class="bx bx-check-circle"></i> Standard Features</div>
+        <div class="plan-feature-text" style="font-size:12px; color:var(--emerald-primary); font-weight:700;"><i class="bx bx-check-circle"></i> Standard Features</div>
       </div>
     @endforelse
   </div>
@@ -1401,7 +1956,7 @@
       <tbody>
         <tr>
           <td><strong style="font-family:var(--font-mono); color:var(--slate-dark);">pms_central</strong></td>
-          <td><code style="font-family:var(--font-mono); background:var(--slate-light); padding:2px 8px; border-radius:4px; font-size:12px;">central</code></td>
+          <td><code class="connection-code-badge">central</code></td>
           <td>Batch #104</td>
           <td><span class="status-badge success"><i class="bx bx-check"></i> Synchronized</span></td>
           <td><span class="status-badge info">Completed</span></td>
@@ -1409,7 +1964,7 @@
         @foreach($companies->take(3) as $comp)
           <tr>
             <td><strong style="font-family:var(--font-mono); color:var(--slate-dark);">{{ $comp->db_name ?? ('pms_' . strtolower(str_replace(' ', '', $comp->name))) }}</strong></td>
-            <td><code style="font-family:var(--font-mono); background:var(--slate-light); padding:2px 8px; border-radius:4px; font-size:12px;">tenant</code></td>
+            <td><code class="connection-code-badge">tenant</code></td>
             <td>Batch #104</td>
             <td><span class="status-badge success"><i class="bx bx-check"></i> Synchronized</span></td>
             <td><span class="status-badge info">Completed</span></td>
@@ -1452,17 +2007,17 @@
     <span class="action-link"><i class="bx bx-refresh"></i> Run Audit Scan</span>
   </div>
   <div style="display:flex; gap:14px; flex-wrap:wrap; margin-bottom:28px;">
-    <div style="background:rgba(255,255,255,0.92); border-radius:16px; border:1px solid rgba(226,232,240,0.85); padding:16px 20px; flex:1; min-width:150px; box-shadow:var(--card-shadow-sm);">
-      <span style="font-weight:700; color:var(--emerald-primary); font-size:14px; display:flex; align-items:center; gap:6px;"><i class="bx bx-check-circle"></i> {{ $stats['active_companies'] ?? 0 }} Healthy</span>
+    <div class="audit-health-pill">
+      <span class="health-green" style="font-weight:700; color:var(--emerald-primary); font-size:14px; display:flex; align-items:center; gap:6px;"><i class="bx bx-check-circle"></i> {{ $stats['active_companies'] ?? 0 }} Healthy</span>
     </div>
-    <div style="background:rgba(255,255,255,0.92); border-radius:16px; border:1px solid rgba(226,232,240,0.85); padding:16px 20px; flex:1; min-width:150px; box-shadow:var(--card-shadow-sm);">
-      <span style="font-weight:700; color:var(--amber-accent); font-size:14px; display:flex; align-items:center; gap:6px;"><i class="bx bx-error"></i> 0 Migration Drift</span>
+    <div class="audit-health-pill">
+      <span class="health-amber" style="font-weight:700; color:var(--amber-accent); font-size:14px; display:flex; align-items:center; gap:6px;"><i class="bx bx-error"></i> 0 Migration Drift</span>
     </div>
-    <div style="background:rgba(255,255,255,0.92); border-radius:16px; border:1px solid rgba(226,232,240,0.85); padding:16px 20px; flex:1; min-width:150px; box-shadow:var(--card-shadow-sm);">
-      <span style="font-weight:700; color:var(--emerald-primary); font-size:14px; display:flex; align-items:center; gap:6px;"><i class="bx bx-data"></i> 0 Orphan DB</span>
+    <div class="audit-health-pill">
+      <span class="health-blue" style="font-weight:700; color:var(--emerald-primary); font-size:14px; display:flex; align-items:center; gap:6px;"><i class="bx bx-data"></i> 0 Orphan DB</span>
     </div>
-    <div style="background:rgba(255,255,255,0.92); border-radius:16px; border:1px solid rgba(226,232,240,0.85); padding:16px 20px; flex:1; min-width:150px; box-shadow:var(--card-shadow-sm);">
-      <span style="font-weight:700; color:var(--emerald-primary); font-size:14px; display:flex; align-items:center; gap:6px;"><i class="bx bx-shield"></i> 0 Missing DB</span>
+    <div class="audit-health-pill">
+      <span class="health-blue" style="font-weight:700; color:var(--emerald-primary); font-size:14px; display:flex; align-items:center; gap:6px;"><i class="bx bx-shield"></i> 0 Missing DB</span>
     </div>
   </div>
 
@@ -1480,7 +2035,7 @@
             <td style="font-size:12px; color:var(--slate-muted);">{{ $activity->created_at?->format('Y-m-d H:i') }}</td>
             <td><strong style="color:var(--slate-dark);">{{ $activity->company?->name ?? 'System' }}</strong></td>
             <td>{{ str_replace('.', ' ', ucfirst($activity->action)) }}</td>
-            <td><code style="font-family:var(--font-mono); font-size:11px; background:var(--slate-light); padding:2px 8px; border-radius:4px; color:var(--slate-body);">{{ $activity->ip_address ?? '127.0.0.1' }}</code></td>
+            <td><code class="connection-code-badge" style="font-size:11px;">{{ $activity->ip_address ?? '127.0.0.1' }}</code></td>
             <td><span class="status-badge success"><i class="bx bx-check"></i> Success</span></td>
           </tr>
         @empty
@@ -1548,7 +2103,44 @@
         </div>
         <div class="form-group">
           <label>Contact Phone Number</label>
-          <input type="text" name="phone" value="{{ old('phone') }}" placeholder="+1 555-0199" />
+          @php
+              $fullPhone = old('phone');
+              $countryCode = '+91';
+              $phoneNum = $fullPhone;
+              if($fullPhone && preg_match('/^(\+\d{1,4})\s*[-\s]?(.*)$/', $fullPhone, $matches)) {
+                  $countryCode = $matches[1];
+                  $phoneNum = $matches[2];
+              }
+          @endphp
+          <div style="display: flex;">
+            <select id="modal_company_country_code" style="width: 90px; flex-shrink: 0; padding: 10px 8px; border: 1px solid var(--border-subtle, #cbd5e1); border-right: 0; border-top-left-radius: 8px; border-bottom-left-radius: 8px; font-size: 13px; background-color: var(--bg-surface, #f8fafc); outline: none;">
+                <option value="+91" {{ $countryCode == '+91' ? 'selected' : '' }}>+91 (IN)</option>
+                <option value="+1" {{ $countryCode == '+1' ? 'selected' : '' }}>+1 (US)</option>
+                <option value="+44" {{ $countryCode == '+44' ? 'selected' : '' }}>+44 (UK)</option>
+                <option value="+61" {{ $countryCode == '+61' ? 'selected' : '' }}>+61 (AU)</option>
+                <option value="+971" {{ $countryCode == '+971' ? 'selected' : '' }}>+971 (AE)</option>
+                <option value="+81" {{ $countryCode == '+81' ? 'selected' : '' }}>+81 (JP)</option>
+                <option value="+49" {{ $countryCode == '+49' ? 'selected' : '' }}>+49 (DE)</option>
+                <option value="+33" {{ $countryCode == '+33' ? 'selected' : '' }}>+33 (FR)</option>
+            </select>
+            <input type="text" id="modal_company_phone_display" value="{{ $phoneNum }}" placeholder="555 0199" style="border-top-left-radius: 0; border-bottom-left-radius: 0; width: 100%;" />
+            <input type="hidden" name="phone" id="modal_company_phone_hidden" value="{{ $fullPhone }}">
+          </div>
+          <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const ccDash = document.getElementById('modal_company_country_code');
+                const mobDash = document.getElementById('modal_company_phone_display');
+                const hiddenDash = document.getElementById('modal_company_phone_hidden');
+                function updateDashPhone() {
+                    const num = mobDash.value.replace(/[^0-9]/g, '');
+                    hiddenDash.value = num ? ccDash.value + ' ' + num : '';
+                }
+                if(ccDash && mobDash) {
+                    ccDash.addEventListener('change', updateDashPhone);
+                    mobDash.addEventListener('input', updateDashPhone);
+                }
+            });
+          </script>
         </div>
         <div class="form-group">
           <label>Company Address</label>
@@ -1665,6 +2257,88 @@
       </form>
     </div>
   </div>
+
+  <!-- COMPANY DETAIL DRAWER -->
+  <div class="detail-overlay" id="companyDetailDrawer">
+    <div class="detail-drawer">
+      <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(226, 232, 240, 0.8); padding-bottom: 14px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 40px; height: 40px; border-radius: 10px; background: linear-gradient(135deg, var(--slate-dark), var(--emerald-dark)); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; overflow: hidden;" id="drawerLogo">CO</div>
+          <div>
+            <h3 id="drawerName" style="font-size: 18px; font-weight: 800; color: var(--slate-dark); margin: 0;">Company Name</h3>
+            <div id="drawerDomain" style="font-size: 12px; color: var(--slate-muted);">tenant.domain</div>
+          </div>
+        </div>
+        <button type="button" id="closeDrawerBtn" style="font-size: 22px; color: var(--slate-muted); border: none; background: transparent; cursor: pointer;">
+          <i class="bx bx-x"></i>
+        </button>
+      </div>
+
+      <div>
+        <h4 style="font-size: 12px; font-weight: 800; text-transform: uppercase; color: var(--slate-muted); margin-bottom: 8px;">Tenant Summary</h4>
+        <div style="background: var(--slate-light, #f8fafc); border: 1px solid rgba(226, 232, 240, 0.8); border-radius: 12px; padding: 14px; font-size: 13px; display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; justify-content: space-between;"><span style="color: var(--slate-muted);">Contact Email:</span> <strong id="drawerEmail" style="color: var(--slate-dark);">admin@company.com</strong></div>
+          <div style="display: flex; justify-content: space-between;"><span style="color: var(--slate-muted);">Database:</span> <code id="drawerDb" style="color: #0284c7; font-family: monospace;">tenant_db</code></div>
+          <div style="display: flex; justify-content: space-between;"><span style="color: var(--slate-muted);">Status:</span> <span class="status-badge success" id="drawerStatus">Active</span></div>
+        </div>
+      </div>
+
+      <div>
+        <h4 style="font-size: 12px; font-weight: 800; text-transform: uppercase; color: var(--slate-muted); margin-bottom: 8px;">Quick Actions</h4>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <a href="#" class="btn-workspace-custom" style="width: 100%; text-align: center;" id="drawerWorkspaceBtn">Open Dedicated Workspace</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PLAN CHANGE MODAL -->
+  <div class="plan-modal-backdrop" id="planChangeModal">
+    <div class="plan-modal-dialog">
+      <h3 style="font-size: 20px; font-weight: 800; margin-top: 0; margin-bottom: 6px; color: var(--slate-dark);">Change Subscription Plan</h3>
+      <p style="font-size: 13.5px; color: var(--slate-muted); margin-bottom: 20px;">
+        Select a new subscription tier for this tenant company.
+      </p>
+
+      <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px;">
+        @forelse($plans as $plan)
+          <div class="plan-card-option {{ $loop->first ? 'selected' : '' }}" data-plan-id="{{ $plan->id }}" onclick="selectPlanCard(this, '{{ $plan->id }}')">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span class="status-badge info" style="font-weight: 800; text-transform: uppercase;">{{ $plan->name }}</span>
+              <strong style="font-size: 15px; color: var(--slate-dark);">${{ number_format($plan->monthly_price, 0) }} / mo</strong>
+            </div>
+            <div style="font-size: 12px; color: var(--slate-muted); margin-top: 4px;">{{ $plan->description ?? ($plan->max_users > 0 ? $plan->max_users . ' Users Max' : 'Unlimited Users') }}</div>
+          </div>
+        @empty
+          <div class="plan-card-option selected">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span class="status-badge info">STANDARD</span>
+              <strong style="font-size: 15px; color: var(--slate-dark);">$49 / mo</strong>
+            </div>
+          </div>
+        @endforelse
+      </div>
+
+      <form id="assignPlanForm" method="POST" action="{{ Route::has('superadmin.subscriptions.assign') ? route('superadmin.subscriptions.assign') : url('/superadmin/subscriptions/assign') }}">
+        @csrf
+        <input type="hidden" name="company_id" id="modalPlanCompanyId" value="">
+        <input type="hidden" name="plan_id" id="modalPlanSelectedId" value="{{ $plans->first()?->id ?? 1 }}">
+        <div style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid rgba(226, 232, 240, 0.8); padding-top: 16px;">
+          <button type="button" class="btn btn-secondary" id="closePlanModalBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="confirmPlanChangeBtn">Confirm Change</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- HIDDEN FORMS FOR SUSPEND & DELETE -->
+  <form id="dashboardSuspendForm" method="POST" action="" style="display:none;">
+    @csrf
+  </form>
+  <form id="dashboardDeleteForm" method="POST" action="" style="display:none;">
+    @csrf
+    @method('DELETE')
+  </form>
 @endsection
 
 @push('scripts')
@@ -1715,6 +2389,167 @@
       modal.classList.add('active');
     }
 
+    // Dropdown Positioning and Viewport Alignment
+    function positionDropdownMenu(btn, menu) {
+      if (!btn || !menu) return;
+      menu.style.position = 'fixed';
+      menu.style.zIndex = '999999';
+      menu.style.visibility = 'hidden';
+      menu.style.display = 'block';
+
+      const rect = btn.getBoundingClientRect();
+      const menuHeight = menu.offsetHeight || 260;
+      const menuWidth = menu.offsetWidth || 215;
+      const viewportHeight = window.innerHeight;
+      const viewportWidth = window.innerWidth;
+
+      const spaceBelow = viewportHeight - rect.bottom;
+      const spaceAbove = rect.top;
+
+      if (spaceBelow < menuHeight + 12 && spaceAbove > spaceBelow) {
+        menu.style.top = 'auto';
+        menu.style.bottom = Math.max(8, viewportHeight - rect.top + 6) + 'px';
+      } else {
+        menu.style.top = Math.max(8, rect.bottom + 6) + 'px';
+        menu.style.bottom = 'auto';
+      }
+
+      const rightOffset = viewportWidth - rect.right;
+      if (rect.right - menuWidth < 12) {
+        menu.style.left = '12px';
+        menu.style.right = 'auto';
+      } else {
+        menu.style.right = Math.max(12, rightOffset) + 'px';
+        menu.style.left = 'auto';
+      }
+
+      menu.style.visibility = 'visible';
+    }
+
+    function closeAllDropdowns() {
+      document.querySelectorAll('.dropdown-menu-custom').forEach(menu => {
+        menu.classList.remove('open');
+        menu.style.display = '';
+      });
+    }
+
+    document.addEventListener('click', function(e) {
+      const toggleBtn = e.target.closest('.dropdown-toggle-trigger');
+      if (toggleBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        const menu = toggleBtn.nextElementSibling;
+        if (menu) {
+          const isOpen = menu.classList.contains('open');
+          closeAllDropdowns();
+          if (!isOpen) {
+            menu.classList.add('open');
+            positionDropdownMenu(toggleBtn, menu);
+          }
+        }
+        return;
+      }
+
+      if (e.target.closest('.dropdown-menu-custom a, .dropdown-menu-custom button')) {
+        closeAllDropdowns();
+        return;
+      }
+
+      if (!e.target.closest('.dropdown-menu-custom')) {
+        closeAllDropdowns();
+      }
+    });
+
+    window.addEventListener('scroll', closeAllDropdowns, true);
+    window.addEventListener('resize', closeAllDropdowns);
+
+    // Suspend and Delete handlers
+    function confirmSuspendCompany(id, name) {
+      if (confirm("Are you sure you want to suspend access for company '" + name + "'?")) {
+        const form = document.getElementById('dashboardSuspendForm');
+        form.action = "{{ url('/superadmin/companies') }}/" + id + "/suspend";
+        form.submit();
+      }
+    }
+
+    function confirmDeleteCompany(id, name) {
+      if (confirm("CRITICAL WARNING: Are you sure you want to completely delete company '" + name + "'? This operation will remove the tenant database link and cannot be undone.")) {
+        const form = document.getElementById('dashboardDeleteForm');
+        form.action = "{{ url('/superadmin/companies') }}/" + id;
+        form.submit();
+      }
+    }
+
+    // Detail Drawer handlers
+    document.addEventListener('DOMContentLoaded', function() {
+      const drawer = document.getElementById('companyDetailDrawer');
+      const closeDrawerBtn = document.getElementById('closeDrawerBtn');
+
+      document.querySelectorAll('.trigger-detail-drawer').forEach(trigger => {
+        trigger.addEventListener('click', function(e) {
+          e.preventDefault();
+          const id = this.getAttribute('data-company-id');
+          const name = this.getAttribute('data-company-name') || 'Company';
+          const email = this.getAttribute('data-company-email') || '';
+          const db = this.getAttribute('data-company-db') || '';
+          const logo = this.getAttribute('data-company-logo') || '';
+
+          document.getElementById('drawerName').textContent = name;
+          document.getElementById('drawerDomain').textContent = name.toLowerCase().replace(/[^a-z0-9]/g, '') + '.platform.io';
+          document.getElementById('drawerEmail').textContent = email;
+          document.getElementById('drawerDb').textContent = db;
+
+          const logoEl = document.getElementById('drawerLogo');
+          if (logo) {
+            logoEl.innerHTML = '<img src="' + logo + '" style="width:100%; height:100%; object-fit:cover;" />';
+          } else {
+            logoEl.innerHTML = name.substring(0, 2).toUpperCase();
+          }
+
+          document.getElementById('drawerWorkspaceBtn').href = "{{ url('/superadmin/companies') }}/" + id;
+          if (drawer) drawer.classList.add('open');
+        });
+      });
+
+      if (closeDrawerBtn && drawer) {
+        closeDrawerBtn.addEventListener('click', () => drawer.classList.remove('open'));
+      }
+      if (drawer) {
+        drawer.addEventListener('click', function(e) {
+          if (e.target === drawer) drawer.classList.remove('open');
+        });
+      }
+
+      // Plan Change Modal handlers
+      const planModal = document.getElementById('planChangeModal');
+      const closePlanBtn = document.getElementById('closePlanModalBtn');
+
+      document.querySelectorAll('.trigger-plan-modal').forEach(trigger => {
+        trigger.addEventListener('click', function(e) {
+          e.preventDefault();
+          const id = this.getAttribute('data-company-id');
+          document.getElementById('modalPlanCompanyId').value = id;
+          if (planModal) planModal.classList.add('open');
+        });
+      });
+
+      if (closePlanBtn && planModal) {
+        closePlanBtn.addEventListener('click', () => planModal.classList.remove('open'));
+      }
+      if (planModal) {
+        planModal.addEventListener('click', function(e) {
+          if (e.target === planModal) planModal.classList.remove('open');
+        });
+      }
+    });
+
+    function selectPlanCard(card, planId) {
+      document.querySelectorAll('.plan-card-option').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      const hiddenInput = document.getElementById('modalPlanSelectedId');
+      if (hiddenInput) hiddenInput.value = planId;
+    }
+
     // ---------- CHARTS (Chart.js Gradient & Curves) ----------
     document.addEventListener('DOMContentLoaded', function() {
       // Dynamic Data from Backend
@@ -1740,7 +2575,7 @@
             datasets: [{
               label: 'Companies',
               data: planCounts.length ? planCounts : [8, 6, 4],
-              backgroundColor: ['#0f744c', '#10b981', '#7c3aed', '#2563eb', '#f59e0b'],
+              backgroundColor: ['#2F6BFF', '#8B5CF6', '#22D3EE', '#10B981', '#F59E0B'],
               borderRadius: 8,
               borderSkipped: false,
             }]

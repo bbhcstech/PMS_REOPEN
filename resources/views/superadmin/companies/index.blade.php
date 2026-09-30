@@ -10,25 +10,25 @@
        DESIGN TOKENS — Luxury Emerald & Slate Theme
        ============================================================ */
     :root {
-        --emerald-primary: #0f744c;
-        --emerald-dark: #073a26;
-        --emerald-deep: #05291b;
-        --emerald-light: #10b981;
-        --emerald-soft: #e4f3eb;
-        --emerald-glow: rgba(16, 185, 129, 0.25);
-        --purple-accent: #7c3aed;
-        --blue-accent: #2563eb;
-        --amber-accent: #f59e0b;
-        --rose-accent: #ef4444;
+        --emerald-primary: #2F6BFF;
+        --emerald-dark: #1E4FCC;
+        --emerald-deep: #070B1A;
+        --emerald-light: #22D3EE;
+        --emerald-soft: rgba(47, 107, 255, 0.08);
+        --emerald-glow: rgba(47, 107, 255, 0.25);
+        --purple-accent: #8B5CF6;
+        --blue-accent: #2F6BFF;
+        --amber-accent: #F59E0B;
+        --rose-accent: #EF4444;
 
-        --slate-dark: #0f172a;
+        --slate-dark: #10142C;
         --slate-body: #334155;
-        --slate-muted: #64748b;
-        --slate-light: #f8fafc;
+        --slate-muted: #545D82;
+        --slate-light: #F6F7FC;
 
-        --card-shadow-sm: 0 10px 25px -5px rgba(0, 0, 0, 0.04), 0 4px 10px rgba(0, 0, 0, 0.02);
-        --card-shadow-md: 0 20px 45px -10px rgba(15, 116, 76, 0.08), 0 6px 18px rgba(0, 0, 0, 0.03);
-        --card-shadow-lg: 0 30px 70px -15px rgba(15, 116, 76, 0.16), 0 12px 30px rgba(0, 0, 0, 0.05);
+        --card-shadow-sm: 0 10px 25px -5px rgba(16, 24, 60, 0.04), 0 4px 10px rgba(16, 24, 60, 0.02);
+        --card-shadow-md: 0 20px 45px -10px rgba(47, 107, 255, 0.08), 0 6px 18px rgba(16, 24, 60, 0.03);
+        --card-shadow-lg: 0 30px 70px -15px rgba(47, 107, 255, 0.16), 0 12px 30px rgba(16, 24, 60, 0.05);
 
         --radius: 24px;
         --radius-sm: 14px;
@@ -50,6 +50,25 @@
         --plan-diamond-bg: #f5f3ff;
         --plan-diamond-text: #6d28d9;
         --plan-diamond-border: #ddd6fe;
+    }
+
+    html[data-pms-theme="dark"],
+    html[data-theme="dark"] {
+        --emerald-primary: #2F6BFF;
+        --emerald-dark: #1E4FCC;
+        --emerald-deep: #070B1A;
+        --emerald-light: #22D3EE;
+        --emerald-soft: rgba(47, 107, 255, 0.18);
+        --emerald-glow: rgba(47, 107, 255, 0.35);
+
+        --slate-dark: #EEF1FB;
+        --slate-body: #CBD5E1;
+        --slate-muted: #9AA3C7;
+        --slate-light: #141B3D;
+
+        --card-shadow-sm: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        --card-shadow-md: 0 20px 45px -10px rgba(0, 0, 0, 0.45);
+        --card-shadow-lg: 0 30px 70px -15px rgba(0, 0, 0, 0.6);
     }
 
     /* ===== PAGE HEADER (Breadcrumb + Title + Actions) ===== */
@@ -132,12 +151,37 @@
     .btn-primary-custom {
         background: linear-gradient(135deg, var(--emerald-dark), var(--emerald-primary), var(--emerald-light));
         color: #fff !important;
-        box-shadow: 0 8px 24px rgba(15, 116, 76, 0.3);
+        box-shadow: 0 8px 24px rgba(47, 107, 255, 0.3);
+    }
+
+    .btn-workspace-custom {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 14px;
+        height: 30px;
+        font-size: 12px;
+        font-weight: 700;
+        border-radius: 8px;
+        color: #ffffff !important;
+        background: linear-gradient(135deg, #0284c7 0%, #0284c7 20%, #0ea5e9 60%, #38bdf8 100%) !important;
+        box-shadow: 0 4px 14px rgba(14, 165, 233, 0.45);
+        border: none;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        white-space: nowrap;
+    }
+
+    .btn-workspace-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(14, 165, 233, 0.6);
+        color: #ffffff !important;
     }
 
     .btn-primary-custom:hover {
         transform: translateY(-2px);
-        box-shadow: 0 14px 32px rgba(15, 116, 76, 0.4);
+        box-shadow: 0 14px 32px rgba(47, 107, 255, 0.4);
         color: #fff !important;
     }
 
@@ -236,7 +280,7 @@
     }
 
     .kpi-card:hover {
-        border-color: rgba(15, 116, 76, 0.25);
+        border-color: rgba(47, 107, 255, 0.25);
         box-shadow: var(--card-shadow-lg);
         transform: translateY(-4px);
     }
@@ -354,7 +398,7 @@
     }
 
     .analytics-card:hover {
-        border-color: rgba(15, 116, 76, 0.2);
+        border-color: rgba(47, 107, 255, 0.2);
         box-shadow: var(--card-shadow-md);
     }
 
@@ -630,7 +674,7 @@
     }
 
     table.company-table tbody tr:hover {
-        background: rgba(15, 116, 76, 0.05);
+        background: rgba(47, 107, 255, 0.05);
     }
 
     table.company-table tbody td {
@@ -772,7 +816,7 @@
     }
 
     .status-pill .dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
-    .status-pill.status-active { background: var(--emerald-soft); color: var(--emerald-primary); border-color: rgba(15, 116, 76, 0.2); }
+    .status-pill.status-active { background: var(--emerald-soft); color: var(--emerald-primary); border-color: rgba(47, 107, 255, 0.2); }
     .status-pill.status-active .dot { background: var(--emerald-light); }
     .status-pill.status-trial { background: rgba(245, 158, 11, 0.1); color: var(--amber-accent); border-color: rgba(245, 158, 11, 0.2); }
     .status-pill.status-trial .dot { background: var(--amber-accent); }
@@ -811,18 +855,15 @@
     }
 
     .dropdown-menu-custom {
-        position: absolute;
-        right: 0;
-        top: 100%;
-        margin-top: 4px;
+        position: fixed;
         background: rgba(255, 255, 255, 0.98);
         border-radius: 12px;
-        border: 1px solid rgba(226, 232, 240, 0.8);
-        box-shadow: var(--card-shadow-lg);
+        border: 1px solid rgba(226, 232, 240, 0.85);
+        box-shadow: 0 14px 40px rgba(15, 23, 42, 0.18), 0 4px 12px rgba(15, 23, 42, 0.08);
         min-width: 220px;
-        padding: 4px 0;
+        padding: 6px 0;
         display: none;
-        z-index: 60;
+        z-index: 999999;
         animation: fadeSlide 0.15s ease;
         backdrop-filter: blur(16px);
     }
@@ -937,7 +978,350 @@
         from { transform: translateX(30px); opacity: 0; }
         to { transform: translateX(0); opacity: 1; }
     }
-</style>
+
+    /* Companies View Dark Mode Overrides */
+    html[data-pms-theme="dark"] .kpi-card,
+    html[data-theme="dark"] .kpi-card,
+    html[data-pms-theme="dark"] .analytics-card,
+    html[data-theme="dark"] .analytics-card,
+    html[data-pms-theme="dark"] .toolbar,
+    html[data-theme="dark"] .toolbar,
+    html[data-pms-theme="dark"] .table-wrap,
+    html[data-theme="dark"] .table-wrap {
+        background: var(--bg-surface);
+        border-color: var(--border-subtle);
+    }
+    html[data-pms-theme="dark"] .toolbar .search-wrap,
+    html[data-theme="dark"] .toolbar .search-wrap {
+        background: var(--bg-surface-subtle);
+    }
+    html[data-pms-theme="dark"] .toolbar .search-wrap input,
+    html[data-theme="dark"] .toolbar .search-wrap input {
+        color: var(--slate-dark);
+    }
+    html[data-pms-theme="dark"] .toolbar .filter-group select,
+    html[data-theme="dark"] .toolbar .filter-group select {
+        background-color: var(--bg-surface-subtle);
+        border-color: var(--border-subtle);
+        color: var(--slate-dark);
+    }
+    html[data-pms-theme="dark"] table.company-table thead,
+    html[data-theme="dark"] table.company-table thead {
+        background: var(--bg-surface-subtle);
+    }
+    html[data-pms-theme="dark"] table.company-table thead th,
+    html[data-theme="dark"] table.company-table thead th {
+        color: var(--slate-muted);
+        border-bottom-color: var(--border-subtle);
+        border-right-color: var(--border-subtle);
+    }
+    html[data-pms-theme="dark"] table.company-table tbody tr:nth-child(even),
+    html[data-theme="dark"] table.company-table tbody tr:nth-child(even) {
+        background: rgba(255, 255, 255, 0.02);
+    }
+    html[data-pms-theme="dark"] table.company-table tbody tr:hover,
+    html[data-theme="dark"] table.company-table tbody tr:hover {
+        background: rgba(47, 107, 255, 0.1);
+    }
+    html[data-pms-theme="dark"] table.company-table tbody td,
+    html[data-theme="dark"] table.company-table tbody td {
+        border-bottom-color: var(--border-subtle);
+        border-right-color: var(--border-subtle);
+        color: var(--slate-body);
+    }
+    html[data-pms-theme="dark"] .dropdown-menu-custom,
+    html[data-theme="dark"] .dropdown-menu-custom {
+        background: var(--bg-surface);
+        border-color: var(--border-strong);
+    }
+    html[data-pms-theme="dark"] .dropdown-menu-custom a,
+    html[data-pms-theme="dark"] .dropdown-menu-custom button,
+    html[data-theme="dark"] .dropdown-menu-custom a,
+    html[data-theme="dark"] .dropdown-menu-custom button {
+        color: var(--slate-body);
+    }
+    html[data-pms-theme="dark"] .modal-dialog-custom,
+    html[data-theme="dark"] .modal-dialog-custom,
+    html[data-pms-theme="dark"] .detail-drawer,
+    html[data-theme="dark"] .detail-drawer {
+        background: var(--bg-surface);
+        color: var(--slate-dark);
+        border-color: var(--border-strong);
+    }
+
+    /* Dark Mode: Buttons & Controls */
+    html[data-pms-theme="dark"] .btn-outline-custom,
+    html[data-theme="dark"] .btn-outline-custom,
+    html[data-bs-theme="dark"] .btn-outline-custom {
+        background: var(--bg-surface-subtle, #141B3D) !important;
+        border-color: var(--border-strong, rgba(238, 241, 251, 0.14)) !important;
+        color: var(--text-main, #EEF1FB) !important;
+    }
+    html[data-pms-theme="dark"] .btn-outline-custom:hover,
+    html[data-theme="dark"] .btn-outline-custom:hover,
+    html[data-bs-theme="dark"] .btn-outline-custom:hover,
+    html[data-pms-theme="dark"] .btn-outline-custom:focus,
+    html[data-theme="dark"] .btn-outline-custom:focus,
+    html[data-bs-theme="dark"] .btn-outline-custom:focus {
+        background: var(--bg-surface-hover, #1A2247) !important;
+        border-color: var(--primary, #2F6BFF) !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 14px rgba(47, 107, 255, 0.22);
+    }
+    html[data-pms-theme="dark"] .btn-outline-custom:disabled,
+    html[data-theme="dark"] .btn-outline-custom:disabled,
+    html[data-bs-theme="dark"] .btn-outline-custom:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+        background: var(--bg-surface-subtle, #141B3D) !important;
+        border-color: var(--border-subtle, rgba(238, 241, 251, 0.08)) !important;
+        color: var(--text-muted, #9AA3C7) !important;
+        box-shadow: none !important;
+        transform: none !important;
+    }
+
+    /* Dark Mode: Impersonation Banner Components */
+    html[data-pms-theme="dark"] .impersonation-db-code,
+    html[data-theme="dark"] .impersonation-db-code,
+    html[data-bs-theme="dark"] .impersonation-db-code {
+        background: rgba(245, 158, 11, 0.18) !important;
+        color: #fde68a !important;
+        border: 1px solid rgba(245, 158, 11, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .impersonation-leave-btn,
+    html[data-theme="dark"] .impersonation-leave-btn,
+    html[data-bs-theme="dark"] .impersonation-leave-btn {
+        background: rgba(245, 158, 11, 0.12) !important;
+        color: var(--amber-accent, #fbbf24) !important;
+        border-color: rgba(245, 158, 11, 0.35) !important;
+    }
+    html[data-pms-theme="dark"] .impersonation-leave-btn:hover,
+    html[data-theme="dark"] .impersonation-leave-btn:hover,
+    html[data-bs-theme="dark"] .impersonation-leave-btn:hover {
+        background: rgba(245, 158, 11, 0.25) !important;
+        border-color: #f59e0b !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 14px rgba(245, 158, 11, 0.25) !important;
+    }
+
+    /* Dark Mode: Show Entries Dropdown */
+    html[data-pms-theme="dark"] .entries-select-box,
+    html[data-theme="dark"] .entries-select-box,
+    html[data-bs-theme="dark"] .entries-select-box,
+    html[data-pms-theme="dark"] #entriesPerPageSelect,
+    html[data-theme="dark"] #entriesPerPageSelect,
+    html[data-bs-theme="dark"] #entriesPerPageSelect {
+        background: var(--bg-surface-subtle, #141B3D) !important;
+        border-color: var(--border-subtle, rgba(238, 241, 251, 0.14)) !important;
+        color: var(--text-main, #EEF1FB) !important;
+    }
+    html[data-pms-theme="dark"] .entries-select-box option,
+    html[data-theme="dark"] .entries-select-box option,
+    html[data-bs-theme="dark"] .entries-select-box option {
+        background: var(--bg-surface, #0F1530);
+        color: var(--text-main, #EEF1FB);
+    }
+
+    /* Dark Mode: Table Pagination Footer */
+    html[data-pms-theme="dark"] .table-pagination-footer,
+    html[data-theme="dark"] .table-pagination-footer,
+    html[data-bs-theme="dark"] .table-pagination-footer {
+        background: var(--bg-surface, #0F1530) !important;
+        border-color: var(--border-subtle, rgba(238, 241, 251, 0.12)) !important;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35) !important;
+    }
+    html[data-pms-theme="dark"] .table-pagination-footer .pagination-info,
+    html[data-theme="dark"] .table-pagination-footer .pagination-info,
+    html[data-bs-theme="dark"] .table-pagination-footer .pagination-info {
+        color: var(--text-muted, #9AA3C7) !important;
+    }
+    html[data-pms-theme="dark"] .table-pagination-footer .pagination-info span,
+    html[data-theme="dark"] .table-pagination-footer .pagination-info span,
+    html[data-bs-theme="dark"] .table-pagination-footer .pagination-info span {
+        color: var(--text-main, #EEF1FB) !important;
+    }
+
+    /* Dark Mode: Change Subscription Plan Modal & Option Cards */
+    html[data-pms-theme="dark"] .modal-backdrop-custom,
+    html[data-theme="dark"] .modal-backdrop-custom,
+    html[data-bs-theme="dark"] .modal-backdrop-custom {
+        background: rgba(7, 11, 26, 0.75);
+    }
+    html[data-pms-theme="dark"] .modal-dialog-custom,
+    html[data-theme="dark"] .modal-dialog-custom,
+    html[data-bs-theme="dark"] .modal-dialog-custom {
+        background: var(--bg-surface, #0F1530) !important;
+        color: var(--text-main, #EEF1FB) !important;
+        border: 1px solid var(--border-strong, rgba(238, 241, 251, 0.14)) !important;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7) !important;
+    }
+    html[data-pms-theme="dark"] .modal-dialog-custom > div:last-child,
+    html[data-theme="dark"] .modal-dialog-custom > div:last-child,
+    html[data-bs-theme="dark"] .modal-dialog-custom > div:last-child {
+        border-top-color: var(--border-subtle, rgba(238, 241, 251, 0.12)) !important;
+    }
+    html[data-pms-theme="dark"] .plan-card-option,
+    html[data-theme="dark"] .plan-card-option,
+    html[data-bs-theme="dark"] .plan-card-option {
+        background: var(--bg-surface-subtle, #141B3D) !important;
+        border: 2px solid var(--border-strong, rgba(238, 241, 251, 0.14)) !important;
+        color: var(--slate-dark, #EEF1FB) !important;
+    }
+    html[data-pms-theme="dark"] .plan-card-option:hover,
+    html[data-theme="dark"] .plan-card-option:hover,
+    html[data-bs-theme="dark"] .plan-card-option:hover {
+        border-color: var(--emerald-primary, #2F6BFF) !important;
+        background: var(--bg-surface-hover, #1A2247) !important;
+    }
+    html[data-pms-theme="dark"] .plan-card-option.selected,
+    html[data-theme="dark"] .plan-card-option.selected,
+    html[data-bs-theme="dark"] .plan-card-option.selected {
+        border-color: var(--emerald-primary, #2F6BFF) !important;
+        background: rgba(47, 107, 255, 0.22) !important;
+        box-shadow: 0 0 0 1px var(--emerald-primary, #2F6BFF) !important;
+    }
+    html[data-pms-theme="dark"] .plan-card-option strong,
+    html[data-theme="dark"] .plan-card-option strong,
+    html[data-bs-theme="dark"] .plan-card-option strong {
+        color: #ffffff !important;
+    }
+    html[data-pms-theme="dark"] .plan-card-option div,
+    html[data-theme="dark"] .plan-card-option div,
+    html[data-bs-theme="dark"] .plan-card-option div {
+        color: var(--slate-muted, #9AA3C7) !important;
+    }
+
+    /* Dark Mode: Plan Badge Pills */
+    html[data-pms-theme="dark"] .plan-badge-cell.plan-free,
+    html[data-theme="dark"] .plan-badge-cell.plan-free,
+    html[data-bs-theme="dark"] .plan-badge-cell.plan-free {
+        background: rgba(241, 245, 249, 0.12) !important;
+        color: #cbd5e1 !important;
+        border: 1px solid rgba(203, 213, 225, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .plan-badge-cell.plan-gold,
+    html[data-theme="dark"] .plan-badge-cell.plan-gold,
+    html[data-bs-theme="dark"] .plan-badge-cell.plan-gold {
+        background: rgba(245, 158, 11, 0.18) !important;
+        color: #fde68a !important;
+        border: 1px solid rgba(245, 158, 11, 0.35) !important;
+    }
+    html[data-pms-theme="dark"] .plan-badge-cell.plan-platinum,
+    html[data-theme="dark"] .plan-badge-cell.plan-platinum,
+    html[data-bs-theme="dark"] .plan-badge-cell.plan-platinum {
+        background: rgba(2, 132, 199, 0.18) !important;
+        color: #bae6fd !important;
+        border: 1px solid rgba(2, 132, 199, 0.35) !important;
+    }
+    html[data-pms-theme="dark"] .plan-badge-cell.plan-diamond,
+    html[data-theme="dark"] .plan-badge-cell.plan-diamond,
+    html[data-bs-theme="dark"] .plan-badge-cell.plan-diamond {
+        background: rgba(109, 40, 217, 0.22) !important;
+        color: #ddd6fe !important;
+        border: 1px solid rgba(139, 92, 246, 0.35) !important;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .btn-outline-custom {
+            background: var(--bg-surface-subtle, #141B3D) !important;
+            border-color: var(--border-strong, rgba(238, 241, 251, 0.14)) !important;
+            color: var(--text-main, #EEF1FB) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .btn-outline-custom:hover {
+            background: var(--bg-surface-hover, #1A2247) !important;
+            border-color: var(--primary, #2F6BFF) !important;
+            color: #ffffff !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .btn-outline-custom:disabled {
+            opacity: 0.45;
+            background: var(--bg-surface-subtle, #141B3D) !important;
+            color: var(--text-muted, #9AA3C7) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .impersonation-db-code {
+            background: rgba(245, 158, 11, 0.18) !important;
+            color: #fde68a !important;
+            border: 1px solid rgba(245, 158, 11, 0.3) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .impersonation-leave-btn {
+            background: rgba(245, 158, 11, 0.12) !important;
+            color: var(--amber-accent, #fbbf24) !important;
+            border-color: rgba(245, 158, 11, 0.35) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .impersonation-leave-btn:hover {
+            background: rgba(245, 158, 11, 0.25) !important;
+            border-color: #f59e0b !important;
+            color: #ffffff !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .entries-select-box,
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) #entriesPerPageSelect {
+            background: var(--bg-surface-subtle, #141B3D) !important;
+            border-color: var(--border-subtle, rgba(238, 241, 251, 0.14)) !important;
+            color: var(--text-main, #EEF1FB) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .entries-select-box option {
+            background: var(--bg-surface, #0F1530);
+            color: var(--text-main, #EEF1FB);
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .table-pagination-footer {
+            background: var(--bg-surface, #0F1530) !important;
+            border-color: var(--border-subtle, rgba(238, 241, 251, 0.12)) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .table-pagination-footer .pagination-info {
+            color: var(--text-muted, #9AA3C7) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .table-pagination-footer .pagination-info span {
+            color: var(--text-main, #EEF1FB) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .modal-backdrop-custom {
+            background: rgba(7, 11, 26, 0.75);
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .modal-dialog-custom {
+            background: var(--bg-surface, #0F1530) !important;
+            color: var(--text-main, #EEF1FB) !important;
+            border: 1px solid var(--border-strong, rgba(238, 241, 251, 0.14)) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .plan-card-option {
+            background: var(--bg-surface-subtle, #141B3D) !important;
+            border: 2px solid var(--border-strong, rgba(238, 241, 251, 0.14)) !important;
+            color: var(--slate-dark, #EEF1FB) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .plan-card-option:hover {
+            border-color: var(--emerald-primary, #2F6BFF) !important;
+            background: var(--bg-surface-hover, #1A2247) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .plan-card-option.selected {
+            border-color: var(--emerald-primary, #2F6BFF) !important;
+            background: rgba(47, 107, 255, 0.22) !important;
+            box-shadow: 0 0 0 1px var(--emerald-primary, #2F6BFF) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .plan-card-option strong {
+            color: #ffffff !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .plan-card-option div {
+            color: var(--slate-muted, #9AA3C7) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .plan-badge-cell.plan-free {
+            background: rgba(241, 245, 249, 0.12) !important;
+            color: #cbd5e1 !important;
+            border: 1px solid rgba(203, 213, 225, 0.3) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .plan-badge-cell.plan-gold {
+            background: rgba(245, 158, 11, 0.18) !important;
+            color: #fde68a !important;
+            border: 1px solid rgba(245, 158, 11, 0.35) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .plan-badge-cell.plan-platinum {
+            background: rgba(2, 132, 199, 0.18) !important;
+            color: #bae6fd !important;
+            border: 1px solid rgba(2, 132, 199, 0.35) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .plan-badge-cell.plan-diamond {
+            background: rgba(109, 40, 217, 0.22) !important;
+            color: #ddd6fe !important;
+            border: 1px solid rgba(139, 92, 246, 0.35) !important;
+        }
+    }
+  </style>
 
 <!-- PAGE CONTROL TOOLBAR -->
 <div class="page-header" style="justify-content: flex-end; margin-bottom: 20px;">
@@ -970,13 +1354,13 @@
         <div>
             <strong style="color: var(--amber-accent); font-size: 14px;">Active Tenant Impersonation Session</strong>
             <div style="font-size: 12px; color: var(--slate-muted); margin-top: 2px;">
-                Session Database: <code style="background: #fff; padding: 2px 6px; border-radius: 4px; font-family: monospace;">{{ $currentCompanyDb }}</code>
+                Session Database: <code class="impersonation-db-code" style="background: #fff; padding: 2px 6px; border-radius: 4px; font-family: monospace;">{{ $currentCompanyDb }}</code>
             </div>
         </div>
     </div>
     <form method="POST" action="{{ route('super-admin.leave-impersonation') }}" style="margin: 0;">
         @csrf
-        <button type="submit" class="btn-custom btn-outline-custom btn-sm-custom" style="color: var(--amber-accent); border-color: rgba(245, 158, 11, 0.3);">
+        <button type="submit" class="btn-custom btn-outline-custom btn-sm-custom impersonation-leave-btn" style="color: var(--amber-accent); border-color: rgba(245, 158, 11, 0.3);">
             <i class="bx bx-log-out-circle"></i> Leave Impersonation
         </button>
     </form>
@@ -1219,7 +1603,7 @@
     <!-- Show Entries Dropdown (10, 20, 30, 40, 50) -->
     <div class="entries-selector-wrap" style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--slate-muted); margin-left: auto;">
         <span>Show</span>
-        <select id="entriesPerPageSelect" style="padding: 5px 12px; border-radius: 8px; border: 1px solid rgba(226, 232, 240, 0.9); font-weight: 700; color: var(--slate-dark); background: #f8fafc; cursor: pointer; outline: none;">
+        <select id="entriesPerPageSelect" class="entries-select-box" style="padding: 5px 12px; border-radius: 8px; border: 1px solid rgba(226, 232, 240, 0.9); font-weight: 700; color: var(--slate-dark); background: #f8fafc; cursor: pointer; outline: none;">
             <option value="10" selected>10</option>
             <option value="20">20</option>
             <option value="30">30</option>
@@ -1344,8 +1728,8 @@
                     </td>
                     <td style="text-align: right;">
                         <div class="actions-cell-wrap">
-                            <a href="{{ Route::has('super-admin.companies.show') ? route('super-admin.companies.show', $company->id) : (Route::has('superadmin.companies.show') ? route('superadmin.companies.show', $company->id) : url('/super-admin/companies/'.$company->id)) }}" 
-                               class="btn-custom btn-primary-custom btn-xs-custom" title="Open Dedicated Workspace">
+                            <a href="{{ Route::has('super-admin.companies.show') ? route('super-admin.companies.show', $company->id) : (Route::has('superadmin.companies.show') ? route('superadmin.companies.show', $company->id) : url('/superadmin/companies/'.$company->id)) }}" 
+                               class="btn-workspace-custom" title="Open Dedicated Workspace">
                                 Workspace
                             </a>
                             <div class="dropdown-container">
@@ -1353,7 +1737,7 @@
                                     <i class="bx bx-dots-vertical-rounded" style="font-size: 18px;"></i>
                                 </button>
                                 <div class="dropdown-menu-custom">
-                                    <a href="{{ Route::has('super-admin.companies.show') ? route('super-admin.companies.show', $company->id) : (Route::has('superadmin.companies.show') ? route('superadmin.companies.show', $company->id) : url('/super-admin/companies/'.$company->id)) }}">
+                                    <a href="{{ Route::has('super-admin.companies.show') ? route('super-admin.companies.show', $company->id) : (Route::has('superadmin.companies.show') ? route('superadmin.companies.show', $company->id) : url('/superadmin/companies/'.$company->id)) }}">
                                         <i class="bx bx-show" style="color: var(--blue-accent);"></i> Open Workspace
                                     </a>
                                     <a href="#" class="trigger-detail-drawer" data-company-id="{{ $company->id }}" data-company-name="{{ $company->name }}" data-company-email="{{ $company->email }}" data-company-db="{{ $company->db_name }}" data-company-logo="{{ $company->logo ? asset($company->logo) : '' }}">
@@ -1363,13 +1747,13 @@
                                         <i class="bx bx-layer" style="color: var(--purple-accent);"></i> Change Subscription
                                     </a>
                                     <div class="divider"></div>
-                                    <form method="POST" action="{{ route('super-admin.companies.enter', $company) }}" style="margin: 0;">
+                                    <form method="POST" action="{{ Route::has('superadmin.companies.enter') ? route('superadmin.companies.enter', $company) : (Route::has('super-admin.companies.enter') ? route('super-admin.companies.enter', $company) : url('/superadmin/companies/'.$company->id.'/enter')) }}" style="margin: 0;">
                                         @csrf
                                         <button type="submit" style="width:100%; text-align:left;"><i class="bx bx-log-in-circle" style="color: var(--amber-accent);"></i> Impersonate Context</button>
                                     </form>
                                     <div class="divider"></div>
-                                    <a href="#" class="danger-item"><i class="bx bx-block"></i> Suspend Company</a>
-                                    <a href="#" class="danger-item"><i class="bx bx-trash"></i> Delete Company</a>
+                                    <a href="javascript:void(0)" onclick="confirmSuspendCompany({{ $company->id }}, '{{ addslashes($company->name) }}')" class="danger-item"><i class="bx bx-block"></i> Suspend Company</a>
+                                    <a href="javascript:void(0)" onclick="confirmDeleteCompany({{ $company->id }}, '{{ addslashes($company->name) }}')" class="danger-item"><i class="bx bx-trash"></i> Delete Company</a>
                                 </div>
                             </div>
                         </div>
@@ -1503,11 +1887,34 @@
     </div>
 </div>
 
+<!-- HIDDEN FORMS FOR SUSPEND & DELETE -->
+<form id="companiesIndexSuspendForm" method="POST" action="" style="display:none;">
+    @csrf
+</form>
+<form id="companiesIndexDeleteForm" method="POST" action="" style="display:none;">
+    @csrf
+    @method('DELETE')
+</form>
+
 @endsection
 
 @push('scripts')
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script>
+function confirmSuspendCompany(id, name) {
+    if (confirm("Are you sure you want to suspend access for company '" + name + "'?")) {
+        const form = document.getElementById('companiesIndexSuspendForm');
+        form.action = "{{ url('/superadmin/companies') }}/" + id + "/suspend";
+        form.submit();
+    }
+}
+function confirmDeleteCompany(id, name) {
+    if (confirm("CRITICAL WARNING: Are you sure you want to completely delete company '" + name + "'? This operation will remove the tenant database link and cannot be undone.")) {
+        const form = document.getElementById('companiesIndexDeleteForm');
+        form.action = "{{ url('/superadmin/companies') }}/" + id;
+        form.submit();
+    }
+}
 document.addEventListener('DOMContentLoaded', function() {
     // 1. Chart.js Donut Chart
     const ctx = document.getElementById('planDonutChart');
@@ -1676,21 +2083,93 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // 5. Action Dropdown Toggle
-    document.querySelectorAll('.dropdown-toggle-trigger').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            const menu = this.nextElementSibling;
-            document.querySelectorAll('.dropdown-menu-custom').forEach(m => {
-                if (m !== menu) m.classList.remove('open');
-            });
-            menu.classList.toggle('open');
+    // 5. Action & Export Dropdown Toggle with Smart Viewport Positioning
+    function positionDropdownMenu(btn, menu) {
+        if (!btn || !menu) return;
+
+        menu.style.position = 'fixed';
+        menu.style.zIndex = '999999';
+        menu.style.visibility = 'hidden';
+        menu.style.display = 'block';
+
+        const rect = btn.getBoundingClientRect();
+        const menuHeight = menu.offsetHeight || 250;
+        const menuWidth = menu.offsetWidth || 220;
+        const viewportHeight = window.innerHeight;
+        const viewportWidth = window.innerWidth;
+
+        // Flip UP if near screen bottom
+        const spaceBelow = viewportHeight - rect.bottom;
+        const spaceAbove = rect.top;
+
+        if (spaceBelow < menuHeight + 12 && spaceAbove > spaceBelow) {
+            menu.style.top = 'auto';
+            menu.style.bottom = Math.max(8, viewportHeight - rect.top + 6) + 'px';
+        } else {
+            menu.style.top = Math.max(8, rect.bottom + 6) + 'px';
+            menu.style.bottom = 'auto';
+        }
+
+        // Align right edge of menu to right edge of trigger button
+        const rightOffset = viewportWidth - rect.right;
+        if (rect.right - menuWidth < 12) {
+            menu.style.left = '12px';
+            menu.style.right = 'auto';
+        } else {
+            menu.style.right = Math.max(12, rightOffset) + 'px';
+            menu.style.left = 'auto';
+        }
+
+        menu.style.visibility = 'visible';
+    }
+
+    function closeAllDropdowns() {
+        document.querySelectorAll('.dropdown-menu-custom').forEach(menu => {
+            menu.classList.remove('open');
+            menu.style.display = '';
         });
+    }
+
+    // Toggle dropdowns with dynamic viewport alignment
+    document.addEventListener('click', function(e) {
+        const toggleBtn = e.target.closest('.dropdown-toggle-trigger') || e.target.closest('#exportDropdownBtn');
+
+        if (toggleBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            let menu = toggleBtn.nextElementSibling;
+            if (toggleBtn.id === 'exportDropdownBtn') {
+                menu = document.getElementById('exportDropdownMenu');
+            }
+
+            if (menu) {
+                const isOpen = menu.classList.contains('open');
+                closeAllDropdowns();
+
+                if (!isOpen) {
+                    menu.classList.add('open');
+                    positionDropdownMenu(toggleBtn, menu);
+                }
+            }
+            return;
+        }
+
+        // Close dropdown when item inside is clicked
+        if (e.target.closest('.dropdown-menu-custom a, .dropdown-menu-custom button')) {
+            closeAllDropdowns();
+            return;
+        }
+
+        // Close dropdown when clicking outside
+        if (!e.target.closest('.dropdown-menu-custom')) {
+            closeAllDropdowns();
+        }
     });
 
-    document.addEventListener('click', function() {
-        document.querySelectorAll('.dropdown-menu-custom').forEach(m => m.classList.remove('open'));
-    });
+    // Close open dropdowns on scroll or resize to prevent detached floating UI
+    window.addEventListener('scroll', closeAllDropdowns, true);
+    window.addEventListener('resize', closeAllDropdowns);
 
     // 6. Plan Change Modal
     const planModal = document.getElementById('planChangeModal');
@@ -1765,22 +2244,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // 8. Export Dropdown & File Handlers (CSV & PDF)
-    const exportDropdownBtn = document.getElementById('exportDropdownBtn');
-    const exportDropdownMenu = document.getElementById('exportDropdownMenu');
     const exportCsvOption = document.getElementById('exportCsvOption');
     const exportPdfOption = document.getElementById('exportPdfOption');
-
-    if (exportDropdownBtn && exportDropdownMenu) {
-        exportDropdownBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            exportDropdownMenu.classList.toggle('open');
-        });
-
-        document.addEventListener('click', function() {
-            exportDropdownMenu.classList.remove('open');
-        });
-    }
 
     // Export CSV Handler
     if (exportCsvOption) {
@@ -1844,7 +2309,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // 3. Format header and enforce strict clean logo image sizing (32px x 32px)
             element.innerHTML = `
                 <style>
-                    .pdf-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #0f744c; padding-bottom: 12px; margin-bottom: 16px; }
+                    .pdf-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #2F6BFF; padding-bottom: 12px; margin-bottom: 16px; }
                     .pdf-title { font-size: 18px; font-weight: 800; color: #0f172a; margin: 0; }
                     .pdf-sub { font-size: 11px; color: #64748b; margin: 4px 0 0 0; }
                     .pdf-meta { font-size: 11px; color: #64748b; text-align: right; }
@@ -1861,7 +2326,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     .plan-badge-cell { font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 999px; text-transform: uppercase; display: inline-block; }
                     .status-pill { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 999px; display: inline-block; }
                     .storage-track-bar { width: 80px; height: 6px; background: #e2e8f0; border-radius: 999px; overflow: hidden; margin-bottom: 2px; }
-                    .storage-fill-bar { height: 100%; background: #0f744c; }
+                    .storage-fill-bar { height: 100%; background: #2F6BFF; }
                 </style>
                 <div class="pdf-header">
                     <div>

@@ -15,7 +15,7 @@
         --primary: #2563eb;
         --primary-light: #eff6ff;
         --success: #10b981;
-        --success-light: #ecfdf5;
+        --success-light: #EEF2FF;
         --warning: #f59e0b;
         --warning-light: #fffbeb;
         --danger: #ef4444;
@@ -144,7 +144,7 @@
     .sev-critical { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
     .sev-warning { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
     .sev-info { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
-    .sev-success { background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; }
+    .sev-success { background: #EEF2FF; color: #2F6BFF; border: 1px solid #C7D2FE; }
 
     .category-pill {
         background: #f1f5f9;
@@ -326,6 +326,177 @@
         align-items: center;
         justify-content: center;
     }
+
+    /* ============================================================
+       DARK THEME ARCHITECTURE FOR ALERTS CENTER
+       ============================================================ */
+    html[data-pms-theme="dark"],
+    html[data-theme="dark"],
+    html[data-bs-theme="dark"] {
+        --bg-surface: #0F1530;
+        --bg-subtle: #141B3D;
+        --border-color: rgba(238, 241, 251, 0.09);
+        --text-main: #EEF1FB;
+        --text-muted: #CBD5E1;
+        --text-subtle: #9AA3C7;
+        --primary: #2F6BFF;
+        --primary-light: rgba(47, 107, 255, 0.15);
+    }
+
+    html[data-pms-theme="dark"] .kpi-card,
+    html[data-theme="dark"] .kpi-card,
+    html[data-bs-theme="dark"] .kpi-card {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+    }
+
+    html[data-pms-theme="dark"] .filter-toolbar,
+    html[data-theme="dark"] .filter-toolbar,
+    html[data-bs-theme="dark"] .filter-toolbar {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+    }
+    html[data-pms-theme="dark"] .filter-select,
+    html[data-theme="dark"] .filter-select,
+    html[data-bs-theme="dark"] .filter-select {
+        background: #141B3D !important;
+        color: #EEF1FB !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
+    }
+    html[data-pms-theme="dark"] .filter-select option,
+    html[data-theme="dark"] .filter-select option {
+        background: #0F1530 !important;
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .search-box input,
+    html[data-theme="dark"] .search-box input,
+    html[data-bs-theme="dark"] .search-box input {
+        background: #141B3D !important;
+        color: #EEF1FB !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
+    }
+
+    /* Alert Cards (Screenshot 5 & 6) */
+    html[data-pms-theme="dark"] .alert-card,
+    html[data-theme="dark"] .alert-card,
+    html[data-bs-theme="dark"] .alert-card {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+    }
+    html[data-pms-theme="dark"] .alert-card:hover,
+    html[data-theme="dark"] .alert-card:hover,
+    html[data-bs-theme="dark"] .alert-card:hover {
+        border-color: rgba(47, 107, 255, 0.4) !important;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+    }
+    html[data-pms-theme="dark"] .alert-card.is-unread,
+    html[data-theme="dark"] .alert-card.is-unread,
+    html[data-bs-theme="dark"] .alert-card.is-unread {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
+        border-left-color: var(--primary) !important;
+    }
+    html[data-pms-theme="dark"] .alert-card.is-resolved,
+    html[data-theme="dark"] .alert-card.is-resolved,
+    html[data-bs-theme="dark"] .alert-card.is-resolved {
+        background: #0D1333 !important;
+        border-color: rgba(238, 241, 251, 0.08) !important;
+        opacity: 0.88 !important;
+    }
+    html[data-pms-theme="dark"] .alert-card.is-resolved h3,
+    html[data-theme="dark"] .alert-card.is-resolved h3,
+    html[data-bs-theme="dark"] .alert-card.is-resolved h3 {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .alert-card.is-resolved p,
+    html[data-theme="dark"] .alert-card.is-resolved p,
+    html[data-bs-theme="dark"] .alert-card.is-resolved p {
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] .sub-intel-box,
+    html[data-theme="dark"] .sub-intel-box,
+    html[data-bs-theme="dark"] .sub-intel-box {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+    }
+
+    /* Alert Icon Badges (Screenshot 5 - Bottom Left) */
+    .alert-icon-critical { background: #fef2f2; color: #dc2626; }
+    .alert-icon-warning { background: #fffbeb; color: #d97706; }
+    .alert-icon-success { background: #EEF2FF; color: #2F6BFF; }
+    .alert-icon-info { background: #eff6ff; color: #2563eb; }
+
+    html[data-pms-theme="dark"] .alert-icon-critical,
+    html[data-theme="dark"] .alert-icon-critical,
+    html[data-bs-theme="dark"] .alert-icon-critical {
+        background: rgba(239, 68, 68, 0.15) !important;
+        color: #f87171 !important;
+        border: 1px solid rgba(248, 113, 113, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .alert-icon-warning,
+    html[data-theme="dark"] .alert-icon-warning,
+    html[data-bs-theme="dark"] .alert-icon-warning {
+        background: rgba(245, 158, 11, 0.15) !important;
+        color: #fbbf24 !important;
+        border: 1px solid rgba(251, 191, 36, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .alert-icon-success,
+    html[data-theme="dark"] .alert-icon-success,
+    html[data-bs-theme="dark"] .alert-icon-success {
+        background: rgba(47, 107, 255, 0.15) !important;
+        color: #60A5FA !important;
+        border: 1px solid rgba(79, 131, 255, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .alert-icon-info,
+    html[data-theme="dark"] .alert-icon-info,
+    html[data-bs-theme="dark"] .alert-icon-info {
+        background: rgba(37, 99, 235, 0.15) !important;
+        color: #60a5fa !important;
+        border: 1px solid rgba(96, 165, 250, 0.3) !important;
+    }
+
+    html[data-pms-theme="dark"] .category-pill,
+    html[data-theme="dark"] .category-pill,
+    html[data-bs-theme="dark"] .category-pill {
+        background: #141B3D !important;
+        color: #9AA3C7 !important;
+        border: 1px solid rgba(238, 241, 251, 0.09) !important;
+    }
+
+    /* Action Buttons (Screenshot 5 - Bottom Right) */
+    html[data-pms-theme="dark"] .btn-action-secondary,
+    html[data-theme="dark"] .btn-action-secondary,
+    html[data-bs-theme="dark"] .btn-action-secondary {
+        background: #141B3D !important;
+        color: #EEF1FB !important;
+        border: 1px solid rgba(238, 241, 251, 0.12) !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .btn-action-secondary:hover,
+    html[data-theme="dark"] .btn-action-secondary:hover,
+    html[data-bs-theme="dark"] .btn-action-secondary:hover {
+        background: #1A2247 !important;
+        border-color: rgba(47, 107, 255, 0.4) !important;
+        color: #38bdf8 !important;
+    }
+
+    /* Drawer */
+    html[data-pms-theme="dark"] .drawer-panel,
+    html[data-theme="dark"] .drawer-panel,
+    html[data-bs-theme="dark"] .drawer-panel {
+        background: #0F1530 !important;
+        color: #EEF1FB !important;
+        border-left: 1px solid rgba(238, 241, 251, 0.09);
+    }
+    html[data-pms-theme="dark"] .drawer-header,
+    html[data-theme="dark"] .drawer-header,
+    html[data-bs-theme="dark"] .drawer-header {
+        background: #141B3D !important;
+        border-bottom-color: rgba(238, 241, 251, 0.09) !important;
+    }
 </style>
 @endpush
 
@@ -438,11 +609,11 @@
 
         <!-- Resolved Today -->
         <div class="kpi-card" data-filter-type="status" data-filter-val="resolved">
-            <div class="kpi-icon-box" style="background: #ecfdf5; color: #059669;">
+            <div class="kpi-icon-box" style="background: #EEF2FF; color: #2F6BFF;">
                 <i class="fas fa-check-circle"></i>
             </div>
             <div>
-                <div class="kpi-val" style="color: #059669;">{{ $kpis['resolved_today'] }}</div>
+                <div class="kpi-val" style="color: #2F6BFF;">{{ $kpis['resolved_today'] }}</div>
                 <div class="kpi-label">Resolved Today</div>
             </div>
         </div>
@@ -527,9 +698,7 @@
                 @endif
 
                 <!-- Severity Icon Badge -->
-                <div style="width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;
-                     background: {{ $alert['severity'] === 'critical' ? '#fef2f2' : ($alert['severity'] === 'warning' ? '#fffbeb' : ($alert['severity'] === 'success' ? '#ecfdf5' : '#eff6ff')) }};
-                     color: {{ $alert['severity'] === 'critical' ? '#dc2626' : ($alert['severity'] === 'warning' ? '#d97706' : ($alert['severity'] === 'success' ? '#059669' : '#2563eb')) }};">
+                <div class="alert-icon-box alert-icon-{{ $alert['severity'] }}" style="width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">
                     @if($alert['severity'] === 'critical')
                         <i class="fas fa-exclamation-circle"></i>
                     @elseif($alert['severity'] === 'warning')
@@ -572,7 +741,7 @@
 
                     <!-- Affected Company Bar -->
                     <div style="display: flex; align-items: center; gap: 10px; font-size: 12.5px; color: var(--text-muted); font-weight: 600;">
-                        <div style="width: 24px; height: 24px; border-radius: 6px; background: #f1f5f9; color: #334155; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 10.5px; overflow: hidden; border: 1px solid var(--border-color); flex-shrink: 0;">
+                        <div style="width: 24px; height: 24px; border-radius: 6px; background: var(--bg-subtle); color: var(--text-main); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 10.5px; overflow: hidden; border: 1px solid var(--border-color); flex-shrink: 0;">
                             @if(!empty($alert['logo_url']))
                                 <img src="{{ $alert['logo_url'] }}" alt="{{ $alert['company_name'] }}" style="width: 100%; height: 100%; object-fit: cover;" />
                             @else
@@ -580,7 +749,7 @@
                             @endif
                         </div>
                         <span>Company: <strong style="color: var(--text-main);">{{ $alert['company_name'] }}</strong></span>
-                        <span style="font-family: monospace; font-size: 11px; background: #f1f5f9; color: #475569; padding: 1px 6px; border-radius: 4px;">
+                        <span style="font-family: monospace; font-size: 11px; background: var(--bg-subtle); color: var(--text-muted); padding: 1px 6px; border-radius: 4px;">
                             {{ $alert['tenant_code'] ?? 'CENTRAL' }}
                         </span>
                     </div>

@@ -37,9 +37,7 @@ class LeaveController extends Controller
             $this->leaveService->ensureBalance($employee);
         }
 
-        if (! $isAdmin) {
-            $this->leaveService->ensureBalance(Auth::user());
-        }
+        $this->leaveService->ensureBalance(Auth::user());
 
         $query = Leave::with(['user.employeeDetail.department', 'leaveType', 'approver', 'rejector'])
             ->whereNull('archived_at');
@@ -47,7 +45,10 @@ class LeaveController extends Controller
         if (! $isAdmin) {
             $query->where('user_id', Auth::id());
         } elseif ($companyId) {
-            $query->whereHas('user', fn ($userQuery) => $userQuery->where('company_id', $companyId));
+            $query->where(function ($q) use ($companyId) {
+                $q->whereHas('user', fn ($userQuery) => $userQuery->where('company_id', $companyId))
+                  ->orWhere('company_id', $companyId);
+            });
         }
 
         if ($isAdmin && $request->filled('employee')) {
@@ -69,8 +70,9 @@ class LeaveController extends Controller
         $leaves = $query->latest()->paginate($perPage)->withQueryString();
         $allLeaves = (clone $query)->get();
 
+        $balanceUserIds = $isAdmin ? $employees->pluck('id')->push(Auth::id())->unique() : [Auth::id()];
         $balances = LeaveBalance::with('user')
-            ->whereIn('user_id', $isAdmin ? $employees->pluck('id') : [Auth::id()])
+            ->whereIn('user_id', $balanceUserIds)
             ->latest('year_start')
             ->get()
             ->unique('user_id')
@@ -107,7 +109,8 @@ class LeaveController extends Controller
         $policy = $this->leaveService->policy();
         $leaveTypes = $this->leaveService->leaveTypes();
         $users = $this->employeeQuery()->get();
-        $selectedUser = $this->isAdmin() ? null : Auth::user();
+        $isPureAdmin = strtolower((string) Auth::user()?->role) === 'admin';
+        $selectedUser = $isPureAdmin ? null : Auth::user();
         $balance = $selectedUser ? $this->leaveService->ensureBalance($selectedUser) : null;
         $policyNotice = $this->leaveService->policyNotice($policy);
 
@@ -118,7 +121,8 @@ class LeaveController extends Controller
     {
         $this->leaveService->ensureDefaultTypes();
         $actor = Auth::user();
-        $employee = $this->isAdmin() && $request->filled('user_id')
+        $isPureAdmin = strtolower((string) $actor?->role) === 'admin';
+        $employee = $isPureAdmin && $request->filled('user_id')
             ? User::findOrFail($request->user_id)
             : $actor;
 
@@ -129,7 +133,7 @@ class LeaveController extends Controller
         }
         $data['emergency_flag'] = $request->boolean('emergency_flag');
         $data['half_day_flag'] = $request->boolean('half_day_flag');
-        $data['status'] = $this->isAdmin() ? ($request->status ?: 'pending') : 'pending';
+        $data['status'] = $isPureAdmin ? ($request->status ?: 'pending') : 'pending';
 
         if ($request->hasFile('attachment')) {
             $file = $request->file('attachment');
@@ -152,7 +156,7 @@ class LeaveController extends Controller
 
         $leave = $this->leaveService->createLeave($employee, $type, $data, $actor);
 
-        if (! $this->isAdmin()) {
+        if (! $isPureAdmin || $employee->id === $actor->id) {
             SystemNotificationService::notifyAdmins(
                 'New Leave Request',
                 $employee->name . ' requested ' . $type->name . ' from ' . $data['start_date'] . ' to ' . $data['end_date'],
@@ -176,8 +180,9 @@ class LeaveController extends Controller
     {
         $this->authorizeLeaveAccess($leave);
         $leave->load(['user.employeeDetail.department', 'leaveType', 'approvals.user', 'approver', 'rejector', 'apologyLetters.user']);
+        $isAdmin = $this->isAdmin();
 
-        return view('admin.leaves.show', compact('leave'));
+        return view('admin.leaves.show', compact('leave', 'isAdmin'));
     }
 
     public function apologyLetters(Request $request)
@@ -508,6 +513,10 @@ class LeaveController extends Controller
             );
         }
 
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json(['success' => true, 'message' => 'Leave request status updated.']);
+        }
+
         return back()->with('success', 'Leave request status updated.');
     }
 
@@ -722,6 +731,16 @@ class LeaveController extends Controller
             } else {
                 $leave->update(['status' => 'pending', 'approval_status' => 'pending']);
             }
+
+            if ($leave->user) {
+                SystemNotificationService::notifyUser(
+                    $leave->user,
+                    'Leave ' . ucfirst($leave->status),
+                    'Your leave request has been marked ' . ucfirst($leave->status) . '.',
+                    route('leaves.show', $leave->id),
+                    ['employee_id' => $leave->user_id, 'entity_type' => Leave::class, 'entity_id' => $leave->id, 'type' => 'leave_status_updated', 'icon' => 'fa-calendar-check']
+                );
+            }
         }
 
         return response()->json(['message' => 'Bulk action completed successfully.']);
@@ -843,7 +862,10 @@ class LeaveController extends Controller
         if (! $this->isAdmin()) {
             $query->where('user_id', Auth::id());
         } elseif ($companyId = $this->selectedCompanyId($request)) {
-            $query->whereHas('user', fn ($userQuery) => $userQuery->where('company_id', $companyId));
+            $query->where(function ($q) use ($companyId) {
+                $q->whereHas('user', fn ($userQuery) => $userQuery->where('company_id', $companyId))
+                  ->orWhere('company_id', $companyId);
+            });
         }
         if ($this->isAdmin() && $request->filled('employee')) {
             $query->where('user_id', $request->employee);
@@ -891,7 +913,7 @@ class LeaveController extends Controller
 
     private function isAdmin(): bool
     {
-        return in_array(strtolower((string) Auth::user()?->role), ['admin', 'hr'], true);
+        return in_array(strtolower((string) Auth::user()?->role), ['admin', 'hr', 'manager', 'administrator', 'superadmin'], true);
     }
 
     private function ensureAdmin(): void

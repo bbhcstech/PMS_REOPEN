@@ -120,7 +120,7 @@
         padding: 30px 0;
         min-height: 100vh;
         background: linear-gradient(145deg, #f7fbf9, #eef7f2);
-        color: #07130d;
+        color: #070B1A;
     }
 
     /* Breadcrumb */
@@ -129,31 +129,31 @@
         backdrop-filter: blur(10px);
         padding: 16px 26px;
         border-radius: 18px;
-        border: 1px solid rgba(15, 116, 76, .12);
+        border: 1px solid rgba(47, 107, 255, .12);
         margin-bottom: 28px;
-        color: #0f744c;
+        color: #2F6BFF;
         font-weight: 600;
         font-size: 1.05rem;
     }
 
     .breadcrumb i {
         margin-right: 12px;
-        color: #34d399;
+        color: #60A5FA;
         font-size: 1.1rem;
     }
 
     .breadcrumb a {
-        color: #0f744c;
+        color: #2F6BFF;
         text-decoration: none;
         transition: color 0.2s;
     }
 
     .breadcrumb a:hover {
-        color: #10b981;
+        color: #1E4FCC;
     }
 
     .breadcrumb strong {
-        color: #07130d;
+        color: #070B1A;
     }
 
     /* Header Card */
@@ -165,8 +165,8 @@
         justify-content: space-between;
         align-items: center;
         gap: 24px;
-        box-shadow: 0 18px 45px rgba(15, 116, 76, .09);
-        border: 1px solid rgba(15, 116, 76, .12);
+        box-shadow: 0 18px 45px rgba(47, 107, 255, .09);
+        border: 1px solid rgba(47, 107, 255, .12);
         margin-bottom: 28px;
     }
 
@@ -179,31 +179,31 @@
     .header-icon {
         width: 70px;
         height: 70px;
-        background: linear-gradient(145deg, #34d399, #10b981);
+        background: linear-gradient(135deg, #4F83FF, #2F6BFF);
         color: white;
         border-radius: 20px;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 32px;
-        box-shadow: 0 10px 25px rgba(16, 185, 129, .2);
+        box-shadow: 0 10px 25px rgba(47, 107, 255, .2);
     }
 
     .header-card h1 {
         font-size: 34px;
         font-weight: 700;
         margin-bottom: 6px;
-        color: #07130d;
+        color: #070B1A;
     }
 
     .header-card p {
-        color: #52645a;
+        color: #64748B;
         font-size: 17px;
         margin: 0;
     }
 
     .header-card p strong {
-        color: #0f744c;
+        color: #2F6BFF;
     }
 
     .header-actions {
@@ -229,26 +229,26 @@
 
     .btn-outline {
         background: transparent;
-        border: 1px solid rgba(15, 116, 76, .2);
-        color: #0f744c;
+        border: 1px solid rgba(47, 107, 255, .2);
+        color: #2F6BFF;
     }
 
     .btn-outline:hover {
-        background: #edf8f2;
-        border-color: #34d399;
+        background: rgba(47, 107, 255, 0.08);
+        border-color: #60A5FA;
         transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(15, 116, 76, .1);
+        box-shadow: 0 8px 20px rgba(47, 107, 255, .1);
     }
 
     .btn-primary {
-        background: linear-gradient(145deg, #34d399, #10b981);
+        background: linear-gradient(135deg, #4F83FF, #2F6BFF);
         color: white;
-        box-shadow: 0 8px 20px rgba(16, 185, 129, .25);
+        box-shadow: 0 8px 20px rgba(47, 107, 255, .25);
     }
 
     .btn-primary:hover {
         transform: translateY(-2px);
-        box-shadow: 0 12px 28px rgba(16, 185, 129, .35);
+        box-shadow: 0 12px 28px rgba(47, 107, 255, .35);
     }
 
     /* Stats Grid */
@@ -263,8 +263,8 @@
         background: white;
         padding: 22px;
         border-radius: 22px;
-        border: 1px solid rgba(15, 116, 76, .12);
-        box-shadow: 0 14px 35px rgba(15, 116, 76, .06);
+        border: 1px solid rgba(47, 107, 255, .12);
+        box-shadow: 0 14px 35px rgba(47, 107, 255, .06);
         display: flex;
         gap: 16px;
         align-items: center;
@@ -273,7 +273,7 @@
 
     .stat-card:hover {
         transform: translateY(-3px);
-        box-shadow: 0 20px 40px rgba(15, 116, 76, .12);
+        box-shadow: 0 20px 40px rgba(47, 107, 255, .12);
     }
 
     .stat-icon {
@@ -284,8 +284,8 @@
         align-items: center;
         justify-content: center;
         font-size: 22px;
-        background: #d1fae5;
-        color: #0f744c;
+        background: #E0E7FF;
+        color: #2F6BFF;
     }
 
     .stat-card h3 {
@@ -313,10 +313,10 @@
     .nav-tabs-wrapper {
         background: white;
         border-radius: 24px;
-        border: 1px solid rgba(15, 116, 76, .12);
+        border: 1px solid rgba(47, 107, 255, .12);
         overflow: hidden;
         margin-bottom: 28px;
-        box-shadow: 0 8px 25px rgba(15, 116, 76, .06);
+        box-shadow: 0 8px 25px rgba(47, 107, 255, .06);
     }
 
     .nav-tabs {
@@ -327,11 +327,11 @@
         margin: 0;
         list-style: none;
         background: linear-gradient(135deg, #ffffff, #f5fbf7);
-        border-bottom: 1px solid rgba(15, 116, 76, .08);
+        border-bottom: 1px solid rgba(47, 107, 255, .08);
     }
 
     .nav-tabs.extra-tabs {
-        border-top: 1px solid rgba(15, 116, 76, .08);
+        border-top: 1px solid rgba(47, 107, 255, .08);
         border-bottom: none;
         padding-top: 8px;
     }
@@ -359,17 +359,17 @@
 
     .nav-link:hover {
         background: #edf8f2;
-        color: #0f744c;
+        color: #2F6BFF;
     }
 
     .nav-link.active {
-        background: linear-gradient(145deg, #0f744c, #10b981);
+        background: linear-gradient(145deg, #2F6BFF, #4F83FF);
         color: white;
-        box-shadow: 0 4px 12px rgba(16, 185, 129, .25);
+        box-shadow: 0 4px 12px rgba(47, 107, 255, .25);
     }
 
     .nav-link.more-toggle {
-        color: #0f744c;
+        color: #2F6BFF;
         cursor: pointer;
     }
 
@@ -381,8 +381,8 @@
     .content-card {
         background: white;
         border-radius: 24px;
-        border: 1px solid rgba(15, 116, 76, .12);
-        box-shadow: 0 18px 45px rgba(15, 116, 76, .08);
+        border: 1px solid rgba(47, 107, 255, .12);
+        box-shadow: 0 18px 45px rgba(47, 107, 255, .08);
         overflow: hidden;
     }
 
@@ -390,7 +390,7 @@
     .chart-header {
         padding: 22px 28px;
         background: linear-gradient(135deg, #ffffff, #f5fbf7);
-        border-bottom: 1px solid rgba(15, 116, 76, .1);
+        border-bottom: 1px solid rgba(47, 107, 255, .1);
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -408,7 +408,7 @@
         width: 48px;
         height: 48px;
         background: #e7f5ee;
-        color: #0f744c;
+        color: #2F6BFF;
         border-radius: 14px;
         display: flex;
         align-items: center;
@@ -420,12 +420,12 @@
         font-size: 1.3rem;
         font-weight: 700;
         margin: 0;
-        color: #07130d;
+        color: #070B1A;
     }
 
     .chart-title .muted {
         font-size: 0.95rem;
-        color: #8ba198;
+        color: #64748B;
         display: block;
         margin-top: 2px;
     }
@@ -441,7 +441,7 @@
         align-items: center;
         gap: 8px;
         font-size: 0.9rem;
-        color: #5a6e63;
+        color: #64748B;
         font-weight: 500;
     }
 
@@ -452,7 +452,7 @@
     }
 
     .legend-color.actual {
-        background: #0f744c;
+        background: #2F6BFF;
     }
 
     .legend-color.ideal {
@@ -464,8 +464,8 @@
     /* Filter Section */
     .filter-section {
         padding: 20px 28px;
-        border-bottom: 1px solid rgba(15, 116, 76, .08);
-        background: #fafefb;
+        border-bottom: 1px solid rgba(47, 107, 255, .08);
+        background: #F8FAFC;
     }
 
     .filter-form {
@@ -484,19 +484,19 @@
     .filter-group label {
         font-size: 0.85rem;
         font-weight: 700;
-        color: #5a6e63;
+        color: #64748B;
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
 
     .filter-group label i {
         margin-right: 6px;
-        color: #34d399;
+        color: #60A5FA;
     }
 
     .filter-group .form-control {
         border-radius: 12px;
-        border: 1px solid rgba(15, 116, 76, .18);
+        border: 1px solid rgba(47, 107, 255, .18);
         padding: 12px 16px;
         font-weight: 500;
         font-size: 1rem;
@@ -506,8 +506,8 @@
     }
 
     .filter-group .form-control:focus {
-        border-color: #34d399;
-        box-shadow: 0 0 0 3px rgba(16, 185, 129, .1);
+        border-color: #60A5FA;
+        box-shadow: 0 0 0 3px rgba(47, 107, 255, .1);
     }
 
     .filter-actions {
@@ -530,8 +530,8 @@
     /* Chart Summary */
     .chart-summary {
         padding: 18px 28px;
-        background: #fafefb;
-        border-top: 1px solid rgba(15, 116, 76, .08);
+        background: #F8FAFC;
+        border-top: 1px solid rgba(47, 107, 255, .08);
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -547,15 +547,15 @@
 
     .summary-label {
         font-size: 0.85rem;
-        color: #8ba198;
+        color: #64748B;
         font-weight: 500;
     }
 
     .summary-value {
         font-size: 1.1rem;
         font-weight: 700;
-        color: #07130d;
-        background: #f0f9f4;
+        color: #070B1A;
+        background: #F8FAFC;
         padding: 4px 14px;
         border-radius: 20px;
     }
@@ -571,8 +571,8 @@
         align-items: center;
         flex-wrap: wrap;
         gap: 16px;
-        border: 1px solid rgba(15, 116, 76, .1);
-        box-shadow: 0 8px 25px rgba(15, 116, 76, .04);
+        border: 1px solid rgba(47, 107, 255, .1);
+        box-shadow: 0 8px 25px rgba(47, 107, 255, .04);
     }
 
     .status-item {
@@ -589,7 +589,7 @@
 
     .status-item span {
         font-weight: 700;
-        color: #07130d;
+        color: #070B1A;
         margin-right: 4px;
         font-size: 1.05rem;
     }
@@ -670,7 +670,7 @@
 
     /* Dark Mode Support */
     html[data-pms-theme="dark"] .burndown-chart-page {
-        background: linear-gradient(145deg, #07130d, #102119);
+        background: linear-gradient(145deg, #070B1A, #0F1530);
     }
 
     html[data-pms-theme="dark"] .breadcrumb,
@@ -679,8 +679,8 @@
     html[data-pms-theme="dark"] .stat-card,
     html[data-pms-theme="dark"] .status-bar,
     html[data-pms-theme="dark"] .nav-tabs-wrapper {
-        background: #102119;
-        border-color: rgba(122, 240, 181, .18);
+        background: #0F1530;
+        border-color: rgba(79, 131, 255, .18);
     }
 
     html[data-pms-theme="dark"] .header-card h1,
@@ -691,56 +691,186 @@
     }
 
     html[data-pms-theme="dark"] .filter-section {
-        background: #142a20;
-        border-color: rgba(122, 240, 181, .16);
+        background: #141B3D;
+        border-color: rgba(79, 131, 255, .16);
     }
 
     html[data-pms-theme="dark"] .filter-group .form-control {
-        background: #183026;
+        background: #141B3D;
         color: #ffffff;
-        border-color: rgba(122, 240, 181, .18);
+        border-color: rgba(79, 131, 255, .18);
     }
 
     html[data-pms-theme="dark"] .chart-container {
-        background: #102119;
+        background: #0F1530;
     }
 
     html[data-pms-theme="dark"] .chart-summary {
-        background: #142a20;
-        border-color: rgba(122, 240, 181, .16);
+        background: #141B3D;
+        border-color: rgba(79, 131, 255, .16);
     }
 
     html[data-pms-theme="dark"] .summary-value {
-        background: #183026;
-        color: #7af0b5;
+        background: #141B3D;
+        color: #60A5FA;
     }
 
     html[data-pms-theme="dark"] .nav-link {
-        color: #d9f1e4;
+        color: #EEF1FB;
     }
 
     html[data-pms-theme="dark"] .nav-link:hover {
-        background: rgba(122, 240, 181, .1);
-        color: #7af0b5;
+        background: rgba(79, 131, 255, .1);
+        color: #60A5FA;
     }
 
     html[data-pms-theme="dark"] .nav-link.active {
-        background: linear-gradient(145deg, #0f744c, #10b981);
+        background: linear-gradient(145deg, #2F6BFF, #4F83FF);
         color: white;
     }
 
     html[data-pms-theme="dark"] .chart-header {
-        background: #142a20;
-        border-color: rgba(122, 240, 181, .16);
+        background: #141B3D;
+        border-color: rgba(79, 131, 255, .16);
     }
 
     html[data-pms-theme="dark"] .chart-title-icon {
-        background: rgba(122, 240, 181, .15);
-        color: #7af0b5;
+        background: rgba(79, 131, 255, .15);
+        color: #60A5FA;
     }
 
     html[data-pms-theme="dark"] .legend-item {
-        color: #d9f1e4;
+        color: #EEF1FB;
+    }
+
+    /* ApexCharts Toolbar & Controls in Dark Mode */
+    html[data-pms-theme="dark"] .apexcharts-toolbar,
+    html[data-theme="dark"] .apexcharts-toolbar {
+        background: #141B3D !important;
+        border: 1px solid rgba(79, 131, 255, 0.3) !important;
+        border-radius: 12px !important;
+        padding: 4px 8px !important;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45) !important;
+        gap: 4px !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+
+    html[data-pms-theme="dark"] .apexcharts-toolbar > div,
+    html[data-theme="dark"] .apexcharts-toolbar > div {
+        border-radius: 6px !important;
+        padding: 2px !important;
+        margin: 0 1px !important;
+        transition: all 0.2s ease !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 24px !important;
+        height: 24px !important;
+        cursor: pointer !important;
+    }
+
+    html[data-pms-theme="dark"] .apexcharts-toolbar > div:hover,
+    html[data-theme="dark"] .apexcharts-toolbar > div:hover {
+        background: rgba(79, 131, 255, 0.2) !important;
+    }
+
+    html[data-pms-theme="dark"] .apexcharts-toolbar > div.apexcharts-selected,
+    html[data-theme="dark"] .apexcharts-toolbar > div.apexcharts-selected {
+        background: rgba(79, 131, 255, 0.25) !important;
+    }
+
+    html[data-pms-theme="dark"] .apexcharts-toolbar svg,
+    html[data-theme="dark"] .apexcharts-toolbar svg {
+        fill: #94A3B8 !important;
+        stroke: #94A3B8 !important;
+        transition: all 0.2s ease !important;
+    }
+
+    html[data-pms-theme="dark"] .apexcharts-toolbar > div:hover svg,
+    html[data-theme="dark"] .apexcharts-toolbar > div:hover svg {
+        fill: #ffffff !important;
+        stroke: #ffffff !important;
+    }
+
+    html[data-pms-theme="dark"] .apexcharts-toolbar > div.apexcharts-selected svg,
+    html[data-theme="dark"] .apexcharts-toolbar > div.apexcharts-selected svg {
+        fill: #60A5FA !important;
+        stroke: #60A5FA !important;
+    }
+
+    /* Pan icon outline handling */
+    html[data-pms-theme="dark"] .apexcharts-pan-icon svg,
+    html[data-theme="dark"] .apexcharts-pan-icon svg {
+        fill: transparent !important;
+        stroke: #94A3B8 !important;
+        stroke-width: 2 !important;
+    }
+
+    html[data-pms-theme="dark"] .apexcharts-pan-icon:hover svg,
+    html[data-theme="dark"] .apexcharts-pan-icon:hover svg {
+        fill: transparent !important;
+        stroke: #ffffff !important;
+    }
+
+    html[data-pms-theme="dark"] .apexcharts-pan-icon.apexcharts-selected svg,
+    html[data-theme="dark"] .apexcharts-pan-icon.apexcharts-selected svg {
+        fill: transparent !important;
+        stroke: #60A5FA !important;
+    }
+
+    /* Zoom in/out icon paths */
+    html[data-pms-theme="dark"] .apexcharts-zoomin-icon svg,
+    html[data-pms-theme="dark"] .apexcharts-zoomout-icon svg,
+    html[data-theme="dark"] .apexcharts-zoomin-icon svg,
+    html[data-theme="dark"] .apexcharts-zoomout-icon svg {
+        fill: #94A3B8 !important;
+        stroke: #94A3B8 !important;
+    }
+
+    /* Dropdown export menu */
+    html[data-pms-theme="dark"] .apexcharts-menu,
+    html[data-theme="dark"] .apexcharts-menu {
+        background: #0F1530 !important;
+        border: 1px solid rgba(79, 131, 255, 0.28) !important;
+        border-radius: 12px !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6) !important;
+        color: #EEF1FB !important;
+        padding: 6px !important;
+    }
+
+    html[data-pms-theme="dark"] .apexcharts-menu .apexcharts-menu-item,
+    html[data-theme="dark"] .apexcharts-menu .apexcharts-menu-item {
+        color: #EEF1FB !important;
+        padding: 8px 14px !important;
+        font-size: 13px !important;
+        font-weight: 500 !important;
+        border-radius: 8px !important;
+        transition: all 0.15s ease !important;
+    }
+
+    html[data-pms-theme="dark"] .apexcharts-menu .apexcharts-menu-item:hover,
+    html[data-theme="dark"] .apexcharts-menu .apexcharts-menu-item:hover {
+        background: rgba(79, 131, 255, 0.18) !important;
+        color: #ffffff !important;
+    }
+
+    /* Tooltip */
+    html[data-pms-theme="dark"] .apexcharts-tooltip,
+    html[data-theme="dark"] .apexcharts-tooltip {
+        background: #0F1530 !important;
+        border: 1px solid rgba(79, 131, 255, 0.25) !important;
+        color: #ffffff !important;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5) !important;
+        border-radius: 10px !important;
+    }
+
+    html[data-pms-theme="dark"] .apexcharts-tooltip-title,
+    html[data-theme="dark"] .apexcharts-tooltip-title {
+        background: #141B3D !important;
+        border-bottom: 1px solid rgba(79, 131, 255, 0.18) !important;
+        color: #60A5FA !important;
+        font-weight: 600 !important;
     }
 </style>
 
@@ -789,7 +919,7 @@
                 {
                     name: 'Actual Progress',
                     data: @json($actual),
-                    color: '#0f744c'
+                    color: '#2F6BFF'
                 },
                 {
                     name: 'Ideal Progress',
@@ -804,7 +934,7 @@
             },
             markers: {
                 size: 6,
-                colors: ['#0f744c', '#9ca3af'],
+                colors: ['#2F6BFF', '#9ca3af'],
                 strokeColors: '#ffffff',
                 strokeWidth: 2,
                 hover: {
@@ -817,7 +947,7 @@
                     shade: 'light',
                     type: 'horizontal',
                     shadeIntensity: 0.5,
-                    gradientToColors: ['#10b981', '#d1d5db'],
+                    gradientToColors: ['#2F6BFF', '#d1d5db'],
                     inverseColors: false,
                     opacityFrom: 0.6,
                     opacityTo: 0.1
@@ -942,10 +1072,13 @@
         // Dark mode support
         function updateChartTheme() {
             const isDark = document.documentElement.getAttribute('data-pms-theme') === 'dark';
-            const textColor = isDark ? '#d9f1e4' : '#6b7280';
-            const gridColor = isDark ? 'rgba(122, 240, 181, 0.15)' : '#e5e7eb';
+            const textColor = isDark ? '#94A3B8' : '#64748B';
+            const gridColor = isDark ? 'rgba(79, 131, 255, 0.15)' : '#e5e7eb';
 
             chart.updateOptions({
+                theme: {
+                    mode: isDark ? 'dark' : 'light'
+                },
                 grid: {
                     borderColor: gridColor
                 },
@@ -994,6 +1127,11 @@
             attributes: true,
             attributeFilter: ['data-pms-theme']
         });
+
+        // Initialize theme on page load if dark mode is active
+        if (document.documentElement.getAttribute('data-pms-theme') === 'dark') {
+            updateChartTheme();
+        }
     });
 </script>
 @endsection

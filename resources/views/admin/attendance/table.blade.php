@@ -1,4 +1,4 @@
-{{-- resources/views/admin/attendance/table.blade.php --}}
+﻿{{-- resources/views/admin/attendance/table.blade.php --}}
 @php $authUser = Auth::user(); @endphp
 
 <div class="table-wrapper position-relative" style="margin-top:12px;">
@@ -7,13 +7,13 @@
       <thead class="table-light">
         <tr>
           <th class="no-export" data-pms-selection-column aria-label="Select rows"></th>
-          <th style="background-color:#f0f0f0; min-width:240px;">Employee</th>
+          <th class="attendance-col-emp" style="min-width:240px;">Employee</th>
           @for($i=1;$i<=$daysInMonth;$i++)
             @php $date = \Carbon\Carbon::createFromDate($year,$month,$i); @endphp
             <th style="font-size:16px; width:56px;">{{ $i }}<br><small>{{ $date->format('D') }}</small></th>
           @endfor
-          <th style="background-color:#f0f0f0; min-width:140px;">Total Hours</th>
-          <th class="no-export" style="background-color:#f0f0f0; min-width:260px;">Actions</th>
+          <th class="attendance-col-hours" style="min-width:140px;">Total Hours</th>
+          <th class="no-export attendance-col-actions" style="min-width:260px;">Actions</th>
         </tr>
       </thead>
 
@@ -21,7 +21,7 @@
         @foreach($users as $user)
           <tr>
             <td class="no-export" data-pms-selection-column></td>
-            <td class="text-start" style="background-color:#f9f9f9; white-space:nowrap;">
+            <td class="text-start attendance-cell-emp" style="white-space:nowrap;">
               <div class="attendance-employee-cell">
                 <img src="{{ $user->profile_image ? asset($user->profile_image) : asset('images/default-avatar.png') }}"
                      alt="{{ $user->name }}"
@@ -130,13 +130,13 @@
               @endphp
 
               <td class="fw-bold">
-                @php $isAdmin = auth()->user()->role === 'admin'; @endphp
+                @php $canEditAttendance = in_array(strtolower((string)(auth()->user()->role ?? '')), ['admin', 'superadmin', 'administrator', 'hr'], true); @endphp
 
                 @if($popupClass === 'view-attendance')
                   <a href="javascript:;" class="view-attendance" data-attendance-id="{{ $attendance->id ?? '' }}" data-user-id="{{ $user->id }}" data-date="{{ $dateKey }}">
                     {!! $symbol !!}
                   </a>
-                @elseif($popupClass === 'edit-attendance' && $isAdmin)
+                @elseif($popupClass === 'edit-attendance' && $canEditAttendance)
                   <a href="javascript:;" class="edit-attendance" data-attendance-id="{{ $attendance->id ?? '' }}" data-user-id="{{ $user->id }}" data-date="{{ $dateKey }}">
                     {!! $symbol !!}
                   </a>
@@ -199,7 +199,7 @@
                   <i class="fas fa-eye"></i>
                   <span>View</span>
                 </button>
-                @if(auth()->user()->role === 'admin')
+                @if($canEditAttendance)
                   <button type="button" class="attendance-action-btn edit js-month-edit" data-payload="{{ $employeeMonthPayloadEncoded }}" title="Edit month records">
                     <i class="fas fa-pen"></i>
                     <span>Edit</span>
@@ -218,25 +218,6 @@
   </div>
 </div>
 
-{{-- Modal: kept here so clicks can open it --}}
-<div class="modal fade attendance-details-modal" id="attendanceDetailsModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
-    <div class="modal-content attendance-details-modal-content">
-      <div class="modal-header bg-primary text-white">
-        <h5 class="modal-title">Attendance Details</h5>
-        <button type="button" class="btn-close" data-attendance-modal-close aria-label="Close"></button>
-      </div>
-      <div id="attendanceDetailsBody" class="modal-body attendance-details-modal-body">
-        <div class="text-center py-4">
-          <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-attendance-modal-close>Close</button>
-      </div>
-    </div>
-  </div>
-</div>
 
 {{-- small styles --}}
 <style>
@@ -265,12 +246,14 @@
     min-width: 0;
   }
   .attendance-employee-meta strong {
-    color: #0f172a;
+    color: #0f172a !important;
+    -webkit-text-fill-color: #0f172a !important;
     font-size: 1.12rem;
     line-height: 1.2;
   }
   .attendance-employee-meta small {
-    color: #64748b;
+    color: #475569 !important;
+    -webkit-text-fill-color: #475569 !important;
     font-size: 0.96rem;
     line-height: 1.2;
   }
@@ -290,10 +273,16 @@
     align-items: center;
     justify-content: center;
     gap: 0.38rem;
-    color: #ffffff;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
     font-size: 0.92rem;
     font-weight: 800;
     transition: all 0.2s ease;
+  }
+  .attendance-action-btn i,
+  .attendance-action-btn span {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
   }
   .attendance-action-btn:disabled {
     cursor: not-allowed;
@@ -306,13 +295,13 @@
     box-shadow: 0 8px 18px rgba(15, 23, 42, 0.16);
   }
   .attendance-action-btn.view {
-    background: #2563eb;
+    background: #2563eb !important;
   }
   .attendance-action-btn.edit {
-    background: #f59e0b;
+    background: #f59e0b !important;
   }
   .attendance-action-btn.archive {
-    background: #64748b;
+    background: #64748b !important;
   }
   .attendance-status-icon {
     width: 34px;
@@ -321,38 +310,44 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: #ffffff;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
     font-size: 1rem;
     font-weight: 800;
     box-shadow: 0 5px 14px rgba(15, 23, 42, 0.12);
   }
+  .attendance-status-icon i {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+  }
   .attendance-status-icon.present {
-    background: #22c55e;
+    background: #22c55e !important;
   }
   .attendance-status-icon.absent {
-    background: #ef4444;
+    background: #ef4444 !important;
   }
   .attendance-status-icon.late {
-    background: #f59e0b;
+    background: #f59e0b !important;
   }
   .attendance-status-icon.halfday {
-    background: #8b5cf6;
+    background: #8b5cf6 !important;
   }
   .attendance-status-icon.holiday {
-    background: #e67e22;
+    background: #e67e22 !important;
   }
   .attendance-status-icon.dayoff {
-    background: #3b82f6;
+    background: #3b82f6 !important;
   }
   .attendance-status-icon.leave {
-    background: #06b6d4;
+    background: #06b6d4 !important;
   }
   .attendance-status-icon.wfh {
-    background: #14b8a6;
+    background: #14b8a6 !important;
   }
   .attendance-status-icon.empty {
-    background: #e2e8f0;
-    color: #64748b;
+    background: #e2e8f0 !important;
+    color: #475569 !important;
+    -webkit-text-fill-color: #475569 !important;
     box-shadow: none;
   }
   .attendance-table td a .attendance-status-icon {
@@ -383,13 +378,15 @@
   }
   .attendance-month-profile h5 {
     margin: 0;
-    color: #0f172a;
+    color: #0f172a !important;
+    -webkit-text-fill-color: #0f172a !important;
     font-weight: 800;
     font-size: 1.25rem;
   }
   .attendance-month-profile p {
     margin: 0.2rem 0 0;
-    color: #64748b;
+    color: #475569 !important;
+    -webkit-text-fill-color: #475569 !important;
     font-weight: 600;
     font-size: 1rem;
   }
@@ -399,14 +396,16 @@
     border-spacing: 0 0.45rem;
   }
   .attendance-month-table th {
-    color: #64748b;
+    color: #475569 !important;
+    -webkit-text-fill-color: #475569 !important;
     font-size: 0.95rem;
     text-transform: uppercase;
     padding: 0.65rem;
   }
   .attendance-month-table td {
     background: #ffffff;
-    color: #1e293b;
+    color: #1e293b !important;
+    -webkit-text-fill-color: #1e293b !important;
     padding: 0.85rem;
     font-size: 1rem;
     border-top: 1px solid #eef2f7;
@@ -424,10 +423,19 @@
     border: 0;
     border-radius: 999px;
     padding: 0.45rem 0.9rem;
-    background: #fff7ed;
-    color: #c2410c;
+    background: #fff7ed !important;
+    color: #c2410c !important;
+    -webkit-text-fill-color: #c2410c !important;
     font-weight: 800;
     font-size: 0.95rem;
+  .attendance-col-emp,
+  .attendance-col-hours,
+  .attendance-col-actions {
+    background-color: #f8fafc !important;
+    color: #475569 !important;
+  }
+  .attendance-cell-emp {
+    background-color: #ffffff !important;
   }
   #attendanceDetailsModal {
     z-index: 2060 !important;
@@ -466,31 +474,179 @@
     opacity: 0.48 !important;
     z-index: 2050 !important;
   }
-  html[data-pms-theme="dark"] .attendance-employee-meta strong {
-    color: #ffffff;
+
+  /* Dark mode overrides for table & modal */
+  html[data-pms-theme="dark"] .attendance-col-emp,
+  html[data-pms-theme="dark"] .attendance-col-hours,
+  html[data-pms-theme="dark"] .attendance-col-actions,
+  html[data-theme="dark"] .attendance-col-emp,
+  html[data-theme="dark"] .attendance-col-hours,
+  html[data-theme="dark"] .attendance-col-actions,
+  body.dark-mode .attendance-col-emp,
+  body.dark-mode .attendance-col-hours,
+  body.dark-mode .attendance-col-actions {
+    background-color: #0F1530 !important;
+    color: #9AA3C7 !important;
+    -webkit-text-fill-color: #9AA3C7 !important;
+    border-color: rgba(238, 241, 251, 0.08) !important;
   }
-  html[data-pms-theme="dark"] .attendance-employee-meta small {
-    color: #8ba198;
+  html[data-pms-theme="dark"] .attendance-cell-emp,
+  html[data-theme="dark"] .attendance-cell-emp,
+  body.dark-mode .attendance-cell-emp {
+    background-color: #0F1530 !important;
+    border-color: rgba(238, 241, 251, 0.08) !important;
   }
-  html[data-pms-theme="dark"] .attendance-employee-photo {
-    border-color: #183026;
-    background: #183026;
+  html[data-pms-theme="dark"] .attendance-table th,
+  html[data-theme="dark"] .attendance-table th,
+  html[data-bs-theme="dark"] .attendance-table th,
+  [data-pms-theme="dark"] .attendance-table th,
+  [data-theme="dark"] .attendance-table th,
+  body.dark-mode .attendance-table th {
+    background-color: #0F1530 !important;
+    color: #9AA3C7 !important;
+    -webkit-text-fill-color: #9AA3C7 !important;
+    border-color: rgba(238, 241, 251, 0.08) !important;
   }
-  html[data-pms-theme="dark"] .attendance-month-summary {
-    background: #07130d;
+  html[data-pms-theme="dark"] .attendance-table td,
+  html[data-theme="dark"] .attendance-table td,
+  html[data-bs-theme="dark"] .attendance-table td,
+  [data-pms-theme="dark"] .attendance-table td,
+  [data-theme="dark"] .attendance-table td,
+  body.dark-mode .attendance-table td {
+    background-color: #141B3D !important;
+    color: #CBD5E1 !important;
+    -webkit-text-fill-color: #CBD5E1 !important;
+    border-color: rgba(238, 241, 251, 0.08) !important;
+  }
+  html[data-pms-theme="dark"] .attendance-table tbody tr:hover td,
+  html[data-theme="dark"] .attendance-table tbody tr:hover td,
+  body.dark-mode .attendance-table tbody tr:hover td {
+    background-color: #1A2247 !important;
+  }
+  html[data-pms-theme="dark"] .attendance-employee-meta strong,
+  html[data-theme="dark"] .attendance-employee-meta strong,
+  html[data-bs-theme="dark"] .attendance-employee-meta strong,
+  [data-pms-theme="dark"] .attendance-employee-meta strong,
+  [data-theme="dark"] .attendance-employee-meta strong,
+  body.dark-mode .attendance-employee-meta strong {
+    color: #EEF1FB !important;
+    -webkit-text-fill-color: #EEF1FB !important;
+  }
+  html[data-pms-theme="dark"] .attendance-employee-meta small,
+  html[data-theme="dark"] .attendance-employee-meta small,
+  html[data-bs-theme="dark"] .attendance-employee-meta small,
+  [data-pms-theme="dark"] .attendance-employee-meta small,
+  [data-theme="dark"] .attendance-employee-meta small,
+  body.dark-mode .attendance-employee-meta small {
+    color: #9AA3C7 !important;
+    -webkit-text-fill-color: #9AA3C7 !important;
+  }
+  html[data-pms-theme="dark"] .attendance-employee-photo,
+  html[data-theme="dark"] .attendance-employee-photo,
+  html[data-bs-theme="dark"] .attendance-employee-photo,
+  [data-pms-theme="dark"] .attendance-employee-photo,
+  [data-theme="dark"] .attendance-employee-photo,
+  body.dark-mode .attendance-employee-photo {
+    border-color: rgba(238, 241, 251, 0.16) !important;
+    background: #141B3D !important;
+  }
+  html[data-pms-theme="dark"] .attendance-month-summary,
+  html[data-theme="dark"] .attendance-month-summary,
+  html[data-bs-theme="dark"] .attendance-month-summary,
+  [data-pms-theme="dark"] .attendance-month-summary,
+  [data-theme="dark"] .attendance-month-summary,
+  body.dark-mode .attendance-month-summary {
+    background: #070B1A !important;
   }
   html[data-pms-theme="dark"] .attendance-month-profile,
-  html[data-pms-theme="dark"] .attendance-month-table td {
-    background: #102119;
-    border-color: rgba(122, 240, 181, 0.15);
+  html[data-theme="dark"] .attendance-month-profile,
+  html[data-bs-theme="dark"] .attendance-month-profile,
+  [data-pms-theme="dark"] .attendance-month-profile,
+  [data-theme="dark"] .attendance-month-profile,
+  body.dark-mode .attendance-month-profile {
+    background: #0F1530 !important;
+    border-color: rgba(238, 241, 251, 0.1) !important;
   }
   html[data-pms-theme="dark"] .attendance-month-profile h5,
-  html[data-pms-theme="dark"] .attendance-month-table td {
-    color: #ffffff;
+  html[data-theme="dark"] .attendance-month-profile h5,
+  html[data-bs-theme="dark"] .attendance-month-profile h5,
+  [data-pms-theme="dark"] .attendance-month-profile h5,
+  [data-theme="dark"] .attendance-month-profile h5,
+  body.dark-mode .attendance-month-profile h5 {
+    color: #EEF1FB !important;
+    -webkit-text-fill-color: #EEF1FB !important;
   }
-  html[data-pms-theme="dark"] .attendance-status-icon.empty {
-    background: #183026;
-    color: #8ba198;
+  html[data-pms-theme="dark"] .attendance-month-profile p,
+  html[data-theme="dark"] .attendance-month-profile p,
+  body.dark-mode .attendance-month-profile p {
+    color: #9AA3C7 !important;
+    -webkit-text-fill-color: #9AA3C7 !important;
+  }
+  html[data-pms-theme="dark"] .attendance-month-table th,
+  html[data-theme="dark"] .attendance-month-table th,
+  body.dark-mode .attendance-month-table th {
+    color: #9AA3C7 !important;
+    -webkit-text-fill-color: #9AA3C7 !important;
+  }
+  html[data-pms-theme="dark"] .attendance-month-table td,
+  html[data-theme="dark"] .attendance-month-table td,
+  html[data-bs-theme="dark"] .attendance-month-table td,
+  [data-pms-theme="dark"] .attendance-month-table td,
+  [data-theme="dark"] .attendance-month-table td,
+  body.dark-mode .attendance-month-table td {
+    background: #141B3D !important;
+    border-color: rgba(238, 241, 251, 0.08) !important;
+    color: #EEF1FB !important;
+    -webkit-text-fill-color: #EEF1FB !important;
+  }
+  html[data-pms-theme="dark"] .attendance-status-icon.empty,
+  html[data-theme="dark"] .attendance-status-icon.empty,
+  html[data-bs-theme="dark"] .attendance-status-icon.empty,
+  [data-pms-theme="dark"] .attendance-status-icon.empty,
+  [data-theme="dark"] .attendance-status-icon.empty,
+  body.dark-mode .attendance-status-icon.empty {
+    background: #141B3D !important;
+    color: #6B739A !important;
+    -webkit-text-fill-color: #6B739A !important;
+  }
+  /* Dark mode modal fixes */
+  html[data-pms-theme="dark"] #attendanceDetailsModal .attendance-details-modal-content,
+  html[data-theme="dark"] #attendanceDetailsModal .attendance-details-modal-content,
+  body.dark-mode #attendanceDetailsModal .attendance-details-modal-content {
+    background: #0F1530 !important;
+    border: 1px solid rgba(238, 241, 251, 0.12) !important;
+    color: #CBD5E1 !important;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.7) !important;
+  }
+  html[data-pms-theme="dark"] #attendanceDetailsModal .attendance-details-modal-body,
+  html[data-theme="dark"] #attendanceDetailsModal .attendance-details-modal-body,
+  body.dark-mode #attendanceDetailsModal .attendance-details-modal-body {
+    background: #0F1530 !important;
+    color: #CBD5E1 !important;
+  }
+  html[data-pms-theme="dark"] #attendanceDetailsModal .attendance-details-container,
+  html[data-theme="dark"] #attendanceDetailsModal .attendance-details-container,
+  body.dark-mode #attendanceDetailsModal .attendance-details-container {
+    background: #070B1A !important;
+    color: #CBD5E1 !important;
+  }
+  html[data-pms-theme="dark"] #attendanceDetailsModal .modal-header,
+  html[data-theme="dark"] #attendanceDetailsModal .modal-header,
+  body.dark-mode #attendanceDetailsModal .modal-header {
+    background: #141B3D !important;
+    border-bottom: 1px solid rgba(238, 241, 251, 0.09) !important;
+    color: #EEF1FB !important;
+  }
+  html[data-pms-theme="dark"] #attendanceDetailsModal .modal-title,
+  html[data-theme="dark"] #attendanceDetailsModal .modal-title,
+  body.dark-mode #attendanceDetailsModal .modal-title {
+    color: #EEF1FB !important;
+  }
+  html[data-pms-theme="dark"] #attendanceDetailsModal .modal-footer,
+  html[data-theme="dark"] #attendanceDetailsModal .modal-footer,
+  body.dark-mode #attendanceDetailsModal .modal-footer {
+    background: #0F1530 !important;
+    border-top: 1px solid rgba(238, 241, 251, 0.09) !important;
   }
 </style>
 
@@ -499,17 +655,52 @@
 $(document).ready(function () {
     function getAttendanceModal() {
         var modalEl = document.getElementById('attendanceDetailsModal');
-        if (!modalEl) return null;
-
-        if (modalEl.parentElement !== document.body) {
+        if (!modalEl) {
+            modalEl = document.createElement('div');
+            modalEl.className = 'modal fade attendance-details-modal';
+            modalEl.id = 'attendanceDetailsModal';
+            modalEl.tabIndex = -1;
+            modalEl.setAttribute('aria-hidden', 'true');
+            modalEl.innerHTML = '<div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">' +
+                '<div class="modal-content attendance-details-modal-content">' +
+                '<div class="modal-header bg-primary text-white">' +
+                '<h5 class="modal-title">Attendance Details</h5>' +
+                '<button type="button" class="btn-close" data-attendance-modal-close aria-label="Close"></button>' +
+                '</div>' +
+                '<div id="attendanceDetailsBody" class="modal-body attendance-details-modal-body">' +
+                '<div class="text-center py-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>' +
+                '</div>' +
+                '<div class="modal-footer">' +
+                '<button type="button" class="btn btn-secondary" data-attendance-modal-close>Close</button>' +
+                '</div></div></div>';
+            document.body.appendChild(modalEl);
+        } else if (modalEl.parentElement !== document.body) {
             document.body.appendChild(modalEl);
         }
 
-        return bootstrap.Modal.getOrCreateInstance(modalEl, {
-            backdrop: true,
-            keyboard: true,
-            focus: true
-        });
+        if (window.bootstrap && bootstrap.Modal) {
+            if (typeof bootstrap.Modal.getOrCreateInstance === 'function') {
+                return bootstrap.Modal.getOrCreateInstance(modalEl, {
+                    backdrop: true,
+                    keyboard: true,
+                    focus: true
+                });
+            }
+            return new bootstrap.Modal(modalEl, {
+                backdrop: true,
+                keyboard: true,
+                focus: true
+            });
+        }
+
+        if (window.jQuery && typeof $(modalEl).modal === 'function') {
+            return {
+                show: function() { $(modalEl).modal('show'); },
+                hide: function() { $(modalEl).modal('hide'); }
+            };
+        }
+
+        return null;
     }
 
     function showAttendanceLoading(message) {
@@ -542,9 +733,13 @@ $(document).ready(function () {
             return;
         }
 
-        var modal = bootstrap.Modal.getInstance(modalEl);
-        if (modal) {
-            modal.hide();
+        if (window.bootstrap && bootstrap.Modal && typeof bootstrap.Modal.getInstance === 'function') {
+            var modal = bootstrap.Modal.getInstance(modalEl);
+            if (modal) {
+                modal.hide();
+            }
+        } else if (window.jQuery && typeof $(modalEl).modal === 'function') {
+            $(modalEl).modal('hide');
         }
 
         modalEl.classList.remove('show');
@@ -569,17 +764,28 @@ $(document).ready(function () {
     }
 
     function parseAttendancePayload(encoded) {
-        var binary = atob(encoded);
-        var bytes = new Uint8Array(binary.length);
-        for (var i = 0; i < binary.length; i++) {
-            bytes[i] = binary.charCodeAt(i);
+        if (typeof encoded === 'object' && encoded !== null) {
+            return encoded;
         }
-
-        if (window.TextDecoder) {
-            return JSON.parse(new TextDecoder('utf-8').decode(bytes));
+        if (!encoded) {
+            return {};
         }
+        try {
+            var binary = atob(encoded);
+            var bytes = new Uint8Array(binary.length);
+            for (var i = 0; i < binary.length; i++) {
+                bytes[i] = binary.charCodeAt(i);
+            }
 
-        return JSON.parse(decodeURIComponent(escape(binary)));
+            if (window.TextDecoder) {
+                return JSON.parse(new TextDecoder('utf-8').decode(bytes));
+            }
+
+            return JSON.parse(decodeURIComponent(escape(binary)));
+        } catch (e) {
+            console.error('Error parsing attendance payload:', e);
+            return {};
+        }
     }
 
     function renderEmployeeMonthDetails(payload, editMode) {
@@ -636,13 +842,17 @@ $(document).ready(function () {
     }
 
     $(document).off('click.attendanceMonthView', '.js-month-view')
-        .on('click.attendanceMonthView', '.js-month-view', function() {
-        renderEmployeeMonthDetails(parseAttendancePayload(this.dataset.payload), false);
+        .on('click.attendanceMonthView', '.js-month-view', function(e) {
+        if (e) e.preventDefault();
+        var rawPayload = this.dataset?.payload || this.getAttribute('data-payload') || $(this).data('payload') || $(this).attr('data-payload');
+        renderEmployeeMonthDetails(parseAttendancePayload(rawPayload), false);
     });
 
     $(document).off('click.attendanceMonthEdit', '.js-month-edit')
-        .on('click.attendanceMonthEdit', '.js-month-edit', function() {
-        renderEmployeeMonthDetails(parseAttendancePayload(this.dataset.payload), true);
+        .on('click.attendanceMonthEdit', '.js-month-edit', function(e) {
+        if (e) e.preventDefault();
+        var rawPayload = this.dataset?.payload || this.getAttribute('data-payload') || $(this).data('payload') || $(this).attr('data-payload');
+        renderEmployeeMonthDetails(parseAttendancePayload(rawPayload), true);
     });
 
     $(document).off('click.attendanceMonthArchive', '.js-month-archive')

@@ -27,6 +27,36 @@ use Illuminate\Support\Str;
 class AttendanceController extends Controller
 {
     /**
+     * Role Helper Methods (Case-insensitive & SuperAdmin aware)
+     */
+    private function isAdminUser($user): bool
+    {
+        if (!$user) return false;
+        $role = strtolower((string) ($user->role ?? ''));
+        return in_array($role, ['admin', 'superadmin', 'administrator'], true);
+    }
+
+    private function isManagerOrHrUser($user): bool
+    {
+        if (!$user) return false;
+        $role = strtolower((string) ($user->role ?? ''));
+        return in_array($role, ['manager', 'hr'], true);
+    }
+
+    private function canManageAttendance($user): bool
+    {
+        if (!$user) return false;
+        $role = strtolower((string) ($user->role ?? ''));
+        return in_array($role, ['admin', 'superadmin', 'administrator', 'hr'], true);
+    }
+
+    private function isEmployeeUser($user): bool
+    {
+        if (!$user) return false;
+        return !$this->isAdminUser($user) && !$this->isManagerOrHrUser($user);
+    }
+
+    /**
      * Convert seconds to HH:MM or HH:MM:SS
      */
     private function secondsToHhmm(int $seconds, bool $showSeconds = false): string
@@ -223,8 +253,9 @@ class AttendanceController extends Controller
     {
         $user = Auth::user();
 
-        // Only admin can export
-        if ($user->role !== 'admin') {
+        // Only admin / authorized roles can export
+        $userRole = strtolower((string) ($user->role ?? ''));
+        if (! in_array($userRole, ['admin', 'superadmin', 'hr', 'manager', 'developer'], true)) {
             return redirect()->route('attendance.index')
                 ->with('error', 'You do not have permission to export data.');
         }
@@ -324,9 +355,8 @@ class AttendanceController extends Controller
     {
         $user = Auth::user();
 
-        // Check if user has access
-        if (!in_array($user->role, ['admin', 'manager', 'hr', 'employee'])) {
-            abort(403, 'Unauthorized access');
+        if (!$user) {
+            abort(401, 'Unauthenticated access');
         }
 
         $month = (int) ($request->filled('month') ? $request->month : now()->month);
@@ -351,11 +381,15 @@ class AttendanceController extends Controller
             ->toArray();
 
         // Step 2: load users and attendances based on role
-        if ($user->role === 'admin') {
-            $usersQuery = User::with('employeeDetail')->where('role', 'employee');
+        if ($this->isAdminUser($user) || $this->canManageAttendance($user)) {
+            $usersQuery = User::with('employeeDetail')->where(function ($q) {
+                $q->whereNotIn(DB::raw('LOWER(COALESCE(role, ""))'), ['client']);
+            });
 
             if ($companyId) {
                 $usersQuery->where('company_id', $companyId);
+            } elseif ($user->company_id && strtolower((string)$user->role) === 'hr') {
+                $usersQuery->where('company_id', $user->company_id);
             }
 
             if ($userId) {
@@ -381,13 +415,25 @@ class AttendanceController extends Controller
                 ->whereMonth('date', $month)
                 ->whereYear('date', $year)
                 ->get();
-        } elseif (in_array($user->role, ['manager', 'hr'], true)) {
+        } elseif ($this->isManagerOrHrUser($user)) {
+            $visibleIds = method_exists($user, 'visibleEmployeeIds') ? $user->visibleEmployeeIds() : collect();
             $usersQuery = User::with('employeeDetail')
-                ->where('role', 'employee')
-                ->whereIn('id', $user->visibleEmployeeIds());
+                ->whereIn('id', $visibleIds);
 
             if ($userId) {
                 $usersQuery->where('id', (int) $userId);
+            }
+
+            if ($departmentId) {
+                $usersQuery->whereHas('employeeDetail', function ($q) use ($departmentId) {
+                    $q->where('department_id', $departmentId);
+                });
+            }
+
+            if ($designationId) {
+                $usersQuery->whereHas('employeeDetail', function ($q) use ($designationId) {
+                    $q->where('designation_id', $designationId);
+                });
             }
 
             $users = $usersQuery->orderBy('name')->get();
@@ -494,10 +540,12 @@ class AttendanceController extends Controller
             }
         }
 
-        // Only admin gets these data
-        $departments = $user->role == 'admin' ? Department::get() : collect();
-        $designations = $user->role == 'admin' ? Designation::all() : collect();
-        $archivedCount = $user->role == 'admin' ? Attendance::whereNotNull('archived_at')->count() : 0;
+        // Admin & HR get these data
+        $isAdmin = $this->isAdminUser($user);
+        $canManage = $this->canManageAttendance($user);
+        $departments = ($isAdmin || $canManage) ? Department::when($user->company_id, fn($q) => $q->where('company_id', $user->company_id))->get() : collect();
+        $designations = ($isAdmin || $canManage) ? Designation::all() : collect();
+        $archivedCount = ($isAdmin || $canManage) ? Attendance::whereNotNull('archived_at')->count() : 0;
 
         // calculate period totals for the displayed period and users
         $periodTotals = $this->calculatePeriodTotals($users, $attendanceMap, $startDate, $endDate);
@@ -609,8 +657,8 @@ class AttendanceController extends Controller
     {
         $user = Auth::user();
 
-        if (!in_array($user->role, ['admin', 'employee'])) {
-            abort(403, 'Unauthorized');
+        if (!$user) {
+            abort(401, 'Unauthenticated');
         }
 
         $month = (int) ($request->filled('month') ? $request->input('month') : now()->month);
@@ -629,29 +677,57 @@ class AttendanceController extends Controller
                 return [Carbon::parse($holiday->date)->format('Y-m-d') => $holiday->occassion ?? $holiday->title ?? 'Holiday'];
             })->toArray();
 
-        // base users query
-        $usersQuery = User::with('employeeDetail')->where('role', 'employee');
+        $isAdmin = $this->isAdminUser($user);
+        $canManage = $this->canManageAttendance($user);
+        $isManagerOrHr = $this->isManagerOrHrUser($user);
 
-        if ($user->role === 'employee') {
+        if ($isAdmin || $canManage) {
+            $usersQuery = User::with('employeeDetail')->where(function ($q) {
+                $q->whereNotIn(DB::raw('LOWER(COALESCE(role, ""))'), ['client']);
+            });
+
+            if ($user->company_id && strtolower((string)$user->role) === 'hr') {
+                $usersQuery->where('company_id', $user->company_id);
+            }
+
+            if ($userId) {
+                $usersQuery->where('id', (int) $userId);
+            }
+
+            if ($department_id) {
+                $usersQuery->whereHas('employeeDetail', function ($q) use ($department_id) {
+                    $q->where('department_id', $department_id);
+                });
+            }
+
+            if ($designation_id) {
+                $usersQuery->whereHas('employeeDetail', function ($q) use ($designation_id) {
+                    $q->where('designation_id', $designation_id);
+                });
+            }
+        } elseif ($isManagerOrHr) {
+            $visibleIds = method_exists($user, 'visibleEmployeeIds') ? $user->visibleEmployeeIds() : collect();
+            $usersQuery = User::with('employeeDetail')
+                ->whereIn('id', $visibleIds);
+
+            if ($userId) {
+                $usersQuery->where('id', (int) $userId);
+            }
+
+            if ($department_id) {
+                $usersQuery->whereHas('employeeDetail', function ($q) use ($department_id) {
+                    $q->where('department_id', $department_id);
+                });
+            }
+
+            if ($designation_id) {
+                $usersQuery->whereHas('employeeDetail', function ($q) use ($designation_id) {
+                    $q->where('designation_id', $designation_id);
+                });
+            }
+        } else {
             // Employee can only see their own data
-            $usersQuery->where('id', $user->id);
-        } elseif ($userId && $user->role === 'admin') {
-            // Admin can filter by specific user
-            $usersQuery->where('id', (int) $userId);
-        }
-
-        // Department filter - only for admin
-        if ($department_id && $user->role === 'admin') {
-            $usersQuery->whereHas('employeeDetail', function ($q) use ($department_id) {
-                $q->where('department_id', $department_id);
-            });
-        }
-
-        // Designation filter - only for admin
-        if ($designation_id && $user->role === 'admin') {
-            $usersQuery->whereHas('employeeDetail', function ($q) use ($designation_id) {
-                $q->where('designation_id', $designation_id);
-            });
+            $usersQuery = User::with('employeeDetail')->where('id', $user->id);
         }
 
         $users = $usersQuery->orderBy('name')->get();
@@ -661,7 +737,7 @@ class AttendanceController extends Controller
         // if no users, still return empty table
         if ($users->isEmpty()) {
             $attendanceMap = [];
-            $designations = $user->role === 'admin' ? Designation::all() : collect();
+            $designations = ($isAdmin || $canManage) ? Designation::all() : collect();
 
             $html = view('admin.attendance.table', compact(
                 'users',
@@ -736,7 +812,7 @@ class AttendanceController extends Controller
             }
         }
 
-        $designations = $user->role === 'admin' ? Designation::all() : collect();
+        $designations = ($isAdmin || $canManage) ? Designation::all() : collect();
 
         // calculate period totals and pass them to the view used by AJAX
         $periodTotals = $this->calculatePeriodTotals($users, $attendanceMap, $startDate, $endDate);
@@ -1058,8 +1134,9 @@ class AttendanceController extends Controller
     {
         $user = Auth::user();
 
-        // Only admin can access reports
-        if ($user->role !== 'admin') {
+        // Only authorized admin / management roles can access reports
+        $userRole = strtolower((string) ($user->role ?? ''));
+        if (! in_array($userRole, ['admin', 'superadmin', 'hr', 'manager', 'developer'], true)) {
             return redirect()->route('attendance.index')
                 ->with('error', 'You do not have permission to access reports.');
         }
@@ -1068,7 +1145,12 @@ class AttendanceController extends Controller
         $year  = (int) ($request->year ?? now()->year);
         $daysInMonth = Carbon::create($year, $month)->daysInMonth;
 
-        $users = User::where('role', 'employee')->get();
+        if (in_array($userRole, ['manager', 'hr'], true) && method_exists($user, 'visibleEmployeeIds')) {
+            $visibleIds = $user->visibleEmployeeIds();
+            $users = User::where('role', 'employee')->whereIn('id', $visibleIds)->get();
+        } else {
+            $users = User::where('role', 'employee')->get();
+        }
 
         $input = $request->user_id;
 
@@ -1181,8 +1263,9 @@ class AttendanceController extends Controller
     {
         $user = Auth::user();
 
-        // Only admin can export
-        if ($user->role !== 'admin') {
+        // Only authorized admin / management roles can export
+        $userRole = strtolower((string) ($user->role ?? ''));
+        if (! in_array($userRole, ['admin', 'superadmin', 'hr', 'manager', 'developer'], true)) {
             abort(403, 'Unauthorized access');
         }
 
@@ -1203,8 +1286,9 @@ class AttendanceController extends Controller
     {
         $user = Auth::user();
 
-        // Only admin can export
-        if ($user->role !== 'admin') {
+        // Only authorized admin / management roles can export
+        $userRole = strtolower((string) ($user->role ?? ''));
+        if (! in_array($userRole, ['admin', 'superadmin', 'hr', 'manager', 'developer'], true)) {
             abort(403, 'Unauthorized access');
         }
 
@@ -1219,8 +1303,9 @@ class AttendanceController extends Controller
     {
         $user = Auth::user();
 
-        // Only admin can access by member view
-        if ($user->role !== 'admin') {
+        // Only authorized admin / management roles can access by member view
+        $userRole = strtolower((string) ($user->role ?? ''));
+        if (! in_array($userRole, ['admin', 'superadmin', 'hr', 'manager', 'developer'], true)) {
             return redirect()->route('attendance.index')
                 ->with('error', 'You do not have permission to access this page.');
         }
@@ -1317,8 +1402,9 @@ class AttendanceController extends Controller
     {
         $user = Auth::user();
 
-        // Only admin can access location view
-        if ($user->role !== 'admin') {
+        // Only authorized admin / management roles can access location view
+        $userRole = strtolower((string) ($user->role ?? ''));
+        if (! in_array($userRole, ['admin', 'superadmin', 'hr', 'manager', 'developer'], true)) {
             return redirect()->route('attendance.index')
                 ->with('error', 'You do not have permission to access this page.');
         }
@@ -1995,7 +2081,13 @@ class AttendanceController extends Controller
 
         try {
             $response = DB::transaction(function () use ($user, $request) {
-                $today = now()->toDateString();
+                $timezone = $this->resolveEmployeeTimezone(
+                    $request->input('clock_in_timezone') ?? $request->input('timezone'),
+                    $request->filled('clock_in_latitude') ? (float)$request->clock_in_latitude : null,
+                    $request->filled('clock_in_longitude') ? (float)$request->clock_in_longitude : null
+                );
+                $now = Carbon::now($timezone);
+                $today = $now->toDateString();
 
                 // find or create today's attendance row
                 $attendance = Attendance::firstOrCreate(
@@ -2010,7 +2102,7 @@ class AttendanceController extends Controller
 
                 // set clock_in if not already set
                 if (empty($attendance->clock_in)) {
-                    $attendance->clock_in = now()->format('H:i:s');
+                    $attendance->clock_in = $now->format('H:i:s');
                     $attendance->save();
                     $attendance = $this->applyOrganizationAttendanceRules($attendance);
                 } else {
@@ -2075,5 +2167,35 @@ class AttendanceController extends Controller
 
             return redirect()->back()->with('error', 'Failed to record clock-in: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Resolve employee's timezone with respect to location/browser, defaulting to India (Asia/Kolkata).
+     */
+    protected function resolveEmployeeTimezone(?string $clientTz = null, ?float $lat = null, ?float $lng = null): string
+    {
+        // 1. If valid IANA timezone string is provided (e.g. from employee's device/browser)
+        if (!empty($clientTz) && in_array($clientTz, \DateTimeZone::listIdentifiers(), true)) {
+            return $clientTz;
+        }
+
+        // 2. Fallback based on geolocation coordinates if available
+        if ($lat !== null && $lng !== null) {
+            // India bounding box (approx lat 6°N - 37.5°N, lng 68°E - 97.5°E)
+            if ($lat >= 6.0 && $lat <= 37.5 && $lng >= 68.0 && $lng <= 97.5) {
+                return 'Asia/Kolkata';
+            }
+            // UAE / Gulf (approx lat 22°N - 27°N, lng 51°E - 57°E)
+            if ($lat >= 22.0 && $lat <= 27.0 && $lng >= 51.0 && $lng <= 57.0) {
+                return 'Asia/Dubai';
+            }
+            // UK (approx lat 49°N - 61°N, lng -8°W - 2°E)
+            if ($lat >= 49.0 && $lat <= 61.0 && $lng >= -8.0 && $lng <= 2.0) {
+                return 'Europe/London';
+            }
+        }
+
+        // 3. Fallback to app configuration or default to India (Asia/Kolkata)
+        return config('app.timezone') ?: 'Asia/Kolkata';
     }
 }

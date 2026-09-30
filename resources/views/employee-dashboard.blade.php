@@ -95,25 +95,46 @@
 
 <style>
     :root {
-        --employee-primary: #5b5ce2;
-        --employee-success: #12a66a;
-        --employee-warning: #f59e0b;
-        --employee-danger: #e5484d;
-        --employee-info: #168aad;
-        --employee-ink: #172033;
-        --employee-muted: #667085;
-        --employee-border: rgba(23, 32, 51, 0.1);
-        --employee-surface: rgba(255, 255, 255, 0.92);
-        --employee-shadow: 0 18px 45px rgba(28, 37, 65, 0.12);
+        --employee-primary: #2F6BFF;
+        --employee-success: #10B981;
+        --employee-warning: #F59E0B;
+        --employee-danger: #EF4444;
+        --employee-info: #22D3EE;
+        --employee-ink: #10142C;
+        --employee-muted: #545D82;
+        --employee-border: rgba(16, 20, 44, 0.08);
+        --employee-surface: rgba(255, 255, 255, 0.94);
+        --employee-shadow: 0 12px 32px rgba(16, 24, 60, 0.06);
+    }
+
+    html[data-pms-theme="dark"],
+    html[data-theme="dark"] {
+        --employee-primary: #2F6BFF;
+        --employee-success: #10B981;
+        --employee-warning: #F59E0B;
+        --employee-danger: #EF4444;
+        --employee-info: #22D3EE;
+        --employee-ink: #EEF1FB;
+        --employee-muted: #9AA3C7;
+        --employee-border: rgba(238, 241, 251, 0.09);
+        --employee-surface: #0F1530;
+        --employee-shadow: 0 18px 45px rgba(0, 0, 0, 0.45);
     }
 
     .employee-dashboard {
         min-height: 100vh;
         padding: 28px;
         background:
-            linear-gradient(135deg, rgba(91, 92, 226, 0.12), rgba(18, 166, 106, 0.08) 38%, rgba(245, 158, 11, 0.08)),
-            #f6f8fb;
+            linear-gradient(135deg, rgba(47, 107, 255, 0.04), rgba(139, 92, 246, 0.03) 38%, rgba(34, 211, 238, 0.03)),
+            #f6f7fc;
         color: var(--employee-ink);
+    }
+
+    html[data-pms-theme="dark"] .employee-dashboard,
+    html[data-theme="dark"] .employee-dashboard {
+        background:
+            linear-gradient(135deg, rgba(47, 107, 255, 0.06), rgba(139, 92, 246, 0.04) 38%, rgba(34, 211, 238, 0.03)),
+            #070B1A;
     }
 
     .employee-dashboard a {
@@ -137,7 +158,7 @@
         padding: 28px;
         color: white !important;
         background:
-            linear-gradient(135deg, #0f3d91 0%, #0b66c3 48%, #0ea5e9 100%);
+            linear-gradient(135deg, #1E4FCC 0%, #2F6BFF 48%, #8B5CF6 100%);
     }
 
     .employee-hero::after {
@@ -145,7 +166,7 @@
         position: absolute;
         inset: auto 0 0 0;
         height: 6px;
-        background: linear-gradient(90deg, #bfdbfe, #60a5fa, #ffffff);
+        background: linear-gradient(90deg, #22D3EE, #2F6BFF, #8B5CF6);
     }
 
     .employee-eyebrow {
@@ -218,6 +239,7 @@
         color: #fff;
         font-weight: 900;
         line-height: 1;
+        font-variant-numeric: tabular-nums;
     }
 
     .employee-hero .employee-clock,
@@ -1016,6 +1038,91 @@
             flex-direction: column;
         }
     }
+
+    /* ===== EMPLOYEE DASHBOARD DARK MODE ===== */
+    html[data-pms-theme="dark"] .employee-dashboard {
+        background: #070B1A !important;
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .employee-card,
+    html[data-pms-theme="dark"] .employee-panel,
+    html[data-pms-theme="dark"] .employee-table-card {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+        box-shadow: 0 18px 45px rgba(0, 0, 0, 0.45) !important;
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .employee-card-title {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .employee-metric {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .employee-label {
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] .employee-profile-meta-item {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.1) !important;
+    }
+    html[data-pms-theme="dark"] .employee-profile-meta-item strong {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .employee-profile-meta-item span {
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] .employee-quick-action {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .employee-quick-action:hover {
+        background: #1A2247 !important;
+        border-color: #2F6BFF !important;
+        color: #60A5FA !important;
+    }
+    html[data-pms-theme="dark"] .employee-rule {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.1) !important;
+        color: #CBD5E1 !important;
+    }
+    html[data-pms-theme="dark"] .employee-status-chip {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.1) !important;
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .employee-table-head {
+        border-bottom-color: rgba(238, 241, 251, 0.1) !important;
+    }
+    html[data-pms-theme="dark"] .employee-table thead th {
+        background: #141B3D !important;
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] .employee-table td {
+        border-bottom-color: rgba(238, 241, 251, 0.06) !important;
+        color: #CBD5E1 !important;
+    }
+    html[data-pms-theme="dark"] .employee-calendar-row {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.1) !important;
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .employee-people-item {
+        border-bottom-color: rgba(238, 241, 251, 0.08) !important;
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .clock-camera-panel {
+        background: #0F1530 !important;
+        border: 1px solid rgba(238, 241, 251, 0.14) !important;
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .clock-camera-body {
+        background: #141B3D !important;
+    }
+    html[data-pms-theme="dark"] .clock-camera-header,
+    html[data-pms-theme="dark"] .clock-camera-footer {
+        border-color: rgba(238, 241, 251, 0.1) !important;
+    }
 </style>
 
 @if($showEmployeeWelcome ?? false)
@@ -1095,16 +1202,17 @@
                         </p>
                     </div>
                     <div class="col-lg-4">
-                        <div class="employee-clock">
+                        <div class="employee-clock" data-server-time="{{ now()->getTimestamp() * 1000 }}">
                             <div class="text-lg-end">
-                                <div class="employee-time">{{ now()->format('h:i A') }}</div>
-                                <div>{{ now()->format('l, d M Y') }}</div>
+                                <div class="employee-time" id="employeeLiveTime">{{ now()->format('h:i A') }}</div>
+                                <div id="employeeLiveDate">{{ now()->format('l, d M Y') }}</div>
                             </div>
 
                             @if ($attendance && $attendance->clock_in && !$attendance->clock_out)
-                                <form method="POST" action="{{ route('dashboard.clockout') }}">
+                                <form method="POST" action="{{ route('dashboard.clockout') }}" id="employeeClockOutForm">
                                     @csrf
-                                    <button class="employee-action-btn is-out" type="submit">
+                                    <input type="hidden" name="clock_out_timezone" id="clockOutTimezone">
+                                    <button class="employee-action-btn is-out" type="submit" id="employeeClockOutButton">
                                         <i class="bx bx-log-out-circle"></i> Clock Out
                                     </button>
                                 </form>
@@ -1116,6 +1224,7 @@
                                     <input type="hidden" name="clock_in_accuracy" id="clockInAccuracy">
                                     <input type="hidden" name="clock_in_address" id="clockInAddress">
                                     <input type="hidden" name="clock_in_selfie" id="clockInSelfie">
+                                    <input type="hidden" name="clock_in_timezone" id="clockInTimezone">
                                     <button class="employee-action-btn is-in" type="submit" id="employeeClockInButton">
                                         <i class="bx bx-log-in-circle"></i> Clock In
                                     </button>
@@ -1142,6 +1251,9 @@
                                                     : null
                                             );
                                         $clockedInOutsideOffice = strtolower((string) $attendance->work_from_type) === 'field';
+                                        $defaultTz = config('app.timezone', 'Asia/Kolkata');
+                                        $clockInIsoString = $attendance->clock_in ? \Carbon\Carbon::parse($attendance->date->format('Y-m-d') . ' ' . $attendance->clock_in, $defaultTz)->toIso8601String() : '';
+                                        $clockOutIsoString = $attendance->clock_out ? \Carbon\Carbon::parse($attendance->date->format('Y-m-d') . ' ' . $attendance->clock_out, $defaultTz)->toIso8601String() : '';
                                     @endphp
                                     @if($clockInLocationText)
                                         <div class="clock-location-note">
@@ -1157,15 +1269,15 @@
                                     @endif
                                     <div class="clock-live-grid">
                                         <div class="clock-live-box">
-                                            <span>IST Time</span>
+                                            <span id="employeeClockZoneLabel">IST Time</span>
                                             <strong id="employeeIstClock">{{ now()->format('h:i:s A') }}</strong>
                                         </div>
                                         <div class="clock-live-box">
                                             <span>{{ $attendance->clock_out ? 'Worked Time' : 'Working Time' }}</span>
                                             <strong
                                                 id="employeeWorkTimer"
-                                                data-clock-in="{{ \Carbon\Carbon::parse($attendance->date->format('Y-m-d') . ' ' . $attendance->clock_in)->toIso8601String() }}"
-                                                data-clock-out="{{ $attendance->clock_out ? \Carbon\Carbon::parse($attendance->date->format('Y-m-d') . ' ' . $attendance->clock_out)->toIso8601String() : '' }}"
+                                                data-clock-in="{{ $clockInIsoString }}"
+                                                data-clock-out="{{ $clockOutIsoString }}"
                                                 data-fixed-duration="{{ $attendance->clock_out ? $workedDurationLabel : '' }}"
                                             >{{ $attendance->clock_out ? $workedDurationLabel : '00:00:00' }}</strong>
                                         </div>
@@ -1307,7 +1419,7 @@
                     </div>
                 </div>
                 <div class="employee-quick-actions">
-                    <a href="{{ route('my-documents.index') }}" class="employee-quick-action"><span class="employee-icon success" style="background: rgba(16, 185, 129, 0.15); color: #059669;"><i class="bx bx-file"></i></span> My Documents</a>
+                    <a href="{{ route('my-documents.index') }}" class="employee-quick-action"><span class="employee-icon success" style="background: rgba(47, 107, 255, 0.15); color: #2F6BFF;"><i class="bx bx-file"></i></span> My Documents</a>
                     <a href="{{ route('tasks.index') }}" class="employee-quick-action"><span class="employee-icon primary"><i class="bx bx-list-check"></i></span> Tasks</a>
                     <a href="{{ route('projects.index') }}" class="employee-quick-action"><span class="employee-icon success"><i class="bx bx-folder-open"></i></span> Projects</a>
                     <a href="{{ route('tickets.index') }}" class="employee-quick-action"><span class="employee-icon warning"><i class="bx bx-message-square-detail"></i></span> Tickets</a>
@@ -1989,7 +2101,7 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
                     return;
                 }
 
-                const colors = ['#ffffff', '#bbf7d0', '#38bdf8', '#facc15', '#fb7185', '#a7f3d0'];
+                const colors = ['#ffffff', '#bbf7d0', '#38bdf8', '#facc15', '#fb7185', '#C7D2FE'];
                 for (let i = 0; i < 72; i++) {
                     const piece = document.createElement('i');
                     piece.style.left = `${Math.random() * 100}%`;
@@ -2119,6 +2231,7 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
         const accuracyInput = document.getElementById('clockInAccuracy');
         const addressInput = document.getElementById('clockInAddress');
         const selfieInput = document.getElementById('clockInSelfie');
+        const timezoneInput = document.getElementById('clockInTimezone');
         let cameraStream = null;
         let cameraFacingMode = 'user';
         let capturedSelfie = '';
@@ -2320,27 +2433,122 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
             }
 
             selfieInput.value = capturedSelfie;
+            if (timezoneInput) {
+                timezoneInput.value = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata';
+            }
             canSubmitClockIn = true;
             setClockStatus('Photo captured. Completing clock in...', 'success');
             closeCameraModal();
             clockInForm.submit();
         });
 
+        const clockOutForm = document.getElementById('employeeClockOutForm');
+        if (clockOutForm) {
+            clockOutForm.addEventListener('submit', () => {
+                const clockOutTz = document.getElementById('clockOutTimezone');
+                if (clockOutTz) {
+                    clockOutTz.value = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata';
+                }
+            });
+        }
+
         const istClock = document.getElementById('employeeIstClock');
         const workTimer = document.getElementById('employeeWorkTimer');
+        const liveTime = document.getElementById('employeeLiveTime');
+        const liveDate = document.getElementById('employeeLiveDate');
+        const clockZoneLabel = document.getElementById('employeeClockZoneLabel');
+        const employeeTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata';
+
+        if (clockZoneLabel) {
+            clockZoneLabel.textContent = employeeTimeZone === 'Asia/Kolkata' ? 'IST Time' : `${employeeTimeZone.split('/').pop().replace('_', ' ')} Time`;
+        }
 
         const updateClockWidgets = () => {
             const now = new Date();
 
-            if (istClock) {
-                istClock.textContent = new Intl.DateTimeFormat('en-IN', {
-                    timeZone: 'Asia/Kolkata',
+            if (liveTime) {
+                liveTime.textContent = new Intl.DateTimeFormat('en-IN', {
+                    timeZone: employeeTimeZone,
                     hour: '2-digit',
                     minute: '2-digit',
-                    second: '2-digit',
                     hour12: true
                 }).format(now);
             }
+
+            if (liveDate) {
+                liveDate.textContent = new Intl.DateTimeFormat('en-IN', {
+                    timeZone: employeeTimeZone,
+                    weekday: 'long',
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric'
+                }).format(now);
+            }
+
+            if (istClock) {
+                istClock.textContent = new Intl.DateTimeFormat('en-IN', {
+                    timeZone: employeeTimeZone,
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: includeSeconds ? '2-digit' : undefined,
+                    hour12: true
+                }).format(date);
+            } catch (e) {
+                let h = date.getHours();
+                const m = String(date.getMinutes()).padStart(2, '0');
+                const s = String(date.getSeconds()).padStart(2, '0');
+                const ampm = h >= 12 ? 'PM' : 'AM';
+                h = h % 12 || 12;
+                const hStr = String(h).padStart(2, '0');
+                return includeSeconds ? `${hStr}:${m}:${s} ${ampm}` : `${hStr}:${m} ${ampm}`;
+            }
+        };
+
+        const formatIstDate = (date) => {
+            try {
+                const parts = new Intl.DateTimeFormat('en-US', {
+                    timeZone: 'Asia/Kolkata',
+                    weekday: 'long',
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric'
+                }).formatToParts(date);
+
+                let weekday = '', day = '', month = '', year = '';
+                for (const p of parts) {
+                    if (p.type === 'weekday') weekday = p.value;
+                    else if (p.type === 'day') day = p.value;
+                    else if (p.type === 'month') month = p.value;
+                    else if (p.type === 'year') year = p.value;
+                }
+                return `${weekday}, ${day} ${month} ${year}`;
+            } catch (e) {
+                return date.toLocaleDateString();
+            }
+        };
+
+        const updateClockWidgets = () => {
+            const now = new Date(Date.now() + serverOffset);
+
+            if (heroTime) {
+                heroTime.textContent = formatIstTime(now, true);
+            }
+
+            if (heroDate) {
+                heroDate.textContent = formatIstDate(now);
+            }
+
+            if (istClock) {
+                istClock.textContent = formatIstTime(now, true);
+            }
+
+            document.querySelectorAll('[data-live-clock="time"]').forEach(el => {
+                if (el !== heroTime) el.textContent = formatIstTime(now, true);
+            });
+
+            document.querySelectorAll('[data-live-clock="date"]').forEach(el => {
+                if (el !== heroDate) el.textContent = formatIstDate(now);
+            });
 
             if (workTimer && workTimer.dataset.clockIn) {
                 if (workTimer.dataset.fixedDuration) {
@@ -2365,7 +2573,7 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
         setInterval(updateClockWidgets, 1000);
 
         const scheduleMidnightRefresh = () => {
-            const now = new Date();
+            const now = new Date(Date.now() + serverOffset);
             const midnight = new Date(now);
             midnight.setHours(24, 0, 3, 0);
             setTimeout(() => window.location.reload(), Math.max(1000, midnight - now));
@@ -2374,19 +2582,19 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
         scheduleMidnightRefresh();
 
         const loadedDateKey = new Intl.DateTimeFormat('en-CA', {
-            timeZone: 'Asia/Kolkata',
+            timeZone: employeeTimeZone,
             year: 'numeric',
             month: '2-digit',
             day: '2-digit'
-        }).format(new Date());
+        }).format(new Date(Date.now() + serverOffset));
 
         setInterval(() => {
             const currentDateKey = new Intl.DateTimeFormat('en-CA', {
-                timeZone: 'Asia/Kolkata',
+                timeZone: employeeTimeZone,
                 year: 'numeric',
                 month: '2-digit',
                 day: '2-digit'
-            }).format(new Date());
+            }).format(new Date(Date.now() + serverOffset));
 
             if (currentDateKey !== loadedDateKey) {
                 window.location.reload();
@@ -2587,3 +2795,4 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
     });
 </script>
 @endpush
+

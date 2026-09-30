@@ -39,8 +39,9 @@ class CompanySettingsController extends Controller
 
         $countryMap = \App\Support\CountryPhone::map();
 
-        // Parse existing phone into country code and number
+        // Parse existing phone into country code and number (default India +91)
         $selectedCountryCode = '+91';
+        $selectedCountry = 'India';
         $phoneDigits = $company->company_phone ?? '';
 
         if (!empty($phoneDigits)) {
@@ -56,6 +57,10 @@ class CompanySettingsController extends Controller
                 if (str_starts_with($phoneDigits, $dCode)) {
                     $selectedCountryCode = $dCode;
                     $phoneDigits = trim(substr($phoneDigits, strlen($dCode)));
+                    $matchedMeta = \App\Support\CountryPhone::findByDialCode($dCode);
+                    if ($matchedMeta) {
+                        $selectedCountry = $matchedMeta['name'];
+                    }
                     $matched = true;
                     break;
                 }
@@ -64,17 +69,37 @@ class CompanySettingsController extends Controller
             if (!$matched && preg_match('/^(\+\d{1,4})\s*(.*)$/', $phoneDigits, $matches)) {
                 $selectedCountryCode = $matches[1];
                 $phoneDigits = trim($matches[2]);
+                $matchedMeta = \App\Support\CountryPhone::findByDialCode($matches[1]);
+                if ($matchedMeta) {
+                    $selectedCountry = $matchedMeta['name'];
+                }
             }
         }
 
-        return view('admin.settings.company', compact('company', 'countryMap', 'selectedCountryCode', 'phoneDigits'));
+        return view('admin.settings.company', compact('company', 'countryMap', 'selectedCountryCode', 'selectedCountry', 'phoneDigits'));
     }
 
     // Store or update company settings
     public function store(Request $request)
     {
-        if (auth()->user()?->role !== 'admin') {
+        $userRole = auth()->user()?->role;
+        if (!in_array($userRole, ['admin', 'superadmin', 'super_admin'])) {
             abort(403, 'Unauthorized. Only administrators can update company settings.');
+        }
+
+        // Normalize country code and name
+        if ($request->filled('company_country_code') || $request->filled('company_country_name')) {
+            $countryIdentifier = $request->input('company_country_name') ?: $request->input('company_country_code');
+            $cRules = \App\Support\CountryPhone::getDigitRules($countryIdentifier);
+            $request->merge([
+                'company_country_code' => $cRules['dial_code'],
+                'company_country_name' => $cRules['name'],
+            ]);
+        } else {
+            $request->merge([
+                'company_country_code' => '+91',
+                'company_country_name' => 'India',
+            ]);
         }
 
         // Normalize website if provided without scheme
@@ -104,10 +129,11 @@ class CompanySettingsController extends Controller
                     'company_phone_number' => $m[2],
                 ]);
             } else {
+                $cleanPhone = preg_replace('/[^\d\s\-()]/', '', $phone);
                 $request->merge([
                     'company_country_code' => '+91',
-                    'company_phone_number' => $phone,
-                    'company_phone' => '+91 ' . $phone,
+                    'company_phone_number' => $cleanPhone,
+                    'company_phone' => '+91 ' . $cleanPhone,
                 ]);
             }
         }
@@ -151,14 +177,21 @@ class CompanySettingsController extends Controller
         ]);
 
         // Country-specific phone digit validation
-        $countryRules = \App\Support\CountryPhone::getDigitRules($validated['company_country_code']);
-        $minDigits = $countryRules['min_digits'] ?? 6;
-        $maxDigits = $countryRules['max_digits'] ?? 15;
-        $countryName = $countryRules['name'] ?? 'Selected Country';
+        $countryLookup = $request->input('company_country_name') ?: $validated['company_country_code'];
+        $countryRules = \App\Support\CountryPhone::getDigitRules($countryLookup);
+        $minDigits = $countryRules['min_digits'] ?? 10;
+        $maxDigits = $countryRules['max_digits'] ?? 10;
+        $countryName = $countryRules['name'] ?? 'India';
         $dialCode = $countryRules['dial_code'] ?? $validated['company_country_code'];
 
         $digitsOnly = preg_replace('/\D/', '', (string) $validated['company_phone_number']);
         $digitCount = strlen($digitsOnly);
+
+        if ($digitCount === 0 || $digitsOnly === str_repeat('0', $digitCount)) {
+            return back()->withInput()->withErrors([
+                'company_phone_number' => "Please enter a valid phone number for {$countryName} ({$dialCode}).",
+            ]);
+        }
 
         if ($digitCount < $minDigits || $digitCount > $maxDigits) {
             $expectedText = ($minDigits === $maxDigits)
@@ -169,6 +202,9 @@ class CompanySettingsController extends Controller
                 'company_phone_number' => "Phone number for {$countryName} ({$dialCode}) {$expectedText}. You entered {$digitCount} digits.",
             ]);
         }
+
+        // Store cleanly formatted phone
+        $validated['company_phone'] = $dialCode . ' ' . $digitsOnly;
 
         $company = CompanySetting::first() ?? new CompanySetting();
 
@@ -256,7 +292,8 @@ class CompanySettingsController extends Controller
 
     public function destroy()
     {
-        if (auth()->user()?->role !== 'admin') {
+        $userRole = auth()->user()?->role;
+        if (!in_array($userRole, ['admin', 'superadmin', 'super_admin'])) {
             abort(403, 'Unauthorized. Only administrators can reset company settings.');
         }
 
@@ -265,29 +302,50 @@ class CompanySettingsController extends Controller
             File::delete(public_path($company->company_logo));
         }
 
-        CompanySetting::query()->delete(); // reset all tenant settings
-
-        // Also reset central Company logo if set
+        // Also delete central Company logo if set
         $currentCompany = app(CompanyContext::class)->current();
-        if ($currentCompany) {
-            if ($currentCompany->logo && File::exists(public_path($currentCompany->logo))) {
-                File::delete(public_path($currentCompany->logo));
-            }
-            $currentCompany->update(['logo' => null]);
+        if ($currentCompany && $currentCompany->logo && File::exists(public_path($currentCompany->logo))) {
+            File::delete(public_path($currentCompany->logo));
         }
 
+        // Reset central Company details so they don't re-populate stale data on reload
+        if ($currentCompany) {
+            $currentCompany->update([
+                'logo'    => null,
+                'phone'   => null,
+                'website' => null,
+                'address' => null,
+            ]);
+        }
+
+        // Reset tenant CompanySetting with clean defaults
+        if (!$company) {
+            $company = new CompanySetting();
+        }
+        $company->company_name = 'Your Company Name';
+        $company->company_email = auth()->user()?->email ?? 'admin@company.com';
+        $company->company_phone = null;
+        $company->company_website = null;
+        $company->company_location = null;
+        $company->company_logo = null;
+        $company->save();
+
         // Broadcast notification to Admin, HR, Manager, and Employees
-        \App\Services\SystemNotificationService::notifyAllRoles(
-            'Company Profile Reset',
-            'Company profile settings have been reset by ' . (auth()->user()?->name ?? 'Admin') . '.',
-            route('settings.company'),
-            [
-                'type' => 'setting_update',
-                'setting_module' => 'company-profile',
-                'icon' => 'fa-rotate-left',
-                'color' => 'warning',
-            ]
-        );
+        try {
+            \App\Services\SystemNotificationService::notifyAllRoles(
+                'Company Profile Reset',
+                'Company profile settings have been reset by ' . (auth()->user()?->name ?? 'Admin') . '.',
+                route('settings.company'),
+                [
+                    'type' => 'setting_update',
+                    'setting_module' => 'company-profile',
+                    'icon' => 'fa-rotate-left',
+                    'color' => 'warning',
+                ]
+            );
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('System notification failed on reset: ' . $e->getMessage());
+        }
 
         // Dispatch automatic notification to Super Admin Alert & Notification Center
         try {
@@ -315,6 +373,6 @@ class CompanySettingsController extends Controller
 
         return redirect()
             ->route('settings.company')
-            ->with('success', 'Company settings reset successfully. Please add again.');
+            ->with('success', 'Company settings have been reset to default values successfully.');
     }
 }

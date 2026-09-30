@@ -18,8 +18,21 @@ class SetTenantConnection
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Bypass tenant DB switching for SuperAdmin routes and authenticated SuperAdmin users
-        if ($request->is('super-admin*') || \Illuminate\Support\Facades\Auth::guard('super_admin')->check()) {
+        // Bypass tenant DB switching for SuperAdmin & Developer routes and authenticated SuperAdmin / Developer users
+        if (
+            $request->is('super-admin*') ||
+            $request->is('superadmin*') ||
+            $request->is('developer*') ||
+            \Illuminate\Support\Facades\Auth::guard('super_admin')->check() ||
+            (auth()->check() && (
+                in_array(strtolower((string)(auth()->user()->role ?? '')), ['superadmin', 'super-admin', 'super_admin'], true) ||
+                (method_exists(auth()->user(), 'isDeveloper') && auth()->user()->isDeveloper()) ||
+                in_array(strtolower((string)(auth()->user()->role ?? '')), ['developer', 'dev'], true) ||
+                str_contains(strtolower((string)(auth()->user()->role ?? '')), 'developer') ||
+                str_contains(strtolower((string)(auth()->user()->designation ?? '')), 'developer') ||
+                str_contains(strtolower((string)(auth()->user()->designation ?? '')), 'engineer')
+            ))
+        ) {
             return $next($request);
         }
 
@@ -55,7 +68,8 @@ class SetTenantConnection
         }
 
         $currentTenantDb = config('database.connections.tenant.database');
-        if ($tenantDb && $tenantDb !== $currentTenantDb) {
+        $currentMysqlDb  = config('database.connections.mysql.database');
+        if ($tenantDb && ($tenantDb !== $currentTenantDb || $tenantDb !== $currentMysqlDb)) {
             try {
                 config([
                     'database.connections.tenant.database' => $tenantDb,
@@ -65,6 +79,7 @@ class SetTenantConnection
                 DB::purge('mysql');
                 // Test PDO connection
                 DB::connection('tenant')->getPdo();
+                DB::connection('mysql')->getPdo();
             } catch (\Throwable $e) {
                 // If tenant DB cannot be connected to, fall back safely to default database
                 config([

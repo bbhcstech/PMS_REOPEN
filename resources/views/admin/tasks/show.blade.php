@@ -5,7 +5,7 @@
 @section('content')
 <style>
     :root {
-        --tsk-primary: #0f744c;
+        --tsk-primary: #2F6BFF;
         --tsk-primary-hover: #0c5d3d;
         --tsk-primary-light: #10b981;
         --tsk-primary-soft: #eaf6f0;
@@ -16,8 +16,24 @@
         --tsk-border: rgba(226, 232, 240, 0.85);
         --tsk-card-bg: #ffffff;
         --tsk-shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.03);
-        --tsk-shadow: 0 12px 30px -8px rgba(15, 116, 76, 0.08), 0 4px 12px rgba(0, 0, 0, 0.03);
-        --tsk-shadow-hover: 0 20px 40px -10px rgba(15, 116, 76, 0.14);
+        --tsk-shadow: 0 12px 30px -8px rgba(47, 107, 255, 0.08), 0 4px 12px rgba(0, 0, 0, 0.03);
+        --tsk-shadow-hover: 0 20px 40px -10px rgba(47, 107, 255, 0.14);
+    }
+
+    html[data-pms-theme="dark"] {
+        --tsk-primary: #2F6BFF;
+        --tsk-primary-hover: #1E4FCC;
+        --tsk-primary-light: #60A5FA;
+        --tsk-primary-soft: rgba(47, 107, 255, 0.15);
+        --tsk-slate-dark: #EEF1FB;
+        --tsk-slate-body: #CBD5E1;
+        --tsk-slate-muted: #9AA3C7;
+        --tsk-slate-light: #141B3D;
+        --tsk-border: rgba(238, 241, 251, 0.12);
+        --tsk-card-bg: #0F1530;
+        --tsk-shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.35);
+        --tsk-shadow: 0 12px 30px -8px rgba(0, 0, 0, 0.45);
+        --tsk-shadow-hover: 0 20px 40px -10px rgba(0, 0, 0, 0.6);
     }
 
     .task-page-shell {
@@ -61,7 +77,7 @@
         right: 0;
         width: 160px;
         height: 160px;
-        background: radial-gradient(circle, rgba(16, 185, 129, 0.08) 0%, rgba(255, 255, 255, 0) 70%);
+        background: radial-gradient(circle, rgba(47, 107, 255, 0.08) 0%, rgba(255, 255, 255, 0) 70%);
         pointer-events: none;
     }
 
@@ -84,7 +100,7 @@
         font-weight: 800;
         font-size: 0.82rem;
         border-radius: 999px;
-        border: 1px solid rgba(15, 116, 76, 0.2);
+        border: 1px solid rgba(47, 107, 255, 0.2);
     }
 
     /* Quick Metrics Strip */
@@ -255,10 +271,10 @@
         border-color: #cbd5e1;
     }
     .task-nav-pills .nav-link.active {
-        background: linear-gradient(135deg, #0f744c 0%, #10b981 100%) !important;
+        background: linear-gradient(135deg, #2F6BFF 0%, #10b981 100%) !important;
         color: #ffffff !important;
-        border-color: #0f744c;
-        box-shadow: 0 6px 16px rgba(15, 116, 76, 0.25);
+        border-color: #2F6BFF;
+        box-shadow: 0 6px 16px rgba(47, 107, 255, 0.25);
     }
     .task-nav-pills .nav-link.active * {
         color: #ffffff !important;
@@ -266,14 +282,14 @@
 
     /* Action Buttons */
     .btn-tsk-primary {
-        background: linear-gradient(135deg, #0f744c 0%, #10b981 100%);
+        background: linear-gradient(135deg, #2F6BFF 0%, #10b981 100%);
         color: #ffffff !important;
         font-weight: 800;
         font-size: 0.88rem;
         padding: 0.55rem 1.25rem;
         border-radius: 999px;
         border: none;
-        box-shadow: 0 4px 14px rgba(15, 116, 76, 0.25);
+        box-shadow: 0 4px 14px rgba(47, 107, 255, 0.25);
         transition: all 0.2s ease;
         display: inline-flex;
         align-items: center;
@@ -282,7 +298,7 @@
     }
     .btn-tsk-primary:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(15, 116, 76, 0.35);
+        box-shadow: 0 8px 20px rgba(47, 107, 255, 0.35);
         color: #ffffff !important;
     }
     .btn-tsk-primary * {
@@ -290,13 +306,13 @@
     }
 
     .btn-tsk-outline {
-        background: rgba(15, 116, 76, 0.08);
+        background: rgba(47, 107, 255, 0.08);
         color: var(--tsk-primary) !important;
         font-weight: 800;
         font-size: 0.88rem;
         padding: 0.5rem 1.15rem;
         border-radius: 999px;
-        border: 1px solid rgba(15, 116, 76, 0.25);
+        border: 1px solid rgba(47, 107, 255, 0.25);
         transition: all 0.2s ease;
         display: inline-flex;
         align-items: center;
@@ -326,7 +342,7 @@
         color: #000000 !important;
     }
     .status-pill.completed {
-        background: #d1fae5 !important;
+        background: #E0E7FF !important;
         color: #000000 !important;
         border: 1px solid #86efac !important;
     }
@@ -373,9 +389,9 @@
         border: 1px solid rgba(245, 158, 11, 0.25);
     }
     .priority-pill.low {
-        background: rgba(16, 185, 129, 0.12);
-        color: #059669;
-        border: 1px solid rgba(16, 185, 129, 0.25);
+        background: rgba(47, 107, 255, 0.12);
+        color: #2F6BFF;
+        border: 1px solid rgba(47, 107, 255, 0.25);
     }
 
     /* Progress bar custom */
@@ -387,7 +403,7 @@
     }
     .task-progress-fill {
         height: 100%;
-        background: linear-gradient(90deg, #10b981, #059669);
+        background: linear-gradient(90deg, #10b981, #2F6BFF);
         border-radius: 999px;
         transition: width 0.4s ease;
     }
@@ -397,9 +413,199 @@
         padding: 0.85rem 0;
         border-bottom: 1px solid #f1f5f9;
     }
-    .update-timeline-item:last-child {
-        border-bottom: none;
-        padding-bottom: 0;
+    /* ===== TASK SHOW DARK MODE ENGINE ===== */
+    html[data-pms-theme="dark"] .task-page-shell {
+        color: #CBD5E1;
+    }
+    html[data-pms-theme="dark"] .task-breadcrumb .breadcrumb-item a {
+        color: #9AA3C7;
+    }
+    html[data-pms-theme="dark"] .task-breadcrumb .breadcrumb-item.active {
+        color: #60A5FA;
+    }
+    html[data-pms-theme="dark"] .task-hero-card {
+        background: linear-gradient(135deg, #0F1530 0%, #141B3D 100%) !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
+        box-shadow: 0 12px 30px -8px rgba(0, 0, 0, 0.45) !important;
+    }
+    html[data-pms-theme="dark"] .task-hero-card::after {
+        background: radial-gradient(circle, rgba(47, 107, 255, 0.15) 0%, rgba(15, 21, 48, 0) 70%) !important;
+    }
+    html[data-pms-theme="dark"] .task-hero-title {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .task-code-badge {
+        background: rgba(47, 107, 255, 0.2) !important;
+        color: #60A5FA !important;
+        border-color: rgba(47, 107, 255, 0.4) !important;
+    }
+    html[data-pms-theme="dark"] .task-metric-box {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.1) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35) !important;
+    }
+    html[data-pms-theme="dark"] .task-metric-box .metric-label {
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] .task-metric-box .metric-val {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .task-card {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.1) !important;
+        box-shadow: 0 12px 30px -8px rgba(0, 0, 0, 0.45) !important;
+    }
+    html[data-pms-theme="dark"] .task-card-header {
+        background: #141B3D !important;
+        border-bottom-color: rgba(238, 241, 251, 0.1) !important;
+    }
+    html[data-pms-theme="dark"] .task-card-header h5 {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .detail-item {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.1) !important;
+    }
+    html[data-pms-theme="dark"] .detail-label {
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] .detail-value {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .user-pill {
+        background: #141B3D !important;
+        color: #EEF1FB !important;
+        border: 1px solid rgba(238, 241, 251, 0.12) !important;
+    }
+    html[data-pms-theme="dark"] .task-nav-pills {
+        border-bottom-color: rgba(238, 241, 251, 0.12) !important;
+    }
+    html[data-pms-theme="dark"] .task-nav-pills .nav-link {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.14) !important;
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] .task-nav-pills .nav-link:hover {
+        background: #1A2247 !important;
+        color: #EEF1FB !important;
+        border-color: #2F6BFF !important;
+    }
+    html[data-pms-theme="dark"] .task-nav-pills .nav-link.active {
+        background: #2F6BFF !important;
+        color: #FFFFFF !important;
+        border-color: #2F6BFF !important;
+        box-shadow: 0 4px 14px rgba(47, 107, 255, 0.35) !important;
+    }
+    html[data-pms-theme="dark"] .btn-tsk-outline {
+        background: #141B3D !important;
+        color: #60A5FA !important;
+        border-color: rgba(47, 107, 255, 0.35) !important;
+    }
+    html[data-pms-theme="dark"] .btn-tsk-outline:hover {
+        background: #2F6BFF !important;
+        color: #FFFFFF !important;
+        border-color: #2F6BFF !important;
+    }
+    html[data-pms-theme="dark"] .status-pill {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .status-pill.completed {
+        background: rgba(47, 107, 255, 0.22) !important;
+        color: #93C5FD !important;
+        border: 1px solid rgba(47, 107, 255, 0.45) !important;
+    }
+    html[data-pms-theme="dark"] .status-pill.doing,
+    html[data-pms-theme="dark"] .status-pill.in-progress {
+        background: rgba(6, 182, 212, 0.22) !important;
+        color: #67E8F9 !important;
+        border: 1px solid rgba(6, 182, 212, 0.45) !important;
+    }
+    html[data-pms-theme="dark"] .status-pill.to-do {
+        background: rgba(99, 102, 241, 0.22) !important;
+        color: #A5B4FC !important;
+        border: 1px solid rgba(99, 102, 241, 0.45) !important;
+    }
+    html[data-pms-theme="dark"] .status-pill.waiting-for-approval {
+        background: rgba(245, 158, 11, 0.22) !important;
+        color: #FCD34D !important;
+        border: 1px solid rgba(245, 158, 11, 0.45) !important;
+    }
+    html[data-pms-theme="dark"] .status-pill.incomplete {
+        background: rgba(239, 68, 68, 0.22) !important;
+        color: #FCA5A5 !important;
+        border: 1px solid rgba(239, 68, 68, 0.45) !important;
+    }
+    html[data-pms-theme="dark"] .task-progress-bar {
+        background: #1A2247 !important;
+    }
+    html[data-pms-theme="dark"] .update-timeline-item {
+        border-bottom-color: rgba(238, 241, 251, 0.08) !important;
+    }
+    html[data-pms-theme="dark"] .update-timeline-item strong {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .update-timeline-item small {
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] .bg-light {
+        background: #141B3D !important;
+        color: #EEF1FB !important;
+        border-color: rgba(238, 241, 251, 0.1) !important;
+    }
+    html[data-pms-theme="dark"] .bg-white {
+        background: #0F1530 !important;
+        color: #EEF1FB !important;
+        border-color: rgba(238, 241, 251, 0.1) !important;
+    }
+    html[data-pms-theme="dark"] .text-dark {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .text-muted {
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] .text-secondary {
+        color: #CBD5E1 !important;
+    }
+    html[data-pms-theme="dark"] .btn-light {
+        background: #141B3D !important;
+        color: #EEF1FB !important;
+        border-color: rgba(238, 241, 251, 0.14) !important;
+    }
+    html[data-pms-theme="dark"] .dropdown-menu {
+        background: #0F1530 !important;
+        border: 1px solid rgba(238, 241, 251, 0.14) !important;
+        box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6) !important;
+    }
+    html[data-pms-theme="dark"] .dropdown-item {
+        color: #CBD5E1 !important;
+    }
+    html[data-pms-theme="dark"] .dropdown-item:hover {
+        background: #141B3D !important;
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .modal-content {
+        background: #0F1530 !important;
+        border: 1px solid rgba(238, 241, 251, 0.12) !important;
+        color: #CBD5E1 !important;
+    }
+    html[data-pms-theme="dark"] .modal-header,
+    html[data-pms-theme="dark"] .modal-footer {
+        border-color: rgba(238, 241, 251, 0.1) !important;
+    }
+    html[data-pms-theme="dark"] .modal-title {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .table thead.table-light th {
+        background: #141B3D !important;
+        color: #9AA3C7 !important;
+        border-bottom-color: rgba(238, 241, 251, 0.1) !important;
+    }
+    html[data-pms-theme="dark"] .table td {
+        border-bottom-color: rgba(238, 241, 251, 0.06) !important;
+        color: #CBD5E1 !important;
+    }
+    html[data-pms-theme="dark"] .table-hover tbody tr:hover td {
+        background: rgba(47, 107, 255, 0.08) !important;
     }
 </style>
 
@@ -418,7 +624,7 @@
 
     {{-- Flash Alerts --}}
     @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show rounded-4 border-0 shadow-sm mb-4" role="alert" style="background: rgba(16, 185, 129, 0.12); color: #047857; border: 1px solid rgba(16, 185, 129, 0.3);">
+        <div class="alert alert-success alert-dismissible fade show rounded-4 border-0 shadow-sm mb-4" role="alert" style="background: rgba(47, 107, 255, 0.12); color: #2F6BFF; border: 1px solid rgba(47, 107, 255, 0.3);">
             <div class="d-flex align-items-center">
                 <i class="bx bx-check-circle fs-4 me-2"></i>
                 <strong>{{ session('success') }}</strong>
@@ -463,7 +669,7 @@
                         <i class="bx bx-check-circle fs-5"></i> Mark as Complete
                     </a>
                 @else
-                    <span class="btn-tsk-outline text-success" style="background: rgba(16, 185, 129, 0.12); border-color: rgba(16, 185, 129, 0.3);">
+                    <span class="btn-tsk-outline text-success" style="background: rgba(47, 107, 255, 0.12); border-color: rgba(47, 107, 255, 0.3);">
                         <i class="bx bx-check-double fs-5"></i> Completed
                     </span>
                 @endif
@@ -536,7 +742,7 @@
     {{-- Quick Metric Cards Strip --}}
     <div class="task-metrics-grid">
         <div class="task-metric-box">
-            <div class="metric-icon-box" style="background: rgba(15, 116, 76, 0.1); color: var(--tsk-primary);">
+            <div class="metric-icon-box" style="background: rgba(47, 107, 255, 0.1); color: var(--tsk-primary);">
                 <i class="bx bx-folder"></i>
             </div>
             <div>
@@ -572,7 +778,7 @@
         </div>
 
         <div class="task-metric-box">
-            <div class="metric-icon-box" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+            <div class="metric-icon-box" style="background: rgba(47, 107, 255, 0.1); color: #10b981;">
                 <i class="bx bx-time-five"></i>
             </div>
             <div>

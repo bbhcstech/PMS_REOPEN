@@ -138,7 +138,7 @@
     <div class="container">
       <div class="module-grid">
         <div class="module-copy" data-reveal>
-          <div class="module-icon" style="background:linear-gradient(135deg, #34D399, #6EE7B7)">
+          <div class="module-icon" style="background:linear-gradient(135deg, #60A5FA, #93C5FD)">
             <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 010 18M12 3a15 15 0 000 18"/></svg>
           </div>
           <span class="eyebrow">Operations</span>

@@ -337,6 +337,17 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
 
     public function index()
     {
+        $user = auth()->user();
+        if ($user && (
+            (method_exists($user, 'isDeveloper') && $user->isDeveloper()) ||
+            in_array(strtolower((string) ($user->role ?? '')), ['developer', 'dev'], true) ||
+            str_contains(strtolower((string) ($user->role ?? '')), 'developer') ||
+            str_contains(strtolower((string) ($user->designation ?? '')), 'developer') ||
+            str_contains(strtolower((string) ($user->designation ?? '')), 'engineer')
+        )) {
+            return redirect()->route('developer.dashboard');
+        }
+
         $userId = Auth::id();
         $userRole = strtolower((string) (auth()->user()?->role ?? ''));
 
@@ -439,20 +450,17 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
             ));
         }
 
-        // ✅ Client  ogic
-
-        if (auth()->user()->role == 'client') {
-
+        // ✅ Client logic
+        if ($userRole === 'client') {
             return view('client-dashboard');
         }
 
-        if (in_array(strtolower((string) auth()->user()->role), ['hr', 'manager'], true)) {
+        if (in_array($userRole, ['hr', 'manager'], true)) {
             return $this->hrindex(request());
         }
 
-
         // ✅ Employee logic
-        if (auth()->user()->role == 'employee') {
+        if ($userRole === 'employee') {
             $user = Auth::user()->loadMissing(['employeeDetail.designation', 'employeeDetail.department']);
             $today = now()->toDateString();
 
@@ -758,6 +766,36 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
 
 
 
+    /**
+     * Resolve employee's timezone with respect to location/browser, defaulting to India (Asia/Kolkata).
+     */
+    protected function resolveEmployeeTimezone(?string $clientTz = null, ?float $lat = null, ?float $lng = null): string
+    {
+        // 1. If valid IANA timezone string is provided (e.g. from employee's device/browser)
+        if (!empty($clientTz) && in_array($clientTz, \DateTimeZone::listIdentifiers(), true)) {
+            return $clientTz;
+        }
+
+        // 2. Fallback based on geolocation coordinates if available
+        if ($lat !== null && $lng !== null) {
+            // India bounding box (approx lat 6°N - 37.5°N, lng 68°E - 97.5°E)
+            if ($lat >= 6.0 && $lat <= 37.5 && $lng >= 68.0 && $lng <= 97.5) {
+                return 'Asia/Kolkata';
+            }
+            // UAE / Gulf (approx lat 22°N - 27°N, lng 51°E - 57°E)
+            if ($lat >= 22.0 && $lat <= 27.0 && $lng >= 51.0 && $lng <= 57.0) {
+                return 'Asia/Dubai';
+            }
+            // UK (approx lat 49°N - 61°N, lng -8°W - 2°E)
+            if ($lat >= 49.0 && $lat <= 61.0 && $lng >= -8.0 && $lng <= 2.0) {
+                return 'Europe/London';
+            }
+        }
+
+        // 3. Fallback to app configuration or default to India (Asia/Kolkata)
+        return config('app.timezone') ?: 'Asia/Kolkata';
+    }
+
    public function clockIn(Request $request)
 {
     $validated = $request->validate([
@@ -766,13 +804,20 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
         'clock_in_accuracy' => ['nullable', 'numeric', 'min:0'],
         'clock_in_address' => ['nullable', 'string', 'max:255'],
         'clock_in_selfie' => ['required', 'string'],
+        'clock_in_timezone' => ['nullable', 'string', 'max:50'],
     ], [
         'clock_in_latitude.required' => 'Please share your current location before clocking in.',
         'clock_in_longitude.required' => 'Please share your current location before clocking in.',
         'clock_in_selfie.required' => 'Please capture your photo before clocking in.',
     ]);
 
-    $now = now(); // automatically in IST if app timezone is set
+    $timezone = $this->resolveEmployeeTimezone(
+        $request->input('clock_in_timezone'),
+        (float) $validated['clock_in_latitude'],
+        (float) $validated['clock_in_longitude']
+    );
+
+    $now = Carbon::now($timezone);
     $today = $now->toDateString();
     $userId = auth()->id();
 
@@ -847,15 +892,25 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
 }
 
 
-   public function clockOut()
+   public function clockOut(Request $request)
 {
-    $now = now();
+    $timezone = $this->resolveEmployeeTimezone($request->input('clock_out_timezone') ?? $request->input('timezone'));
+    $now = Carbon::now($timezone);
     $today = $now->toDateString();
     $userId = auth()->id();
 
     $attendance = Attendance::where('user_id', $userId)
         ->where('date', $today)
         ->first();
+
+    // If not found for today's local date (e.g. crossing midnight), look for latest open clock-in
+    if (!$attendance) {
+        $attendance = Attendance::where('user_id', $userId)
+            ->whereNotNull('clock_in')
+            ->whereNull('clock_out')
+            ->latest('date')
+            ->first();
+    }
 
     if (!$attendance) {
         return back()->with('error', 'You need to clock in first.');
@@ -1057,8 +1112,7 @@ public function hrindex(Request $request)
 
 
 
-        $departmentWise = DB::table('employee_details')
-            ->leftJoin('departments', 'employee_details.department_id', '=', 'departments.id')
+        $departmentWise = EmployeeDetail::leftJoin('departments', 'employee_details.department_id', '=', 'departments.id')
             ->select('departments.dpt_name as department_name', DB::raw('COUNT(*) as total'))
             ->groupBy('departments.dpt_name')
             ->get();
@@ -1089,7 +1143,7 @@ public function hrindex(Request $request)
             ->take(5)
             ->get();
 
-        $activities = DB::table('project_activity')
+        $activities = DB::connection('tenant')->table('project_activity')
             ->join('projects', 'projects.id', '=', 'project_activity.project_id')
             ->select(
                 'project_activity.activity',
@@ -1106,6 +1160,16 @@ public function hrindex(Request $request)
         $unresolvedTicket = Ticket::where('status', '!=', 'closed')->count();
         $projects = Project::whereNull('deleted_at')->orderBy('name')->get();
         $tasks = Task::all();
+
+        $todayStr = now()->toDateString();
+        $attendance = Attendance::where('user_id', Auth::id())
+            ->where('date', $todayStr)
+            ->first();
+        $attendancePolicy = $this->attendancePolicy();
+        $officeLatitude = self::OFFICE_LATITUDE;
+        $officeLongitude = self::OFFICE_LONGITUDE;
+        $officeRadiusMeters = self::OFFICE_RADIUS_METERS;
+        $officeAddress = self::OFFICE_ADDRESS;
 
         return view('dashboard-hr', compact(
             'totalEmployees',
@@ -1139,7 +1203,13 @@ public function hrindex(Request $request)
             'totalClient',
             'unresolvedTicket',
             'projects',
-            'tasks'
+            'tasks',
+            'attendance',
+            'attendancePolicy',
+            'officeLatitude',
+            'officeLongitude',
+            'officeRadiusMeters',
+            'officeAddress'
         ));
     }
 

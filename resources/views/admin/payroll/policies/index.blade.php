@@ -126,59 +126,59 @@
             
             <!-- Structured Category Navigation Sidebar -->
             <div class="col-lg-3 col-12">
-                <div class="card border-0 shadow-sm sticky-top" style="top: 80px; z-index: 5; border-radius: 12px;">
+                <div class="card border-0 shadow-sm mb-4" style="border-radius: 12px; overflow: hidden;">
                     <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
                         <h6 class="mb-0 fw-bold text-dark"><i class="bx bx-category text-primary me-2"></i>Categories</h6>
                         <span class="badge bg-light text-primary border">12 Rulesets</span>
                     </div>
                     <div class="list-group list-group-flush p-2" id="policyTabs" role="tablist">
-                        <a class="list-group-item list-group-item-action active rounded-3 mb-1 py-2.5 fw-semibold d-flex align-items-center justify-content-between" id="tab-salary-tab" data-bs-toggle="list" href="#tab-salary" role="tab">
-                            <span><i class="bx bx-money me-2 text-primary"></i>1. Salary & Earnings</span>
-                            <i class="bx bx-chevron-right text-muted fs-6"></i>
+                        <a class="list-group-item list-group-item-action active rounded-3 mb-1 py-2.5 fw-semibold d-flex align-items-center justify-content-between" id="tab-salary-tab" data-bs-toggle="list" href="#tab-salary" role="tab" style="min-width:0;">
+                            <span class="text-truncate me-2"><i class="bx bx-money me-2 text-primary"></i>1. Salary & Earnings</span>
+                            <i class="bx bx-chevron-right text-muted fs-6 flex-shrink-0"></i>
                         </a>
-                        <a class="list-group-item list-group-item-action rounded-3 mb-1 py-2.5 fw-semibold d-flex align-items-center justify-content-between" id="tab-working-tab" data-bs-toggle="list" href="#tab-working" role="tab">
-                            <span><i class="bx bx-calendar me-2 text-info"></i>2. Working Days</span>
-                            <i class="bx bx-chevron-right text-muted fs-6"></i>
+                        <a class="list-group-item list-group-item-action rounded-3 mb-1 py-2.5 fw-semibold d-flex align-items-center justify-content-between" id="tab-working-tab" data-bs-toggle="list" href="#tab-working" role="tab" style="min-width:0;">
+                            <span class="text-truncate me-2"><i class="bx bx-calendar me-2 text-info"></i>2. Working Days</span>
+                            <i class="bx bx-chevron-right text-muted fs-6 flex-shrink-0"></i>
                         </a>
-                        <a class="list-group-item list-group-item-action rounded-3 mb-1 py-2.5 fw-semibold d-flex align-items-center justify-content-between" id="tab-leave-tab" data-bs-toggle="list" href="#tab-leave" role="tab">
-                            <span><i class="bx bx-time-five me-2 text-warning"></i>3. Leave & Absence</span>
-                            <i class="bx bx-chevron-right text-muted fs-6"></i>
+                        <a class="list-group-item list-group-item-action rounded-3 mb-1 py-2.5 fw-semibold d-flex align-items-center justify-content-between" id="tab-leave-tab" data-bs-toggle="list" href="#tab-leave" role="tab" style="min-width:0;">
+                            <span class="text-truncate me-2"><i class="bx bx-time-five me-2 text-warning"></i>3. Leave & Absence</span>
+                            <i class="bx bx-chevron-right text-muted fs-6 flex-shrink-0"></i>
                         </a>
-                        <a class="list-group-item list-group-item-action rounded-3 mb-1 py-2.5 fw-semibold d-flex align-items-center justify-content-between" id="tab-overtime-tab" data-bs-toggle="list" href="#tab-overtime" role="tab">
-                            <span><i class="bx bx-timer me-2 text-danger"></i>4. Overtime Policy</span>
-                            <i class="bx bx-chevron-right text-muted fs-6"></i>
+                        <a class="list-group-item list-group-item-action rounded-3 mb-1 py-2.5 fw-semibold d-flex align-items-center justify-content-between" id="tab-overtime-tab" data-bs-toggle="list" href="#tab-overtime" role="tab" style="min-width:0;">
+                            <span class="text-truncate me-2"><i class="bx bx-timer me-2 text-danger"></i>4. Overtime Policy</span>
+                            <i class="bx bx-chevron-right text-muted fs-6 flex-shrink-0"></i>
                         </a>
-                        <a class="list-group-item list-group-item-action rounded-3 mb-1 py-2.5 fw-semibold d-flex align-items-center justify-content-between" id="tab-deductions-tab" data-bs-toggle="list" href="#tab-deductions" role="tab">
-                            <span><i class="bx bx-minus-circle me-2 text-secondary"></i>5. Deductions Rules</span>
-                            <i class="bx bx-chevron-right text-muted fs-6"></i>
+                        <a class="list-group-item list-group-item-action rounded-3 mb-1 py-2.5 fw-semibold d-flex align-items-center justify-content-between" id="tab-deductions-tab" data-bs-toggle="list" href="#tab-deductions" role="tab" style="min-width:0;">
+                            <span class="text-truncate me-2"><i class="bx bx-minus-circle me-2 text-secondary"></i>5. Deductions Rules</span>
+                            <i class="bx bx-chevron-right text-muted fs-6 flex-shrink-0"></i>
                         </a>
-                        <a class="list-group-item list-group-item-action rounded-3 mb-1 py-2.5 fw-semibold d-flex align-items-center justify-content-between" id="tab-tax-tab" data-bs-toggle="list" href="#tab-tax" role="tab">
-                            <span><i class="bx bx-receipt me-2 text-purple"></i>6. Tax Slabs</span>
-                            <i class="bx bx-chevron-right text-muted fs-6"></i>
+                        <a class="list-group-item list-group-item-action rounded-3 mb-1 py-2.5 fw-semibold d-flex align-items-center justify-content-between" id="tab-tax-tab" data-bs-toggle="list" href="#tab-tax" role="tab" style="min-width:0;">
+                            <span class="text-truncate me-2"><i class="bx bx-receipt me-2 text-purple"></i>6. Tax Slabs</span>
+                            <i class="bx bx-chevron-right text-muted fs-6 flex-shrink-0"></i>
                         </a>
-                        <a class="list-group-item list-group-item-action rounded-3 mb-1 py-2.5 fw-semibold d-flex align-items-center justify-content-between" id="tab-bonus-tab" data-bs-toggle="list" href="#tab-bonus" role="tab">
-                            <span><i class="bx bx-gift me-2 text-success"></i>7. Bonus & Incentives</span>
-                            <i class="bx bx-chevron-right text-muted fs-6"></i>
+                        <a class="list-group-item list-group-item-action rounded-3 mb-1 py-2.5 fw-semibold d-flex align-items-center justify-content-between" id="tab-bonus-tab" data-bs-toggle="list" href="#tab-bonus" role="tab" style="min-width:0;">
+                            <span class="text-truncate me-2"><i class="bx bx-gift me-2 text-success"></i>7. Bonus & Incentives</span>
+                            <i class="bx bx-chevron-right text-muted fs-6 flex-shrink-0"></i>
                         </a>
-                        <a class="list-group-item list-group-item-action rounded-3 mb-1 py-2.5 fw-semibold d-flex align-items-center justify-content-between" id="tab-attendance-tab" data-bs-toggle="list" href="#tab-attendance" role="tab">
-                            <span><i class="bx bx-check-double me-2 text-info"></i>8. Attendance Policy</span>
-                            <i class="bx bx-chevron-right text-muted fs-6"></i>
+                        <a class="list-group-item list-group-item-action rounded-3 mb-1 py-2.5 fw-semibold d-flex align-items-center justify-content-between" id="tab-attendance-tab" data-bs-toggle="list" href="#tab-attendance" role="tab" style="min-width:0;">
+                            <span class="text-truncate me-2"><i class="bx bx-check-double me-2 text-info"></i>8. Attendance Policy</span>
+                            <i class="bx bx-chevron-right text-muted fs-6 flex-shrink-0"></i>
                         </a>
-                        <a class="list-group-item list-group-item-action rounded-3 mb-1 py-2.5 fw-semibold d-flex align-items-center justify-content-between" id="tab-processing-tab" data-bs-toggle="list" href="#tab-processing" role="tab">
-                            <span><i class="bx bx-cog me-2 text-primary"></i>9. Processing Rules</span>
-                            <i class="bx bx-chevron-right text-muted fs-6"></i>
+                        <a class="list-group-item list-group-item-action rounded-3 mb-1 py-2.5 fw-semibold d-flex align-items-center justify-content-between" id="tab-processing-tab" data-bs-toggle="list" href="#tab-processing" role="tab" style="min-width:0;">
+                            <span class="text-truncate me-2"><i class="bx bx-cog me-2 text-primary"></i>9. Processing Rules</span>
+                            <i class="bx bx-chevron-right text-muted fs-6 flex-shrink-0"></i>
                         </a>
-                        <a class="list-group-item list-group-item-action rounded-3 mb-1 py-2.5 fw-semibold d-flex align-items-center justify-content-between" id="tab-rounding-tab" data-bs-toggle="list" href="#tab-rounding" role="tab">
-                            <span><i class="bx bx-math me-2 text-dark"></i>10. Rounding & Precision</span>
-                            <i class="bx bx-chevron-right text-muted fs-6"></i>
+                        <a class="list-group-item list-group-item-action rounded-3 mb-1 py-2.5 fw-semibold d-flex align-items-center justify-content-between" id="tab-rounding-tab" data-bs-toggle="list" href="#tab-rounding" role="tab" style="min-width:0;">
+                            <span class="text-truncate me-2"><i class="bx bx-math me-2 text-dark"></i>10. Rounding & Precision</span>
+                            <i class="bx bx-chevron-right text-muted fs-6 flex-shrink-0"></i>
                         </a>
-                        <a class="list-group-item list-group-item-action rounded-3 mb-1 py-2.5 fw-semibold d-flex align-items-center justify-content-between" id="tab-payslip-tab" data-bs-toggle="list" href="#tab-payslip" role="tab">
-                            <span><i class="bx bx-detail me-2 text-success"></i>11. Payslip Display</span>
-                            <i class="bx bx-chevron-right text-muted fs-6"></i>
+                        <a class="list-group-item list-group-item-action rounded-3 mb-1 py-2.5 fw-semibold d-flex align-items-center justify-content-between" id="tab-payslip-tab" data-bs-toggle="list" href="#tab-payslip" role="tab" style="min-width:0;">
+                            <span class="text-truncate me-2"><i class="bx bx-detail me-2 text-success"></i>11. Payslip Display</span>
+                            <i class="bx bx-chevron-right text-muted fs-6 flex-shrink-0"></i>
                         </a>
-                        <a class="list-group-item list-group-item-action rounded-3 py-2.5 fw-semibold d-flex align-items-center justify-content-between" id="tab-compliance-tab" data-bs-toggle="list" href="#tab-compliance" role="tab">
-                            <span><i class="bx bx-shield-check me-2 text-primary"></i>12. Compliance</span>
-                            <i class="bx bx-chevron-right text-muted fs-6"></i>
+                        <a class="list-group-item list-group-item-action rounded-3 py-2.5 fw-semibold d-flex align-items-center justify-content-between" id="tab-compliance-tab" data-bs-toggle="list" href="#tab-compliance" role="tab" style="min-width:0;">
+                            <span class="text-truncate me-2"><i class="bx bx-shield-check me-2 text-primary"></i>12. Compliance</span>
+                            <i class="bx bx-chevron-right text-muted fs-6 flex-shrink-0"></i>
                         </a>
                     </div>
                 </div>

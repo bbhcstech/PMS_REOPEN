@@ -55,7 +55,7 @@
                                 <td class="fw-bold">#{{ $key + 1 }}</td>
                                 <td><div class="fw-bold text-dark">{{ $exp->item_name }}</div></td>
                                 <td>{{ $exp->project->name ?? 'General Expense' }}</td>
-                                <td>{{ $exp->user->name ?? 'Admin' }}</td>
+                                <td>{{ $exp->employee->name ?? $exp->user->name ?? 'Admin' }}</td>
                                 <td><span class="badge bg-danger-subtle text-danger fw-bold fs-6 px-3 py-1">${{ number_format($exp->price, 2) }}</span></td>
                                 <td><span class="badge bg-success rounded-pill px-3 py-1">{{ ucfirst($exp->status ?? 'Approved') }}</span></td>
                                 <td>{{ $exp->purchase_date ? \Carbon\Carbon::parse($exp->purchase_date)->format('d M Y') : \Carbon\Carbon::parse($exp->created_at)->format('d M Y') }}</td>
@@ -72,7 +72,7 @@
 @push('css')
 <style>
     .dt-buttons .btn { border-radius: 50rem !important; padding: 0.35rem 0.9rem !important; font-size: 0.82rem !important; font-weight: 600 !important; margin-right: 0.35rem !important; background: #ffffff !important; border: 1px solid #e5e7eb !important; color: #374151 !important; }
-    .dt-buttons .btn:hover { background: #e4f3eb !important; color: #0f744c !important; }
+    .dt-buttons .btn:hover { background: #EEF2FF !important; color: #2F6BFF !important; }
     .dataTables_filter input { border-radius: 50rem !important; padding: 0.35rem 1rem !important; border: 1px solid #d1d5db !important; }
 </style>
 @endpush

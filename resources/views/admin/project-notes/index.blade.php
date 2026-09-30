@@ -61,17 +61,19 @@
 <script>
    
     $(document).ready(function () {
-    $('#noteTable').DataTable({
-        dom: 'rftip',
-        responsive: true,
-        pageLength: 10,
-        lengthMenu: [10, 25, 50, 100],
-        language: {
+        if (window.jQuery && jQuery.fn && jQuery.fn.dataTable) {
+            jQuery.fn.dataTable.ext.errMode = 'none';
+        }
+        $('#noteTable').DataTable({
+            dom: '<"d-flex flex-wrap align-items-center justify-content-end gap-3 mb-3"f><"table-responsive"t><"d-flex flex-wrap align-items-center justify-content-between gap-3 mt-3"ip>',
+            pageLength: 10,
+            lengthMenu: [10, 25, 50, 100],
+            language: {
                 search: "_INPUT_",
                 searchPlaceholder: "Search notes..."
-        }
+            }
+        });
     });
-  });
 </script>
 
 <script>
