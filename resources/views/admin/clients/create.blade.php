@@ -182,18 +182,21 @@
                                     <i class="fa fa-random"></i>
                                 </button>
                             </div>
-                            <small class="form-text text-muted">Must have at least 9 characters</small>
-                            <div class="invalid-feedback">Password must be at least 6 characters.</div>
+                            <small class="form-text text-muted d-block" id="password_help_text">Must be at least 8 characters (1 uppercase, 1 lowercase, 1 number & 1 special char)</small>
+                            <div class="invalid-feedback" id="password_feedback">Password must be at least 8 characters with 1 uppercase, 1 lowercase, 1 number, and 1 special character.</div>
                         </div>
 
                         <!-- Country -->
                         <div class="col-md-5 mb-2">
                             <label class="form-label fw-semibold text-secondary">Country <sup class="text-danger">*</sup></label>
                             <select name="country" id="country" class="form-select form-control-custom select2" required>
-                                <option value="">Select members</option>
+                                <option value="">Select country</option>
                                 @foreach($countries as $country)
                                     <option value="{{ $country->name }}" 
                                             data-flag="{{ $country->flag_url }}"
+                                            data-dial-code="{{ $country->phone_code ?? '+91' }}"
+                                            data-min-digits="{{ $country->min_digits ?? 10 }}"
+                                            data-max-digits="{{ $country->max_digits ?? 10 }}"
                                             {{ old('country', 'India') == $country->name ? 'selected' : '' }}>
                                         {{ $country->name }}
                                     </option>
@@ -205,9 +208,9 @@
                         <!-- Mobile -->
                         <div class="col-md-4">
                             <label class="form-label fw-semibold text-secondary">Mobile <sup class="text-danger">*</sup></label>
-                            <input name="mobile" id="client_mobile" type="text" class="form-control form-control-custom" placeholder="e.g. 1234567890" value="{{ old('mobile', '+91') }}" required>
-                            <small class="text-muted">Format: +91XXXXXXXXXX</small>
-                            <div class="invalid-feedback">Please enter a 10-digit mobile number starting with +91.</div>
+                            <input name="mobile" id="client_mobile" type="text" class="form-control form-control-custom" placeholder="e.g. +919876543210" value="{{ old('mobile', '+91') }}" required>
+                            <div class="invalid-feedback" id="mobile_feedback">Please enter a valid 10-digit mobile number starting with +91.</div>
+                            <small class="text-muted d-block" id="mobile_format_hint">Format: +91XXXXXXXXXX (10 digits)</small>
                         </div>
 
                         <!-- Profile Picture -->
@@ -344,34 +347,57 @@
                         </div>
 
                         <!-- Tax Name -->
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <label class="form-label fw-semibold text-secondary">Tax Name</label>
                             <input name="tax_name" id="tax_name" type="text" class="form-control form-control-custom" placeholder="e.g. GST/VAT" value="{{ old('tax_name') }}">
                         </div>
 
                         <!-- GST/VAT Number -->
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <label class="form-label fw-semibold text-secondary">GST/VAT Number</label>
                             <input name="tax_number" id="tax_number" type="text" class="form-control form-control-custom" placeholder="e.g. 18AABCU960XXXXX" value="{{ old('tax_number') }}">
                         </div>
 
+                        <!-- Company Country -->
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold text-secondary">Country</label>
+                            <select name="company_country" id="company_country" class="form-select form-control-custom select2">
+                                <option value="">Select country</option>
+                                @foreach($countries as $c)
+                                    <option value="{{ $c->name }}" 
+                                            data-flag="{{ $c->flag_url }}"
+                                            data-dial-code="{{ $c->phone_code ?? '+91' }}"
+                                            data-min-digits="{{ $c->min_digits ?? 10 }}"
+                                            data-max-digits="{{ $c->max_digits ?? 10 }}"
+                                            {{ old('company_country', old('country', 'India')) == $c->name ? 'selected' : '' }}>
+                                        {{ $c->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
                         <!-- Office Phone -->
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <label class="form-label fw-semibold text-secondary">Office Phone</label>
-                            <input name="office_phone" id="office_phone" type="text" class="form-control form-control-custom" placeholder="+91XXXXXXXXXX" value="{{ old('office_phone') }}">
-                            <small class="text-muted">Format: +91XXXXXXXXXX</small>
+                            <input name="office_phone" id="office_phone" type="text" class="form-control form-control-custom" placeholder="e.g. +919876543210" value="{{ old('office_phone') }}">
+                            <div class="invalid-feedback" id="office_phone_feedback"></div>
+                            <small class="text-muted d-block" id="office_phone_format_hint">Format: +91XXXXXXXXXX (10 digits)</small>
+                        </div>
+
+                        <!-- State -->
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold text-secondary">State / Province</label>
+                            <select name="state" id="state" class="form-select form-control-custom select2">
+                                <option value="">Select state/province</option>
+                            </select>
                         </div>
 
                         <!-- City -->
                         <div class="col-md-4">
                             <label class="form-label fw-semibold text-secondary">City</label>
-                            <input name="city" id="city" type="text" class="form-control form-control-custom" placeholder="e.g. New York" value="{{ old('city') }}">
-                        </div>
-
-                        <!-- State -->
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold text-secondary">State</label>
-                            <input name="state" id="state" type="text" class="form-control form-control-custom" placeholder="e.g. California" value="{{ old('state') }}">
+                            <select name="city" id="city" class="form-select form-control-custom select2">
+                                <option value="">Select city</option>
+                            </select>
                         </div>
 
                         <!-- Postal Code -->
@@ -559,35 +585,6 @@
                             </select>
                         </div>
 
-                        <!-- Currency -->
-                        <div class="col-md-3">
-                            <label class="form-label fw-semibold text-secondary">Currency</label>
-                            <select name="project_currency_id" id="project_currency_id" class="form-select form-control-custom">
-                                @foreach($currencies as $curr)
-                                    <option value="{{ $curr->id }}" {{ (old('project_currency_id') == $curr->id || $curr->currency_code == 'INR') ? 'selected' : '' }}>
-                                        {{ $curr->currency_symbol ?? '' }} {{ $curr->currency_code }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <!-- Budget -->
-                        <div class="col-md-3">
-                            <label class="form-label fw-semibold text-secondary">Project Budget</label>
-                            <input type="number" step="0.01" name="project_budget" id="project_budget" class="form-control form-control-custom" placeholder="e.g. 50000" value="{{ old('project_budget') }}">
-                        </div>
-
-                        <!-- Hours Allocated -->
-                        <div class="col-md-3">
-                            <label class="form-label fw-semibold text-secondary">Hours Allocated</label>
-                            <input type="number" name="project_hours" id="project_hours" class="form-control form-control-custom" placeholder="e.g. 120" value="{{ old('project_hours') }}">
-                        </div>
-
-                        <!-- Progress Percentage -->
-                        <div class="col-md-3">
-                            <label class="form-label fw-semibold text-secondary">Initial Progress (%)</label>
-                            <input type="number" name="completion_percent" id="completion_percent" class="form-control form-control-custom" min="0" max="100" placeholder="0" value="{{ old('completion_percent', 0) }}">
-                        </div>
 
                         <!-- Project Description -->
                         <div class="col-md-6">
@@ -656,10 +653,21 @@
                                     <input type="text" class="form-control form-control-custom" id="deal_name" name="deal_name" placeholder="e.g. Annual Software License & Retainer" value="{{ old('deal_name') }}">
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label fw-semibold text-secondary">Deal Value (₹)</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-white">₹</span>
-                                        <input type="number" step="0.01" class="form-control form-control-custom" id="deal_value" name="deal_value" placeholder="0.00" value="{{ old('deal_value') }}">
+                                    <label class="form-label fw-semibold text-secondary" id="deal_value_label">Deal Value (<span id="deal_currency_symbol_label">{{ ($currencies ?? collect())->where('currency_code', old('deal_currency', 'INR'))->first()?->currency_symbol ?? '₹' }}</span>)</label>
+                                    <div class="input-group deal-value-input-group">
+                                        <select name="deal_currency" id="deal_currency" class="form-select form-control-custom flex-grow-0" style="width: auto; min-width: 120px; max-width: 145px; border-top-right-radius: 0 !important; border-bottom-right-radius: 0 !important; font-weight: 600;" aria-label="Deal Currency">
+                                            @foreach($currencies ?? [] as $curr)
+                                                @php
+                                                    $displaySym = ($curr->currency_symbol && $curr->currency_symbol !== $curr->currency_code) ? $curr->currency_symbol . ' ' : '';
+                                                @endphp
+                                                <option value="{{ $curr->currency_code }}" 
+                                                        data-symbol="{{ $curr->currency_symbol }}"
+                                                        {{ (old('deal_currency', 'INR') == $curr->currency_code) ? 'selected' : '' }}>
+                                                    {{ $displaySym }}{{ $curr->currency_code }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        <input type="number" step="0.01" min="0" class="form-control form-control-custom" id="deal_value" name="deal_value" placeholder="0.00" value="{{ old('deal_value') }}" style="border-top-left-radius: 0 !important; border-bottom-left-radius: 0 !important;">
                                     </div>
                                 </div>
                                 <div class="row g-2">
@@ -936,10 +944,14 @@
     align-items: center;
     justify-content: center;
     font-weight: 700;
-    color: #64748b;
+    color: #475569 !important;
     font-size: 1rem;
     transition: all 0.3s ease;
     box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+.step-circle .step-number {
+    color: #475569 !important;
+    font-weight: 700;
 }
 .step-item .step-check {
     display: none;
@@ -960,23 +972,65 @@
     color: #94a3b8;
 }
 
-/* Active Step */
-.step-item.active .step-circle {
-    background: #0f766e;
-    border-color: #0f766e;
-    color: #ffffff;
-    box-shadow: 0 0 0 5px rgba(15, 118, 110, 0.2);
+/* Dark Mode Stepper Overrides */
+html[data-pms-theme="dark"] .step-circle,
+html[data-theme="dark"] .step-circle,
+html[data-bs-theme="dark"] .step-circle,
+[data-pms-theme="dark"] .step-circle,
+[data-theme="dark"] .step-circle,
+[data-bs-theme="dark"] .step-circle,
+.dark-mode .step-circle {
+    background: #141B3D !important;
+    border-color: #334155 !important;
+    color: #E2E8F0 !important;
 }
-.step-item.active .step-title {
-    color: #0f766e;
+
+html[data-pms-theme="dark"] .step-circle .step-number,
+html[data-theme="dark"] .step-circle .step-number,
+html[data-bs-theme="dark"] .step-circle .step-number,
+[data-pms-theme="dark"] .step-circle .step-number,
+[data-theme="dark"] .step-circle .step-number,
+[data-bs-theme="dark"] .step-circle .step-number,
+.dark-mode .step-circle .step-number {
+    color: #E2E8F0 !important;
+}
+
+html[data-pms-theme="dark"] .step-title,
+html[data-theme="dark"] .step-title,
+html[data-bs-theme="dark"] .step-title,
+[data-pms-theme="dark"] .step-title,
+[data-theme="dark"] .step-title,
+[data-bs-theme="dark"] .step-title,
+.dark-mode .step-title {
+    color: #CBD5E1 !important;
+}
+
+/* Active Step */
+.step-item.active .step-circle,
+html[data-pms-theme="dark"] .step-item.active .step-circle,
+[data-pms-theme="dark"] .step-item.active .step-circle {
+    background: #0f766e !important;
+    border-color: #0f766e !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 0 5px rgba(15, 118, 110, 0.25) !important;
+}
+.step-item.active .step-circle .step-number,
+html[data-pms-theme="dark"] .step-item.active .step-circle .step-number {
+    color: #ffffff !important;
+}
+.step-item.active .step-title,
+html[data-pms-theme="dark"] .step-item.active .step-title {
+    color: #0f766e !important;
     font-weight: 700;
 }
 
 /* Completed Step */
-.step-item.completed .step-circle {
-    background: #10b981;
-    border-color: #10b981;
-    color: #ffffff;
+.step-item.completed .step-circle,
+html[data-pms-theme="dark"] .step-item.completed .step-circle,
+[data-pms-theme="dark"] .step-item.completed .step-circle {
+    background: #10b981 !important;
+    border-color: #10b981 !important;
+    color: #ffffff !important;
 }
 .step-item.completed .step-number {
     display: none;
@@ -984,8 +1038,9 @@
 .step-item.completed .step-check {
     display: inline-block;
 }
-.step-item.completed .step-title {
-    color: #10b981;
+.step-item.completed .step-title,
+html[data-pms-theme="dark"] .step-item.completed .step-title {
+    color: #10b981 !important;
 }
 
 /* Radio button style */
@@ -1010,6 +1065,160 @@
         font-size: 0.85rem;
     }
 }
+
+/* Select2 Dark Mode & Visibility Fixes */
+.select2-container .select2-selection--single,
+.select2-container--classic .select2-selection--single,
+.select2-container--bootstrap-5 .select2-selection--single,
+.select2-container--default .select2-selection--single {
+    background-color: var(--bx-surface, #ffffff) !important;
+    background-image: none !important;
+    border: 1px solid var(--bx-border-strong, #e2e8f0) !important;
+    border-radius: 8px !important;
+    height: 42px !important;
+    display: flex !important;
+    align-items: center !important;
+    color: var(--bx-ink, #1e293b) !important;
+}
+
+.select2-container .select2-selection__rendered,
+.select2-container--classic .select2-selection--single .select2-selection__rendered,
+.select2-container--bootstrap-5 .select2-selection__rendered,
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    color: var(--bx-ink, #1e293b) !important;
+    line-height: 40px !important;
+    padding-left: 0.75rem !important;
+    padding-right: 2rem !important;
+}
+
+.select2-container .select2-selection__arrow,
+.select2-container--classic .select2-selection--single .select2-selection__arrow,
+.select2-container--bootstrap-5 .select2-selection__arrow,
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    background: transparent !important;
+    background-image: none !important;
+    border: none !important;
+    height: 40px !important;
+    top: 0 !important;
+    right: 8px !important;
+}
+
+.select2-container--classic .select2-selection--single .select2-selection__arrow b,
+.select2-container--default .select2-selection--single .select2-selection__arrow b {
+    border-color: var(--bx-ink-muted, #64748b) transparent transparent transparent !important;
+}
+
+html[data-pms-theme="dark"] .select2-container .select2-selection--single,
+html[data-theme="dark"] .select2-container .select2-selection--single,
+html[data-bs-theme="dark"] .select2-container .select2-selection--single,
+[data-pms-theme="dark"] .select2-container .select2-selection--single,
+[data-theme="dark"] .select2-container .select2-selection--single,
+[data-bs-theme="dark"] .select2-container .select2-selection--single,
+.dark-mode .select2-container .select2-selection--single {
+    background-color: var(--bx-surface, #0F1530) !important;
+    border-color: var(--bx-border-strong, rgba(238, 241, 251, 0.15)) !important;
+    color: #EEF1FB !important;
+}
+
+html[data-pms-theme="dark"] .select2-container .select2-selection__rendered,
+html[data-theme="dark"] .select2-container .select2-selection__rendered,
+html[data-bs-theme="dark"] .select2-container .select2-selection__rendered,
+[data-pms-theme="dark"] .select2-container .select2-selection__rendered,
+[data-theme="dark"] .select2-container .select2-selection__rendered,
+[data-bs-theme="dark"] .select2-container .select2-selection__rendered,
+.dark-mode .select2-container .select2-selection__rendered {
+    color: #EEF1FB !important;
+}
+
+html[data-pms-theme="dark"] .select2-dropdown,
+html[data-theme="dark"] .select2-dropdown,
+html[data-bs-theme="dark"] .select2-dropdown,
+[data-pms-theme="dark"] .select2-dropdown,
+[data-theme="dark"] .select2-dropdown,
+[data-bs-theme="dark"] .select2-dropdown,
+.dark-mode .select2-dropdown {
+    background-color: #0F1530 !important;
+    border-color: rgba(238, 241, 251, 0.15) !important;
+    color: #EEF1FB !important;
+}
+
+html[data-pms-theme="dark"] .select2-results__option,
+html[data-theme="dark"] .select2-results__option,
+html[data-bs-theme="dark"] .select2-results__option,
+[data-pms-theme="dark"] .select2-results__option,
+[data-theme="dark"] .select2-results__option,
+[data-bs-theme="dark"] .select2-results__option,
+.dark-mode .select2-results__option {
+    background-color: #0F1530 !important;
+    color: #EEF1FB !important;
+}
+
+html[data-pms-theme="dark"] .select2-results__option--highlighted,
+html[data-theme="dark"] .select2-results__option--highlighted,
+html[data-bs-theme="dark"] .select2-results__option--highlighted,
+[data-pms-theme="dark"] .select2-results__option--highlighted,
+[data-theme="dark"] .select2-results__option--highlighted,
+[data-bs-theme="dark"] .select2-results__option--highlighted,
+.dark-mode .select2-results__option--highlighted {
+    background-color: #2F6BFF !important;
+    color: #FFFFFF !important;
+}
+
+html[data-pms-theme="dark"] .select2-search--dropdown .select2-search__field,
+html[data-theme="dark"] .select2-search--dropdown .select2-search__field,
+html[data-bs-theme="dark"] .select2-search--dropdown .select2-search__field,
+[data-pms-theme="dark"] .select2-search--dropdown .select2-search__field,
+[data-theme="dark"] .select2-search--dropdown .select2-search__field,
+[data-bs-theme="dark"] .select2-search--dropdown .select2-search__field,
+.dark-mode .select2-search--dropdown .select2-search__field {
+    background-color: #141B3D !important;
+    border-color: rgba(238, 241, 251, 0.15) !important;
+    color: #EEF1FB !important;
+}
+
+/* Deal Currency Selector in Input Group */
+.deal-value-input-group {
+    display: flex;
+    flex-wrap: nowrap;
+}
+.deal-value-input-group #deal_currency {
+    cursor: pointer;
+    background-color: var(--bx-surface, #ffffff);
+    color: var(--bx-ink, #1e293b);
+    border-color: #e2e8f0;
+}
+.deal-value-input-group #deal_currency:focus {
+    z-index: 3;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+.deal-value-input-group #deal_value:focus {
+    z-index: 3;
+}
+
+/* Dark Mode Overrides for Deal Currency */
+html[data-pms-theme="dark"] .deal-value-input-group #deal_currency,
+html[data-theme="dark"] .deal-value-input-group #deal_currency,
+html[data-bs-theme="dark"] .deal-value-input-group #deal_currency,
+[data-pms-theme="dark"] .deal-value-input-group #deal_currency,
+[data-theme="dark"] .deal-value-input-group #deal_currency,
+[data-bs-theme="dark"] .deal-value-input-group #deal_currency,
+.dark-mode .deal-value-input-group #deal_currency {
+    background-color: #141B3D !important;
+    border-color: rgba(238, 241, 251, 0.15) !important;
+    color: #EEF1FB !important;
+}
+
+html[data-pms-theme="dark"] .deal-value-input-group #deal_currency option,
+html[data-theme="dark"] .deal-value-input-group #deal_currency option,
+html[data-bs-theme="dark"] .deal-value-input-group #deal_currency option,
+[data-pms-theme="dark"] .deal-value-input-group #deal_currency option,
+[data-theme="dark"] .deal-value-input-group #deal_currency option,
+[data-bs-theme="dark"] .deal-value-input-group #deal_currency option,
+.dark-mode .deal-value-input-group #deal_currency option {
+    background-color: #0F1530 !important;
+    color: #EEF1FB !important;
+}
 </style>
 
 <!-- Scripts -->
@@ -1022,6 +1231,49 @@
 <script>
 let currentStep = 1;
 const totalSteps = 4;
+let dealCurrencyManuallyChanged = {{ old('deal_currency') ? 'true' : 'false' }};
+
+const countryToCurrencyMap = {
+    'India': 'INR',
+    'United States': 'USD',
+    'United Kingdom': 'GBP',
+    'Canada': 'CAD',
+    'Australia': 'AUD',
+    'Bangladesh': 'BDT',
+    'United Arab Emirates': 'AED',
+    'Saudi Arabia': 'SAR',
+    'Japan': 'JPY',
+    'Switzerland': 'CHF',
+    'South Africa': 'ZAR',
+    'New Zealand': 'NZD',
+    'Singapore': 'SGD',
+    'Germany': 'EUR',
+    'France': 'EUR',
+    'Italy': 'EUR',
+    'Spain': 'EUR',
+    'Netherlands': 'EUR',
+    'Ireland': 'EUR',
+    'Portugal': 'EUR',
+    'Greece': 'EUR',
+    'Austria': 'EUR',
+    'Belgium': 'EUR',
+    'Finland': 'EUR'
+};
+
+function updateDealCurrencyLabel() {
+    const $selected = $('#deal_currency option:selected');
+    const symbol = $selected.data('symbol') || $selected.val() || '₹';
+    $('#deal_currency_symbol_label').text(symbol);
+}
+
+function syncDealCurrencyWithCountry(countryName) {
+    if (dealCurrencyManuallyChanged || !countryName) return;
+    const mappedCurrency = countryToCurrencyMap[countryName];
+    if (mappedCurrency && $('#deal_currency').find(`option[value="${mappedCurrency}"]`).length) {
+        $('#deal_currency').val(mappedCurrency);
+        updateDealCurrencyLabel();
+    }
+}
 
 function updateStepperUI(step) {
     // Update progress bar width
@@ -1040,20 +1292,334 @@ function updateStepperUI(step) {
     }
 }
 
-function normalizeMobile(val) {
-    if (!val) return '';
-    val = val.trim().replace(/\s+/g, '');
-    if (!val.startsWith('+91')) {
-        // If it starts with 91 but no +, add +
-        if (val.startsWith('91') && val.length === 12) {
-            val = '+' + val;
+function getSelectedCountryPhoneRules() {
+    const $opt = $('#country option:selected');
+    const dialCode = $opt.data('dial-code') || '+91';
+    const minDigits = parseInt($opt.data('min-digits')) || 10;
+    const maxDigits = parseInt($opt.data('max-digits')) || 10;
+    const countryName = $opt.val() || 'India';
+    return { dialCode, minDigits, maxDigits, countryName };
+}
+
+function getCompanyCountryPhoneRules() {
+    const $opt = $('#company_country option:selected');
+    let dialCode = $opt.data('dial-code');
+    let minDigits = parseInt($opt.data('min-digits'));
+    let maxDigits = parseInt($opt.data('max-digits'));
+    let countryName = $opt.val();
+
+    if (!dialCode) {
+        return getSelectedCountryPhoneRules();
+    }
+    return {
+        dialCode: dialCode || '+91',
+        minDigits: minDigits || 10,
+        maxDigits: maxDigits || 10,
+        countryName: countryName || 'India'
+    };
+}
+
+function updateMobileFormatHint(rules) {
+    const { dialCode, minDigits, maxDigits } = rules || getSelectedCountryPhoneRules();
+    let helpMsg = minDigits === maxDigits
+        ? `Format: ${dialCode}XXXXXXXXXX (${minDigits} digits)`
+        : `Format: ${dialCode}XXXXXXXXXX (${minDigits}-${maxDigits} digits)`;
+    $('#mobile_format_hint').text(helpMsg);
+
+    const totalMaxLen = dialCode.length + maxDigits;
+    $('#client_mobile').attr({
+        'placeholder': 'e.g. ' + dialCode + '9876543210',
+        'maxlength': totalMaxLen
+    });
+}
+
+function updateOfficePhoneFormatHint(rules) {
+    const { dialCode, minDigits, maxDigits } = rules || getCompanyCountryPhoneRules();
+    let helpMsg = minDigits === maxDigits
+        ? `Format: ${dialCode}XXXXXXXXXX (${minDigits} digits)`
+        : `Format: ${dialCode}XXXXXXXXXX (${minDigits}-${maxDigits} digits)`;
+    if ($('#office_phone_format_hint').length) {
+        $('#office_phone_format_hint').text(helpMsg);
+    }
+
+    const totalMaxLen = dialCode.length + maxDigits;
+    $('#office_phone').attr({
+        'placeholder': 'e.g. ' + dialCode + '9876543210',
+        'maxlength': totalMaxLen
+    });
+}
+
+function populateStates(country, selectedState = null) {
+    const $state = $('#state');
+    if (!$state.length) return;
+
+    $state.empty();
+    $state.append(new Option('Select state/province', '', true, false));
+
+    const countryData = window.locationData && window.locationData[country] ? window.locationData[country] : null;
+    let statesList = [];
+    if (countryData) {
+        statesList = Object.keys(countryData);
+    }
+
+    if (selectedState && !statesList.includes(selectedState)) {
+        statesList.push(selectedState);
+    }
+
+    statesList.forEach(st => {
+        const isSelected = selectedState && selectedState.toLowerCase() === st.toLowerCase();
+        const option = new Option(st, st, isSelected, isSelected);
+        $state.append(option);
+    });
+
+    $state.trigger('change.select2');
+}
+
+function populateCities(country, state, selectedCity = null) {
+    const $city = $('#city');
+    if (!$city.length) return;
+
+    $city.empty();
+    $city.append(new Option('Select city', '', true, false));
+
+    const countryData = window.locationData && window.locationData[country] ? window.locationData[country] : null;
+    let citiesList = [];
+
+    if (countryData) {
+        if (state && countryData[state]) {
+            citiesList = countryData[state];
         } else {
-            // Remove leading 0 if any
-            val = val.replace(/^0+/, '');
-            val = '+91' + val;
+            const set = new Set();
+            Object.values(countryData).forEach(arr => {
+                if (Array.isArray(arr)) {
+                    arr.forEach(c => set.add(c));
+                }
+            });
+            citiesList = Array.from(set);
         }
     }
-    return val;
+
+    if (selectedCity && !citiesList.includes(selectedCity)) {
+        citiesList.push(selectedCity);
+    }
+
+    citiesList.forEach(ct => {
+        const isSelected = selectedCity && selectedCity.toLowerCase() === ct.toLowerCase();
+        const option = new Option(ct, ct, isSelected, isSelected);
+        $city.append(option);
+    });
+
+    $city.trigger('change.select2');
+}
+
+function sanitizePhoneNumber(inputElement) {
+    if (!inputElement) return '';
+    const $input = $(inputElement);
+    const isOffice = $input.attr('id') === 'office_phone';
+    const rules = isOffice ? getCompanyCountryPhoneRules() : getSelectedCountryPhoneRules();
+    const dialCode = rules.dialCode;
+    const maxDigits = rules.maxDigits;
+
+    let val = $input.val();
+    if (!val) return '';
+
+    let nationalPart = '';
+    if (val.startsWith(dialCode)) {
+        nationalPart = val.substring(dialCode.length);
+    } else if (val.startsWith('+')) {
+        nationalPart = val.replace(/^\+\d*/, '');
+    } else {
+        nationalPart = val;
+    }
+
+    // Strip leading 0 if present and total digits exceed maxDigits
+    if (nationalPart.startsWith('0') && nationalPart.replace(/\D/g, '').length > maxDigits) {
+        nationalPart = nationalPart.replace(/^0+/, '');
+    }
+
+    // STRICT: ONLY DIGITS ALLOWED - strip any text, spaces, or symbols
+    let cleanDigits = nationalPart.replace(/\D/g, '');
+
+    // Limit to maxDigits
+    if (cleanDigits.length > maxDigits) {
+        cleanDigits = cleanDigits.substring(0, maxDigits);
+    }
+
+    const newVal = dialCode + cleanDigits;
+    if ($input.val() !== newVal) {
+        $input.val(newVal);
+    }
+
+    return cleanDigits;
+}
+
+function handlePhoneKeyDown(e, inputElement) {
+    const isOffice = $(inputElement).attr('id') === 'office_phone';
+    const rules = isOffice ? getCompanyCountryPhoneRules() : getSelectedCountryPhoneRules();
+    const dialCode = rules.dialCode;
+    const maxDigits = rules.maxDigits;
+
+    // Allow navigation/control keys: Backspace (8), Tab (9), Enter (13), Esc (27), Delete (46)
+    if ([8, 9, 13, 27, 46].indexOf(e.keyCode) !== -1 ||
+        // Allow: Ctrl/Cmd + A, C, V, X, Z
+        ((e.ctrlKey || e.metaKey) && [65, 67, 86, 88, 90].indexOf(e.keyCode) !== -1) ||
+        // Allow: Home, End, Left, Right, Up, Down (35-40)
+        (e.keyCode >= 35 && e.keyCode <= 40)) {
+
+        // Prevent deleting dial code prefix with backspace
+        if (e.keyCode === 8) {
+            const start = inputElement.selectionStart;
+            const end = inputElement.selectionEnd;
+            if (start <= dialCode.length && end <= dialCode.length) {
+                e.preventDefault();
+            }
+        }
+        return;
+    }
+
+    // Digits only: regular keys 0-9 (48-57, without shift) or numpad 0-9 (96-105)
+    const isDigit = (!e.shiftKey && e.keyCode >= 48 && e.keyCode <= 57) ||
+                    (e.keyCode >= 96 && e.keyCode <= 105);
+
+    // BLOCK all non-digit keys (letters, symbols, punctuation)
+    if (!isDigit) {
+        e.preventDefault();
+        return;
+    }
+
+    // If max digits reached, prevent typing more digits unless replacing selected text
+    const curVal = $(inputElement).val();
+    let currentDigits = '';
+    if (curVal.startsWith(dialCode)) {
+        currentDigits = curVal.substring(dialCode.length).replace(/\D/g, '');
+    } else {
+        currentDigits = curVal.replace(/^\+\d*/, '').replace(/\D/g, '');
+    }
+
+    if (inputElement.selectionStart === inputElement.selectionEnd && currentDigits.length >= maxDigits) {
+        e.preventDefault();
+    }
+}
+
+function validateMobileInput(inputId = 'client_mobile', isRequired = true) {
+    const isOffice = inputId === 'office_phone';
+    const rules = isOffice ? getCompanyCountryPhoneRules() : getSelectedCountryPhoneRules();
+    const { dialCode, minDigits, maxDigits, countryName } = rules;
+    const $input = $('#' + inputId);
+    if (!$input.length) return true;
+
+    const $feedback = inputId === 'client_mobile' ? $('#mobile_feedback') : $('#' + inputId + '_feedback');
+    const fieldLabel = inputId === 'office_phone' ? 'Office phone' : 'Mobile number';
+
+    // Run sanitization first to guarantee NO letters exist in input
+    const cleanDigits = sanitizePhoneNumber($input[0]);
+    const val = $input.val().trim();
+
+    if (!val || val === dialCode || val === '+') {
+        if (isRequired) {
+            $input.addClass('is-invalid').removeClass('is-valid');
+            if ($feedback.length) {
+                $feedback.text(`Please enter ${fieldLabel.toLowerCase()}.`).show();
+            }
+            return false;
+        } else {
+            $input.removeClass('is-invalid is-valid');
+            if ($feedback.length) {
+                $feedback.text('').hide();
+            }
+            return true;
+        }
+    }
+
+    const digitCount = cleanDigits.length;
+    let errorMsg = '';
+
+    if (!val.startsWith(dialCode)) {
+        errorMsg = `${fieldLabel} must start with country code ${dialCode}.`;
+    } else if (minDigits === maxDigits) {
+        if (digitCount !== minDigits) {
+            errorMsg = `${fieldLabel} must be exactly ${minDigits} digits (${digitCount}/${minDigits} entered).`;
+        }
+    } else {
+        if (digitCount < minDigits || digitCount > maxDigits) {
+            errorMsg = `${fieldLabel} must be between ${minDigits} and ${maxDigits} digits (${digitCount} entered).`;
+        }
+    }
+
+    if (errorMsg) {
+        $input.addClass('is-invalid').removeClass('is-valid');
+        if ($feedback.length) {
+            $feedback.text(errorMsg).show();
+        }
+        return false;
+    } else {
+        $input.removeClass('is-invalid').addClass('is-valid');
+        if ($feedback.length) {
+            $feedback.text('').hide();
+        }
+        return true;
+    }
+}
+
+function generateCompliantPassword(len = 12) {
+    const uppers = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+    const lowers = 'abcdefghijkmnopqrstuvwxyz';
+    const digits = '23456789';
+    const specials = '!@#$%^&*()-_=+';
+    const all = uppers + lowers + digits + specials;
+
+    let pwd = [
+        uppers[Math.floor(Math.random() * uppers.length)],
+        lowers[Math.floor(Math.random() * lowers.length)],
+        digits[Math.floor(Math.random() * digits.length)],
+        specials[Math.floor(Math.random() * specials.length)]
+    ];
+    for (let i = 4; i < len; i++) {
+        pwd.push(all[Math.floor(Math.random() * all.length)]);
+    }
+    return pwd.sort(() => Math.random() - 0.5).join('');
+}
+
+function checkPasswordComplexity(val, isRequired = true) {
+    if (!val) {
+        return isRequired ? 'Password is required.' : '';
+    }
+    if (val.length < 8) {
+        return 'Password must be at least 8 characters long.';
+    }
+    if (!/[A-Z]/.test(val)) {
+        return 'Password must contain at least 1 uppercase letter.';
+    }
+    if (!/[a-z]/.test(val)) {
+        return 'Password must contain at least 1 lowercase letter.';
+    }
+    if (!/[0-9]/.test(val)) {
+        return 'Password must contain at least 1 number.';
+    }
+    if (!/[^A-Za-z0-9]/.test(val)) {
+        return 'Password must contain at least 1 special character.';
+    }
+    return '';
+}
+
+function validatePasswordInput(inputId = 'password', isRequired = true) {
+    const $input = $('#' + inputId);
+    if (!$input.length) return true;
+
+    const val = $input.val();
+    const err = checkPasswordComplexity(val, isRequired);
+    const $feedback = $('#password_feedback');
+
+    if (err) {
+        $input.addClass('is-invalid');
+        if ($feedback.length) {
+            $feedback.text(err);
+        }
+        return false;
+    } else {
+        $input.removeClass('is-invalid');
+        return true;
+    }
 }
 
 function validateStep(step) {
@@ -1062,8 +1628,6 @@ function validateStep(step) {
     if (step === 1) {
         const name = $('#client_name').val().trim();
         const email = $('#client_email').val().trim();
-        const password = $('#password').val();
-        let mobile = $('#client_mobile').val().trim();
         const country = $('#country').val();
 
         // Validate Name
@@ -1083,26 +1647,9 @@ function validateStep(step) {
             $('#client_email').removeClass('is-invalid');
         }
 
-        // Validate Password
-        if (!password || password.length < 6) {
-            $('#password').addClass('is-invalid');
+        // Validate Password Complexity
+        if (!validatePasswordInput('password', true)) {
             isValid = false;
-        } else {
-            $('#password').removeClass('is-invalid');
-        }
-
-        // Validate & Normalize Mobile
-        if (mobile && mobile !== '+91') {
-            mobile = normalizeMobile(mobile);
-            $('#client_mobile').val(mobile);
-        }
-
-        const phoneRegex = /^\+91[0-9]{10}$/;
-        if (!mobile || !phoneRegex.test(mobile)) {
-            $('#client_mobile').addClass('is-invalid');
-            isValid = false;
-        } else {
-            $('#client_mobile').removeClass('is-invalid');
         }
 
         // Validate Country
@@ -1111,6 +1658,11 @@ function validateStep(step) {
             isValid = false;
         } else {
             $('#country').removeClass('is-invalid');
+        }
+
+        // Validate Mobile using selected Country rules
+        if (!validateMobileInput('client_mobile', true)) {
+            isValid = false;
         }
 
         if (!isValid) {
@@ -1123,19 +1675,21 @@ function validateStep(step) {
 
     if (step === 2) {
         let officePhone = $('#office_phone').val().trim();
-        if (officePhone && officePhone !== '+91') {
-            officePhone = normalizeMobile(officePhone);
-            $('#office_phone').val(officePhone);
-            const phoneRegex = /^\+91[0-9]{10}$/;
-            if (!phoneRegex.test(officePhone)) {
-                $('#office_phone').addClass('is-invalid');
+        const { dialCode } = getCompanyCountryPhoneRules();
+        if (officePhone === dialCode || officePhone === '+') {
+            $('#office_phone').val('').removeClass('is-invalid is-valid');
+            $('#office_phone_feedback').text('').hide();
+            officePhone = '';
+        }
+
+        if (officePhone) {
+            if (!validateMobileInput('office_phone', false)) {
                 isValid = false;
                 $('#office_phone').focus();
-            } else {
-                $('#office_phone').removeClass('is-invalid');
             }
         } else {
             $('#office_phone').removeClass('is-invalid');
+            $('#office_phone_feedback').text('').hide();
         }
     }
 
@@ -1158,6 +1712,10 @@ function goToStep(targetStep) {
         if (!$('#deal_contact_details').val()) {
             const contact = $('#client_email').val() || $('#client_mobile').val();
             $('#deal_contact_details').val(contact);
+        }
+        if (!dealCurrencyManuallyChanged) {
+            const selCountry = $('#company_country').val() || $('#country').val();
+            syncDealCurrencyWithCountry(selCountry);
         }
     }
 
@@ -1223,33 +1781,72 @@ $(document).ready(function () {
         }
     });
 
-    // Generate Random Password
+    // Generate Compliant Random Password
     $('.generate-password').on('click', function () {
-        const randomPassword = Math.random().toString(36).slice(-8) + '!A9';
-        $('#password').val(randomPassword).trigger('input').removeClass('is-invalid');
+        const randomPassword = generateCompliantPassword(12);
+        $('#password').val(randomPassword).trigger('input');
+        validatePasswordInput('password', true);
     });
 
-    // Auto-prefix +91 on mobile input
-    $('#client_mobile').on('focus', function () {
-        if (!$(this).val() || $(this).val() === '') {
-            $(this).val('+91');
-        }
-    }).on('blur', function() {
-        if ($(this).val()) {
-            $(this).val(normalizeMobile($(this).val()));
-        }
+    // Real-time Password Complexity Validation
+    $('#password').on('input blur', function () {
+        validatePasswordInput('password', true);
     });
 
-    // Auto-prefix +91 on office phone
-    $('#office_phone').on('focus', function () {
-        if (!$(this).val() || $(this).val() === '') {
-            $(this).val('+91');
-        }
-    }).on('blur', function() {
-        if ($(this).val() && $(this).val() !== '+91') {
-            $(this).val(normalizeMobile($(this).val()));
-        }
-    });
+    // Setup strict phone input behaviors
+    function bindPhoneInput($input, isRequired) {
+        if (!$input.length) return;
+
+        $input.on('keydown', function(e) {
+            handlePhoneKeyDown(e, this);
+        });
+
+        $input.on('input', function() {
+            sanitizePhoneNumber(this);
+            const val = $(this).val().trim();
+            const isOffice = $(this).attr('id') === 'office_phone';
+            const { dialCode } = isOffice ? getCompanyCountryPhoneRules() : getSelectedCountryPhoneRules();
+            if (!isRequired && (val === '' || val === dialCode || val === '+')) {
+                $(this).removeClass('is-invalid is-valid');
+                const feedbackId = $(this).attr('id') === 'client_mobile' ? '#mobile_feedback' : '#' + $(this).attr('id') + '_feedback';
+                $(feedbackId).text('').hide();
+                return;
+            }
+            validateMobileInput($(this).attr('id'), isRequired);
+        });
+
+        $input.on('paste', function() {
+            setTimeout(() => {
+                sanitizePhoneNumber(this);
+                validateMobileInput($(this).attr('id'), isRequired);
+            }, 10);
+        });
+
+        $input.on('focus', function() {
+            const isOffice = $(this).attr('id') === 'office_phone';
+            const { dialCode } = isOffice ? getCompanyCountryPhoneRules() : getSelectedCountryPhoneRules();
+            if (!$(this).val() || $(this).val().trim() === '') {
+                $(this).val(dialCode);
+            }
+        });
+
+        $input.on('blur', function() {
+            sanitizePhoneNumber(this);
+            const val = $(this).val().trim();
+            const isOffice = $(this).attr('id') === 'office_phone';
+            const { dialCode } = isOffice ? getCompanyCountryPhoneRules() : getSelectedCountryPhoneRules();
+            if (!isRequired && (val === dialCode || val === '' || val === '+')) {
+                $(this).val('').removeClass('is-invalid is-valid');
+                const feedbackId = $(this).attr('id') === 'client_mobile' ? '#mobile_feedback' : '#' + $(this).attr('id') + '_feedback';
+                $(feedbackId).text('').hide();
+                return;
+            }
+            validateMobileInput($(this).attr('id'), isRequired);
+        });
+    }
+
+    bindPhoneInput($('#client_mobile'), true);
+    bindPhoneInput($('#office_phone'), false);
 
     // Custom formatting for Select2 flags
     function formatOption (state) {
@@ -1261,18 +1858,127 @@ $(document).ready(function () {
         return state.text;
     }
 
-    // Country dropdown Select2
+    let companyCountryTouchedByUser = false;
+
+    // Step 1: Client Country dropdown Select2
     $('#country').select2({
         theme: "classic",
         templateResult: formatOption,
         templateSelection: formatOption,
-        placeholder: "Select members",
+        placeholder: "Select country",
         width: '100%'
     }).on('change', function() {
         if ($(this).val()) {
             $(this).removeClass('is-invalid');
         }
+        const rules = getSelectedCountryPhoneRules();
+        updateMobileFormatHint(rules);
+
+        const $mobile = $('#client_mobile');
+        let currentVal = $mobile.val().trim();
+        let nationalDigits = '';
+        if (currentVal.startsWith('+')) {
+            nationalDigits = currentVal.replace(/^\+\d+/, '').replace(/\D/g, '');
+        } else {
+            nationalDigits = currentVal.replace(/\D/g, '');
+        }
+        nationalDigits = nationalDigits.substring(0, rules.maxDigits);
+        $mobile.val(rules.dialCode + nationalDigits);
+
+        if ($mobile.val() && $mobile.val() !== rules.dialCode) {
+            validateMobileInput('client_mobile', true);
+        } else {
+            $mobile.removeClass('is-invalid is-valid');
+            $('#mobile_feedback').text('');
+        }
+
+        // If user hasn't manually selected a different company_country, auto-sync company country
+        if (!companyCountryTouchedByUser && $('#company_country').length) {
+            const clientCountry = $(this).val();
+            if ($('#company_country').val() !== clientCountry) {
+                $('#company_country').val(clientCountry).trigger('change', [true]);
+            }
+        }
+
+        if (!dealCurrencyManuallyChanged) {
+            syncDealCurrencyWithCountry($(this).val());
+        }
     });
+
+    // Step 2: Company Country dropdown Select2
+    $('#company_country').select2({
+        theme: "classic",
+        templateResult: formatOption,
+        templateSelection: formatOption,
+        placeholder: "Select country",
+        width: '100%'
+    }).on('change', function(e, triggeredProgrammatically) {
+        if (!triggeredProgrammatically) {
+            companyCountryTouchedByUser = true;
+        }
+        const countryVal = $(this).val();
+        const rules = getCompanyCountryPhoneRules();
+        updateOfficePhoneFormatHint(rules);
+
+        const $office = $('#office_phone');
+        if ($office.length && $office.val().trim()) {
+            let officeVal = $office.val().trim();
+            let officeDigits = '';
+            if (officeVal.startsWith('+')) {
+                officeDigits = officeVal.replace(/^\+\d+/, '').replace(/\D/g, '');
+            } else {
+                officeDigits = officeVal.replace(/\D/g, '');
+            }
+            officeDigits = officeDigits.substring(0, rules.maxDigits);
+            if (officeDigits) {
+                $office.val(rules.dialCode + officeDigits);
+                validateMobileInput('office_phone', false);
+            } else {
+                $office.val('');
+                $office.removeClass('is-invalid is-valid');
+            }
+        }
+
+        // Populate State & City dropdowns dynamically
+        populateStates(countryVal, $('#state').val());
+        populateCities(countryVal, $('#state').val(), $('#city').val());
+
+        if (!dealCurrencyManuallyChanged) {
+            syncDealCurrencyWithCountry(countryVal);
+        }
+    });
+
+    // Step 2: State dropdown Select2 (searchable + tags allowed)
+    $('#state').select2({
+        theme: "classic",
+        tags: true,
+        placeholder: "Select or type state",
+        width: '100%',
+        allowClear: true
+    }).on('change', function() {
+        const countryVal = $('#company_country').val() || $('#country').val();
+        populateCities(countryVal, $(this).val(), $('#city').val());
+    });
+
+    // Step 2: City dropdown Select2 (searchable + tags allowed)
+    $('#city').select2({
+        theme: "classic",
+        tags: true,
+        placeholder: "Select or type city",
+        width: '100%',
+        allowClear: true
+    });
+
+    // Initialize country & office phone format hints on page load
+    updateMobileFormatHint();
+    updateOfficePhoneFormatHint();
+
+    // Initial population for states & cities based on old or initial country
+    const initialCompanyCountry = $('#company_country').val() || $('#country').val() || 'India';
+    const oldState = @json(old('state', ''));
+    const oldCity = @json(old('city', ''));
+    populateStates(initialCompanyCountry, oldState);
+    populateCities(initialCompanyCountry, oldState, oldCity);
 
     // Language dropdown Select2
     $('#language').select2({
@@ -1375,6 +2081,17 @@ $(document).ready(function () {
             $(this).css('border-left', '');
         }
     });
+
+    // Deal currency selector change listener & initialization
+    $('#deal_currency').on('change', function() {
+        dealCurrencyManuallyChanged = true;
+        updateDealCurrencyLabel();
+    });
+    updateDealCurrencyLabel();
+    if (!dealCurrencyManuallyChanged) {
+        const initialCountry = $('#company_country').val() || $('#country').val() || 'India';
+        syncDealCurrencyWithCountry(initialCountry);
+    }
 
     // Direct Final Submit click handler
     $('#finalSubmitBtn').on('click', function(e) {

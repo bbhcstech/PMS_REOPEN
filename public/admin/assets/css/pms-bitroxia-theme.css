@@ -705,13 +705,17 @@ label {
   box-shadow: 0 0 0 3px var(--bx-border-focus) !important;
 }
 
-/* Select2 Integration (Default & Bootstrap-5) */
+/* Select2 Integration (Default, Classic & Bootstrap-5) */
 .select2-container--default .select2-selection--single,
 .select2-container--default .select2-selection--multiple,
+.select2-container--classic .select2-selection--single,
+.select2-container--classic .select2-selection--multiple,
 .select2-container--bootstrap-5 .select2-selection,
 .select2-container--bootstrap-5 .select2-selection--single,
-.select2-container--bootstrap-5 .select2-selection--multiple {
+.select2-container--bootstrap-5 .select2-selection--multiple,
+.select2-container .select2-selection--single {
   background-color: var(--bx-surface) !important;
+  background-image: none !important;
   border: 1px solid var(--bx-border-strong) !important;
   border-radius: 10px !important;
   min-height: 38px !important;
@@ -720,16 +724,28 @@ label {
 }
 
 .select2-container--default .select2-selection--single .select2-selection__rendered,
-.select2-container--bootstrap-5 .select2-selection__rendered {
+.select2-container--classic .select2-selection--single .select2-selection__rendered,
+.select2-container--bootstrap-5 .select2-selection__rendered,
+.select2-container .select2-selection__rendered {
   color: var(--bx-ink) !important;
   padding-left: 0.85rem !important;
   font-size: 0.875rem;
 }
 
 .select2-container--default .select2-selection--single .select2-selection__arrow,
-.select2-container--bootstrap-5 .select2-selection__arrow {
+.select2-container--classic .select2-selection--single .select2-selection__arrow,
+.select2-container--bootstrap-5 .select2-selection__arrow,
+.select2-container .select2-selection__arrow {
+  background: transparent !important;
+  background-image: none !important;
+  border: none !important;
   height: 36px !important;
   right: 8px !important;
+}
+
+.select2-container--classic .select2-selection--single .select2-selection__arrow b,
+.select2-container--default .select2-selection--single .select2-selection__arrow b {
+  border-color: var(--bx-ink-muted) transparent transparent transparent !important;
 }
 
 .select2-dropdown {
@@ -742,13 +758,17 @@ label {
 }
 
 .select2-container--default .select2-results__option,
-.select2-container--bootstrap-5 .select2-results__option {
+.select2-container--classic .select2-results__option,
+.select2-container--bootstrap-5 .select2-results__option,
+.select2-results__option {
+  background-color: var(--bx-surface) !important;
   color: var(--bx-ink-body) !important;
   padding: 8px 12px;
   font-size: 0.875rem;
 }
 
 .select2-container--default .select2-results__option--highlighted[aria-selected],
+.select2-container--classic .select2-results__option--highlighted[aria-selected],
 .select2-container--bootstrap-5 .select2-results__option--highlighted[aria-selected],
 .select2-results__option--highlighted {
   background-color: var(--bx-blue) !important;
@@ -756,6 +776,7 @@ label {
 }
 
 .select2-container--default .select2-search--dropdown .select2-search__field,
+.select2-container--classic .select2-search--dropdown .select2-search__field,
 .select2-container--bootstrap-5 .select2-search__field {
   background-color: var(--bx-surface-2) !important;
   border: 1px solid var(--bx-border) !important;
@@ -6272,4 +6293,93 @@ html[data-theme="light"] .notif-clear-all-btn i,
 .notif-clear-all-btn i {
   color: #ef4444 !important;
   -webkit-text-fill-color: #ef4444 !important;
+}
+
+/* Stepper Circle & Number Visibility Overrides */
+.step-circle {
+  color: #475569 !important;
+}
+.step-circle .step-number {
+  color: #475569 !important;
+  font-weight: 700;
+}
+
+html[data-pms-theme="dark"] .step-circle,
+html[data-theme="dark"] .step-circle,
+html[data-bs-theme="dark"] .step-circle,
+[data-pms-theme="dark"] .step-circle,
+[data-theme="dark"] .step-circle,
+[data-bs-theme="dark"] .step-circle,
+.dark-mode .step-circle {
+  background: #141B3D !important;
+  border-color: #334155 !important;
+  color: #E2E8F0 !important;
+}
+
+html[data-pms-theme="dark"] .step-circle .step-number,
+html[data-theme="dark"] .step-circle .step-number,
+html[data-bs-theme="dark"] .step-circle .step-number,
+[data-pms-theme="dark"] .step-circle .step-number,
+[data-theme="dark"] .step-circle .step-number,
+[data-bs-theme="dark"] .step-circle .step-number,
+.dark-mode .step-circle .step-number {
+  color: #E2E8F0 !important;
+}
+
+html[data-pms-theme="dark"] .step-title,
+html[data-theme="dark"] .step-title,
+html[data-bs-theme="dark"] .step-title,
+[data-pms-theme="dark"] .step-title,
+[data-theme="dark"] .step-title,
+[data-bs-theme="dark"] .step-title,
+.dark-mode .step-title {
+  color: #CBD5E1 !important;
+}
+
+.step-item.active .step-circle,
+html[data-pms-theme="dark"] .step-item.active .step-circle,
+[data-pms-theme="dark"] .step-item.active .step-circle {
+  background: #0f766e !important;
+  border-color: #0f766e !important;
+  color: #ffffff !important;
+}
+
+.step-item.active .step-circle .step-number,
+html[data-pms-theme="dark"] .step-item.active .step-circle .step-number {
+  color: #ffffff !important;
+}
+
+/* High-contrast phone & form validation feedback */
+.invalid-feedback {
+  font-size: 0.825rem;
+  font-weight: 500;
+  color: #ef4444 !important;
+  margin-top: 0.25rem;
+}
+
+html[data-pms-theme="dark"] .invalid-feedback,
+html[data-theme="dark"] .invalid-feedback,
+html[data-bs-theme="dark"] .invalid-feedback,
+[data-pms-theme="dark"] .invalid-feedback,
+.dark-mode .invalid-feedback {
+  color: #f87171 !important;
+}
+
+.form-control.is-invalid,
+.form-select.is-invalid {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15) !important;
+}
+
+html[data-pms-theme="dark"] .form-control.is-invalid,
+html[data-pms-theme="dark"] .form-select.is-invalid,
+[data-pms-theme="dark"] .form-control.is-invalid {
+  border-color: #f87171 !important;
+  box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.25) !important;
+}
+
+.form-control.is-valid,
+.form-select.is-valid {
+  border-color: #10b981 !important;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15) !important;
 }
