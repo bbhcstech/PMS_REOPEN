@@ -11,14 +11,60 @@
  *   2. Bare name:       "folder-kanban"      → try bx bx-{name}, fallback to mapping
  *   3. Heroicon prefix: "heroicon-o-cube"    → map to nearest bx equivalent
  */
-function resolveModuleIcon(?string $icon): string {
+function resolveModuleIcon(?string $icon, ?string $slug = null): string {
+    // Contextual icon map for modules with generic or missing icons
+    $slugMap = [
+        'employees'             => 'bx bx-user',
+        'designations'          => 'bx bx-badge-check',
+        'departments'           => 'bx bx-sitemap',
+        'holidays'              => 'bx bx-calendar-star',
+        'recognition'           => 'bx bx-trophy',
+        'awards'                => 'bx bx-trophy',
+        'recruitment'           => 'bx bx-user-plus',
+        'appraisal'             => 'bx bx-star',
+        'tasks'                 => 'bx bx-check-square',
+        'timelogs'              => 'bx bx-time',
+        'timesheets'            => 'bx bx-time-five',
+        'teams'                 => 'bx bx-group',
+        'hr-management'         => 'bx bx-user-pin',
+        'manager-management'    => 'bx bx-user-voice',
+        'role-management'       => 'bx bx-shield-quarter',
+        'permission-management' => 'bx bx-key',
+        'user-management'       => 'bx bx-user',
+        'module-management'     => 'bx bx-extension',
+        'system-logs'           => 'bx bx-list-ul',
+        'activity-logs'         => 'bx bx-pulse',
+    ];
+
+    if ($slug && (empty($icon) || $icon === 'heroicon-o-cube' || $icon === 'cube')) {
+        if (isset($slugMap[$slug])) {
+            return $slugMap[$slug];
+        }
+    }
+
     if (empty($icon)) {
         return 'bx bx-cube';
     }
 
-    // Already a full bx class
-    if (str_starts_with($icon, 'bx ')) {
+    $icon = trim($icon);
+
+    // If it already starts with 'bx bx-' or 'bx bxs-'
+    if (str_starts_with($icon, 'bx bx-') || str_starts_with($icon, 'bx bxs-')) {
         return $icon;
+    }
+
+    // If it starts with 'bx '
+    if (str_starts_with($icon, 'bx ')) {
+        $sub = substr($icon, 3);
+        if (str_starts_with($sub, 'bx-') || str_starts_with($sub, 'bxs-')) {
+            return $icon;
+        }
+        return 'bx bx-' . $sub;
+    }
+
+    // If it starts with 'bx-' or 'bxs-' (e.g. 'bx-file', 'bx-calendar-event', 'bx-award')
+    if (str_starts_with($icon, 'bx-') || str_starts_with($icon, 'bxs-')) {
+        return 'bx ' . $icon;
     }
 
     // Heroicon prefix → map to Boxicons
@@ -53,7 +99,7 @@ function resolveModuleIcon(?string $icon): string {
         'calendar-check' => 'bx bx-calendar-check',
         'calendar-days'  => 'bx bx-calendar',
         'life-buoy'      => 'bx bx-help-circle',
-        'handshake'      => 'bx bx-handshake',
+        'handshake'      => 'bx bx-briefcase',
         'file-signature' => 'bx bx-file-blank',
         'bar-chart'      => 'bx bx-bar-chart-alt-2',
         'bar-chart-2'    => 'bx bx-bar-chart-alt-2',
@@ -99,7 +145,6 @@ function resolveModuleIcon(?string $icon): string {
         return $bareMap[$icon];
     }
 
-    // Last resort: try bx bx-{icon} directly
     return 'bx bx-' . $icon;
 }
 @endphp
@@ -250,13 +295,30 @@ function resolveModuleIcon(?string $icon): string {
     }
 
     .btn-icon-action i,
-    .btn-icon-action svg,
-    .btn-icon-action [class*="bx"],
-    .btn-icon-action [class*="fa"] {
-        background-color: transparent !important;
-        background: transparent !important;
+    .btn-icon-action [class*="bx"] {
+        display: inline-block !important;
+        width: 1.15rem !important;
+        height: 1.15rem !important;
         font-size: 1.15rem !important;
         line-height: 1 !important;
+        background-color: currentColor !important;
+        vertical-align: middle !important;
+        flex-shrink: 0 !important;
+    }
+
+    .btn-icon-action svg {
+        display: inline-block !important;
+        width: 1.15rem !important;
+        height: 1.15rem !important;
+        fill: currentColor !important;
+        vertical-align: middle !important;
+    }
+
+    .btn-icon-action [class*="fa"] {
+        display: inline-block !important;
+        font-size: 1.15rem !important;
+        line-height: 1 !important;
+        color: currentColor !important;
     }
 
     /* Primary Edit Action Button */
@@ -271,6 +333,7 @@ function resolveModuleIcon(?string $icon): string {
         color: #4f46e5 !important;
         fill: #4f46e5 !important;
         -webkit-text-fill-color: #4f46e5 !important;
+        background-color: currentColor !important;
     }
     .btn-icon-action.btn-label-primary:hover {
         background-color: #4f46e5 !important;
@@ -282,6 +345,7 @@ function resolveModuleIcon(?string $icon): string {
         color: #ffffff !important;
         fill: #ffffff !important;
         -webkit-text-fill-color: #ffffff !important;
+        background-color: currentColor !important;
     }
 
     /* Danger Delete Action Button */
@@ -296,6 +360,7 @@ function resolveModuleIcon(?string $icon): string {
         color: #dc2626 !important;
         fill: #dc2626 !important;
         -webkit-text-fill-color: #dc2626 !important;
+        background-color: currentColor !important;
     }
     .btn-icon-action.btn-label-danger:hover {
         background-color: #dc2626 !important;
@@ -307,6 +372,7 @@ function resolveModuleIcon(?string $icon): string {
         color: #ffffff !important;
         fill: #ffffff !important;
         -webkit-text-fill-color: #ffffff !important;
+        background-color: currentColor !important;
     }
 
     /* Secondary Disabled/Lock Action Button */
@@ -322,6 +388,7 @@ function resolveModuleIcon(?string $icon): string {
         color: #64748b !important;
         fill: #64748b !important;
         -webkit-text-fill-color: #64748b !important;
+        background-color: currentColor !important;
     }
 
     /* Primary Header Button Icon */
@@ -329,20 +396,16 @@ function resolveModuleIcon(?string $icon): string {
     .btn-mm-primary svg,
     .btn-mm-primary [class*="bx"],
     .btn-mm-primary [class*="fa"] {
-        background-color: transparent !important;
-        background: transparent !important;
         color: #ffffff !important;
         fill: #ffffff !important;
         -webkit-text-fill-color: #ffffff !important;
+        background-color: currentColor !important;
     }
 
     /* Stat Cards Icon Wrappers & Sub-Icons */
     .mm-stat-card .mm-icon-wrapper i,
-    .mm-stat-card .mm-icon-wrapper svg,
-    .mm-stat-card .mm-icon-wrapper [class*="bx"],
-    .mm-stat-card .mm-icon-wrapper [class*="fa"] {
-        background-color: transparent !important;
-        background: transparent !important;
+    .mm-stat-card .mm-icon-wrapper [class*="bx"] {
+        background-color: currentColor !important;
         -webkit-text-fill-color: initial !important;
     }
 
@@ -354,6 +417,7 @@ function resolveModuleIcon(?string $icon): string {
         color: #2F6BFF !important;
         fill: #2F6BFF !important;
         -webkit-text-fill-color: #2F6BFF !important;
+        background-color: currentColor !important;
     }
 
     .col-sm-6:nth-child(2) .mm-stat-card .mm-icon-wrapper {
@@ -364,6 +428,7 @@ function resolveModuleIcon(?string $icon): string {
         color: #10b981 !important;
         fill: #10b981 !important;
         -webkit-text-fill-color: #10b981 !important;
+        background-color: currentColor !important;
     }
 
     .col-sm-6:nth-child(3) .mm-stat-card .mm-icon-wrapper {
@@ -374,6 +439,7 @@ function resolveModuleIcon(?string $icon): string {
         color: #03c3ec !important;
         fill: #03c3ec !important;
         -webkit-text-fill-color: #03c3ec !important;
+        background-color: currentColor !important;
     }
 
     .col-sm-6:nth-child(4) .mm-stat-card .mm-icon-wrapper {
@@ -384,40 +450,74 @@ function resolveModuleIcon(?string $icon): string {
         color: #d97706 !important;
         fill: #d97706 !important;
         -webkit-text-fill-color: #d97706 !important;
+        background-color: currentColor !important;
     }
 
     /* Module Details Table Icons */
-    .mm-table td i,
-    .mm-table td svg,
+    .mm-module-icon-box {
+        width: 40px !important;
+        height: 40px !important;
+        min-width: 40px !important;
+        border-radius: 10px !important;
+        background: rgba(47, 107, 255, 0.08) !important;
+        border: 1px solid rgba(47, 107, 255, 0.16) !important;
+        color: #2F6BFF !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        flex-shrink: 0 !important;
+    }
+
+    .mm-module-icon-box i,
+    .mm-module-icon-box [class*="bx"] {
+        display: inline-block !important;
+        width: 1.4rem !important;
+        height: 1.4rem !important;
+        background-color: currentColor !important;
+        vertical-align: middle !important;
+        --svg-fallback: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='black' d='m21.406 6.086l-9-4a1 1 0 0 0-.813 0l-9 4c-.02.009-.034.024-.054.035c-.028.014-.058.023-.084.04c-.022.015-.039.034-.06.05a.9.9 0 0 0-.19.194q-.031.04-.059.081a1 1 0 0 0-.076.165c-.009.027-.023.052-.031.079A1 1 0 0 0 2 7v10c0 .396.232.753.594.914l9 4c.13.058.268.086.406.086a1 1 0 0 0 .402-.096l.004.01l9-4A1 1 0 0 0 22 17V7a1 1 0 0 0-.594-.914M12 4.095L18.538 7L12 9.905l-1.308-.581L5.463 7zM4 16.351V8.539l7 3.111v7.811zm9 3.11V11.65l7-3.111v7.812z'/%3E%3C/svg%3E");
+        -webkit-mask-image: var(--svg, var(--svg-fallback)) !important;
+        mask-image: var(--svg, var(--svg-fallback)) !important;
+    }
+
+    [data-theme="dark"] .mm-module-icon-box,
+    body.dark-mode .mm-module-icon-box {
+        background: rgba(99, 102, 241, 0.16) !important;
+        border-color: rgba(99, 102, 241, 0.3) !important;
+        color: #818cf8 !important;
+    }
+
+    .mm-table td i.bx,
     .mm-table td [class*="bx"] {
-        background-color: transparent !important;
+        background-color: currentColor !important;
+        display: inline-block !important;
     }
 
     .mm-table td .btn-icon-action.btn-label-primary i,
     .mm-table td .btn-icon-action.btn-label-primary svg,
     .mm-table td .btn-icon-action.btn-label-primary [class*="bx"] {
-        background-color: transparent !important;
         color: #4f46e5 !important;
         fill: #4f46e5 !important;
         -webkit-text-fill-color: #4f46e5 !important;
+        background-color: currentColor !important;
     }
 
     .mm-table td .btn-icon-action.btn-label-danger i,
     .mm-table td .btn-icon-action.btn-label-danger svg,
     .mm-table td .btn-icon-action.btn-label-danger [class*="bx"] {
-        background-color: transparent !important;
         color: #dc2626 !important;
         fill: #dc2626 !important;
         -webkit-text-fill-color: #dc2626 !important;
+        background-color: currentColor !important;
     }
 
     .mm-table td .btn-icon-action.btn-label-secondary i,
     .mm-table td .btn-icon-action.btn-label-secondary svg,
     .mm-table td .btn-icon-action.btn-label-secondary [class*="bx"] {
-        background-color: transparent !important;
         color: #64748b !important;
         fill: #64748b !important;
         -webkit-text-fill-color: #64748b !important;
+        background-color: currentColor !important;
     }
 
     /* Toast Notification Animation */
@@ -464,11 +564,28 @@ function resolveModuleIcon(?string $icon): string {
     }
     [data-theme="dark"] .btn-icon-action.btn-label-primary i,
     [data-theme="dark"] .btn-icon-action.btn-label-primary svg,
+    [data-theme="dark"] .btn-icon-action.btn-label-primary [class*="bx"],
     body.dark-mode .btn-icon-action.btn-label-primary i,
-    body.dark-mode .btn-icon-action.btn-label-primary svg {
+    body.dark-mode .btn-icon-action.btn-label-primary svg,
+    body.dark-mode .btn-icon-action.btn-label-primary [class*="bx"] {
         color: #818cf8 !important;
         fill: #818cf8 !important;
         -webkit-text-fill-color: #818cf8 !important;
+        background-color: currentColor !important;
+    }
+    [data-theme="dark"] .btn-icon-action.btn-label-primary:hover,
+    body.dark-mode .btn-icon-action.btn-label-primary:hover {
+        background-color: #6366f1 !important;
+        color: #ffffff !important;
+    }
+    [data-theme="dark"] .btn-icon-action.btn-label-primary:hover i,
+    [data-theme="dark"] .btn-icon-action.btn-label-primary:hover [class*="bx"],
+    body.dark-mode .btn-icon-action.btn-label-primary:hover i,
+    body.dark-mode .btn-icon-action.btn-label-primary:hover [class*="bx"] {
+        color: #ffffff !important;
+        fill: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        background-color: currentColor !important;
     }
 
     [data-theme="dark"] .btn-icon-action.btn-label-danger,
@@ -479,11 +596,28 @@ function resolveModuleIcon(?string $icon): string {
     }
     [data-theme="dark"] .btn-icon-action.btn-label-danger i,
     [data-theme="dark"] .btn-icon-action.btn-label-danger svg,
+    [data-theme="dark"] .btn-icon-action.btn-label-danger [class*="bx"],
     body.dark-mode .btn-icon-action.btn-label-danger i,
-    body.dark-mode .btn-icon-action.btn-label-danger svg {
+    body.dark-mode .btn-icon-action.btn-label-danger svg,
+    body.dark-mode .btn-icon-action.btn-label-danger [class*="bx"] {
         color: #f87171 !important;
         fill: #f87171 !important;
         -webkit-text-fill-color: #f87171 !important;
+        background-color: currentColor !important;
+    }
+    [data-theme="dark"] .btn-icon-action.btn-label-danger:hover,
+    body.dark-mode .btn-icon-action.btn-label-danger:hover {
+        background-color: #ef4444 !important;
+        color: #ffffff !important;
+    }
+    [data-theme="dark"] .btn-icon-action.btn-label-danger:hover i,
+    [data-theme="dark"] .btn-icon-action.btn-label-danger:hover [class*="bx"],
+    body.dark-mode .btn-icon-action.btn-label-danger:hover i,
+    body.dark-mode .btn-icon-action.btn-label-danger:hover [class*="bx"] {
+        color: #ffffff !important;
+        fill: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        background-color: currentColor !important;
     }
 
     [data-theme="dark"] .btn-icon-action.btn-label-secondary,
@@ -494,11 +628,14 @@ function resolveModuleIcon(?string $icon): string {
     }
     [data-theme="dark"] .btn-icon-action.btn-label-secondary i,
     [data-theme="dark"] .btn-icon-action.btn-label-secondary svg,
+    [data-theme="dark"] .btn-icon-action.btn-label-secondary [class*="bx"],
     body.dark-mode .btn-icon-action.btn-label-secondary i,
-    body.dark-mode .btn-icon-action.btn-label-secondary svg {
+    body.dark-mode .btn-icon-action.btn-label-secondary svg,
+    body.dark-mode .btn-icon-action.btn-label-secondary [class*="bx"] {
         color: #94a3b8 !important;
         fill: #94a3b8 !important;
         -webkit-text-fill-color: #94a3b8 !important;
+        background-color: currentColor !important;
     }
 </style>
 
@@ -675,8 +812,8 @@ function resolveModuleIcon(?string $icon): string {
                             <!-- MODULE DETAILS -->
                             <td>
                                 <div class="d-flex align-items-center gap-3">
-                                    <div class="rounded-3 p-2 d-flex align-items-center justify-content-center border" style="width: 40px; height: 40px; min-width: 40px; background: #f8fafc; color: var(--mm-emerald);">
-                                        <i class="{{ resolveModuleIcon($module->icon) }} fs-4"></i>
+                                    <div class="mm-module-icon-box rounded-3 d-flex align-items-center justify-content-center">
+                                        <i class="{{ resolveModuleIcon($module->icon, $module->slug) }} fs-4"></i>
                                     </div>
                                     <div>
                                         <div class="fw-bold text-dark fs-6 d-flex align-items-center gap-2">
@@ -767,7 +904,7 @@ function resolveModuleIcon(?string $icon): string {
                                     <!-- Edit Button -->
                                     <button type="button" class="btn btn-icon-action btn-label-primary" 
                                         data-bs-toggle="modal" data-bs-target="#editModuleModal{{ $module->id }}" 
-                                        data-bs-toggle="tooltip" data-bs-placement="top" title="Edit module">
+                                        title="Edit module">
                                         <i class="bx bx-edit-alt"></i>
                                     </button>
 
@@ -914,7 +1051,7 @@ function resolveModuleIcon(?string $icon): string {
             <div class="modal-header border-bottom bg-light py-3 px-4">
                 <div class="d-flex align-items-center gap-3">
                     <div class="rounded-3 p-2 d-flex align-items-center justify-content-center text-white" style="background: var(--mm-emerald); width: 38px; height: 38px;">
-                        <i class="{{ resolveModuleIcon($module->icon) }} fs-4"></i>
+                        <i class="{{ resolveModuleIcon($module->icon, $module->slug) }} fs-4"></i>
                     </div>
                     <div>
                         <h5 class="modal-title fw-bold text-dark">Edit Module: {{ $module->name }}</h5>
@@ -949,7 +1086,7 @@ function resolveModuleIcon(?string $icon): string {
                         <div class="col-md-6">
                             <label class="form-label fw-semibold text-secondary mb-1">Boxicons Class</label>
                             <div class="input-group">
-                                <span class="input-group-text"><i class="{{ resolveModuleIcon($module->icon) }}"></i></span>
+                                <span class="input-group-text"><i class="{{ resolveModuleIcon($module->icon, $module->slug) }}"></i></span>
                                 <input type="text" name="icon" class="form-control" value="{{ $module->icon }}">
                             </div>
                         </div>

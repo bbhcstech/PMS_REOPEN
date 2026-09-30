@@ -180,8 +180,9 @@ class LeaveController extends Controller
     {
         $this->authorizeLeaveAccess($leave);
         $leave->load(['user.employeeDetail.department', 'leaveType', 'approvals.user', 'approver', 'rejector', 'apologyLetters.user']);
+        $isAdmin = $this->isAdmin();
 
-        return view('admin.leaves.show', compact('leave'));
+        return view('admin.leaves.show', compact('leave', 'isAdmin'));
     }
 
     public function apologyLetters(Request $request)
@@ -512,6 +513,10 @@ class LeaveController extends Controller
             );
         }
 
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json(['success' => true, 'message' => 'Leave request status updated.']);
+        }
+
         return back()->with('success', 'Leave request status updated.');
     }
 
@@ -726,6 +731,16 @@ class LeaveController extends Controller
             } else {
                 $leave->update(['status' => 'pending', 'approval_status' => 'pending']);
             }
+
+            if ($leave->user) {
+                SystemNotificationService::notifyUser(
+                    $leave->user,
+                    'Leave ' . ucfirst($leave->status),
+                    'Your leave request has been marked ' . ucfirst($leave->status) . '.',
+                    route('leaves.show', $leave->id),
+                    ['employee_id' => $leave->user_id, 'entity_type' => Leave::class, 'entity_id' => $leave->id, 'type' => 'leave_status_updated', 'icon' => 'fa-calendar-check']
+                );
+            }
         }
 
         return response()->json(['message' => 'Bulk action completed successfully.']);
@@ -898,7 +913,7 @@ class LeaveController extends Controller
 
     private function isAdmin(): bool
     {
-        return in_array(strtolower((string) Auth::user()?->role), ['admin', 'hr'], true);
+        return in_array(strtolower((string) Auth::user()?->role), ['admin', 'hr', 'manager', 'administrator', 'superadmin'], true);
     }
 
     private function ensureAdmin(): void

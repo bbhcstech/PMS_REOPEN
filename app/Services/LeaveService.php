@@ -352,6 +352,17 @@ class LeaveService
                 'admin_note' => $reason,
             ])->save();
 
+            $startDate = $leave->start_date ? Carbon::parse($leave->start_date) : ($leave->date ? Carbon::parse($leave->date) : null);
+            $endDate = $leave->end_date ? Carbon::parse($leave->end_date) : $startDate;
+            if ($startDate && $endDate && $leave->user_id) {
+                foreach (CarbonPeriod::create($startDate, $endDate) as $date) {
+                    Attendance::where('user_id', $leave->user_id)
+                        ->where('date', $date->toDateString())
+                        ->whereIn('status', ['leave', 'unpaid_leave'])
+                        ->delete();
+                }
+            }
+
             $this->recordApproval($leave, $actor, 'rejected', $reason);
             if ($leave->user) {
                 $this->syncBalanceCounters($leave->user);
@@ -368,26 +379,23 @@ class LeaveService
             return;
         }
 
-        $startDate = $leave->start_date ?: $leave->date ?: ($leave->created_at ? $leave->created_at->toDateString() : now()->toDateString());
-        $endDate = $leave->end_date ?: $startDate;
+        $startDate = $leave->start_date
+            ? Carbon::parse($leave->start_date)
+            : ($leave->date ? Carbon::parse($leave->date) : now());
+        $endDate = $leave->end_date
+            ? Carbon::parse($leave->end_date)
+            : $startDate;
 
-        $startCarbon = Carbon::parse($startDate)->startOfDay();
-        $endCarbon = Carbon::parse($endDate)->startOfDay();
-        if ($startCarbon->gt($endCarbon)) {
-            $endCarbon = $startCarbon->copy();
-        }
-
-        if (empty($leave->getRawOriginal('start_date')) || empty($leave->getRawOriginal('end_date'))) {
+        if (! $leave->start_date) {
             $leave->forceFill([
-                'start_date' => $startCarbon->toDateString(),
-                'end_date' => $endCarbon->toDateString(),
-                'date' => $leave->date ? Carbon::parse($leave->date)->toDateString() : $startCarbon->toDateString(),
-            ])->saveQuietly();
+                'start_date' => $startDate->toDateString(),
+                'end_date' => $endDate->toDateString(),
+            ])->save();
         }
 
-        $before = $this->ensureBalance($employee, $startCarbon)?->toArray() ?: [];
+        $before = $this->ensureBalance($employee, $startDate)?->toArray() ?: [];
         $balance = LeaveBalance::where('user_id', $employee->id)
-            ->where('leave_year', $leave->leave_year ?: $this->leaveYearDates($startCarbon)['label'])
+            ->where('leave_year', $leave->leave_year ?: $this->leaveYearDates($startDate)['label'])
             ->first();
 
         if ($balance) {
@@ -404,18 +412,19 @@ class LeaveService
             $leave->refresh();
         }
 
-        $periodStart = ($leave->start_date ? Carbon::parse($leave->start_date) : $startCarbon)->toDateString();
-        $periodEnd = ($leave->end_date ? Carbon::parse($leave->end_date) : $endCarbon)->toDateString();
+        $policy = $this->policy();
+        $attendanceStatus = ($leave->is_unpaid && ($policy->unpaid_leave_handling ?? 'unpaid_leave') === 'absent')
+            ? 'absent'
+            : (((float) ($leave->paid_days ?? 0)) <= 0 ? 'unpaid_leave' : 'leave');
 
-        foreach (CarbonPeriod::create($periodStart, $periodEnd) as $date) {
+        foreach (CarbonPeriod::create($startDate, $endDate) as $date) {
             Attendance::updateOrCreate(
                 ['user_id' => $employee->id, 'date' => $date->toDateString()],
                 [
-                    'company_id' => $employee->company_id ?: 1,
-                    'status' => 'leave',
-                    'half_day' => !empty($leave->half_day_flag) ? 'yes' : 'no',
-                    'location' => 'Leave',
-                    'working_from' => 'Leave',
+                    'company_id' => $employee->company_id,
+                    'status' => $attendanceStatus,
+                    'location' => $leave->is_unpaid ? 'Unpaid Leave' : 'Leave',
+                    'working_from' => $leave->is_unpaid ? 'Unpaid Leave' : 'Leave',
                 ]
             );
         }
@@ -426,7 +435,7 @@ class LeaveService
             'user_id' => $employee->id,
             'leave_id' => $leave->id,
             'changed_by' => $actor?->id,
-            'leave_year' => $leave->leave_year ?: $this->leaveYearDates($startCarbon)['label'],
+            'leave_year' => $leave->leave_year ?: $this->leaveYearDates($startDate)['label'],
             'action' => 'approved',
             'days' => $leave->total_days,
             'before_snapshot' => $before,
