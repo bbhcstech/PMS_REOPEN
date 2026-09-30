@@ -57,8 +57,26 @@
        opacity: 1 !important;
    }
 
-   .modal { z-index: 1050; }
-   .modal-backdrop { z-index: 1040; }
+   .modal-backdrop {
+       z-index: 10040 !important;
+   }
+
+   .modal {
+       z-index: 10050 !important;
+       padding-top: 0 !important;
+   }
+
+   .modal-dialog {
+       z-index: 10051 !important;
+       margin-top: 1.75rem !important;
+       margin-bottom: 1.75rem !important;
+   }
+
+   .modal-dialog-centered {
+       min-height: calc(100% - 3.5rem) !important;
+       margin-top: 1.75rem !important;
+       margin-bottom: 1.75rem !important;
+   }
 
    .modal-content {
        background-color: var(--bx-surface) !important;
@@ -92,6 +110,8 @@
 
    /* ===================== TOP NAVBAR ===================== */
    #layout-navbar {
+       position: relative;
+       z-index: 1030 !important;
        display: flex;
        flex-wrap: nowrap !important;
        align-items: center;
@@ -226,233 +246,7 @@
        }
    }
 
-   /* ===================== EXTRA SAFETY ===================== */
-   .layout-menu {
-       transition: transform 0.3s ease;
-       background: linear-gradient(135deg, var(--white-pure) 0%, var(--white-soft) 100%);
-       border-right: 1px solid rgba(124, 58, 237, 0.1);
-   }
-
-   .layout-menu-active .layout-menu {
-       transform: translateX(0);
-   }
-
-   /* ===================== MENU THEME - PURPLE & WHITE ===================== */
-   .bg-menu-theme {
-       background: linear-gradient(135deg, var(--white-pure) 0%, var(--white-soft) 100%) !important;
-   }
-
-   .app-brand {
-       background: var(--white-pure);
-       border-bottom: 1px solid rgba(124, 58, 237, 0.1);
-   }
-
-   .app-brand-text {
-       color: var(--purple-primary) !important;
-       font-weight: 800 !important;
-   }
-
-   .app-brand-logo.demo {
-       width: 42px;
-       height: 42px;
-       border-radius: 12px;
-       overflow: hidden;
-       display: inline-flex;
-       align-items: center;
-       justify-content: center;
-       flex: 0 0 auto;
-       box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
-       background: #ffffff;
-       padding: 4px;
-   }
-
-   .app-brand-logo.demo img {
-       max-width: 100%;
-       max-height: 100%;
-       width: auto;
-       height: auto;
-       object-fit: contain;
-       display: block;
-   }
-
-    .app-brand-text.demo {
-        max-width: 175px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        font-size: 1.05rem !important;
-        font-weight: 800 !important;
-        line-height: 1.25;
-        letter-spacing: -0.01em !important;
-        background: linear-gradient(135deg, #0569ff, #13d5e7 50%, #8f25ff);
-        -webkit-background-clip: text;
-        background-clip: text;
-        -webkit-text-fill-color: transparent !important;
-        color: transparent !important;
-    }
-
-   .menu-inner .menu-item .menu-link {
-       color: var(--text-dark);
-       transition: all 0.2s ease;
-   }
-
-   .menu-inner .menu-item .menu-link i {
-       color: var(--purple-primary);
-   }
-
-   .menu-inner .menu-item:hover > .menu-link {
-       background-color: var(--purple-hover);
-       color: var(--purple-primary);
-   }
-
-   .menu-inner .menu-item.active > .menu-link {
-       background: var(--purple-gradient);
-       color: var(--white-pure);
-       box-shadow: 0 4px 12px rgba(15, 116, 76, 0.16);
-   }
-
-   .menu-inner .menu-item.active > .menu-link i {
-       color: var(--white-pure);
-   }
-
-   .menu-inner .menu-item.active:not(.open) > .menu-link {
-       position: relative;
-       overflow: hidden;
-       animation: sidebarActiveGlow 1.8s ease-in-out infinite;
-   }
-
-   .menu-inner .menu-item.active:not(.open) > .menu-link::after {
-       content: "";
-       position: absolute;
-       right: 12px;
-       top: 50%;
-       width: 8px;
-       height: 8px;
-       border-radius: 999px;
-       background: #ffffff;
-       box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.9);
-       transform: translateY(-50%);
-       animation: sidebarActiveDot 1.25s ease-in-out infinite;
-   }
-
-    @keyframes sidebarActiveGlow {
-        0%, 100% {
-            box-shadow: 0 4px 12px rgba(15, 116, 76, 0.16);
-        }
-        50% {
-            box-shadow: 0 6px 16px rgba(15, 116, 76, 0.24);
-        }
-    }
-
-   @keyframes sidebarActiveDot {
-       0% {
-           box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.9);
-       }
-       70% {
-           box-shadow: 0 0 0 8px rgba(255, 255, 255, 0);
-       }
-       100% {
-           box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
-       }
-   }
-
-   .menu-inner .menu-item.open > .menu-link {
-       background-color: var(--purple-hover);
-       color: var(--purple-primary);
-   }
-
-   .menu-sub {
-       background: rgba(124, 58, 237, 0.02);
-   }
-
-   .menu-sub .menu-item .menu-link {
-       color: var(--text-soft);
-   }
-
-   .menu-sub .menu-item:hover .menu-link {
-       color: var(--purple-primary);
-       background-color: var(--purple-hover);
-   }
-
-   .menu-sub .menu-item.active .menu-link {
-       color: var(--purple-primary);
-       font-weight: 700;
-       background: linear-gradient(90deg, var(--purple-soft) 0%, rgba(124, 58, 237, 0.05) 100%);
-       border-left: 3px solid var(--purple-primary);
-   }
-
-   .menu-divider {
-       border-color: rgba(124, 58, 237, 0.1) !important;
-   }
-
-   /* Dropdown Menu Purple Theme */
-   .dropdown-menu {
-       border: 1px solid rgba(124, 58, 237, 0.1);
-       box-shadow: var(--shadow-purple);
-   }
-
-   .dropdown-item:hover {
-       background-color: var(--purple-hover);
-       color: var(--purple-primary);
-   }
-
-   .dropdown-item i {
-       color: var(--purple-primary);
-   }
-
-   /* Badge Purple Theme */
-   .badge.bg-danger {
-       background: var(--purple-gradient) !important;
-       color: var(--white-pure);
-   }
-
-   /* Form Controls Purple Theme */
-   .form-control:focus,
-   .form-select:focus {
-       border-color: var(--purple-light);
-       box-shadow: 0 0 0 0.25rem rgba(124, 58, 237, 0.1);
-   }
-
-   .btn-primary {
-       background: var(--purple-gradient) !important;
-       border: none !important;
-       color: var(--white-pure) !important;
-   }
-
-   .btn-primary:hover {
-       background: linear-gradient(135deg, var(--purple-dark) 0%, var(--purple-primary) 100%) !important;
-       box-shadow: var(--shadow-purple);
-   }
-
-   .btn-outline-primary {
-       border-color: var(--purple-primary) !important;
-       color: var(--purple-primary) !important;
-   }
-
-   .btn-outline-primary:hover {
-       background: var(--purple-gradient) !important;
-       color: var(--white-pure) !important;
-   }
-
-   /* Text Colors */
-   .text-primary {
-       color: var(--purple-primary) !important;
-   }
-
-   .text-dark {
-       color: var(--text-dark) !important;
-   }
-
-   .text-muted {
-       color: var(--text-soft) !important;
-   }
-
-   /* Links */
-   a {
-       color: var(--purple-primary);
->>>>>>> 6d97a43b6294c8b9d5b01ac69fbdaa2c7b5bf49b
-       transition: color 0.2s ease;
-   }
+   /* Cleaned legacy purple conflict block */
 
    .theme-toggle-btn {
        width: 38px;
@@ -1045,8 +839,8 @@
    html[data-pms-theme="dark"] .sticky-note-card.green,
    html[data-theme="dark"] .sticky-note-card.green,
    [data-pms-theme="dark"] .sticky-note-card.green {
-       background: linear-gradient(135deg, rgba(16, 185, 129, 0.22), rgba(4, 120, 87, 0.35)) !important;
-       border: 1px solid rgba(16, 185, 129, 0.5) !important;
+       background: linear-gradient(135deg, rgba(47, 107, 255, 0.22), rgba(4, 120, 87, 0.35)) !important;
+       border: 1px solid rgba(47, 107, 255, 0.5) !important;
    }
 
    html[data-pms-theme="dark"] .sticky-note-actions button,
@@ -1119,7 +913,16 @@
 
    /* ===================== DARK MODE SUPPORT ===================== */
    html[data-pms-theme="dark"],
-   html[data-theme="dark"] {
+   html[data-theme="dark"],
+   html[data-bs-theme="dark"],
+   body[data-pms-theme="dark"],
+   body.dark-mode,
+   [data-pms-theme="dark"],
+   [data-theme="dark"] {
+       --bx-blue-primary: #2F6BFF;
+       --bx-blue-hover: #4F83FF;
+       --bx-blue-soft: rgba(47, 107, 255, 0.18);
+       --bx-blue-subtle: rgba(47, 107, 255, 0.08);
        --bx-surface: #0F1530;
        --bx-surface-soft: #141B3D;
        --bx-surface-subtle: #1A2247;
@@ -1130,52 +933,268 @@
        --bx-text-faint: #4B5578;
        --bx-border-subtle: rgba(238, 241, 251, 0.09);
        --bx-border-soft: rgba(238, 241, 251, 0.16);
-       --bx-navbar-bg: rgba(15, 21, 48, 0.92);
+       --bx-border-focus: rgba(47, 107, 255, 0.5);
+       --bx-navbar-bg: rgba(15, 21, 48, 0.94);
    }
 
+   /* Layout & Navbar */
    html[data-pms-theme="dark"] #layout-navbar,
-   html[data-theme="dark"] #layout-navbar {
-       background: rgba(15, 21, 48, 0.92) !important;
+   html[data-theme="dark"] #layout-navbar,
+   html[data-bs-theme="dark"] #layout-navbar,
+   [data-pms-theme="dark"] #layout-navbar,
+   body.dark-mode #layout-navbar {
+       background: rgba(15, 21, 48, 0.94) !important;
        border-color: rgba(238, 241, 251, 0.09) !important;
+       color: #CBD5E1 !important;
    }
 
+   html[data-pms-theme="dark"] #layout-navbar .fw-bold,
+   html[data-theme="dark"] #layout-navbar .fw-bold,
+   [data-pms-theme="dark"] #layout-navbar .fw-bold {
+       color: #EEF1FB !important;
+   }
+
+   html[data-pms-theme="dark"] #layout-navbar .navbar-search-wrapper,
+   [data-pms-theme="dark"] #layout-navbar .navbar-search-wrapper {
+       color: #CBD5E1 !important;
+   }
+
+   html[data-pms-theme="dark"] #layout-navbar .navbar-search-wrapper input,
+   [data-pms-theme="dark"] #layout-navbar .navbar-search-wrapper input {
+       background: #141B3D !important;
+       border: 1px solid rgba(238, 241, 251, 0.1) !important;
+       color: #EEF1FB !important;
+   }
+
+   html[data-pms-theme="dark"] #layout-navbar .navbar-search-wrapper input::placeholder,
+   [data-pms-theme="dark"] #layout-navbar .navbar-search-wrapper input::placeholder {
+       color: #9AA3C7 !important;
+   }
+
+   /* Header Icons */
+   html[data-pms-theme="dark"] .header-icon-box,
+   html[data-theme="dark"] .header-icon-box,
+   html[data-pms-theme="dark"] .theme-toggle-btn,
+   html[data-theme="dark"] .theme-toggle-btn,
+   html[data-pms-theme="dark"] .notification-bell,
+   html[data-theme="dark"] .notification-bell,
+   [data-pms-theme="dark"] .header-icon-box,
+   [data-pms-theme="dark"] .theme-toggle-btn,
+   [data-pms-theme="dark"] .notification-bell,
+   body.dark-mode .header-icon-box,
+   body.dark-mode .theme-toggle-btn,
+   body.dark-mode .notification-bell {
+       background: #141B3D !important;
+       border-color: rgba(238, 241, 251, 0.1) !important;
+       color: #CBD5E1 !important;
+   }
+
+   html[data-pms-theme="dark"] .header-icon-box:hover,
+   html[data-theme="dark"] .header-icon-box:hover,
+   html[data-pms-theme="dark"] .theme-toggle-btn:hover,
+   html[data-theme="dark"] .theme-toggle-btn:hover,
+   html[data-pms-theme="dark"] .notification-bell:hover,
+   html[data-theme="dark"] .notification-bell:hover,
+   [data-pms-theme="dark"] .header-icon-box:hover,
+   [data-pms-theme="dark"] .theme-toggle-btn:hover,
+   [data-pms-theme="dark"] .notification-bell:hover {
+       background: #1A2247 !important;
+       border-color: rgba(47, 107, 255, 0.35) !important;
+       color: #2F6BFF !important;
+   }
+
+   html[data-pms-theme="dark"] .header-icon-box i,
+   html[data-pms-theme="dark"] .header-icon-box i.text-dark,
+   html[data-pms-theme="dark"] .header-icon-box i.text-dark-grey,
+   [data-pms-theme="dark"] .header-icon-box i,
+   [data-pms-theme="dark"] .header-icon-box i.text-dark,
+   [data-pms-theme="dark"] .header-icon-box i.text-dark-grey,
+   body.dark-mode .header-icon-box i,
+   body.dark-mode .header-icon-box i.text-dark,
+   body.dark-mode .header-icon-box i.text-dark-grey {
+       color: #CBD5E1 !important;
+   }
+
+   html[data-pms-theme="dark"] .header-icon-box:hover i,
+   html[data-pms-theme="dark"] .header-icon-box:hover i.text-dark,
+   [data-pms-theme="dark"] .header-icon-box:hover i {
+       color: #2F6BFF !important;
+   }
+
+   /* Sidebar Menu */
    html[data-pms-theme="dark"] .layout-menu,
-   html[data-theme="dark"] .layout-menu {
+   html[data-theme="dark"] .layout-menu,
+   html[data-bs-theme="dark"] .layout-menu,
+   [data-pms-theme="dark"] .layout-menu,
+   body.dark-mode .layout-menu {
        background: #0B1026 !important;
        border-color: rgba(238, 241, 251, 0.09) !important;
    }
 
+   html[data-pms-theme="dark"] .bg-menu-theme,
+   html[data-theme="dark"] .bg-menu-theme,
+   [data-pms-theme="dark"] .bg-menu-theme,
+   body.dark-mode .bg-menu-theme {
+       background: #0B1026 !important;
+   }
+
    html[data-pms-theme="dark"] .app-brand,
-   html[data-theme="dark"] .app-brand {
+   html[data-theme="dark"] .app-brand,
+   [data-pms-theme="dark"] .app-brand,
+   body.dark-mode .app-brand {
        background: #0B1026 !important;
        border-color: rgba(238, 241, 251, 0.09) !important;
    }
 
    html[data-pms-theme="dark"] .app-brand-text.demo,
-   html[data-theme="dark"] .app-brand-text.demo {
+   html[data-theme="dark"] .app-brand-text.demo,
+   [data-pms-theme="dark"] .app-brand-text.demo {
        color: #EEF1FB !important;
    }
 
-   html[data-pms-theme="dark"] .header-icon-box,
-   html[data-theme="dark"] .header-icon-box,
-   html[data-pms-theme="dark"] .theme-toggle-btn,
-   html[data-theme="dark"] .theme-toggle-btn {
-       background: #141B3D;
-       border-color: rgba(238, 241, 251, 0.09);
-       color: #CBD5E1;
+   html[data-pms-theme="dark"] .menu-inner .menu-item .menu-link,
+   html[data-theme="dark"] .menu-inner .menu-item .menu-link,
+   [data-pms-theme="dark"] .menu-inner .menu-item .menu-link,
+   body.dark-mode .menu-inner .menu-item .menu-link {
+       color: #CBD5E1 !important;
    }
 
+   html[data-pms-theme="dark"] .menu-inner .menu-item .menu-link i,
+   html[data-pms-theme="dark"] .menu-inner .menu-item .menu-link .menu-icon,
+   [data-pms-theme="dark"] .menu-inner .menu-item .menu-link i,
+   [data-pms-theme="dark"] .menu-inner .menu-item .menu-link .menu-icon {
+       color: #9AA3C7 !important;
+   }
+
+   html[data-pms-theme="dark"] .menu-inner .menu-item:hover > .menu-link,
+   [data-pms-theme="dark"] .menu-inner .menu-item:hover > .menu-link {
+       background-color: #141B3D !important;
+       color: #EEF1FB !important;
+   }
+
+   html[data-pms-theme="dark"] .menu-inner .menu-item:hover > .menu-link i,
+   html[data-pms-theme="dark"] .menu-inner .menu-item:hover > .menu-link .menu-icon,
+   [data-pms-theme="dark"] .menu-inner .menu-item:hover > .menu-link i {
+       color: #2F6BFF !important;
+   }
+
+   html[data-pms-theme="dark"] .menu-inner .menu-item.active > .menu-link,
+   [data-pms-theme="dark"] .menu-inner .menu-item.active > .menu-link {
+       background: rgba(47, 107, 255, 0.18) !important;
+       color: #60A5FA !important;
+       font-weight: 700 !important;
+       box-shadow: inset 3px 0 0 #2F6BFF !important;
+   }
+
+   html[data-pms-theme="dark"] .menu-inner .menu-item.active > .menu-link i,
+   html[data-pms-theme="dark"] .menu-inner .menu-item.active > .menu-link .menu-icon,
+   [data-pms-theme="dark"] .menu-inner .menu-item.active > .menu-link i {
+       color: #2F6BFF !important;
+   }
+
+   html[data-pms-theme="dark"] .menu-inner .menu-item.open > .menu-link,
+   [data-pms-theme="dark"] .menu-inner .menu-item.open > .menu-link {
+       background-color: #141B3D !important;
+       color: #EEF1FB !important;
+   }
+
+   html[data-pms-theme="dark"] .menu-inner .menu-item.open > .menu-link i,
+   [data-pms-theme="dark"] .menu-inner .menu-item.open > .menu-link i {
+       color: #2F6BFF !important;
+   }
+
+   html[data-pms-theme="dark"] .menu-sub,
+   [data-pms-theme="dark"] .menu-sub {
+       background: rgba(7, 11, 26, 0.5) !important;
+       border-radius: 8px;
+   }
+
+   html[data-pms-theme="dark"] .menu-sub .menu-item .menu-link,
+   [data-pms-theme="dark"] .menu-sub .menu-item .menu-link {
+       color: #9AA3C7 !important;
+   }
+
+   html[data-pms-theme="dark"] .menu-sub .menu-item:hover .menu-link,
+   [data-pms-theme="dark"] .menu-sub .menu-item:hover .menu-link {
+       color: #EEF1FB !important;
+       background-color: #141B3D !important;
+   }
+
+   html[data-pms-theme="dark"] .menu-sub .menu-item.active .menu-link,
+   [data-pms-theme="dark"] .menu-sub .menu-item.active .menu-link {
+       color: #2F6BFF !important;
+       background: rgba(47, 107, 255, 0.16) !important;
+       box-shadow: inset 2px 0 0 #2F6BFF !important;
+   }
+
+   html[data-pms-theme="dark"] .menu-header-text,
+   [data-pms-theme="dark"] .menu-header-text {
+       color: #6B739A !important;
+   }
+
+   /* Dropdowns in Dark Mode */
    html[data-pms-theme="dark"] .dropdown-menu,
-   html[data-theme="dark"] .dropdown-menu {
+   html[data-theme="dark"] .dropdown-menu,
+   html[data-bs-theme="dark"] .dropdown-menu,
+   [data-pms-theme="dark"] .dropdown-menu,
+   body.dark-mode .dropdown-menu {
        background: #0F1530 !important;
        border-color: rgba(238, 241, 251, 0.12) !important;
+       box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6) !important;
+       color: #CBD5E1 !important;
    }
 
+   html[data-pms-theme="dark"] .dropdown-item,
+   html[data-pms-theme="dark"] .dropdown-item.text-dark,
+   [data-pms-theme="dark"] .dropdown-item,
+   [data-pms-theme="dark"] .dropdown-item.text-dark {
+       color: #CBD5E1 !important;
+   }
+
+   html[data-pms-theme="dark"] .dropdown-item:hover,
+   [data-pms-theme="dark"] .dropdown-item:hover {
+       background-color: #141B3D !important;
+       color: #2F6BFF !important;
+   }
+
+   html[data-pms-theme="dark"] .dropdown-item:hover i,
+   [data-pms-theme="dark"] .dropdown-item:hover i {
+       color: #2F6BFF !important;
+   }
+
+   html[data-pms-theme="dark"] .dropdown-header,
+   [data-pms-theme="dark"] .dropdown-header {
+       color: #9AA3C7 !important;
+   }
+
+   html[data-pms-theme="dark"] .dropdown-divider,
+   [data-pms-theme="dark"] .dropdown-divider {
+       border-color: rgba(238, 241, 251, 0.09) !important;
+   }
+
+   html[data-pms-theme="dark"] .dropdown-menu .bg-white,
+   html[data-pms-theme="dark"] .dropdown-menu li.bg-white,
+   [data-pms-theme="dark"] .dropdown-menu .bg-white,
+   [data-pms-theme="dark"] .dropdown-menu li.bg-white {
+       background-color: #141B3D !important;
+       color: #EEF1FB !important;
+   }
+
+   html[data-pms-theme="dark"] .dropdown-menu .text-dark,
+   [data-pms-theme="dark"] .dropdown-menu .text-dark {
+       color: #EEF1FB !important;
+   }
+
+   /* Modals in Dark Mode */
    html[data-pms-theme="dark"] .modal-content,
-   html[data-theme="dark"] .modal-content {
+   html[data-theme="dark"] .modal-content,
+   html[data-bs-theme="dark"] .modal-content,
+   [data-pms-theme="dark"] .modal-content,
+   body.dark-mode .modal-content {
        background-color: #0F1530 !important;
        color: #CBD5E1 !important;
        border-color: rgba(238, 241, 251, 0.12) !important;
+       box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.7) !important;
    }
 
    html[data-pms-theme="dark"] .modal-header,
@@ -2278,7 +2297,8 @@
 
           <nav
             class="layout-navbar container-xxl navbar-detached navbar navbar-expand-xl align-items-center bg-navbar-theme"
-            id="layout-navbar">
+            id="layout-navbar"
+            style="position: sticky !important; top: 0.75rem !important; z-index: 1030 !important;">
             <div class="layout-menu-toggle navbar-nav align-items-xl-center me-4 me-xl-0 d-xl-none">
               <a class="nav-item nav-link px-0 me-xl-6" href="javascript:void(0)">
                 <i class="icon-base bx bx-menu icon-md"></i>
@@ -2322,7 +2342,7 @@
                   <!-- Sticky Note Icon -->
                   <div class="nav-item me-3">
                       <a href="javascript:void(0);" class="d-block header-icon-box sticky-note-trigger" data-bs-toggle="modal" data-bs-target="#addNoteModal" title="Sticky Notes">
-                          <i class="bx bx-note icon-md text-dark"></i>
+                          <i class="bx bx-note icon-md"></i>
                           @if($stickyNotes->count())
                             <span class="sticky-note-count">{{ $stickyNotes->count() }}</span>
                           @endif
@@ -2342,7 +2362,7 @@
                           <!-- Start Timer -->
                           <div class="nav-item me-3">
                           <a href="javascript:void(0);" class="d-block header-icon-box" data-bs-toggle="modal" data-bs-target="#startTimerModal" title="Start Timer">
-                              <i class="bx bx-time-five icon-md text-dark"></i>
+                              <i class="bx bx-time-five icon-md"></i>
                           </a>
                           </div>
                       @endif
@@ -2353,17 +2373,17 @@
                       <li class="nav-item dropdown" data-bs-toggle="tooltip" data-bs-placement="top" title="Create new">
                         <a class="d-block header-icon-box" href="#" id="createNewDropdown" role="button"
                            data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bx bx-plus-circle icon-md text-dark"></i>
+                            <i class="bx bx-plus-circle icon-md"></i>
                         </a>
 
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="createNewDropdown">
                             <li title="Add Task">
-                                <a class="dropdown-item f-14 text-dark openRightModal" href="{{ route('tasks.create') }}">
+                                <a class="dropdown-item f-14 openRightModal" href="{{ route('tasks.create') }}">
                                     <i class="bx bx-plus me-2"></i> Add Task
                                 </a>
                             </li>
                             <li title="Create Ticket">
-                                <a class="dropdown-item f-14 text-dark openRightModal" href="{{ route('tickets.create') }}">
+                                <a class="dropdown-item f-14 openRightModal" href="{{ route('tickets.create') }}">
                                     <i class="bx bx-plus me-2"></i> Create Ticket
                                 </a>
                             </li>
@@ -2375,7 +2395,7 @@
                       <li class="nav-item dropdown" data-bs-toggle="tooltip" data-bs-placement="top" title="Assigned work">
                         <a class="d-block header-icon-box sticky-note-trigger" href="#" id="assignedWorkDropdown" role="button"
                            data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bx bx-plus-circle icon-md text-dark"></i>
+                            <i class="bx bx-plus-circle icon-md"></i>
                             @php $assignedWorkCount = $assignedWorkProjects->count() + $assignedWorkTasks->count() + $assignedWorkTickets->count(); @endphp
                             @if($assignedWorkCount)
                               <span class="sticky-note-count">{{ $assignedWorkCount }}</span>
@@ -2383,7 +2403,7 @@
                         </a>
 
                         <ul class="dropdown-menu dropdown-menu-end p-0" aria-labelledby="assignedWorkDropdown" style="width: 380px; max-height: 520px; overflow-y: auto;">
-                            <li class="px-3 py-2 border-bottom bg-white">
+                            <li class="px-3 py-2 border-bottom">
                                 <p class="mb-0 fw-bold">Assigned Work</p>
                                 <small class="text-muted">Projects, tasks, and tickets assigned to you</small>
                             </li>
@@ -2418,7 +2438,7 @@
                             @forelse($assignedWorkTickets as $ticketItem)
                                 <li class="px-3 py-2">
                                     <div class="d-flex justify-content-between gap-2">
-                                        <a class="text-dark text-decoration-none flex-grow-1" href="{{ route('tickets.show', $ticketItem->id) }}">
+                                        <a class="text-decoration-none flex-grow-1" href="{{ route('tickets.show', $ticketItem->id) }}">
                                             <div class="fw-semibold text-truncate">#{{ $ticketItem->id }} {{ $ticketItem->subject }}</div>
                                             <small class="text-muted">{{ $ticketItem->project?->name ?? 'No project' }} · {{ ucfirst($ticketItem->status) }}</small>
                                         </a>
@@ -2486,7 +2506,7 @@
                        <li class="nav-item dropdown" title="New notifications">
                         <a class="nav-link header-icon-box notification-bell {{ $totalHeaderUnread > 0 ? 'has-unread' : '' }}" href="#" id="navbarDropdown"
                            role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fa fa-bell f-16 text-dark-grey"></i>
+                            <i class="fa fa-bell f-16"></i>
                             @if($totalHeaderUnread > 0)
                                 <span class="badge bg-danger" id="navbarNotificationCount">{{ $totalHeaderUnread }}</span>
                             @endif

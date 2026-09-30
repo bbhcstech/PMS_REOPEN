@@ -7,8 +7,8 @@
     .localization-settings-page {
         min-height: calc(100vh - 100px);
         padding: 2rem 1.75rem;
-        background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 50%, #f4fbf7 100%);
-        color: #0a2e1f;
+        background: linear-gradient(135deg, #F8FAFC 0%, #EEF2FF 50%, #F8FAFC 100%);
+        color: #0F172A;
     }
 
     .localization-settings-shell {
@@ -32,7 +32,7 @@
         right: -100px;
         width: 500px;
         height: 500px;
-        background: radial-gradient(circle, rgba(52, 211, 153, 0.12) 0%, transparent 70%);
+        background: radial-gradient(circle, rgba(79, 131, 255, 0.12) 0%, transparent 70%);
         animation: orbFloat 20s ease-in-out infinite;
     }
 
@@ -41,7 +41,7 @@
         left: -100px;
         width: 450px;
         height: 450px;
-        background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 70%);
+        background: radial-gradient(circle, rgba(47, 107, 255, 0.1) 0%, transparent 70%);
         animation: orbFloat 25s ease-in-out infinite reverse;
     }
 
@@ -68,13 +68,13 @@
     }
 
     .breadcrumb-custom a {
-        color: #059669;
+        color: #2F6BFF;
         text-decoration: none;
         transition: color 0.2s ease;
     }
 
     .breadcrumb-custom a:hover {
-        color: #047857;
+        color: #1E4FCC;
     }
 
     /* ===== HEADER CARD ===== */
@@ -84,8 +84,8 @@
         border-radius: 28px;
         padding: 1.75rem 2.25rem;
         margin-bottom: 2rem;
-        border: 1px solid rgba(16, 185, 129, 0.15);
-        box-shadow: 0 10px 30px -10px rgba(16, 185, 129, 0.08);
+        border: 1px solid rgba(47, 107, 255, 0.15);
+        box-shadow: 0 10px 30px -10px rgba(47, 107, 255, 0.08);
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -109,20 +109,20 @@
         width: 58px;
         height: 58px;
         border-radius: 20px;
-        background: linear-gradient(145deg, #34d399, #059669);
+        background: linear-gradient(145deg, #4F83FF, #2F6BFF);
         color: white;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 1.6rem;
-        box-shadow: 0 8px 20px -4px rgba(5, 150, 105, 0.35);
+        box-shadow: 0 8px 20px -4px rgba(47, 107, 255, 0.35);
         flex-shrink: 0;
     }
 
     .header-title h1 {
         font-size: 1.95rem;
         font-weight: 800;
-        background: linear-gradient(135deg, #0a2e1f, #059669, #10b981);
+        background: linear-gradient(135deg, #0F172A, #2F6BFF, #10b981);
         -webkit-background-clip: text;
         background-clip: text;
         color: transparent;
@@ -139,8 +139,8 @@
 
     .btn-back-settings {
         background-color: #ffffff;
-        border: 1px solid rgba(16, 185, 129, 0.25);
-        color: #0f744c !important;
+        border: 1px solid rgba(47, 107, 255, 0.25);
+        color: #2F6BFF !important;
         font-weight: 700;
         font-size: 0.9rem;
         border-radius: 40px;
@@ -154,9 +154,9 @@
     }
 
     .btn-back-settings:hover {
-        background-color: #e6f3ec;
-        color: #059669 !important;
-        border-color: rgba(16, 185, 129, 0.4);
+        background-color: #EEF2FF;
+        color: #2F6BFF !important;
+        border-color: rgba(47, 107, 255, 0.4);
         transform: translateY(-2px);
     }
 
@@ -184,15 +184,15 @@
         backdrop-filter: blur(20px);
         border-radius: 24px;
         padding: 1.5rem;
-        border: 1px solid rgba(16, 185, 129, 0.14) !important;
-        box-shadow: 0 10px 30px -10px rgba(16, 185, 129, 0.08) !important;
+        border: 1px solid rgba(47, 107, 255, 0.14) !important;
+        box-shadow: 0 10px 30px -10px rgba(47, 107, 255, 0.08) !important;
         display: flex;
         align-items: center;
         gap: 1.25rem;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         position: relative;
         overflow: hidden;
-        color: #0a2e1f !important;
+        color: #0F172A !important;
     }
 
     .localization-settings-page .stat-card:first-of-type *,
@@ -202,8 +202,8 @@
 
     .localization-settings-page .stat-card h3,
     .localization-settings-page .stat-card:first-of-type h3 {
-        color: #0a2e1f !important;
-        -webkit-text-fill-color: #0a2e1f !important;
+        color: #0F172A !important;
+        -webkit-text-fill-color: #0F172A !important;
     }
 
     .localization-settings-page .stat-card h6,
@@ -221,7 +221,7 @@
         left: 0;
         right: 0;
         height: 3px;
-        background: linear-gradient(90deg, #34d399, #059669);
+        background: linear-gradient(90deg, #4F83FF, #2F6BFF);
         transform: scaleX(0);
         transition: transform 0.3s ease;
     }
@@ -232,8 +232,8 @@
 
     .stat-card:hover {
         transform: translateY(-4px);
-        box-shadow: 0 20px 35px -12px rgba(16, 185, 129, 0.15) !important;
-        border-color: rgba(16, 185, 129, 0.25) !important;
+        box-shadow: 0 20px 35px -12px rgba(47, 107, 255, 0.15) !important;
+        border-color: rgba(47, 107, 255, 0.25) !important;
     }
 
     .stat-icon {
@@ -249,9 +249,9 @@
 
     .stat-icon.curr,
     .localization-settings-page .stat-card:first-of-type .stat-icon.curr {
-        background: linear-gradient(145deg, #d1fae5, #a7f3d0) !important;
-        color: #059669 !important;
-        -webkit-text-fill-color: #059669 !important;
+        background: linear-gradient(145deg, #EEF2FF, #E0E7FF) !important;
+        color: #2F6BFF !important;
+        -webkit-text-fill-color: #2F6BFF !important;
     }
 
     .stat-icon.curr i, .stat-icon.curr svg, .stat-icon.curr [class*="fa"],
@@ -260,9 +260,9 @@
     .localization-settings-page .stat-card:first-of-type .stat-icon.curr i,
     .localization-settings-page .stat-card:first-of-type .stat-icon.curr svg {
         background-color: transparent !important;
-        color: #059669 !important;
-        fill: #059669 !important;
-        -webkit-text-fill-color: #059669 !important;
+        color: #2F6BFF !important;
+        fill: #2F6BFF !important;
+        -webkit-text-fill-color: #2F6BFF !important;
     }
 
     .stat-icon.tz,
@@ -326,9 +326,9 @@
     .card-header-avatar svg,
     .card-header-avatar [class*="fa"] {
         background-color: transparent !important;
-        color: #059669 !important;
-        fill: #059669 !important;
-        -webkit-text-fill-color: #059669 !important;
+        color: #2F6BFF !important;
+        fill: #2F6BFF !important;
+        -webkit-text-fill-color: #2F6BFF !important;
     }
 
     .stat-info h6 {
@@ -343,7 +343,7 @@
     .stat-info h3 {
         font-size: 1.2rem;
         font-weight: 800;
-        color: #0a2e1f;
+        color: #0F172A;
         margin: 0;
         line-height: 1.2;
     }
@@ -353,14 +353,14 @@
         background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(20px);
         border-radius: 28px;
-        border: 1px solid rgba(16, 185, 129, 0.15);
-        box-shadow: 0 10px 30px -10px rgba(16, 185, 129, 0.08);
+        border: 1px solid rgba(47, 107, 255, 0.15);
+        box-shadow: 0 10px 30px -10px rgba(47, 107, 255, 0.08);
         overflow: hidden;
     }
 
     .card-header-custom {
         padding: 1.5rem 2.25rem;
-        border-bottom: 1px solid rgba(16, 185, 129, 0.12);
+        border-bottom: 1px solid rgba(47, 107, 255, 0.12);
         display: flex;
         align-items: center;
         gap: 1rem;
@@ -371,8 +371,8 @@
         width: 48px;
         height: 48px;
         border-radius: 16px;
-        background: linear-gradient(145deg, #d1fae5, #a7f3d0);
-        color: #059669;
+        background: linear-gradient(145deg, #EEF2FF, #E0E7FF);
+        color: #2F6BFF;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -386,19 +386,19 @@
         gap: 0.5rem;
         padding: 0.4rem 1rem;
         border-radius: 40px;
-        background: #ecfdf5;
-        color: #059669;
+        background: #EEF2FF;
+        color: #2F6BFF;
         font-weight: 800;
         font-size: 0.82rem;
         letter-spacing: 0.03em;
-        border: 1px solid rgba(5, 150, 105, 0.2);
+        border: 1px solid rgba(47, 107, 255, 0.2);
         margin-bottom: 1.25rem;
     }
 
     .form-label-custom {
         font-size: 0.88rem;
         font-weight: 700;
-        color: #0a2e1f;
+        color: #0F172A;
         margin-bottom: 8px;
         display: flex;
         align-items: center;
@@ -407,23 +407,23 @@
 
     .input-group-custom {
         border-radius: 16px;
-        border: 1px solid rgba(16, 185, 129, 0.2);
+        border: 1px solid rgba(47, 107, 255, 0.2);
         background-color: #fafefb;
         transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         overflow: hidden;
     }
 
     .input-group-custom:focus-within {
-        border-color: #34d399;
+        border-color: #60A5FA;
         background-color: #ffffff;
-        box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.15);
+        box-shadow: 0 0 0 4px rgba(79, 131, 255, 0.15);
         transform: translateY(-1px);
     }
 
     .input-group-custom .input-group-text {
         background-color: transparent;
         border: none;
-        color: #059669;
+        color: #2F6BFF;
         padding-left: 18px;
         padding-right: 12px;
         font-size: 1.1rem;
@@ -435,7 +435,7 @@
         background-color: transparent;
         font-size: 0.92rem;
         font-weight: 600;
-        color: #0a2e1f;
+        color: #0F172A;
         padding-right: 18px;
         height: 50px;
     }
@@ -458,22 +458,22 @@
         font-weight: 700;
         font-size: 0.95rem;
         padding: 0 32px;
-        background: linear-gradient(145deg, #34d399, #059669);
+        background: linear-gradient(145deg, #4F83FF, #2F6BFF);
         color: white !important;
         border: none;
-        box-shadow: 0 6px 20px -4px rgba(5, 150, 105, 0.35);
+        box-shadow: 0 6px 20px -4px rgba(47, 107, 255, 0.35);
         transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         cursor: pointer;
     }
 
     .btn-save-address:hover {
         transform: translateY(-2px) scale(1.02);
-        box-shadow: 0 10px 28px -4px rgba(5, 150, 105, 0.45);
+        box-shadow: 0 10px 28px -4px rgba(47, 107, 255, 0.45);
         color: white !important;
     }
 
     .req-asterisk {
-        color: #059669;
+        color: #2F6BFF;
         font-weight: 800;
     }
 
@@ -497,7 +497,7 @@
 
     [data-theme="dark"] .header-title h1,
     body.dark-mode .header-title h1 {
-        background: linear-gradient(135deg, #34d399, #10b981) !important;
+        background: linear-gradient(135deg, #60A5FA, #10b981) !important;
         -webkit-background-clip: text !important;
         background-clip: text !important;
         color: transparent !important;
@@ -528,13 +528,13 @@
     body.dark-mode .btn-back-settings {
         background-color: #334155 !important;
         border-color: #475569 !important;
-        color: #34d399 !important;
+        color: #60A5FA !important;
     }
 
     [data-theme="dark"] .btn-back-settings:hover,
     body.dark-mode .btn-back-settings:hover {
         background-color: #475569 !important;
-        color: #6ee7b7 !important;
+        color: #93C5FD !important;
     }
 
     [data-theme="dark"] .input-group-custom,
@@ -559,16 +559,16 @@
 
     [data-theme="dark"] .stat-icon.curr,
     body.dark-mode .stat-icon.curr {
-        background: rgba(16, 185, 129, 0.2) !important;
+        background: rgba(47, 107, 255, 0.2) !important;
     }
 
     [data-theme="dark"] .stat-icon.curr i,
     [data-theme="dark"] .stat-icon.curr svg,
     body.dark-mode .stat-icon.curr i,
     body.dark-mode .stat-icon.curr svg {
-        color: #34d399 !important;
-        fill: #34d399 !important;
-        -webkit-text-fill-color: #34d399 !important;
+        color: #60A5FA !important;
+        fill: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
     }
 
     [data-theme="dark"] .stat-icon.tz,
@@ -729,7 +729,7 @@
                         <i class="fas fa-sliders"></i>
                     </div>
                     <div>
-                        <h5 class="mb-0 fw-bold fs-5" style="color: #0a2e1f;">Currency, Timezone & Regional Formats</h5>
+                        <h5 class="mb-0 fw-bold fs-5" style="color: #0F172A;">Currency, Timezone & Regional Formats</h5>
                         <small class="text-muted">Set global default formatting preferences across financial reports, time logs, and employee portals</small>
                     </div>
                 </div>
@@ -780,7 +780,7 @@
                                         value="{{ old('currency_symbol', $settings['currency_symbol'] ?? '$') }}" readonly required
                                         title="Auto-filled based on selected Default Currency Code">
                                 </div>
-                                <small class="text-muted mt-1 d-block"><i class="fas fa-lock me-1" style="color: #059669;"></i>Auto-derived from selected Currency Code.</small>
+                                <small class="text-muted mt-1 d-block"><i class="fas fa-lock me-1" style="color: #2F6BFF;"></i>Auto-derived from selected Currency Code.</small>
                             </div>
 
                             <!-- Currency Symbol Position -->

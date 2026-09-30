@@ -7,7 +7,7 @@
 <div style="display: flex; flex-direction: column; gap: 24px;">
 
     <!-- HEADER BANNER -->
-    <div style="background: linear-gradient(135deg, #059669 0%, #047857 100%); color: #ffffff; padding: 28px 36px; border-radius: var(--radius-xl); box-shadow: var(--shadow-md); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px; position: relative; overflow: hidden;">
+    <div style="background: linear-gradient(135deg, #2F6BFF 0%, #047857 100%); color: #ffffff; padding: 28px 36px; border-radius: var(--radius-xl); box-shadow: var(--shadow-md); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px; position: relative; overflow: hidden;">
         <div style="position: relative; z-index: 1;">
             <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 6px;">
                 <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; font-size: 22px;">
@@ -15,13 +15,13 @@
                 </div>
                 <h1 style="font-size: 24px; font-weight: 800; letter-spacing: -0.5px; color: #ffffff;">Automatic Contribution Analytics</h1>
             </div>
-            <p style="color: #a7f3d0; font-size: 14px; font-weight: 500;">
+            <p style="color: #C7D2FE; font-size: 14px; font-weight: 500;">
                 Verified task completion telemetry derived directly from your database records across tenant platforms.
             </p>
         </div>
 
         <div style="position: relative; z-index: 1; background: rgba(255, 255, 255, 0.16); backdrop-filter: blur(8px); padding: 14px 24px; border-radius: var(--radius-lg); text-align: center; border: 1px solid rgba(255, 255, 255, 0.25); box-shadow: var(--shadow-xs);">
-            <span style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #d1fae5; letter-spacing: 0.8px; display: block; margin-bottom: 2px;">VERIFIED COMPLETED TASKS</span>
+            <span style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #E0E7FF; letter-spacing: 0.8px; display: block; margin-bottom: 2px;">VERIFIED COMPLETED TASKS</span>
             <strong style="font-size: 28px; font-weight: 900; color: #ffffff; line-height: 1;">{{ $stats['total_completed'] }}</strong>
         </div>
     </div>
@@ -93,7 +93,7 @@
                             <span style="font-size: 11.5px; color: var(--slate-muted);">Tenant Company</span>
                         </div>
                     </div>
-                    <span style="font-size: 13px; font-weight: 800; color: #059669; background: #ecfdf5; padding: 4px 14px; border-radius: 14px; border: 1px solid #a7f3d0;">
+                    <span style="font-size: 13px; font-weight: 800; color: #2F6BFF; background: #EEF2FF; padding: 4px 14px; border-radius: 14px; border: 1px solid #C7D2FE;">
                         {{ $cb['completed_count'] }} Tasks
                     </span>
                 </div>
@@ -114,7 +114,7 @@
         <div style="display: flex; flex-direction: column; gap: 14px;">
             @forelse($contributionHistory as $item)
             <div style="display: flex; align-items: flex-start; gap: 16px; padding: 16px; background: #f8fafc; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
-                <div style="width: 36px; height: 36px; border-radius: 50%; background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; margin-top: 2px;">
+                <div style="width: 36px; height: 36px; border-radius: 50%; background: #EEF2FF; color: #2F6BFF; border: 1px solid #C7D2FE; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; margin-top: 2px;">
                     <i class="bx bx-check-circle"></i>
                 </div>
                 <div style="flex: 1;">

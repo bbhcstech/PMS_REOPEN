@@ -46,8 +46,8 @@
         --bx-violet-soft: rgba(139, 92, 246, 0.08);
 
         --bx-emerald: #10B981;
-        --bx-emerald-dim: #059669;
-        --bx-emerald-soft: rgba(16, 185, 129, 0.08);
+        --bx-emerald-dim: #2F6BFF;
+        --bx-emerald-soft: rgba(47, 107, 255, 0.08);
 
         --bx-amber: #F59E0B;
         --bx-amber-soft: rgba(245, 158, 11, 0.08);
@@ -101,7 +101,7 @@
         --bx-blue-soft: rgba(47, 107, 255, 0.18);
         --bx-cyan-soft: rgba(6, 182, 212, 0.18);
         --bx-violet-soft: rgba(139, 92, 246, 0.18);
-        --bx-emerald-soft: rgba(16, 185, 129, 0.18);
+        --bx-emerald-soft: rgba(47, 107, 255, 0.18);
         --bx-amber-soft: rgba(245, 158, 11, 0.18);
         --bx-red-soft: rgba(239, 68, 68, 0.18);
 
@@ -639,18 +639,18 @@
     }
 
     .saas-risk-low {
-        background: #ECFDF5 !important;
-        border: 1px solid #A7F3D0 !important;
-        color: #059669 !important;
-        -webkit-text-fill-color: #059669 !important;
+        background: #EEF2FF !important;
+        border: 1px solid #C7D2FE !important;
+        color: #2F6BFF !important;
+        -webkit-text-fill-color: #2F6BFF !important;
     }
 
     .saas-risk-low i,
     .saas-risk-low .bx,
     .saas-risk-low * {
-        color: #059669 !important;
-        -webkit-text-fill-color: #059669 !important;
-        background-color: #059669 !important;
+        color: #2F6BFF !important;
+        -webkit-text-fill-color: #2F6BFF !important;
+        background-color: #2F6BFF !important;
     }
 
     .saas-risk-mid {
@@ -686,10 +686,10 @@
     /* Dark Mode Risk Status Pills - High Contrast & Clearly Visible */
     html[data-pms-theme="dark"] .saas-risk-low,
     html[data-theme="dark"] .saas-risk-low {
-        background: rgba(16, 185, 129, 0.18) !important;
-        border: 1px solid rgba(16, 185, 129, 0.45) !important;
-        color: #34D399 !important;
-        -webkit-text-fill-color: #34D399 !important;
+        background: rgba(47, 107, 255, 0.18) !important;
+        border: 1px solid rgba(47, 107, 255, 0.45) !important;
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
     }
 
     html[data-pms-theme="dark"] .saas-risk-low i,
@@ -698,9 +698,9 @@
     html[data-theme="dark"] .saas-risk-low i,
     html[data-theme="dark"] .saas-risk-low .bx,
     html[data-theme="dark"] .saas-risk-low * {
-        color: #34D399 !important;
-        -webkit-text-fill-color: #34D399 !important;
-        background-color: #34D399 !important;
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
+        background-color: #60A5FA !important;
     }
 
     html[data-pms-theme="dark"] .saas-risk-mid,
@@ -1280,13 +1280,13 @@
         width: 42px;
         height: 42px;
         border-radius: 12px;
-        background: var(--pms-primary, #0f744c) !important;
+        background: var(--pms-primary, #2F6BFF) !important;
         color: #ffffff !important;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 1.35rem;
-        box-shadow: 0 4px 12px rgba(15, 116, 76, 0.2);
+        box-shadow: 0 4px 12px rgba(47, 107, 255, 0.2);
         flex-shrink: 0;
     }
 
@@ -1296,7 +1296,8 @@
     .stat-icon svg {
         color: #ffffff !important;
         -webkit-text-fill-color: #ffffff !important;
-        background-color: #ffffff !important;
+        background-color: transparent !important;
+        background: transparent !important;
         fill: #ffffff !important;
         opacity: 1 !important;
         font-size: 1.35rem !important;
@@ -1323,7 +1324,8 @@
     .stat-card.is-featured .stat-icon svg {
         color: #ffffff !important;
         -webkit-text-fill-color: #ffffff !important;
-        background-color: #ffffff !important;
+        background-color: transparent !important;
+        background: transparent !important;
         fill: #ffffff !important;
         opacity: 1 !important;
         visibility: visible !important;
@@ -1505,9 +1507,9 @@
     /* Soft Tinted Status Badges (Requirement 9) */
     .badge-low,
     .badge.bg-success {
-        background: #ECFDF5 !important;
-        color: #059669 !important;
-        border: 1px solid #A7F3D0 !important;
+        background: #EEF2FF !important;
+        color: #2F6BFF !important;
+        border: 1px solid #C7D2FE !important;
         border-radius: 6px;
         font-weight: 650;
         font-size: 0.72rem;
@@ -1764,7 +1766,7 @@
                 ['label' => 'Tickets', 'slug' => 'tickets', 'hint' => "{$dashboardUnresolvedTicket} unresolved tickets", 'route' => 'tickets.index', 'value' => $dashboardUnresolvedTicket, 'percent' => round(($dashboardUnresolvedTicket / $dashboardFeatureScale) * 100), 'color' => '#FB7185'],
                 ['label' => 'Clients', 'slug' => 'clients', 'hint' => "{$dashboardTotalClient} client records", 'route' => 'clients.index', 'value' => $dashboardTotalClient, 'percent' => round(($dashboardTotalClient / $dashboardFeatureScale) * 100), 'color' => '#38BDF8'],
                 ['label' => 'Leaves', 'slug' => 'leaves', 'hint' => "{$dashboardPendingLeaves} pending requests", 'route' => 'leaves.index', 'value' => $dashboardPendingLeaves, 'percent' => round(($dashboardPendingLeaves / $dashboardFeatureScale) * 100), 'color' => '#A78BFA'],
-                ['label' => 'Employees', 'slug' => 'employees', 'hint' => "{$dashboardTotalEmployees} total employees", 'route' => 'employees.index', 'value' => $dashboardTotalEmployees, 'percent' => round(($dashboardTotalEmployees / $dashboardFeatureScale) * 100), 'color' => '#34D399'],
+                ['label' => 'Employees', 'slug' => 'employees', 'hint' => "{$dashboardTotalEmployees} total employees", 'route' => 'employees.index', 'value' => $dashboardTotalEmployees, 'percent' => round(($dashboardTotalEmployees / $dashboardFeatureScale) * 100), 'color' => '#60A5FA'],
                 ['label' => 'Reports', 'slug' => 'reports', 'hint' => 'Attendance and operations reporting', 'route' => 'attendance.report', 'value' => 'View', 'percent' => max(35, $dashboardAttendancePercent), 'color' => '#6366F1'],
             ];
             $adminPieCharts = collect($adminPieCharts)->filter(function ($chart) use ($currentCompany) {
@@ -1904,7 +1906,7 @@
                     'url' => $url,
                     'value' => $metric,
                     'percent' => is_numeric($metric) ? round(((float) $metric / $moduleScale) * 100) : 35,
-                    'color' => ['#2F6BFF', '#8B5CF6', '#22D3EE', '#34D399', '#FBBF24', '#FB7185', '#38BDF8', '#6366F1'][$index % 8],
+                    'color' => ['#2F6BFF', '#8B5CF6', '#22D3EE', '#60A5FA', '#FBBF24', '#FB7185', '#38BDF8', '#6366F1'][$index % 8],
                 ];
             })->filter(fn ($module) => $module['url'])->values();
             if ($autoModuleCards->isEmpty()) {

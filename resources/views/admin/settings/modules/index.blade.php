@@ -107,10 +107,10 @@ function resolveModuleIcon(?string $icon): string {
 @section('content')
 <style>
     :root {
-        --mm-emerald: #0f744c;
+        --mm-emerald: #2F6BFF;
         --mm-emerald-dark: #0b5a3a;
-        --mm-emerald-light: rgba(15, 116, 76, 0.08);
-        --mm-emerald-border: rgba(15, 116, 76, 0.2);
+        --mm-emerald-light: rgba(47, 107, 255, 0.08);
+        --mm-emerald-border: rgba(47, 107, 255, 0.2);
         --mm-slate-bg: #f8fafc;
         --mm-slate-border: #e2e8f0;
         --mm-slate-heading: #0f172a;
@@ -140,19 +140,19 @@ function resolveModuleIcon(?string $icon): string {
 
     /* Button Enhancements */
     .btn-mm-primary {
-        background: linear-gradient(135deg, #0f744c 0%, #0d6542 100%);
+        background: linear-gradient(135deg, #2F6BFF 0%, #0d6542 100%);
         color: #ffffff !important;
         border: none;
         font-weight: 600;
         border-radius: 8px;
         padding: 0.55rem 1.25rem;
-        box-shadow: 0 4px 12px rgba(15, 116, 76, 0.2);
+        box-shadow: 0 4px 12px rgba(47, 107, 255, 0.2);
         transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
     }
     .btn-mm-primary:hover {
         background: linear-gradient(135deg, #0b5a3a 0%, #08492f 100%);
         transform: translateY(-2px);
-        box-shadow: 0 6px 18px rgba(15, 116, 76, 0.3);
+        box-shadow: 0 6px 18px rgba(47, 107, 255, 0.3);
         color: #ffffff !important;
     }
     .btn-mm-primary:active {
@@ -168,8 +168,8 @@ function resolveModuleIcon(?string $icon): string {
     }
     .mm-stat-card:hover {
         transform: translateY(-3px);
-        border-color: rgba(15, 116, 76, 0.3);
-        box-shadow: 0 12px 24px -6px rgba(15, 116, 76, 0.1), 0 4px 12px rgba(0, 0, 0, 0.02);
+        border-color: rgba(47, 107, 255, 0.3);
+        box-shadow: 0 12px 24px -6px rgba(47, 107, 255, 0.1), 0 4px 12px rgba(0, 0, 0, 0.02);
     }
     .mm-stat-card:hover .mm-icon-wrapper {
         transform: scale(1.08);
@@ -205,7 +205,7 @@ function resolveModuleIcon(?string $icon): string {
     }
 
     .mm-table tbody tr:hover {
-        background-color: rgba(15, 116, 76, 0.02) !important;
+        background-color: rgba(47, 107, 255, 0.02) !important;
     }
 
     .mm-table tbody td {
@@ -217,7 +217,7 @@ function resolveModuleIcon(?string $icon): string {
     /* Custom Input Focus Ring */
     .mm-search-input:focus {
         border-color: var(--mm-emerald) !important;
-        box-shadow: 0 0 0 3px rgba(15, 116, 76, 0.15) !important;
+        box-shadow: 0 0 0 3px rgba(47, 107, 255, 0.15) !important;
     }
 
     /* Status Switch Styling */
@@ -347,17 +347,17 @@ function resolveModuleIcon(?string $icon): string {
     }
 
     .col-sm-6:nth-child(1) .mm-stat-card .mm-icon-wrapper {
-        background: rgba(15, 116, 76, 0.14) !important;
+        background: rgba(47, 107, 255, 0.14) !important;
     }
     .col-sm-6:nth-child(1) .mm-stat-card .mm-icon-wrapper i,
     .col-sm-6:nth-child(1) .mm-stat-card .mm-icon-wrapper [class*="bx"] {
-        color: #0f744c !important;
-        fill: #0f744c !important;
-        -webkit-text-fill-color: #0f744c !important;
+        color: #2F6BFF !important;
+        fill: #2F6BFF !important;
+        -webkit-text-fill-color: #2F6BFF !important;
     }
 
     .col-sm-6:nth-child(2) .mm-stat-card .mm-icon-wrapper {
-        background: rgba(16, 185, 129, 0.16) !important;
+        background: rgba(47, 107, 255, 0.16) !important;
     }
     .col-sm-6:nth-child(2) .mm-stat-card .mm-icon-wrapper i,
     .col-sm-6:nth-child(2) .mm-stat-card .mm-icon-wrapper [class*="bx"] {
@@ -568,7 +568,7 @@ function resolveModuleIcon(?string $icon): string {
                             <i class="bx bx-check-circle"></i> System registered
                         </small>
                     </div>
-                    <div class="mm-icon-wrapper rounded-3 p-3 d-flex align-items-center justify-content-center" style="background: rgba(15, 116, 76, 0.1); color: var(--mm-emerald);">
+                    <div class="mm-icon-wrapper rounded-3 p-3 d-flex align-items-center justify-content-center" style="background: rgba(47, 107, 255, 0.1); color: var(--mm-emerald);">
                         <i class="bx bx-grid-alt fs-3"></i>
                     </div>
                 </div>
@@ -586,7 +586,7 @@ function resolveModuleIcon(?string $icon): string {
                             Operational now
                         </small>
                     </div>
-                    <div class="mm-icon-wrapper rounded-3 p-3 d-flex align-items-center justify-content-center" style="background: rgba(16, 185, 129, 0.12); color: #10b981;">
+                    <div class="mm-icon-wrapper rounded-3 p-3 d-flex align-items-center justify-content-center" style="background: rgba(47, 107, 255, 0.12); color: #10b981;">
                         <i class="bx bx-toggle-right fs-3"></i>
                     </div>
                 </div>
@@ -635,7 +635,7 @@ function resolveModuleIcon(?string $icon): string {
         <!-- Section Header -->
         <div class="card-header bg-white border-bottom py-3 d-flex flex-wrap align-items-center justify-content-between gap-3">
             <div class="d-flex align-items-center gap-3">
-                <div class="rounded-3 p-2 d-flex align-items-center justify-content-center" style="background: rgba(15, 116, 76, 0.08); color: var(--mm-emerald);">
+                <div class="rounded-3 p-2 d-flex align-items-center justify-content-center" style="background: rgba(47, 107, 255, 0.08); color: var(--mm-emerald);">
                     <i class="bx bx-layer fs-4"></i>
                 </div>
                 <div>

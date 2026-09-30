@@ -1,4 +1,4 @@
-{{-- resources/views/admin/attendance/table.blade.php --}}
+﻿{{-- resources/views/admin/attendance/table.blade.php --}}
 @php $authUser = Auth::user(); @endphp
 
 <div class="table-wrapper position-relative" style="margin-top:12px;">
@@ -7,13 +7,13 @@
       <thead class="table-light">
         <tr>
           <th class="no-export" data-pms-selection-column aria-label="Select rows"></th>
-          <th style="background-color:#f0f0f0; min-width:240px;">Employee</th>
+          <th class="attendance-col-emp" style="min-width:240px;">Employee</th>
           @for($i=1;$i<=$daysInMonth;$i++)
             @php $date = \Carbon\Carbon::createFromDate($year,$month,$i); @endphp
             <th style="font-size:16px; width:56px;">{{ $i }}<br><small>{{ $date->format('D') }}</small></th>
           @endfor
-          <th style="background-color:#f0f0f0; min-width:140px;">Total Hours</th>
-          <th class="no-export" style="background-color:#f0f0f0; min-width:260px;">Actions</th>
+          <th class="attendance-col-hours" style="min-width:140px;">Total Hours</th>
+          <th class="no-export attendance-col-actions" style="min-width:260px;">Actions</th>
         </tr>
       </thead>
 
@@ -21,7 +21,7 @@
         @foreach($users as $user)
           <tr>
             <td class="no-export" data-pms-selection-column></td>
-            <td class="text-start" style="background-color:#f9f9f9; white-space:nowrap;">
+            <td class="text-start attendance-cell-emp" style="white-space:nowrap;">
               <div class="attendance-employee-cell">
                 <img src="{{ $user->profile_image ? asset($user->profile_image) : asset('images/default-avatar.png') }}"
                      alt="{{ $user->name }}"
@@ -130,13 +130,13 @@
               @endphp
 
               <td class="fw-bold">
-                @php $isAdmin = auth()->user()->role === 'admin'; @endphp
+                @php $canEditAttendance = in_array(strtolower((string)(auth()->user()->role ?? '')), ['admin', 'superadmin', 'administrator', 'hr'], true); @endphp
 
                 @if($popupClass === 'view-attendance')
                   <a href="javascript:;" class="view-attendance" data-attendance-id="{{ $attendance->id ?? '' }}" data-user-id="{{ $user->id }}" data-date="{{ $dateKey }}">
                     {!! $symbol !!}
                   </a>
-                @elseif($popupClass === 'edit-attendance' && $isAdmin)
+                @elseif($popupClass === 'edit-attendance' && $canEditAttendance)
                   <a href="javascript:;" class="edit-attendance" data-attendance-id="{{ $attendance->id ?? '' }}" data-user-id="{{ $user->id }}" data-date="{{ $dateKey }}">
                     {!! $symbol !!}
                   </a>
@@ -199,7 +199,7 @@
                   <i class="fas fa-eye"></i>
                   <span>View</span>
                 </button>
-                @if(auth()->user()->role === 'admin')
+                @if($canEditAttendance)
                   <button type="button" class="attendance-action-btn edit js-month-edit" data-payload="{{ $employeeMonthPayloadEncoded }}" title="Edit month records">
                     <i class="fas fa-pen"></i>
                     <span>Edit</span>
@@ -428,6 +428,14 @@
     -webkit-text-fill-color: #c2410c !important;
     font-weight: 800;
     font-size: 0.95rem;
+  .attendance-col-emp,
+  .attendance-col-hours,
+  .attendance-col-actions {
+    background-color: #f8fafc !important;
+    color: #475569 !important;
+  }
+  .attendance-cell-emp {
+    background-color: #ffffff !important;
   }
   #attendanceDetailsModal {
     z-index: 2060 !important;
@@ -467,7 +475,27 @@
     z-index: 2050 !important;
   }
 
-  /* Dark mode overrides for table */
+  /* Dark mode overrides for table & modal */
+  html[data-pms-theme="dark"] .attendance-col-emp,
+  html[data-pms-theme="dark"] .attendance-col-hours,
+  html[data-pms-theme="dark"] .attendance-col-actions,
+  html[data-theme="dark"] .attendance-col-emp,
+  html[data-theme="dark"] .attendance-col-hours,
+  html[data-theme="dark"] .attendance-col-actions,
+  body.dark-mode .attendance-col-emp,
+  body.dark-mode .attendance-col-hours,
+  body.dark-mode .attendance-col-actions {
+    background-color: #0F1530 !important;
+    color: #9AA3C7 !important;
+    -webkit-text-fill-color: #9AA3C7 !important;
+    border-color: rgba(238, 241, 251, 0.08) !important;
+  }
+  html[data-pms-theme="dark"] .attendance-cell-emp,
+  html[data-theme="dark"] .attendance-cell-emp,
+  body.dark-mode .attendance-cell-emp {
+    background-color: #0F1530 !important;
+    border-color: rgba(238, 241, 251, 0.08) !important;
+  }
   html[data-pms-theme="dark"] .attendance-table th,
   html[data-theme="dark"] .attendance-table th,
   html[data-bs-theme="dark"] .attendance-table th,
@@ -477,6 +505,7 @@
     background-color: #0F1530 !important;
     color: #9AA3C7 !important;
     -webkit-text-fill-color: #9AA3C7 !important;
+    border-color: rgba(238, 241, 251, 0.08) !important;
   }
   html[data-pms-theme="dark"] .attendance-table td,
   html[data-theme="dark"] .attendance-table td,
@@ -487,6 +516,12 @@
     background-color: #141B3D !important;
     color: #CBD5E1 !important;
     -webkit-text-fill-color: #CBD5E1 !important;
+    border-color: rgba(238, 241, 251, 0.08) !important;
+  }
+  html[data-pms-theme="dark"] .attendance-table tbody tr:hover td,
+  html[data-theme="dark"] .attendance-table tbody tr:hover td,
+  body.dark-mode .attendance-table tbody tr:hover td {
+    background-color: #1A2247 !important;
   }
   html[data-pms-theme="dark"] .attendance-employee-meta strong,
   html[data-theme="dark"] .attendance-employee-meta strong,
@@ -494,8 +529,8 @@
   [data-pms-theme="dark"] .attendance-employee-meta strong,
   [data-theme="dark"] .attendance-employee-meta strong,
   body.dark-mode .attendance-employee-meta strong {
-    color: #ffffff !important;
-    -webkit-text-fill-color: #ffffff !important;
+    color: #EEF1FB !important;
+    -webkit-text-fill-color: #EEF1FB !important;
   }
   html[data-pms-theme="dark"] .attendance-employee-meta small,
   html[data-theme="dark"] .attendance-employee-meta small,
@@ -512,8 +547,8 @@
   [data-pms-theme="dark"] .attendance-employee-photo,
   [data-theme="dark"] .attendance-employee-photo,
   body.dark-mode .attendance-employee-photo {
-    border-color: #183026 !important;
-    background: #183026 !important;
+    border-color: rgba(238, 241, 251, 0.16) !important;
+    background: #141B3D !important;
   }
   html[data-pms-theme="dark"] .attendance-month-summary,
   html[data-theme="dark"] .attendance-month-summary,
@@ -521,37 +556,48 @@
   [data-pms-theme="dark"] .attendance-month-summary,
   [data-theme="dark"] .attendance-month-summary,
   body.dark-mode .attendance-month-summary {
-    background: #07130d !important;
+    background: #070B1A !important;
   }
   html[data-pms-theme="dark"] .attendance-month-profile,
   html[data-theme="dark"] .attendance-month-profile,
   html[data-bs-theme="dark"] .attendance-month-profile,
   [data-pms-theme="dark"] .attendance-month-profile,
   [data-theme="dark"] .attendance-month-profile,
-  body.dark-mode .attendance-month-profile,
-  html[data-pms-theme="dark"] .attendance-month-table td,
-  html[data-theme="dark"] .attendance-month-table td,
-  html[data-bs-theme="dark"] .attendance-month-table td,
-  [data-pms-theme="dark"] .attendance-month-table td,
-  [data-theme="dark"] .attendance-month-table td,
-  body.dark-mode .attendance-month-table td {
-    background: #102119 !important;
-    border-color: rgba(122, 240, 181, 0.15) !important;
+  body.dark-mode .attendance-month-profile {
+    background: #0F1530 !important;
+    border-color: rgba(238, 241, 251, 0.1) !important;
   }
   html[data-pms-theme="dark"] .attendance-month-profile h5,
   html[data-theme="dark"] .attendance-month-profile h5,
   html[data-bs-theme="dark"] .attendance-month-profile h5,
   [data-pms-theme="dark"] .attendance-month-profile h5,
   [data-theme="dark"] .attendance-month-profile h5,
-  body.dark-mode .attendance-month-profile h5,
+  body.dark-mode .attendance-month-profile h5 {
+    color: #EEF1FB !important;
+    -webkit-text-fill-color: #EEF1FB !important;
+  }
+  html[data-pms-theme="dark"] .attendance-month-profile p,
+  html[data-theme="dark"] .attendance-month-profile p,
+  body.dark-mode .attendance-month-profile p {
+    color: #9AA3C7 !important;
+    -webkit-text-fill-color: #9AA3C7 !important;
+  }
+  html[data-pms-theme="dark"] .attendance-month-table th,
+  html[data-theme="dark"] .attendance-month-table th,
+  body.dark-mode .attendance-month-table th {
+    color: #9AA3C7 !important;
+    -webkit-text-fill-color: #9AA3C7 !important;
+  }
   html[data-pms-theme="dark"] .attendance-month-table td,
   html[data-theme="dark"] .attendance-month-table td,
   html[data-bs-theme="dark"] .attendance-month-table td,
   [data-pms-theme="dark"] .attendance-month-table td,
   [data-theme="dark"] .attendance-month-table td,
   body.dark-mode .attendance-month-table td {
-    color: #ffffff !important;
-    -webkit-text-fill-color: #ffffff !important;
+    background: #141B3D !important;
+    border-color: rgba(238, 241, 251, 0.08) !important;
+    color: #EEF1FB !important;
+    -webkit-text-fill-color: #EEF1FB !important;
   }
   html[data-pms-theme="dark"] .attendance-status-icon.empty,
   html[data-theme="dark"] .attendance-status-icon.empty,
@@ -559,9 +605,48 @@
   [data-pms-theme="dark"] .attendance-status-icon.empty,
   [data-theme="dark"] .attendance-status-icon.empty,
   body.dark-mode .attendance-status-icon.empty {
-    background: #183026 !important;
-    color: #8ba198 !important;
-    -webkit-text-fill-color: #8ba198 !important;
+    background: #141B3D !important;
+    color: #6B739A !important;
+    -webkit-text-fill-color: #6B739A !important;
+  }
+  /* Dark mode modal fixes */
+  html[data-pms-theme="dark"] #attendanceDetailsModal .attendance-details-modal-content,
+  html[data-theme="dark"] #attendanceDetailsModal .attendance-details-modal-content,
+  body.dark-mode #attendanceDetailsModal .attendance-details-modal-content {
+    background: #0F1530 !important;
+    border: 1px solid rgba(238, 241, 251, 0.12) !important;
+    color: #CBD5E1 !important;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.7) !important;
+  }
+  html[data-pms-theme="dark"] #attendanceDetailsModal .attendance-details-modal-body,
+  html[data-theme="dark"] #attendanceDetailsModal .attendance-details-modal-body,
+  body.dark-mode #attendanceDetailsModal .attendance-details-modal-body {
+    background: #0F1530 !important;
+    color: #CBD5E1 !important;
+  }
+  html[data-pms-theme="dark"] #attendanceDetailsModal .attendance-details-container,
+  html[data-theme="dark"] #attendanceDetailsModal .attendance-details-container,
+  body.dark-mode #attendanceDetailsModal .attendance-details-container {
+    background: #070B1A !important;
+    color: #CBD5E1 !important;
+  }
+  html[data-pms-theme="dark"] #attendanceDetailsModal .modal-header,
+  html[data-theme="dark"] #attendanceDetailsModal .modal-header,
+  body.dark-mode #attendanceDetailsModal .modal-header {
+    background: #141B3D !important;
+    border-bottom: 1px solid rgba(238, 241, 251, 0.09) !important;
+    color: #EEF1FB !important;
+  }
+  html[data-pms-theme="dark"] #attendanceDetailsModal .modal-title,
+  html[data-theme="dark"] #attendanceDetailsModal .modal-title,
+  body.dark-mode #attendanceDetailsModal .modal-title {
+    color: #EEF1FB !important;
+  }
+  html[data-pms-theme="dark"] #attendanceDetailsModal .modal-footer,
+  html[data-theme="dark"] #attendanceDetailsModal .modal-footer,
+  body.dark-mode #attendanceDetailsModal .modal-footer {
+    background: #0F1530 !important;
+    border-top: 1px solid rgba(238, 241, 251, 0.09) !important;
   }
 </style>
 

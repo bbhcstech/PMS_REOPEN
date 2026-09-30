@@ -286,7 +286,7 @@
                                 <span class="badge bg-teal text-white">{{ $project->start_date ? \Carbon\Carbon::parse($project->start_date)->format('d M') : 'Start' }} &rarr; {{ $project->deadline ? \Carbon\Carbon::parse($project->deadline)->format('d M Y') : 'Ongoing' }}</span>
                             </div>
                             <div class="progress mb-2" style="height: 10px; border-radius: 6px;">
-                                <div class="progress-bar" style="width: {{ $completionPercent }}%; background: linear-gradient(90deg, #0f744c, #10b981);"></div>
+                                <div class="progress-bar" style="width: {{ $completionPercent }}%; background: linear-gradient(90deg, #2F6BFF, #10b981);"></div>
                             </div>
                             <div class="d-flex justify-content-between text-muted" style="font-size: 0.75rem;">
                                 <span>Planned: {{ $project->start_date ? \Carbon\Carbon::parse($project->start_date)->format('M Y') : 'Start' }}</span>
@@ -752,8 +752,8 @@
     }
 
     .btn-teal {
-        background: #0f744c;
-        border-color: #0f744c;
+        background: #2F6BFF;
+        border-color: #2F6BFF;
         color: #ffffff;
     }
     .btn-teal:hover {
@@ -763,20 +763,20 @@
     }
 
     .btn-outline-teal {
-        color: #0f744c;
-        border-color: #0f744c;
+        color: #2F6BFF;
+        border-color: #2F6BFF;
         background: transparent;
         font-size: 0.78rem;
         font-weight: 600;
         padding: 4px 10px;
     }
     .btn-outline-teal:hover {
-        background: #0f744c;
+        background: #2F6BFF;
         color: #ffffff;
     }
 
-    .text-teal { color: #0f744c !important; }
-    .bg-teal { background-color: #0f744c !important; }
+    .text-teal { color: #2F6BFF !important; }
+    .bg-teal { background-color: #2F6BFF !important; }
 
     /* Stats Grid */
     .overview-stats-grid {
@@ -890,8 +890,8 @@
     .header-icon {
         width: 32px;
         height: 32px;
-        background: #ecfdf5;
-        color: #0f744c;
+        background: #EEF2FF;
+        color: #2F6BFF;
         border-radius: 8px;
         display: flex;
         align-items: center;
@@ -902,7 +902,7 @@
     .feature-view-all {
         font-size: 0.78rem;
         font-weight: 700;
-        color: #0f744c;
+        color: #2F6BFF;
         text-decoration: none;
         display: inline-flex;
         align-items: center;
@@ -1010,7 +1010,7 @@
         width: 34px;
         height: 34px;
         border-radius: 50%;
-        background: #0f744c;
+        background: #2F6BFF;
         color: #ffffff;
         font-weight: 700;
         font-size: 0.85rem;
@@ -1076,7 +1076,7 @@
     }
 
     .mini-row-title:hover {
-        color: #0f744c;
+        color: #2F6BFF;
     }
 
     /* Updates Timeline */
@@ -1109,9 +1109,9 @@
         width: 10px;
         height: 10px;
         border-radius: 50%;
-        background: #0f744c;
+        background: #2F6BFF;
         border: 2px solid #ffffff;
-        box-shadow: 0 0 0 2px #d1fae5;
+        box-shadow: 0 0 0 2px #E0E7FF;
     }
 
     .timeline-content {
@@ -1200,9 +1200,9 @@
         border: 1px solid rgba(47, 107, 255, 0.3) !important;
     }
     html[data-pms-theme="dark"] .stat-icon-wrapper.icon-progress {
-        background: rgba(16, 185, 129, 0.18) !important;
-        color: #34D399 !important;
-        border: 1px solid rgba(16, 185, 129, 0.3) !important;
+        background: rgba(47, 107, 255, 0.18) !important;
+        color: #60A5FA !important;
+        border: 1px solid rgba(47, 107, 255, 0.3) !important;
     }
     html[data-pms-theme="dark"] .stat-icon-wrapper.icon-time {
         background: rgba(245, 158, 11, 0.18) !important;
@@ -1225,9 +1225,9 @@
         border: 1px solid rgba(47, 107, 255, 0.3) !important;
     }
     html[data-pms-theme="dark"] .project-priority-pill.priority-low {
-        background: rgba(16, 185, 129, 0.18) !important;
-        color: #6EE7B7 !important;
-        border: 1px solid rgba(16, 185, 129, 0.3) !important;
+        background: rgba(47, 107, 255, 0.18) !important;
+        color: #93C5FD !important;
+        border: 1px solid rgba(47, 107, 255, 0.3) !important;
     }
     html[data-pms-theme="dark"] .project-priority-pill.priority-medium {
         background: rgba(245, 158, 11, 0.18) !important;
@@ -1246,9 +1246,9 @@
     }
 
     html[data-pms-theme="dark"] .project-status-pill.status-completed {
-        background: rgba(16, 185, 129, 0.18) !important;
-        color: #6EE7B7 !important;
-        border: 1px solid rgba(16, 185, 129, 0.3) !important;
+        background: rgba(47, 107, 255, 0.18) !important;
+        color: #93C5FD !important;
+        border: 1px solid rgba(47, 107, 255, 0.3) !important;
     }
     html[data-pms-theme="dark"] .project-status-pill.status-in-progress,
     html[data-pms-theme="dark"] .project-status-pill.status-in_progress {

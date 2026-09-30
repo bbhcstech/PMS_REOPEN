@@ -12,25 +12,25 @@
            ============================================= */
         :root {
             /* Core Palette - Matching Listing Page */
-            --primary: #0f744c;
-            --secondary: #188b5e;
+            --primary: #2F6BFF;
+            --secondary: #1E4FCC;
             --accent: #22c55e;
-            --mint: #d1fae5;
-            --text-main: #07130d;
+            --mint: #E0E7FF;
+            --text-main: #070B1A;
             --text-muted: #52645a;
             --bg-base: #f7fbf9;
             --surface: #ffffff;
 
             /* Gradients */
             --grad-cta: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 40%, var(--accent) 80%, var(--mint) 100%);
-            --grad-bg: linear-gradient(135deg, rgba(15, 116, 76, 0.12) 0%, rgba(24, 139, 94, 0.12) 40%, rgba(34, 197, 94, 0.12) 80%, rgba(209, 250, 229, 0.2) 100%);
-            --grad-bg-hover: linear-gradient(135deg, rgba(15, 116, 76, 0.2) 0%, rgba(24, 139, 94, 0.2) 40%, rgba(34, 197, 94, 0.2) 80%, rgba(209, 250, 229, 0.3) 100%);
+            --grad-bg: linear-gradient(135deg, rgba(47, 107, 255, 0.12) 0%, rgba(24, 139, 94, 0.12) 40%, rgba(34, 197, 94, 0.12) 80%, rgba(209, 250, 229, 0.2) 100%);
+            --grad-bg-hover: linear-gradient(135deg, rgba(47, 107, 255, 0.2) 0%, rgba(24, 139, 94, 0.2) 40%, rgba(34, 197, 94, 0.2) 80%, rgba(209, 250, 229, 0.3) 100%);
 
             /* Glassmorphism */
             --glass-bg: rgba(255, 255, 255, 0.92);
             --glass-border: rgba(255, 255, 255, 1);
-            --shadow-soft: 0 10px 30px -10px rgba(15, 116, 76, 0.08);
-            --shadow-hover: 0 20px 40px -12px rgba(15, 116, 76, 0.2);
+            --shadow-soft: 0 10px 30px -10px rgba(47, 107, 255, 0.08);
+            --shadow-hover: 0 20px 40px -12px rgba(47, 107, 255, 0.2);
 
             /* Motion */
             --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -47,11 +47,11 @@
         }
 
         .directory-profile-box {
-            border: 1px solid rgba(15, 116, 76, .14);
+            border: 1px solid rgba(47, 107, 255, .14);
             background: rgba(255, 255, 255, .94);
             border-radius: 14px;
             padding: 18px;
-            box-shadow: 0 14px 34px rgba(15, 116, 76, .08);
+            box-shadow: 0 14px 34px rgba(47, 107, 255, .08);
         }
 
         .directory-profile-head {
@@ -150,7 +150,7 @@
             border-radius: 24px;
             padding: 2rem 2.5rem;
             margin-bottom: 2rem;
-            box-shadow: 0 20px 40px -10px rgba(15, 116, 76, 0.25);
+            box-shadow: 0 20px 40px -10px rgba(47, 107, 255, 0.25);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -276,7 +276,7 @@
         }
 
         .alert-custom-success {
-            background: #d1fae5;
+            background: #E0E7FF;
             border-left: 4px solid #10b981;
             color: #065f46;
             border-radius: 16px;
@@ -288,7 +288,7 @@
         /* MAIN CARD */
         .card-premium {
             background: var(--surface);
-            border: 1px solid rgba(15, 116, 76, 0.12);
+            border: 1px solid rgba(47, 107, 255, 0.12);
             border-radius: 24px;
             box-shadow: var(--shadow-soft);
             overflow: hidden;
@@ -339,10 +339,10 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
             background: var(--grad-bg);
-            border: 1px solid rgba(15, 116, 76, 0.12);
+            border: 1px solid rgba(47, 107, 255, 0.12);
             border-radius: 16px;
             padding: 1.2rem 2rem;
-            box-shadow: 0 10px 24px -18px rgba(15, 116, 76, 0.45);
+            box-shadow: 0 10px 24px -18px rgba(47, 107, 255, 0.45);
         }
 
         .section-title i {
@@ -390,7 +390,7 @@
         .form-control-premium,
         .form-select-premium {
             background: #ffffff;
-            border: 1.5px solid rgba(15, 116, 76, 0.2);
+            border: 1.5px solid rgba(47, 107, 255, 0.2);
             border-radius: 14px;
             padding: 0.7rem 1.2rem;
             font-size: 0.9rem;
@@ -412,7 +412,7 @@
             display: flex;
             border-radius: 14px;
             overflow: hidden;
-            border: 1.5px solid rgba(15, 116, 76, 0.2);
+            border: 1.5px solid rgba(47, 107, 255, 0.2);
             transition: all 0.3s;
             background: #fff;
         }
@@ -443,7 +443,7 @@
         .password-input-group .btn {
             align-items: center;
             border: none;
-            border-left: 1px solid rgba(15, 116, 76, 0.12);
+            border-left: 1px solid rgba(47, 107, 255, 0.12);
             border-radius: 0;
             color: var(--primary);
             display: inline-flex;
@@ -455,7 +455,7 @@
 
         .password-input-group .btn:hover,
         .password-input-group .btn:focus {
-            background: rgba(15, 116, 76, 0.08);
+            background: rgba(47, 107, 255, 0.08);
             color: var(--primary);
             box-shadow: none;
         }
@@ -463,7 +463,6 @@
         .input-group-premium .country-code-select {
             border: none;
             background: transparent;
-            padding-left: 1rem;
             font-weight: 600;
             color: var(--primary);
             max-width: 160px;
@@ -547,8 +546,9 @@
         .input-group-premium .mobile-input {
             border: none;
             background: transparent;
-            border-left: 1.5px solid rgba(15, 116, 76, 0.2);
+            border-left: 1.5px solid rgba(47, 107, 255, 0.2);
             border-radius: 0 14px 14px 0;
+            padding-left: 0.85rem;
         }
 
         .input-group-premium .mobile-input:focus {
@@ -688,7 +688,7 @@
 
         /* MODAL STYLES */
         .modal-content-premium {
-            border: 1px solid rgba(15, 116, 76, 0.14);
+            border: 1px solid rgba(47, 107, 255, 0.14);
             border-radius: 20px;
             overflow: hidden;
             box-shadow: 0 24px 60px rgba(22, 39, 30, 0.18);
@@ -696,7 +696,7 @@
 
         .modal-header-premium {
             background: linear-gradient(135deg, #f1faf5, #ffffff) !important;
-            border-bottom: 1px solid rgba(15, 116, 76, 0.1);
+            border-bottom: 1px solid rgba(47, 107, 255, 0.1);
             padding: 1.2rem 1.5rem;
         }
 
@@ -769,8 +769,8 @@
         html[data-pms-theme="dark"] .section-title i,
         html[data-bs-theme="dark"] .section-title i,
         html[data-theme="dark"] .section-title i {
-            color: #34D399 !important;
-            -webkit-text-fill-color: #34D399 !important;
+            color: #60A5FA !important;
+            -webkit-text-fill-color: #60A5FA !important;
         }
 
         /* Form Labels & Badges */
@@ -894,15 +894,15 @@
         html[data-pms-theme="dark"] .directory-profile-head span,
         html[data-bs-theme="dark"] .directory-profile-head span,
         html[data-theme="dark"] .directory-profile-head span {
-            color: #34D399 !important;
-            -webkit-text-fill-color: #34D399 !important;
+            color: #60A5FA !important;
+            -webkit-text-fill-color: #60A5FA !important;
         }
 
         html[data-pms-theme="dark"] .directory-profile-head span i,
         html[data-bs-theme="dark"] .directory-profile-head span i,
         html[data-theme="dark"] .directory-profile-head span i {
-            color: #34D399 !important;
-            -webkit-text-fill-color: #34D399 !important;
+            color: #60A5FA !important;
+            -webkit-text-fill-color: #60A5FA !important;
         }
 
         html[data-pms-theme="dark"] .directory-profile-head p,
@@ -1041,8 +1041,8 @@
         html[data-pms-theme="dark"] small.text-muted a,
         html[data-bs-theme="dark"] small.text-muted a,
         html[data-theme="dark"] small.text-muted a {
-            color: #34D399 !important;
-            -webkit-text-fill-color: #34D399 !important;
+            color: #60A5FA !important;
+            -webkit-text-fill-color: #60A5FA !important;
             font-weight: 700 !important;
         }
 
@@ -1130,8 +1130,8 @@
         [data-pms-theme="dark"] .btn-header-enterprise:hover {
             background: #ffffff !important;
             border-color: #ffffff !important;
-            color: #0f744c !important;
-            -webkit-text-fill-color: #0f744c !important;
+            color: #2F6BFF !important;
+            -webkit-text-fill-color: #2F6BFF !important;
             box-shadow: 0 15px 30px -8px rgba(0, 0, 0, 0.25) !important;
         }
 
@@ -1140,8 +1140,8 @@
         html[data-theme="dark"] .btn-header-enterprise:hover i,
         body[data-pms-theme="dark"] .btn-header-enterprise:hover i,
         [data-pms-theme="dark"] .btn-header-enterprise:hover i {
-            color: #0f744c !important;
-            -webkit-text-fill-color: #0f744c !important;
+            color: #2F6BFF !important;
+            -webkit-text-fill-color: #2F6BFF !important;
         }
     </style>
 
@@ -1284,10 +1284,10 @@
                         <div class="col-md-4">
                             <label class="form-label-premium">
                                 <span><i class="fas fa-lock"></i> Password</span>
-                                <span class="optional-badge">Optional</span>
+                                <span class="mandatory-badge">Required</span>
                             </label>
                             <div class="input-group-premium password-input-group">
-                                <input type="password" name="password" id="password" class="form-control-premium" autocomplete="off" minlength="8">
+                                <input type="password" name="password" id="password" class="form-control-premium @error('password') is-invalid @enderror" autocomplete="new-password" required minlength="8" placeholder="Enter password">
                                 <button type="button" class="btn btn-outline-secondary toggle-password" title="Show/Hide Password">
                                     <i class="fa fa-eye"></i>
                                 </button>
@@ -1295,7 +1295,8 @@
                                     <i class="fa fa-random"></i>
                                 </button>
                             </div>
-                            <small class="text-muted" style="font-size: 0.7rem;">Leave blank to auto-generate a password. Min 8 characters if setting manually.</small>
+                            <small class="text-muted" style="font-size: 0.72rem;">Min 8 chars: at least 1 uppercase, 1 lowercase, 1 number & 1 special character.</small>
+                            <div id="password-validation-msg" class="text-danger small mt-1 d-none" style="font-size: 0.75rem;"></div>
                             @error('password')
                                 <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
@@ -1438,7 +1439,7 @@
                                             $phoneFlag = $country->flag_url ?? 'https://flagcdn.com/w20/' . $phoneMeta['iso'] . '.png';
                                             $phoneLabel = $country->name . ' (' . $phoneMeta['dial_code'] . ')';
                                         @endphp
-                                        <option value="{{ $phoneMeta['dial_code'] }}" data-country="{{ $country->name }}" data-flag="{{ $phoneFlag }}" {{ $selectedMobileCode === $phoneMeta['dial_code'] && $selectedCountry === $country->name ? 'selected' : '' }}>
+                                        <option value="{{ $phoneMeta['dial_code'] }}" data-country="{{ $country->name }}" data-flag="{{ $phoneFlag }}" data-min-digits="{{ $phoneMeta['min_digits'] }}" data-max-digits="{{ $phoneMeta['max_digits'] }}" {{ $selectedMobileCode === $phoneMeta['dial_code'] && $selectedCountry === $country->name ? 'selected' : '' }}>
                                             {{ $phoneLabel }}
                                         </option>
                                     @endforeach
@@ -1447,7 +1448,7 @@
                                        value="{{ $mobileValue }}" style="border: none;">
                                 <div id="mobile-error" class="invalid-feedback mobile-error d-none"></div>
                             </div>
-                            <small class="text-muted d-block mt-1" style="font-size: 0.7rem;">Select the country code and enter a 10-digit phone number.</small>
+                            <small id="mobile_help_text" class="text-muted d-block mt-1" style="font-size: 0.7rem;">Select the country code and enter a 10-digit phone number.</small>
                             <input type="hidden" name="mobile_with_code" id="mobile_with_code" value="{{ old('mobile_with_code') ?? ($ed->mobile ?? $employee?->mobile ?? '') }}">
                             @error('mobile_country_code')
                                 <div class="invalid-feedback d-block">{{ $message }}</div>
@@ -1847,7 +1848,7 @@
     }
     .select2-container--bootstrap-5 .select2-selection {
         border-radius: 14px !important;
-        border-color: rgba(15, 116, 76, 0.2) !important;
+        border-color: rgba(47, 107, 255, 0.2) !important;
         min-height: 44px;
     }
     .input-group-premium .invalid-feedback {
@@ -1860,8 +1861,8 @@
     }
     .pending-option-note {
         align-items: center;
-        background: #ecfdf5;
-        border: 1px solid rgba(16, 185, 129, 0.28);
+        background: #EEF2FF;
+        border: 1px solid rgba(47, 107, 255, 0.28);
         border-radius: 12px;
         color: #065f46;
         display: flex;
@@ -1983,14 +1984,62 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
+    function generateCompliantPassword(len = 12) {
+        const uppers = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+        const lowers = 'abcdefghijkmnopqrstuvwxyz';
+        const digits = '23456789';
+        const specials = '!@#$%^&*()-_=+';
+        const all = uppers + lowers + digits + specials;
+
+        let pwd = [
+            uppers[Math.floor(Math.random() * uppers.length)],
+            lowers[Math.floor(Math.random() * lowers.length)],
+            digits[Math.floor(Math.random() * digits.length)],
+            specials[Math.floor(Math.random() * specials.length)]
+        ];
+        for (let i = 4; i < len; i++) {
+            pwd.push(all[Math.floor(Math.random() * all.length)]);
+        }
+        return pwd.sort(() => Math.random() - 0.5).join('');
+    }
+
+    function checkPasswordComplexity(val) {
+        if (!val) return 'Password is required.';
+        if (val.length < 8) return 'Password must be at least 8 characters.';
+        if (!/[A-Z]/.test(val)) return 'Password must contain at least 1 uppercase letter.';
+        if (!/[a-z]/.test(val)) return 'Password must contain at least 1 lowercase letter.';
+        if (!/[0-9]/.test(val)) return 'Password must contain at least 1 number.';
+        if (!/[^A-Za-z0-9]/.test(val)) return 'Password must contain at least 1 special character.';
+        return '';
+    }
+
     document.querySelectorAll('.generate-password').forEach(btn => {
         btn.addEventListener('click', function () {
             const passwordField = $el('password');
             if (!passwordField) return;
-            const randomPassword = Math.random().toString(36).slice(-10) + '!A1';
-            passwordField.value = randomPassword;
+            passwordField.value = generateCompliantPassword(12);
+            passwordField.dispatchEvent(new Event('input'));
         });
     });
+
+    const pwdInput = $el('password');
+    if (pwdInput) {
+        pwdInput.addEventListener('input', function () {
+            const err = checkPasswordComplexity(this.value);
+            const msgEl = $el('password-validation-msg');
+            if (msgEl) {
+                if (err) {
+                    msgEl.textContent = err;
+                    msgEl.classList.remove('d-none');
+                    pwdInput.classList.add('is-invalid');
+                } else {
+                    msgEl.textContent = '';
+                    msgEl.classList.add('d-none');
+                    pwdInput.classList.remove('is-invalid');
+                }
+            }
+        });
+    }
 
     const desBtn = $el('openDesignationModalBtn');
     if (desBtn) desBtn.addEventListener('click', function () {
@@ -2041,6 +2090,23 @@ document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('employeeForm');
     if (form) {
         form.addEventListener('submit', function (e) {
+            const pwdField = $el('password');
+            if (pwdField) {
+                const pwdError = checkPasswordComplexity(pwdField.value);
+                if (pwdError) {
+                    e.preventDefault();
+                    pwdField.focus();
+                    pwdField.classList.add('is-invalid');
+                    const msgEl = $el('password-validation-msg');
+                    if (msgEl) {
+                        msgEl.textContent = pwdError;
+                        msgEl.classList.remove('d-none');
+                    }
+                    alert(pwdError);
+                    return false;
+                }
+            }
+
             const dobEl = $el('dob');
             if (dobEl && !dobEl.value) {
                 e.preventDefault();
@@ -2051,23 +2117,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const mobileEl = $el('mobile_only_digits');
             if (mobileEl) {
-                if (mobileEl.classList.contains('is-invalid')) {
+                if (mobileEl.classList.contains('is-invalid') || !validateMobileInput()) {
                     e.preventDefault();
                     mobileEl.focus();
                     alert(($el('mobile-error') && $el('mobile-error').textContent) || 'Please fix the mobile number before submitting.');
                     return false;
                 }
-
-                const m = mobileEl.value.trim();
-                if (!/^[1-9]\d{9}$/.test(m)) {
-                    e.preventDefault();
-                    mobileEl.focus();
-                    alert('Please enter a valid 10-digit mobile number (no leading 0).');
-                    return false;
-                }
                 const hidden = $el('mobile_with_code');
                 const countryCode = $('#mobile_country_code').val() || '+91';
-                if (hidden) hidden.value = countryCode + m;
+                if (hidden) hidden.value = countryCode + mobileEl.value.trim();
             }
 
             const exitDateEl = $el('exit_date');
@@ -2164,19 +2222,71 @@ $(document).ready(function() {
         loadSubDepartments($(this).val(), null);
     });
 
+    function getSelectedMobileDigitRules() {
+        const $opt = $('#mobile_country_code option:selected');
+        let minDigits = parseInt($opt.data('min-digits')) || 10;
+        let maxDigits = parseInt($opt.data('max-digits')) || 10;
+        return { minDigits, maxDigits };
+    }
+
+    function updateMobileValidationRules() {
+        const rules = getSelectedMobileDigitRules();
+        const minDigits = rules.minDigits;
+        const maxDigits = rules.maxDigits;
+        const $mobileInput = $('#mobile_only_digits');
+        $mobileInput.attr('maxlength', maxDigits);
+
+        let helpMsg = '';
+        if (minDigits === maxDigits) {
+            helpMsg = `Select the country code and enter a ${minDigits}-digit phone number.`;
+        } else {
+            helpMsg = `Select the country code and enter a ${minDigits} to ${maxDigits}-digit phone number.`;
+        }
+        $('#mobile_help_text').text(helpMsg);
+    }
+
+    function validateMobileInput() {
+        const $input = $('#mobile_only_digits');
+        const value = $input.val().trim();
+        const $error = $('#mobile-error');
+
+        $error.addClass('d-none').removeClass('d-block').text('');
+        $input.removeClass('is-invalid');
+
+        if (!value) return true;
+
+        const rules = getSelectedMobileDigitRules();
+        const minDigits = rules.minDigits;
+        const maxDigits = rules.maxDigits;
+        const len = value.length;
+        const isDigitsOnly = /^[1-9]\d*$/.test(value);
+
+        let msg = '';
+        if (!isDigitsOnly) {
+            msg = 'Please enter a valid mobile number (digits only, no leading 0).';
+        } else if (len < minDigits || len > maxDigits) {
+            if (minDigits === maxDigits) {
+                msg = `Please enter a valid ${minDigits}-digit mobile number.`;
+            } else {
+                msg = `Please enter a valid ${minDigits} to ${maxDigits}-digit mobile number.`;
+            }
+        }
+
+        if (msg) {
+            $input.addClass('is-invalid');
+            $error.text(msg).removeClass('d-none').addClass('d-block');
+            return false;
+        }
+
+        return true;
+    }
+
     let mobileCheckAjax = null;
     $('#mobile_only_digits').on('blur', function() {
+        if (!validateMobileInput()) return;
+
         const value = $(this).val().trim();
-        $('#mobile-error').addClass('d-none').text('');
-        $(this).removeClass('is-invalid');
-
         if (!value) return;
-
-        if (!/^[1-9]\d{9}$/.test(value)) {
-            $(this).addClass('is-invalid');
-            $('#mobile-error').text('Please enter a valid 10-digit mobile number').removeClass('d-none').addClass('d-block');
-            return;
-        }
 
         const selectedCountryCode = $('#mobile_country_code').val() || '+91';
         $('#mobile_with_code').val(selectedCountryCode + value);
@@ -2372,6 +2482,16 @@ $(document).ready(function() {
         return $('<span class="country-code-selection-item"><strong class="country-dial-code">' + code + '</strong></span>');
     }
 
+    function formatMobileCodeSelection(state) {
+        if (!state.id) return state.text;
+        const flag = $(state.element).data("flag");
+        const code = state.id;
+        if (flag) {
+            return $('<span><img src="' + flag + '" width="20" height="14" style="object-fit: cover; border-radius: 2px; vertical-align: middle; margin-right: 6px;"/> <span class="country-dial-code" style="font-weight: 600; vertical-align: middle; font-size: 0.95rem;">' + code + '</span></span>');
+        }
+        return $('<span><span class="country-dial-code" style="font-weight: 600; vertical-align: middle; font-size: 0.95rem;">' + code + '</span></span>');
+    }
+
     function syncMobileHidden() {
         const code = $('#mobile_country_code').val() || '+91';
         const mobile = $('#mobile_only_digits').val() || '';
@@ -2409,9 +2529,15 @@ $(document).ready(function() {
             width: '125px',
             dropdownAutoWidth: true
         }).on('change', function () {
+            updateMobileValidationRules();
             syncMobileHidden();
-            $('#mobile_only_digits').trigger('blur');
+            if ($('#mobile_only_digits').val().trim() !== '') {
+                validateMobileInput();
+                $('#mobile_only_digits').trigger('blur');
+            }
         });
+
+        updateMobileValidationRules();
     }
 
     if ($('#language').length) {

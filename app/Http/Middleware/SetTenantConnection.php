@@ -19,7 +19,12 @@ class SetTenantConnection
     public function handle(Request $request, Closure $next): Response
     {
         // Bypass tenant DB switching for SuperAdmin routes and authenticated SuperAdmin users
-        if ($request->is('super-admin*') || \Illuminate\Support\Facades\Auth::guard('super_admin')->check()) {
+        if (
+            $request->is('super-admin*') ||
+            $request->is('superadmin*') ||
+            \Illuminate\Support\Facades\Auth::guard('super_admin')->check() ||
+            (auth()->check() && in_array(strtolower((string)(auth()->user()->role ?? '')), ['superadmin', 'super-admin', 'super_admin'], true))
+        ) {
             return $next($request);
         }
 

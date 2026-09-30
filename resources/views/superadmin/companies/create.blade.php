@@ -8,8 +8,8 @@
 <style>
   :root {
     --brand-primary: #10b981;
-    --brand-primary-hover: #059669;
-    --brand-glow: rgba(16, 185, 129, 0.2);
+    --brand-primary-hover: #2F6BFF;
+    --brand-glow: rgba(47, 107, 255, 0.2);
     --brand-emerald: #10b981;
     --brand-indigo: #6366f1;
     --brand-purple: #8b5cf6;
@@ -129,9 +129,9 @@
   }
 
   @keyframes pulseGreenDot {
-    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-    70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
-    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(47, 107, 255, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(47, 107, 255, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(47, 107, 255, 0); }
   }
 
   @keyframes shimmerBtn {
@@ -198,7 +198,7 @@
     width: 42px;
     height: 42px;
     border-radius: 12px;
-    background: linear-gradient(135deg, #0f744c 0%, #10b981 100%);
+    background: linear-gradient(135deg, #2F6BFF 0%, #10b981 100%);
     color: #ffffff;
     display: flex;
     align-items: center;
@@ -236,7 +236,7 @@
     top: 24px;
     left: 15%;
     height: 3px;
-    background: linear-gradient(90deg, #0f744c, var(--brand-emerald));
+    background: linear-gradient(90deg, #2F6BFF, var(--brand-emerald));
     z-index: 1;
     border-radius: 999px;
     width: 0%;
@@ -293,7 +293,7 @@
   }
 
   .step-card.active .step-number {
-    background: linear-gradient(135deg, #0f744c, var(--brand-emerald));
+    background: linear-gradient(135deg, #2F6BFF, var(--brand-emerald));
     color: #ffffff;
     border-color: transparent;
     box-shadow: 0 4px 12px var(--brand-glow);
@@ -351,7 +351,7 @@
     width: 44px;
     height: 44px;
     border-radius: 14px;
-    background: rgba(16, 185, 129, 0.12);
+    background: rgba(47, 107, 255, 0.12);
     color: var(--brand-emerald);
     display: flex;
     align-items: center;
@@ -390,7 +390,7 @@
     width: 34px;
     height: 34px;
     border-radius: 10px;
-    background: linear-gradient(135deg, #0f744c, var(--brand-emerald));
+    background: linear-gradient(135deg, #2F6BFF, var(--brand-emerald));
     color: #fff;
     font-weight: 800;
     font-size: 13px;
@@ -639,7 +639,7 @@
 
   .drag-drop-box:hover, .drag-drop-box.dragover {
     border-color: var(--brand-emerald);
-    background: rgba(16, 185, 129, 0.05);
+    background: rgba(47, 107, 255, 0.05);
     box-shadow: 0 8px 20px var(--brand-glow);
     transform: translateY(-2px);
   }
@@ -903,7 +903,7 @@
     width: 36px;
     height: 36px;
     border-radius: 10px;
-    background: rgba(16, 185, 129, 0.12);
+    background: rgba(47, 107, 255, 0.12);
     color: var(--brand-emerald);
     display: flex;
     align-items: center;
@@ -944,7 +944,7 @@
   }
 
   .btn-shimmer-cta {
-    background: linear-gradient(135deg, #0f744c 0%, #10b981 50%, #0f744c 100%);
+    background: linear-gradient(135deg, #2F6BFF 0%, #10b981 50%, #2F6BFF 100%);
     background-size: 200% 100%;
     color: #ffffff;
     border: none;
@@ -963,7 +963,7 @@
   .btn-shimmer-cta:hover {
     animation: shimmerBtn 2s infinite linear;
     transform: translateY(-2px);
-    box-shadow: 0 14px 30px rgba(16, 185, 129, 0.35);
+    box-shadow: 0 14px 30px rgba(47, 107, 255, 0.35);
   }
 
   /* ERROR ALERT */
@@ -1123,10 +1123,45 @@
         <!-- Phone Number -->
         <div class="form-field-group">
           <label class="form-label">Phone Number</label>
-          <div class="input-with-icon">
-            <i class="bx bx-phone"></i>
-            <input type="text" name="phone" value="{{ old('phone') }}" placeholder="+1 (555) 019-2831" class="input-control" />
+          @php
+              $fullPhone = old('phone');
+              $countryCode = '+91';
+              $phoneNum = $fullPhone;
+              if($fullPhone && preg_match('/^(\+\d{1,4})\s*[-\s]?(.*)$/', $fullPhone, $matches)) {
+                  $countryCode = $matches[1];
+                  $phoneNum = $matches[2];
+              }
+          @endphp
+          <div class="input-with-icon" style="display: flex; position: relative;">
+            <i class="bx bx-phone" style="z-index: 10;"></i>
+            <select id="company_create_country_code" style="width: 100px; flex-shrink: 0; padding-left: 36px; border: 1px solid var(--border-color); border-right: 0; border-top-left-radius: 8px; border-bottom-left-radius: 8px; font-size: 14px; background-color: var(--bg-surface); outline: none; appearance: none; -webkit-appearance: none;">
+                <option value="+91" {{ $countryCode == '+91' ? 'selected' : '' }}>+91 (IN)</option>
+                <option value="+1" {{ $countryCode == '+1' ? 'selected' : '' }}>+1 (US)</option>
+                <option value="+44" {{ $countryCode == '+44' ? 'selected' : '' }}>+44 (UK)</option>
+                <option value="+61" {{ $countryCode == '+61' ? 'selected' : '' }}>+61 (AU)</option>
+                <option value="+971" {{ $countryCode == '+971' ? 'selected' : '' }}>+971 (AE)</option>
+                <option value="+81" {{ $countryCode == '+81' ? 'selected' : '' }}>+81 (JP)</option>
+                <option value="+49" {{ $countryCode == '+49' ? 'selected' : '' }}>+49 (DE)</option>
+                <option value="+33" {{ $countryCode == '+33' ? 'selected' : '' }}>+33 (FR)</option>
+            </select>
+            <input type="text" id="company_create_phone_display" value="{{ $phoneNum }}" placeholder="555 019 2831" class="input-control" style="border-top-left-radius: 0; border-bottom-left-radius: 0; padding-left: 12px; width: 100%;" />
+            <input type="hidden" name="phone" id="company_create_phone_hidden" value="{{ $fullPhone }}">
           </div>
+          <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const ccCreate = document.getElementById('company_create_country_code');
+                const mobCreate = document.getElementById('company_create_phone_display');
+                const hiddenCreate = document.getElementById('company_create_phone_hidden');
+                function updateCreatePhone() {
+                    const num = mobCreate.value.replace(/[^0-9]/g, '');
+                    hiddenCreate.value = num ? ccCreate.value + ' ' + num : '';
+                }
+                if(ccCreate && mobCreate) {
+                    ccCreate.addEventListener('change', updateCreatePhone);
+                    mobCreate.addEventListener('input', updateCreatePhone);
+                }
+            });
+          </script>
         </div>
 
         <!-- Company Address -->

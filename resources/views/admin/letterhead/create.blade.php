@@ -9,13 +9,13 @@
     .leave-form-page {
         padding: 24px 30px;
         min-height: 100vh;
-        background: linear-gradient(135deg, #f0f9f4 0%, #f7fbff 100%);
-        color: #102119;
+        background: linear-gradient(135deg, #F8FAFC 0%, #f7fbff 100%);
+        color: #0F1530;
         font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     }
 
     .leave-breadcrumb, .leave-form-hero, .form-card {
-        border: 1px solid rgba(16, 185, 129, 0.14);
+        border: 1px solid rgba(47, 107, 255, 0.14);
         background: rgba(255, 255, 255, 0.98);
         box-shadow: 0 16px 36px -20px rgba(15, 23, 42, 0.18);
     }
@@ -26,13 +26,13 @@
         align-items: center;
         padding: 10px 18px;
         border-radius: 14px;
-        color: #0f744c;
+        color: #2F6BFF;
         font-weight: 800;
         font-size: 0.88rem;
         margin-bottom: 20px;
     }
     .leave-breadcrumb a {
-        color: #0f744c;
+        color: #2F6BFF;
         text-decoration: none;
     }
 
@@ -54,7 +54,7 @@
         left: 0;
         right: 0;
         height: 4px;
-        background: linear-gradient(90deg, #10b981 0%, #0f744c 50%, #1e40af 100%);
+        background: linear-gradient(90deg, #10b981 0%, #2F6BFF 50%, #1e40af 100%);
     }
 
     .leave-form-hero h1 {
@@ -139,7 +139,7 @@
     }
     .form-control:focus, .form-select:focus {
         border-color: #10b981;
-        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+        box-shadow: 0 0 0 3px rgba(47, 107, 255, 0.15);
     }
 
     textarea.form-control {
@@ -165,13 +165,13 @@
         text-decoration: none;
     }
     .btn-primary {
-        background: linear-gradient(135deg, #10b981 0%, #0f744c 100%);
+        background: linear-gradient(135deg, #10b981 0%, #2F6BFF 100%);
         color: #ffffff !important;
-        box-shadow: 0 6px 18px rgba(16, 185, 129, 0.35);
+        box-shadow: 0 6px 18px rgba(47, 107, 255, 0.35);
     }
     .btn-primary:hover {
         transform: translateY(-1px);
-        box-shadow: 0 8px 22px rgba(16, 185, 129, 0.45);
+        box-shadow: 0 8px 22px rgba(47, 107, 255, 0.45);
         color: #ffffff !important;
     }
 
@@ -187,9 +187,9 @@
     }
 
     .btn-light, .btn-secondary {
-        background: #f0f9f4;
-        color: #0f744c;
-        border: 1px solid rgba(16, 185, 129, 0.22);
+        background: #F8FAFC;
+        color: #2F6BFF;
+        border: 1px solid rgba(47, 107, 255, 0.22);
     }
     .btn-light:hover, .btn-secondary:hover {
         background: #e1f5ec;
@@ -199,12 +199,12 @@
     /* Letterhead Customization Box */
     .lh-custom-box {
         background: #f8fafc;
-        border: 1px solid #d1fae5;
+        border: 1px solid #E0E7FF;
         border-radius: 16px;
         padding: 18px;
         margin-top: 16px;
         margin-bottom: 16px;
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.05);
+        box-shadow: 0 4px 12px rgba(47, 107, 255, 0.05);
     }
 
     .upload-slot-card {
@@ -275,12 +275,12 @@
     html[data-bs-theme="dark"] .leave-breadcrumb {
         background: #0F1530 !important;
         border-color: rgba(238, 241, 251, 0.12) !important;
-        color: #34d399 !important;
+        color: #60A5FA !important;
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3) !important;
     }
     html[data-pms-theme="dark"] .leave-breadcrumb a,
     html[data-bs-theme="dark"] .leave-breadcrumb a {
-        color: #34d399 !important;
+        color: #60A5FA !important;
     }
     html[data-pms-theme="dark"] .leave-breadcrumb span,
     html[data-bs-theme="dark"] .leave-breadcrumb span {
@@ -339,7 +339,7 @@
     html[data-bs-theme="dark"] .btn-light:hover,
     html[data-bs-theme="dark"] .btn-secondary:hover {
         background: #1A2247 !important;
-        color: #34d399 !important;
+        color: #60A5FA !important;
         border-color: #10b981 !important;
     }
     html[data-pms-theme="dark"] .btn-light span,
@@ -398,7 +398,7 @@
 
     html[data-pms-theme="dark"] .btn-link.text-success,
     html[data-bs-theme="dark"] .btn-link.text-success {
-        color: #34d399 !important;
+        color: #60A5FA !important;
     }
 
     html[data-pms-theme="dark"] .lh-custom-box,
@@ -756,7 +756,7 @@
                             <span id="prevDate">{{ now()->format('F d, Y') }}</span>
                         </div>
 
-                        <div style="font-size: 8.5pt; font-weight: bold; color: #0f744c; text-decoration: underline; margin-bottom: 10px;" id="prevSubject">
+                        <div style="font-size: 8.5pt; font-weight: bold; color: #2F6BFF; text-decoration: underline; margin-bottom: 10px;" id="prevSubject">
                             Subject: Apology Letter Regarding Leave
                         </div>
 
@@ -820,7 +820,7 @@ document.addEventListener('DOMContentLoaded', function () {
         bodyArea.value = sampleArea.value;
         bodyArea.focus();
         bodyArea.style.transition = 'background-color 0.3s ease';
-        bodyArea.style.backgroundColor = '#ecfdf5';
+        bodyArea.style.backgroundColor = '#EEF2FF';
         setTimeout(() => bodyArea.style.backgroundColor = '', 600);
     });
 

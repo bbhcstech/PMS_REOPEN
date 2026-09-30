@@ -19,6 +19,7 @@ use App\Models\Deal;
 use App\Models\DealStage;
 use App\Models\DealCategory;
 use App\Models\UserActivity;
+use App\Support\CountryPhone;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
@@ -162,42 +163,101 @@ class ClientController extends Controller
         ));
     }
 
-    public function store(Request $request)
+    protected function getPhoneRulesAndNormalize(Request $request): array
     {
-        Log::info('Client Form Data:', $request->all());
+        // 1. Mobile Phone (Personal / Step 1)
+        $mobileCountryName = $request->input('country', 'India');
+        $mobilePhoneMeta   = CountryPhone::getDigitRules($mobileCountryName);
+        $mobileDialCode    = $mobilePhoneMeta['dial_code'];
+        $mobileMinDigits   = $mobilePhoneMeta['min_digits'];
+        $mobileMaxDigits   = $mobilePhoneMeta['max_digits'];
 
         // Normalize mobile
         if ($request->filled('mobile')) {
-            $mobile = trim(preg_replace('/\s+/', '', (string) $request->mobile));
-            if (!str_starts_with($mobile, '+91')) {
-                $mobile = '+91' . ltrim($mobile, '+0');
+            $rawMobile = trim((string) $request->mobile);
+            // If letters were submitted, keep an invalid token so regex rejects it
+            if (preg_match('/[a-zA-Z]/', $rawMobile)) {
+                $mobile = $mobileDialCode . 'INVALID_TEXT';
+            } else {
+                $digitsOnly = preg_replace('/\D/', '', $rawMobile);
+                $cleanDialDigits = preg_replace('/\D/', '', $mobileDialCode);
+                if (str_starts_with($digitsOnly, $cleanDialDigits)) {
+                    $nationalDigits = substr($digitsOnly, strlen($cleanDialDigits));
+                } else {
+                    $nationalDigits = $digitsOnly;
+                }
+                $mobile = $mobileDialCode . $nationalDigits;
             }
             $request->merge(['mobile' => $mobile]);
         }
 
-        // Normalize office_phone (if just '+91' or empty, set to null)
+        // 2. Office Phone (Company / Step 2) - uses company_country or falls back to country
+        $companyCountryName = $request->input('company_country') ?: $request->input('country', 'India');
+        $officePhoneMeta    = CountryPhone::getDigitRules($companyCountryName);
+        $officeDialCode     = $officePhoneMeta['dial_code'];
+        $officeMinDigits    = $officePhoneMeta['min_digits'];
+        $officeMaxDigits    = $officePhoneMeta['max_digits'];
+
+        // Normalize office_phone
         if ($request->filled('office_phone')) {
-            $phone = trim(preg_replace('/\s+/', '', (string) $request->office_phone));
-            if ($phone === '+91' || $phone === '') {
-                $request->merge(['office_phone' => null]);
+            $rawOffice = trim((string) $request->office_phone);
+            if (preg_match('/[a-zA-Z]/', $rawOffice)) {
+                $officePhone = $officeDialCode . 'INVALID_TEXT';
+                $request->merge(['office_phone' => $officePhone]);
             } else {
-                if (!str_starts_with($phone, '+91')) {
-                    $phone = '+91' . ltrim($phone, '+0');
+                $digitsOnly = preg_replace('/\D/', '', $rawOffice);
+                $cleanDialDigits = preg_replace('/\D/', '', $officeDialCode);
+                if ($rawOffice === $officeDialCode || $rawOffice === '' || $digitsOnly === '' || $digitsOnly === $cleanDialDigits) {
+                    $request->merge(['office_phone' => null]);
+                } else {
+                    if (str_starts_with($digitsOnly, $cleanDialDigits)) {
+                        $nationalDigits = substr($digitsOnly, strlen($cleanDialDigits));
+                    } else {
+                        $nationalDigits = $digitsOnly;
+                    }
+                    $officePhone = $officeDialCode . $nationalDigits;
+                    $request->merge(['office_phone' => $officePhone]);
                 }
-                $request->merge(['office_phone' => $phone]);
             }
         } else {
             $request->merge(['office_phone' => null]);
         }
+
+        $mobileRegex = '/^' . preg_quote($mobileDialCode, '/') . '[0-9]{' . $mobileMinDigits . ',' . $mobileMaxDigits . '}$/';
+        $officeRegex = '/^' . preg_quote($officeDialCode, '/') . '[0-9]{' . $officeMinDigits . ',' . $officeMaxDigits . '}$/';
+
+        $mobileMsg = $mobileMinDigits === $mobileMaxDigits 
+            ? "must start with {$mobileDialCode} and have exactly {$mobileMinDigits} digits with numbers only (no text or letters allowed)."
+            : "must start with {$mobileDialCode} and have {$mobileMinDigits} to {$maxDigits} digits with numbers only (no text or letters allowed).";
+
+        $officeMsg = $officeMinDigits === $officeMaxDigits 
+            ? "must start with {$officeDialCode} and have exactly {$officeMinDigits} digits with numbers only (no text or letters allowed)."
+            : "must start with {$officeDialCode} and have {$officeMinDigits} to {$officeMaxDigits} digits with numbers only (no text or letters allowed).";
+
+        return [
+            'mobileRegex' => $mobileRegex,
+            'officeRegex' => $officeRegex,
+            'messages' => [
+                'mobile.regex'       => 'Mobile number ' . $mobileMsg,
+                'office_phone.regex' => 'Office phone ' . $officeMsg,
+            ]
+        ];
+    }
+
+    public function store(Request $request)
+    {
+        Log::info('Client Form Data:', $request->all());
+
+        $phoneConfig = $this->getPhoneRulesAndNormalize($request);
 
         $rules = [
             // Account Details
             'salutation'             => 'nullable|string|max:10',
             'name'                   => 'required|string|max:255',
             'email'                  => 'required|email|unique:clients,email',
-            'password'               => 'nullable|string|min:6',
+            'password'               => ['required', 'string', 'min:8', 'regex:/[A-Z]/', 'regex:/[a-z]/', 'regex:/[0-9]/', 'regex:/[^A-Za-z0-9]/'],
             'country'                => 'nullable',
-            'mobile'                 => ['required', 'regex:/^\+91[0-9]{10}$/'],
+            'mobile'                 => ['required', 'regex:' . $phoneConfig['mobileRegex']],
             'profile_picture'        => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'gender'                 => 'nullable',
             'language'               => 'nullable',
@@ -208,10 +268,11 @@ class ClientController extends Controller
 
             // Company Details
             'company_name'           => 'nullable|string|max:255',
+            'company_country'        => 'nullable|string|max:100',
             'website'                => 'nullable|url|max:255',
             'tax_name'               => 'nullable',
             'tax_number'             => 'nullable',
-            'office_phone'           => ['nullable','regex:/^\+91[0-9]{10}$/'],
+            'office_phone'           => ['nullable', 'regex:' . $phoneConfig['officeRegex']],
             'city'                   => 'nullable',
             'state'                  => 'nullable',
             'postal_code'            => 'nullable',
@@ -235,6 +296,7 @@ class ClientController extends Controller
 
             // Deal Details (Optional)
             'deal_name'              => 'nullable|string|max:255',
+            'deal_currency'          => 'nullable|string|max:10',
             'deal_value'             => 'nullable|numeric|min:0',
             'deal_close_date'        => 'nullable|date',
             'deal_stage_id'          => 'nullable|exists:deal_stages,id',
@@ -242,17 +304,20 @@ class ClientController extends Controller
             'deal_agent_id'          => 'nullable|exists:users,id',
         ];
 
-        $request->validate($rules, [
-            'mobile.regex'       => 'Mobile number must start with +91 and have 10 digits.',
-            'office_phone.regex' => 'Office phone must start with +91 and have 10 digits.',
+        $validationMessages = array_merge($phoneConfig['messages'], [
+            'password.required' => 'Password is required.',
+            'password.min'      => 'Password must be at least 8 characters long.',
+            'password.regex'    => 'Password must contain at least 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character.',
         ]);
+
+        $request->validate($rules, $validationMessages);
 
         DB::beginTransaction();
         try {
             $data = $request->only([
                 'salutation', 'name', 'email', 'country', 'mobile', 'gender', 'language',
                 'client_category_id', 'client_sub_category_id', 'login_allowed', 'email_notifications',
-                'company_name', 'website', 'tax_name', 'tax_number', 'office_phone', 'city',
+                'company_name', 'company_country', 'website', 'tax_name', 'tax_number', 'office_phone', 'city',
                 'state', 'postal_code', 'added_by', 'company_address', 'shipping_address', 'note'
             ]);
 
@@ -423,6 +488,7 @@ class ClientController extends Controller
                     'lead_name'        => $request->input('deal_lead_name') ?: $client->name,
                     'contact_details'  => $request->input('deal_contact_details') ?: ($client->email ?: ($client->mobile ?: 'N/A')),
                     'value'            => $request->input('deal_value', 0.00) ?: 0.00,
+                    'currency'         => $request->input('deal_currency', 'INR') ?: 'INR',
                     'close_date'       => $request->filled('deal_close_date') ? $request->deal_close_date : Carbon::today()->addDays(7),
                     'next_follow_up'   => $request->deal_next_follow_up,
                     'deal_stage_id'    => $request->filled('deal_stage_id') ? $request->deal_stage_id : (DealStage::first()?->id ?? 1),
@@ -460,36 +526,42 @@ class ClientController extends Controller
         $client = Client::findOrFail($id);
         $user   = User::where('email', $client->email)->first();
 
-     $request->validate([
-    'salutation'             => 'nullable|string|max:10',
-    'name'                   => 'required|string|max:255',
-    'email'                  => 'required|email|unique:clients,email',
-    'password'               => 'nullable|string|min:6',
-    'country'                => 'nullable',
-    'mobile'                 => 'nullable',
-    'profile_picture'        => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-    'gender'                 => 'nullable',
-    'language'               => 'nullable',
-    'client_category_id'     => 'nullable|exists:client_categories,id',
-    'client_sub_category_id' => 'nullable|exists:client_sub_categories,id',
-    'login_allowed'          => 'nullable|boolean',
-    'email_notifications'    => 'nullable|boolean',
-    'company_name'           => 'nullable|string|max:255',
-    'website'                => 'nullable|url|max:255',
-    'tax_name'               => 'nullable',
-    'tax_number'             => 'nullable',
-    'office_phone'           => ['nullable','regex:/^\+91[0-9]{10}$/'],
-    'city'                   => 'nullable',
-    'state'                  => 'nullable',
-    'postal_code'            => 'nullable',
-    'added_by'               => 'nullable|integer|exists:users,id',
-    'company_address'        => 'nullable|string',
-    'shipping_address'       => 'nullable|string',
-    'note'                   => 'nullable|string',
-    'company_logo'           => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-], [
-    'office_phone.regex' => 'Office phone must start with +91 and have 10 digits.',
-]);
+        $phoneConfig = $this->getPhoneRulesAndNormalize($request);
+
+        $validationMessages = array_merge($phoneConfig['messages'], [
+            'password.min'   => 'Password must be at least 8 characters long.',
+            'password.regex' => 'Password must contain at least 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character.',
+        ]);
+
+        $request->validate([
+            'salutation'             => 'nullable|string|max:10',
+            'name'                   => 'required|string|max:255',
+            'email'                  => 'required|email|unique:clients,email,' . $id,
+            'password'               => ['nullable', 'string', 'min:8', 'regex:/[A-Z]/', 'regex:/[a-z]/', 'regex:/[0-9]/', 'regex:/[^A-Za-z0-9]/'],
+            'country'                => 'nullable',
+            'mobile'                 => ['required', 'regex:' . $phoneConfig['mobileRegex']],
+            'profile_picture'        => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'gender'                 => 'nullable',
+            'language'               => 'nullable',
+            'client_category_id'     => 'nullable|exists:client_categories,id',
+            'client_sub_category_id' => 'nullable|exists:client_sub_categories,id',
+            'login_allowed'          => 'nullable|boolean',
+            'email_notifications'    => 'nullable|boolean',
+            'company_name'           => 'nullable|string|max:255',
+            'company_country'        => 'nullable|string|max:100',
+            'website'                => 'nullable|url|max:255',
+            'tax_name'               => 'nullable',
+            'tax_number'             => 'nullable',
+            'office_phone'           => ['nullable', 'regex:' . $phoneConfig['officeRegex']],
+            'city'                   => 'nullable',
+            'state'                  => 'nullable',
+            'postal_code'            => 'nullable',
+            'added_by'               => 'nullable|integer|exists:users,id',
+            'company_address'        => 'nullable|string',
+            'shipping_address'       => 'nullable|string',
+            'note'                   => 'nullable|string',
+            'company_logo'           => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        ], $validationMessages);
 
 
         $data = $request->except(['password', 'profile_picture', 'company_logo']);

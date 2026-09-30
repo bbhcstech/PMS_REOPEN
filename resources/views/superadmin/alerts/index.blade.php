@@ -15,7 +15,7 @@
         --primary: #2563eb;
         --primary-light: #eff6ff;
         --success: #10b981;
-        --success-light: #ecfdf5;
+        --success-light: #EEF2FF;
         --warning: #f59e0b;
         --warning-light: #fffbeb;
         --danger: #ef4444;
@@ -144,7 +144,7 @@
     .sev-critical { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
     .sev-warning { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
     .sev-info { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
-    .sev-success { background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; }
+    .sev-success { background: #EEF2FF; color: #2F6BFF; border: 1px solid #C7D2FE; }
 
     .category-pill {
         background: #f1f5f9;
@@ -426,7 +426,7 @@
     /* Alert Icon Badges (Screenshot 5 - Bottom Left) */
     .alert-icon-critical { background: #fef2f2; color: #dc2626; }
     .alert-icon-warning { background: #fffbeb; color: #d97706; }
-    .alert-icon-success { background: #ecfdf5; color: #059669; }
+    .alert-icon-success { background: #EEF2FF; color: #2F6BFF; }
     .alert-icon-info { background: #eff6ff; color: #2563eb; }
 
     html[data-pms-theme="dark"] .alert-icon-critical,
@@ -446,9 +446,9 @@
     html[data-pms-theme="dark"] .alert-icon-success,
     html[data-theme="dark"] .alert-icon-success,
     html[data-bs-theme="dark"] .alert-icon-success {
-        background: rgba(16, 185, 129, 0.15) !important;
-        color: #34d399 !important;
-        border: 1px solid rgba(52, 211, 153, 0.3) !important;
+        background: rgba(47, 107, 255, 0.15) !important;
+        color: #60A5FA !important;
+        border: 1px solid rgba(79, 131, 255, 0.3) !important;
     }
     html[data-pms-theme="dark"] .alert-icon-info,
     html[data-theme="dark"] .alert-icon-info,
@@ -609,11 +609,11 @@
 
         <!-- Resolved Today -->
         <div class="kpi-card" data-filter-type="status" data-filter-val="resolved">
-            <div class="kpi-icon-box" style="background: #ecfdf5; color: #059669;">
+            <div class="kpi-icon-box" style="background: #EEF2FF; color: #2F6BFF;">
                 <i class="fas fa-check-circle"></i>
             </div>
             <div>
-                <div class="kpi-val" style="color: #059669;">{{ $kpis['resolved_today'] }}</div>
+                <div class="kpi-val" style="color: #2F6BFF;">{{ $kpis['resolved_today'] }}</div>
                 <div class="kpi-label">Resolved Today</div>
             </div>
         </div>

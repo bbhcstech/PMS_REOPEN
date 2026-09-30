@@ -7,8 +7,8 @@
     .branches-page {
         min-height: calc(100vh - 100px);
         padding: 2rem 1.75rem;
-        background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 50%, #f4fbf7 100%);
-        color: #0a2e1f;
+        background: linear-gradient(135deg, #F8FAFC 0%, #EEF2FF 50%, #F8FAFC 100%);
+        color: #0F172A;
     }
 
     .branches-shell {
@@ -32,7 +32,7 @@
         right: -100px;
         width: 500px;
         height: 500px;
-        background: radial-gradient(circle, rgba(52, 211, 153, 0.12) 0%, transparent 70%);
+        background: radial-gradient(circle, rgba(79, 131, 255, 0.12) 0%, transparent 70%);
         animation: orbFloat 20s ease-in-out infinite;
     }
 
@@ -41,7 +41,7 @@
         left: -100px;
         width: 450px;
         height: 450px;
-        background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 70%);
+        background: radial-gradient(circle, rgba(47, 107, 255, 0.1) 0%, transparent 70%);
         animation: orbFloat 25s ease-in-out infinite reverse;
     }
 
@@ -68,13 +68,13 @@
     }
 
     .breadcrumb-custom a {
-        color: #059669;
+        color: #2F6BFF;
         text-decoration: none;
         transition: color 0.2s ease;
     }
 
     .breadcrumb-custom a:hover {
-        color: #047857;
+        color: #1E4FCC;
     }
 
     /* ===== HEADER CARD ===== */
@@ -84,8 +84,8 @@
         border-radius: 28px;
         padding: 1.75rem 2.25rem;
         margin-bottom: 2rem;
-        border: 1px solid rgba(16, 185, 129, 0.15);
-        box-shadow: 0 10px 30px -10px rgba(16, 185, 129, 0.08);
+        border: 1px solid rgba(47, 107, 255, 0.15);
+        box-shadow: 0 10px 30px -10px rgba(47, 107, 255, 0.08);
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -109,20 +109,20 @@
         width: 58px;
         height: 58px;
         border-radius: 20px;
-        background: linear-gradient(145deg, #34d399, #059669);
+        background: linear-gradient(145deg, #4F83FF, #2F6BFF);
         color: white;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 1.6rem;
-        box-shadow: 0 8px 20px -4px rgba(5, 150, 105, 0.35);
+        box-shadow: 0 8px 20px -4px rgba(47, 107, 255, 0.35);
         flex-shrink: 0;
     }
 
     .header-title h1 {
         font-size: 1.95rem;
         font-weight: 800;
-        background: linear-gradient(135deg, #0a2e1f, #059669, #10b981);
+        background: linear-gradient(135deg, #0F172A, #2F6BFF, #10b981);
         -webkit-background-clip: text;
         background-clip: text;
         color: transparent;
@@ -138,7 +138,7 @@
     }
 
     .btn-add-address {
-        background: linear-gradient(145deg, #34d399, #059669);
+        background: linear-gradient(145deg, #4F83FF, #2F6BFF);
         color: white !important;
         padding: 0.75rem 1.6rem;
         border-radius: 40px;
@@ -151,12 +151,12 @@
         transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         border: none;
         cursor: pointer;
-        box-shadow: 0 6px 20px -4px rgba(5, 150, 105, 0.35);
+        box-shadow: 0 6px 20px -4px rgba(47, 107, 255, 0.35);
     }
 
     .btn-add-address:hover {
         transform: translateY(-2px) scale(1.02);
-        box-shadow: 0 10px 28px -4px rgba(5, 150, 105, 0.45);
+        box-shadow: 0 10px 28px -4px rgba(47, 107, 255, 0.45);
         color: white !important;
     }
 
@@ -175,15 +175,15 @@
         backdrop-filter: blur(20px);
         border-radius: 24px;
         padding: 1.5rem;
-        border: 1px solid rgba(16, 185, 129, 0.14) !important;
-        box-shadow: 0 10px 30px -10px rgba(16, 185, 129, 0.08) !important;
+        border: 1px solid rgba(47, 107, 255, 0.14) !important;
+        box-shadow: 0 10px 30px -10px rgba(47, 107, 255, 0.08) !important;
         display: flex;
         align-items: center;
         gap: 1.25rem;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         position: relative;
         overflow: hidden;
-        color: #0a2e1f !important;
+        color: #0F172A !important;
     }
 
     .branches-page .stat-card:first-of-type *,
@@ -193,8 +193,8 @@
 
     .branches-page .stat-card h3,
     .branches-page .stat-card:first-of-type h3 {
-        color: #0a2e1f !important;
-        -webkit-text-fill-color: #0a2e1f !important;
+        color: #0F172A !important;
+        -webkit-text-fill-color: #0F172A !important;
     }
 
     .branches-page .stat-card h6,
@@ -212,7 +212,7 @@
         left: 0;
         right: 0;
         height: 3px;
-        background: linear-gradient(90deg, #34d399, #059669);
+        background: linear-gradient(90deg, #4F83FF, #2F6BFF);
         transform: scaleX(0);
         transition: transform 0.3s ease;
     }
@@ -223,8 +223,8 @@
 
     .stat-card:hover {
         transform: translateY(-4px);
-        box-shadow: 0 20px 35px -12px rgba(16, 185, 129, 0.15) !important;
-        border-color: rgba(16, 185, 129, 0.25) !important;
+        box-shadow: 0 20px 35px -12px rgba(47, 107, 255, 0.15) !important;
+        border-color: rgba(47, 107, 255, 0.25) !important;
     }
 
     .stat-icon {
@@ -248,14 +248,14 @@
     .stat-icon.total,
     .branches-page .stat-card .stat-icon.total,
     .branches-page .stat-card:first-of-type .stat-icon.total {
-        background: linear-gradient(145deg, #d1fae5, #a7f3d0) !important;
+        background: linear-gradient(145deg, #EEF2FF, #E0E7FF) !important;
     }
 
     .stat-icon.total i,
     .branches-page .stat-card .stat-icon.total i,
     .branches-page .stat-card:first-of-type .stat-icon.total i {
-        color: #047857 !important;
-        -webkit-text-fill-color: #047857 !important;
+        color: #2F6BFF !important;
+        -webkit-text-fill-color: #2F6BFF !important;
     }
 
     .stat-icon.default,
@@ -319,13 +319,13 @@
     html[data-pms-theme="dark"] .stat-icon.total,
     html[data-bs-theme="dark"] .stat-icon.total,
     [data-pms-theme="dark"] .stat-icon.total {
-        background: rgba(16, 185, 129, 0.2) !important;
+        background: rgba(47, 107, 255, 0.2) !important;
     }
     html[data-pms-theme="dark"] .stat-icon.total i,
     html[data-bs-theme="dark"] .stat-icon.total i,
     [data-pms-theme="dark"] .stat-icon.total i {
-        color: #34d399 !important;
-        -webkit-text-fill-color: #34d399 !important;
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
     }
 
     html[data-pms-theme="dark"] .stat-icon.default,
@@ -376,7 +376,7 @@
     .stat-info h3 {
         font-size: 2rem;
         font-weight: 800;
-        color: #0a2e1f;
+        color: #0F172A;
         margin: 0;
         line-height: 1;
     }
@@ -386,14 +386,14 @@
         background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(20px);
         border-radius: 28px;
-        border: 1px solid rgba(16, 185, 129, 0.15);
-        box-shadow: 0 10px 30px -10px rgba(16, 185, 129, 0.08);
+        border: 1px solid rgba(47, 107, 255, 0.15);
+        box-shadow: 0 10px 30px -10px rgba(47, 107, 255, 0.08);
         overflow: hidden;
     }
 
     .card-header-custom {
         padding: 1.35rem 2rem;
-        border-bottom: 1px solid rgba(16, 185, 129, 0.12);
+        border-bottom: 1px solid rgba(47, 107, 255, 0.12);
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -402,7 +402,7 @@
     }
 
     .branch-item-card {
-        border: 1px solid rgba(16, 185, 129, 0.15);
+        border: 1px solid rgba(47, 107, 255, 0.15);
         border-radius: 20px;
         padding: 1.5rem;
         background: #ffffff;
@@ -411,34 +411,34 @@
     }
 
     .branch-item-card:hover {
-        border-color: rgba(16, 185, 129, 0.3);
+        border-color: rgba(47, 107, 255, 0.3);
         transform: translateY(-4px);
-        box-shadow: 0 14px 35px -10px rgba(16, 185, 129, 0.12);
+        box-shadow: 0 14px 35px -10px rgba(47, 107, 255, 0.12);
     }
 
     .branch-avatar-box {
         width: 56px;
         height: 56px;
         border-radius: 16px;
-        background: linear-gradient(145deg, #d1fae5, #a7f3d0);
-        color: #059669;
+        background: linear-gradient(145deg, #EEF2FF, #E0E7FF);
+        color: #2F6BFF;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 1.6rem;
         flex-shrink: 0;
         overflow: hidden;
-        border: 1px solid rgba(16, 185, 129, 0.2);
+        border: 1px solid rgba(47, 107, 255, 0.2);
     }
 
     .branch-avatar-box i {
-        color: #059669 !important;
-        -webkit-text-fill-color: #059669 !important;
+        color: #2F6BFF !important;
+        -webkit-text-fill-color: #2F6BFF !important;
     }
 
     .card-header-custom .avatar i {
-        color: #059669 !important;
-        -webkit-text-fill-color: #059669 !important;
+        color: #2F6BFF !important;
+        -webkit-text-fill-color: #2F6BFF !important;
     }
 
     .branch-avatar-img {
@@ -457,21 +457,21 @@
         width: 84px;
         height: 84px;
         border-radius: 26px;
-        background: linear-gradient(145deg, #d1fae5, #a7f3d0);
-        color: #059669;
+        background: linear-gradient(145deg, #EEF2FF, #E0E7FF);
+        color: #2F6BFF;
         display: flex;
         align-items: center;
         justify-content: center;
         margin: 0 auto 1.5rem auto;
-        border: 1px solid rgba(16, 185, 129, 0.2);
+        border: 1px solid rgba(47, 107, 255, 0.2);
         animation: floatOrb 4s ease-in-out infinite;
-        box-shadow: 0 10px 25px -8px rgba(16, 185, 129, 0.25);
+        box-shadow: 0 10px 25px -8px rgba(47, 107, 255, 0.25);
     }
 
     .empty-state-icon-box i {
         font-size: 2.2rem;
-        color: #059669 !important;
-        -webkit-text-fill-color: #059669 !important;
+        color: #2F6BFF !important;
+        -webkit-text-fill-color: #2F6BFF !important;
     }
 
     /* Dark Mode Support for Header Avatar, Empty State & Address Cards */
@@ -506,48 +506,48 @@
     html[data-bs-theme="dark"] .card-header-custom .avatar,
     body[data-pms-theme="dark"] .card-header-custom .avatar,
     [data-pms-theme="dark"] .card-header-custom .avatar {
-        background: rgba(16, 185, 129, 0.2) !important;
-        border: 1px solid rgba(52, 211, 153, 0.3) !important;
+        background: rgba(47, 107, 255, 0.2) !important;
+        border: 1px solid rgba(79, 131, 255, 0.3) !important;
     }
 
     html[data-pms-theme="dark"] .card-header-custom .avatar i,
     html[data-bs-theme="dark"] .card-header-custom .avatar i,
     body[data-pms-theme="dark"] .card-header-custom .avatar i,
     [data-pms-theme="dark"] .card-header-custom .avatar i {
-        color: #34d399 !important;
-        -webkit-text-fill-color: #34d399 !important;
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
     }
 
     html[data-pms-theme="dark"] .empty-state-icon-box,
     html[data-bs-theme="dark"] .empty-state-icon-box,
     body[data-pms-theme="dark"] .empty-state-icon-box,
     [data-pms-theme="dark"] .empty-state-icon-box {
-        background: rgba(16, 185, 129, 0.2) !important;
-        border-color: rgba(52, 211, 153, 0.3) !important;
+        background: rgba(47, 107, 255, 0.2) !important;
+        border-color: rgba(79, 131, 255, 0.3) !important;
     }
 
     html[data-pms-theme="dark"] .empty-state-icon-box i,
     html[data-bs-theme="dark"] .empty-state-icon-box i,
     body[data-pms-theme="dark"] .empty-state-icon-box i,
     [data-pms-theme="dark"] .empty-state-icon-box i {
-        color: #34d399 !important;
-        -webkit-text-fill-color: #34d399 !important;
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
     }
 
     html[data-pms-theme="dark"] .branch-avatar-box,
     html[data-bs-theme="dark"] .branch-avatar-box,
     body[data-pms-theme="dark"] .branch-avatar-box,
     [data-pms-theme="dark"] .branch-avatar-box {
-        background: rgba(16, 185, 129, 0.2) !important;
-        border-color: rgba(52, 211, 153, 0.3) !important;
+        background: rgba(47, 107, 255, 0.2) !important;
+        border-color: rgba(79, 131, 255, 0.3) !important;
     }
 
     html[data-pms-theme="dark"] .branch-avatar-box i,
     html[data-bs-theme="dark"] .branch-avatar-box i,
     body[data-pms-theme="dark"] .branch-avatar-box i,
     [data-pms-theme="dark"] .branch-avatar-box i {
-        color: #34d399 !important;
-        -webkit-text-fill-color: #34d399 !important;
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
     }
 
     html[data-pms-theme="dark"] .branch-item-card,
@@ -683,17 +683,17 @@
             <div class="address-card-elevated">
                 <div class="card-header-custom">
                     <div class="d-flex align-items-center gap-3">
-                        <div class="avatar avatar-sm rounded-3 p-1 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; background: linear-gradient(145deg, #d1fae5, #a7f3d0); color: #059669;">
+                        <div class="avatar avatar-sm rounded-3 p-1 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; background: linear-gradient(145deg, #EEF2FF, #E0E7FF); color: #2F6BFF;">
                             <i class="fas fa-map-pin fs-5"></i>
                         </div>
                         <div>
-                            <h5 class="mb-0 fw-bold fs-5" style="color: #0a2e1f;">Address List</h5>
+                            <h5 class="mb-0 fw-bold fs-5" style="color: #0F172A;">Address List</h5>
                             <small class="text-muted">Manage your business locations and primary office addresses</small>
                         </div>
                     </div>
                     
                     @if(!$isSettingsReadOnly)
-                        <a href="{{ route('admin.settings.business-address.create') }}" class="btn btn-sm px-3 rounded-pill fw-bold" style="background: #e6f3ec; color: #0f744c; border: 1px solid rgba(16, 185, 129, 0.25);">
+                        <a href="{{ route('admin.settings.business-address.create') }}" class="btn btn-sm px-3 rounded-pill fw-bold" style="background: #EEF2FF; color: #2F6BFF; border: 1px solid rgba(47, 107, 255, 0.25);">
                             <i class="fas fa-plus me-1"></i> Add Address
                         </a>
                     @endif
@@ -729,10 +729,10 @@
                                                 </div>
                                                 <div>
                                                     <div class="d-flex align-items-center gap-2 flex-wrap">
-                                                        <h5 class="fw-bold mb-0" style="color: #0a2e1f;">{{ $address->display_name }}</h5>
+                                                        <h5 class="fw-bold mb-0" style="color: #0F172A;">{{ $address->display_name }}</h5>
                                                         @if($address->is_default)
-                                                            <span class="badge rounded-pill px-2.5 py-1 small" style="background: linear-gradient(145deg, #ecfdf5, #d1fae5); color: #065f46; border: 1px solid rgba(5, 150, 105, 0.25); font-weight: 750;">
-                                                                <i class="fas fa-star me-1" style="color: #059669;"></i> Default Primary
+                                                            <span class="badge rounded-pill px-2.5 py-1 small" style="background: linear-gradient(145deg, #EEF2FF, #E0E7FF); color: #065f46; border: 1px solid rgba(47, 107, 255, 0.25); font-weight: 750;">
+                                                                <i class="fas fa-star me-1" style="color: #2F6BFF;"></i> Default Primary
                                                             </span>
                                                         @endif
                                                     </div>
@@ -770,7 +770,7 @@
                                                         <form action="{{ route('admin.settings.business-address.make-default', $address->id) }}" method="POST" class="d-inline">
                                                             @csrf
                                                             @method('PUT')
-                                                            <button type="submit" class="btn btn-sm rounded-pill px-3 fw-bold" style="background: #e6f3ec; color: #0f744c; border: 1px solid rgba(16, 185, 129, 0.25);">
+                                                            <button type="submit" class="btn btn-sm rounded-pill px-3 fw-bold" style="background: #EEF2FF; color: #2F6BFF; border: 1px solid rgba(47, 107, 255, 0.25);">
                                                                 <i class="fas fa-check-circle me-1"></i> Set as Default
                                                             </button>
                                                         </form>
@@ -804,7 +804,7 @@
                             <div class="empty-state-icon-box">
                                 <i class="fas fa-city"></i>
                             </div>
-                            <h4 class="fw-bold mb-2" style="color: #0a2e1f;">No Business Addresses Found</h4>
+                            <h4 class="fw-bold mb-2" style="color: #0F172A;">No Business Addresses Found</h4>
                             <p class="text-muted mb-4 max-w-md mx-auto small">Add your first business address to configure official branch locations, contact info, logo, and tax details.</p>
                             <a href="{{ route('admin.settings.business-address.create') }}" class="btn-add-address">
                                 <i class="fas fa-plus-circle"></i> Add First Address

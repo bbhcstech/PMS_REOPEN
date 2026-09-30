@@ -28,8 +28,8 @@
             justify-content: space-between;
             gap: 20px;
             padding: 24px 28px;
-            background: #ecfdf5;
-            border-bottom: 1px solid #d1fae5;
+            background: #EEF2FF;
+            border-bottom: 1px solid #E0E7FF;
         }
 
         h1 {
@@ -48,7 +48,7 @@
             align-self: center;
             border: 0;
             border-radius: 10px;
-            background: #059669;
+            background: #2F6BFF;
             color: #ffffff;
             padding: 11px 18px;
             font-weight: 700;
