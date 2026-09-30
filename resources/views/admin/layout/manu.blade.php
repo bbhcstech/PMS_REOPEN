@@ -1583,9 +1583,14 @@
 
 
                 @if($canSeeModule('leaves'))
-                <li class="menu-item {{ request()->routeIs('leaves.*') ? 'active' : '' }}">
+                <li class="menu-item {{ (request()->routeIs('leaves.index') || request()->routeIs('leaves.show') || request()->routeIs('leaves.calendar') || request()->routeIs('leaves.archive') || request()->routeIs('leaves.apology-letters.*')) ? 'active' : '' }}">
                 <a href="{{ route('leaves.index') }}" class="menu-link" data-sidebar-key="leaves">
                     <div class="text-truncate" data-i18n="Without navbar">My Leaves</div>
+                </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('leaves.create') ? 'active' : '' }}">
+                <a href="{{ route('leaves.create') }}" class="menu-link" data-sidebar-key="leaves-apply">
+                    <div class="text-truncate">Apply Leave</div>
                 </a>
                 </li>
                 @endif
@@ -2292,7 +2297,8 @@
 
           <nav
             class="layout-navbar container-xxl navbar-detached navbar navbar-expand-xl align-items-center bg-navbar-theme"
-            id="layout-navbar">
+            id="layout-navbar"
+            style="position: sticky !important; top: 0.75rem !important; z-index: 1030 !important;">
             <div class="layout-menu-toggle navbar-nav align-items-xl-center me-4 me-xl-0 d-xl-none">
               <a class="nav-item nav-link px-0 me-xl-6" href="javascript:void(0)">
                 <i class="icon-base bx bx-menu icon-md"></i>

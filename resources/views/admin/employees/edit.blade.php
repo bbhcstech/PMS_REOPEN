@@ -462,11 +462,46 @@
         .input-group-premium .country-code-select {
             border: none;
             background: transparent;
-            padding-left: 1rem;
             font-weight: 600;
             color: var(--primary);
-            max-width: 100px;
-            border-radius: 14px 0 0 14px;
+        }
+
+        .input-group-premium .select2-container {
+            width: 115px !important;
+            min-width: 115px !important;
+            max-width: 115px !important;
+            flex: 0 0 115px !important;
+        }
+
+        .input-group-premium .select2-container--bootstrap-5 .select2-selection {
+            border: none !important;
+            background: transparent !important;
+            box-shadow: none !important;
+            border-radius: 14px 0 0 14px !important;
+            min-height: 48px !important;
+            height: 100% !important;
+            padding-left: 0.75rem !important;
+            padding-right: 1.5rem !important;
+            display: flex !important;
+            align-items: center !important;
+        }
+
+        .input-group-premium .select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered {
+            padding: 0 !important;
+            margin: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+            color: var(--primary) !important;
+            font-weight: 600 !important;
+            overflow: visible !important;
+            line-height: normal !important;
+            white-space: nowrap !important;
+        }
+
+        .input-group-premium .select2-container--bootstrap-5 .select2-selection--single .select2-selection__arrow {
+            right: 8px !important;
+            top: 50% !important;
+            transform: translateY(-50%) !important;
         }
 
         .input-group-premium .mobile-input {
@@ -474,6 +509,7 @@
             background: transparent;
             border-left: 1.5px solid rgba(47, 107, 255, 0.2);
             border-radius: 0 14px 14px 0;
+            padding-left: 0.85rem;
         }
 
         .input-group-premium .mobile-input:focus {
@@ -745,6 +781,26 @@
         html[data-theme="dark"] .input-group-premium {
             background: #141B3D !important;
             border-color: rgba(238, 241, 251, 0.16) !important;
+        }
+
+        html[data-pms-theme="dark"] .input-group-premium .select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered,
+        html[data-bs-theme="dark"] .input-group-premium .select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered,
+        html[data-theme="dark"] .input-group-premium .select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered {
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
+        }
+
+        html[data-pms-theme="dark"] .input-group-premium .select2-container--bootstrap-5 .select2-selection--single .select2-selection__arrow b,
+        html[data-bs-theme="dark"] .input-group-premium .select2-container--bootstrap-5 .select2-selection--single .select2-selection__arrow b,
+        html[data-theme="dark"] .input-group-premium .select2-container--bootstrap-5 .select2-selection--single .select2-selection__arrow b {
+            border-color: #CBD5E1 transparent transparent transparent !important;
+        }
+
+        html[data-pms-theme="dark"] .input-group-premium .mobile-input,
+        html[data-bs-theme="dark"] .input-group-premium .mobile-input,
+        html[data-theme="dark"] .input-group-premium .mobile-input {
+            border-left-color: rgba(238, 241, 251, 0.16) !important;
+            color: #ffffff !important;
         }
 
         html[data-pms-theme="dark"] .form-check-label,
@@ -1273,11 +1329,56 @@
                                 <span class="mandatory-badge">Required</span>
                             </label>
                             <div class="input-group-premium">
-                                <span class="input-group-text" style="background: transparent; border: none; font-weight: 600; color: var(--primary);">+91</span>
+                                @php
+                                    $rawMobile = old('mobile_with_code') ?? ($ed->mobile ?? ($employee->mobile ?? ''));
+                                    $selectedMobileCode = old('mobile_country_code');
+                                    $mobileValue = old('mobile');
+
+                                    if (empty($selectedMobileCode) || empty($mobileValue)) {
+                                        $countryMap = \App\Support\CountryPhone::map();
+                                        $selectedMobileCode = '+91';
+                                        $mobileValue = $rawMobile;
+
+                                        if (!empty($rawMobile)) {
+                                            $sortedCodes = [];
+                                            foreach ($countryMap as $cName => $meta) {
+                                                $sortedCodes[$meta['dial_code']] = strlen($meta['dial_code']);
+                                            }
+                                            arsort($sortedCodes);
+
+                                            foreach ($sortedCodes as $dCode => $len) {
+                                                if (str_starts_with($rawMobile, $dCode)) {
+                                                    $selectedMobileCode = $dCode;
+                                                    $mobileValue = substr($rawMobile, strlen($dCode));
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    $selectedCountry = old('country') ?? ($ed->country ?? ($employee->country ?? ''));
+                                @endphp
+                                <select name="mobile_country_code" id="mobile_country_code" class="country-code-select" required>
+                                    @foreach($countries as $country)
+                                        @php
+                                            $phoneMeta = \App\Support\CountryPhone::meta($country->name);
+                                            $phoneFlag = $country->flag_url ?? 'https://flagcdn.com/w20/' . $phoneMeta['iso'] . '.png';
+                                            $phoneLabel = $country->name . ' (' . $phoneMeta['dial_code'] . ')';
+                                        @endphp
+                                        <option value="{{ $phoneMeta['dial_code'] }}" data-country="{{ $country->name }}" data-flag="{{ $phoneFlag }}" data-min-digits="{{ $phoneMeta['min_digits'] }}" data-max-digits="{{ $phoneMeta['max_digits'] }}" {{ $selectedMobileCode === $phoneMeta['dial_code'] && $selectedCountry === $country->name ? 'selected' : '' }}>
+                                            {{ $phoneLabel }}
+                                        </option>
+                                    @endforeach
+                                </select>
                                 <input id="mobile_only_digits" type="text" name="mobile" class="form-control-premium mobile-input" required maxlength="10" placeholder="9876543210"
-                                       value="{{ old('mobile') ?? ($ed->mobile ? preg_replace('/^\+91/', '', $ed->mobile) : preg_replace('/^\+91/', '', ($employee->mobile ?? ''))) }}" style="border: none;">
+                                       value="{{ $mobileValue }}" style="border: none;">
+                                <div id="mobile-error" class="invalid-feedback mobile-error d-none"></div>
                             </div>
+                            <small id="mobile_help_text" class="text-muted d-block mt-1" style="font-size: 0.7rem;">Select the country code and enter a 10-digit phone number.</small>
                             <input type="hidden" name="mobile_with_code" id="mobile_with_code" value="{{ old('mobile_with_code') ?? ($ed->mobile ?? $employee->mobile ?? '') }}">
+                            <input type="hidden" id="employee_id_val" value="{{ $employee->id }}">
+                            @error('mobile_country_code')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
                             @error('mobile')
                                 <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
@@ -1835,15 +1936,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const mobileEl = $el('mobile_only_digits');
             if (mobileEl) {
-                const m = mobileEl.value.trim();
-                if (!/^[1-9]\d{9}$/.test(m)) {
+                if (mobileEl.classList.contains('is-invalid') || !validateMobileInput()) {
                     e.preventDefault();
                     mobileEl.focus();
-                    alert('Please enter a valid 10-digit mobile number (no leading 0).');
+                    alert(($el('mobile-error') && $el('mobile-error').textContent) || 'Please fix the mobile number before submitting.');
                     return false;
                 }
                 const hidden = $el('mobile_with_code');
-                if (hidden) hidden.value = '+91' + m;
+                const countryCode = $('#mobile_country_code').val() || '+91';
+                if (hidden) hidden.value = countryCode + mobileEl.value.trim();
             }
         });
     }
@@ -2108,6 +2209,128 @@ $(document).ready(function() {
         return state.text;
     }
 
+    function formatMobileCodeResult(state) {
+        if (!state.id) return state.text;
+        const flag = $(state.element).data("flag");
+        const country = $(state.element).data("country");
+        const code = state.id;
+        const label = country ? country + ' (' + code + ')' : state.text;
+        if (flag) {
+            return $('<span><img src="' + flag + '" width="20" height="14" style="object-fit: cover; border-radius: 2px; vertical-align: middle; margin-right: 8px;"/> <span style="vertical-align: middle;">' + label + '</span></span>');
+        }
+        return label;
+    }
+
+    function formatMobileCodeSelection(state) {
+        if (!state.id) return state.text;
+        const flag = $(state.element).data("flag");
+        const code = state.id;
+        if (flag) {
+            return $('<span><img src="' + flag + '" width="20" height="14" style="object-fit: cover; border-radius: 2px; vertical-align: middle; margin-right: 6px;"/> <span class="country-dial-code" style="font-weight: 600; vertical-align: middle; font-size: 0.95rem;">' + code + '</span></span>');
+        }
+        return $('<span><span class="country-dial-code" style="font-weight: 600; vertical-align: middle; font-size: 0.95rem;">' + code + '</span></span>');
+    }
+
+    function syncMobileHidden() {
+        const code = $('#mobile_country_code').val() || '+91';
+        const mobile = $('#mobile_only_digits').val() || '';
+        $('#mobile_with_code').val(mobile ? code + mobile : '');
+    }
+
+    function getSelectedMobileDigitRules() {
+        const $opt = $('#mobile_country_code option:selected');
+        let minDigits = parseInt($opt.data('min-digits')) || 10;
+        let maxDigits = parseInt($opt.data('max-digits')) || 10;
+        return { minDigits, maxDigits };
+    }
+
+    function updateMobileValidationRules() {
+        const rules = getSelectedMobileDigitRules();
+        const minDigits = rules.minDigits;
+        const maxDigits = rules.maxDigits;
+        const $mobileInput = $('#mobile_only_digits');
+        $mobileInput.attr('maxlength', maxDigits);
+
+        let helpMsg = '';
+        if (minDigits === maxDigits) {
+            helpMsg = `Select the country code and enter a ${minDigits}-digit phone number.`;
+        } else {
+            helpMsg = `Select the country code and enter a ${minDigits} to ${maxDigits}-digit phone number.`;
+        }
+        $('#mobile_help_text').text(helpMsg);
+    }
+
+    function validateMobileInput() {
+        const $input = $('#mobile_only_digits');
+        const value = $input.val().trim();
+        const $error = $('#mobile-error');
+
+        $error.addClass('d-none').removeClass('d-block').text('');
+        $input.removeClass('is-invalid');
+
+        if (!value) return true;
+
+        const rules = getSelectedMobileDigitRules();
+        const minDigits = rules.minDigits;
+        const maxDigits = rules.maxDigits;
+        const len = value.length;
+        const isDigitsOnly = /^[1-9]\d*$/.test(value);
+
+        let msg = '';
+        if (!isDigitsOnly) {
+            msg = 'Please enter a valid mobile number (digits only, no leading 0).';
+        } else if (len < minDigits || len > maxDigits) {
+            if (minDigits === maxDigits) {
+                msg = `Please enter a valid ${minDigits}-digit mobile number.`;
+            } else {
+                msg = `Please enter a valid ${minDigits} to ${maxDigits}-digit mobile number.`;
+            }
+        }
+
+        if (msg) {
+            $input.addClass('is-invalid');
+            $error.text(msg).removeClass('d-none').addClass('d-block');
+            return false;
+        }
+
+        return true;
+    }
+
+    let mobileCheckAjax = null;
+    window.validateMobileInput = validateMobileInput;
+
+    $('#mobile_only_digits').on('blur', function() {
+        if (!validateMobileInput()) return;
+
+        const value = $(this).val().trim();
+        if (!value) return;
+
+        const selectedCountryCode = $('#mobile_country_code').val() || '+91';
+        $('#mobile_with_code').val(selectedCountryCode + value);
+
+        if (mobileCheckAjax) mobileCheckAjax.abort();
+
+        mobileCheckAjax = $.ajax({
+            url: '{{ route("employees.check-mobile") }}',
+            method: 'POST',
+            data: {
+                mobile: value,
+                mobile_country_code: selectedCountryCode,
+                employee_id: $('#employee_id_val').val() || null,
+                _token: '{{ csrf_token() }}'
+            },
+            success: function(response) {
+                if (response.exists) {
+                    $('#mobile_only_digits').addClass('is-invalid');
+                    $('#mobile-error').text('This mobile number is already registered').removeClass('d-none').addClass('d-block');
+                }
+            },
+            error: function(xhr, status) {
+                if (status !== 'abort') console.error('Mobile check failed');
+            }
+        });
+    });
+
     if ($('#country').length) {
         $('#country').select2({
             theme: "bootstrap-5",
@@ -2116,6 +2339,34 @@ $(document).ready(function() {
             placeholder: "Select Country",
             allowClear: true
         });
+
+        $('#country').on('change', function () {
+            const countryName = $(this).val();
+            const selected = $('#mobile_country_code option').filter(function () {
+                return $(this).data('country') === countryName;
+            }).first();
+            if (selected.length) {
+                $('#mobile_country_code').val(selected.val()).trigger('change');
+            }
+        });
+    }
+
+    if ($('#mobile_country_code').length) {
+        $('#mobile_country_code').select2({
+            theme: "bootstrap-5",
+            templateResult: formatMobileCodeResult,
+            templateSelection: formatMobileCodeSelection,
+            width: '115px'
+        }).on('change', function () {
+            updateMobileValidationRules();
+            syncMobileHidden();
+            if ($('#mobile_only_digits').val().trim() !== '') {
+                validateMobileInput();
+                $('#mobile_only_digits').trigger('blur');
+            }
+        });
+
+        updateMobileValidationRules();
     }
 
     if ($('#language').length) {

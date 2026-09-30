@@ -1344,6 +1344,153 @@
         border-top: 1px solid rgba(79, 131, 255, 0.18) !important;
     }
 
+    /* ===== QUICK ADD DEPARTMENT INLINE PANEL STYLES (LIGHT & DARK MODE) ===== */
+    .quick-add-dept-panel {
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0 !important;
+        box-shadow: 0 4px 14px rgba(47, 107, 255, 0.12);
+        transition: all 0.3s ease;
+    }
+    .quick-add-dept-panel .panel-title {
+        color: #15803d !important;
+        font-weight: 700;
+    }
+    .quick-add-dept-panel .panel-label {
+        color: #1e293b !important;
+        font-weight: 700;
+    }
+    .quick-add-dept-panel .panel-input {
+        background-color: #ffffff !important;
+        color: #0f172a !important;
+        border: 1px solid #cbd5e1 !important;
+    }
+    .quick-add-dept-panel .panel-header {
+        border-bottom: 1px solid rgba(22, 163, 74, 0.2) !important;
+    }
+    .quick-add-dept-panel .btn-panel-cancel {
+        background-color: #ffffff !important;
+        color: #334155 !important;
+        border: 1px solid #cbd5e1 !important;
+    }
+    .quick-add-dept-panel .btn-panel-save {
+        background: linear-gradient(135deg, #16a34a, #15803d) !important;
+        color: #ffffff !important;
+        border: none !important;
+        box-shadow: 0 2px 8px rgba(22, 163, 74, 0.3);
+    }
+    .quick-add-dept-panel .btn-close {
+        filter: none;
+    }
+
+    /* DARK MODE OVERRIDES FOR QUICK ADD DEPARTMENT PANEL */
+    html[data-pms-theme="dark"] .quick-add-dept-panel,
+    html[data-bs-theme="dark"] .quick-add-dept-panel,
+    html[data-theme="dark"] .quick-add-dept-panel,
+    html.dark .quick-add-dept-panel,
+    body[data-pms-theme="dark"] .quick-add-dept-panel,
+    [data-pms-theme="dark"] .quick-add-dept-panel,
+    .dark .quick-add-dept-panel {
+        background: linear-gradient(145deg, #1e293b, #0f172a) !important;
+        border: 1px solid rgba(74, 222, 128, 0.4) !important;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6) !important;
+    }
+    html[data-pms-theme="dark"] .quick-add-dept-panel .panel-title,
+    html[data-bs-theme="dark"] .quick-add-dept-panel .panel-title,
+    html[data-theme="dark"] .quick-add-dept-panel .panel-title,
+    html.dark .quick-add-dept-panel .panel-title,
+    body[data-pms-theme="dark"] .quick-add-dept-panel .panel-title,
+    [data-pms-theme="dark"] .quick-add-dept-panel .panel-title,
+    .dark .quick-add-dept-panel .panel-title {
+        color: #4ade80 !important;
+        -webkit-text-fill-color: #4ade80 !important;
+    }
+    html[data-pms-theme="dark"] .quick-add-dept-panel .panel-label,
+    html[data-bs-theme="dark"] .quick-add-dept-panel .panel-label,
+    html[data-theme="dark"] .quick-add-dept-panel .panel-label,
+    html.dark .quick-add-dept-panel .panel-label,
+    body[data-pms-theme="dark"] .quick-add-dept-panel .panel-label,
+    [data-pms-theme="dark"] .quick-add-dept-panel .panel-label,
+    .dark .quick-add-dept-panel .panel-label {
+        color: #f8fafc !important;
+        -webkit-text-fill-color: #f8fafc !important;
+    }
+    html[data-pms-theme="dark"] .quick-add-dept-panel .panel-label .text-muted,
+    html[data-bs-theme="dark"] .quick-add-dept-panel .panel-label .text-muted,
+    html[data-theme="dark"] .quick-add-dept-panel .panel-label .text-muted,
+    html.dark .quick-add-dept-panel .panel-label .text-muted,
+    body[data-pms-theme="dark"] .quick-add-dept-panel .panel-label .text-muted,
+    [data-pms-theme="dark"] .quick-add-dept-panel .panel-label .text-muted,
+    .dark .quick-add-dept-panel .panel-label .text-muted {
+        color: #94a3b8 !important;
+        -webkit-text-fill-color: #94a3b8 !important;
+    }
+    html[data-pms-theme="dark"] .quick-add-dept-panel .panel-input,
+    html[data-bs-theme="dark"] .quick-add-dept-panel .panel-input,
+    html[data-theme="dark"] .quick-add-dept-panel .panel-input,
+    html.dark .quick-add-dept-panel .panel-input,
+    body[data-pms-theme="dark"] .quick-add-dept-panel .panel-input,
+    [data-pms-theme="dark"] .quick-add-dept-panel .panel-input,
+    .dark .quick-add-dept-panel .panel-input {
+        background-color: #1e293b !important;
+        color: #f8fafc !important;
+        -webkit-text-fill-color: #f8fafc !important;
+        border: 1px solid #334155 !important;
+    }
+    html[data-pms-theme="dark"] .quick-add-dept-panel .panel-input option,
+    html[data-bs-theme="dark"] .quick-add-dept-panel .panel-input option,
+    html[data-theme="dark"] .quick-add-dept-panel .panel-input option,
+    html.dark .quick-add-dept-panel .panel-input option,
+    body[data-pms-theme="dark"] .quick-add-dept-panel .panel-input option,
+    [data-pms-theme="dark"] .quick-add-dept-panel .panel-input option,
+    .dark .quick-add-dept-panel .panel-input option {
+        background-color: #1e293b !important;
+        color: #f8fafc !important;
+    }
+    html[data-pms-theme="dark"] .quick-add-dept-panel .panel-header,
+    html[data-bs-theme="dark"] .quick-add-dept-panel .panel-header,
+    html[data-theme="dark"] .quick-add-dept-panel .panel-header,
+    html.dark .quick-add-dept-panel .panel-header,
+    body[data-pms-theme="dark"] .quick-add-dept-panel .panel-header,
+    [data-pms-theme="dark"] .quick-add-dept-panel .panel-header,
+    .dark .quick-add-dept-panel .panel-header {
+        border-bottom: 1px solid rgba(74, 222, 128, 0.25) !important;
+    }
+    html[data-pms-theme="dark"] .quick-add-dept-panel .btn-panel-cancel,
+    html[data-bs-theme="dark"] .quick-add-dept-panel .btn-panel-cancel,
+    html[data-theme="dark"] .quick-add-dept-panel .btn-panel-cancel,
+    html.dark .quick-add-dept-panel .btn-panel-cancel,
+    body[data-pms-theme="dark"] .quick-add-dept-panel .btn-panel-cancel,
+    [data-pms-theme="dark"] .quick-add-dept-panel .btn-panel-cancel,
+    .dark .quick-add-dept-panel .btn-panel-cancel {
+        background-color: #334155 !important;
+        color: #f8fafc !important;
+        -webkit-text-fill-color: #f8fafc !important;
+        border: 1px solid #475569 !important;
+    }
+    html[data-pms-theme="dark"] .quick-add-dept-panel .btn-panel-save,
+    html[data-bs-theme="dark"] .quick-add-dept-panel .btn-panel-save,
+    html[data-theme="dark"] .quick-add-dept-panel .btn-panel-save,
+    html.dark .quick-add-dept-panel .btn-panel-save,
+    body[data-pms-theme="dark"] .quick-add-dept-panel .btn-panel-save,
+    [data-pms-theme="dark"] .quick-add-dept-panel .btn-panel-save,
+    .dark .quick-add-dept-panel .btn-panel-save {
+        background: linear-gradient(135deg, #16a34a, #15803d) !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        border: none !important;
+        box-shadow: 0 2px 10px rgba(34, 197, 94, 0.35) !important;
+    }
+    html[data-pms-theme="dark"] .quick-add-dept-panel .btn-close,
+    html[data-bs-theme="dark"] .quick-add-dept-panel .btn-close,
+    html[data-theme="dark"] .quick-add-dept-panel .btn-close,
+    html.dark .quick-add-dept-panel .btn-close,
+    body[data-pms-theme="dark"] .quick-add-dept-panel .btn-close,
+    [data-pms-theme="dark"] .quick-add-dept-panel .btn-close,
+    .dark .quick-add-dept-panel .btn-close {
+        filter: invert(1) grayscale(100%) brightness(200%) !important;
+        opacity: 0.85;
+    }
+
     @media (max-width: 767.98px) {
         .rec-header-card { padding: 1.25rem; }
         .rec-header-left { flex-direction: column; align-items: flex-start; }
@@ -1870,12 +2017,7 @@
                         </div>
 
                         <div class="col-md-6">
-                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                <label class="form-label fw-bold mb-0">Department</label>
-                                <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none fw-bold text-success d-inline-flex align-items-center gap-1" id="btnToggleInlineDept" onclick="toggleInlineAddDept();" style="font-size: 0.8rem;">
-                                    <i class="bx bx-plus-circle"></i> Add Department
-                                </button>
-                            </div>
+                            <label class="form-label fw-bold">Department</label>
                             <div class="input-group">
                                 <select name="department_id" id="recruitment_department_select" class="form-select">
                                     <option value="">-- Select Department --</option>
@@ -1889,9 +2031,9 @@
                             </div>
 
                             <!-- INLINE QUICK ADD DEPARTMENT PANEL -->
-                            <div id="inlineAddDeptPanel" class="mt-2 p-3 rounded-3 border d-none" style="background: #f0fdf4; border-color: #C7D2FE !important; box-shadow: 0 4px 14px rgba(47, 107, 255, 0.12);">
-                                <div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom border-success-subtle">
-                                    <span class="fw-bold text-success small d-flex align-items-center gap-1">
+                            <div id="inlineAddDeptPanel" class="mt-2 p-3 rounded-3 quick-add-dept-panel d-none">
+                                <div class="d-flex justify-content-between align-items-center mb-2 pb-1 panel-header">
+                                    <span class="small d-flex align-items-center gap-1 panel-title">
                                         <i class="bx bx-buildings"></i> Quick Add Department
                                     </span>
                                     <button type="button" class="btn-close" style="font-size: 0.65rem;" onclick="toggleInlineAddDept(false);" aria-label="Close"></button>
@@ -1900,13 +2042,13 @@
                                 <div id="inlineDptError" class="alert alert-danger py-1 px-2 small rounded-2 mb-2 d-none"></div>
 
                                 <div class="mb-2">
-                                    <label class="form-label small fw-bold mb-1 text-dark">Department Name <sup class="text-danger">*</sup></label>
-                                    <input type="text" id="inline_dpt_name" class="form-control form-control-sm bg-white" placeholder="e.g. PHP DEV, QA, Marketing" autocomplete="off">
+                                    <label class="form-label small mb-1 panel-label">Department Name <sup class="text-danger">*</sup></label>
+                                    <input type="text" id="inline_dpt_name" class="form-control form-control-sm panel-input" placeholder="e.g. PHP DEV, QA, Marketing" autocomplete="off">
                                 </div>
 
                                 <div class="mb-2">
-                                    <label class="form-label small fw-bold mb-1 text-dark">Parent Department <span class="text-muted fw-normal">(Optional)</span></label>
-                                    <select id="inline_parent_dpt_id" class="form-select form-select-sm bg-white">
+                                    <label class="form-label small mb-1 panel-label">Parent Department <span class="text-muted fw-normal">(Optional)</span></label>
+                                    <select id="inline_parent_dpt_id" class="form-select form-select-sm panel-input">
                                         <option value="">-- None / Top Level Department --</option>
                                         @if(isset($parentDepartments))
                                             @foreach($parentDepartments as $pDept)
@@ -1917,8 +2059,8 @@
                                 </div>
 
                                 <div class="d-flex justify-content-end gap-2 mt-2 pt-1">
-                                    <button type="button" class="btn btn-sm btn-light border" onclick="toggleInlineAddDept(false);">Cancel</button>
-                                    <button type="button" id="btnSaveInlineDept" class="btn btn-sm btn-rec-primary px-3" onclick="saveInlineDepartment();">
+                                    <button type="button" class="btn btn-sm btn-panel-cancel" onclick="toggleInlineAddDept(false);">Cancel</button>
+                                    <button type="button" id="btnSaveInlineDept" class="btn btn-sm btn-panel-save px-3" onclick="saveInlineDepartment();">
                                         <i class="bx bx-check me-1"></i> Save & Select
                                     </button>
                                 </div>
@@ -1943,7 +2085,33 @@
 
                         <div class="col-md-4">
                             <label class="form-label fw-bold">Salary Range</label>
-                            <input type="text" name="salary_range" class="form-control" placeholder="e.g. $60,000 - $80,000 / year">
+                            <div class="input-group">
+                                <select name="salary_currency" id="recruitment_salary_currency" class="form-select bg-light fw-bold" style="max-width: 95px;" onchange="updateSalaryRangeValue();">
+                                    @if(isset($currencies) && count($currencies) > 0)
+                                        @foreach($currencies as $curr)
+                                            @php
+                                                $sym = $curr->currency_symbol ?: ($curr->currency_code ?: '$');
+                                                $code = $curr->currency_code ?: $sym;
+                                            @endphp
+                                            <option value="{{ $sym }}" {{ ($sym == ($defaultCurrencySymbol ?? '$')) ? 'selected' : '' }}>
+                                                {{ $sym }} ({{ $code }})
+                                            </option>
+                                        @endforeach
+                                    @else
+                                        <option value="$" selected>$ (USD)</option>
+                                        <option value="₹">₹ (INR)</option>
+                                        <option value="৳">৳ (BDT)</option>
+                                        <option value="€">€ (EUR)</option>
+                                        <option value="£">£ (GBP)</option>
+                                        <option value="CAD $">CAD ($)</option>
+                                        <option value="AUD $">AUD ($)</option>
+                                        <option value="AED">AED</option>
+                                        <option value="SAR">SAR</option>
+                                    @endif
+                                </select>
+                                <input type="text" name="salary_amount" id="recruitment_salary_amount" class="form-control" placeholder="e.g. 60,000 - 80,000 / year" oninput="updateSalaryRangeValue();">
+                                <input type="hidden" name="salary_range" id="recruitment_salary_range">
+                            </div>
                         </div>
 
                         <div class="col-md-4">
@@ -1985,6 +2153,38 @@
 </div>
 
 <script>
+function updateSalaryRangeValue() {
+    const currencySelect = document.getElementById('recruitment_salary_currency');
+    const amountInput = document.getElementById('recruitment_salary_amount');
+    const hiddenRangeInput = document.getElementById('recruitment_salary_range');
+
+    if (!amountInput || !hiddenRangeInput) return;
+
+    const val = amountInput.value.trim();
+    const curr = currencySelect ? currencySelect.value : '$';
+
+    if (!val) {
+        hiddenRangeInput.value = '';
+        return;
+    }
+
+    const hasSymbol = /^[\$\₹\৳\€\£]|^(CAD|AUD|AED|SAR)/i.test(val);
+    if (hasSymbol) {
+        hiddenRangeInput.value = val;
+    } else {
+        hiddenRangeInput.value = curr + ' ' + val;
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const recForm = document.querySelector('form[action*="recruitment.store"]');
+    if (recForm) {
+        recForm.addEventListener('submit', function() {
+            updateSalaryRangeValue();
+        });
+    }
+});
+
 function toggleInlineAddDept(forceState) {
     const panel = document.getElementById('inlineAddDeptPanel');
     const input = document.getElementById('inline_dpt_name');

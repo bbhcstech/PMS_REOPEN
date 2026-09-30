@@ -18,6 +18,25 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware) {
+        $middleware->redirectTo(
+            guests: '/login',
+            users: function (\Illuminate\Http\Request $request) {
+                $user = auth()->user();
+                if ($user && (
+                    (method_exists($user, 'isDeveloper') && $user->isDeveloper()) ||
+                    in_array(strtolower((string) ($user->role ?? '')), ['developer', 'dev'], true) ||
+                    str_contains(strtolower((string) ($user->role ?? '')), 'developer') ||
+                    str_contains(strtolower((string) ($user->designation ?? '')), 'developer') ||
+                    str_contains(strtolower((string) ($user->designation ?? '')), 'engineer')
+                )) {
+                    return route('developer.dashboard');
+                }
+                if ($user && in_array(strtolower((string) ($user->role ?? '')), ['superadmin', 'super-admin', 'super_admin'], true)) {
+                    return route('superadmin.dashboard');
+                }
+                return route('dashboard');
+            }
+        );
         $middleware->web(append: [
             SetTenantConnection::class,
             \App\Http\Middleware\EnsureCompanySubscriptionActive::class,

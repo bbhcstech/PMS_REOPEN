@@ -666,6 +666,133 @@
         padding: 4px 12px !important;
         font-weight: 600 !important;
     }
+
+    /* RSVP Box & Segmented Control Dark Mode Support */
+    html[data-pms-theme="dark"] .rsvp-box,
+    html[data-bs-theme="dark"] .rsvp-box,
+    html[data-theme="dark"] .rsvp-box,
+    body.dark-mode .rsvp-box,
+    .dark-mode .rsvp-box {
+        background: #141B3D !important;
+        border: 1px solid rgba(238, 241, 251, 0.12) !important;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25) !important;
+    }
+
+    html[data-pms-theme="dark"] .rsvp-box .text-dark,
+    html[data-bs-theme="dark"] .rsvp-box .text-dark,
+    html[data-theme="dark"] .rsvp-box .text-dark,
+    body.dark-mode .rsvp-box .text-dark,
+    .dark-mode .rsvp-box .text-dark {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .rsvp-count-badge,
+    html[data-bs-theme="dark"] .rsvp-count-badge,
+    html[data-theme="dark"] .rsvp-count-badge,
+    body.dark-mode .rsvp-count-badge,
+    .dark-mode .rsvp-count-badge {
+        background: rgba(22, 163, 74, 0.2) !important;
+        color: #4ade80 !important;
+        border: 1px solid rgba(74, 222, 128, 0.3) !important;
+    }
+
+    html[data-pms-theme="dark"] .rsvp-segmented-bar,
+    html[data-bs-theme="dark"] .rsvp-segmented-bar,
+    html[data-theme="dark"] .rsvp-segmented-bar,
+    body.dark-mode .rsvp-segmented-bar,
+    .dark-mode .rsvp-segmented-bar {
+        background: #0B1026 !important;
+        border: 1px solid rgba(238, 241, 251, 0.08) !important;
+    }
+
+    html[data-pms-theme="dark"] .rsvp-segment-btn,
+    html[data-bs-theme="dark"] .rsvp-segment-btn,
+    html[data-theme="dark"] .rsvp-segment-btn,
+    body.dark-mode .rsvp-segment-btn,
+    .dark-mode .rsvp-segment-btn {
+        color: #94A3B8 !important;
+        -webkit-text-fill-color: #94A3B8 !important;
+    }
+
+    html[data-pms-theme="dark"] .rsvp-segment-btn:hover:not(.active-going):not(.active-maybe):not(.active-not_going),
+    html[data-bs-theme="dark"] .rsvp-segment-btn:hover:not(.active-going):not(.active-maybe):not(.active-not_going),
+    html[data-theme="dark"] .rsvp-segment-btn:hover:not(.active-going):not(.active-maybe):not(.active-not_going),
+    body.dark-mode .rsvp-segment-btn:hover:not(.active-going):not(.active-maybe):not(.active-not_going),
+    .dark-mode .rsvp-segment-btn:hover:not(.active-going):not(.active-maybe):not(.active-not_going) {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+        background: rgba(255, 255, 255, 0.1) !important;
+    }
+
+    html[data-pms-theme="dark"] .rsvp-segment-btn.active-going,
+    html[data-bs-theme="dark"] .rsvp-segment-btn.active-going,
+    html[data-theme="dark"] .rsvp-segment-btn.active-going,
+    body.dark-mode .rsvp-segment-btn.active-going,
+    .dark-mode .rsvp-segment-btn.active-going {
+        background: #0D6E46 !important;
+        color: #FFFFFF !important;
+        -webkit-text-fill-color: #FFFFFF !important;
+        box-shadow: 0 3px 10px rgba(13, 110, 70, 0.5) !important;
+    }
+
+    html[data-pms-theme="dark"] .rsvp-segment-btn.active-maybe,
+    html[data-bs-theme="dark"] .rsvp-segment-btn.active-maybe,
+    html[data-theme="dark"] .rsvp-segment-btn.active-maybe,
+    body.dark-mode .rsvp-segment-btn.active-maybe,
+    .dark-mode .rsvp-segment-btn.active-maybe {
+        background: #D97706 !important;
+        color: #FFFFFF !important;
+        -webkit-text-fill-color: #FFFFFF !important;
+        box-shadow: 0 3px 10px rgba(217, 119, 6, 0.5) !important;
+    }
+
+    html[data-pms-theme="dark"] .rsvp-segment-btn.active-not_going,
+    html[data-bs-theme="dark"] .rsvp-segment-btn.active-not_going,
+    html[data-theme="dark"] .rsvp-segment-btn.active-not_going,
+    body.dark-mode .rsvp-segment-btn.active-not_going,
+    .dark-mode .rsvp-segment-btn.active-not_going {
+        background: #DC2626 !important;
+        color: #FFFFFF !important;
+        -webkit-text-fill-color: #FFFFFF !important;
+        box-shadow: 0 3px 10px rgba(220, 38, 38, 0.5) !important;
+    }
+
+    html[data-pms-theme="dark"] .rsvp-summary-card,
+    html[data-bs-theme="dark"] .rsvp-summary-card,
+    html[data-theme="dark"] .rsvp-summary-card,
+    body.dark-mode .rsvp-summary-card,
+    .dark-mode .rsvp-summary-card {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
+    }
+
+    html[data-pms-theme="dark"] .rsvp-stat-going,
+    html[data-bs-theme="dark"] .rsvp-stat-going,
+    html[data-theme="dark"] .rsvp-stat-going,
+    body.dark-mode .rsvp-stat-going,
+    .dark-mode .rsvp-stat-going {
+        background-color: rgba(16, 185, 129, 0.12) !important;
+        border-color: rgba(52, 211, 153, 0.25) !important;
+    }
+
+    html[data-pms-theme="dark"] .rsvp-stat-maybe,
+    html[data-bs-theme="dark"] .rsvp-stat-maybe,
+    html[data-theme="dark"] .rsvp-stat-maybe,
+    body.dark-mode .rsvp-stat-maybe,
+    .dark-mode .rsvp-stat-maybe {
+        background-color: rgba(245, 158, 11, 0.12) !important;
+        border-color: rgba(251, 191, 36, 0.25) !important;
+    }
+
+    html[data-pms-theme="dark"] .rsvp-stat-not_going,
+    html[data-bs-theme="dark"] .rsvp-stat-not_going,
+    html[data-theme="dark"] .rsvp-stat-not_going,
+    body.dark-mode .rsvp-stat-not_going,
+    .dark-mode .rsvp-stat-not_going {
+        background-color: rgba(239, 68, 68, 0.12) !important;
+        border-color: rgba(248, 113, 113, 0.25) !important;
+    }
 </style>
 @endpush
 
@@ -924,7 +1051,7 @@
                                         <span class="fw-extrabold text-dark d-flex align-items-center gap-1.5" style="font-size: 0.92rem;">
                                             <i class="bx bx-checkbox-checked text-success fs-5"></i> RSVP:
                                         </span>
-                                        <span class="badge" style="background: #e8f5e9; color: #16a34a; font-weight: 700; font-size: 0.78rem; padding: 6px 12px; border-radius: 20px;">
+                                        <span class="badge rsvp-count-badge" style="background: #e8f5e9; color: #16a34a; font-weight: 700; font-size: 0.78rem; padding: 6px 12px; border-radius: 20px;">
                                             <i class="bx bx-user-check me-1"></i> {{ $event->rsvp_counts['going'] }} Going
                                         </span>
                                     </div>
@@ -1110,7 +1237,7 @@
                 </button>
             </div>
 
-            <form id="eventForm" enctype="multipart/form-data" method="POST" action="{{ route('events.store') }}">
+            <form id="eventForm" enctype="multipart/form-data" method="POST" action="{{ route('events.store') }}" onsubmit="return validateEventDateTime();">
                 @csrf
                 <input type="hidden" name="_method" id="formMethod" value="POST">
                 <input type="hidden" name="event_id" id="eventId" value="">
@@ -1160,23 +1287,26 @@
                     <div class="form-section-title">
                         <i class="bx bx-time fs-5"></i> SECTION 2: DATE & TIME
                     </div>
-                    <div class="row g-3 mb-4">
+                    <div class="row g-3 mb-2">
                         <div class="col-md-3 col-6">
                             <label class="form-label premium-label">Start Date <span class="text-danger">*</span></label>
-                            <input type="date" name="start_date" id="eventStartDateInput" class="form-control premium-input" required value="{{ date('Y-m-d') }}">
+                            <input type="date" name="start_date" id="eventStartDateInput" class="form-control premium-input" required value="{{ date('Y-m-d') }}" onchange="validateEventDateTime()" oninput="validateEventDateTime()">
                         </div>
                         <div class="col-md-3 col-6">
                             <label class="form-label premium-label">Start Time</label>
-                            <input type="time" name="start_time" id="eventStartTimeInput" class="form-control premium-input" value="09:00">
+                            <input type="time" name="start_time" id="eventStartTimeInput" class="form-control premium-input" value="09:00" onchange="validateEventDateTime()" oninput="validateEventDateTime()">
                         </div>
                         <div class="col-md-3 col-6">
                             <label class="form-label premium-label">End Date</label>
-                            <input type="date" name="end_date" id="eventEndDateInput" class="form-control premium-input" value="{{ date('Y-m-d') }}">
+                            <input type="date" name="end_date" id="eventEndDateInput" class="form-control premium-input" value="{{ date('Y-m-d') }}" onchange="validateEventDateTime()" oninput="validateEventDateTime()">
                         </div>
                         <div class="col-md-3 col-6">
                             <label class="form-label premium-label">End Time</label>
-                            <input type="time" name="end_time" id="eventEndTimeInput" class="form-control premium-input" value="17:00">
+                            <input type="time" name="end_time" id="eventEndTimeInput" class="form-control premium-input" value="17:00" onchange="validateEventDateTime()" oninput="validateEventDateTime()">
                         </div>
+                    </div>
+                    <div id="dateTimeValidationError" class="alert alert-danger py-2 px-3 small mb-4 d-none" style="border-radius: 10px; font-weight: 600;">
+                        <i class="bx bx-error-circle me-1 fs-6 align-middle"></i> <span id="dateTimeValidationErrorText"></span>
                     </div>
 
                     {{-- SECTION 3: LOCATION --}}
@@ -1480,6 +1610,56 @@
         }
     }
 
+    function validateEventDateTime() {
+        const startDateInput = document.getElementById('eventStartDateInput');
+        const startTimeInput = document.getElementById('eventStartTimeInput');
+        const endDateInput = document.getElementById('eventEndDateInput');
+        const endTimeInput = document.getElementById('eventEndTimeInput');
+        const errorBox = document.getElementById('dateTimeValidationError');
+        const errorText = document.getElementById('dateTimeValidationErrorText');
+        const submitBtn = document.getElementById('btnSubmitForm');
+
+        if (!startDateInput || !endDateInput) return true;
+
+        const startDate = startDateInput.value;
+        const startTime = startTimeInput ? startTimeInput.value : '';
+        const endDate = endDateInput.value;
+        const endTime = endTimeInput ? endTimeInput.value : '';
+
+        // Reset error state
+        if (errorBox) errorBox.classList.add('d-none');
+        if (errorText) errorText.innerText = '';
+        endDateInput.classList.remove('is-invalid');
+        if (endTimeInput) endTimeInput.classList.remove('is-invalid');
+        if (submitBtn) submitBtn.disabled = false;
+
+        // Set min attribute on end_date based on start_date
+        if (startDate) {
+            endDateInput.min = startDate;
+        }
+
+        if (startDate && endDate) {
+            if (endDate < startDate) {
+                if (errorText) errorText.innerText = 'End Date cannot be earlier than Start Date.';
+                if (errorBox) errorBox.classList.remove('d-none');
+                endDateInput.classList.add('is-invalid');
+                if (submitBtn) submitBtn.disabled = true;
+                return false;
+            }
+
+            if (startDate === endDate && startTime && endTime) {
+                if (endTime <= startTime) {
+                    if (errorText) errorText.innerText = 'End Time must be greater than Start Time when event is on the same day.';
+                    if (errorBox) errorBox.classList.remove('d-none');
+                    if (endTimeInput) endTimeInput.classList.add('is-invalid');
+                    if (submitBtn) submitBtn.disabled = true;
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     function openCreateModal() {
         document.getElementById('eventModalTitle').innerHTML = '<i class="bx bx-calendar-plus fs-4"></i> Create Company Event';
         document.getElementById('eventForm').action = '{{ route("events.store") }}';
@@ -1487,6 +1667,7 @@
         document.getElementById('eventId').value = '';
         document.getElementById('eventForm').reset();
         toggleLocationFields();
+        validateEventDateTime();
 
         const modal = new bootstrap.Modal(document.getElementById('eventModal'));
         modal.show();
@@ -1523,6 +1704,7 @@
             document.getElementById('eventRsvpInput').checked = !!e.rsvp_required;
 
             toggleLocationFields();
+            validateEventDateTime();
 
             const modal = new bootstrap.Modal(document.getElementById('eventModal'));
             modal.show();
@@ -1695,25 +1877,25 @@
 
                 {{-- RSVP SUMMARY METRICS --}}
                 ${e.rsvp_required ? `
-                <div class="card border-0 p-3.5 mb-3" style="border-radius: 16px; background: #f8fafc; border: 1px solid #e2e8f0 !important;">
+                <div class="card border-0 p-3.5 mb-3 rsvp-summary-card" style="border-radius: 16px; background: #f8fafc; border: 1px solid #e2e8f0 !important;">
                     <h6 class="fw-bold text-dark mb-3 d-flex align-items-center gap-1.5" style="font-size: 0.95rem;">
                         <i class="bx bx-pie-chart-alt-2 text-primary"></i> RSVP Summary
                     </h6>
                     <div class="row g-3 text-center">
                         <div class="col-4">
-                            <div class="p-3 rounded-3" style="border: 1px solid #E0E7FF; background-color: #f0fdf4 !important;">
+                            <div class="p-3 rounded-3 rsvp-stat-going" style="border: 1px solid #d1fae5; background-color: #f0fdf4 !important;">
                                 <span class="d-block small text-success fw-bold uppercase-label" style="font-size: 11px; letter-spacing: 0.5px;">Going</span>
                                 <h3 class="fw-extrabold text-success mb-0 mt-1">${rsvp.going}</h3>
                             </div>
                         </div>
                         <div class="col-4">
-                            <div class="p-3 rounded-3" style="border: 1px solid #fef3c7; background-color: #fffbeb !important;">
+                            <div class="p-3 rounded-3 rsvp-stat-maybe" style="border: 1px solid #fef3c7; background-color: #fffbeb !important;">
                                 <span class="d-block small text-warning fw-bold uppercase-label" style="font-size: 11px; letter-spacing: 0.5px;">Maybe</span>
                                 <h3 class="fw-extrabold text-warning mb-0 mt-1">${rsvp.maybe}</h3>
                             </div>
                         </div>
                         <div class="col-4">
-                            <div class="p-3 rounded-3" style="border: 1px solid #fee2e2; background-color: #fef2f2 !important;">
+                            <div class="p-3 rounded-3 rsvp-stat-not_going" style="border: 1px solid #fee2e2; background-color: #fef2f2 !important;">
                                 <span class="d-block small text-danger fw-bold uppercase-label" style="font-size: 11px; letter-spacing: 0.5px;">Not Going</span>
                                 <h3 class="fw-extrabold text-danger mb-0 mt-1">${rsvp.not_going}</h3>
                             </div>

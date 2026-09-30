@@ -239,6 +239,7 @@
         color: #fff;
         font-weight: 900;
         line-height: 1;
+        font-variant-numeric: tabular-nums;
     }
 
     .employee-hero .employee-clock,
@@ -1201,7 +1202,7 @@
                         </p>
                     </div>
                     <div class="col-lg-4">
-                        <div class="employee-clock">
+                        <div class="employee-clock" data-server-time="{{ now()->getTimestamp() * 1000 }}">
                             <div class="text-lg-end">
                                 <div class="employee-time" id="employeeLiveTime">{{ now()->format('h:i A') }}</div>
                                 <div id="employeeLiveDate">{{ now()->format('l, d M Y') }}</div>
@@ -2489,10 +2490,65 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
                     timeZone: employeeTimeZone,
                     hour: '2-digit',
                     minute: '2-digit',
-                    second: '2-digit',
+                    second: includeSeconds ? '2-digit' : undefined,
                     hour12: true
-                }).format(now);
+                }).format(date);
+            } catch (e) {
+                let h = date.getHours();
+                const m = String(date.getMinutes()).padStart(2, '0');
+                const s = String(date.getSeconds()).padStart(2, '0');
+                const ampm = h >= 12 ? 'PM' : 'AM';
+                h = h % 12 || 12;
+                const hStr = String(h).padStart(2, '0');
+                return includeSeconds ? `${hStr}:${m}:${s} ${ampm}` : `${hStr}:${m} ${ampm}`;
             }
+        };
+
+        const formatIstDate = (date) => {
+            try {
+                const parts = new Intl.DateTimeFormat('en-US', {
+                    timeZone: 'Asia/Kolkata',
+                    weekday: 'long',
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric'
+                }).formatToParts(date);
+
+                let weekday = '', day = '', month = '', year = '';
+                for (const p of parts) {
+                    if (p.type === 'weekday') weekday = p.value;
+                    else if (p.type === 'day') day = p.value;
+                    else if (p.type === 'month') month = p.value;
+                    else if (p.type === 'year') year = p.value;
+                }
+                return `${weekday}, ${day} ${month} ${year}`;
+            } catch (e) {
+                return date.toLocaleDateString();
+            }
+        };
+
+        const updateClockWidgets = () => {
+            const now = new Date(Date.now() + serverOffset);
+
+            if (heroTime) {
+                heroTime.textContent = formatIstTime(now, true);
+            }
+
+            if (heroDate) {
+                heroDate.textContent = formatIstDate(now);
+            }
+
+            if (istClock) {
+                istClock.textContent = formatIstTime(now, true);
+            }
+
+            document.querySelectorAll('[data-live-clock="time"]').forEach(el => {
+                if (el !== heroTime) el.textContent = formatIstTime(now, true);
+            });
+
+            document.querySelectorAll('[data-live-clock="date"]').forEach(el => {
+                if (el !== heroDate) el.textContent = formatIstDate(now);
+            });
 
             if (workTimer && workTimer.dataset.clockIn) {
                 if (workTimer.dataset.fixedDuration) {
@@ -2517,7 +2573,7 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
         setInterval(updateClockWidgets, 1000);
 
         const scheduleMidnightRefresh = () => {
-            const now = new Date();
+            const now = new Date(Date.now() + serverOffset);
             const midnight = new Date(now);
             midnight.setHours(24, 0, 3, 0);
             setTimeout(() => window.location.reload(), Math.max(1000, midnight - now));
@@ -2530,7 +2586,7 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
             year: 'numeric',
             month: '2-digit',
             day: '2-digit'
-        }).format(new Date());
+        }).format(new Date(Date.now() + serverOffset));
 
         setInterval(() => {
             const currentDateKey = new Intl.DateTimeFormat('en-CA', {
@@ -2538,7 +2594,7 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
                 year: 'numeric',
                 month: '2-digit',
                 day: '2-digit'
-            }).format(new Date());
+            }).format(new Date(Date.now() + serverOffset));
 
             if (currentDateKey !== loadedDateKey) {
                 window.location.reload();

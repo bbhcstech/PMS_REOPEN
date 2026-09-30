@@ -154,6 +154,31 @@
         box-shadow: 0 8px 24px rgba(47, 107, 255, 0.3);
     }
 
+    .btn-workspace-custom {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 14px;
+        height: 30px;
+        font-size: 12px;
+        font-weight: 700;
+        border-radius: 8px;
+        color: #ffffff !important;
+        background: linear-gradient(135deg, #0284c7 0%, #0284c7 20%, #0ea5e9 60%, #38bdf8 100%) !important;
+        box-shadow: 0 4px 14px rgba(14, 165, 233, 0.45);
+        border: none;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        white-space: nowrap;
+    }
+
+    .btn-workspace-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(14, 165, 233, 0.6);
+        color: #ffffff !important;
+    }
+
     .btn-primary-custom:hover {
         transform: translateY(-2px);
         box-shadow: 0 14px 32px rgba(47, 107, 255, 0.4);
@@ -1703,8 +1728,8 @@
                     </td>
                     <td style="text-align: right;">
                         <div class="actions-cell-wrap">
-                            <a href="{{ Route::has('super-admin.companies.show') ? route('super-admin.companies.show', $company->id) : (Route::has('superadmin.companies.show') ? route('superadmin.companies.show', $company->id) : url('/super-admin/companies/'.$company->id)) }}" 
-                               class="btn-custom btn-primary-custom btn-xs-custom" title="Open Dedicated Workspace">
+                            <a href="{{ Route::has('super-admin.companies.show') ? route('super-admin.companies.show', $company->id) : (Route::has('superadmin.companies.show') ? route('superadmin.companies.show', $company->id) : url('/superadmin/companies/'.$company->id)) }}" 
+                               class="btn-workspace-custom" title="Open Dedicated Workspace">
                                 Workspace
                             </a>
                             <div class="dropdown-container">
@@ -1712,7 +1737,7 @@
                                     <i class="bx bx-dots-vertical-rounded" style="font-size: 18px;"></i>
                                 </button>
                                 <div class="dropdown-menu-custom">
-                                    <a href="{{ Route::has('super-admin.companies.show') ? route('super-admin.companies.show', $company->id) : (Route::has('superadmin.companies.show') ? route('superadmin.companies.show', $company->id) : url('/super-admin/companies/'.$company->id)) }}">
+                                    <a href="{{ Route::has('super-admin.companies.show') ? route('super-admin.companies.show', $company->id) : (Route::has('superadmin.companies.show') ? route('superadmin.companies.show', $company->id) : url('/superadmin/companies/'.$company->id)) }}">
                                         <i class="bx bx-show" style="color: var(--blue-accent);"></i> Open Workspace
                                     </a>
                                     <a href="#" class="trigger-detail-drawer" data-company-id="{{ $company->id }}" data-company-name="{{ $company->name }}" data-company-email="{{ $company->email }}" data-company-db="{{ $company->db_name }}" data-company-logo="{{ $company->logo ? asset($company->logo) : '' }}">
@@ -1722,13 +1747,13 @@
                                         <i class="bx bx-layer" style="color: var(--purple-accent);"></i> Change Subscription
                                     </a>
                                     <div class="divider"></div>
-                                    <form method="POST" action="{{ route('super-admin.companies.enter', $company) }}" style="margin: 0;">
+                                    <form method="POST" action="{{ Route::has('superadmin.companies.enter') ? route('superadmin.companies.enter', $company) : (Route::has('super-admin.companies.enter') ? route('super-admin.companies.enter', $company) : url('/superadmin/companies/'.$company->id.'/enter')) }}" style="margin: 0;">
                                         @csrf
                                         <button type="submit" style="width:100%; text-align:left;"><i class="bx bx-log-in-circle" style="color: var(--amber-accent);"></i> Impersonate Context</button>
                                     </form>
                                     <div class="divider"></div>
-                                    <a href="#" class="danger-item"><i class="bx bx-block"></i> Suspend Company</a>
-                                    <a href="#" class="danger-item"><i class="bx bx-trash"></i> Delete Company</a>
+                                    <a href="javascript:void(0)" onclick="confirmSuspendCompany({{ $company->id }}, '{{ addslashes($company->name) }}')" class="danger-item"><i class="bx bx-block"></i> Suspend Company</a>
+                                    <a href="javascript:void(0)" onclick="confirmDeleteCompany({{ $company->id }}, '{{ addslashes($company->name) }}')" class="danger-item"><i class="bx bx-trash"></i> Delete Company</a>
                                 </div>
                             </div>
                         </div>
@@ -1862,11 +1887,34 @@
     </div>
 </div>
 
+<!-- HIDDEN FORMS FOR SUSPEND & DELETE -->
+<form id="companiesIndexSuspendForm" method="POST" action="" style="display:none;">
+    @csrf
+</form>
+<form id="companiesIndexDeleteForm" method="POST" action="" style="display:none;">
+    @csrf
+    @method('DELETE')
+</form>
+
 @endsection
 
 @push('scripts')
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script>
+function confirmSuspendCompany(id, name) {
+    if (confirm("Are you sure you want to suspend access for company '" + name + "'?")) {
+        const form = document.getElementById('companiesIndexSuspendForm');
+        form.action = "{{ url('/superadmin/companies') }}/" + id + "/suspend";
+        form.submit();
+    }
+}
+function confirmDeleteCompany(id, name) {
+    if (confirm("CRITICAL WARNING: Are you sure you want to completely delete company '" + name + "'? This operation will remove the tenant database link and cannot be undone.")) {
+        const form = document.getElementById('companiesIndexDeleteForm');
+        form.action = "{{ url('/superadmin/companies') }}/" + id;
+        form.submit();
+    }
+}
 document.addEventListener('DOMContentLoaded', function() {
     // 1. Chart.js Donut Chart
     const ctx = document.getElementById('planDonutChart');

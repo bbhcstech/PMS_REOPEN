@@ -219,7 +219,6 @@
 </div>
 
 
-
 {{-- small styles --}}
 <style>
   .half-star { display:inline-block; width:18px; height:18px; }
@@ -651,3 +650,405 @@
   }
 </style>
 
+@push('js')
+<script>
+$(document).ready(function () {
+    function getAttendanceModal() {
+        var modalEl = document.getElementById('attendanceDetailsModal');
+        if (!modalEl) {
+            modalEl = document.createElement('div');
+            modalEl.className = 'modal fade attendance-details-modal';
+            modalEl.id = 'attendanceDetailsModal';
+            modalEl.tabIndex = -1;
+            modalEl.setAttribute('aria-hidden', 'true');
+            modalEl.innerHTML = '<div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">' +
+                '<div class="modal-content attendance-details-modal-content">' +
+                '<div class="modal-header bg-primary text-white">' +
+                '<h5 class="modal-title">Attendance Details</h5>' +
+                '<button type="button" class="btn-close" data-attendance-modal-close aria-label="Close"></button>' +
+                '</div>' +
+                '<div id="attendanceDetailsBody" class="modal-body attendance-details-modal-body">' +
+                '<div class="text-center py-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>' +
+                '</div>' +
+                '<div class="modal-footer">' +
+                '<button type="button" class="btn btn-secondary" data-attendance-modal-close>Close</button>' +
+                '</div></div></div>';
+            document.body.appendChild(modalEl);
+        } else if (modalEl.parentElement !== document.body) {
+            document.body.appendChild(modalEl);
+        }
+
+        if (window.bootstrap && bootstrap.Modal) {
+            if (typeof bootstrap.Modal.getOrCreateInstance === 'function') {
+                return bootstrap.Modal.getOrCreateInstance(modalEl, {
+                    backdrop: true,
+                    keyboard: true,
+                    focus: true
+                });
+            }
+            return new bootstrap.Modal(modalEl, {
+                backdrop: true,
+                keyboard: true,
+                focus: true
+            });
+        }
+
+        if (window.jQuery && typeof $(modalEl).modal === 'function') {
+            return {
+                show: function() { $(modalEl).modal('show'); },
+                hide: function() { $(modalEl).modal('hide'); }
+            };
+        }
+
+        return null;
+    }
+
+    function showAttendanceLoading(message) {
+        $('#attendanceDetailsBody').html(
+            '<div class="text-center py-5 bg-white">' +
+                '<div class="spinner-border text-primary" role="status">' +
+                    '<span class="visually-hidden">Loading...</span>' +
+                '</div>' +
+                '<p class="mt-3 mb-0 text-muted">' + message + '</p>' +
+            '</div>'
+        );
+    }
+
+    function cleanModalState(force = false) {
+        if (force || $('.modal.show').length === 0) {
+            $('.modal-backdrop').remove();
+            $('body').removeClass('modal-open').css({
+                overflow: '',
+                paddingRight: ''
+            });
+            document.body.style.removeProperty('overflow');
+            document.body.style.removeProperty('padding-right');
+        }
+    }
+
+    function closeAttendanceModal() {
+        var modalEl = document.getElementById('attendanceDetailsModal');
+        if (!modalEl) {
+            cleanModalState(true);
+            return;
+        }
+
+        if (window.bootstrap && bootstrap.Modal && typeof bootstrap.Modal.getInstance === 'function') {
+            var modal = bootstrap.Modal.getInstance(modalEl);
+            if (modal) {
+                modal.hide();
+            }
+        } else if (window.jQuery && typeof $(modalEl).modal === 'function') {
+            $(modalEl).modal('hide');
+        }
+
+        modalEl.classList.remove('show');
+        modalEl.setAttribute('aria-hidden', 'true');
+        modalEl.removeAttribute('aria-modal');
+        modalEl.style.display = 'none';
+        $('#attendanceDetailsBody').html('');
+        $('#editAttendanceModal').remove();
+        cleanModalState(true);
+    }
+
+    function escapeAttendanceHtml(value) {
+        return String(value ?? '').replace(/[&<>"']/g, function(char) {
+            return {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            }[char];
+        });
+    }
+
+    function parseAttendancePayload(encoded) {
+        if (typeof encoded === 'object' && encoded !== null) {
+            return encoded;
+        }
+        if (!encoded) {
+            return {};
+        }
+        try {
+            var binary = atob(encoded);
+            var bytes = new Uint8Array(binary.length);
+            for (var i = 0; i < binary.length; i++) {
+                bytes[i] = binary.charCodeAt(i);
+            }
+
+            if (window.TextDecoder) {
+                return JSON.parse(new TextDecoder('utf-8').decode(bytes));
+            }
+
+            return JSON.parse(decodeURIComponent(escape(binary)));
+        } catch (e) {
+            console.error('Error parsing attendance payload:', e);
+            return {};
+        }
+    }
+
+    function renderEmployeeMonthDetails(payload, editMode) {
+        var rows = (payload.records || []).map(function(record) {
+            var editButton = '';
+            if (editMode) {
+                editButton = '<button type="button" class="month-edit-day-btn edit-attendance" ' +
+                    'data-attendance-id="' + escapeAttendanceHtml(record.attendance_id || '') + '" ' +
+                    'data-user-id="' + escapeAttendanceHtml(payload.user_id) + '" ' +
+                    'data-date="' + escapeAttendanceHtml(record.date) + '">' +
+                    '<i class="fas fa-pen me-1"></i>Edit</button>';
+            }
+
+            return '<tr>' +
+                '<td><strong>' + escapeAttendanceHtml(record.day) + '</strong><div class="small text-muted">' + escapeAttendanceHtml(record.date) + '</div></td>' +
+                '<td>' + escapeAttendanceHtml(record.status) + '</td>' +
+                '<td>' + escapeAttendanceHtml(record.clock_in) + '</td>' +
+                '<td>' + escapeAttendanceHtml(record.clock_out) + '</td>' +
+                '<td>' + escapeAttendanceHtml(record.total) + '</td>' +
+                '<td>' + escapeAttendanceHtml(record.note || '-') + '</td>' +
+                (editMode ? '<td class="text-center">' + editButton + '</td>' : '') +
+            '</tr>';
+        }).join('');
+
+        var heading = editMode ? 'Edit Monthly Attendance' : 'Monthly Attendance Details';
+        $('#attendanceDetailsModal .modal-title').text(heading);
+        $('#attendanceDetailsBody').html(
+            '<div class="attendance-month-summary">' +
+                '<div class="attendance-month-profile">' +
+                    '<img src="' + escapeAttendanceHtml(payload.photo) + '" alt="' + escapeAttendanceHtml(payload.name) + '">' +
+                    '<div>' +
+                        '<h5>' + escapeAttendanceHtml(payload.name) + '</h5>' +
+                        '<p>' + escapeAttendanceHtml(payload.designation) + ' | ' + escapeAttendanceHtml(payload.month_name) +
+                        ' | Total: ' + escapeAttendanceHtml(payload.total_hours) +
+                        ' | Present: ' + escapeAttendanceHtml(payload.present_count) + '/' + escapeAttendanceHtml(payload.days_in_month) + '</p>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="table-responsive">' +
+                    '<table class="attendance-month-table">' +
+                        '<thead><tr>' +
+                            '<th>Date</th><th>Status</th><th>Clock In</th><th>Clock Out</th><th>Total</th><th>Note</th>' +
+                            (editMode ? '<th class="text-center">Action</th>' : '') +
+                        '</tr></thead>' +
+                        '<tbody>' + rows + '</tbody>' +
+                    '</table>' +
+                '</div>' +
+            '</div>'
+        );
+
+        var modal = getAttendanceModal();
+        if (modal) {
+            modal.show();
+        }
+    }
+
+    $(document).off('click.attendanceMonthView', '.js-month-view')
+        .on('click.attendanceMonthView', '.js-month-view', function(e) {
+        if (e) e.preventDefault();
+        var rawPayload = this.dataset?.payload || this.getAttribute('data-payload') || $(this).data('payload') || $(this).attr('data-payload');
+        renderEmployeeMonthDetails(parseAttendancePayload(rawPayload), false);
+    });
+
+    $(document).off('click.attendanceMonthEdit', '.js-month-edit')
+        .on('click.attendanceMonthEdit', '.js-month-edit', function(e) {
+        if (e) e.preventDefault();
+        var rawPayload = this.dataset?.payload || this.getAttribute('data-payload') || $(this).data('payload') || $(this).attr('data-payload');
+        renderEmployeeMonthDetails(parseAttendancePayload(rawPayload), true);
+    });
+
+    $(document).off('click.attendanceMonthArchive', '.js-month-archive')
+        .on('click.attendanceMonthArchive', '.js-month-archive', function() {
+        var archiveButton = $(this);
+        var originalHtml = archiveButton.html();
+        var payload = parseAttendancePayload(this.dataset.payload);
+        var message = 'Archive attendance records for ' + payload.name + ' in ' + payload.month_name + '?\n\nThey will move out of the active attendance table and can be restored later.';
+        if (!confirm(message)) {
+            return;
+        }
+
+        archiveButton.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i><span>Archiving</span>');
+
+        $.ajax({
+            url: "{{ route('attendance.month.archive') }}",
+            type: 'POST',
+            data: {
+                _token: "{{ csrf_token() }}",
+                user_id: payload.user_id,
+                month: payload.month,
+                year: payload.year
+            },
+            success: function(response) {
+                alert(response.message || 'Monthly attendance archived successfully.');
+                window.location.reload();
+            },
+            error: function(xhr) {
+                var message = 'Unable to archive monthly attendance.';
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    message = xhr.responseJSON.message;
+                }
+                alert(message);
+            },
+            complete: function() {
+                archiveButton.prop('disabled', false).html(originalHtml);
+            }
+        });
+    });
+
+    $(document).off('hidden.bs.modal.attendanceDetails', '#attendanceDetailsModal')
+        .on('hidden.bs.modal.attendanceDetails', '#attendanceDetailsModal', function () {
+        $('#attendanceDetailsBody').html('');
+        $('#editAttendanceModal').remove();
+        cleanModalState(true);
+    });
+
+    $(document).off('click.attendanceModalClose', '[data-attendance-modal-close]')
+        .on('click.attendanceModalClose', '[data-attendance-modal-close]', function(e) {
+        e.preventDefault();
+        closeAttendanceModal();
+    });
+
+    $(document).off('click.attendanceModalBackdrop', '#attendanceDetailsModal')
+        .on('click.attendanceModalBackdrop', '#attendanceDetailsModal', function(e) {
+        if (e.target === this) {
+            closeAttendanceModal();
+        }
+    });
+
+    $(document).off('keydown.attendanceModalEscape')
+        .on('keydown.attendanceModalEscape', function(e) {
+        if (e.key === 'Escape' && $('#attendanceDetailsModal').hasClass('show')) {
+            closeAttendanceModal();
+        }
+    });
+
+    $(document).off('submit.attendanceModalForm', '#attendanceDetailsModal .attendance-form')
+        .on('submit.attendanceModalForm', '#attendanceDetailsModal .attendance-form', function(e) {
+        e.preventDefault();
+
+        var form = this;
+        var submitButton = $(form).find('[type="submit"]').first();
+        var originalHtml = submitButton.html();
+
+        submitButton.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Saving...');
+
+        $.ajax({
+            url: form.action,
+            type: form.method || 'POST',
+            data: new FormData(form),
+            processData: false,
+            contentType: false,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            success: function() {
+                closeAttendanceModal();
+                window.location.reload();
+            },
+            error: function(xhr) {
+                var message = 'Unable to save attendance. Please check the form and try again.';
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    message = xhr.responseJSON.message;
+                }
+
+                $(form).prepend('<div class="alert alert-danger alert-dismissible fade show" role="alert">' +
+                    message +
+                    '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+                '</div>');
+            },
+            complete: function() {
+                submitButton.prop('disabled', false).html(originalHtml);
+                cleanModalState();
+            }
+        });
+    });
+
+    // Filter AJAX submit (optional; fallback to normal GET if disabled)
+    $('#attendanceFilter').on('submit', function(e) {
+        // allow default GET submit, but if you want ajax un-comment below
+        // e.preventDefault();
+        // $.ajax({...})
+    });
+
+    // view attendance modal
+    $(document).off('click.attendanceView', '.view-attendance')
+        .on('click.attendanceView', '.view-attendance', function(e) {
+        e.preventDefault();
+        var attendanceId = $(this).data('attendance-id');
+        var userId = $(this).data('user-id');
+        var date = $(this).data('date');
+
+        var url = "{{ url('attendance/details') }}?attendance_id=" + attendanceId + "&user_id=" + userId + "&date=" + date;
+
+        var modal = getAttendanceModal();
+        if (!modal) return;
+
+        $('#editAttendanceModal').remove();
+        $('#attendanceDetailsModal .modal-title').text('Attendance Details');
+        showAttendanceLoading('Loading attendance details...');
+        modal.show();
+
+        $.ajax({
+            url: url,
+            type: 'GET',
+            success: function(response) {
+                $('#attendanceDetailsBody').html(response);
+            },
+            error: function(xhr) {
+                $('#attendanceDetailsBody').html('<div class="alert alert-danger m-4">Error loading attendance details.</div>');
+            },
+            complete: function() {
+                cleanModalState();
+            }
+        });
+    });
+
+    // edit attendance modal for admins
+    $(document).off('click.attendanceEdit', '.edit-attendance')
+        .on('click.attendanceEdit', '.edit-attendance', function(e) {
+        e.preventDefault();
+        var attendanceId = $(this).data('attendance-id');
+        var userId       = $(this).data('user-id');
+        var date         = $(this).data('date');
+
+        var url = "{{ url('attendance/edit') }}?attendance_id=" + attendanceId + "&user_id=" + userId + "&date=" + date;
+
+        var modal = getAttendanceModal();
+        if (!modal) return;
+
+        $('#editAttendanceModal').remove();
+        $('#attendanceDetailsModal .modal-title').text('Edit Attendance');
+        showAttendanceLoading('Loading attendance form...');
+        modal.show();
+
+        $.ajax({
+            url: url,
+            type: 'GET',
+            success: function(response) {
+                $('#attendanceDetailsBody').html(response);
+            },
+            error: function(xhr) {
+                $('#attendanceDetailsBody').html('<div class="alert alert-danger m-4">Error loading attendance form.</div>');
+            },
+            complete: function() {
+                cleanModalState();
+            }
+        });
+    });
+
+    // tooltips
+    $(function () {
+        $('[data-bs-toggle="tooltip"]').tooltip({
+            trigger: 'hover',
+            placement: 'top'
+        });
+    });
+
+    $(document).ajaxComplete(function () {
+        $('[data-bs-toggle="tooltip"]').tooltip({
+            trigger: 'hover',
+            placement: 'top'
+        });
+    });
+
+});
+</script>
+@endpush

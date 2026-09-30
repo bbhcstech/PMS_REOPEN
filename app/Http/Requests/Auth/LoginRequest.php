@@ -102,6 +102,16 @@ class LoginRequest extends FormRequest
             })->first();
         } catch (\Throwable $e) {}
 
+        // Check if user is a developer
+        $isDeveloper = false;
+        if ($user) {
+            $isDeveloper = method_exists($user, 'isDeveloper') ? $user->isDeveloper() : (
+                in_array(strtolower((string)($user->role ?? '')), ['developer', 'dev'], true)
+                || str_contains(strtolower((string)($user->designation ?? '')), 'developer')
+                || str_contains(strtolower((string)($user->designation ?? '')), 'engineer')
+            );
+        }
+
         // If central company not found yet, check via user's company_id
         if (! $centralCompany && $user && !empty($user->company_id)) {
             try {
@@ -111,7 +121,20 @@ class LoginRequest extends FormRequest
             } catch (\Throwable $e) {}
         }
 
-        if ($centralCompany && !empty($centralCompany->db_name)) {
+        // Detect if this is an authentic company admin credential login
+        $isCompanyAdminLogin = false;
+        if ($centralCompany && ! $isDeveloper) {
+            $cmpEmail = strtolower((string) $centralCompany->email);
+            $cmpCode  = strtolower((string) $centralCompany->company_code);
+            $cmpDom   = strtolower((string) $centralCompany->domain);
+            $cmpSub   = strtolower((string) $centralCompany->subdomain);
+
+            if (in_array($inputEmail, array_filter([$cmpEmail, $cmpCode, $cmpDom, $cmpSub]), true)) {
+                $isCompanyAdminLogin = true;
+            }
+        }
+
+        if ($centralCompany && !empty($centralCompany->db_name) && ! $isDeveloper) {
             $companyEmail = strtolower($centralCompany->email);
 
             // Set dynamic tenant DB connection for this company login with PDO validation

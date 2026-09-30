@@ -16,6 +16,8 @@ class RecruitmentSettingsController extends Controller
             'auto_reply' => AppSetting::valueFor('recruit_auto_reply', '1'),
             'max_resume_size_mb' => AppSetting::valueFor('recruit_max_resume_size', '5'),
             'allowed_file_types' => AppSetting::valueFor('recruit_allowed_file_types', 'pdf,doc,docx'),
+            'hiring_sla_days' => AppSetting::valueFor('recruit_hiring_sla_days', '30'),
+            'probation_period_months' => AppSetting::valueFor('recruit_probation_period_months', '3'),
         ];
 
         return view('admin.settings.recruitment', compact('settings'));
@@ -32,7 +34,12 @@ class RecruitmentSettingsController extends Controller
             'pipeline_stages' => 'required|string',
             'max_resume_size_mb' => 'required|numeric|min:1|max:50',
             'allowed_file_types' => 'required|string',
+            'hiring_sla_days' => 'required|numeric|min:1|max:365',
+            'probation_period_months' => 'required|numeric|min:0|max:24',
         ]);
+
+        $probationMonths = (int) $request->probation_period_months;
+        $slaDays = (int) $request->hiring_sla_days;
 
         $data = [
             'job_categories' => $request->job_categories,
@@ -40,6 +47,10 @@ class RecruitmentSettingsController extends Controller
             'auto_reply' => $request->has('auto_reply') ? '1' : '0',
             'max_resume_size' => $request->max_resume_size_mb,
             'allowed_file_types' => $request->allowed_file_types,
+            'hiring_sla_days' => $slaDays,
+            'probation_period_months' => $probationMonths,
+            'hiring_sla' => $slaDays . ' Days from Requirement posting to Offer',
+            'probation_period' => $probationMonths . ' Months (' . ($probationMonths * 30) . ' Days standard evaluation)',
         ];
 
         foreach ($data as $key => $val) {
@@ -47,7 +58,7 @@ class RecruitmentSettingsController extends Controller
                 ['key' => 'recruit_' . $key],
                 [
                     'label' => ucwords(str_replace('_', ' ', $key)),
-                    'value' => $val,
+                    'value' => (string) $val,
                     'page' => 'recruitment-settings',
                     'section' => 'Recruitment',
                     'type' => 'text'
@@ -57,8 +68,8 @@ class RecruitmentSettingsController extends Controller
 
         // Broadcast notification to Admin, HR, Manager, and Employees
         \App\Services\SystemNotificationService::notifyAllRoles(
-            'Recruitment Pipeline Settings Updated',
-            'Recruitment pipeline stages and candidate application settings have been updated by ' . (auth()->user()?->name ?? 'Admin') . '.',
+            'Recruitment Pipeline & Governance Settings Updated',
+            'Recruitment SLA targets, probation periods, and pipeline settings updated by ' . (auth()->user()?->name ?? 'Admin') . '.',
             route('admin.settings.recruitment'),
             [
                 'type' => 'setting_update',
@@ -68,6 +79,6 @@ class RecruitmentSettingsController extends Controller
             ]
         );
 
-        return back()->with('success', 'Recruitment settings updated successfully!');
+        return back()->with('success', 'Recruitment SLA, Probation, and Pipeline settings updated successfully!');
     }
 }

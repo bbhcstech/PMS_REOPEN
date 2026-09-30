@@ -1985,16 +1985,14 @@
                     </div>
                 </div>
             </div>
-            <div class="table-responsive">
-                <div id="attendance-table">
-                    @include('admin.attendance.table', [
-                        'users' => $users,
-                        'attendanceMap' => $attendanceMap,
-                        'daysInMonth' => $daysInMonth,
-                        'month' => $month,
-                        'year' => $year
-                    ])
-                </div>
+            <div id="attendance-table">
+                @include('admin.attendance.table', [
+                    'users' => $users,
+                    'attendanceMap' => $attendanceMap,
+                    'daysInMonth' => $daysInMonth,
+                    'month' => $month,
+                    'year' => $year
+                ])
             </div>
         </div>
 
@@ -2008,13 +2006,13 @@
     </div>
 </div>
 
-{{-- ===== ATTENDANCE DETAILS MODAL (persistent – outside AJAX zone) ===== --}}
+{{-- Attendance Details Modal --}}
 <div class="modal fade attendance-details-modal" id="attendanceDetailsModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
     <div class="modal-content attendance-details-modal-content">
       <div class="modal-header bg-primary text-white">
         <h5 class="modal-title">Attendance Details</h5>
-        <button type="button" class="btn-close btn-close-white" data-attendance-modal-close aria-label="Close"></button>
+        <button type="button" class="btn-close" data-attendance-modal-close aria-label="Close"></button>
       </div>
       <div id="attendanceDetailsBody" class="modal-body attendance-details-modal-body">
         <div class="text-center py-4">

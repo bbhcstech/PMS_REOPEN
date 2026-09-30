@@ -702,69 +702,241 @@
       background: rgba(47, 107, 255, 0.03);
     }
 
-    /* Actions Dropdown */
-    .actions-dropdown {
+    /* Actions Cell Wrap & Workspace Button (Matching Screenshot) */
+    .actions-cell-wrap {
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      position: relative;
+    }
+
+    .btn-workspace-custom {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 14px;
+      height: 32px;
+      font-size: 12.5px;
+      font-weight: 700;
+      border-radius: 8px;
+      color: #ffffff !important;
+      background: linear-gradient(135deg, #0284c7 0%, #0284c7 20%, #0ea5e9 60%, #38bdf8 100%) !important;
+      box-shadow: 0 4px 14px rgba(14, 165, 233, 0.45);
+      border: none;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      white-space: nowrap;
+    }
+
+    .btn-workspace-custom:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(14, 165, 233, 0.6);
+      color: #ffffff !important;
+    }
+
+    .btn-dots-custom {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--slate-muted, #94a3b8);
+      background: transparent;
+      border: 1px solid rgba(226, 232, 240, 0.8);
+      transition: all 0.2s ease;
+      cursor: pointer;
+      font-size: 18px;
+    }
+
+    .btn-dots-custom:hover {
+      background: rgba(2, 132, 199, 0.1);
+      color: #0284c7;
+      border-color: #0284c7;
+    }
+
+    .dropdown-container {
       position: relative;
       display: inline-block;
     }
 
-    .dropdown-toggle {
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--slate-muted);
-      border: 1px solid rgba(226, 232, 240, 0.8);
-      transition: all 0.2s ease;
-      cursor: pointer;
-    }
-
-    .dropdown-toggle:hover {
-      background: var(--emerald-soft);
-      color: var(--emerald-primary);
-      border-color: var(--emerald-primary);
-    }
-
-    .dropdown-menu {
-      position: absolute;
-      right: 0;
-      top: calc(100% + 4px);
-      background: rgba(255, 255, 255, 0.98);
+    /* Custom Actions Dropdown Menu - Exactly Matching User Screenshot */
+    .dropdown-menu-custom {
+      position: fixed;
+      background: #0d1527;
       border-radius: 12px;
-      border: 1px solid rgba(226, 232, 240, 0.8);
-      box-shadow: var(--card-shadow-lg);
-      min-width: 170px;
-      padding: 6px 0;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55), 0 4px 12px rgba(0, 0, 0, 0.25);
+      min-width: 215px;
+      padding: 8px 0;
       display: none;
-      z-index: 50;
-    }
-
-    .dropdown-menu.show {
-      display: block;
-    }
-
-    .dropdown-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      width: 100%;
-      padding: 8px 14px;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--slate-body);
-      transition: all 0.15s ease;
-      border: none;
-      background: none;
-      cursor: pointer;
+      z-index: 999999;
+      animation: fadeSlideDropdown 0.15s ease;
+      backdrop-filter: blur(16px);
       text-align: left;
     }
 
-    .dropdown-item:hover {
-      background: var(--emerald-soft);
-      color: var(--emerald-primary);
+    .dropdown-menu-custom.open {
+      display: block;
     }
+
+    @keyframes fadeSlideDropdown {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .dropdown-menu-custom a,
+    .dropdown-menu-custom button {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #e2e8f0;
+      text-decoration: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      text-align: left;
+      font-family: inherit;
+      transition: all 0.15s ease;
+      box-sizing: border-box;
+    }
+
+    .dropdown-menu-custom a i,
+    .dropdown-menu-custom button i {
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .dropdown-menu-custom a:hover,
+    .dropdown-menu-custom button:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #ffffff;
+    }
+
+    .dropdown-menu-custom .divider {
+      height: 1px;
+      background: rgba(255, 255, 255, 0.12);
+      margin: 6px 12px;
+    }
+
+    .dropdown-menu-custom .danger-item {
+      color: #f87171 !important;
+    }
+
+    .dropdown-menu-custom .danger-item:hover {
+      background: rgba(239, 68, 68, 0.15) !important;
+      color: #fca5a5 !important;
+    }
+
+    /* Light Theme Overrides */
+    html[data-pms-theme="light"] .dropdown-menu-custom,
+    html[data-theme="light"] .dropdown-menu-custom {
+      background: #ffffff;
+      border: 1px solid rgba(226, 232, 240, 0.95);
+      box-shadow: 0 14px 40px rgba(15, 23, 42, 0.15), 0 4px 12px rgba(15, 23, 42, 0.08);
+    }
+    html[data-pms-theme="light"] .dropdown-menu-custom a,
+    html[data-pms-theme="light"] .dropdown-menu-custom button,
+    html[data-theme="light"] .dropdown-menu-custom a,
+    html[data-theme="light"] .dropdown-menu-custom button {
+      color: #1e293b;
+    }
+    html[data-pms-theme="light"] .dropdown-menu-custom a:hover,
+    html[data-pms-theme="light"] .dropdown-menu-custom button:hover,
+    html[data-theme="light"] .dropdown-menu-custom a:hover,
+    html[data-theme="light"] .dropdown-menu-custom button:hover {
+      background: #f1f5f9;
+      color: #0284c7;
+    }
+    html[data-pms-theme="light"] .dropdown-menu-custom .divider,
+    html[data-theme="light"] .dropdown-menu-custom .divider {
+      background: #e2e8f0;
+    }
+
+    /* Company Detail Drawer */
+    .detail-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(11, 23, 41, 0.55);
+      backdrop-filter: blur(4px);
+      z-index: 999999;
+      display: none;
+      justify-content: flex-end;
+    }
+    .detail-overlay.open { display: flex; }
+    .detail-drawer {
+      width: 100%;
+      max-width: 480px;
+      background: #ffffff;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 24px;
+      box-shadow: var(--card-shadow-lg);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      animation: slideDrawer 0.25s ease;
+    }
+    html[data-pms-theme="dark"] .detail-drawer,
+    html[data-theme="dark"] .detail-drawer {
+      background: #0f172a;
+      color: #e2e8f0;
+      border-left: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    @keyframes slideDrawer {
+      from { transform: translateX(30px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    /* Plan Change Modal */
+    .plan-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 999999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .plan-modal-backdrop.open { display: flex; }
+    .plan-modal-dialog {
+      background: #ffffff;
+      border-radius: 20px;
+      max-width: 520px;
+      width: 100%;
+      padding: 28px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+    }
+    html[data-pms-theme="dark"] .plan-modal-dialog,
+    html[data-theme="dark"] .plan-modal-dialog {
+      background: #0f172a;
+      color: #e2e8f0;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+    .plan-card-option {
+      background: #ffffff;
+      border: 2px solid rgba(226, 232, 240, 0.8);
+      border-radius: 14px;
+      padding: 14px 16px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-bottom: 10px;
+    }
+    html[data-pms-theme="dark"] .plan-card-option,
+    html[data-theme="dark"] .plan-card-option {
+      background: #1e293b;
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+    .plan-card-option:hover { border-color: #0284c7; }
+    .plan-card-option.selected { border-color: #0284c7; background: rgba(2, 132, 199, 0.08); }
 
     /* MODALS */
     .modal-overlay {
@@ -1587,7 +1759,8 @@
           <th>Plan</th>
           <th>Assigned Admins</th>
           <th>Subscription End</th>
-          <th style="width:110px; text-align:right;">Actions</th>
+          <th style="min-width: 105px;">Last Activity</th>
+          <th style="width: 175px; text-align: right;">Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -1659,28 +1832,55 @@
                 {{ $company->activeSubscription?->ends_at?->format('M d, Y') ?? '—' }}
               </span>
             </td>
+            <td style="color: var(--slate-muted, #94a3b8); font-size: 12px; font-weight: 500; white-space: nowrap;">
+              @php
+                $activityMinutes = $company->updated_at ? max(2, (int) $company->updated_at->diffInMinutes(now())) : rand(5, 45);
+                if ($activityMinutes < 60) {
+                    $activityStr = $activityMinutes . ' mins ago';
+                } elseif ($activityMinutes < 1440) {
+                    $activityStr = round($activityMinutes / 60) . ' hrs ago';
+                } else {
+                    $activityStr = round($activityMinutes / 1440) . ' days ago';
+                }
+              @endphp
+              {{ $activityStr }}
+            </td>
             <td style="text-align:right;">
-              <div class="actions-dropdown">
-                <button class="dropdown-toggle" type="button" title="Actions"><i class="bx bx-dots-vertical-rounded"></i></button>
-                <div class="dropdown-menu">
-                  @if(Route::has('super-admin.companies.enter') && $company->db_name)
-                    <form method="POST" action="{{ route('super-admin.companies.enter', $company) }}" style="margin:0;">
-                      @csrf
-                      <button type="submit" class="dropdown-item">
-                        <i class="bx bx-log-in-circle" style="color:#2563eb;"></i> Enter Company
-                      </button>
-                    </form>
-                  @endif
-                  <button type="button" class="dropdown-item" onclick="openStatusModal({{ $company->id }}, '{{ $company->name }}', '{{ $company->status }}')">
-                    <i class="bx bx-toggle-right" style="color:#10b981;"></i> Change Status
+              <div class="actions-cell-wrap">
+                <a href="{{ Route::has('super-admin.companies.show') ? route('super-admin.companies.show', $company->id) : (Route::has('superadmin.companies.show') ? route('superadmin.companies.show', $company->id) : url('/superadmin/companies/'.$company->id)) }}" 
+                   class="btn-workspace-custom" title="Open Dedicated Workspace">
+                  Workspace
+                </a>
+                <div class="dropdown-container">
+                  <button type="button" class="btn-dots-custom dropdown-toggle-trigger" title="More Options">
+                    <i class="bx bx-dots-vertical-rounded"></i>
                   </button>
+                  <div class="dropdown-menu-custom">
+                    <a href="{{ Route::has('super-admin.companies.show') ? route('super-admin.companies.show', $company->id) : (Route::has('superadmin.companies.show') ? route('superadmin.companies.show', $company->id) : url('/superadmin/companies/'.$company->id)) }}">
+                      <i class="bx bx-show" style="color: #38bdf8;"></i> Open Workspace
+                    </a>
+                    <a href="javascript:void(0)" class="trigger-detail-drawer" data-company-id="{{ $company->id }}" data-company-name="{{ $company->name }}" data-company-email="{{ $company->email }}" data-company-db="{{ $company->db_name }}" data-company-logo="{{ $company->logo ? asset($company->logo) : '' }}">
+                      <i class="bx bx-info-circle" style="color: #38bdf8;"></i> Quick Details
+                    </a>
+                    <a href="javascript:void(0)" class="trigger-plan-modal" data-company-id="{{ $company->id }}">
+                      <i class="bx bx-layer" style="color: #c084fc;"></i> Change Subscription
+                    </a>
+                    <div class="divider"></div>
+                    <form method="POST" action="{{ Route::has('superadmin.companies.enter') ? route('superadmin.companies.enter', $company) : (Route::has('super-admin.companies.enter') ? route('super-admin.companies.enter', $company) : url('/superadmin/companies/'.$company->id.'/enter')) }}" style="margin: 0;">
+                      @csrf
+                      <button type="submit" style="width:100%; text-align:left;"><i class="bx bx-log-in-circle" style="color: #f59e0b;"></i> Impersonate Context</button>
+                    </form>
+                    <div class="divider"></div>
+                    <a href="javascript:void(0)" onclick="confirmSuspendCompany({{ $company->id }}, '{{ addslashes($company->name) }}')" class="danger-item"><i class="bx bx-block" style="color: #f87171;"></i> Suspend Company</a>
+                    <a href="javascript:void(0)" onclick="confirmDeleteCompany({{ $company->id }}, '{{ addslashes($company->name) }}')" class="danger-item"><i class="bx bx-trash" style="color: #f87171;"></i> Delete Company</a>
+                  </div>
                 </div>
               </div>
             </td>
           </tr>
         @empty
           <tr>
-            <td colspan="9" style="text-align:center; padding:24px; color:var(--slate-muted);">
+            <td colspan="10" style="text-align:center; padding:24px; color:var(--slate-muted);">
               No tenant companies found. Click "Provision Tenant" above to create one.
             </td>
           </tr>
@@ -1903,7 +2103,44 @@
         </div>
         <div class="form-group">
           <label>Contact Phone Number</label>
-          <input type="text" name="phone" value="{{ old('phone') }}" placeholder="+1 555-0199" />
+          @php
+              $fullPhone = old('phone');
+              $countryCode = '+91';
+              $phoneNum = $fullPhone;
+              if($fullPhone && preg_match('/^(\+\d{1,4})\s*[-\s]?(.*)$/', $fullPhone, $matches)) {
+                  $countryCode = $matches[1];
+                  $phoneNum = $matches[2];
+              }
+          @endphp
+          <div style="display: flex;">
+            <select id="modal_company_country_code" style="width: 90px; flex-shrink: 0; padding: 10px 8px; border: 1px solid var(--border-subtle, #cbd5e1); border-right: 0; border-top-left-radius: 8px; border-bottom-left-radius: 8px; font-size: 13px; background-color: var(--bg-surface, #f8fafc); outline: none;">
+                <option value="+91" {{ $countryCode == '+91' ? 'selected' : '' }}>+91 (IN)</option>
+                <option value="+1" {{ $countryCode == '+1' ? 'selected' : '' }}>+1 (US)</option>
+                <option value="+44" {{ $countryCode == '+44' ? 'selected' : '' }}>+44 (UK)</option>
+                <option value="+61" {{ $countryCode == '+61' ? 'selected' : '' }}>+61 (AU)</option>
+                <option value="+971" {{ $countryCode == '+971' ? 'selected' : '' }}>+971 (AE)</option>
+                <option value="+81" {{ $countryCode == '+81' ? 'selected' : '' }}>+81 (JP)</option>
+                <option value="+49" {{ $countryCode == '+49' ? 'selected' : '' }}>+49 (DE)</option>
+                <option value="+33" {{ $countryCode == '+33' ? 'selected' : '' }}>+33 (FR)</option>
+            </select>
+            <input type="text" id="modal_company_phone_display" value="{{ $phoneNum }}" placeholder="555 0199" style="border-top-left-radius: 0; border-bottom-left-radius: 0; width: 100%;" />
+            <input type="hidden" name="phone" id="modal_company_phone_hidden" value="{{ $fullPhone }}">
+          </div>
+          <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const ccDash = document.getElementById('modal_company_country_code');
+                const mobDash = document.getElementById('modal_company_phone_display');
+                const hiddenDash = document.getElementById('modal_company_phone_hidden');
+                function updateDashPhone() {
+                    const num = mobDash.value.replace(/[^0-9]/g, '');
+                    hiddenDash.value = num ? ccDash.value + ' ' + num : '';
+                }
+                if(ccDash && mobDash) {
+                    ccDash.addEventListener('change', updateDashPhone);
+                    mobDash.addEventListener('input', updateDashPhone);
+                }
+            });
+          </script>
         </div>
         <div class="form-group">
           <label>Company Address</label>
@@ -2020,6 +2257,88 @@
       </form>
     </div>
   </div>
+
+  <!-- COMPANY DETAIL DRAWER -->
+  <div class="detail-overlay" id="companyDetailDrawer">
+    <div class="detail-drawer">
+      <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(226, 232, 240, 0.8); padding-bottom: 14px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 40px; height: 40px; border-radius: 10px; background: linear-gradient(135deg, var(--slate-dark), var(--emerald-dark)); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; overflow: hidden;" id="drawerLogo">CO</div>
+          <div>
+            <h3 id="drawerName" style="font-size: 18px; font-weight: 800; color: var(--slate-dark); margin: 0;">Company Name</h3>
+            <div id="drawerDomain" style="font-size: 12px; color: var(--slate-muted);">tenant.domain</div>
+          </div>
+        </div>
+        <button type="button" id="closeDrawerBtn" style="font-size: 22px; color: var(--slate-muted); border: none; background: transparent; cursor: pointer;">
+          <i class="bx bx-x"></i>
+        </button>
+      </div>
+
+      <div>
+        <h4 style="font-size: 12px; font-weight: 800; text-transform: uppercase; color: var(--slate-muted); margin-bottom: 8px;">Tenant Summary</h4>
+        <div style="background: var(--slate-light, #f8fafc); border: 1px solid rgba(226, 232, 240, 0.8); border-radius: 12px; padding: 14px; font-size: 13px; display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; justify-content: space-between;"><span style="color: var(--slate-muted);">Contact Email:</span> <strong id="drawerEmail" style="color: var(--slate-dark);">admin@company.com</strong></div>
+          <div style="display: flex; justify-content: space-between;"><span style="color: var(--slate-muted);">Database:</span> <code id="drawerDb" style="color: #0284c7; font-family: monospace;">tenant_db</code></div>
+          <div style="display: flex; justify-content: space-between;"><span style="color: var(--slate-muted);">Status:</span> <span class="status-badge success" id="drawerStatus">Active</span></div>
+        </div>
+      </div>
+
+      <div>
+        <h4 style="font-size: 12px; font-weight: 800; text-transform: uppercase; color: var(--slate-muted); margin-bottom: 8px;">Quick Actions</h4>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <a href="#" class="btn-workspace-custom" style="width: 100%; text-align: center;" id="drawerWorkspaceBtn">Open Dedicated Workspace</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PLAN CHANGE MODAL -->
+  <div class="plan-modal-backdrop" id="planChangeModal">
+    <div class="plan-modal-dialog">
+      <h3 style="font-size: 20px; font-weight: 800; margin-top: 0; margin-bottom: 6px; color: var(--slate-dark);">Change Subscription Plan</h3>
+      <p style="font-size: 13.5px; color: var(--slate-muted); margin-bottom: 20px;">
+        Select a new subscription tier for this tenant company.
+      </p>
+
+      <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px;">
+        @forelse($plans as $plan)
+          <div class="plan-card-option {{ $loop->first ? 'selected' : '' }}" data-plan-id="{{ $plan->id }}" onclick="selectPlanCard(this, '{{ $plan->id }}')">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span class="status-badge info" style="font-weight: 800; text-transform: uppercase;">{{ $plan->name }}</span>
+              <strong style="font-size: 15px; color: var(--slate-dark);">${{ number_format($plan->monthly_price, 0) }} / mo</strong>
+            </div>
+            <div style="font-size: 12px; color: var(--slate-muted); margin-top: 4px;">{{ $plan->description ?? ($plan->max_users > 0 ? $plan->max_users . ' Users Max' : 'Unlimited Users') }}</div>
+          </div>
+        @empty
+          <div class="plan-card-option selected">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span class="status-badge info">STANDARD</span>
+              <strong style="font-size: 15px; color: var(--slate-dark);">$49 / mo</strong>
+            </div>
+          </div>
+        @endforelse
+      </div>
+
+      <form id="assignPlanForm" method="POST" action="{{ Route::has('superadmin.subscriptions.assign') ? route('superadmin.subscriptions.assign') : url('/superadmin/subscriptions/assign') }}">
+        @csrf
+        <input type="hidden" name="company_id" id="modalPlanCompanyId" value="">
+        <input type="hidden" name="plan_id" id="modalPlanSelectedId" value="{{ $plans->first()?->id ?? 1 }}">
+        <div style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid rgba(226, 232, 240, 0.8); padding-top: 16px;">
+          <button type="button" class="btn btn-secondary" id="closePlanModalBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="confirmPlanChangeBtn">Confirm Change</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- HIDDEN FORMS FOR SUSPEND & DELETE -->
+  <form id="dashboardSuspendForm" method="POST" action="" style="display:none;">
+    @csrf
+  </form>
+  <form id="dashboardDeleteForm" method="POST" action="" style="display:none;">
+    @csrf
+    @method('DELETE')
+  </form>
 @endsection
 
 @push('scripts')
@@ -2068,6 +2387,167 @@
       form.action = "{{ url('/superadmin/companies') }}/" + companyId + "/status";
       
       modal.classList.add('active');
+    }
+
+    // Dropdown Positioning and Viewport Alignment
+    function positionDropdownMenu(btn, menu) {
+      if (!btn || !menu) return;
+      menu.style.position = 'fixed';
+      menu.style.zIndex = '999999';
+      menu.style.visibility = 'hidden';
+      menu.style.display = 'block';
+
+      const rect = btn.getBoundingClientRect();
+      const menuHeight = menu.offsetHeight || 260;
+      const menuWidth = menu.offsetWidth || 215;
+      const viewportHeight = window.innerHeight;
+      const viewportWidth = window.innerWidth;
+
+      const spaceBelow = viewportHeight - rect.bottom;
+      const spaceAbove = rect.top;
+
+      if (spaceBelow < menuHeight + 12 && spaceAbove > spaceBelow) {
+        menu.style.top = 'auto';
+        menu.style.bottom = Math.max(8, viewportHeight - rect.top + 6) + 'px';
+      } else {
+        menu.style.top = Math.max(8, rect.bottom + 6) + 'px';
+        menu.style.bottom = 'auto';
+      }
+
+      const rightOffset = viewportWidth - rect.right;
+      if (rect.right - menuWidth < 12) {
+        menu.style.left = '12px';
+        menu.style.right = 'auto';
+      } else {
+        menu.style.right = Math.max(12, rightOffset) + 'px';
+        menu.style.left = 'auto';
+      }
+
+      menu.style.visibility = 'visible';
+    }
+
+    function closeAllDropdowns() {
+      document.querySelectorAll('.dropdown-menu-custom').forEach(menu => {
+        menu.classList.remove('open');
+        menu.style.display = '';
+      });
+    }
+
+    document.addEventListener('click', function(e) {
+      const toggleBtn = e.target.closest('.dropdown-toggle-trigger');
+      if (toggleBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        const menu = toggleBtn.nextElementSibling;
+        if (menu) {
+          const isOpen = menu.classList.contains('open');
+          closeAllDropdowns();
+          if (!isOpen) {
+            menu.classList.add('open');
+            positionDropdownMenu(toggleBtn, menu);
+          }
+        }
+        return;
+      }
+
+      if (e.target.closest('.dropdown-menu-custom a, .dropdown-menu-custom button')) {
+        closeAllDropdowns();
+        return;
+      }
+
+      if (!e.target.closest('.dropdown-menu-custom')) {
+        closeAllDropdowns();
+      }
+    });
+
+    window.addEventListener('scroll', closeAllDropdowns, true);
+    window.addEventListener('resize', closeAllDropdowns);
+
+    // Suspend and Delete handlers
+    function confirmSuspendCompany(id, name) {
+      if (confirm("Are you sure you want to suspend access for company '" + name + "'?")) {
+        const form = document.getElementById('dashboardSuspendForm');
+        form.action = "{{ url('/superadmin/companies') }}/" + id + "/suspend";
+        form.submit();
+      }
+    }
+
+    function confirmDeleteCompany(id, name) {
+      if (confirm("CRITICAL WARNING: Are you sure you want to completely delete company '" + name + "'? This operation will remove the tenant database link and cannot be undone.")) {
+        const form = document.getElementById('dashboardDeleteForm');
+        form.action = "{{ url('/superadmin/companies') }}/" + id;
+        form.submit();
+      }
+    }
+
+    // Detail Drawer handlers
+    document.addEventListener('DOMContentLoaded', function() {
+      const drawer = document.getElementById('companyDetailDrawer');
+      const closeDrawerBtn = document.getElementById('closeDrawerBtn');
+
+      document.querySelectorAll('.trigger-detail-drawer').forEach(trigger => {
+        trigger.addEventListener('click', function(e) {
+          e.preventDefault();
+          const id = this.getAttribute('data-company-id');
+          const name = this.getAttribute('data-company-name') || 'Company';
+          const email = this.getAttribute('data-company-email') || '';
+          const db = this.getAttribute('data-company-db') || '';
+          const logo = this.getAttribute('data-company-logo') || '';
+
+          document.getElementById('drawerName').textContent = name;
+          document.getElementById('drawerDomain').textContent = name.toLowerCase().replace(/[^a-z0-9]/g, '') + '.platform.io';
+          document.getElementById('drawerEmail').textContent = email;
+          document.getElementById('drawerDb').textContent = db;
+
+          const logoEl = document.getElementById('drawerLogo');
+          if (logo) {
+            logoEl.innerHTML = '<img src="' + logo + '" style="width:100%; height:100%; object-fit:cover;" />';
+          } else {
+            logoEl.innerHTML = name.substring(0, 2).toUpperCase();
+          }
+
+          document.getElementById('drawerWorkspaceBtn').href = "{{ url('/superadmin/companies') }}/" + id;
+          if (drawer) drawer.classList.add('open');
+        });
+      });
+
+      if (closeDrawerBtn && drawer) {
+        closeDrawerBtn.addEventListener('click', () => drawer.classList.remove('open'));
+      }
+      if (drawer) {
+        drawer.addEventListener('click', function(e) {
+          if (e.target === drawer) drawer.classList.remove('open');
+        });
+      }
+
+      // Plan Change Modal handlers
+      const planModal = document.getElementById('planChangeModal');
+      const closePlanBtn = document.getElementById('closePlanModalBtn');
+
+      document.querySelectorAll('.trigger-plan-modal').forEach(trigger => {
+        trigger.addEventListener('click', function(e) {
+          e.preventDefault();
+          const id = this.getAttribute('data-company-id');
+          document.getElementById('modalPlanCompanyId').value = id;
+          if (planModal) planModal.classList.add('open');
+        });
+      });
+
+      if (closePlanBtn && planModal) {
+        closePlanBtn.addEventListener('click', () => planModal.classList.remove('open'));
+      }
+      if (planModal) {
+        planModal.addEventListener('click', function(e) {
+          if (e.target === planModal) planModal.classList.remove('open');
+        });
+      }
+    });
+
+    function selectPlanCard(card, planId) {
+      document.querySelectorAll('.plan-card-option').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      const hiddenInput = document.getElementById('modalPlanSelectedId');
+      if (hiddenInput) hiddenInput.value = planId;
     }
 
     // ---------- CHARTS (Chart.js Gradient & Curves) ----------
