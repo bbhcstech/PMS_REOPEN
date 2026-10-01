@@ -4,8 +4,10 @@
 
 @section('content')
 @php
-    $isAdmin = in_array(strtolower((string) auth()->user()?->role), ['admin', 'manager', 'hr'], true);
-    $isEmployee = auth()->user()?->role === 'employee';
+    $userRole = strtolower((string) auth()->user()?->role);
+    $isAdmin = in_array($userRole, ['admin', 'manager', 'hr'], true);
+    $isEmployee = $userRole === 'employee';
+    $canManageProjectTemplates = in_array($userRole, ['admin', 'hr'], true);
     $statusOptions = [
         'pending' => 'Pending',
         'not started' => 'Not Started',
@@ -163,9 +165,11 @@
                 <a href="{{ route('projects.create') }}" class="btn btn-primary">
                     <i class="fas fa-plus-circle"></i> Add Project
                 </a>
-                <button type="button" class="btn btn-outline" data-bs-toggle="modal" data-bs-target="#projectTemplateModal">
-                    <i class="fas fa-copy"></i> Project Template
-                </button>
+                @if($canManageProjectTemplates)
+                    <button type="button" class="btn btn-outline" data-bs-toggle="modal" data-bs-target="#projectTemplateModal">
+                        <i class="fas fa-copy"></i> Project Template
+                    </button>
+                @endif
                 <button type="button" class="btn btn-outline" data-bs-toggle="modal" data-bs-target="#projectImportModal">
                     <i class="fas fa-file-import"></i> Import
                 </button>
@@ -690,7 +694,7 @@
     @endforeach
 
     <!-- Template Modal -->
-    @if($isAdmin)
+    @if($canManageProjectTemplates)
         <div class="modal fade" id="projectTemplateModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-lg modal-dialog-centered">
                 <div class="modal-content">

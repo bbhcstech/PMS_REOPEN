@@ -1209,19 +1209,19 @@
                     <h6 class="mb-0 fw-bold text-dark"><i class="bx bx-store text-primary me-2"></i>Work Section (Projects & Tasks)</h6>
                     <small class="text-muted">Live view of projects, pending task queue, timesheets, and recent deliverables.</small>
                 </div>
-                <div class="d-flex flex-wrap gap-2">
+                <div class="d-flex flex-wrap gap-2 align-items-center ms-auto">
                     @if(Route::has('projects.create'))
-                        <a href="{{ route('projects.create') }}" class="btn btn-sm btn-primary">
+                        <a href="{{ route('projects.create') }}" class="btn btn-sm btn-primary px-3 py-2 text-nowrap d-inline-flex align-items-center gap-1" style="min-width: max-content;">
                             <i class="bx bx-plus me-1"></i> Add Project
                         </a>
                     @endif
                     @if(Route::has('tasks.create'))
-                        <a href="{{ route('tasks.create') }}" class="btn btn-sm btn-outline-primary">
+                        <a href="{{ route('tasks.create') }}" class="btn btn-sm btn-outline-primary px-3 py-2 text-nowrap d-inline-flex align-items-center gap-1" style="min-width: max-content;">
                             <i class="bx bx-task me-1"></i> New Task
                         </a>
                     @endif
                     @if(Route::has('timelogs.create'))
-                        <a href="{{ route('timelogs.create') }}" class="btn btn-sm btn-outline-success">
+                        <a href="{{ route('timelogs.create') }}" class="btn btn-sm btn-outline-success px-3 py-2 text-nowrap d-inline-flex align-items-center gap-1" style="min-width: max-content;">
                             <i class="bx bx-time-five me-1"></i> Log Time
                         </a>
                     @endif
@@ -1235,7 +1235,7 @@
                         <div class="p-3 border rounded-3 bg-light mb-3">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <h6 class="fw-bold mb-0 text-dark"><i class="bx bx-briefcase-alt-2 text-primary me-1"></i> Projects Summary</h6>
-                                <a href="{{ route('projects.index') }}" class="btn btn-sm btn-link text-primary p-0">View All <i class="bx bx-chevron-right"></i></a>
+                                <a href="{{ route('projects.index') }}" class="btn btn-sm btn-link text-primary p-0 text-nowrap">View All <i class="bx bx-chevron-right"></i></a>
                             </div>
                             <div class="row g-2 text-center my-2">
                                 <div class="col-6">
@@ -1252,7 +1252,7 @@
                                 </div>
                             </div>
                             <div class="d-grid gap-2 mt-3">
-                                <a href="{{ route('projects.index') }}" class="btn btn-sm btn-outline-primary">
+                                <a href="{{ route('projects.index') }}" class="btn btn-sm btn-outline-primary py-2 text-nowrap d-flex align-items-center justify-content-center">
                                     <i class="bx bx-folder-open me-1"></i> Open Projects Workspace
                                 </a>
                             </div>
@@ -1262,7 +1262,7 @@
                         <div class="p-3 border rounded-3 bg-light">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <h6 class="fw-bold mb-0 text-dark"><i class="bx bx-time-five text-success me-1"></i> Timesheet Overview</h6>
-                                <a href="{{ route('timelogs.index') }}" class="btn btn-sm btn-link text-success p-0">Timesheets <i class="bx bx-chevron-right"></i></a>
+                                <a href="{{ route('timelogs.index') }}" class="btn btn-sm btn-link text-success p-0 text-nowrap">Timesheets <i class="bx bx-chevron-right"></i></a>
                             </div>
                             <div class="row g-2 text-center my-2">
                                 <div class="col-6">
@@ -1279,7 +1279,7 @@
                                 </div>
                             </div>
                             <div class="d-grid gap-2 mt-3">
-                                <a href="{{ route('timelogs.index') }}" class="btn btn-sm btn-outline-success">
+                                <a href="{{ route('timelogs.index') }}" class="btn btn-sm btn-outline-success py-2 text-nowrap d-flex align-items-center justify-content-center">
                                     <i class="bx bx-list-check me-1"></i> Review Timesheets
                                 </a>
                             </div>

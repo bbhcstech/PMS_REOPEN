@@ -6207,6 +6207,68 @@ body[data-pms-theme="dark"] .app-table .btn-icon.btn-light i.text-danger,
   z-index: 1030 !important;
 }
 
+/* ==========================================================================
+   BUTTON TEXT SIZING & FILE CHOOSE ALIGNMENT FIXES
+   ========================================================================== */
+.btn-sm,
+.btn-primary,
+.btn-secondary,
+.btn-outline-primary,
+.btn-outline-secondary,
+.btn-outline-success {
+  white-space: nowrap !important;
+  max-width: 100%;
+}
+
+/* Ensure header buttons auto-expand to accommodate text */
+.card-header .d-flex.flex-wrap.gap-2 .btn-sm {
+  min-width: max-content;
+  padding: 0.45rem 0.95rem !important;
+  font-size: 0.82rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.35rem;
+}
+
+/* Choose File button inner alignment fix */
+input[type="file"].form-control,
+.form-control[type="file"] {
+  padding: 0.35rem 0.75rem !important;
+  display: flex !important;
+  align-items: center !important;
+  min-height: 42px !important;
+  overflow: hidden !important;
+  cursor: pointer;
+}
+
+input[type="file"].form-control::file-selector-button,
+.form-control[type="file"]::file-selector-button,
+input[type="file"].form-control::-webkit-file-upload-button,
+.form-control[type="file"]::-webkit-file-upload-button {
+  padding: 0.4rem 0.95rem !important;
+  margin: -0.35rem 0.75rem -0.35rem -0.75rem !important;
+  margin-inline-end: 0.85rem !important;
+  background: var(--bx-surface-3, #1A2247) !important;
+  color: var(--bx-ink, #EEF1FB) !important;
+  border: none !important;
+  border-inline-end: 1px solid var(--bx-border, rgba(238, 241, 251, 0.16)) !important;
+  border-top-left-radius: inherit !important;
+  border-bottom-left-radius: inherit !important;
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+  font-weight: 600 !important;
+  font-size: 0.85rem !important;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+input[type="file"].form-control:hover::file-selector-button,
+.form-control[type="file"]:hover::file-selector-button {
+  background: var(--bx-primary, #2F6BFF) !important;
+  color: #ffffff !important;
+}
+
 .modal-backdrop {
   z-index: 10040 !important;
 }
@@ -6452,4 +6514,36 @@ html[data-pms-theme="dark"] .form-select.is-invalid,
 .form-select.is-valid {
   border-color: #10b981 !important;
   box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15) !important;
+}
+
+/* ==========================================================================
+   ATTENDANCE RULES & REGULATIONS DARK MODE CONTRAST FIX
+   ========================================================================== */
+html[data-pms-theme="dark"] .employee-rule,
+body[data-pms-theme="dark"] .employee-rule,
+[data-pms-theme="dark"] .employee-rule,
+body.dark .employee-rule,
+html.dark .employee-rule,
+[data-bs-theme="dark"] .employee-rule,
+.dark .employee-rule,
+.dark-mode .employee-rule {
+  background: #141B3D !important;
+  border: 1px solid rgba(238, 241, 251, 0.2) !important;
+  color: #ffffff !important;
+}
+
+.employee-rule *,
+.employee-rule span,
+.employee-rule strong,
+.employee-rule-text,
+.employee-rule-bold,
+html[data-pms-theme="dark"] .employee-rule *,
+body[data-pms-theme="dark"] .employee-rule *,
+[data-pms-theme="dark"] .employee-rule *,
+body.dark .employee-rule *,
+html.dark .employee-rule *,
+[data-bs-theme="dark"] .employee-rule *,
+.dark .employee-rule *,
+.dark-mode .employee-rule * {
+  color: #ffffff !important;
 }

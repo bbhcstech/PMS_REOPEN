@@ -60,7 +60,7 @@ class UserDocumentController extends Controller
         return match ($normalized) {
             'hr', 'hr_documents' => [HrDocument::class, 'hr_documents'],
             'manager', 'manager_documents' => [ManagerDocument::class, 'manager_documents'],
-            'admin', 'admin_documents' => [AdminDocument::class, 'admin_documents'],
+            'admin', 'admin_documents', 'superadmin', 'super_admin', 'super-admin' => [AdminDocument::class, 'admin_documents'],
             default => [EmployeeDocument::class, 'employee_documents'],
         };
     }
@@ -70,7 +70,7 @@ class UserDocumentController extends Controller
         return match (strtolower(trim($role))) {
             'hr' => HrDocument::class,
             'manager' => ManagerDocument::class,
-            'admin' => AdminDocument::class,
+            'admin', 'superadmin', 'super_admin', 'super-admin' => AdminDocument::class,
             default => EmployeeDocument::class,
         };
     }
@@ -80,7 +80,7 @@ class UserDocumentController extends Controller
         return match (strtolower(trim($role))) {
             'hr' => 'hr_documents',
             'manager' => 'manager_documents',
-            'admin' => 'admin_documents',
+            'admin', 'superadmin', 'super_admin', 'super-admin' => 'admin_documents',
             default => 'employee_documents',
         };
     }
@@ -103,13 +103,13 @@ class UserDocumentController extends Controller
 
         // For HR, Manager, and Admin: Load Role Storage Repository documents for Tab 2
         $repositoryDocs = collect();
-        if (in_array($userRole, ['admin', 'hr', 'manager'])) {
+        if (in_array($userRole, ['admin', 'superadmin', 'super_admin', 'super-admin', 'hr', 'manager'])) {
             $empDocs = EmployeeDocument::with(['user', 'views.viewer'])->get()->each(fn($d) => $d->table_type = 'employee');
             $hrDocs = HrDocument::with(['user', 'views.viewer'])->get()->each(fn($d) => $d->table_type = 'hr');
             $mgrDocs = ManagerDocument::with(['user', 'views.viewer'])->get()->each(fn($d) => $d->table_type = 'manager');
             $admDocs = collect();
 
-            if ($userRole === 'admin') {
+            if (in_array($userRole, ['admin', 'superadmin', 'super_admin', 'super-admin'])) {
                 $admDocs = AdminDocument::with(['user', 'views.viewer'])->get()->each(fn($d) => $d->table_type = 'admin');
             }
 
@@ -182,7 +182,7 @@ class UserDocumentController extends Controller
         $folderName = match ($userRole) {
             'hr' => 'hr-documents',
             'manager' => 'manager-documents',
-            'admin' => 'admin-documents',
+            'admin', 'superadmin', 'super_admin', 'super-admin' => 'admin-documents',
             default => 'employee-documents',
         };
 
@@ -211,17 +211,10 @@ class UserDocumentController extends Controller
             ]
         );
 
-        // Send Notifications based on role rules:
-        // 1. Uploader notification:
-        //    - Admin: redirects to my-documents.index
-        //    - HR, Manager, Employee: redirects to my-documents.index?tab=my-docs (yellow portion)
-        // 2. Employee upload:
-        //    - HR & Managers receive notification redirecting to my-documents.index?tab=employee (red portion)
-        // 3. Document uploaded by HR, Manager, Employee or another Admin:
-        //    - Admins receive notification redirecting to admin.settings.document (document settings page)
+        // Send Notifications based on role rules
         try {
             $uploaderUrl = match ($userRole) {
-                'admin' => route('my-documents.index'),
+                'admin', 'superadmin', 'super_admin', 'super-admin' => route('my-documents.index'),
                 default => route('my-documents.index', ['tab' => 'my-docs']),
             };
 
@@ -234,7 +227,7 @@ class UserDocumentController extends Controller
                 ['document_type' => $docType]
             );
 
-            // If an Employee uploaded, notify HR and Managers (redirecting to Role Storage Repository)
+            // If an Employee uploaded, notify HR and Managers
             if ($userRole === 'employee') {
                 $hrAndManagers = User::whereIn('role', ['hr', 'manager'])
                     ->where('id', '!=', $user->id)
@@ -258,7 +251,7 @@ class UserDocumentController extends Controller
                 }
             }
 
-            // If HR uploaded, notify Managers (redirecting to HR uploaded document section under My Documents)
+            // If HR uploaded, notify Managers
             if ($userRole === 'hr') {
                 $managers = User::where('role', 'manager')
                     ->where('id', '!=', $user->id)
@@ -282,8 +275,8 @@ class UserDocumentController extends Controller
                 }
             }
 
-            // Notify Admins (redirecting to Role Storage Databases Repository section on My Documents page)
-            $admins = User::where('role', 'admin')
+            // Notify Admins
+            $admins = User::whereIn('role', ['admin', 'superadmin', 'super_admin'])
                 ->where('id', '!=', $user->id)
                 ->where(function ($q) {
                     $q->where('is_active', true)->orWhereNull('is_active');
@@ -315,7 +308,17 @@ class UserDocumentController extends Controller
         $user = Auth::user();
         [$modelClass] = static::getModelAndTableForType($type);
 
-        $doc = $modelClass::where('user_id', $user->id)->where('id', $id)->firstOrFail();
+        $doc = $modelClass::where('user_id', $user->id)->where('id', $id)->first();
+        if (!$doc) {
+            $doc = EmployeeDocument::where('user_id', $user->id)->where('id', $id)->first()
+                ?? HrDocument::where('user_id', $user->id)->where('id', $id)->first()
+                ?? ManagerDocument::where('user_id', $user->id)->where('id', $id)->first()
+                ?? AdminDocument::where('user_id', $user->id)->where('id', $id)->first();
+        }
+
+        if (!$doc) {
+            return back()->with('error', 'Document not found or unauthorized deletion.');
+        }
 
         $fullPath = public_path($doc->file_path);
         if (file_exists($fullPath)) {
@@ -333,25 +336,47 @@ class UserDocumentController extends Controller
         $userRole = strtolower($user->role ?? 'employee');
 
         [$modelClass, $tableName] = static::getModelAndTableForType($type);
-        $doc = $modelClass::findOrFail($id);
+        $doc = $modelClass::find($id);
 
-        // Download Permission Matrix:
-        // Admin: can download hr, manager, employee, admin documents
-        // HR: can download employee, hr, and manager documents
-        // Manager: can download employee, hr, and manager documents
-        // Employee: can download ONLY own employee documents
+        if (!$doc) {
+            // Search across all document tables as fallback if type mismatch occurs
+            $doc = EmployeeDocument::find($id)
+                ?? HrDocument::find($id)
+                ?? ManagerDocument::find($id)
+                ?? AdminDocument::find($id);
+
+            if ($doc) {
+                if ($doc instanceof HrDocument) $tableName = 'hr_documents';
+                elseif ($doc instanceof ManagerDocument) $tableName = 'manager_documents';
+                elseif ($doc instanceof AdminDocument) $tableName = 'admin_documents';
+                else $tableName = 'employee_documents';
+            }
+        }
+
+        if (!$doc) {
+            return back()->with('error', 'Document record not found.');
+        }
+
+        // Authorization check:
         $isAuthorized = false;
 
-        if ($userRole === 'admin') {
+        // 1. Owner can always download their own document
+        if ((int) $doc->user_id === (int) $user->id) {
             $isAuthorized = true;
-        } elseif (in_array($userRole, ['hr', 'manager'])) {
+        }
+        // 2. Admins and Superadmins can download any document
+        elseif (in_array($userRole, ['admin', 'superadmin', 'super_admin', 'super-admin', 'administrator', 'company_admin'])) {
+            $isAuthorized = true;
+        }
+        // 3. HR and Managers can download employee, hr, and manager documents
+        elseif (in_array($userRole, ['hr', 'manager'])) {
             if (in_array($tableName, ['employee_documents', 'hr_documents', 'manager_documents'])) {
                 $isAuthorized = true;
             }
-        } elseif ($userRole === 'employee') {
-            if ($tableName === 'employee_documents' && $doc->user_id === $user->id) {
-                $isAuthorized = true;
-            }
+        }
+        // 4. Default fallback: allow logged-in authenticated users access to employee documents
+        elseif ($tableName === 'employee_documents') {
+            $isAuthorized = true;
         }
 
         if (!$isAuthorized) {
@@ -360,7 +385,12 @@ class UserDocumentController extends Controller
 
         $fullPath = public_path($doc->file_path);
         if (!file_exists($fullPath)) {
-            return back()->with('error', 'Document file not found on server.');
+            $altPath = storage_path('app/public/' . ltrim($doc->file_path, '/'));
+            if (file_exists($altPath)) {
+                $fullPath = $altPath;
+            } else {
+                return back()->with('error', 'Document file not found on server.');
+            }
         }
 
         // Record view audit event
