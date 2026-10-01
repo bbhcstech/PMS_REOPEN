@@ -47,13 +47,18 @@
                                 <i class="fas fa-users-gear text-blue-600 me-2"></i> HR Employee Records
                             </a>
                         </li>
-                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item py-2 px-3 fw-bold text-slate-700" href="{{ route('employees.archive') }}">
+                                <i class="fas fa-box-archive text-slate-500 me-2"></i> Archived Employees
+                            </a>
+                        </li>
+                    @else
+                        <li>
+                            <a class="dropdown-item py-2 px-3 fw-bold text-slate-700" href="{{ route('organization.index') }}">
+                                <i class="fas fa-sitemap text-blue-600 me-2"></i> Employee Directory
+                            </a>
+                        </li>
                     @endif
-                    <li>
-                        <a class="dropdown-item py-2 px-3 fw-bold text-slate-700" href="{{ route('employees.archive') }}">
-                            <i class="fas fa-box-archive text-slate-500 me-2"></i> Archived Employees
-                        </a>
-                    </li>
                 </ul>
             </div>
 
