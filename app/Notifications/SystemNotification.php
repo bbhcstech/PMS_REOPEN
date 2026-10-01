@@ -37,4 +37,9 @@ class SystemNotification extends Notification
             'employee_id' => $this->data['employee_id'] ?? null,
         ];
     }
+
+    public function toArray($notifiable): array
+    {
+        return $this->toDatabase($notifiable);
+    }
 }

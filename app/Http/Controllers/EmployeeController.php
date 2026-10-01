@@ -26,6 +26,7 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
 use Carbon\Carbon;
+use App\Support\CountryPhone;
 
 class EmployeeController extends Controller
 {
@@ -820,6 +821,8 @@ class EmployeeController extends Controller
         $user = User::findOrFail($id);
         $detail = $user->employeeDetail;
 
+        $emailUniqueRule = 'required|email|max:255|unique:users,email,' . $user->id;
+
         $phoneRules = CountryPhone::getDigitRules($request->mobile_country_code ?? '+91');
         $minDigits = $phoneRules['min_digits'];
         $maxDigits = $phoneRules['max_digits'];
@@ -1138,8 +1141,7 @@ class EmployeeController extends Controller
     {
         $this->ensureAdmin();
 
-        $employee = User::where('role', 'employee')
-            ->whereNotNull('archived_at')
+        $employee = User::whereNotNull('archived_at')
             ->findOrFail($id);
 
         $employee->forceFill([
@@ -1162,12 +1164,12 @@ class EmployeeController extends Controller
             'employee_ids.*' => 'integer|exists:users,id',
         ]);
 
-        $restored = User::where('role', 'employee')
-            ->whereNotNull('archived_at')
+        $restored = User::whereNotNull('archived_at')
             ->whereIn('id', $request->employee_ids)
             ->update(['archived_at' => null]);
 
         return response()->json([
+            'success' => true,
             'message' => $restored . ' employee(s) restored successfully.',
             'restored' => $restored,
         ]);

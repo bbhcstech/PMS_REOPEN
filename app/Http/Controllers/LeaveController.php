@@ -58,7 +58,11 @@ class LeaveController extends Controller
             $query->where('leave_type_id', $request->leave_type_id);
         }
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
+            if ($request->status === 'unpaid') {
+                $query->where('status', 'approved')->where('is_unpaid', true);
+            } else {
+                $query->where('status', $request->status);
+            }
         }
         if ($request->filled('from')) {
             $query->whereDate('start_date', '>=', $request->from);
@@ -83,7 +87,7 @@ class LeaveController extends Controller
             'pending' => $allLeaves->where('status', 'pending')->count(),
             'approved' => $allLeaves->where('status', 'approved')->count(),
             'rejected' => $allLeaves->where('status', 'rejected')->count(),
-            'unpaid' => $allLeaves->where('is_unpaid', true)->count(),
+            'unpaid' => $allLeaves->where('status', 'approved')->where('is_unpaid', true)->count(),
         ];
 
         $archivedCount = $isAdmin ? Leave::whereNotNull('archived_at')->count() : 0;
@@ -500,7 +504,7 @@ class LeaveController extends Controller
         } elseif ($request->status === 'rejected') {
             $this->leaveService->reject($leave, Auth::user(), $request->rejection_reason ?: $request->note ?: 'Rejected by HR/Admin.');
         } else {
-            $leave->update(['status' => 'pending', 'approval_status' => 'pending']);
+            $this->leaveService->markPending($leave, Auth::user(), $request->note ?: 'Status set to pending');
         }
 
         if ($leave->user) {
@@ -729,7 +733,7 @@ class LeaveController extends Controller
             } elseif ($request->status === 'rejected') {
                 $this->leaveService->reject($leave, Auth::user(), 'Bulk rejected');
             } else {
-                $leave->update(['status' => 'pending', 'approval_status' => 'pending']);
+                $this->leaveService->markPending($leave, Auth::user(), 'Bulk reset to pending');
             }
 
             if ($leave->user) {

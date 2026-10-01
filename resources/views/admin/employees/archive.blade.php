@@ -149,7 +149,7 @@
         </div>
 
         <div class="!w-full !overflow-x-auto">
-            <table class="table archive-table mb-0 !min-w-[920px] md:!min-w-full">
+            <table class="table archive-table mb-0 !min-w-[920px] md:!min-w-full" data-pms-export="off">
                 <thead>
                     <tr>
                         <th width="50">
@@ -506,6 +506,13 @@
     .archive-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(47, 107, 255, 0.3); color: white !important; -webkit-text-fill-color: white !important; }
     .archive-btn-light { background: white; border: 1px solid rgba(47, 107, 255, 0.2); color: var(--primary) !important; -webkit-text-fill-color: var(--primary) !important; }
     .archive-btn-light:hover { background: #edf8f2; border-color: var(--primary); transform: translateY(-2px); color: var(--primary) !important; -webkit-text-fill-color: var(--primary) !important; }
+    .archive-btn:disabled,
+    .archive-btn[disabled] {
+        opacity: 0.55 !important;
+        cursor: not-allowed !important;
+        transform: none !important;
+        box-shadow: none !important;
+    }
 
     /* Table */
     .archive-table { width: 100%; border-collapse: separate; border-spacing: 0; }
@@ -992,7 +999,7 @@ $(document).ready(function () {
     function archiveSelectedIds() {
         return $('.archive-checkbox:checked').map(function () {
             return $(this).val();
-        }).get();
+        }).get().filter(Boolean);
     }
 
     function updateArchiveSelection() {
@@ -1010,12 +1017,23 @@ $(document).ready(function () {
             .prop('indeterminate', checked > 0 && checked < total);
     }
 
-    $('#archiveSelectAll').on('change', function () {
+    $(document).on('change', '#archiveSelectAll', function () {
         $('.archive-checkbox').prop('checked', $(this).is(':checked'));
         updateArchiveSelection();
     });
 
-    $(document).on('change', '.archive-checkbox', updateArchiveSelection);
+    $(document).on('change', '.archive-checkbox', function () {
+        updateArchiveSelection();
+    });
+
+    $(document).on('click', '.archive-table tbody tr', function (e) {
+        if ($(e.target).closest('a, button, input, label, form').length) return;
+        const cb = $(this).find('.archive-checkbox');
+        if (cb.length) {
+            cb.prop('checked', !cb.prop('checked'));
+            updateArchiveSelection();
+        }
+    });
 
     $('#archiveShowEntries').on('change', function () {
         const url = new URL(window.location.href);
@@ -1024,7 +1042,8 @@ $(document).ready(function () {
         window.location.href = url.toString();
     });
 
-    $('#bulkRestoreBtn').on('click', function () {
+    $(document).on('click', '#bulkRestoreBtn', function (e) {
+        e.preventDefault();
         const selectedIds = archiveSelectedIds();
 
         if (!selectedIds.length) {
@@ -1036,9 +1055,16 @@ $(document).ready(function () {
             return;
         }
 
+        const btn = $(this);
+        const originalHtml = btn.html();
+        btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Restoring...');
+
         $.ajax({
             url: '{{ route("employees.archive.bulkRestore") }}',
             type: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
             data: {
                 _token: '{{ csrf_token() }}',
                 employee_ids: selectedIds
@@ -1049,6 +1075,7 @@ $(document).ready(function () {
             },
             error: function (xhr) {
                 alert(xhr?.responseJSON?.message || 'Failed to restore selected employees. Please try again.');
+                btn.prop('disabled', false).html(originalHtml);
             }
         });
     });

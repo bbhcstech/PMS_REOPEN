@@ -1,4 +1,4 @@
-﻿{{-- resources/views/admin/attendance/table.blade.php --}}
+{{-- resources/views/admin/attendance/table.blade.php --}}
 @php $authUser = Auth::user(); @endphp
 
 <div class="table-wrapper position-relative" style="margin-top:12px;">
@@ -428,6 +428,7 @@
     -webkit-text-fill-color: #c2410c !important;
     font-weight: 800;
     font-size: 0.95rem;
+  }
   .attendance-col-emp,
   .attendance-col-hours,
   .attendance-col-actions {
@@ -612,41 +613,148 @@
   /* Dark mode modal fixes */
   html[data-pms-theme="dark"] #attendanceDetailsModal .attendance-details-modal-content,
   html[data-theme="dark"] #attendanceDetailsModal .attendance-details-modal-content,
-  body.dark-mode #attendanceDetailsModal .attendance-details-modal-content {
+  html[data-bs-theme="dark"] #attendanceDetailsModal .attendance-details-modal-content,
+  html.dark #attendanceDetailsModal .attendance-details-modal-content,
+  body[data-pms-theme="dark"] #attendanceDetailsModal .attendance-details-modal-content,
+  body[data-theme="dark"] #attendanceDetailsModal .attendance-details-modal-content,
+  body[data-bs-theme="dark"] #attendanceDetailsModal .attendance-details-modal-content,
+  body.dark-mode #attendanceDetailsModal .attendance-details-modal-content,
+  body.dark #attendanceDetailsModal .attendance-details-modal-content,
+  [data-pms-theme="dark"] #attendanceDetailsModal .attendance-details-modal-content,
+  [data-theme="dark"] #attendanceDetailsModal .attendance-details-modal-content,
+  [data-bs-theme="dark"] #attendanceDetailsModal .attendance-details-modal-content,
+  .dark-mode #attendanceDetailsModal .attendance-details-modal-content,
+  html[data-pms-theme="dark"] #editAttendanceModal .modal-content,
+  html[data-theme="dark"] #editAttendanceModal .modal-content,
+  html[data-bs-theme="dark"] #editAttendanceModal .modal-content,
+  body.dark-mode #editAttendanceModal .modal-content,
+  [data-theme="dark"] #editAttendanceModal .modal-content {
     background: #0F1530 !important;
-    border: 1px solid rgba(238, 241, 251, 0.12) !important;
+    border: 1px solid rgba(79, 131, 255, 0.2) !important;
     color: #CBD5E1 !important;
     box-shadow: 0 24px 70px rgba(0, 0, 0, 0.7) !important;
   }
   html[data-pms-theme="dark"] #attendanceDetailsModal .attendance-details-modal-body,
   html[data-theme="dark"] #attendanceDetailsModal .attendance-details-modal-body,
-  body.dark-mode #attendanceDetailsModal .attendance-details-modal-body {
+  html[data-bs-theme="dark"] #attendanceDetailsModal .attendance-details-modal-body,
+  body.dark-mode #attendanceDetailsModal .attendance-details-modal-body,
+  [data-theme="dark"] #attendanceDetailsModal .attendance-details-modal-body,
+  html[data-pms-theme="dark"] #editAttendanceModal .modal-body,
+  html[data-theme="dark"] #editAttendanceModal .modal-body,
+  body.dark-mode #editAttendanceModal .modal-body,
+  [data-theme="dark"] #editAttendanceModal .modal-body {
     background: #0F1530 !important;
     color: #CBD5E1 !important;
   }
   html[data-pms-theme="dark"] #attendanceDetailsModal .attendance-details-container,
   html[data-theme="dark"] #attendanceDetailsModal .attendance-details-container,
-  body.dark-mode #attendanceDetailsModal .attendance-details-container {
+  html[data-bs-theme="dark"] #attendanceDetailsModal .attendance-details-container,
+  body.dark-mode #attendanceDetailsModal .attendance-details-container,
+  [data-theme="dark"] #attendanceDetailsModal .attendance-details-container {
     background: #070B1A !important;
     color: #CBD5E1 !important;
   }
   html[data-pms-theme="dark"] #attendanceDetailsModal .modal-header,
   html[data-theme="dark"] #attendanceDetailsModal .modal-header,
-  body.dark-mode #attendanceDetailsModal .modal-header {
+  html[data-bs-theme="dark"] #attendanceDetailsModal .modal-header,
+  body.dark-mode #attendanceDetailsModal .modal-header,
+  [data-theme="dark"] #attendanceDetailsModal .modal-header,
+  html[data-pms-theme="dark"] #editAttendanceModal .modal-header,
+  html[data-theme="dark"] #editAttendanceModal .modal-header,
+  body.dark-mode #editAttendanceModal .modal-header,
+  [data-theme="dark"] #editAttendanceModal .modal-header {
     background: #141B3D !important;
-    border-bottom: 1px solid rgba(238, 241, 251, 0.09) !important;
-    color: #EEF1FB !important;
+    border-bottom: 1px solid rgba(79, 131, 255, 0.18) !important;
+    color: #FFFFFF !important;
   }
   html[data-pms-theme="dark"] #attendanceDetailsModal .modal-title,
   html[data-theme="dark"] #attendanceDetailsModal .modal-title,
-  body.dark-mode #attendanceDetailsModal .modal-title {
-    color: #EEF1FB !important;
+  html[data-bs-theme="dark"] #attendanceDetailsModal .modal-title,
+  body.dark-mode #attendanceDetailsModal .modal-title,
+  [data-theme="dark"] #attendanceDetailsModal .modal-title,
+  html[data-pms-theme="dark"] #editAttendanceModal .modal-title,
+  html[data-theme="dark"] #editAttendanceModal .modal-title,
+  body.dark-mode #editAttendanceModal .modal-title,
+  [data-theme="dark"] #editAttendanceModal .modal-title {
+    color: #FFFFFF !important;
+  }
+  html[data-pms-theme="dark"] #attendanceDetailsModal .modal-header .btn-close,
+  html[data-theme="dark"] #attendanceDetailsModal .modal-header .btn-close,
+  html[data-bs-theme="dark"] #attendanceDetailsModal .modal-header .btn-close,
+  body.dark-mode #attendanceDetailsModal .modal-header .btn-close,
+  [data-theme="dark"] #attendanceDetailsModal .modal-header .btn-close,
+  html[data-pms-theme="dark"] #editAttendanceModal .modal-header .btn-close,
+  html[data-theme="dark"] #editAttendanceModal .modal-header .btn-close,
+  body.dark-mode #editAttendanceModal .modal-header .btn-close,
+  [data-theme="dark"] #editAttendanceModal .modal-header .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%) !important;
+    opacity: 0.8 !important;
+  }
+  html[data-pms-theme="dark"] #attendanceDetailsModal .modal-header .btn-close:hover,
+  html[data-theme="dark"] #attendanceDetailsModal .modal-header .btn-close:hover,
+  body.dark-mode #attendanceDetailsModal .modal-header .btn-close:hover,
+  html[data-pms-theme="dark"] #editAttendanceModal .modal-header .btn-close:hover,
+  html[data-theme="dark"] #editAttendanceModal .modal-header .btn-close:hover,
+  body.dark-mode #editAttendanceModal .modal-header .btn-close:hover {
+    opacity: 1 !important;
   }
   html[data-pms-theme="dark"] #attendanceDetailsModal .modal-footer,
   html[data-theme="dark"] #attendanceDetailsModal .modal-footer,
-  body.dark-mode #attendanceDetailsModal .modal-footer {
+  html[data-bs-theme="dark"] #attendanceDetailsModal .modal-footer,
+  body.dark-mode #attendanceDetailsModal .modal-footer,
+  [data-theme="dark"] #attendanceDetailsModal .modal-footer,
+  html[data-pms-theme="dark"] #editAttendanceModal .modal-footer,
+  html[data-theme="dark"] #editAttendanceModal .modal-footer,
+  body.dark-mode #editAttendanceModal .modal-footer,
+  [data-theme="dark"] #editAttendanceModal .modal-footer {
     background: #0F1530 !important;
-    border-top: 1px solid rgba(238, 241, 251, 0.09) !important;
+    border-top: 1px solid rgba(79, 131, 255, 0.18) !important;
+  }
+  html[data-pms-theme="dark"] #attendanceDetailsModal .modal-footer .btn-secondary,
+  html[data-theme="dark"] #attendanceDetailsModal .modal-footer .btn-secondary,
+  html[data-bs-theme="dark"] #attendanceDetailsModal .modal-footer .btn-secondary,
+  body.dark-mode #attendanceDetailsModal .modal-footer .btn-secondary,
+  [data-theme="dark"] #attendanceDetailsModal .modal-footer .btn-secondary {
+    background: #141B3D !important;
+    color: #CBD5E1 !important;
+    border: 1px solid rgba(79, 131, 255, 0.25) !important;
+  }
+  html[data-pms-theme="dark"] #attendanceDetailsModal .modal-footer .btn-secondary:hover,
+  html[data-theme="dark"] #attendanceDetailsModal .modal-footer .btn-secondary:hover,
+  body.dark-mode #attendanceDetailsModal .modal-footer .btn-secondary:hover {
+    background: #1A2247 !important;
+    color: #FFFFFF !important;
+  }
+  html[data-pms-theme="dark"] .month-edit-day-btn,
+  html[data-theme="dark"] .month-edit-day-btn,
+  html[data-bs-theme="dark"] .month-edit-day-btn,
+  [data-pms-theme="dark"] .month-edit-day-btn,
+  [data-theme="dark"] .month-edit-day-btn,
+  body.dark-mode .month-edit-day-btn {
+    background: rgba(245, 158, 11, 0.18) !important;
+    color: #FBBF24 !important;
+    -webkit-text-fill-color: #FBBF24 !important;
+    border: 1px solid rgba(251, 191, 36, 0.35) !important;
+  }
+  html[data-pms-theme="dark"] .month-edit-day-btn:hover,
+  html[data-theme="dark"] .month-edit-day-btn:hover,
+  html[data-bs-theme="dark"] .month-edit-day-btn:hover,
+  [data-pms-theme="dark"] .month-edit-day-btn:hover,
+  [data-theme="dark"] .month-edit-day-btn:hover,
+  body.dark-mode .month-edit-day-btn:hover {
+    background: rgba(245, 158, 11, 0.28) !important;
+    color: #FDE68A !important;
+    -webkit-text-fill-color: #FDE68A !important;
+  }
+  .attendance-loading-box {
+    background: transparent !important;
+  }
+  html[data-pms-theme="dark"] .attendance-loading-box p,
+  html[data-theme="dark"] .attendance-loading-box p,
+  html[data-bs-theme="dark"] .attendance-loading-box p,
+  body.dark-mode .attendance-loading-box p,
+  [data-theme="dark"] .attendance-loading-box p {
+    color: #94A3B8 !important;
   }
 </style>
 
@@ -705,7 +813,7 @@ $(document).ready(function () {
 
     function showAttendanceLoading(message) {
         $('#attendanceDetailsBody').html(
-            '<div class="text-center py-5 bg-white">' +
+            '<div class="text-center py-5 attendance-loading-box">' +
                 '<div class="spinner-border text-primary" role="status">' +
                     '<span class="visually-hidden">Loading...</span>' +
                 '</div>' +

@@ -63,7 +63,7 @@
                             </td>
                             <td>{{ number_format((float) $leave->total_days, 1) }}</td>
                             <td><span class="status-badge {{ $leave->status }}">{{ ucfirst($leave->status) }}</span></td>
-                            <td><span class="pay-badge {{ $leave->is_unpaid ? 'unpaid' : 'paid' }}">{{ $leave->is_unpaid ? 'Unpaid' : 'Paid' }}</span></td>
+                            <td><span class="pay-badge {{ $leave->status === 'rejected' ? 'rejected' : ($leave->is_unpaid ? 'unpaid' : 'paid') }}">{{ $leave->status === 'rejected' ? 'N/A' : ($leave->is_unpaid ? 'Unpaid' : 'Paid') }}</span></td>
                             <td>{{ $leave->archived_at?->format('d M Y h:i A') ?? 'Unknown' }}</td>
                             <td class="text-end">
                                 <div class="action-buttons">
@@ -246,7 +246,8 @@
         color: #047857;
     }
 
-    .status-badge.rejected {
+    .status-badge.rejected,
+    .pay-badge.rejected {
         background: #fee2e2;
         color: #b91c1c;
     }
@@ -418,7 +419,9 @@
     }
 
     html[data-pms-theme="dark"] .status-badge.rejected,
-    html[data-bs-theme="dark"] .status-badge.rejected {
+    html[data-bs-theme="dark"] .status-badge.rejected,
+    html[data-pms-theme="dark"] .pay-badge.rejected,
+    html[data-bs-theme="dark"] .pay-badge.rejected {
         background: rgba(239, 68, 68, 0.2) !important;
         color: #f87171 !important;
     }

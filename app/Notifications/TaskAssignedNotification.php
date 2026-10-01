@@ -4,6 +4,7 @@ namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Notification;
 
 class TaskAssignedNotification extends Notification implements ShouldQueue
@@ -55,5 +56,15 @@ class TaskAssignedNotification extends Notification implements ShouldQueue
                 'for' => 'admin',
             ];
         }
+    }
+
+    public function toArray($notifiable)
+    {
+        return $this->toDatabase($notifiable);
+    }
+
+    public function toBroadcast($notifiable)
+    {
+        return new BroadcastMessage($this->toDatabase($notifiable));
     }
 }
