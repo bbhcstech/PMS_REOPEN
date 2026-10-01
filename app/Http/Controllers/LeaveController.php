@@ -270,7 +270,7 @@ class LeaveController extends Controller
 
     public function showApologyLetter(LeaveApologyLetter $letter)
     {
-        abort_if(! $this->isAdmin() && $letter->user_id !== Auth::id(), 403);
+        $this->authorizeApologyLetterAccess($letter);
         $letter->load(['user.employeeDetail.department', 'leave.leaveType', 'reviewer']);
 
         return view('admin.leaves.apology-letters.show', compact('letter'));
@@ -414,6 +414,11 @@ class LeaveController extends Controller
     public function edit(Leave $leave)
     {
         $this->authorizeLeaveAccess($leave);
+
+        if (! $this->isAdmin() && $leave->status !== 'pending') {
+            return redirect()->route('leaves.index')->with('error', 'Only pending leave requests can be edited.');
+        }
+
         $policy = $this->leaveService->policy();
         $leaveTypes = $this->leaveService->leaveTypes();
         $users = $this->employeeQuery()->get();
@@ -432,7 +437,10 @@ class LeaveController extends Controller
     public function update(StoreLeaveRequest $request, Leave $leave)
     {
         $this->authorizeLeaveAccess($leave);
-        abort_if($leave->status === 'approved' && ! $this->isAdmin(), 403);
+
+        if (! $this->isAdmin() && $leave->status !== 'pending') {
+            return redirect()->route('leaves.index')->with('error', 'Only pending leave requests can be updated.');
+        }
 
         $employee = $this->isAdmin() && $request->filled('user_id') ? User::findOrFail($request->user_id) : $leave->user;
         $type = LeaveType::findOrFail($request->leave_type_id);
@@ -607,7 +615,10 @@ class LeaveController extends Controller
     {
         $leave = Leave::findOrFail($id);
         $this->authorizeLeaveAccess($leave);
-        abort_if(! $this->isAdmin() && $leave->status !== 'pending', 403);
+
+        if (! $this->isAdmin() && $leave->status !== 'pending') {
+            return back()->with('error', 'Only pending leave requests can be deleted.');
+        }
         $user = $leave->user;
         $leave->delete();
         if (! $this->isAdmin()) {
@@ -942,7 +953,11 @@ class LeaveController extends Controller
 
     private function authorizeLeaveAccess(Leave $leave): void
     {
-        abort_if(! $this->isAdmin() && $leave->user_id !== Auth::id(), 403);
+        if ($this->isAdmin()) {
+            return;
+        }
+
+        abort_if((int) $leave->user_id !== (int) Auth::id(), 403, 'Unauthorized access to leave request.');
     }
 
     private function leaveExportRow(Leave $leave): array
@@ -1016,6 +1031,10 @@ TEXT;
 
     private function authorizeApologyLetterAccess(LeaveApologyLetter $letter): void
     {
-        abort_if(! $this->isAdmin() && $letter->user_id !== Auth::id(), 403);
+        if ($this->isAdmin()) {
+            return;
+        }
+
+        abort_if((int) $letter->user_id !== (int) Auth::id(), 403, 'Unauthorized access to apology letter.');
     }
 }

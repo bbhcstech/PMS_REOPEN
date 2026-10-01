@@ -1725,6 +1725,56 @@
         -webkit-text-fill-color: #ffffff !important;
         transform: translateY(-2px);
     }
+
+    /* Toast / Notification Pop-up styling */
+    .pms-toast-popup,
+    .alert.position-fixed {
+        position: fixed !important;
+        top: 24px !important;
+        right: 24px !important;
+        z-index: 999999 !important;
+        min-width: 320px !important;
+        max-width: 480px !important;
+        background-color: #0f172a !important;
+        background: #0f172a !important;
+        opacity: 1 !important;
+        color: #ffffff !important;
+        border: 1px solid #3b82f6 !important;
+        border-left: 5px solid #3b82f6 !important;
+        box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45), 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+        border-radius: 12px !important;
+        padding: 0.9rem 3.5rem 0.9rem 1.25rem !important;
+        font-size: 0.925rem !important;
+        font-weight: 500 !important;
+        line-height: 1.5 !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+    }
+    .pms-toast-popup *,
+    .alert.position-fixed * {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+    .pms-toast-popup strong,
+    .alert.position-fixed strong {
+        color: #60a5fa !important;
+        -webkit-text-fill-color: #60a5fa !important;
+        font-weight: 700 !important;
+    }
+    .pms-toast-popup .btn-close,
+    .alert.position-fixed .btn-close {
+        filter: invert(1) grayscale(100%) brightness(200%) !important;
+        opacity: 0.8 !important;
+        position: absolute !important;
+        top: 50% !important;
+        right: 14px !important;
+        transform: translateY(-50%) !important;
+        padding: 0.5rem !important;
+    }
+    .pms-toast-popup .btn-close:hover,
+    .alert.position-fixed .btn-close:hover {
+        opacity: 1 !important;
+    }
 </style>
 
 <div class="attendance-container">
@@ -2292,30 +2342,61 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Notification function
     function showNotification(message, type = 'info') {
+        document.querySelectorAll('.pms-toast-popup').forEach(el => el.remove());
+
+        const isDark = document.documentElement.getAttribute('data-pms-theme') === 'dark' ||
+                       document.documentElement.getAttribute('data-bs-theme') === 'dark' ||
+                       document.body.classList.contains('dark-mode') ||
+                       document.body.classList.contains('dark');
+
+        const bg = isDark ? '#0f172a' : '#1e293b';
+        const borderColor = type === 'success' ? '#10b981' : (type === 'danger' ? '#ef4444' : (type === 'warning' ? '#f59e0b' : '#3b82f6'));
+        const strongColor = type === 'success' ? '#34d399' : (type === 'danger' ? '#f87171' : (type === 'warning' ? '#fbbf24' : '#60a5fa'));
+
         const notification = document.createElement('div');
-        notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+        notification.className = `pms-toast-popup alert alert-${type} alert-dismissible fade show position-fixed`;
         notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 9999;
-            min-width: 300px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            border-radius: 12px;
-            padding: 1rem 1.5rem;
+            position: fixed !important;
+            top: 24px !important;
+            right: 24px !important;
+            z-index: 999999 !important;
+            min-width: 320px !important;
+            max-width: 480px !important;
+            background-color: ${bg} !important;
+            background: ${bg} !important;
+            opacity: 1 !important;
+            color: #ffffff !important;
+            border: 1px solid ${borderColor} !important;
+            border-left: 5px solid ${borderColor} !important;
+            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45), 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+            border-radius: 12px !important;
+            padding: 0.9rem 3.25rem 0.9rem 1.25rem !important;
+            font-size: 0.925rem !important;
+            font-weight: 500 !important;
+            line-height: 1.5 !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
         `;
         notification.innerHTML = `
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <div style="display: flex; align-items: center; gap: 8px; color: #ffffff !important; -webkit-text-fill-color: #ffffff !important;">
+                ${message}
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" style="position: absolute !important; right: 14px !important; top: 50% !important; transform: translateY(-50%) !important; opacity: 0.8; filter: invert(1) grayscale(100%) brightness(200%);"></button>
         `;
+
+        notification.querySelectorAll('strong').forEach(el => {
+            el.style.cssText = `color: ${strongColor} !important; -webkit-text-fill-color: ${strongColor} !important; font-weight: 700 !important;`;
+        });
 
         document.body.appendChild(notification);
 
         setTimeout(() => {
             if (notification.parentNode) {
-                notification.remove();
+                notification.style.opacity = '0';
+                notification.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
             }
-        }, 3000);
+        }, 3500);
     }
 
     // Export functions (preserved)
