@@ -5,6 +5,7 @@ namespace App\Notifications;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
+use Illuminate\Notifications\Messages\BroadcastMessage;
 
 class TaskAssignedNotification extends Notification implements ShouldQueue
 {
@@ -23,6 +24,11 @@ class TaskAssignedNotification extends Notification implements ShouldQueue
 
     public function via($notifiable)
     {
+        $driver = config('broadcasting.default');
+        if ($driver && !in_array($driver, ['null', 'log'], true)) {
+            return ['database', 'broadcast'];
+        }
+
         return ['database'];
     }
 
@@ -55,5 +61,15 @@ class TaskAssignedNotification extends Notification implements ShouldQueue
                 'for' => 'admin',
             ];
         }
+    }
+
+    public function toArray($notifiable)
+    {
+        return $this->toDatabase($notifiable);
+    }
+
+    public function toBroadcast($notifiable)
+    {
+        return new BroadcastMessage($this->toDatabase($notifiable));
     }
 }
