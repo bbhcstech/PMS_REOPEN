@@ -42,6 +42,7 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\EnsureCompanySubscriptionActive::class,
         ]);
         $middleware->alias([
+            'admin' => RoleMiddleware::class,
             'tenant' => SetTenantConnection::class,
             'module.access' => EnsureModuleAccess::class,
             'role' => RoleMiddleware::class,

@@ -26,6 +26,7 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
 use Carbon\Carbon;
+use App\Support\CountryPhone;
 
 class EmployeeController extends Controller
 {
@@ -202,21 +203,21 @@ class EmployeeController extends Controller
         // compute preview id (does NOT reserve it — store() will recompute to avoid races)
         $nextEmployeeId = $this->computeNextEmployeeIdWithLock();
 
+        $companies = Company::where('status', 'active')->orderBy('name')->get();
+        if ($companies->isEmpty()) {
+            $companies = Company::orderBy('name')->get();
+        }
+
         return view('admin.employees.create', [
-            'companies'        => Company::where('status', 'active')->orderBy('name')->get(),
+            'companies'        => $companies,
             'designations'    => Designation::orderBy('name')->get(),
             'departments'     => Department::with('parent')
                                     ->when(Schema::hasColumn('departments', 'dpt_name'), fn ($q) => $q->orderBy('dpt_name'), fn ($q) => $q->orderBy('id'))
                                     ->get(),
             'prtdepartments'  => ParentDepartment::when(Schema::hasColumn('parent_departments', 'dpt_name'), fn ($q) => $q->orderBy('dpt_name'), fn ($q) => $q->orderBy('id'))
                                     ->get(),
-            'users'           => User::where('role', 'employee')
+            'users'           => User::whereIn('role', ['admin', 'manager', 'hr', 'employee', 'administrator', 'superadmin'])
                                     ->whereNull('archived_at')
-                                    ->when(Schema::hasColumn('employee_details', 'status'), function ($q) {
-                                        $q->whereHas('employeeDetail', function ($detail) {
-                                            $detail->whereIn('status', ['Active', 'active']);
-                                        });
-                                    })
                                     ->orderBy('name')
                                     ->get(),
             'countries'       => Country::orderBy('name')->get(),
@@ -234,8 +235,8 @@ class EmployeeController extends Controller
 
         $dialCode = $request->mobile_country_code ?: '+91';
         $countryRules = CountryPhone::getDigitRules($dialCode);
-        $minDigits = $countryRules['min_digits'];
-        $maxDigits = $countryRules['max_digits'];
+        $minDigits = $countryRules['min_digits'] ?? 6;
+        $maxDigits = $countryRules['max_digits'] ?? 15;
 
         $request->validate([
             'mobile' => ['required', 'string', 'regex:/^[1-9]\d*$/', "min:{$minDigits}", "max:{$maxDigits}"],
@@ -306,9 +307,38 @@ class EmployeeController extends Controller
             }
         }
 
+        // Auto-fill fallback values for fields if omitted
+        if (! $request->filled('company_id')) {
+            $defaultCompany = auth()->user()?->company_id ?: Company::value('id');
+            if ($defaultCompany) {
+                $request->merge(['company_id' => $defaultCompany]);
+            }
+        }
+        if (! $request->filled('mobile_country_code')) {
+            $request->merge(['mobile_country_code' => '+91']);
+        }
+        if (! $request->filled('reporting_to')) {
+            $defaultReporting = auth()->id() ?: User::value('id');
+            if ($defaultReporting) {
+                $request->merge(['reporting_to' => $defaultReporting]);
+            }
+        }
+        if (! $request->filled('status')) {
+            $request->merge(['status' => 'Active']);
+        }
+        if (! $request->has('login_allowed')) {
+            $request->merge(['login_allowed' => 1]);
+        }
+        if (! $request->filled('employment_type')) {
+            $request->merge(['employment_type' => 'full_time']);
+        }
+        if (! $request->filled('business_address')) {
+            $request->merge(['business_address' => $request->address ?: 'Head Office']);
+        }
+
         $phoneRules = CountryPhone::getDigitRules($request->mobile_country_code ?? '+91');
-        $minDigits = $phoneRules['min_digits'];
-        $maxDigits = $phoneRules['max_digits'];
+        $minDigits = $phoneRules['min_digits'] ?? 6;
+        $maxDigits = $phoneRules['max_digits'] ?? 15;
         $phoneCountryName = $phoneRules['name'] ?? 'selected country';
 
         // Prepare validation rules
@@ -319,15 +349,17 @@ class EmployeeController extends Controller
             'mobile_country_code' => 'required|string|regex:/^\+\d{1,4}$/',
             'mobile'            => ['required', 'string', 'regex:/^[1-9]\d*$/', "min:{$minDigits}", "max:{$maxDigits}"],
             'joining_date'      => 'required|date',
-            'reporting_to'      => 'required|integer|exists:users,id',
+            'reporting_to'      => 'nullable|integer|exists:users,id',
             'business_address'  => 'required|string',
             'status'            => 'required|in:Active,Inactive',
             'login_allowed'     => 'required|in:0,1',
+            'employment_type'   => 'required|in:full_time,part_time,on_contract,internship,trainee',
             'password'          => [
-                'required',
+                'nullable',
                 'string',
                 'min:8',
                 function ($attribute, $value, $fail) {
+                    if (!$value) return;
                     if (!preg_match('/[A-Z]/', $value)) {
                         $fail('The password must contain at least 1 uppercase letter.');
                     }
@@ -342,8 +374,8 @@ class EmployeeController extends Controller
                     }
                 },
             ],
-            'profile_picture'   => 'required|image|mimes:jpeg,png,jpg|max:2048',
-            'government_id_card' => 'required|image|mimes:jpeg,png,jpg|max:4096',
+            'profile_picture'   => 'nullable|image|mimes:jpeg,png,jpg|max:4096',
+            'government_id_card' => 'nullable|image|mimes:jpeg,png,jpg|max:4096',
             'designation_id'    => 'required',
             'parent_dpt_id'     => 'required',
             'department_id'     => 'nullable',
@@ -660,7 +692,7 @@ class EmployeeController extends Controller
                     ['employee_id' => $user->id, 'type' => 'employee_created', 'icon' => 'fa-user-plus']
                 );
             } catch (\Throwable $notifEx) {
-                Log::warning('Admin system notification failed', ['error' => $notifEx->getMessage()]);
+                Log::warning('Employee creation notification failed', ['error' => $notifEx->getMessage()]);
             }
 
             return redirect()->route('employees.index')
@@ -820,9 +852,15 @@ class EmployeeController extends Controller
         $user = User::findOrFail($id);
         $detail = $user->employeeDetail;
 
-        $phoneRules = CountryPhone::getDigitRules($request->mobile_country_code ?? '+91');
-        $minDigits = $phoneRules['min_digits'];
-        $maxDigits = $phoneRules['max_digits'];
+        // Only check email uniqueness when the email is actually being changed.
+        $emailUniqueRule = 'required|email';
+        if (strtolower(trim((string) $request->email)) !== strtolower(trim((string) $user->email))) {
+            $emailUniqueRule .= '|unique:users,email,' . $user->id;
+        }
+        $dialCode = $request->mobile_country_code ?: '+91';
+        $phoneRules = CountryPhone::getDigitRules($dialCode);
+        $minDigits = $phoneRules['min_digits'] ?? 6;
+        $maxDigits = $phoneRules['max_digits'] ?? 15;
         $phoneCountryName = $phoneRules['name'] ?? 'selected country';
 
         $mobileRule = ['required', 'string', 'regex:/^[1-9]\d*$/', "min:{$minDigits}", "max:{$maxDigits}"];
@@ -868,7 +906,7 @@ class EmployeeController extends Controller
             'cv_file'            => 'nullable|file|mimes:pdf,doc,docx|max:4096',
         ], $customMessages);
 
-        $mobileWithCodeForValidation = ($request->mobile_country_code ?? '+91') . $request->mobile;
+        $mobileWithCodeForValidation = $dialCode . $request->mobile;
         if (User::where('mobile', $mobileWithCodeForValidation)->where('id', '!=', $user->id)->exists()) {
             return back()->withErrors(['mobile' => 'This mobile number is already registered.'])->withInput();
         }
@@ -906,7 +944,7 @@ class EmployeeController extends Controller
         DB::beginTransaction();
         try {
             // Format mobile number with country code prefix
-            $mobileWithCode = ($request->mobile_country_code ?? '+91') . $request->mobile;
+            $mobileWithCode = $dialCode . $request->mobile;
 
             // handle profile image: delete old file if present and save new one
             if ($request->hasFile('profile_picture')) {
