@@ -1109,6 +1109,94 @@
     html[data-pms-theme="dark"] .modal .modal-header .btn-close::before {
         background-color: currentColor !important;
     }
+
+    /* Comprehensive Dark Mode Theme Overrides for Milestone Page */
+    html[data-pms-theme="dark"] .project-milestones-page,
+    html[data-theme="dark"] .project-milestones-page,
+    html[data-bs-theme="dark"] .project-milestones-page,
+    html.dark .project-milestones-page {
+        background: #070B1A !important;
+        color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .project-milestones-page .header-card,
+    html[data-theme="dark"] .project-milestones-page .header-card,
+    html[data-bs-theme="dark"] .project-milestones-page .header-card,
+    html.dark .project-milestones-page .header-card,
+    html[data-pms-theme="dark"] .project-milestones-page .content-card,
+    html[data-theme="dark"] .project-milestones-page .content-card,
+    html[data-bs-theme="dark"] .project-milestones-page .content-card,
+    html.dark .project-milestones-page .content-card {
+        background: #0F1530 !important;
+        border-color: rgba(255, 255, 255, 0.1) !important;
+        box-shadow: 0 18px 45px rgba(0, 0, 0, 0.5) !important;
+        color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .project-milestones-page .breadcrumb,
+    html[data-theme="dark"] .project-milestones-page .breadcrumb,
+    html[data-bs-theme="dark"] .project-milestones-page .breadcrumb,
+    html.dark .project-milestones-page .breadcrumb {
+        background: rgba(15, 21, 48, 0.9) !important;
+        border-color: rgba(255, 255, 255, 0.12) !important;
+        color: #60A5FA !important;
+    }
+
+    html[data-pms-theme="dark"] .project-milestones-page .table-header,
+    html[data-theme="dark"] .project-milestones-page .table-header,
+    html[data-bs-theme="dark"] .project-milestones-page .table-header,
+    html.dark .project-milestones-page .table-header {
+        background: #141B3D !important;
+        border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+    }
+
+    html[data-pms-theme="dark"] .project-milestones-page .milestone-table thead tr,
+    html[data-theme="dark"] .project-milestones-page .milestone-table thead tr,
+    html[data-bs-theme="dark"] .project-milestones-page .milestone-table thead tr,
+    html.dark .project-milestones-page .milestone-table thead tr {
+        background: #141B3D !important;
+    }
+
+    html[data-pms-theme="dark"] .project-milestones-page .milestone-table thead th,
+    html[data-theme="dark"] .project-milestones-page .milestone-table thead th,
+    html[data-bs-theme="dark"] .project-milestones-page .milestone-table thead th,
+    html.dark .project-milestones-page .milestone-table thead th {
+        background: #141B3D !important;
+        color: #94A3B8 !important;
+        border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+    }
+
+    html[data-pms-theme="dark"] .project-milestones-page .milestone-table tbody td,
+    html[data-theme="dark"] .project-milestones-page .milestone-table tbody td,
+    html[data-bs-theme="dark"] .project-milestones-page .milestone-table tbody td,
+    html.dark .project-milestones-page .milestone-table tbody td {
+        background: #0F1530 !important;
+        border-bottom-color: rgba(255, 255, 255, 0.06) !important;
+        color: #E2E8F0 !important;
+    }
+
+    html[data-pms-theme="dark"] .project-milestones-page .milestone-table tbody tr:hover td,
+    html[data-theme="dark"] .project-milestones-page .milestone-table tbody tr:hover td,
+    html[data-bs-theme="dark"] .project-milestones-page .milestone-table tbody tr:hover td,
+    html.dark .project-milestones-page .milestone-table tbody tr:hover td {
+        background: #18224B !important;
+    }
+
+    html[data-pms-theme="dark"] .project-milestones-page .search-box input,
+    html[data-theme="dark"] .project-milestones-page .search-box input,
+    html[data-bs-theme="dark"] .project-milestones-page .search-box input,
+    html.dark .project-milestones-page .search-box input {
+        background: #141B3D !important;
+        border-color: rgba(255, 255, 255, 0.15) !important;
+        color: #FFFFFF !important;
+    }
+
+    html[data-pms-theme="dark"] .project-milestones-page .title-text,
+    html[data-theme="dark"] .project-milestones-page .title-text,
+    html[data-bs-theme="dark"] .project-milestones-page .title-text,
+    html.dark .project-milestones-page .title-text {
+        color: #F8FAFC !important;
+    }
 </style>
 @endpush
 

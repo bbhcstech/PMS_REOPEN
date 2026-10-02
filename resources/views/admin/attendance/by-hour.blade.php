@@ -1687,7 +1687,7 @@
                                             'user_id' => $uid,
                                             'name' => $user->name,
                                             'designation' => $designationName,
-                                            'photo' => $user->profile_image ? asset($user->profile_image) : asset('images/default-avatar.png'),
+                                            'photo' => (!empty($user->profile_image) && file_exists(public_path($user->profile_image))) ? asset($user->profile_image) : asset('images/default-avatar.png'),
                                             'month' => (int) $month,
                                             'year' => (int) $year,
                                             'month_name' => Carbon::createFromDate($year, $month)->format('F Y'),
@@ -2016,7 +2016,7 @@ document.addEventListener('DOMContentLoaded', function () {
         $('#hourAttendanceModalBody').html(
             '<div class="hour-month-summary">' +
                 '<div class="hour-month-profile">' +
-                    '<img src="' + escapeHourHtml(payload.photo) + '" alt="' + escapeHourHtml(payload.name) + '">' +
+                    '<img src="' + escapeHourHtml(payload.photo) + '" alt="' + escapeHourHtml(payload.name) + '" onerror="this.onerror=null; this.src=\'/images/default-avatar.png\';">' +
                     '<div>' +
                         '<h5>' + escapeHourHtml(payload.name) + '</h5>' +
                         '<p>' + escapeHourHtml(payload.designation) + ' | ' + escapeHourHtml(payload.month_name) +

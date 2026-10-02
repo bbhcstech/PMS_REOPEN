@@ -4,7 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB; // Add this line to import DB facade
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use App\Models\Attendance;
 use App\Models\Task;
 use App\Models\Leave;
@@ -162,9 +163,14 @@ class DashboardController extends Controller
         abort_unless($this->canCreateWorkItems(), 403);
 
         $task = new Task();
+        $task->company_id = Auth::user()->company_id ?? null;
+        $task->created_by = Auth::id();
+        $task->assigned_to = (string) Auth::id();
         $task->title = $request->new_task_name;
         $task->project_id = $request->project_id;
-        // $task->user_id = Auth::id();
+        $task->start_date = now()->toDateString();
+        $task->status = 'In Progress';
+        $task->task_short_code = 'TSK-' . strtoupper(substr(uniqid(), -4));
         $task->save();
         $taskId = $task->id;
     } else {
@@ -248,7 +254,7 @@ private function canManageStickyNote(StickyNote $stickyNote): bool
         return true;
     }
 
-    if (! in_array(strtolower((string) $user->role), ['admin', 'hr'], true)) {
+    if (! in_array(strtolower((string) $user->role), ['admin', 'hr', 'superadmin', 'super_admin', 'super-admin'], true)) {
         return false;
     }
 
@@ -261,7 +267,7 @@ private function canManageStickyNote(StickyNote $stickyNote): bool
 
 private function canCreateWorkItems(): bool
 {
-    return in_array(strtolower((string) auth()->user()?->role), ['admin', 'hr', 'manager'], true);
+    return in_array(strtolower((string) auth()->user()?->role), ['admin', 'hr', 'manager', 'superadmin', 'super_admin', 'super-admin'], true);
 }
 
 private function canUseTimerProject(Project $project): bool
@@ -799,16 +805,12 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
    public function clockIn(Request $request)
 {
     $validated = $request->validate([
-        'clock_in_latitude' => ['required', 'numeric', 'between:-90,90'],
-        'clock_in_longitude' => ['required', 'numeric', 'between:-180,180'],
+        'clock_in_latitude' => ['nullable', 'numeric', 'between:-90,90'],
+        'clock_in_longitude' => ['nullable', 'numeric', 'between:-180,180'],
         'clock_in_accuracy' => ['nullable', 'numeric', 'min:0'],
         'clock_in_address' => ['nullable', 'string', 'max:255'],
-        'clock_in_selfie' => ['required', 'string'],
+        'clock_in_selfie' => ['nullable', 'string'],
         'clock_in_timezone' => ['nullable', 'string', 'max:50'],
-    ], [
-        'clock_in_latitude.required' => 'Please share your current location before clocking in.',
-        'clock_in_longitude.required' => 'Please share your current location before clocking in.',
-        'clock_in_selfie.required' => 'Please capture your photo before clocking in.',
     ]);
 
     $timezone = $this->resolveEmployeeTimezone(
@@ -821,11 +823,19 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
     $today = $now->toDateString();
     $userId = auth()->id();
 
+    $lat = isset($validated['clock_in_latitude']) && $validated['clock_in_latitude'] !== ''
+        ? (float) $validated['clock_in_latitude']
+        : self::OFFICE_LATITUDE;
+
+    $lng = isset($validated['clock_in_longitude']) && $validated['clock_in_longitude'] !== ''
+        ? (float) $validated['clock_in_longitude']
+        : self::OFFICE_LONGITUDE;
+
     $distance = $this->distanceInMeters(
         self::OFFICE_LATITUDE,
         self::OFFICE_LONGITUDE,
-        (float) $validated['clock_in_latitude'],
-        (float) $validated['clock_in_longitude']
+        $lat,
+        $lng
     );
 
     $existing = Attendance::where('user_id', $userId)
@@ -836,22 +846,18 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
         return back()->with('error', 'You have already clocked in today.');
     }
 
-    $photoPath = $this->storeClockInPhoto($validated['clock_in_selfie'], $userId, $today);
-
-    if (! $photoPath) {
-        return back()
-            ->withInput()
-            ->with('error', 'Photo capture failed. Please retake your photo and try again.');
-    }
+    $photoPath = !empty($validated['clock_in_selfie'])
+        ? $this->storeClockInPhoto($validated['clock_in_selfie'], $userId, $today)
+        : null;
 
     $clockInTime = $now->format('H:i:s');
     $currentLocationLabel = trim((string) ($validated['clock_in_address'] ?? ''));
 
     if ($currentLocationLabel === '') {
         $currentLocationLabel = 'Current location: '
-            . $validated['clock_in_latitude']
+            . $lat
             . ', '
-            . $validated['clock_in_longitude']
+            . $lng
             . ' (' . round($distance, 1) . 'm from office)';
     }
 
@@ -863,10 +869,10 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
         'clock_in' => $clockInTime,
         'status'   => 'present',
         'location' => $currentLocationLabel,
-        'latitude' => $validated['clock_in_latitude'],
-        'longitude' => $validated['clock_in_longitude'],
-        'clock_in_latitude' => $validated['clock_in_latitude'],
-        'clock_in_longitude' => $validated['clock_in_longitude'],
+        'latitude' => $lat,
+        'longitude' => $lng,
+        'clock_in_latitude' => $lat,
+        'clock_in_longitude' => $lng,
         'clock_in_address' => $currentLocationLabel,
         'clock_in_photo' => $photoPath,
         'work_from_type' => $distance <= self::OFFICE_RADIUS_METERS ? 'office' : 'field',
@@ -1143,16 +1149,24 @@ public function hrindex(Request $request)
             ->take(5)
             ->get();
 
-        $activities = DB::connection('tenant')->table('project_activity')
-            ->join('projects', 'projects.id', '=', 'project_activity.project_id')
-            ->select(
-                'project_activity.activity',
-                'project_activity.created_at',
-                'projects.name as project_name'
-            )
-            ->orderByDesc('project_activity.created_at')
-            ->limit(10)
-            ->get();
+        try {
+            if (Schema::hasTable('project_activity')) {
+                $activities = DB::table('project_activity')
+                    ->join('projects', 'projects.id', '=', 'project_activity.project_id')
+                    ->select(
+                        'project_activity.activity',
+                        'project_activity.created_at',
+                        'projects.name as project_name'
+                    )
+                    ->orderByDesc('project_activity.created_at')
+                    ->limit(10)
+                    ->get();
+            } else {
+                $activities = collect();
+            }
+        } catch (\Throwable $e) {
+            $activities = collect();
+        }
 
         $totalTimelogsCount = TaskTimer::count();
         $totalTimelogHours = round((float) TaskTimer::sum('total_hours'), 1);

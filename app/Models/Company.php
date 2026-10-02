@@ -23,6 +23,7 @@ class Company extends Model
         'favicon',
         'domain',
         'subdomain',
+        'db_name',
         'address',
         'gst_number',
         'pan_number',
@@ -45,6 +46,28 @@ class Company extends Model
         'letterhead_file_type',
         'letterhead_uploaded_at',
     ];
+
+    protected static function booted(): void
+    {
+        static::creating(function ($company) {
+            if (empty($company->db_name)) {
+                $base = $company->company_code ?: ($company->subdomain ?: $company->name);
+                $slug = \Illuminate\Support\Str::slug((string) $base, '_');
+                if (empty($slug)) {
+                    $slug = 'tenant_' . strtolower(\Illuminate\Support\Str::random(6));
+                }
+                $prefix = env('TENANT_DB_PREFIX', 'pms_');
+                $candidate = str_starts_with($slug, $prefix) ? $slug : $prefix . $slug;
+
+                $count = 1;
+                $original = $candidate;
+                while (static::where('db_name', $candidate)->exists()) {
+                    $candidate = $original . '_' . $count++;
+                }
+                $company->db_name = $candidate;
+            }
+        });
+    }
 
     protected $casts = [
         'settings' => 'array',
@@ -75,7 +98,13 @@ class Company extends Model
 
     public function logoUrl(): ?string
     {
-        return $this->logo ? asset($this->logo) : null;
+        if ($this->logo && file_exists(public_path($this->logo))) {
+            return asset($this->logo);
+        }
+        if (file_exists(public_path('logo.png'))) {
+            return asset('logo.png');
+        }
+        return null;
     }
 
     public function faviconUrl(): ?string
