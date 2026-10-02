@@ -2622,7 +2622,7 @@ document.addEventListener('DOMContentLoaded', function () {
             $('#attendanceDetailsBody').html(
                 '<div class="attendance-month-summary">' +
                     '<div class="attendance-month-profile">' +
-                        '<img src="' + escapeHtml(payload.photo) + '" alt="' + escapeHtml(payload.name) + '">' +
+                        '<img src="' + escapeHtml(payload.photo) + '" alt="' + escapeHtml(payload.name) + '" onerror="this.onerror=null; this.src=\'/images/default-avatar.png\';">' +
                         '<div>' +
                             '<h5>' + escapeHtml(payload.name) + '</h5>' +
                             '<p>' + escapeHtml(payload.designation) + ' &nbsp;|&nbsp; ' + escapeHtml(payload.month_name) +

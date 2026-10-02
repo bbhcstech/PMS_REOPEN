@@ -873,14 +873,14 @@
     }
 
     .employee-rule-text {
-        color: #334155 !important;
-        font-size: 0.88rem !important;
-        line-height: 1.45 !important;
+        color: #334155;
+        font-size: 0.88rem;
+        line-height: 1.45;
     }
 
     .employee-rule-bold {
-        color: #0f172a !important;
-        font-weight: 700 !important;
+        color: #0f172a;
+        font-weight: 700;
     }
 
     .employee-chart {
@@ -1652,25 +1652,25 @@
                     <div class="col-lg-3 col-md-6">
                         <div class="employee-rule">
                             <i class="bx bx-time-five text-warning fs-3 me-2"></i>
-                            <span class="employee-rule-text" style="color: #ffffff !important;">Clock-in after <strong class="employee-rule-bold" style="color: #ffffff !important; font-weight: 700;">{{ $lateTimeLabel }}</strong> is marked as <strong class="employee-rule-bold" style="color: #ffffff !important; font-weight: 700;">Late</strong>.</span>
+                            <span class="employee-rule-text">Clock-in after <strong class="employee-rule-bold">{{ $lateTimeLabel }}</strong> is marked as <strong class="employee-rule-bold">Late</strong>.</span>
                         </div>
                     </div>
                     <div class="col-lg-3 col-md-6">
                         <div class="employee-rule">
                             <i class="bx bx-star text-primary fs-3 me-2"></i>
-                            <span class="employee-rule-text" style="color: #ffffff !important;">Working time below <strong class="employee-rule-bold" style="color: #ffffff !important; font-weight: 700;">{{ $halfDayLabel }}</strong> is marked as <strong class="employee-rule-bold" style="color: #ffffff !important; font-weight: 700;">Half Day</strong>.</span>
+                            <span class="employee-rule-text">Working time below <strong class="employee-rule-bold">{{ $halfDayLabel }}</strong> is marked as <strong class="employee-rule-bold">Half Day</strong>.</span>
                         </div>
                     </div>
                     <div class="col-lg-3 col-md-6">
                         <div class="employee-rule">
                             <i class="bx bx-calendar-x text-danger fs-3 me-2"></i>
-                            <span class="employee-rule-text" style="color: #ffffff !important;">Working time below <strong class="employee-rule-bold" style="color: #ffffff !important; font-weight: 700;">{{ $dayOffLabel }}</strong> is marked as <strong class="employee-rule-bold" style="color: #ffffff !important; font-weight: 700;">Day Off</strong>.</span>
+                            <span class="employee-rule-text">Working time below <strong class="employee-rule-bold">{{ $dayOffLabel }}</strong> is marked as <strong class="employee-rule-bold">Day Off</strong>.</span>
                         </div>
                     </div>
                     <div class="col-lg-3 col-md-6">
                         <div class="employee-rule">
                             <i class="bx bx-plane-alt text-info fs-3 me-2"></i>
-                            <span class="employee-rule-text" style="color: #ffffff !important;">Approved leave is shown automatically from the leave table.</span>
+                            <span class="employee-rule-text">Approved leave is shown automatically from the leave table.</span>
                         </div>
                     </div>
                 </div>
