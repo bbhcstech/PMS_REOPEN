@@ -856,10 +856,11 @@ Route::middleware(['auth', 'module.access'])->group(function () {
     Route::delete('/leaves/{id}', [LeaveController::class, 'destroy'])->name('leaves.destroy');
     Route::get('leaves/{leave}/edit', [LeaveController::class, 'edit'])->name('leaves.edit');
     Route::put('leaves/{leave}', [LeaveController::class, 'update'])->name('leaves.update');
+    Route::get('/leaves/report', [LeaveController::class, 'leaveReport'])->name('leaves.report');
+    Route::get('/admin/leaves/report', [LeaveController::class, 'leaveReport'])->name('admin.leave.report');
     Route::get('/leaves/{leave}', [LeaveController::class, 'show'])->name('leaves.show');
     Route::get('/leaves/{leave}/status', fn (\App\Models\Leave $leave) => redirect()->route('leaves.show', $leave->id));
     Route::patch('/leaves/{leave}/status', [LeaveController::class, 'updateStatus'])->name('leaves.updateStatus');
-    Route::get('/admin/leaves/report', [LeaveController::class, 'leaveReport'])->name('admin.leave.report');
 
 
 

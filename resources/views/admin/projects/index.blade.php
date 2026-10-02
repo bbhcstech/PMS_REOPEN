@@ -2495,22 +2495,48 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    document.querySelectorAll('[data-copy-url]').forEach(button => {
-        button.addEventListener('click', function () {
-            const url = this.dataset.copyUrl;
-            const oldText = this.innerHTML;
+    document.addEventListener('click', function (e) {
+        const button = e.target.closest('[data-copy-url]');
+        if (!button) return;
 
-            function done() {
-                button.innerHTML = '<i class="fas fa-check"></i> Copied';
-                setTimeout(() => button.innerHTML = oldText, 1400);
-            }
+        e.preventDefault();
+        const url = button.getAttribute('data-copy-url');
+        if (!url) return;
 
-            if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(url).then(done).catch(() => prompt('Copy this link:', url));
-            } else {
-                prompt('Copy this link:', url);
+        const oldText = button.innerHTML;
+
+        function showSuccess() {
+            button.innerHTML = '<i class="fas fa-check text-success"></i> Copied!';
+            setTimeout(() => button.innerHTML = oldText, 2000);
+        }
+
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(url).then(showSuccess).catch(() => fallbackCopy(url));
+        } else {
+            fallbackCopy(url);
+        }
+
+        function fallbackCopy(text) {
+            try {
+                const textArea = document.createElement("textarea");
+                textArea.value = text;
+                textArea.style.position = "fixed";
+                textArea.style.left = "-999999px";
+                textArea.style.top = "-999999px";
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                const successful = document.execCommand('copy');
+                document.body.removeChild(textArea);
+                if (successful) {
+                    showSuccess();
+                } else {
+                    prompt('Copy this link:', text);
+                }
+            } catch (err) {
+                prompt('Copy this link:', text);
             }
-        });
+        }
     });
 
     document.getElementById('exportProjectsCsv')?.addEventListener('click', function () {
