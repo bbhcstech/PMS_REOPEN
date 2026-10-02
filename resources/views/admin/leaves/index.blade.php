@@ -252,8 +252,8 @@
                     @forelse($leaves as $leave)
                         @php
                             $statusClass = ['pending' => 'warning', 'approved' => 'success', 'rejected' => 'danger'][$leave->status] ?? 'secondary';
-                            $currentStatusValue = $leave->is_unpaid ? 'unpaid' : $leave->status;
-                            $statusSelectClass = $currentStatusValue === 'unpaid' ? 'unpaid' : $statusClass;
+                            $currentStatusValue = $leave->status;
+                            $statusSelectClass = $statusClass;
                         @endphp
                         <tr>
                             @if($isAdmin)<td><input type="checkbox" class="form-check-input leave-checkbox" value="{{ $leave->id }}"></td>@endif
@@ -295,7 +295,7 @@
                                             <option value="pending" {{ $currentStatusValue === 'pending' ? 'selected' : '' }}>Pending</option>
                                             <option value="approved" {{ $currentStatusValue === 'approved' ? 'selected' : '' }}>Approved</option>
                                             <option value="rejected" {{ $currentStatusValue === 'rejected' ? 'selected' : '' }}>Rejected</option>
-                                            <option value="unpaid" {{ $currentStatusValue === 'unpaid' ? 'selected' : '' }}>Unpaid</option>
+                                            <option value="unpaid">Convert to Unpaid</option>
                                         </select>
                                     </form>
                                 @else

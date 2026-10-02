@@ -308,7 +308,8 @@ class LeaveService
 
     public function approve(Leave $leave, ?User $actor = null, ?string $note = null, bool $forceUnpaid = false): Leave
     {
-        return DB::transaction(function () use ($leave, $actor, $note, $forceUnpaid) {
+        $connection = $leave->getConnection();
+        return $connection->transaction(function () use ($leave, $actor, $note, $forceUnpaid) {
             if ($forceUnpaid) {
                 $leave->forceFill([
                     'leave_type_id' => LeaveType::where('code', 'UL')->value('id') ?: $leave->leave_type_id,
@@ -342,7 +343,8 @@ class LeaveService
 
     public function reject(Leave $leave, ?User $actor = null, string $reason = ''): Leave
     {
-        return DB::transaction(function () use ($leave, $actor, $reason) {
+        $connection = $leave->getConnection();
+        return $connection->transaction(function () use ($leave, $actor, $reason) {
             $leave->forceFill([
                 'status' => 'rejected',
                 'approval_status' => 'rejected',
@@ -364,6 +366,41 @@ class LeaveService
             }
 
             $this->recordApproval($leave, $actor, 'rejected', $reason);
+            if ($leave->user) {
+                $this->syncBalanceCounters($leave->user);
+            }
+
+            return $leave->refresh();
+        });
+    }
+
+    public function markPending(Leave $leave, ?User $actor = null, ?string $note = null): Leave
+    {
+        $connection = $leave->getConnection();
+        return $connection->transaction(function () use ($leave, $actor, $note) {
+            $leave->forceFill([
+                'status' => 'pending',
+                'approval_status' => 'pending',
+                'approved_by' => null,
+                'approved_at' => null,
+                'rejected_by' => null,
+                'rejected_at' => null,
+                'rejection_reason' => null,
+                'admin_note' => $note,
+            ])->save();
+
+            $startDate = $leave->start_date ? Carbon::parse($leave->start_date) : ($leave->date ? Carbon::parse($leave->date) : null);
+            $endDate = $leave->end_date ? Carbon::parse($leave->end_date) : $startDate;
+            if ($startDate && $endDate && $leave->user_id) {
+                foreach (CarbonPeriod::create($startDate, $endDate) as $date) {
+                    Attendance::where('user_id', $leave->user_id)
+                        ->where('date', $date->toDateString())
+                        ->whereIn('status', ['leave', 'unpaid_leave'])
+                        ->delete();
+                }
+            }
+
+            $this->recordApproval($leave, $actor, 'marked_pending', $note);
             if ($leave->user) {
                 $this->syncBalanceCounters($leave->user);
             }
