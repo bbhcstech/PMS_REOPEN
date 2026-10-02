@@ -771,7 +771,7 @@ Route::middleware(['auth', 'module.access'])->group(function () {
 
     //employee email and mobile validation routes inside admin group
 
-    Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'admin']], function() {
+    Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'role:admin,hr,manager']], function() {
     // ... other routes ...
 
     // Add these validation routes

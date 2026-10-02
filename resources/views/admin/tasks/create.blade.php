@@ -64,9 +64,9 @@
                     </div>
 
                     <div class="col-md-6">
-                          <label>Task Category <span class="text-danger">*</span></label>
+                          <label>Task Category</label>
                           <div class="d-flex">
-                            <select name="category_id" class="form-select flex-grow-1 me-2" required>
+                            <select name="category_id" class="form-select flex-grow-1 me-2">
                               <option value="">--</option>
                               @foreach($taskCategories as $category)
                                   <option value="{{ $category->id }}"
@@ -515,9 +515,12 @@
             <div class="modal-body">
                  <form id="employeeForm" action="{{ route('employees.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
-        <input type="hidden" name="company_id" value="{{ auth()->user()->company_id ?? 1 }}">
+        <input type="hidden" name="company_id" value="{{ auth()->user()?->company_id }}">
         <input type="hidden" name="mobile_country_code" value="+91">
+        <input type="hidden" name="status" value="Active">
         <input type="hidden" name="login_allowed" value="1">
+        <input type="hidden" name="employment_type" value="full_time">
+        <input type="hidden" name="business_address" value="Head Office">
 
         <h5 class="mb-3">Account Details</h5>
 
