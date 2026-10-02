@@ -854,7 +854,35 @@ class LeaveController extends Controller
 
     public function leaveReport(Request $request)
     {
-        return $this->index($request);
+        $users = User::where('role', 'employee')->orderBy('name')->get();
+        $query = Leave::with(['user', 'leaveType'])->whereNull('archived_at');
+
+        if ($request->filled('user_id')) {
+            $query->where('user_id', $request->user_id);
+        }
+        if ($request->filled('type')) {
+            $query->where(function ($q) use ($request) {
+                $q->where('type', $request->type)
+                  ->orWhereHas('leaveType', fn ($lt) => $lt->where('type_name', 'like', '%' . $request->type . '%'));
+            });
+        }
+        if ($request->filled('from')) {
+            $query->where('start_date', '>=', $request->from);
+        }
+        if ($request->filled('to')) {
+            $query->where('end_date', '<=', $request->to);
+        }
+
+        $leaves = $query->orderBy('created_at', 'desc')->get();
+
+        $summary = [
+            'total' => $leaves->count(),
+            'approved' => $leaves->where('status', 'approved')->count(),
+            'pending' => $leaves->where('status', 'pending')->count(),
+            'rejected' => $leaves->where('status', 'rejected')->count(),
+        ];
+
+        return view('admin.leaves.report', compact('users', 'leaves', 'summary'));
     }
 
     public function calendar()

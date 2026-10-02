@@ -1657,7 +1657,7 @@
                                             'user_id' => $user->id,
                                             'name' => $user->name,
                                             'designation' => $designationName,
-                                            'photo' => $user->profile_image ? asset($user->profile_image) : asset('images/default-avatar.png'),
+                                            'photo' => (!empty($user->profile_image) && file_exists(public_path($user->profile_image))) ? asset($user->profile_image) : asset('images/default-avatar.png'),
                                             'month' => (int) $month,
                                             'year' => (int) $year,
                                             'month_name' => \Carbon\Carbon::createFromDate($year, $month)->format('F Y'),
@@ -2058,7 +2058,7 @@ document.addEventListener('DOMContentLoaded', function () {
         $('#memberAttendanceModalBody').html(
             '<div class="member-month-summary">' +
                 '<div class="member-month-profile">' +
-                    '<img src="' + escapeMemberHtml(payload.photo) + '" alt="' + escapeMemberHtml(payload.name) + '">' +
+                    '<img src="' + escapeMemberHtml(payload.photo) + '" alt="' + escapeMemberHtml(payload.name) + '" onerror="this.onerror=null; this.src=\'/images/default-avatar.png\';">' +
                     '<div>' +
                         '<h5>' + escapeMemberHtml(payload.name) + '</h5>' +
                         '<p>' + escapeMemberHtml(payload.designation) + ' | ' + escapeMemberHtml(payload.month_name) +

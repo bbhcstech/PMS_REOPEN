@@ -604,8 +604,39 @@
         border-bottom-color: rgba(238, 241, 251, 0.06) !important;
         color: #CBD5E1 !important;
     }
-    html[data-pms-theme="dark"] .table-hover tbody tr:hover td {
-        background: rgba(47, 107, 255, 0.08) !important;
+    .btn-task-action-dropdown {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        color: #1e293b;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    .btn-task-action-dropdown:hover,
+    .btn-task-action-dropdown:focus {
+        background: #e2e8f0;
+        color: #0f172a;
+    }
+
+    html[data-pms-theme="dark"] .btn-task-action-dropdown,
+    html[data-theme="dark"] .btn-task-action-dropdown,
+    html[data-bs-theme="dark"] .btn-task-action-dropdown,
+    html.dark .btn-task-action-dropdown {
+        background: #141B3D !important;
+        border-color: rgba(255, 255, 255, 0.15) !important;
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .btn-task-action-dropdown:hover,
+    html[data-theme="dark"] .btn-task-action-dropdown:hover,
+    html[data-bs-theme="dark"] .btn-task-action-dropdown:hover,
+    html.dark .btn-task-action-dropdown:hover {
+        background: #1E295D !important;
+        color: #FFFFFF !important;
     }
 </style>
 
@@ -714,8 +745,8 @@
 
                 {{-- Action Dropdown --}}
                 <div class="dropdown">
-                    <button class="btn btn-light rounded-circle p-2 border shadow-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bx bx-dots-vertical-rounded fs-5 text-dark"></i>
+                    <button class="btn btn-task-action-dropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="More Options">
+                        <i class="bx bx-dots-vertical-rounded fs-5"></i>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end shadow-sm rounded-3">
                         <li>
