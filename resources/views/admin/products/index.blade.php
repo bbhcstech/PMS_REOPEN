@@ -31,6 +31,108 @@
         -webkit-text-fill-color: #ffffff !important;
         opacity: 1 !important;
     }
+
+    /* Actions Column Dropdown Button & Three-Dot Visibility Fix */
+    .table td .btn-icon,
+    .table td .btn-icon.btn-sm,
+    .table td button.btn-icon {
+        width: 34px !important;
+        height: 34px !important;
+        min-width: 34px !important;
+        min-height: 34px !important;
+        padding: 0 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border-radius: 50% !important;
+        flex-shrink: 0 !important;
+        transition: all 0.2s ease !important;
+    }
+
+    .table td .btn-icon i,
+    .table td .btn-icon i.bx,
+    .table td .btn-icon i.bx-dots-vertical-rounded {
+        font-size: 1.25rem !important;
+        width: 1.25rem !important;
+        height: 1.25rem !important;
+        min-width: 1.25rem !important;
+        min-height: 1.25rem !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        line-height: 1 !important;
+        background-color: currentColor !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    /* Light Mode Actions Button */
+    .table td .btn-icon.btn-light {
+        background-color: #f1f5f9 !important;
+        border: 1px solid rgba(148, 163, 184, 0.3) !important;
+        color: #334155 !important;
+    }
+    .table td .btn-icon.btn-light:hover {
+        background-color: #e2e8f0 !important;
+        border-color: #2F6BFF !important;
+        color: #2F6BFF !important;
+    }
+
+    /* Dark Mode Actions Button & Three-Dot Prominence */
+    html[data-pms-theme="dark"] .table td .btn-icon,
+    html[data-bs-theme="dark"] .table td .btn-icon,
+    html[data-theme="dark"] .table td .btn-icon,
+    html.dark .table td .btn-icon,
+    body[data-pms-theme="dark"] .table td .btn-icon,
+    [data-pms-theme="dark"] .table td .btn-icon,
+    .dark .table td .btn-icon {
+        background: #141B3D !important;
+        border: 1px solid rgba(79, 131, 255, 0.35) !important;
+        color: #EEF1FB !important;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25) !important;
+    }
+
+    html[data-pms-theme="dark"] .table td .btn-icon:hover,
+    html[data-bs-theme="dark"] .table td .btn-icon:hover,
+    html[data-theme="dark"] .table td .btn-icon:hover,
+    html.dark .table td .btn-icon:hover,
+    body[data-pms-theme="dark"] .table td .btn-icon:hover,
+    [data-pms-theme="dark"] .table td .btn-icon:hover,
+    .dark .table td .btn-icon:hover {
+        background: #1A2247 !important;
+        border-color: #2F6BFF !important;
+        color: #FFFFFF !important;
+        box-shadow: 0 4px 12px rgba(47, 107, 255, 0.35) !important;
+        transform: translateY(-1px) !important;
+    }
+
+    html[data-pms-theme="dark"] .table td .btn-icon i,
+    html[data-pms-theme="dark"] .table td .btn-icon i.bx,
+    html[data-pms-theme="dark"] .table td .btn-icon i.bx-dots-vertical-rounded,
+    html[data-bs-theme="dark"] .table td .btn-icon i,
+    html[data-theme="dark"] .table td .btn-icon i,
+    html.dark .table td .btn-icon i,
+    body[data-pms-theme="dark"] .table td .btn-icon i,
+    [data-pms-theme="dark"] .table td .btn-icon i,
+    .dark .table td .btn-icon i {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+        background-color: #EEF1FB !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    html[data-pms-theme="dark"] .table td .btn-icon:hover i,
+    html[data-bs-theme="dark"] .table td .btn-icon:hover i,
+    html[data-theme="dark"] .table td .btn-icon:hover i,
+    html.dark .table td .btn-icon:hover i,
+    body[data-pms-theme="dark"] .table td .btn-icon:hover i,
+    [data-pms-theme="dark"] .table td .btn-icon:hover i,
+    .dark .table td .btn-icon:hover i {
+        color: #FFFFFF !important;
+        -webkit-text-fill-color: #FFFFFF !important;
+        background-color: #FFFFFF !important;
+    }
 </style>
 
 <div class="container-fluid px-4 py-4">
