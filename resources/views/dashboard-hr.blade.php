@@ -1631,13 +1631,37 @@
         capturedSelfie = '';
         preview?.classList.remove('has-photo');
 
-        cameraStream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: cameraFacingMode, width: { ideal: 1280 }, height: { ideal: 960 } },
-            audio: false
-        });
+        if (video) {
+            video.style.transform = cameraFacingMode === 'user' ? 'scaleX(-1)' : 'scaleX(1)';
+        }
 
+        const constraintsList = [
+            { video: { facingMode: { exact: cameraFacingMode }, width: { ideal: 1280 }, height: { ideal: 960 } }, audio: false },
+            { video: { facingMode: cameraFacingMode, width: { ideal: 1280 }, height: { ideal: 960 } }, audio: false },
+            { video: { facingMode: cameraFacingMode }, audio: false },
+            { video: true, audio: false }
+        ];
+
+        let stream = null;
+        for (const constraints of constraintsList) {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia(constraints);
+                if (stream) break;
+            } catch (e) {
+                // Try next fallback constraint
+            }
+        }
+
+        if (!stream) {
+            throw new Error('Unable to access camera');
+        }
+
+        cameraStream = stream;
         if (video) {
             video.srcObject = cameraStream;
+            try {
+                await video.play();
+            } catch (e) {}
         }
     };
 
@@ -1760,7 +1784,8 @@
         try {
             await startCamera();
         } catch (error) {
-            setClockStatus('Camera flip failed. Please continue with available camera.', 'error');
+            cameraFacingMode = cameraFacingMode === 'user' ? 'environment' : 'user';
+            setClockStatus('Camera flip failed. Switched to primary camera.', 'error');
         }
     });
 
@@ -1773,8 +1798,17 @@
         const height = video.videoHeight || 720;
         canvas.width = width;
         canvas.height = height;
-        canvas.getContext('2d').drawImage(video, 0, 0, width, height);
-        capturedSelfie = canvas.toDataURL('image/jpeg', 0.88);
+
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, width, height);
+
+        if (cameraFacingMode === 'user') {
+            ctx.translate(width, 0);
+            ctx.scale(-1, 1);
+        }
+
+        ctx.drawImage(video, 0, 0, width, height);
+        capturedSelfie = canvas.toDataURL('image/jpeg', 0.92);
         photo.src = capturedSelfie;
         preview?.classList.add('has-photo');
     });

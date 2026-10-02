@@ -660,16 +660,25 @@
         font-weight: 700;
     }
 
-    /* Dim rows not matching active filter */
+    /* Hide rows not matching active legend filter */
     .attendance-table tbody tr.legend-filtered-out {
-        opacity: 0.15;
-        filter: grayscale(0.7);
-        transition: opacity 0.3s ease, filter 0.3s ease;
+        display: none !important;
     }
     .attendance-table tbody tr.legend-filtered-in {
-        opacity: 1;
-        filter: none;
-        transition: opacity 0.3s ease, filter 0.3s ease;
+        opacity: 1 !important;
+    }
+
+    html[data-pms-theme="dark"] .legend-item {
+        background: #0F1530 !important;
+        border-color: rgba(255, 255, 255, 0.15) !important;
+    }
+    html[data-pms-theme="dark"] .legend-item .legend-text {
+        color: #E2E8F0 !important;
+        -webkit-text-fill-color: #E2E8F0 !important;
+    }
+    html[data-pms-theme="dark"] .legend-item.active {
+        background: rgba(47, 107, 255, 0.3) !important;
+        border-color: #3b82f6 !important;
     }
 
     .legend-icon {
