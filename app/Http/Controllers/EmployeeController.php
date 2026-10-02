@@ -26,6 +26,7 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
 use Carbon\Carbon;
+use App\Support\CountryPhone;
 
 class EmployeeController extends Controller
 {
@@ -196,21 +197,21 @@ class EmployeeController extends Controller
         // compute preview id (does NOT reserve it — store() will recompute to avoid races)
         $nextEmployeeId = $this->computeNextEmployeeIdWithLock();
 
+        $companies = Company::where('status', 'active')->orderBy('name')->get();
+        if ($companies->isEmpty()) {
+            $companies = Company::orderBy('name')->get();
+        }
+
         return view('admin.employees.create', [
-            'companies'        => Company::where('status', 'active')->orderBy('name')->get(),
+            'companies'        => $companies,
             'designations'    => Designation::orderBy('name')->get(),
             'departments'     => Department::with('parent')
                                     ->when(Schema::hasColumn('departments', 'dpt_name'), fn ($q) => $q->orderBy('dpt_name'), fn ($q) => $q->orderBy('id'))
                                     ->get(),
             'prtdepartments'  => ParentDepartment::when(Schema::hasColumn('parent_departments', 'dpt_name'), fn ($q) => $q->orderBy('dpt_name'), fn ($q) => $q->orderBy('id'))
                                     ->get(),
-            'users'           => User::where('role', 'employee')
+            'users'           => User::whereIn('role', ['admin', 'manager', 'hr', 'employee', 'administrator', 'superadmin'])
                                     ->whereNull('archived_at')
-                                    ->when(Schema::hasColumn('employee_details', 'status'), function ($q) {
-                                        $q->whereHas('employeeDetail', function ($detail) {
-                                            $detail->whereIn('status', ['Active', 'active']);
-                                        });
-                                    })
                                     ->orderBy('name')
                                     ->get(),
             'countries'       => Country::orderBy('name')->get(),
@@ -226,14 +227,19 @@ class EmployeeController extends Controller
     {
         $this->ensureAdmin();
 
+        $dialCode = $request->mobile_country_code ?: '+91';
+        $countryRules = CountryPhone::getDigitRules($dialCode);
+        $minDigits = $countryRules['min_digits'] ?? 6;
+        $maxDigits = $countryRules['max_digits'] ?? 15;
+
         $request->validate([
-            'mobile' => 'required|string|regex:/^[1-9]\d{9}$/',
+            'mobile' => ['required', 'string', 'regex:/^[1-9]\d*$/', "min:{$minDigits}", "max:{$maxDigits}"],
             'mobile_country_code' => 'nullable|string|regex:/^\+\d{1,4}$/',
             'employee_id' => 'nullable|integer|exists:users,id'
         ]);
 
         $mobile = $request->mobile;
-        $mobileWithCode = ($request->mobile_country_code ?: '+91') . $mobile;
+        $mobileWithCode = $dialCode . $mobile;
         $currentId = $request->employee_id;
 
         $query = User::where('mobile', $mobileWithCode);
@@ -295,22 +301,56 @@ class EmployeeController extends Controller
             }
         }
 
+        // Auto-fill fallback values for fields if omitted
+        if (! $request->filled('company_id')) {
+            $defaultCompany = auth()->user()?->company_id ?: Company::value('id');
+            if ($defaultCompany) {
+                $request->merge(['company_id' => $defaultCompany]);
+            }
+        }
+        if (! $request->filled('mobile_country_code')) {
+            $request->merge(['mobile_country_code' => '+91']);
+        }
+        if (! $request->filled('reporting_to')) {
+            $defaultReporting = auth()->id() ?: User::value('id');
+            if ($defaultReporting) {
+                $request->merge(['reporting_to' => $defaultReporting]);
+            }
+        }
+        if (! $request->filled('status')) {
+            $request->merge(['status' => 'Active']);
+        }
+        if (! $request->has('login_allowed')) {
+            $request->merge(['login_allowed' => 1]);
+        }
+        if (! $request->filled('employment_type')) {
+            $request->merge(['employment_type' => 'full_time']);
+        }
+        if (! $request->filled('business_address')) {
+            $request->merge(['business_address' => $request->address ?: 'Head Office']);
+        }
+
+        $phoneRules = CountryPhone::getDigitRules($request->mobile_country_code ?? '+91');
+        $minDigits = $phoneRules['min_digits'] ?? 6;
+        $maxDigits = $phoneRules['max_digits'] ?? 15;
+        $phoneCountryName = $phoneRules['name'] ?? 'selected country';
+
         // Prepare validation rules
         $validationRules = [
             'name'              => 'required|string',
             'company_id'        => 'required|exists:companies,id',
             'email'             => 'required|email|unique:users,email',
             'mobile_country_code' => 'required|string|regex:/^\+\d{1,4}$/',
-            'mobile'            => 'required|regex:/^[1-9]\d{9}$/',
+            'mobile'            => ['required', 'string', 'regex:/^[1-9]\d*$/', "min:{$minDigits}", "max:{$maxDigits}"],
             'joining_date'      => 'required|date',
-            'reporting_to'      => 'required|integer|exists:users,id',
+            'reporting_to'      => 'nullable|integer|exists:users,id',
             'business_address'  => 'required|string',
             'status'            => 'required|in:Active,Inactive',
             'login_allowed'     => 'required|in:0,1',
             'employment_type'   => 'required|in:full_time,part_time,on_contract,internship,trainee',
             'password'          => 'nullable|string|min:8',
-            'profile_picture'   => 'required|image|mimes:jpeg,png,jpg|max:2048',
-            'government_id_card' => 'required|image|mimes:jpeg,png,jpg|max:4096',
+            'profile_picture'   => 'nullable|image|mimes:jpeg,png,jpg|max:4096',
+            'government_id_card' => 'nullable|image|mimes:jpeg,png,jpg|max:4096',
             'designation_id'    => 'required',
             'parent_dpt_id'     => 'required',
             'department_id'     => 'nullable',
@@ -332,14 +372,24 @@ class EmployeeController extends Controller
             'cv_file'            => 'nullable|file|mimes:pdf,doc,docx|max:4096',
         ];
 
+        $customMessages = [
+            'mobile.regex' => 'The mobile number must contain digits only and cannot start with 0.',
+            'mobile.min'   => $minDigits === $maxDigits 
+                                ? "The mobile number for {$phoneCountryName} must be exactly {$minDigits} digits." 
+                                : "The mobile number for {$phoneCountryName} must be between {$minDigits} and {$maxDigits} digits.",
+            'mobile.max'   => $minDigits === $maxDigits 
+                                ? "The mobile number for {$phoneCountryName} must be exactly {$minDigits} digits." 
+                                : "The mobile number for {$phoneCountryName} must be between {$minDigits} and {$maxDigits} digits.",
+        ];
+
         // If editing, adjust unique rules
         if ($request->isMethod('PUT') || $request->isMethod('PATCH')) {
             $userId = $request->route('employee');
             $validationRules['email'] = 'required|email|unique:users,email,' . $userId;
-            $validationRules['mobile'] = 'required|regex:/^[1-9]\d{9}$/';
+            $validationRules['mobile'] = ['required', 'string', 'regex:/^[1-9]\d*$/', "min:{$minDigits}", "max:{$maxDigits}"];
         }
 
-        $request->validate($validationRules);
+        $request->validate($validationRules, $customMessages);
 
         $mobileWithCodeForValidation = $request->mobile_country_code . $request->mobile;
         $mobileQuery = User::where('mobile', $mobileWithCodeForValidation);
@@ -583,12 +633,16 @@ class EmployeeController extends Controller
 
             DB::commit();
 
-            SystemNotificationService::notifyAdmins(
-                'Employee Added',
-                auth()->user()->name . ' added employee ' . $user->name . '.',
-                route('employees.show', $user->id),
-                ['employee_id' => $user->id, 'type' => 'employee_created', 'icon' => 'fa-user-plus']
-            );
+            try {
+                SystemNotificationService::notifyAdmins(
+                    'Employee Added',
+                    auth()->user()->name . ' added employee ' . $user->name . '.',
+                    route('employees.show', $user->id),
+                    ['employee_id' => $user->id, 'type' => 'employee_created', 'icon' => 'fa-user-plus']
+                );
+            } catch (\Throwable $notifEx) {
+                Log::warning('Employee creation notification failed', ['error' => $notifEx->getMessage()]);
+            }
 
             return redirect()->route('employees.index')
                 ->with('success', 'Employee added successfully and notified.');
@@ -752,7 +806,13 @@ class EmployeeController extends Controller
         if (strtolower(trim((string) $request->email)) !== strtolower(trim((string) $user->email))) {
             $emailUniqueRule .= '|unique:users,email,' . $user->id;
         }
-        $mobileUniqueRule = 'required|regex:/^[1-9]\d{9}$/|unique:users,mobile,' . $user->id;
+        $dialCode = $request->mobile_country_code ?: '+91';
+        $phoneRules = CountryPhone::getDigitRules($dialCode);
+        $minDigits = $phoneRules['min_digits'] ?? 6;
+        $maxDigits = $phoneRules['max_digits'] ?? 15;
+        $phoneCountryName = $phoneRules['name'] ?? 'selected country';
+
+        $mobileRule = ['required', 'string', 'regex:/^[1-9]\d*$/', "min:{$minDigits}", "max:{$maxDigits}"];
         $employeeIdRule = 'required|string';
         if ($detail) {
             $employeeIdRule .= '|unique:employee_details,employee_id,' . $detail->id;
@@ -760,17 +820,28 @@ class EmployeeController extends Controller
             $employeeIdRule .= '|unique:employee_details,employee_id';
         }
 
+        $customMessages = [
+            'mobile.regex' => 'The mobile number must contain digits only and cannot start with 0.',
+            'mobile.min'   => $minDigits === $maxDigits 
+                                ? "The mobile number for {$phoneCountryName} must be exactly {$minDigits} digits." 
+                                : "The mobile number for {$phoneCountryName} must be between {$minDigits} and {$maxDigits} digits.",
+            'mobile.max'   => $minDigits === $maxDigits 
+                                ? "The mobile number for {$phoneCountryName} must be exactly {$minDigits} digits." 
+                                : "The mobile number for {$phoneCountryName} must be between {$minDigits} and {$maxDigits} digits.",
+        ];
+
         $request->validate([
-            'employee_id'      => $employeeIdRule,
-            'name'             => 'required|string',
-            'company_id'       => 'required|exists:companies,id',
-            'email'            => $emailUniqueRule,
-            'mobile'           => $mobileUniqueRule,
-            'business_address' => 'required|string',
-            'status'           => 'required|in:Active,Inactive',
-            'login_allowed'    => 'required|in:0,1',
-            'department_id'    => 'nullable|exists:departments,id',
-            'profile_picture'  => 'nullable|image|max:2048',
+            'employee_id'        => $employeeIdRule,
+            'name'               => 'required|string',
+            'company_id'         => 'required|exists:companies,id',
+            'email'              => $emailUniqueRule,
+            'mobile_country_code' => 'required|string|regex:/^\+\d{1,4}$/',
+            'mobile'             => $mobileRule,
+            'business_address'   => 'required|string',
+            'status'             => 'required|in:Active,Inactive',
+            'login_allowed'      => 'required|in:0,1',
+            'department_id'      => 'nullable|exists:departments,id',
+            'profile_picture'    => 'nullable|image|max:2048',
             'probation_end_date' => 'nullable|date',
             'notice_start_date'  => 'nullable|date',
             'notice_end_date'    => 'nullable|date',
@@ -782,7 +853,12 @@ class EmployeeController extends Controller
             'instagram_url'      => 'nullable|url|max:255',
             'x_url'              => 'nullable|url|max:255',
             'cv_file'            => 'nullable|file|mimes:pdf,doc,docx|max:4096',
-        ]);
+        ], $customMessages);
+
+        $mobileWithCodeForValidation = $dialCode . $request->mobile;
+        if (User::where('mobile', $mobileWithCodeForValidation)->where('id', '!=', $user->id)->exists()) {
+            return back()->withErrors(['mobile' => 'This mobile number is already registered.'])->withInput();
+        }
 
         // Small helper: check if $potentialAncestorId is an ancestor (manager chain) of $startUserId
         $isAncestor = function (int $potentialAncestorId, int $startUserId): bool {
@@ -816,8 +892,8 @@ class EmployeeController extends Controller
 
         DB::beginTransaction();
         try {
-            // Format mobile number with +91 prefix
-            $mobileWithCode = '+91' . $request->mobile;
+            // Format mobile number with country code prefix
+            $mobileWithCode = $dialCode . $request->mobile;
 
             // handle profile image: delete old file if present and save new one
             if ($request->hasFile('profile_picture')) {

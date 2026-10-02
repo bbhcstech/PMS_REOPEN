@@ -28,11 +28,15 @@ class User extends Authenticatable
                             ->exists();
 
                         if (! $exists) {
-                            $centralCompany = \App\Models\Central\Company::on('central')->find($user->company_id)
-                                ?? \App\Models\Company::on('central')->find($user->company_id);
+                            try {
+                                $centralCompany = \App\Models\Central\Company::on('central')->find($user->company_id)
+                                    ?? \App\Models\Company::on('central')->find($user->company_id);
 
-                            if ($centralCompany) {
-                                static::syncCompanyToConnection($connectionName, $centralCompany);
+                                if ($centralCompany) {
+                                    static::syncCompanyToConnection($connectionName, $centralCompany);
+                                }
+                            } catch (\Throwable $ce) {
+                                // Central DB may not exist on single-DB setup; continue gracefully
                             }
                         }
 
