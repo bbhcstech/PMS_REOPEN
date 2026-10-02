@@ -455,9 +455,16 @@
                                         </div>
 
                                         <div class="d-flex gap-2 align-items-center">
-                                            <a href="{{ route('my-documents.download', ['type' => $userRole, 'id' => $doc->id]) }}" class="btn btn-sm btn-outline-success w-100 rounded-pill py-2 font-weight-bold">
+                                            <a href="{{ route('my-documents.download', ['type' => $doc->table_type ?? $userRole, 'id' => $doc->id]) }}" class="btn btn-sm btn-outline-success w-100 rounded-pill py-2 font-weight-bold">
                                                 <i class="fas fa-download me-1"></i> Download
                                             </a>
+                                            <form method="POST" action="{{ route('my-documents.destroy', ['type' => $doc->table_type ?? $userRole, 'id' => $doc->id]) }}" onsubmit="return confirm('Delete this uploaded document?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle p-2" title="Delete Upload">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </button>
+                                            </form>
                                         </div>
                                     </div>
                                 </div>

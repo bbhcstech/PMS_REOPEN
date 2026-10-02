@@ -351,6 +351,22 @@ class TicketController extends Controller
         $ticket->status = $request->status;
         $ticket->save();
 
+        try {
+            TicketActivity::create([
+                'ticket_id' => $ticket->id,
+                'project_id' => $ticket->project_id,
+                'user_id' => auth()->id(),
+                'assigned_to' => $ticket->agent_id,
+                'channel_id' => $ticket->channel,
+                'group_id' => $ticket->group_id,
+                'type_id' => $ticket->type_id,
+                'status' => $ticket->status,
+                'priority' => $ticket->priority,
+                'type' => 'Status Update',
+                'content' => 'Ticket status changed to ' . ucfirst($ticket->status),
+            ]);
+        } catch (\Throwable $e) {}
+
         SystemNotificationService::notifyAllRoles(
             'Ticket Status Updated',
             ($user?->name ?? 'Someone') . ' changed ticket #' . $ticket->id . ' to ' . ucfirst($ticket->status),
@@ -362,7 +378,7 @@ class TicketController extends Controller
             return back()->with('success', 'Ticket status updated.');
         }
 
-        return response()->json(['status' => 'success', 'message' => 'Status updated']);
+        return response()->json(['status' => 'success', 'message' => 'Status updated', 'ticket_id' => $ticket->id, 'new_status' => $ticket->status]);
     }
 
     public function destroy($ticketId)

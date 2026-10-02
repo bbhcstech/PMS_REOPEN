@@ -340,9 +340,9 @@
                                 <td>{{ $attendances->firstItem() + $index }}</td>
                                 <td>
                                     <div class="employee-cell">
-                                        <img src="{{ $attendance->user?->profile_image ? asset($attendance->user->profile_image) : asset('images/default-avatar.png') }}"
+                                        <img src="{{ (!empty($attendance->user?->profile_image) && file_exists(public_path($attendance->user->profile_image))) ? asset($attendance->user->profile_image) : asset('images/default-avatar.png') }}"
                                              alt="{{ $attendance->user?->name ?? 'Employee' }}"
-                                             onerror="this.onerror=null; this.src='{{ asset('admin/assets/img/avatars/1.png') }}';">
+                                             onerror="this.onerror=null; this.src='{{ asset('images/default-avatar.png') }}';">
                                         <div>
                                             <div class="employee-name">{{ $attendance->user?->name ?? '-' }}</div>
                                             <div class="employee-meta">{{ $attendance->user?->employeeDetail?->designation?->name ?? '-' }}</div>

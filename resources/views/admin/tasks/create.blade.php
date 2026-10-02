@@ -513,7 +513,7 @@
             </div>
 
             <div class="modal-body">
-                 <form action="{{ route('employees.store') }}" method="POST" enctype="multipart/form-data">
+                 <form id="employeeForm" action="{{ route('employees.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
         <input type="hidden" name="company_id" value="{{ auth()->user()?->company_id }}">
         <input type="hidden" name="mobile_country_code" value="+91">
@@ -645,17 +645,19 @@
            
            <div class="col-md-4 mb-3">
             <label class="form-label fw-semibold">Country <sup class="text-danger">*</sup></label>
-        
-            <!-- Country dropdown -->
-            <select name="country" id="country" class="form-select form-select-sm select2">
-                <option value="">Select Country</option>
-                @foreach($countries as $country)
-                    <option value="{{ $country->name }}" 
-                            data-flag="{{ $country->flag_url }}"> <!-- keep flag url in DB -->
-                        {{ $country->name }}
-                    </option>
-                @endforeach
-            </select>
+            <div class="input-group">
+                <select name="country" id="country" class="form-select form-select-sm" required>
+                    <option value="">Select Country</option>
+                    @foreach($countries as $country)
+                        <option value="{{ $country->name }}">
+                            {{ $country->name }}
+                        </option>
+                    @endforeach
+                </select>
+                <button type="button" class="btn btn-outline-secondary flex-shrink-0 text-nowrap px-3" data-bs-toggle="modal" data-bs-target="#countryModal" style="white-space: nowrap; min-width: 75px;">
+                    <i class="fas fa-plus me-1"></i> Add
+                </button>
+            </div>
         </div>
 
 
@@ -1006,6 +1008,32 @@
     </div>
 </div>
 
+<!-- Country Modal -->
+<div class="modal fade" id="countryModal" tabindex="-1" aria-labelledby="countryModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-md">
+        <form id="addCountryForm">
+            @csrf
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="countryModalLabel">Add Country</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Country Name <sup class="text-danger">*</sup></label>
+                        <input type="text" name="name" id="new_country_name" class="form-control" placeholder="Enter country name" required>
+                        <div id="country-error" class="text-danger d-none mt-2"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Country</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
         
         </main>
 
@@ -1014,11 +1042,53 @@
 
 <script>
     $(function () {
-        $('.select2').select2({
+        $('#employeeModal').on('shown.bs.modal', function () {
+            $('#language', this).select2({
+                theme: 'bootstrap-5',
+                dropdownParent: $('#employeeModal'),
+                width: '100%',
+                placeholder: 'Select an option',
+                allowClear: true
+            });
+        });
+
+        $('.select2:not(#employeeModal .select2)').select2({
             theme: 'bootstrap-5',
             width: '100%',
             placeholder: 'Select an option',
             allowClear: true
+        });
+
+        $('#addCountryForm').on('submit', function (e) {
+            e.preventDefault();
+            const name = $('#new_country_name').val().trim();
+            if (!name) return;
+
+            $.ajax({
+                url: '{{ route("countries.quick-create") }}',
+                method: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    name: name,
+                    status: 'Active'
+                },
+                success: function (res) {
+                    if (res.status === 'success' && res.country) {
+                        const newOpt = new Option(res.country.name, res.country.name, true, true);
+                        $('#country').append(newOpt).trigger('change');
+                        const modalEl = document.getElementById('countryModal');
+                        const modalObj = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                        modalObj.hide();
+                        $('#new_country_name').val('');
+                        $('#country-error').addClass('d-none').text('');
+                    }
+                },
+                error: function (xhr) {
+                    const msg = xhr.responseJSON && xhr.responseJSON.errors && xhr.responseJSON.errors.name ?
+                        xhr.responseJSON.errors.name[0] : (xhr.responseJSON?.message || 'Failed to add country');
+                    $('#country-error').removeClass('d-none').text(msg);
+                }
+            });
         });
     });
 </script>

@@ -24,6 +24,7 @@ class EnterpriseCompanySeeder extends Seeder
                     'name' => $name,
                     'short_name' => $shortName,
                     'email' => strtolower($code) . '@example.com',
+                    'db_name' => 'pms_' . strtolower($code),
                     'status' => 'active',
                     'employee_id_prefix' => $employeePrefix,
                     'leave_prefix' => $leavePrefix,
