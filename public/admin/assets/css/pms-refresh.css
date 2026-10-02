@@ -7241,6 +7241,39 @@ html.dark .employee-dashboard .page-dots {
   -webkit-text-fill-color: #94A3B8 !important;
 }
 
+/* Universal Table & Dropdown Action Icon Buttons */
+.table td .btn-icon,
+.table td .btn-icon.btn-sm,
+table td .btn-icon,
+table .btn-icon,
+.btn-icon.rounded-circle {
+  width: 34px !important;
+  height: 34px !important;
+  min-width: 34px !important;
+  min-height: 34px !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 50% !important;
+  flex-shrink: 0 !important;
+  transition: all 0.2s ease !important;
+}
+
+.table td .btn-icon i,
+table td .btn-icon i,
+table .btn-icon i,
+.btn-icon.rounded-circle i {
+  font-size: 1.25rem !important;
+  width: 1.25rem !important;
+  height: 1.25rem !important;
+  min-width: 1.25rem !important;
+  min-height: 1.25rem !important;
+  display: inline-block !important;
+  line-height: 1 !important;
+  background-color: currentColor !important;
+}
+
 html[data-pms-theme="dark"] .btn-icon,
 html[data-bs-theme="dark"] .btn-icon,
 html[data-theme="dark"] .btn-icon,
@@ -7250,8 +7283,8 @@ body[data-pms-theme="dark"] .btn-icon,
 .dark .btn-icon {
   background: #141B3D !important;
   border: 1px solid rgba(79, 131, 255, 0.35) !important;
-  color: #60A5FA !important;
-  -webkit-text-fill-color: #60A5FA !important;
+  color: #EEF1FB !important;
+  -webkit-text-fill-color: #EEF1FB !important;
 }
 
 html[data-pms-theme="dark"] .btn-icon *,
@@ -7268,8 +7301,11 @@ html.dark .btn-icon i,
 body[data-pms-theme="dark"] .btn-icon i,
 [data-pms-theme="dark"] .btn-icon i,
 .dark .btn-icon i {
-  color: #60A5FA !important;
-  -webkit-text-fill-color: #60A5FA !important;
+  color: #EEF1FB !important;
+  -webkit-text-fill-color: #EEF1FB !important;
+  background-color: #EEF1FB !important;
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 
 html[data-pms-theme="dark"] .btn-icon:hover,
