@@ -26,6 +26,10 @@ Route::prefix('super-admin')->name('super-admin.')->group(function () {
     Route::middleware(['auth:super_admin,web'])->group(function () {
         Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
+        // Super Admin Profile Management
+        Route::get('/profile', [\App\Http\Controllers\SuperAdminController::class, 'profile'])->name('profile');
+        Route::post('/profile', [\App\Http\Controllers\SuperAdminController::class, 'updateProfile'])->name('profile.update');
+
         // Company management & impersonation
         Route::get('/', [CompanyController::class, 'index']);
         Route::get('/companies', [CompanyController::class, 'index'])->name('companies.index');
@@ -50,6 +54,31 @@ Route::prefix('super-admin')->name('super-admin.')->group(function () {
         Route::post('/companies/{company}/deactivate', [CompanyController::class, 'deactivate'])->name('companies.deactivate');
         Route::post('/companies/{company}/activate', [CompanyController::class, 'activate'])->name('companies.activate');
         Route::post('/leave-impersonation', [CompanyController::class, 'leaveImpersonation'])->name('leave-impersonation');
+
+        // Clear Cache / Optimize
+        Route::match(['GET', 'POST'], '/clear-cache', function () {
+            try {
+                \Illuminate\Support\Facades\Artisan::call('optimize:clear');
+                \Illuminate\Support\Facades\Artisan::call('route:clear');
+                \Illuminate\Support\Facades\Artisan::call('config:clear');
+                \Illuminate\Support\Facades\Artisan::call('cache:clear');
+                \Illuminate\Support\Facades\Artisan::call('view:clear');
+
+                $cacheDir = base_path('bootstrap/cache');
+                if (is_dir($cacheDir)) {
+                    foreach (['routes-v7.php', 'config.php', 'events.php', 'packages.php', 'services.php'] as $f) {
+                        $p = $cacheDir . DIRECTORY_SEPARATOR . $f;
+                        if (file_exists($p)) {
+                            @unlink($p);
+                        }
+                    }
+                }
+
+                return redirect()->back()->with('success', 'Server cache, routes, config, and views flushed successfully!');
+            } catch (\Throwable $e) {
+                return redirect()->back()->with('error', 'Cache clear error: ' . $e->getMessage());
+            }
+        })->name('clear-cache');
 
         // Migrations management
         Route::get('/migrations', [CompanyController::class, 'migrations'])->name('migrations.index');

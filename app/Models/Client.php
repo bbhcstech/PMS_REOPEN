@@ -13,6 +13,7 @@ class Client extends TenantModel
         'name',
         'email',
         'company_name',
+        'company_country',
         'password',
         'country',
         'mobile',

@@ -150,7 +150,6 @@
       font-family: var(--font-family-main);
       background: var(--bg-app) !important;
       color: var(--text-main);
-      display: flex;
       min-height: 100vh;
       line-height: 1.6;
       overflow-x: hidden;
@@ -293,16 +292,17 @@
        ============================================================ */
     .sidebar {
       width: var(--sidebar-width);
-      min-height: 100vh;
+      height: 100vh;
       background: var(--bg-sidebar);
       color: rgba(255, 255, 255, 0.75);
       display: flex;
       flex-direction: column;
       flex-shrink: 0;
-      position: sticky;
+      position: fixed;
       top: 0;
-      height: 100vh;
+      left: 0;
       overflow-y: auto;
+      overflow-x: hidden;
       padding: 0 16px 20px;
       border-right: 1px solid var(--border-subtle);
       transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -490,19 +490,46 @@
       font-weight: 500;
     }
 
+    .btn-sidebar-logout-footer {
+      margin-top: 10px;
+      width: 100%;
+      padding: 9px 14px;
+      background: rgba(239, 68, 68, 0.14);
+      border: 1px solid rgba(239, 68, 68, 0.32);
+      border-radius: 10px;
+      color: #ef4444;
+      font-weight: 700;
+      font-size: 13.5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-sidebar-logout-footer:hover {
+      background: rgba(239, 68, 68, 0.25);
+      border-color: rgba(239, 68, 68, 0.5);
+      color: #ff6b6b;
+      transform: translateY(-1px);
+    }
+
     /* ============================================================
        MAIN CONTENT
        ============================================================ */
     .main {
-      flex: 1;
+      margin-left: var(--sidebar-width);
       min-width: 0;
       padding: 0 32px 40px;
-      max-width: calc(100vw - var(--sidebar-width));
+      width: calc(100vw - var(--sidebar-width));
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
       position: relative;
       z-index: 1;
       animation: fadeInUp 0.75s ease-out;
+      box-sizing: border-box;
     }
 
     /* ============================================================
@@ -901,6 +928,17 @@
       flex-shrink: 0;
     }
 
+    .top-header .right .profile .avatar-img {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+      flex-shrink: 0;
+      background: linear-gradient(135deg, var(--emerald-primary), var(--emerald-light));
+      border: 2px solid rgba(255, 255, 255, 0.15);
+      display: block;
+    }
+
     .top-header .right .profile .info .name {
       font-size: 13px;
       font-weight: 700;
@@ -1070,25 +1108,75 @@
       border: 1px solid rgba(239, 68, 68, 0.2);
     }
 
-    /* ============================================================
-       RESPONSIVE
-       ============================================================ */
-    @media (max-width: 992px) {
-      :root {
-        --sidebar-width: 0px;
-      }
+    /* Standalone Navbar Logout Button */
+    .btn-navbar-logout {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border-radius: 12px;
+      background: rgba(239, 68, 68, 0.09);
+      border: 1px solid rgba(239, 68, 68, 0.22);
+      color: #ef4444;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      flex-shrink: 0;
+      text-decoration: none;
+    }
 
+    .btn-navbar-logout:hover {
+      background: #ef4444;
+      border-color: #ef4444;
+      color: #ffffff !important;
+      box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);
+      transform: translateY(-1px);
+    }
+
+    /* ============================================================
+       RESPONSIVE & ALL-DEVICE SCREEN COMPATIBILITY
+       ============================================================ */
+    html, body {
+      overflow-x: hidden !important;
+      max-width: 100vw !important;
+    }
+
+    .main {
+      overflow-x: hidden;
+    }
+
+    /* Auto-responsive table containers */
+    .table-responsive,
+    .table-wrapper,
+    .card-table-wrap {
+      width: 100%;
+      overflow-x: auto !important;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* ---- 1200px — Large tablets / small laptops ---- */
+    @media (max-width: 1200px) {
+      .top-header {
+        padding: 14px 24px;
+        margin: 0 -24px 8px;
+      }
+      .grid-4, .kpi-grid, .stats-grid, .metrics-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+      }
+      .main {
+        padding: 0 24px 32px;
+      }
+    }
+
+    /* ---- 992px — Tablet / sidebar collapse ---- */
+    @media (max-width: 992px) {
       .sidebar {
-        position: fixed;
         transform: translateX(-100%);
         width: 280px;
-        height: 100vh;
-        top: 0;
-        left: 0;
-        z-index: 100;
-        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        border-right: 1px solid rgba(255, 255, 255, 0.06);
-        background: var(--slate-dark);
+        z-index: 200;
+        box-shadow: 4px 0 32px rgba(0,0,0,0.25);
       }
 
       .sidebar.open {
@@ -1096,18 +1184,396 @@
       }
 
       .main {
-        max-width: 100vw;
-        padding: 0 16px 24px;
+        margin-left: 0 !important;
+        width: 100vw;
+        padding: 0 20px 100px; /* bottom padding for mobile nav bar */
       }
 
       .top-header {
-        margin: 0 -16px 8px;
-        padding: 14px 16px 16px;
+        margin: 0 -20px 8px;
+        padding: 12px 20px;
       }
 
       .hamburger {
         display: flex;
       }
+
+      .top-header .left .page-title {
+        font-size: 22px;
+      }
+
+      .top-header .center {
+        max-width: 280px;
+        margin: 0 10px;
+      }
+
+      /* KPI cards 2-col on tablet */
+      .grid-4, .kpi-grid, .stats-grid, .metrics-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+      }
+
+      /* Table horizontal scroll */
+      table {
+        min-width: 600px;
+      }
+
+      .table-responsive,
+      .table-wrapper,
+      .card-table-wrap,
+      [class*="table-wrap"] {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+        border-radius: 12px;
+      }
+    }
+
+    /* ---- 768px — Mobile landscape / small tablet ---- */
+    @media (max-width: 768px) {
+      .top-header {
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 10px 16px;
+        margin: 0 -16px 8px;
+      }
+
+      .main {
+        padding: 0 16px 100px;
+      }
+
+      .top-header .left {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .top-header .left .page-title {
+        font-size: 19px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 200px;
+      }
+
+      .top-header .left .page-sub {
+        font-size: 11px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 200px;
+      }
+
+      /* Search bar goes full-width on its own row */
+      .top-header .center {
+        order: 3;
+        flex: 1 0 100%;
+        max-width: 100%;
+        margin: 0;
+      }
+
+      .top-header .right {
+        gap: 6px;
+        flex-shrink: 0;
+      }
+
+      /* All grids collapse to 1 column */
+      .grid-4, .grid-3, .grid-2,
+      .kpi-grid, .stats-grid, .metrics-grid,
+      .form-grid, .plan-grid, .alert-grid,
+      [class*="-grid"]:not(.profile-form-grid) {
+        grid-template-columns: 1fr !important;
+      }
+
+      /* Action bars stack */
+      .header-actions,
+      .filter-actions,
+      .action-bar,
+      .page-header-actions,
+      .btn-row,
+      .top-bar,
+      .controls-row {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 8px !important;
+        width: 100%;
+      }
+
+      .header-actions .btn,
+      .header-actions button,
+      .filter-actions .btn,
+      .action-bar .btn,
+      [class*="btn-"]:not(.hamburger):not(.theme-toggle-btn):not(.btn-notif):not(.profile) {
+        width: 100%;
+        justify-content: center;
+      }
+
+      /* Modals go full-width */
+      .modal-dialog {
+        margin: 8px !important;
+        max-width: calc(100vw - 16px) !important;
+      }
+      .modal-content {
+        border-radius: 16px !important;
+        max-height: 90vh;
+        overflow-y: auto;
+      }
+
+      /* Drawers/offcanvas full width */
+      .drawer, .offcanvas-drawer, .right-drawer {
+        width: 100% !important;
+        max-width: 100vw !important;
+      }
+
+      /* Cards */
+      .content-card,
+      .table-card,
+      .filter-panel,
+      .header-card,
+      .detail-card,
+      [class*="-card"] {
+        border-radius: 14px !important;
+      }
+
+      /* Company detail / show page */
+      .company-detail-grid,
+      .detail-grid,
+      .info-grid {
+        grid-template-columns: 1fr !important;
+      }
+
+      /* Tables: make first column sticky */
+      .table-responsive table th:first-child,
+      .table-responsive table td:first-child,
+      .table-wrapper table th:first-child,
+      .table-wrapper table td:first-child {
+        position: sticky;
+        left: 0;
+        z-index: 1;
+        background: inherit;
+      }
+
+      /* Flash alerts */
+      .flash-alert {
+        font-size: 12px;
+        padding: 10px 14px;
+      }
+
+      /* Pagination */
+      .pagination {
+        flex-wrap: wrap;
+        gap: 3px;
+        justify-content: center;
+      }
+
+      /* Stat number value */
+      .stat-number, .kpi-value, [class*="counter"] {
+        font-size: 22px !important;
+      }
+    }
+
+    /* ---- 576px — Mobile portrait ---- */
+    @media (max-width: 576px) {
+      .main {
+        padding: 0 12px 100px;
+      }
+
+      .top-header {
+        padding: 8px 12px;
+        margin: 0 -12px 6px;
+      }
+
+      /* Hide profile text, show only avatar */
+      .top-header .right .profile .info {
+        display: none !important;
+      }
+      .top-header .right .profile .arrow {
+        display: none !important;
+      }
+      .top-header .right .profile {
+        padding: 4px !important;
+        border-radius: 50% !important;
+        border: 1px solid rgba(226,232,240,0.8) !important;
+      }
+
+      /* Smaller page title */
+      .top-header .left .page-title {
+        font-size: 17px;
+        max-width: 150px;
+      }
+      .top-header .left .page-sub {
+        display: none;
+      }
+
+      /* Compact cards */
+      .content-card, .table-card, .filter-panel, .header-card,
+      [class*="-card"] {
+        padding: 14px !important;
+        border-radius: 12px !important;
+      }
+
+      /* Notification dropdown fits screen */
+      .notif-dropdown {
+        right: -40px;
+        width: calc(100vw - 24px) !important;
+        max-width: calc(100vw - 24px) !important;
+      }
+
+      /* Profile dropdown */
+      .profile-dropdown {
+        right: 0;
+        left: auto;
+        min-width: 200px;
+      }
+
+      /* Forms: all full width */
+      .profile-form-grid,
+      [class*="form-grid"] {
+        grid-template-columns: 1fr !important;
+      }
+
+      /* Table font size */
+      table th, table td {
+        font-size: 12px;
+        padding: 8px 10px !important;
+        white-space: nowrap;
+      }
+
+      /* Stats grid */
+      .kpi-grid,
+      .stats-grid,
+      .metrics-grid {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 10px !important;
+      }
+
+      /* KPI card compact */
+      .kpi-card, .stat-card, [class*="metric-card"] {
+        padding: 14px !important;
+      }
+
+      .kpi-value, .stat-number {
+        font-size: 20px !important;
+      }
+
+      /* Buttons in header */
+      .btn-navbar-logout {
+        padding: 6px 10px;
+        font-size: 12px;
+      }
+
+      /* Modals full screen */
+      .modal-dialog {
+        margin: 0 !important;
+        max-width: 100vw !important;
+        min-height: 100vh;
+      }
+      .modal-content {
+        border-radius: 0 !important;
+        min-height: 100vh;
+      }
+    }
+
+    /* ---- 480px — Very small phones ---- */
+    @media (max-width: 480px) {
+      .main {
+        padding: 0 10px 100px;
+      }
+
+      .top-header {
+        padding: 8px 10px;
+        margin: 0 -10px 6px;
+      }
+
+      .kpi-grid,
+      .stats-grid,
+      .metrics-grid {
+        grid-template-columns: 1fr !important;
+        gap: 8px !important;
+      }
+
+      /* Sidebar fits screen */
+      .sidebar {
+        width: 100vw !important;
+      }
+
+      .top-header .left .page-title {
+        font-size: 15px;
+      }
+    }
+
+    /* ---- MOBILE BOTTOM NAVIGATION BAR ---- */
+    /* Shows quick-access links at bottom on mobile instead of requiring sidebar */
+    .mobile-bottom-nav {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 64px;
+      background: var(--bg-sidebar);
+      border-top: 1px solid rgba(255,255,255,0.08);
+      z-index: 150;
+      padding: 0 8px;
+      align-items: center;
+      justify-content: space-around;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      gap: 0;
+    }
+
+    .mobile-bottom-nav .mob-nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      padding: 6px 12px;
+      border-radius: 12px;
+      color: rgba(255,255,255,0.55);
+      font-size: 10px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      flex: 1;
+      min-width: 0;
+      cursor: pointer;
+      border: none;
+      background: none;
+      font-family: inherit;
+    }
+
+    .mobile-bottom-nav .mob-nav-item i {
+      font-size: 22px;
+      line-height: 1;
+    }
+
+    .mobile-bottom-nav .mob-nav-item span {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+      font-size: 9.5px;
+    }
+
+    .mobile-bottom-nav .mob-nav-item.active,
+    .mobile-bottom-nav .mob-nav-item:hover {
+      color: var(--brand-accent);
+      background: rgba(47,107,255,0.12);
+    }
+
+    .mobile-bottom-nav .mob-nav-item.mob-menu-trigger {
+      color: rgba(255,255,255,0.55);
+    }
+
+    @media (max-width: 992px) {
+      .mobile-bottom-nav {
+        display: flex;
+      }
+    }
+
+    /* Light theme for bottom nav */
+    html[data-pms-theme="light"] .mobile-bottom-nav,
+    html[data-theme="light"] .mobile-bottom-nav {
+      background: rgba(7,11,26,0.97);
+      border-top-color: rgba(255,255,255,0.06);
     }
 
     /* Bootstrap 5 Pagination Compatibility */
@@ -1231,6 +1697,80 @@
       max-width: 1.25rem !important;
       max-height: 1.25rem !important;
     }
+
+    /* ---- UNIVERSAL MODAL / DRAWER RESPONSIVE ---- */
+    /* Scrollable modal overlays on all screen sizes */
+    .modal-overlay,
+    .modal-backdrop,
+    [id$="Modal"],
+    [class*="modal-overlay"],
+    [class*="overlay-modal"] {
+      overflow-y: auto !important;
+      -webkit-overflow-scrolling: touch;
+      padding: 16px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+    }
+
+    /* Drawers: scrollable content */
+    .drawer,
+    .right-drawer,
+    [class*="drawer"] {
+      overflow-y: auto !important;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* ---- CATCH-ALL: force inline grid to single column on mobile ---- */
+    /* Targets inline style="display: grid; grid-template-columns: ..." inside modals/drawers */
+    @media (max-width: 576px) {
+      /* Force all inline-grids inside modals & drawers to single column */
+      .modal-overlay [style*="grid-template-columns"],
+      .drawer [style*="grid-template-columns"],
+      .right-drawer [style*="grid-template-columns"],
+      [id$="Modal"] [style*="grid-template-columns"],
+      [id$="Drawer"] [style*="grid-template-columns"],
+      [id*="modal"] [style*="grid-template-columns"],
+      [id*="drawer"] [style*="grid-template-columns"],
+      .modal-dialog [style*="grid-template-columns"],
+      .modal-content [style*="grid-template-columns"] {
+        grid-template-columns: 1fr !important;
+      }
+
+      /* Inline flex rows inside modals/drawers that need to stack */
+      .modal-overlay [style*="display: flex"][style*="gap"],
+      .drawer [style*="display: flex"][style*="gap"],
+      .modal-dialog [style*="display: flex"][style*="gap"] {
+        flex-wrap: wrap !important;
+      }
+    }
+
+    /* ---- TOUCH-FRIENDLY TAP TARGETS ---- */
+    @media (max-width: 992px) {
+      /* Ensure minimum 44px tap target height for all interactive elements */
+      .sidebar-nav a,
+      .sidebar-nav .nav-item,
+      .mob-nav-item,
+      .btn-save-profile,
+      .btn-navbar-logout,
+      [class*="btn-"]:not(.theme-toggle-btn):not(.btn-notif) {
+        min-height: 44px;
+      }
+
+      /* Table rows: easier to tap */
+      table tbody tr td {
+        padding-top: 12px !important;
+        padding-bottom: 12px !important;
+      }
+
+      /* Close buttons inside modals */
+      [onclick*="close"], [onclick*="Close"],
+      [id*="close"], [id*="Close"],
+      button[data-dismiss], button[data-bs-dismiss] {
+        min-width: 44px;
+        min-height: 44px;
+      }
+    }
   </style>
   @stack('styles')
 </head>
@@ -1245,7 +1785,7 @@
 
   <!-- SIDEBAR (LUXURY DARK THEME) -->
   <aside class="sidebar" id="sidebar">
-    <div class="sidebar-brand">
+    <a href="{{ Route::has('superadmin.dashboard') ? route('superadmin.dashboard') : (Route::has('super-admin.dashboard') ? route('super-admin.dashboard') : (Route::has('super-admin.companies.index') ? route('super-admin.companies.index') : url('/super-admin'))) }}" class="sidebar-brand" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 12px;" title="Go to Super Admin Dashboard">
       <div class="logo">
         <i class="bx bx-cube-alt"></i>
       </div>
@@ -1253,7 +1793,7 @@
         <div class="brand-name">Super Admin</div>
         <div class="brand-sub">Command Center <span class="status-dot"></span></div>
       </div>
-    </div>
+    </a>
 
     <nav class="sidebar-nav">
       <!-- COMMAND CENTER -->
@@ -1325,6 +1865,11 @@
          class="{{ request()->routeIs('super-admin.developers.*') ? 'active' : '' }}">
         <i class="bx bx-code-alt icon"></i> Developer Management
       </a>
+
+      <!-- ACCOUNT / LOGOUT -->
+      <a href="javascript:void(0);" onclick="document.getElementById('logoutForm').submit();" class="sidebar-logout-link" style="margin-top: 10px; color: #ef4444 !important; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.25);">
+        <i class="bx bx-log-out icon" style="color: #ef4444 !important;"></i> Logout
+      </a>
     </nav>
 
     <div class="sidebar-footer">
@@ -1346,10 +1891,10 @@
         <button class="hamburger" id="hamburgerBtn" title="Toggle Sidebar" aria-label="Toggle Navigation">
           <i class="bx bx-menu"></i>
         </button>
-        <div class="title-wrap">
+        <a href="{{ Route::has('superadmin.dashboard') ? route('superadmin.dashboard') : (Route::has('super-admin.dashboard') ? route('super-admin.dashboard') : (Route::has('super-admin.companies.index') ? route('super-admin.companies.index') : url('/super-admin'))) }}" class="title-wrap" style="text-decoration: none; color: inherit;" title="Go to Super Admin Dashboard">
           <h1 class="page-title">@yield('page_title', 'Dashboard')</h1>
           <div class="page-sub">@yield('page_subtitle', 'Central Command Center')</div>
-        </div>
+        </a>
       </div>
 
       <!-- Header Search -->
@@ -1478,12 +2023,25 @@
           $displayName = $displayUser?->name ?? 'Super Admin';
           $displayEmail = $displayUser?->email ?? 'admin@platform.io';
           $displayInitials = strtoupper(substr($displayName, 0, 2));
+
+          // Resolve saved profile picture (supports both profile_image and image columns)
+          $displayAvatar = null;
+          if ($displayUser) {
+              $pi = $displayUser->profile_image ?? $displayUser->image ?? null;
+              if ($pi && file_exists(public_path($pi))) {
+                  $displayAvatar = asset($pi);
+              }
+          }
         @endphp
         <div class="profile-wrapper" id="profileWrapper">
           <div class="profile" id="profileMenuToggle">
-            <div class="avatar">
-              {{ $displayInitials }}
-            </div>
+            @if($displayAvatar)
+              <img src="{{ $displayAvatar }}" alt="{{ $displayName }}" class="avatar avatar-img" />
+            @else
+              <div class="avatar">
+                {{ $displayInitials }}
+              </div>
+            @endif
             <div class="info">
               <div class="name">{{ $displayName }}</div>
               <div class="role">Platform Administrator</div>
@@ -1497,7 +2055,8 @@
               <div class="user-name">{{ $displayName }}</div>
               <div class="user-email">{{ $displayEmail }}</div>
             </div>
-            <a href="#platform-health"><i class="bx bx-slider-alt" style="color:#2563eb;"></i> System Health</a>
+            <a href="{{ Route::has('super-admin.system-health.index') ? route('super-admin.system-health.index') : url('/super-admin/system-health') }}"><i class="bx bx-slider-alt" style="color:#2563eb;"></i> System Health</a>
+            <a href="{{ Route::has('superadmin.profile') ? route('superadmin.profile') : (Route::has('super-admin.profile') ? route('super-admin.profile') : url('/superadmin/profile')) }}"><i class="bx bx-user-circle" style="color:#22d3ee;"></i> My Profile</a>
             <a href="{{ Route::has('super-admin.tenant-audit.index') ? route('super-admin.tenant-audit.index') : url('/super-admin/tenant-audit') }}"><i class="bx bx-shield-alt-2" style="color:#7c3aed;"></i> Audit Activity</a>
             <div class="divider"></div>
             <button type="button" class="dropdown-item danger" onclick="document.getElementById('logoutForm').submit();">
@@ -1533,17 +2092,20 @@
   @yield('modals')
 
   <script>
-    // Mobile Sidebar Toggle
+    // Mobile Sidebar Toggle (hamburger + bottom nav menu button)
     const hamburgerBtn = document.getElementById('hamburgerBtn');
+    const mobMenuTrigger = document.getElementById('mobMenuTrigger');
     const sidebar = document.getElementById('sidebar');
     const sidebarOverlay = document.getElementById('sidebarOverlay');
 
-    if (hamburgerBtn && sidebar) {
-      hamburgerBtn.addEventListener('click', () => {
-        sidebar.classList.toggle('open');
-        if (sidebarOverlay) sidebarOverlay.classList.toggle('open');
-      });
+    function toggleSidebar() {
+      if (!sidebar) return;
+      sidebar.classList.toggle('open');
+      if (sidebarOverlay) sidebarOverlay.classList.toggle('open');
     }
+
+    if (hamburgerBtn) hamburgerBtn.addEventListener('click', toggleSidebar);
+    if (mobMenuTrigger) mobMenuTrigger.addEventListener('click', toggleSidebar);
     if (sidebarOverlay) {
       sidebarOverlay.addEventListener('click', () => {
         sidebar.classList.remove('open');
@@ -1697,6 +2259,36 @@
       }
     })();
   </script>
+
+  <!-- MOBILE BOTTOM NAVIGATION BAR -->
+  <nav class="mobile-bottom-nav" id="mobileBottomNav" role="navigation" aria-label="Mobile quick navigation">
+    <a href="{{ Route::has('super-admin.companies.index') ? route('super-admin.companies.index') : url('/super-admin/companies') }}"
+       class="mob-nav-item {{ request()->routeIs('super-admin.companies.*') ? 'active' : '' }}">
+      <i class="bx bx-building-house"></i>
+      <span>Companies</span>
+    </a>
+    <a href="{{ Route::has('super-admin.plans.index') ? route('super-admin.plans.index') : url('/super-admin/plans') }}"
+       class="mob-nav-item {{ request()->routeIs('super-admin.plans.*') ? 'active' : '' }}">
+      <i class="bx bx-layer"></i>
+      <span>Plans</span>
+    </a>
+    <a href="{{ Route::has('super-admin.system-health.index') ? route('super-admin.system-health.index') : url('/super-admin/system-health') }}"
+       class="mob-nav-item {{ request()->routeIs('super-admin.system-health.*') ? 'active' : '' }}">
+      <i class="bx bx-pulse"></i>
+      <span>Health</span>
+    </a>
+    <a href="{{ Route::has('super-admin.alerts.index') ? route('super-admin.alerts.index') : url('/super-admin/alerts') }}"
+       class="mob-nav-item {{ request()->routeIs('super-admin.alerts.*') ? 'active' : '' }}">
+      <i class="bx bx-bell"></i>
+      <span>Alerts</span>
+    </a>
+    <button class="mob-nav-item mob-menu-trigger" id="mobMenuTrigger" aria-label="Open sidebar menu">
+      <i class="bx bx-menu"></i>
+      <span>Menu</span>
+    </button>
+  </nav>
+
+  @include('admin.layout.toasts')
 
   @stack('scripts')
 </body>

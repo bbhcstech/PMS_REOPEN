@@ -117,7 +117,8 @@ class LeaveService
             ->whereIn('status', ['approved'])
             ->where(function ($query) use ($yearStart, $yearEnd) {
                 $query->whereBetween('start_date', [$yearStart, $yearEnd])
-                    ->orWhereBetween('end_date', [$yearStart, $yearEnd]);
+                    ->orWhereBetween('end_date', [$yearStart, $yearEnd])
+                    ->orWhereBetween('date', [$yearStart, $yearEnd]);
             })
             ->orderBy('approved_at')
             ->orderBy('start_date')
@@ -545,9 +546,16 @@ class LeaveService
         $dates = collect([now()]);
 
         Leave::where('user_id', $employee->id)
-            ->whereNotNull('start_date')
-            ->pluck('start_date')
-            ->each(fn ($date) => $dates->push(Carbon::parse($date)));
+            ->where(function ($q) {
+                $q->whereNotNull('start_date')->orWhereNotNull('date');
+            })
+            ->get(['start_date', 'date'])
+            ->each(function ($l) use ($dates) {
+                $d = $l->start_date ?: $l->date;
+                if ($d) {
+                    $dates->push(Carbon::parse($d));
+                }
+            });
 
         LeaveBalance::where('user_id', $employee->id)
             ->pluck('year_start')

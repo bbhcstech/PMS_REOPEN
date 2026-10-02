@@ -28,7 +28,7 @@
             <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px;">
                 <div style="flex: 1; min-width: 280px;">
                     <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px; flex-wrap: wrap;">
-                        <span style="font-size: 11px; font-weight: 800; padding: 4px 12px; border-radius: 14px; text-transform: uppercase; letter-spacing: 0.5px; background: {{ $task->deadline_status === 'OVERDUE' ? '#fef2f2' : ($task->deadline_status === 'DUE SOON' ? '#fffbe6' : '#EEF2FF') }}; color: {{ $task->deadline_status === 'OVERDUE' ? '#dc2626' : ($task->deadline_status === 'DUE SOON' ? '#d97706' : '#2F6BFF') }}; border: 1px solid {{ $task->deadline_status === 'OVERDUE' ? '#fecaca' : ($task->deadline_status === 'DUE SOON' ? '#ffe58f' : '#C7D2FE') }};">
+                        <span class="deadline-badge-{{ $task->deadline_status === 'OVERDUE' ? 'overdue' : ($task->deadline_status === 'DUE SOON' ? 'due-soon' : 'normal') }}" style="font-size: 11px; font-weight: 800; padding: 4px 12px; border-radius: 14px; text-transform: uppercase; letter-spacing: 0.5px;">
                             ● {{ $task->deadline_status }}
                         </span>
                         <span style="font-size: 12px; font-weight: 700; color: var(--slate-muted);">
@@ -36,21 +36,21 @@
                         </span>
                     </div>
 
-                    <h3 style="font-size: 18px; font-weight: 800; color: var(--slate-dark); margin-bottom: 6px;">{{ $task->title }}</h3>
+                    <h3 style="font-size: 18px; font-weight: 800; color: var(--slate-heading); margin-bottom: 6px;">{{ $task->title }}</h3>
                     <span style="font-size: 13px; color: var(--slate-muted);">
-                        Company: <strong style="color: var(--slate-dark);">{{ $task->company_name ?? 'Central Platform' }}</strong> &bull; Project: <strong style="color: var(--slate-dark);">{{ $task->project_name ?? 'Development' }}</strong>
+                        Company: <strong style="color: var(--slate-heading);">{{ $task->company_name ?? 'Central Platform' }}</strong> &bull; Project: <strong style="color: var(--slate-heading);">{{ $task->project_name ?? 'Development' }}</strong>
                     </span>
                 </div>
 
                 <div style="display: flex; align-items: center; gap: 20px;">
                     <div style="text-align: right;">
                         <span style="font-size: 11px; font-weight: 800; color: var(--slate-muted); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 2px;">TARGET DEADLINE</span>
-                        <strong style="font-size: 15px; font-weight: 800; color: {{ $task->deadline_status === 'OVERDUE' ? '#dc2626' : 'var(--slate-dark)' }};">
+                        <strong style="font-size: 15px; font-weight: 800; color: {{ $task->deadline_status === 'OVERDUE' ? '#dc2626' : 'var(--slate-heading)' }};">
                             {{ !empty($task->due_date) ? \Carbon\Carbon::parse($task->due_date)->format('d M Y') : 'No Deadline' }}
                         </strong>
                     </div>
 
-                    <a href="{{ route('developer.my-work') }}" style="padding: 10px 18px; border-radius: var(--radius-md); background: var(--slate-dark); color: #ffffff; text-decoration: none; font-size: 13px; font-weight: 700; box-shadow: var(--shadow-xs); transition: background 0.2s;" onmouseover="this.style.background='#1e293b'" onmouseout="this.style.background='var(--slate-dark)'">
+                    <a href="{{ route('developer.my-work') }}" class="dev-btn-dark" style="padding: 10px 18px; border-radius: var(--radius-md); text-decoration: none; font-size: 13px; font-weight: 700; box-shadow: var(--shadow-xs);">
                         Open Task &rarr;
                     </a>
                 </div>
@@ -59,7 +59,7 @@
         @empty
         <div class="dev-card" style="text-align: center; padding: 56px 24px;">
             <i class="bx bx-check-double" style="font-size: 44px; color: #10b981; margin-bottom: 14px; display: block;"></i>
-            <h3 style="font-size: 19px; font-weight: 800; color: var(--slate-dark); margin-bottom: 6px;">No Upcoming Deadlines</h3>
+            <h3 style="font-size: 19px; font-weight: 800; color: var(--slate-heading); margin-bottom: 6px;">No Upcoming Deadlines</h3>
             <p style="font-size: 14px; color: var(--slate-muted); max-width: 480px; margin: 0 auto;">
                 All active development tasks are currently up to date or completed. Great job!
             </p>

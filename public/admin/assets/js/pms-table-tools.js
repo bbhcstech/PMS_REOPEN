@@ -3,6 +3,7 @@
 
   var controllerNumber = 0;
   var controllers = new WeakMap();
+  var controllerList = [];
   var actionHeaderPattern = /^(action|actions|option|options|control|controls|manage|management|operation|operations)$/i;
 
   function isDarkMode() {
@@ -524,6 +525,7 @@
       legacySelectionColumn: hasLegacySelectionColumn(table)
     };
     controllers.set(table, controller);
+    controllerList.push(controller);
     table.classList.add('pms-exportable-table');
     table.setAttribute('data-pms-table-tools-id', controller.id);
     createToolbar(controller);
@@ -610,7 +612,7 @@
 
     if (window.MutationObserver) {
       var themeObserver = new MutationObserver(function () {
-        controllers.forEach(function (ctrl) { syncToolbar(ctrl); });
+        controllerList.forEach(function (ctrl) { if (ctrl.table && ctrl.table.isConnected) syncToolbar(ctrl); });
       });
       themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-pms-theme', 'data-bs-theme', 'data-theme', 'class'] });
       if (document.body) {
@@ -620,7 +622,7 @@
 
     window.addEventListener('storage', function (e) {
       if (e.key === 'pms-theme' || e.key === 'bitroxia-theme') {
-        controllers.forEach(function (ctrl) { syncToolbar(ctrl); });
+        controllerList.forEach(function (ctrl) { if (ctrl.table && ctrl.table.isConnected) syncToolbar(ctrl); });
       }
     });
 

@@ -854,6 +854,275 @@
             color: var(--text-main, #EEF1FB);
         }
     }
+
+    /* ============================================================
+       COMPREHENSIVE DARK THEME ARCHITECTURE FOR PLANS CATALOG & MODALS
+       ============================================================ */
+    html[data-pms-theme="dark"],
+    html[data-theme="dark"],
+    html[data-bs-theme="dark"],
+    .dark {
+        --bg-main: #070B1A;
+        --bg-surface: #0F1530;
+        --bg-subtle: #141B3D;
+        --bg-hover: #1A2247;
+        --border-color: rgba(238, 241, 251, 0.09);
+        --border-subtle: rgba(238, 241, 251, 0.06);
+        --text-main: #EEF1FB;
+        --text-muted: #CBD5E1;
+        --text-subtle: #9AA3C7;
+
+        --plan-free-accent: #94a3b8;
+        --plan-free-bg: rgba(148, 163, 184, 0.15);
+        --plan-free-border: rgba(148, 163, 184, 0.25);
+
+        --plan-gold-accent: #fbbf24;
+        --plan-gold-bg: rgba(245, 158, 11, 0.15);
+        --plan-gold-border: rgba(245, 158, 11, 0.3);
+
+        --plan-platinum-accent: #38bdf8;
+        --plan-platinum-bg: rgba(56, 189, 248, 0.15);
+        --plan-platinum-border: rgba(56, 189, 248, 0.3);
+
+        --plan-diamond-accent: #a78bfa;
+        --plan-diamond-bg: rgba(167, 139, 250, 0.15);
+        --plan-diamond-border: rgba(167, 139, 250, 0.3);
+    }
+
+    /* KPI Cards */
+    html[data-pms-theme="dark"] .kpi-card,
+    html[data-theme="dark"] .kpi-card,
+    html[data-bs-theme="dark"] .kpi-card,
+    .dark .kpi-card {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .kpi-card .val,
+    html[data-theme="dark"] .kpi-card .val,
+    html[data-bs-theme="dark"] .kpi-card .val,
+    .dark .kpi-card .val {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .kpi-card .lbl,
+    html[data-theme="dark"] .kpi-card .lbl,
+    html[data-bs-theme="dark"] .kpi-card .lbl,
+    .dark .kpi-card .lbl {
+        color: #9AA3C7 !important;
+    }
+
+    /* Plan Cards */
+    html[data-pms-theme="dark"] .plan-card-item,
+    html[data-theme="dark"] .plan-card-item,
+    html[data-bs-theme="dark"] .plan-card-item,
+    .dark .plan-card-item {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.1) !important;
+    }
+    html[data-pms-theme="dark"] .plan-card-item.theme-free,
+    html[data-theme="dark"] .plan-card-item.theme-free { border-color: rgba(148, 163, 184, 0.3) !important; }
+    html[data-pms-theme="dark"] .plan-card-item.theme-gold,
+    html[data-theme="dark"] .plan-card-item.theme-gold { border-color: rgba(245, 158, 11, 0.35) !important; }
+    html[data-pms-theme="dark"] .plan-card-item.theme-platinum,
+    html[data-theme="dark"] .plan-card-item.theme-platinum { border-color: rgba(56, 189, 248, 0.35) !important; }
+    html[data-pms-theme="dark"] .plan-card-item.theme-diamond,
+    html[data-theme="dark"] .plan-card-item.theme-diamond { border-color: rgba(167, 139, 250, 0.35) !important; }
+
+    html[data-pms-theme="dark"] .plan-name-title,
+    html[data-theme="dark"] .plan-name-title,
+    html[data-bs-theme="dark"] .plan-name-title,
+    .dark .plan-name-title { color: #EEF1FB !important; }
+
+    html[data-pms-theme="dark"] .plan-desc-text,
+    html[data-theme="dark"] .plan-desc-text,
+    html[data-bs-theme="dark"] .plan-desc-text,
+    .dark .plan-desc-text { color: #9AA3C7 !important; }
+
+    html[data-pms-theme="dark"] .plan-price-amount,
+    html[data-theme="dark"] .plan-price-amount,
+    html[data-bs-theme="dark"] .plan-price-amount,
+    .dark .plan-price-amount { color: #EEF1FB !important; }
+
+    html[data-pms-theme="dark"] .plan-price-cycle,
+    html[data-theme="dark"] .plan-price-cycle,
+    html[data-bs-theme="dark"] .plan-price-cycle { color: #9AA3C7 !important; }
+
+    html[data-pms-theme="dark"] .plan-stats-item span,
+    html[data-theme="dark"] .plan-stats-item span,
+    html[data-bs-theme="dark"] .plan-stats-item span { color: #9AA3C7 !important; }
+
+    html[data-pms-theme="dark"] .plan-stats-item strong,
+    html[data-theme="dark"] .plan-stats-item strong,
+    html[data-bs-theme="dark"] .plan-stats-item strong,
+    .dark .plan-stats-item strong { color: #EEF1FB !important; }
+
+    html[data-pms-theme="dark"] .plan-features-list li,
+    html[data-theme="dark"] .plan-features-list li,
+    html[data-bs-theme="dark"] .plan-features-list li,
+    .dark .plan-features-list li { color: #CBD5E1 !important; }
+
+    /* Chart Cards */
+    html[data-pms-theme="dark"] .chart-card-wrapper,
+    html[data-theme="dark"] .chart-card-wrapper,
+    html[data-bs-theme="dark"] .chart-card-wrapper,
+    .dark .chart-card-wrapper {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .chart-card-title,
+    html[data-theme="dark"] .chart-card-title,
+    html[data-bs-theme="dark"] .chart-card-title,
+    .dark .chart-card-title {
+        color: #EEF1FB !important;
+    }
+
+    /* Modal Dialogs - Dark Theme Overrides */
+    html[data-pms-theme="dark"] .modal-dialog-custom,
+    html[data-theme="dark"] .modal-dialog-custom,
+    html[data-bs-theme="dark"] .modal-dialog-custom,
+    .dark .modal-dialog-custom {
+        background: #0F1530 !important;
+        border: 1px solid rgba(238, 241, 251, 0.12) !important;
+        box-shadow: 0 25px 60px -10px rgba(0, 0, 0, 0.75) !important;
+        color: #EEF1FB !important;
+    }
+
+    /* Modal Close Cross */
+    html[data-pms-theme="dark"] #closePlanModalCrossBtn,
+    html[data-theme="dark"] #closePlanModalCrossBtn,
+    html[data-bs-theme="dark"] #closePlanModalCrossBtn,
+    html[data-pms-theme="dark"] #closeDetailsModalCrossBtn,
+    html[data-theme="dark"] #closeDetailsModalCrossBtn,
+    html[data-bs-theme="dark"] #closeDetailsModalCrossBtn {
+        background: #141B3D !important;
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] #closePlanModalCrossBtn:hover,
+    html[data-theme="dark"] #closePlanModalCrossBtn:hover,
+    html[data-bs-theme="dark"] #closePlanModalCrossBtn:hover,
+    html[data-pms-theme="dark"] #closeDetailsModalCrossBtn:hover,
+    html[data-theme="dark"] #closeDetailsModalCrossBtn:hover,
+    html[data-bs-theme="dark"] #closeDetailsModalCrossBtn:hover {
+        background: #1A2247 !important;
+        color: #ffffff !important;
+    }
+
+    /* Modal Inputs & Selects */
+    html[data-pms-theme="dark"] .modal-input-field,
+    html[data-theme="dark"] .modal-input-field,
+    html[data-bs-theme="dark"] .modal-input-field,
+    .dark .modal-input-field {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.14) !important;
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .modal-input-field:focus,
+    html[data-theme="dark"] .modal-input-field:focus,
+    html[data-bs-theme="dark"] .modal-input-field:focus,
+    .dark .modal-input-field:focus {
+        background: #1A2247 !important;
+        border-color: #2F6BFF !important;
+        box-shadow: 0 0 0 4px rgba(47, 107, 255, 0.25) !important;
+    }
+    html[data-pms-theme="dark"] .modal-input-wrap i,
+    html[data-theme="dark"] .modal-input-wrap i,
+    html[data-bs-theme="dark"] .modal-input-wrap i,
+    .dark .modal-input-wrap i {
+        color: #6B739A !important;
+    }
+    html[data-pms-theme="dark"] .modal-input-wrap:focus-within i,
+    html[data-theme="dark"] .modal-input-wrap:focus-within i {
+        color: #2F6BFF !important;
+    }
+    html[data-pms-theme="dark"] .modal-input-field option,
+    html[data-theme="dark"] .modal-input-field option {
+        background: #0F1530 !important;
+        color: #EEF1FB !important;
+    }
+
+    /* Modal Headings, Labels, Text */
+    html[data-pms-theme="dark"] #modalPlanTitle,
+    html[data-theme="dark"] #modalPlanTitle,
+    html[data-pms-theme="dark"] #detailsPlanTitle,
+    html[data-theme="dark"] #detailsPlanTitle {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] #detailsPlanDesc,
+    html[data-theme="dark"] #detailsPlanDesc {
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] .modal-dialog-custom label,
+    html[data-theme="dark"] .modal-dialog-custom label {
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] .modal-dialog-custom h4,
+    html[data-theme="dark"] .modal-dialog-custom h4 {
+        color: #EEF1FB !important;
+    }
+
+    /* Live Preview Banner in Edit Modal */
+    html[data-pms-theme="dark"] #planModalDialog div[style*="background: linear-gradient"],
+    html[data-theme="dark"] #planModalDialog div[style*="background: linear-gradient"] {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
+    }
+    html[data-pms-theme="dark"] #livePreviewPrice,
+    html[data-theme="dark"] #livePreviewPrice {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] #livePreviewQuotas,
+    html[data-theme="dark"] #livePreviewQuotas {
+        color: #9AA3C7 !important;
+    }
+
+    /* Details Modal Banner & Quota Cards */
+    html[data-pms-theme="dark"] #planDetailsModalDialog div[style*="background: linear-gradient"],
+    html[data-theme="dark"] #planDetailsModalDialog div[style*="background: linear-gradient"] {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
+    }
+    html[data-pms-theme="dark"] #detailsPriceText,
+    html[data-theme="dark"] #detailsPriceText {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] #detailsPriceText span,
+    html[data-theme="dark"] #detailsPriceText span {
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] #planDetailsModalDialog div[style*="grid-template-columns: 1fr 1fr"] > div,
+    html[data-theme="dark"] #planDetailsModalDialog div[style*="grid-template-columns: 1fr 1fr"] > div {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.1) !important;
+    }
+    html[data-pms-theme="dark"] #planDetailsModalDialog div[style*="grid-template-columns: 1fr 1fr"] strong,
+    html[data-theme="dark"] #planDetailsModalDialog div[style*="grid-template-columns: 1fr 1fr"] strong {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] #planDetailsModalDialog div[style*="grid-template-columns: 1fr 1fr"] div[style*="text-transform: uppercase"],
+    html[data-theme="dark"] #planDetailsModalDialog div[style*="grid-template-columns: 1fr 1fr"] div[style*="text-transform: uppercase"] {
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] #planDetailsModalDialog div[style*="color: #334155"],
+    html[data-theme="dark"] #planDetailsModalDialog div[style*="color: #334155"] {
+        color: #CBD5E1 !important;
+    }
+    html[data-pms-theme="dark"] #planDetailsModalDialog div[style*="border-top: 1px solid #f1f5f9"],
+    html[data-theme="dark"] #planDetailsModalDialog div[style*="border-top: 1px solid #f1f5f9"],
+    html[data-pms-theme="dark"] #planModalDialog div[style*="border-top: 1px solid #f1f5f9"],
+    html[data-theme="dark"] #planModalDialog div[style*="border-top: 1px solid #f1f5f9"] {
+        border-top-color: rgba(238, 241, 251, 0.1) !important;
+    }
+    html[data-pms-theme="dark"] .status-pill.status-active,
+    html[data-theme="dark"] .status-pill.status-active,
+    html[data-bs-theme="dark"] .status-pill.status-active {
+        background: rgba(16, 185, 129, 0.18) !important;
+        color: #34D399 !important;
+        border-color: rgba(16, 185, 129, 0.35) !important;
+    }
+    html[data-pms-theme="dark"] .status-pill.status-active .dot,
+    html[data-theme="dark"] .status-pill.status-active .dot,
+    html[data-bs-theme="dark"] .status-pill.status-active .dot {
+        background: #34D399 !important;
+    }
 </style>
 
 <!-- PAGE CONTROL TOOLBAR -->
@@ -1231,7 +1500,7 @@
 
 <!-- VIEW PLAN DETAILS MODAL -->
 <div class="modal-backdrop-custom" id="planDetailsModalDialog">
-    <div class="modal-dialog-custom" style="max-width: 620px; border-radius: 24px; padding: 32px; background: #ffffff; box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.3);">
+    <div class="modal-dialog-custom" style="max-width: 620px; border-radius: 24px; padding: 32px; box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.3);">
         <button type="button" id="closeDetailsModalCrossBtn" style="position: absolute; right: 20px; top: 20px; width: 34px; height: 34px; border-radius: 50%; background: #f1f5f9; border: none; color: #64748b; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;">
             <i class="bx bx-x"></i>
         </button>

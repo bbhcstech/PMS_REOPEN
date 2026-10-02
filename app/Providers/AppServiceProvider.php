@@ -34,6 +34,14 @@ class AppServiceProvider extends ServiceProvider
     {
         Paginator::useBootstrapFive();
 
+        try {
+            $tz = AppSetting::valueFor('loc_timezone', config('app.timezone', 'Asia/Kolkata'));
+            if ($tz) {
+                config(['app.timezone' => $tz]);
+                date_default_timezone_set($tz);
+            }
+        } catch (\Throwable $e) {}
+
         view()->composer('*', function ($view) {
             try {
                 $user = auth()->user();

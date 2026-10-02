@@ -65,15 +65,21 @@ class EmployeeController extends Controller
             ->where('role', 'employee')
             ->whereNull('archived_at');
 
-        if ($viewer && $viewer->normalizedRole() !== 'admin' && $viewer->company_id) {
+        $viewerRole = $viewer?->normalizedRole();
+        $isGlobalAdmin = in_array($viewerRole, ['admin', 'superadmin', 'administrator'], true);
+        $isAdminOrHr = in_array($viewerRole, ['admin', 'superadmin', 'administrator', 'hr'], true);
+
+        if ($viewer && ! $isAdminOrHr && $viewer->company_id) {
             $query->where('users.company_id', $viewer->company_id);
         }
 
-        if ($viewer && $viewer->normalizedRole() === 'admin' && $selectedCompanyId) {
+        if ($viewer && $isAdminOrHr && $selectedCompanyId) {
             $query->where('users.company_id', $selectedCompanyId);
+        } elseif ($viewer && ! $isGlobalAdmin && $viewer->company_id) {
+            $query->where('users.company_id', $viewer->company_id);
         }
 
-        if ($viewer && $viewer->normalizedRole() !== 'admin') {
+        if ($viewer && ! $isAdminOrHr) {
             $query->whereIn('users.id', $viewer->visibleEmployeeIds());
         }
 
@@ -146,14 +152,14 @@ class EmployeeController extends Controller
 
         // prepare dropdown list options but exclude notice/probation entries so selects don't show them
         $employeeDetails = EmployeeDetail::with(['user', 'reportingTo'])
-            ->whereHas('user', function ($q) use ($viewer, $selectedCompanyId) {
+            ->whereHas('user', function ($q) use ($viewer, $selectedCompanyId, $isGlobalAdmin, $isAdminOrHr) {
                 $q->whereNull('archived_at');
 
-                if ($viewer && $viewer->normalizedRole() !== 'admin' && $viewer->company_id) {
+                if ($viewer && ! $isGlobalAdmin && $viewer->company_id) {
                     $q->where('company_id', $viewer->company_id);
                 }
 
-                if ($viewer && $viewer->normalizedRole() === 'admin' && $selectedCompanyId) {
+                if ($viewer && $isAdminOrHr && $selectedCompanyId) {
                     $q->where('company_id', $selectedCompanyId);
                 }
             })
@@ -348,7 +354,26 @@ class EmployeeController extends Controller
             'status'            => 'required|in:Active,Inactive',
             'login_allowed'     => 'required|in:0,1',
             'employment_type'   => 'required|in:full_time,part_time,on_contract,internship,trainee',
-            'password'          => 'nullable|string|min:8',
+            'password'          => [
+                'nullable',
+                'string',
+                'min:8',
+                function ($attribute, $value, $fail) {
+                    if (!$value) return;
+                    if (!preg_match('/[A-Z]/', $value)) {
+                        $fail('The password must contain at least 1 uppercase letter.');
+                    }
+                    if (!preg_match('/[a-z]/', $value)) {
+                        $fail('The password must contain at least 1 lowercase letter.');
+                    }
+                    if (!preg_match('/[0-9]/', $value)) {
+                        $fail('The password must contain at least 1 number.');
+                    }
+                    if (!preg_match('/[^A-Za-z0-9]/', $value)) {
+                        $fail('The password must contain at least 1 special character.');
+                    }
+                },
+            ],
             'profile_picture'   => 'nullable|image|mimes:jpeg,png,jpg|max:4096',
             'government_id_card' => 'nullable|image|mimes:jpeg,png,jpg|max:4096',
             'designation_id'    => 'required',
@@ -450,12 +475,13 @@ class EmployeeController extends Controller
         $plainPassword = $request->filled('password') ? $request->password : Str::random(12);
         $passwordHash = Hash::make($plainPassword);
 
-        DB::beginTransaction();
+        $conn = (new EmployeeDetail)->getConnectionName() ?: config('database.default', 'mysql');
+        DB::connection($conn)->beginTransaction();
         try {
             $mobileWithCode = $request->mobile_country_code . $request->mobile;
 
             // Create user
-            $user = User::create([
+            $userData = [
                 'name'          => $request->name,
                 'company_id'    => $request->company_id,
                 'email'         => $request->email,
@@ -466,7 +492,19 @@ class EmployeeController extends Controller
                 'profile_image' => $profileImagePath,
                 'login_allowed' => $request->login_allowed ?? 1,
                 'email_notifications' => $request->email_notifications ?? 1,
-            ]);
+            ];
+
+            if ($request->filled('reporting_to')) {
+                $userData['reports_to_id'] = (int) $request->reporting_to;
+            }
+            $viewer = auth()->user();
+            if ($viewer && $viewer->normalizedRole() === 'hr') {
+                $userData['hr_id'] = $viewer->id;
+            } elseif ($viewer && $viewer->normalizedRole() === 'manager') {
+                $userData['manager_id'] = $viewer->id;
+            }
+
+            $user = User::create($userData);
 
             // Prepare employee detail payload
             $employeeData = $request->only([
@@ -482,12 +520,14 @@ class EmployeeController extends Controller
             // Add mobile without prefix for employee detail
             $employeeData['mobile'] = $request->mobile;
             $employeeData['user_id'] = $user->id;
-            if (Schema::hasColumn('employee_details', 'company_id')) {
+            if (Schema::connection($conn)->hasColumn('employee_details', 'company_id')) {
                 $employeeData['company_id'] = $request->company_id;
             }
             $employeeData['government_id_card'] = $governmentIdCardPath;
             $employeeData['government_id_verification_status'] = $governmentIdVerification['status'] ?? null;
             $employeeData['cv_path'] = $cvPath;
+            $employeeData['reporting_to'] = $request->filled('reporting_to') ? (int) $request->reporting_to : null;
+            $employeeData['hourly_rate'] = $request->filled('hourly_rate') ? $request->hourly_rate : null;
 
             // ================================================
             // FIXED: Handle new designation with firstOrCreate - WITH LEVEL
@@ -496,10 +536,10 @@ class EmployeeController extends Controller
                 $designation = Designation::firstOrCreate(
                     array_filter([
                         'name' => trim($request->new_designation),
-                        'company_id' => Schema::hasColumn('designations', 'company_id') ? $request->company_id : null,
+                        'company_id' => Schema::connection($conn)->hasColumn('designations', 'company_id') ? $request->company_id : null,
                     ], fn ($value) => ! is_null($value)),
                     [
-                        'company_id' => Schema::hasColumn('designations', 'company_id') ? $request->company_id : null,
+                        'company_id' => Schema::connection($conn)->hasColumn('designations', 'company_id') ? $request->company_id : null,
                         'level' => $request->new_designation_level ?? 0, // ADDED LEVEL FIELD
                         'status' => 'Active',
                         'added_by' => auth()->id(),
@@ -508,7 +548,7 @@ class EmployeeController extends Controller
                 );
                 $employeeData['designation_id'] = $designation->id;
             } else {
-                $employeeData['designation_id'] = $request->designation_id;
+                $employeeData['designation_id'] = $request->filled('designation_id') ? $request->designation_id : null;
             }
 
             // ================================================
@@ -518,17 +558,17 @@ class EmployeeController extends Controller
                 $department = ParentDepartment::firstOrCreate(
                     array_filter([
                         'dpt_name' => trim($request->new_department),
-                        'company_id' => Schema::hasColumn('parent_departments', 'company_id') ? $request->company_id : null,
+                        'company_id' => Schema::connection($conn)->hasColumn('parent_departments', 'company_id') ? $request->company_id : null,
                     ], fn ($value) => ! is_null($value)),
                     [
-                        'company_id' => Schema::hasColumn('parent_departments', 'company_id') ? $request->company_id : null,
+                        'company_id' => Schema::connection($conn)->hasColumn('parent_departments', 'company_id') ? $request->company_id : null,
                         'dpt_code' => $this->generateNextParentDepartmentCode(),
                         'status' => 'Active'
                     ]
                 );
                 $employeeData['parent_dpt_id'] = $department->id;
             } else {
-                $employeeData['parent_dpt_id'] = $request->parent_dpt_id;
+                $employeeData['parent_dpt_id'] = $request->filled('parent_dpt_id') ? $request->parent_dpt_id : null;
             }
 
             // ================================================
@@ -539,17 +579,17 @@ class EmployeeController extends Controller
                     [
                         'dpt_name' => trim($request->new_sub_department),
                         'parent_dpt_id' => $employeeData['parent_dpt_id'],
-                        'company_id' => Schema::hasColumn('departments', 'company_id') ? $request->company_id : null,
+                        'company_id' => Schema::connection($conn)->hasColumn('departments', 'company_id') ? $request->company_id : null,
                     ],
                     [
-                        'company_id' => Schema::hasColumn('departments', 'company_id') ? $request->company_id : null,
+                        'company_id' => Schema::connection($conn)->hasColumn('departments', 'company_id') ? $request->company_id : null,
                         'dpt_code' => $this->generateNextSubDepartmentCode(),
                         'status' => 'Active'
                     ]
                 );
                 $employeeData['department_id'] = $subDepartment->id;
             } else {
-                $employeeData['department_id'] = $request->department_id;
+                $employeeData['department_id'] = ($request->filled('department_id') && $request->department_id !== 'new') ? $request->department_id : null;
             }
 
             // ================================================
@@ -576,25 +616,36 @@ class EmployeeController extends Controller
                 $employeeData['probation_end_date'] = null;
             }
 
-            // Create EmployeeDetail with retry to handle rare employee_id collision
+            // Handle Employee ID (custom vs auto-generate)
+            if ($request->input('employee_id_option') === 'custom' && $request->filled('employee_id')) {
+                $customId = trim($request->input('employee_id'));
+                if (EmployeeDetail::where('employee_id', $customId)->exists()) {
+                    DB::connection($conn)->rollBack();
+                    return back()->withErrors(['employee_id' => 'The Employee ID "' . $customId . '" is already in use. Please provide a unique ID.'])->withInput();
+                }
+                $employeeData['employee_id'] = $customId;
+            } else {
+                $employeeData['employee_id'] = $this->computeNextEmployeeIdWithLock((int) $request->company_id);
+            }
+
+            // Create EmployeeDetail with retry in case of concurrency
             $tries = 0;
             $created = false;
             do {
-                $employeeData['employee_id'] = $this->computeNextEmployeeIdWithLock((int) $request->company_id);
                 try {
                     $detail = EmployeeDetail::create($employeeData);
                     $created = true;
                 } catch (\Illuminate\Database\QueryException $qe) {
                     $tries++;
+                    if ($request->input('employee_id_option') === 'custom' || $tries > 5) {
+                        throw $qe;
+                    }
                     Log::warning('employee_id collision on create, retrying', [
                         'employee_id' => $employeeData['employee_id'],
                         'tries' => $tries,
                         'error' => $qe->getMessage()
                     ]);
-                    if ($tries > 5) {
-                        // rethrow after too many retries
-                        throw $qe;
-                    }
+                    $employeeData['employee_id'] = $this->computeNextEmployeeIdWithLock((int) $request->company_id);
                     usleep(100000); // 100ms backoff
                 }
             } while (! $created);
@@ -631,7 +682,7 @@ class EmployeeController extends Controller
                 // proceed without failing the whole operation; client will still see success
             }
 
-            DB::commit();
+            DB::connection($conn)->commit();
 
             try {
                 SystemNotificationService::notifyAdmins(
@@ -647,7 +698,7 @@ class EmployeeController extends Controller
             return redirect()->route('employees.index')
                 ->with('success', 'Employee added successfully and notified.');
         } catch (\Exception $e) {
-            DB::rollBack();
+            DB::connection($conn)->rollBack();
             Log::error('Store employee error', ['error' => $e->getMessage()]);
             return back()->withErrors(['error' => 'Error: ' . $e->getMessage()])->withInput();
         }
@@ -1608,23 +1659,27 @@ class EmployeeController extends Controller
         $digits = 4;
 
         $like = $prefix . '-%';
+        $conn = (new EmployeeDetail)->getConnectionName() ?: config('database.default', 'mysql');
 
-        return DB::transaction(function () use ($like, $prefix, $digits, $companyId) {
-            $last = DB::table('employee_details')
-                ->where('employee_id', 'LIKE', $like)
-                ->when($companyId && Schema::hasColumn('employee_details', 'company_id'), fn ($query) => $query->where('company_id', $companyId))
-                ->orderBy('id', 'desc')
-                ->lockForUpdate()
-                ->first();
+        $last = EmployeeDetail::where('employee_id', 'LIKE', $like)
+            ->when($companyId && Schema::connection($conn)->hasColumn('employee_details', 'company_id'), fn ($query) => $query->where('company_id', $companyId))
+            ->orderBy('id', 'desc')
+            ->lockForUpdate()
+            ->first();
 
-            if ($last && preg_match('/(\d+)$/', $last->employee_id, $m)) {
-                $nextNumber = intval($m[1]) + 1;
-            } else {
-                $nextNumber = 1;
-            }
+        if ($last && preg_match('/(\d+)$/', $last->employee_id, $m)) {
+            $nextNumber = intval($m[1]) + 1;
+        } else {
+            $nextNumber = 1;
+        }
 
-            return $prefix . '-' . str_pad($nextNumber, $digits, '0', STR_PAD_LEFT);
-        }, 5); // retry up to 5 times on deadlock
+        $candidate = $prefix . '-' . str_pad($nextNumber, $digits, '0', STR_PAD_LEFT);
+        while (EmployeeDetail::where('employee_id', $candidate)->exists()) {
+            $nextNumber++;
+            $candidate = $prefix . '-' . str_pad($nextNumber, $digits, '0', STR_PAD_LEFT);
+        }
+
+        return $candidate;
     }
 
     /**

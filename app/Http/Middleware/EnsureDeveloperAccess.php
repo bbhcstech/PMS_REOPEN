@@ -33,8 +33,8 @@ class EnsureDeveloperAccess
         );
 
         if ($isDevRole && $user->login_allowed && empty($user->archived_at)) {
-            // Force temporary password change requirement if set
-            if ($user->must_change_password && !in_array($request->route()?->getName(), ['developer.settings', 'developer.settings.password', 'logout', 'superadmin.logout'], true)) {
+            // Force temporary password change requirement if set (allow dashboard to avoid redirect loop)
+            if ($user->must_change_password && !in_array($request->route()?->getName(), ['developer.dashboard', 'developer.settings', 'developer.settings.password', 'logout', 'superadmin.logout'], true)) {
                 return redirect()->route('developer.settings')->with('warning', 'Security Action Required: Please change your temporary password before continuing.');
             }
             return $next($request);
