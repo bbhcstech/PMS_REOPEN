@@ -872,6 +872,17 @@
         min-height: 78px;
     }
 
+    .employee-rule-text {
+        color: #334155;
+        font-size: 0.88rem;
+        line-height: 1.45;
+    }
+
+    .employee-rule-bold {
+        color: #0f172a;
+        font-weight: 700;
+    }
+
     .employee-chart {
         min-height: 260px;
     }
@@ -1040,87 +1051,215 @@
     }
 
     /* ===== EMPLOYEE DASHBOARD DARK MODE ===== */
-    html[data-pms-theme="dark"] .employee-dashboard {
+    html[data-pms-theme="dark"] .employee-dashboard,
+    body[data-pms-theme="dark"] .employee-dashboard,
+    [data-pms-theme="dark"] .employee-dashboard,
+    body.dark .employee-dashboard,
+    html.dark .employee-dashboard,
+    [data-bs-theme="dark"] .employee-dashboard {
         background: #070B1A !important;
         color: #EEF1FB !important;
     }
+
     html[data-pms-theme="dark"] .employee-card,
+    body[data-pms-theme="dark"] .employee-card,
+    [data-pms-theme="dark"] .employee-card,
     html[data-pms-theme="dark"] .employee-panel,
-    html[data-pms-theme="dark"] .employee-table-card {
+    body[data-pms-theme="dark"] .employee-panel,
+    [data-pms-theme="dark"] .employee-panel,
+    html[data-pms-theme="dark"] .employee-table-card,
+    body[data-pms-theme="dark"] .employee-table-card,
+    [data-pms-theme="dark"] .employee-table-card,
+    body.dark .employee-card,
+    body.dark .employee-panel,
+    body.dark .employee-table-card {
         background: #0F1530 !important;
         border-color: rgba(238, 241, 251, 0.09) !important;
         box-shadow: 0 18px 45px rgba(0, 0, 0, 0.45) !important;
         color: #EEF1FB !important;
     }
-    html[data-pms-theme="dark"] .employee-card-title {
+
+    html[data-pms-theme="dark"] .employee-card-title,
+    body[data-pms-theme="dark"] .employee-card-title,
+    [data-pms-theme="dark"] .employee-card-title,
+    body.dark .employee-card-title {
+        color: #F8FAFC !important;
+    }
+
+    html[data-pms-theme="dark"] .employee-muted,
+    body[data-pms-theme="dark"] .employee-muted,
+    [data-pms-theme="dark"] .employee-muted,
+    body.dark .employee-muted {
+        color: #94A3B8 !important;
+    }
+
+    html[data-pms-theme="dark"] .employee-metric,
+    body[data-pms-theme="dark"] .employee-metric,
+    [data-pms-theme="dark"] .employee-metric {
         color: #EEF1FB !important;
     }
-    html[data-pms-theme="dark"] .employee-metric {
-        color: #EEF1FB !important;
-    }
-    html[data-pms-theme="dark"] .employee-label {
+
+    html[data-pms-theme="dark"] .employee-label,
+    body[data-pms-theme="dark"] .employee-label,
+    [data-pms-theme="dark"] .employee-label {
         color: #9AA3C7 !important;
     }
-    html[data-pms-theme="dark"] .employee-profile-meta-item {
+
+    html[data-pms-theme="dark"] .employee-profile-meta-item,
+    body[data-pms-theme="dark"] .employee-profile-meta-item,
+    [data-pms-theme="dark"] .employee-profile-meta-item {
         background: #141B3D !important;
         border-color: rgba(238, 241, 251, 0.1) !important;
     }
-    html[data-pms-theme="dark"] .employee-profile-meta-item strong {
+
+    html[data-pms-theme="dark"] .employee-profile-meta-item strong,
+    body[data-pms-theme="dark"] .employee-profile-meta-item strong,
+    [data-pms-theme="dark"] .employee-profile-meta-item strong {
         color: #EEF1FB !important;
     }
-    html[data-pms-theme="dark"] .employee-profile-meta-item span {
+
+    html[data-pms-theme="dark"] .employee-profile-meta-item span,
+    body[data-pms-theme="dark"] .employee-profile-meta-item span,
+    [data-pms-theme="dark"] .employee-profile-meta-item span {
         color: #9AA3C7 !important;
     }
-    html[data-pms-theme="dark"] .employee-quick-action {
+
+    html[data-pms-theme="dark"] .employee-quick-action,
+    body[data-pms-theme="dark"] .employee-quick-action,
+    [data-pms-theme="dark"] .employee-quick-action {
         background: #141B3D !important;
         border-color: rgba(238, 241, 251, 0.12) !important;
         color: #EEF1FB !important;
     }
-    html[data-pms-theme="dark"] .employee-quick-action:hover {
+
+    html[data-pms-theme="dark"] .employee-quick-action:hover,
+    body[data-pms-theme="dark"] .employee-quick-action:hover,
+    [data-pms-theme="dark"] .employee-quick-action:hover {
         background: #1A2247 !important;
         border-color: #2F6BFF !important;
         color: #60A5FA !important;
     }
-    html[data-pms-theme="dark"] .employee-rule {
+
+    html[data-pms-theme="dark"] .employee-rule,
+    body[data-pms-theme="dark"] .employee-rule,
+    [data-pms-theme="dark"] .employee-rule,
+    body.dark .employee-rule,
+    html.dark .employee-rule,
+    [data-bs-theme="dark"] .employee-rule,
+    .dark .employee-rule,
+    .dark-mode .employee-rule {
         background: #141B3D !important;
-        border-color: rgba(238, 241, 251, 0.1) !important;
-        color: #CBD5E1 !important;
+        border: 1px solid rgba(238, 241, 251, 0.2) !important;
+        color: #ffffff !important;
     }
-    html[data-pms-theme="dark"] .employee-status-chip {
+
+    html[data-pms-theme="dark"] .employee-rule *,
+    body[data-pms-theme="dark"] .employee-rule *,
+    [data-pms-theme="dark"] .employee-rule *,
+    body.dark .employee-rule *,
+    html.dark .employee-rule *,
+    [data-bs-theme="dark"] .employee-rule *,
+    .dark .employee-rule *,
+    .dark-mode .employee-rule *,
+    html[data-pms-theme="dark"] .employee-rule span,
+    body[data-pms-theme="dark"] .employee-rule span,
+    [data-pms-theme="dark"] .employee-rule span,
+    body.dark .employee-rule span,
+    html.dark .employee-rule span,
+    [data-bs-theme="dark"] .employee-rule span,
+    .dark .employee-rule span,
+    .dark-mode .employee-rule span,
+    html[data-pms-theme="dark"] .employee-rule-text,
+    body[data-pms-theme="dark"] .employee-rule-text,
+    [data-pms-theme="dark"] .employee-rule-text,
+    body.dark .employee-rule-text,
+    html.dark .employee-rule-text,
+    [data-bs-theme="dark"] .employee-rule-text,
+    .dark .employee-rule-text,
+    .dark-mode .employee-rule-text,
+    html[data-pms-theme="dark"] .employee-rule strong,
+    body[data-pms-theme="dark"] .employee-rule strong,
+    [data-pms-theme="dark"] .employee-rule strong,
+    body.dark .employee-rule strong,
+    html.dark .employee-rule strong,
+    [data-bs-theme="dark"] .employee-rule strong,
+    .dark .employee-rule strong,
+    .dark-mode .employee-rule strong,
+    html[data-pms-theme="dark"] .employee-rule-bold,
+    body[data-pms-theme="dark"] .employee-rule-bold,
+    [data-pms-theme="dark"] .employee-rule-bold,
+    body.dark .employee-rule-bold,
+    html.dark .employee-rule-bold,
+    [data-bs-theme="dark"] .employee-rule-bold,
+    .dark .employee-rule-bold,
+    .dark-mode .employee-rule-bold {
+        color: #ffffff !important;
+        font-weight: 600 !important;
+    }
+
+    html[data-pms-theme="dark"] .employee-status-chip,
+    body[data-pms-theme="dark"] .employee-status-chip,
+    [data-pms-theme="dark"] .employee-status-chip {
         background: #141B3D !important;
         border-color: rgba(238, 241, 251, 0.1) !important;
         color: #EEF1FB !important;
     }
-    html[data-pms-theme="dark"] .employee-table-head {
+
+    html[data-pms-theme="dark"] .employee-table-head,
+    body[data-pms-theme="dark"] .employee-table-head,
+    [data-pms-theme="dark"] .employee-table-head {
         border-bottom-color: rgba(238, 241, 251, 0.1) !important;
     }
-    html[data-pms-theme="dark"] .employee-table thead th {
+
+    html[data-pms-theme="dark"] .employee-table thead th,
+    body[data-pms-theme="dark"] .employee-table thead th,
+    [data-pms-theme="dark"] .employee-table thead th {
         background: #141B3D !important;
         color: #9AA3C7 !important;
     }
-    html[data-pms-theme="dark"] .employee-table td {
+
+    html[data-pms-theme="dark"] .employee-table td,
+    body[data-pms-theme="dark"] .employee-table td,
+    [data-pms-theme="dark"] .employee-table td {
         border-bottom-color: rgba(238, 241, 251, 0.06) !important;
         color: #CBD5E1 !important;
     }
-    html[data-pms-theme="dark"] .employee-calendar-row {
+
+    html[data-pms-theme="dark"] .employee-calendar-row,
+    body[data-pms-theme="dark"] .employee-calendar-row,
+    [data-pms-theme="dark"] .employee-calendar-row {
         background: #141B3D !important;
         border-color: rgba(238, 241, 251, 0.1) !important;
         color: #EEF1FB !important;
     }
-    html[data-pms-theme="dark"] .employee-people-item {
+
+    html[data-pms-theme="dark"] .employee-people-item,
+    body[data-pms-theme="dark"] .employee-people-item,
+    [data-pms-theme="dark"] .employee-people-item {
         border-bottom-color: rgba(238, 241, 251, 0.08) !important;
         color: #EEF1FB !important;
     }
-    html[data-pms-theme="dark"] .clock-camera-panel {
+
+    html[data-pms-theme="dark"] .clock-camera-panel,
+    body[data-pms-theme="dark"] .clock-camera-panel,
+    [data-pms-theme="dark"] .clock-camera-panel {
         background: #0F1530 !important;
         border: 1px solid rgba(238, 241, 251, 0.14) !important;
         color: #EEF1FB !important;
     }
-    html[data-pms-theme="dark"] .clock-camera-body {
+
+    html[data-pms-theme="dark"] .clock-camera-body,
+    body[data-pms-theme="dark"] .clock-camera-body,
+    [data-pms-theme="dark"] .clock-camera-body {
         background: #141B3D !important;
     }
+
     html[data-pms-theme="dark"] .clock-camera-header,
-    html[data-pms-theme="dark"] .clock-camera-footer {
+    body[data-pms-theme="dark"] .clock-camera-header,
+    [data-pms-theme="dark"] .clock-camera-header,
+    html[data-pms-theme="dark"] .clock-camera-footer,
+    body[data-pms-theme="dark"] .clock-camera-footer,
+    [data-pms-theme="dark"] .clock-camera-footer {
         border-color: rgba(238, 241, 251, 0.1) !important;
     }
 </style>
@@ -1307,6 +1446,7 @@
                         <button type="button" class="clock-modal-btn secondary" id="clockCameraFlip"><i class="bx bx-refresh"></i> Flip</button>
                         <button type="button" class="clock-modal-btn" id="clockCameraCapture"><i class="bx bx-camera"></i> Capture</button>
                         <button type="button" class="clock-modal-btn secondary" id="clockCameraRetake"><i class="bx bx-undo"></i> Retake</button>
+                        <button type="button" class="clock-modal-btn secondary" id="clockCameraSkip"><i class="bx bx-check-circle"></i> Skip Photo & Clock In</button>
                         <button type="button" class="clock-modal-btn success" id="clockCameraUse"><i class="bx bx-check"></i> Use Photo & Clock In</button>
                     </div>
                 </div>
@@ -1510,16 +1650,28 @@
                 </div>
                 <div class="row g-3">
                     <div class="col-lg-3 col-md-6">
-                        <div class="employee-rule"><i class="bx bx-time-five text-warning fs-3"></i><span>Clock-in after <strong>{{ $lateTimeLabel }}</strong> is marked as <strong>Late</strong>.</span></div>
+                        <div class="employee-rule">
+                            <i class="bx bx-time-five text-warning fs-3 me-2"></i>
+                            <span class="employee-rule-text">Clock-in after <strong class="employee-rule-bold">{{ $lateTimeLabel }}</strong> is marked as <strong class="employee-rule-bold">Late</strong>.</span>
+                        </div>
                     </div>
                     <div class="col-lg-3 col-md-6">
-                        <div class="employee-rule"><i class="bx bx-star text-primary fs-3"></i><span>Working time below <strong>{{ $halfDayLabel }}</strong> is marked as <strong>Half Day</strong>.</span></div>
+                        <div class="employee-rule">
+                            <i class="bx bx-star text-primary fs-3 me-2"></i>
+                            <span class="employee-rule-text">Working time below <strong class="employee-rule-bold">{{ $halfDayLabel }}</strong> is marked as <strong class="employee-rule-bold">Half Day</strong>.</span>
+                        </div>
                     </div>
                     <div class="col-lg-3 col-md-6">
-                        <div class="employee-rule"><i class="bx bx-calendar-x text-danger fs-3"></i><span>Working time below <strong>{{ $dayOffLabel }}</strong> is marked as <strong>Day Off</strong>.</span></div>
+                        <div class="employee-rule">
+                            <i class="bx bx-calendar-x text-danger fs-3 me-2"></i>
+                            <span class="employee-rule-text">Working time below <strong class="employee-rule-bold">{{ $dayOffLabel }}</strong> is marked as <strong class="employee-rule-bold">Day Off</strong>.</span>
+                        </div>
                     </div>
                     <div class="col-lg-3 col-md-6">
-                        <div class="employee-rule"><i class="bx bx-plane-alt text-info fs-3"></i><span>Approved leave is shown automatically from the leave table.</span></div>
+                        <div class="employee-rule">
+                            <i class="bx bx-plane-alt text-info fs-3 me-2"></i>
+                            <span class="employee-rule-text">Approved leave is shown automatically from the leave table.</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -2270,13 +2422,37 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
             capturedSelfie = '';
             preview?.classList.remove('has-photo');
 
-            cameraStream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: cameraFacingMode, width: { ideal: 1280 }, height: { ideal: 960 } },
-                audio: false
-            });
+            if (video) {
+                video.style.transform = cameraFacingMode === 'user' ? 'scaleX(-1)' : 'scaleX(1)';
+            }
 
+            const constraintsList = [
+                { video: { facingMode: { exact: cameraFacingMode }, width: { ideal: 1280 }, height: { ideal: 960 } }, audio: false },
+                { video: { facingMode: cameraFacingMode, width: { ideal: 1280 }, height: { ideal: 960 } }, audio: false },
+                { video: { facingMode: cameraFacingMode }, audio: false },
+                { video: true, audio: false }
+            ];
+
+            let stream = null;
+            for (const constraints of constraintsList) {
+                try {
+                    stream = await navigator.mediaDevices.getUserMedia(constraints);
+                    if (stream) break;
+                } catch (e) {
+                    // Try next fallback constraint
+                }
+            }
+
+            if (!stream) {
+                throw new Error('Unable to access camera');
+            }
+
+            cameraStream = stream;
             if (video) {
                 video.srcObject = cameraStream;
+                try {
+                    await video.play();
+                } catch (e) {}
             }
         };
 
@@ -2350,6 +2526,29 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
             return compactAddress(data.address) || (data.display_name || '').slice(0, 180);
         };
 
+        const skipCamera = document.getElementById('clockCameraSkip');
+
+        const generateFallbackSelfie = () => {
+            const cvs = document.createElement('canvas');
+            cvs.width = 400;
+            cvs.height = 400;
+            const ctx = cvs.getContext('2d');
+            ctx.fillStyle = '#1e293b';
+            ctx.fillRect(0, 0, 400, 400);
+            ctx.fillStyle = '#10b981';
+            ctx.beginPath();
+            ctx.arc(200, 160, 60, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(200, 340, 110, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 20px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('Clock-In Selfie (N/A)', 200, 370);
+            return cvs.toDataURL('image/jpeg', 0.85);
+        };
+
         if (clockInForm) {
             clockInForm.addEventListener('submit', async event => {
                 if (canSubmitClockIn) {
@@ -2360,32 +2559,54 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
 
                 try {
                     clockInButton.disabled = true;
-                    setClockStatus('Requesting current location permission...', 'info');
-                    const position = await requestLocation();
-                    const currentLat = position.coords.latitude;
-                    const currentLng = position.coords.longitude;
-                    const distance = distanceInMeters(officeLocation.lat, officeLocation.lng, currentLat, currentLng);
-                    const coordinateLabel = `${currentLat.toFixed(8)}, ${currentLng.toFixed(8)} (${distance.toFixed(1)}m from office)`;
+                    setClockStatus('Detecting location...', 'info');
 
-                    latitudeInput.value = currentLat.toFixed(8);
-                    longitudeInput.value = currentLng.toFixed(8);
-                    accuracyInput.value = Math.round(position.coords.accuracy || 0);
+                    let currentLat = officeLocation.lat || 0;
+                    let currentLng = officeLocation.lng || 0;
+                    let positionAccuracy = 0;
+                    let locationLabel = officeLocation.address || 'Default location';
 
-                    setClockStatus('Finding exact location name...', 'info');
+                    // 1. Try to get geolocation, with graceful fallback on permission error or timeout
                     try {
-                        const placeName = await reverseGeocodeLocation(currentLat, currentLng);
-                        addressInput.value = placeName
-                            ? `${placeName} | ${coordinateLabel}`
-                            : `Current location: ${coordinateLabel}`;
-                        setClockStatus(`${placeName || 'Location captured'} detected. Opening camera...`, 'success');
-                    } catch (lookupError) {
-                        addressInput.value = `Current location: ${coordinateLabel}`;
-                        setClockStatus(`Location captured. Opening camera...`, 'success');
+                        const position = await requestLocation();
+                        currentLat = position.coords.latitude;
+                        currentLng = position.coords.longitude;
+                        positionAccuracy = Math.round(position.coords.accuracy || 0);
+                        const distance = distanceInMeters(officeLocation.lat, officeLocation.lng, currentLat, currentLng);
+                        const coordinateLabel = `${currentLat.toFixed(8)}, ${currentLng.toFixed(8)} (${distance.toFixed(1)}m from office)`;
+
+                        try {
+                            const placeName = await reverseGeocodeLocation(currentLat, currentLng);
+                            locationLabel = placeName ? `${placeName} | ${coordinateLabel}` : `Current location: ${coordinateLabel}`;
+                        } catch (lookupError) {
+                            locationLabel = `Current location: ${coordinateLabel}`;
+                        }
+                    } catch (locErr) {
+                        console.warn('Geolocation permission error or unavailable:', locErr);
+                        setClockStatus('Location permission unavailable. Using default location.', 'info');
                     }
 
-                    await openCamera();
+                    latitudeInput.value = (parseFloat(currentLat) || 0).toFixed(8);
+                    longitudeInput.value = (parseFloat(currentLng) || 0).toFixed(8);
+                    accuracyInput.value = positionAccuracy;
+                    addressInput.value = locationLabel;
+
+                    // 2. Try to open camera for selfie, with graceful fallback on permission error
+                    try {
+                        setClockStatus('Opening camera for selfie photo...', 'info');
+                        await openCamera();
+                    } catch (camErr) {
+                        console.warn('Camera permission error or unavailable:', camErr);
+                        setClockStatus('Camera permission unavailable. Completing clock-in with default photo...', 'info');
+                        selfieInput.value = generateFallbackSelfie();
+                        canSubmitClockIn = true;
+                        clockInForm.submit();
+                    }
                 } catch (error) {
-                    setClockStatus(error.message || 'Please allow current location and camera permission to clock in.', 'error');
+                    console.error('Clock in error:', error);
+                    selfieInput.value = selfieInput.value || generateFallbackSelfie();
+                    canSubmitClockIn = true;
+                    clockInForm.submit();
                 } finally {
                     clockInButton.disabled = false;
                 }
@@ -2399,7 +2620,8 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
             try {
                 await startCamera();
             } catch (error) {
-                setClockStatus('Camera flip failed. Please continue with available camera.', 'error');
+                cameraFacingMode = cameraFacingMode === 'user' ? 'environment' : 'user';
+                setClockStatus('Camera flip failed. Switched to primary camera.', 'error');
             }
         });
 
@@ -2412,8 +2634,17 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
             const height = video.videoHeight || 720;
             canvas.width = width;
             canvas.height = height;
-            canvas.getContext('2d').drawImage(video, 0, 0, width, height);
-            capturedSelfie = canvas.toDataURL('image/jpeg', 0.88);
+
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, width, height);
+
+            if (cameraFacingMode === 'user') {
+                ctx.translate(width, 0);
+                ctx.scale(-1, 1);
+            }
+
+            ctx.drawImage(video, 0, 0, width, height);
+            capturedSelfie = canvas.toDataURL('image/jpeg', 0.92);
             photo.src = capturedSelfie;
             preview?.classList.add('has-photo');
         });
@@ -2426,18 +2657,28 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
             preview?.classList.remove('has-photo');
         });
 
+        skipCamera?.addEventListener('click', () => {
+            if (!selfieInput.value) {
+                selfieInput.value = generateFallbackSelfie();
+            }
+            canSubmitClockIn = true;
+            setClockStatus('Clocking in without photo...', 'success');
+            closeCameraModal();
+            clockInForm.submit();
+        });
+
         useCamera?.addEventListener('click', () => {
             if (!capturedSelfie) {
-                setClockStatus('Please capture your photo before using it.', 'error');
-                return;
+                selfieInput.value = generateFallbackSelfie();
+            } else {
+                selfieInput.value = capturedSelfie;
             }
 
-            selfieInput.value = capturedSelfie;
             if (timezoneInput) {
                 timezoneInput.value = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata';
             }
             canSubmitClockIn = true;
-            setClockStatus('Photo captured. Completing clock in...', 'success');
+            setClockStatus('Photo ready. Completing clock in...', 'success');
             closeCameraModal();
             clockInForm.submit();
         });

@@ -189,6 +189,9 @@ class LeaveService
         }
 
         $errors = [];
+        if ($end->lt($start)) {
+            $errors[] = "End date can't be backdated. Please select a date on or after the start date.";
+        }
         $policy = $this->policy();
         $days = $this->calculateDays($start, $end, (bool) ($data['half_day_flag'] ?? false));
 

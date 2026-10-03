@@ -11,8 +11,8 @@
     <!-- ===== EMPLOYEE INFO CARD ===== -->
     <div class="employee-card">
         <div class="employee-avatar-wrapper">
-            <img src="{{ $employee->profile_image ? asset($employee->profile_image) : asset('images/default-avatar.png') }}"
-                 alt="{{ $employee->name }}" class="employee-avatar">
+            <img src="{{ (!empty($employee->profile_image) && file_exists(public_path($employee->profile_image))) ? asset($employee->profile_image) : asset('images/default-avatar.png') }}"
+                 alt="{{ $employee->name }}" class="employee-avatar" onerror="this.onerror=null; this.src='{{ asset('images/default-avatar.png') }}';">
             <div class="employee-status-dot"></div>
         </div>
         <div class="employee-info">

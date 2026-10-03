@@ -578,9 +578,13 @@
         });
 
         // Status change handler
-        $('#tickets-table').on('change', '.change-status', function () {
-            var ticketId = $(this).data('ticket-id');
-            var status = $(this).val();
+        $('#tickets-table').on('focus', '.change-status', function () {
+            $(this).data('prev-val', $(this).val());
+        }).on('change', '.change-status', function () {
+            var $select = $(this);
+            var prevVal = $select.data('prev-val') || $select.val();
+            var ticketId = $select.data('ticket-id');
+            var status = $select.val();
             var token = '{{ csrf_token() }}';
 
             $.ajax({
@@ -593,11 +597,16 @@
                 },
                 success: function (response) {
                     if (response.status === 'success') {
-                        // Toast or alert notification
+                        $select.data('prev-val', status);
+                    } else {
+                        $select.val(prevVal);
+                        alert(response.message || 'Error updating ticket status');
                     }
                 },
-                error: function () {
-                    alert('Error updating ticket status');
+                error: function (xhr) {
+                    $select.val(prevVal);
+                    var msg = xhr.responseJSON && xhr.responseJSON.error ? xhr.responseJSON.error : 'Error updating ticket status';
+                    alert(msg);
                 }
             });
         });

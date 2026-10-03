@@ -177,7 +177,7 @@
                 'user_id' => $user->id,
                 'name' => $user->name,
                 'designation' => $user->employeeDetail->designation->name ?? '-',
-                'photo' => $user->profile_image ? asset($user->profile_image) : asset('images/default-avatar.png'),
+                'photo' => (!empty($user->profile_image) && file_exists(public_path($user->profile_image))) ? asset($user->profile_image) : asset('images/default-avatar.png'),
                 'month' => (int) $month,
                 'year' => (int) $year,
                 'month_name' => \Carbon\Carbon::createFromDate($year, $month)->format('F Y'),
@@ -923,7 +923,7 @@ $(document).ready(function () {
         $('#attendanceDetailsBody').html(
             '<div class="attendance-month-summary">' +
                 '<div class="attendance-month-profile">' +
-                    '<img src="' + escapeAttendanceHtml(payload.photo) + '" alt="' + escapeAttendanceHtml(payload.name) + '">' +
+                    '<img src="' + escapeAttendanceHtml(payload.photo) + '" alt="' + escapeAttendanceHtml(payload.name) + '" onerror="this.onerror=null; this.src=\'/images/default-avatar.png\';">' +
                     '<div>' +
                         '<h5>' + escapeAttendanceHtml(payload.name) + '</h5>' +
                         '<p>' + escapeAttendanceHtml(payload.designation) + ' | ' + escapeAttendanceHtml(payload.month_name) +

@@ -18,9 +18,17 @@ class RoleMiddleware
     //     return $next($request);
     // }
     
-   public function handle(Request $request, Closure $next, $role)
+   public function handle(Request $request, Closure $next, $role = 'admin')
     {
-        if (\Illuminate\Support\Facades\Auth::guard('super_admin')->check() || (auth()->check() && (auth()->user()->role == $role || in_array(strtolower((string) auth()->user()->role), ['superadmin', 'admin'], true)))) {
+        $allowedRoles = array_filter(array_map('trim', explode(',', (string) $role)));
+        if (empty($allowedRoles)) {
+            $allowedRoles = ['admin'];
+        }
+
+        $userRole = strtolower((string) auth()->user()?->role);
+
+        if (\Illuminate\Support\Facades\Auth::guard('super_admin')->check() 
+            || (auth()->check() && (in_array($userRole, $allowedRoles, true) || in_array($userRole, ['superadmin', 'admin', 'administrator'], true)))) {
             return $next($request);
         }
 

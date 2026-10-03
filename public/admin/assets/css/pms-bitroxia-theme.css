@@ -6142,28 +6142,147 @@ body[data-pms-theme="dark"] .modal-body .rec-notification-alert-icon,
   -webkit-text-fill-color: #60A5FA !important;
 }
 
-/* Appraisal Table Action Buttons Dark Mode Overrides */
-html[data-pms-theme="dark"] .app-table .btn-icon.btn-light,
-html[data-bs-theme="dark"] .app-table .btn-icon.btn-light,
-html[data-theme="dark"] .app-table .btn-icon.btn-light,
-html.dark .app-table .btn-icon.btn-light,
-body[data-pms-theme="dark"] .app-table .btn-icon.btn-light,
-[data-pms-theme="dark"] .app-table .btn-icon.btn-light,
-.dark .app-table .btn-icon.btn-light {
-  background: #141B3D !important;
-  border: 1px solid rgba(238, 241, 251, 0.2) !important;
-  color: #cbd5e1 !important;
+/* Table Action Buttons Dark Mode Overrides (Universal for all tables) */
+.table td .btn-icon,
+.table td .btn-icon.btn-sm,
+table td .btn-icon,
+table .btn-icon,
+.app-table .btn-icon,
+.btn-icon.rounded-circle {
+  width: 34px !important;
+  height: 34px !important;
+  min-width: 34px !important;
+  min-height: 34px !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 50% !important;
+  flex-shrink: 0 !important;
+  transition: all 0.2s ease !important;
 }
 
+.table td .btn-icon i,
+table td .btn-icon i,
+table .btn-icon i,
+.app-table .btn-icon i,
+.btn-icon.rounded-circle i {
+  font-size: 1.25rem !important;
+  width: 1.25rem !important;
+  height: 1.25rem !important;
+  min-width: 1.25rem !important;
+  min-height: 1.25rem !important;
+  display: inline-block !important;
+  line-height: 1 !important;
+  background-color: currentColor !important;
+}
+
+html[data-pms-theme="dark"] .table td .btn-icon.btn-light,
+html[data-pms-theme="dark"] table .btn-icon.btn-light,
+html[data-pms-theme="dark"] .app-table .btn-icon.btn-light,
+html[data-bs-theme="dark"] .table td .btn-icon.btn-light,
+html[data-bs-theme="dark"] table .btn-icon.btn-light,
+html[data-bs-theme="dark"] .app-table .btn-icon.btn-light,
+html[data-theme="dark"] .table td .btn-icon.btn-light,
+html[data-theme="dark"] table .btn-icon.btn-light,
+html[data-theme="dark"] .app-table .btn-icon.btn-light,
+html.dark .table td .btn-icon.btn-light,
+html.dark table .btn-icon.btn-light,
+html.dark .app-table .btn-icon.btn-light,
+body[data-pms-theme="dark"] .table td .btn-icon.btn-light,
+body[data-pms-theme="dark"] table .btn-icon.btn-light,
+body[data-pms-theme="dark"] .app-table .btn-icon.btn-light,
+[data-pms-theme="dark"] .table td .btn-icon.btn-light,
+[data-pms-theme="dark"] table .btn-icon.btn-light,
+[data-pms-theme="dark"] .app-table .btn-icon.btn-light,
+.dark .table td .btn-icon.btn-light,
+.dark table .btn-icon.btn-light,
+.dark .app-table .btn-icon.btn-light {
+  background: #141B3D !important;
+  border: 1px solid rgba(79, 131, 255, 0.35) !important;
+  color: #EEF1FB !important;
+}
+
+html[data-pms-theme="dark"] .table td .btn-icon.btn-light:hover,
+html[data-pms-theme="dark"] table .btn-icon.btn-light:hover,
 html[data-pms-theme="dark"] .app-table .btn-icon.btn-light:hover,
+html[data-bs-theme="dark"] .table td .btn-icon.btn-light:hover,
+html[data-bs-theme="dark"] table .btn-icon.btn-light:hover,
 html[data-bs-theme="dark"] .app-table .btn-icon.btn-light:hover,
+html[data-theme="dark"] .table td .btn-icon.btn-light:hover,
+html[data-theme="dark"] table .btn-icon.btn-light:hover,
 html[data-theme="dark"] .app-table .btn-icon.btn-light:hover,
+html.dark .table td .btn-icon.btn-light:hover,
+html.dark table .btn-icon.btn-light:hover,
 html.dark .app-table .btn-icon.btn-light:hover,
+body[data-pms-theme="dark"] .table td .btn-icon.btn-light:hover,
+body[data-pms-theme="dark"] table .btn-icon.btn-light:hover,
 body[data-pms-theme="dark"] .app-table .btn-icon.btn-light:hover,
+[data-pms-theme="dark"] .table td .btn-icon.btn-light:hover,
+[data-pms-theme="dark"] table .btn-icon.btn-light:hover,
 [data-pms-theme="dark"] .app-table .btn-icon.btn-light:hover,
+.dark .table td .btn-icon.btn-light:hover,
+.dark table .btn-icon.btn-light:hover,
 .dark .app-table .btn-icon.btn-light:hover {
-  background: #1e293b !important;
-  border-color: rgba(238, 241, 251, 0.35) !important;
+  background: #1A2247 !important;
+  border-color: #2F6BFF !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 12px rgba(47, 107, 255, 0.3) !important;
+}
+
+/* Default three-dot / action icon in dark mode */
+html[data-pms-theme="dark"] .table td .btn-icon.btn-light i,
+html[data-pms-theme="dark"] table .btn-icon.btn-light i,
+html[data-pms-theme="dark"] .app-table .btn-icon.btn-light i,
+html[data-bs-theme="dark"] .table td .btn-icon.btn-light i,
+html[data-bs-theme="dark"] table .btn-icon.btn-light i,
+html[data-bs-theme="dark"] .app-table .btn-icon.btn-light i,
+html[data-theme="dark"] .table td .btn-icon.btn-light i,
+html[data-theme="dark"] table .btn-icon.btn-light i,
+html[data-theme="dark"] .app-table .btn-icon.btn-light i,
+html.dark .table td .btn-icon.btn-light i,
+html.dark table .btn-icon.btn-light i,
+html.dark .app-table .btn-icon.btn-light i,
+body[data-pms-theme="dark"] .table td .btn-icon.btn-light i,
+body[data-pms-theme="dark"] table .btn-icon.btn-light i,
+body[data-pms-theme="dark"] .app-table .btn-icon.btn-light i,
+[data-pms-theme="dark"] .table td .btn-icon.btn-light i,
+[data-pms-theme="dark"] table .btn-icon.btn-light i,
+[data-pms-theme="dark"] .app-table .btn-icon.btn-light i,
+.dark .table td .btn-icon.btn-light i,
+.dark table .btn-icon.btn-light i,
+.dark .app-table .btn-icon.btn-light i {
+  color: #EEF1FB !important;
+  -webkit-text-fill-color: #EEF1FB !important;
+  background-color: #EEF1FB !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+html[data-pms-theme="dark"] .table td .btn-icon.btn-light:hover i,
+html[data-pms-theme="dark"] table .btn-icon.btn-light:hover i,
+html[data-pms-theme="dark"] .app-table .btn-icon.btn-light:hover i,
+html[data-bs-theme="dark"] .table td .btn-icon.btn-light:hover i,
+html[data-bs-theme="dark"] table .btn-icon.btn-light:hover i,
+html[data-bs-theme="dark"] .app-table .btn-icon.btn-light:hover i,
+html[data-theme="dark"] .table td .btn-icon.btn-light:hover i,
+html[data-theme="dark"] table .btn-icon.btn-light:hover i,
+html[data-theme="dark"] .app-table .btn-icon.btn-light:hover i,
+html.dark .table td .btn-icon.btn-light:hover i,
+html.dark table .btn-icon.btn-light:hover i,
+html.dark .app-table .btn-icon.btn-light:hover i,
+body[data-pms-theme="dark"] .table td .btn-icon.btn-light:hover i,
+body[data-pms-theme="dark"] table .btn-icon.btn-light:hover i,
+body[data-pms-theme="dark"] .app-table .btn-icon.btn-light:hover i,
+[data-pms-theme="dark"] .table td .btn-icon.btn-light:hover i,
+[data-pms-theme="dark"] table .btn-icon.btn-light:hover i,
+[data-pms-theme="dark"] .app-table .btn-icon.btn-light:hover i,
+.dark .table td .btn-icon.btn-light:hover i,
+.dark table .btn-icon.btn-light:hover i,
+.dark .app-table .btn-icon.btn-light:hover i {
+  color: #FFFFFF !important;
+  -webkit-text-fill-color: #FFFFFF !important;
+  background-color: #FFFFFF !important;
 }
 
 html[data-pms-theme="dark"] .app-table .btn-icon.btn-light i.text-info,
@@ -6175,6 +6294,7 @@ body[data-pms-theme="dark"] .app-table .btn-icon.btn-light i.text-info,
 .dark .app-table .btn-icon.btn-light i.text-info {
   color: #38bdf8 !important;
   -webkit-text-fill-color: #38bdf8 !important;
+  background-color: #38bdf8 !important;
 }
 
 html[data-pms-theme="dark"] .app-table .btn-icon.btn-light i.text-primary,
@@ -6186,6 +6306,7 @@ body[data-pms-theme="dark"] .app-table .btn-icon.btn-light i.text-primary,
 .dark .app-table .btn-icon.btn-light i.text-primary {
   color: #818cf8 !important;
   -webkit-text-fill-color: #818cf8 !important;
+  background-color: #818cf8 !important;
 }
 
 html[data-pms-theme="dark"] .app-table .btn-icon.btn-light i.text-danger,
@@ -6197,6 +6318,7 @@ body[data-pms-theme="dark"] .app-table .btn-icon.btn-light i.text-danger,
 .dark .app-table .btn-icon.btn-light i.text-danger {
   color: #fca5a5 !important;
   -webkit-text-fill-color: #fca5a5 !important;
+  background-color: #fca5a5 !important;
 }
 
 /* Ensure top navbar remains sticky when scrolling */
@@ -6205,6 +6327,68 @@ body[data-pms-theme="dark"] .app-table .btn-icon.btn-light i.text-danger,
   position: sticky !important;
   top: 0.75rem !important;
   z-index: 1030 !important;
+}
+
+/* ==========================================================================
+   BUTTON TEXT SIZING & FILE CHOOSE ALIGNMENT FIXES
+   ========================================================================== */
+.btn-sm,
+.btn-primary,
+.btn-secondary,
+.btn-outline-primary,
+.btn-outline-secondary,
+.btn-outline-success {
+  white-space: nowrap !important;
+  max-width: 100%;
+}
+
+/* Ensure header buttons auto-expand to accommodate text */
+.card-header .d-flex.flex-wrap.gap-2 .btn-sm {
+  min-width: max-content;
+  padding: 0.45rem 0.95rem !important;
+  font-size: 0.82rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.35rem;
+}
+
+/* Choose File button inner alignment fix */
+input[type="file"].form-control,
+.form-control[type="file"] {
+  padding: 0.35rem 0.75rem !important;
+  display: flex !important;
+  align-items: center !important;
+  min-height: 42px !important;
+  overflow: hidden !important;
+  cursor: pointer;
+}
+
+input[type="file"].form-control::file-selector-button,
+.form-control[type="file"]::file-selector-button,
+input[type="file"].form-control::-webkit-file-upload-button,
+.form-control[type="file"]::-webkit-file-upload-button {
+  padding: 0.4rem 0.95rem !important;
+  margin: -0.35rem 0.75rem -0.35rem -0.75rem !important;
+  margin-inline-end: 0.85rem !important;
+  background: var(--bx-surface-3, #1A2247) !important;
+  color: var(--bx-ink, #EEF1FB) !important;
+  border: none !important;
+  border-inline-end: 1px solid var(--bx-border, rgba(238, 241, 251, 0.16)) !important;
+  border-top-left-radius: inherit !important;
+  border-bottom-left-radius: inherit !important;
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+  font-weight: 600 !important;
+  font-size: 0.85rem !important;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+input[type="file"].form-control:hover::file-selector-button,
+.form-control[type="file"]:hover::file-selector-button {
+  background: var(--bx-primary, #2F6BFF) !important;
+  color: #ffffff !important;
 }
 
 .modal-backdrop {
@@ -6452,4 +6636,269 @@ html[data-pms-theme="dark"] .form-select.is-invalid,
 .form-select.is-valid {
   border-color: #10b981 !important;
   box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15) !important;
+}
+
+/* ==========================================================================
+   ATTENDANCE RULES & REGULATIONS DARK MODE CONTRAST FIX
+   ========================================================================== */
+html[data-pms-theme="dark"] .employee-rule,
+html[data-theme="dark"] .employee-rule,
+html[data-bs-theme="dark"] .employee-rule,
+body[data-pms-theme="dark"] .employee-rule,
+[data-pms-theme="dark"] .employee-rule,
+[data-theme="dark"] .employee-rule,
+[data-bs-theme="dark"] .employee-rule,
+body.dark .employee-rule,
+html.dark .employee-rule,
+.dark .employee-rule,
+.dark-mode .employee-rule {
+  background: #141B3D !important;
+  border: 1px solid rgba(238, 241, 251, 0.16) !important;
+  color: #EEF1FB !important;
+}
+
+html[data-pms-theme="dark"] .employee-rule *,
+html[data-theme="dark"] .employee-rule *,
+html[data-bs-theme="dark"] .employee-rule *,
+body[data-pms-theme="dark"] .employee-rule *,
+[data-pms-theme="dark"] .employee-rule *,
+[data-theme="dark"] .employee-rule *,
+[data-bs-theme="dark"] .employee-rule *,
+body.dark .employee-rule *,
+html.dark .employee-rule *,
+.dark .employee-rule *,
+.dark-mode .employee-rule *,
+html[data-pms-theme="dark"] .employee-rule-text,
+html[data-theme="dark"] .employee-rule-text,
+html[data-bs-theme="dark"] .employee-rule-text,
+[data-pms-theme="dark"] .employee-rule-text,
+[data-theme="dark"] .employee-rule-text,
+body.dark .employee-rule-text,
+html.dark .employee-rule-text,
+.dark .employee-rule-text,
+.dark-mode .employee-rule-text {
+  color: #CBD5E1 !important;
+  -webkit-text-fill-color: #CBD5E1 !important;
+}
+
+html[data-pms-theme="dark"] .employee-rule-bold,
+html[data-theme="dark"] .employee-rule-bold,
+html[data-bs-theme="dark"] .employee-rule-bold,
+body[data-pms-theme="dark"] .employee-rule-bold,
+[data-pms-theme="dark"] .employee-rule-bold,
+[data-theme="dark"] .employee-rule-bold,
+[data-bs-theme="dark"] .employee-rule-bold,
+body.dark .employee-rule-bold,
+html.dark .employee-rule-bold,
+.dark .employee-rule-bold,
+.dark-mode .employee-rule-bold {
+  color: #FFFFFF !important;
+  -webkit-text-fill-color: #FFFFFF !important;
+  font-weight: 700 !important;
+}
+
+/* ==========================================================================
+   ATTENDANCE DETAILS MODAL & SUMMARY DARK MODE CONTRAST FIX
+   ========================================================================== */
+.attendance-month-summary,
+.member-month-summary,
+.hour-month-summary {
+  background: #f8fafc;
+  padding: 1.25rem;
+  border-radius: 12px;
+}
+
+.attendance-month-profile,
+.member-month-profile,
+.hour-month-profile {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.attendance-month-profile img,
+.member-month-profile img,
+.hour-month-profile img {
+  width: 64px;
+  height: 64px;
+  border-radius: 14px;
+  object-fit: cover;
+  background-color: #e2e8f0;
+}
+
+.attendance-month-profile h5,
+.member-month-profile h5,
+.hour-month-profile h5 {
+  margin: 0;
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+  font-weight: 800;
+  font-size: 1.25rem;
+}
+
+.attendance-month-profile p,
+.member-month-profile p,
+.hour-month-profile p {
+  margin: 0.2rem 0 0;
+  color: #475569 !important;
+  -webkit-text-fill-color: #475569 !important;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+html[data-pms-theme="dark"] .attendance-month-summary,
+html[data-theme="dark"] .attendance-month-summary,
+html[data-bs-theme="dark"] .attendance-month-summary,
+[data-pms-theme="dark"] .attendance-month-summary,
+[data-theme="dark"] .attendance-month-summary,
+body.dark-mode .attendance-month-summary,
+body.dark .attendance-month-summary,
+html[data-pms-theme="dark"] .member-month-summary,
+html[data-theme="dark"] .member-month-summary,
+html[data-bs-theme="dark"] .member-month-summary,
+[data-pms-theme="dark"] .member-month-summary,
+[data-theme="dark"] .member-month-summary,
+body.dark-mode .member-month-summary,
+body.dark .member-month-summary,
+html[data-pms-theme="dark"] .hour-month-summary,
+html[data-theme="dark"] .hour-month-summary,
+html[data-bs-theme="dark"] .hour-month-summary,
+[data-pms-theme="dark"] .hour-month-summary,
+[data-theme="dark"] .hour-month-summary,
+body.dark-mode .hour-month-summary,
+body.dark .hour-month-summary {
+  background: #070B1A !important;
+  color: #CBD5E1 !important;
+}
+
+html[data-pms-theme="dark"] .attendance-month-profile,
+html[data-theme="dark"] .attendance-month-profile,
+html[data-bs-theme="dark"] .attendance-month-profile,
+[data-pms-theme="dark"] .attendance-month-profile,
+[data-theme="dark"] .attendance-month-profile,
+body.dark-mode .attendance-month-profile,
+body.dark .attendance-month-profile,
+html[data-pms-theme="dark"] .member-month-profile,
+html[data-theme="dark"] .member-month-profile,
+html[data-bs-theme="dark"] .member-month-profile,
+[data-pms-theme="dark"] .member-month-profile,
+[data-theme="dark"] .member-month-profile,
+body.dark-mode .member-month-profile,
+body.dark .member-month-profile,
+html[data-pms-theme="dark"] .hour-month-profile,
+html[data-theme="dark"] .hour-month-profile,
+html[data-bs-theme="dark"] .hour-month-profile,
+[data-pms-theme="dark"] .hour-month-profile,
+[data-theme="dark"] .hour-month-profile,
+body.dark-mode .hour-month-profile,
+body.dark .hour-month-profile {
+  background: #0F1530 !important;
+  border-color: rgba(238, 241, 251, 0.12) !important;
+}
+
+html[data-pms-theme="dark"] .attendance-month-profile h5,
+html[data-theme="dark"] .attendance-month-profile h5,
+html[data-bs-theme="dark"] .attendance-month-profile h5,
+[data-pms-theme="dark"] .attendance-month-profile h5,
+[data-theme="dark"] .attendance-month-profile h5,
+body.dark-mode .attendance-month-profile h5,
+body.dark .attendance-month-profile h5,
+html[data-pms-theme="dark"] .member-month-profile h5,
+html[data-theme="dark"] .member-month-profile h5,
+html[data-bs-theme="dark"] .member-month-profile h5,
+[data-pms-theme="dark"] .member-month-profile h5,
+[data-theme="dark"] .member-month-profile h5,
+body.dark-mode .member-month-profile h5,
+body.dark .member-month-profile h5,
+html[data-pms-theme="dark"] .hour-month-profile h5,
+html[data-theme="dark"] .hour-month-profile h5,
+html[data-bs-theme="dark"] .hour-month-profile h5,
+[data-pms-theme="dark"] .hour-month-profile h5,
+[data-theme="dark"] .hour-month-profile h5,
+body.dark-mode .hour-month-profile h5,
+body.dark .hour-month-profile h5 {
+  color: #EEF1FB !important;
+  -webkit-text-fill-color: #EEF1FB !important;
+}
+
+html[data-pms-theme="dark"] .attendance-month-profile p,
+html[data-theme="dark"] .attendance-month-profile p,
+html[data-bs-theme="dark"] .attendance-month-profile p,
+[data-pms-theme="dark"] .attendance-month-profile p,
+[data-theme="dark"] .attendance-month-profile p,
+body.dark-mode .attendance-month-profile p,
+body.dark .attendance-month-profile p,
+html[data-pms-theme="dark"] .member-month-profile p,
+html[data-theme="dark"] .member-month-profile p,
+html[data-bs-theme="dark"] .member-month-profile p,
+[data-pms-theme="dark"] .member-month-profile p,
+[data-theme="dark"] .member-month-profile p,
+body.dark-mode .member-month-profile p,
+body.dark .member-month-profile p,
+html[data-pms-theme="dark"] .hour-month-profile p,
+html[data-theme="dark"] .hour-month-profile p,
+html[data-bs-theme="dark"] .hour-month-profile p,
+[data-pms-theme="dark"] .hour-month-profile p,
+[data-theme="dark"] .hour-month-profile p,
+body.dark-mode .hour-month-profile p,
+body.dark .hour-month-profile p {
+  color: #9AA3C7 !important;
+  -webkit-text-fill-color: #9AA3C7 !important;
+}
+
+html[data-pms-theme="dark"] #attendanceDetailsModal .attendance-details-modal-content,
+html[data-theme="dark"] #attendanceDetailsModal .attendance-details-modal-content,
+html[data-bs-theme="dark"] #attendanceDetailsModal .attendance-details-modal-content,
+[data-pms-theme="dark"] #attendanceDetailsModal .attendance-details-modal-content,
+[data-theme="dark"] #attendanceDetailsModal .attendance-details-modal-content,
+body.dark-mode #attendanceDetailsModal .attendance-details-modal-content,
+body.dark #attendanceDetailsModal .attendance-details-modal-content,
+html[data-pms-theme="dark"] #memberAttendanceModal .modal-content,
+html[data-theme="dark"] #memberAttendanceModal .modal-content,
+html[data-bs-theme="dark"] #memberAttendanceModal .modal-content,
+[data-pms-theme="dark"] #memberAttendanceModal .modal-content,
+[data-theme="dark"] #memberAttendanceModal .modal-content,
+body.dark-mode #memberAttendanceModal .modal-content,
+body.dark #memberAttendanceModal .modal-content,
+html[data-pms-theme="dark"] #hourAttendanceModal .modal-content,
+html[data-theme="dark"] #hourAttendanceModal .modal-content,
+html[data-bs-theme="dark"] #hourAttendanceModal .modal-content,
+[data-pms-theme="dark"] #hourAttendanceModal .modal-content,
+[data-theme="dark"] #hourAttendanceModal .modal-content,
+body.dark-mode #hourAttendanceModal .modal-content,
+body.dark #hourAttendanceModal .modal-content {
+  background: #0F1530 !important;
+  border: 1px solid rgba(238, 241, 251, 0.12) !important;
+  color: #CBD5E1 !important;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.7) !important;
+}
+
+html[data-pms-theme="dark"] #attendanceDetailsModal .attendance-details-modal-body,
+html[data-theme="dark"] #attendanceDetailsModal .attendance-details-modal-body,
+html[data-bs-theme="dark"] #attendanceDetailsModal .attendance-details-modal-body,
+[data-pms-theme="dark"] #attendanceDetailsModal .attendance-details-modal-body,
+[data-theme="dark"] #attendanceDetailsModal .attendance-details-modal-body,
+body.dark-mode #attendanceDetailsModal .attendance-details-modal-body,
+body.dark #attendanceDetailsModal .attendance-details-modal-body,
+html[data-pms-theme="dark"] #memberAttendanceModal .modal-body,
+html[data-theme="dark"] #memberAttendanceModal .modal-body,
+html[data-bs-theme="dark"] #memberAttendanceModal .modal-body,
+[data-pms-theme="dark"] #memberAttendanceModal .modal-body,
+[data-theme="dark"] #memberAttendanceModal .modal-body,
+body.dark-mode #memberAttendanceModal .modal-body,
+body.dark #memberAttendanceModal .modal-body,
+html[data-pms-theme="dark"] #hourAttendanceModal .modal-body,
+html[data-theme="dark"] #hourAttendanceModal .modal-body,
+html[data-bs-theme="dark"] #hourAttendanceModal .modal-body,
+[data-pms-theme="dark"] #hourAttendanceModal .modal-body,
+[data-theme="dark"] #hourAttendanceModal .modal-body,
+body.dark-mode #hourAttendanceModal .modal-body,
+body.dark #hourAttendanceModal .modal-body {
+  background: #0F1530 !important;
+  color: #CBD5E1 !important;
 }

@@ -4,8 +4,10 @@
 
 @section('content')
 @php
-    $isAdmin = in_array(strtolower((string) auth()->user()?->role), ['admin', 'manager', 'hr'], true);
-    $isEmployee = auth()->user()?->role === 'employee';
+    $userRole = strtolower((string) auth()->user()?->role);
+    $isAdmin = in_array($userRole, ['admin', 'manager', 'hr'], true);
+    $isEmployee = $userRole === 'employee';
+    $canManageProjectTemplates = in_array($userRole, ['admin', 'hr'], true);
     $statusOptions = [
         'pending' => 'Pending',
         'not started' => 'Not Started',
@@ -163,9 +165,11 @@
                 <a href="{{ route('projects.create') }}" class="btn btn-primary">
                     <i class="fas fa-plus-circle"></i> Add Project
                 </a>
-                <button type="button" class="btn btn-outline" data-bs-toggle="modal" data-bs-target="#projectTemplateModal">
-                    <i class="fas fa-copy"></i> Project Template
-                </button>
+                @if($canManageProjectTemplates)
+                    <button type="button" class="btn btn-outline" data-bs-toggle="modal" data-bs-target="#projectTemplateModal">
+                        <i class="fas fa-copy"></i> Project Template
+                    </button>
+                @endif
                 <button type="button" class="btn btn-outline" data-bs-toggle="modal" data-bs-target="#projectImportModal">
                     <i class="fas fa-file-import"></i> Import
                 </button>
@@ -690,7 +694,7 @@
     @endforeach
 
     <!-- Template Modal -->
-    @if($isAdmin)
+    @if($canManageProjectTemplates)
         <div class="modal fade" id="projectTemplateModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-lg modal-dialog-centered">
                 <div class="modal-content">
@@ -2491,22 +2495,48 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    document.querySelectorAll('[data-copy-url]').forEach(button => {
-        button.addEventListener('click', function () {
-            const url = this.dataset.copyUrl;
-            const oldText = this.innerHTML;
+    document.addEventListener('click', function (e) {
+        const button = e.target.closest('[data-copy-url]');
+        if (!button) return;
 
-            function done() {
-                button.innerHTML = '<i class="fas fa-check"></i> Copied';
-                setTimeout(() => button.innerHTML = oldText, 1400);
-            }
+        e.preventDefault();
+        const url = button.getAttribute('data-copy-url');
+        if (!url) return;
 
-            if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(url).then(done).catch(() => prompt('Copy this link:', url));
-            } else {
-                prompt('Copy this link:', url);
+        const oldText = button.innerHTML;
+
+        function showSuccess() {
+            button.innerHTML = '<i class="fas fa-check text-success"></i> Copied!';
+            setTimeout(() => button.innerHTML = oldText, 2000);
+        }
+
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(url).then(showSuccess).catch(() => fallbackCopy(url));
+        } else {
+            fallbackCopy(url);
+        }
+
+        function fallbackCopy(text) {
+            try {
+                const textArea = document.createElement("textarea");
+                textArea.value = text;
+                textArea.style.position = "fixed";
+                textArea.style.left = "-999999px";
+                textArea.style.top = "-999999px";
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                const successful = document.execCommand('copy');
+                document.body.removeChild(textArea);
+                if (successful) {
+                    showSuccess();
+                } else {
+                    prompt('Copy this link:', text);
+                }
+            } catch (err) {
+                prompt('Copy this link:', text);
             }
-        });
+        }
     });
 
     document.getElementById('exportProjectsCsv')?.addEventListener('click', function () {

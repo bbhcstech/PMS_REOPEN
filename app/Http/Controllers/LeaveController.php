@@ -274,7 +274,7 @@ class LeaveController extends Controller
 
     public function showApologyLetter(LeaveApologyLetter $letter)
     {
-        abort_if(! $this->isAdmin() && $letter->user_id !== Auth::id(), 403);
+        $this->authorizeApologyLetterAccess($letter);
         $letter->load(['user.employeeDetail.department', 'leave.leaveType', 'reviewer']);
 
         return view('admin.leaves.apology-letters.show', compact('letter'));
@@ -418,6 +418,11 @@ class LeaveController extends Controller
     public function edit(Leave $leave)
     {
         $this->authorizeLeaveAccess($leave);
+
+        if (! $this->isAdmin() && $leave->status !== 'pending') {
+            return redirect()->route('leaves.index')->with('error', 'Only pending leave requests can be edited.');
+        }
+
         $policy = $this->leaveService->policy();
         $leaveTypes = $this->leaveService->leaveTypes();
         $users = $this->employeeQuery()->get();
@@ -436,7 +441,10 @@ class LeaveController extends Controller
     public function update(StoreLeaveRequest $request, Leave $leave)
     {
         $this->authorizeLeaveAccess($leave);
-        abort_if($leave->status === 'approved' && ! $this->isAdmin(), 403);
+
+        if (! $this->isAdmin() && $leave->status !== 'pending') {
+            return redirect()->route('leaves.index')->with('error', 'Only pending leave requests can be updated.');
+        }
 
         $employee = $this->isAdmin() && $request->filled('user_id') ? User::findOrFail($request->user_id) : $leave->user;
         $type = LeaveType::findOrFail($request->leave_type_id);
@@ -611,7 +619,10 @@ class LeaveController extends Controller
     {
         $leave = Leave::findOrFail($id);
         $this->authorizeLeaveAccess($leave);
-        abort_if(! $this->isAdmin() && $leave->status !== 'pending', 403);
+
+        if (! $this->isAdmin() && $leave->status !== 'pending') {
+            return back()->with('error', 'Only pending leave requests can be deleted.');
+        }
         $user = $leave->user;
         $leave->delete();
         if (! $this->isAdmin()) {
@@ -847,7 +858,35 @@ class LeaveController extends Controller
 
     public function leaveReport(Request $request)
     {
-        return $this->index($request);
+        $users = User::where('role', 'employee')->orderBy('name')->get();
+        $query = Leave::with(['user', 'leaveType'])->whereNull('archived_at');
+
+        if ($request->filled('user_id')) {
+            $query->where('user_id', $request->user_id);
+        }
+        if ($request->filled('type')) {
+            $query->where(function ($q) use ($request) {
+                $q->where('type', $request->type)
+                  ->orWhereHas('leaveType', fn ($lt) => $lt->where('type_name', 'like', '%' . $request->type . '%'));
+            });
+        }
+        if ($request->filled('from')) {
+            $query->where('start_date', '>=', $request->from);
+        }
+        if ($request->filled('to')) {
+            $query->where('end_date', '<=', $request->to);
+        }
+
+        $leaves = $query->orderBy('created_at', 'desc')->get();
+
+        $summary = [
+            'total' => $leaves->count(),
+            'approved' => $leaves->where('status', 'approved')->count(),
+            'pending' => $leaves->where('status', 'pending')->count(),
+            'rejected' => $leaves->where('status', 'rejected')->count(),
+        ];
+
+        return view('admin.leaves.report', compact('users', 'leaves', 'summary'));
     }
 
     public function calendar()
@@ -946,7 +985,11 @@ class LeaveController extends Controller
 
     private function authorizeLeaveAccess(Leave $leave): void
     {
-        abort_if(! $this->isAdmin() && $leave->user_id !== Auth::id(), 403);
+        if ($this->isAdmin()) {
+            return;
+        }
+
+        abort_if((int) $leave->user_id !== (int) Auth::id(), 403, 'Unauthorized access to leave request.');
     }
 
     private function leaveExportRow(Leave $leave): array
@@ -1020,6 +1063,10 @@ TEXT;
 
     private function authorizeApologyLetterAccess(LeaveApologyLetter $letter): void
     {
-        abort_if(! $this->isAdmin() && $letter->user_id !== Auth::id(), 403);
+        if ($this->isAdmin()) {
+            return;
+        }
+
+        abort_if((int) $letter->user_id !== (int) Auth::id(), 403, 'Unauthorized access to apology letter.');
     }
 }

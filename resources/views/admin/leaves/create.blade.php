@@ -106,10 +106,13 @@
                 <div>
                     <label>End Date <span>*</span></label>
                     <input type="date" name="end_date" id="endDate" class="form-control" value="{{ $oldEndDate }}" required>
+                    <div id="endDateError" class="end-date-error-msg">
+                        <i class="fas fa-exclamation-circle"></i> <span>End date can't be backdated. Please select a date on or after start date.</span>
+                    </div>
                 </div>
                 <div>
                     <label>Total Days</label>
-                    <input type="text" id="totalDays" class="form-control" value="{{ old('total_days', $leave->total_days ?? '1') }}" readonly>
+                    <input type="text" id="totalDays" class="form-control" value="{{ old('total_days', $leave->total_days ?? '') }}" readonly placeholder="0">
                 </div>
                 <div>
                     <label>Contact During Leave <span style="color:#6b7280;font-weight:600;font-size:.7rem;text-transform:none;">(with country code)</span></label>
@@ -160,7 +163,7 @@
 
             <div class="form-actions">
                 <a href="{{ route('leaves.index') }}" class="btn btn-secondary"><i class="fas fa-times"></i> Cancel</a>
-                <button class="btn btn-primary"><i class="fas fa-paper-plane"></i> {{ $isEdit ? 'Update Leave' : 'Submit Request' }}</button>
+                <button type="submit" id="leaveSubmitBtn" class="btn btn-primary"><i class="fas fa-paper-plane"></i> {{ $isEdit ? 'Update Leave' : 'Submit Request' }}</button>
             </div>
         </form>
     </section>
@@ -600,6 +603,25 @@
         color: #5A6490 !important;
     }
 
+    /* ── End Date Backdated Error Message ── */
+    .end-date-error-msg {
+        display: none;
+        color: #ef4444 !important;
+        font-size: 0.84rem;
+        font-weight: 700;
+        margin-top: 6px;
+        padding: 7px 12px;
+        background: rgba(239, 68, 68, 0.12);
+        border: 1px solid rgba(239, 68, 68, 0.35);
+        border-radius: 8px;
+        align-items: center;
+        gap: 8px;
+    }
+    .end-date-error-msg i {
+        color: #ef4444 !important;
+        font-size: 0.95rem;
+        flex-shrink: 0;
+    }
 </style>
 
 {{-- intl-tel-input CSS --}}
@@ -615,33 +637,243 @@ document.addEventListener('DOMContentLoaded', function () {
     const total = document.getElementById('totalDays');
     const type = document.getElementById('leaveType');
     const attachment = document.getElementById('attachment');
+    const endDateError = document.getElementById('endDateError');
+    const leaveForm = document.getElementById('leaveForm');
+    const submitBtn = document.getElementById('leaveSubmitBtn') || (leaveForm ? leaveForm.querySelector('button[type="submit"], button.btn-primary') : null);
 
-    function calculateDays() {
-        if (!start.value) return;
-        if (!end.value || end.value < start.value) end.value = start.value;
-        const s = new Date(start.value + 'T00:00:00');
-        const e = new Date(end.value + 'T00:00:00');
-        const diff = Math.floor((e - s) / 86400000) + 1;
-        total.value = half.checked ? '0.5' : String(Math.max(1, diff));
-        end.min = start.value;
+    let isDateInvalid = false;
+
+    function parseDate(val) {
+        if (!val || typeof val !== 'string') return null;
+        val = val.trim();
+        if (!val) return null;
+
+        // YYYY-MM-DD
+        const ymd = val.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+        if (ymd) {
+            return new Date(parseInt(ymd[1], 10), parseInt(ymd[2], 10) - 1, parseInt(ymd[3], 10));
+        }
+        // DD-MM-YYYY
+        const dmy = val.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})$/);
+        if (dmy) {
+            return new Date(parseInt(dmy[3], 10), parseInt(dmy[2], 10) - 1, parseInt(dmy[1], 10));
+        }
+        const d = new Date(val);
+        return isNaN(d.getTime()) ? null : d;
+    }
+
+    function getDateFromInput(el) {
+        if (!el) return null;
+        if (el.valueAsDate && !isNaN(el.valueAsDate.getTime())) {
+            return new Date(el.valueAsDate.getUTCFullYear(), el.valueAsDate.getUTCMonth(), el.valueAsDate.getUTCDate());
+        }
+        return parseDate(el.value);
+    }
+
+    function showDateError(msg) {
+        isDateInvalid = true;
+        if (endDateError) {
+            const span = endDateError.querySelector('span');
+            if (span) span.textContent = msg;
+            else endDateError.textContent = msg;
+            endDateError.style.setProperty('display', 'flex', 'important');
+        }
+        if (end) {
+            end.classList.add('is-invalid');
+            end.style.setProperty('border-color', '#ef4444', 'important');
+            end.style.setProperty('box-shadow', '0 0 0 3px rgba(239, 68, 68, 0.25)', 'important');
+            end.setCustomValidity(msg);
+        }
+        if (total) {
+            total.value = 'Invalid (Backdated)';
+            total.style.setProperty('color', '#ef4444', 'important');
+            total.style.setProperty('font-weight', '700', 'important');
+        }
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.style.setProperty('opacity', '0.5', 'important');
+            submitBtn.style.setProperty('cursor', 'not-allowed', 'important');
+            submitBtn.setAttribute('title', msg);
+        }
+    }
+
+    function clearDateError() {
+        isDateInvalid = false;
+        if (endDateError) {
+            endDateError.style.setProperty('display', 'none', 'important');
+        }
+        if (end) {
+            end.classList.remove('is-invalid');
+            end.style.removeProperty('border-color');
+            end.style.removeProperty('box-shadow');
+            end.setCustomValidity('');
+        }
+        if (total) {
+            total.style.removeProperty('color');
+            total.style.removeProperty('font-weight');
+        }
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.style.removeProperty('opacity');
+            submitBtn.style.removeProperty('cursor');
+            submitBtn.removeAttribute('title');
+        }
+    }
+
+    function validateAndCalculate() {
+        if (half && half.checked) {
+            if (start && start.value) {
+                end.value = start.value;
+            }
+            if (end) {
+                end.readOnly = true;
+                end.style.opacity = '0.7';
+                end.style.cursor = 'not-allowed';
+            }
+            if (total) {
+                total.value = '0.5';
+                total.style.removeProperty('color');
+                total.style.removeProperty('font-weight');
+            }
+            clearDateError();
+            return true;
+        } else if (end) {
+            end.readOnly = false;
+            end.style.opacity = '1';
+            end.style.cursor = '';
+        }
+
+        const startDate = getDateFromInput(start);
+        const endDate = getDateFromInput(end);
+
+        if (!startDate || !endDate) {
+            if (!endDate && total) {
+                total.value = '';
+            }
+            clearDateError();
+            return false;
+        }
+
+        // Check if End Date is before Start Date (Backdated)
+        if (endDate.getTime() < startDate.getTime()) {
+            showDateError("End date can't be backdated. Please select a date on or after start date.");
+            return false;
+        }
+
+        // Valid date range!
+        clearDateError();
+        const diffMs = endDate.getTime() - startDate.getTime();
+        const diffDays = Math.floor(diffMs / 86400000) + 1;
+        if (total) {
+            total.value = String(Math.max(1, diffDays));
+        }
+        return true;
+    }
+
+    function handleDatePaste(e) {
+        const text = (e.clipboardData || window.clipboardData)?.getData('text')?.trim();
+        if (!text) return;
+        const parsed = parseDate(text);
+        if (parsed) {
+            e.preventDefault();
+            const y = parsed.getFullYear();
+            const m = String(parsed.getMonth() + 1).padStart(2, '0');
+            const d = String(parsed.getDate()).padStart(2, '0');
+            this.value = `${y}-${m}-${d}`;
+            validateAndCalculate();
+            this.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+    }
+
+    if (start) {
+        ['input', 'change', 'keyup', 'blur'].forEach(evt => {
+            start.addEventListener(evt, validateAndCalculate);
+        });
+        start.addEventListener('paste', handleDatePaste);
+    }
+
+    if (end) {
+        ['input', 'change', 'keyup', 'blur'].forEach(evt => {
+            end.addEventListener(evt, validateAndCalculate);
+        });
+        end.addEventListener('paste', handleDatePaste);
+    }
+
+    if (half) {
+        half.addEventListener('change', validateAndCalculate);
     }
 
     function syncDocumentRequired() {
-        const option = type.options[type.selectedIndex];
-        attachment.required = option && option.dataset.document === '1';
+        const option = type && type.selectedIndex >= 0 ? type.options[type.selectedIndex] : null;
+        if (attachment) {
+            attachment.required = option && option.dataset.document === '1';
+        }
     }
 
-    [start, end, half].forEach(el => el && el.addEventListener('change', calculateDays));
-    type && type.addEventListener('change', syncDocumentRequired);
-    calculateDays();
+    if (type) type.addEventListener('change', syncDocumentRequired);
+
+    // Initial check on load
+    validateAndCalculate();
     syncDocumentRequired();
+
+    // STRICT BLOCKER on leaveForm submit - capture phase so it runs BEFORE any other handlers
+    if (leaveForm) {
+        leaveForm.addEventListener('submit', function (e) {
+            const startDate = getDateFromInput(start);
+            const endDate = getDateFromInput(end);
+
+            if (startDate && endDate && endDate.getTime() < startDate.getTime()) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                showDateError("End date can't be backdated. Please select a date on or after start date.");
+                end.focus();
+                end.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return false;
+            }
+
+            if (isDateInvalid) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                showDateError("End date can't be backdated. Please select a date on or after start date.");
+                end.focus();
+                return false;
+            }
+        }, true);
+    }
+
+    // Secondary click blocker on submit button
+    if (submitBtn) {
+        submitBtn.addEventListener('click', function (e) {
+            const startDate = getDateFromInput(start);
+            const endDate = getDateFromInput(end);
+
+            if (startDate && endDate && endDate.getTime() < startDate.getTime()) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                showDateError("End date can't be backdated. Please select a date on or after start date.");
+                end.focus();
+                end.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return false;
+            }
+
+            if (isDateInvalid) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                end.focus();
+                return false;
+            }
+        }, true);
+    }
 
     /* ===== INTL-TEL-INPUT PHONE VALIDATION ===== */
     const phoneInput   = document.getElementById('contactDuringLeavePhone');
     const hiddenInput  = document.getElementById('contactDuringLeaveHidden');
     const phoneError   = document.getElementById('phoneError');
     const phoneIcon    = document.getElementById('phoneValidIcon');
-    const leaveForm    = document.getElementById('leaveForm');
 
     function initPhoneValidation() {
         if (!phoneInput || !window.intlTelInput) return;
@@ -746,7 +978,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
 
-        // Block form submit if phone is filled but invalid
+        // Block form submit if phone is invalid
         if (leaveForm) {
             leaveForm.addEventListener('submit', function (e) {
                 const rawVal = phoneInput.value.trim();
@@ -754,6 +986,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     if (!iti.isValidNumber()) {
                         e.preventDefault();
                         e.stopPropagation();
+                        e.stopImmediatePropagation();
                         showPhoneState(false);
                         phoneInput.focus();
                         phoneInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -763,7 +996,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 } else {
                     if (hiddenInput) hiddenInput.value = '';
                 }
-            }, true); // capture phase so it fires before other submit handlers
+            }, true);
         }
     }
 
