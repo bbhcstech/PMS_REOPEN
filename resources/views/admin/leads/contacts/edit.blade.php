@@ -2,6 +2,12 @@
 
 @section('content')
 
+@php
+    if (!isset($countries) || (is_object($countries) && method_exists($countries, 'isEmpty') && $countries->isEmpty())) {
+        $countries = \App\Models\Country::orderBy('name')->get();
+    }
+@endphp
+
 <style>
 .form-card-modern {
     background: #ffffff;
@@ -146,6 +152,148 @@ html[data-pms-theme="dark"] .btn-cancel-modern:hover {
     background: rgba(79, 131, 255, 0.2);
     color: #ffffff;
 }
+.input-group-modern {
+    display: flex;
+    position: relative;
+    border-radius: 10px;
+}
+.input-group-text-modern {
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-right: none;
+    border-top-left-radius: 10px;
+    border-bottom-left-radius: 10px;
+    color: #64748b;
+    padding: 0.55rem 0.9rem;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    transition: all 0.18s ease-in-out;
+}
+html[data-pms-theme="dark"] .input-group-text-modern {
+    background-color: #141B3D;
+    border-color: rgba(79, 131, 255, 0.15);
+    color: #94a3b8;
+}
+.input-group:focus-within .input-group-text-modern {
+    border-color: #2F6BFF;
+    color: #2F6BFF;
+}
+html[data-pms-theme="dark"] .input-group:focus-within .input-group-text-modern {
+    border-color: #60A5FA;
+    color: #60A5FA;
+}
+.form-control-modern.has-prefix {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    border-left: none;
+}
+.form-control-modern.is-valid {
+    border-color: #10B981 !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%2310B981' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right calc(0.375em + 0.1875rem) center;
+    background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+}
+.form-control-modern.is-invalid {
+    border-color: #EF4444 !important;
+}
+.validation-hint {
+    font-size: 0.75rem;
+    color: #64748b;
+    margin-top: 0.3rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+html[data-pms-theme="dark"] .validation-hint {
+    color: #94a3b8;
+}
+.email-suggestion-box {
+    font-size: 0.78rem;
+    background: rgba(47, 107, 255, 0.08);
+    border: 1px dashed rgba(47, 107, 255, 0.3);
+    color: #2563EB;
+    border-radius: 8px;
+    padding: 0.3rem 0.6rem;
+    margin-top: 0.35rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+.email-suggestion-box:hover {
+    background: rgba(47, 107, 255, 0.15);
+    color: #1D4ED8;
+}
+html[data-pms-theme="dark"] .email-suggestion-box {
+    background: rgba(79, 131, 255, 0.15);
+    border-color: rgba(79, 131, 255, 0.35);
+    color: #93C5FD;
+}
+
+/* Select2 Modern Theme */
+.select2-container .select2-selection--single {
+    background-color: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 10px !important;
+    height: 42px !important;
+    display: flex !important;
+    align-items: center !important;
+    transition: all 0.18s ease-in-out !important;
+}
+.select2-container .select2-selection--single .select2-selection__rendered {
+    color: #0f172a !important;
+    font-weight: 500 !important;
+    font-size: 0.875rem !important;
+    line-height: 40px !important;
+    padding-left: 0.9rem !important;
+    padding-right: 2rem !important;
+}
+.select2-container .select2-selection--single .select2-selection__arrow {
+    height: 40px !important;
+    right: 10px !important;
+}
+.select2-container--open .select2-dropdown {
+    border: 1px solid #2F6BFF !important;
+    border-radius: 10px !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08) !important;
+    z-index: 1060 !important;
+}
+.select2-results__option {
+    padding: 0.55rem 0.9rem !important;
+    font-size: 0.875rem !important;
+}
+.select2-results__option--highlighted {
+    background-color: #2F6BFF !important;
+    color: #ffffff !important;
+}
+html[data-pms-theme="dark"] .select2-container .select2-selection--single {
+    background-color: #141B3D !important;
+    border-color: rgba(79, 131, 255, 0.15) !important;
+}
+html[data-pms-theme="dark"] .select2-container .select2-selection--single .select2-selection__rendered {
+    color: #ffffff !important;
+}
+html[data-pms-theme="dark"] .select2-dropdown {
+    background-color: #0F1530 !important;
+    border-color: rgba(79, 131, 255, 0.25) !important;
+    color: #ffffff !important;
+}
+html[data-pms-theme="dark"] .select2-results__option {
+    background-color: #0F1530 !important;
+    color: #cbd5e1 !important;
+}
+html[data-pms-theme="dark"] .select2-results__option--highlighted {
+    background-color: #2F6BFF !important;
+    color: #ffffff !important;
+}
+html[data-pms-theme="dark"] .select2-search--dropdown .select2-search__field {
+    background-color: #141B3D !important;
+    border-color: rgba(79, 131, 255, 0.2) !important;
+    color: #ffffff !important;
+}
 </style>
 
 <div class="container-fluid py-3">
@@ -199,29 +347,96 @@ html[data-pms-theme="dark"] .btn-cancel-modern:hover {
                     </div>
 
                     <div class="col-md-4">
-                        <label class="form-label-modern">Email Address <span class="text-danger">*</span></label>
-                        <input type="email" name="email" class="form-control form-control-modern @error('email') is-invalid @enderror" value="{{ old('email', $lead->email) }}" required placeholder="e.g. john@example.com">
-                        @error('email')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        <label class="form-label-modern" for="lead_country">Country <span class="text-danger">*</span></label>
+                        <select name="country" id="lead_country" class="form-select form-select-modern select2" required>
+                            <option value="">Select country</option>
+                            @foreach($countries as $c)
+                                <option value="{{ $c->name }}"
+                                    data-flag="{{ $c->flag_url }}"
+                                    data-dial-code="{{ $c->phone_code }}"
+                                    data-min-digits="{{ $c->min_digits ?? 6 }}"
+                                    data-max-digits="{{ $c->max_digits ?? 15 }}"
+                                    {{ old('country', $lead->country ?? 'India') == $c->name ? 'selected' : '' }}>
+                                    {{ $c->name }} ({{ $c->phone_code }})
+                                </option>
+                            @endforeach
+                        </select>
+                        <div class="invalid-feedback d-block" id="country_feedback" style="display: {{ $errors->has('country') ? 'block' : 'none' }};">
+                            @error('country'){{ $message }}@enderror
+                        </div>
                     </div>
 
                     <div class="col-md-4">
-                        <label class="form-label-modern">Primary Phone</label>
-                        <input type="text" name="phone" class="form-control form-control-modern" value="{{ old('phone', $lead->phone) }}" placeholder="e.g. +1 234 567 890">
+                        <label class="form-label-modern" for="inputPhone">Primary Phone <span class="text-danger">*</span></label>
+                        <div class="input-group-modern">
+                            <span class="input-group-text-modern"><i class="fas fa-phone-alt"></i></span>
+                            <input type="tel" name="phone" id="inputPhone" class="form-control form-control-modern has-prefix @error('phone') is-invalid @enderror" value="{{ old('phone', $lead->phone) }}" required maxlength="20" placeholder="e.g. 9876543210">
+                        </div>
+                        <div class="invalid-feedback d-block" id="phone_feedback" style="display: {{ $errors->has('phone') ? 'block' : 'none' }};">
+                            @error('phone'){{ $message }}@enderror
+                        </div>
+                        <small class="validation-hint" id="phone_format_hint">
+                            <i class="fas fa-info-circle"></i> <span id="phone_format_hint_text">Required: 10-digit number</span>
+                        </small>
                     </div>
 
                     <div class="col-md-4">
-                        <label class="form-label-modern">Mobile / Cell</label>
-                        <input type="text" name="mobile" class="form-control form-control-modern" value="{{ old('mobile', $lead->mobile) }}" placeholder="e.g. +1 987 654 321">
+                        <label class="form-label-modern" for="inputMobile">Mobile / Cell</label>
+                        <div class="input-group-modern">
+                            <span class="input-group-text-modern"><i class="fas fa-mobile-alt"></i></span>
+                            <input type="tel" name="mobile" id="inputMobile" class="form-control form-control-modern has-prefix @error('mobile') is-invalid @enderror" value="{{ old('mobile', $lead->mobile) }}" maxlength="20" placeholder="e.g. 9876543210">
+                        </div>
+                        <div class="invalid-feedback d-block" id="mobile_feedback" style="display: {{ $errors->has('mobile') ? 'block' : 'none' }};">
+                            @error('mobile'){{ $message }}@enderror
+                        </div>
+                        <small class="validation-hint" id="mobile_format_hint">
+                            <i class="fas fa-info-circle"></i> <span id="mobile_format_hint_text">Optional mobile number</span>
+                        </small>
                     </div>
 
                     <div class="col-md-4">
-                        <label class="form-label-modern">Alternate Phone</label>
-                        <input type="text" name="alternate_phone" class="form-control form-control-modern" value="{{ old('alternate_phone', $lead->alternate_phone) }}" placeholder="e.g. Office Ext 102">
+                        <label class="form-label-modern" for="inputEmail">Email Address <span class="text-danger">*</span></label>
+                        <div class="input-group-modern">
+                            <span class="input-group-text-modern"><i class="fas fa-envelope"></i></span>
+                            <input type="email" name="email" id="inputEmail" class="form-control form-control-modern has-prefix @error('email') is-invalid @enderror" value="{{ old('email', $lead->email) }}" required autocomplete="email" placeholder="e.g. john@gmail.com">
+                        </div>
+                        <div class="invalid-feedback d-block" id="email_feedback" style="display: {{ $errors->has('email') ? 'block' : 'none' }};">
+                            @error('email'){{ $message }}@enderror
+                        </div>
+                        <div id="email_suggestion" class="email-suggestion-box d-none">
+                            <i class="fas fa-lightbulb"></i> <span id="email_suggestion_text"></span>
+                        </div>
+                        <small class="validation-hint" id="email_format_hint">
+                            <i class="fas fa-info-circle"></i> Accepts valid email (e.g. name@gmail.com or business email)
+                        </small>
                     </div>
 
                     <div class="col-md-4">
-                        <label class="form-label-modern">WhatsApp Number</label>
-                        <input type="text" name="whatsapp" class="form-control form-control-modern" value="{{ old('whatsapp', $lead->whatsapp) }}" placeholder="e.g. +1 234 567 890">
+                        <label class="form-label-modern" for="inputAlternatePhone">Alternate Phone</label>
+                        <div class="input-group-modern">
+                            <span class="input-group-text-modern"><i class="fas fa-phone"></i></span>
+                            <input type="tel" name="alternate_phone" id="inputAlternatePhone" class="form-control form-control-modern has-prefix @error('alternate_phone') is-invalid @enderror" value="{{ old('alternate_phone', $lead->alternate_phone) }}" maxlength="20" placeholder="e.g. 9876543210 or Ext 102">
+                        </div>
+                        <div class="invalid-feedback d-block" id="alternate_phone_feedback" style="display: {{ $errors->has('alternate_phone') ? 'block' : 'none' }};">
+                            @error('alternate_phone'){{ $message }}@enderror
+                        </div>
+                        <small class="validation-hint" id="alternate_phone_hint">
+                            <i class="fas fa-info-circle"></i> Optional secondary phone number
+                        </small>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label-modern" for="inputWhatsapp">WhatsApp Number</label>
+                        <div class="input-group-modern">
+                            <span class="input-group-text-modern"><i class="fab fa-whatsapp text-success"></i></span>
+                            <input type="tel" name="whatsapp" id="inputWhatsapp" class="form-control form-control-modern has-prefix @error('whatsapp') is-invalid @enderror" value="{{ old('whatsapp', $lead->whatsapp) }}" maxlength="20" placeholder="e.g. 9876543210">
+                        </div>
+                        <div class="invalid-feedback d-block" id="whatsapp_feedback" style="display: {{ $errors->has('whatsapp') ? 'block' : 'none' }};">
+                            @error('whatsapp'){{ $message }}@enderror
+                        </div>
+                        <small class="validation-hint" id="whatsapp_format_hint">
+                            <i class="fas fa-info-circle"></i> Optional WhatsApp number
+                        </small>
                     </div>
 
                     <div class="col-md-4">
@@ -245,8 +460,20 @@ html[data-pms-theme="dark"] .btn-cancel-modern:hover {
             <div class="card-body p-4">
                 <div class="row g-3">
                     <div class="col-md-3">
-                        <label class="form-label-modern">Country</label>
-                        <input type="text" name="country" class="form-control form-control-modern" value="{{ old('country', $lead->country) }}" placeholder="e.g. United States">
+                        <label class="form-label-modern" for="location_country">Country <span class="text-danger">*</span></label>
+                        <select id="location_country" class="form-select form-select-modern select2">
+                            <option value="">Select country</option>
+                            @foreach($countries as $c)
+                                <option value="{{ $c->name }}"
+                                    data-flag="{{ $c->flag_url }}"
+                                    data-dial-code="{{ $c->phone_code }}"
+                                    data-min-digits="{{ $c->min_digits ?? 6 }}"
+                                    data-max-digits="{{ $c->max_digits ?? 15 }}"
+                                    {{ old('country', $lead->country ?? 'India') == $c->name ? 'selected' : '' }}>
+                                    {{ $c->name }} ({{ $c->phone_code }})
+                                </option>
+                            @endforeach
+                        </select>
                     </div>
                     <div class="col-md-3">
                         <label class="form-label-modern">State / Province</label>
@@ -362,5 +589,536 @@ html[data-pms-theme="dark"] .btn-cancel-modern:hover {
         </div>
     </form>
 </div>
+
+<!-- Select2 & jQuery Resources -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const leadEditForm = document.getElementById('leadEditForm');
+
+    // Input elements
+    const leadCountrySelect = document.getElementById('lead_country');
+    const locationCountrySelect = document.getElementById('location_country');
+    const countryFeedback = document.getElementById('country_feedback');
+
+    const inputEmail = document.getElementById('inputEmail');
+    const emailFeedback = document.getElementById('email_feedback');
+    const emailSuggestion = document.getElementById('email_suggestion');
+    const emailSuggestionText = document.getElementById('email_suggestion_text');
+
+    const inputPhone = document.getElementById('inputPhone');
+    const phoneFeedback = document.getElementById('phone_feedback');
+    const phoneFormatHint = document.getElementById('phone_format_hint_text');
+
+    const inputMobile = document.getElementById('inputMobile');
+    const mobileFeedback = document.getElementById('mobile_feedback');
+    const mobileFormatHint = document.getElementById('mobile_format_hint_text');
+
+    const inputAlternatePhone = document.getElementById('inputAlternatePhone');
+    const alternatePhoneFeedback = document.getElementById('alternate_phone_feedback');
+
+    const inputWhatsapp = document.getElementById('inputWhatsapp');
+    const whatsappFeedback = document.getElementById('whatsapp_feedback');
+    const whatsappFormatHint = document.getElementById('whatsapp_format_hint');
+
+    // All known database dial codes sorted longest first for unambiguous prefix stripping
+    const DB_DIAL_CODES = @json(\App\Models\Country::distinct()->pluck('phone_code')->filter()->values()->sort(function($a, $b) {
+        return strlen($b) - strlen($a);
+    })->values());
+
+    // Helper to get selected country phone rules from database-driven option attributes
+    function getCountryPhoneRules() {
+        const sel = leadCountrySelect || locationCountrySelect;
+        if (!sel || !sel.selectedOptions || sel.selectedOptions.length === 0) {
+            return { dialCode: '+91', minDigits: 10, maxDigits: 10, countryName: 'India' };
+        }
+        const opt = sel.selectedOptions[0];
+        const dialCode = opt.getAttribute('data-dial-code') || '+91';
+        const minDigits = parseInt(opt.getAttribute('data-min-digits'), 10) || 10;
+        const maxDigits = parseInt(opt.getAttribute('data-max-digits'), 10) || 10;
+        const countryName = opt.value || 'India';
+
+        return { dialCode, minDigits, maxDigits, countryName };
+    }
+
+    // Strip any existing dial codes (database-backed) and non-digit formatting from a phone string
+    function extractNationalDigits(val, rules) {
+        if (!val) return '';
+        let clean = val.replace(/[\s\-\(\)\.]/g, '');
+
+        // Repeatedly strip known dial codes if preceded by '+' (e.g. +91, +91+91, +44, etc.)
+        while (clean.startsWith('+')) {
+            let matched = false;
+            for (let i = 0; i < DB_DIAL_CODES.length; i++) {
+                const code = DB_DIAL_CODES[i];
+                if (clean.startsWith(code)) {
+                    clean = clean.substring(code.length);
+                    matched = true;
+                    break;
+                }
+            }
+            if (!matched) {
+                clean = clean.replace(/^\++/, '');
+                break;
+            }
+        }
+
+        // Isolate pure digits
+        let digits = clean.replace(/\D/g, '');
+
+        // If digits entered without '+' but prefixed with country's dial digits (e.g. 919876543210 for India)
+        if (rules && rules.dialCode) {
+            const dialDigits = rules.dialCode.replace(/\D/g, '');
+            if (digits.length > rules.maxDigits && dialDigits !== '' && digits.startsWith(dialDigits)) {
+                digits = digits.substring(dialDigits.length);
+            }
+        }
+
+        // Strip domestic leading 0 if remainder meets or exceeds minDigits (e.g. 07123456789 -> 7123456789)
+        if (rules && digits.startsWith('0') && (digits.length - 1 >= rules.minDigits)) {
+            digits = digits.replace(/^0+/, '');
+        }
+
+        return digits;
+    }
+
+    // Format phone field with auto-prepended country code
+    function formatPhoneInput(inputEl, forcePrefix = false) {
+        if (!inputEl) return '';
+        const rules = getCountryPhoneRules();
+        const dialCode = rules.dialCode;
+        const maxDigits = rules.maxDigits;
+
+        let val = inputEl.value;
+        if (!val) {
+            if (forcePrefix) {
+                inputEl.value = dialCode;
+            }
+            return '';
+        }
+
+        let digits = extractNationalDigits(val, rules);
+        if (digits.length > maxDigits) {
+            digits = digits.substring(0, maxDigits);
+        }
+
+        let formatted = '';
+        if (digits.length > 0) {
+            formatted = dialCode + digits;
+        } else if (forcePrefix || val.startsWith('+')) {
+            formatted = dialCode;
+        }
+
+        if (inputEl.value !== formatted) {
+            inputEl.value = formatted;
+        }
+
+        return digits;
+    }
+
+    // Update placeholders and format hints according to database country rules
+    function updateCountryPhoneHints() {
+        const rules = getCountryPhoneRules();
+        const dialCode = rules.dialCode;
+        const minDigits = rules.minDigits;
+        const maxDigits = rules.maxDigits;
+        const countryName = rules.countryName;
+
+        const rangeStr = minDigits === maxDigits ? `${minDigits} digits` : `${minDigits}-${maxDigits} digits`;
+        const hintText = `Required: ${rangeStr} for ${countryName} (numbers only, country code added automatically)`;
+        const optHintText = `Optional: ${rangeStr} for ${countryName} (numbers only)`;
+
+        if (phoneFormatHint) {
+            phoneFormatHint.textContent = hintText;
+        }
+        if (mobileFormatHint) {
+            mobileFormatHint.textContent = optHintText;
+        }
+
+        const samplePlaceholder = `e.g. ${dialCode} 9876543210`;
+        const totalMaxLen = dialCode.length + maxDigits;
+
+        [inputPhone, inputMobile, inputAlternatePhone, inputWhatsapp].forEach(el => {
+            if (el) {
+                el.setAttribute('placeholder', samplePlaceholder);
+                el.setAttribute('maxlength', totalMaxLen.toString());
+            }
+        });
+    }
+
+    // When country changes: update hints, refresh dial code prefix across all phone fields without duplicating
+    function handleCountryChange(newCountryName) {
+        const rules = getCountryPhoneRules();
+
+        if (leadCountrySelect && $(leadCountrySelect).val() !== newCountryName) {
+            $(leadCountrySelect).val(newCountryName).trigger('change.select2-sync');
+        }
+        if (locationCountrySelect && $(locationCountrySelect).val() !== newCountryName) {
+            $(locationCountrySelect).val(newCountryName).trigger('change.select2-sync');
+        }
+
+        updateCountryPhoneHints();
+
+        // Update phone fields with new country code while preserving entered national digits
+        [
+            { el: inputPhone, feedback: phoneFeedback, req: true, label: 'Primary phone' },
+            { el: inputMobile, feedback: mobileFeedback, req: false, label: 'Mobile number' },
+            { el: inputAlternatePhone, feedback: alternatePhoneFeedback, req: false, label: 'Alternate phone' },
+            { el: inputWhatsapp, feedback: whatsappFeedback, req: false, label: 'WhatsApp number' }
+        ].forEach(item => {
+            if (!item.el) return;
+            const currentVal = item.el.value.trim();
+            if (currentVal) {
+                const digits = extractNationalDigits(currentVal, rules);
+                item.el.value = digits.length > 0 ? (rules.dialCode + digits.substring(0, rules.maxDigits)) : '';
+                if (item.el.value) {
+                    validatePhoneField(item.el, item.feedback, item.req, item.label);
+                } else {
+                    item.el.classList.remove('is-invalid', 'is-valid');
+                    if (item.feedback) item.feedback.style.display = 'none';
+                }
+            }
+        });
+    }
+
+    // Keydown guard: allow control keys and digits only, block letters and symbols
+    function attachPhoneKeydownGuards(inputEl) {
+        if (!inputEl) return;
+
+        inputEl.addEventListener('keydown', function(e) {
+            const rules = getCountryPhoneRules();
+            const dialCode = rules.dialCode;
+
+            // Allow navigation and control shortcuts: Backspace, Tab, Enter, Esc, Delete
+            if ([8, 9, 13, 27, 46].indexOf(e.keyCode) !== -1 ||
+                ((e.ctrlKey || e.metaKey) && [65, 67, 86, 88, 90].indexOf(e.keyCode) !== -1) ||
+                (e.keyCode >= 35 && e.keyCode <= 40)) {
+
+                // Prevent backspacing over the country dial code prefix
+                if (e.keyCode === 8) {
+                    const start = this.selectionStart;
+                    const end = this.selectionEnd;
+                    if (start <= dialCode.length && end <= dialCode.length) {
+                        e.preventDefault();
+                    }
+                }
+                return;
+            }
+
+            // Allow digit keys: 0-9 on regular keyboard and numpad
+            const isDigit = (!e.shiftKey && e.keyCode >= 48 && e.keyCode <= 57) ||
+                            (e.keyCode >= 96 && e.keyCode <= 105);
+
+            if (!isDigit) {
+                e.preventDefault();
+                return;
+            }
+
+            // Check if maxDigits limit reached
+            const currentDigits = extractNationalDigits(this.value, rules);
+            if (this.selectionStart === this.selectionEnd && currentDigits.length >= rules.maxDigits) {
+                e.preventDefault();
+            }
+        });
+
+        // Auto-prepend country code on focus if field is empty
+        inputEl.addEventListener('focus', function() {
+            const rules = getCountryPhoneRules();
+            if (!this.value.trim()) {
+                this.value = rules.dialCode;
+            }
+        });
+
+        // Clean up on blur if user entered nothing beyond the country code
+        inputEl.addEventListener('blur', function() {
+            const rules = getCountryPhoneRules();
+            const digits = extractNationalDigits(this.value, rules);
+            if (digits.length === 0) {
+                this.value = '';
+            }
+        });
+
+        // Real-time formatting on input: keeps country code at front and removes non-digits
+        inputEl.addEventListener('input', function() {
+            formatPhoneInput(this, false);
+        });
+    }
+
+    [inputPhone, inputMobile, inputAlternatePhone, inputWhatsapp].forEach(attachPhoneKeydownGuards);
+
+    // Validate phone number field according to country database rules
+    function validatePhoneField(inputEl, feedbackEl, isRequired = false, fieldLabel = 'Phone number') {
+        if (!inputEl) return true;
+        const rules = getCountryPhoneRules();
+        const { dialCode, minDigits, maxDigits, countryName } = rules;
+
+        // Auto-format first to guarantee no duplicate country code or invalid characters
+        const cleanDigits = formatPhoneInput(inputEl, false);
+        const val = inputEl.value.trim();
+
+        // Empty field handling
+        if (!val || val === dialCode || val === '+') {
+            if (isRequired) {
+                inputEl.classList.add('is-invalid');
+                inputEl.classList.remove('is-valid');
+                if (feedbackEl) {
+                    feedbackEl.innerText = `${fieldLabel} is required for ${countryName} (${minDigits === maxDigits ? minDigits + ' digits' : minDigits + '-' + maxDigits + ' digits'}).`;
+                    feedbackEl.style.display = 'block';
+                }
+                return false;
+            } else {
+                inputEl.classList.remove('is-invalid', 'is-valid');
+                if (feedbackEl) feedbackEl.style.display = 'none';
+                return true;
+            }
+        }
+
+        // Must start with country code
+        if (!val.startsWith(dialCode)) {
+            inputEl.classList.add('is-invalid');
+            inputEl.classList.remove('is-valid');
+            if (feedbackEl) {
+                feedbackEl.innerText = `${fieldLabel} must start with country code ${dialCode}.`;
+                feedbackEl.style.display = 'block';
+            }
+            return false;
+        }
+
+        const digitCount = cleanDigits.length;
+
+        // Digit count validation based on selected country database rules
+        if (minDigits === maxDigits) {
+            if (digitCount !== minDigits) {
+                inputEl.classList.add('is-invalid');
+                inputEl.classList.remove('is-valid');
+                if (feedbackEl) {
+                    feedbackEl.innerText = `${fieldLabel} for ${countryName} must be exactly ${minDigits} digits (${digitCount}/${minDigits} entered).`;
+                    feedbackEl.style.display = 'block';
+                }
+                return false;
+            }
+        } else {
+            if (digitCount < minDigits || digitCount > maxDigits) {
+                inputEl.classList.add('is-invalid');
+                inputEl.classList.remove('is-valid');
+                if (feedbackEl) {
+                    feedbackEl.innerText = `${fieldLabel} for ${countryName} must be between ${minDigits} and ${maxDigits} digits (${digitCount} entered).`;
+                    feedbackEl.style.display = 'block';
+                }
+                return false;
+            }
+        }
+
+        // Valid
+        inputEl.classList.remove('is-invalid');
+        inputEl.classList.add('is-valid');
+        if (feedbackEl) feedbackEl.style.display = 'none';
+        return true;
+    }
+
+    // Email validation function with Gmail typo assistance
+    function validateEmail(inputEl, feedbackEl, suggestionEl, isRequired = true) {
+        if (!inputEl) return true;
+        const val = inputEl.value.trim();
+
+        if (suggestionEl) {
+            suggestionEl.classList.add('d-none');
+        }
+
+        if (!val) {
+            if (isRequired) {
+                inputEl.classList.add('is-invalid');
+                inputEl.classList.remove('is-valid');
+                if (feedbackEl) {
+                    feedbackEl.innerText = 'Email address is required.';
+                    feedbackEl.style.display = 'block';
+                }
+                return false;
+            } else {
+                inputEl.classList.remove('is-invalid', 'is-valid');
+                if (feedbackEl) feedbackEl.style.display = 'none';
+                return true;
+            }
+        }
+
+        // Strict email format regex
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (!emailRegex.test(val)) {
+            inputEl.classList.add('is-invalid');
+            inputEl.classList.remove('is-valid');
+            if (feedbackEl) {
+                feedbackEl.innerText = 'Please enter a valid email address (e.g. name@gmail.com).';
+                feedbackEl.style.display = 'block';
+            }
+            return false;
+        }
+
+        // Check for common Gmail typos
+        const parts = val.split('@');
+        if (parts.length === 2) {
+            const domain = parts[1].toLowerCase();
+            const typos = ['gmai.com', 'gamil.com', 'gmaill.com', 'gmial.com', 'gmail.co', 'gmaill.co', 'gmai.in'];
+            if (typos.includes(domain)) {
+                const corrected = parts[0] + '@gmail.com';
+                if (suggestionEl && emailSuggestionText) {
+                    emailSuggestionText.innerText = `Did you mean ${corrected}? Click to fix.`;
+                    suggestionEl.classList.remove('d-none');
+                    suggestionEl.onclick = function() {
+                        inputEl.value = corrected;
+                        suggestionEl.classList.add('d-none');
+                        validateEmail(inputEl, feedbackEl, suggestionEl, isRequired);
+                    };
+                }
+            }
+        }
+
+        inputEl.classList.remove('is-invalid');
+        inputEl.classList.add('is-valid');
+        if (feedbackEl) feedbackEl.style.display = 'none';
+        return true;
+    }
+
+    // Real-time event listeners for phone & email
+    if (inputEmail) {
+        inputEmail.addEventListener('blur', function() {
+            validateEmail(inputEmail, emailFeedback, emailSuggestion, true);
+        });
+        inputEmail.addEventListener('input', function() {
+            if (this.classList.contains('is-invalid')) {
+                validateEmail(inputEmail, emailFeedback, emailSuggestion, true);
+            }
+        });
+    }
+
+    if (inputPhone) {
+        inputPhone.addEventListener('blur', function() {
+            validatePhoneField(inputPhone, phoneFeedback, true, 'Primary phone');
+        });
+        inputPhone.addEventListener('input', function() {
+            const digits = extractNationalDigits(this.value, getCountryPhoneRules());
+            if (this.classList.contains('is-invalid') || digits.length >= getCountryPhoneRules().minDigits) {
+                validatePhoneField(inputPhone, phoneFeedback, true, 'Primary phone');
+            }
+        });
+    }
+
+    if (inputMobile) {
+        inputMobile.addEventListener('blur', function() {
+            validatePhoneField(inputMobile, mobileFeedback, false, 'Mobile number');
+        });
+        inputMobile.addEventListener('input', function() {
+            const digits = extractNationalDigits(this.value, getCountryPhoneRules());
+            if (this.classList.contains('is-invalid') || digits.length >= getCountryPhoneRules().minDigits) {
+                validatePhoneField(inputMobile, mobileFeedback, false, 'Mobile number');
+            }
+        });
+    }
+
+    if (inputAlternatePhone) {
+        inputAlternatePhone.addEventListener('blur', function() {
+            validatePhoneField(inputAlternatePhone, alternatePhoneFeedback, false, 'Alternate phone');
+        });
+    }
+
+    if (inputWhatsapp) {
+        inputWhatsapp.addEventListener('blur', function() {
+            validatePhoneField(inputWhatsapp, whatsappFeedback, false, 'WhatsApp number');
+        });
+    }
+
+    // Initialize Select2 with Country Flags and two-way sync
+    if (window.jQuery && $.fn.select2) {
+        function formatCountryOption(state) {
+            if (!state.id) return state.text;
+            const flag = $(state.element).data('flag');
+            if (flag) {
+                return $('<span><img src="' + flag + '" width="20" height="14" class="me-2 rounded-1 align-text-top" style="object-fit: cover;" /> ' + state.text + '</span>');
+            }
+            return state.text;
+        }
+
+        $('#lead_country').select2({
+            theme: 'classic',
+            placeholder: 'Select country',
+            width: '100%',
+            templateResult: formatCountryOption,
+            templateSelection: formatCountryOption
+        }).on('change', function(e, isSync) {
+            if (isSync) return;
+            const countryVal = $(this).val();
+            handleCountryChange(countryVal);
+        });
+
+        $('#location_country').select2({
+            theme: 'classic',
+            placeholder: 'Select country',
+            width: '100%',
+            templateResult: formatCountryOption,
+            templateSelection: formatCountryOption
+        }).on('change', function(e, isSync) {
+            if (isSync) return;
+            const countryVal = $(this).val();
+            handleCountryChange(countryVal);
+        });
+    } else {
+        if (leadCountrySelect) {
+            leadCountrySelect.addEventListener('change', function() {
+                handleCountryChange(this.value);
+            });
+        }
+        if (locationCountrySelect) {
+            locationCountrySelect.addEventListener('change', function() {
+                handleCountryChange(this.value);
+            });
+        }
+    }
+
+    // Initialize country hints on page load
+    updateCountryPhoneHints();
+
+    // Form submit validation guard
+    if (leadEditForm) {
+        leadEditForm.addEventListener('submit', function(e) {
+            const rules = getCountryPhoneRules();
+            if (!leadCountrySelect || !leadCountrySelect.value) {
+                e.preventDefault();
+                if (countryFeedback) {
+                    countryFeedback.innerText = 'Please select a country.';
+                    countryFeedback.style.display = 'block';
+                }
+                if (leadCountrySelect) leadCountrySelect.focus();
+                return false;
+            }
+
+            const isEmailValid = validateEmail(inputEmail, emailFeedback, emailSuggestion, true);
+            const isPhoneValid = validatePhoneField(inputPhone, phoneFeedback, true, 'Primary phone');
+            const isMobileValid = validatePhoneField(inputMobile, mobileFeedback, false, 'Mobile number');
+            const isAlternateValid = validatePhoneField(inputAlternatePhone, alternatePhoneFeedback, false, 'Alternate phone');
+            const isWhatsappValid = validatePhoneField(inputWhatsapp, whatsappFeedback, false, 'WhatsApp number');
+
+            if (!isEmailValid || !isPhoneValid || !isMobileValid || !isAlternateValid || !isWhatsappValid) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                if (!isPhoneValid && inputPhone) {
+                    inputPhone.focus();
+                } else if (!isEmailValid && inputEmail) {
+                    inputEmail.focus();
+                } else if (!isMobileValid && inputMobile) {
+                    inputMobile.focus();
+                } else if (!isWhatsappValid && inputWhatsapp) {
+                    inputWhatsapp.focus();
+                } else if (!isAlternateValid && inputAlternatePhone) {
+                    inputAlternatePhone.focus();
+                }
+                return false;
+            }
+        });
+    }
+});
+</script>
 
 @endsection

@@ -40,6 +40,7 @@ class LeadsImport implements ToModel, WithHeadingRow, WithValidation
         return [
             'contact_name' => 'required',
             'email' => 'required|email',
+            'phone' => 'nullable|regex:/^\+?[0-9]{10,15}$/',
         ];
     }
 }

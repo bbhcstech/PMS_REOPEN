@@ -10,6 +10,8 @@ use App\Models\Client;
 use App\Models\CrmActivity;
 use App\Models\CrmFollowUp;
 use App\Models\User;
+use App\Models\Country;
+use Illuminate\Validation\ValidationException;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\LeadsExport;
 use App\Imports\LeadsImport;
@@ -193,33 +195,200 @@ class LeadContactController extends Controller
         ]);
     }
 
+    public function getCountryPhoneMeta(Request $request)
+    {
+        $countryName = trim((string) $request->input('country', ''));
+        if (empty($countryName)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Country parameter is required.'
+            ], 400);
+        }
+
+        $country = Country::where('name', $countryName)
+            ->orWhere('id', $countryName)
+            ->first();
+
+        if (!$country) {
+            return response()->json([
+                'success' => false,
+                'message' => "Country '{$countryName}' not found in database."
+            ], 404);
+        }
+
+        return response()->json([
+            'success'    => true,
+            'id'         => $country->id,
+            'name'       => $country->name,
+            'dial_code'  => $country->phone_code,
+            'min_digits' => (int) ($country->min_digits ?? 6),
+            'max_digits' => (int) ($country->max_digits ?? 15),
+            'iso_code'   => $country->iso_code,
+            'flag_url'   => $country->flag_url,
+        ]);
+    }
+
+    protected function validateAndFormatPhoneWithCountry(Request $request, Country $country, string $field = 'phone', bool $isRequired = true): ?string
+    {
+        $raw = trim((string) $request->input($field, ''));
+        $label = $field === 'phone' ? 'Primary phone' : ucwords(str_replace('_', ' ', $field));
+
+        if ($raw === '' || $raw === $country->phone_code || $raw === '+') {
+            if ($isRequired) {
+                throw ValidationException::withMessages([
+                    $field => ["{$label} is required for {$country->name}."]
+                ]);
+            }
+            return null;
+        }
+
+        if (preg_match('/[a-zA-Z]/', $raw)) {
+            throw ValidationException::withMessages([
+                $field => ["{$label} for {$country->name} must contain numbers only (no text or letters allowed)."]
+            ]);
+        }
+
+        $clean = preg_replace('/[\s\-\(\)\.]/', '', $raw);
+
+        // Fetch known dial codes from database sorted longest first to safely strip any previous or duplicate codes
+        static $sortedCodes = null;
+        if ($sortedCodes === null) {
+            $codes = Country::distinct()->pluck('phone_code')->filter()->values()->toArray();
+            usort($codes, function($a, $b) {
+                return strlen($b) - strlen($a);
+            });
+            $sortedCodes = $codes;
+        }
+
+        // Repeatedly strip known dial codes if preceded by '+' (e.g. +91, +91+91, +44, etc.)
+        while (str_starts_with($clean, '+')) {
+            $matched = false;
+            foreach ($sortedCodes as $code) {
+                if (str_starts_with($clean, $code)) {
+                    $clean = substr($clean, strlen($code));
+                    $matched = true;
+                    break;
+                }
+            }
+            if (!$matched) {
+                $clean = ltrim($clean, '+');
+                break;
+            }
+        }
+
+        // Now isolate the pure digits
+        $nationalDigits = preg_replace('/\D/', '', $clean);
+
+        $minDigits = (int) ($country->min_digits ?? 6);
+        $maxDigits = (int) ($country->max_digits ?? 15);
+        $dialDigits = preg_replace('/\D/', '', $country->phone_code);
+
+        // If digits entered without '+' but prefixed with country dial code (e.g. 919876543210 for India)
+        if (strlen($nationalDigits) > $maxDigits && $dialDigits !== '' && str_starts_with($nationalDigits, $dialDigits)) {
+            $nationalDigits = substr($nationalDigits, strlen($dialDigits));
+        }
+
+        // Strip leading 0 for domestic numbers if remainder meets or exceeds minDigits (e.g. 07123456789 -> 7123456789)
+        if (str_starts_with($nationalDigits, '0') && (strlen($nationalDigits) - 1 >= $minDigits)) {
+            $nationalDigits = ltrim($nationalDigits, '0');
+        }
+
+        $digitCount = strlen($nationalDigits);
+
+        if ($digitCount === 0) {
+            if ($isRequired) {
+                throw ValidationException::withMessages([
+                    $field => ["{$label} is required for {$country->name}."]
+                ]);
+            }
+            return null;
+        }
+
+        if ($minDigits === $maxDigits) {
+            if ($digitCount !== $minDigits) {
+                throw ValidationException::withMessages([
+                    $field => ["{$label} for {$country->name} must be exactly {$minDigits} digits ({$digitCount} entered)."]
+                ]);
+            }
+        } else {
+            if ($digitCount < $minDigits || $digitCount > $maxDigits) {
+                throw ValidationException::withMessages([
+                    $field => ["{$label} for {$country->name} must be between {$minDigits} and {$maxDigits} digits ({$digitCount} entered)."]
+                ]);
+            }
+        }
+
+        // Construct final phone: single country code from database + national digits
+        return $country->phone_code . $nationalDigits;
+    }
+
     public function create()
     {
         $this->authorizeLeadAccess('create');
 
         $users = User::select('id', 'name')->get();
-        return view('admin.leads.contacts.create', compact('users'));
+        $countries = Country::orderBy('name')->get();
+        return view('admin.leads.contacts.create', compact('users', 'countries'));
     }
 
     public function store(Request $request)
     {
         $this->authorizeLeadAccess('create');
 
+        // Pre-normalize email
+        if ($request->filled('email')) {
+            $request->merge(['email' => strtolower(trim((string) $request->email))]);
+        }
+
+        // Validate Country exists in database
+        $request->validate([
+            'country' => 'required|string|exists:countries,name',
+        ], [
+            'country.required' => 'Please select a country.',
+            'country.exists'   => 'The selected country is not found in the database.',
+        ]);
+
+        $country = Country::where('name', $request->input('country'))->first();
+        if (!$country) {
+            throw ValidationException::withMessages([
+                'country' => ['The selected country was not found in the database.']
+            ]);
+        }
+
+        // Validate and construct phone numbers using country database rules
+        $finalPhone = $this->validateAndFormatPhoneWithCountry($request, $country, 'phone', true);
+        $request->merge(['phone' => $finalPhone]);
+
+        if ($request->filled('mobile')) {
+            $finalMobile = $this->validateAndFormatPhoneWithCountry($request, $country, 'mobile', false);
+            $request->merge(['mobile' => $finalMobile]);
+        }
+
+        if ($request->filled('alternate_phone')) {
+            $finalAlt = $this->validateAndFormatPhoneWithCountry($request, $country, 'alternate_phone', false);
+            $request->merge(['alternate_phone' => $finalAlt]);
+        }
+
+        if ($request->filled('whatsapp')) {
+            $finalWa = $this->validateAndFormatPhoneWithCountry($request, $country, 'whatsapp', false);
+            $request->merge(['whatsapp' => $finalWa]);
+        }
+
         $data = $request->validate([
             // Section: Basic Information
             'salutation' => 'nullable|string|max:20',
             'contact_name' => 'required|string|max:255',
             'job_title' => 'nullable|string|max:255',
-            'email' => 'required|email|max:255',
-            'phone' => 'nullable|string|max:30',
-            'mobile' => 'nullable|string|max:30',
-            'alternate_phone' => 'nullable|string|max:30',
-            'whatsapp' => 'nullable|string|max:30',
+            'email' => ['required', 'string', 'email', 'max:255', 'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/'],
+            'phone' => ['required', 'string', 'max:30'],
+            'mobile' => ['nullable', 'string', 'max:30'],
+            'alternate_phone' => ['nullable', 'string', 'max:30'],
+            'whatsapp' => ['nullable', 'string', 'max:30'],
             'company_name' => 'nullable|string|max:255',
             'website' => 'nullable|url|max:255',
 
             // Section: Location
-            'country' => 'nullable|string|max:100',
+            'country' => 'required|string|max:100',
             'state' => 'nullable|string|max:100',
             'city' => 'nullable|string|max:100',
             'address' => 'nullable|string',
@@ -249,6 +418,11 @@ class LeadContactController extends Controller
 
             // Section: Notes
             'description' => 'nullable|string',
+        ], [
+            'email.required' => 'Email address is required.',
+            'email.email' => 'Please enter a valid email address (e.g., name@gmail.com).',
+            'email.regex' => 'Please enter a valid email address with a valid domain (e.g., name@gmail.com).',
+            'phone.required' => 'Primary phone number is required.',
         ]);
 
         $data['create_deal'] = $request->has('create_deal');
@@ -356,8 +530,9 @@ class LeadContactController extends Controller
 
         $lead = LeadContact::findOrFail($id);
         $users = User::select('id', 'name')->get();
+        $countries = Country::orderBy('name')->get();
 
-        return view('admin.leads.contacts.edit', compact('lead', 'users'));
+        return view('admin.leads.contacts.edit', compact('lead', 'users', 'countries'));
     }
 
     public function update(Request $request, $id)
@@ -368,21 +543,60 @@ class LeadContactController extends Controller
         $oldStatus = $lead->status;
         $oldPriority = $lead->priority;
 
+        // Pre-normalize email
+        if ($request->filled('email')) {
+            $request->merge(['email' => strtolower(trim((string) $request->email))]);
+        }
+
+        // Validate Country exists in database
+        $request->validate([
+            'country' => 'required|string|exists:countries,name',
+        ], [
+            'country.required' => 'Please select a country.',
+            'country.exists'   => 'The selected country is not found in the database.',
+        ]);
+
+        $country = Country::where('name', $request->input('country'))->first();
+        if (!$country) {
+            throw ValidationException::withMessages([
+                'country' => ['The selected country was not found in the database.']
+            ]);
+        }
+
+        // Validate and construct phone numbers using country database rules
+        $finalPhone = $this->validateAndFormatPhoneWithCountry($request, $country, 'phone', true);
+        $request->merge(['phone' => $finalPhone]);
+
+        if ($request->filled('mobile')) {
+            $finalMobile = $this->validateAndFormatPhoneWithCountry($request, $country, 'mobile', false);
+            $request->merge(['mobile' => $finalMobile]);
+        }
+
+        if ($request->filled('alternate_phone')) {
+            $finalAlt = $this->validateAndFormatPhoneWithCountry($request, $country, 'alternate_phone', false);
+            $request->merge(['alternate_phone' => $finalAlt]);
+        }
+
+        if ($request->filled('whatsapp')) {
+            $finalWa = $this->validateAndFormatPhoneWithCountry($request, $country, 'whatsapp', false);
+            $request->merge(['whatsapp' => $finalWa]);
+        }
+
         $data = $request->validate([
             // Section: Basic Information
             'salutation' => 'nullable|string|max:20',
             'contact_name' => 'required|string|max:255',
             'job_title' => 'nullable|string|max:255',
-            'email' => 'required|email|max:255',
-            'phone' => 'nullable|string|max:30',
-            'mobile' => 'nullable|string|max:30',
-            'alternate_phone' => 'nullable|string|max:30',
-            'whatsapp' => 'nullable|string|max:30',
+            'email' => ['required', 'string', 'email', 'max:255', 'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/'],
+            'phone' => ['required', 'string', 'max:30'],
+            'mobile' => ['nullable', 'string', 'max:30'],
+            'alternate_phone' => ['nullable', 'string', 'max:30'],
+            'whatsapp' => ['nullable', 'string', 'max:30'],
             'company_name' => 'nullable|string|max:255',
             'website' => 'nullable|url|max:255',
 
             // Section: Location
-            'country' => 'nullable|string|max:100',
+            'country' => 'required|string|max:100',
             'state' => 'nullable|string|max:100',
             'city' => 'nullable|string|max:100',
             'address' => 'nullable|string',
@@ -401,6 +615,11 @@ class LeadContactController extends Controller
 
             // Section: Notes
             'description' => 'nullable|string',
+        ], [
+            'email.required' => 'Email address is required.',
+            'email.email' => 'Please enter a valid email address (e.g., name@gmail.com).',
+            'email.regex' => 'Please enter a valid email address with a valid domain (e.g., name@gmail.com).',
+            'phone.required' => 'Primary phone number is required.',
         ]);
 
         if ($request->has('products') && is_array($request->products)) {

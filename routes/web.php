@@ -1210,6 +1210,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('leads/contacts/create', [LeadContactController::class, 'create'])->name('leads.contacts.create');
     Route::post('leads/contacts/store', [LeadContactController::class, 'store'])->name('leads.contacts.store');
     Route::post('leads/contacts/check-duplicate', [LeadContactController::class, 'checkDuplicate'])->name('leads.contacts.check-duplicate');
+    Route::get('countries/phone-meta', [LeadContactController::class, 'getCountryPhoneMeta'])->name('countries.phone-meta');
+    Route::get('leads/contacts/country-phone-meta', [LeadContactController::class, 'getCountryPhoneMeta'])->name('leads.contacts.country-phone-meta');
     Route::get('leads/contacts/{id}', [LeadContactController::class, 'show'])->name('leads.contacts.show');
     Route::get('leads/contacts/{id}/edit', [LeadContactController::class, 'edit'])->name('leads.contacts.edit');
     Route::put('leads/contacts/{id}', [LeadContactController::class, 'update'])->name('leads.contacts.update');
