@@ -52,6 +52,10 @@ public function toMail($notifiable)
         ->line('Priority: ' . ($ticket->priority ?? 'N/A'))
         ->action('View Ticket', $ticketUrl)
         ->line('You can also view this ticket in the PMS dashboard.');
-}
+    }
 
+    public function toArray($notifiable)
+    {
+        return $this->toDatabase($notifiable);
+    }
 }

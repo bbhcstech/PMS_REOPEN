@@ -384,6 +384,23 @@
                             <small class="text-muted d-block" id="office_phone_format_hint">Format: +91XXXXXXXXXX (10 digits)</small>
                         </div>
 
+                        <!-- Postal Code / Pincode -->
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold text-secondary d-flex align-items-center justify-content-between">
+                                <span>Postal Code / Pincode</span>
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle" style="font-size: 10px; font-weight: normal;">
+                                    <i class="fas fa-magic me-1"></i>Auto-detects Area, City & State
+                                </span>
+                            </label>
+                            <div class="position-relative">
+                                <input name="postal_code" id="postal_code" type="text" class="form-control form-control-custom pe-5" placeholder="e.g. 700001 or 110001" value="{{ old('postal_code') }}" autocomplete="off">
+                                <div id="pincode_spinner" class="position-absolute end-0 top-50 translate-middle-y me-3" style="display: none; pointer-events: none;">
+                                    <i class="fas fa-spinner fa-spin text-primary"></i>
+                                </div>
+                            </div>
+                            <div id="pincode_feedback_pill" class="mt-1" style="display: none;"></div>
+                        </div>
+
                         <!-- State -->
                         <div class="col-md-4">
                             <label class="form-label fw-semibold text-secondary">State / Province</label>
@@ -400,10 +417,28 @@
                             </select>
                         </div>
 
-                        <!-- Postal Code -->
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold text-secondary">Postal Code</label>
-                            <input name="postal_code" id="postal_code" type="text" class="form-control form-control-custom" placeholder="e.g. 90250" value="{{ old('postal_code') }}">
+                        <!-- Detected Area / Locality Selector (Auto-shown when pincode has multiple areas) -->
+                        <div class="col-md-12" id="area_selection_wrapper" style="display: none;">
+                            <div class="p-3 rounded-3" style="background: rgba(37, 99, 235, 0.05); border: 1px solid rgba(37, 99, 235, 0.2);">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <label class="form-label fw-semibold text-primary mb-0">
+                                        <i class="fas fa-map-marker-alt me-1"></i> Auto-Detected Areas / Localities for this Pincode
+                                    </label>
+                                    <span class="badge bg-primary text-white" id="area_count_badge">0 areas</span>
+                                </div>
+                                <div class="row align-items-center">
+                                    <div class="col-md-6">
+                                        <select id="detected_area_select" class="form-select form-control-custom">
+                                            <option value="">-- Choose specific area / post office --</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <small class="text-muted">
+                                            <i class="fas fa-info-circle me-1"></i> Selecting an area automatically populates your Company Address below.
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Company Address -->
@@ -520,6 +555,7 @@
                                 <i class="fas fa-calendar-times text-primary me-1"></i> Deadline
                             </label>
                             <input type="date" name="project_deadline" id="project_deadline" class="form-control form-control-custom" value="{{ old('project_deadline') }}">
+                            <div class="invalid-feedback" id="project_deadline_feedback">Deadline must be later than the start date.</div>
                         </div>
 
                         <!-- No Deadline Checkbox -->
@@ -678,6 +714,7 @@
                                     <div class="col-md-6 mb-2">
                                         <label class="form-label fw-semibold text-secondary">Next Follow Up</label>
                                         <input type="date" class="form-control form-control-custom" id="deal_next_follow_up" name="deal_next_follow_up" value="{{ old('deal_next_follow_up', date('Y-m-d', strtotime('+14 days'))) }}">
+                                        <div class="invalid-feedback" id="deal_next_follow_up_feedback">Next follow-up date must be later than the close date.</div>
                                     </div>
                                 </div>
                             </div>
@@ -1229,6 +1266,7 @@ html[data-bs-theme="dark"] .deal-value-input-group #deal_currency option,
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 <script>
+window.locationData = @json(\App\Support\LocationData::data());
 let currentStep = 1;
 const totalSteps = 4;
 let dealCurrencyManuallyChanged = {{ old('deal_currency') ? 'true' : 'false' }};
@@ -1410,6 +1448,157 @@ function populateCities(country, state, selectedCity = null) {
     });
 
     $city.trigger('change.select2');
+}
+
+let pincodeLookupTimer = null;
+let currentPincodeAjax = null;
+
+function showPincodeNotFound() {
+    $('#pincode_spinner').hide();
+    $('#pincode_feedback_pill').html(`
+        <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1" style="font-size: 11px;">
+            <i class="fas fa-times-circle me-1"></i> No data found
+        </span>
+    `).show();
+    $('#area_selection_wrapper').slideUp(150);
+}
+
+function performPincodeLookup(pincode) {
+    pincode = (pincode || '').trim().replace(/\s+/g, '');
+    const country = $('#company_country').val() || $('#country').val() || 'India';
+    const isIndia = !country || country.toLowerCase() === 'india';
+
+    // Abort previous in-flight request if user is typing
+    if (currentPincodeAjax && typeof currentPincodeAjax.abort === 'function') {
+        currentPincodeAjax.abort();
+        currentPincodeAjax = null;
+    }
+
+    if (!pincode) {
+        $('#pincode_spinner').hide();
+        $('#pincode_feedback_pill').hide();
+        $('#area_selection_wrapper').slideUp(150);
+        return;
+    }
+
+    // India pincodes must be 6 digits and start with 1-9
+    if (isIndia) {
+        if (pincode.length !== 6 || !/^[1-9]\d{5}$/.test(pincode)) {
+            showPincodeNotFound();
+            return;
+        }
+    } else {
+        if (pincode.length < 3) {
+            showPincodeNotFound();
+            return;
+        }
+    }
+
+    $('#pincode_spinner').show();
+    $('#pincode_feedback_pill').html('<span class="text-primary small"><i class="fas fa-spinner fa-spin me-1"></i> Checking location...</span>').show();
+
+    const lookupUrl = "{{ route('clients.lookup-pincode') }}";
+    
+    currentPincodeAjax = $.ajax({
+        url: lookupUrl,
+        type: 'GET',
+        data: { pincode: pincode, country: country },
+        timeout: 3500,
+        success: function(res) {
+            if (res && res.success) {
+                applyPincodeLocationData(res, country);
+            } else {
+                showPincodeNotFound();
+            }
+        },
+        error: function(xhr, status) {
+            if (status === 'abort') {
+                $('#pincode_spinner').hide();
+                return;
+            }
+            showPincodeNotFound();
+        },
+        complete: function() {
+            $('#pincode_spinner').hide();
+        }
+    });
+}
+
+function applyPincodeLocationData(data, country) {
+    const detectedState = data.state;
+    const detectedCity = data.city || data.district;
+    const areas = data.areas || [];
+
+    // 1. Ensure State is in dropdown and selected
+    if (detectedState) {
+        let stateFound = false;
+        $('#state option').each(function() {
+            if ($(this).val().toLowerCase() === detectedState.toLowerCase()) {
+                $('#state').val($(this).val()).trigger('change.select2');
+                stateFound = true;
+                return false;
+            }
+        });
+
+        if (!stateFound) {
+            const newOpt = new Option(detectedState, detectedState, true, true);
+            $('#state').append(newOpt).trigger('change.select2');
+        }
+
+        // Populate cities for this state
+        populateCities(country, detectedState, detectedCity);
+    }
+
+    // 2. Ensure City is in dropdown and selected
+    if (detectedCity) {
+        setTimeout(function() {
+            let cityFound = false;
+            $('#city option').each(function() {
+                if ($(this).val().toLowerCase() === detectedCity.toLowerCase()) {
+                    $('#city').val($(this).val()).trigger('change.select2');
+                    cityFound = true;
+                    return false;
+                }
+            });
+
+            if (!cityFound) {
+                const newOpt = new Option(detectedCity, detectedCity, true, true);
+                $('#city').append(newOpt).trigger('change.select2');
+            }
+        }, 100);
+    }
+
+    // 3. Populate Areas in Detected Area Selector
+    const $areaSelect = $('#detected_area_select');
+    $areaSelect.empty();
+    $areaSelect.append(new Option('-- Choose specific area / post office --', '', true, true));
+
+    if (areas.length > 0) {
+        areas.forEach(function(area) {
+            $areaSelect.append(new Option(area, area));
+        });
+        $('#area_count_badge').text(areas.length + ' found');
+        $('#area_selection_wrapper').slideDown(200);
+
+        if ($areaSelect.hasClass('select2-hidden-accessible')) {
+            $areaSelect.select2('destroy');
+        }
+        $areaSelect.select2({
+            theme: "classic",
+            width: '100%',
+            placeholder: "-- Choose specific area / post office --"
+        });
+    } else {
+        $('#area_selection_wrapper').slideUp(150);
+    }
+
+    // 4. Update feedback pill
+    const areaSummary = areas.length ? ` (${areas.length} areas found)` : '';
+    $('#pincode_feedback_pill').html(`
+        <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
+            <i class="fas fa-check-circle me-1"></i> Auto-detected: ${detectedCity ? detectedCity + ', ' : ''}${detectedState}${areaSummary}
+        </span>
+    `).show();
 }
 
 function sanitizePhoneNumber(inputElement) {
@@ -1693,6 +1882,20 @@ function validateStep(step) {
         }
     }
 
+    if (step === 3) {
+        if (!validateProjectDates()) {
+            isValid = false;
+            $('#project_deadline').focus();
+        }
+    }
+
+    if (step === 4) {
+        if (!validateDealDates()) {
+            isValid = false;
+            $('#deal_next_follow_up').focus();
+        }
+    }
+
     return isValid;
 }
 
@@ -1758,12 +1961,101 @@ function toggleProjectCodeInput() {
     }
 }
 
-function toggleDeadlineInput() {
-    if ($('#project_without_deadline').is(':checked')) {
-        $('#project_deadline').prop('disabled', true).val('');
+function syncProjectDateConstraints() {
+    const $start = $('#project_start_date');
+    const $deadline = $('#project_deadline');
+    const $withoutDeadline = $('#project_without_deadline');
+
+    if ($withoutDeadline.is(':checked')) {
+        $deadline.prop('disabled', true).val('').removeClass('is-invalid');
+        $('#project_deadline_feedback').text('').hide();
+        return true;
     } else {
-        $('#project_deadline').prop('disabled', false);
+        $deadline.prop('disabled', false);
     }
+
+    const startVal = $start.val();
+    if (startVal) {
+        // Calculate the next day (start_date + 1 day) as minimum allowed deadline
+        const startDate = new Date(startVal + 'T00:00:00');
+        if (!isNaN(startDate.getTime())) {
+            const nextDay = new Date(startDate);
+            nextDay.setDate(nextDay.getDate() + 1);
+            const yyyy = nextDay.getFullYear();
+            const mm = String(nextDay.getMonth() + 1).padStart(2, '0');
+            const dd = String(nextDay.getDate()).padStart(2, '0');
+            const minDateStr = `${yyyy}-${mm}-${dd}`;
+            $deadline.attr('min', minDateStr);
+
+            // If deadline is already filled, validate it
+            const deadlineVal = $deadline.val();
+            if (deadlineVal) {
+                const deadlineDate = new Date(deadlineVal + 'T00:00:00');
+                if (!isNaN(deadlineDate.getTime()) && deadlineDate <= startDate) {
+                    $deadline.addClass('is-invalid');
+                    $('#project_deadline_feedback').text('Deadline must be later than the project start date (' + startVal + ').').show();
+                    return false;
+                } else {
+                    $deadline.removeClass('is-invalid');
+                    $('#project_deadline_feedback').text('').hide();
+                }
+            }
+        }
+    } else {
+        $deadline.removeAttr('min');
+    }
+    return true;
+}
+
+function validateProjectDates() {
+    const $withoutDeadline = $('#project_without_deadline');
+    if ($withoutDeadline.is(':checked')) {
+        $('#project_deadline').removeClass('is-invalid');
+        $('#project_deadline_feedback').hide();
+        return true;
+    }
+
+    const startVal = $('#project_start_date').val();
+    const deadlineVal = $('#project_deadline').val();
+
+    if (startVal && deadlineVal) {
+        const startDate = new Date(startVal + 'T00:00:00');
+        const deadlineDate = new Date(deadlineVal + 'T00:00:00');
+
+        if (deadlineDate <= startDate) {
+            $('#project_deadline').addClass('is-invalid');
+            $('#project_deadline_feedback').text('Deadline must be later than the project start date (' + startVal + ').').show();
+            return false;
+        } else {
+            $('#project_deadline').removeClass('is-invalid');
+            $('#project_deadline_feedback').hide();
+        }
+    }
+    return true;
+}
+
+function validateDealDates() {
+    const closeDateVal = $('#deal_close_date').val();
+    const followUpVal = $('#deal_next_follow_up').val();
+
+    if (closeDateVal && followUpVal) {
+        const closeDate = new Date(closeDateVal + 'T00:00:00');
+        const followUpDate = new Date(followUpVal + 'T00:00:00');
+
+        if (followUpDate <= closeDate) {
+            $('#deal_next_follow_up').addClass('is-invalid');
+            $('#deal_next_follow_up_feedback').text('Next follow-up date must be later than the close date (' + closeDateVal + ').').show();
+            return false;
+        } else {
+            $('#deal_next_follow_up').removeClass('is-invalid');
+            $('#deal_next_follow_up_feedback').hide();
+        }
+    }
+    return true;
+}
+
+function toggleDeadlineInput() {
+    syncProjectDateConstraints();
 }
 
 $(document).ready(function () {
@@ -1969,6 +2261,64 @@ $(document).ready(function () {
         allowClear: true
     });
 
+    // Step 2: Postal Code Auto-Detection
+    $('#postal_code').on('input paste change', function() {
+        clearTimeout(pincodeLookupTimer);
+        const val = $(this).val().trim();
+        if (!val) {
+            if (currentPincodeAjax && typeof currentPincodeAjax.abort === 'function') {
+                currentPincodeAjax.abort();
+                currentPincodeAjax = null;
+            }
+            $('#pincode_spinner').hide();
+            $('#pincode_feedback_pill').hide();
+            $('#area_selection_wrapper').slideUp(150);
+            return;
+        }
+        pincodeLookupTimer = setTimeout(function() {
+            performPincodeLookup(val);
+        }, 350);
+    });
+
+    $('#postal_code').on('blur', function() {
+        const val = $(this).val().trim();
+        if (!val) {
+            if (currentPincodeAjax && typeof currentPincodeAjax.abort === 'function') {
+                currentPincodeAjax.abort();
+                currentPincodeAjax = null;
+            }
+            $('#pincode_spinner').hide();
+            $('#pincode_feedback_pill').hide();
+            $('#area_selection_wrapper').slideUp(150);
+        } else {
+            performPincodeLookup(val);
+        }
+    });
+
+    // Step 2: Selecting an auto-detected area populates company address
+    $('#detected_area_select').on('change', function() {
+        const selectedArea = $(this).val();
+        if (!selectedArea) return;
+
+        const $addr = $('#company_address');
+        const currentAddr = $addr.val().trim();
+        const city = $('#city').val() || '';
+        const state = $('#state').val() || '';
+        const pin = $('#postal_code').val() || '';
+
+        if (!currentAddr) {
+            const fullAddr = [selectedArea, city, state, pin].filter(Boolean).join(', ');
+            $addr.val(fullAddr);
+        } else if (!currentAddr.toLowerCase().includes(selectedArea.toLowerCase())) {
+            $addr.val(selectedArea + ', ' + currentAddr);
+        }
+    });
+
+    // Auto-trigger pincode detection if postal_code already filled on load
+    if ($('#postal_code').val() && $('#postal_code').val().trim()) {
+        performPincodeLookup($('#postal_code').val().trim());
+    }
+
     // Initialize country & office phone format hints on page load
     updateMobileFormatHint();
     updateOfficePhoneFormatHint();
@@ -2093,6 +2443,38 @@ $(document).ready(function () {
         syncDealCurrencyWithCountry(initialCountry);
     }
 
+    // Real-time synchronization and validation for Project Dates
+    $('#project_start_date').on('change input', function() {
+        syncProjectDateConstraints();
+    });
+
+    $('#project_deadline').on('change input', function() {
+        validateProjectDates();
+    });
+
+    $('#deal_close_date').on('change input', function() {
+        const closeVal = $(this).val();
+        if (closeVal) {
+            const cDate = new Date(closeVal + 'T00:00:00');
+            if (!isNaN(cDate.getTime())) {
+                const nextDay = new Date(cDate);
+                nextDay.setDate(nextDay.getDate() + 1);
+                const yyyy = nextDay.getFullYear();
+                const mm = String(nextDay.getMonth() + 1).padStart(2, '0');
+                const dd = String(nextDay.getDate()).padStart(2, '0');
+                $('#deal_next_follow_up').attr('min', `${yyyy}-${mm}-${dd}`);
+            }
+        }
+        validateDealDates();
+    });
+
+    $('#deal_next_follow_up').on('change input', function() {
+        validateDealDates();
+    });
+
+    // Initialize date constraints on page load
+    syncProjectDateConstraints();
+
     // Direct Final Submit click handler
     $('#finalSubmitBtn').on('click', function(e) {
         e.preventDefault();
@@ -2109,7 +2491,22 @@ $(document).ready(function () {
             return false;
         }
 
-        // Enable deadline if disabled so form doesn't miss it or leave it as is
+        // Validate Step 3 (Project deadline must be later than start date)
+        if (!validateStep(3)) {
+            goToStep(3);
+            return false;
+        }
+
+        // Validate Step 4 (Deal dates)
+        if (!validateStep(4)) {
+            goToStep(4);
+            return false;
+        }
+
+        // If without_deadline is checked, ensure deadline input value is cleared
+        if ($('#project_without_deadline').is(':checked')) {
+            $('#project_deadline').val('');
+        }
         $('#project_deadline').prop('disabled', false);
 
         // Show loading state

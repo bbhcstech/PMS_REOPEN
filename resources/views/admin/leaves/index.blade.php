@@ -167,8 +167,8 @@
                 <label>Status</label>
                 <select name="status" class="form-control">
                     <option value="">All Status</option>
-                    @foreach(['pending','approved','rejected'] as $status)
-                        <option value="{{ $status }}" {{ request('status') === $status ? 'selected' : '' }}>{{ ucfirst($status) }}</option>
+                    @foreach(['pending' => 'Pending', 'approved' => 'Approved', 'rejected' => 'Rejected', 'unpaid' => 'Unpaid'] as $statusVal => $statusLabel)
+                        <option value="{{ $statusVal }}" {{ request('status') === $statusVal ? 'selected' : '' }}>{{ $statusLabel }}</option>
                     @endforeach
                 </select>
             </div>
@@ -252,7 +252,8 @@
                     @forelse($leaves as $leave)
                         @php
                             $statusClass = ['pending' => 'warning', 'approved' => 'success', 'rejected' => 'danger'][$leave->status] ?? 'secondary';
-                            $currentStatusValue = $leave->is_unpaid ? 'unpaid' : $leave->status;
+                            $isUnpaidApproved = ($leave->status === 'approved' && $leave->is_unpaid);
+                            $currentStatusValue = $isUnpaidApproved ? 'unpaid' : $leave->status;
                             $statusSelectClass = $currentStatusValue === 'unpaid' ? 'unpaid' : $statusClass;
                         @endphp
                         <tr>
@@ -268,19 +269,26 @@
                             </td>
                             <td>{{ number_format((float) $leave->total_days, 1) }}</td>
                             <td>
-                                @php
-                                    $paidDays = (float) ($leave->paid_days ?? 0);
-                                    $unpaidDays = (float) ($leave->unpaid_days ?? 0);
-                                @endphp
-                                <span class="pay-badge {{ $unpaidDays > 0 ? 'unpaid' : 'paid' }}">
-                                    @if($paidDays > 0 && $unpaidDays > 0)
-                                        Partial Unpaid
-                                    @else
-                                        {{ $unpaidDays > 0 ? 'Unpaid' : 'Paid' }}
+                                @if($leave->status === 'rejected')
+                                    <span class="pay-badge rejected">N/A</span>
+                                    <small class="text-muted">Rejected</small>
+                                @elseif($leave->status === 'pending')
+                                    <span class="pay-badge pending text-muted">Pending</span>
+                                @else
+                                    @php
+                                        $paidDays = (float) ($leave->paid_days ?? 0);
+                                        $unpaidDays = (float) ($leave->unpaid_days ?? 0);
+                                    @endphp
+                                    <span class="pay-badge {{ $unpaidDays > 0 ? 'unpaid' : 'paid' }}">
+                                        @if($paidDays > 0 && $unpaidDays > 0)
+                                            Partial Unpaid
+                                        @else
+                                            {{ $unpaidDays > 0 ? 'Unpaid' : 'Paid' }}
+                                        @endif
+                                    </span>
+                                    @if($paidDays > 0 || $unpaidDays > 0)
+                                        <small>{{ number_format($paidDays, 1) }} paid / {{ number_format($unpaidDays, 1) }} unpaid</small>
                                     @endif
-                                </span>
-                                @if($paidDays > 0 || $unpaidDays > 0)
-                                    <small>{{ number_format($paidDays, 1) }} paid / {{ number_format($unpaidDays, 1) }} unpaid</small>
                                 @endif
                             </td>
                             <td>
@@ -1288,6 +1296,18 @@
         border-color: rgba(194, 65, 12, 0.1);
     }
 
+    .leave-table td .pay-badge.rejected {
+        background: #fee2e2;
+        color: #b91c1c;
+        border-color: rgba(185, 28, 28, 0.1);
+    }
+
+    .leave-table td .pay-badge.pending {
+        background: #f1f5f9;
+        color: #64748b;
+        border-color: rgba(100, 116, 139, 0.1);
+    }
+
     .leave-table td .status-badge {
         display: inline-flex;
         padding: 8px 16px;
@@ -2233,6 +2253,18 @@
     html[data-pms-theme="dark"] .leave-table td .pay-badge.unpaid {
         background: #1a1a0d;
         color: #fbbf24;
+    }
+
+    html[data-pms-theme="dark"] .leave-table td .pay-badge.rejected {
+        background: rgba(239, 68, 68, 0.16);
+        color: #f87171;
+        border-color: rgba(239, 68, 68, 0.3);
+    }
+
+    html[data-pms-theme="dark"] .leave-table td .pay-badge.pending {
+        background: #141B3D;
+        color: #94a3b8;
+        border-color: rgba(148, 163, 184, 0.2);
     }
 
     html[data-pms-theme="dark"] .leave-table td .status-badge.warning {

@@ -570,15 +570,15 @@ class AttendanceController extends Controller
     {
         $user = Auth::user();
 
-        // Only admin can mark attendance
-        if ($user->role !== 'admin') {
+        // Only authorized management can mark attendance
+        if (!$this->canManageAttendance($user) && !$this->isAdminUser($user)) {
             return back()->with('error', 'You do not have permission to mark attendance.');
         }
 
         $data = $request->validate([
             'user_id' => 'required|exists:users,id',
             'date' => 'required|date',
-            'status' => 'required|in:present,absent,holiday,late,half_day,leave',
+            'status' => 'required|in:present,absent,holiday,late,half_day,leave,day_off,unpaid_leave',
             'clock_in' => 'nullable|date_format:H:i',
         ]);
 
@@ -949,8 +949,8 @@ class AttendanceController extends Controller
     {
         $user = Auth::user();
 
-        // Only admin can create attendance
-        if ($user->role !== 'admin') {
+        // Only authorized management can access bulk create page
+        if (!$this->canManageAttendance($user) && !$this->isAdminUser($user)) {
             return redirect()->route('attendance.index')
                 ->with('error', 'You do not have permission to add attendance.');
         }
@@ -965,14 +965,40 @@ class AttendanceController extends Controller
     }
 
     /**
-     * Store Attendance - ADMIN ONLY
+     * Store Attendance
      */
     public function store(Request $request)
     {
         $user = Auth::user();
 
-        // Only admin can store attendance
-        if ($user->role !== 'admin') {
+        if (!$user) {
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json(['status' => 'error', 'message' => 'Unauthenticated.'], 401);
+            }
+            return redirect()->route('login');
+        }
+
+        // Normalize user_id to array (accept both single id and array)
+        $userIds = $request->input('user_id', []);
+        if (!is_array($userIds)) $userIds = [$userIds];
+
+        $canManageAll = $this->canManageAttendance($user) || $this->isAdminUser($user);
+        $isSelf = count($userIds) === 1 && (int) reset($userIds) === (int) $user->id;
+        $isManagerForEmployees = false;
+        if ($this->isManagerOrHrUser($user) && method_exists($user, 'visibleEmployeeIds')) {
+            $visibleIds = $user->visibleEmployeeIds();
+            if ($visibleIds instanceof \Illuminate\Support\Collection) {
+                $isManagerForEmployees = collect($userIds)->every(fn($id) => $visibleIds->contains($id));
+            }
+        }
+
+        if (!$canManageAll && !$isSelf && !$isManagerForEmployees) {
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'You do not have permission to add attendance.'
+                ], 403);
+            }
             return redirect()->route('attendance.index')
                 ->with('error', 'You do not have permission to add attendance.');
         }
@@ -1122,6 +1148,10 @@ class AttendanceController extends Controller
                     );
                 }
             }
+        }
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json(['success' => true, 'message' => 'Attendance saved successfully.']);
         }
 
         return redirect()->route('attendance.index')->with('success', 'Attendance saved successfully.');
@@ -1839,18 +1869,17 @@ class AttendanceController extends Controller
     }
 
     /**
-     * Edit Attendance - ADMIN ONLY
+     * Edit Attendance
      */
     public function edit(Request $request)
     {
         $user = Auth::user();
 
-        // Only admin can edit attendance
-        if ($user->role !== 'admin') {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'You do not have permission to edit attendance.'
-            ], 403);
+        if (!$user) {
+            if ($request->expectsJson() && !$request->ajax()) {
+                return response()->json(['status' => 'error', 'message' => 'Unauthenticated.'], 401);
+            }
+            return response('<div class="alert alert-danger m-3">Unauthenticated.</div>', 401);
         }
 
         $attendanceId = $request->attendance_id;
@@ -1858,22 +1887,65 @@ class AttendanceController extends Controller
         $date         = $request->date;
 
         if (!$userId || !$date) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Missing required parameters.'
-            ]);
+            if ($request->expectsJson() && !$request->ajax()) {
+                return response()->json(['status' => 'error', 'message' => 'Missing required parameters.'], 400);
+            }
+            return response('<div class="alert alert-danger m-3">Missing required parameters (employee or date).</div>', 400);
         }
 
-        $attendance = Attendance::find($attendanceId);
+        $canManageAll = $this->canManageAttendance($user) || $this->isAdminUser($user);
+        $isSelf = (int) $userId === (int) $user->id;
+        $isManagerForEmployee = false;
+        if ($this->isManagerOrHrUser($user) && method_exists($user, 'visibleEmployeeIds')) {
+            $visibleIds = $user->visibleEmployeeIds();
+            if ($visibleIds instanceof \Illuminate\Support\Collection && $visibleIds->contains($userId)) {
+                $isManagerForEmployee = true;
+            }
+        }
+
+        if (!$canManageAll && !$isSelf && !$isManagerForEmployee) {
+            if ($request->expectsJson() && !$request->ajax()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'You do not have permission to edit attendance.'
+                ], 403);
+            }
+            return response('<div class="alert alert-danger m-3"><i class="fas fa-exclamation-circle me-1"></i> You do not have permission to edit attendance.</div>', 403);
+        }
+
+        $attendance = $attendanceId ? Attendance::find($attendanceId) : null;
 
         if ($attendanceId && !$attendance) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Attendance record not found.'
-            ]);
+            if ($request->expectsJson() && !$request->ajax()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Attendance record not found.'
+                ], 404);
+            }
+            return response('<div class="alert alert-danger m-3"><i class="fas fa-exclamation-circle me-1"></i> Attendance record not found.</div>', 404);
         }
 
-        $employee    = User::find($userId);
+        if ($attendance && !$canManageAll && !$isManagerForEmployee && (int) $attendance->user_id !== (int) $user->id) {
+            if ($request->expectsJson() && !$request->ajax()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'You do not have permission to edit this attendance.'
+                ], 403);
+            }
+            return response('<div class="alert alert-danger m-3"><i class="fas fa-exclamation-circle me-1"></i> You do not have permission to edit this attendance.</div>', 403);
+        }
+
+        $employee    = User::with(['employeeDetail.department', 'employeeDetail.designation'])->find($userId);
+        if (!$employee) {
+            if ($request->expectsJson() && !$request->ajax()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Employee not found.'
+                ], 404);
+            }
+            return response('<div class="alert alert-danger m-3"><i class="fas fa-exclamation-circle me-1"></i> Employee not found.</div>', 404);
+        }
+
         $departments = Department::all();
         $location    = CompanyAddress::all();
 
@@ -1888,14 +1960,27 @@ class AttendanceController extends Controller
     }
 
     /**
-     * Update Attendance - ADMIN ONLY
+     * Update Attendance
      */
     public function update(Request $request, Attendance $attendance)
     {
         $user = Auth::user();
 
-        // Only admin can update attendance
-        if ($user->role !== 'admin') {
+        if (!$user) {
+            return response()->json(['status' => 'error', 'message' => 'Unauthenticated.'], 401);
+        }
+
+        $canManageAll = $this->canManageAttendance($user) || $this->isAdminUser($user);
+        $isSelf = (int) $attendance->user_id === (int) $user->id;
+        $isManagerForEmployee = false;
+        if ($this->isManagerOrHrUser($user) && method_exists($user, 'visibleEmployeeIds')) {
+            $visibleIds = $user->visibleEmployeeIds();
+            if ($visibleIds instanceof \Illuminate\Support\Collection && $visibleIds->contains($attendance->user_id)) {
+                $isManagerForEmployee = true;
+            }
+        }
+
+        if (!$canManageAll && !$isSelf && !$isManagerForEmployee) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'You do not have permission to update attendance.'
@@ -1908,15 +1993,35 @@ class AttendanceController extends Controller
             'status'    => 'required|string'
         ]);
 
-        $attendance->update([
-            // store as time-only (H:i:s) because DB has TIME columns
-            'clock_in' => $request->clock_in ? Carbon::createFromFormat('H:i', $request->clock_in)->format('H:i:s') : null,
-            'clock_out'=> $request->clock_out ? Carbon::createFromFormat('H:i', $request->clock_out)->format('H:i:s') : null,
-            'status'   => $request->status,
-        ]);
+        $updateData = [
+            'clock_in'  => $request->clock_in ? Carbon::createFromFormat('H:i', $request->clock_in)->format('H:i:s') : null,
+            'clock_out' => $request->clock_out ? Carbon::createFromFormat('H:i', $request->clock_out)->format('H:i:s') : null,
+            'status'    => $request->status,
+        ];
+
+        if ($request->filled('location_id')) {
+            $updateData['location_id'] = $request->location_id;
+        }
+        if ($request->filled('work_from_type')) {
+            $updateData['work_from_type'] = $request->work_from_type;
+        }
+        if ($request->filled('working_from')) {
+            $updateData['working_from'] = $request->working_from;
+        }
+        if ($request->filled('late')) {
+            $updateData['late'] = ($request->late == 'yes') ? 'yes' : 'no';
+        }
+        if ($request->filled('half_day')) {
+            $updateData['half_day'] = ($request->half_day == 'yes') ? 'yes' : 'no';
+        }
+        if ($request->has('overwrite_attendance')) {
+            $updateData['overwrite_attendance'] = ($request->overwrite_attendance == 'yes') ? 'yes' : 'no';
+        }
+
+        $attendance->update($updateData);
         $attendance = $this->applyOrganizationAttendanceRules($attendance);
 
-        if ($attendance->user) {
+        if ($attendance->user && (int) $attendance->user_id !== (int) Auth::id()) {
             SystemNotificationService::notifyUser(
                 $attendance->user,
                 'Attendance Updated',
@@ -1930,13 +2035,13 @@ class AttendanceController extends Controller
     }
 
     /**
-     * Archive one employee's attendance records for a selected month - ADMIN ONLY
+     * Archive one employee's attendance records for a selected month
      */
     public function archiveMonth(Request $request)
     {
         $user = Auth::user();
 
-        if ($user->role !== 'admin') {
+        if (!$this->canManageAttendance($user) && !$this->isAdminUser($user)) {
             return response()->json([
                 'success' => false,
                 'message' => 'You do not have permission to archive attendance.'
@@ -1965,13 +2070,13 @@ class AttendanceController extends Controller
     }
 
     /**
-     * Archived attendance records - ADMIN ONLY
+     * Archived attendance records
      */
     public function archive(Request $request)
     {
         $user = Auth::user();
 
-        if ($user->role !== 'admin') {
+        if (!$this->canManageAttendance($user) && !$this->isAdminUser($user)) {
             return redirect()->route('attendance.index')
                 ->with('error', 'You do not have permission to view archived attendance.');
         }
@@ -2000,13 +2105,13 @@ class AttendanceController extends Controller
     }
 
     /**
-     * Restore archived attendance - ADMIN ONLY
+     * Restore archived attendance
      */
     public function restore($id)
     {
         $user = Auth::user();
 
-        if ($user->role !== 'admin') {
+        if (!$this->canManageAttendance($user) && !$this->isAdminUser($user)) {
             return redirect()->route('attendance.index')
                 ->with('error', 'You do not have permission to restore attendance.');
         }

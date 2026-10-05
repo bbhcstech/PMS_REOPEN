@@ -282,7 +282,14 @@ $(function () {
 
     // init bootstrap popovers (support both data-toggle and data-bs-toggle)
     var popoverList = [].slice.call(document.querySelectorAll('[data-toggle="popover"], [data-bs-toggle="popover"]'));
-    popoverList.map(function (el) { return new bootstrap.Popover(el); });
+    popoverList.forEach(function (el) {
+        var content = el.getAttribute('data-bs-content') || el.getAttribute('data-content') || '';
+        var placement = el.getAttribute('data-bs-placement') || el.getAttribute('data-placement') || 'top';
+        var trigger = el.getAttribute('data-bs-trigger') || el.getAttribute('data-trigger') || 'hover focus';
+        if (window.bootstrap && bootstrap.Popover) {
+            new bootstrap.Popover(el, { trigger: trigger, placement: placement, content: content, html: true });
+        }
+    });
 });
 </script>
 @endpush
