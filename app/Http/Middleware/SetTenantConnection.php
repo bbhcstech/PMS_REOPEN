@@ -12,68 +12,93 @@ class SetTenantConnection
     /**
      * Set the active tenant database connection dynamically for the incoming request.
      *
-     * Reads 'current_company_db' from session.
-     * If not set, defaults to env('DB_DATABASE', 'pms_last'), ensuring existing
-     * logged-in users and public routes continue seamlessly.
+     * SESSION is the primary source of truth — it is written once at login and
+     * is always correct. Using user->company_id as the primary resolver caused a
+     * chicken-and-egg problem: Auth::user() reloads the user from whatever 'tenant'
+     * DB is active BEFORE this middleware switches it, so the user could be from
+     * a different company's DB, giving the wrong company_id back.
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Bypass tenant DB switching for SuperAdmin & Developer routes and authenticated SuperAdmin / Developer users
+        // 1. Bypass tenant DB switching for SuperAdmin & Developer routes
         if (
             $request->is('super-admin*') ||
             $request->is('superadmin*') ||
-            $request->is('developer*') ||
-            \Illuminate\Support\Facades\Auth::guard('super_admin')->check() ||
-            (auth()->check() && (
-                in_array(strtolower((string)(auth()->user()->role ?? '')), ['superadmin', 'super-admin', 'super_admin'], true) ||
-                (method_exists(auth()->user(), 'isDeveloper') && auth()->user()->isDeveloper()) ||
-                in_array(strtolower((string)(auth()->user()->role ?? '')), ['developer', 'dev'], true) ||
-                str_contains(strtolower((string)(auth()->user()->role ?? '')), 'developer') ||
-                str_contains(strtolower((string)(auth()->user()->designation ?? '')), 'developer') ||
-                str_contains(strtolower((string)(auth()->user()->designation ?? '')), 'engineer')
-            ))
+            $request->is('developer*')
         ) {
             return $next($request);
         }
 
-        $defaultDb = config('database.connections.tenant.database') ?: (config('database.connections.mysql.database') ?: env('DB_DATABASE', 'thesmart_lara319'));
-        $tenantDb = session('current_company_db');
+        $defaultDb = env('DB_DATABASE', 'pms_last');
+        $isSuperAdmin = \Illuminate\Support\Facades\Auth::guard('super_admin')->check() ||
+            (auth()->check() && in_array(strtolower((string)(auth()->user()->role ?? '')), ['superadmin', 'super-admin', 'super_admin'], true));
 
-        $user = auth()->user();
-        if ($user) {
-            $company = null;
-            if (!empty($user->company_id)) {
-                try {
-                    $company = \App\Models\Central\Company::on('central')->find($user->company_id);
-                } catch (\Throwable $e) {}
-            }
-            if (!$company && !empty($user->email)) {
-                try {
-                    $company = \App\Models\Central\Company::on('central')->where('email', $user->email)->first();
-                } catch (\Throwable $e) {}
-            }
+        $user = \Illuminate\Support\Facades\Auth::guard('web')->user() ?? auth()->user();
+        $targetDb = null;
 
-            if ($company && !empty($company->db_name)) {
-                $tenantDb = $company->db_name;
-                session([
-                    'current_company_db'   => $tenantDb,
-                    'current_company_id'   => $company->id,
-                    'current_company_name' => $company->name,
-                ]);
+        if ($isSuperAdmin) {
+            // Super Admin can switch / impersonate via session
+            $targetDb = session('current_company_db') ?: $defaultDb;
+        } elseif ($user) {
+            $isDev = (method_exists($user, 'isDeveloper') && $user->isDeveloper()) ||
+                in_array(strtolower((string)($user->role ?? '')), ['developer', 'dev'], true) ||
+                str_contains(strtolower((string)($user->role ?? '')), 'developer') ||
+                str_contains(strtolower((string)($user->designation ?? '')), 'developer') ||
+                str_contains(strtolower((string)($user->designation ?? '')), 'engineer');
+
+            if (! $isDev) {
+                $company = null;
+
+                // PRIMARY: Trust the session set at login time — it is always correct.
+                // user->company_id cannot be trusted here because Laravel reloads the
+                // user from whatever 'tenant' DB is active at middleware boot time
+                // (before we've had a chance to switch it), causing a stale-user
+                // chicken-and-egg problem that redirects to the wrong company.
+                if (session('current_company_id')) {
+                    try {
+                        $company = \App\Models\Central\Company::on('central')->find(session('current_company_id'));
+                    } catch (\Throwable $e) {}
+                }
+
+                // SECONDARY: No session yet (e.g. first request after seeding).
+                // Fall back to company_id on the user — safe only when no session exists.
+                if (!$company && !empty($user->company_id)) {
+                    try {
+                        $company = \App\Models\Central\Company::on('central')->find($user->company_id);
+                    } catch (\Throwable $e) {}
+                }
+
+                if ($company && !empty($company->db_name)) {
+                    $targetDb = $company->db_name;
+                    // Keep session consistent
+                    session([
+                        'current_company_db'   => $targetDb,
+                        'current_company_id'   => $company->id,
+                        'current_company_name' => $company->name,
+                    ]);
+                } else {
+                    $targetDb = session('current_company_db') ?: $defaultDb;
+                }
+            } else {
+                $targetDb = session('current_company_db') ?: $defaultDb;
             }
+        } else {
+            // Unauthenticated guest request
+            $targetDb = session('current_company_db') ?: $defaultDb;
         }
 
-        if (! $tenantDb) {
-            $tenantDb = $defaultDb;
+        if (!$targetDb) {
+            $targetDb = $defaultDb;
         }
 
+        // Apply target connection if different from current
         $currentTenantDb = config('database.connections.tenant.database');
         $currentMysqlDb  = config('database.connections.mysql.database');
-        if ($tenantDb && ($tenantDb !== $currentTenantDb || $tenantDb !== $currentMysqlDb)) {
+        if ($targetDb !== $currentTenantDb || $targetDb !== $currentMysqlDb) {
             try {
                 config([
-                    'database.connections.tenant.database' => $tenantDb,
-                    'database.connections.mysql.database'  => $tenantDb,
+                    'database.connections.tenant.database' => $targetDb,
+                    'database.connections.mysql.database'  => $targetDb,
                 ]);
                 DB::purge('tenant');
                 DB::purge('mysql');
@@ -81,7 +106,7 @@ class SetTenantConnection
                 DB::connection('tenant')->getPdo();
                 DB::connection('mysql')->getPdo();
             } catch (\Throwable $e) {
-                // If tenant DB cannot be connected to, fall back safely to default database
+                // If target DB cannot be connected to, fall back safely to default database
                 config([
                     'database.connections.tenant.database' => $defaultDb,
                     'database.connections.mysql.database'  => $defaultDb,

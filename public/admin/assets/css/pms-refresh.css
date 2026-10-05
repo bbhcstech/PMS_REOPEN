@@ -318,17 +318,17 @@ html[data-pms-theme="dark"] .app-brand-text.demo {
 }
 
 #layout-navbar {
-  position: sticky !important;
+  position: absolute !important;
   top: 0.75rem !important;
-  z-index: 1030 !important;
-  margin: 0.75rem 1.5rem 0;
-  width: auto;
+  z-index: 1035 !important;
+  margin: 0 !important;
   min-height: 72px;
   border: 1px solid var(--pms-border);
   border-radius: 20px;
   background: rgba(255, 255, 255, 0.98) !important;
   box-shadow: var(--pms-shadow-soft);
   backdrop-filter: blur(18px);
+  transition: left 0.25s ease, width 0.25s ease, max-width 0.25s ease, background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
 #layout-navbar .navbar-nav-right,
@@ -772,9 +772,9 @@ html[data-theme="dark"] .btn-secondary {
 
 #layout-navbar,
 .layout-navbar {
-  position: sticky !important;
+  position: fixed !important;
   top: 0.75rem !important;
-  z-index: 1030 !important;
+  z-index: 1035 !important;
 }
 
 .modal-backdrop {
@@ -2139,9 +2139,13 @@ html[data-pms-theme="dark"] .welcome-illustration img[src*="dashboard-ui-preview
   }
 
   #layout-navbar {
-    margin: 0.75rem;
-    width: auto;
-    max-width: calc(100vw - 1.5rem);
+    position: fixed !important;
+    top: 0.75rem !important;
+    left: 0.75rem !important;
+    right: 0.75rem !important;
+    margin: 0 !important;
+    width: calc(100% - 1.5rem) !important;
+    max-width: calc(100% - 1.5rem) !important;
   }
 
   #layout-navbar .navbar-nav-right,
@@ -4457,9 +4461,14 @@ button {
 
 @media (max-width: 767.98px) {
   #layout-navbar {
-    position: sticky;
-    top: 0.5rem;
-    z-index: 1080;
+    position: fixed !important;
+    top: 0.5rem !important;
+    left: 0.5rem !important;
+    right: 0.5rem !important;
+    margin: 0 !important;
+    width: calc(100% - 1rem) !important;
+    max-width: calc(100% - 1rem) !important;
+    z-index: 1080 !important;
   }
 
   #layout-navbar .layout-menu-toggle {
@@ -5043,10 +5052,22 @@ button,
     padding-top: 1rem;
   }
 
-  .layout-menu-fixed #layout-navbar {
-    margin: 1.25rem 0 0 !important;
-    max-width: 100% !important;
-    width: 100% !important;
+  html.layout-menu-fixed:not(.layout-menu-collapsed) #layout-navbar,
+  .layout-menu-fixed:not(.layout-menu-collapsed) #layout-navbar {
+    left: calc(var(--bs-menu-width, 16.25rem) + 1.25rem) !important;
+    right: 1.25rem !important;
+    width: calc(100% - var(--bs-menu-width, 16.25rem) - 2.5rem) !important;
+    max-width: calc(100% - var(--bs-menu-width, 16.25rem) - 2.5rem) !important;
+    margin: 0 !important;
+  }
+
+  html.layout-menu-fixed.layout-menu-collapsed #layout-navbar,
+  .layout-menu-fixed.layout-menu-collapsed #layout-navbar {
+    left: calc(var(--bs-menu-collapsed-width, 5.25rem) + 1.25rem) !important;
+    right: 1.25rem !important;
+    width: calc(100% - var(--bs-menu-collapsed-width, 5.25rem) - 2.5rem) !important;
+    max-width: calc(100% - var(--bs-menu-collapsed-width, 5.25rem) - 2.5rem) !important;
+    margin: 0 !important;
   }
 
   .layout-menu-fixed .content-wrapper,
@@ -5267,10 +5288,25 @@ button,
     width: 100% !important;
   }
 
-  html.layout-menu-fixed #layout-navbar {
-    margin: 1.25rem 0 0 !important;
-    max-width: 100% !important;
-    width: 100% !important;
+  html.layout-menu-fixed:not(.layout-menu-collapsed) #layout-navbar {
+    left: calc(var(--bs-menu-width, 16.25rem) + 1.25rem) !important;
+    right: 1.25rem !important;
+    width: calc(100% - var(--bs-menu-width, 16.25rem) - 2.5rem) !important;
+    max-width: calc(100% - var(--bs-menu-width, 16.25rem) - 2.5rem) !important;
+    margin: 0 !important;
+  }
+
+  html.layout-menu-fixed.layout-menu-collapsed #layout-navbar {
+    left: calc(var(--bs-menu-collapsed-width, 5.25rem) + 1.25rem) !important;
+    right: 1.25rem !important;
+    width: calc(100% - var(--bs-menu-collapsed-width, 5.25rem) - 2.5rem) !important;
+    max-width: calc(100% - var(--bs-menu-collapsed-width, 5.25rem) - 2.5rem) !important;
+    margin: 0 !important;
+  }
+
+  html.layout-navbar-fixed .layout-wrapper:not(.layout-horizontal) .layout-page,
+  .layout-page {
+    padding-top: calc(72px + 1.75rem) !important;
   }
 
   html.layout-menu-fixed .content-wrapper {
@@ -5294,6 +5330,11 @@ button,
 }
 
 @media (max-width: 1199.98px) {
+  html.layout-navbar-fixed .layout-wrapper:not(.layout-horizontal) .layout-page,
+  .layout-page {
+    padding-top: calc(68px + 1.5rem) !important;
+  }
+
   html.layout-menu-fixed .layout-wrapper:not(.layout-without-menu) .layout-page {
     padding-inline-start: 0 !important;
     padding-inline-end: 0 !important;
@@ -5310,6 +5351,19 @@ button,
   html.layout-menu-fixed .content-wrapper>.container-xxl {
     padding-inline: 0.75rem !important;
   }
+}
+
+@media (max-width: 767.98px) {
+  html.layout-navbar-fixed .layout-wrapper:not(.layout-horizontal) .layout-page,
+  .layout-page {
+    padding-top: calc(60px + 1.25rem) !important;
+  }
+}
+
+.layout-navbar-fixed .layout-wrapper:not(.layout-horizontal) .layout-page::before,
+.layout-page::before {
+  display: none !important;
+  content: none !important;
 }
 
 /* Final dashboard polish layer: consistent, responsive, and production-ready. */

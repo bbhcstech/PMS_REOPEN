@@ -110,12 +110,12 @@
 
    /* ===================== TOP NAVBAR ===================== */
    #layout-navbar {
-       position: relative;
-       z-index: 1030 !important;
+       position: absolute !important;
+       top: 0.75rem !important;
+       z-index: 1035 !important;
        display: flex;
        flex-wrap: nowrap !important;
        align-items: center;
-       width: 100%;
        background: var(--bx-navbar-bg, rgba(255, 255, 255, 0.94)) !important;
        backdrop-filter: blur(16px);
        -webkit-backdrop-filter: blur(16px);
@@ -125,7 +125,67 @@
        padding: 0.75rem 1.25rem;
        font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
        min-height: 64px;
-       transition: background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+       margin: 0 !important;
+       transition: left 0.25s ease, width 0.25s ease, max-width 0.25s ease, background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+   }
+
+   @media (min-width: 1200px) {
+       html.layout-menu-fixed:not(.layout-menu-collapsed) #layout-navbar,
+       .layout-menu-fixed:not(.layout-menu-collapsed) #layout-navbar {
+           left: calc(var(--bs-menu-width, 16.25rem) + 1.25rem) !important;
+           right: 1.25rem !important;
+           width: calc(100% - var(--bs-menu-width, 16.25rem) - 2.5rem) !important;
+           max-width: calc(100% - var(--bs-menu-width, 16.25rem) - 2.5rem) !important;
+       }
+
+       html.layout-menu-fixed.layout-menu-collapsed #layout-navbar,
+       .layout-menu-fixed.layout-menu-collapsed #layout-navbar {
+           left: calc(var(--bs-menu-collapsed-width, 5.25rem) + 1.25rem) !important;
+           right: 1.25rem !important;
+           width: calc(100% - var(--bs-menu-collapsed-width, 5.25rem) - 2.5rem) !important;
+           max-width: calc(100% - var(--bs-menu-collapsed-width, 5.25rem) - 2.5rem) !important;
+       }
+
+       html.layout-navbar-fixed .layout-wrapper:not(.layout-horizontal) .layout-page,
+       .layout-page {
+           padding-top: calc(72px + 1.75rem) !important;
+       }
+   }
+
+   @media (max-width: 1199.98px) {
+       #layout-navbar {
+           left: 0.75rem !important;
+           right: 0.75rem !important;
+           width: calc(100% - 1.5rem) !important;
+           max-width: calc(100% - 1.5rem) !important;
+           top: 0.75rem !important;
+       }
+
+       html.layout-navbar-fixed .layout-wrapper:not(.layout-horizontal) .layout-page,
+       .layout-page {
+           padding-top: calc(68px + 1.5rem) !important;
+       }
+   }
+
+   @media (max-width: 767.98px) {
+       #layout-navbar {
+           left: 0.5rem !important;
+           right: 0.5rem !important;
+           width: calc(100% - 1rem) !important;
+           max-width: calc(100% - 1rem) !important;
+           top: 0.5rem !important;
+       }
+
+       html.layout-navbar-fixed .layout-wrapper:not(.layout-horizontal) .layout-page,
+       .layout-page {
+           padding-top: calc(60px + 1.25rem) !important;
+       }
+   }
+
+   .layout-navbar-fixed .layout-wrapper:not(.layout-horizontal) .layout-page::before,
+   .layout-page::before {
+       display: none !important;
+       content: none !important;
    }
 
    #layout-navbar .nav-item,
@@ -1258,6 +1318,252 @@
         align-items: center !important;
         justify-content: center !important;
     }
+
+    /* ===================== SUBSCRIPTION & SUSPENSION BANNERS ===================== */
+    .pms-suspended-banner {
+        background: linear-gradient(135deg, #fef2f2 0%, #ffe4e6 100%) !important;
+        border: 1px solid #fecaca !important;
+        border-left: 5px solid #ef4444 !important;
+        border-radius: 14px !important;
+        color: #991b1b !important;
+        padding: 16px 20px !important;
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.08) !important;
+    }
+    .pms-suspended-banner .pms-banner-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: #fee2e2 !important;
+        color: #ef4444 !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+    }
+    .pms-suspended-banner .pms-banner-title {
+        color: #991b1b !important;
+        font-size: 15px !important;
+        font-weight: 700 !important;
+        letter-spacing: -0.01em;
+    }
+    .pms-suspended-banner .pms-banner-text {
+        color: #7f1d1d !important;
+        font-size: 13px !important;
+        font-weight: 500 !important;
+        opacity: 0.95 !important;
+        margin-top: 2px;
+    }
+    .pms-suspended-banner .pms-banner-btn {
+        font-size: 13px !important;
+        background: #ef4444 !important;
+        border-color: #ef4444 !important;
+        color: #ffffff !important;
+        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.25) !important;
+    }
+    .pms-suspended-banner .pms-banner-btn:hover {
+        background: #dc2626 !important;
+        border-color: #dc2626 !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35) !important;
+    }
+
+    /* Expiring Banner - Light Mode */
+    .pms-expiring-banner {
+        border-radius: 14px !important;
+        padding: 16px 20px !important;
+    }
+    .pms-expiring-banner.is-urgent {
+        background: linear-gradient(135deg, #fff5f5 0%, #fef2f2 100%) !important;
+        border: 1px solid #fecaca !important;
+        border-left: 5px solid #ef4444 !important;
+        color: #991b1b !important;
+    }
+    .pms-expiring-banner.is-urgent .pms-banner-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: #fee2e2 !important;
+        color: #ef4444 !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+    }
+    .pms-expiring-banner.is-urgent .pms-banner-title {
+        color: #991b1b !important;
+        font-size: 15px !important;
+        font-weight: 700 !important;
+    }
+    .pms-expiring-banner.is-urgent .pms-banner-text {
+        color: #7f1d1d !important;
+        font-size: 13px !important;
+        opacity: 0.95 !important;
+    }
+
+    .pms-expiring-banner.is-warning {
+        background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%) !important;
+        border: 1px solid #fde68a !important;
+        border-left: 5px solid #f59e0b !important;
+        color: #92400e !important;
+    }
+    .pms-expiring-banner.is-warning .pms-banner-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: #fde68a !important;
+        color: #d97706 !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+    }
+    .pms-expiring-banner.is-warning .pms-banner-title {
+        color: #92400e !important;
+        font-size: 15px !important;
+        font-weight: 700 !important;
+    }
+    .pms-expiring-banner.is-warning .pms-banner-text {
+        color: #78350f !important;
+        font-size: 13px !important;
+        opacity: 0.95 !important;
+    }
+    .pms-expiring-banner .pms-banner-btn-secondary {
+        font-size: 12.5px !important;
+        background: transparent !important;
+        border: 1px solid rgba(0, 0, 0, 0.2) !important;
+        color: #1e293b !important;
+    }
+
+    /* ===================== SUSPENDED & EXPIRING BANNERS — DARK MODE ===================== */
+    html[data-pms-theme="dark"] .pms-suspended-banner,
+    html[data-theme="dark"] .pms-suspended-banner,
+    html[data-bs-theme="dark"] .pms-suspended-banner,
+    [data-pms-theme="dark"] .pms-suspended-banner,
+    [data-theme="dark"] .pms-suspended-banner,
+    body.dark-mode .pms-suspended-banner {
+        background: linear-gradient(135deg, rgba(239, 68, 68, 0.16) 0%, rgba(185, 28, 28, 0.28) 100%) !important;
+        border: 1px solid rgba(239, 68, 68, 0.38) !important;
+        border-left: 5px solid #ef4444 !important;
+        color: #fca5a5 !important;
+        box-shadow: 0 8px 24px rgba(239, 68, 68, 0.18) !important;
+        backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px) !important;
+    }
+    html[data-pms-theme="dark"] .pms-suspended-banner .pms-banner-icon,
+    html[data-theme="dark"] .pms-suspended-banner .pms-banner-icon,
+    html[data-bs-theme="dark"] .pms-suspended-banner .pms-banner-icon,
+    [data-pms-theme="dark"] .pms-suspended-banner .pms-banner-icon,
+    [data-theme="dark"] .pms-suspended-banner .pms-banner-icon,
+    body.dark-mode .pms-suspended-banner .pms-banner-icon {
+        background: rgba(239, 68, 68, 0.25) !important;
+        color: #f87171 !important;
+        border: 1px solid rgba(239, 68, 68, 0.45) !important;
+    }
+    html[data-pms-theme="dark"] .pms-suspended-banner .pms-banner-title,
+    html[data-theme="dark"] .pms-suspended-banner .pms-banner-title,
+    html[data-bs-theme="dark"] .pms-suspended-banner .pms-banner-title,
+    [data-pms-theme="dark"] .pms-suspended-banner .pms-banner-title,
+    [data-theme="dark"] .pms-suspended-banner .pms-banner-title,
+    body.dark-mode .pms-suspended-banner .pms-banner-title {
+        color: #ffffff !important;
+        font-weight: 750 !important;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+    }
+    html[data-pms-theme="dark"] .pms-suspended-banner .pms-banner-text,
+    html[data-theme="dark"] .pms-suspended-banner .pms-banner-text,
+    html[data-bs-theme="dark"] .pms-suspended-banner .pms-banner-text,
+    [data-pms-theme="dark"] .pms-suspended-banner .pms-banner-text,
+    [data-theme="dark"] .pms-suspended-banner .pms-banner-text,
+    body.dark-mode .pms-suspended-banner .pms-banner-text {
+        color: #fecaca !important;
+        opacity: 1 !important;
+        font-weight: 500 !important;
+    }
+    html[data-pms-theme="dark"] .pms-suspended-banner .pms-banner-btn,
+    html[data-theme="dark"] .pms-suspended-banner .pms-banner-btn,
+    html[data-bs-theme="dark"] .pms-suspended-banner .pms-banner-btn,
+    [data-pms-theme="dark"] .pms-suspended-banner .pms-banner-btn,
+    [data-theme="dark"] .pms-suspended-banner .pms-banner-btn,
+    body.dark-mode .pms-suspended-banner .pms-banner-btn {
+        background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+        border-color: #ef4444 !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 16px rgba(239, 68, 68, 0.45) !important;
+    }
+
+    /* Dark Mode Expiring Banners */
+    html[data-pms-theme="dark"] .pms-expiring-banner.is-urgent,
+    html[data-theme="dark"] .pms-expiring-banner.is-urgent,
+    html[data-bs-theme="dark"] .pms-expiring-banner.is-urgent,
+    [data-pms-theme="dark"] .pms-expiring-banner.is-urgent,
+    [data-theme="dark"] .pms-expiring-banner.is-urgent,
+    body.dark-mode .pms-expiring-banner.is-urgent {
+        background: linear-gradient(135deg, rgba(239, 68, 68, 0.16) 0%, rgba(185, 28, 28, 0.28) 100%) !important;
+        border: 1px solid rgba(239, 68, 68, 0.38) !important;
+        border-left: 5px solid #ef4444 !important;
+        color: #fca5a5 !important;
+        box-shadow: 0 8px 24px rgba(239, 68, 68, 0.18) !important;
+    }
+    html[data-pms-theme="dark"] .pms-expiring-banner.is-urgent .pms-banner-icon,
+    html[data-theme="dark"] .pms-expiring-banner.is-urgent .pms-banner-icon,
+    [data-pms-theme="dark"] .pms-expiring-banner.is-urgent .pms-banner-icon {
+        background: rgba(239, 68, 68, 0.25) !important;
+        color: #f87171 !important;
+        border: 1px solid rgba(239, 68, 68, 0.45) !important;
+    }
+    html[data-pms-theme="dark"] .pms-expiring-banner.is-urgent .pms-banner-title,
+    html[data-theme="dark"] .pms-expiring-banner.is-urgent .pms-banner-title,
+    [data-pms-theme="dark"] .pms-expiring-banner.is-urgent .pms-banner-title {
+        color: #ffffff !important;
+        font-weight: 750 !important;
+    }
+    html[data-pms-theme="dark"] .pms-expiring-banner.is-urgent .pms-banner-text,
+    html[data-theme="dark"] .pms-expiring-banner.is-urgent .pms-banner-text,
+    [data-pms-theme="dark"] .pms-expiring-banner.is-urgent .pms-banner-text {
+        color: #fecaca !important;
+        opacity: 1 !important;
+        font-weight: 500 !important;
+    }
+
+    html[data-pms-theme="dark"] .pms-expiring-banner.is-warning,
+    html[data-theme="dark"] .pms-expiring-banner.is-warning,
+    html[data-bs-theme="dark"] .pms-expiring-banner.is-warning,
+    [data-pms-theme="dark"] .pms-expiring-banner.is-warning,
+    [data-theme="dark"] .pms-expiring-banner.is-warning,
+    body.dark-mode .pms-expiring-banner.is-warning {
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.16) 0%, rgba(180, 83, 9, 0.28) 100%) !important;
+        border: 1px solid rgba(245, 158, 11, 0.38) !important;
+        border-left: 5px solid #f59e0b !important;
+        color: #fde68a !important;
+        box-shadow: 0 8px 24px rgba(245, 158, 11, 0.18) !important;
+    }
+    html[data-pms-theme="dark"] .pms-expiring-banner.is-warning .pms-banner-icon,
+    html[data-theme="dark"] .pms-expiring-banner.is-warning .pms-banner-icon,
+    [data-pms-theme="dark"] .pms-expiring-banner.is-warning .pms-banner-icon {
+        background: rgba(245, 158, 11, 0.25) !important;
+        color: #fbbf24 !important;
+        border: 1px solid rgba(245, 158, 11, 0.45) !important;
+    }
+    html[data-pms-theme="dark"] .pms-expiring-banner.is-warning .pms-banner-title,
+    html[data-theme="dark"] .pms-expiring-banner.is-warning .pms-banner-title,
+    [data-pms-theme="dark"] .pms-expiring-banner.is-warning .pms-banner-title {
+        color: #ffffff !important;
+        font-weight: 750 !important;
+    }
+    html[data-pms-theme="dark"] .pms-expiring-banner.is-warning .pms-banner-text,
+    html[data-theme="dark"] .pms-expiring-banner.is-warning .pms-banner-text,
+    [data-pms-theme="dark"] .pms-expiring-banner.is-warning .pms-banner-text {
+        color: #fef3c7 !important;
+        opacity: 1 !important;
+        font-weight: 500 !important;
+    }
+    html[data-pms-theme="dark"] .pms-expiring-banner .pms-banner-btn-secondary,
+    html[data-theme="dark"] .pms-expiring-banner .pms-banner-btn-secondary,
+    [data-pms-theme="dark"] .pms-expiring-banner .pms-banner-btn-secondary {
+        border-color: rgba(238, 241, 251, 0.25) !important;
+        color: #e2e8f0 !important;
+        background: rgba(255, 255, 255, 0.08) !important;
+    }
 </style>
 @php
     $adminRefreshVersion = file_exists(public_path('admin/assets/css/pms-refresh.css')) ? filemtime(public_path('admin/assets/css/pms-refresh.css')) : time();
@@ -1276,7 +1582,7 @@
         $resolvedLogo = asset('logo.png');
     }
     $brandLogo = $resolvedLogo;
-    $brandName = $currentCompany?->brand_name ?? ($companySetting?->company_name ?? 'Bitroxia');
+    $brandName = $currentCompany?->brand_name ?? ($currentCompany?->name ?? ($companySetting?->company_name ?? 'Bitroxia'));
 @endphp
 <link rel="stylesheet" href="{{ asset('admin/assets/css/pms-refresh.css') }}?v={{ $adminRefreshVersion }}">
 
@@ -2309,8 +2615,7 @@
 
           <nav
             class="layout-navbar container-xxl navbar-detached navbar navbar-expand-xl align-items-center bg-navbar-theme"
-            id="layout-navbar"
-            style="position: sticky !important; top: 0.75rem !important; z-index: 1030 !important;">
+            id="layout-navbar">
             <div class="layout-menu-toggle navbar-nav align-items-xl-center me-4 me-xl-0 d-xl-none">
               <a class="nav-item nav-link px-0 me-xl-6" href="javascript:void(0)">
                 <i class="icon-base bx bx-menu icon-md"></i>
@@ -3249,48 +3554,44 @@
               @endphp
 
               @if($bannerIsSuspended)
-                <div class="alert border-0 shadow-sm mb-4 d-flex align-items-center justify-content-between flex-wrap gap-3" style="background: linear-gradient(135deg, #fef2f2 0%, #ffe4e6 100%); border-left: 5px solid #ef4444 !important; border-radius: 14px; color: #991b1b; padding: 16px 20px;">
+                <div class="alert pms-suspended-banner border-0 shadow-sm mb-4 d-flex align-items-center justify-content-between flex-wrap gap-3">
                     <div class="d-flex align-items-center gap-3">
-                        <div style="width: 38px; height: 38px; border-radius: 50%; background: #fee2e2; color: #ef4444; display: flex; align-items: center; justify-content: center; font-size: 20px;" class="flex-shrink-0">
+                        <div class="pms-banner-icon flex-shrink-0">
                             <i class="bx bx-lock-alt"></i>
                         </div>
                         <div>
-                            <div class="fw-bold" style="font-size: 15px;">Account Suspended – Immediate Action Required</div>
-                            <div style="font-size: 13px; opacity: 0.9;">Your organization's subscription has expired and account access is restricted. Renew or upgrade your plan to restore full access.</div>
+                            <div class="fw-bold pms-banner-title">Account Suspended – Immediate Action Required</div>
+                            <div class="pms-banner-text">Your organization's subscription has expired and account access is restricted. Renew or upgrade your plan to restore full access.</div>
                         </div>
                     </div>
-                    <a href="{{ route('subscription.suspended') }}" class="btn btn-danger fw-bold rounded-pill px-4" style="font-size: 13px;">
+                    <a href="{{ route('subscription.suspended') }}" class="btn btn-danger fw-bold rounded-pill px-4 pms-banner-btn">
                         <i class="bx bx-zap me-1"></i> Reactivate Plan
                     </a>
                 </div>
               @elseif($showExpiringBanner && $bannerDaysLeft !== null && $bannerDaysLeft <= 7 && $bannerDaysLeft >= 0)
                 @php
-                    $bBg = $bannerDaysLeft <= 3 ? 'linear-gradient(135deg, #fff5f5 0%, #fef2f2 100%)' : 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)';
-                    $bBorder = $bannerDaysLeft <= 3 ? '#ef4444' : '#f59e0b';
-                    $bColor = $bannerDaysLeft <= 3 ? '#991b1b' : '#92400e';
-                    $bIconBg = $bannerDaysLeft <= 3 ? '#fee2e2' : '#fde68a';
-                    $bIconColor = $bannerDaysLeft <= 3 ? '#ef4444' : '#d97706';
+                    $isUrgent = $bannerDaysLeft <= 3;
                     $bPlanName = strtoupper($bannerSub?->plan?->name ?? ($bannerComp?->isOnTrial() ? 'FREE TRIAL' : 'SUBSCRIPTION'));
                 @endphp
-                <div class="alert border-0 shadow-sm mb-4 d-flex align-items-center justify-content-between flex-wrap gap-3" style="background: {{ $bBg }}; border-left: 5px solid {{ $bBorder }} !important; border-radius: 14px; color: {{ $bColor }}; padding: 16px 20px;">
+                <div class="alert pms-expiring-banner {{ $isUrgent ? 'is-urgent' : 'is-warning' }} border-0 shadow-sm mb-4 d-flex align-items-center justify-content-between flex-wrap gap-3">
                     <div class="d-flex align-items-center gap-3">
-                        <div style="width: 38px; height: 38px; border-radius: 50%; background: {{ $bIconBg }}; color: {{ $bIconColor }}; display: flex; align-items: center; justify-content: center; font-size: 20px;" class="flex-shrink-0">
-                            <i class="bx {{ $bannerDaysLeft <= 3 ? 'bx-error-alt' : 'bx-time-five' }}"></i>
+                        <div class="pms-banner-icon flex-shrink-0">
+                            <i class="bx {{ $isUrgent ? 'bx-error-alt' : 'bx-time-five' }}"></i>
                         </div>
                         <div>
-                            <div class="fw-bold" style="font-size: 15px;">
+                            <div class="fw-bold pms-banner-title">
                                 Subscription Warning: Expiring in {{ $bannerDaysLeft == 1 ? '1 Day (Tomorrow)' : $bannerDaysLeft . ' Days' }} – {{ $bPlanName }}
                             </div>
-                            <div style="font-size: 13px; opacity: 0.9;">
+                            <div class="pms-banner-text">
                                 Your {{ $bPlanName }} subscription is scheduled to expire on {{ \Carbon\Carbon::parse($bannerExpiry)->format('d M Y') }}. Renew or upgrade now to avoid suspension.
                             </div>
                         </div>
                     </div>
                     <div class="d-flex align-items-center gap-2">
-                        <a href="{{ route('notifications.all') }}" class="btn btn-outline-dark fw-bold rounded-pill px-3" style="font-size: 12.5px;">
+                        <a href="{{ route('notifications.all') }}" class="btn pms-banner-btn-secondary fw-bold rounded-pill px-3">
                             <i class="bx bx-bell me-1"></i> Notifications
                         </a>
-                        <a href="{{ route('subscription.suspended') }}" class="btn btn-primary fw-bold rounded-pill px-3" style="font-size: 12.5px; background: #2563eb; border-color: #2563eb;">
+                        <a href="{{ route('subscription.suspended') }}" class="btn {{ $isUrgent ? 'btn-danger' : 'btn-primary' }} fw-bold rounded-pill px-3 pms-banner-btn">
                             <i class="bx bx-credit-card me-1"></i> Renew / Upgrade
                         </a>
                     </div>

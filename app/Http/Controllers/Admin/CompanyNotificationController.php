@@ -24,18 +24,7 @@ class CompanyNotificationController extends Controller
             return (int) $user->company_id;
         }
 
-        if (session('current_company_id')) {
-            return (int) session('current_company_id');
-        }
-
-        $dbName = session('current_company_db');
-        if ($dbName) {
-            $comp = Company::on('central')->where('db_name', $dbName)->first();
-            if ($comp) return (int) $comp->id;
-        }
-
-        $firstComp = Company::on('central')->first();
-        return $firstComp ? (int) $firstComp->id : 1;
+        abort(403, 'Unauthorized: Company context could not be identified.');
     }
 
     /**

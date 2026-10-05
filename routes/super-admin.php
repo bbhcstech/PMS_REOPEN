@@ -47,12 +47,15 @@ Route::prefix('super-admin')->name('super-admin.')->group(function () {
         Route::post('/subscriptions/{id}/reduce', [CompanyController::class, 'reduceSubscription'])->name('subscriptions.reduce');
         Route::post('/subscriptions/toggle-override', [CompanyController::class, 'toggleCompanyOverride'])->name('subscriptions.toggle-override');
         Route::get('/companies/create', [CompanyController::class, 'create'])->name('companies.create');
-        Route::get('/companies/{company}', [CompanyController::class, 'show'])->name('companies.show');
+        Route::get('/companies/{company}', [CompanyController::class, 'show'])->where('company', '[0-9]+')->name('companies.show');
+        Route::get('/companies/{company}/edit', [CompanyController::class, 'edit'])->where('company', '[0-9]+')->name('companies.edit');
+        Route::match(['PUT', 'PATCH', 'POST'], '/companies/{company}', [CompanyController::class, 'update'])->where('company', '[0-9]+')->name('companies.update');
+        Route::match(['PUT', 'PATCH', 'POST'], '/companies/{company}/update', [CompanyController::class, 'update'])->where('company', '[0-9]+');
         Route::post('/companies', [CompanyController::class, 'store'])->name('companies.store');
-        Route::post('/companies/{company}/enter', [CompanyController::class, 'enter'])->name('companies.enter');
-        Route::post('/companies/{company}/suspend', [CompanyController::class, 'suspend'])->name('companies.suspend');
-        Route::post('/companies/{company}/deactivate', [CompanyController::class, 'deactivate'])->name('companies.deactivate');
-        Route::post('/companies/{company}/activate', [CompanyController::class, 'activate'])->name('companies.activate');
+        Route::post('/companies/{company}/enter', [CompanyController::class, 'enter'])->where('company', '[0-9]+')->name('companies.enter');
+        Route::post('/companies/{company}/suspend', [CompanyController::class, 'suspend'])->where('company', '[0-9]+')->name('companies.suspend');
+        Route::post('/companies/{company}/deactivate', [CompanyController::class, 'deactivate'])->where('company', '[0-9]+')->name('companies.deactivate');
+        Route::post('/companies/{company}/activate', [CompanyController::class, 'activate'])->where('company', '[0-9]+')->name('companies.activate');
         Route::post('/leave-impersonation', [CompanyController::class, 'leaveImpersonation'])->name('leave-impersonation');
 
         // Clear Cache / Optimize
@@ -101,6 +104,7 @@ Route::prefix('super-admin')->name('super-admin.')->group(function () {
         Route::get('/activity-logs', [CompanyController::class, 'tenantAudit'])->name('activity-logs.index');
         Route::get('/tenant-audit/event/{id}', [CompanyController::class, 'tenantAuditEvent'])->name('tenant-audit.event');
         Route::get('/tenant-audit/export', [CompanyController::class, 'exportTenantAudit'])->name('tenant-audit.export');
+        Route::get('/activity-logs/export', [CompanyController::class, 'exportTenantAudit'])->name('activity-logs.export');
 
         // Platform System Health Monitoring Center
         Route::get('/system-health', [CompanyController::class, 'systemHealth'])->name('system-health.index');
@@ -142,8 +146,9 @@ Route::prefix('super-admin')->name('super-admin.')->group(function () {
         Route::get('/complaints/unread-count', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'unreadCount'])->name('complaints.unread-count');
         Route::get('/complaints/{id}', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'show'])->name('complaints.show');
         Route::post('/complaints/{id}/respond', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'respond'])->name('complaints.respond');
-        Route::post('/complaints/{id}/status', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'updateStatus'])->name('complaints.status');
-        Route::post('/complaints/{id}/assign', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'assign'])->name('complaints.assign');
+        Route::match(['GET', 'POST', 'PATCH'], '/complaints/{id}/status', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'updateStatus'])->name('complaints.status');
+        Route::match(['GET', 'POST', 'PATCH'], '/complaints/{id}/assign', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'assign'])->name('complaints.assign');
+        Route::get('/complaints/{id}/attachment/{attachmentId}', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'downloadAttachment'])->name('complaints.attachment');
     });
 });
 

@@ -2250,7 +2250,7 @@
                 <div class="row g-0">
                     <div class="col-lg-7">
                         <div class="welcome-content">
-                            <h1 class="welcome-title">{{ $currentCompany?->greeting_message ?: 'Welcome to' }} {{ $currentCompany?->display_name ?? 'Bitroxia' }} Dashboard</h1>
+                            <h1 class="welcome-title">{{ $currentCompany?->greeting_message ?: 'Welcome to' }} {{ $currentCompany?->display_name ?? ($currentCompany?->name ?? 'Company') }} Dashboard</h1>
                             <p class="welcome-text">Manage your projects, team, and clients efficiently with our comprehensive dashboard. Track progress, monitor performance, and make data-driven decisions.</p>
                             <div class="welcome-badges">
                                 <div class="welcome-badge">

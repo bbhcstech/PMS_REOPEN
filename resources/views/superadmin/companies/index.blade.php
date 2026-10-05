@@ -822,8 +822,8 @@
     .status-pill.status-trial .dot { background: var(--amber-accent); }
     .status-pill.status-suspended { background: rgba(239, 68, 68, 0.1); color: var(--rose-accent); border-color: rgba(239, 68, 68, 0.2); }
     .status-pill.status-suspended .dot { background: var(--rose-accent); }
-    .status-pill.status-expired { background: var(--slate-light); color: var(--slate-muted); border-color: rgba(226, 232, 240, 0.8); }
-    .status-pill.status-expired .dot { background: var(--slate-muted); }
+    .status-pill.status-expired { background: rgba(239, 68, 68, 0.1); color: var(--rose-accent); border-color: rgba(239, 68, 68, 0.2); }
+    .status-pill.status-expired .dot { background: var(--rose-accent); }
 
     .storage-track-bar {
         width: 76px;
@@ -1340,7 +1340,7 @@
                 </a>
             </div>
         </div>
-        <a href="{{ route('super-admin.companies.create') }}" class="btn-custom btn-primary-custom">
+        <a href="{{ Route::has('super-admin.companies.create') ? route('super-admin.companies.create') : (Route::has('superadmin.companies.create') ? route('superadmin.companies.create') : url('/super-admin/companies/create')) }}" class="btn-custom btn-primary-custom">
             <i class="bx bx-plus-circle"></i> Provision New Company
         </a>
     </div>
@@ -1702,6 +1702,7 @@
                                 'active' => 'status-active',
                                 'trial' => 'status-trial',
                                 'suspended' => 'status-suspended',
+                                'expired' => 'status-expired',
                                 default => 'status-expired',
                             };
                         @endphp
@@ -1752,7 +1753,11 @@
                                         <button type="submit" style="width:100%; text-align:left;"><i class="bx bx-log-in-circle" style="color: var(--amber-accent);"></i> Impersonate Context</button>
                                     </form>
                                     <div class="divider"></div>
-                                    <a href="javascript:void(0)" onclick="confirmSuspendCompany({{ $company->id }}, '{{ addslashes($company->name) }}')" class="danger-item"><i class="bx bx-block"></i> Suspend Company</a>
+                                    @if(($company->status ?? '') === 'suspended')
+                                        <a href="javascript:void(0)" onclick="confirmActivateCompany({{ $company->id }}, '{{ addslashes($company->name) }}')" style="color: var(--emerald-primary);"><i class="bx bx-check-circle"></i> Lift Suspension (Activate)</a>
+                                    @else
+                                        <a href="javascript:void(0)" onclick="confirmSuspendCompany({{ $company->id }}, '{{ addslashes($company->name) }}')" class="danger-item"><i class="bx bx-block"></i> Suspend Company</a>
+                                    @endif
                                     <a href="javascript:void(0)" onclick="confirmDeleteCompany({{ $company->id }}, '{{ addslashes($company->name) }}')" class="danger-item"><i class="bx bx-trash"></i> Delete Company</a>
                                 </div>
                             </div>
@@ -1905,6 +1910,13 @@ function confirmSuspendCompany(id, name) {
     if (confirm("Are you sure you want to suspend access for company '" + name + "'?")) {
         const form = document.getElementById('companiesIndexSuspendForm');
         form.action = "{{ url('/superadmin/companies') }}/" + id + "/suspend";
+        form.submit();
+    }
+}
+function confirmActivateCompany(id, name) {
+    if (confirm("Are you sure you want to lift suspension and activate access for company '" + name + "'?")) {
+        const form = document.getElementById('companiesIndexSuspendForm');
+        form.action = "{{ url('/superadmin/companies') }}/" + id + "/activate";
         form.submit();
     }
 }
@@ -2084,50 +2096,112 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // 5. Action & Export Dropdown Toggle with Smart Viewport Positioning
+    let activeDropdownMenu = null;
+    let activeDropdownParent = null;
+    let activeDropdownNextSibling = null;
+
+    function closeAllDropdowns() {
+        if (activeDropdownMenu) {
+            activeDropdownMenu.classList.remove('open');
+            activeDropdownMenu.style.display = 'none';
+            activeDropdownMenu.style.visibility = '';
+            activeDropdownMenu.style.top = '';
+            activeDropdownMenu.style.left = '';
+            activeDropdownMenu.style.right = '';
+            activeDropdownMenu.style.bottom = '';
+            activeDropdownMenu.style.maxHeight = '';
+            activeDropdownMenu.style.overflowY = '';
+
+            // Restore menu back to its original DOM container in the row
+            if (activeDropdownParent) {
+                if (activeDropdownNextSibling && activeDropdownNextSibling.parentNode === activeDropdownParent) {
+                    activeDropdownParent.insertBefore(activeDropdownMenu, activeDropdownNextSibling);
+                } else {
+                    activeDropdownParent.appendChild(activeDropdownMenu);
+                }
+            }
+            activeDropdownMenu._triggerBtn = null;
+            activeDropdownMenu = null;
+            activeDropdownParent = null;
+            activeDropdownNextSibling = null;
+        }
+
+        // Safety fallback for any lingering open menus
+        document.querySelectorAll('.dropdown-menu-custom.open').forEach(menu => {
+            menu.classList.remove('open');
+            menu.style.display = 'none';
+        });
+    }
+
     function positionDropdownMenu(btn, menu) {
         if (!btn || !menu) return;
 
+        // Reset temporary positioning to get true dimensions
         menu.style.position = 'fixed';
         menu.style.zIndex = '999999';
-        menu.style.visibility = 'hidden';
         menu.style.display = 'block';
+        menu.style.visibility = 'hidden';
+        menu.style.top = '0px';
+        menu.style.left = '0px';
+        menu.style.right = 'auto';
+        menu.style.bottom = 'auto';
+        menu.style.margin = '0';
 
-        const rect = btn.getBoundingClientRect();
-        const menuHeight = menu.offsetHeight || 250;
+        const btnRect = btn.getBoundingClientRect();
         const menuWidth = menu.offsetWidth || 220;
-        const viewportHeight = window.innerHeight;
+        const menuHeight = menu.offsetHeight || 260;
         const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
 
-        // Flip UP if near screen bottom
-        const spaceBelow = viewportHeight - rect.bottom;
-        const spaceAbove = rect.top;
+        const gap = 6; // Small consistent gap between button and dropdown
+        const padding = 12; // Safety margin from viewport edges
 
-        if (spaceBelow < menuHeight + 12 && spaceAbove > spaceBelow) {
-            menu.style.top = 'auto';
-            menu.style.bottom = Math.max(8, viewportHeight - rect.top + 6) + 'px';
+        // Vertical positioning:
+        // Requirement: Prefer opening above the button when there is not enough space below
+        const spaceBelow = viewportHeight - btnRect.bottom - gap - padding;
+        const spaceAbove = btnRect.top - gap - padding;
+
+        let top;
+        if (spaceBelow < menuHeight && spaceAbove >= menuHeight) {
+            // Open ABOVE the button
+            top = btnRect.top - menuHeight - gap;
+        } else if (spaceBelow >= menuHeight) {
+            // Open BELOW the button
+            top = btnRect.bottom + gap;
         } else {
-            menu.style.top = Math.max(8, rect.bottom + 6) + 'px';
-            menu.style.bottom = 'auto';
+            // Space is tight on both sides: pick whichever side has more room
+            if (spaceAbove > spaceBelow) {
+                top = Math.max(padding, btnRect.top - menuHeight - gap);
+            } else {
+                top = btnRect.bottom + gap;
+            }
         }
 
-        // Align right edge of menu to right edge of trigger button
-        const rightOffset = viewportWidth - rect.right;
-        if (rect.right - menuWidth < 12) {
-            menu.style.left = '12px';
-            menu.style.right = 'auto';
-        } else {
-            menu.style.right = Math.max(12, rightOffset) + 'px';
-            menu.style.left = 'auto';
+        // Clamp top within viewport boundaries
+        top = Math.max(padding, Math.min(top, viewportHeight - menuHeight - padding));
+
+        // Horizontal positioning:
+        // Align dropdown right edge with the button's right edge so it sits directly beside it
+        let left = btnRect.right - menuWidth;
+
+        // Prevent overflowing left edge
+        if (left < padding) {
+            left = padding;
         }
 
+        // Prevent overflowing right edge
+        if (left + menuWidth > viewportWidth - padding) {
+            left = Math.max(padding, viewportWidth - menuWidth - padding);
+        }
+
+        menu.style.top = Math.round(top) + 'px';
+        menu.style.left = Math.round(left) + 'px';
+        menu.style.right = 'auto';
+        menu.style.bottom = 'auto';
+        menu.style.maxHeight = `calc(100vh - ${padding * 2}px)`;
+        menu.style.overflowY = 'auto';
+        menu.classList.add('open');
         menu.style.visibility = 'visible';
-    }
-
-    function closeAllDropdowns() {
-        document.querySelectorAll('.dropdown-menu-custom').forEach(menu => {
-            menu.classList.remove('open');
-            menu.style.display = '';
-        });
     }
 
     // Toggle dropdowns with dynamic viewport alignment
@@ -2138,26 +2212,46 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             e.stopPropagation();
 
-            let menu = toggleBtn.nextElementSibling;
+            // Toggle off if clicking the currently open trigger
+            if (activeDropdownMenu && activeDropdownMenu._triggerBtn === toggleBtn) {
+                closeAllDropdowns();
+                return;
+            }
+
+            // Find target menu
+            let menu = null;
             if (toggleBtn.id === 'exportDropdownBtn') {
                 menu = document.getElementById('exportDropdownMenu');
+            } else {
+                const container = toggleBtn.closest('.dropdown-container');
+                menu = container ? container.querySelector('.dropdown-menu-custom') : toggleBtn.nextElementSibling;
             }
 
             if (menu) {
-                const isOpen = menu.classList.contains('open');
                 closeAllDropdowns();
 
-                if (!isOpen) {
-                    menu.classList.add('open');
-                    positionDropdownMenu(toggleBtn, menu);
-                }
+                // Store references before moving to body
+                activeDropdownMenu = menu;
+                activeDropdownParent = menu.parentElement;
+                activeDropdownNextSibling = menu.nextSibling;
+                activeDropdownMenu._triggerBtn = toggleBtn;
+
+                // Move directly to body to bypass any ancestor backdrop-filter/overflow constraints
+                document.body.appendChild(menu);
+
+                positionDropdownMenu(toggleBtn, menu);
             }
             return;
         }
 
         // Close dropdown when item inside is clicked
-        if (e.target.closest('.dropdown-menu-custom a, .dropdown-menu-custom button')) {
-            closeAllDropdowns();
+        const actionItem = e.target.closest('.dropdown-menu-custom a, .dropdown-menu-custom button');
+        if (actionItem) {
+            const form = actionItem.closest('form');
+            if (form && actionItem.type === 'submit') {
+                form.submit();
+            }
+            setTimeout(closeAllDropdowns, 10);
             return;
         }
 

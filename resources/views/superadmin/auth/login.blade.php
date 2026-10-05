@@ -53,13 +53,21 @@
                     <input type="email" id="email" name="email" value="{{ old('email') }}" required autofocus
                            class="w-full px-4 py-3 bg-slate-950/80 border border-slate-800 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition text-sm"
                            placeholder="superadmin@bbhpms.com">
+                    <div id="loginEmail_error" style="display:none; color: #ef4444; font-size: 12px; margin-top: 4px; font-weight: 500;"></div>
                 </div>
 
                 <div>
                     <label for="password" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Password</label>
-                    <input type="password" id="password" name="password" required
-                           class="w-full px-4 py-3 bg-slate-950/80 border border-slate-800 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition text-sm"
-                           placeholder="••••••••">
+                    <div class="relative">
+                        <input type="password" id="password" name="password" required minlength="8" maxlength="128"
+                               class="w-full px-4 py-3 bg-slate-950/80 border border-slate-800 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition text-sm pr-11"
+                               placeholder="•••••••• (min 8 chars)">
+                        <button type="button" id="toggleLoginPasswordBtn" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-white transition" title="Show/Hide Password">
+                            <i id="toggleLoginPasswordIcon" class="bx bx-show" style="font-size: 20px;"></i>
+                        </button>
+                    </div>
+                    <div style="font-size: 11px; color: #94a3b8; margin-top: 4px;">Must be between 8 and 128 characters.</div>
+                    <div id="loginPassword_error" style="display:none; color: #ef4444; font-size: 12px; margin-top: 4px; font-weight: 500;"></div>
                 </div>
 
                 <div class="flex items-center justify-between">
@@ -78,5 +86,137 @@
 
         <p class="text-center text-xs text-slate-600 mt-8">&copy; {{ date('Y') }} {{ config('app.name') }}. All rights reserved.</p>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const emailInput = document.getElementById('email');
+            const errorDiv = document.getElementById('loginEmail_error');
+            const form = document.querySelector('form');
+
+            function validateEmail() {
+                const val = (emailInput.value || '').trim();
+                if (!val) {
+                    showError('Email is required.');
+                    return false;
+                }
+                if (/\s/.test(val)) {
+                    showError('Email address cannot contain spaces.');
+                    return false;
+                }
+                const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+                if (!regex.test(val)) {
+                    showError('Please enter a valid email address.');
+                    return false;
+                }
+                clearError();
+                return true;
+            }
+
+            function showError(msg) {
+                if (errorDiv) {
+                    errorDiv.textContent = msg;
+                    errorDiv.style.display = 'block';
+                }
+                emailInput.style.borderColor = '#ef4444';
+            }
+
+            function clearError() {
+                if (errorDiv) {
+                    errorDiv.textContent = '';
+                    errorDiv.style.display = 'none';
+                }
+                emailInput.style.borderColor = '';
+            }
+
+            const pwdInput = document.getElementById('password');
+            const pwdErrorDiv = document.getElementById('loginPassword_error');
+            const togglePwdBtn = document.getElementById('toggleLoginPasswordBtn');
+            const togglePwdIcon = document.getElementById('toggleLoginPasswordIcon');
+
+            if (togglePwdBtn && pwdInput) {
+                togglePwdBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    if (pwdInput.type === 'password') {
+                        pwdInput.type = 'text';
+                        if (togglePwdIcon) { togglePwdIcon.className = 'bx bx-hide'; }
+                    } else {
+                        pwdInput.type = 'password';
+                        if (togglePwdIcon) { togglePwdIcon.className = 'bx bx-show'; }
+                    }
+                });
+            }
+
+            function validatePassword() {
+                if (!pwdInput) return true;
+                const val = pwdInput.value;
+                if (!val) {
+                    showPwdError('Password is required.');
+                    return false;
+                }
+                if (val.length < 8) {
+                    showPwdError('Password must be at least 8 characters long.');
+                    return false;
+                }
+                if (val.length > 128) {
+                    showPwdError('Password cannot exceed 128 characters.');
+                    return false;
+                }
+                clearPwdError();
+                return true;
+            }
+
+            function showPwdError(msg) {
+                if (pwdErrorDiv) {
+                    pwdErrorDiv.textContent = msg;
+                    pwdErrorDiv.style.display = 'block';
+                }
+                if (pwdInput) pwdInput.style.borderColor = '#ef4444';
+            }
+
+            function clearPwdError() {
+                if (pwdErrorDiv) {
+                    pwdErrorDiv.textContent = '';
+                    pwdErrorDiv.style.display = 'none';
+                }
+                if (pwdInput) pwdInput.style.borderColor = '';
+            }
+
+            if (pwdInput) {
+                pwdInput.addEventListener('input', function() {
+                    if (pwdErrorDiv && pwdErrorDiv.style.display === 'block') {
+                        validatePassword();
+                    }
+                });
+                pwdInput.addEventListener('blur', validatePassword);
+            }
+
+            if (emailInput) {
+                emailInput.addEventListener('input', function() {
+                    if (/\s/.test(this.value)) {
+                        this.value = this.value.replace(/\s+/g, '');
+                    }
+                    if (errorDiv.style.display === 'block') {
+                        validateEmail();
+                    }
+                });
+                emailInput.addEventListener('blur', validateEmail);
+            }
+
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    const isEmailValid = validateEmail();
+                    const isPwdValid = validatePassword();
+                    if (!isEmailValid || !isPwdValid) {
+                        e.preventDefault();
+                        if (!isEmailValid) {
+                            emailInput.focus();
+                        } else if (!isPwdValid) {
+                            pwdInput.focus();
+                        }
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>

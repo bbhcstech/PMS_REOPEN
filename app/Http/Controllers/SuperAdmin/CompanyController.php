@@ -61,6 +61,14 @@ class CompanyController extends Controller
             }
         }
 
+        // Synchronize all company statuses in database before rendering
+        try {
+            $subService = app(\App\Services\SubscriptionService::class);
+            foreach ($companies as $comp) {
+                $subService->syncCompanyStatus($comp);
+            }
+        } catch (\Throwable $e) {}
+
         $currentCompanyDb = session('current_company_db');
 
         return view('superadmin.companies.index', compact('companies', 'currentCompanyDb'));
@@ -84,6 +92,14 @@ class CompanyController extends Controller
                 $companies = collect();
             }
         }
+
+        // Synchronize all company statuses in database before calculating metrics
+        try {
+            $subService = app(\App\Services\SubscriptionService::class);
+            foreach ($companies as $comp) {
+                $subService->syncCompanyStatus($comp);
+            }
+        } catch (\Throwable $e) {}
 
         try {
             $totalUsers = User::count();
@@ -187,6 +203,14 @@ class CompanyController extends Controller
                 $companies = collect();
             }
         }
+
+        // Synchronize all company statuses in database before rendering subscriptions
+        try {
+            $subService = app(\App\Services\SubscriptionService::class);
+            foreach ($companies as $comp) {
+                $subService->syncCompanyStatus($comp);
+            }
+        } catch (\Throwable $e) {}
 
         try {
             $plans = \App\Models\Central\Plan::on('central')->with('modules')->orderBy('sort_order')->orderBy('monthly_price', 'asc')->get();
@@ -405,6 +429,11 @@ class CompanyController extends Controller
             $company = \App\Models\Company::findOrFail($id);
         }
 
+        try {
+            app(\App\Services\SubscriptionService::class)->syncCompanyStatus($company);
+            $company->refresh();
+        } catch (\Throwable $e) {}
+
         $currentCompanyDb = session('current_company_db');
 
         // Dynamically fetch actual details from primary database and tenant database
@@ -523,14 +552,30 @@ class CompanyController extends Controller
         $data = $request->validate([
             'name'                => ['required', 'string', 'max:255'],
             'slug'                => ['required', 'string', 'max:50', 'regex:/^[a-zA-Z0-9_-]+$/'],
-            'email'               => ['required', 'email', 'max:255', 'unique:central.companies,email'],
-            'phone'               => ['nullable', 'string', 'max:50'],
+            'email'               => ['required', 'string', 'max:255', 'email:rfc', 'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/', 'unique:central.companies,email'],
+            'phone'               => [
+                'nullable',
+                'string',
+                'max:50',
+                function ($attribute, $value, $fail) {
+                    if (!empty($value) && !\App\Support\CountryPhone::validateFormattedNumber($value)) {
+                        $fail(\App\Support\CountryPhone::getValidationErrorMessage($value));
+                    }
+                }
+            ],
             'address'             => ['nullable', 'string', 'max:1000'],
             'company_logo'        => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg,webp', 'max:5120'],
             'admin_name'          => ['required', 'string', 'max:255'],
-            'admin_email'         => ['required', 'email', 'max:255'],
-            'admin_password'      => ['required', 'string', 'min:8'],
+            'admin_email'         => ['required', 'string', 'max:255', 'email:rfc', 'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/'],
+            'admin_password'      => ['required', 'string', 'min:8', 'max:128'],
+            'admin_password_confirmation' => ['nullable', 'string', 'same:admin_password'],
             'admin_profile_image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg,webp', 'max:5120'],
+        ], [
+            'email.regex'         => 'Please enter a valid company contact email address (e.g. contact@company.com).',
+            'admin_email.regex'   => 'Please enter a valid admin email address (e.g. admin@company.com).',
+            'admin_password.min'  => 'Admin password must be at least 8 characters long.',
+            'admin_password.max'  => 'Admin password may not be greater than 128 characters.',
+            'admin_password_confirmation.same' => 'Password confirmation does not match.',
         ]);
 
         $rawSlug = strtolower(trim($data['slug']));
@@ -820,6 +865,187 @@ class CompanyController extends Controller
     }
 
     /**
+     * Show edit screen or redirect to company workspace settings.
+     */
+    public function edit($id): RedirectResponse
+    {
+        $this->authorizeSuperAdmin();
+        return redirect()->route('super-admin.companies.show', ['company' => $id, 'tab' => 'tab-settings']);
+    }
+
+    /**
+     * Update tenant company profile, limits, branding, and prefixes.
+     */
+    public function update(Request $request, $id): RedirectResponse
+    {
+        $this->authorizeSuperAdmin();
+
+        try {
+            $company = Company::on('central')->findOrFail($id);
+        } catch (\Throwable $e) {
+            $company = \App\Models\Company::findOrFail($id);
+        }
+
+        $data = $request->validate([
+            'name'                => ['required', 'string', 'max:255'],
+            'short_name'          => ['nullable', 'string', 'max:100'],
+            'company_code'        => ['nullable', 'string', 'max:50'],
+            'email'               => [
+                'required',
+                'string',
+                'max:255',
+                'email:rfc',
+                'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/',
+                \Illuminate\Validation\Rule::unique('central.companies', 'email')->ignore($company->id),
+            ],
+            'phone'               => ['nullable', 'string', 'max:50'],
+            'website'             => ['nullable', 'string', 'max:255'],
+            'domain'              => ['nullable', 'string', 'max:255'],
+            'subdomain'           => ['nullable', 'string', 'max:100'],
+            'address'             => ['nullable', 'string', 'max:1000'],
+            'company_logo'        => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg,webp', 'max:5120'],
+            'max_users'           => ['nullable', 'integer', 'min:1'],
+            'max_projects'        => ['nullable', 'integer', 'min:0'],
+            'max_clients'         => ['nullable', 'integer', 'min:0'],
+            'max_storage_mb'      => ['nullable', 'integer', 'min:50'],
+            'gst_number'          => ['nullable', 'string', 'max:50'],
+            'pan_number'          => ['nullable', 'string', 'max:50'],
+            'registration_number' => ['nullable', 'string', 'max:100'],
+            'employee_id_prefix'  => ['nullable', 'string', 'max:20'],
+            'leave_prefix'        => ['nullable', 'string', 'max:20'],
+            'payroll_prefix'      => ['nullable', 'string', 'max:20'],
+            'payslip_prefix'      => ['nullable', 'string', 'max:20'],
+            'password'            => ['nullable', 'string', 'min:8', 'max:128'],
+            'password_confirmation' => ['nullable', 'string', 'same:password'],
+        ], [
+            'email.regex'  => 'Please enter a valid company contact email address.',
+            'email.unique' => 'A company with this email address is already registered.',
+            'password.min' => 'Password must be at least 8 characters long.',
+            'password.max' => 'Password may not be greater than 128 characters.',
+            'password_confirmation.same' => 'Password confirmation does not match.',
+        ]);
+
+        // Handle Company Logo upload
+        if ($request->hasFile('company_logo')) {
+            $file = $request->file('company_logo');
+            $dir = public_path('uploads/company_logos');
+            if (! File::exists($dir)) {
+                File::makeDirectory($dir, 0755, true);
+            }
+            $filename = uniqid('logo_', true) . '.' . $file->getClientOriginalExtension();
+            $file->move($dir, $filename);
+            $data['logo'] = 'uploads/company_logos/' . $filename;
+        }
+
+        // Clean & prepare update array
+        $updateFields = [
+            'name'                => $data['name'],
+            'short_name'          => $data['short_name'] ?? null,
+            'company_code'        => !empty($data['company_code']) ? strtoupper(trim($data['company_code'])) : null,
+            'email'               => $data['email'],
+            'phone'               => $data['phone'] ?? null,
+            'website'             => $data['website'] ?? null,
+            'domain'              => $data['domain'] ?? null,
+            'subdomain'           => $data['subdomain'] ?? null,
+            'address'             => $data['address'] ?? null,
+            'max_users'           => isset($data['max_users']) ? (int) $data['max_users'] : ($company->max_users ?? 10),
+            'max_projects'        => isset($data['max_projects']) ? (int) $data['max_projects'] : ($company->max_projects ?? 5),
+            'max_clients'         => isset($data['max_clients']) ? (int) $data['max_clients'] : ($company->max_clients ?? 50),
+            'max_storage_mb'      => isset($data['max_storage_mb']) ? (int) $data['max_storage_mb'] : ($company->max_storage_mb ?? 1024),
+            'gst_number'          => $data['gst_number'] ?? null,
+            'pan_number'          => $data['pan_number'] ?? null,
+            'registration_number' => $data['registration_number'] ?? null,
+            'employee_id_prefix'  => $data['employee_id_prefix'] ?? null,
+            'leave_prefix'        => $data['leave_prefix'] ?? null,
+            'payroll_prefix'      => $data['payroll_prefix'] ?? null,
+            'payslip_prefix'      => $data['payslip_prefix'] ?? null,
+        ];
+
+        if (isset($data['logo'])) {
+            $updateFields['logo'] = $data['logo'];
+        }
+
+        if (!empty($data['password'])) {
+            $updateFields['password'] = $data['password'];
+        }
+
+        // 1. Update Central Company
+        $company->update($updateFields);
+
+        try {
+            \App\Models\Company::where('id', $company->id)->update($updateFields);
+        } catch (\Throwable $e) {}
+
+        // 2. Sync to Tenant DB if available and connected
+        if (!empty($company->db_name)) {
+            try {
+                config(['database.connections.tenant.database' => $company->db_name]);
+                DB::purge('tenant');
+
+                if (DB::connection('tenant')->getSchemaBuilder()->hasTable('companies')) {
+                    $tenantCompany = DB::connection('tenant')->table('companies')->first();
+                    if ($tenantCompany) {
+                        $tenantFields = [];
+                        foreach ($updateFields as $col => $val) {
+                            if (DB::connection('tenant')->getSchemaBuilder()->hasColumn('companies', $col)) {
+                                $tenantFields[$col] = $val;
+                            }
+                        }
+                        if (!empty($tenantFields)) {
+                            DB::connection('tenant')->table('companies')->where('id', $tenantCompany->id)->update($tenantFields);
+                        }
+                    }
+                }
+
+                // If password was updated, update admin user password in tenant database
+                if (!empty($data['password'])) {
+                    $hashed = Hash::make($data['password']);
+                    if (DB::connection('tenant')->getSchemaBuilder()->hasTable('users')) {
+                        DB::connection('tenant')->table('users')
+                            ->where(function($q) use ($company) {
+                                $q->where('email', $company->email)
+                                  ->orWhere('role', 'admin');
+                            })
+                            ->update([
+                                'password' => $hashed,
+                                'raw_password' => $data['password'],
+                            ]);
+                    }
+                }
+            } catch (\Throwable $e) {}
+        }
+
+        // 3. If password was updated, update in primary mysql connection users
+        if (!empty($data['password'])) {
+            try {
+                $hashed = Hash::make($data['password']);
+                User::on('mysql')->where(function($q) use ($company) {
+                    $q->where('company_id', $company->id)
+                      ->orWhere('email', $company->email);
+                })->update([
+                    'password' => $hashed,
+                    'raw_password' => $data['password'],
+                ]);
+            } catch (\Throwable $e) {}
+        }
+
+        // 4. Log super admin activity
+        try {
+            \App\Models\Central\SuperAdminActivityLog::create([
+                'super_admin_id' => auth('super_admin')->id() ?? (auth()->id() ?? 1),
+                'company_id'     => $company->id,
+                'action'         => 'company.updated',
+                'description'    => "Updated company profile & workspace settings for '{$company->name}' (Tenant #{$company->id})",
+                'ip_address'     => $request->ip(),
+                'user_agent'     => $request->userAgent(),
+            ]);
+        } catch (\Throwable $e) {}
+
+        return redirect()->route('super-admin.companies.show', ['company' => $company->id, 'tab' => 'tab-settings'])
+            ->with('success', "Company '{$company->name}' updated successfully.");
+    }
+
+    /**
      * Enter (impersonate) a tenant company by setting session key.
      */
     public function enter(Company $company): RedirectResponse
@@ -875,6 +1101,8 @@ class CompanyController extends Controller
 
             if ($company) {
                 $company->status = 'suspended';
+                $company->manually_suspended = true;  // Mark as Super Admin manual suspension
+                $company->suspended_at = now();
                 $company->save();
 
                 // Also sync central subscriptions to suspended status
@@ -903,6 +1131,7 @@ class CompanyController extends Controller
             ->with('success', "Tenant company subscription access has been suspended.");
     }
 
+
     /**
      * Deactivate a tenant company.
      */
@@ -924,7 +1153,7 @@ class CompanyController extends Controller
     /**
      * Activate a tenant company.
      */
-    public function activate($id): RedirectResponse
+    public function activate($id): RedirectResponse|\Illuminate\Http\JsonResponse
     {
         try {
             $company = Company::on('central')->findOrFail($id);
@@ -932,8 +1161,30 @@ class CompanyController extends Controller
             $company = \App\Models\Company::findOrFail($id);
         }
 
-        $company->status = 'active';
+        $company->manually_suspended = false;  // Super Admin explicitly lifts suspension
+        $company->suspended_at = null;
+
+        $status = app(\App\Services\SubscriptionService::class)->evaluateCompanyStatus($company);
+        $company->status = ($status === 'expired') ? 'expired' : 'active';
         $company->save();
+
+        if ($company->status === 'active') {
+            try {
+                \App\Models\Central\Subscription::on('central')
+                    ->where('company_id', $company->id)
+                    ->where('status', 'suspended')
+                    ->update(['status' => 'active']);
+            } catch (\Throwable $e) {}
+        }
+
+        if (request()->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => "Tenant company '{$company->name}' suspension has been lifted. Current status: " . ucfirst($company->status) . ".",
+                'status' => $company->status,
+                'company_id' => $company->id
+            ]);
+        }
 
         return redirect()->back()
             ->with('success', "Tenant company '{$company->name}' is now active.");
@@ -1159,6 +1410,9 @@ class CompanyController extends Controller
             if ($company && $plan) {
                 /** @var \App\Services\SubscriptionService $subService */
                 $subService = app(\App\Services\SubscriptionService::class);
+
+                $isManual = (bool) ($company->manually_suspended ?? false);
+
                 $sub = $subService->activateOrUpgradePlan(
                     company: $company,
                     plan: $plan,
@@ -1166,11 +1420,12 @@ class CompanyController extends Controller
                     performedBy: auth('super_admin')->user()?->name ?? auth()->user()?->name ?? 'Super Admin Command Center'
                 );
 
-                // Update resource limits on company record
+                // Update resource limits on company record, preserving manual suspension if set
+                $newCompanyStatus = $isManual ? 'suspended' : 'active';
                 $company->update([
                     'max_users'      => $plan->max_users > 0 ? $plan->max_users : 999999,
                     'max_storage_mb' => $plan->max_storage_mb > 0 ? $plan->max_storage_mb : 512000,
-                    'status'         => 'active',
+                    'status'         => $newCompanyStatus,
                     'trial_ends_at'  => $sub->ends_at,
                 ]);
 
@@ -1254,8 +1509,11 @@ class CompanyController extends Controller
                     ]);
                 }
 
+                $isManual = (bool) ($company->manually_suspended ?? false);
+                $newCompanyStatus = $isManual ? 'suspended' : 'active';
+
                 $company->update([
-                    'status'        => 'active',
+                    'status'        => $newCompanyStatus,
                     'trial_ends_at' => $newEndsAt,
                 ]);
 
@@ -1263,7 +1521,7 @@ class CompanyController extends Controller
                     $tenantComp = \App\Models\Company::find($company->id);
                     if ($tenantComp) {
                         $tenantComp->update([
-                            'status'        => 'active',
+                            'status'        => $newCompanyStatus,
                             'trial_ends_at' => $newEndsAt,
                         ]);
                     }
@@ -1344,7 +1602,7 @@ class CompanyController extends Controller
                 $newEndsAt = \Carbon\Carbon::parse($currentEndsAt)->subDays($days);
 
                 $isExpiredNow = $newEndsAt->isPast();
-                $newStatus = $isExpiredNow ? 'suspended' : 'active';
+                $newStatus = $isExpiredNow ? 'expired' : 'active';
 
                 if ($sub) {
                     $sub->update([
@@ -2592,12 +2850,36 @@ class CompanyController extends Controller
     public function exportTenantAudit(Request $request)
     {
         $headers = [
-            "Content-type"        => "text/csv",
-            "Content-Disposition" => "attachment; filename=tenant_audit_export_" . date('Y-m-d') . ".csv",
+            "Content-type"        => "text/csv; charset=UTF-8",
+            "Content-Disposition" => "attachment; filename=activity_logs_export_" . date('Y-m-d') . ".csv",
             "Pragma"              => "no-cache",
             "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
             "Expires"             => "0"
         ];
+
+        $callback = function () {
+            $handle = fopen('php://output', 'w');
+            fprintf($handle, chr(0xEF).chr(0xBB).chr(0xBF));
+            fputcsv($handle, ['Timestamp', 'Actor / User', 'Company', 'Action', 'IP Address', 'Status']);
+
+            if (class_exists(\App\Models\AuditLog::class)) {
+                try {
+                    $logs = \App\Models\AuditLog::on('central')->with(['company', 'user'])->latest()->take(1000)->get();
+                    foreach ($logs as $log) {
+                        fputcsv($handle, [
+                            $log->created_at?->format('Y-m-d H:i:s') ?? '',
+                            $log->user?->name ?? 'System',
+                            $log->company?->name ?? 'System',
+                            str_replace('.', ' ', ucfirst($log->action ?? '')),
+                            $log->ip_address ?? '127.0.0.1',
+                            'Success',
+                        ]);
+                    }
+                } catch (\Throwable $e) {}
+            }
+
+            fclose($handle);
+        };
 
         return response()->stream($callback, 200, $headers);
     }

@@ -1438,7 +1438,10 @@
             <div style="display: flex; align-items: center; gap: 12px;">
                 <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-subtle);">
                     <span>Rows per page:</span>
-                    <select id="rowsPerPageSelect" class="filter-select" style="padding: 4px 8px; font-size: 12px; width: 70px;">
+                    <select id="rowsPerPageSelect" class="filter-select" style="padding: 4px 8px; font-size: 12px; width: 75px;">
+                        <option value="10" selected>10</option>
+                        <option value="20">20</option>
+                        <option value="30">30</option>
                         <option value="25">25</option>
                         <option value="50">50</option>
                         <option value="100">100</option>
@@ -1930,6 +1933,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         activeChipsBar.style.display = activeFilterCount > 0 ? 'flex' : 'none';
 
+        let tenantAuditMatched = [];
         rows.forEach(r => {
             const rActor = r.getAttribute('data-actor');
             const rComp = r.getAttribute('data-company-id');
@@ -1948,17 +1952,83 @@ document.addEventListener('DOMContentLoaded', function() {
             if (statVal && rStat !== statVal) match = false;
 
             if (match) {
-                r.style.display = '';
-                visibleCount++;
-            } else {
-                r.style.display = 'none';
+                tenantAuditMatched.push(r);
             }
+            r.style.display = 'none';
         });
 
-        emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
-        document.getElementById('showingStart').textContent = visibleCount > 0 ? 1 : 0;
-        document.getElementById('showingEnd').textContent = visibleCount;
-        document.getElementById('totalEventsCount').textContent = visibleCount;
+        const rowsPerPage = parseInt(document.getElementById('rowsPerPageSelect')?.value || '10');
+        const totalMatched = tenantAuditMatched.length;
+        const totalPages = Math.ceil(totalMatched / rowsPerPage) || 1;
+
+        if (tenantAuditCurrentPage > totalPages) tenantAuditCurrentPage = totalPages;
+        if (tenantAuditCurrentPage < 1) tenantAuditCurrentPage = 1;
+
+        const startIdx = (tenantAuditCurrentPage - 1) * rowsPerPage;
+        const endIdx = Math.min(startIdx + rowsPerPage, totalMatched);
+
+        for (let i = startIdx; i < endIdx; i++) {
+            tenantAuditMatched[i].style.display = '';
+        }
+
+        emptyState.style.display = totalMatched === 0 ? 'block' : 'none';
+        document.getElementById('showingStart').textContent = totalMatched > 0 ? (startIdx + 1) : 0;
+        document.getElementById('showingEnd').textContent = endIdx;
+        document.getElementById('totalEventsCount').textContent = totalMatched;
+
+        renderTenantAuditPagination(totalPages);
+    }
+
+    let tenantAuditCurrentPage = 1;
+
+    function renderTenantAuditPagination(totalPages) {
+        const paginationContainer = document.getElementById('paginationButtons');
+        if (!paginationContainer) return;
+
+        paginationContainer.innerHTML = '';
+        if (totalPages <= 1) return;
+
+        const prevBtn = document.createElement('button');
+        prevBtn.className = 'page-num-btn';
+        prevBtn.innerHTML = '<i class="bx bx-chevron-left"></i>';
+        prevBtn.disabled = tenantAuditCurrentPage === 1;
+        prevBtn.onclick = () => {
+            if (tenantAuditCurrentPage > 1) {
+                tenantAuditCurrentPage--;
+                filterRows();
+            }
+        };
+        paginationContainer.appendChild(prevBtn);
+
+        let startP = Math.max(1, tenantAuditCurrentPage - 2);
+        let endP = Math.min(totalPages, startP + 4);
+        if (endP - startP < 4) {
+            startP = Math.max(1, endP - 4);
+        }
+
+        for (let p = startP; p <= endP; p++) {
+            const pageBtn = document.createElement('button');
+            pageBtn.className = 'page-num-btn' + (p === tenantAuditCurrentPage ? ' active' : '');
+            pageBtn.textContent = p;
+            const targetP = p;
+            pageBtn.onclick = () => {
+                tenantAuditCurrentPage = targetP;
+                filterRows();
+            };
+            paginationContainer.appendChild(pageBtn);
+        }
+
+        const nextBtn = document.createElement('button');
+        nextBtn.className = 'page-num-btn';
+        nextBtn.innerHTML = '<i class="bx bx-chevron-right"></i>';
+        nextBtn.disabled = tenantAuditCurrentPage === totalPages;
+        nextBtn.onclick = () => {
+            if (tenantAuditCurrentPage < totalPages) {
+                tenantAuditCurrentPage++;
+                filterRows();
+            }
+        };
+        paginationContainer.appendChild(nextBtn);
     }
 
     function addChip(label, onRemove) {
@@ -1982,13 +2052,19 @@ document.addEventListener('DOMContentLoaded', function() {
         filterRows();
     };
 
-    searchInput.addEventListener('input', filterRows);
-    actorFilter.addEventListener('change', filterRows);
-    companyFilter.addEventListener('change', filterRows);
-    actionFilter.addEventListener('change', filterRows);
-    moduleFilter.addEventListener('change', filterRows);
-    statusFilter.addEventListener('change', filterRows);
-    dateFilter.addEventListener('change', filterRows);
+    const onFilterChange = () => {
+        tenantAuditCurrentPage = 1;
+        filterRows();
+    };
+
+    searchInput.addEventListener('input', onFilterChange);
+    actorFilter.addEventListener('change', onFilterChange);
+    companyFilter.addEventListener('change', onFilterChange);
+    actionFilter.addEventListener('change', onFilterChange);
+    moduleFilter.addEventListener('change', onFilterChange);
+    statusFilter.addEventListener('change', onFilterChange);
+    dateFilter.addEventListener('change', onFilterChange);
+    document.getElementById('rowsPerPageSelect')?.addEventListener('change', onFilterChange);
     resetBtn?.addEventListener('click', resetAllFilters);
 
     // 4. Click-to-filter on KPI Cards
@@ -2056,7 +2132,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         rowsArr.forEach(r => tbody.appendChild(r));
+        filterRows();
     };
+
+    filterRows();
 });
 </script>
 @endpush
