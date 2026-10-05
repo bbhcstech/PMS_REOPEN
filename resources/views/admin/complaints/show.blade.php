@@ -153,7 +153,7 @@
                 <div class="mt-2 pt-2 border-top">
                   <div class="fs-8 fw-bold mb-1">Attachments:</div>
                   @foreach($conv->attachments as $att)
-                    <a href="{{ asset($att->file_path) }}" target="_blank" class="fs-7 text-primary d-block text-decoration-none">
+                    <a href="{{ route('admin.company-complaints.attachment', [$ticket->id, $att->id]) }}" target="_blank" class="fs-7 text-primary d-block text-decoration-none">
                       <i class="bx bx-paperclip"></i> {{ $att->original_name }} ({{ round($att->file_size / 1024, 1) }} KB)
                     </a>
                   @endforeach

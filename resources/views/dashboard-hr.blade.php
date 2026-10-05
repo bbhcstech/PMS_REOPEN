@@ -914,7 +914,7 @@
             </div>
 
             <!-- HR Clock In/Out Card -->
-            <div class="role-panel role-clock-card" data-server-time="{{ now()->getTimestamp() * 1000 }}">
+            <div class="role-panel role-clock-card">
                 <div class="d-flex align-items-center justify-content-between mb-3">
                     <span class="role-eyebrow mb-0"><i class="bx bx-time-five me-1"></i> My Attendance</span>
                     <div class="text-end">
@@ -981,7 +981,7 @@
                             @endif
                             <div class="clock-live-grid">
                                 <div class="clock-live-box">
-                                    <span>IST Time</span>
+                                    <span>Current Time</span>
                                     <strong id="employeeIstClock">{{ now()->format('h:i:s A') }}</strong>
                                 </div>
                                 <div class="clock-live-box">
@@ -1838,20 +1838,16 @@
     const workTimer = document.getElementById('employeeWorkTimer');
     const hrClockTime = document.getElementById('hrClockTime');
     const hrClockDate = document.getElementById('hrClockDate');
-    const clockCard = document.querySelector('.role-clock-card');
-    const serverTimestamp = clockCard && clockCard.dataset.serverTime ? parseInt(clockCard.dataset.serverTime, 10) : null;
-    const clientTimestamp = Date.now();
-    const serverOffset = serverTimestamp ? (serverTimestamp - clientTimestamp) : 0;
 
-    const formatIstTime = (date, includeSeconds = true) => {
+    const formatLocalTime = (date, includeSeconds = true) => {
         try {
-            return new Intl.DateTimeFormat('en-US', {
-                timeZone: 'Asia/Kolkata',
+            const options = {
                 hour: '2-digit',
                 minute: '2-digit',
-                second: includeSeconds ? '2-digit' : undefined,
-                hour12: true
-            }).format(date);
+                second: includeSeconds ? '2-digit' : undefined
+            };
+            const formatted = new Intl.DateTimeFormat(undefined, options).format(date);
+            return formatted.replace(/[\u202f\u00a0]/g, ' ').replace(/\b(am|pm)\b/gi, match => match.toUpperCase());
         } catch (e) {
             let h = date.getHours();
             const m = String(date.getMinutes()).padStart(2, '0');
@@ -1863,10 +1859,9 @@
         }
     };
 
-    const formatIstDate = (date) => {
+    const formatLocalDate = (date) => {
         try {
             const parts = new Intl.DateTimeFormat('en-US', {
-                timeZone: 'Asia/Kolkata',
                 weekday: 'long',
                 day: '2-digit',
                 month: 'short',
@@ -1887,26 +1882,26 @@
     };
 
     const updateClockWidgets = () => {
-        const now = new Date(Date.now() + serverOffset);
+        const now = new Date();
 
         if (hrClockTime) {
-            hrClockTime.textContent = formatIstTime(now, true);
+            hrClockTime.textContent = formatLocalTime(now, true);
         }
 
         if (hrClockDate) {
-            hrClockDate.textContent = formatIstDate(now);
+            hrClockDate.textContent = formatLocalDate(now);
         }
 
         if (istClock) {
-            istClock.textContent = formatIstTime(now, true);
+            istClock.textContent = formatLocalTime(now, true);
         }
 
         document.querySelectorAll('[data-live-clock="time"]').forEach(el => {
-            if (el !== hrClockTime) el.textContent = formatIstTime(now, true);
+            if (el !== hrClockTime && el !== istClock) el.textContent = formatLocalTime(now, true);
         });
 
         document.querySelectorAll('[data-live-clock="date"]').forEach(el => {
-            if (el !== hrClockDate) el.textContent = formatIstDate(now);
+            if (el !== hrClockDate) el.textContent = formatLocalDate(now);
         });
 
         if (workTimer && workTimer.dataset.clockIn) {
@@ -1932,19 +1927,17 @@
     setInterval(updateClockWidgets, 1000);
 
     const loadedDateKey = new Intl.DateTimeFormat('en-CA', {
-        timeZone: 'Asia/Kolkata',
         year: 'numeric',
         month: '2-digit',
         day: '2-digit'
-    }).format(new Date(Date.now() + serverOffset));
+    }).format(new Date());
 
     setInterval(() => {
         const currentDateKey = new Intl.DateTimeFormat('en-CA', {
-            timeZone: 'Asia/Kolkata',
             year: 'numeric',
             month: '2-digit',
             day: '2-digit'
-        }).format(new Date(Date.now() + serverOffset));
+        }).format(new Date());
 
         if (currentDateKey !== loadedDateKey) {
             window.location.reload();

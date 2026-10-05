@@ -45,12 +45,18 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): RedirectResponse
     {
-        // LoginRequest handles all authentication including exit date checks
+        // LoginRequest::authenticate() resolves the correct company and writes
+        // current_company_id / current_company_db / current_company_name to session.
         $request->authenticate();
 
+        // regenerate() changes session ID but preserves all session data (including
+        // the company session keys written inside authenticate() above).
         $request->session()->regenerate();
 
-        // Multi-Tenant: Preserve and set active tenant company database name and company ID in session
+        // Multi-Tenant: Re-affirm the company session and lock the DB connection.
+        // We deliberately do NOT read user->company_id here because Auth::user() may
+        // have been loaded from the wrong DB connection before SetTenantConnection
+        // had a chance to switch it. The session is the single source of truth.
         $user = Auth::user();
         $isDeveloper = $user && (
             (method_exists($user, 'isDeveloper') && $user->isDeveloper()) ||
@@ -61,29 +67,24 @@ class AuthenticatedSessionController extends Controller
         );
 
         if ($user && ! $isDeveloper) {
+            // Resolve company exclusively from session (set correctly by authenticate())
             $company = null;
-            if (!empty($user->company_id)) {
-                $company = \App\Models\Central\Company::on('central')->where('id', $user->company_id)->first();
-            }
-            if (!$company && !empty($user->email)) {
-                $company = \App\Models\Central\Company::on('central')->where('email', $user->email)->first();
-            }
-            if (!$company && session('current_company_db')) {
-                $company = \App\Models\Central\Company::on('central')->where('db_name', session('current_company_db'))->first();
+            if (session('current_company_id')) {
+                try {
+                    $company = \App\Models\Central\Company::on('central')->find(session('current_company_id'));
+                } catch (\Throwable $e) {}
             }
 
-            $dbName = $company?->db_name ?: (session('current_company_db') ?: config('database.connections.tenant.database'));
-            $companyId = $company?->id ?: session('current_company_id');
-            $companyName = $company?->name ?: session('current_company_name');
+            $dbName     = $company?->db_name     ?: (session('current_company_db')   ?: config('database.connections.tenant.database'));
+            $companyId   = $company?->id          ?: session('current_company_id');
+            $companyName = $company?->name        ?: session('current_company_name');
 
-            $request->session()->put('current_company_db', $dbName);
-            if ($companyId) {
-                $request->session()->put('current_company_id', $companyId);
-            }
-            if ($companyName) {
-                $request->session()->put('current_company_name', $companyName);
-            }
+            // Write final, authoritative company context to session
+            $request->session()->put('current_company_db',   $dbName);
+            $request->session()->put('current_company_id',   $companyId);
+            $request->session()->put('current_company_name', $companyName);
 
+            // Point both connections at the correct company DB
             config([
                 'database.connections.tenant.database' => $dbName,
                 'database.connections.mysql.database'  => $dbName,
@@ -146,9 +147,22 @@ class AuthenticatedSessionController extends Controller
         }
         Auth::logout();
 
+        $request->session()->forget(['current_company_id', 'current_company_db', 'current_company_name']);
         $request->session()->flush();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
+        $defaultDb = env('DB_DATABASE', 'pms_last');
+        config([
+            'database.connections.tenant.database' => $defaultDb,
+            'database.connections.mysql.database'  => $defaultDb,
+        ]);
+        \Illuminate\Support\Facades\DB::purge('tenant');
+        \Illuminate\Support\Facades\DB::purge('mysql');
+
+        if (app()->bound(\App\Services\CompanyContext::class)) {
+            app(\App\Services\CompanyContext::class)->reset();
+        }
 
         return redirect()->route('login');
     }

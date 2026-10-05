@@ -1779,6 +1779,7 @@
                     <div>
                         <label style="display: block; font-size: 12px; font-weight: 700; color: var(--slate-dark); margin-bottom: 6px;">Developer Login Email *</label>
                         <input type="email" name="email" id="devFormEmail" required style="width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 13px;" placeholder="e.g. developer@example.com">
+                        <div id="devFormEmail_error" class="field-error-feedback"></div>
                     </div>
                 </div>
 
@@ -1786,11 +1787,12 @@
                     <div>
                         <label style="display: block; font-size: 12px; font-weight: 700; color: var(--slate-dark); margin-bottom: 6px;">Personal Email (for Credentials) *</label>
                         <input type="email" name="personal_email" id="devFormPersonalEmail" required style="width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 13px;" placeholder="e.g. siraj.personal@gmail.com">
+                        <div id="devFormPersonalEmail_error" class="field-error-feedback"></div>
                     </div>
                     <div>
                         <label style="display: block; font-size: 12px; font-weight: 700; color: var(--slate-dark); margin-bottom: 6px;">Phone Number</label>
                         <div style="display: flex;">
-                            <select id="devFormCountryCode" style="width: 90px; flex-shrink: 0; padding: 9px; border: 1px solid var(--border-color); border-right: 0; border-top-left-radius: var(--radius-md); border-bottom-left-radius: var(--radius-md); font-size: 13px; background-color: var(--bg-surface);">
+                            <select id="devFormCountryCode" class="country-code-select" style="width: 95px; flex-shrink: 0; padding: 9px; border: 1px solid var(--border-color); border-right: 0; border-top-left-radius: var(--radius-md); border-bottom-left-radius: var(--radius-md); font-size: 13px; outline: none;">
                                 <option value="+91">+91 (IN)</option>
                                 <option value="+1">+1 (US)</option>
                                 <option value="+44">+44 (UK)</option>
@@ -1803,21 +1805,7 @@
                             <input type="text" id="devFormMobileDisplay" style="width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-top-right-radius: var(--radius-md); border-bottom-right-radius: var(--radius-md); font-size: 13px;" placeholder="98765 43210">
                             <input type="hidden" name="mobile" id="devFormMobile">
                         </div>
-                        <script>
-                            document.addEventListener('DOMContentLoaded', function() {
-                                const ccDev = document.getElementById('devFormCountryCode');
-                                const mobDev = document.getElementById('devFormMobileDisplay');
-                                const hiddenDev = document.getElementById('devFormMobile');
-                                function updateDevMobile() {
-                                    const num = mobDev.value.replace(/[^0-9]/g, '');
-                                    hiddenDev.value = num ? ccDev.value + ' ' + num : '';
-                                }
-                                if(ccDev && mobDev) {
-                                    ccDev.addEventListener('change', updateDevMobile);
-                                    mobDev.addEventListener('input', updateDevMobile);
-                                }
-                            });
-                        </script>
+                        <div id="devFormMobile_error" class="field-error-feedback"></div>
                     </div>
                 </div>
 
@@ -1874,7 +1862,7 @@
 <!-- MODAL 2: ASSIGN TASK WORK ALLOCATION MODAL -->
 <div class="modal-overlay" id="assignWorkModal">
     <div class="modal-box" style="width: 720px;">
-        <form method="POST" action="{{ route('super-admin.developers.assign-work') }}">
+        <form id="assignWorkForm" method="POST" action="{{ route('super-admin.developers.assign-work') }}">
             @csrf
             <div class="modal-header">
                 <div>
@@ -1913,6 +1901,7 @@
                     <div>
                         <label style="display: block; font-size: 11.5px; font-weight: 700; color: var(--slate-dark); margin-bottom: 4px;">Developer Email *</label>
                         <input type="email" name="developer_email" id="assignDevEmailInput" onkeyup="lookupDevEmail(this.value)" style="width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 12.5px; font-family: monospace;" placeholder="developer@example.com">
+                        <div id="assignDevEmail_error" class="field-error-feedback"></div>
                     </div>
                     <div>
                         <label style="display: block; font-size: 11.5px; font-weight: 700; color: var(--slate-dark); margin-bottom: 4px;">Full Name</label>
@@ -2116,6 +2105,19 @@
             <div style="display: flex; flex-direction: column; gap: 10px;">
                 <form id="credResetForm" method="POST" action="">
                     @csrf
+                    <div style="margin-bottom: 12px; text-align: left;">
+                        <label style="font-size: 11.5px; font-weight: 700; color: var(--slate-dark); display: block; margin-bottom: 4px;">
+                            New Custom Password <span style="font-weight: normal; color: var(--slate-muted);">(Optional - leave blank to auto-generate 10-char password)</span>
+                        </label>
+                        <div style="position: relative;">
+                            <input type="password" name="password" id="devResetPasswordInput" minlength="8" maxlength="128" placeholder="Enter custom password (min 8 chars)" style="width: 100%; padding: 8px 36px 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; font-family: monospace; outline: none; background: #ffffff;">
+                            <button type="button" onclick="togglePasswordVisibility('devResetPasswordInput', this)" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--slate-muted); font-size: 18px;" title="Show/Hide Password">
+                                <i class="bx bx-show"></i>
+                            </button>
+                        </div>
+                        <div style="font-size: 11px; color: var(--slate-muted); margin-top: 3px;">If provided, must be 8–128 characters.</div>
+                        <div id="devResetPassword_error" style="display: none; color: #ef4444; font-size: 12px; margin-top: 3px; font-weight: 600;"></div>
+                    </div>
                     <button type="submit" class="btn-action-primary" style="width: 100%; padding: 10px; justify-content: center; font-size: 13px;">
                         <i class="bx bx-paper-plane"></i> Reset Password &amp; Dispatch Credentials Email
                     </button>
@@ -2880,6 +2882,30 @@
         document.getElementById('devCredentialsModal').classList.remove('active');
     }
 
+    const credResetForm = document.getElementById('credResetForm');
+    if (credResetForm) {
+        credResetForm.addEventListener('submit', function(e) {
+            const pwdInput = document.getElementById('devResetPasswordInput');
+            const errorDiv = document.getElementById('devResetPassword_error');
+            if (pwdInput && pwdInput.value) {
+                const val = pwdInput.value;
+                if (val.length < 8) {
+                    e.preventDefault();
+                    if (errorDiv) { errorDiv.textContent = 'Password must be at least 8 characters long.'; errorDiv.style.display = 'block'; }
+                    pwdInput.focus();
+                    return false;
+                }
+                if (val.length > 128) {
+                    e.preventDefault();
+                    if (errorDiv) { errorDiv.textContent = 'Password cannot exceed 128 characters.'; errorDiv.style.display = 'block'; }
+                    pwdInput.focus();
+                    return false;
+                }
+            }
+            if (errorDiv) { errorDiv.textContent = ''; errorDiv.style.display = 'none'; }
+        });
+    }
+
     function copyTextToClipboard(text, successMsg) {
         if (navigator.clipboard && window.isSecureContext) {
             navigator.clipboard.writeText(text).then(() => {
@@ -2895,6 +2921,227 @@
             alert(successMsg || 'Copied to clipboard!');
         }
     }
+
+    // Developer Form Strict Email & Phone Validation
+    document.addEventListener('DOMContentLoaded', function() {
+        function getDevPhoneRule(countryCode) {
+            switch (countryCode) {
+                case '+91': return { min: 10, max: 10, regex: /^[6-9]\d{9}$/, placeholder: '9876543210', error: 'India phone number must be exactly 10 digits starting with 6, 7, 8, or 9.' };
+                case '+1':  return { min: 10, max: 10, regex: /^[2-9]\d{9}$/, placeholder: '5550192831', error: 'US/Canada phone number must be exactly 10 digits (e.g. 5550192831).' };
+                case '+44': return { min: 10, max: 11, regex: /^[1-9]\d{9,10}$/, placeholder: '7911123456', error: 'UK phone number must be 10 to 11 digits.' };
+                case '+61': return { min: 9,  max: 10, regex: /^[1-9]\d{8,9}$/, placeholder: '412345678', error: 'Australia phone number must be 9 to 10 digits.' };
+                case '+971':return { min: 9,  max: 9,  regex: /^[2-9]\d{8}$/, placeholder: '501234567', error: 'UAE phone number must be 9 digits (e.g. 501234567).' };
+                case '+81': return { min: 10, max: 10, regex: /^[1-9]\d{9}$/, placeholder: '9012345678', error: 'Japan phone number must be 10 digits.' };
+                case '+49': return { min: 10, max: 11, regex: /^[1-9]\d{9,10}$/, placeholder: '15123456789', error: 'Germany phone number must be 10 to 11 digits.' };
+                case '+33': return { min: 9,  max: 9,  regex: /^[1-9]\d{8}$/, placeholder: '612345678', error: 'France phone number must be 9 digits.' };
+                default:    return { min: 7,  max: 15, regex: /^\d{7,15}$/, placeholder: '1234567890', error: 'Phone number must be between 7 and 15 digits.' };
+            }
+        }
+
+        function validateDevEmailFormat(email, isRequired = true) {
+            const val = (email || '').trim();
+            if (!val) {
+                return isRequired ? { valid: false, message: 'Email address is required.' } : { valid: true };
+            }
+            if (/\s/.test(val)) {
+                return { valid: false, message: 'Email address cannot contain spaces.' };
+            }
+            if (!val.includes('@')) {
+                return { valid: false, message: "Email address must include an '@' symbol." };
+            }
+            const parts = val.split('@');
+            if (parts.length !== 2) {
+                return { valid: false, message: "Email address must contain only one '@' symbol." };
+            }
+            const [local, domain] = parts;
+            if (!local) return { valid: false, message: "Missing username before '@'." };
+            if (!domain) return { valid: false, message: "Missing domain after '@'." };
+            if (!domain.includes('.')) return { valid: false, message: "Domain name must include a valid extension (e.g. .com)." };
+            if (domain.startsWith('.') || domain.endsWith('.')) return { valid: false, message: "Domain name cannot start or end with a dot." };
+            if (domain.includes('..')) return { valid: false, message: "Domain name cannot contain consecutive dots." };
+            const strictRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            if (!strictRegex.test(val)) {
+                return { valid: false, message: 'Please enter a valid email address (e.g. name@company.com).' };
+            }
+            return { valid: true };
+        }
+
+        function setupDevPhoneValidator(countrySelectId, phoneInputId, hiddenInputId, errorDivId) {
+            const countrySelect = document.getElementById(countrySelectId);
+            const phoneInput = document.getElementById(phoneInputId);
+            const hiddenInput = document.getElementById(hiddenInputId);
+            const errorDiv = document.getElementById(errorDivId);
+            if (!countrySelect || !phoneInput) return null;
+
+            function updateRule() {
+                const rule = getDevPhoneRule(countrySelect.value);
+                phoneInput.placeholder = rule.placeholder;
+                phoneInput.maxLength = rule.max;
+            }
+
+            phoneInput.addEventListener('keydown', function(e) {
+                if (['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(e.key) ||
+                    ((e.ctrlKey || e.metaKey) && ['a', 'c', 'v', 'x', 'z'].includes(e.key.toLowerCase()))) {
+                    return;
+                }
+                if (!/^\d$/.test(e.key)) {
+                    e.preventDefault();
+                }
+            });
+
+            function syncValue() {
+                phoneInput.value = phoneInput.value.replace(/\D/g, '');
+                const rule = getDevPhoneRule(countrySelect.value);
+                if (phoneInput.value.length > rule.max) {
+                    phoneInput.value = phoneInput.value.substring(0, rule.max);
+                }
+                if (hiddenInput) {
+                    hiddenInput.value = phoneInput.value ? countrySelect.value + ' ' + phoneInput.value : '';
+                }
+            }
+
+            phoneInput.addEventListener('input', function() {
+                syncValue();
+                validate(false);
+            });
+
+            countrySelect.addEventListener('change', function() {
+                updateRule();
+                syncValue();
+                validate(false);
+            });
+
+            phoneInput.addEventListener('blur', function() {
+                validate(true);
+            });
+
+            function validate(showEmptyError = true) {
+                const val = phoneInput.value.trim();
+                if (!val) {
+                    clearError();
+                    return true;
+                }
+                const rule = getDevPhoneRule(countrySelect.value);
+                if (!rule.regex.test(val)) {
+                    showError(rule.error);
+                    return false;
+                }
+                clearError();
+                return true;
+            }
+
+            function showError(msg) {
+                if (errorDiv) {
+                    errorDiv.textContent = msg;
+                    errorDiv.classList.add('visible');
+                }
+                phoneInput.classList.add('is-invalid');
+            }
+
+            function clearError() {
+                if (errorDiv) {
+                    errorDiv.textContent = '';
+                    errorDiv.classList.remove('visible');
+                }
+                phoneInput.classList.remove('is-invalid');
+            }
+
+            updateRule();
+            syncValue();
+            return { validate, input: phoneInput };
+        }
+
+        function setupDevEmailValidator(inputId, errorDivId, isRequired = true) {
+            const input = document.getElementById(inputId);
+            const errorDiv = document.getElementById(errorDivId);
+            if (!input) return null;
+
+            function validate(showEmptyError = true) {
+                const val = input.value.trim();
+                if (!val && !showEmptyError && !isRequired) {
+                    clearError();
+                    return true;
+                }
+                const res = validateDevEmailFormat(val, isRequired);
+                if (!res.valid) {
+                    if (val || showEmptyError) {
+                        showError(res.message);
+                        return false;
+                    }
+                    return false;
+                }
+                clearError();
+                return true;
+            }
+
+            function showError(msg) {
+                if (errorDiv) {
+                    errorDiv.textContent = msg;
+                    errorDiv.classList.add('visible');
+                }
+                input.classList.add('is-invalid');
+            }
+
+            function clearError() {
+                if (errorDiv) {
+                    errorDiv.textContent = '';
+                    errorDiv.classList.remove('visible');
+                }
+                input.classList.remove('is-invalid');
+            }
+
+            input.addEventListener('input', function() {
+                if (/\s/.test(this.value)) {
+                    this.value = this.value.replace(/\s+/g, '');
+                }
+                validate(false);
+            });
+
+            input.addEventListener('blur', function() {
+                validate(true);
+            });
+
+            return { validate, input };
+        }
+
+        const devPhoneVal = setupDevPhoneValidator('devFormCountryCode', 'devFormMobileDisplay', 'devFormMobile', 'devFormMobile_error');
+        const devLoginEmailVal = setupDevEmailValidator('devFormEmail', 'devFormEmail_error', true);
+        const devPersonalEmailVal = setupDevEmailValidator('devFormPersonalEmail', 'devFormPersonalEmail_error', true);
+        const devAssignEmailVal = setupDevEmailValidator('assignDevEmailInput', 'assignDevEmail_error', false);
+
+        const devForm = document.getElementById('devForm');
+        if (devForm) {
+            devForm.addEventListener('submit', function(e) {
+                const isLoginEmailValid = devLoginEmailVal ? devLoginEmailVal.validate(true) : true;
+                const isPersonalEmailValid = devPersonalEmailVal ? devPersonalEmailVal.validate(true) : true;
+                const isPhoneValid = devPhoneVal ? devPhoneVal.validate(true) : true;
+
+                if (!isLoginEmailValid || !isPersonalEmailValid || !isPhoneValid) {
+                    e.preventDefault();
+                    const firstInvalid = devForm.querySelector('input.is-invalid, select.is-invalid');
+                    if (firstInvalid) {
+                        firstInvalid.focus();
+                    }
+                    return false;
+                }
+            });
+        }
+
+        const assignWorkForm = document.getElementById('assignWorkForm');
+        if (assignWorkForm) {
+            assignWorkForm.addEventListener('submit', function(e) {
+                const select = document.getElementById('assignDevSelect');
+                if (select && select.value === 'new') {
+                    if (devAssignEmailVal && !devAssignEmailVal.validate(true)) {
+                        e.preventDefault();
+                        const input = document.getElementById('assignDevEmailInput');
+                        if (input) input.focus();
+                        return false;
+                    }
+                }
+            });
+        }
+    });
 </script>
 @endpush
 @endsection

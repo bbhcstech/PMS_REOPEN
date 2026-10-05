@@ -4,12 +4,16 @@ namespace App\Models;
 
 use App\Models\TenantModel;
 
+use App\Traits\BelongsToCompany;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Task extends TenantModel
 {
+    use BelongsToCompany;
+
      protected $fillable = [
+        'company_id',
         'task_short_code',
         'title',
         'project_id',

@@ -2001,37 +2001,52 @@
     </table>
   </div>
 
-  <!-- TENANT AUDIT -->
-  <div class="section-header" id="tenant-audit">
-    <h2>Tenant Audit &amp; System Health</h2>
-    <span class="action-link"><i class="bx bx-refresh"></i> Run Audit Scan</span>
-  </div>
-  <div style="display:flex; gap:14px; flex-wrap:wrap; margin-bottom:28px;">
-    <div class="audit-health-pill">
-      <span class="health-green" style="font-weight:700; color:var(--emerald-primary); font-size:14px; display:flex; align-items:center; gap:6px;"><i class="bx bx-check-circle"></i> {{ $stats['active_companies'] ?? 0 }} Healthy</span>
-    </div>
-    <div class="audit-health-pill">
-      <span class="health-amber" style="font-weight:700; color:var(--amber-accent); font-size:14px; display:flex; align-items:center; gap:6px;"><i class="bx bx-error"></i> 0 Migration Drift</span>
-    </div>
-    <div class="audit-health-pill">
-      <span class="health-blue" style="font-weight:700; color:var(--emerald-primary); font-size:14px; display:flex; align-items:center; gap:6px;"><i class="bx bx-data"></i> 0 Orphan DB</span>
-    </div>
-    <div class="audit-health-pill">
-      <span class="health-blue" style="font-weight:700; color:var(--emerald-primary); font-size:14px; display:flex; align-items:center; gap:6px;"><i class="bx bx-shield"></i> 0 Missing DB</span>
-    </div>
-  </div>
-
   <!-- AUDIT ACTIVITY LOGS -->
   <div class="section-header" id="activity-logs">
     <h2>Audit Activity Logs</h2>
-    <span class="action-link">Full History <i class="bx bx-history"></i></span>
+    <div style="display: flex; gap: 10px; align-items: center;">
+      <button type="button" class="btn btn-secondary" onclick="exportActivityLogsToCSV()" style="display: flex; align-items: center; gap: 6px; font-size: 12.5px; padding: 6px 14px; cursor: pointer;">
+        <i class="bx bx-download"></i> Export CSV
+      </button>
+      <a href="{{ Route::has('super-admin.activity-logs.index') ? route('super-admin.activity-logs.index') : (Route::has('super-admin.tenant-audit.index') ? route('super-admin.tenant-audit.index') : url('/super-admin/activity-logs')) }}" class="action-link">Full History <i class="bx bx-history"></i></a>
+    </div>
   </div>
-  <div class="table-wrap">
-    <table class="table-compact">
-      <thead><tr><th>Timestamp</th><th>Company</th><th>Action</th><th>IP Address</th><th>Status</th></tr></thead>
-      <tbody>
+  <div class="table-wrap" style="border-radius: 20px; overflow: hidden;">
+    <div class="table-toolbar">
+      <div style="display:flex; align-items:center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--slate-body);">
+        <span>Show</span>
+        <select id="activityEntriesPerPageSelect" class="table-select" onchange="changeActivityEntriesPerPage(this.value)">
+          <option value="10" selected>10</option>
+          <option value="20">20</option>
+          <option value="30">30</option>
+          <option value="50">50</option>
+          <option value="100">100</option>
+        </select>
+        <span>entries</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <div style="position: relative;">
+          <i class="bx bx-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--slate-muted); font-size: 17px;"></i>
+          <input type="text" id="activityTableSearch" class="table-search-input" placeholder="Search activity logs..." onkeyup="filterActivityLogs()" />
+        </div>
+        <button type="button" class="btn btn-secondary" onclick="exportActivityLogsToCSV()" title="Export Activity Logs to CSV" style="display: flex; align-items: center; gap: 6px; font-size: 12.5px; height: 34px; padding: 0 14px; cursor: pointer; border-radius: 8px;">
+          <i class="bx bx-export"></i> Export
+        </button>
+      </div>
+    </div>
+    <table class="table-compact" id="activityLogsTable">
+      <thead>
+        <tr>
+          <th>Timestamp</th>
+          <th>Company</th>
+          <th>Action</th>
+          <th>IP Address</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="activityLogsTableBody">
         @forelse($recentActivities as $activity)
-          <tr>
+          <tr class="activity-log-row">
             <td style="font-size:12px; color:var(--slate-muted);">{{ $activity->created_at?->format('Y-m-d H:i') }}</td>
             <td><strong style="color:var(--slate-dark);">{{ $activity->company?->name ?? 'System' }}</strong></td>
             <td>{{ str_replace('.', ' ', ucfirst($activity->action)) }}</td>
@@ -2039,12 +2054,18 @@
             <td><span class="status-badge success"><i class="bx bx-check"></i> Success</span></td>
           </tr>
         @empty
-          <tr>
+          <tr class="no-activity-row">
             <td colspan="5" style="text-align:center; color:var(--slate-muted); padding:20px;">No recent audit activity logged.</td>
           </tr>
         @endforelse
       </tbody>
     </table>
+    <div class="table-footer-bar" id="activityTableFooter">
+      <div style="font-size: 12.5px; font-weight: 600; color: var(--slate-muted);" id="activityShowingText">
+        Showing 1 to {{ min(10, count($recentActivities)) }} of {{ count($recentActivities) }} entries
+      </div>
+      <div style="display: flex; gap: 4px; align-items: center;" id="activityPaginationControls"></div>
+    </div>
   </div>
 
   <!-- COMPANY ADMISSIONS DIRECTORY -->
@@ -2087,7 +2108,7 @@
       <h3><i class="bx bx-building-house" style="color:var(--emerald-primary);"></i> Provision New Tenant Company</h3>
       <p>Initialize a new isolated tenant company, provision its database, run migrations, and assign an admin.</p>
       
-      <form method="POST" action="{{ route('superadmin.companies.store') }}" enctype="multipart/form-data">
+      <form method="POST" action="{{ route('superadmin.companies.store') }}" enctype="multipart/form-data" id="dashboardProvisionCompanyForm">
         @csrf
         <div class="form-group">
           <label>Company Name <span style="color:var(--rose-accent);">*</span></label>
@@ -2095,7 +2116,8 @@
         </div>
         <div class="form-group">
           <label>Company Email <span style="color:var(--rose-accent);">*</span></label>
-          <input type="email" name="email" value="{{ old('email') }}" required placeholder="contact@acme.com" />
+          <input type="email" name="email" id="modal_company_email" value="{{ old('email') }}" required placeholder="contact@acme.com" />
+          <div id="modal_company_email_error" class="field-error-feedback"></div>
         </div>
         <div class="form-group">
           <label>Subdomain / Tenant Identifier</label>
@@ -2113,7 +2135,7 @@
               }
           @endphp
           <div style="display: flex;">
-            <select id="modal_company_country_code" style="width: 90px; flex-shrink: 0; padding: 10px 8px; border: 1px solid var(--border-subtle, #cbd5e1); border-right: 0; border-top-left-radius: 8px; border-bottom-left-radius: 8px; font-size: 13px; background-color: var(--bg-surface, #f8fafc); outline: none;">
+            <select id="modal_company_country_code" class="country-code-select" style="width: 100px; flex-shrink: 0; padding: 10px 8px; border: 1px solid var(--border-subtle, #cbd5e1); border-right: 0; border-top-left-radius: 8px; border-bottom-left-radius: 8px; font-size: 13px; outline: none;">
                 <option value="+91" {{ $countryCode == '+91' ? 'selected' : '' }}>+91 (IN)</option>
                 <option value="+1" {{ $countryCode == '+1' ? 'selected' : '' }}>+1 (US)</option>
                 <option value="+44" {{ $countryCode == '+44' ? 'selected' : '' }}>+44 (UK)</option>
@@ -2126,21 +2148,7 @@
             <input type="text" id="modal_company_phone_display" value="{{ $phoneNum }}" placeholder="555 0199" style="border-top-left-radius: 0; border-bottom-left-radius: 0; width: 100%;" />
             <input type="hidden" name="phone" id="modal_company_phone_hidden" value="{{ $fullPhone }}">
           </div>
-          <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const ccDash = document.getElementById('modal_company_country_code');
-                const mobDash = document.getElementById('modal_company_phone_display');
-                const hiddenDash = document.getElementById('modal_company_phone_hidden');
-                function updateDashPhone() {
-                    const num = mobDash.value.replace(/[^0-9]/g, '');
-                    hiddenDash.value = num ? ccDash.value + ' ' + num : '';
-                }
-                if(ccDash && mobDash) {
-                    ccDash.addEventListener('change', updateDashPhone);
-                    mobDash.addEventListener('input', updateDashPhone);
-                }
-            });
-          </script>
+          <div id="modal_company_phone_error" class="field-error-feedback"></div>
         </div>
         <div class="form-group">
           <label>Company Address</label>
@@ -2199,11 +2207,19 @@
         </div>
         <div class="form-group">
           <label>Admin Login Email <span style="color:var(--rose-accent);">*</span></label>
-          <input type="email" name="admin_email" value="{{ old('admin_email') }}" required placeholder="admin@acme.com" />
+          <input type="email" name="admin_email" id="modal_company_admin_email" value="{{ old('admin_email') }}" required placeholder="admin@acme.com" />
+          <div id="modal_company_admin_email_error" class="field-error-feedback"></div>
         </div>
         <div class="form-group">
           <label>Admin Password <span style="color:var(--rose-accent);">*</span></label>
-          <input type="password" name="admin_password" required placeholder="••••••••" />
+          <div style="position: relative;">
+            <input type="password" name="admin_password" id="modal_admin_password" required minlength="8" maxlength="128" placeholder="•••••••• (min 8 chars)" style="padding-right: 40px;" />
+            <button type="button" onclick="toggleDashboardPassword('modal_admin_password', this)" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--slate-muted); font-size: 18px;" title="Show/Hide Password">
+              <i class="bx bx-show"></i>
+            </button>
+          </div>
+          <div style="font-size: 11px; color: var(--slate-muted); margin-top: 4px;">Must be between 8 and 128 characters.</div>
+          <div id="modal_admin_password_error" class="field-error-feedback"></div>
         </div>
         <div class="form-group">
           <label>Admin Profile Picture</label>
@@ -2378,6 +2394,167 @@
       });
     }
 
+    // Activity Logs Table Controls (Show entries: 10, 20, 30, search, pagination, CSV export)
+    let activityPageSize = 10;
+    let activityCurrentPage = 1;
+
+    function renderActivityTable() {
+      const allRows = Array.from(document.querySelectorAll('#activityLogsTableBody tr.activity-log-row'));
+      const emptyRow = document.querySelector('#activityLogsTableBody tr.no-activity-row');
+      const query = (document.getElementById('activityTableSearch')?.value || '').toLowerCase().trim();
+
+      const matchedRows = allRows.filter(row => {
+        if (!query) return true;
+        return row.innerText.toLowerCase().includes(query);
+      });
+
+      const totalMatched = matchedRows.length;
+      const totalPages = Math.ceil(totalMatched / activityPageSize) || 1;
+
+      if (activityCurrentPage > totalPages) activityCurrentPage = totalPages;
+      if (activityCurrentPage < 1) activityCurrentPage = 1;
+
+      const startIndex = (activityCurrentPage - 1) * activityPageSize;
+      const endIndex = Math.min(startIndex + activityPageSize, totalMatched);
+
+      allRows.forEach(row => row.style.display = 'none');
+
+      for (let i = startIndex; i < endIndex; i++) {
+        if (matchedRows[i]) {
+          matchedRows[i].style.display = '';
+        }
+      }
+
+      if (emptyRow) {
+        emptyRow.style.display = totalMatched === 0 ? '' : 'none';
+      }
+
+      const showingText = document.getElementById('activityShowingText');
+      if (showingText) {
+        if (totalMatched === 0) {
+          showingText.innerHTML = 'Showing 0 to 0 of 0 entries';
+        } else {
+          showingText.innerHTML = `Showing ${startIndex + 1} to ${endIndex} of ${totalMatched} entries`;
+        }
+      }
+
+      renderActivityPagination(totalPages);
+    }
+
+    function renderActivityPagination(totalPages) {
+      const container = document.getElementById('activityPaginationControls');
+      if (!container) return;
+
+      container.innerHTML = '';
+      if (totalPages <= 1) return;
+
+      const prevBtn = document.createElement('button');
+      prevBtn.type = 'button';
+      prevBtn.className = 'btn-chart';
+      prevBtn.innerHTML = '<i class="bx bx-chevron-left"></i>';
+      prevBtn.style.padding = '4px 8px';
+      prevBtn.style.borderRadius = '6px';
+      prevBtn.style.cursor = activityCurrentPage === 1 ? 'not-allowed' : 'pointer';
+      prevBtn.style.opacity = activityCurrentPage === 1 ? '0.5' : '1';
+      prevBtn.disabled = activityCurrentPage === 1;
+      prevBtn.onclick = () => {
+        if (activityCurrentPage > 1) {
+          activityCurrentPage--;
+          renderActivityTable();
+        }
+      };
+      container.appendChild(prevBtn);
+
+      let startP = Math.max(1, activityCurrentPage - 2);
+      let endP = Math.min(totalPages, startP + 4);
+      if (endP - startP < 4) {
+        startP = Math.max(1, endP - 4);
+      }
+
+      for (let p = startP; p <= endP; p++) {
+        const pageBtn = document.createElement('button');
+        pageBtn.type = 'button';
+        pageBtn.className = 'btn-chart' + (p === activityCurrentPage ? ' active' : '');
+        pageBtn.textContent = p;
+        pageBtn.style.padding = '4px 10px';
+        pageBtn.style.borderRadius = '6px';
+        pageBtn.style.fontWeight = '700';
+        pageBtn.style.cursor = 'pointer';
+        const targetP = p;
+        pageBtn.onclick = () => {
+          activityCurrentPage = targetP;
+          renderActivityTable();
+        };
+        container.appendChild(pageBtn);
+      }
+
+      const nextBtn = document.createElement('button');
+      nextBtn.type = 'button';
+      nextBtn.className = 'btn-chart';
+      nextBtn.innerHTML = '<i class="bx bx-chevron-right"></i>';
+      nextBtn.style.padding = '4px 8px';
+      nextBtn.style.borderRadius = '6px';
+      nextBtn.style.cursor = activityCurrentPage === totalPages ? 'not-allowed' : 'pointer';
+      nextBtn.style.opacity = activityCurrentPage === totalPages ? '0.5' : '1';
+      nextBtn.disabled = activityCurrentPage === totalPages;
+      nextBtn.onclick = () => {
+        if (activityCurrentPage < totalPages) {
+          activityCurrentPage++;
+          renderActivityTable();
+        }
+      };
+      container.appendChild(nextBtn);
+    }
+
+    function changeActivityEntriesPerPage(val) {
+      activityPageSize = parseInt(val) || 10;
+      activityCurrentPage = 1;
+      renderActivityTable();
+    }
+
+    function filterActivityLogs() {
+      activityCurrentPage = 1;
+      renderActivityTable();
+    }
+
+    function exportActivityLogsToCSV() {
+      const allRows = Array.from(document.querySelectorAll('#activityLogsTableBody tr.activity-log-row'));
+      if (allRows.length === 0) {
+        alert('No activity log entries to export.');
+        return;
+      }
+
+      const headers = ['Timestamp', 'Company', 'Action', 'IP Address', 'Status'];
+      const csvRows = [headers.join(',')];
+
+      allRows.forEach(row => {
+        const cols = row.querySelectorAll('td');
+        if (cols.length >= 5) {
+          const timestamp = '"' + (cols[0].innerText || '').replace(/"/g, '""').trim() + '"';
+          const company = '"' + (cols[1].innerText || '').replace(/"/g, '""').trim() + '"';
+          const action = '"' + (cols[2].innerText || '').replace(/"/g, '""').trim() + '"';
+          const ip = '"' + (cols[3].innerText || '').replace(/"/g, '""').trim() + '"';
+          const status = '"' + (cols[4].innerText || '').replace(/"/g, '""').trim() + '"';
+          csvRows.push([timestamp, company, action, ip, status].join(','));
+        }
+      });
+
+      const csvContent = '\uFEFF' + csvRows.join('\r\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', 'activity_logs_export_' + new Date().toISOString().slice(0, 10) + '.csv');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      renderActivityTable();
+    });
+
     function openStatusModal(companyId, companyName, currentStatus) {
       const modal = document.getElementById('statusModal');
       document.getElementById('statusModalCompanyName').innerText = companyName;
@@ -2390,47 +2567,97 @@
     }
 
     // Dropdown Positioning and Viewport Alignment
+    let activeDropdownMenu = null;
+    let activeDropdownParent = null;
+    let activeDropdownNextSibling = null;
+
+    function closeAllDropdowns() {
+      if (activeDropdownMenu) {
+        activeDropdownMenu.classList.remove('open');
+        activeDropdownMenu.style.display = 'none';
+        activeDropdownMenu.style.visibility = '';
+        activeDropdownMenu.style.top = '';
+        activeDropdownMenu.style.left = '';
+        activeDropdownMenu.style.right = '';
+        activeDropdownMenu.style.bottom = '';
+        activeDropdownMenu.style.maxHeight = '';
+        activeDropdownMenu.style.overflowY = '';
+
+        if (activeDropdownParent) {
+          if (activeDropdownNextSibling && activeDropdownNextSibling.parentNode === activeDropdownParent) {
+            activeDropdownParent.insertBefore(activeDropdownMenu, activeDropdownNextSibling);
+          } else {
+            activeDropdownParent.appendChild(activeDropdownMenu);
+          }
+        }
+        activeDropdownMenu._triggerBtn = null;
+        activeDropdownMenu = null;
+        activeDropdownParent = null;
+        activeDropdownNextSibling = null;
+      }
+
+      document.querySelectorAll('.dropdown-menu-custom.open').forEach(menu => {
+        menu.classList.remove('open');
+        menu.style.display = 'none';
+      });
+    }
+
     function positionDropdownMenu(btn, menu) {
       if (!btn || !menu) return;
+
       menu.style.position = 'fixed';
       menu.style.zIndex = '999999';
-      menu.style.visibility = 'hidden';
       menu.style.display = 'block';
+      menu.style.visibility = 'hidden';
+      menu.style.top = '0px';
+      menu.style.left = '0px';
+      menu.style.right = 'auto';
+      menu.style.bottom = 'auto';
+      menu.style.margin = '0';
 
-      const rect = btn.getBoundingClientRect();
+      const btnRect = btn.getBoundingClientRect();
       const menuHeight = menu.offsetHeight || 260;
       const menuWidth = menu.offsetWidth || 215;
       const viewportHeight = window.innerHeight;
       const viewportWidth = window.innerWidth;
 
-      const spaceBelow = viewportHeight - rect.bottom;
-      const spaceAbove = rect.top;
+      const gap = 6;
+      const padding = 12;
 
-      if (spaceBelow < menuHeight + 12 && spaceAbove > spaceBelow) {
-        menu.style.top = 'auto';
-        menu.style.bottom = Math.max(8, viewportHeight - rect.top + 6) + 'px';
+      const spaceBelow = viewportHeight - btnRect.bottom - gap - padding;
+      const spaceAbove = btnRect.top - gap - padding;
+
+      let top;
+      if (spaceBelow < menuHeight && spaceAbove >= menuHeight) {
+        top = btnRect.top - menuHeight - gap;
+      } else if (spaceBelow >= menuHeight) {
+        top = btnRect.bottom + gap;
       } else {
-        menu.style.top = Math.max(8, rect.bottom + 6) + 'px';
-        menu.style.bottom = 'auto';
+        if (spaceAbove > spaceBelow) {
+          top = Math.max(padding, btnRect.top - menuHeight - gap);
+        } else {
+          top = btnRect.bottom + gap;
+        }
       }
 
-      const rightOffset = viewportWidth - rect.right;
-      if (rect.right - menuWidth < 12) {
-        menu.style.left = '12px';
-        menu.style.right = 'auto';
-      } else {
-        menu.style.right = Math.max(12, rightOffset) + 'px';
-        menu.style.left = 'auto';
+      top = Math.max(padding, Math.min(top, viewportHeight - menuHeight - padding));
+
+      let left = btnRect.right - menuWidth;
+      if (left < padding) {
+        left = padding;
+      }
+      if (left + menuWidth > viewportWidth - padding) {
+        left = Math.max(padding, viewportWidth - menuWidth - padding);
       }
 
+      menu.style.top = Math.round(top) + 'px';
+      menu.style.left = Math.round(left) + 'px';
+      menu.style.right = 'auto';
+      menu.style.bottom = 'auto';
+      menu.style.maxHeight = `calc(100vh - ${padding * 2}px)`;
+      menu.style.overflowY = 'auto';
+      menu.classList.add('open');
       menu.style.visibility = 'visible';
-    }
-
-    function closeAllDropdowns() {
-      document.querySelectorAll('.dropdown-menu-custom').forEach(menu => {
-        menu.classList.remove('open');
-        menu.style.display = '';
-      });
     }
 
     document.addEventListener('click', function(e) {
@@ -2438,20 +2665,35 @@
       if (toggleBtn) {
         e.preventDefault();
         e.stopPropagation();
-        const menu = toggleBtn.nextElementSibling;
-        if (menu) {
-          const isOpen = menu.classList.contains('open');
+
+        if (activeDropdownMenu && activeDropdownMenu._triggerBtn === toggleBtn) {
           closeAllDropdowns();
-          if (!isOpen) {
-            menu.classList.add('open');
-            positionDropdownMenu(toggleBtn, menu);
-          }
+          return;
+        }
+
+        const container = toggleBtn.closest('.dropdown-container');
+        const menu = container ? container.querySelector('.dropdown-menu-custom') : toggleBtn.nextElementSibling;
+        if (menu) {
+          closeAllDropdowns();
+
+          activeDropdownMenu = menu;
+          activeDropdownParent = menu.parentElement;
+          activeDropdownNextSibling = menu.nextSibling;
+          activeDropdownMenu._triggerBtn = toggleBtn;
+
+          document.body.appendChild(menu);
+          positionDropdownMenu(toggleBtn, menu);
         }
         return;
       }
 
-      if (e.target.closest('.dropdown-menu-custom a, .dropdown-menu-custom button')) {
-        closeAllDropdowns();
+      const actionItem = e.target.closest('.dropdown-menu-custom a, .dropdown-menu-custom button');
+      if (actionItem) {
+        const form = actionItem.closest('form');
+        if (form && actionItem.type === 'submit') {
+          form.submit();
+        }
+        setTimeout(closeAllDropdowns, 10);
         return;
       }
 
@@ -2726,6 +2968,260 @@
         'modal_admin_profile_preview_container', 'modal_admin_profile_preview_img',
         'modal_admin_profile_filename', 'modal_admin_profile_remove_btn'
       );
+
+      // Dashboard Modal Strict Email & Phone Validation
+      function getModalPhoneRule(countryCode) {
+        switch (countryCode) {
+          case '+91': return { min: 10, max: 10, regex: /^[6-9]\d{9}$/, placeholder: '9876543210', error: 'India phone number must be exactly 10 digits starting with 6, 7, 8, or 9.' };
+          case '+1':  return { min: 10, max: 10, regex: /^[2-9]\d{9}$/, placeholder: '5550192831', error: 'US/Canada phone number must be exactly 10 digits (e.g. 5550192831).' };
+          case '+44': return { min: 10, max: 11, regex: /^[1-9]\d{9,10}$/, placeholder: '7911123456', error: 'UK phone number must be 10 to 11 digits.' };
+          case '+61': return { min: 9,  max: 10, regex: /^[1-9]\d{8,9}$/, placeholder: '412345678', error: 'Australia phone number must be 9 to 10 digits.' };
+          case '+971':return { min: 9,  max: 9,  regex: /^[2-9]\d{8}$/, placeholder: '501234567', error: 'UAE phone number must be 9 digits (e.g. 501234567).' };
+          case '+81': return { min: 10, max: 10, regex: /^[1-9]\d{9}$/, placeholder: '9012345678', error: 'Japan phone number must be 10 digits.' };
+          case '+49': return { min: 10, max: 11, regex: /^[1-9]\d{9,10}$/, placeholder: '15123456789', error: 'Germany phone number must be 10 to 11 digits.' };
+          case '+33': return { min: 9,  max: 9,  regex: /^[1-9]\d{8}$/, placeholder: '612345678', error: 'France phone number must be 9 digits.' };
+          default:    return { min: 7,  max: 15, regex: /^\d{7,15}$/, placeholder: '1234567890', error: 'Phone number must be between 7 and 15 digits.' };
+        }
+      }
+
+      function validateModalEmailFormat(email, isRequired = true) {
+        const val = (email || '').trim();
+        if (!val) {
+          return isRequired ? { valid: false, message: 'Email address is required.' } : { valid: true };
+        }
+        if (/\s/.test(val)) {
+          return { valid: false, message: 'Email address cannot contain spaces.' };
+        }
+        if (!val.includes('@')) {
+          return { valid: false, message: "Email address must include an '@' symbol." };
+        }
+        const parts = val.split('@');
+        if (parts.length !== 2) {
+          return { valid: false, message: "Email address must contain only one '@' symbol." };
+        }
+        const [local, domain] = parts;
+        if (!local) return { valid: false, message: "Missing username before '@'." };
+        if (!domain) return { valid: false, message: "Missing domain after '@'." };
+        if (!domain.includes('.')) return { valid: false, message: "Domain name must include a valid extension (e.g. .com)." };
+        if (domain.startsWith('.') || domain.endsWith('.')) return { valid: false, message: "Domain name cannot start or end with a dot." };
+        if (domain.includes('..')) return { valid: false, message: "Domain name cannot contain consecutive dots." };
+        const strictRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (!strictRegex.test(val)) {
+          return { valid: false, message: 'Please enter a valid email address (e.g. name@company.com).' };
+        }
+        return { valid: true };
+      }
+
+      function setupModalPhoneValidator(countrySelectId, phoneInputId, hiddenInputId, errorDivId) {
+        const countrySelect = document.getElementById(countrySelectId);
+        const phoneInput = document.getElementById(phoneInputId);
+        const hiddenInput = document.getElementById(hiddenInputId);
+        const errorDiv = document.getElementById(errorDivId);
+        if (!countrySelect || !phoneInput) return null;
+
+        function updateRule() {
+          const rule = getModalPhoneRule(countrySelect.value);
+          phoneInput.placeholder = rule.placeholder;
+          phoneInput.maxLength = rule.max;
+        }
+
+        phoneInput.addEventListener('keydown', function(e) {
+          if (['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(e.key) ||
+              ((e.ctrlKey || e.metaKey) && ['a', 'c', 'v', 'x', 'z'].includes(e.key.toLowerCase()))) {
+            return;
+          }
+          if (!/^\d$/.test(e.key)) {
+            e.preventDefault();
+          }
+        });
+
+        function syncValue() {
+          phoneInput.value = phoneInput.value.replace(/\D/g, '');
+          const rule = getModalPhoneRule(countrySelect.value);
+          if (phoneInput.value.length > rule.max) {
+            phoneInput.value = phoneInput.value.substring(0, rule.max);
+          }
+          if (hiddenInput) {
+            hiddenInput.value = phoneInput.value ? countrySelect.value + ' ' + phoneInput.value : '';
+          }
+        }
+
+        phoneInput.addEventListener('input', function() {
+          syncValue();
+          validate(false);
+        });
+
+        countrySelect.addEventListener('change', function() {
+          updateRule();
+          syncValue();
+          validate(false);
+        });
+
+        phoneInput.addEventListener('blur', function() {
+          validate(true);
+        });
+
+        function validate(showEmptyError = true) {
+          const val = phoneInput.value.trim();
+          if (!val) {
+            clearError();
+            return true;
+          }
+          const rule = getModalPhoneRule(countrySelect.value);
+          if (!rule.regex.test(val)) {
+            showError(rule.error);
+            return false;
+          }
+          clearError();
+          return true;
+        }
+
+        function showError(msg) {
+          if (errorDiv) {
+            errorDiv.textContent = msg;
+            errorDiv.classList.add('visible');
+          }
+          phoneInput.classList.add('is-invalid');
+        }
+
+        function clearError() {
+          if (errorDiv) {
+            errorDiv.textContent = '';
+            errorDiv.classList.remove('visible');
+          }
+          phoneInput.classList.remove('is-invalid');
+        }
+
+        updateRule();
+        syncValue();
+        return { validate, input: phoneInput };
+      }
+
+      function setupModalEmailValidator(inputId, errorDivId, isRequired = true) {
+        const input = document.getElementById(inputId);
+        const errorDiv = document.getElementById(errorDivId);
+        if (!input) return null;
+
+        function validate(showEmptyError = true) {
+          const val = input.value.trim();
+          if (!val && !showEmptyError && !isRequired) {
+            clearError();
+            return true;
+          }
+          const res = validateModalEmailFormat(val, isRequired);
+          if (!res.valid) {
+            if (val || showEmptyError) {
+              showError(res.message);
+              return false;
+            }
+            return false;
+          }
+          clearError();
+          return true;
+        }
+
+        function showError(msg) {
+          if (errorDiv) {
+            errorDiv.textContent = msg;
+            errorDiv.classList.add('visible');
+          }
+          input.classList.add('is-invalid');
+        }
+
+        function clearError() {
+          if (errorDiv) {
+            errorDiv.textContent = '';
+            errorDiv.classList.remove('visible');
+          }
+          input.classList.remove('is-invalid');
+        }
+
+        input.addEventListener('input', function() {
+          if (/\s/.test(this.value)) {
+            this.value = this.value.replace(/\s+/g, '');
+          }
+          validate(false);
+        });
+
+        input.addEventListener('blur', function() {
+          validate(true);
+        });
+
+        return { validate, input };
+      }
+
+      window.toggleDashboardPassword = function(inputId, btnEl) {
+        const input = document.getElementById(inputId);
+        if (!input) return;
+        const icon = btnEl?.querySelector('i');
+        if (input.type === 'password') {
+          input.type = 'text';
+          if (icon) { icon.classList.remove('bx-show'); icon.classList.add('bx-hide'); }
+        } else {
+          input.type = 'password';
+          if (icon) { icon.classList.remove('bx-hide'); icon.classList.add('bx-show'); }
+        }
+      };
+
+      function validateModalAdminPassword(showError = true) {
+        const input = document.getElementById('modal_admin_password');
+        const errorDiv = document.getElementById('modal_admin_password_error');
+        if (!input) return true;
+        const val = input.value;
+        if (!val) {
+          if (showError) {
+            if (errorDiv) { errorDiv.textContent = 'Admin password is required.'; errorDiv.classList.add('visible'); errorDiv.style.display = 'block'; }
+            input.classList.add('is-invalid');
+          }
+          return false;
+        }
+        if (val.length < 8) {
+          if (showError) {
+            if (errorDiv) { errorDiv.textContent = 'Password must be at least 8 characters long.'; errorDiv.classList.add('visible'); errorDiv.style.display = 'block'; }
+            input.classList.add('is-invalid');
+          }
+          return false;
+        }
+        if (val.length > 128) {
+          if (showError) {
+            if (errorDiv) { errorDiv.textContent = 'Password cannot exceed 128 characters.'; errorDiv.classList.add('visible'); errorDiv.style.display = 'block'; }
+            input.classList.add('is-invalid');
+          }
+          return false;
+        }
+        if (errorDiv) { errorDiv.textContent = ''; errorDiv.classList.remove('visible'); errorDiv.style.display = 'none'; }
+        input.classList.remove('is-invalid');
+        return true;
+      }
+
+      const modalPwdInput = document.getElementById('modal_admin_password');
+      if (modalPwdInput) {
+        modalPwdInput.addEventListener('input', function() { validateModalAdminPassword(false); });
+        modalPwdInput.addEventListener('blur', function() { validateModalAdminPassword(true); });
+      }
+
+      const modalPhoneVal = setupModalPhoneValidator('modal_company_country_code', 'modal_company_phone_display', 'modal_company_phone_hidden', 'modal_company_phone_error');
+      const modalEmailVal = setupModalEmailValidator('modal_company_email', 'modal_company_email_error', true);
+      const modalAdminEmailVal = setupModalEmailValidator('modal_company_admin_email', 'modal_company_admin_email_error', true);
+
+      const modalForm = document.getElementById('dashboardProvisionCompanyForm');
+      if (modalForm) {
+        modalForm.addEventListener('submit', function(e) {
+          const isEmailValid = modalEmailVal ? modalEmailVal.validate(true) : true;
+          const isAdminEmailValid = modalAdminEmailVal ? modalAdminEmailVal.validate(true) : true;
+          const isPhoneValid = modalPhoneVal ? modalPhoneVal.validate(true) : true;
+          const isPasswordValid = validateModalAdminPassword(true);
+
+          if (!isEmailValid || !isAdminEmailValid || !isPhoneValid || !isPasswordValid) {
+            e.preventDefault();
+            const firstInvalid = modalForm.querySelector('input.is-invalid, select.is-invalid');
+            if (firstInvalid) {
+              firstInvalid.focus();
+            }
+            return false;
+          }
+        });
+      }
     });
   </script>
 @endpush

@@ -91,7 +91,7 @@ class SuperAdminController extends Controller
         $companyOptions = Company::orderBy('name')->get();
         $recentAdmins = User::where('role', 'admin')->with('company')->latest()->take(6)->get();
         $recentInvoices = Invoice::with('company')->latest()->take(5)->get();
-        $recentActivities = AuditLog::with(['company', 'user'])->latest()->take(8)->get();
+        $recentActivities = AuditLog::with(['company', 'user'])->latest()->take(100)->get();
 
         return view('superadmin.dashboard', compact(
             'stats',
@@ -236,10 +236,15 @@ class SuperAdminController extends Controller
             'max_storage_mb' => ['nullable', 'integer', 'min:0'],
             'admin_name' => ['required', 'string', 'max:255'],
             'admin_email' => ['required', 'email', 'max:255', 'unique:users,email'],
-            'admin_password' => ['required', 'string', 'min:8'],
+            'admin_password' => ['required', 'string', 'min:8', 'max:128'],
+            'admin_password_confirmation' => ['nullable', 'string', 'same:admin_password'],
             'admin_profile_image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg,webp', 'max:5120'],
             'module_ids' => ['array'],
             'module_ids.*' => ['exists:modules,id'],
+        ], [
+            'admin_password.min' => 'Admin password must be at least 8 characters long.',
+            'admin_password.max' => 'Admin password may not be greater than 128 characters.',
+            'admin_password_confirmation.same' => 'Password confirmation does not match.',
         ]);
 
         $logoPath = null;
@@ -373,8 +378,14 @@ class SuperAdminController extends Controller
         $data = $request->validate([
             'company_id' => ['required', 'exists:companies,id'],
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', 'string', 'min:8'],
+            'email' => ['required', 'string', 'max:255', 'email:rfc', 'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/', 'unique:users,email'],
+            'password' => ['required', 'string', 'min:8', 'max:128'],
+            'password_confirmation' => ['nullable', 'string', 'same:password'],
+        ], [
+            'email.regex' => 'Please enter a valid email address (e.g. admin@company.com).',
+            'password.min' => 'Password must be at least 8 characters long.',
+            'password.max' => 'Password may not be greater than 128 characters.',
+            'password_confirmation.same' => 'Password confirmation does not match.',
         ]);
 
         $admin = User::create([
@@ -401,10 +412,16 @@ class SuperAdminController extends Controller
         $data = $request->validate([
             'company_id' => ['required', 'exists:companies,id'],
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($admin->id)],
-            'password' => ['nullable', 'string', 'min:8'],
+            'email' => ['required', 'string', 'max:255', 'email:rfc', 'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/', Rule::unique('users', 'email')->ignore($admin->id)],
+            'password' => ['nullable', 'string', 'min:8', 'max:128'],
+            'password_confirmation' => ['nullable', 'string', 'same:password'],
             'login_allowed' => ['nullable', 'boolean'],
             'email_notifications' => ['nullable', 'boolean'],
+        ], [
+            'email.regex' => 'Please enter a valid email address (e.g. admin@company.com).',
+            'password.min' => 'Password must be at least 8 characters long.',
+            'password.max' => 'Password may not be greater than 128 characters.',
+            'password_confirmation.same' => 'Password confirmation does not match.',
         ]);
 
         $oldValues = $admin->only(['company_id', 'name', 'email', 'login_allowed', 'email_notifications']);
@@ -1186,14 +1203,26 @@ class SuperAdminController extends Controller
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email'],
-            'personal_email' => ['nullable', 'email'],
-            'mobile' => ['nullable', 'string', 'max:20'],
+            'email' => ['required', 'string', 'max:255', 'email:rfc', 'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/'],
+            'personal_email' => ['nullable', 'string', 'max:255', 'email:rfc', 'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/'],
+            'mobile' => [
+                'nullable',
+                'string',
+                'max:30',
+                function ($attribute, $value, $fail) {
+                    if (!empty($value) && !\App\Support\CountryPhone::validateFormattedNumber($value)) {
+                        $fail(\App\Support\CountryPhone::getValidationErrorMessage($value));
+                    }
+                }
+            ],
             'role' => ['required', 'string', 'max:100'],
             'company_id' => ['nullable', 'integer'],
             'skills' => ['nullable', 'string'],
             'experience' => ['nullable', 'string', 'max:100'],
             'joining_date' => ['nullable', 'date'],
+        ], [
+            'email.regex' => 'Please enter a valid login email address (e.g. developer@company.com).',
+            'personal_email.regex' => 'Please enter a valid personal email address (e.g. name@gmail.com).',
         ]);
 
         $loginEmail = strtolower(trim($data['email']));
@@ -1306,13 +1335,25 @@ class SuperAdminController extends Controller
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'unique:users,email,' . $id],
-            'personal_email' => ['nullable', 'email'],
-            'mobile' => ['nullable', 'string', 'max:20'],
+            'email' => ['required', 'string', 'max:255', 'email:rfc', 'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/', 'unique:users,email,' . $id],
+            'personal_email' => ['nullable', 'string', 'max:255', 'email:rfc', 'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/'],
+            'mobile' => [
+                'nullable',
+                'string',
+                'max:30',
+                function ($attribute, $value, $fail) {
+                    if (!empty($value) && !\App\Support\CountryPhone::validateFormattedNumber($value)) {
+                        $fail(\App\Support\CountryPhone::getValidationErrorMessage($value));
+                    }
+                }
+            ],
             'role' => ['required', 'string', 'max:100'],
             'company_id' => ['nullable', 'integer'],
             'skills' => ['nullable', 'string'],
             'experience' => ['nullable', 'string'],
+        ], [
+            'email.regex' => 'Please enter a valid login email address (e.g. developer@company.com).',
+            'personal_email.regex' => 'Please enter a valid personal email address (e.g. name@gmail.com).',
         ]);
 
         $upCompId = !empty($data['company_id']) ? $data['company_id'] : $user->company_id;
@@ -1474,6 +1515,15 @@ class SuperAdminController extends Controller
         config(['mail.mailers.smtp.timeout' => 5]);
 
         $this->authorizeSuperAdmin();
+
+        $request->validate([
+            'password' => ['nullable', 'string', 'min:8', 'max:128'],
+            'password_confirmation' => ['nullable', 'string', 'same:password'],
+        ], [
+            'password.min' => 'Password must be at least 8 characters long.',
+            'password.max' => 'Password may not be greater than 128 characters.',
+            'password_confirmation.same' => 'Password confirmation does not match.',
+        ]);
 
         $developer = User::findOrFail($id);
         $newPassword = $request->input('password') ?: \Illuminate\Support\Str::random(10);
@@ -1707,8 +1757,17 @@ class SuperAdminController extends Controller
 
         $data = $request->validate([
             'name'                => ['required', 'string', 'max:255'],
-            'email'               => ['required', 'email', 'max:255'],
-            'mobile'              => ['nullable', 'string', 'max:50'],
+            'email'               => ['required', 'string', 'max:255', 'email:rfc', 'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/'],
+            'mobile'              => [
+                'nullable',
+                'string',
+                'max:50',
+                function ($attribute, $value, $fail) {
+                    if (!empty($value) && !\App\Support\CountryPhone::validateFormattedNumber($value)) {
+                        $fail(\App\Support\CountryPhone::getValidationErrorMessage($value));
+                    }
+                }
+            ],
             'gender'              => ['nullable', 'string', 'max:20'],
             'date_of_birth'       => ['nullable', 'date'],
             'marital_status'      => ['nullable', 'string', 'max:50'],
@@ -1720,6 +1779,8 @@ class SuperAdminController extends Controller
             'google_calendar'     => ['nullable', 'boolean'],
             'profile_image'       => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg,webp', 'max:5120'],
             'govt_id_card'        => ['nullable', 'file', 'mimes:pdf,jpeg,png,jpg', 'max:10240'],
+        ], [
+            'email.regex'         => 'Please enter a valid email address (e.g. name@company.com).',
         ]);
 
         // Email uniqueness check safely matching model guard

@@ -41,7 +41,10 @@ class AuthController extends Controller
     {
         $credentials = $request->validate([
             'email'    => ['required', 'email'],
-            'password' => ['required', 'string'],
+            'password' => ['required', 'string', 'min:8', 'max:128'],
+        ], [
+            'password.min' => 'Password must be at least 8 characters long.',
+            'password.max' => 'Password may not be greater than 128 characters.',
         ]);
 
         $remember = $request->boolean('remember');

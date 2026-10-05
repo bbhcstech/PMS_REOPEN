@@ -23,6 +23,7 @@ class Company extends Model
         'max_users', 'max_projects', 'max_clients', 'max_storage_mb',
         'letterhead_file', 'letterhead_original_name',
         'letterhead_file_type', 'letterhead_uploaded_at',
+        'manually_suspended',
     ];
 
     protected static function booted(): void
@@ -52,7 +53,38 @@ class Company extends Model
         'settings'               => 'array',
         'trial_ends_at'          => 'datetime',
         'letterhead_uploaded_at' => 'datetime',
+        'manually_suspended'     => 'boolean',
     ];
+
+    public function getDisplayNameAttribute(): string
+    {
+        return $this->name ?: ($this->short_name ?: 'Workspace');
+    }
+
+    public function getBrandNameAttribute(): string
+    {
+        return $this->name ?: 'Workspace';
+    }
+
+    public function logoUrl(): ?string
+    {
+        return $this->logo ? asset($this->logo) : null;
+    }
+
+    public function faviconUrl(): ?string
+    {
+        return $this->favicon ? asset($this->favicon) : null;
+    }
+
+    public function hasLetterhead(): bool
+    {
+        return !empty($this->letterhead_file);
+    }
+
+    public function letterheadUrl(): ?string
+    {
+        return $this->letterhead_file ? asset($this->letterhead_file) : null;
+    }
 
     public function subscriptions(): HasMany
     {
@@ -81,7 +113,7 @@ class Company extends Model
 
     public function isActive(): bool
     {
-        return $this->status === 'active';
+        return strtolower((string)$this->status) === 'active' && !$this->isSuspended() && !$this->isExpired();
     }
 
     public function isOnTrial(): bool
@@ -105,13 +137,28 @@ class Company extends Model
 
     public function isSuspended(): bool
     {
-        if (strtolower($this->status ?? '') === 'suspended') {
+        if (strtolower((string)$this->status) === 'suspended' || !empty($this->manually_suspended)) {
             return true;
         }
 
         try {
             if (app()->bound(\App\Services\SubscriptionService::class)) {
                 return app(\App\Services\SubscriptionService::class)->isSuspended($this);
+            }
+        } catch (\Throwable $e) {}
+
+        return false;
+    }
+
+    public function isExpired(): bool
+    {
+        if (strtolower((string)$this->status) === 'expired') {
+            return true;
+        }
+
+        try {
+            if (app()->bound(\App\Services\SubscriptionService::class)) {
+                return app(\App\Services\SubscriptionService::class)->isExpired($this);
             }
         } catch (\Throwable $e) {}
 
@@ -129,7 +176,7 @@ class Company extends Model
 
     public function hasFeature(string $featureSlug): bool
     {
-        if ($this->isSuspended()) {
+        if ($this->isSuspended() || $this->isExpired() || in_array(strtolower((string)$this->status), ['suspended', 'expired'], true)) {
             return false;
         }
 
