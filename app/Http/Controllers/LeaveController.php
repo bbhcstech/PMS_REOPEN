@@ -491,6 +491,16 @@ class LeaveController extends Controller
 
         $leave->update($leaveUpdates);
 
+        if ($this->isAdmin() && $request->filled('status')) {
+            if ($request->status === 'approved' && $leave->status !== 'approved') {
+                $this->leaveService->approve($leave, Auth::user(), $request->admin_note ?? 'Approved via edit');
+            } elseif ($request->status === 'rejected' && $leave->status !== 'rejected') {
+                $this->leaveService->reject($leave, Auth::user(), $request->rejection_reason ?: 'Rejected via edit');
+            } elseif ($request->status === 'pending' && $leave->status !== 'pending') {
+                $this->leaveService->markPending($leave, Auth::user(), 'Marked pending via edit');
+            }
+        }
+
         $this->leaveService->syncBalanceCounters($employee);
 
         return redirect()->route('leaves.index')->with('success', 'Leave request updated successfully.');
@@ -512,24 +522,36 @@ class LeaveController extends Controller
         } elseif ($request->status === 'rejected') {
             $this->leaveService->reject($leave, Auth::user(), $request->rejection_reason ?: $request->note ?: 'Rejected by HR/Admin.');
         } else {
-            $this->leaveService->markPending($leave, Auth::user(), $request->note ?: 'Status set to pending');
+            $this->leaveService->markPending($leave, Auth::user(), $request->note);
         }
 
+        $leave->refresh();
+
         if ($leave->user) {
-            SystemNotificationService::notifyUser(
-                $leave->user,
-                'Leave ' . ucfirst($leave->status),
-                'Your leave request has been marked ' . ucfirst($leave->status) . '.',
-                route('leaves.show', $leave->id),
-                ['employee_id' => $leave->user_id, 'entity_type' => Leave::class, 'entity_id' => $leave->id, 'type' => 'leave_status_updated', 'icon' => 'fa-calendar-check']
-            );
+            try {
+                SystemNotificationService::notifyUser(
+                    $leave->user,
+                    'Leave ' . ucfirst($leave->status),
+                    'Your leave request has been marked ' . ucfirst($leave->status) . '.',
+                    route('leaves.show', $leave->id),
+                    ['employee_id' => $leave->user_id, 'entity_type' => Leave::class, 'entity_id' => $leave->id, 'type' => 'leave_status_updated', 'icon' => 'fa-calendar-check']
+                );
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning('Leave status notification failed: ' . $e->getMessage());
+            }
         }
 
         if ($request->ajax() || $request->wantsJson()) {
-            return response()->json(['success' => true, 'message' => 'Leave request status updated.']);
+            return response()->json([
+                'success' => true,
+                'status' => $leave->status,
+                'approval_status' => $leave->approval_status,
+                'is_unpaid' => $leave->is_unpaid,
+                'message' => 'Leave request status updated successfully.'
+            ]);
         }
 
-        return back()->with('success', 'Leave request status updated.');
+        return back()->with('success', 'Leave request status updated successfully.');
     }
 
     public function updatePolicy(Request $request)
@@ -744,17 +766,23 @@ class LeaveController extends Controller
             } elseif ($request->status === 'rejected') {
                 $this->leaveService->reject($leave, Auth::user(), 'Bulk rejected');
             } else {
-                $this->leaveService->markPending($leave, Auth::user(), 'Bulk reset to pending');
+                $this->leaveService->markPending($leave, Auth::user(), 'Bulk set to pending');
             }
 
+            $leave->refresh();
+
             if ($leave->user) {
-                SystemNotificationService::notifyUser(
-                    $leave->user,
-                    'Leave ' . ucfirst($leave->status),
-                    'Your leave request has been marked ' . ucfirst($leave->status) . '.',
-                    route('leaves.show', $leave->id),
-                    ['employee_id' => $leave->user_id, 'entity_type' => Leave::class, 'entity_id' => $leave->id, 'type' => 'leave_status_updated', 'icon' => 'fa-calendar-check']
-                );
+                try {
+                    SystemNotificationService::notifyUser(
+                        $leave->user,
+                        'Leave ' . ucfirst($leave->status),
+                        'Your leave request has been marked ' . ucfirst($leave->status) . '.',
+                        route('leaves.show', $leave->id),
+                        ['employee_id' => $leave->user_id, 'entity_type' => Leave::class, 'entity_id' => $leave->id, 'type' => 'leave_status_updated', 'icon' => 'fa-calendar-check']
+                    );
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::warning('Bulk leave notification failed: ' . $e->getMessage());
+                }
             }
         }
 
