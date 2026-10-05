@@ -383,6 +383,13 @@ class UserDocumentController extends Controller
             abort(403, 'Unauthorized document access.');
         }
 
+        // Cross-company isolation check: ensure the document owner belongs to the same tenant company
+        $targetUser = User::find($doc->user_id);
+        $myCompanyId = app(\App\Services\CompanyContext::class)->id() ?? $user->company_id;
+        if ($targetUser && $myCompanyId && $targetUser->company_id && $targetUser->company_id != $myCompanyId) {
+            abort(403, 'Cross-company document access forbidden.');
+        }
+
         $fullPath = public_path($doc->file_path);
         if (!file_exists($fullPath)) {
             $altPath = storage_path('app/public/' . ltrim($doc->file_path, '/'));

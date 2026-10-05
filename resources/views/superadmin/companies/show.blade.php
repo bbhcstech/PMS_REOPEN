@@ -747,10 +747,52 @@
         padding: 16px;
         cursor: pointer;
         transition: all 0.2s ease;
+        position: relative;
     }
-    .plan-card-option:hover, .plan-card-option.selected {
+    .plan-card-option:not(.disabled):hover {
         border-color: var(--primary);
         background: var(--bg-hover);
+        transform: translateY(-1px);
+    }
+    .plan-card-option.selected {
+        border-color: var(--primary) !important;
+        background: var(--bg-hover) !important;
+        box-shadow: 0 0 0 1.5px var(--primary), 0 4px 12px var(--primary-glow);
+    }
+    .plan-card-option.disabled {
+        opacity: 0.45;
+        cursor: not-allowed !important;
+        background: var(--bg-subtle);
+        border: 1.5px dashed var(--border-color);
+        user-select: none;
+    }
+    .plan-card-option.disabled * {
+        cursor: not-allowed !important;
+    }
+    .plan-tier-status-badge {
+        font-size: 11px;
+        font-weight: 700;
+        padding: 3px 8px;
+        border-radius: 6px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        line-height: 1;
+    }
+    .plan-tier-status-current {
+        background: rgba(47, 107, 255, 0.12);
+        color: var(--primary);
+        border: 1px solid rgba(47, 107, 255, 0.25);
+    }
+    .plan-tier-status-restricted {
+        background: rgba(239, 68, 68, 0.1);
+        color: var(--danger);
+        border: 1px solid rgba(239, 68, 68, 0.25);
+    }
+    .plan-tier-status-upgrade {
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+        border: 1px solid rgba(16, 185, 129, 0.25);
     }
 
     .user-avatar-circle {
@@ -768,6 +810,156 @@
         flex-shrink: 0;
         border: 1.5px solid var(--bg-surface);
     }
+
+    /* COMPANY EDIT FORM STYLES */
+    .form-grid-layout {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 18px;
+    }
+    .form-grid-3 {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px;
+    }
+    .form-grid-4 {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 18px;
+    }
+    @media (max-width: 992px) {
+        .form-grid-layout, .form-grid-3, .form-grid-4 {
+            grid-template-columns: repeat(1, 1fr) !important;
+        }
+    }
+    .form-field-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+    .form-field-group.full-width {
+        grid-column: 1 / -1;
+    }
+    .form-field-label {
+        font-size: 12.5px;
+        font-weight: 700;
+        color: var(--text-main);
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .form-field-label .req {
+        color: var(--danger);
+    }
+    .form-field-label .help-hint {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--text-subtle);
+        margin-left: auto;
+    }
+    .input-with-icon-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+    .input-with-icon-wrapper i.input-icon {
+        position: absolute;
+        left: 14px;
+        font-size: 18px;
+        color: var(--text-subtle);
+        pointer-events: none;
+        transition: color 0.2s ease;
+    }
+    .form-control-custom {
+        width: 100%;
+        padding: 11px 14px 11px 40px;
+        border: 1.5px solid var(--border-color);
+        border-radius: 12px;
+        font-size: 13.5px;
+        font-weight: 500;
+        color: var(--text-main);
+        background: var(--bg-subtle);
+        outline: none;
+        transition: all 0.2s ease;
+        font-family: inherit;
+    }
+    .form-control-custom:focus {
+        border-color: var(--primary);
+        background: var(--bg-surface);
+        box-shadow: 0 0 0 3px var(--primary-glow);
+    }
+    .input-with-icon-wrapper:focus-within i.input-icon {
+        color: var(--primary);
+    }
+    .form-control-custom:disabled, .form-control-custom[readonly] {
+        opacity: 0.8;
+        cursor: not-allowed;
+        background: var(--bg-hover);
+        border-style: dashed;
+    }
+    .form-control-textarea {
+        width: 100%;
+        padding: 12px 14px;
+        border: 1.5px solid var(--border-color);
+        border-radius: 12px;
+        font-size: 13.5px;
+        font-weight: 500;
+        color: var(--text-main);
+        background: var(--bg-subtle);
+        outline: none;
+        transition: all 0.2s ease;
+        resize: vertical;
+        font-family: inherit;
+        min-height: 80px;
+    }
+    .form-control-textarea:focus {
+        border-color: var(--primary);
+        background: var(--bg-surface);
+        box-shadow: 0 0 0 3px var(--primary-glow);
+    }
+    .form-section-divider {
+        border: 0;
+        height: 1px;
+        background: var(--border-subtle);
+        margin: 24px 0 20px 0;
+    }
+    .form-section-subtitle {
+        font-size: 13px;
+        font-weight: 800;
+        color: var(--text-subtle);
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        margin-bottom: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .logo-edit-preview-box {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 16px;
+        background: var(--bg-subtle);
+        border: 1px dashed var(--border-color);
+        border-radius: 14px;
+    }
+    .logo-preview-thumb {
+        width: 64px;
+        height: 64px;
+        border-radius: 14px;
+        background: var(--bg-surface);
+        border: 1px solid var(--border-color);
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    .logo-preview-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
 </style>
 
 @php
@@ -776,6 +968,49 @@
     if (!in_array($rawPlan, $planNames)) { $rawPlan = 'FREE'; }
     $planClass = strtolower($rawPlan);
     $companyStatus = strtolower($company->status ?? 'active');
+
+    $planHierarchy = [
+        'free' => [
+            'level' => 0,
+            'name' => 'FREE',
+            'badge_class' => 'plan-free',
+            'price' => '₹0 / mo',
+            'features' => 'Up to 5 Users • 5GB Storage',
+        ],
+        'gold' => [
+            'level' => 1,
+            'name' => 'GOLD',
+            'badge_class' => 'plan-gold',
+            'price' => '₹4,999 / mo',
+            'features' => 'Up to 25 Users • 25GB Storage',
+        ],
+        'platinum' => [
+            'level' => 2,
+            'name' => 'PLATINUM',
+            'badge_class' => 'plan-platinum',
+            'price' => '₹9,999 / mo',
+            'features' => 'Up to 100 Users • 100GB Storage',
+        ],
+        'diamond' => [
+            'level' => 3,
+            'name' => 'DIAMOND',
+            'badge_class' => 'plan-diamond',
+            'price' => '₹19,999 / mo',
+            'features' => 'Unlimited Users • Priority Support',
+        ],
+    ];
+
+    $currentCompanyPlanSlug = strtolower($rawPlan);
+    $currentTierLevel = $planHierarchy[$currentCompanyPlanSlug]['level'] ?? 0;
+
+    // Retrieve highest tier level company has achieved (e.g. if company was previously upgraded)
+    $highestTierLevel = 0;
+    try {
+        $highestTierLevel = \App\Services\PlanEligibilityService::getHighestLevel($company);
+    } catch (\Throwable $e) {
+        $highestTierLevel = $currentTierLevel;
+    }
+    $minAllowedTierLevel = max($currentTierLevel, $highestTierLevel);
 @endphp
 
 <div class="animate-card">
@@ -789,10 +1024,15 @@
         </div>
     </div>
 
-    <!-- SUCCESS FLASH ALERT -->
+    <!-- FLASH ALERTS -->
     @if(session('success'))
         <div class="flash-alert-success">
             <i class="bx bx-check-circle" style="font-size: 22px; color: var(--success);"></i> {{ session('success') }}
+        </div>
+    @endif
+    @if(session('error') || $errors->has('error'))
+        <div class="flash-alert-error" style="background: var(--danger-bg); border: 1.5px solid var(--danger-border); color: var(--danger); padding: 14px 20px; border-radius: 12px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; font-weight: 600; font-size: 14px;">
+            <i class="bx bx-error-circle" style="font-size: 22px; color: var(--danger);"></i> {{ session('error') ?? $errors->first('error') }}
         </div>
     @endif
 
@@ -1305,8 +1545,300 @@
         </div>
     </div>
 
-    <!-- TAB 12: SETTINGS (FUNCTIONAL SUSPEND & DEACTIVATE) -->
+    <!-- TAB 12: SETTINGS (COMPANY EDIT FORM & SECURITY CONTROLS) -->
     <div class="workspace-tab-content" id="tab-settings">
+        <!-- EDIT COMPANY FORM CARD -->
+        <div class="dashboard-card" id="editCompanyCard" style="margin-bottom: 24px;">
+            <div class="dashboard-card-header" style="margin-bottom: 24px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                <div>
+                    <h3 class="dashboard-card-title" style="font-size: 18px; font-weight: 800; color: var(--text-main); margin: 0; display: flex; align-items: center; gap: 8px;">
+                        <i class="bx bx-edit-alt" style="color: var(--primary);"></i> Edit Company Profile &amp; Workspace
+                    </h3>
+                    <p style="font-size: 13px; color: var(--text-muted); margin: 4px 0 0 0;">Update tenant identity, contact details, branding, quotas, and document prefixes.</p>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span class="tenant-id-tag">Tenant ID: #{{ $company->id }}</span>
+                    <span class="status-pill {{ $statusPillClass }}">
+                        <span class="dot"></span> {{ ucfirst($company->status ?? 'Active') }}
+                    </span>
+                </div>
+            </div>
+
+            @if(isset($errors) && $errors->any())
+                <div style="background: var(--danger-bg); border: 1px solid var(--danger-border); color: var(--danger); border-radius: 12px; padding: 14px 18px; margin-bottom: 24px; font-size: 13.5px;">
+                    <div style="display: flex; align-items: center; gap: 8px; font-weight: 800; margin-bottom: 6px;">
+                        <i class="bx bx-error-circle" style="font-size: 18px;"></i> Please review and resolve the errors below:
+                    </div>
+                    <ul style="margin: 0; padding-left: 20px;">
+                        @foreach($errors->all() as $err)
+                            <li>{{ $err }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
+            <form method="POST" action="{{ route('super-admin.companies.update', $company->id) }}" enctype="multipart/form-data" id="companyEditForm">
+                @csrf
+                @method('PUT')
+
+                <!-- SECTION 1: IDENTITY & DOMAINS -->
+                <div class="form-section-subtitle">
+                    <i class="bx bx-building"></i> Company Identity &amp; Infrastructure
+                </div>
+                <div class="form-grid-layout">
+                    <div class="form-field-group">
+                        <label class="form-field-label" for="company_name_edit">Company Legal Name <span class="req">*</span></label>
+                        <div class="input-with-icon-wrapper">
+                            <i class="bx bx-building-house input-icon"></i>
+                            <input type="text" name="name" id="company_name_edit" class="form-control-custom" required value="{{ old('name', $company->name) }}" placeholder="e.g. Amazon Technologies Inc." />
+                        </div>
+                    </div>
+
+                    <div class="form-field-group">
+                        <label class="form-field-label" for="company_short_name_edit">Brand / Short Name</label>
+                        <div class="input-with-icon-wrapper">
+                            <i class="bx bx-tag input-icon"></i>
+                            <input type="text" name="short_name" id="company_short_name_edit" class="form-control-custom" value="{{ old('short_name', $company->short_name) }}" placeholder="e.g. Amazon" />
+                        </div>
+                    </div>
+
+                    <div class="form-field-group">
+                        <label class="form-field-label" for="company_code_edit">Company Code <span class="help-hint">Upper-case identifier</span></label>
+                        <div class="input-with-icon-wrapper">
+                            <i class="bx bx-barcode input-icon"></i>
+                            <input type="text" name="company_code" id="company_code_edit" class="form-control-custom" style="text-transform: uppercase;" value="{{ old('company_code', $company->company_code) }}" placeholder="e.g. AMAZON" />
+                        </div>
+                    </div>
+
+                    <div class="form-field-group">
+                        <label class="form-field-label" for="company_db_name_edit">Tenant Database <span class="help-hint"><i class="bx bx-lock-alt"></i> Locked</span></label>
+                        <div class="input-with-icon-wrapper">
+                            <i class="bx bx-data input-icon"></i>
+                            <input type="text" id="company_db_name_edit" class="form-control-custom" value="{{ $company->db_name }}" readonly disabled style="font-family: monospace;" />
+                        </div>
+                    </div>
+
+                    <div class="form-field-group">
+                        <label class="form-field-label" for="company_subdomain_edit">Subdomain</label>
+                        <div class="input-with-icon-wrapper">
+                            <i class="bx bx-globe input-icon"></i>
+                            <input type="text" name="subdomain" id="company_subdomain_edit" class="form-control-custom" value="{{ old('subdomain', $company->subdomain) }}" placeholder="e.g. amazon" />
+                        </div>
+                    </div>
+
+                    <div class="form-field-group">
+                        <label class="form-field-label" for="company_domain_edit">Custom Domain</label>
+                        <div class="input-with-icon-wrapper">
+                            <i class="bx bx-link-external input-icon"></i>
+                            <input type="text" name="domain" id="company_domain_edit" class="form-control-custom" value="{{ old('domain', $company->domain) }}" placeholder="e.g. portal.amazon.com" />
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="form-section-divider" />
+
+                <!-- SECTION 2: CONTACT & ADDRESS -->
+                <div class="form-section-subtitle">
+                    <i class="bx bx-envelope"></i> Contact Information &amp; Location
+                </div>
+                <div class="form-grid-layout">
+                    <div class="form-field-group">
+                        <label class="form-field-label" for="company_email_edit">Official Contact Email <span class="req">*</span></label>
+                        <div class="input-with-icon-wrapper">
+                            <i class="bx bx-envelope input-icon"></i>
+                            <input type="email" name="email" id="company_email_edit" class="form-control-custom" required value="{{ old('email', $company->email) }}" placeholder="contact@company.com" />
+                        </div>
+                    </div>
+
+                    <div class="form-field-group">
+                        <label class="form-field-label" for="company_phone_edit">Phone Number</label>
+                        <div class="input-with-icon-wrapper">
+                            <i class="bx bx-phone input-icon"></i>
+                            <input type="text" name="phone" id="company_phone_edit" class="form-control-custom" value="{{ old('phone', $company->phone) }}" placeholder="+91 9876543210" />
+                        </div>
+                    </div>
+
+                    <div class="form-field-group full-width">
+                        <label class="form-field-label" for="company_website_edit">Website URL</label>
+                        <div class="input-with-icon-wrapper">
+                            <i class="bx bx-globe-alt input-icon"></i>
+                            <input type="url" name="website" id="company_website_edit" class="form-control-custom" value="{{ old('website', $company->website) }}" placeholder="https://www.company.com" />
+                        </div>
+                    </div>
+
+                    <div class="form-field-group full-width">
+                        <label class="form-field-label" for="company_address_edit">Registered Physical Address</label>
+                        <textarea name="address" id="company_address_edit" class="form-control-textarea" rows="2" placeholder="Full postal / physical address...">{{ old('address', $company->address) }}</textarea>
+                    </div>
+                </div>
+
+                <hr class="form-section-divider" />
+
+                <!-- SECTION 3: BRANDING & LOGO -->
+                <div class="form-section-subtitle">
+                    <i class="bx bx-image-alt"></i> Company Branding &amp; Logo
+                </div>
+                <div class="logo-edit-preview-box">
+                    <div class="logo-preview-thumb" id="editLogoThumb">
+                        @if($company->logo && file_exists(public_path($company->logo)))
+                            <img src="{{ asset($company->logo) }}" alt="{{ $company->name }}" id="currentLogoPreview" />
+                        @elseif($company->logo)
+                            <img src="{{ asset($company->logo) }}" alt="{{ $company->name }}" id="currentLogoPreview" />
+                        @else
+                            <span id="logoTextFallback" style="font-size: 20px; font-weight: 800; color: var(--primary);">{{ strtoupper(substr($company->name, 0, 2)) }}</span>
+                        @endif
+                    </div>
+                    <div style="flex: 1;">
+                        <label class="form-field-label" for="company_logo_edit" style="margin-bottom: 6px;">Upload New Company Logo</label>
+                        <input type="file" name="company_logo" id="company_logo_edit" accept="image/*" class="form-control-custom" style="padding: 8px 12px;" onchange="previewEditLogo(this)" />
+                        <div style="font-size: 11.5px; color: var(--text-subtle); margin-top: 5px;">
+                            Supported formats: PNG, JPG, JPEG, SVG, WebP. Recommended size: 256x256px. Max 5MB.
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="form-section-divider" />
+
+                <!-- SECTION 4: RESOURCE QUOTAS & ALLOCATION -->
+                <div class="form-section-subtitle">
+                    <i class="bx bx-pie-chart-alt-2"></i> Resource Allocation &amp; Quotas
+                </div>
+                <div class="form-grid-4">
+                    <div class="form-field-group">
+                        <label class="form-field-label" for="company_max_users_edit">Max Users</label>
+                        <div class="input-with-icon-wrapper">
+                            <i class="bx bx-group input-icon"></i>
+                            <input type="number" min="1" name="max_users" id="company_max_users_edit" class="form-control-custom" value="{{ old('max_users', $company->max_users ?? 10) }}" />
+                        </div>
+                    </div>
+
+                    <div class="form-field-group">
+                        <label class="form-field-label" for="company_max_storage_edit">Max Storage (MB)</label>
+                        <div class="input-with-icon-wrapper">
+                            <i class="bx bx-hard-drive input-icon"></i>
+                            <input type="number" min="50" name="max_storage_mb" id="company_max_storage_edit" class="form-control-custom" value="{{ old('max_storage_mb', $company->max_storage_mb ?? 1024) }}" />
+                        </div>
+                    </div>
+
+                    <div class="form-field-group">
+                        <label class="form-field-label" for="company_max_projects_edit">Max Projects</label>
+                        <div class="input-with-icon-wrapper">
+                            <i class="bx bx-briefcase input-icon"></i>
+                            <input type="number" min="0" name="max_projects" id="company_max_projects_edit" class="form-control-custom" value="{{ old('max_projects', $company->max_projects ?? 5) }}" />
+                        </div>
+                    </div>
+
+                    <div class="form-field-group">
+                        <label class="form-field-label" for="company_max_clients_edit">Max Clients</label>
+                        <div class="input-with-icon-wrapper">
+                            <i class="bx bx-user-check input-icon"></i>
+                            <input type="number" min="0" name="max_clients" id="company_max_clients_edit" class="form-control-custom" value="{{ old('max_clients', $company->max_clients ?? 50) }}" />
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="form-section-divider" />
+
+                <!-- SECTION 5: REGISTRATION & PREFIXES -->
+                <div class="form-section-subtitle">
+                    <i class="bx bx-receipt"></i> Statutory Registration &amp; Prefixes
+                </div>
+                <div class="form-grid-3" style="margin-bottom: 18px;">
+                    <div class="form-field-group">
+                        <label class="form-field-label" for="company_gst_edit">GST Number</label>
+                        <div class="input-with-icon-wrapper">
+                            <i class="bx bx-file input-icon"></i>
+                            <input type="text" name="gst_number" id="company_gst_edit" class="form-control-custom" value="{{ old('gst_number', $company->gst_number) }}" placeholder="e.g. 29ABCDE1234F1Z5" />
+                        </div>
+                    </div>
+
+                    <div class="form-field-group">
+                        <label class="form-field-label" for="company_pan_edit">PAN Number</label>
+                        <div class="input-with-icon-wrapper">
+                            <i class="bx bx-id-card input-icon"></i>
+                            <input type="text" name="pan_number" id="company_pan_edit" class="form-control-custom" value="{{ old('pan_number', $company->pan_number) }}" placeholder="e.g. ABCDE1234F" />
+                        </div>
+                    </div>
+
+                    <div class="form-field-group">
+                        <label class="form-field-label" for="company_reg_edit">Registration No.</label>
+                        <div class="input-with-icon-wrapper">
+                            <i class="bx bx-check-shield input-icon"></i>
+                            <input type="text" name="registration_number" id="company_reg_edit" class="form-control-custom" value="{{ old('registration_number', $company->registration_number) }}" placeholder="e.g. U72200MH2021PTC123456" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-grid-4">
+                    <div class="form-field-group">
+                        <label class="form-field-label" for="company_emp_prefix_edit">Employee ID Prefix</label>
+                        <input type="text" name="employee_id_prefix" id="company_emp_prefix_edit" class="form-control-custom" style="padding-left: 14px;" value="{{ old('employee_id_prefix', $company->employee_id_prefix) }}" placeholder="e.g. EMP-" />
+                    </div>
+
+                    <div class="form-field-group">
+                        <label class="form-field-label" for="company_leave_prefix_edit">Leave Prefix</label>
+                        <input type="text" name="leave_prefix" id="company_leave_prefix_edit" class="form-control-custom" style="padding-left: 14px;" value="{{ old('leave_prefix', $company->leave_prefix) }}" placeholder="e.g. LV-" />
+                    </div>
+
+                    <div class="form-field-group">
+                        <label class="form-field-label" for="company_payroll_prefix_edit">Payroll Prefix</label>
+                        <input type="text" name="payroll_prefix" id="company_payroll_prefix_edit" class="form-control-custom" style="padding-left: 14px;" value="{{ old('payroll_prefix', $company->payroll_prefix) }}" placeholder="e.g. PAY-" />
+                    </div>
+
+                    <div class="form-field-group">
+                        <label class="form-field-label" for="company_payslip_prefix_edit">Payslip Prefix</label>
+                        <input type="text" name="payslip_prefix" id="company_payslip_prefix_edit" class="form-control-custom" style="padding-left: 14px;" value="{{ old('payslip_prefix', $company->payslip_prefix) }}" placeholder="e.g. SLIP-" />
+                    </div>
+                </div>
+
+                <hr class="form-section-divider" />
+
+                <!-- SECTION 6: CREDENTIALS (OPTIONAL) -->
+                <div class="form-section-subtitle">
+                    <i class="bx bx-shield-quarter"></i> Company Security Credentials
+                </div>
+                <div class="form-grid-layout" style="margin-bottom: 24px;">
+                    <div class="form-field-group">
+                        <label class="form-field-label" for="company_password_edit">
+                            Update Company / Admin Password
+                            <span class="help-hint">Leave blank to keep current</span>
+                        </label>
+                        <div class="input-with-icon-wrapper" style="position: relative;">
+                            <i class="bx bx-key input-icon"></i>
+                            <input type="password" name="password" id="company_password_edit" minlength="8" maxlength="128" class="form-control-custom @error('password') is-invalid @enderror" placeholder="•••••••••••• (min 8 chars)" style="padding-right: 44px;" />
+                            <button type="button" onclick="toggleEditPasswordVisibility()" style="position: absolute; right: 12px; background: none; border: none; color: var(--text-subtle); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px;" title="Show/Hide">
+                                <i class="bx bx-show" id="editPasswordEyeIcon"></i>
+                            </button>
+                        </div>
+                        <div class="field-help-text" style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Leave blank to preserve current password. If updating, must be 8–128 characters.</div>
+                        @error('password')
+                            <div class="field-error-feedback visible" style="display: block; color: var(--danger); font-size: 12px; margin-top: 4px;">{{ $message }}</div>
+                        @enderror
+                        <div id="company_password_edit_error" class="field-error-feedback" style="display: none; color: var(--danger); font-size: 12px; margin-top: 4px;"></div>
+                    </div>
+
+                    <div class="form-field-group">
+                        <label class="form-field-label">Current Login Email</label>
+                        <div class="input-with-icon-wrapper">
+                            <i class="bx bx-user-pin input-icon"></i>
+                            <input type="text" class="form-control-custom" value="{{ $companyLoginEmail ?: ($company->email ?? 'N/A') }}" readonly disabled />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FORM ACTION BUTTONS -->
+                <div style="display: flex; align-items: center; justify-content: flex-end; gap: 12px; padding-top: 16px; border-top: 1px solid var(--border-subtle); flex-wrap: wrap;">
+                    <button type="reset" class="btn-custom btn-outline-custom btn-sm-custom">
+                        <i class="bx bx-undo"></i> Reset
+                    </button>
+                    <button type="submit" class="btn-custom btn-primary-custom btn-sm-custom" style="padding: 10px 24px; font-weight: 800;">
+                        <i class="bx bx-save"></i> Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- TENANT LIFECYCLE & SECURITY CONTROLS CARD -->
         <div class="dashboard-card">
             <div class="dashboard-card-header" style="margin-bottom: 24px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
                 <div>
@@ -1318,7 +1850,7 @@
                 </span>
             </div>
 
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+            <div style="display: grid; grid-template-columns: 1fr; max-width: 680px;">
                 <!-- SUSPEND / UNSUSPEND CARD -->
                 <div class="settings-action-card card-warning">
                     <div>
@@ -1357,45 +1889,6 @@
                         @endif
                     </div>
                 </div>
-
-                <!-- DEACTIVATE / REACTIVATE ACCESS CARD -->
-                <div class="settings-action-card card-danger">
-                    <div>
-                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 10px;">
-                            <div style="width: 40px; height: 40px; border-radius: 12px; background: rgba(239, 68, 68, 0.15); color: var(--danger); display: flex; align-items: center; justify-content: center; font-size: 22px;">
-                                <i class="bx bx-block"></i>
-                            </div>
-                            <div>
-                                <strong style="font-size: 15px; color: var(--danger);">Deactivate Tenant Access</strong>
-                                <div style="font-size: 11.5px; color: var(--text-subtle);">Disable access authorization</div>
-                            </div>
-                        </div>
-                        <p style="font-size: 12.5px; color: var(--text-muted); margin: 0 0 20px 0; line-height: 1.5;">
-                            @if($companyStatus === 'inactive')
-                                This company is currently <strong>INACTIVE</strong>. Tenant authorization and API access are disabled.
-                            @else
-                                Deactivate company status. Disables tenant context impersonation and user account access across all apps.
-                            @endif
-                        </p>
-                    </div>
-                    <div>
-                        @if($companyStatus === 'inactive')
-                            <form method="POST" action="{{ route('super-admin.companies.activate', $company->id) }}">
-                                @csrf
-                                <button type="submit" class="btn-custom btn-primary-custom btn-sm-custom" style="width: 100%; padding: 10px 16px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                                    <i class="bx bx-check-circle"></i> Reactivate Access
-                                </button>
-                            </form>
-                        @else
-                            <form method="POST" action="{{ route('super-admin.companies.deactivate', $company->id) }}" onsubmit="return confirm('Are you sure you want to DEACTIVATE access for {{ addslashes($company->name) }}?');">
-                                @csrf
-                                <button type="submit" class="btn-custom btn-danger-custom btn-sm-custom" style="width: 100%; padding: 10px 16px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                                    <i class="bx bx-power-off"></i> Deactivate Access
-                                </button>
-                            </form>
-                        @endif
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -1404,49 +1897,59 @@
 <!-- CHANGE SUBSCRIPTION MODAL -->
 <div class="modal-backdrop-custom" id="planChangeModal">
     <div class="modal-dialog-custom">
-        <h3 style="font-size: 20px; font-weight: 800; margin-top: 0; margin-bottom: 6px; color: var(--text-main);">Change Subscription Plan</h3>
-        <p style="font-size: 13.5px; color: var(--text-muted); margin-bottom: 20px;">
-            Select a new subscription tier for {{ $company->name }}.
-        </p>
+        <form method="POST" action="{{ route('super-admin.subscriptions.assign') }}" id="planChangeForm" style="margin: 0;">
+            @csrf
+            <input type="hidden" name="company_id" value="{{ $company->id }}">
+            <input type="hidden" name="billing_cycle" value="monthly">
+            <input type="hidden" name="plan_id" id="modalSelectedPlanInput" value="{{ $currentCompanyPlanSlug }}">
 
-        <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px;">
-            <div class="plan-card-option" data-plan="free">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span class="plan-badge plan-free">FREE</span>
-                    <strong style="font-size: 14px; color: var(--text-main);">₹0 / mo</strong>
-                </div>
-                <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px; font-weight: 600;">Up to 5 Users • 5GB Storage</div>
+            <h3 style="font-size: 20px; font-weight: 800; margin-top: 0; margin-bottom: 6px; color: var(--text-main);">Change Subscription Plan</h3>
+            <p style="font-size: 13.5px; color: var(--text-muted); margin-bottom: 20px;">
+                Select a new subscription tier for {{ $company->name }}.
+            </p>
+
+            <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px;">
+                @foreach($planHierarchy as $slug => $tier)
+                    @php
+                        $isCurrent = ($slug === $currentCompanyPlanSlug);
+                        $isLower = ($tier['level'] < $minAllowedTierLevel);
+                        $isUpgrade = ($tier['level'] > $minAllowedTierLevel);
+                    @endphp
+                    <div class="plan-card-option {{ $isCurrent ? 'selected' : '' }} {{ $isLower ? 'disabled' : '' }}" 
+                         data-plan="{{ $slug }}"
+                         data-tier-level="{{ $tier['level'] }}"
+                         data-plan-name="{{ $tier['name'] }}"
+                         @if($isLower) title="Downgrading to a lower plan tier is restricted" @endif>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span class="plan-badge {{ $tier['badge_class'] }}">{{ $tier['name'] }}</span>
+                                @if($isCurrent)
+                                    <span class="plan-tier-status-badge plan-tier-status-current"><i class="bx bx-check-circle"></i> Current Plan</span>
+                                @elseif($isLower)
+                                    <span class="plan-tier-status-badge plan-tier-status-restricted"><i class="bx bx-lock-alt"></i> Downgrade Restricted</span>
+                                @else
+                                    <span class="plan-tier-status-badge plan-tier-status-upgrade"><i class="bx bx-up-arrow-alt"></i> Upgrade Available</span>
+                                @endif
+                            </div>
+                            <strong style="font-size: 14px; color: var(--text-main);">{{ $tier['price'] }}</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+                            <span style="font-size: 12px; color: var(--text-muted); font-weight: 600;">{{ $tier['features'] }}</span>
+                            @if($isLower)
+                                <span style="font-size: 11px; color: var(--danger); font-weight: 600;"><i class="bx bx-block"></i> Cannot downgrade</span>
+                            @endif
+                        </div>
+                    </div>
+                @endforeach
             </div>
 
-            <div class="plan-card-option" data-plan="gold">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span class="plan-badge plan-gold">GOLD</span>
-                    <strong style="font-size: 14px; color: var(--text-main);">₹4,999 / mo</strong>
-                </div>
-                <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px; font-weight: 600;">Up to 25 Users • 25GB Storage</div>
+            <div style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid var(--border-subtle); padding-top: 16px;">
+                <button type="button" class="btn-custom btn-outline-custom btn-sm-custom" id="closePlanModalBtn">Cancel</button>
+                <button type="submit" class="btn-custom btn-primary-custom btn-sm-custom" id="confirmPlanChangeBtn">
+                    <i class="bx bx-check"></i> Confirm Change
+                </button>
             </div>
-
-            <div class="plan-card-option" data-plan="platinum">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span class="plan-badge plan-platinum">PLATINUM</span>
-                    <strong style="font-size: 14px; color: var(--text-main);">₹9,999 / mo</strong>
-                </div>
-                <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px; font-weight: 600;">Up to 100 Users • 100GB Storage</div>
-            </div>
-
-            <div class="plan-card-option selected" data-plan="diamond">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span class="plan-badge plan-diamond">DIAMOND</span>
-                    <strong style="font-size: 14px; color: var(--text-main);">₹19,999 / mo</strong>
-                </div>
-                <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px; font-weight: 600;">Unlimited Users • Priority Support</div>
-            </div>
-        </div>
-
-        <div style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid var(--border-subtle); padding-top: 16px;">
-            <button class="btn-custom btn-outline-custom btn-sm-custom" id="closePlanModalBtn">Cancel</button>
-            <button class="btn-custom btn-primary-custom btn-sm-custom" id="confirmPlanChangeBtn">Confirm Change</button>
-        </div>
+        </form>
     </div>
 </div>
 
@@ -1457,7 +1960,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const tabBtns = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.workspace-tab-content');
 
-    function switchTab(tabId) {
+    function switchTab(tabId, shouldScroll = false) {
         tabBtns.forEach(b => b.classList.remove('active'));
         tabContents.forEach(c => c.classList.remove('active'));
 
@@ -1466,6 +1969,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (targetBtn) targetBtn.classList.add('active');
         if (targetContent) targetContent.classList.add('active');
+
+        if (shouldScroll && tabId === 'tab-settings') {
+            setTimeout(() => {
+                const editCard = document.getElementById('editCompanyCard');
+                if (editCard) {
+                    editCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    const nameInput = document.getElementById('company_name_edit');
+                    if (nameInput) nameInput.focus();
+                }
+            }, 80);
+        }
     }
 
     tabBtns.forEach(btn => {
@@ -1479,18 +1993,50 @@ document.addEventListener('DOMContentLoaded', function() {
         trigger.addEventListener('click', function(e) {
             e.preventDefault();
             const jumpTab = this.getAttribute('data-jump-tab') || 'tab-overview';
-            switchTab(jumpTab);
+            switchTab(jumpTab, jumpTab === 'tab-settings');
         });
     });
+
+    // Check if initial tab is specified in URL query (?tab=settings or ?tab=tab-settings) or hash (#tab-settings) or if validation errors
+    const urlParams = new URLSearchParams(window.location.search);
+    const tabParam = urlParams.get('tab') || window.location.hash.replace('#', '');
+    const hasErrors = @json(isset($errors) && $errors->any());
+
+    if (hasErrors || tabParam === 'settings' || tabParam === 'tab-settings') {
+        switchTab('tab-settings', hasErrors || tabParam === 'settings' || tabParam === 'tab-settings');
+    } else if (tabParam && document.getElementById(tabParam)) {
+        switchTab(tabParam);
+    }
 
     // Modal Triggers
     const planModal = document.getElementById('planChangeModal');
     const closePlanModalBtn = document.getElementById('closePlanModalBtn');
+    const planChangeForm = document.getElementById('planChangeForm');
+    const modalSelectedPlanInput = document.getElementById('modalSelectedPlanInput');
+    const planOptions = document.querySelectorAll('#planChangeModal .plan-card-option');
     const confirmPlanBtn = document.getElementById('confirmPlanChangeBtn');
+    const defaultPlanSlug = @json($currentCompanyPlanSlug);
+
+    function resetPlanModalSelection() {
+        if (!modalSelectedPlanInput) return;
+        modalSelectedPlanInput.value = defaultPlanSlug;
+        planOptions.forEach(card => {
+            if (card.getAttribute('data-plan') === defaultPlanSlug) {
+                card.classList.add('selected');
+            } else {
+                card.classList.remove('selected');
+            }
+        });
+        if (confirmPlanBtn) {
+            confirmPlanBtn.disabled = false;
+            confirmPlanBtn.innerHTML = '<i class="bx bx-check"></i> Confirm Change';
+        }
+    }
 
     document.querySelectorAll('.trigger-plan-modal').forEach(trigger => {
         trigger.addEventListener('click', function(e) {
             e.preventDefault();
+            resetPlanModalSelection();
             if (planModal) planModal.classList.add('open');
         });
     });
@@ -1501,9 +2047,128 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    if (confirmPlanBtn && planModal) {
-        confirmPlanBtn.addEventListener('click', function() {
+    if (planModal) {
+        planModal.addEventListener('click', function(e) {
+            if (e.target === planModal) {
+                planModal.classList.remove('open');
+            }
+        });
+    }
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && planModal && planModal.classList.contains('open')) {
             planModal.classList.remove('open');
+        }
+    });
+
+    planOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            if (this.classList.contains('disabled')) {
+                return;
+            }
+
+            planOptions.forEach(opt => opt.classList.remove('selected'));
+            this.classList.add('selected');
+
+            const selectedPlan = this.getAttribute('data-plan');
+            const selectedName = this.getAttribute('data-plan-name') || selectedPlan.toUpperCase();
+            if (modalSelectedPlanInput) {
+                modalSelectedPlanInput.value = selectedPlan;
+            }
+
+            if (confirmPlanBtn) {
+                if (selectedPlan === defaultPlanSlug) {
+                    confirmPlanBtn.innerHTML = '<i class="bx bx-check"></i> Confirm Current Plan';
+                } else {
+                    confirmPlanBtn.innerHTML = `<i class="bx bx-up-arrow-circle"></i> Upgrade to ${selectedName}`;
+                }
+            }
+        });
+    });
+
+    if (planChangeForm) {
+        planChangeForm.addEventListener('submit', function() {
+            if (confirmPlanBtn) {
+                confirmPlanBtn.disabled = true;
+                confirmPlanBtn.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i> Updating Plan...';
+            }
+        });
+    }
+});
+
+function previewEditLogo(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const thumb = document.getElementById('editLogoThumb');
+            if (thumb) {
+                thumb.innerHTML = `<img src="${e.target.result}" alt="Preview" style="width: 100%; height: 100%; object-fit: cover;" />`;
+            }
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function toggleEditPasswordVisibility() {
+    const pwdInput = document.getElementById('company_password_edit');
+    const eyeIcon = document.getElementById('editPasswordEyeIcon');
+    if (!pwdInput) return;
+
+    if (pwdInput.type === 'password') {
+        pwdInput.type = 'text';
+        if (eyeIcon) {
+            eyeIcon.classList.remove('bx-show');
+            eyeIcon.classList.add('bx-hide');
+        }
+    } else {
+        pwdInput.type = 'password';
+        if (eyeIcon) {
+            eyeIcon.classList.remove('bx-hide');
+            eyeIcon.classList.add('bx-show');
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const editForm = document.getElementById('companyEditForm');
+    const pwdEditInput = document.getElementById('company_password_edit');
+    const pwdEditError = document.getElementById('company_password_edit_error');
+
+    function validateEditPassword() {
+        if (!pwdEditInput) return true;
+        const val = pwdEditInput.value;
+        if (!val) {
+            if (pwdEditError) { pwdEditError.textContent = ''; pwdEditError.style.display = 'none'; }
+            pwdEditInput.classList.remove('is-invalid');
+            return true;
+        }
+        if (val.length < 8) {
+            if (pwdEditError) { pwdEditError.textContent = 'Password must be at least 8 characters long.'; pwdEditError.style.display = 'block'; }
+            pwdEditInput.classList.add('is-invalid');
+            return false;
+        }
+        if (val.length > 128) {
+            if (pwdEditError) { pwdEditError.textContent = 'Password cannot exceed 128 characters.'; pwdEditError.style.display = 'block'; }
+            pwdEditInput.classList.add('is-invalid');
+            return false;
+        }
+        if (pwdEditError) { pwdEditError.textContent = ''; pwdEditError.style.display = 'none'; }
+        pwdEditInput.classList.remove('is-invalid');
+        return true;
+    }
+
+    if (pwdEditInput) {
+        pwdEditInput.addEventListener('input', validateEditPassword);
+        pwdEditInput.addEventListener('blur', validateEditPassword);
+    }
+
+    if (editForm) {
+        editForm.addEventListener('submit', function(e) {
+            if (!validateEditPassword()) {
+                e.preventDefault();
+                pwdEditInput.focus();
+                return false;
+            }
         });
     }
 });

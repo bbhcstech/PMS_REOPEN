@@ -63,29 +63,103 @@ class SubscriptionService
     }
 
     /**
+     * Dynamically evaluate the accurate company status from database records.
+     */
+    public function evaluateCompanyStatus(Company|\App\Models\Company $company): string
+    {
+        $centralComp = $this->resolveCentralCompany($company);
+
+        // 1. Super Admin manual suspension always takes top priority
+        if (!empty($centralComp->manually_suspended) || strtolower((string)$centralComp->status) === 'suspended') {
+            return 'suspended';
+        }
+
+        // 2. Inactive status set explicitly
+        if (strtolower((string)$centralComp->status) === 'inactive') {
+            return 'inactive';
+        }
+
+        // 3. Check for subscriptions in central DB
+        $sub = Subscription::on('central')
+            ->where('company_id', $centralComp->id)
+            ->latest('ends_at')
+            ->latest('id')
+            ->first();
+
+        if ($sub && $sub->ends_at) {
+            $subEnds = is_string($sub->ends_at) ? Carbon::parse($sub->ends_at) : $sub->ends_at;
+            if ($subEnds->isPast()) {
+                return 'expired';
+            }
+            return 'active';
+        }
+
+        // 4. Check trial_ends_at
+        if ($centralComp->trial_ends_at) {
+            $trialEnds = is_string($centralComp->trial_ends_at) ? Carbon::parse($centralComp->trial_ends_at) : $centralComp->trial_ends_at;
+            if ($trialEnds->isPast()) {
+                return 'expired';
+            }
+            return (strtolower((string)$centralComp->status) === 'trial') ? 'trial' : 'active';
+        }
+
+        // 5. If no subscription and no trial_ends_at (e.g. provisioned company with 30-day initial period)
+        if ($centralComp->created_at) {
+            $createdAt = is_string($centralComp->created_at) ? Carbon::parse($centralComp->created_at) : $centralComp->created_at;
+            if ($createdAt->copy()->addDays(30)->isPast()) {
+                return 'expired';
+            }
+        }
+
+        return $centralComp->status ?: 'active';
+    }
+
+    /**
+     * Synchronize company status to the database idempotently.
+     */
+    public function syncCompanyStatus(Company|\App\Models\Company $company): string
+    {
+        $centralComp = $this->resolveCentralCompany($company);
+        $newStatus = $this->evaluateCompanyStatus($centralComp);
+
+        if ($centralComp->status !== $newStatus) {
+            $centralComp->status = $newStatus;
+            if ($newStatus === 'expired') {
+                try {
+                    Subscription::on('central')
+                        ->where('company_id', $centralComp->id)
+                        ->where('status', 'active')
+                        ->whereDate('ends_at', '<', now()->toDateString())
+                        ->update(['status' => 'expired']);
+                } catch (\Throwable $e) {}
+            }
+            $centralComp->save();
+
+            if ($company !== $centralComp) {
+                try {
+                    $company->status = $newStatus;
+                    $company->save();
+                } catch (\Throwable $e) {}
+            }
+        }
+
+        return $newStatus;
+    }
+
+    /**
      * Dynamically check real-time expiration of trial or paid subscription.
      */
     public function isExpired(Company|\App\Models\Company $company): bool
     {
-        if ($company->status === 'suspended') {
+        if (strtolower((string)$company->status) === 'expired') {
             return true;
         }
 
-        if ($company->status === 'trial') {
-            if (!$company->trial_ends_at) {
-                return false;
-            }
-            $trialEnds = is_string($company->trial_ends_at) ? Carbon::parse($company->trial_ends_at) : $company->trial_ends_at;
-            return $trialEnds->isPast();
+        if (!empty($company->manually_suspended)) {
+            return false;
         }
 
-        $sub = $company->activeSubscription ?? Subscription::on('central')->where('company_id', $company->id)->where('status', 'active')->latest()->first();
-        if ($sub && $sub->ends_at) {
-            $subEnds = is_string($sub->ends_at) ? Carbon::parse($sub->ends_at) : $sub->ends_at;
-            return $subEnds->isPast();
-        }
-
-        return false;
+        return $this->evaluateCompanyStatus($company) === 'expired';
     }
 
     /**
@@ -93,7 +167,15 @@ class SubscriptionService
      */
     public function isSuspended(Company|\App\Models\Company $company): bool
     {
-        return strtolower((string)$company->status) === 'suspended';
+        return !empty($company->manually_suspended) || strtolower((string)$company->status) === 'suspended';
+    }
+
+    /**
+     * Check if company access is restricted (either suspended or expired).
+     */
+    public function isRestricted(Company|\App\Models\Company $company): bool
+    {
+        return $this->isSuspended($company) || $this->isExpired($company);
     }
 
     /**
@@ -101,7 +183,7 @@ class SubscriptionService
      */
     public function getRemainingDays(Company|\App\Models\Company $company): int
     {
-        if ($this->isSuspended($company)) {
+        if ($this->isSuspended($company) || $this->isExpired($company)) {
             return 0;
         }
 
@@ -121,41 +203,30 @@ class SubscriptionService
 
     /**
      * Real-time expiration check executed on incoming web requests.
-     * If expired, transitions company to SUSPENDED idempotently.
+     * If expired, transitions company to EXPIRED idempotently.
      */
     public function checkRealtimeExpiration(Company|\App\Models\Company $company): void
     {
-        if ($this->isSuspended($company)) {
-            return;
-        }
-
-        if ($this->isExpired($company)) {
-            $this->processExpiration($company);
-        }
+        $this->syncCompanyStatus($company);
     }
 
     /**
      * Process expiration for a trial or paid subscription.
-     * Suspends the company immediately while preserving all data.
+     * Transitions the company status to 'expired' at backend database level.
      */
     public function processExpiration(Company|\App\Models\Company $company, string $reason = 'Subscription/Trial period expired.'): void
     {
-        if ($this->isSuspended($company)) {
-            return;
-        }
-
         $centralComp = $this->resolveCentralCompany($company);
 
         DB::connection('central')->transaction(function () use ($centralComp, $company, $reason) {
-            $previousStatus = $centralComp->status;
-            $centralComp->status = 'suspended';
-            $centralComp->suspended_at = now();
+            $centralComp->status = 'expired';
+            $centralComp->manually_suspended = false;
             $centralComp->save();
 
             if ($company !== $centralComp) {
                 try {
-                    $company->status = 'suspended';
-                    $company->suspended_at = now();
+                    $company->status = 'expired';
+                    $company->manually_suspended = false;
                     $company->save();
                 } catch (\Throwable $e) {}
             }
@@ -164,7 +235,6 @@ class SubscriptionService
             if ($sub) {
                 $sub->status = 'expired';
                 $sub->expired_at = now();
-                $sub->suspended_at = now();
                 $sub->save();
             }
 
@@ -175,16 +245,9 @@ class SubscriptionService
                 subscription: $sub,
                 reason: $reason
             );
-
-            $this->historyService->log(
-                company: $centralComp,
-                action: 'COMPANY_SUSPENDED',
-                subscription: $sub,
-                reason: 'Account automatically suspended due to subscription expiration.'
-            );
         });
 
-        Log::info("Company ID {$company->id} ('{$company->name}') automatically suspended due to expiration.");
+        Log::info("Company ID {$company->id} ('{$company->name}') marked EXPIRED.");
     }
 
     /**
@@ -283,18 +346,28 @@ class SubscriptionService
             $centralComp, $company, $plan, $billingCycle, $targetLevel, $newHighestLevel, $newHighestSlug,
             $startsAt, $endsAt, $action, $previousSub, $previousPlan, $performedBy, $reason
         ) {
+            // SAFETY GUARD: Renewal must NOT automatically remove a Super Admin manual suspension.
+            // Subscription is renewed, but company status remains 'suspended' until Super Admin explicitly lifts it.
+            $wasSuspended = (strtolower((string) $centralComp->status) === 'suspended' || !empty($centralComp->suspended_at));
+            $isManual = !empty($centralComp->manually_suspended);
+
             // Update company record
-            $wasSuspended = $centralComp->status === 'suspended';
-            $centralComp->status = 'active';
-            $centralComp->suspended_at = null;
+            if ($isManual) {
+                $centralComp->status = 'suspended';
+            } else {
+                $centralComp->status = 'active';
+                $centralComp->suspended_at = null;
+            }
             $centralComp->highest_plan_level = $newHighestLevel;
             $centralComp->highest_plan_slug = $newHighestSlug;
             $centralComp->save();
 
             if ($company !== $centralComp) {
                 try {
-                    $company->status = 'active';
-                    $company->suspended_at = null;
+                    $company->status = $isManual ? 'suspended' : 'active';
+                    if (!$isManual) {
+                        $company->suspended_at = null;
+                    }
                     $company->highest_plan_level = $newHighestLevel;
                     $company->highest_plan_slug = $newHighestSlug;
                     $company->save();

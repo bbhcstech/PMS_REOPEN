@@ -115,20 +115,20 @@ class LetterheadController extends Controller
 
         // Replace placeholders for initial sample preview
         $user = auth()->user();
-        $company = Company::first();
+        $company = app(\App\Services\CompanyContext::class)->current() ?? Company::first();
         $userDesignation = is_string($user?->designation) 
             ? $user->designation 
             : ($user?->employeeDetail?->designation?->name ?: 'Senior Software Engineer');
 
         $sampleText = LetterTemplateService::render($currentTemplate['content'], [
-            '[Company Name]' => $company?->name ?: 'Bengal IT Hub Private Limited',
+            '[Company Name]' => $company?->name ?: 'Company Name',
             '[Employee Name]' => $user?->name ?: 'Alexander Wright',
             '[Employee ID]' => 'EMP-' . date('Y') . '-' . str_pad($user?->id ?? '0842', 4, '0', STR_PAD_LEFT),
-            '[Employee Email]' => $user?->email ?: 'alexander.w@bengalithub.com',
+            '[Employee Email]' => $user?->email ?: 'employee@example.com',
             '[Designation]' => $userDesignation,
-            '[HR Email]' => $company?->email ?: 'hr@bengalithub.com',
-            '[HR Phone]' => $company?->phone ?: '+91 92306 53975',
-            '[Office Address]' => $company?->address ?: '3rd Floor 259, New Santoshpur Main Rd, Santoshpur, Kolkata 700075, India',
+            '[HR Email]' => $company?->email ?: 'hr@example.com',
+            '[HR Phone]' => $company?->phone ?: '',
+            '[Office Address]' => $company?->address ?: 'Company Address',
         ]);
 
         // Related Leaves (for Apology Letters)
@@ -774,26 +774,26 @@ class LetterheadController extends Controller
 
         $template = LetterTemplateService::getTemplate($templateKey);
         $user = auth()->user();
-        $company = Company::first();
+        $company = app(\App\Services\CompanyContext::class)->current() ?? Company::first();
 
         $userDesignation = is_string($user?->designation) 
             ? $user->designation 
             : ($user?->employeeDetail?->designation?->name ?: 'Senior Software Engineer');
 
         $renderedText = LetterTemplateService::render($template['content'], [
-            '[Company Name]' => $company?->name ?: 'Bengal IT Hub Private Limited',
+            '[Company Name]' => $company?->name ?: 'Company Name',
             '[Employee Name]' => $user?->name ?: 'Alexander Wright',
             '[Employee ID]' => 'EMP-' . date('Y') . '-' . str_pad($user?->id ?? '0842', 4, '0', STR_PAD_LEFT),
             '[Designation]' => $userDesignation,
         ]);
 
         $letterData = [
-            'company_name' => $company?->name ?: 'BENGAL IT HUB PRIVATE LIMITED',
-            'cin_number' => 'CIN : U62090WB2026PTC287230',
-            'address' => $company?->address ?: '3RD FLOOR 259, NEW SANTOSHPUR MAIN RD, SANTOSHPUR, KOLKATA 700075, INDIA',
-            'phone' => $company?->phone ?: '+91 92306 53975',
-            'email' => $company?->email ?: 'CONTACT@BENGALITHUB.COM',
-            'website' => $company?->website ?: 'WWW.BENGALITHUB.COM',
+            'company_name' => strtoupper($company?->name ?: 'COMPANY NAME'),
+            'cin_number' => $company?->registration_number ?: '',
+            'address' => $company?->address ?: 'Corporate Office',
+            'phone' => $company?->phone ?: '',
+            'email' => $company?->email ?: '',
+            'website' => $company?->website ?: '',
             'ref_no' => 'DEMO/' . date('Y') . '/' . strtoupper(Str::random(5)),
             'date' => now()->format('F d, Y'),
             'recipient_name' => 'HR Operations Team',

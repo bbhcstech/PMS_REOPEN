@@ -169,7 +169,7 @@ class Company extends Model
 
     public function isActive(): bool
     {
-        return $this->status === 'active';
+        return strtolower((string)$this->status) === 'active' && !$this->isSuspended() && !$this->isExpired();
     }
 
     public function isOnTrial(): bool
@@ -193,13 +193,28 @@ class Company extends Model
 
     public function isSuspended(): bool
     {
-        if (strtolower($this->status ?? '') === 'suspended') {
+        if (strtolower((string)$this->status) === 'suspended' || !empty($this->manually_suspended)) {
             return true;
         }
 
         try {
             if (app()->bound(\App\Services\SubscriptionService::class)) {
                 return app(\App\Services\SubscriptionService::class)->isSuspended($this);
+            }
+        } catch (\Throwable $e) {}
+
+        return false;
+    }
+
+    public function isExpired(): bool
+    {
+        if (strtolower((string)$this->status) === 'expired') {
+            return true;
+        }
+
+        try {
+            if (app()->bound(\App\Services\SubscriptionService::class)) {
+                return app(\App\Services\SubscriptionService::class)->isExpired($this);
             }
         } catch (\Throwable $e) {}
 
@@ -260,7 +275,7 @@ class Company extends Model
 
     public function hasFeature(string $featureSlug): bool
     {
-        if ($this->isSuspended()) {
+        if ($this->isSuspended() || $this->isExpired() || in_array(strtolower((string)$this->status), ['suspended', 'expired'], true)) {
             return false;
         }
 

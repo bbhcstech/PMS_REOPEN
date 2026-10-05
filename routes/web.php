@@ -382,11 +382,16 @@ Route::middleware(['auth:super_admin,web'])->prefix('superadmin')->name('superad
     Route::get('/companies', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'index'])->name('companies.list');
     Route::get('/companies/directory', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'index'])->name('companies.index');
     Route::get('/companies/create', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'create'])->name('companies.create');
-    Route::get('/companies/{company}', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'show'])->name('companies.show');
+    Route::get('/companies/metrics', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'metrics'])->name('companies.metrics');
+    Route::get('/companies/{company}', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'show'])->where('company', '[0-9]+')->name('companies.show');
+    Route::get('/companies/{company}/edit', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'edit'])->where('company', '[0-9]+')->name('companies.edit');
+    Route::match(['PUT', 'PATCH', 'POST'], '/companies/{company}', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'update'])->where('company', '[0-9]+')->name('companies.update');
+    Route::match(['PUT', 'PATCH', 'POST'], '/companies/{company}/update', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'update'])->where('company', '[0-9]+');
     Route::post('/companies', [SuperAdminController::class, 'storeCompany'])->name('companies.store');
-    Route::post('/companies/{company}/enter', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'enter'])->name('companies.enter');
-    Route::post('/companies/{company}/suspend', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'suspend'])->name('companies.suspend');
-    Route::delete('/companies/{company}', [SuperAdminController::class, 'deleteCompany'])->name('companies.delete');
+    Route::post('/companies/{company}/enter', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'enter'])->where('company', '[0-9]+')->name('companies.enter');
+    Route::post('/companies/{company}/suspend', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'suspend'])->where('company', '[0-9]+')->name('companies.suspend');
+    Route::post('/companies/{company}/activate', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'activate'])->where('company', '[0-9]+')->name('companies.activate');
+    Route::delete('/companies/{company}', [SuperAdminController::class, 'deleteCompany'])->where('company', '[0-9]+')->name('companies.delete');
     Route::post('/company-admins', [SuperAdminController::class, 'storeAdmin'])->name('admins.store');
     Route::get('/company-admins', [SuperAdminController::class, 'companyAdmins'])->name('admins.index');
     Route::get('/company-admins/export', [SuperAdminController::class, 'exportAdmins'])->name('admins.export');
@@ -407,8 +412,9 @@ Route::middleware(['auth:super_admin,web'])->prefix('superadmin')->name('superad
     Route::get('/complaints/unread-count', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'unreadCount'])->name('complaints.unread-count');
     Route::get('/complaints/{id}', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'show'])->name('complaints.show');
     Route::post('/complaints/{id}/respond', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'respond'])->name('complaints.respond');
-    Route::post('/complaints/{id}/status', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'updateStatus'])->name('complaints.status');
-    Route::post('/complaints/{id}/assign', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'assign'])->name('complaints.assign');
+    Route::match(['GET', 'POST', 'PATCH'], '/complaints/{id}/status', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'updateStatus'])->name('complaints.status');
+    Route::match(['GET', 'POST', 'PATCH'], '/complaints/{id}/assign', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'assign'])->name('complaints.assign');
+    Route::get('/complaints/{id}/attachment/{attachmentId}', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'downloadAttachment'])->name('complaints.attachment');
     Route::match(['GET', 'POST'], '/clear-cache', function () {
         try {
             \Illuminate\Support\Facades\Artisan::call('optimize:clear');
@@ -447,12 +453,18 @@ Route::middleware(['auth:super_admin,web'])->group(function () {
     // Fallback and alias routes for super-admin.*
     Route::get('/super-admin', [SuperAdminController::class, 'dashboard'])->name('super-admin.dashboard');
     Route::get('/super-admin/profile', [SuperAdminController::class, 'profile'])->name('super-admin.profile');
-    Route::post('/super-admin/profile', [SuperAdminController::class, 'updateProfile'])->name('super-admin.profile.update');
     Route::get('/super-admin/companies', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'index'])->name('super-admin.companies.index');
-    Route::get('/super-admin/companies/{company}', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'show'])->name('super-admin.companies.show');
-    Route::post('/super-admin/companies/{company}/enter', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'enter'])->name('super-admin.companies.enter');
-    Route::post('/super-admin/companies/{company}/suspend', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'suspend'])->name('super-admin.companies.suspend');
-    Route::delete('/super-admin/companies/{company}', [SuperAdminController::class, 'deleteCompany'])->name('super-admin.companies.delete');
+    Route::get('/super-admin/companies/create', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'create'])->name('super-admin.companies.create');
+    Route::get('/super-admin/companies/metrics', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'metrics'])->name('super-admin.companies.metrics');
+    Route::get('/super-admin/companies/{company}', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'show'])->where('company', '[0-9]+')->name('super-admin.companies.show');
+    Route::get('/super-admin/companies/{company}/edit', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'edit'])->where('company', '[0-9]+')->name('super-admin.companies.edit');
+    Route::match(['PUT', 'PATCH', 'POST'], '/super-admin/companies/{company}', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'update'])->where('company', '[0-9]+')->name('super-admin.companies.update');
+    Route::match(['PUT', 'PATCH', 'POST'], '/super-admin/companies/{company}/update', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'update'])->where('company', '[0-9]+');
+    Route::post('/super-admin/companies', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'store'])->name('super-admin.companies.store');
+    Route::post('/super-admin/companies/{company}/enter', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'enter'])->where('company', '[0-9]+')->name('super-admin.companies.enter');
+    Route::post('/super-admin/companies/{company}/suspend', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'suspend'])->where('company', '[0-9]+')->name('super-admin.companies.suspend');
+    Route::post('/super-admin/companies/{company}/activate', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'activate'])->where('company', '[0-9]+')->name('super-admin.companies.activate');
+    Route::delete('/super-admin/companies/{company}', [SuperAdminController::class, 'deleteCompany'])->where('company', '[0-9]+')->name('super-admin.companies.delete');
     Route::match(['GET', 'POST'], '/super-admin/clear-cache', function () {
         try {
             \Illuminate\Support\Facades\Artisan::call('optimize:clear');
@@ -1532,7 +1544,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/admin/company-complaints', [\App\Http\Controllers\Admin\CompanyComplaintController::class, 'store'])->name('admin.company-complaints.store');
     Route::get('/admin/company-complaints/{id}', [\App\Http\Controllers\Admin\CompanyComplaintController::class, 'show'])->name('admin.company-complaints.show');
     Route::post('/admin/company-complaints/{id}/reply', [\App\Http\Controllers\Admin\CompanyComplaintController::class, 'reply'])->name('admin.company-complaints.reply');
-    Route::post('/admin/company-complaints/{id}/reopen', [\App\Http\Controllers\Admin\CompanyComplaintController::class, 'reopen'])->name('admin.company-complaints.reopen');
+    Route::match(['POST', 'PATCH'], '/admin/company-complaints/{id}/reopen', [\App\Http\Controllers\Admin\CompanyComplaintController::class, 'reopen'])->name('admin.company-complaints.reopen');
+    Route::get('/admin/company-complaints/{id}/attachment/{attachmentId}', [\App\Http\Controllers\Admin\CompanyComplaintController::class, 'downloadAttachment'])->name('admin.company-complaints.attachment');
 
     // Platform Notifications Routes (Tenant Admin)
     Route::get('/admin/company-notifications', [\App\Http\Controllers\Admin\CompanyNotificationController::class, 'index'])->name('admin.company-notifications.index');
@@ -1589,6 +1602,30 @@ Route::fallback(function (\Illuminate\Http\Request $request) {
             return redirect()->route('login');
         }
         return app(\App\Http\Controllers\SuperAdmin\CompanyController::class)->index($request);
+    }
+
+    // 2b. SuperAdmin Company Metrics fallback
+    if (in_array($path, ['superadmin/companies/metrics', 'super-admin/companies/metrics'], true)) {
+        if (!\Illuminate\Support\Facades\Auth::guard('super_admin')->check() && !auth()->check()) {
+            return redirect()->route('login');
+        }
+        return app(\App\Http\Controllers\SuperAdmin\CompanyController::class)->metrics($request);
+    }
+
+    // 2c. SuperAdmin Provision Company fallback
+    if (in_array($path, ['superadmin/companies/create', 'super-admin/companies/create'], true)) {
+        if (!\Illuminate\Support\Facades\Auth::guard('super_admin')->check() && !auth()->check()) {
+            return redirect()->route('login');
+        }
+        return app(\App\Http\Controllers\SuperAdmin\CompanyController::class)->create();
+    }
+
+    // 2d. SuperAdmin Edit Company fallback
+    if (preg_match('#^(superadmin|super-admin)/companies/([0-9]+)/edit$#', $path, $matches)) {
+        if (!\Illuminate\Support\Facades\Auth::guard('super_admin')->check() && !auth()->check()) {
+            return redirect()->route('login');
+        }
+        return app(\App\Http\Controllers\SuperAdmin\CompanyController::class)->edit($matches[2]);
     }
 
     // 3. SuperAdmin Dashboard fallback

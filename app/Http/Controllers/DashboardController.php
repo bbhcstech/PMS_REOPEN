@@ -358,53 +358,79 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
         $userRole = strtolower((string) (auth()->user()?->role ?? ''));
 
         if (in_array($userRole, ['admin', 'administrator', 'superadmin'], true)) {
-            try { $totalEmployees = \App\Models\User::where('role', 'employee')->count(); } catch (\Throwable $e) { $totalEmployees = 0; }
+            $companyId = app(\App\Services\CompanyContext::class)->id() ?? auth()->user()?->company_id;
+
+            try {
+                $totalEmployees = \App\Models\User::where('role', 'employee')
+                    ->when($companyId && \Illuminate\Support\Facades\Schema::hasColumn('users', 'company_id'), fn ($q) => $q->where(fn($sub) => $sub->where('company_id', $companyId)->orWhereNull('company_id')))
+                    ->count();
+            } catch (\Throwable $e) { $totalEmployees = 0; }
             $today = now()->toDateString();
 
             try {
                 $presentCount = \App\Models\Attendance::where('date', $today)
+                    ->when($companyId && \Illuminate\Support\Facades\Schema::hasColumn('attendances', 'company_id'), fn ($q) => $q->where(fn($sub) => $sub->where('company_id', $companyId)->orWhereNull('company_id')))
                     ->whereIn('status', ['present', 'late'])
                     ->count();
             } catch (\Throwable $e) { $presentCount = 0; }
 
             try {
                 $lateCount = \App\Models\Attendance::where('date', $today)
+                    ->when($companyId && \Illuminate\Support\Facades\Schema::hasColumn('attendances', 'company_id'), fn ($q) => $q->where(fn($sub) => $sub->where('company_id', $companyId)->orWhereNull('company_id')))
                     ->where('status', 'late')
                     ->count();
             } catch (\Throwable $e) { $lateCount = 0; }
 
             $absentCount = max(0, $totalEmployees - $presentCount);
 
-            try { $totalClient = \App\Models\Client::count(); } catch (\Throwable $e) { $totalClient = 0; }
-            try { $totalProject = \App\Models\Project::count(); } catch (\Throwable $e) { $totalProject = 0; }
-            try { $pendingTask = \App\Models\Task::where('status', '!=', 'Completed')->count(); } catch (\Throwable $e) { $pendingTask = 0; }
+            try {
+                $totalClient = \App\Models\Client::when($companyId && \Illuminate\Support\Facades\Schema::hasColumn('clients', 'company_id'), fn ($q) => $q->where(fn($sub) => $sub->where('company_id', $companyId)->orWhereNull('company_id')))->count();
+            } catch (\Throwable $e) { $totalClient = 0; }
 
             try {
+                $totalProject = \App\Models\Project::when($companyId && \Illuminate\Support\Facades\Schema::hasColumn('projects', 'company_id'), fn ($q) => $q->where(fn($sub) => $sub->where('company_id', $companyId)->orWhereNull('company_id')))->count();
+            } catch (\Throwable $e) { $totalProject = 0; }
+
+            try {
+                $pendingTask = \App\Models\Task::where('status', '!=', 'Completed')
+                    ->when($companyId && \Illuminate\Support\Facades\Schema::hasColumn('tasks', 'company_id'), fn ($q) => $q->where(fn($sub) => $sub->where('company_id', $companyId)->orWhereNull('company_id')))
+                    ->count();
+            } catch (\Throwable $e) { $pendingTask = 0; }
+
+            try {
+                $unresolvedTicketQuery = \App\Models\Ticket::query()
+                    ->when($companyId && \Illuminate\Support\Facades\Schema::hasColumn('tickets', 'company_id'), fn ($q) => $q->where(fn($sub) => $sub->where('company_id', $companyId)->orWhereNull('company_id')));
+
                 if (\Illuminate\Support\Facades\Schema::hasColumn('tickets', 'status')) {
-                    $unresolvedTicket = \App\Models\Ticket::where('status', '!=', 'closed')->count();
+                    $unresolvedTicket = $unresolvedTicketQuery->where('status', '!=', 'closed')->count();
                 } else {
-                    $unresolvedTicket = \App\Models\Ticket::count();
+                    $unresolvedTicket = $unresolvedTicketQuery->count();
                 }
             } catch (\Throwable $e) { $unresolvedTicket = 0; }
 
             try {
-                $pendingLeaves = Leave::with('user')->where('status', 'pending')->latest()->take(5)->get();
+                $pendingLeaves = Leave::with('user')
+                    ->when($companyId && \Illuminate\Support\Facades\Schema::hasColumn('leaves', 'company_id'), fn ($q) => $q->where(fn($sub) => $sub->where('company_id', $companyId)->orWhereNull('company_id')))
+                    ->where('status', 'pending')
+                    ->latest()
+                    ->take(5)
+                    ->get();
             } catch (\Throwable $e) { $pendingLeaves = collect(); }
 
             try {
+                $openTicketsQuery = \App\Models\Ticket::with(['project', 'agent'])
+                    ->when($companyId && \Illuminate\Support\Facades\Schema::hasColumn('tickets', 'company_id'), fn ($q) => $q->where(fn($sub) => $sub->where('company_id', $companyId)->orWhereNull('company_id')));
+
                 if (\Illuminate\Support\Facades\Schema::hasColumn('tickets', 'status')) {
-                    $openTickets = \App\Models\Ticket::where('status', 'open')
-                        ->with(['project', 'agent'])
-                        ->latest()
-                        ->take(5)
-                        ->get();
+                    $openTickets = $openTicketsQuery->where('status', 'open')->latest()->take(5)->get();
                 } else {
-                    $openTickets = \App\Models\Ticket::with(['project', 'agent'])->latest()->take(5)->get();
+                    $openTickets = $openTicketsQuery->latest()->take(5)->get();
                 }
             } catch (\Throwable $e) { $openTickets = collect(); }
 
             try {
                 $pendingTasksTotal = \App\Models\Task::where('status', '!=', 'Completed')
+                    ->when($companyId && \Illuminate\Support\Facades\Schema::hasColumn('tasks', 'company_id'), fn ($q) => $q->where(fn($sub) => $sub->where('company_id', $companyId)->orWhereNull('company_id')))
                     ->with('project')
                     ->orderByDesc('created_at')
                     ->take(5)
@@ -413,16 +439,19 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
 
             try {
                 if (\Illuminate\Support\Facades\Schema::hasTable('project_activity')) {
-                    $activities = DB::table('project_activity')
+                    $activitiesQuery = DB::table('project_activity')
                         ->join('projects', 'projects.id', '=', 'project_activity.project_id')
                         ->select(
                             'project_activity.activity',
                             'project_activity.created_at',
                             'projects.name as project_name'
-                        )
-                        ->orderByDesc('project_activity.created_at')
-                        ->limit(15)
-                        ->get();
+                        );
+
+                    if ($companyId && \Illuminate\Support\Facades\Schema::hasColumn('projects', 'company_id')) {
+                        $activitiesQuery->where(fn($sub) => $sub->where('projects.company_id', $companyId)->orWhereNull('projects.company_id'));
+                    }
+
+                    $activities = $activitiesQuery->orderByDesc('project_activity.created_at')->limit(15)->get();
                 } else {
                     $activities = collect();
                 }
@@ -430,13 +459,19 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
 
             try {
                 $useractivities = UserActivity::with('user')
+                    ->when($companyId && \Illuminate\Support\Facades\Schema::hasColumn('user_activities', 'company_id'), fn ($q) => $q->where(fn($sub) => $sub->where('company_id', $companyId)->orWhereNull('company_id')))
                     ->orderBy('created_at', 'desc')
                     ->limit(10)
                     ->get();
             } catch (\Throwable $e) { $useractivities = collect(); }
 
-            try { $projects = Project::all(); } catch (\Throwable $e) { $projects = collect(); }
-            try { $tasks = Task::all(); } catch (\Throwable $e) { $tasks = collect(); }
+            try {
+                $projects = Project::when($companyId && \Illuminate\Support\Facades\Schema::hasColumn('projects', 'company_id'), fn ($q) => $q->where(fn($sub) => $sub->where('company_id', $companyId)->orWhereNull('company_id')))->get();
+            } catch (\Throwable $e) { $projects = collect(); }
+
+            try {
+                $tasks = Task::when($companyId && \Illuminate\Support\Facades\Schema::hasColumn('tasks', 'company_id'), fn ($q) => $q->where(fn($sub) => $sub->where('company_id', $companyId)->orWhereNull('company_id')))->get();
+            } catch (\Throwable $e) { $tasks = collect(); }
 
             return view('dashboard', compact(
                 'totalEmployees',
@@ -658,93 +693,103 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
     $type = $request->input('type');
     $query = $request->input('query');
     $results = [];
+    $companyId = app(\App\Services\CompanyContext::class)->id() ?? auth()->user()?->company_id;
 
     // Get matching results
     switch ($type) {
         case 'ticket':
-            $results = Ticket::where(function ($q) use ($query) {
-                $q->where('requester_name', 'like', "%$query%")
-                  ->orWhere('requester_type', 'like', "%$query%")
-                  ->orWhere('subject', 'like', "%$query%")
-                  ->orWhere('description', 'like', "%$query%")
-                  ->orWhere('attachment', 'like', "%$query%")
-                  ->orWhere('priority', 'like', "%$query%")
-                  ->orWhere('channel', 'like', "%$query%")
-                  ->orWhere('tags', 'like', "%$query%")
-                  ->orWhere('status', 'like', "%$query%");
-            })->get();
+            $results = Ticket::query()
+                ->when($companyId && \Illuminate\Support\Facades\Schema::hasColumn('tickets', 'company_id'), fn ($q) => $q->where(fn($sub) => $sub->where('company_id', $companyId)->orWhereNull('company_id')))
+                ->where(function ($q) use ($query) {
+                    $q->where('requester_name', 'like', "%$query%")
+                      ->orWhere('requester_type', 'like', "%$query%")
+                      ->orWhere('subject', 'like', "%$query%")
+                      ->orWhere('description', 'like', "%$query%")
+                      ->orWhere('attachment', 'like', "%$query%")
+                      ->orWhere('priority', 'like', "%$query%")
+                      ->orWhere('channel', 'like', "%$query%")
+                      ->orWhere('tags', 'like', "%$query%")
+                      ->orWhere('status', 'like', "%$query%");
+                })->get();
             break;
 
         case 'task':
-            $results = Task::where(function ($q) use ($query) {
-                $q->where('task_short_code', 'like', "%$query%")
-                  ->orWhere('title', 'like', "%$query%")
-                  ->orWhere('description', 'like', "%$query%")
-                  ->orWhere('assigned_to', 'like', "%$query%")
-                  ->orWhere('task_labels', 'like', "%$query%")
-                  ->orWhere('priority', 'like', "%$query%")
-                  ->orWhere('status', 'like', "%$query%");
+            $results = Task::query()
+                ->when($companyId && \Illuminate\Support\Facades\Schema::hasColumn('tasks', 'company_id'), fn ($q) => $q->where(fn($sub) => $sub->where('company_id', $companyId)->orWhereNull('company_id')))
+                ->where(function ($q) use ($query) {
+                    $q->where('task_short_code', 'like', "%$query%")
+                      ->orWhere('title', 'like', "%$query%")
+                      ->orWhere('description', 'like', "%$query%")
+                      ->orWhere('assigned_to', 'like', "%$query%")
+                      ->orWhere('task_labels', 'like', "%$query%")
+                      ->orWhere('priority', 'like', "%$query%")
+                      ->orWhere('status', 'like', "%$query%");
+                })->get();
+            break;
+
+        case 'project':
+            $results = Project::with('client')
+                ->when($companyId && \Illuminate\Support\Facades\Schema::hasColumn('projects', 'company_id'), fn ($q) => $q->where(fn($sub) => $sub->where('company_id', $companyId)->orWhereNull('company_id')))
+                ->where(function ($rootQ) use ($query) {
+                    $rootQ->where(function ($q) use ($query) {
+                        $q->where('name', 'like', "%$query%")
+                          ->orWhere('project_code', 'like', "%$query%")
+                          ->orWhere('description', 'like', "%$query%")
+                          ->orWhere('start_date', 'like', "%$query%")
+                          ->orWhere('deadline', 'like', "%$query%")
+                          ->orWhere('status', 'like', "%$query%");
+                    })
+                    ->orWhereHas('client', function ($q) use ($query) {
+                        $q->where('name', 'like', "%$query%")
+                          ->orWhere('email', 'like', "%$query%")
+                          ->orWhere('mobile', 'like', "%$query%")
+                          ->orWhere('company_name', 'like', "%$query%")
+                          ->orWhere('website', 'like', "%$query%")
+                          ->orWhere('country', 'like', "%$query%")
+                          ->orWhere('city', 'like', "%$query%");
+                    });
+                })
+                ->get();
+            break;
+
+        case 'employee':
+            $empQuery = \DB::table('employee_details')
+                ->join('users', 'employee_details.user_id', '=', 'users.id')
+                ->leftJoin('designations', 'employee_details.designation_id', '=', 'designations.id')
+                ->select(
+                    'employee_details.id as emp_detail_id',
+                    'employee_details.employee_id',
+                    'employee_details.status',
+                    'employee_details.gender',
+                    'employee_details.user_role',
+                    'users.id as user_id',
+                    'users.name',
+                    'users.email',
+                    'users.mobile',
+                    'designations.name as designation'
+                );
+
+            if ($companyId && \Illuminate\Support\Facades\Schema::hasColumn('users', 'company_id')) {
+                $empQuery->where(fn($sub) => $sub->where('users.company_id', $companyId)->orWhereNull('users.company_id'));
+            }
+
+            $results = $empQuery->where(function ($q) use ($query) {
+                $q->where('users.name', 'like', "%{$query}%")
+                  ->orWhere('users.email', 'like', "%{$query}%")
+                  ->orWhere('users.mobile', 'like', "%{$query}%")
+                  ->orWhere('designations.name', 'like', "%{$query}%")
+                  ->orWhere('employee_details.employee_id', 'like', "%{$query}%")
+                  ->orWhere('employee_details.status', 'like', "%{$query}%")
+                  ->orWhere('employee_details.gender', 'like', "%{$query}%")
+                  ->orWhere('employee_details.user_role', 'like', "%{$query}%");
             })->get();
             break;
 
-
-      case 'project':
-    $results = Project::with('client') // eager load client
-        ->where(function ($q) use ($query) {
-            $q->where('name', 'like', "%$query%")
-              ->orWhere('project_code', 'like', "%$query%")
-              ->orWhere('description', 'like', "%$query%")
-              ->orWhere('start_date', 'like', "%$query%")
-              ->orWhere('deadline', 'like', "%$query%")
-              ->orWhere('status', 'like', "%$query%");
-        })
-        ->orWhereHas('client', function ($q) use ($query) {
-            $q->where('name', 'like', "%$query%")
-              ->orWhere('email', 'like', "%$query%")
-              ->orWhere('mobile', 'like', "%$query%")
-              ->orWhere('company_name', 'like', "%$query%")
-              ->orWhere('website', 'like', "%$query%")
-              ->orWhere('country', 'like', "%$query%")
-              ->orWhere('city', 'like', "%$query%");
-        })
-        ->get();
-    break;
-
-
-
-        case 'employee':
-    $results = \DB::table('employee_details')
-        ->join('users', 'employee_details.user_id', '=', 'users.id')
-        ->leftJoin('designations', 'employee_details.designation_id', '=', 'designations.id')
-        ->select(
-            'employee_details.id as emp_detail_id',
-            'employee_details.employee_id',
-            'employee_details.status',
-            'employee_details.gender',
-            'employee_details.user_role',
-            'users.id as user_id',
-            'users.name',
-            'users.email',
-            'users.mobile',
-            'designations.name as designation'
-        )
-        ->where(function ($q) use ($query) {
-            $q->where('users.name', 'like', "%{$query}%")
-              ->orWhere('users.email', 'like', "%{$query}%")
-              ->orWhere('users.mobile', 'like', "%{$query}%")
-              ->orWhere('designations.name', 'like', "%{$query}%")
-              // add employee_details fields also
-              ->orWhere('employee_details.employee_id', 'like', "%{$query}%")
-              ->orWhere('employee_details.status', 'like', "%{$query}%")
-              ->orWhere('employee_details.gender', 'like', "%{$query}%")
-              ->orWhere('employee_details.user_role', 'like', "%{$query}%");
-        })
-        ->get();
-    break;
-
-
         case 'client':
-            $results = Client::where('name', 'like', "%$query%")->get();
+            $results = Client::query()
+                ->when($companyId && \Illuminate\Support\Facades\Schema::hasColumn('clients', 'company_id'), fn ($q) => $q->where(fn($sub) => $sub->where('company_id', $companyId)->orWhereNull('company_id')))
+                ->where('name', 'like', "%$query%")
+                ->get();
             break;
     }
 

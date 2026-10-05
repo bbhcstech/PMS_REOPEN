@@ -1266,8 +1266,8 @@
 
 @if($showEmployeeWelcome ?? false)
     @php
-        $welcomeCompanyName = $currentCompany?->display_name ?? 'our company';
-        $welcomeCompanyLogo = $currentCompany?->logoUrl() ?? asset('logos/Bengal IT Hub_05.png');
+        $welcomeCompanyName = $currentCompany?->display_name ?? ($currentCompany?->name ?? 'our company');
+        $welcomeCompanyLogo = $currentCompany?->logoUrl() ?? ($currentCompany?->logo ? asset($currentCompany->logo) : asset('logo.png'));
     @endphp
     <div class="employee-welcome-overlay" id="employeeWelcomeOverlay" data-seen-url="{{ route('dashboard.employeeWelcomeSeen') }}">
         <div class="welcome-balloon"></div>
@@ -1341,7 +1341,7 @@
                         </p>
                     </div>
                     <div class="col-lg-4">
-                        <div class="employee-clock" data-server-time="{{ now()->getTimestamp() * 1000 }}">
+                        <div class="employee-clock">
                             <div class="text-lg-end">
                                 <div class="employee-time" id="employeeLiveTime">{{ now()->format('h:i A') }}</div>
                                 <div id="employeeLiveDate">{{ now()->format('l, d M Y') }}</div>
@@ -1408,7 +1408,7 @@
                                     @endif
                                     <div class="clock-live-grid">
                                         <div class="clock-live-box">
-                                            <span id="employeeClockZoneLabel">IST Time</span>
+                                            <span id="employeeClockZoneLabel">Current Time</span>
                                             <strong id="employeeIstClock">{{ now()->format('h:i:s A') }}</strong>
                                         </div>
                                         <div class="clock-live-box">
@@ -2697,6 +2697,8 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
         const workTimer = document.getElementById('employeeWorkTimer');
         const liveTime = document.getElementById('employeeLiveTime');
         const liveDate = document.getElementById('employeeLiveDate');
+        const heroTime = document.getElementById('employeeHeroTime');
+        const heroDate = document.getElementById('employeeHeroDate');
         const clockZoneLabel = document.getElementById('employeeClockZoneLabel');
         const employeeTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata';
 
@@ -2704,36 +2706,16 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
             clockZoneLabel.textContent = employeeTimeZone === 'Asia/Kolkata' ? 'IST Time' : `${employeeTimeZone.split('/').pop().replace('_', ' ')} Time`;
         }
 
-        const updateClockWidgets = () => {
-            const now = new Date();
-
-            if (liveTime) {
-                liveTime.textContent = new Intl.DateTimeFormat('en-IN', {
+        const formatLocalTime = (date, includeSeconds = true) => {
+            try {
+                const options = {
                     timeZone: employeeTimeZone,
                     hour: '2-digit',
                     minute: '2-digit',
-                    hour12: true
-                }).format(now);
-            }
-
-            if (liveDate) {
-                liveDate.textContent = new Intl.DateTimeFormat('en-IN', {
-                    timeZone: employeeTimeZone,
-                    weekday: 'long',
-                    day: '2-digit',
-                    month: 'short',
-                    year: 'numeric'
-                }).format(now);
-            }
-
-            if (istClock) {
-                istClock.textContent = new Intl.DateTimeFormat('en-IN', {
-                    timeZone: employeeTimeZone,
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    second: includeSeconds ? '2-digit' : undefined,
-                    hour12: true
-                }).format(date);
+                    second: includeSeconds ? '2-digit' : undefined
+                };
+                const formatted = new Intl.DateTimeFormat('en-IN', options).format(date);
+                return formatted.replace(/[\u202f\u00a0]/g, ' ').replace(/\b(am|pm)\b/gi, match => match.toUpperCase());
             } catch (e) {
                 let h = date.getHours();
                 const m = String(date.getMinutes()).padStart(2, '0');
@@ -2745,10 +2727,9 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
             }
         };
 
-        const formatIstDate = (date) => {
+        const formatLocalDate = (date) => {
             try {
                 const parts = new Intl.DateTimeFormat('en-US', {
-                    timeZone: 'Asia/Kolkata',
                     weekday: 'long',
                     day: '2-digit',
                     month: 'short',
@@ -2769,26 +2750,34 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
         };
 
         const updateClockWidgets = () => {
-            const now = new Date(Date.now() + serverOffset);
+            const now = new Date();
+
+            if (liveTime) {
+                liveTime.textContent = formatLocalTime(now, false);
+            }
+
+            if (liveDate) {
+                liveDate.textContent = formatLocalDate(now);
+            }
 
             if (heroTime) {
-                heroTime.textContent = formatIstTime(now, true);
+                heroTime.textContent = formatLocalTime(now, true);
             }
 
             if (heroDate) {
-                heroDate.textContent = formatIstDate(now);
+                heroDate.textContent = formatLocalDate(now);
             }
 
             if (istClock) {
-                istClock.textContent = formatIstTime(now, true);
+                istClock.textContent = formatLocalTime(now, true);
             }
 
             document.querySelectorAll('[data-live-clock="time"]').forEach(el => {
-                if (el !== heroTime) el.textContent = formatIstTime(now, true);
+                if (el !== heroTime && el !== istClock) el.textContent = formatLocalTime(now, true);
             });
 
             document.querySelectorAll('[data-live-clock="date"]').forEach(el => {
-                if (el !== heroDate) el.textContent = formatIstDate(now);
+                if (el !== heroDate) el.textContent = formatLocalDate(now);
             });
 
             if (workTimer && workTimer.dataset.clockIn) {
@@ -2814,7 +2803,7 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
         setInterval(updateClockWidgets, 1000);
 
         const scheduleMidnightRefresh = () => {
-            const now = new Date(Date.now() + serverOffset);
+            const now = new Date();
             const midnight = new Date(now);
             midnight.setHours(24, 0, 3, 0);
             setTimeout(() => window.location.reload(), Math.max(1000, midnight - now));
@@ -2827,7 +2816,7 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
             year: 'numeric',
             month: '2-digit',
             day: '2-digit'
-        }).format(new Date(Date.now() + serverOffset));
+        }).format(new Date());
 
         setInterval(() => {
             const currentDateKey = new Intl.DateTimeFormat('en-CA', {
@@ -2835,7 +2824,7 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
                 year: 'numeric',
                 month: '2-digit',
                 day: '2-digit'
-            }).format(new Date(Date.now() + serverOffset));
+            }).format(new Date());
 
             if (currentDateKey !== loadedDateKey) {
                 window.location.reload();

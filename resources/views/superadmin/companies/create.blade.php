@@ -116,6 +116,31 @@
     --btn-cancel-hover-text: #EEF1FB;
   }
 
+  /* Country Code Dropdown UI in Dark & Light Modes */
+  #company_create_country_code {
+    color: var(--input-text, #0f172a) !important;
+    background-color: var(--input-bg, #f8fafc) !important;
+    color-scheme: light dark;
+  }
+  #company_create_country_code option {
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+  }
+  html[data-pms-theme="dark"] #company_create_country_code,
+  html[data-theme="dark"] #company_create_country_code,
+  html[data-bs-theme="dark"] #company_create_country_code {
+    background-color: #141B3D !important;
+    color: #EEF1FB !important;
+    border-color: rgba(238, 241, 251, 0.14) !important;
+    color-scheme: dark !important;
+  }
+  html[data-pms-theme="dark"] #company_create_country_code option,
+  html[data-theme="dark"] #company_create_country_code option,
+  html[data-bs-theme="dark"] #company_create_country_code option {
+    background-color: #0F1530 !important;
+    color: #EEF1FB !important;
+  }
+
   /* KEYFRAME ANIMATIONS */
   @keyframes fadeInUp {
     from {
@@ -1047,7 +1072,7 @@
   </div>
 
   <!-- ERROR ALERT -->
-  @if ($errors->any())
+  @if (isset($errors) && $errors->any())
     <div class="provision-error-alert">
       <div style="font-weight: 800; margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
         <i class="bx bx-error-circle" style="font-size: 22px; color: #dc2626;"></i> Please correct the following provisioning validation errors:
@@ -1061,7 +1086,7 @@
   @endif
 
   <!-- FORM START -->
-  <form method="POST" action="{{ route('super-admin.companies.store') }}" enctype="multipart/form-data" id="provisionCompanyForm">
+  <form method="POST" action="{{ Route::has('super-admin.companies.store') ? route('super-admin.companies.store') : (Route::has('superadmin.companies.store') ? route('superadmin.companies.store') : url('/super-admin/companies')) }}" enctype="multipart/form-data" id="provisionCompanyForm">
     @csrf
 
     <!-- SECTION 1: COMPANY & DB DETAILS -->
@@ -1116,8 +1141,9 @@
           <label class="form-label">Company Contact Email <span class="req">*</span></label>
           <div class="input-with-icon">
             <i class="bx bx-envelope"></i>
-            <input type="email" name="email" value="{{ old('email') }}" required placeholder="contact@acme.com" class="input-control" />
+            <input type="email" name="email" id="company_create_email" value="{{ old('email') }}" required placeholder="contact@acme.com" class="input-control" />
           </div>
+          <div id="company_create_email_error" class="field-error-feedback"></div>
         </div>
 
         <!-- Phone Number -->
@@ -1134,7 +1160,7 @@
           @endphp
           <div class="input-with-icon" style="display: flex; position: relative;">
             <i class="bx bx-phone" style="z-index: 10;"></i>
-            <select id="company_create_country_code" style="width: 100px; flex-shrink: 0; padding-left: 36px; border: 1px solid var(--border-color); border-right: 0; border-top-left-radius: 8px; border-bottom-left-radius: 8px; font-size: 14px; background-color: var(--bg-surface); outline: none; appearance: none; -webkit-appearance: none;">
+            <select id="company_create_country_code" class="country-code-select" style="width: 105px; flex-shrink: 0; padding-left: 36px; border: 1px solid var(--border-subtle, #cbd5e1); border-right: 0; border-top-left-radius: 8px; border-bottom-left-radius: 8px; font-size: 14px; outline: none;">
                 <option value="+91" {{ $countryCode == '+91' ? 'selected' : '' }}>+91 (IN)</option>
                 <option value="+1" {{ $countryCode == '+1' ? 'selected' : '' }}>+1 (US)</option>
                 <option value="+44" {{ $countryCode == '+44' ? 'selected' : '' }}>+44 (UK)</option>
@@ -1147,21 +1173,7 @@
             <input type="text" id="company_create_phone_display" value="{{ $phoneNum }}" placeholder="555 019 2831" class="input-control" style="border-top-left-radius: 0; border-bottom-left-radius: 0; padding-left: 12px; width: 100%;" />
             <input type="hidden" name="phone" id="company_create_phone_hidden" value="{{ $fullPhone }}">
           </div>
-          <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const ccCreate = document.getElementById('company_create_country_code');
-                const mobCreate = document.getElementById('company_create_phone_display');
-                const hiddenCreate = document.getElementById('company_create_phone_hidden');
-                function updateCreatePhone() {
-                    const num = mobCreate.value.replace(/[^0-9]/g, '');
-                    hiddenCreate.value = num ? ccCreate.value + ' ' + num : '';
-                }
-                if(ccCreate && mobCreate) {
-                    ccCreate.addEventListener('change', updateCreatePhone);
-                    mobCreate.addEventListener('input', updateCreatePhone);
-                }
-            });
-          </script>
+          <div id="company_create_phone_error" class="field-error-feedback"></div>
         </div>
 
         <!-- Company Address -->
@@ -1227,8 +1239,9 @@
           <label class="form-label">Admin Login Email <span class="req">*</span></label>
           <div class="input-with-icon">
             <i class="bx bx-at"></i>
-            <input type="email" name="admin_email" value="{{ old('admin_email') }}" required placeholder="s.connor@acme.com" class="input-control" />
+            <input type="email" name="admin_email" id="company_create_admin_email" value="{{ old('admin_email') }}" required placeholder="s.connor@acme.com" class="input-control" />
           </div>
+          <div id="company_create_admin_email_error" class="field-error-feedback"></div>
         </div>
 
         <!-- Admin Password + Live Strength Meter -->
@@ -1236,10 +1249,15 @@
           <label class="form-label">Admin Password <span class="req">*</span></label>
           <div class="input-with-icon">
             <i class="bx bx-lock-alt"></i>
-            <input type="password" name="admin_password" id="admin_password_input" required placeholder="••••••••••••" class="input-control" style="padding-right: 42px;" />
+            <input type="password" name="admin_password" id="admin_password_input" required minlength="8" maxlength="128" placeholder="•••••••••••• (min 8 chars)" class="input-control @error('admin_password') is-invalid @enderror" style="padding-right: 42px;" />
             <i class="bx bx-show" id="toggle_password_btn" style="left: auto; right: 14px; cursor: pointer; pointer-events: auto;"></i>
           </div>
-          <div class="password-meter-wrap">
+          <div class="field-help-text" style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Must be between 8 and 128 characters.</div>
+          @error('admin_password')
+            <div class="field-error-feedback visible" style="display: block; color: var(--danger); font-size: 12px; margin-top: 4px;">{{ $message }}</div>
+          @enderror
+          <div id="admin_password_error" class="field-error-feedback"></div>
+          <div class="password-meter-wrap" style="margin-top: 6px;">
             <div class="meter-bar-track">
               <div class="meter-bar-fill" id="password_meter_fill"></div>
             </div>
@@ -1351,7 +1369,7 @@
       </div>
 
       <div style="display: flex; align-items: center; gap: 14px;">
-        <a href="{{ route('super-admin.companies.index') }}" class="btn-custom btn-outline-custom">Cancel</a>
+        <a href="{{ Route::has('super-admin.companies.index') ? route('super-admin.companies.index') : (Route::has('superadmin.companies.index') ? route('superadmin.companies.index') : url('/super-admin/companies')) }}" class="btn-custom btn-outline-custom">Cancel</a>
         <button type="submit" class="btn-shimmer-cta" id="submitProvisionBtn">
           <i class="bx bx-rocket" style="font-size: 20px;"></i> Provision Company &amp; Run Migrations
         </button>
@@ -1576,11 +1594,267 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 
-  // 7. Form Submit Loading Spinner State
+  // 7. Strict Email and Phone Validation
+  function getPhoneRule(countryCode) {
+    switch (countryCode) {
+      case '+91': return { min: 10, max: 10, regex: /^[6-9]\d{9}$/, placeholder: '9876543210', error: 'India phone number must be exactly 10 digits starting with 6, 7, 8, or 9.' };
+      case '+1':  return { min: 10, max: 10, regex: /^[2-9]\d{9}$/, placeholder: '5550192831', error: 'US/Canada phone number must be exactly 10 digits (e.g. 5550192831).' };
+      case '+44': return { min: 10, max: 11, regex: /^[1-9]\d{9,10}$/, placeholder: '7911123456', error: 'UK phone number must be 10 to 11 digits.' };
+      case '+61': return { min: 9,  max: 10, regex: /^[1-9]\d{8,9}$/, placeholder: '412345678', error: 'Australia phone number must be 9 to 10 digits.' };
+      case '+971':return { min: 9,  max: 9,  regex: /^[2-9]\d{8}$/, placeholder: '501234567', error: 'UAE phone number must be 9 digits (e.g. 501234567).' };
+      case '+81': return { min: 10, max: 10, regex: /^[1-9]\d{9}$/, placeholder: '9012345678', error: 'Japan phone number must be 10 digits.' };
+      case '+49': return { min: 10, max: 11, regex: /^[1-9]\d{9,10}$/, placeholder: '15123456789', error: 'Germany phone number must be 10 to 11 digits.' };
+      case '+33': return { min: 9,  max: 9,  regex: /^[1-9]\d{8}$/, placeholder: '612345678', error: 'France phone number must be 9 digits.' };
+      default:    return { min: 7,  max: 15, regex: /^\d{7,15}$/, placeholder: '1234567890', error: 'Phone number must be between 7 and 15 digits.' };
+    }
+  }
+
+  function validateEmailFormat(email, isRequired = true) {
+    const val = (email || '').trim();
+    if (!val) {
+      return isRequired ? { valid: false, message: 'Email address is required.' } : { valid: true };
+    }
+    if (/\s/.test(val)) {
+      return { valid: false, message: 'Email address cannot contain spaces.' };
+    }
+    if (!val.includes('@')) {
+      return { valid: false, message: "Email address must include an '@' symbol." };
+    }
+    const parts = val.split('@');
+    if (parts.length !== 2) {
+      return { valid: false, message: "Email address must contain only one '@' symbol." };
+    }
+    const [local, domain] = parts;
+    if (!local) {
+      return { valid: false, message: "Missing username before '@'." };
+    }
+    if (!domain) {
+      return { valid: false, message: "Missing domain after '@'." };
+    }
+    if (!domain.includes('.')) {
+      return { valid: false, message: "Domain name must include a valid extension (e.g. .com, .org)." };
+    }
+    if (domain.startsWith('.') || domain.endsWith('.')) {
+      return { valid: false, message: "Domain name cannot start or end with a dot." };
+    }
+    if (domain.includes('..')) {
+      return { valid: false, message: "Domain name cannot contain consecutive dots." };
+    }
+    const strictRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!strictRegex.test(val)) {
+      return { valid: false, message: 'Please enter a valid email address (e.g. name@company.com).' };
+    }
+    return { valid: true };
+  }
+
+  function setupPhoneValidator(countrySelectId, phoneInputId, hiddenInputId, errorDivId, isRequired = false) {
+    const countrySelect = document.getElementById(countrySelectId);
+    const phoneInput = document.getElementById(phoneInputId);
+    const hiddenInput = document.getElementById(hiddenInputId);
+    const errorDiv = document.getElementById(errorDivId);
+    if (!countrySelect || !phoneInput) return null;
+
+    function updateRule() {
+      const rule = getPhoneRule(countrySelect.value);
+      phoneInput.placeholder = rule.placeholder;
+      phoneInput.maxLength = rule.max;
+    }
+
+    phoneInput.addEventListener('keydown', function(e) {
+      if (['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(e.key) ||
+          ((e.ctrlKey || e.metaKey) && ['a', 'c', 'v', 'x', 'z'].includes(e.key.toLowerCase()))) {
+        return;
+      }
+      if (!/^\d$/.test(e.key)) {
+        e.preventDefault();
+      }
+    });
+
+    function syncValue() {
+      phoneInput.value = phoneInput.value.replace(/\D/g, '');
+      const rule = getPhoneRule(countrySelect.value);
+      if (phoneInput.value.length > rule.max) {
+        phoneInput.value = phoneInput.value.substring(0, rule.max);
+      }
+      if (hiddenInput) {
+        hiddenInput.value = phoneInput.value ? countrySelect.value + ' ' + phoneInput.value : '';
+      }
+    }
+
+    phoneInput.addEventListener('input', function() {
+      syncValue();
+      validate(false);
+    });
+
+    countrySelect.addEventListener('change', function() {
+      updateRule();
+      syncValue();
+      validate(false);
+    });
+
+    phoneInput.addEventListener('blur', function() {
+      validate(true);
+    });
+
+    function validate(showEmptyError = true) {
+      const val = phoneInput.value.trim();
+      if (!val) {
+        if (isRequired && showEmptyError) {
+          showError('Phone number is required.');
+          return false;
+        }
+        clearError();
+        return true;
+      }
+      const rule = getPhoneRule(countrySelect.value);
+      if (!rule.regex.test(val)) {
+        showError(rule.error);
+        return false;
+      }
+      clearError();
+      return true;
+    }
+
+    function showError(msg) {
+      if (errorDiv) {
+        errorDiv.textContent = msg;
+        errorDiv.classList.add('visible');
+      }
+      phoneInput.classList.add('is-invalid');
+    }
+
+    function clearError() {
+      if (errorDiv) {
+        errorDiv.textContent = '';
+        errorDiv.classList.remove('visible');
+      }
+      phoneInput.classList.remove('is-invalid');
+    }
+
+    updateRule();
+    syncValue();
+    return { validate, input: phoneInput };
+  }
+
+  function setupEmailValidator(inputId, errorDivId, isRequired = true) {
+    const input = document.getElementById(inputId);
+    const errorDiv = document.getElementById(errorDivId);
+    if (!input) return null;
+
+    function validate(showEmptyError = true) {
+      const val = input.value.trim();
+      if (!val && !showEmptyError && !isRequired) {
+        clearError();
+        return true;
+      }
+      const res = validateEmailFormat(val, isRequired);
+      if (!res.valid) {
+        if (val || showEmptyError) {
+          showError(res.message);
+          return false;
+        }
+        return false;
+      }
+      clearError();
+      return true;
+    }
+
+    function showError(msg) {
+      if (errorDiv) {
+        errorDiv.textContent = msg;
+        errorDiv.classList.add('visible');
+      }
+      input.classList.add('is-invalid');
+    }
+
+    function clearError() {
+      if (errorDiv) {
+        errorDiv.textContent = '';
+        errorDiv.classList.remove('visible');
+      }
+      input.classList.remove('is-invalid');
+    }
+
+    input.addEventListener('input', function() {
+      if (/\s/.test(this.value)) {
+        this.value = this.value.replace(/\s+/g, '');
+      }
+      validate(false);
+    });
+
+    input.addEventListener('blur', function() {
+      validate(true);
+    });
+
+    return { validate, input };
+  }
+
+  const compPhoneVal = setupPhoneValidator('company_create_country_code', 'company_create_phone_display', 'company_create_phone_hidden', 'company_create_phone_error', false);
+  const compEmailVal = setupEmailValidator('company_create_email', 'company_create_email_error', true);
+  const adminEmailVal = setupEmailValidator('company_create_admin_email', 'company_create_admin_email_error', true);
+
+  function validateAdminPassword(showError = true) {
+    const input = document.getElementById('admin_password_input');
+    const errorDiv = document.getElementById('admin_password_error');
+    if (!input) return true;
+    const val = input.value;
+    if (!val) {
+      if (showError) {
+        if (errorDiv) { errorDiv.textContent = 'Admin password is required.'; errorDiv.classList.add('visible'); errorDiv.style.display = 'block'; }
+        input.classList.add('is-invalid');
+      }
+      return false;
+    }
+    if (val.length < 8) {
+      if (showError) {
+        if (errorDiv) { errorDiv.textContent = 'Password must be at least 8 characters long.'; errorDiv.classList.add('visible'); errorDiv.style.display = 'block'; }
+        input.classList.add('is-invalid');
+      }
+      return false;
+    }
+    if (val.length > 128) {
+      if (showError) {
+        if (errorDiv) { errorDiv.textContent = 'Password cannot exceed 128 characters.'; errorDiv.classList.add('visible'); errorDiv.style.display = 'block'; }
+        input.classList.add('is-invalid');
+      }
+      return false;
+    }
+    if (errorDiv) { errorDiv.textContent = ''; errorDiv.classList.remove('visible'); errorDiv.style.display = 'none'; }
+    input.classList.remove('is-invalid');
+    return true;
+  }
+
+  const pwdInputEl = document.getElementById('admin_password_input');
+  if (pwdInputEl) {
+    pwdInputEl.addEventListener('blur', function() { validateAdminPassword(true); });
+    pwdInputEl.addEventListener('input', function() {
+      if (pwdInputEl.classList.contains('is-invalid')) {
+        validateAdminPassword(false);
+      }
+    });
+  }
+
+  // 8. Form Submit Loading Spinner & Pre-Validation Check
   const form = document.getElementById('provisionCompanyForm');
   const submitBtn = document.getElementById('submitProvisionBtn');
   if (form && submitBtn) {
-    form.addEventListener('submit', function() {
+    form.addEventListener('submit', function(e) {
+      const isEmailValid = compEmailVal ? compEmailVal.validate(true) : true;
+      const isAdminEmailValid = adminEmailVal ? adminEmailVal.validate(true) : true;
+      const isPhoneValid = compPhoneVal ? compPhoneVal.validate(true) : true;
+      const isPasswordValid = validateAdminPassword(true);
+
+      if (!isEmailValid || !isAdminEmailValid || !isPhoneValid || !isPasswordValid) {
+        e.preventDefault();
+        // Scroll to the first invalid field
+        const firstInvalid = document.querySelector('.input-control.is-invalid, select.is-invalid');
+        if (firstInvalid) {
+          firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          firstInvalid.focus();
+        }
+        return false;
+      }
+
       submitBtn.disabled = true;
       submitBtn.style.opacity = '0.85';
       submitBtn.innerHTML = '<i class="bx bx-loader-alt bx-spin" style="font-size: 20px;"></i> Provisioning Database &amp; Running Migrations...';

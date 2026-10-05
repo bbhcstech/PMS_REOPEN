@@ -15,7 +15,7 @@
       content="width=device-width, initial-scale=1.0" />
 
     @php
-      $companyBrand = $currentCompany?->brand_name ?? 'Bitroxia PMS';
+      $companyBrand = $currentCompany?->brand_name ?? ($currentCompany?->name ?? 'PMS');
       $companyFavicon = $currentCompany?->favicon ? asset($currentCompany->favicon) : asset('admin/assets/img/favicon/favicon.ico');
     @endphp
 

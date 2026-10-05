@@ -389,7 +389,7 @@
       <div class="profile-sec-subtitle">Update your account details and personal information.</div>
 
       <!-- FORM -->
-      <form action="{{ Route::has('superadmin.profile.update') ? route('superadmin.profile.update') : (Route::has('super-admin.profile.update') ? route('super-admin.profile.update') : url('/superadmin/profile')) }}" method="POST" enctype="multipart/form-data">
+      <form id="superadminProfileForm" action="{{ Route::has('superadmin.profile.update') ? route('superadmin.profile.update') : (Route::has('super-admin.profile.update') ? route('super-admin.profile.update') : url('/superadmin/profile')) }}" method="POST" enctype="multipart/form-data">
         @csrf
 
         <!-- PROFILE IMAGE UPLOAD -->
@@ -426,7 +426,8 @@
           <!-- EMAIL -->
           <div>
             <label class="profile-label">Email</label>
-            <input type="email" name="email" class="profile-control" value="{{ old('email', $user->email ?? 'admin@company.com') }}" required placeholder="admin@company.com" />
+            <input type="email" name="email" id="profile_email_input" class="profile-control" value="{{ old('email', $user->email ?? 'admin@company.com') }}" required placeholder="admin@company.com" />
+            <div id="profile_email_error" class="field-error-feedback"></div>
           </div>
 
           <!-- MOBILE -->
@@ -443,7 +444,7 @@
               }
             @endphp
             <div style="display: flex;">
-              <select id="profile_country_code" class="profile-control" style="width: 100px; flex-shrink: 0; border-top-right-radius: 0; border-bottom-right-radius: 0; border-right: 0; background-position: right 0.25rem center; padding-right: 20px;">
+              <select id="profile_country_code" class="profile-control country-code-select" style="width: 100px; flex-shrink: 0; border-top-right-radius: 0; border-bottom-right-radius: 0; border-right: 0; background-position: right 0.25rem center; padding-right: 20px; outline: none;">
                 <option value="+91" {{ $countryCode == '+91' ? 'selected' : '' }}>+91 (IN)</option>
                 <option value="+1" {{ $countryCode == '+1' ? 'selected' : '' }}>+1 (US)</option>
                 <option value="+44" {{ $countryCode == '+44' ? 'selected' : '' }}>+44 (UK)</option>
@@ -453,31 +454,11 @@
                 <option value="+49" {{ $countryCode == '+49' ? 'selected' : '' }}>+49 (DE)</option>
                 <option value="+33" {{ $countryCode == '+33' ? 'selected' : '' }}>+33 (FR)</option>
               </select>
-              <input type="text" id="profile_mobile_number" class="profile-control" value="{{ $mobileNum }}" placeholder="Enter mobile number" style="border-top-left-radius: 0; border-bottom-left-radius: 0;" />
+              <input type="text" id="profile_mobile_number" class="profile-control" value="{{ $mobileNum }}" placeholder="Enter mobile number" style="border-top-left-radius: 0; border-bottom-left-radius: 0; width: 100%;" />
               <input type="hidden" name="mobile" id="profile_mobile_hidden" value="{{ $fullMobile }}">
             </div>
+            <div id="profile_mobile_error" class="field-error-feedback"></div>
           </div>
-          <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const ccSelect = document.getElementById('profile_country_code');
-                const mobileInput = document.getElementById('profile_mobile_number');
-                const hiddenMobile = document.getElementById('profile_mobile_hidden');
-                
-                function updateMobile() {
-                    const num = mobileInput.value.replace(/[^0-9]/g, '');
-                    if (num === '') {
-                        hiddenMobile.value = '';
-                    } else {
-                        hiddenMobile.value = ccSelect.value + ' ' + num;
-                    }
-                }
-                
-                if (ccSelect && mobileInput) {
-                    ccSelect.addEventListener('change', updateMobile);
-                    mobileInput.addEventListener('input', updateMobile);
-                }
-            });
-          </script>
 
           <!-- GENDER -->
           <div>
@@ -594,5 +575,200 @@ function updateFileName(input, spanId, imgId, fallbackId) {
     }
   }
 }
+
+// Profile Strict Phone & Email Validation
+document.addEventListener('DOMContentLoaded', function() {
+  function getProfilePhoneRule(countryCode) {
+    switch (countryCode) {
+      case '+91': return { min: 10, max: 10, regex: /^[6-9]\d{9}$/, placeholder: '9876543210', error: 'India phone number must be exactly 10 digits starting with 6, 7, 8, or 9.' };
+      case '+1':  return { min: 10, max: 10, regex: /^[2-9]\d{9}$/, placeholder: '5550192831', error: 'US/Canada phone number must be exactly 10 digits (e.g. 5550192831).' };
+      case '+44': return { min: 10, max: 11, regex: /^[1-9]\d{9,10}$/, placeholder: '7911123456', error: 'UK phone number must be 10 to 11 digits.' };
+      case '+61': return { min: 9,  max: 10, regex: /^[1-9]\d{8,9}$/, placeholder: '412345678', error: 'Australia phone number must be 9 to 10 digits.' };
+      case '+971':return { min: 9,  max: 9,  regex: /^[2-9]\d{8}$/, placeholder: '501234567', error: 'UAE phone number must be 9 digits (e.g. 501234567).' };
+      case '+81': return { min: 10, max: 10, regex: /^[1-9]\d{9}$/, placeholder: '9012345678', error: 'Japan phone number must be 10 digits.' };
+      case '+49': return { min: 10, max: 11, regex: /^[1-9]\d{9,10}$/, placeholder: '15123456789', error: 'Germany phone number must be 10 to 11 digits.' };
+      case '+33': return { min: 9,  max: 9,  regex: /^[1-9]\d{8}$/, placeholder: '612345678', error: 'France phone number must be 9 digits.' };
+      default:    return { min: 7,  max: 15, regex: /^\d{7,15}$/, placeholder: '1234567890', error: 'Phone number must be between 7 and 15 digits.' };
+    }
+  }
+
+  function validateProfileEmailFormat(email, isRequired = true) {
+    const val = (email || '').trim();
+    if (!val) {
+      return isRequired ? { valid: false, message: 'Email address is required.' } : { valid: true };
+    }
+    if (/\s/.test(val)) {
+      return { valid: false, message: 'Email address cannot contain spaces.' };
+    }
+    if (!val.includes('@')) {
+      return { valid: false, message: "Email address must include an '@' symbol." };
+    }
+    const parts = val.split('@');
+    if (parts.length !== 2) {
+      return { valid: false, message: "Email address must contain only one '@' symbol." };
+    }
+    const [local, domain] = parts;
+    if (!local) return { valid: false, message: "Missing username before '@'." };
+    if (!domain) return { valid: false, message: "Missing domain after '@'." };
+    if (!domain.includes('.')) return { valid: false, message: "Domain name must include a valid extension (e.g. .com)." };
+    if (domain.startsWith('.') || domain.endsWith('.')) return { valid: false, message: "Domain name cannot start or end with a dot." };
+    if (domain.includes('..')) return { valid: false, message: "Domain name cannot contain consecutive dots." };
+    const strictRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!strictRegex.test(val)) {
+      return { valid: false, message: 'Please enter a valid email address (e.g. name@company.com).' };
+    }
+    return { valid: true };
+  }
+
+  const ccSelect = document.getElementById('profile_country_code');
+  const mobileInput = document.getElementById('profile_mobile_number');
+  const hiddenMobile = document.getElementById('profile_mobile_hidden');
+  const mobileError = document.getElementById('profile_mobile_error');
+
+  function updateMobileRule() {
+    if (!ccSelect || !mobileInput) return;
+    const rule = getProfilePhoneRule(ccSelect.value);
+    mobileInput.placeholder = rule.placeholder;
+    mobileInput.maxLength = rule.max;
+  }
+
+  if (mobileInput) {
+    mobileInput.addEventListener('keydown', function(e) {
+      if (['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(e.key) ||
+          ((e.ctrlKey || e.metaKey) && ['a', 'c', 'v', 'x', 'z'].includes(e.key.toLowerCase()))) {
+        return;
+      }
+      if (!/^\d$/.test(e.key)) {
+        e.preventDefault();
+      }
+    });
+
+    function syncMobile() {
+      mobileInput.value = mobileInput.value.replace(/\D/g, '');
+      const rule = getProfilePhoneRule(ccSelect.value);
+      if (mobileInput.value.length > rule.max) {
+        mobileInput.value = mobileInput.value.substring(0, rule.max);
+      }
+      if (hiddenMobile) {
+        hiddenMobile.value = mobileInput.value ? ccSelect.value + ' ' + mobileInput.value : '';
+      }
+    }
+
+    mobileInput.addEventListener('input', function() {
+      syncMobile();
+      validatePhone(false);
+    });
+
+    if (ccSelect) {
+      ccSelect.addEventListener('change', function() {
+        updateMobileRule();
+        syncMobile();
+        validatePhone(false);
+      });
+    }
+
+    mobileInput.addEventListener('blur', function() {
+      validatePhone(true);
+    });
+  }
+
+  function validatePhone(showEmptyError = true) {
+    if (!mobileInput) return true;
+    const val = mobileInput.value.trim();
+    if (!val) {
+      clearPhoneError();
+      return true;
+    }
+    const rule = getProfilePhoneRule(ccSelect.value);
+    if (!rule.regex.test(val)) {
+      showPhoneError(rule.error);
+      return false;
+    }
+    clearPhoneError();
+    return true;
+  }
+
+  function showPhoneError(msg) {
+    if (mobileError) {
+      mobileError.textContent = msg;
+      mobileError.classList.add('visible');
+    }
+    mobileInput.classList.add('is-invalid');
+  }
+
+  function clearPhoneError() {
+    if (mobileError) {
+      mobileError.textContent = '';
+      mobileError.classList.remove('visible');
+    }
+    mobileInput.classList.remove('is-invalid');
+  }
+
+  updateMobileRule();
+
+  const emailInput = document.getElementById('profile_email_input');
+  const emailError = document.getElementById('profile_email_error');
+
+  function validateEmailField(showEmptyError = true) {
+    if (!emailInput) return true;
+    const val = emailInput.value.trim();
+    const res = validateProfileEmailFormat(val, true);
+    if (!res.valid) {
+      if (val || showEmptyError) {
+        showEmailError(res.message);
+        return false;
+      }
+      return false;
+    }
+    clearEmailError();
+    return true;
+  }
+
+  function showEmailError(msg) {
+    if (emailError) {
+      emailError.textContent = msg;
+      emailError.classList.add('visible');
+    }
+    emailInput.classList.add('is-invalid');
+  }
+
+  function clearEmailError() {
+    if (emailError) {
+      emailError.textContent = '';
+      emailError.classList.remove('visible');
+    }
+    emailInput.classList.remove('is-invalid');
+  }
+
+  if (emailInput) {
+    emailInput.addEventListener('input', function() {
+      if (/\s/.test(this.value)) {
+        this.value = this.value.replace(/\s+/g, '');
+      }
+      validateEmailField(false);
+    });
+
+    emailInput.addEventListener('blur', function() {
+      validateEmailField(true);
+    });
+  }
+
+  const profileForm = document.getElementById('superadminProfileForm');
+  if (profileForm) {
+    profileForm.addEventListener('submit', function(e) {
+      const isEmailValid = validateEmailField(true);
+      const isPhoneValid = validatePhone(true);
+
+      if (!isEmailValid || !isPhoneValid) {
+        e.preventDefault();
+        const firstInvalid = profileForm.querySelector('.is-invalid');
+        if (firstInvalid) {
+          firstInvalid.focus();
+        }
+        return false;
+      }
+    });
+  }
+});
 </script>
 @endsection
