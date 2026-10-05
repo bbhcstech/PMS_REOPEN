@@ -853,7 +853,7 @@ class EmployeeController extends Controller
         $detail = $user->employeeDetail;
 
         // Only check email uniqueness when the email is actually being changed.
-        $emailUniqueRule = 'required|email';
+        $emailUniqueRule = 'required|email|max:255';
         if (strtolower(trim((string) $request->email)) !== strtolower(trim((string) $user->email))) {
             $emailUniqueRule .= '|unique:users,email,' . $user->id;
         }
@@ -1176,8 +1176,7 @@ class EmployeeController extends Controller
     {
         $this->ensureAdmin();
 
-        $employee = User::where('role', 'employee')
-            ->whereNotNull('archived_at')
+        $employee = User::whereNotNull('archived_at')
             ->findOrFail($id);
 
         $employee->forceFill([
@@ -1200,12 +1199,12 @@ class EmployeeController extends Controller
             'employee_ids.*' => 'integer|exists:users,id',
         ]);
 
-        $restored = User::where('role', 'employee')
-            ->whereNotNull('archived_at')
+        $restored = User::whereNotNull('archived_at')
             ->whereIn('id', $request->employee_ids)
             ->update(['archived_at' => null]);
 
         return response()->json([
+            'success' => true,
             'message' => $restored . ' employee(s) restored successfully.',
             'restored' => $restored,
         ]);

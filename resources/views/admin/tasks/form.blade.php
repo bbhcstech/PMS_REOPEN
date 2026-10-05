@@ -212,8 +212,18 @@
                        {{ old('is_private', $task->is_private ?? false) ? 'checked' : '' }}>
                 <label class="form-check-label" for="is_private">
                     Make Private
-                    <i class="fas fa-question-circle" data-toggle="popover"
-                       data-content="Private tasks are only visible to admin, assignor, and assignee."></i>
+                    <i class="fas fa-question-circle question-info-icon"
+                       data-bs-toggle="popover"
+                       data-bs-trigger="hover focus"
+                       data-bs-placement="top"
+                       data-bs-content="Private tasks are only visible to admin, assignor, and assignee."
+                       data-toggle="popover"
+                       data-trigger="hover focus"
+                       data-placement="top"
+                       data-content="Private tasks are only visible to admin, assignor, and assignee."
+                       tabindex="0"
+                       role="button"
+                       aria-label="Info"></i>
                 </label>
             </div>
         </div>
@@ -227,8 +237,18 @@
                        {{ old('billable', $task->billable ?? false) ? 'checked' : '' }}>
                 <label class="form-check-label" for="billable">
                     Billable
-                    <i class="fas fa-question-circle" data-toggle="popover"
-                       data-content="Invoice can be generated for this task's time log."></i>
+                    <i class="fas fa-question-circle question-info-icon"
+                       data-bs-toggle="popover"
+                       data-bs-trigger="hover focus"
+                       data-bs-placement="top"
+                       data-bs-content="Invoice can be generated for this task's time log."
+                       data-toggle="popover"
+                       data-trigger="hover focus"
+                       data-placement="top"
+                       data-content="Invoice can be generated for this task's time log."
+                       tabindex="0"
+                       role="button"
+                       aria-label="Info"></i>
                 </label>
             </div>
         </div>

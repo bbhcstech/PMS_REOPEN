@@ -6142,28 +6142,147 @@ body[data-pms-theme="dark"] .modal-body .rec-notification-alert-icon,
   -webkit-text-fill-color: #60A5FA !important;
 }
 
-/* Appraisal Table Action Buttons Dark Mode Overrides */
-html[data-pms-theme="dark"] .app-table .btn-icon.btn-light,
-html[data-bs-theme="dark"] .app-table .btn-icon.btn-light,
-html[data-theme="dark"] .app-table .btn-icon.btn-light,
-html.dark .app-table .btn-icon.btn-light,
-body[data-pms-theme="dark"] .app-table .btn-icon.btn-light,
-[data-pms-theme="dark"] .app-table .btn-icon.btn-light,
-.dark .app-table .btn-icon.btn-light {
-  background: #141B3D !important;
-  border: 1px solid rgba(238, 241, 251, 0.2) !important;
-  color: #cbd5e1 !important;
+/* Table Action Buttons Dark Mode Overrides (Universal for all tables) */
+.table td .btn-icon,
+.table td .btn-icon.btn-sm,
+table td .btn-icon,
+table .btn-icon,
+.app-table .btn-icon,
+.btn-icon.rounded-circle {
+  width: 34px !important;
+  height: 34px !important;
+  min-width: 34px !important;
+  min-height: 34px !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 50% !important;
+  flex-shrink: 0 !important;
+  transition: all 0.2s ease !important;
 }
 
+.table td .btn-icon i,
+table td .btn-icon i,
+table .btn-icon i,
+.app-table .btn-icon i,
+.btn-icon.rounded-circle i {
+  font-size: 1.25rem !important;
+  width: 1.25rem !important;
+  height: 1.25rem !important;
+  min-width: 1.25rem !important;
+  min-height: 1.25rem !important;
+  display: inline-block !important;
+  line-height: 1 !important;
+  background-color: currentColor !important;
+}
+
+html[data-pms-theme="dark"] .table td .btn-icon.btn-light,
+html[data-pms-theme="dark"] table .btn-icon.btn-light,
+html[data-pms-theme="dark"] .app-table .btn-icon.btn-light,
+html[data-bs-theme="dark"] .table td .btn-icon.btn-light,
+html[data-bs-theme="dark"] table .btn-icon.btn-light,
+html[data-bs-theme="dark"] .app-table .btn-icon.btn-light,
+html[data-theme="dark"] .table td .btn-icon.btn-light,
+html[data-theme="dark"] table .btn-icon.btn-light,
+html[data-theme="dark"] .app-table .btn-icon.btn-light,
+html.dark .table td .btn-icon.btn-light,
+html.dark table .btn-icon.btn-light,
+html.dark .app-table .btn-icon.btn-light,
+body[data-pms-theme="dark"] .table td .btn-icon.btn-light,
+body[data-pms-theme="dark"] table .btn-icon.btn-light,
+body[data-pms-theme="dark"] .app-table .btn-icon.btn-light,
+[data-pms-theme="dark"] .table td .btn-icon.btn-light,
+[data-pms-theme="dark"] table .btn-icon.btn-light,
+[data-pms-theme="dark"] .app-table .btn-icon.btn-light,
+.dark .table td .btn-icon.btn-light,
+.dark table .btn-icon.btn-light,
+.dark .app-table .btn-icon.btn-light {
+  background: #141B3D !important;
+  border: 1px solid rgba(79, 131, 255, 0.35) !important;
+  color: #EEF1FB !important;
+}
+
+html[data-pms-theme="dark"] .table td .btn-icon.btn-light:hover,
+html[data-pms-theme="dark"] table .btn-icon.btn-light:hover,
 html[data-pms-theme="dark"] .app-table .btn-icon.btn-light:hover,
+html[data-bs-theme="dark"] .table td .btn-icon.btn-light:hover,
+html[data-bs-theme="dark"] table .btn-icon.btn-light:hover,
 html[data-bs-theme="dark"] .app-table .btn-icon.btn-light:hover,
+html[data-theme="dark"] .table td .btn-icon.btn-light:hover,
+html[data-theme="dark"] table .btn-icon.btn-light:hover,
 html[data-theme="dark"] .app-table .btn-icon.btn-light:hover,
+html.dark .table td .btn-icon.btn-light:hover,
+html.dark table .btn-icon.btn-light:hover,
 html.dark .app-table .btn-icon.btn-light:hover,
+body[data-pms-theme="dark"] .table td .btn-icon.btn-light:hover,
+body[data-pms-theme="dark"] table .btn-icon.btn-light:hover,
 body[data-pms-theme="dark"] .app-table .btn-icon.btn-light:hover,
+[data-pms-theme="dark"] .table td .btn-icon.btn-light:hover,
+[data-pms-theme="dark"] table .btn-icon.btn-light:hover,
 [data-pms-theme="dark"] .app-table .btn-icon.btn-light:hover,
+.dark .table td .btn-icon.btn-light:hover,
+.dark table .btn-icon.btn-light:hover,
 .dark .app-table .btn-icon.btn-light:hover {
-  background: #1e293b !important;
-  border-color: rgba(238, 241, 251, 0.35) !important;
+  background: #1A2247 !important;
+  border-color: #2F6BFF !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 12px rgba(47, 107, 255, 0.3) !important;
+}
+
+/* Default three-dot / action icon in dark mode */
+html[data-pms-theme="dark"] .table td .btn-icon.btn-light i,
+html[data-pms-theme="dark"] table .btn-icon.btn-light i,
+html[data-pms-theme="dark"] .app-table .btn-icon.btn-light i,
+html[data-bs-theme="dark"] .table td .btn-icon.btn-light i,
+html[data-bs-theme="dark"] table .btn-icon.btn-light i,
+html[data-bs-theme="dark"] .app-table .btn-icon.btn-light i,
+html[data-theme="dark"] .table td .btn-icon.btn-light i,
+html[data-theme="dark"] table .btn-icon.btn-light i,
+html[data-theme="dark"] .app-table .btn-icon.btn-light i,
+html.dark .table td .btn-icon.btn-light i,
+html.dark table .btn-icon.btn-light i,
+html.dark .app-table .btn-icon.btn-light i,
+body[data-pms-theme="dark"] .table td .btn-icon.btn-light i,
+body[data-pms-theme="dark"] table .btn-icon.btn-light i,
+body[data-pms-theme="dark"] .app-table .btn-icon.btn-light i,
+[data-pms-theme="dark"] .table td .btn-icon.btn-light i,
+[data-pms-theme="dark"] table .btn-icon.btn-light i,
+[data-pms-theme="dark"] .app-table .btn-icon.btn-light i,
+.dark .table td .btn-icon.btn-light i,
+.dark table .btn-icon.btn-light i,
+.dark .app-table .btn-icon.btn-light i {
+  color: #EEF1FB !important;
+  -webkit-text-fill-color: #EEF1FB !important;
+  background-color: #EEF1FB !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+html[data-pms-theme="dark"] .table td .btn-icon.btn-light:hover i,
+html[data-pms-theme="dark"] table .btn-icon.btn-light:hover i,
+html[data-pms-theme="dark"] .app-table .btn-icon.btn-light:hover i,
+html[data-bs-theme="dark"] .table td .btn-icon.btn-light:hover i,
+html[data-bs-theme="dark"] table .btn-icon.btn-light:hover i,
+html[data-bs-theme="dark"] .app-table .btn-icon.btn-light:hover i,
+html[data-theme="dark"] .table td .btn-icon.btn-light:hover i,
+html[data-theme="dark"] table .btn-icon.btn-light:hover i,
+html[data-theme="dark"] .app-table .btn-icon.btn-light:hover i,
+html.dark .table td .btn-icon.btn-light:hover i,
+html.dark table .btn-icon.btn-light:hover i,
+html.dark .app-table .btn-icon.btn-light:hover i,
+body[data-pms-theme="dark"] .table td .btn-icon.btn-light:hover i,
+body[data-pms-theme="dark"] table .btn-icon.btn-light:hover i,
+body[data-pms-theme="dark"] .app-table .btn-icon.btn-light:hover i,
+[data-pms-theme="dark"] .table td .btn-icon.btn-light:hover i,
+[data-pms-theme="dark"] table .btn-icon.btn-light:hover i,
+[data-pms-theme="dark"] .app-table .btn-icon.btn-light:hover i,
+.dark .table td .btn-icon.btn-light:hover i,
+.dark table .btn-icon.btn-light:hover i,
+.dark .app-table .btn-icon.btn-light:hover i {
+  color: #FFFFFF !important;
+  -webkit-text-fill-color: #FFFFFF !important;
+  background-color: #FFFFFF !important;
 }
 
 html[data-pms-theme="dark"] .app-table .btn-icon.btn-light i.text-info,
@@ -6175,6 +6294,7 @@ body[data-pms-theme="dark"] .app-table .btn-icon.btn-light i.text-info,
 .dark .app-table .btn-icon.btn-light i.text-info {
   color: #38bdf8 !important;
   -webkit-text-fill-color: #38bdf8 !important;
+  background-color: #38bdf8 !important;
 }
 
 html[data-pms-theme="dark"] .app-table .btn-icon.btn-light i.text-primary,
@@ -6186,6 +6306,7 @@ body[data-pms-theme="dark"] .app-table .btn-icon.btn-light i.text-primary,
 .dark .app-table .btn-icon.btn-light i.text-primary {
   color: #818cf8 !important;
   -webkit-text-fill-color: #818cf8 !important;
+  background-color: #818cf8 !important;
 }
 
 html[data-pms-theme="dark"] .app-table .btn-icon.btn-light i.text-danger,
@@ -6197,6 +6318,7 @@ body[data-pms-theme="dark"] .app-table .btn-icon.btn-light i.text-danger,
 .dark .app-table .btn-icon.btn-light i.text-danger {
   color: #fca5a5 !important;
   -webkit-text-fill-color: #fca5a5 !important;
+  background-color: #fca5a5 !important;
 }
 
 /* Ensure top navbar remains sticky when scrolling */

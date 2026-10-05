@@ -956,6 +956,7 @@ Route::get('/my-awards', [AwardController::class, 'myAwards'])->name('awards.my-
     Route::get('/clients/pending', [ClientController::class, 'pending'])->name('clients.pending');
     Route::post('/clients/pending/bulk-action', [ClientController::class, 'pendingBulkAction'])->name('clients.pendingbulkAction');
 
+    Route::get('/clients/lookup-pincode', [ClientController::class, 'lookupPincode'])->name('clients.lookup-pincode');
     Route::resource('clients', ClientController::class);
     Route::get('/clients/{client}', [ClientController::class, 'show'])->name('clients.show');
     Route::resource('collaborating-companies', CollaboratingCompanyController::class);

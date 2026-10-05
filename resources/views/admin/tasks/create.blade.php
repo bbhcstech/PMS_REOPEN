@@ -219,7 +219,18 @@
                             <input class="form-check-input" type="checkbox" name="is_private" id="is_private">
                             <label class="form-check-label" for="is_private">
                                 Make Private
-                                <i class="fas fa-question-circle" data-toggle="popover" data-content="Private tasks are only visible to admin, assignor, and assignee."></i>
+                                <i class="fas fa-question-circle question-info-icon"
+                                   data-bs-toggle="popover"
+                                   data-bs-trigger="hover focus"
+                                   data-bs-placement="top"
+                                   data-bs-content="Private tasks are only visible to admin, assignor, and assignee."
+                                   data-toggle="popover"
+                                   data-trigger="hover focus"
+                                   data-placement="top"
+                                   data-content="Private tasks are only visible to admin, assignor, and assignee."
+                                   tabindex="0"
+                                   role="button"
+                                   aria-label="Info"></i>
                             </label>
                         </div>
                     </div>
@@ -232,7 +243,18 @@
 
                             <label class="form-check-label" for="billable">
                                 Billable
-                                <i class="fas fa-question-circle" data-toggle="popover" data-content="Invoice can be generated for this task's time log."></i>
+                                <i class="fas fa-question-circle question-info-icon"
+                                   data-bs-toggle="popover"
+                                   data-bs-trigger="hover focus"
+                                   data-bs-placement="top"
+                                   data-bs-content="Invoice can be generated for this task's time log."
+                                   data-toggle="popover"
+                                   data-trigger="hover focus"
+                                   data-placement="top"
+                                   data-content="Invoice can be generated for this task's time log."
+                                   tabindex="0"
+                                   role="button"
+                                   aria-label="Info"></i>
                             </label>
                         </div>
                     </div>
@@ -1038,6 +1060,43 @@
         </main>
 
 
+@push('styles')
+<style>
+    .question-info-icon {
+        cursor: pointer;
+        color: #6c757d;
+        font-size: 0.875rem;
+        margin-left: 4px;
+        transition: color 0.15s ease-in-out, transform 0.15s ease-in-out;
+        vertical-align: middle;
+        display: inline-block;
+    }
+    .question-info-icon:hover,
+    .question-info-icon:focus {
+        color: #0d6efd;
+        transform: scale(1.15);
+    }
+    .popover {
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+        border-radius: 8px;
+        font-size: 0.85rem;
+        z-index: 1060;
+    }
+    html[data-pms-theme="dark"] .popover,
+    html[data-bs-theme="dark"] .popover,
+    body.dark-mode .popover {
+        background-color: #232733 !important;
+        border-color: #3b4253 !important;
+        color: #e2e8f0 !important;
+    }
+    html[data-pms-theme="dark"] .popover .popover-body,
+    html[data-bs-theme="dark"] .popover .popover-body,
+    body.dark-mode .popover .popover-body {
+        color: #cbd5e1 !important;
+    }
+</style>
+@endpush
+
 @push('scripts')
 
 <script>
@@ -1112,18 +1171,49 @@
 </script>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-toggle="popover"]'));
-        popoverTriggerList.map(function (popoverTriggerEl) {
-            new bootstrap.Popover(popoverTriggerEl);
-        });
-    });
-</script>
-<script>
+    function initTaskPopovers() {
+        var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"], [data-toggle="popover"]'));
+        popoverTriggerList.forEach(function (popoverTriggerEl) {
+            var content = popoverTriggerEl.getAttribute('data-bs-content') || popoverTriggerEl.getAttribute('data-content') || '';
+            var title = popoverTriggerEl.getAttribute('data-bs-original-title') || popoverTriggerEl.getAttribute('title') || '';
+            var placement = popoverTriggerEl.getAttribute('data-bs-placement') || popoverTriggerEl.getAttribute('data-placement') || 'top';
+            var trigger = popoverTriggerEl.getAttribute('data-bs-trigger') || popoverTriggerEl.getAttribute('data-trigger') || 'hover focus';
 
+            if (window.bootstrap && bootstrap.Popover) {
+                try {
+                    var existing = bootstrap.Popover.getInstance(popoverTriggerEl);
+                    if (existing) {
+                        existing.dispose();
+                    }
+                } catch (e) {}
+
+                new bootstrap.Popover(popoverTriggerEl, {
+                    trigger: trigger,
+                    placement: placement,
+                    content: content,
+                    title: title,
+                    html: true
+                });
+            } else if (window.jQuery && $.fn.popover) {
+                $(popoverTriggerEl).popover({
+                    trigger: trigger,
+                    placement: placement,
+                    content: content,
+                    title: title,
+                    html: true
+                });
+            }
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initTaskPopovers);
+    } else {
+        initTaskPopovers();
+    }
 
     $(function () {
-        $('[data-toggle="popover"]').popover();
+        initTaskPopovers();
 
         $('#set_time_estimate').on('change', function () {
             $('#set-time-estimate-fields').toggle(this.checked);

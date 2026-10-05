@@ -189,6 +189,9 @@ class LeaveService
         }
 
         $errors = [];
+        if ($end->lt($start)) {
+            $errors[] = "End date can't be backdated. Please select a date on or after the start date.";
+        }
         $policy = $this->policy();
         $days = $this->calculateDays($start, $end, (bool) ($data['half_day_flag'] ?? false));
 
@@ -321,6 +324,14 @@ class LeaveService
                     'unpaid_days' => (float) ($leave->total_days ?: 1),
                     'payroll_deduction_flag' => true,
                 ]);
+            } else {
+                $typeCode = $this->typeCode($leave);
+                if ($typeCode !== 'UL') {
+                    $leave->forceFill([
+                        'is_unpaid' => false,
+                        'payroll_deduction_flag' => false,
+                    ]);
+                }
             }
 
             $leave->forceFill([
@@ -352,17 +363,23 @@ class LeaveService
                 'rejected_at' => now(),
                 'rejection_reason' => $reason,
                 'admin_note' => $reason,
+                'approved_by' => null,
+                'approved_at' => null,
+                'is_unpaid' => false,
+                'is_paid' => false,
+                'paid' => false,
+                'paid_days' => 0,
+                'unpaid_days' => 0,
+                'payroll_deduction_flag' => false,
             ])->save();
 
             $startDate = $leave->start_date ? Carbon::parse($leave->start_date) : ($leave->date ? Carbon::parse($leave->date) : null);
             $endDate = $leave->end_date ? Carbon::parse($leave->end_date) : $startDate;
             if ($startDate && $endDate && $leave->user_id) {
-                foreach (CarbonPeriod::create($startDate, $endDate) as $date) {
-                    Attendance::where('user_id', $leave->user_id)
-                        ->where('date', $date->toDateString())
-                        ->whereIn('status', ['leave', 'unpaid_leave'])
-                        ->delete();
-                }
+                Attendance::where('user_id', $leave->user_id)
+                    ->whereBetween('date', [$startDate->toDateString(), $endDate->toDateString()])
+                    ->whereIn('status', ['leave', 'unpaid_leave'])
+                    ->delete();
             }
 
             $this->recordApproval($leave, $actor, 'rejected', $reason);
@@ -455,15 +472,31 @@ class LeaveService
             : (((float) ($leave->paid_days ?? 0)) <= 0 ? 'unpaid_leave' : 'leave');
 
         foreach (CarbonPeriod::create($startDate, $endDate) as $date) {
-            Attendance::updateOrCreate(
-                ['user_id' => $employee->id, 'date' => $date->toDateString()],
-                [
-                    'company_id' => $employee->company_id,
-                    'status' => $attendanceStatus,
-                    'location' => $leave->is_unpaid ? 'Unpaid Leave' : 'Leave',
-                    'working_from' => $leave->is_unpaid ? 'Unpaid Leave' : 'Leave',
-                ]
-            );
+            try {
+                Attendance::updateOrCreate(
+                    ['user_id' => $employee->id, 'date' => $date->toDateString()],
+                    [
+                        'company_id' => $employee->company_id,
+                        'status' => $attendanceStatus,
+                        'location' => $leave->is_unpaid ? 'Unpaid Leave' : 'Leave',
+                        'working_from' => $leave->is_unpaid ? 'Unpaid Leave' : 'Leave',
+                    ]
+                );
+            } catch (\Throwable $e) {
+                if ($attendanceStatus === 'unpaid_leave') {
+                    Attendance::updateOrCreate(
+                        ['user_id' => $employee->id, 'date' => $date->toDateString()],
+                        [
+                            'company_id' => $employee->company_id,
+                            'status' => 'leave',
+                            'location' => 'Unpaid Leave',
+                            'working_from' => 'Unpaid Leave',
+                        ]
+                    );
+                } else {
+                    throw $e;
+                }
+            }
         }
 
         $after = $this->syncBalanceCounters($employee)?->toArray() ?: [];
