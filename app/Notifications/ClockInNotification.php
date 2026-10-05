@@ -57,4 +57,9 @@ class ClockInNotification extends Notification
     {
         return $this->toDatabase($notifiable);
     }
+
+    public function toBroadcast($notifiable)
+    {
+        return new \Illuminate\Notifications\Messages\BroadcastMessage($this->toDatabase($notifiable));
+    }
 }

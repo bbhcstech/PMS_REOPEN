@@ -522,19 +522,23 @@ public function update(Request $request, Task $task)
     if ($request->has('assigned_to')) {
     $this->syncTaskAssignees($task, $request->assigned_to);
 
-    foreach ($request->assigned_to as $userId) {
-        $user = User::find($userId);
-        if ($user) {
-            $user->notify(new TaskAssignedNotification($task, auth()->user(), 'employee'));
+    try {
+        foreach ($request->assigned_to as $userId) {
+            $user = User::find($userId);
+            if ($user) {
+                $user->notify(new TaskAssignedNotification($task, auth()->user(), 'employee'));
+            }
         }
-    }
 
-    SystemNotificationService::notifyAllRoles(
-        'Task Updated',
-        auth()->user()->name . ' updated task "' . $task->title . '".',
-        route('tasks.show', $task->id),
-        ['task_id' => $task->id, 'project_id' => $task->project_id, 'type' => 'task_updated', 'icon' => 'fa-tasks', 'color' => 'info']
-    );
+        SystemNotificationService::notifyAllRoles(
+            'Task Updated',
+            auth()->user()->name . ' updated task "' . $task->title . '".',
+            route('tasks.show', $task->id),
+            ['task_id' => $task->id, 'project_id' => $task->project_id, 'type' => 'task_updated', 'icon' => 'fa-tasks', 'color' => 'info']
+        );
+    } catch (\Throwable $e) {
+        \Log::warning('Task update notification failed: ' . $e->getMessage());
+    }
 }
 
 

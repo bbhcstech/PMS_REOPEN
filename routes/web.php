@@ -860,7 +860,7 @@ Route::middleware(['auth', 'module.access'])->group(function () {
     Route::get('/admin/leaves/report', [LeaveController::class, 'leaveReport'])->name('admin.leave.report');
     Route::get('/leaves/{leave}', [LeaveController::class, 'show'])->name('leaves.show');
     Route::get('/leaves/{leave}/status', fn (\App\Models\Leave $leave) => redirect()->route('leaves.show', $leave->id));
-    Route::patch('/leaves/{leave}/status', [LeaveController::class, 'updateStatus'])->name('leaves.updateStatus');
+    Route::match(['patch', 'post'], '/leaves/{leave}/status', [LeaveController::class, 'updateStatus'])->name('leaves.updateStatus');
 
 
 
