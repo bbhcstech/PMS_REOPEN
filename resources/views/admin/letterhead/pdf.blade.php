@@ -121,7 +121,7 @@
         .watermark-text {
             font-size: {{ $letterhead->watermark_size ?: 44 }}pt;
             font-weight: bold;
-            color: {{ $letterhead->primary_color ?: '#0f744c' }};
+            color: {{ $letterhead->primary_color ?: '#2F6BFF' }};
             text-transform: uppercase;
             letter-spacing: 6px;
         }
@@ -165,7 +165,7 @@
         .doc-subject {
             font-size: 10.5pt;
             font-weight: bold;
-            color: #0f744c;
+            color: #2F6BFF;
             margin: 12px 0 14px 0;
             text-decoration: underline;
             text-underline-offset: 3px;

@@ -279,10 +279,38 @@
         box-shadow: var(--shadow-md);
         transform: translateY(-3px);
     }
+    /* Plan Specific Theme Variations */
     .plan-card-item.theme-free { border-color: var(--plan-free-border); }
     .plan-card-item.theme-gold { border-color: var(--plan-gold-border); background: linear-gradient(180deg, #ffffff 0%, #fffdf5 100%); }
     .plan-card-item.theme-platinum { border-color: var(--plan-platinum-border); background: linear-gradient(180deg, #ffffff 0%, #f7fcff 100%); }
     .plan-card-item.theme-diamond { border-color: var(--plan-diamond-border); background: linear-gradient(180deg, #ffffff 0%, #faf8ff 100%); }
+
+    /* Dark Mode: Ensure all plan cards adopt the dark surface background like the Free card */
+    html[data-pms-theme="dark"] .plan-card-item,
+    html[data-theme="dark"] .plan-card-item,
+    html[data-bs-theme="dark"] .plan-card-item {
+        background: var(--bg-surface);
+    }
+    html[data-pms-theme="dark"] .plan-card-item.theme-gold,
+    html[data-theme="dark"] .plan-card-item.theme-gold,
+    html[data-bs-theme="dark"] .plan-card-item.theme-gold,
+    html[data-pms-theme="dark"] .plan-card-item.theme-platinum,
+    html[data-theme="dark"] .plan-card-item.theme-platinum,
+    html[data-bs-theme="dark"] .plan-card-item.theme-platinum,
+    html[data-pms-theme="dark"] .plan-card-item.theme-diamond,
+    html[data-theme="dark"] .plan-card-item.theme-diamond,
+    html[data-bs-theme="dark"] .plan-card-item.theme-diamond {
+        background: var(--bg-surface);
+    }
+
+    @media (prefers-color-scheme: dark) {
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .plan-card-item,
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .plan-card-item.theme-gold,
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .plan-card-item.theme-platinum,
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .plan-card-item.theme-diamond {
+            background: var(--bg-surface);
+        }
+    }
 
     .popular-badge-ribbon {
         position: absolute;
@@ -603,7 +631,429 @@
         gap: 10px;
         animation: fadeInUp 0.3s ease;
     }
+
+    /* Dark Mode: Outline Buttons & Header Actions */
+    html[data-pms-theme="dark"] .btn-outline-custom,
+    html[data-theme="dark"] .btn-outline-custom,
+    html[data-bs-theme="dark"] .btn-outline-custom {
+        background: var(--bg-surface-subtle, #141B3D);
+        border-color: var(--border-strong, rgba(238, 241, 251, 0.14));
+        color: var(--text-main, #EEF1FB);
+    }
+    html[data-pms-theme="dark"] .btn-outline-custom:hover,
+    html[data-theme="dark"] .btn-outline-custom:hover,
+    html[data-bs-theme="dark"] .btn-outline-custom:hover,
+    html[data-pms-theme="dark"] .btn-outline-custom:focus,
+    html[data-theme="dark"] .btn-outline-custom:focus,
+    html[data-bs-theme="dark"] .btn-outline-custom:focus {
+        background: var(--bg-surface-hover, #1A2247);
+        border-color: var(--primary, #2F6BFF);
+        color: #ffffff;
+        box-shadow: 0 4px 14px rgba(47, 107, 255, 0.22);
+    }
+
+    /* Dark Mode: Impersonation Banner */
+    html[data-pms-theme="dark"] .impersonation-banner-box,
+    html[data-theme="dark"] .impersonation-banner-box,
+    html[data-bs-theme="dark"] .impersonation-banner-box {
+        background: rgba(245, 158, 11, 0.1) !important;
+        border-color: rgba(245, 158, 11, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .impersonation-banner-box strong,
+    html[data-theme="dark"] .impersonation-banner-box strong,
+    html[data-bs-theme="dark"] .impersonation-banner-box strong {
+        color: #fbbf24 !important;
+    }
+    html[data-pms-theme="dark"] .impersonation-banner-box i.fa-right-to-bracket,
+    html[data-theme="dark"] .impersonation-banner-box i.fa-right-to-bracket,
+    html[data-bs-theme="dark"] .impersonation-banner-box i.fa-right-to-bracket {
+        color: #f59e0b !important;
+    }
+    html[data-pms-theme="dark"] .impersonation-db-code,
+    html[data-theme="dark"] .impersonation-db-code,
+    html[data-bs-theme="dark"] .impersonation-db-code {
+        background: rgba(245, 158, 11, 0.18) !important;
+        color: #fde68a !important;
+        border: 1px solid rgba(245, 158, 11, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .impersonation-leave-btn,
+    html[data-theme="dark"] .impersonation-leave-btn,
+    html[data-bs-theme="dark"] .impersonation-leave-btn {
+        background: rgba(245, 158, 11, 0.12) !important;
+        color: #fbbf24 !important;
+        border-color: rgba(245, 158, 11, 0.35) !important;
+    }
+    html[data-pms-theme="dark"] .impersonation-leave-btn:hover,
+    html[data-theme="dark"] .impersonation-leave-btn:hover,
+    html[data-bs-theme="dark"] .impersonation-leave-btn:hover {
+        background: rgba(245, 158, 11, 0.25) !important;
+        border-color: #f59e0b !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 14px rgba(245, 158, 11, 0.25) !important;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .btn-outline-custom {
+            background: var(--bg-surface-subtle, #141B3D);
+            border-color: var(--border-strong, rgba(238, 241, 251, 0.14));
+            color: var(--text-main, #EEF1FB);
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .btn-outline-custom:hover {
+            background: var(--bg-surface-hover, #1A2247);
+            border-color: var(--primary, #2F6BFF);
+            color: #ffffff;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .impersonation-banner-box {
+            background: rgba(245, 158, 11, 0.1) !important;
+            border-color: rgba(245, 158, 11, 0.3) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .impersonation-banner-box strong {
+            color: #fbbf24 !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .impersonation-banner-box i.fa-right-to-bracket {
+            color: #f59e0b !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .impersonation-db-code {
+            background: rgba(245, 158, 11, 0.18) !important;
+            color: #fde68a !important;
+            border: 1px solid rgba(245, 158, 11, 0.3) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .impersonation-leave-btn {
+            background: rgba(245, 158, 11, 0.12) !important;
+            color: #fbbf24 !important;
+            border-color: rgba(245, 158, 11, 0.35) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .impersonation-leave-btn:hover {
+            background: rgba(245, 158, 11, 0.25) !important;
+            border-color: #f59e0b !important;
+            color: #ffffff !important;
+        }
+    }
+
+    /* Dark Mode: Matrix Table & Feature Row Hover */
+    html[data-pms-theme="dark"] table.matrix-table,
+    html[data-theme="dark"] table.matrix-table,
+    html[data-bs-theme="dark"] table.matrix-table {
+        border-color: var(--border-subtle, rgba(238, 241, 251, 0.12));
+    }
+    html[data-pms-theme="dark"] table.matrix-table thead th,
+    html[data-theme="dark"] table.matrix-table thead th,
+    html[data-bs-theme="dark"] table.matrix-table thead th {
+        background: var(--bg-surface-subtle, #141B3D);
+        border-color: var(--border-subtle, rgba(238, 241, 251, 0.1));
+        color: var(--text-light, #9AA3C7);
+    }
+    html[data-pms-theme="dark"] .category-header-row td,
+    html[data-theme="dark"] .category-header-row td,
+    html[data-bs-theme="dark"] .category-header-row td {
+        background: var(--bg-surface-subtle, #141B3D);
+        border-color: var(--border-subtle, rgba(238, 241, 251, 0.1));
+        color: var(--text-main, #EEF1FB);
+    }
+    html[data-pms-theme="dark"] .feature-item-row td,
+    html[data-theme="dark"] .feature-item-row td,
+    html[data-bs-theme="dark"] .feature-item-row td,
+    html[data-pms-theme="dark"] .feature-item-row:nth-child(even) td,
+    html[data-theme="dark"] .feature-item-row:nth-child(even) td,
+    html[data-bs-theme="dark"] .feature-item-row:nth-child(even) td {
+        background: var(--bg-surface, #0F1530);
+        border-color: var(--border-subtle, rgba(238, 241, 251, 0.08));
+        color: var(--text-body, #CBD5E1);
+    }
+    html[data-pms-theme="dark"] .feature-item-row:hover td,
+    html[data-theme="dark"] .feature-item-row:hover td,
+    html[data-bs-theme="dark"] .feature-item-row:hover td,
+    html[data-pms-theme="dark"] table.matrix-table tr:hover td,
+    html[data-theme="dark"] table.matrix-table tr:hover td,
+    html[data-bs-theme="dark"] table.matrix-table tr:hover td {
+        background: var(--bg-surface-hover, #1A2247) !important;
+        color: var(--text-main, #EEF1FB);
+    }
+
+    @media (prefers-color-scheme: dark) {
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) table.matrix-table {
+            border-color: var(--border-subtle, rgba(238, 241, 251, 0.12));
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) table.matrix-table thead th {
+            background: var(--bg-surface-subtle, #141B3D);
+            border-color: var(--border-subtle, rgba(238, 241, 251, 0.1));
+            color: var(--text-light, #9AA3C7);
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .category-header-row td {
+            background: var(--bg-surface-subtle, #141B3D);
+            border-color: var(--border-subtle, rgba(238, 241, 251, 0.1));
+            color: var(--text-main, #EEF1FB);
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .feature-item-row td,
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .feature-item-row:nth-child(even) td {
+            background: var(--bg-surface, #0F1530);
+            border-color: var(--border-subtle, rgba(238, 241, 251, 0.08));
+            color: var(--text-body, #CBD5E1);
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .feature-item-row:hover td,
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) table.matrix-table tr:hover td {
+            background: var(--bg-surface-hover, #1A2247) !important;
+            color: var(--text-main, #EEF1FB);
+        }
+    }
+
+    /* ============================================================
+       COMPREHENSIVE DARK THEME ARCHITECTURE FOR SUBSCRIPTIONS & DRAWER & MODALS
+       ============================================================ */
+    html[data-pms-theme="dark"],
+    html[data-theme="dark"],
+    html[data-bs-theme="dark"],
+    .dark {
+        --bg-main: #070B1A;
+        --bg-surface: #0F1530;
+        --bg-subtle: #141B3D;
+        --bg-hover: #1A2247;
+        --border-color: rgba(238, 241, 251, 0.09);
+        --border-subtle: rgba(238, 241, 251, 0.06);
+        --text-main: #EEF1FB;
+        --text-muted: #CBD5E1;
+        --text-subtle: #9AA3C7;
+    }
+
+    /* KPI Cards */
+    html[data-pms-theme="dark"] .subs-kpi-grid .kpi-card,
+    html[data-theme="dark"] .subs-kpi-grid .kpi-card,
+    html[data-bs-theme="dark"] .subs-kpi-grid .kpi-card,
+    .dark .subs-kpi-grid .kpi-card {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .subs-kpi-grid .kpi-card .val,
+    html[data-theme="dark"] .subs-kpi-grid .kpi-card .val,
+    html[data-bs-theme="dark"] .subs-kpi-grid .kpi-card .val,
+    .dark .subs-kpi-grid .kpi-card .val {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .subs-kpi-grid .kpi-card .lbl,
+    html[data-theme="dark"] .subs-kpi-grid .kpi-card .lbl,
+    html[data-bs-theme="dark"] .subs-kpi-grid .kpi-card .lbl,
+    .dark .subs-kpi-grid .kpi-card .lbl {
+        color: #9AA3C7 !important;
+    }
+
+    /* Toolbar, Search & Filters */
+    html[data-pms-theme="dark"] #searchSubsInput,
+    html[data-theme="dark"] #searchSubsInput,
+    html[data-bs-theme="dark"] #searchSubsInput {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.14) !important;
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] #searchSubsInput:focus,
+    html[data-theme="dark"] #searchSubsInput:focus {
+        background: #1A2247 !important;
+        border-color: #2F6BFF !important;
+        box-shadow: 0 0 0 3px rgba(47, 107, 255, 0.25) !important;
+    }
+    html[data-pms-theme="dark"] .filter-select,
+    html[data-theme="dark"] .filter-select,
+    html[data-bs-theme="dark"] .filter-select {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.14) !important;
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .filter-select option,
+    html[data-theme="dark"] .filter-select option {
+        background: #0F1530 !important;
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .nav-tab-item,
+    html[data-theme="dark"] .nav-tab-item,
+    html[data-bs-theme="dark"] .nav-tab-item {
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] .nav-tab-item.active,
+    html[data-theme="dark"] .nav-tab-item.active {
+        color: #2F6BFF !important;
+        border-bottom-color: #2F6BFF !important;
+    }
+
+    /* Table Container & Rows */
+    html[data-pms-theme="dark"] .matrix-table,
+    html[data-theme="dark"] .matrix-table,
+    html[data-bs-theme="dark"] .matrix-table {
+        border-color: rgba(238, 241, 251, 0.08) !important;
+    }
+    html[data-pms-theme="dark"] .matrix-table th,
+    html[data-theme="dark"] .matrix-table th,
+    html[data-bs-theme="dark"] .matrix-table th {
+        background: #141B3D !important;
+        color: #9AA3C7 !important;
+        border-color: rgba(238, 241, 251, 0.08) !important;
+    }
+    html[data-pms-theme="dark"] .matrix-table td,
+    html[data-theme="dark"] .matrix-table td,
+    html[data-bs-theme="dark"] .matrix-table td {
+        border-color: rgba(238, 241, 251, 0.07) !important;
+        color: #CBD5E1 !important;
+    }
+    html[data-pms-theme="dark"] .matrix-table tr:hover td,
+    html[data-theme="dark"] .matrix-table tr:hover td,
+    html[data-bs-theme="dark"] .matrix-table tr:hover td {
+        background: #1A2247 !important;
+        color: #EEF1FB !important;
+    }
+
+    /* ============================================================
+       SUBSCRIPTION COMMAND DRAWER (IMAGE 3 FIX)
+       ============================================================ */
+    html[data-pms-theme="dark"] .drawer-panel-custom,
+    html[data-theme="dark"] .drawer-panel-custom,
+    html[data-bs-theme="dark"] .drawer-panel-custom,
+    .dark .drawer-panel-custom {
+        background: #0F1530 !important;
+        color: #EEF1FB !important;
+        border-left: 1px solid rgba(238, 241, 251, 0.1) !important;
+        box-shadow: -15px 0 50px rgba(0, 0, 0, 0.7) !important;
+    }
+    html[data-pms-theme="dark"] .drawer-header,
+    html[data-theme="dark"] .drawer-header,
+    html[data-bs-theme="dark"] .drawer-header,
+    .dark .drawer-header {
+        background: #141B3D !important;
+        border-bottom: 1px solid rgba(238, 241, 251, 0.1) !important;
+    }
+    html[data-pms-theme="dark"] #drawerCompanyName,
+    html[data-theme="dark"] #drawerCompanyName,
+    html[data-bs-theme="dark"] #drawerCompanyName {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] #closeDrawerBtn,
+    html[data-theme="dark"] #closeDrawerBtn,
+    html[data-bs-theme="dark"] #closeDrawerBtn {
+        background: #1A2247 !important;
+        color: #9AA3C7 !important;
+        border: 1px solid rgba(238, 241, 251, 0.1) !important;
+    }
+    html[data-pms-theme="dark"] #closeDrawerBtn:hover,
+    html[data-theme="dark"] #closeDrawerBtn:hover {
+        background: #2563eb !important;
+        color: #ffffff !important;
+    }
+    html[data-pms-theme="dark"] .drawer-card-box,
+    html[data-theme="dark"] .drawer-card-box,
+    html[data-bs-theme="dark"] .drawer-card-box,
+    .dark .drawer-card-box {
+        background: #141B3D !important;
+        border: 1px solid rgba(238, 241, 251, 0.09) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+    }
+    html[data-pms-theme="dark"] .drawer-card-box .box-title,
+    html[data-theme="dark"] .drawer-card-box .box-title,
+    html[data-bs-theme="dark"] .drawer-card-box .box-title,
+    .dark .drawer-card-box .box-title {
+        color: #EEF1FB !important;
+    }
+    /* Drawer Stat Grid Boxes (e.g. Monthly Auto-Renew, Paid, Prices) */
+    html[data-pms-theme="dark"] .drawer-card-box div[style*="background: #f8fafc"],
+    html[data-theme="dark"] .drawer-card-box div[style*="background: #f8fafc"],
+    html[data-bs-theme="dark"] .drawer-card-box div[style*="background: #f8fafc"] {
+        background: #1A2247 !important;
+        border-color: rgba(238, 241, 251, 0.08) !important;
+    }
+    html[data-pms-theme="dark"] .drawer-card-box div[style*="background: #f8fafc"] strong,
+    html[data-theme="dark"] .drawer-card-box div[style*="background: #f8fafc"] strong {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .drawer-card-box div[style*="background: #f8fafc"] div[style*="text-transform: uppercase"],
+    html[data-theme="dark"] .drawer-card-box div[style*="background: #f8fafc"] div[style*="text-transform: uppercase"] {
+        color: #9AA3C7 !important;
+    }
+    /* Capacity progress bar tracks in drawer */
+    html[data-pms-theme="dark"] .drawer-card-box div[style*="background: #e2e8f0"],
+    html[data-theme="dark"] .drawer-card-box div[style*="background: #e2e8f0"] {
+        background: rgba(238, 241, 251, 0.1) !important;
+    }
+    html[data-pms-theme="dark"] .drawer-card-box strong,
+    html[data-theme="dark"] .drawer-card-box strong {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .drawer-card-box span,
+    html[data-theme="dark"] .drawer-card-box span {
+        color: #CBD5E1 !important;
+    }
+    html[data-pms-theme="dark"] .drawer-card-box div[style*="border-bottom: 1px solid var(--border-subtle)"],
+    html[data-theme="dark"] .drawer-card-box div[style*="border-bottom: 1px solid var(--border-subtle)"] {
+        border-bottom-color: rgba(238, 241, 251, 0.08) !important;
+    }
+    html[data-pms-theme="dark"] .drawer-card-box div[style*="border-left: 2px solid var(--border-color)"],
+    html[data-theme="dark"] .drawer-card-box div[style*="border-left: 2px solid var(--border-color)"] {
+        border-left-color: rgba(238, 241, 251, 0.15) !important;
+    }
+
+    /* ============================================================
+       ASSIGN / CHANGE PLAN MODAL (IMAGE 4 FIX)
+       ============================================================ */
+    html[data-pms-theme="dark"] .modal-dialog-custom,
+    html[data-theme="dark"] .modal-dialog-custom,
+    html[data-bs-theme="dark"] .modal-dialog-custom,
+    .dark .modal-dialog-custom {
+        background: #0F1530 !important;
+        color: #EEF1FB !important;
+        border: 1px solid rgba(238, 241, 251, 0.12) !important;
+        box-shadow: 0 25px 60px -10px rgba(0, 0, 0, 0.8) !important;
+    }
+    html[data-pms-theme="dark"] #assignPlanModal h3,
+    html[data-theme="dark"] #assignPlanModal h3,
+    html[data-pms-theme="dark"] #suspendConfirmModal h3,
+    html[data-theme="dark"] #suspendConfirmModal h3 {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] #assignPlanModal p,
+    html[data-theme="dark"] #assignPlanModal p,
+    html[data-pms-theme="dark"] #suspendConfirmModal p,
+    html[data-theme="dark"] #suspendConfirmModal p {
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] #assignPlanModal label,
+    html[data-theme="dark"] #assignPlanModal label {
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] #modalCompanySelect,
+    html[data-theme="dark"] #modalCompanySelect {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.14) !important;
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] #modalCompanySelect option,
+    html[data-theme="dark"] #modalCompanySelect option {
+        background: #0F1530 !important;
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .plan-card-option,
+    html[data-theme="dark"] .plan-card-option,
+    html[data-bs-theme="dark"] .plan-card-option,
+    .dark .plan-card-option {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .plan-card-option:hover,
+    html[data-theme="dark"] .plan-card-option:hover {
+        background: #1A2247 !important;
+        border-color: #2F6BFF !important;
+    }
+    html[data-pms-theme="dark"] .plan-card-option strong,
+    html[data-theme="dark"] .plan-card-option strong {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] #downgradeWarningNotice,
+    html[data-theme="dark"] #downgradeWarningNotice {
+        background: rgba(239, 68, 68, 0.15) !important;
+        border-color: rgba(239, 68, 68, 0.3) !important;
+        color: #FCA5A5 !important;
+    }
+    html[data-pms-theme="dark"] #assignPlanModal div[style*="border-top: 1px solid var(--border-color)"],
+    html[data-theme="dark"] #assignPlanModal div[style*="border-top: 1px solid var(--border-color)"] {
+        border-top-color: rgba(238, 241, 251, 0.1) !important;
+    }
 </style>
+
 
 <!-- PAGE CONTROL HEADER BAR -->
 <div class="subs-header-bar">
@@ -628,19 +1078,19 @@
 </div>
 
 @if($currentCompanyDb)
-<div style="background: var(--warning-bg); border: 1px solid var(--warning-border); border-radius: var(--radius-lg); padding: 14px 20px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between;">
+<div class="impersonation-banner-box" style="background: var(--warning-bg); border: 1px solid var(--warning-border); border-radius: var(--radius-lg); padding: 14px 20px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between;">
     <div style="display: flex; align-items: center; gap: 12px;">
         <i class="fas fa-right-to-bracket" style="font-size: 20px; color: var(--warning);"></i>
         <div>
             <strong style="color: var(--warning); font-size: 14px;">Active Tenant Impersonation Session</strong>
             <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
-                Session Database: <code style="background: #fff; padding: 2px 6px; border-radius: 4px; font-family: monospace;">{{ $currentCompanyDb }}</code>
+                Session Database: <code class="impersonation-db-code" style="background: #fff; padding: 2px 6px; border-radius: 4px; font-family: monospace;">{{ $currentCompanyDb }}</code>
             </div>
         </div>
     </div>
     <form method="POST" action="{{ route('super-admin.leave-impersonation') }}" style="margin: 0;">
         @csrf
-        <button type="submit" class="btn-custom btn-outline-custom btn-xs-custom" style="color: var(--warning); border-color: var(--warning-border);">
+        <button type="submit" class="btn-custom btn-outline-custom btn-xs-custom impersonation-leave-btn" style="color: var(--warning); border-color: var(--warning-border);">
             <i class="fas fa-arrow-left"></i> Leave Impersonation
         </button>
     </form>
@@ -796,11 +1246,11 @@
     <div style="background: var(--bg-surface); padding: 16px 20px; border-radius: var(--radius-lg); border: 1px solid var(--border-color); box-shadow: var(--shadow-xs); margin-bottom: 20px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px;">
         <div style="position: relative; flex: 1; min-width: 280px; max-width: 440px;">
             <i class="fas fa-search" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-subtle); font-size: 14px;"></i>
-            <input type="text" id="searchSubsInput" placeholder="Search company, domain, or tenant ID..." style="width: 100%; padding: 10px 14px 10px 40px; border-radius: 24px; border: 1px solid var(--border-color); font-size: 13px; background: #f8fafc; outline: none; font-family: inherit;" />
+            <input type="text" id="searchSubsInput" placeholder="Search company, domain, or tenant ID..." style="width: 100%; padding: 10px 14px 10px 40px; border-radius: 24px; border: 1px solid var(--border-color); font-size: 13px; background: var(--bg-subtle); color: var(--text-main); outline: none; font-family: inherit;" />
         </div>
 
         <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-            <select class="filter-select" id="filterStatus" style="padding: 8px 14px; border-radius: 10px; border: 1px solid var(--border-color); background: #fff; font-size: 13px; font-weight: 500; font-family: inherit;">
+            <select class="filter-select" id="filterStatus" style="padding: 8px 14px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-main); font-size: 13px; font-weight: 500; font-family: inherit;">
                 <option value="">All Statuses</option>
                 <option value="active">Active</option>
                 <option value="trial">Trial</option>
@@ -811,7 +1261,7 @@
                 <option value="suspended">Suspended</option>
             </select>
 
-            <select class="filter-select" id="filterPlan" style="padding: 8px 14px; border-radius: 10px; border: 1px solid var(--border-color); background: #fff; font-size: 13px; font-weight: 500; font-family: inherit;">
+            <select class="filter-select" id="filterPlan" style="padding: 8px 14px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-main); font-size: 13px; font-weight: 500; font-family: inherit;">
                 <option value="">All Plans</option>
                 <option value="free">FREE</option>
                 <option value="gold">GOLD</option>
@@ -1379,15 +1829,15 @@
 
         <div class="drawer-body">
             <!-- HEALTH & EXPIRATION COUNTDOWN BANNER (LUXURY EMERALD SLATE THEMING) -->
-            <div style="background: linear-gradient(135deg, #073a26 0%, #0f744c 100%); padding: 20px; border-radius: var(--radius-lg); color: #ffffff; box-shadow: 0 12px 32px rgba(15, 116, 76, 0.22); border: 1px solid rgba(255, 255, 255, 0.18);">
+            <div style="background: linear-gradient(135deg, #073a26 0%, #2F6BFF 100%); padding: 20px; border-radius: var(--radius-lg); color: #ffffff; box-shadow: 0 12px 32px rgba(47, 107, 255, 0.22); border: 1px solid rgba(255, 255, 255, 0.18);">
                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <span class="plan-badge-cell plan-gold" id="drawerPlanBadge" style="font-size: 12px; padding: 5px 12px; font-weight: 800;">GOLD</span>
                         <span class="status-pill status-active" id="drawerStatusPill"><span class="dot"></span> Active</span>
                     </div>
                     <div style="text-align: right;">
-                        <div style="font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.9px; color: #a7f3d0;">COUNTDOWN</div>
-                        <div style="font-size: 22px; font-weight: 900; color: #34d399; margin-top: 2px;" id="drawerCountdownText">29 DAYS LEFT</div>
+                        <div style="font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.9px; color: #C7D2FE;">COUNTDOWN</div>
+                        <div style="font-size: 22px; font-weight: 900; color: #60A5FA; margin-top: 2px;" id="drawerCountdownText">29 DAYS LEFT</div>
                     </div>
                 </div>
 
@@ -1421,19 +1871,19 @@
                     <span style="font-size: 11px; color: var(--success); font-weight: 700;"><i class="fas fa-shield-check"></i> Verified Status</span>
                 </div>
                 <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
-                    <div style="background: #f8fafc; padding: 12px; border-radius: 10px; border: 1px solid var(--border-subtle);">
+                    <div style="background: var(--bg-subtle); padding: 12px; border-radius: 10px; border: 1px solid var(--border-subtle);">
                         <div style="font-size: 10.5px; color: var(--text-subtle); font-weight: 700; text-transform: uppercase;">Billing Cycle</div>
                         <strong style="font-size: 13.5px; color: var(--text-main);" id="drawerCycleText">Monthly Auto-Renew</strong>
                     </div>
-                    <div style="background: #f8fafc; padding: 12px; border-radius: 10px; border: 1px solid var(--border-subtle);">
+                    <div style="background: var(--bg-subtle); padding: 12px; border-radius: 10px; border: 1px solid var(--border-subtle);">
                         <div style="font-size: 10.5px; color: var(--text-subtle); font-weight: 700; text-transform: uppercase;">Payment Status</div>
                         <strong style="font-size: 13.5px; color: var(--success);"><i class="fas fa-circle-check"></i> Paid &amp; Current</strong>
                     </div>
-                    <div style="background: #f8fafc; padding: 12px; border-radius: 10px; border: 1px solid var(--border-subtle);">
+                    <div style="background: var(--bg-subtle); padding: 12px; border-radius: 10px; border: 1px solid var(--border-subtle);">
                         <div style="font-size: 10.5px; color: var(--text-subtle); font-weight: 700; text-transform: uppercase;">Monthly Price</div>
                         <strong style="font-size: 15px; color: var(--text-main);" id="drawerPriceText">₹4,999 / mo</strong>
                     </div>
-                    <div style="background: #f8fafc; padding: 12px; border-radius: 10px; border: 1px solid var(--border-subtle);">
+                    <div style="background: var(--bg-subtle); padding: 12px; border-radius: 10px; border: 1px solid var(--border-subtle);">
                         <div style="font-size: 10.5px; color: var(--text-subtle); font-weight: 700; text-transform: uppercase;">Annual Price</div>
                         <strong style="font-size: 15px; color: var(--text-main);">₹49,990 / yr</strong>
                     </div>
@@ -1449,9 +1899,9 @@
                 <div style="margin-bottom: 14px;">
                     <div style="display: flex; justify-content: space-between; font-size: 12.5px; margin-bottom: 4px;">
                         <span style="font-weight: 600; color: var(--text-main);">User Accounts Allocation</span>
-                        <strong id="drawerUserUsageText">18 / 25 Users</strong>
+                        <strong id="drawerUserUsageText" style="color: var(--text-main);">18 / 25 Users</strong>
                     </div>
-                    <div style="height: 6px; background: #e2e8f0; border-radius: 4px; overflow: hidden;">
+                    <div style="height: 6px; background: var(--border-color); border-radius: 4px; overflow: hidden;">
                         <div style="height: 100%; width: 72%; background: var(--primary);"></div>
                     </div>
                 </div>
@@ -1459,9 +1909,9 @@
                 <div style="margin-bottom: 14px;">
                     <div style="display: flex; justify-content: space-between; font-size: 12.5px; margin-bottom: 4px;">
                         <span style="font-weight: 600; color: var(--text-main);">Tenant Storage Allocation</span>
-                        <strong id="drawerStorageUsageText">18 GB / 25 GB</strong>
+                        <strong id="drawerStorageUsageText" style="color: var(--text-main);">18 GB / 25 GB</strong>
                     </div>
-                    <div style="height: 6px; background: #e2e8f0; border-radius: 4px; overflow: hidden;">
+                    <div style="height: 6px; background: var(--border-color); border-radius: 4px; overflow: hidden;">
                         <div style="height: 100%; width: 72%; background: var(--success);"></div>
                     </div>
                 </div>
@@ -1469,9 +1919,9 @@
                 <div>
                     <div style="display: flex; justify-content: space-between; font-size: 12.5px; margin-bottom: 4px;">
                         <span style="font-weight: 600; color: var(--text-main);">Active Projects Allocation</span>
-                        <strong>18 / 50 Projects</strong>
+                        <strong style="color: var(--text-main);">18 / 50 Projects</strong>
                     </div>
-                    <div style="height: 6px; background: #e2e8f0; border-radius: 4px; overflow: hidden;">
+                    <div style="height: 6px; background: var(--border-color); border-radius: 4px; overflow: hidden;">
                         <div style="height: 100%; width: 36%; background: #0284c7;"></div>
                     </div>
                 </div>
@@ -1567,7 +2017,7 @@
             @csrf
             <div style="margin-bottom: 16px;">
                 <label style="font-size: 12px; font-weight: 700; color: var(--text-subtle); text-transform: uppercase;">Select Tenant Company:</label>
-                <select name="company_id" id="modalCompanySelect" style="width: 100%; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--border-color); font-size: 14px; font-weight: 700; font-family: inherit; margin-top: 4px;">
+                <select name="company_id" id="modalCompanySelect" style="width: 100%; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--border-color); font-size: 14px; font-weight: 700; font-family: inherit; margin-top: 4px; background: var(--bg-surface); color: var(--text-main);">
                     @foreach($companies as $c)
                         <option value="{{ $c->id }}">{{ $c->name }} (Current: {{ strtoupper($c->activeSubscription?->plan?->name ?? 'FREE') }})</option>
                     @endforeach
@@ -1584,12 +2034,12 @@
                         $pPrice = $planObj?->monthly_price ?? match($pName) { 'FREE' => 0, 'GOLD' => 4999, 'PLATINUM' => 9999, 'DIAMOND' => 19999 };
                         $pLevel = match($pName) { 'FREE' => 0, 'GOLD' => 1, 'PLATINUM' => 2, 'DIAMOND' => 3 };
                     @endphp
-                    <label style="padding: 14px; border: 2px solid var(--border-color); border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: space-between;" class="plan-card-option" data-planlevel="{{ $pLevel }}" data-planname="{{ $pName }}">
+                    <label style="padding: 14px; border: 2px solid var(--border-color); border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; background: var(--bg-surface); color: var(--text-main);" class="plan-card-option" data-planlevel="{{ $pLevel }}" data-planname="{{ $pName }}">
                         <div style="display: flex; align-items: center; gap: 8px;">
                             <input type="radio" name="plan_id" value="{{ $pId }}" data-planname="{{ $pName }}" data-planlevel="{{ $pLevel }}" {{ $pName === 'GOLD' ? 'checked' : '' }} />
                             <span class="plan-badge-cell plan-{{ strtolower($pName) }}">{{ $pName }}</span>
                         </div>
-                        <strong style="font-size: 13.5px;">₹{{ number_format($pPrice) }}/mo</strong>
+                        <strong style="font-size: 13.5px; color: var(--text-main);">₹{{ number_format($pPrice) }}/mo</strong>
                     </label>
                     @endforeach
                 </div>
@@ -1797,7 +2247,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     const daysLeft = Math.floor(diffMs / (1000 * 60 * 60 * 24));
                     const hoursLeft = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                     countdownEl.innerText = daysLeft + 'd ' + hoursLeft + 'h LEFT';
-                    countdownEl.style.color = daysLeft <= 5 ? '#f59e0b' : '#34d399';
+                    countdownEl.style.color = daysLeft <= 5 ? '#f59e0b' : '#60A5FA';
                 }
             }
 

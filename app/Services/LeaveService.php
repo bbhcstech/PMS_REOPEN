@@ -75,8 +75,12 @@ class LeaveService
         return LeaveType::where('is_active', true)->orderBy('sort_order')->orderBy('name')->get();
     }
 
-    public function ensureBalance(User $employee, ?Carbon $date = null): LeaveBalance
+    public function ensureBalance(?User $employee, ?Carbon $date = null): ?LeaveBalance
     {
+        if (! $employee) {
+            return null;
+        }
+
         $policy = $this->policy();
         $year = $this->leaveYearDates($date);
         $balance = LeaveBalance::firstOrCreate(
@@ -100,8 +104,11 @@ class LeaveService
         return $balance->refresh();
     }
 
-    public function syncBalanceCounters(User $employee, ?LeaveBalance $balance = null): LeaveBalance
+    public function syncBalanceCounters(?User $employee, ?LeaveBalance $balance = null): ?LeaveBalance
     {
+        if (! $employee) {
+            return null;
+        }
         $balance = $balance ?: $this->ensureBalance($employee);
         $yearStart = Carbon::parse($balance->year_start);
         $yearEnd = Carbon::parse($balance->year_end);
@@ -110,7 +117,8 @@ class LeaveService
             ->whereIn('status', ['approved'])
             ->where(function ($query) use ($yearStart, $yearEnd) {
                 $query->whereBetween('start_date', [$yearStart, $yearEnd])
-                    ->orWhereBetween('end_date', [$yearStart, $yearEnd]);
+                    ->orWhereBetween('end_date', [$yearStart, $yearEnd])
+                    ->orWhereBetween('date', [$yearStart, $yearEnd]);
             })
             ->orderBy('approved_at')
             ->orderBy('start_date')
@@ -174,9 +182,16 @@ class LeaveService
         return (float) ($start->diffInDays($end) + 1);
     }
 
-    public function validateRequest(User $employee, LeaveType $type, Carbon $start, Carbon $end, array $data): array
+    public function validateRequest(?User $employee, LeaveType $type, Carbon $start, Carbon $end, array $data): array
     {
+        if (! $employee) {
+            return ['Employee record not found.'];
+        }
+
         $errors = [];
+        if ($end->lt($start)) {
+            $errors[] = "End date can't be backdated. Please select a date on or after the start date.";
+        }
         $policy = $this->policy();
         $days = $this->calculateDays($start, $end, (bool) ($data['half_day_flag'] ?? false));
 
@@ -229,8 +244,12 @@ class LeaveService
         return $errors;
     }
 
-    public function createLeave(User $employee, LeaveType $type, array $data, ?User $actor = null): Leave
+    public function createLeave(?User $employee, LeaveType $type, array $data, ?User $actor = null): Leave
     {
+        if (! $employee) {
+            throw new \InvalidArgumentException('Employee is required to create a leave request.');
+        }
+
         return DB::transaction(function () use ($employee, $type, $data, $actor) {
             $start = Carbon::parse($data['start_date']);
             $end = Carbon::parse($data['end_date']);
@@ -244,11 +263,12 @@ class LeaveService
                 $status = 'approved';
             }
 
-            $paidPlan = $this->paidPlan($balance, $type, $days);
+            $paidPlan = $balance ? $this->paidPlan($balance, $type, $days) : ['paid_days' => 0, 'unpaid_days' => $days];
             $isUnpaid = $type->code === 'UL' || $paidPlan['unpaid_days'] > 0;
 
             $leave = Leave::create([
                 'user_id' => $employee->id,
+                'company_id' => $employee->company_id ?: 1,
                 'leave_type_id' => $type->id,
                 'type' => $this->legacyType($type),
                 'duration' => ($data['half_day_flag'] ?? false) ? 'half_day' : ($days > 1 ? 'multiple' : 'full_day'),
@@ -289,9 +309,10 @@ class LeaveService
         });
     }
 
-    public function approve(Leave $leave, User $actor, ?string $note = null, bool $forceUnpaid = false): Leave
+    public function approve(Leave $leave, ?User $actor = null, ?string $note = null, bool $forceUnpaid = false): Leave
     {
-        return DB::transaction(function () use ($leave, $actor, $note, $forceUnpaid) {
+        $connection = $leave->getConnection();
+        return $connection->transaction(function () use ($leave, $actor, $note, $forceUnpaid) {
             if ($forceUnpaid) {
                 $leave->forceFill([
                     'leave_type_id' => LeaveType::where('code', 'UL')->value('id') ?: $leave->leave_type_id,
@@ -303,12 +324,20 @@ class LeaveService
                     'unpaid_days' => (float) ($leave->total_days ?: 1),
                     'payroll_deduction_flag' => true,
                 ]);
+            } else {
+                $typeCode = $this->typeCode($leave);
+                if ($typeCode !== 'UL') {
+                    $leave->forceFill([
+                        'is_unpaid' => false,
+                        'payroll_deduction_flag' => false,
+                    ]);
+                }
             }
 
             $leave->forceFill([
                 'status' => 'approved',
                 'approval_status' => 'approved',
-                'approved_by' => $actor->id,
+                'approved_by' => $actor?->id,
                 'approved_at' => now(),
                 'rejected_by' => null,
                 'rejected_at' => null,
@@ -323,20 +352,75 @@ class LeaveService
         });
     }
 
-    public function reject(Leave $leave, User $actor, string $reason): Leave
+    public function reject(Leave $leave, ?User $actor = null, string $reason = ''): Leave
     {
-        return DB::transaction(function () use ($leave, $actor, $reason) {
+        $connection = $leave->getConnection();
+        return $connection->transaction(function () use ($leave, $actor, $reason) {
             $leave->forceFill([
                 'status' => 'rejected',
                 'approval_status' => 'rejected',
-                'rejected_by' => $actor->id,
+                'rejected_by' => $actor?->id,
                 'rejected_at' => now(),
                 'rejection_reason' => $reason,
                 'admin_note' => $reason,
+                'approved_by' => null,
+                'approved_at' => null,
+                'is_unpaid' => false,
+                'is_paid' => false,
+                'paid' => false,
+                'paid_days' => 0,
+                'unpaid_days' => 0,
+                'payroll_deduction_flag' => false,
             ])->save();
 
+            $startDate = $leave->start_date ? Carbon::parse($leave->start_date) : ($leave->date ? Carbon::parse($leave->date) : null);
+            $endDate = $leave->end_date ? Carbon::parse($leave->end_date) : $startDate;
+            if ($startDate && $endDate && $leave->user_id) {
+                Attendance::where('user_id', $leave->user_id)
+                    ->whereBetween('date', [$startDate->toDateString(), $endDate->toDateString()])
+                    ->whereIn('status', ['leave', 'unpaid_leave'])
+                    ->delete();
+            }
+
             $this->recordApproval($leave, $actor, 'rejected', $reason);
-            $this->syncBalanceCounters($leave->user);
+            if ($leave->user) {
+                $this->syncBalanceCounters($leave->user);
+            }
+
+            return $leave->refresh();
+        });
+    }
+
+    public function markPending(Leave $leave, ?User $actor = null, ?string $note = null): Leave
+    {
+        $connection = $leave->getConnection();
+        return $connection->transaction(function () use ($leave, $actor, $note) {
+            $leave->forceFill([
+                'status' => 'pending',
+                'approval_status' => 'pending',
+                'approved_by' => null,
+                'approved_at' => null,
+                'rejected_by' => null,
+                'rejected_at' => null,
+                'rejection_reason' => null,
+                'admin_note' => $note,
+            ])->save();
+
+            $startDate = $leave->start_date ? Carbon::parse($leave->start_date) : ($leave->date ? Carbon::parse($leave->date) : null);
+            $endDate = $leave->end_date ? Carbon::parse($leave->end_date) : $startDate;
+            if ($startDate && $endDate && $leave->user_id) {
+                foreach (CarbonPeriod::create($startDate, $endDate) as $date) {
+                    Attendance::where('user_id', $leave->user_id)
+                        ->where('date', $date->toDateString())
+                        ->whereIn('status', ['leave', 'unpaid_leave'])
+                        ->delete();
+                }
+            }
+
+            $this->recordApproval($leave, $actor, 'marked_pending', $note);
+            if ($leave->user) {
+                $this->syncBalanceCounters($leave->user);
+            }
 
             return $leave->refresh();
         });
@@ -349,9 +433,23 @@ class LeaveService
             return;
         }
 
-        $before = $this->ensureBalance($employee, Carbon::parse($leave->start_date))->toArray();
+        $startDate = $leave->start_date
+            ? Carbon::parse($leave->start_date)
+            : ($leave->date ? Carbon::parse($leave->date) : now());
+        $endDate = $leave->end_date
+            ? Carbon::parse($leave->end_date)
+            : $startDate;
+
+        if (! $leave->start_date) {
+            $leave->forceFill([
+                'start_date' => $startDate->toDateString(),
+                'end_date' => $endDate->toDateString(),
+            ])->save();
+        }
+
+        $before = $this->ensureBalance($employee, $startDate)?->toArray() ?: [];
         $balance = LeaveBalance::where('user_id', $employee->id)
-            ->where('leave_year', $leave->leave_year ?: $this->leaveYearDates(Carbon::parse($leave->start_date))['label'])
+            ->where('leave_year', $leave->leave_year ?: $this->leaveYearDates($startDate)['label'])
             ->first();
 
         if ($balance) {
@@ -368,24 +466,46 @@ class LeaveService
             $leave->refresh();
         }
 
-        foreach (CarbonPeriod::create($leave->start_date, $leave->end_date) as $date) {
-            Attendance::updateOrCreate(
-                ['user_id' => $employee->id, 'date' => $date->toDateString()],
-                [
-                    'status' => ((float) ($leave->paid_days ?? 0)) <= 0 ? 'unpaid_leave' : 'leave',
-                    'location' => 'Leave',
-                    'working_from' => 'Leave',
-                ]
-            );
+        $policy = $this->policy();
+        $attendanceStatus = ($leave->is_unpaid && ($policy->unpaid_leave_handling ?? 'unpaid_leave') === 'absent')
+            ? 'absent'
+            : (((float) ($leave->paid_days ?? 0)) <= 0 ? 'unpaid_leave' : 'leave');
+
+        foreach (CarbonPeriod::create($startDate, $endDate) as $date) {
+            try {
+                Attendance::updateOrCreate(
+                    ['user_id' => $employee->id, 'date' => $date->toDateString()],
+                    [
+                        'company_id' => $employee->company_id,
+                        'status' => $attendanceStatus,
+                        'location' => $leave->is_unpaid ? 'Unpaid Leave' : 'Leave',
+                        'working_from' => $leave->is_unpaid ? 'Unpaid Leave' : 'Leave',
+                    ]
+                );
+            } catch (\Throwable $e) {
+                if ($attendanceStatus === 'unpaid_leave') {
+                    Attendance::updateOrCreate(
+                        ['user_id' => $employee->id, 'date' => $date->toDateString()],
+                        [
+                            'company_id' => $employee->company_id,
+                            'status' => 'leave',
+                            'location' => 'Unpaid Leave',
+                            'working_from' => 'Unpaid Leave',
+                        ]
+                    );
+                } else {
+                    throw $e;
+                }
+            }
         }
 
-        $after = $this->syncBalanceCounters($employee)->toArray();
+        $after = $this->syncBalanceCounters($employee)?->toArray() ?: [];
 
         LeaveBalanceLog::create([
             'user_id' => $employee->id,
             'leave_id' => $leave->id,
             'changed_by' => $actor?->id,
-            'leave_year' => $leave->leave_year ?: $this->leaveYearDates(Carbon::parse($leave->start_date))['label'],
+            'leave_year' => $leave->leave_year ?: $this->leaveYearDates($startDate)['label'],
             'action' => 'approved',
             'days' => $leave->total_days,
             'before_snapshot' => $before,
@@ -394,7 +514,7 @@ class LeaveService
         ]);
     }
 
-    public function updatePolicy(array $data, User $actor): LeavePolicy
+    public function updatePolicy(array $data, ?User $actor = null): LeavePolicy
     {
         return DB::transaction(function () use ($data, $actor) {
             $policy = $this->policy();
@@ -404,7 +524,7 @@ class LeaveService
 
             LeavePolicyLog::create([
                 'leave_policy_id' => $policy->id,
-                'changed_by' => $actor->id,
+                'changed_by' => $actor?->id,
                 'before_snapshot' => $before,
                 'after_snapshot' => $policy->toArray(),
             ]);
@@ -496,9 +616,16 @@ class LeaveService
         $dates = collect([now()]);
 
         Leave::where('user_id', $employee->id)
-            ->whereNotNull('start_date')
-            ->pluck('start_date')
-            ->each(fn ($date) => $dates->push(Carbon::parse($date)));
+            ->where(function ($q) {
+                $q->whereNotNull('start_date')->orWhereNotNull('date');
+            })
+            ->get(['start_date', 'date'])
+            ->each(function ($l) use ($dates) {
+                $d = $l->start_date ?: $l->date;
+                if ($d) {
+                    $dates->push(Carbon::parse($d));
+                }
+            });
 
         LeaveBalance::where('user_id', $employee->id)
             ->pluck('year_start')

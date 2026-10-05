@@ -2,10 +2,23 @@
   'use strict';
 
   var controllerNumber = 0;
-  var cardNumber = 0;
   var controllers = new WeakMap();
+  var controllerList = [];
   var actionHeaderPattern = /^(action|actions|option|options|control|controls|manage|management|operation|operations)$/i;
-  var cardSelector = '.card, [data-pms-card-border], div[class*="-card"], section[class*="-card"], article[class*="-card"], aside[class*="-card"], li[class*="-card"], a[class*="-card"], form[class*="-card"]';
+
+  function isDarkMode() {
+    return (document.documentElement.getAttribute('data-pms-theme') === 'dark') ||
+           (document.documentElement.getAttribute('data-bs-theme') === 'dark') ||
+           (document.documentElement.getAttribute('data-theme') === 'dark') ||
+           document.documentElement.classList.contains('dark') ||
+           (document.body && (
+             document.body.getAttribute('data-pms-theme') === 'dark' ||
+             document.body.getAttribute('data-bs-theme') === 'dark' ||
+             document.body.classList.contains('dark')
+           )) ||
+           localStorage.getItem('pms-theme') === 'dark' ||
+           localStorage.getItem('bitroxia-theme') === 'dark';
+  }
 
   function icon(name) {
     if (name === 'download') {
@@ -84,17 +97,8 @@
   }
 
   function removeLegacySelectionControls(controller, cell) {
-    if (!controller.legacySelectionColumn || !cell) return;
-    var inputs = cell.querySelectorAll('input[type="checkbox"]:not([data-pms-select])');
-
-    Array.prototype.forEach.call(inputs, function (input) {
-      var wrapper = input.closest('label, .form-check, .custom-control');
-      input.remove();
-
-      if (wrapper && cell.contains(wrapper) && !wrapper.querySelector('input, button, select, textarea, a') && !(wrapper.textContent || '').trim()) {
-        wrapper.remove();
-      }
-    });
+    // Keep legacy selection controls intact so application bulk forms and page scripts function properly
+    return;
   }
 
   function ensureTableScrolling(controller) {
@@ -111,12 +115,37 @@
     var minimumWidth = Math.min(2200, Math.max(720, columnCount * 155));
     table.style.setProperty('--pms-table-content-min-width', minimumWidth + 'px');
 
+    var dataTableWrapper = table.closest('.dataTables_wrapper');
+    if (dataTableWrapper) {
+      var outerResponsive = dataTableWrapper.closest('.table-responsive');
+      if (outerResponsive) {
+        // Move dataTables_wrapper outside outer table-responsive so search, length and pagination controls never scroll
+        outerResponsive.parentNode.insertBefore(dataTableWrapper, outerResponsive);
+        outerResponsive.remove();
+      }
+
+      var currentParent = table.parentElement;
+      if (currentParent && currentParent.classList.contains('table-responsive')) {
+        currentParent.classList.add('pms-table-scroll-host');
+        controller.scrollHost = currentParent;
+        return;
+      }
+
+      var innerResponsive = document.createElement('div');
+      innerResponsive.className = 'table-responsive pms-table-scroll-host';
+      table.parentNode.insertBefore(innerResponsive, table);
+      innerResponsive.appendChild(table);
+      controller.scrollHost = innerResponsive;
+      return;
+    }
+
     var scrollHost = table.closest('.table-responsive') ||
       table.closest('.dataTables_scrollBody') ||
-      table.closest('.dataTables_wrapper') ||
+      table.closest('.gantt-matrix-wrapper') ||
+      table.closest('.table-wrapper') ||
       table.parentElement;
 
-    if (scrollHost) {
+    if (scrollHost && !scrollHost.classList.contains('dataTables_wrapper')) {
       scrollHost.classList.add('pms-table-scroll-host');
       controller.scrollHost = scrollHost;
     }
@@ -145,11 +174,24 @@
         '</div>' +
       '</div>';
 
-    var responsiveParent = controller.table.closest('.table-responsive');
-    var dataTableWrapper = controller.table.closest('.dataTables_wrapper');
-    var anchor = responsiveParent || dataTableWrapper || controller.table;
-    var parent = anchor.parentNode;
+    if (isDarkMode()) {
+      var initialStatus = toolbar.querySelector('.pms-table-tools__status');
+      if (initialStatus) {
+        initialStatus.style.setProperty('color', '#f8fffb', 'important');
+        initialStatus.style.setProperty('-webkit-text-fill-color', '#f8fffb', 'important');
+        initialStatus.style.setProperty('font-weight', '700', 'important');
+      }
+      var exportToggleSpan = toolbar.querySelector('.pms-table-export__toggle span');
+      if (exportToggleSpan) {
+        exportToggleSpan.style.setProperty('color', '#ffffff', 'important');
+        exportToggleSpan.style.setProperty('-webkit-text-fill-color', '#ffffff', 'important');
+      }
+    }
+
     ensureTableScrolling(controller);
+    var dataTableWrapper = controller.table.closest('.dataTables_wrapper');
+    var anchor = dataTableWrapper || controller.scrollHost || controller.table.closest('.table-responsive, .gantt-matrix-wrapper, .table-wrapper') || controller.table;
+    var parent = anchor.parentNode;
     if (parent) parent.insertBefore(toolbar, anchor);
     controller.toolbar = toolbar;
   }
@@ -158,7 +200,17 @@
     var row = headerRow(controller.table);
     if (!row || !row.cells.length) return;
     var cell = row.cells[0];
-    removeLegacySelectionControls(controller, cell);
+    if (controller.legacySelectionColumn) {
+      var existingAll = cell.querySelector('input[type="checkbox"]');
+      if (existingAll) {
+        controller.selectAll = existingAll;
+        if (!existingAll.hasAttribute('data-pms-select')) {
+          existingAll.setAttribute('data-pms-select', 'all');
+          existingAll.setAttribute('data-pms-table', controller.id);
+        }
+        return;
+      }
+    }
     cell.classList.add('pms-table-selection-cell');
     if (cell.querySelector('[data-pms-select="all"]')) {
       controller.selectAll = cell.querySelector('[data-pms-select="all"]');
@@ -177,7 +229,18 @@
       return;
     }
     var cell = row.cells[0];
-    removeLegacySelectionControls(controller, cell);
+    if (controller.legacySelectionColumn) {
+      var existingRowInput = cell.querySelector('input[type="checkbox"]');
+      if (existingRowInput) {
+        if (!existingRowInput.hasAttribute('data-pms-select')) {
+          existingRowInput.setAttribute('data-pms-select', 'row');
+          existingRowInput.setAttribute('data-pms-table', controller.id);
+        }
+        if (existingRowInput.checked) controller.selectedRows.add(row);
+        row.classList.toggle('pms-row-selected', existingRowInput.checked);
+        return;
+      }
+    }
     cell.classList.add('pms-table-selection-cell');
     var input = cell.querySelector(':scope > .pms-table-select > [data-pms-select="row"]');
     if (!input) {
@@ -220,6 +283,48 @@
     if (allLabel) allLabel.textContent = 'Export all (' + rows.length + ')';
     if (selectedLabel) selectedLabel.textContent = 'Export selected (' + selected.length + ')';
     if (selectedButton) selectedButton.disabled = selected.length === 0;
+
+    var isDark = isDarkMode();
+    if (status) {
+      if (isDark) {
+        status.style.setProperty('color', '#f8fffb', 'important');
+        status.style.setProperty('-webkit-text-fill-color', '#f8fffb', 'important');
+        status.style.setProperty('font-weight', '700', 'important');
+      } else {
+        status.style.removeProperty('color');
+        status.style.removeProperty('-webkit-text-fill-color');
+        status.style.removeProperty('font-weight');
+      }
+    }
+    if (isDark) {
+      var exportToggleSpan = controller.toolbar.querySelector('.pms-table-export__toggle span');
+      if (exportToggleSpan) {
+        exportToggleSpan.style.setProperty('color', '#ffffff', 'important');
+        exportToggleSpan.style.setProperty('-webkit-text-fill-color', '#ffffff', 'important');
+      }
+      if (allLabel) {
+        allLabel.style.setProperty('color', '#ffffff', 'important');
+        allLabel.style.setProperty('-webkit-text-fill-color', '#ffffff', 'important');
+      }
+      if (selectedLabel) {
+        selectedLabel.style.setProperty('color', '#ffffff', 'important');
+        selectedLabel.style.setProperty('-webkit-text-fill-color', '#ffffff', 'important');
+      }
+    } else {
+      var exportToggleSpan = controller.toolbar.querySelector('.pms-table-export__toggle span');
+      if (exportToggleSpan) {
+        exportToggleSpan.style.removeProperty('color');
+        exportToggleSpan.style.removeProperty('-webkit-text-fill-color');
+      }
+      if (allLabel) {
+        allLabel.style.removeProperty('color');
+        allLabel.style.removeProperty('-webkit-text-fill-color');
+      }
+      if (selectedLabel) {
+        selectedLabel.style.removeProperty('color');
+        selectedLabel.style.removeProperty('-webkit-text-fill-color');
+      }
+    }
   }
 
   function cleanCell(cell) {
@@ -343,10 +448,17 @@
 
       if (input.getAttribute('data-pms-select') === 'all') {
         dataRows(controller.table).forEach(function (row) {
-          var rowCheckbox = row.querySelector('[data-pms-select="row"][data-pms-table="' + controller.id + '"]');
+          var rowCheckbox = row.querySelector('[data-pms-select="row"][data-pms-table="' + controller.id + '"]') ||
+                            (row.cells[0] ? row.cells[0].querySelector('input[type="checkbox"]') : null);
+          if (rowCheckbox) {
+            var stateChanged = (rowCheckbox.checked !== input.checked);
+            rowCheckbox.checked = input.checked;
+            if (stateChanged) {
+              rowCheckbox.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+          }
           if (input.checked) controller.selectedRows.add(row);
           else controller.selectedRows.delete(row);
-          if (rowCheckbox) rowCheckbox.checked = input.checked;
           row.classList.toggle('pms-row-selected', input.checked);
         });
       } else {
@@ -372,6 +484,24 @@
         });
         exportBox.classList.toggle('is-open', isOpen);
         toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        var isDarkClick = isDarkMode();
+        if (isDarkClick) {
+          var tSpan = toggle.querySelector('span');
+          if (tSpan) {
+            tSpan.style.setProperty('color', '#ffffff', 'important');
+            tSpan.style.setProperty('-webkit-text-fill-color', '#ffffff', 'important');
+          }
+          var allSpan = exportBox.querySelector('[data-export-scope="all"] span');
+          if (allSpan) {
+            allSpan.style.setProperty('color', '#ffffff', 'important');
+            allSpan.style.setProperty('-webkit-text-fill-color', '#ffffff', 'important');
+          }
+          var selSpan = exportBox.querySelector('[data-export-scope="selected"] span');
+          if (selSpan) {
+            selSpan.style.setProperty('color', '#ffffff', 'important');
+            selSpan.style.setProperty('-webkit-text-fill-color', '#ffffff', 'important');
+          }
+        }
         return;
       }
 
@@ -414,6 +544,7 @@
       legacySelectionColumn: hasLegacySelectionColumn(table)
     };
     controllers.set(table, controller);
+    controllerList.push(controller);
     table.classList.add('pms-exportable-table');
     table.setAttribute('data-pms-table-tools-id', controller.id);
     createToolbar(controller);
@@ -422,52 +553,55 @@
     bindController(controller);
   }
 
-  function isCardCandidate(element) {
-    if (!element || element.nodeType !== 1 || element.matches('[data-pms-card-border="off"]')) return false;
-    if (!element.matches('div, section, article, aside, li, a, form')) return false;
-    if (Array.prototype.some.call(element.classList, function (className) { return /^fa[srlbd]?(-|$)|^bx(-|$)/.test(className); })) return false;
-    if (element.classList.contains('card')) return true;
-
-    return Array.prototype.some.call(element.classList, function (className) {
-      if (className.endsWith('-card')) return true;
-      if (className.indexOf('-card-') === -1) return false;
-      return !/-card-(body|content|footer|header|icon|image|img|left|right|title|subtitle|text|meta|actions?|wrapper|section|grid|row|col)(-|$)/.test(className);
-    });
-  }
-
-  function enhanceCard(card) {
-    if (!isCardCandidate(card) || card.getAttribute('data-pms-card-border-ready') === 'true') return;
-    cardNumber += 1;
-
-    var hue = Math.round((cardNumber * 137.508) % 360);
-    var secondHue = Math.round((hue + 52) % 360);
-    var layer = document.createElement('span');
-    layer.className = 'pms-card-border-layer';
-    layer.setAttribute('aria-hidden', 'true');
-
-    card.setAttribute('data-pms-card-border-ready', 'true');
-    card.classList.add('pms-animated-card-border');
-    if (window.getComputedStyle(card).position === 'static') card.classList.add('pms-card-needs-position');
-    card.style.setProperty('--pms-card-color-a', 'hsl(' + hue + ' 84% 52%)');
-    card.style.setProperty('--pms-card-color-b', 'hsl(' + secondHue + ' 88% 58%)');
-    var borderDuration = 9.5 + (cardNumber % 6) * 0.65;
-    card.style.setProperty('--pms-card-border-duration', borderDuration.toFixed(2) + 's');
-    card.style.setProperty('--pms-card-border-hover-duration', (borderDuration * 0.58).toFixed(2) + 's');
-    card.style.setProperty('--pms-card-border-delay', (-cardNumber * 0.31).toFixed(2) + 's');
-    card.insertBefore(layer, card.firstChild);
-  }
-
-  function scanCards(root) {
+  function removeCardBorderLayers(root) {
     if (!root) return;
-    if (root.matches && root.matches(cardSelector)) enhanceCard(root);
-    if (root.querySelectorAll) root.querySelectorAll(cardSelector).forEach(enhanceCard);
+    try {
+      if (root.matches && (root.matches('.pms-card-border-layer') || root.classList.contains('pms-card-border-layer'))) {
+        if (root.parentNode) {
+          root.parentNode.classList.remove('pms-animated-card-border', 'pms-card-needs-position');
+          root.parentNode.removeAttribute('data-pms-card-border-ready');
+        }
+        root.remove();
+        return;
+      }
+      if (root.querySelectorAll) {
+        var layers = root.querySelectorAll('.pms-card-border-layer');
+        for (var i = 0; i < layers.length; i++) {
+          var layer = layers[i];
+          var parent = layer.parentNode;
+          if (parent) {
+            parent.classList.remove('pms-animated-card-border', 'pms-card-needs-position');
+            parent.removeAttribute('data-pms-card-border-ready');
+            parent.style.removeProperty('--pms-card-color-a');
+            parent.style.removeProperty('--pms-card-color-b');
+            parent.style.removeProperty('--pms-card-border-duration');
+            parent.style.removeProperty('--pms-card-border-hover-duration');
+            parent.style.removeProperty('--pms-card-border-delay');
+          }
+          layer.remove();
+        }
+        var animatedCards = root.querySelectorAll('.pms-animated-card-border');
+        for (var j = 0; j < animatedCards.length; j++) {
+          var card = animatedCards[j];
+          card.classList.remove('pms-animated-card-border', 'pms-card-needs-position');
+          card.removeAttribute('data-pms-card-border-ready');
+          card.style.removeProperty('--pms-card-color-a');
+          card.style.removeProperty('--pms-card-color-b');
+          card.style.removeProperty('--pms-card-border-duration');
+          card.style.removeProperty('--pms-card-border-hover-duration');
+          card.style.removeProperty('--pms-card-border-delay');
+        }
+      }
+    } catch (e) {
+      // Ignore cleanup errors
+    }
   }
 
   function scan(root) {
     if (!root) return;
     if (root.matches && root.matches('table')) enhance(root);
     if (root.querySelectorAll) root.querySelectorAll('table').forEach(enhance);
-    scanCards(root);
+    removeCardBorderLayers(root);
   }
 
   function start() {
@@ -494,6 +628,22 @@
       });
     });
     pageObserver.observe(document.body, { childList: true, subtree: true });
+
+    if (window.MutationObserver) {
+      var themeObserver = new MutationObserver(function () {
+        controllerList.forEach(function (ctrl) { if (ctrl.table && ctrl.table.isConnected) syncToolbar(ctrl); });
+      });
+      themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-pms-theme', 'data-bs-theme', 'data-theme', 'class'] });
+      if (document.body) {
+        themeObserver.observe(document.body, { attributes: true, attributeFilter: ['data-pms-theme', 'data-bs-theme', 'data-theme', 'class'] });
+      }
+    }
+
+    window.addEventListener('storage', function (e) {
+      if (e.key === 'pms-theme' || e.key === 'bitroxia-theme') {
+        controllerList.forEach(function (ctrl) { if (ctrl.table && ctrl.table.isConnected) syncToolbar(ctrl); });
+      }
+    });
 
     document.addEventListener('click', function (event) {
       if (event.target.closest('.pms-table-export')) return;

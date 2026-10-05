@@ -34,21 +34,23 @@
 
 <style>
     :root {
-        --primary-blue: #1e3a8a;
-        --primary-teal: #0ea5a4;
-        --primary-green: #22c55e;
+        --primary-blue: #2F6BFF;
+        --primary-hover: #1E4FCC;
+        --primary-teal: #2F6BFF;
+        --primary-accent: #22D3EE;
+        --primary-green: #8B5CF6;
         --glass-border: rgba(255, 255, 255, 0.7);
         --card-shadow: 0px 4px 20px rgba(0, 0, 0, 0.02),
             0px 8px 40px rgba(0, 0, 0, 0.04),
-            0px 20px 60px rgba(30, 58, 138, 0.06);
+            0px 20px 60px rgba(47, 107, 255, 0.06);
         --card-shadow-hover: 0px 20px 50px rgba(0, 0, 0, 0.08),
-            0px 30px 80px rgba(30, 58, 138, 0.12);
+            0px 30px 80px rgba(47, 107, 255, 0.12);
         --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         --spring-transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
     .attendance-hour-container {
-        background: linear-gradient(135deg, #f0f9ff 0%, #e6f7f5 50%, #f0fdf4 100%);
+        background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 50%, #f1f5f9 100%);
         min-height: calc(100vh - 100px);
         padding: 2rem 1.75rem;
         position: relative;
@@ -76,7 +78,7 @@
     .legend-card:hover,
     .table-card:hover {
         box-shadow: var(--card-shadow-hover);
-        border-color: rgba(14, 165, 164, 0.2);
+        border-color: rgba(47, 107, 255, 0.2);
     }
 
     .header-card {
@@ -93,7 +95,7 @@
     .header-title h1 {
         font-size: 2.45rem;
         font-weight: 800;
-        background: linear-gradient(135deg, var(--primary-blue), var(--primary-teal), var(--primary-green));
+        background: linear-gradient(135deg, var(--primary-blue), var(--primary-accent), var(--primary-green));
         -webkit-background-clip: text;
         background-clip: text;
         color: transparent;
@@ -118,7 +120,8 @@
         gap: 0.5rem;
     }
 
-    .nav-tab-btn {
+    .nav-tab-btn,
+    .attendance-container .nav-tab-btn {
         display: inline-flex;
         align-items: center;
         gap: 0.4rem;
@@ -126,23 +129,43 @@
         border-radius: 40px;
         font-weight: 600;
         font-size: 1.05rem;
-        color: #475569;
-        background: #f1f5f9;
+        color: #475569 !important;
+        -webkit-text-fill-color: #475569 !important;
+        background: #f1f5f9 !important;
         text-decoration: none;
         transition: var(--spring-transition);
-        border: 2px solid transparent;
+        border: 2px solid #e2e8f0 !important;
     }
 
-    .nav-tab-btn:hover {
-        background: #e2e8f0;
-        color: #0f172a;
+    .nav-tab-btn:hover,
+    .attendance-container .nav-tab-btn:hover {
+        background: #e2e8f0 !important;
+        color: #0f172a !important;
+        -webkit-text-fill-color: #0f172a !important;
+        border-color: #cbd5e1 !important;
         transform: translateY(-2px);
     }
 
-    .nav-tab-btn.active {
-        background: linear-gradient(135deg, var(--primary-blue), var(--primary-teal));
-        color: white;
-        box-shadow: 0 4px 15px rgba(14, 165, 164, 0.25);
+    .nav-tab-btn.active,
+    .attendance-container .nav-tab-btn.active {
+        background: linear-gradient(135deg, #2F6BFF, #1E4FCC) !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        border-color: transparent !important;
+        box-shadow: 0 4px 15px rgba(47, 107, 255, 0.3) !important;
+    }
+
+    .nav-tab-btn.active *,
+    .attendance-container .nav-tab-btn.active i,
+    .attendance-container .nav-tab-btn.active span {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    .nav-tab-btn i {
+        font-size: 0.9rem;
+        color: inherit !important;
+        -webkit-text-fill-color: inherit !important;
     }
 
     .filter-card,
@@ -230,8 +253,8 @@
         flex-wrap: wrap;
     }
 
-    .btn-filter,
-    .btn-reset {
+    .btn-filter {
+        background: linear-gradient(135deg, #2F6BFF, #1E4FCC);
         color: white;
         padding: 0.65rem 1.75rem;
         border-radius: 40px;
@@ -245,22 +268,49 @@
         gap: 0.5rem;
         min-height: 46px;
         text-decoration: none;
+        box-shadow: 0 4px 15px rgba(47, 107, 255, 0.2);
     }
 
-    .btn-filter {
-        background: linear-gradient(135deg, var(--primary-blue), var(--primary-teal));
-        box-shadow: 0 4px 15px rgba(14, 165, 164, 0.2);
+    .btn-reset,
+    .attendance-container .btn-reset {
+        background: #f1f5f9 !important;
+        color: #475569 !important;
+        -webkit-text-fill-color: #475569 !important;
+        padding: 0.65rem 1.75rem;
+        border-radius: 40px;
+        border: 1.5px solid #cbd5e1 !important;
+        font-weight: 700;
+        font-size: 1.02rem;
+        cursor: pointer;
+        transition: var(--spring-transition);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        min-height: 46px;
+        text-decoration: none;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
     }
 
-    .btn-reset {
-        background: linear-gradient(135deg, #64748b, #475569);
-        box-shadow: 0 4px 15px rgba(100, 116, 139, 0.2);
-    }
-
-    .btn-filter:hover,
-    .btn-reset:hover {
+    .btn-filter:hover {
         transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(14, 165, 164, 0.3);
         color: white;
+    }
+
+    .btn-reset:hover,
+    .attendance-container .btn-reset:hover {
+        background: #e2e8f0 !important;
+        color: #0f172a !important;
+        -webkit-text-fill-color: #0f172a !important;
+        border-color: #94a3b8 !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .btn-reset *,
+    .attendance-container .btn-reset i {
+        color: inherit !important;
+        -webkit-text-fill-color: inherit !important;
     }
 
     .legend-items {
@@ -286,7 +336,7 @@
         flex-shrink: 0;
     }
 
-    .legend-dot.present { background: linear-gradient(135deg, #34d399, #22c55e); }
+    .legend-dot.present { background: linear-gradient(135deg, #60A5FA, #22c55e); }
     .legend-dot.absent { background: linear-gradient(135deg, #ef4444, #dc2626); }
     .legend-dot.late { background: linear-gradient(135deg, #fb923c, #f97316); }
     .legend-dot.halfday { background: linear-gradient(135deg, #818cf8, #6366f1); }
@@ -325,7 +375,7 @@
     .badge-count {
         display: inline-block;
         padding: 0.15rem 0.8rem;
-        background: linear-gradient(135deg, var(--primary-blue), var(--primary-teal));
+        background: linear-gradient(135deg, #2F6BFF, #8B5CF6);
         color: white;
         border-radius: 30px;
         font-size: 0.86rem;
@@ -369,9 +419,9 @@
     }
 
     .btn-export-menu {
-        border: 1px solid rgba(16, 185, 129, 0.2);
-        background: #f0f9f4;
-        color: #0f744c;
+        border: 1px solid rgba(47, 107, 255, 0.2);
+        background: #F8FAFC;
+        color: #2F6BFF;
         border-radius: 16px;
         padding: 0.65rem 1.25rem;
     }
@@ -414,10 +464,10 @@
         min-width: 230px;
         margin-top: 10px !important;
         background: #ffffff;
-        border: 1px solid rgba(16, 185, 129, 0.18);
+        border: 1px solid rgba(47, 107, 255, 0.18);
         border-radius: 16px;
         padding: 10px;
-        box-shadow: 0 24px 48px -14px rgba(10, 46, 31, 0.28);
+        box-shadow: 0 24px 48px -14px rgba(15, 23, 42, 0.28);
         z-index: 9999 !important;
     }
 
@@ -438,8 +488,8 @@
     }
 
     .attendance-hour-actions .dropdown-item:hover {
-        background: #ecfdf5;
-        color: #059669;
+        background: #EEF2FF;
+        color: #2F6BFF;
     }
 
     .hour-export-buttons {
@@ -557,7 +607,7 @@
     }
 
     .attendance-hour-table tbody tr.hour-row-selected td {
-        background: #ecfdf5;
+        background: #EEF2FF;
     }
 
     .employee-cell {
@@ -577,7 +627,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: linear-gradient(135deg, var(--primary-blue), var(--primary-teal));
+        background: linear-gradient(135deg, #2F6BFF, #8B5CF6);
         color: white;
         font-weight: 700;
         font-size: 0.9rem;
@@ -680,9 +730,9 @@
         gap: 0.35rem;
         padding: 0.35rem 0.7rem;
         border-radius: 999px;
-        background: linear-gradient(135deg, #d1fae5, #a7f3d0);
-        color: #065f46;
-        border: 2px solid rgba(34, 197, 94, 0.2);
+        background: linear-gradient(135deg, #EEF2FF, #E0E7FF);
+        color: #2F6BFF;
+        border: 2px solid rgba(47, 107, 255, 0.2);
         font-weight: 800;
         font-size: 0.9rem;
         white-space: nowrap;
@@ -696,7 +746,7 @@
     }
 
     .status-badge.present {
-        background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+        background: linear-gradient(135deg, #E0E7FF, #C7D2FE);
         color: #065f46;
         border: 2px solid rgba(34, 197, 94, 0.2);
     }
@@ -1131,26 +1181,26 @@
     }
 
     html[data-pms-theme="dark"] .attendance-hour-container {
-        background: linear-gradient(145deg, #07130d, #102119);
+        background: linear-gradient(145deg, #070B1A, #0F1530);
     }
 
     html[data-pms-theme="dark"] .header-card,
     html[data-pms-theme="dark"] .filter-card,
     html[data-pms-theme="dark"] .legend-card,
     html[data-pms-theme="dark"] .table-card {
-        background: rgba(16, 33, 25, 0.95);
-        border-color: rgba(122, 240, 181, 0.15);
+        background: rgba(15, 21, 48, 0.95);
+        border-color: rgba(79, 131, 255, 0.15);
     }
 
     html[data-pms-theme="dark"] .header-title h1 {
-        background: linear-gradient(135deg, #60a5fa, #34d399, #22c55e);
+        background: linear-gradient(135deg, #60a5fa, #2F6BFF, #8B5CF6);
         -webkit-background-clip: text;
         background-clip: text;
     }
 
     html[data-pms-theme="dark"] .header-title p,
     html[data-pms-theme="dark"] .legend-item {
-        color: #d9f1e4;
+        color: #C7D2FE;
     }
 
     html[data-pms-theme="dark"] .filter-header h6,
@@ -1162,30 +1212,54 @@
 
     html[data-pms-theme="dark"] .filter-group label,
     html[data-pms-theme="dark"] .employee-id {
-        color: #8ba198;
+        color: #94a3b8;
     }
 
     html[data-pms-theme="dark"] .filter-group .form-control,
     html[data-pms-theme="dark"] .table-card .dataTables_length select,
     html[data-pms-theme="dark"] .table-card .dataTables_filter input {
-        background: #183026;
-        border-color: rgba(122, 240, 181, 0.2);
+        background: #141B3D;
+        border-color: rgba(79, 131, 255, 0.2);
         color: #ffffff;
     }
 
+    html[data-pms-theme="dark"] .btn-reset,
+    html[data-pms-theme="dark"] .attendance-container .btn-reset {
+        background: #141B3D !important;
+        color: #CBD5E1 !important;
+        -webkit-text-fill-color: #CBD5E1 !important;
+        border: 1px solid rgba(238, 241, 251, 0.16) !important;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    html[data-pms-theme="dark"] .btn-reset:hover,
+    html[data-pms-theme="dark"] .attendance-container .btn-reset:hover {
+        background: #1A2247 !important;
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+        border-color: rgba(238, 241, 251, 0.3) !important;
+        transform: translateY(-2px);
+    }
+
+    html[data-pms-theme="dark"] .btn-reset *,
+    html[data-pms-theme="dark"] .attendance-container .btn-reset i {
+        color: inherit !important;
+        -webkit-text-fill-color: inherit !important;
+    }
+
     html[data-pms-theme="dark"] .nav-tab-btn {
-        background: #183026;
-        color: #d9f1e4;
+        background: #141B3D;
+        color: #EEF1FB;
     }
 
     html[data-pms-theme="dark"] .nav-tab-btn.active {
-        background: linear-gradient(135deg, #0f744c, #10b981);
+        background: linear-gradient(135deg, #2F6BFF, #1E4FCC);
         color: #ffffff;
     }
 
     html[data-pms-theme="dark"] .attendance-hour-table thead th {
-        background: linear-gradient(135deg, #183026, #102119);
-        color: #8ba198;
+        background: linear-gradient(135deg, #141B3D, #0F1530);
+        color: #94a3b8;
     }
 
     html[data-pms-theme="dark"] .attendance-hour-table thead th .day-number,
@@ -1195,30 +1269,30 @@
     }
 
     html[data-pms-theme="dark"] .attendance-hour-table tbody tr:hover td {
-        background: #183026;
+        background: #141B3D;
     }
 
     html[data-pms-theme="dark"] .attendance-hour-table tbody td,
     html[data-pms-theme="dark"] .table-footer {
-        border-color: rgba(122, 240, 181, 0.08);
+        border-color: rgba(79, 131, 255, 0.08);
     }
 
     html[data-pms-theme="dark"] .hour-month-summary {
-        background: #07130d;
+        background: #070B1A;
     }
 
     html[data-pms-theme="dark"] .hour-month-profile,
     html[data-pms-theme="dark"] .hour-month-table td {
-        background: #102119;
-        border-color: rgba(122, 240, 181, 0.15);
+        background: #0F1530;
+        border-color: rgba(79, 131, 255, 0.15);
     }
 
     html[data-pms-theme="dark"] .hour-status-badge.present,
     html[data-pms-theme="dark"] .status-badge.present,
     html[data-pms-theme="dark"] .status-badge.wfh {
-        background: #064e3b;
-        color: #34d399;
-        border-color: rgba(52, 211, 153, 0.2);
+        background: rgba(47, 107, 255, 0.2);
+        color: #60A5FA;
+        border-color: rgba(79, 131, 255, 0.25);
     }
 
     html[data-pms-theme="dark"] .hour-status-badge.late,
@@ -1238,9 +1312,9 @@
 
     html[data-pms-theme="dark"] .status-badge.absent,
     html[data-pms-theme="dark"] .status-badge.empty {
-        background: #183026;
-        color: #8ba198;
-        border-color: rgba(122, 240, 181, 0.15);
+        background: #141B3D;
+        color: #94a3b8;
+        border-color: rgba(79, 131, 255, 0.15);
     }
 </style>
 
@@ -1613,7 +1687,7 @@
                                             'user_id' => $uid,
                                             'name' => $user->name,
                                             'designation' => $designationName,
-                                            'photo' => $user->profile_image ? asset($user->profile_image) : asset('images/default-avatar.png'),
+                                            'photo' => (!empty($user->profile_image) && file_exists(public_path($user->profile_image))) ? asset($user->profile_image) : asset('images/default-avatar.png'),
                                             'month' => (int) $month,
                                             'year' => (int) $year,
                                             'month_name' => Carbon::createFromDate($year, $month)->format('F Y'),
@@ -1942,7 +2016,7 @@ document.addEventListener('DOMContentLoaded', function () {
         $('#hourAttendanceModalBody').html(
             '<div class="hour-month-summary">' +
                 '<div class="hour-month-profile">' +
-                    '<img src="' + escapeHourHtml(payload.photo) + '" alt="' + escapeHourHtml(payload.name) + '">' +
+                    '<img src="' + escapeHourHtml(payload.photo) + '" alt="' + escapeHourHtml(payload.name) + '" onerror="this.onerror=null; this.src=\'/images/default-avatar.png\';">' +
                     '<div>' +
                         '<h5>' + escapeHourHtml(payload.name) + '</h5>' +
                         '<p>' + escapeHourHtml(payload.designation) + ' | ' + escapeHourHtml(payload.month_name) +

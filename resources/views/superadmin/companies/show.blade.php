@@ -6,20 +6,25 @@
 
 @section('content')
 <style>
+    /* ============================================================
+       DESIGN TOKENS — LIGHT MODE (DEFAULT)
+       ============================================================ */
     :root {
-        --primary: #059669;
+        --primary: #2F6BFF;
         --primary-hover: #047857;
-        --primary-glow: rgba(5, 150, 105, 0.18);
+        --primary-glow: rgba(47, 107, 255, 0.18);
         --bg-main: #f8fafc;
         --bg-surface: #ffffff;
+        --bg-subtle: #f8fafc;
+        --bg-hover: #f1f5f9;
         --border-color: #cbd5e1;
         --border-subtle: #e2e8f0;
         --text-main: #0f172a;
         --text-muted: #475569;
         --text-subtle: #64748b;
         --success: #10b981;
-        --success-bg: #ecfdf5;
-        --success-border: #a7f3d0;
+        --success-bg: #EEF2FF;
+        --success-border: #C7D2FE;
         --warning: #f59e0b;
         --warning-bg: #fffbeb;
         --warning-border: #fde68a;
@@ -45,6 +50,55 @@
         --shadow-card: 0 10px 25px -5px rgba(15, 23, 42, 0.05), 0 8px 10px -6px rgba(15, 23, 42, 0.03);
     }
 
+    /* ============================================================
+       DESIGN TOKENS — DARK THEME OVERRIDES
+       ============================================================ */
+    html[data-pms-theme="dark"],
+    html[data-theme="dark"],
+    html[data-bs-theme="dark"] {
+        --primary: #2F6BFF;
+        --primary-hover: #1E4FCC;
+        --primary-glow: rgba(47, 107, 255, 0.25);
+        --bg-main: #070B1A;
+        --bg-surface: #0F1530;
+        --bg-subtle: #141B3D;
+        --bg-hover: #1A2247;
+        --border-color: rgba(238, 241, 251, 0.12);
+        --border-subtle: rgba(238, 241, 251, 0.08);
+        --text-main: #EEF1FB;
+        --text-muted: #CBD5E1;
+        --text-subtle: #9AA3C7;
+        --shadow-card: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+
+        --success: #10b981;
+        --success-bg: rgba(47, 107, 255, 0.15);
+        --success-border: rgba(79, 131, 255, 0.3);
+
+        --warning: #f59e0b;
+        --warning-bg: rgba(245, 158, 11, 0.15);
+        --warning-border: rgba(251, 191, 36, 0.35);
+
+        --danger: #ef4444;
+        --danger-bg: rgba(239, 68, 68, 0.15);
+        --danger-border: rgba(248, 113, 113, 0.35);
+
+        --plan-free-bg: #141b3d;
+        --plan-free-text: #cbd5e1;
+        --plan-free-border: rgba(238, 241, 251, 0.16);
+
+        --plan-gold-bg: rgba(245, 158, 11, 0.15);
+        --plan-gold-text: #fbbf24;
+        --plan-gold-border: rgba(245, 158, 11, 0.35);
+
+        --plan-platinum-bg: rgba(2, 132, 199, 0.15);
+        --plan-platinum-text: #38bdf8;
+        --plan-platinum-border: rgba(56, 189, 248, 0.35);
+
+        --plan-diamond-bg: rgba(109, 40, 217, 0.2);
+        --plan-diamond-text: #c084fc;
+        --plan-diamond-border: rgba(192, 132, 252, 0.35);
+    }
+
     /* TOP NAVIGATION & BREADCRUMB */
     .top-nav-bar {
         display: flex;
@@ -63,14 +117,15 @@
         color: var(--text-muted);
         text-decoration: none;
         padding: 6px 12px;
-        background: #ffffff;
-        border: 1px solid #cbd5e1;
+        background: var(--bg-surface);
+        border: 1px solid var(--border-color);
         border-radius: 10px;
         transition: all 0.2s ease;
     }
     .back-btn-link:hover {
         color: var(--primary);
         border-color: var(--primary);
+        background: var(--bg-hover);
         transform: translateX(-2px);
     }
     .breadcrumb-trail {
@@ -83,9 +138,24 @@
     }
     .breadcrumb-trail span.current { color: var(--text-main); font-weight: 700; }
 
+    /* FLASH ALERT */
+    .flash-alert-success {
+        background: var(--success-bg);
+        border: 1px solid var(--success-border);
+        border-radius: 14px;
+        padding: 14px 20px;
+        margin-bottom: 24px;
+        color: var(--success);
+        font-size: 13.5px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
     /* HEADER CARD */
     .company-header-card {
-        background: #ffffff;
+        background: var(--bg-surface);
         border-radius: var(--radius-card);
         border: 1px solid var(--border-color);
         padding: 28px 32px;
@@ -106,7 +176,7 @@
         left: 0;
         right: 0;
         height: 4px;
-        background: linear-gradient(90deg, #059669 0%, #10b981 50%, #3b82f6 100%);
+        background: linear-gradient(90deg, #2F6BFF 0%, #10b981 50%, #3b82f6 100%);
     }
     .company-header-left {
         display: flex;
@@ -117,7 +187,7 @@
         width: 72px;
         height: 72px;
         border-radius: 20px;
-        background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+        background: linear-gradient(135deg, var(--primary) 0%, #10b981 100%);
         color: #ffffff;
         display: flex;
         align-items: center;
@@ -127,7 +197,7 @@
         box-shadow: 0 10px 20px var(--primary-glow);
         flex-shrink: 0;
         overflow: hidden;
-        border: 2.5px solid #ffffff;
+        border: 2.5px solid var(--bg-surface);
     }
     .company-avatar-box img {
         width: 100%;
@@ -159,10 +229,10 @@
         font-size: 12px;
         font-weight: 700;
         color: var(--text-subtle);
-        background: #f1f5f9;
+        background: var(--bg-subtle);
         padding: 3px 10px;
         border-radius: 8px;
-        border: 1px solid #cbd5e1;
+        border: 1px solid var(--border-color);
     }
 
     /* BADGES & PILLS */
@@ -223,24 +293,44 @@
     .btn-sm-custom { padding: 9px 18px; font-size: 13px; }
     .btn-xs-custom { padding: 6px 14px; font-size: 12px; }
     .btn-primary-custom {
-        background: linear-gradient(135deg, #059669 0%, #047857 100%);
-        color: #ffffff;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+        color: #ffffff !important;
         box-shadow: 0 4px 12px var(--primary-glow);
     }
     .btn-primary-custom:hover {
-        background: linear-gradient(135deg, #047857 0%, #065f46 100%);
+        background: linear-gradient(135deg, var(--primary-hover) 0%, var(--primary) 100%);
         transform: translateY(-1px);
-        color: #ffffff;
+        color: #ffffff !important;
     }
     .btn-outline-custom {
-        background: #ffffff;
+        background: var(--bg-surface);
         color: var(--text-main);
-        border-color: #cbd5e1;
+        border-color: var(--border-color);
     }
     .btn-outline-custom:hover {
         border-color: var(--primary);
         color: var(--primary);
-        background: #f0fdf4;
+        background: var(--bg-hover);
+    }
+    .btn-warning-custom {
+        background: var(--warning-bg);
+        color: var(--warning);
+        border: 1px solid var(--warning-border);
+    }
+    .btn-warning-custom:hover {
+        background: var(--warning-bg);
+        opacity: 0.9;
+        transform: translateY(-1px);
+    }
+    .btn-danger-custom {
+        background: var(--danger-bg);
+        color: var(--danger);
+        border: 1px solid var(--danger-border);
+    }
+    .btn-danger-custom:hover {
+        background: var(--danger-bg);
+        opacity: 0.9;
+        transform: translateY(-1px);
     }
 
     /* SUMMARY METRICS GRID (5 CARDS) */
@@ -257,11 +347,11 @@
         .metrics-summary-grid { grid-template-columns: repeat(1, 1fr); }
     }
     .metric-summary-card {
-        background: #ffffff;
+        background: var(--bg-surface);
         border-radius: 18px;
         border: 1px solid var(--border-color);
         padding: 22px 20px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+        box-shadow: var(--shadow-card);
         transition: all 0.25s ease;
         position: relative;
         overflow: hidden;
@@ -269,7 +359,7 @@
     .metric-summary-card:hover {
         transform: translateY(-3px);
         border-color: var(--primary);
-        box-shadow: 0 10px 25px -5px rgba(5, 150, 105, 0.12);
+        box-shadow: 0 10px 25px -5px var(--primary-glow);
     }
     .metric-summary-card .header-row {
         display: flex;
@@ -280,12 +370,32 @@
         width: 36px;
         height: 36px;
         border-radius: 10px;
-        background: #f0fdf4;
+        background: var(--bg-subtle);
         color: var(--primary);
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 18px;
+    }
+    .metric-summary-card .icon-box.icon-box-blue {
+        background: rgba(59, 130, 246, 0.12);
+        color: #3b82f6;
+    }
+    .metric-summary-card .icon-box.icon-box-purple {
+        background: rgba(139, 92, 246, 0.12);
+        color: #8b5cf6;
+    }
+    .metric-summary-card .icon-box.icon-box-amber {
+        background: var(--warning-bg);
+        color: var(--warning);
+    }
+    .metric-summary-card .icon-box.icon-box-success {
+        background: var(--success-bg);
+        color: var(--success);
+    }
+    .metric-summary-card .icon-box.icon-box-danger {
+        background: var(--danger-bg);
+        color: var(--danger);
     }
     .metric-summary-card .label {
         font-size: 11px;
@@ -310,7 +420,7 @@
 
     /* QUICK ACTIONS BAR */
     .quick-actions-bar {
-        background: #ffffff;
+        background: var(--bg-surface);
         border: 1px solid var(--border-color);
         border-radius: 16px;
         padding: 14px 22px;
@@ -319,15 +429,15 @@
         align-items: center;
         gap: 10px;
         flex-wrap: wrap;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+        box-shadow: var(--shadow-card);
     }
 
     /* NAVIGATION TABS */
     .nav-tabs-wrapper {
-        background: #ffffff;
+        background: var(--bg-surface);
         border-radius: 16px;
         border: 1px solid var(--border-color);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+        box-shadow: var(--shadow-card);
         margin-bottom: 24px;
         overflow-x: auto;
     }
@@ -374,7 +484,7 @@
         .dashboard-grid { grid-template-columns: 1fr; }
     }
     .dashboard-card {
-        background: #ffffff;
+        background: var(--bg-surface);
         border-radius: var(--radius-card);
         border: 1px solid var(--border-color);
         padding: 28px;
@@ -419,14 +529,59 @@
         word-break: break-all;
     }
 
+    .db-code-pill {
+        font-family: monospace;
+        color: #0284c7;
+        background: #e0f2fe;
+        border: 1px solid #bae6fd;
+        padding: 2px 8px;
+        border-radius: 6px;
+        display: inline-block;
+        font-weight: 700;
+    }
+    html[data-pms-theme="dark"] .db-code-pill,
+    html[data-theme="dark"] .db-code-pill,
+    html[data-bs-theme="dark"] .db-code-pill {
+        color: #38bdf8;
+        background: rgba(2, 132, 199, 0.2);
+        border-color: rgba(56, 189, 248, 0.3);
+    }
+
+    .password-box-pill {
+        font-family: monospace;
+        font-weight: 700;
+        background: var(--bg-subtle);
+        padding: 4px 10px;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        color: var(--text-main);
+    }
+    .password-btn-icon {
+        background: var(--bg-subtle);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 4px 8px;
+        cursor: pointer;
+        color: var(--text-muted);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }
+    .password-btn-icon:hover {
+        color: var(--primary);
+        border-color: var(--primary);
+        background: var(--bg-hover);
+    }
+
     /* INFRASTRUCTURE TELEMETRY ROW */
     .telemetry-row {
         display: flex;
         align-items: center;
         justify-content: space-between;
         padding: 14px 18px;
-        background: #f8fafc;
-        border: 1px solid #e2e8f0;
+        background: var(--bg-subtle);
+        border: 1px solid var(--border-subtle);
         border-radius: 14px;
         margin-bottom: 12px;
     }
@@ -435,8 +590,8 @@
         width: 38px;
         height: 38px;
         border-radius: 10px;
-        background: #ffffff;
-        border: 1px solid #cbd5e1;
+        background: var(--bg-surface);
+        border: 1px solid var(--border-color);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -444,15 +599,129 @@
         color: var(--primary);
     }
 
-    /* MODAL BACKDROP */
+    /* TABLES & DIRECTORY */
+    .workspace-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+    }
+    .workspace-table thead tr {
+        border-bottom: 2px solid var(--border-color);
+        text-align: left;
+        color: var(--text-subtle);
+        background: var(--bg-subtle);
+    }
+    .workspace-table th {
+        padding: 14px 16px;
+        font-weight: 800;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .workspace-table tbody tr {
+        border-bottom: 1px solid var(--border-subtle);
+        transition: background 0.15s ease;
+    }
+    .workspace-table tbody tr:hover {
+        background: var(--bg-hover) !important;
+    }
+
+    /* ROLE BADGES */
+    .role-pill {
+        font-weight: 800;
+        font-size: 11.5px;
+        padding: 4px 12px;
+        border-radius: 999px;
+        display: inline-block;
+    }
+    .role-pill.role-admin { background: rgba(37, 99, 235, 0.12); color: #2563eb; border: 1px solid rgba(37, 99, 235, 0.25); }
+    .role-pill.role-dev { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
+    .role-pill.role-manager { background: var(--warning-bg); color: var(--warning); border: 1px solid var(--warning-border); }
+    .role-pill.role-user { background: var(--bg-subtle); color: var(--text-muted); border: 1px solid var(--border-color); }
+
+    html[data-pms-theme="dark"] .role-pill.role-admin,
+    html[data-theme="dark"] .role-pill.role-admin,
+    html[data-bs-theme="dark"] .role-pill.role-admin { color: #60a5fa; }
+
+    /* ADMIN ITEM BOX */
+    .admin-card-item {
+        font-size: 14px;
+        padding: 18px 22px;
+        background: var(--bg-subtle);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 14px;
+    }
+
+    /* SUBSCRIPTION PLAN GRID ITEM */
+    .plan-info-card {
+        border-radius: 16px;
+        padding: 20px;
+        text-align: center;
+    }
+    .plan-info-card.plan-free { background: var(--plan-free-bg); border: 1px solid var(--plan-free-border); }
+    .plan-info-card.plan-gold { background: var(--plan-gold-bg); border: 1px solid var(--plan-gold-border); }
+    .plan-info-card.plan-platinum { background: var(--plan-platinum-bg); border: 1px solid var(--plan-platinum-border); }
+    .plan-info-card.plan-diamond { background: var(--plan-diamond-bg); border: 1px solid var(--plan-diamond-border); }
+
+    .plan-info-card .plan-price {
+        font-size: 20px;
+        font-weight: 800;
+        margin: 10px 0;
+    }
+    .plan-info-card.plan-free .plan-price { color: var(--plan-free-text); }
+    .plan-info-card.plan-gold .plan-price { color: var(--plan-gold-text); }
+    .plan-info-card.plan-platinum .plan-price { color: var(--plan-platinum-text); }
+    .plan-info-card.plan-diamond .plan-price { color: var(--plan-diamond-text); }
+
+    .plan-info-card .plan-subtext {
+        font-size: 12px;
+        font-weight: 600;
+    }
+    .plan-info-card.plan-free .plan-subtext { color: var(--text-subtle); }
+    .plan-info-card.plan-gold .plan-subtext { color: var(--plan-gold-text); }
+    .plan-info-card.plan-platinum .plan-subtext { color: var(--plan-platinum-text); }
+    .plan-info-card.plan-diamond .plan-subtext { color: var(--plan-diamond-text); }
+
+    /* USAGE STAT CARD */
+    .usage-stat-card {
+        background: var(--bg-subtle);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 22px;
+        text-align: center;
+    }
+
+    /* SETTINGS ACTION CARDS */
+    .settings-action-card {
+        border-radius: 16px;
+        padding: 22px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    .settings-action-card.card-warning {
+        background: var(--warning-bg);
+        border: 1px solid var(--warning-border);
+    }
+    .settings-action-card.card-danger {
+        background: var(--danger-bg);
+        border: 1px solid var(--danger-border);
+    }
+
+    /* MODAL BACKDROP & DIALOG */
     .modal-backdrop-custom {
         position: fixed;
         top: 0;
         left: 0;
         right: 0;
         bottom: 0;
-        background: rgba(15, 23, 42, 0.6);
-        backdrop-filter: blur(4px);
+        background: rgba(7, 11, 26, 0.75);
+        backdrop-filter: blur(6px);
         display: none;
         align-items: center;
         justify-content: center;
@@ -461,18 +730,19 @@
     }
     .modal-backdrop-custom.open { display: flex; }
     .modal-dialog-custom {
-        background: #ffffff;
+        background: var(--bg-surface);
         border-radius: 20px;
         border: 1px solid var(--border-color);
         padding: 28px;
         max-width: 520px;
         width: 100%;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        box-shadow: var(--shadow-card);
+        color: var(--text-main);
     }
 
     .plan-card-option {
-        background: #f8fafc;
-        border: 1.5px solid #cbd5e1;
+        background: var(--bg-subtle);
+        border: 1.5px solid var(--border-color);
         border-radius: 14px;
         padding: 16px;
         cursor: pointer;
@@ -480,14 +750,14 @@
     }
     .plan-card-option:hover, .plan-card-option.selected {
         border-color: var(--primary);
-        background: #f0fdf4;
+        background: var(--bg-hover);
     }
 
     .user-avatar-circle {
         width: 38px;
         height: 38px;
         border-radius: 50%;
-        background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+        background: linear-gradient(135deg, var(--primary) 0%, #10b981 100%);
         color: #ffffff;
         display: flex;
         align-items: center;
@@ -496,7 +766,7 @@
         font-size: 13.5px;
         box-shadow: 0 4px 8px var(--primary-glow);
         flex-shrink: 0;
-        border: 1.5px solid #ffffff;
+        border: 1.5px solid var(--bg-surface);
     }
 </style>
 
@@ -521,8 +791,8 @@
 
     <!-- SUCCESS FLASH ALERT -->
     @if(session('success'))
-        <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 14px; padding: 14px 20px; margin-bottom: 24px; color: #047857; font-size: 13.5px; font-weight: 700; display: flex; align-items: center; gap: 10px;">
-            <i class="bx bx-check-circle" style="font-size: 22px; color: #10b981;"></i> {{ session('success') }}
+        <div class="flash-alert-success">
+            <i class="bx bx-check-circle" style="font-size: 22px; color: var(--success);"></i> {{ session('success') }}
         </div>
     @endif
 
@@ -569,7 +839,7 @@
             </button>
             <form method="POST" action="{{ route('super-admin.companies.enter', $company) }}" style="margin: 0;">
                 @csrf
-                <button type="submit" class="btn-custom btn-outline-custom btn-sm-custom" style="color: #d97706; border-color: rgba(245, 158, 11, 0.4); background: #fffbeb;">
+                <button type="submit" class="btn-custom btn-warning-custom btn-sm-custom">
                     <i class="bx bx-log-in-circle"></i> Impersonate Context
                 </button>
             </form>
@@ -590,7 +860,7 @@
         <div class="metric-summary-card">
             <div class="header-row">
                 <div class="label">ADMINS</div>
-                <div class="icon-box" style="background: #eff6ff; color: #2563eb;"><i class="bx bx-user-pin"></i></div>
+                <div class="icon-box icon-box-blue"><i class="bx bx-user-pin"></i></div>
             </div>
             <div class="value">{{ $adminsCount ?? 0 }}</div>
             <div class="subtext">Company admins</div>
@@ -599,7 +869,7 @@
         <div class="metric-summary-card">
             <div class="header-row">
                 <div class="label">STORAGE</div>
-                <div class="icon-box" style="background: #f5f3ff; color: #7c3aed;"><i class="bx bx-hard-drive"></i></div>
+                <div class="icon-box icon-box-purple"><i class="bx bx-hard-drive"></i></div>
             </div>
             <div class="value">0%</div>
             <div class="subtext">0 MB / {{ $company->max_storage_mb ?? 10000 }} MB</div>
@@ -608,7 +878,7 @@
         <div class="metric-summary-card">
             <div class="header-row">
                 <div class="label">DATABASE</div>
-                <div class="icon-box" style="background: {{ ($dbConnected ?? true) ? '#ecfdf5' : '#fef2f2' }}; color: {{ ($dbConnected ?? true) ? 'var(--success)' : 'var(--danger)' }};">
+                <div class="icon-box {{ ($dbConnected ?? true) ? 'icon-box-success' : 'icon-box-danger' }}">
                     <i class="bx bx-data"></i>
                 </div>
             </div>
@@ -623,7 +893,7 @@
         <div class="metric-summary-card">
             <div class="header-row">
                 <div class="label">SUBSCRIPTION</div>
-                <div class="icon-box" style="background: #fffbeb; color: #d97706;"><i class="bx bx-layer"></i></div>
+                <div class="icon-box icon-box-amber"><i class="bx bx-layer"></i></div>
             </div>
             <div class="value" style="font-size: 20px;">
                 <span class="plan-badge plan-{{ $planClass }}">{{ $rawPlan }}</span>
@@ -695,7 +965,7 @@
                     </div>
                     <div class="info-item">
                         <div class="label">DATABASE</div>
-                        <div class="val" style="font-family: monospace; color: #0369a1; background: #e0f2fe; padding: 2px 8px; border-radius: 6px; display: inline-block;">{{ $company->db_name }}</div>
+                        <div class="val"><span class="db-code-pill">{{ $company->db_name }}</span></div>
                     </div>
                     <div class="info-item">
                         <div class="label">CREATED</div>
@@ -718,14 +988,14 @@
                     <div class="info-item">
                         <div class="label">PASSWORD</div>
                         <div class="val" style="display: flex; align-items: center; gap: 8px;">
-                            <span id="companyPasswordDisplay" data-raw-password="{{ $companyPassword }}" style="font-family: monospace; font-weight: 700; background: #f1f5f9; padding: 2px 8px; border-radius: 6px; border: 1px solid #cbd5e1; color: var(--text-main);">
+                            <span id="companyPasswordDisplay" data-raw-password="{{ $companyPassword }}" class="password-box-pill">
                                 {{ $companyPassword ? str_repeat('•', min(strlen($companyPassword), 10)) : 'N/A' }}
                             </span>
                             @if($companyPassword)
-                                <button type="button" id="btnToggleCompanyPassword" onclick="toggleCompanyPassword()" title="Show/Hide Password" style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; padding: 2px 6px; cursor: pointer; color: var(--text-muted); display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s ease;">
+                                <button type="button" id="btnToggleCompanyPassword" onclick="toggleCompanyPassword()" title="Show/Hide Password" class="password-btn-icon">
                                     <i class="bx bx-show" id="passwordEyeIcon" style="font-size: 16px;"></i>
                                 </button>
-                                <button type="button" onclick="copyCompanyPassword('{{ addslashes($companyPassword) }}', this)" title="Copy Password" style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; padding: 2px 6px; cursor: pointer; color: var(--text-muted); display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s ease;">
+                                <button type="button" onclick="copyCompanyPassword('{{ addslashes($companyPassword) }}', this)" title="Copy Password" class="password-btn-icon">
                                     <i class="bx bx-copy" style="font-size: 16px;"></i>
                                 </button>
                             @endif
@@ -804,21 +1074,21 @@
                 <h3 class="dashboard-card-title"><i class="bx bx-group" style="color: var(--primary);"></i> Tenant Users Directory ({{ $tenantUsers->count() }})</h3>
             </div>
             <div style="overflow-x: auto;">
-                <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                <table class="workspace-table">
                     <thead>
-                        <tr style="border-bottom: 2px solid #cbd5e1; text-align: left; color: var(--text-subtle); background: #f8fafc;">
-                            <th style="padding: 14px 16px; font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">User</th>
-                            <th style="padding: 14px 16px; font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Role</th>
-                            <th style="padding: 14px 16px; font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Status</th>
+                        <tr>
+                            <th>User</th>
+                            <th>Role</th>
+                            <th>Status</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($tenantUsers as $u)
-                            <tr style="border-bottom: 1px solid var(--border-subtle); transition: background 0.15s ease;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+                            <tr>
                                 <td style="padding: 14px 16px;">
                                     <div style="display: flex; align-items: center; gap: 12px;">
                                         @if(!empty($u->profile_image) && file_exists(public_path($u->profile_image)))
-                                            <img src="{{ asset($u->profile_image) }}" alt="{{ $u->name }}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1.5px solid #cbd5e1;" />
+                                            <img src="{{ asset($u->profile_image) }}" alt="{{ $u->name }}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--border-color);" />
                                         @else
                                             <div class="user-avatar-circle">
                                                 {{ strtoupper(substr($u->name ?? 'U', 0, 2)) }}
@@ -833,20 +1103,14 @@
                                 <td style="padding: 14px 16px;">
                                     @php
                                         $roleLabel = ucfirst($u->role ?? 'User');
-                                        $rolePillBg = match(strtolower($u->role ?? '')) {
-                                            'admin', 'superadmin' => '#eff6ff',
-                                            'developer', 'dev' => '#ecfdf5',
-                                            'hr', 'manager' => '#fffbeb',
-                                            default => '#f1f5f9',
-                                        };
-                                        $rolePillColor = match(strtolower($u->role ?? '')) {
-                                            'admin', 'superadmin' => '#2563eb',
-                                            'developer', 'dev' => '#059669',
-                                            'hr', 'manager' => '#b45309',
-                                            default => '#475569',
+                                        $roleClass = match(strtolower($u->role ?? '')) {
+                                            'admin', 'superadmin' => 'role-admin',
+                                            'developer', 'dev' => 'role-dev',
+                                            'hr', 'manager' => 'role-manager',
+                                            default => 'role-user',
                                         };
                                     @endphp
-                                    <span style="font-weight: 800; font-size: 11.5px; background: {{ $rolePillBg }}; color: {{ $rolePillColor }}; padding: 4px 12px; border-radius: 999px; border: 1px solid rgba(0,0,0,0.05); display: inline-block;">
+                                    <span class="role-pill {{ $roleClass }}">
                                         {{ $roleLabel }}
                                     </span>
                                 </td>
@@ -859,7 +1123,7 @@
                         @empty
                             <tr>
                                 <td colspan="3" style="padding: 32px; text-align: center; color: var(--text-subtle);">
-                                    <i class="bx bx-group" style="font-size: 36px; color: #cbd5e1; margin-bottom: 8px;"></i><br>
+                                    <i class="bx bx-group" style="font-size: 36px; color: var(--border-color); margin-bottom: 8px;"></i><br>
                                     No tenant users found in database.
                                 </td>
                             </tr>
@@ -876,12 +1140,12 @@
             <h3 class="dashboard-card-title" style="margin-bottom: 20px;"><i class="bx bx-user-pin" style="color: var(--primary);"></i> Company Administrators ({{ $tenantAdmins->count() }})</h3>
             <div style="display: flex; flex-direction: column; gap: 14px;">
                 @forelse($tenantAdmins as $admin)
-                    <div style="font-size: 14px; padding: 18px 22px; background: #f8fafc; border: 1px solid var(--border-color); border-radius: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+                    <div class="admin-card-item">
                         <div style="display: flex; align-items: center; gap: 16px;">
                             @if(!empty($admin->profile_image) && file_exists(public_path($admin->profile_image)))
-                                <img src="{{ asset($admin->profile_image) }}" alt="{{ $admin->name }}" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover; border: 2px solid #cbd5e1;" />
+                                <img src="{{ asset($admin->profile_image) }}" alt="{{ $admin->name }}" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-color);" />
                             @else
-                                <div style="width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #059669 0%, #10b981 100%); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 17px; box-shadow: 0 4px 10px var(--primary-glow);">
+                                <div style="width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--primary) 0%, #10b981 100%); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 17px; box-shadow: 0 4px 10px var(--primary-glow);">
                                     {{ strtoupper(substr($admin->name ?? 'A', 0, 2)) }}
                                 </div>
                             @endif
@@ -899,7 +1163,7 @@
                     </div>
                 @empty
                     <div style="padding: 32px; text-align: center; color: var(--text-subtle);">
-                        <i class="bx bx-user-x" style="font-size: 36px; color: #cbd5e1; margin-bottom: 8px;"></i><br>
+                        <i class="bx bx-user-x" style="font-size: 36px; color: var(--border-color); margin-bottom: 8px;"></i><br>
                         No admin accounts found in tenant database.
                     </div>
                 @endforelse
@@ -918,25 +1182,25 @@
                 Current Active Subscription: <span class="plan-badge plan-{{ $planClass }}">{{ $rawPlan }}</span>
             </div>
             <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
-                <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 16px; padding: 20px; text-align: center;">
+                <div class="plan-info-card plan-free">
                     <span class="plan-badge plan-free">FREE</span>
-                    <div style="font-size: 20px; font-weight: 800; margin: 10px 0; color: var(--text-main);">₹0 / mo</div>
-                    <div style="font-size: 12px; color: var(--text-subtle); font-weight: 600;">Up to 5 Users • 5GB Storage</div>
+                    <div class="plan-price">₹0 / mo</div>
+                    <div class="plan-subtext">Up to 5 Users • 5GB Storage</div>
                 </div>
-                <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 16px; padding: 20px; text-align: center;">
+                <div class="plan-info-card plan-gold">
                     <span class="plan-badge plan-gold">GOLD</span>
-                    <div style="font-size: 20px; font-weight: 800; margin: 10px 0; color: #b45309;">₹4,999 / mo</div>
-                    <div style="font-size: 12px; color: #b45309; font-weight: 600;">Up to 25 Users • 25GB Storage</div>
+                    <div class="plan-price">₹4,999 / mo</div>
+                    <div class="plan-subtext">Up to 25 Users • 25GB Storage</div>
                 </div>
-                <div style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 16px; padding: 20px; text-align: center;">
+                <div class="plan-info-card plan-platinum">
                     <span class="plan-badge plan-platinum">PLATINUM</span>
-                    <div style="font-size: 20px; font-weight: 800; margin: 10px 0; color: #0284c7;">₹9,999 / mo</div>
-                    <div style="font-size: 12px; color: #0284c7; font-weight: 600;">Up to 100 Users • 100GB Storage</div>
+                    <div class="plan-price">₹9,999 / mo</div>
+                    <div class="plan-subtext">Up to 100 Users • 100GB Storage</div>
                 </div>
-                <div style="background: #f5f3ff; border: 1px solid #ddd6fe; border-radius: 16px; padding: 20px; text-align: center;">
+                <div class="plan-info-card plan-diamond">
                     <span class="plan-badge plan-diamond">DIAMOND</span>
-                    <div style="font-size: 20px; font-weight: 800; margin: 10px 0; color: #6d28d9;">₹19,999 / mo</div>
-                    <div style="font-size: 12px; color: #6d28d9; font-weight: 600;">Unlimited Users • Priority Support</div>
+                    <div class="plan-price">₹19,999 / mo</div>
+                    <div class="plan-subtext">Unlimited Users • Priority Support</div>
                 </div>
             </div>
         </div>
@@ -946,22 +1210,22 @@
     <div class="workspace-tab-content" id="tab-billing">
         <div class="dashboard-card">
             <h3 class="dashboard-card-title" style="margin-bottom: 18px;"><i class="bx bx-receipt" style="color: var(--primary);"></i> Billing &amp; Invoices</h3>
-            <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+            <table class="workspace-table">
                 <thead>
-                    <tr style="border-bottom: 2px solid #cbd5e1; text-align: left; background: #f8fafc;">
-                        <th style="padding: 12px;">Invoice #</th>
-                        <th style="padding: 12px;">Date</th>
-                        <th style="padding: 12px;">Plan Tier</th>
-                        <th style="padding: 12px;">Amount</th>
-                        <th style="padding: 12px;">Status</th>
+                    <tr>
+                        <th>Invoice #</th>
+                        <th>Date</th>
+                        <th>Plan Tier</th>
+                        <th>Amount</th>
+                        <th>Status</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr style="border-bottom: 1px solid var(--border-subtle);">
-                        <td style="padding: 12px; font-weight: 700; font-family: monospace; color: #0284c7;">INV-2026-001</td>
+                    <tr>
+                        <td style="padding: 12px; font-weight: 700; font-family: monospace; color: var(--primary);">INV-2026-001</td>
                         <td style="padding: 12px; color: var(--text-muted);">Aug 01, 2026</td>
                         <td style="padding: 12px;"><span class="plan-badge plan-{{ $planClass }}">{{ $rawPlan }}</span></td>
-                        <td style="padding: 12px; font-weight: 800;">₹0.00</td>
+                        <td style="padding: 12px; font-weight: 800; color: var(--text-main);">₹0.00</td>
                         <td style="padding: 12px;"><span class="status-pill status-active"><span class="dot"></span> Paid</span></td>
                     </tr>
                 </tbody>
@@ -974,11 +1238,11 @@
         <div class="dashboard-card">
             <h3 class="dashboard-card-title" style="margin-bottom: 18px;"><i class="bx bx-pie-chart-alt-2" style="color: var(--primary);"></i> Resource Consumption &amp; Quotas</h3>
             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
-                <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 16px; padding: 22px; text-align: center;">
+                <div class="usage-stat-card">
                     <div style="font-size: 28px; font-weight: 800; color: var(--text-main);">{{ $totalUsersCount ?? 0 }} / {{ $company->max_users ?? 100 }}</div>
                     <div style="font-size: 12.5px; color: var(--text-muted); font-weight: 600; margin-top: 4px;">Active Tenant User Accounts</div>
                 </div>
-                <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 16px; padding: 22px; text-align: center;">
+                <div class="usage-stat-card">
                     <div style="font-size: 28px; font-weight: 800; color: var(--text-main);">0 MB / {{ $company->max_storage_mb ?? 10000 }} MB</div>
                     <div style="font-size: 12.5px; color: var(--text-muted); font-weight: 600; margin-top: 4px;">Allocated Database Disk Storage</div>
                 </div>
@@ -991,8 +1255,8 @@
         <div class="dashboard-card">
             <h3 class="dashboard-card-title" style="margin-bottom: 18px;"><i class="bx bx-history" style="color: var(--primary);"></i> Tenant Activity Log</h3>
             <div style="font-size: 13.5px; color: var(--text-muted);">
-                <div style="padding: 14px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
-                    <div><strong>Tenant Workspace Created</strong> — Database <code style="font-family: monospace; color: #0369a1; background: #e0f2fe; padding: 2px 6px; border-radius: 4px;">{{ $company->db_name }}</code> provisioned.</div>
+                <div style="padding: 14px; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;">
+                    <div><strong style="color: var(--text-main);">Tenant Workspace Created</strong> — Database <span class="db-code-pill">{{ $company->db_name }}</span> provisioned.</div>
                     <span style="font-size: 12px; color: var(--text-subtle); font-weight: 600;">Aug 12, 2026</span>
                 </div>
             </div>
@@ -1011,10 +1275,10 @@
     <div class="workspace-tab-content" id="tab-database">
         <div class="dashboard-card">
             <h3 class="dashboard-card-title" style="margin-bottom: 18px;"><i class="bx bx-data" style="color: var(--primary);"></i> Database Telemetry &amp; Connection Target</h3>
-            <div style="font-size: 14px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 16px; padding: 22px;">
-                Target Database: <code style="color: #0369a1; background: #e0f2fe; padding: 4px 12px; border-radius: 8px; font-weight: 800; font-family: monospace;">{{ $company->db_name }}</code><br><br>
+            <div style="font-size: 14px; background: var(--bg-subtle); border: 1px solid var(--border-color); border-radius: 16px; padding: 22px; color: var(--text-muted);">
+                Target Database: <span class="db-code-pill">{{ $company->db_name }}</span><br><br>
                 Connection Status: <span class="status-pill status-active"><span class="dot"></span> Connected ({{ $dbLatency ?? 0 }}ms)</span><br><br>
-                Database Charset: <strong>utf8mb4_general_ci</strong>
+                Database Charset: <strong style="color: var(--text-main);">utf8mb4_general_ci</strong>
             </div>
         </div>
     </div>
@@ -1026,7 +1290,7 @@
                 <h3 class="dashboard-card-title"><i class="bx bx-archive" style="color: var(--primary);"></i> Automated Database Backups</h3>
                 <button class="btn-custom btn-outline-custom btn-sm-custom">Run Manual Backup</button>
             </div>
-            <div style="font-size: 13.5px; color: var(--text-muted); font-weight: 600;">Last verified snapshot: <strong>Today, 10:32 AM (2.4 MB)</strong></div>
+            <div style="font-size: 13.5px; color: var(--text-muted); font-weight: 600;">Last verified snapshot: <strong style="color: var(--text-main);">Today, 10:32 AM (2.4 MB)</strong></div>
         </div>
     </div>
 
@@ -1037,14 +1301,14 @@
                 <h3 class="dashboard-card-title"><i class="bx bx-git-repo-forked" style="color: var(--primary);"></i> Schema Migrations History</h3>
                 <button class="btn-custom btn-outline-custom btn-sm-custom">Run Migrations</button>
             </div>
-            <div style="font-size: 13.5px; color: var(--text-muted); font-weight: 600;">Migration Version: <strong>v1.8.2 (Up to date - 0 pending)</strong></div>
+            <div style="font-size: 13.5px; color: var(--text-muted); font-weight: 600;">Migration Version: <strong style="color: var(--text-main);">v1.8.2 (Up to date - 0 pending)</strong></div>
         </div>
     </div>
 
     <!-- TAB 12: SETTINGS (FUNCTIONAL SUSPEND & DEACTIVATE) -->
     <div class="workspace-tab-content" id="tab-settings">
-        <div class="dashboard-card" style="border: 1px solid #cbd5e1; border-radius: 20px; padding: 28px; box-shadow: var(--shadow-card);">
-            <div class="dashboard-card-header" style="margin-bottom: 24px; border-bottom: 1px solid #e2e8f0; padding-bottom: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+        <div class="dashboard-card">
+            <div class="dashboard-card-header" style="margin-bottom: 24px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
                 <div>
                     <h3 class="dashboard-card-title" style="font-size: 18px; font-weight: 800; color: var(--text-main); margin: 0;">Tenant Lifecycle &amp; Security Controls</h3>
                     <p style="font-size: 13px; color: var(--text-muted); margin: 4px 0 0 0;">Manage tenant operational status, suspension rules, and authorization access policies.</p>
@@ -1056,18 +1320,18 @@
 
             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
                 <!-- SUSPEND / UNSUSPEND CARD -->
-                <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 16px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between;">
+                <div class="settings-action-card card-warning">
                     <div>
                         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 10px;">
-                            <div style="width: 40px; height: 40px; border-radius: 12px; background: rgba(245, 158, 11, 0.15); color: #d97706; display: flex; align-items: center; justify-content: center; font-size: 22px;">
+                            <div style="width: 40px; height: 40px; border-radius: 12px; background: rgba(245, 158, 11, 0.15); color: var(--warning); display: flex; align-items: center; justify-content: center; font-size: 22px;">
                                 <i class="bx bx-pause-circle"></i>
                             </div>
                             <div>
-                                <strong style="font-size: 15px; color: #92400e;">Company Suspension</strong>
-                                <div style="font-size: 11.5px; color: #b45309;">Temporary operational freeze</div>
+                                <strong style="font-size: 15px; color: var(--warning);">Company Suspension</strong>
+                                <div style="font-size: 11.5px; color: var(--text-subtle);">Temporary operational freeze</div>
                             </div>
                         </div>
-                        <p style="font-size: 12.5px; color: #78350f; margin: 0 0 20px 0; line-height: 1.5;">
+                        <p style="font-size: 12.5px; color: var(--text-muted); margin: 0 0 20px 0; line-height: 1.5;">
                             @if($companyStatus === 'suspended')
                                 This company is currently <strong>SUSPENDED</strong>. User authentication and automated workflows are temporarily paused.
                             @else
@@ -1086,7 +1350,7 @@
                         @else
                             <form method="POST" action="{{ route('super-admin.companies.suspend', $company->id) }}" onsubmit="return confirm('Are you sure you want to SUSPEND {{ addslashes($company->name) }}? Tenant users will be temporarily locked out.');">
                                 @csrf
-                                <button type="submit" class="btn-custom btn-outline-custom btn-sm-custom" style="color: #b45309; border-color: #fde68a; background: #ffffff; width: 100%; padding: 10px 16px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                <button type="submit" class="btn-custom btn-warning-custom btn-sm-custom" style="width: 100%; padding: 10px 16px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 8px;">
                                     <i class="bx bx-pause-circle"></i> Suspend Company
                                 </button>
                             </form>
@@ -1095,18 +1359,18 @@
                 </div>
 
                 <!-- DEACTIVATE / REACTIVATE ACCESS CARD -->
-                <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 16px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between;">
+                <div class="settings-action-card card-danger">
                     <div>
                         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 10px;">
-                            <div style="width: 40px; height: 40px; border-radius: 12px; background: rgba(220, 38, 38, 0.15); color: #dc2626; display: flex; align-items: center; justify-content: center; font-size: 22px;">
+                            <div style="width: 40px; height: 40px; border-radius: 12px; background: rgba(239, 68, 68, 0.15); color: var(--danger); display: flex; align-items: center; justify-content: center; font-size: 22px;">
                                 <i class="bx bx-block"></i>
                             </div>
                             <div>
-                                <strong style="font-size: 15px; color: #991b1b;">Deactivate Tenant Access</strong>
-                                <div style="font-size: 11.5px; color: #b91c1c;">Disable access authorization</div>
+                                <strong style="font-size: 15px; color: var(--danger);">Deactivate Tenant Access</strong>
+                                <div style="font-size: 11.5px; color: var(--text-subtle);">Disable access authorization</div>
                             </div>
                         </div>
-                        <p style="font-size: 12.5px; color: #7f1d1d; margin: 0 0 20px 0; line-height: 1.5;">
+                        <p style="font-size: 12.5px; color: var(--text-muted); margin: 0 0 20px 0; line-height: 1.5;">
                             @if($companyStatus === 'inactive')
                                 This company is currently <strong>INACTIVE</strong>. Tenant authorization and API access are disabled.
                             @else
@@ -1125,7 +1389,7 @@
                         @else
                             <form method="POST" action="{{ route('super-admin.companies.deactivate', $company->id) }}" onsubmit="return confirm('Are you sure you want to DEACTIVATE access for {{ addslashes($company->name) }}?');">
                                 @csrf
-                                <button type="submit" class="btn-custom btn-outline-custom btn-sm-custom" style="color: #dc2626; border-color: #fecaca; background: #ffffff; width: 100%; padding: 10px 16px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                <button type="submit" class="btn-custom btn-danger-custom btn-sm-custom" style="width: 100%; padding: 10px 16px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 8px;">
                                     <i class="bx bx-power-off"></i> Deactivate Access
                                 </button>
                             </form>
@@ -1179,7 +1443,7 @@
             </div>
         </div>
 
-        <div style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #e2e8f0; padding-top: 16px;">
+        <div style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid var(--border-subtle); padding-top: 16px;">
             <button class="btn-custom btn-outline-custom btn-sm-custom" id="closePlanModalBtn">Cancel</button>
             <button class="btn-custom btn-primary-custom btn-sm-custom" id="confirmPlanChangeBtn">Confirm Change</button>
         </div>

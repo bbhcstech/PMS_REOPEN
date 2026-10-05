@@ -113,17 +113,29 @@ class SystemNotificationService
 
     public static function send($users, string $title, string $message, ?string $url = null, array $data = []): void
     {
-        collect($users)
-            ->filter()
-            ->unique('id')
-            ->each(function (User $user) use ($title, $message, $url, $data) {
-                $user->notify(new SystemNotification($data + [
-                    'title' => $title,
-                    'message' => $message,
-                    'url' => $url,
-                    'actor_id' => auth()->id(),
-                    'actor_name' => auth()->user()?->name,
-                ]));
-            });
+        try {
+            if (! \Illuminate\Support\Facades\Schema::hasTable('notifications')) {
+                return;
+            }
+
+            collect($users)
+                ->filter()
+                ->unique('id')
+                ->each(function (User $user) use ($title, $message, $url, $data) {
+                    try {
+                        $user->notify(new SystemNotification($data + [
+                            'title' => $title,
+                            'message' => $message,
+                            'url' => $url,
+                            'actor_id' => auth()->id(),
+                            'actor_name' => auth()->user()?->name,
+                        ]));
+                    } catch (\Throwable $e) {
+                        \Illuminate\Support\Facades\Log::warning("SystemNotification send failed for user {$user->id}: " . $e->getMessage());
+                    }
+                });
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning("SystemNotificationService::send top-level failed: " . $e->getMessage());
+        }
     }
 }

@@ -5,6 +5,7 @@ namespace App\Notifications;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Notifications\Messages\BroadcastMessage;
 
 class TicketCreatedNotification extends Notification
 {
@@ -37,21 +38,30 @@ class TicketCreatedNotification extends Notification
         ];
     }
 
+    public function toArray($notifiable)
+    {
+        return $this->toDatabase($notifiable);
+    }
+
+    public function toBroadcast($notifiable)
+    {
+        return new BroadcastMessage($this->toDatabase($notifiable));
+    }
+
     // email message
-public function toMail($notifiable)
-{
-    $ticket = $this->ticket;
-    $ticketUrl = route('tickets.show', $ticket->id);
+    public function toMail($notifiable)
+    {
+        $ticket = $this->ticket;
+        $ticketUrl = route('tickets.show', $ticket->id);
 
-    return (new MailMessage)
-        ->markdown('emails.default') // <--- your custom layout here
-        ->subject('New Ticket Assigned: ' . $ticket->subject)
-        ->greeting('Hello ' . ($notifiable->name ?? 'User') . ',')
-        ->line('A new ticket has been assigned to you.')
-        ->line('Subject: ' . $ticket->subject)
-        ->line('Priority: ' . ($ticket->priority ?? 'N/A'))
-        ->action('View Ticket', $ticketUrl)
-        ->line('You can also view this ticket in the PMS dashboard.');
-}
-
+        return (new MailMessage)
+            ->markdown('emails.default')
+            ->subject('New Ticket Assigned: ' . $ticket->subject)
+            ->greeting('Hello ' . ($notifiable->name ?? 'User') . ',')
+            ->line('A new ticket has been assigned to you.')
+            ->line('Subject: ' . $ticket->subject)
+            ->line('Priority: ' . ($ticket->priority ?? 'N/A'))
+            ->action('View Ticket', $ticketUrl)
+            ->line('You can also view this ticket in the PMS dashboard.');
+    }
 }

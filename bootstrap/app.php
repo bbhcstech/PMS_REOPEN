@@ -18,11 +18,31 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware) {
+        $middleware->redirectTo(
+            guests: '/login',
+            users: function (\Illuminate\Http\Request $request) {
+                $user = auth()->user();
+                if ($user && (
+                    (method_exists($user, 'isDeveloper') && $user->isDeveloper()) ||
+                    in_array(strtolower((string) ($user->role ?? '')), ['developer', 'dev'], true) ||
+                    str_contains(strtolower((string) ($user->role ?? '')), 'developer') ||
+                    str_contains(strtolower((string) ($user->designation ?? '')), 'developer') ||
+                    str_contains(strtolower((string) ($user->designation ?? '')), 'engineer')
+                )) {
+                    return route('developer.dashboard');
+                }
+                if ($user && in_array(strtolower((string) ($user->role ?? '')), ['superadmin', 'super-admin', 'super_admin'], true)) {
+                    return route('superadmin.dashboard');
+                }
+                return route('dashboard');
+            }
+        );
         $middleware->web(append: [
             SetTenantConnection::class,
             \App\Http\Middleware\EnsureCompanySubscriptionActive::class,
         ]);
         $middleware->alias([
+            'admin' => RoleMiddleware::class,
             'tenant' => SetTenantConnection::class,
             'module.access' => EnsureModuleAccess::class,
             'role' => RoleMiddleware::class,
@@ -34,7 +54,17 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions) {
         $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\HttpException $e, \Illuminate\Http\Request $request) {
             if ($e->getStatusCode() === 419) {
-                return redirect()->back()->with('error', 'Your session expired. Please refresh and try again.');
+                if ($request->is('logout') || $request->is('*/logout') || $request->routeIs('logout*')) {
+                    \Illuminate\Support\Facades\Auth::guard('web')->logout();
+                    if (\Illuminate\Support\Facades\Auth::guard('super_admin')->check()) {
+                        \Illuminate\Support\Facades\Auth::guard('super_admin')->logout();
+                    }
+                    \Illuminate\Support\Facades\Auth::logout();
+                    $request->session()->invalidate();
+                    $request->session()->regenerateToken();
+                    return redirect('/login');
+                }
+                return redirect('/login')->with('error', 'Your session expired. Please log in again.');
             }
         });
     })->create();

@@ -16,18 +16,22 @@ class DesignationController extends Controller
     {
         $perPage = $request->get('per_page', 10);
 
-        // FIX 1: Order by level to ensure proper display
-        $designations = Designation::with(['addedBy', 'updatedBy'])
+        // Order by level and name to ensure proper display
+        $designations = Designation::with(['addedBy', 'updatedBy', 'parent'])
             ->whereNull('archived_at')
-            ->orderBy('level', 'asc')  // ADD THIS LINE
-            ->orderBy('name', 'asc')   // ADD THIS LINE
+            ->orderBy('level', 'asc')
+            ->orderBy('name', 'asc')
             ->paginate($perPage);
 
-        // Get unique levels count
+        // Get accurate global counts
         $levelsCount = Designation::whereNull('archived_at')->distinct('level')->count('level');
+        $topLevelCount = Designation::whereNull('archived_at')->where(function ($q) {
+            $q->whereNull('parent_id')->orWhere('level', '<=', 2);
+        })->count();
+        $recentCount = Designation::whereNull('archived_at')->where('updated_at', '>=', now()->subDays(7))->count();
         $archivedCount = Designation::whereNotNull('archived_at')->count();
 
-        return view('admin.designations.index', compact('designations', 'levelsCount', 'archivedCount'));
+        return view('admin.designations.index', compact('designations', 'levelsCount', 'topLevelCount', 'recentCount', 'archivedCount'));
     }
 
     public function show(Designation $designation)
@@ -59,7 +63,10 @@ class DesignationController extends Controller
 
     public function create()
     {
-        $designations = Designation::whereNull('archived_at')->get();
+        $designations = Designation::whereNull('archived_at')
+            ->orderBy('level', 'asc')
+            ->orderBy('name', 'asc')
+            ->get();
         $nextCode = $this->generateNextCodePreview();
         return view('admin.designations.create', compact('designations', 'nextCode'));
     }
@@ -80,15 +87,16 @@ class DesignationController extends Controller
     {
         $request->merge([
             'code_generation_mode' => $request->input('code_generation_mode', 'auto'),
-            'unique_code' => trim((string) $request->input('unique_code', '')),
+            'unique_code'          => trim((string) $request->input('unique_code', '')),
+            'parent_id'            => $request->filled('parent_id') ? $request->input('parent_id') : null,
         ]);
 
         $request->validate([
-            'name'      => ['required','string','max:255', Rule::unique('designations','name')],
-            'parent_id' => ['nullable','exists:designations,id'],
-            'level'     => ['required','integer','min:0','max:6'],
+            'name'                 => ['required', 'string', 'max:255', Rule::unique('designations', 'name')],
+            'parent_id'            => ['nullable', 'exists:designations,id'],
+            'level'                => ['required', 'integer', 'min:0', 'max:6'],
             'code_generation_mode' => ['required', Rule::in(['auto', 'custom'])],
-            'unique_code' => [
+            'unique_code'          => [
                 'required_if:code_generation_mode,custom',
                 'nullable',
                 'string',
@@ -99,11 +107,11 @@ class DesignationController extends Controller
 
         try {
             $designationData = [
-                'name'        => $request->name,
-                'parent_id'   => $request->parent_id ?: null,
-                'level'       => $request->level,
-                'added_by'    => Auth::id(),
-                'updated_by'  => Auth::id(),  // FIX 2: Changed from 'last_updated_by' to 'updated_by'
+                'name'            => $request->name,
+                'parent_id'       => $request->parent_id ?: null,
+                'level'           => $request->level,
+                'added_by'        => Auth::id(),
+                'last_updated_by' => Auth::id(),
             ];
 
             if ($request->code_generation_mode === 'custom') {
@@ -119,7 +127,8 @@ class DesignationController extends Controller
                         'id'          => $designation->id,
                         'name'        => $designation->name,
                         'level'       => $designation->level,
-                        'unique_code' => $designation->unique_code
+                        'unique_code' => $designation->unique_code,
+                        'parent_id'   => $designation->parent_id,
                     ]
                 ]);
             }
@@ -137,7 +146,6 @@ class DesignationController extends Controller
             throw $e;
         }
 
-        // FIX 3: Add timestamp to prevent caching
         return redirect()->route('designations.index', ['t' => time()])
             ->with('success', 'Designation added successfully.');
     }
@@ -146,27 +154,37 @@ class DesignationController extends Controller
     {
         $designations = Designation::whereNull('archived_at')
             ->whereKeyNot($designation->id)
+            ->orderBy('level', 'asc')
+            ->orderBy('name', 'asc')
             ->get();
         return view('admin.designations.create', compact('designation', 'designations'));
     }
 
     public function update(Request $request, Designation $designation)
     {
+        $request->merge([
+            'parent_id' => $request->filled('parent_id') ? $request->input('parent_id') : null,
+        ]);
+
         $request->validate([
             'name' => [
-                'required','string','max:255',
+                'required', 'string', 'max:255',
                 Rule::unique('designations', 'name')->ignore($designation->id)
             ],
-            'parent_id' => ['nullable','exists:designations,id'],
-            'level'     => ['required','integer','min:0','max:6']
+            'parent_id' => [
+                'nullable',
+                'exists:designations,id',
+                Rule::notIn([$designation->id]),
+            ],
+            'level'     => ['required', 'integer', 'min:0', 'max:6']
         ]);
 
         try {
             $designation->update([
-                'name'        => $request->name,
-                'parent_id'   => $request->parent_id ?: null,
-                'level'       => $request->level,
-                'updated_by'  => Auth::id(),  // FIX 4: Changed from 'last_updated_by' to 'updated_by'
+                'name'            => $request->name,
+                'parent_id'       => $request->parent_id ?: null,
+                'level'           => $request->level,
+                'last_updated_by' => Auth::id(),
             ]);
 
             if ($request->ajax()) {
@@ -176,7 +194,8 @@ class DesignationController extends Controller
                         'id'          => $designation->id,
                         'name'        => $designation->name,
                         'level'       => $designation->level,
-                        'unique_code' => $designation->unique_code
+                        'unique_code' => $designation->unique_code,
+                        'parent_id'   => $designation->parent_id,
                     ]
                 ]);
             }
@@ -195,25 +214,30 @@ class DesignationController extends Controller
             throw $e;
         }
 
-        // FIX 5: Add timestamp and updated_id to prevent caching
         return redirect()->route('designations.index', ['t' => time()])
             ->with('success', 'Designation updated successfully.')
-            ->with('updated_id', $designation->id);  // Send back ID for potential JS update
+            ->with('updated_id', $designation->id);
     }
 
     public function ajaxStore(Request $request)
     {
+        $request->merge([
+            'parent_id' => $request->filled('parent_id') ? $request->input('parent_id') : null,
+        ]);
+
         $request->validate([
-            'name'  => ['required','string','max:255', Rule::unique('designations','name')],
-            'level' => ['required','integer','min:0','max:6']
+            'name'      => ['required', 'string', 'max:255', Rule::unique('designations', 'name')],
+            'parent_id' => ['nullable', 'exists:designations,id'],
+            'level'     => ['required', 'integer', 'min:0', 'max:6']
         ]);
 
         try {
             $designation = Designation::create([
-                'name'       => $request->name,
-                'level'      => $request->level,
-                'added_by'   => Auth::id(),
-                'updated_by' => Auth::id(),  // FIX 6: Consistency
+                'name'            => $request->name,
+                'parent_id'       => $request->parent_id ?: null,
+                'level'           => $request->level,
+                'added_by'        => Auth::id(),
+                'last_updated_by' => Auth::id(),
             ]);
 
             $designation->unique_code = 'DGN-' . str_pad($designation->id, 4, '0', STR_PAD_LEFT);
@@ -225,7 +249,8 @@ class DesignationController extends Controller
                     'id'          => $designation->id,
                     'name'        => $designation->name,
                     'level'       => $designation->level,
-                    'unique_code' => $designation->unique_code
+                    'unique_code' => $designation->unique_code,
+                    'parent_id'   => $designation->parent_id,
                 ]
             ]);
 

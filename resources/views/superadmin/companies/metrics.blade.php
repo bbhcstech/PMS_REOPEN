@@ -424,6 +424,399 @@
         padding: 24px;
         box-shadow: var(--shadow-md);
     }
+
+    /* ============================================================
+       DARK MODE OVERRIDES (data-pms-theme="dark" / data-theme="dark")
+       ============================================================ */
+    html[data-pms-theme="dark"],
+    html[data-theme="dark"],
+    html[data-bs-theme="dark"] {
+        --navy-dark: #070b1a;
+        --navy-surface: #0f1530;
+        --bg-main: #070B1A;
+        --bg-surface: #0F1530;
+        --border-color: rgba(238, 241, 251, 0.12);
+        --border-subtle: rgba(238, 241, 251, 0.08);
+        --text-main: #EEF1FB;
+        --text-muted: #9AA3C7;
+        --text-subtle: #6B739A;
+        --primary-soft: rgba(47, 107, 255, 0.15);
+        --warning-bg: rgba(245, 158, 11, 0.1);
+        --warning-border: rgba(245, 158, 11, 0.3);
+    }
+
+    /* Dark Mode: Date Select Dropdown */
+    html[data-pms-theme="dark"] .date-select-btn,
+    html[data-theme="dark"] .date-select-btn,
+    html[data-bs-theme="dark"] .date-select-btn {
+        background: var(--bg-surface-subtle, #141B3D) !important;
+        border-color: var(--border-color) !important;
+        color: var(--text-main, #EEF1FB) !important;
+    }
+    html[data-pms-theme="dark"] .date-select-btn option,
+    html[data-theme="dark"] .date-select-btn option,
+    html[data-bs-theme="dark"] .date-select-btn option {
+        background: var(--bg-surface, #0F1530);
+        color: var(--text-main, #EEF1FB);
+    }
+
+    /* Dark Mode: Impersonation Banner */
+    html[data-pms-theme="dark"] .metrics-impersonation-banner,
+    html[data-theme="dark"] .metrics-impersonation-banner,
+    html[data-bs-theme="dark"] .metrics-impersonation-banner {
+        background: rgba(245, 158, 11, 0.1) !important;
+        border-color: rgba(245, 158, 11, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .metrics-impersonation-code,
+    html[data-theme="dark"] .metrics-impersonation-code,
+    html[data-bs-theme="dark"] .metrics-impersonation-code {
+        background: rgba(245, 158, 11, 0.18) !important;
+        color: #fde68a !important;
+        border: 1px solid rgba(245, 158, 11, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .metrics-impersonation-leave-btn,
+    html[data-theme="dark"] .metrics-impersonation-leave-btn,
+    html[data-bs-theme="dark"] .metrics-impersonation-leave-btn {
+        background: rgba(245, 158, 11, 0.12) !important;
+        color: var(--warning, #fbbf24) !important;
+        border-color: rgba(245, 158, 11, 0.35) !important;
+    }
+    html[data-pms-theme="dark"] .metrics-impersonation-leave-btn:hover,
+    html[data-theme="dark"] .metrics-impersonation-leave-btn:hover,
+    html[data-bs-theme="dark"] .metrics-impersonation-leave-btn:hover {
+        background: rgba(245, 158, 11, 0.25) !important;
+        border-color: #f59e0b !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 14px rgba(245, 158, 11, 0.25) !important;
+    }
+
+    /* Dark Mode: Chart Time Pills */
+    html[data-pms-theme="dark"] .chart-time-pills,
+    html[data-theme="dark"] .chart-time-pills,
+    html[data-bs-theme="dark"] .chart-time-pills {
+        background: var(--bg-surface-subtle, #141B3D) !important;
+        border: 1px solid var(--border-subtle, rgba(238, 241, 251, 0.1));
+    }
+    html[data-pms-theme="dark"] .chart-time-btn,
+    html[data-theme="dark"] .chart-time-btn,
+    html[data-bs-theme="dark"] .chart-time-btn {
+        color: var(--text-muted, #9AA3C7);
+    }
+    html[data-pms-theme="dark"] .chart-time-btn:hover,
+    html[data-theme="dark"] .chart-time-btn:hover,
+    html[data-bs-theme="dark"] .chart-time-btn:hover {
+        color: var(--text-main, #EEF1FB);
+    }
+    html[data-pms-theme="dark"] .chart-time-btn.active,
+    html[data-theme="dark"] .chart-time-btn.active,
+    html[data-bs-theme="dark"] .chart-time-btn.active {
+        background: var(--primary, #2F6BFF) !important;
+        color: #ffffff !important;
+        box-shadow: 0 2px 8px rgba(47, 107, 255, 0.35);
+    }
+
+    /* Dark Mode: Master Ledger Controls */
+    html[data-pms-theme="dark"] .ledger-export-btn,
+    html[data-theme="dark"] .ledger-export-btn,
+    html[data-bs-theme="dark"] .ledger-export-btn {
+        background: var(--bg-surface-subtle, #141B3D) !important;
+        color: var(--text-main, #EEF1FB) !important;
+        border-color: var(--border-color) !important;
+    }
+    html[data-pms-theme="dark"] .ledger-export-btn:hover,
+    html[data-theme="dark"] .ledger-export-btn:hover,
+    html[data-bs-theme="dark"] .ledger-export-btn:hover {
+        background: var(--bg-surface-hover, #1A2247) !important;
+        border-color: var(--primary, #2F6BFF) !important;
+        color: #ffffff !important;
+    }
+    html[data-pms-theme="dark"] .ledger-export-menu,
+    html[data-theme="dark"] .ledger-export-menu,
+    html[data-bs-theme="dark"] .ledger-export-menu {
+        background: var(--bg-surface, #0F1530) !important;
+        border-color: var(--border-color) !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45) !important;
+    }
+    html[data-pms-theme="dark"] .ledger-export-menu a,
+    html[data-theme="dark"] .ledger-export-menu a,
+    html[data-bs-theme="dark"] .ledger-export-menu a {
+        color: var(--text-main, #EEF1FB) !important;
+    }
+    html[data-pms-theme="dark"] .ledger-entries-select,
+    html[data-theme="dark"] .ledger-entries-select,
+    html[data-bs-theme="dark"] .ledger-entries-select {
+        background: var(--bg-surface-subtle, #141B3D) !important;
+        color: var(--text-main, #EEF1FB) !important;
+        border-color: var(--border-color) !important;
+    }
+    html[data-pms-theme="dark"] .ledger-entries-select option,
+    html[data-theme="dark"] .ledger-entries-select option,
+    html[data-bs-theme="dark"] .ledger-entries-select option {
+        background: var(--bg-surface, #0F1530);
+        color: var(--text-main, #EEF1FB);
+    }
+    html[data-pms-theme="dark"] .ledger-search-input,
+    html[data-theme="dark"] .ledger-search-input,
+    html[data-bs-theme="dark"] .ledger-search-input {
+        background: var(--bg-surface-subtle, #141B3D) !important;
+        color: var(--text-main, #EEF1FB) !important;
+        border-color: var(--border-color) !important;
+    }
+    html[data-pms-theme="dark"] .ledger-search-input::placeholder,
+    html[data-theme="dark"] .ledger-search-input::placeholder,
+    html[data-bs-theme="dark"] .ledger-search-input::placeholder {
+        color: var(--text-subtle, #6B739A) !important;
+    }
+
+    /* Dark Mode: Master Ledger Table & Rows */
+    html[data-pms-theme="dark"] .ledger-table-wrap,
+    html[data-theme="dark"] .ledger-table-wrap,
+    html[data-bs-theme="dark"] .ledger-table-wrap {
+        background: var(--bg-surface, #0F1530) !important;
+        border-color: var(--border-color) !important;
+    }
+    html[data-pms-theme="dark"] .ledger-table thead tr,
+    html[data-theme="dark"] .ledger-table thead tr,
+    html[data-bs-theme="dark"] .ledger-table thead tr {
+        background: var(--bg-surface-subtle, #141B3D) !important;
+        border-bottom-color: var(--border-color) !important;
+    }
+    html[data-pms-theme="dark"] .ledger-table th,
+    html[data-theme="dark"] .ledger-table th,
+    html[data-bs-theme="dark"] .ledger-table th {
+        background: var(--bg-surface-subtle, #141B3D) !important;
+        border-color: var(--border-subtle) !important;
+        color: var(--text-muted, #9AA3C7) !important;
+    }
+    html[data-pms-theme="dark"] .ledger-table td,
+    html[data-theme="dark"] .ledger-table td,
+    html[data-bs-theme="dark"] .ledger-table td {
+        border-color: var(--border-subtle) !important;
+    }
+    html[data-pms-theme="dark"] .ledger-table .master-table-row,
+    html[data-theme="dark"] .ledger-table .master-table-row,
+    html[data-bs-theme="dark"] .ledger-table .master-table-row {
+        background: var(--bg-surface, #0F1530) !important;
+    }
+    html[data-pms-theme="dark"] .ledger-table .master-table-row:hover,
+    html[data-theme="dark"] .ledger-table .master-table-row:hover,
+    html[data-bs-theme="dark"] .ledger-table .master-table-row:hover {
+        background: var(--bg-surface-hover, #1A2247) !important;
+    }
+    html[data-pms-theme="dark"] .ledger-table .company-title,
+    html[data-theme="dark"] .ledger-table .company-title,
+    html[data-bs-theme="dark"] .ledger-table .company-title {
+        color: var(--text-main, #EEF1FB) !important;
+    }
+    html[data-pms-theme="dark"] .ledger-table .company-db,
+    html[data-theme="dark"] .ledger-table .company-db,
+    html[data-bs-theme="dark"] .ledger-table .company-db {
+        color: var(--text-muted, #9AA3C7) !important;
+    }
+    html[data-pms-theme="dark"] .ledger-action-btn,
+    html[data-theme="dark"] .ledger-action-btn,
+    html[data-bs-theme="dark"] .ledger-action-btn {
+        background: rgba(47, 107, 255, 0.15) !important;
+        color: #60a5fa !important;
+        border-color: rgba(47, 107, 255, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .ledger-action-btn:hover,
+    html[data-theme="dark"] .ledger-action-btn:hover,
+    html[data-bs-theme="dark"] .ledger-action-btn:hover {
+        background: var(--primary, #2F6BFF) !important;
+        color: #ffffff !important;
+    }
+
+    /* Dark Mode: Plan and Status Badges */
+    html[data-pms-theme="dark"] .plan-badge-item.badge-free,
+    html[data-theme="dark"] .plan-badge-item.badge-free {
+        background: rgba(148, 163, 184, 0.15) !important;
+        color: #94a3b8 !important;
+        border-color: rgba(148, 163, 184, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .plan-badge-item.badge-gold,
+    html[data-theme="dark"] .plan-badge-item.badge-gold {
+        background: rgba(245, 158, 11, 0.15) !important;
+        color: #fbbf24 !important;
+        border-color: rgba(245, 158, 11, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .plan-badge-item.badge-platinum,
+    html[data-theme="dark"] .plan-badge-item.badge-platinum {
+        background: rgba(2, 132, 199, 0.15) !important;
+        color: #38bdf8 !important;
+        border-color: rgba(2, 132, 199, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .plan-badge-item.badge-diamond,
+    html[data-theme="dark"] .plan-badge-item.badge-diamond {
+        background: rgba(124, 58, 237, 0.15) !important;
+        color: #a78bfa !important;
+        border-color: rgba(124, 58, 237, 0.3) !important;
+    }
+
+    html[data-pms-theme="dark"] .status-badge-item.status-active,
+    html[data-theme="dark"] .status-badge-item.status-active {
+        background: rgba(22, 163, 74, 0.15) !important;
+        color: #4ade80 !important;
+        border-color: rgba(22, 163, 74, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .status-badge-item.status-trial,
+    html[data-theme="dark"] .status-badge-item.status-trial {
+        background: rgba(217, 119, 6, 0.15) !important;
+        color: #fbbf24 !important;
+        border-color: rgba(217, 119, 6, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .status-badge-item.status-suspended,
+    html[data-theme="dark"] .status-badge-item.status-suspended {
+        background: rgba(220, 38, 38, 0.15) !important;
+        color: #f87171 !important;
+        border-color: rgba(220, 38, 38, 0.3) !important;
+    }
+
+    /* Dark Mode: Infrastructure Health Cards */
+    html[data-pms-theme="dark"] .infra-health-card,
+    html[data-theme="dark"] .infra-health-card,
+    html[data-bs-theme="dark"] .infra-health-card {
+        background: var(--bg-surface-subtle, #141B3D) !important;
+        border: 1px solid var(--border-subtle, rgba(238, 241, 251, 0.1)) !important;
+    }
+    html[data-pms-theme="dark"] .infra-health-card .health-label,
+    html[data-theme="dark"] .infra-health-card .health-label,
+    html[data-bs-theme="dark"] .infra-health-card .health-label {
+        color: var(--text-subtle, #6B739A) !important;
+    }
+
+    /* Dark Mode: Storage & Modals */
+    html[data-pms-theme="dark"] .modal-dialog-custom,
+    html[data-theme="dark"] .modal-dialog-custom,
+    html[data-bs-theme="dark"] .modal-dialog-custom {
+        background: var(--bg-surface, #0F1530) !important;
+        border: 1px solid var(--border-color) !important;
+        color: var(--text-main, #EEF1FB) !important;
+    }
+    html[data-pms-theme="dark"] .storage-progress-track,
+    html[data-theme="dark"] .storage-progress-track,
+    html[data-bs-theme="dark"] .storage-progress-track {
+        background: rgba(238, 241, 251, 0.12) !important;
+    }
+    html[data-pms-theme="dark"] .ranking-table th,
+    html[data-theme="dark"] .ranking-table th {
+        background: var(--bg-surface-subtle, #141B3D) !important;
+        color: var(--text-muted) !important;
+    }
+    html[data-pms-theme="dark"] .ranking-table tr:hover,
+    html[data-theme="dark"] .ranking-table tr:hover {
+        background: var(--bg-surface-hover, #1A2247) !important;
+    }
+    html[data-pms-theme="dark"] .risk-alert-item,
+    html[data-theme="dark"] .risk-alert-item {
+        background: var(--bg-surface-subtle, #141B3D) !important;
+        border-color: var(--border-color) !important;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) {
+            --navy-dark: #070b1a;
+            --navy-surface: #0f1530;
+            --bg-main: #070B1A;
+            --bg-surface: #0F1530;
+            --border-color: rgba(238, 241, 251, 0.12);
+            --border-subtle: rgba(238, 241, 251, 0.08);
+            --text-main: #EEF1FB;
+            --text-muted: #9AA3C7;
+            --text-subtle: #6B739A;
+            --primary-soft: rgba(47, 107, 255, 0.15);
+            --warning-bg: rgba(245, 158, 11, 0.1);
+            --warning-border: rgba(245, 158, 11, 0.3);
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .date-select-btn {
+            background: var(--bg-surface-subtle, #141B3D) !important;
+            border-color: var(--border-color) !important;
+            color: var(--text-main, #EEF1FB) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .date-select-btn option {
+            background: var(--bg-surface, #0F1530);
+            color: var(--text-main, #EEF1FB);
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .metrics-impersonation-banner {
+            background: rgba(245, 158, 11, 0.1) !important;
+            border-color: rgba(245, 158, 11, 0.3) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .metrics-impersonation-code {
+            background: rgba(245, 158, 11, 0.18) !important;
+            color: #fde68a !important;
+            border: 1px solid rgba(245, 158, 11, 0.3) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .metrics-impersonation-leave-btn {
+            background: rgba(245, 158, 11, 0.12) !important;
+            color: var(--warning, #fbbf24) !important;
+            border-color: rgba(245, 158, 11, 0.35) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .chart-time-pills {
+            background: var(--bg-surface-subtle, #141B3D) !important;
+            border: 1px solid var(--border-subtle, rgba(238, 241, 251, 0.1));
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .chart-time-btn {
+            color: var(--text-muted, #9AA3C7);
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .chart-time-btn.active {
+            background: var(--primary, #2F6BFF) !important;
+            color: #ffffff !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .ledger-export-btn {
+            background: var(--bg-surface-subtle, #141B3D) !important;
+            color: var(--text-main, #EEF1FB) !important;
+            border-color: var(--border-color) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .ledger-export-menu {
+            background: var(--bg-surface, #0F1530) !important;
+            border-color: var(--border-color) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .ledger-export-menu a {
+            color: var(--text-main, #EEF1FB) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .ledger-entries-select {
+            background: var(--bg-surface-subtle, #141B3D) !important;
+            color: var(--text-main, #EEF1FB) !important;
+            border-color: var(--border-color) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .ledger-entries-select option {
+            background: var(--bg-surface, #0F1530);
+            color: var(--text-main, #EEF1FB);
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .ledger-search-input {
+            background: var(--bg-surface-subtle, #141B3D) !important;
+            color: var(--text-main, #EEF1FB) !important;
+            border-color: var(--border-color) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .ledger-table-wrap {
+            background: var(--bg-surface, #0F1530) !important;
+            border-color: var(--border-color) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .ledger-table thead tr {
+            background: var(--bg-surface-subtle, #141B3D) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .ledger-table th {
+            background: var(--bg-surface-subtle, #141B3D) !important;
+            border-color: var(--border-subtle) !important;
+            color: var(--text-muted, #9AA3C7) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .ledger-table td {
+            border-color: var(--border-subtle) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .ledger-table .master-table-row {
+            background: var(--bg-surface, #0F1530) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .ledger-table .company-title {
+            color: var(--text-main, #EEF1FB) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .ledger-table .company-db {
+            color: var(--text-muted, #9AA3C7) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .infra-health-card {
+            background: var(--bg-surface-subtle, #141B3D) !important;
+            border: 1px solid var(--border-subtle, rgba(238, 241, 251, 0.1)) !important;
+        }
+    }
 </style>
 
 <!-- PAGE HEADER -->
@@ -453,19 +846,19 @@
 </div>
 
 @if($currentCompanyDb)
-<div style="background: var(--warning-bg); border: 1px solid var(--warning-border); border-radius: var(--radius-lg); padding: 14px 20px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between;">
+<div class="metrics-impersonation-banner" style="background: var(--warning-bg); border: 1px solid var(--warning-border); border-radius: var(--radius-lg); padding: 14px 20px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
     <div style="display: flex; align-items: center; gap: 12px;">
         <i class="fas fa-right-to-bracket" style="font-size: 20px; color: var(--warning);"></i>
         <div>
             <strong style="color: var(--warning); font-size: 14px;">Active Tenant Impersonation Session</strong>
             <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
-                Session Database: <code style="background: #fff; padding: 2px 6px; border-radius: 4px; font-family: monospace;">{{ $currentCompanyDb }}</code>
+                Session Database: <code class="metrics-impersonation-code" style="background: #fff; padding: 2px 6px; border-radius: 4px; font-family: monospace;">{{ $currentCompanyDb }}</code>
             </div>
         </div>
     </div>
     <form method="POST" action="{{ route('super-admin.leave-impersonation') }}" style="margin: 0;">
         @csrf
-        <button type="submit" class="btn-export" style="background: #ffffff; color: var(--warning); border: 1px solid var(--warning-border); box-shadow: none;">
+        <button type="submit" class="btn-export metrics-impersonation-leave-btn" style="background: #ffffff; color: var(--warning); border: 1px solid var(--warning-border); box-shadow: none;">
             <i class="fas fa-arrow-left"></i> Leave Impersonation
         </button>
     </form>
@@ -787,20 +1180,20 @@
             </div>
         </div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 12.5px;">
-            <div style="background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid var(--border-subtle);">
-                <div style="font-size: 10.5px; color: var(--text-subtle); font-weight: 700;">DB CLUSTER</div>
+            <div class="infra-health-card" style="background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid var(--border-subtle);">
+                <div class="health-label" style="font-size: 10.5px; color: var(--text-subtle); font-weight: 700;">DB CLUSTER</div>
                 <div style="color: var(--success); font-weight: 700; margin-top: 2px;">● Healthy (42ms)</div>
             </div>
-            <div style="background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid var(--border-subtle);">
-                <div style="font-size: 10.5px; color: var(--text-subtle); font-weight: 700;">BACKUP SERVICE</div>
+            <div class="infra-health-card" style="background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid var(--border-subtle);">
+                <div class="health-label" style="font-size: 10.5px; color: var(--text-subtle); font-weight: 700;">BACKUP SERVICE</div>
                 <div style="color: var(--success); font-weight: 700; margin-top: 2px;">● Verified</div>
             </div>
-            <div style="background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid var(--border-subtle);">
-                <div style="font-size: 10.5px; color: var(--text-subtle); font-weight: 700;">MIGRATIONS</div>
+            <div class="infra-health-card" style="background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid var(--border-subtle);">
+                <div class="health-label" style="font-size: 10.5px; color: var(--text-subtle); font-weight: 700;">MIGRATIONS</div>
                 <div style="color: var(--success); font-weight: 700; margin-top: 2px;">● Up to date</div>
             </div>
-            <div style="background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid var(--border-subtle);">
-                <div style="font-size: 10.5px; color: var(--text-subtle); font-weight: 700;">TENANTS</div>
+            <div class="infra-health-card" style="background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid var(--border-subtle);">
+                <div class="health-label" style="font-size: 10.5px; color: var(--text-subtle); font-weight: 700;">TENANTS</div>
                 <div style="color: var(--success); font-weight: 700; margin-top: 2px;">● {{ $companies->count() }}/{{ $companies->count() }} Connected</div>
             </div>
         </div>
@@ -823,10 +1216,10 @@
 
                 <!-- EXPORT DROPDOWN BUTTON -->
                 <div class="custom-export-dropdown" style="position: relative; display: inline-block;">
-                    <button type="button" id="exportDropdownBtn" style="display: inline-flex; align-items: center; gap: 8px; background: #ffffff; color: var(--text-main); border: 1px solid var(--border-color); padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; box-shadow: var(--shadow-xs);">
+                    <button type="button" id="exportDropdownBtn" class="ledger-export-btn" style="display: inline-flex; align-items: center; gap: 8px; background: #ffffff; color: var(--text-main); border: 1px solid var(--border-color); padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; box-shadow: var(--shadow-xs);">
                         <i class="fas fa-download" style="color: var(--primary);"></i> Export <i class="fas fa-chevron-down" style="font-size: 10px; margin-left: 2px;"></i>
                     </button>
-                    <div id="exportMenuOptions" style="display: none; position: absolute; right: 0; top: 100%; margin-top: 4px; background: #ffffff; border: 1px solid var(--border-color); border-radius: 10px; box-shadow: var(--shadow-md); padding: 6px; z-index: 100; min-width: 160px;">
+                    <div id="exportMenuOptions" class="ledger-export-menu" style="display: none; position: absolute; right: 0; top: 100%; margin-top: 4px; background: #ffffff; border: 1px solid var(--border-color); border-radius: 10px; box-shadow: var(--shadow-md); padding: 6px; z-index: 100; min-width: 160px;">
                         <a href="#" id="exportCsvBtn" style="display: flex; align-items: center; gap: 10px; padding: 8px 12px; color: var(--text-main); text-decoration: none; font-size: 13px; font-weight: 600; border-radius: 6px; transition: background 0.15s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
                             <i class="fas fa-file-csv" style="color: #16a34a; font-size: 16px;"></i> Export as CSV
                         </a>
@@ -842,7 +1235,7 @@
         <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding-top: 12px; border-top: 1px solid var(--border-subtle);">
             <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-muted); font-weight: 500;">
                 <span>Show</span>
-                <select id="tableEntriesSelect" style="padding: 6px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 13px; font-weight: 600; color: var(--text-main); outline: none; background: #ffffff; cursor: pointer;">
+                <select id="tableEntriesSelect" class="ledger-entries-select" style="padding: 6px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 13px; font-weight: 600; color: var(--text-main); outline: none; background: #ffffff; cursor: pointer;">
                     <option value="10" selected>10</option>
                     <option value="25">25</option>
                     <option value="50">50</option>
@@ -854,13 +1247,13 @@
 
             <div style="position: relative;">
                 <i class="fas fa-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-subtle); font-size: 13px;"></i>
-                <input type="text" id="companyMetricsSearchInput" placeholder="Search company or DB..." style="padding: 8px 12px 8px 34px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 13px; outline: none; width: 250px; background: #ffffff; box-shadow: var(--shadow-xs);">
+                <input type="text" id="companyMetricsSearchInput" class="ledger-search-input" placeholder="Search company or DB..." style="padding: 8px 12px 8px 34px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 13px; outline: none; width: 250px; background: #ffffff; box-shadow: var(--shadow-xs);">
             </div>
         </div>
     </div>
 
-    <div style="overflow-x: auto; border: 1px solid var(--border-color); border-radius: 12px; background: #ffffff; box-shadow: var(--shadow-xs);">
-        <table style="width: 100%; border-collapse: collapse; font-size: 13px; min-width: 980px;">
+    <div class="ledger-table-wrap" style="overflow-x: auto; border: 1px solid var(--border-color); border-radius: 12px; background: #ffffff; box-shadow: var(--shadow-xs);">
+        <table class="ledger-table" style="width: 100%; border-collapse: collapse; font-size: 13px; min-width: 980px;">
             <thead>
                 <tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0;">
                     <th style="border: 1px solid #e2e8f0; padding: 12px 10px; text-align: center; width: 40px;">
@@ -894,18 +1287,18 @@
                             <input type="checkbox" class="company-row-checkbox" value="{{ $comp->id }}" data-name="{{ $comp->name }}" data-db="{{ $comp->db_name }}" data-plan="{{ $planName }}" data-cycle="{{ $cycle }}" data-price="₹{{ number_format($price) }}" data-starts="{{ $startsAt }}" data-ends="{{ $endsAt }}" data-status="{{ ucfirst($status) }}" style="cursor: pointer; width: 16px; height: 16px; accent-color: #2563eb;">
                         </td>
                         <td style="border: 1px solid #e2e8f0; padding: 12px 14px; white-space: nowrap;">
-                            <div style="font-weight: 700; color: var(--text-main); font-size: 13.5px;">{{ $comp->name }}</div>
-                            <div style="font-size: 11.5px; color: var(--text-subtle); font-family: monospace; margin-top: 2px;">{{ $comp->db_name }}</div>
+                            <div class="company-title" style="font-weight: 700; color: var(--text-main); font-size: 13.5px;">{{ $comp->name }}</div>
+                            <div class="company-db" style="font-size: 11.5px; color: var(--text-subtle); font-family: monospace; margin-top: 2px;">{{ $comp->db_name }}</div>
                         </td>
                         <td style="border: 1px solid #e2e8f0; padding: 12px 14px; text-align: center; white-space: nowrap;">
                             @if($planName === 'FREE')
-                                <span style="background: #f1f5f9; color: #475569; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11px; border: 1px solid #cbd5e1; display: inline-block;">FREE</span>
+                                <span class="plan-badge-item badge-free" style="background: #f1f5f9; color: #475569; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11px; border: 1px solid #cbd5e1; display: inline-block;">FREE</span>
                             @elseif($planName === 'GOLD')
-                                <span style="background: #fffbeb; color: #d97706; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11px; border: 1px solid #fde68a; display: inline-block;">GOLD</span>
+                                <span class="plan-badge-item badge-gold" style="background: #fffbeb; color: #d97706; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11px; border: 1px solid #fde68a; display: inline-block;">GOLD</span>
                             @elseif($planName === 'PLATINUM')
-                                <span style="background: #f0f9ff; color: #0284c7; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11px; border: 1px solid #bae6fd; display: inline-block;">PLATINUM</span>
+                                <span class="plan-badge-item badge-platinum" style="background: #f0f9ff; color: #0284c7; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11px; border: 1px solid #bae6fd; display: inline-block;">PLATINUM</span>
                             @else
-                                <span style="background: #f5f3ff; color: #7c3aed; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11px; border: 1px solid #ddd6fe; display: inline-block;">DIAMOND</span>
+                                <span class="plan-badge-item badge-diamond" style="background: #f5f3ff; color: #7c3aed; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11px; border: 1px solid #ddd6fe; display: inline-block;">DIAMOND</span>
                             @endif
                         </td>
                         <td style="border: 1px solid #e2e8f0; padding: 12px 14px; font-weight: 600; color: var(--text-main); white-space: nowrap;">
@@ -925,21 +1318,21 @@
                         </td>
                         <td style="border: 1px solid #e2e8f0; padding: 12px 14px; text-align: center; white-space: nowrap;">
                             @if($status === 'active')
-                                <span style="background: #f0fdf4; color: #16a34a; padding: 4px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 700; border: 1px solid #bbf7d0; display: inline-flex; align-items: center; gap: 5px;">
+                                <span class="status-badge-item status-active" style="background: #f0fdf4; color: #16a34a; padding: 4px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 700; border: 1px solid #bbf7d0; display: inline-flex; align-items: center; gap: 5px;">
                                     <span style="width: 6px; height: 6px; border-radius: 50%; background: #16a34a;"></span> Active
                                 </span>
                             @elseif($status === 'trial')
-                                <span style="background: #fffbeb; color: #d97706; padding: 4px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 700; border: 1px solid #fde68a; display: inline-flex; align-items: center; gap: 5px;">
+                                <span class="status-badge-item status-trial" style="background: #fffbeb; color: #d97706; padding: 4px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 700; border: 1px solid #fde68a; display: inline-flex; align-items: center; gap: 5px;">
                                     <span style="width: 6px; height: 6px; border-radius: 50%; background: #d97706;"></span> Trial
                                 </span>
                             @else
-                                <span style="background: #fef2f2; color: #dc2626; padding: 4px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 700; border: 1px solid #fecaca; display: inline-flex; align-items: center; gap: 5px;">
+                                <span class="status-badge-item status-suspended" style="background: #fef2f2; color: #dc2626; padding: 4px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 700; border: 1px solid #fecaca; display: inline-flex; align-items: center; gap: 5px;">
                                     <span style="width: 6px; height: 6px; border-radius: 50%; background: #dc2626;"></span> Suspended
                                 </span>
                             @endif
                         </td>
                         <td style="border: 1px solid #e2e8f0; padding: 12px 14px; text-align: right; white-space: nowrap;">
-                            <a href="{{ route('super-admin.companies.show', $comp->id) }}" style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; background: #eff6ff; color: #2563eb; border-radius: 8px; font-weight: 600; font-size: 12.5px; text-decoration: none; border: 1px solid #bfdbfe; transition: all 0.2s;">
+                            <a href="{{ route('super-admin.companies.show', $comp->id) }}" class="ledger-action-btn" style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; background: #eff6ff; color: #2563eb; border-radius: 8px; font-weight: 600; font-size: 12.5px; text-decoration: none; border: 1px solid #bfdbfe; transition: all 0.2s;">
                                 Workspace <i class="fas fa-arrow-right" style="font-size: 10px;"></i>
                             </a>
                         </td>
@@ -996,20 +1389,20 @@
             </div>
         </div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 13px;">
-            <div style="background: #f8fafc; padding: 12px; border-radius: 8px;">
-                <div style="font-size: 11px; color: var(--text-subtle); font-weight: 700;">DATABASE CLUSTER</div>
+            <div class="infra-health-card" style="background: #f8fafc; padding: 12px; border-radius: 8px;">
+                <div class="health-label" style="font-size: 11px; color: var(--text-subtle); font-weight: 700;">DATABASE CLUSTER</div>
                 <div style="color: var(--success); font-weight: 700; margin-top: 2px;">● Healthy (42ms)</div>
             </div>
-            <div style="background: #f8fafc; padding: 12px; border-radius: 8px;">
-                <div style="font-size: 11px; color: var(--text-subtle); font-weight: 700;">BACKUP SERVICE</div>
+            <div class="infra-health-card" style="background: #f8fafc; padding: 12px; border-radius: 8px;">
+                <div class="health-label" style="font-size: 11px; color: var(--text-subtle); font-weight: 700;">BACKUP SERVICE</div>
                 <div style="color: var(--success); font-weight: 700; margin-top: 2px;">● Verified</div>
             </div>
-            <div style="background: #f8fafc; padding: 12px; border-radius: 8px;">
-                <div style="font-size: 11px; color: var(--text-subtle); font-weight: 700;">MIGRATION STATUS</div>
+            <div class="infra-health-card" style="background: #f8fafc; padding: 12px; border-radius: 8px;">
+                <div class="health-label" style="font-size: 11px; color: var(--text-subtle); font-weight: 700;">MIGRATION STATUS</div>
                 <div style="color: var(--success); font-weight: 700; margin-top: 2px;">● Up to date</div>
             </div>
-            <div style="background: #f8fafc; padding: 12px; border-radius: 8px;">
-                <div style="font-size: 11px; color: var(--text-subtle); font-weight: 700;">TENANT CONNECTIONS</div>
+            <div class="infra-health-card" style="background: #f8fafc; padding: 12px; border-radius: 8px;">
+                <div class="health-label" style="font-size: 11px; color: var(--text-subtle); font-weight: 700;">TENANT CONNECTIONS</div>
                 <div style="color: var(--success); font-weight: 700; margin-top: 2px;">● {{ $companies->count() }}/{{ $companies->count() }} Connected</div>
             </div>
         </div>

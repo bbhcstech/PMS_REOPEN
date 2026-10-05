@@ -3,6 +3,8 @@
 @section('content')
 
 @php
+    use Carbon\Carbon;
+
     $defaultStart = now()->format('Y-m-d');
     $defaultEnd = now()->format('Y-m-d');
     $startDate = request('start_date', $defaultStart);
@@ -20,19 +22,29 @@
     $absentToday = max(($totalEmployees ?? 0) - ($todayPresent ?? 0) - ($onLeaveToday ?? 0), 0);
     $roleScale = max($totalEmployees ?? 0, $totalProjects ?? 0, $newEmployees ?? 0, $exits ?? 0, $approvedLeaves ?? 0, $todayPresent ?? 0, $pendingTasks ?? 0, $pendingLeaves ?? 0, 1);
     $rolePieCharts = [
-        ['slug' => 'projects', 'route' => 'projects.index', 'label' => 'Projects', 'value' => $totalProjects ?? 0, 'hint' => ($activeProjects ?? 0) . ' active projects', 'percent' => round((($totalProjects ?? 0) / $roleScale) * 100), 'color' => '#2563eb'],
-        ['slug' => 'tasks', 'route' => 'tasks.index', 'label' => 'Pending Tasks', 'value' => $pendingTasks ?? 0, 'hint' => 'Open work queue', 'percent' => round((($pendingTasks ?? 0) / $roleScale) * 100), 'color' => '#7c3aed'],
-        ['slug' => 'timelogs', 'route' => 'timelogs.index', 'label' => 'Timesheet Hours', 'value' => $totalTimelogHours ?? 0, 'hint' => ($totalTimelogsCount ?? 0) . ' logged entries', 'percent' => min(100, round((($totalTimelogHours ?? 0) / max($roleScale * 8, 1)) * 100)), 'color' => '#10b981'],
-        ['slug' => 'employees', 'route' => 'employees.index', 'label' => 'Employees', 'value' => $totalEmployees ?? 0, 'hint' => 'Total workforce', 'percent' => round((($totalEmployees ?? 0) / $roleScale) * 100), 'color' => '#06b6d4'],
-        ['slug' => 'attendance', 'route' => 'attendance.index', 'label' => 'Presence', 'value' => $todayPresent ?? 0, 'hint' => "{$attendancePercent}% present today", 'percent' => $attendancePercent, 'color' => '#14b8a6'],
-        ['slug' => 'leaves', 'route' => 'leaves.index', 'label' => 'Pending Leaves', 'value' => $pendingLeaves ?? 0, 'hint' => 'Awaiting review', 'percent' => round((($pendingLeaves ?? 0) / $roleScale) * 100), 'color' => '#f59e0b'],
-        ['slug' => 'employees', 'route' => 'employees.index', 'label' => 'New Joiners', 'value' => $newEmployees ?? 0, 'hint' => 'In selected range', 'percent' => round((($newEmployees ?? 0) / $roleScale) * 100), 'color' => '#6366f1'],
-        ['slug' => 'attendance', 'route' => 'attendance.report', 'label' => 'Absent Today', 'value' => $absentToday, 'hint' => 'Not present / leave', 'percent' => $totalEmployees > 0 ? round(($absentToday / $totalEmployees) * 100) : 0, 'color' => '#64748b'],
+        ['slug' => 'projects', 'route' => 'projects.index', 'label' => 'Projects', 'value' => $totalProjects ?? 0, 'hint' => ($activeProjects ?? 0) . ' active projects', 'percent' => round((($totalProjects ?? 0) / $roleScale) * 100), 'color' => '#2F6BFF'],
+        ['slug' => 'tasks', 'route' => 'tasks.index', 'label' => 'Pending Tasks', 'value' => $pendingTasks ?? 0, 'hint' => 'Open work queue', 'percent' => round((($pendingTasks ?? 0) / $roleScale) * 100), 'color' => '#8B5CF6'],
+        ['slug' => 'timelogs', 'route' => 'timelogs.index', 'label' => 'Timesheet Hours', 'value' => $totalTimelogHours ?? 0, 'hint' => ($totalTimelogsCount ?? 0) . ' logged entries', 'percent' => min(100, round((($totalTimelogHours ?? 0) / max($roleScale * 8, 1)) * 100)), 'color' => '#10B981'],
+        ['slug' => 'employees', 'route' => 'employees.index', 'label' => 'Employees', 'value' => $totalEmployees ?? 0, 'hint' => 'Total workforce', 'percent' => round((($totalEmployees ?? 0) / $roleScale) * 100), 'color' => '#22D3EE'],
+        ['slug' => 'attendance', 'route' => 'attendance.index', 'label' => 'Presence', 'value' => $todayPresent ?? 0, 'hint' => "{$attendancePercent}% present today", 'percent' => $attendancePercent, 'color' => '#06B6D4'],
+        ['slug' => 'leaves', 'route' => 'leaves.index', 'label' => 'Pending Leaves', 'value' => $pendingLeaves ?? 0, 'hint' => 'Awaiting review', 'percent' => round((($pendingLeaves ?? 0) / $roleScale) * 100), 'color' => '#F59E0B'],
+        ['slug' => 'employees', 'route' => 'employees.index', 'label' => 'New Joiners', 'value' => $newEmployees ?? 0, 'hint' => 'In selected range', 'percent' => round((($newEmployees ?? 0) / $roleScale) * 100), 'color' => '#6366F1'],
+        ['slug' => 'attendance', 'route' => 'attendance.report', 'label' => 'Absent Today', 'value' => $absentToday, 'hint' => 'Not present / leave', 'percent' => $totalEmployees > 0 ? round(($absentToday / $totalEmployees) * 100) : 0, 'color' => '#64748B'],
     ];
+
+    $clockInLabel = $attendance && $attendance->clock_in ? Carbon::parse($attendance->clock_in)->format('h:i A') : 'Not Clocked In';
+    $clockOutLabel = $attendance && $attendance->clock_out ? Carbon::parse($attendance->clock_out)->format('h:i A') : 'Pending';
+    $todayStatus = $attendance && $attendance->status ? str_replace('_', ' ', ucfirst($attendance->status)) : 'No Entry';
+    $workedDurationLabel = $attendance && $attendance->clock_in && $attendance->clock_out ? $attendance->total_duration : '00:00:00';
+    $officeLatitude = $officeLatitude ?? 22.49682;
+    $officeLongitude = $officeLongitude ?? 88.39462;
+    $officeRadiusMeters = $officeRadiusMeters ?? 10;
+    $officeAddress = $officeAddress ?? '11 Hospital Link Road, Satavisha Building, Kolkata, West Bengal 700075';
 @endphp
 <style>
     .role-dashboard-shell {
-        background: linear-gradient(135deg, #eef7ff 0%, #f9fafb 52%, #f1f5f9 100%);
+        background: linear-gradient(135deg, rgba(47, 107, 255, 0.04) 0%, var(--bx-bg, #f6f7fc) 52%, rgba(139, 92, 246, 0.04) 100%);
+        border: 1px solid var(--bx-border, rgba(16, 20, 44, 0.08));
         border-radius: 28px;
         margin-bottom: 1.5rem;
         overflow: hidden;
@@ -45,14 +57,14 @@
         inset: -20% -10% auto auto;
         width: 460px;
         height: 460px;
-        background: radial-gradient(circle, rgba(37, 99, 235, .18), transparent 68%);
+        background: radial-gradient(circle, rgba(47, 107, 255, .15), transparent 68%);
         pointer-events: none;
     }
     .role-hero {
         align-items: stretch;
         display: grid;
         gap: 1rem;
-        grid-template-columns: minmax(0, 1.35fr) minmax(280px, .65fr);
+        grid-template-columns: minmax(0, 1.4fr) minmax(320px, 1fr) minmax(240px, .65fr);
         position: relative;
         z-index: 1;
     }
@@ -61,9 +73,9 @@
     .role-stat-card,
     .role-feature-card,
     .role-pie-card {
-        background: rgba(255,255,255,.9);
-        border: 1px solid rgba(255,255,255,.75);
-        box-shadow: 0 22px 55px rgba(15, 23, 42, .1);
+        background: var(--bx-surface, rgba(255,255,255,.9));
+        border: 1px solid var(--bx-border, rgba(16, 20, 44, 0.08));
+        box-shadow: 0 12px 32px rgba(15, 23, 42, .05);
         backdrop-filter: blur(16px);
     }
     .role-hero-card {
@@ -71,29 +83,29 @@
         padding: clamp(1.25rem, 3vw, 2.25rem);
     }
     .role-eyebrow {
-        background: rgba(16,185,129,.12);
-        border: 1px solid rgba(16,185,129,.2);
+        background: rgba(47, 107, 255, .1);
+        border: 1px solid rgba(47, 107, 255, .2);
         border-radius: 999px;
-        color: #047857;
+        color: var(--bx-primary, #2F6BFF);
         display: inline-flex;
         font-size: .76rem;
-        font-weight: 900;
+        font-weight: 800;
         letter-spacing: .08em;
         margin-bottom: .9rem;
         padding: .42rem .72rem;
         text-transform: uppercase;
     }
     .role-hero-card h1 {
-        color: #111827;
+        color: var(--bx-ink, #10142C);
         font-size: clamp(1.8rem, 4vw, 3.4rem);
-        font-weight: 900;
-        letter-spacing: 0;
-        line-height: 1.03;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        line-height: 1.05;
         margin: 0 0 .8rem;
     }
     .role-hero-card p {
-        color: #5b6472;
-        font-weight: 700;
+        color: var(--bx-ink-muted, #545D82);
+        font-weight: 600;
         margin: 0;
         max-width: 680px;
     }
@@ -107,44 +119,132 @@
         align-items: center;
         border-radius: 999px;
         display: inline-flex;
-        font-weight: 900;
+        font-weight: 800;
         gap: .45rem;
         min-height: 42px;
-        padding: .7rem 1rem;
+        padding: .7rem 1.1rem;
         text-decoration: none;
+        transition: all .2s ease;
     }
     .role-btn-primary {
-        background: linear-gradient(135deg, #2563eb, #7c3aed);
-        color: #fff;
+        background: linear-gradient(135deg, #1E4FCC, #2F6BFF, #8B5CF6);
+        color: #fff !important;
+        box-shadow: 0 4px 14px rgba(47, 107, 255, 0.3);
+    }
+    .role-btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(47, 107, 255, 0.4);
     }
     .role-btn-light {
-        background: #fff;
-        border: 1px solid rgba(37,99,235,.16);
-        color: #1f2937;
+        background: var(--bx-surface, #fff);
+        border: 1px solid var(--bx-border, rgba(47,107,255,.16));
+        color: var(--bx-ink, #10142C);
+    }
+    .role-btn-light:hover {
+        border-color: var(--bx-primary, #2F6BFF);
+        color: var(--bx-primary, #2F6BFF);
+        transform: translateY(-1px);
     }
     .role-date-filter {
-        align-items: center;
-        background: rgba(255,255,255,.75);
-        border: 1px solid rgba(37,99,235,.14);
-        border-radius: 18px;
-        display: flex;
+        align-items: center !important;
+        background: var(--bx-surface-2, rgba(255,255,255,.85));
+        border: 1px solid var(--bx-border, rgba(47,107,255,.16));
+        border-radius: 16px;
+        display: inline-flex !important;
         flex-wrap: wrap;
-        gap: .55rem;
-        margin-top: 1rem;
-        padding: .7rem;
+        gap: 0.75rem;
+        margin-top: 1.25rem;
+        padding: 0.5rem 0.85rem;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+        max-width: 100%;
     }
-    .role-date-filter label,
-    .role-date-filter span {
-        color: #334155;
-        font-size: .82rem;
-        font-weight: 900;
-        margin: 0;
+    .role-date-label {
+        color: var(--bx-ink, #10142C);
+        font-size: 0.85rem;
+        font-weight: 700;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        height: 38px !important;
+        line-height: 1 !important;
+        margin: 0 !important;
+        white-space: nowrap;
     }
-    .role-date-filter .form-control {
-        border-color: rgba(37,99,235,.16);
-        border-radius: 12px;
-        min-height: 38px;
-        width: auto;
+    .role-date-label i {
+        font-size: 1.1rem !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        line-height: 1 !important;
+        margin-right: 0.35rem !important;
+        margin-bottom: 1px;
+    }
+    .role-date-inputs {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        height: 38px !important;
+    }
+    .role-date-input {
+        background: var(--bx-surface, #fff);
+        border: 1px solid var(--bx-border, rgba(47,107,255,.2));
+        color: var(--bx-ink, #10142C);
+        border-radius: 10px;
+        height: 38px !important;
+        padding: 0 0.75rem !important;
+        font-size: 0.85rem;
+        font-weight: 600;
+        outline: none;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        display: inline-flex !important;
+        align-items: center !important;
+        line-height: 38px !important;
+    }
+    .role-date-input:focus {
+        border-color: var(--bx-primary, #2F6BFF);
+        box-shadow: 0 0 0 3px rgba(47, 107, 255, 0.15);
+    }
+    .role-date-separator {
+        color: var(--bx-ink-muted, #64748B);
+        font-size: 0.82rem;
+        font-weight: 700;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        height: 38px !important;
+        line-height: 1 !important;
+        margin: 0 !important;
+    }
+    .role-date-btn {
+        background: linear-gradient(135deg, #2F6BFF, #1E4FCC);
+        border: none;
+        color: #FFFFFF !important;
+        border-radius: 10px;
+        height: 38px !important;
+        padding: 0 1.25rem !important;
+        font-size: 0.85rem;
+        font-weight: 700;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 0.4rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 3px 10px rgba(47, 107, 255, 0.3);
+        white-space: nowrap;
+        line-height: 1 !important;
+    }
+    .role-date-btn i {
+        font-size: 1rem !important;
+        line-height: 1 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+    }
+    .role-date-btn:hover {
+        background: linear-gradient(135deg, #1E4FCC, #163BA0);
+        transform: translateY(-1px);
+        box-shadow: 0 5px 14px rgba(47, 107, 255, 0.4);
     }
     .role-focus-card {
         border-radius: 24px;
@@ -156,7 +256,7 @@
     }
     .role-gauge {
         align-items: center;
-        background: conic-gradient(#10b981 0%, #2563eb calc(var(--percent) * 1%), #e5e7eb 0);
+        background: conic-gradient(#10B981 0%, #2F6BFF calc(var(--percent) * 1%), rgba(148, 163, 184, 0.2) 0);
         border-radius: 50%;
         display: flex;
         height: 156px;
@@ -166,16 +266,16 @@
         width: 156px;
     }
     .role-gauge::after {
-        background: #fff;
+        background: var(--bx-surface, #fff);
         border-radius: 50%;
         content: "";
         inset: 18px;
         position: absolute;
     }
     .role-gauge strong {
-        color: #111827;
+        color: var(--bx-ink, #10142C);
         font-size: 2rem;
-        font-weight: 900;
+        font-weight: 800;
         position: relative;
         z-index: 1;
     }
@@ -199,15 +299,15 @@
     .role-stat-card span,
     .role-pie-card p,
     .role-feature-card small {
-        color: #667085;
+        color: var(--bx-ink-muted, #667085);
         font-size: .78rem;
-        font-weight: 800;
+        font-weight: 700;
     }
     .role-stat-card strong {
-        color: #111827;
+        color: var(--bx-ink, #10142C);
         display: block;
         font-size: 2rem;
-        font-weight: 900;
+        font-weight: 800;
         margin-top: .4rem;
     }
     .role-panel {
@@ -225,15 +325,15 @@
         margin-bottom: 1rem;
     }
     .role-panel-head h3 {
-        color: #111827;
+        color: var(--bx-ink, #10142C);
         font-size: 1.05rem;
-        font-weight: 900;
+        font-weight: 800;
         margin: 0;
     }
     .role-panel-head p {
-        color: #667085;
+        color: var(--bx-ink-muted, #667085);
         font-size: .84rem;
-        font-weight: 700;
+        font-weight: 600;
         margin: .2rem 0 0;
     }
     .role-pie-grid {
@@ -248,13 +348,13 @@
     }
     .role-pie-card:hover,
     .role-feature-card:hover {
-        box-shadow: 0 26px 58px rgba(37,99,235,.14);
+        box-shadow: 0 20px 48px rgba(47, 107, 255, .12);
         transform: translateY(-4px);
     }
     .role-donut {
-        --accent: #2563eb;
+        --accent: #2F6BFF;
         align-items: center;
-        background: conic-gradient(var(--accent) calc(var(--percent) * 1%), #e5e7eb 0);
+        background: conic-gradient(var(--accent) calc(var(--percent) * 1%), rgba(148, 163, 184, 0.2) 0);
         border-radius: 50%;
         display: flex;
         height: 118px;
@@ -264,30 +364,30 @@
         width: 118px;
     }
     .role-donut::after {
-        background: #fff;
+        background: var(--bx-surface, #fff);
         border-radius: 50%;
         content: "";
         inset: 15px;
         position: absolute;
     }
     .role-donut strong {
-        color: #111827;
+        color: var(--bx-ink, #10142C);
         font-size: 1.25rem;
-        font-weight: 900;
+        font-weight: 800;
         position: relative;
         z-index: 1;
     }
     .role-pie-card h4 {
-        color: #111827;
+        color: var(--bx-ink, #10142C);
         font-size: .95rem;
-        font-weight: 900;
+        font-weight: 800;
         margin-bottom: .2rem;
     }
     .role-pie-card a {
-        color: #2563eb;
+        color: var(--bx-primary, #2F6BFF);
         display: inline-flex;
         font-size: .8rem;
-        font-weight: 900;
+        font-weight: 800;
         margin-top: .55rem;
         text-decoration: none;
     }
@@ -297,7 +397,7 @@
     .role-feature-card {
         align-items: center;
         border-radius: 18px;
-        color: #111827;
+        color: var(--bx-ink, #10142C);
         display: grid;
         gap: .75rem;
         grid-template-columns: 42px minmax(0, 1fr) auto;
@@ -308,9 +408,9 @@
     }
     .role-feature-card i {
         align-items: center;
-        background: linear-gradient(135deg, rgba(37,99,235,.12), rgba(16,185,129,.12));
+        background: linear-gradient(135deg, rgba(47, 107, 255, .12), rgba(34, 211, 238, .12));
         border-radius: 14px;
-        color: #2563eb;
+        color: var(--bx-primary, #2F6BFF);
         display: inline-flex;
         font-size: 1.25rem;
         height: 42px;
@@ -326,15 +426,15 @@
     }
     .role-feature-card strong {
         font-size: .88rem;
-        font-weight: 900;
+        font-weight: 800;
     }
     .role-feature-card em {
-        background: rgba(37,99,235,.08);
+        background: rgba(47, 107, 255, .08);
         border-radius: 999px;
-        color: #2563eb;
+        color: var(--bx-primary, #2F6BFF);
         font-size: .76rem;
         font-style: normal;
-        font-weight: 900;
+        font-weight: 800;
         padding: .34rem .5rem;
     }
     @keyframes roleFadeUp {
@@ -347,6 +447,14 @@
     .role-panel {
         animation: roleFadeUp .65s ease both;
     }
+    @media (max-width: 1399.98px) {
+        .role-hero {
+            grid-template-columns: minmax(0, 1.3fr) minmax(320px, 1fr);
+        }
+        .role-focus-card {
+            grid-column: span 2;
+        }
+    }
     @media (max-width: 1199.98px) {
         .role-stat-grid,
         .role-pie-grid,
@@ -357,6 +465,9 @@
     @media (max-width: 991.98px) {
         .role-hero {
             grid-template-columns: 1fr;
+        }
+        .role-focus-card {
+            grid-column: span 1;
         }
     }
     @media (max-width: 575.98px) {
@@ -373,24 +484,399 @@
             align-items: flex-start;
             flex-direction: column;
         }
-        .role-date-filter,
-        .role-date-filter .form-control,
-        .role-date-filter .btn {
+        .role-date-filter {
+            width: 100%;
+            justify-content: space-between;
+        }
+        .role-date-inputs {
             width: 100%;
         }
+        .role-date-input,
+        .role-date-btn {
+            width: 100%;
+        }
+    }
+
+    /* HR Clock in Card & Components */
+    .role-clock-card {
+        border-radius: 24px;
+        padding: clamp(1.25rem, 2.2vw, 1.75rem);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        position: relative;
+        overflow: hidden;
+    }
+    .hr-clock {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        width: 100%;
+    }
+    .hr-clock-time {
+        font-size: 1.75rem;
+        font-weight: 900;
+        line-height: 1.1;
+        color: var(--bx-ink, #10142C);
+        letter-spacing: -0.02em;
+        font-variant-numeric: tabular-nums;
+    }
+    .hr-clock-date {
+        font-size: 0.84rem;
+        font-weight: 700;
+        color: var(--bx-ink-muted, #545D82);
+    }
+    .employee-action-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: 0;
+        border-radius: 12px;
+        padding: 12px 18px;
+        color: #fff;
+        font-weight: 800;
+        font-size: 0.95rem;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        cursor: pointer;
+    }
+    .employee-action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 26px rgba(0, 0, 0, 0.18);
+    }
+    .employee-action-btn.is-in {
+        background: linear-gradient(135deg, #10B981, #059669);
+    }
+    .employee-action-btn.is-out {
+        background: linear-gradient(135deg, #EF4444, #DC2626);
+    }
+    .employee-complete {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border-radius: 12px;
+        padding: 11px 16px;
+        color: #fff !important;
+        background: linear-gradient(135deg, #10B981, #059669);
+        box-shadow: 0 8px 20px rgba(16, 185, 129, 0.24);
+        font-weight: 800;
+    }
+    .clock-requirements {
+        margin-top: 6px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--bx-ink-muted, #545D82);
+    }
+    .clock-status-line {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 4px;
+        color: var(--bx-ink-muted, #545D82);
+    }
+    .clock-status-line.is-error {
+        color: #EF4444 !important;
+    }
+    .clock-attendance-card {
+        margin-top: 10px;
+        width: 100%;
+        padding: 12px;
+        border-radius: 16px;
+        background: rgba(47, 107, 255, 0.04);
+        border: 1px solid rgba(47, 107, 255, 0.12);
+    }
+    .clock-attendance-card img {
+        width: 100%;
+        max-height: 180px;
+        object-fit: cover;
+        border-radius: 10px;
+        border: 1px solid rgba(47, 107, 255, 0.15);
+        margin-bottom: 8px;
+    }
+    .clock-location-note {
+        margin-top: 8px;
+        padding: 8px 10px;
+        border-radius: 10px;
+        background: rgba(47, 107, 255, 0.06);
+        border: 1px solid rgba(47, 107, 255, 0.12);
+        color: var(--bx-ink, #10142C);
+        font-size: 0.78rem;
+        font-weight: 600;
+        line-height: 1.35;
+    }
+    .clock-location-note span {
+        display: block;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--bx-primary, #2F6BFF);
+        font-weight: 800;
+        margin-bottom: 2px;
+    }
+    .clock-policy-warning-text {
+        margin: 6px 0 0;
+        color: #EF4444 !important;
+        font-size: 0.78rem;
+        font-weight: 700;
+        line-height: 1.35;
+    }
+    .clock-live-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        margin-top: 10px;
+    }
+    .clock-live-box {
+        padding: 8px 10px;
+        border-radius: 10px;
+        background: rgba(47, 107, 255, 0.06);
+        border: 1px solid rgba(47, 107, 255, 0.1);
+    }
+    .clock-live-box span {
+        display: block;
+        font-size: 0.7rem;
+        color: var(--bx-ink-muted, #545D82);
+        font-weight: 700;
+        margin-bottom: 2px;
+    }
+    .clock-live-box strong {
+        font-size: 0.96rem;
+        color: var(--bx-primary, #2F6BFF);
+        font-weight: 800;
+    }
+    .clock-camera-modal {
+        position: fixed;
+        inset: 0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 18px;
+        background: rgba(8, 15, 30, 0.75);
+        backdrop-filter: blur(4px);
+        z-index: 9999;
+    }
+    .clock-camera-modal.is-open {
+        display: flex;
+    }
+    .clock-camera-panel {
+        width: min(620px, 100%);
+        background: #fff;
+        border-radius: 20px;
+        box-shadow: 0 28px 80px rgba(0, 0, 0, 0.35);
+        overflow: hidden;
+    }
+    .clock-camera-header,
+    .clock-camera-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 14px 18px;
+        border-bottom: 1px solid rgba(16, 20, 44, 0.08);
+    }
+    .clock-camera-footer {
+        border-top: 1px solid rgba(16, 20, 44, 0.08);
+        border-bottom: 0;
+        flex-wrap: wrap;
+    }
+    .clock-camera-body {
+        padding: 16px;
+        background: #f8fafc;
+    }
+    .clock-camera-preview {
+        width: 100%;
+        aspect-ratio: 4 / 3;
+        background: #0f172a;
+        border-radius: 14px;
+        overflow: hidden;
+    }
+    .clock-camera-preview video,
+    .clock-camera-preview canvas,
+    .clock-camera-preview img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .clock-camera-preview canvas,
+    .clock-camera-preview img {
+        display: none;
+    }
+    .clock-camera-preview.has-photo video {
+        display: none;
+    }
+    .clock-camera-preview.has-photo img {
+        display: block;
+    }
+    .clock-modal-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        border: 0;
+        border-radius: 10px;
+        padding: 9px 14px;
+        font-weight: 800;
+        font-size: 0.85rem;
+        color: #fff;
+        background: #2F6BFF;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .clock-modal-btn:hover {
+        transform: translateY(-1px);
+        opacity: 0.95;
+    }
+    .clock-modal-btn.secondary {
+        background: #64748B;
+    }
+    .clock-modal-btn.danger {
+        background: #EF4444;
+    }
+    .clock-modal-btn.success {
+        background: #10B981;
+    }
+
+    /* HR Dashboard Dark Mode Overrides */
+    html[data-pms-theme="dark"] .role-dashboard-shell,
+    html[data-theme="dark"] .role-dashboard-shell {
+        background: linear-gradient(135deg, #070B1A 0%, #0F1530 52%, #141B3D 100%);
+        border-color: rgba(238, 241, 251, 0.09);
+    }
+    html[data-pms-theme="dark"] .role-hero-card,
+    html[data-pms-theme="dark"] .role-panel,
+    html[data-pms-theme="dark"] .role-stat-card,
+    html[data-pms-theme="dark"] .role-feature-card,
+    html[data-pms-theme="dark"] .role-pie-card,
+    html[data-theme="dark"] .role-hero-card,
+    html[data-theme="dark"] .role-panel,
+    html[data-theme="dark"] .role-stat-card,
+    html[data-theme="dark"] .role-feature-card,
+    html[data-theme="dark"] .role-pie-card {
+        background: var(--bx-surface, #0F1530);
+        border-color: rgba(238, 241, 251, 0.09);
+        box-shadow: 0 12px 32px rgba(0, 0, 0, .35);
+    }
+    html[data-pms-theme="dark"] .role-btn-light,
+    html[data-theme="dark"] .role-btn-light {
+        background: var(--bx-surface-2, #141B3D);
+        border-color: rgba(238, 241, 251, 0.12);
+        color: #EEF1FB;
+    }
+    html[data-pms-theme="dark"] .role-btn-light:hover,
+    html[data-theme="dark"] .role-btn-light:hover {
+        border-color: var(--bx-accent, #22D3EE);
+        color: var(--bx-accent, #22D3EE);
+    }
+    html[data-pms-theme="dark"] .role-date-filter,
+    html[data-theme="dark"] .role-date-filter {
+        background: rgba(20, 27, 61, 0.85);
+        border-color: rgba(238, 241, 251, 0.14);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    }
+    html[data-pms-theme="dark"] .role-date-label,
+    html[data-theme="dark"] .role-date-label {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .role-date-separator,
+    html[data-theme="dark"] .role-date-separator {
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] .role-date-input,
+    html[data-theme="dark"] .role-date-input {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.18) !important;
+        color: #EEF1FB !important;
+        color-scheme: dark;
+    }
+    html[data-pms-theme="dark"] .role-date-input:focus,
+    html[data-theme="dark"] .role-date-input:focus {
+        border-color: #2F6BFF !important;
+        box-shadow: 0 0 0 3px rgba(47, 107, 255, 0.25) !important;
+    }
+    html[data-pms-theme="dark"] .card-header.bg-white,
+    html[data-theme="dark"] .card-header.bg-white {
+        background: var(--bx-surface, #0F1530) !important;
+        color: #EEF1FB !important;
+        border-bottom-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .hr-clock-time,
+    html[data-theme="dark"] .hr-clock-time {
+        color: #EEF1FB;
+    }
+    html[data-pms-theme="dark"] .hr-clock-date,
+    html[data-theme="dark"] .hr-clock-date,
+    html[data-pms-theme="dark"] .clock-requirements,
+    html[data-theme="dark"] .clock-requirements,
+    html[data-pms-theme="dark"] .clock-status-line,
+    html[data-theme="dark"] .clock-status-line {
+        color: #9AA3C7;
+    }
+    html[data-pms-theme="dark"] .clock-attendance-card,
+    html[data-theme="dark"] .clock-attendance-card {
+        background: rgba(238, 241, 251, 0.04);
+        border-color: rgba(238, 241, 251, 0.08);
+    }
+    html[data-pms-theme="dark"] .clock-location-note,
+    html[data-theme="dark"] .clock-location-note {
+        background: rgba(238, 241, 251, 0.06);
+        border-color: rgba(238, 241, 251, 0.1);
+        color: #EEF1FB;
+    }
+    html[data-pms-theme="dark"] .clock-live-box,
+    html[data-theme="dark"] .clock-live-box {
+        background: rgba(238, 241, 251, 0.06);
+        border-color: rgba(238, 241, 251, 0.08);
+    }
+    html[data-pms-theme="dark"] .clock-live-box span,
+    html[data-theme="dark"] .clock-live-box span {
+        color: #9AA3C7;
+    }
+    html[data-pms-theme="dark"] .clock-live-box strong,
+    html[data-theme="dark"] .clock-live-box strong {
+        color: #22D3EE;
+    }
+    html[data-pms-theme="dark"] .clock-camera-panel,
+    html[data-theme="dark"] .clock-camera-panel {
+        background: #0F1530;
+        color: #EEF1FB;
+    }
+    html[data-pms-theme="dark"] .clock-camera-header,
+    html[data-pms-theme="dark"] .clock-camera-footer,
+    html[data-theme="dark"] .clock-camera-header,
+    html[data-theme="dark"] .clock-camera-footer {
+        border-color: rgba(238, 241, 251, 0.09);
+    }
+    html[data-pms-theme="dark"] .clock-camera-body,
+    html[data-theme="dark"] .clock-camera-body {
+        background: #070B1A;
     }
 </style>
 <div class="container-fluid">
 
     <section class="role-dashboard-shell">
+        @if(session('success'))
+            <div class="alert alert-success alert-dismissible fade show mb-3" role="alert">
+                <i class="bx bx-check-circle me-1"></i> {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+        @if(session('error'))
+            <div class="alert alert-danger alert-dismissible fade show mb-3" role="alert">
+                <i class="bx bx-error-circle me-1"></i> {{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+
         <div class="role-hero">
             <div class="role-hero-card">
                 <span class="role-eyebrow">{{ $roleName }} command center</span>
                 <h1>{{ $roleName }} Dashboard</h1>
                 <p>Monitor workforce health, leave flow, attendance, tasks, and HR analytics from one responsive workspace.</p>
                 <div class="role-hero-actions">
+                    @if(Route::has('leaves.create'))
+                        <a href="{{ route('leaves.create') }}" class="role-btn role-btn-primary"><i class="bx bx-calendar-plus"></i> Apply Leave</a>
+                    @endif
                     @if(Route::has('projects.create'))
-                        <a href="{{ route('projects.create') }}" class="role-btn role-btn-primary"><i class="bx bx-plus"></i> Add Project</a>
+                        <a href="{{ route('projects.create') }}" class="role-btn role-btn-light"><i class="bx bx-plus"></i> Add Project</a>
                     @endif
                     @if(Route::has('tasks.create'))
                         <a href="{{ route('tasks.create') }}" class="role-btn role-btn-light"><i class="bx bx-task"></i> New Task</a>
@@ -415,13 +901,104 @@
                     @endif
                 </div>
                 <form method="GET" class="role-date-filter">
-                    <label>Date Range</label>
-                    <input type="date" name="start_date" class="form-control form-control-sm" value="{{ $startDate }}">
-                    <span>to</span>
-                    <input type="date" name="end_date" class="form-control form-control-sm" value="{{ $endDate }}">
-                    <button type="submit" class="btn btn-sm btn-primary">Filter</button>
+                    <span class="role-date-label"><i class="bx bx-calendar me-1"></i> Date Range</span>
+                    <div class="role-date-inputs">
+                        <input type="date" name="start_date" class="role-date-input" value="{{ $startDate }}">
+                        <span class="role-date-separator">to</span>
+                        <input type="date" name="end_date" class="role-date-input" value="{{ $endDate }}">
+                    </div>
+                    <button type="submit" class="role-date-btn">
+                        <i class="bx bx-filter-alt"></i> Filter
+                    </button>
                 </form>
             </div>
+
+            <!-- HR Clock In/Out Card -->
+            <div class="role-panel role-clock-card" data-server-time="{{ now()->getTimestamp() * 1000 }}">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <span class="role-eyebrow mb-0"><i class="bx bx-time-five me-1"></i> My Attendance</span>
+                    <div class="text-end">
+                        <div class="hr-clock-time employee-time" id="hrClockTime" data-live-clock="time">{{ now()->format('h:i:s A') }}</div>
+                        <div class="hr-clock-date text-muted small" id="hrClockDate" data-live-clock="date">{{ now()->format('l, d M Y') }}</div>
+                    </div>
+                </div>
+
+                <div class="employee-clock hr-clock">
+                    @if ($attendance && $attendance->clock_in && !$attendance->clock_out)
+                        <form method="POST" action="{{ route('dashboard.clockout') }}">
+                            @csrf
+                            <button class="employee-action-btn is-out w-100 justify-content-center" type="submit">
+                                <i class="bx bx-log-out-circle"></i> Clock Out
+                            </button>
+                        </form>
+                    @elseif(!$attendance || !$attendance->clock_in)
+                        <form method="POST" action="{{ route('dashboard.clockin') }}" id="employeeClockInForm">
+                            @csrf
+                            <input type="hidden" name="clock_in_latitude" id="clockInLatitude">
+                            <input type="hidden" name="clock_in_longitude" id="clockInLongitude">
+                            <input type="hidden" name="clock_in_accuracy" id="clockInAccuracy">
+                            <input type="hidden" name="clock_in_address" id="clockInAddress">
+                            <input type="hidden" name="clock_in_selfie" id="clockInSelfie">
+                            <button class="employee-action-btn is-in w-100 justify-content-center" type="submit" id="employeeClockInButton">
+                                <i class="bx bx-log-in-circle"></i> Clock In
+                            </button>
+                        </form>
+                        <div class="clock-requirements" id="clockRequirementStatus">
+                            <div class="clock-status-line"><i class="bx bx-map-pin"></i><span>Share current location to save your clock-in place.</span></div>
+                            <div class="clock-status-line"><i class="bx bx-camera"></i><span>Capture photo to complete clock in.</span></div>
+                        </div>
+                    @else
+                        <span class="employee-complete justify-content-center"><i class="bx bx-check-circle"></i> Shift Completed</span>
+                    @endif
+
+                    @if($attendance && $attendance->clock_in)
+                        <div class="clock-attendance-card">
+                            @if($attendance->clock_in_photo && !$attendance->clock_out)
+                                <img src="{{ asset($attendance->clock_in_photo) }}" alt="Clock in photo">
+                            @endif
+                            @php
+                                $clockInLocationText = $attendance->clock_in_address
+                                    ?: $attendance->location
+                                    ?: (
+                                        $attendance->clock_in_latitude && $attendance->clock_in_longitude
+                                            ? 'Current location: ' . $attendance->clock_in_latitude . ', ' . $attendance->clock_in_longitude
+                                            : null
+                                    );
+                                $clockedInOutsideOffice = strtolower((string) $attendance->work_from_type) === 'field';
+                                $attendanceDateStr = ($attendance->date instanceof \Carbon\Carbon ? $attendance->date->format('Y-m-d') : (string) $attendance->date);
+                            @endphp
+                            @if($clockInLocationText)
+                                <div class="clock-location-note">
+                                    <span>Clock-in location</span>
+                                    {{ $clockInLocationText }}
+                                </div>
+                            @endif
+                            @if($clockedInOutsideOffice)
+                                <p class="clock-policy-warning-text">
+                                    <i class="bx bx-error-circle me-1"></i>
+                                    You did not clock in from the organization area. This may affect your appraisal later. Please maintain the office policy properly.
+                                </p>
+                            @endif
+                            <div class="clock-live-grid">
+                                <div class="clock-live-box">
+                                    <span>IST Time</span>
+                                    <strong id="employeeIstClock">{{ now()->format('h:i:s A') }}</strong>
+                                </div>
+                                <div class="clock-live-box">
+                                    <span>{{ $attendance->clock_out ? 'Worked Time' : 'Working Time' }}</span>
+                                    <strong
+                                        id="employeeWorkTimer"
+                                        data-clock-in="{{ \Carbon\Carbon::parse($attendanceDateStr . ' ' . $attendance->clock_in, config('app.timezone', 'Asia/Kolkata'))->toIso8601String() }}"
+                                        data-clock-out="{{ $attendance->clock_out ? \Carbon\Carbon::parse($attendanceDateStr . ' ' . $attendance->clock_out, config('app.timezone', 'Asia/Kolkata'))->toIso8601String() : '' }}"
+                                        data-fixed-duration="{{ $attendance->clock_out ? $workedDurationLabel : '' }}"
+                                    >{{ $attendance->clock_out ? $workedDurationLabel : '00:00:00' }}</strong>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+            </div>
+
             <div class="role-panel role-focus-card">
                 <div class="role-gauge" style="--percent: {{ max(0, min(100, $attendancePercent)) }};">
                     <strong>{{ $attendancePercent }}%</strong>
@@ -632,19 +1209,19 @@
                     <h6 class="mb-0 fw-bold text-dark"><i class="bx bx-store text-primary me-2"></i>Work Section (Projects & Tasks)</h6>
                     <small class="text-muted">Live view of projects, pending task queue, timesheets, and recent deliverables.</small>
                 </div>
-                <div class="d-flex flex-wrap gap-2">
+                <div class="d-flex flex-wrap gap-2 align-items-center ms-auto">
                     @if(Route::has('projects.create'))
-                        <a href="{{ route('projects.create') }}" class="btn btn-sm btn-primary">
+                        <a href="{{ route('projects.create') }}" class="btn btn-sm btn-primary px-3 py-2 text-nowrap d-inline-flex align-items-center gap-1" style="min-width: max-content;">
                             <i class="bx bx-plus me-1"></i> Add Project
                         </a>
                     @endif
                     @if(Route::has('tasks.create'))
-                        <a href="{{ route('tasks.create') }}" class="btn btn-sm btn-outline-primary">
+                        <a href="{{ route('tasks.create') }}" class="btn btn-sm btn-outline-primary px-3 py-2 text-nowrap d-inline-flex align-items-center gap-1" style="min-width: max-content;">
                             <i class="bx bx-task me-1"></i> New Task
                         </a>
                     @endif
                     @if(Route::has('timelogs.create'))
-                        <a href="{{ route('timelogs.create') }}" class="btn btn-sm btn-outline-success">
+                        <a href="{{ route('timelogs.create') }}" class="btn btn-sm btn-outline-success px-3 py-2 text-nowrap d-inline-flex align-items-center gap-1" style="min-width: max-content;">
                             <i class="bx bx-time-five me-1"></i> Log Time
                         </a>
                     @endif
@@ -658,7 +1235,7 @@
                         <div class="p-3 border rounded-3 bg-light mb-3">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <h6 class="fw-bold mb-0 text-dark"><i class="bx bx-briefcase-alt-2 text-primary me-1"></i> Projects Summary</h6>
-                                <a href="{{ route('projects.index') }}" class="btn btn-sm btn-link text-primary p-0">View All <i class="bx bx-chevron-right"></i></a>
+                                <a href="{{ route('projects.index') }}" class="btn btn-sm btn-link text-primary p-0 text-nowrap">View All <i class="bx bx-chevron-right"></i></a>
                             </div>
                             <div class="row g-2 text-center my-2">
                                 <div class="col-6">
@@ -675,7 +1252,7 @@
                                 </div>
                             </div>
                             <div class="d-grid gap-2 mt-3">
-                                <a href="{{ route('projects.index') }}" class="btn btn-sm btn-outline-primary">
+                                <a href="{{ route('projects.index') }}" class="btn btn-sm btn-outline-primary py-2 text-nowrap d-flex align-items-center justify-content-center">
                                     <i class="bx bx-folder-open me-1"></i> Open Projects Workspace
                                 </a>
                             </div>
@@ -685,7 +1262,7 @@
                         <div class="p-3 border rounded-3 bg-light">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <h6 class="fw-bold mb-0 text-dark"><i class="bx bx-time-five text-success me-1"></i> Timesheet Overview</h6>
-                                <a href="{{ route('timelogs.index') }}" class="btn btn-sm btn-link text-success p-0">Timesheets <i class="bx bx-chevron-right"></i></a>
+                                <a href="{{ route('timelogs.index') }}" class="btn btn-sm btn-link text-success p-0 text-nowrap">Timesheets <i class="bx bx-chevron-right"></i></a>
                             </div>
                             <div class="row g-2 text-center my-2">
                                 <div class="col-6">
@@ -702,7 +1279,7 @@
                                 </div>
                             </div>
                             <div class="d-grid gap-2 mt-3">
-                                <a href="{{ route('timelogs.index') }}" class="btn btn-sm btn-outline-success">
+                                <a href="{{ route('timelogs.index') }}" class="btn btn-sm btn-outline-success py-2 text-nowrap d-flex align-items-center justify-content-center">
                                     <i class="bx bx-list-check me-1"></i> Review Timesheets
                                 </a>
                             </div>
@@ -845,7 +1422,28 @@
         </div>
     </div>
 </div>
-<!-- ============ END LEAVE MANAGEMENT SECTION ============ -->
+    <div class="clock-camera-modal" id="clockCameraModal" aria-hidden="true">
+        <div class="clock-camera-panel">
+            <div class="clock-camera-header">
+                <h5 class="mb-0 fw-bold">Capture Clock In Photo</h5>
+                <button type="button" class="clock-modal-btn danger" id="clockCameraClose"><i class="bx bx-x"></i> Close</button>
+            </div>
+            <div class="clock-camera-body">
+                <div class="clock-camera-preview" id="clockCameraPreview">
+                    <video id="clockCameraVideo" autoplay playsinline muted></video>
+                    <canvas id="clockCameraCanvas"></canvas>
+                    <img id="clockCameraPhoto" alt="Captured clock in photo">
+                </div>
+                <p class="text-muted mt-3 mb-0 small">Take a clear face photo. You can flip camera on mobile, retake, then use photo for clock in.</p>
+            </div>
+            <div class="clock-camera-footer">
+                <button type="button" class="clock-modal-btn secondary" id="clockCameraFlip"><i class="bx bx-refresh"></i> Flip</button>
+                <button type="button" class="clock-modal-btn" id="clockCameraCapture"><i class="bx bx-camera"></i> Capture</button>
+                <button type="button" class="clock-modal-btn secondary" id="clockCameraRetake"><i class="bx bx-undo"></i> Retake</button>
+                <button type="button" class="clock-modal-btn success" id="clockCameraUse"><i class="bx bx-check"></i> Use Photo & Clock In</button>
+            </div>
+        </div>
+    </div>
 
 </div>
 @endsection
@@ -860,7 +1458,7 @@
             labels: {!! json_encode($genderCounts->keys()) !!},
             datasets: [{
                 data: {!! json_encode($genderCounts->values()) !!},
-                backgroundColor: ['#fcbf49', '#90be6d', '#577590']
+                backgroundColor: ['#2F6BFF', '#22D3EE', '#8B5CF6']
             }]
         },
         options: {
@@ -875,7 +1473,7 @@
             labels: {!! json_encode($roleCounts->keys()) !!},
             datasets: [{
                 data: {!! json_encode($roleCounts->values()) !!},
-                backgroundColor: ['#ff6b6b', '#4ecdc4', '#1a535c']
+                backgroundColor: ['#2F6BFF', '#8B5CF6', '#22D3EE', '#10B981', '#F59E0B']
             }]
         },
         options: {
@@ -895,7 +1493,7 @@
         labels: {!! json_encode($departmentWise->map(fn($d) => $d->department_name ?? 'N/A')) !!},
         datasets: [{
             data: {!! json_encode($departmentWise->pluck('total')) !!},
-            backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#8e44ad', '#2ecc71', '#e67e22']
+            backgroundColor: ['#2F6BFF', '#8B5CF6', '#22D3EE', '#10B981', '#F59E0B', '#6366F1']
         }]
     },
     options: {
@@ -912,7 +1510,7 @@
             labels: {!! json_encode($designationWise->map(fn($d) => $d->designation->name ?? 'N/A')) !!},
             datasets: [{
                 data: {!! json_encode($designationWise->pluck('total')) !!},
-                backgroundColor: ['#FF9F40', '#36A2EB', '#FF6384', '#4BC0C0', '#9966FF', '#00a65a']
+                backgroundColor: ['#2F6BFF', '#22D3EE', '#8B5CF6', '#10B981', '#F59E0B', '#EC4899']
             }]
         },
         options: {
@@ -948,7 +1546,8 @@
             datasets: [{
                 label: 'Joinings',
                 data: joiningData,
-                backgroundColor: 'rgba(54, 162, 235, 0.7)'
+                backgroundColor: 'rgba(47, 107, 255, 0.85)',
+                borderRadius: 6
             }]
         }
     });
@@ -960,9 +1559,397 @@
             datasets: [{
                 label: 'Attritions',
                 data: exitData,
-                backgroundColor: 'rgba(255, 99, 132, 0.7)'
+                backgroundColor: 'rgba(239, 68, 68, 0.85)',
+                borderRadius: 6
             }]
         }
     });
+</script>
+
+<script>
+(function () {
+    const officeLocation = {
+        lat: @json($officeLatitude),
+        lng: @json($officeLongitude),
+        radius: @json($officeRadiusMeters),
+        address: @json($officeAddress)
+    };
+
+    const clockInForm = document.getElementById('employeeClockInForm');
+    const clockInButton = document.getElementById('employeeClockInButton');
+    const requirementStatus = document.getElementById('clockRequirementStatus');
+    const modal = document.getElementById('clockCameraModal');
+    const video = document.getElementById('clockCameraVideo');
+    const canvas = document.getElementById('clockCameraCanvas');
+    const photo = document.getElementById('clockCameraPhoto');
+    const preview = document.getElementById('clockCameraPreview');
+    const closeCamera = document.getElementById('clockCameraClose');
+    const flipCamera = document.getElementById('clockCameraFlip');
+    const captureCamera = document.getElementById('clockCameraCapture');
+    const retakeCamera = document.getElementById('clockCameraRetake');
+    const useCamera = document.getElementById('clockCameraUse');
+    const latitudeInput = document.getElementById('clockInLatitude');
+    const longitudeInput = document.getElementById('clockInLongitude');
+    const accuracyInput = document.getElementById('clockInAccuracy');
+    const addressInput = document.getElementById('clockInAddress');
+    const selfieInput = document.getElementById('clockInSelfie');
+    let cameraStream = null;
+    let cameraFacingMode = 'user';
+    let capturedSelfie = '';
+    let canSubmitClockIn = false;
+
+    const setClockStatus = (message, type = 'info') => {
+        if (!requirementStatus) {
+            return;
+        }
+
+        const icon = type === 'success' ? 'bx-check-circle' : (type === 'error' ? 'bx-error-circle' : 'bx-info-circle');
+        const className = type === 'error' ? 'clock-status-line is-error' : 'clock-status-line';
+        requirementStatus.innerHTML = `<div class="${className}"><i class="bx ${icon}"></i><span>${message}</span></div>`;
+    };
+
+    const distanceInMeters = (lat1, lng1, lat2, lng2) => {
+        const earthRadius = 6371000;
+        const toRad = value => value * Math.PI / 180;
+        const dLat = toRad(lat2 - lat1);
+        const dLng = toRad(lng2 - lng1);
+        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+            + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2))
+            * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+        return earthRadius * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+    };
+
+    const stopCamera = () => {
+        if (cameraStream) {
+            cameraStream.getTracks().forEach(track => track.stop());
+            cameraStream = null;
+        }
+    };
+
+    const startCamera = async () => {
+        stopCamera();
+        capturedSelfie = '';
+        preview?.classList.remove('has-photo');
+
+        if (video) {
+            video.style.transform = cameraFacingMode === 'user' ? 'scaleX(-1)' : 'scaleX(1)';
+        }
+
+        const constraintsList = [
+            { video: { facingMode: { exact: cameraFacingMode }, width: { ideal: 1280 }, height: { ideal: 960 } }, audio: false },
+            { video: { facingMode: cameraFacingMode, width: { ideal: 1280 }, height: { ideal: 960 } }, audio: false },
+            { video: { facingMode: cameraFacingMode }, audio: false },
+            { video: true, audio: false }
+        ];
+
+        let stream = null;
+        for (const constraints of constraintsList) {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia(constraints);
+                if (stream) break;
+            } catch (e) {
+                // Try next fallback constraint
+            }
+        }
+
+        if (!stream) {
+            throw new Error('Unable to access camera');
+        }
+
+        cameraStream = stream;
+        if (video) {
+            video.srcObject = cameraStream;
+            try {
+                await video.play();
+            } catch (e) {}
+        }
+    };
+
+    const openCamera = async () => {
+        if (!modal) {
+            return;
+        }
+
+        modal.classList.add('is-open');
+        modal.setAttribute('aria-hidden', 'false');
+        await startCamera();
+    };
+
+    const closeCameraModal = () => {
+        stopCamera();
+        modal?.classList.remove('is-open');
+        modal?.setAttribute('aria-hidden', 'true');
+    };
+
+    const requestLocation = () => new Promise((resolve, reject) => {
+        if (!navigator.geolocation) {
+            reject(new Error('Location is not supported in this browser.'));
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+            enableHighAccuracy: true,
+            timeout: 15000,
+            maximumAge: 0
+        });
+    });
+
+    const compactAddress = address => {
+        if (!address || typeof address !== 'object') {
+            return '';
+        }
+
+        const parts = [
+            address.road,
+            address.neighbourhood || address.suburb || address.quarter,
+            address.city || address.town || address.village || address.municipality,
+            address.county || address.state_district,
+            address.state,
+            address.postcode
+        ];
+
+        return [...new Set(parts.filter(Boolean))]
+            .join(', ')
+            .slice(0, 180);
+    };
+
+    const reverseGeocodeLocation = async (lat, lng) => {
+        const url = new URL('https://nominatim.openstreetmap.org/reverse');
+        url.searchParams.set('format', 'jsonv2');
+        url.searchParams.set('lat', lat);
+        url.searchParams.set('lon', lng);
+        url.searchParams.set('zoom', '18');
+        url.searchParams.set('addressdetails', '1');
+
+        const response = await fetch(url.toString(), {
+            headers: {
+                'Accept': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Location name lookup failed.');
+        }
+
+        const data = await response.json();
+        return compactAddress(data.address) || (data.display_name || '').slice(0, 180);
+    };
+
+    if (clockInForm) {
+        clockInForm.addEventListener('submit', async event => {
+            if (canSubmitClockIn) {
+                return;
+            }
+
+            event.preventDefault();
+
+            try {
+                clockInButton.disabled = true;
+                setClockStatus('Requesting current location permission...', 'info');
+                const position = await requestLocation();
+                const currentLat = position.coords.latitude;
+                const currentLng = position.coords.longitude;
+                const distance = distanceInMeters(officeLocation.lat, officeLocation.lng, currentLat, currentLng);
+                const coordinateLabel = `${currentLat.toFixed(8)}, ${currentLng.toFixed(8)} (${distance.toFixed(1)}m from office)`;
+
+                latitudeInput.value = currentLat.toFixed(8);
+                longitudeInput.value = currentLng.toFixed(8);
+                accuracyInput.value = Math.round(position.coords.accuracy || 0);
+
+                setClockStatus('Finding exact location name...', 'info');
+                try {
+                    const placeName = await reverseGeocodeLocation(currentLat, currentLng);
+                    addressInput.value = placeName
+                        ? `${placeName} | ${coordinateLabel}`
+                        : `Current location: ${coordinateLabel}`;
+                    setClockStatus(`${placeName || 'Location captured'} detected. Opening camera...`, 'success');
+                } catch (lookupError) {
+                    addressInput.value = `Current location: ${coordinateLabel}`;
+                    setClockStatus(`Location captured. Opening camera...`, 'success');
+                }
+
+                await openCamera();
+            } catch (error) {
+                setClockStatus(error.message || 'Please allow current location and camera permission to clock in.', 'error');
+            } finally {
+                clockInButton.disabled = false;
+            }
+        });
+    }
+
+    closeCamera?.addEventListener('click', closeCameraModal);
+
+    flipCamera?.addEventListener('click', async () => {
+        cameraFacingMode = cameraFacingMode === 'user' ? 'environment' : 'user';
+        try {
+            await startCamera();
+        } catch (error) {
+            cameraFacingMode = cameraFacingMode === 'user' ? 'environment' : 'user';
+            setClockStatus('Camera flip failed. Switched to primary camera.', 'error');
+        }
+    });
+
+    captureCamera?.addEventListener('click', () => {
+        if (!video || !canvas || !photo) {
+            return;
+        }
+
+        const width = video.videoWidth || 960;
+        const height = video.videoHeight || 720;
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, width, height);
+
+        if (cameraFacingMode === 'user') {
+            ctx.translate(width, 0);
+            ctx.scale(-1, 1);
+        }
+
+        ctx.drawImage(video, 0, 0, width, height);
+        capturedSelfie = canvas.toDataURL('image/jpeg', 0.92);
+        photo.src = capturedSelfie;
+        preview?.classList.add('has-photo');
+    });
+
+    retakeCamera?.addEventListener('click', () => {
+        capturedSelfie = '';
+        if (photo) {
+            photo.removeAttribute('src');
+        }
+        preview?.classList.remove('has-photo');
+    });
+
+    useCamera?.addEventListener('click', () => {
+        if (!capturedSelfie) {
+            setClockStatus('Please capture your photo before using it.', 'error');
+            return;
+        }
+
+        selfieInput.value = capturedSelfie;
+        canSubmitClockIn = true;
+        setClockStatus('Photo captured. Completing clock in...', 'success');
+        closeCameraModal();
+        clockInForm.submit();
+    });
+
+    const istClock = document.getElementById('employeeIstClock');
+    const workTimer = document.getElementById('employeeWorkTimer');
+    const hrClockTime = document.getElementById('hrClockTime');
+    const hrClockDate = document.getElementById('hrClockDate');
+    const clockCard = document.querySelector('.role-clock-card');
+    const serverTimestamp = clockCard && clockCard.dataset.serverTime ? parseInt(clockCard.dataset.serverTime, 10) : null;
+    const clientTimestamp = Date.now();
+    const serverOffset = serverTimestamp ? (serverTimestamp - clientTimestamp) : 0;
+
+    const formatIstTime = (date, includeSeconds = true) => {
+        try {
+            return new Intl.DateTimeFormat('en-US', {
+                timeZone: 'Asia/Kolkata',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: includeSeconds ? '2-digit' : undefined,
+                hour12: true
+            }).format(date);
+        } catch (e) {
+            let h = date.getHours();
+            const m = String(date.getMinutes()).padStart(2, '0');
+            const s = String(date.getSeconds()).padStart(2, '0');
+            const ampm = h >= 12 ? 'PM' : 'AM';
+            h = h % 12 || 12;
+            const hStr = String(h).padStart(2, '0');
+            return includeSeconds ? `${hStr}:${m}:${s} ${ampm}` : `${hStr}:${m} ${ampm}`;
+        }
+    };
+
+    const formatIstDate = (date) => {
+        try {
+            const parts = new Intl.DateTimeFormat('en-US', {
+                timeZone: 'Asia/Kolkata',
+                weekday: 'long',
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric'
+            }).formatToParts(date);
+
+            let weekday = '', day = '', month = '', year = '';
+            for (const p of parts) {
+                if (p.type === 'weekday') weekday = p.value;
+                else if (p.type === 'day') day = p.value;
+                else if (p.type === 'month') month = p.value;
+                else if (p.type === 'year') year = p.value;
+            }
+            return `${weekday}, ${day} ${month} ${year}`;
+        } catch (e) {
+            return date.toLocaleDateString();
+        }
+    };
+
+    const updateClockWidgets = () => {
+        const now = new Date(Date.now() + serverOffset);
+
+        if (hrClockTime) {
+            hrClockTime.textContent = formatIstTime(now, true);
+        }
+
+        if (hrClockDate) {
+            hrClockDate.textContent = formatIstDate(now);
+        }
+
+        if (istClock) {
+            istClock.textContent = formatIstTime(now, true);
+        }
+
+        document.querySelectorAll('[data-live-clock="time"]').forEach(el => {
+            if (el !== hrClockTime) el.textContent = formatIstTime(now, true);
+        });
+
+        document.querySelectorAll('[data-live-clock="date"]').forEach(el => {
+            if (el !== hrClockDate) el.textContent = formatIstDate(now);
+        });
+
+        if (workTimer && workTimer.dataset.clockIn) {
+            if (workTimer.dataset.fixedDuration) {
+                workTimer.textContent = workTimer.dataset.fixedDuration;
+                return;
+            }
+
+            const started = new Date(workTimer.dataset.clockIn);
+            const ended = workTimer.dataset.clockOut ? new Date(workTimer.dataset.clockOut) : now;
+            if (workTimer.dataset.clockOut && ended < started) {
+                ended.setDate(ended.getDate() + 1);
+            }
+            const diffSeconds = Math.max(0, Math.floor((ended - started) / 1000));
+            const hours = String(Math.floor(diffSeconds / 3600)).padStart(2, '0');
+            const minutes = String(Math.floor((diffSeconds % 3600) / 60)).padStart(2, '0');
+            const seconds = String(diffSeconds % 60).padStart(2, '0');
+            workTimer.textContent = `${hours}:${minutes}:${seconds}`;
+        }
+    };
+
+    updateClockWidgets();
+    setInterval(updateClockWidgets, 1000);
+
+    const loadedDateKey = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Kolkata',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+    }).format(new Date(Date.now() + serverOffset));
+
+    setInterval(() => {
+        const currentDateKey = new Intl.DateTimeFormat('en-CA', {
+            timeZone: 'Asia/Kolkata',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        }).format(new Date(Date.now() + serverOffset));
+
+        if (currentDateKey !== loadedDateKey) {
+            window.location.reload();
+        }
+    }, 60000);
+})();
 </script>
 @endsection

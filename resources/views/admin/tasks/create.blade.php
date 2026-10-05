@@ -64,9 +64,9 @@
                     </div>
 
                     <div class="col-md-6">
-                          <label>Task Category <span class="text-danger">*</span></label>
+                          <label>Task Category</label>
                           <div class="d-flex">
-                            <select name="category_id" class="form-select me-2" required>
+                            <select name="category_id" class="form-select flex-grow-1 me-2">
                               <option value="">--</option>
                               @foreach($taskCategories as $category)
                                   <option value="{{ $category->id }}"
@@ -75,8 +75,8 @@
                                 </option>
                               @endforeach
                             </select>
-                            <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#taskCategoryModal">
-                              Add
+                            <button type="button" class="btn btn-outline-primary flex-shrink-0 text-nowrap px-3" data-bs-toggle="modal" data-bs-target="#taskCategoryModal" style="white-space: nowrap; min-width: 75px;">
+                              <i class="fas fa-plus me-1"></i> Add
                             </button>
                           </div>
                         </div>
@@ -133,8 +133,8 @@
                         
                         </div>
                             <div class="col-md-3 d-flex align-items-start">
-                                <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#employeeModal">
-                                    + Add Employee
+                                <button type="button" class="btn btn-outline-primary flex-shrink-0 text-nowrap px-3" data-bs-toggle="modal" data-bs-target="#employeeModal" style="white-space: nowrap; min-width: 125px;">
+                                    <i class="fas fa-user-plus me-1"></i> Add Employee
                                 </button>
                             </div>
                         </div>
@@ -159,8 +159,8 @@
                             @endforeach
                             
                         </select>
-                        <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#taskLabelsModal">
-                            Add
+                        <button type="button" class="btn btn-outline-primary flex-shrink-0 text-nowrap px-3 ms-2" data-bs-toggle="modal" data-bs-target="#taskLabelsModal" style="white-space: nowrap; min-width: 75px;">
+                            <i class="fas fa-plus me-1"></i> Add
                         </button>
                     </div>
                 </div>
@@ -219,7 +219,18 @@
                             <input class="form-check-input" type="checkbox" name="is_private" id="is_private">
                             <label class="form-check-label" for="is_private">
                                 Make Private
-                                <i class="fas fa-question-circle" data-toggle="popover" data-content="Private tasks are only visible to admin, assignor, and assignee."></i>
+                                <i class="fas fa-question-circle question-info-icon"
+                                   data-bs-toggle="popover"
+                                   data-bs-trigger="hover focus"
+                                   data-bs-placement="top"
+                                   data-bs-content="Private tasks are only visible to admin, assignor, and assignee."
+                                   data-toggle="popover"
+                                   data-trigger="hover focus"
+                                   data-placement="top"
+                                   data-content="Private tasks are only visible to admin, assignor, and assignee."
+                                   tabindex="0"
+                                   role="button"
+                                   aria-label="Info"></i>
                             </label>
                         </div>
                     </div>
@@ -232,7 +243,18 @@
 
                             <label class="form-check-label" for="billable">
                                 Billable
-                                <i class="fas fa-question-circle" data-toggle="popover" data-content="Invoice can be generated for this task's time log."></i>
+                                <i class="fas fa-question-circle question-info-icon"
+                                   data-bs-toggle="popover"
+                                   data-bs-trigger="hover focus"
+                                   data-bs-placement="top"
+                                   data-bs-content="Invoice can be generated for this task's time log."
+                                   data-toggle="popover"
+                                   data-trigger="hover focus"
+                                   data-placement="top"
+                                   data-content="Invoice can be generated for this task's time log."
+                                   tabindex="0"
+                                   role="button"
+                                   aria-label="Info"></i>
                             </label>
                         </div>
                     </div>
@@ -513,8 +535,14 @@
             </div>
 
             <div class="modal-body">
-                 <form action="{{ route('employees.store') }}" method="POST" enctype="multipart/form-data">
+                 <form id="employeeForm" action="{{ route('employees.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
+        <input type="hidden" name="company_id" value="{{ auth()->user()?->company_id }}">
+        <input type="hidden" name="mobile_country_code" value="+91">
+        <input type="hidden" name="status" value="Active">
+        <input type="hidden" name="login_allowed" value="1">
+        <input type="hidden" name="employment_type" value="full_time">
+        <input type="hidden" name="business_address" value="Head Office">
 
         <h5 class="mb-3">Account Details</h5>
 
@@ -592,8 +620,8 @@
                         @endforeach
                     </select>
                     
-                     <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#prtModal">
-                                Add
+                     <button type="button" class="btn btn-outline-secondary flex-shrink-0 text-nowrap px-3" data-bs-toggle="modal" data-bs-target="#prtModal" style="white-space: nowrap; min-width: 75px;">
+                                <i class="fas fa-plus me-1"></i> Add
                     </button>
                 </div>
             </div>
@@ -607,8 +635,8 @@
                             <option value="{{ $department->id }}">{{ $department->dpt_name }}</option>
                         @endforeach
                     </select>
-                    <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#dptModal">
-                                Add
+                    <button type="button" class="btn btn-outline-secondary flex-shrink-0 text-nowrap px-3" data-bs-toggle="modal" data-bs-target="#dptModal" style="white-space: nowrap; min-width: 75px;">
+                                <i class="fas fa-plus me-1"></i> Add
                     </button>
                 </div>
             </div>
@@ -639,17 +667,19 @@
            
            <div class="col-md-4 mb-3">
             <label class="form-label fw-semibold">Country <sup class="text-danger">*</sup></label>
-        
-            <!-- Country dropdown -->
-            <select name="country" id="country" class="form-select form-select-sm select2">
-                <option value="">Select Country</option>
-                @foreach($countries as $country)
-                    <option value="{{ $country->name }}" 
-                            data-flag="{{ $country->flag_url }}"> <!-- keep flag url in DB -->
-                        {{ $country->name }}
-                    </option>
-                @endforeach
-            </select>
+            <div class="input-group">
+                <select name="country" id="country" class="form-select form-select-sm" required>
+                    <option value="">Select Country</option>
+                    @foreach($countries as $country)
+                        <option value="{{ $country->name }}">
+                            {{ $country->name }}
+                        </option>
+                    @endforeach
+                </select>
+                <button type="button" class="btn btn-outline-secondary flex-shrink-0 text-nowrap px-3" data-bs-toggle="modal" data-bs-target="#countryModal" style="white-space: nowrap; min-width: 75px;">
+                    <i class="fas fa-plus me-1"></i> Add
+                </button>
+            </div>
         </div>
 
 
@@ -1000,19 +1030,124 @@
     </div>
 </div>
 
+<!-- Country Modal -->
+<div class="modal fade" id="countryModal" tabindex="-1" aria-labelledby="countryModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-md">
+        <form id="addCountryForm">
+            @csrf
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="countryModalLabel">Add Country</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Country Name <sup class="text-danger">*</sup></label>
+                        <input type="text" name="name" id="new_country_name" class="form-control" placeholder="Enter country name" required>
+                        <div id="country-error" class="text-danger d-none mt-2"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Country</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
         
         </main>
 
+
+@push('styles')
+<style>
+    .question-info-icon {
+        cursor: pointer;
+        color: #6c757d;
+        font-size: 0.875rem;
+        margin-left: 4px;
+        transition: color 0.15s ease-in-out, transform 0.15s ease-in-out;
+        vertical-align: middle;
+        display: inline-block;
+    }
+    .question-info-icon:hover,
+    .question-info-icon:focus {
+        color: #0d6efd;
+        transform: scale(1.15);
+    }
+    .popover {
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+        border-radius: 8px;
+        font-size: 0.85rem;
+        z-index: 1060;
+    }
+    html[data-pms-theme="dark"] .popover,
+    html[data-bs-theme="dark"] .popover,
+    body.dark-mode .popover {
+        background-color: #232733 !important;
+        border-color: #3b4253 !important;
+        color: #e2e8f0 !important;
+    }
+    html[data-pms-theme="dark"] .popover .popover-body,
+    html[data-bs-theme="dark"] .popover .popover-body,
+    body.dark-mode .popover .popover-body {
+        color: #cbd5e1 !important;
+    }
+</style>
+@endpush
 
 @push('scripts')
 
 <script>
     $(function () {
-        $('.select2').select2({
+        $('#employeeModal').on('shown.bs.modal', function () {
+            $('#language', this).select2({
+                theme: 'bootstrap-5',
+                dropdownParent: $('#employeeModal'),
+                width: '100%',
+                placeholder: 'Select an option',
+                allowClear: true
+            });
+        });
+
+        $('.select2:not(#employeeModal .select2)').select2({
             theme: 'bootstrap-5',
             width: '100%',
             placeholder: 'Select an option',
             allowClear: true
+        });
+
+        $('#addCountryForm').on('submit', function (e) {
+            e.preventDefault();
+            const name = $('#new_country_name').val().trim();
+            if (!name) return;
+
+            $.ajax({
+                url: '{{ route("countries.quick-create") }}',
+                method: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    name: name,
+                    status: 'Active'
+                },
+                success: function (res) {
+                    if (res.status === 'success' && res.country) {
+                        const newOpt = new Option(res.country.name, res.country.name, true, true);
+                        $('#country').append(newOpt).trigger('change');
+                        const modalEl = document.getElementById('countryModal');
+                        const modalObj = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                        modalObj.hide();
+                        $('#new_country_name').val('');
+                        $('#country-error').addClass('d-none').text('');
+                    }
+                },
+                error: function (xhr) {
+                    const msg = xhr.responseJSON && xhr.responseJSON.errors && xhr.responseJSON.errors.name ?
+                        xhr.responseJSON.errors.name[0] : (xhr.responseJSON?.message || 'Failed to add country');
+                    $('#country-error').removeClass('d-none').text(msg);
+                }
+            });
         });
     });
 </script>
@@ -1036,18 +1171,49 @@
 </script>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-toggle="popover"]'));
-        popoverTriggerList.map(function (popoverTriggerEl) {
-            new bootstrap.Popover(popoverTriggerEl);
-        });
-    });
-</script>
-<script>
+    function initTaskPopovers() {
+        var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"], [data-toggle="popover"]'));
+        popoverTriggerList.forEach(function (popoverTriggerEl) {
+            var content = popoverTriggerEl.getAttribute('data-bs-content') || popoverTriggerEl.getAttribute('data-content') || '';
+            var title = popoverTriggerEl.getAttribute('data-bs-original-title') || popoverTriggerEl.getAttribute('title') || '';
+            var placement = popoverTriggerEl.getAttribute('data-bs-placement') || popoverTriggerEl.getAttribute('data-placement') || 'top';
+            var trigger = popoverTriggerEl.getAttribute('data-bs-trigger') || popoverTriggerEl.getAttribute('data-trigger') || 'hover focus';
 
+            if (window.bootstrap && bootstrap.Popover) {
+                try {
+                    var existing = bootstrap.Popover.getInstance(popoverTriggerEl);
+                    if (existing) {
+                        existing.dispose();
+                    }
+                } catch (e) {}
+
+                new bootstrap.Popover(popoverTriggerEl, {
+                    trigger: trigger,
+                    placement: placement,
+                    content: content,
+                    title: title,
+                    html: true
+                });
+            } else if (window.jQuery && $.fn.popover) {
+                $(popoverTriggerEl).popover({
+                    trigger: trigger,
+                    placement: placement,
+                    content: content,
+                    title: title,
+                    html: true
+                });
+            }
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initTaskPopovers);
+    } else {
+        initTaskPopovers();
+    }
 
     $(function () {
-        $('[data-toggle="popover"]').popover();
+        initTaskPopovers();
 
         $('#set_time_estimate').on('change', function () {
             $('#set-time-estimate-fields').toggle(this.checked);

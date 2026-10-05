@@ -5,80 +5,137 @@
 @php $userId = Auth::id(); @endphp
 
 <style>
-   /* ===================== PURPLE & WHITE COLOR THEME ===================== */
+   /* ======================================================
+      BITROXIA ADMIN WORKSPACE — SIDEBAR & NAVBAR SYSTEM
+      Derived from https://pms.thesmartservice.in/
+      Color Direction:
+        • Primary:    #2F6BFF (Professional Blue)
+        • Secondary:  #06B6D4 (Cyan / Teal)
+        • Supporting: #8B5CF6 (Violet / Purple)
+        • Success:    #10B981 (Emerald)
+        • Text:       #0F172A (Headings) / #334155 (Body) / #64748B (Muted)
+        • Background: #F8FAFC / Surface: #FFFFFF
+        • Border:     #E2E8F0 (Subtle Cool Gray)
+      ====================================================== */
 
-   /* Global Purple Theme Variables */
    :root {
-       --purple-primary: #7C3AED;
-       --purple-light: #8B5CF6;
-       --purple-dark: #6D28D9;
-       --purple-soft: #EDE9FE;
-       --purple-gradient: linear-gradient(135deg, #7C3AED 0%, #8B5CF6 100%);
-       --purple-hover: rgba(124, 58, 237, 0.08);
-       --white-pure: #FFFFFF;
-       --white-soft: #F9FAFB;
-       --text-dark: #1F2937;
-       --text-soft: #4B5563;
-       --shadow-purple: 0 4px 20px rgba(124, 58, 237, 0.12);
+       --bx-blue-primary: #2F6BFF;
+       --bx-blue-hover: #1E4FCC;
+       --bx-blue-soft: rgba(47, 107, 255, 0.08);
+       --bx-blue-subtle: rgba(47, 107, 255, 0.04);
+       --bx-cyan: #06B6D4;
+       --bx-violet: #8B5CF6;
+       --bx-emerald: #10B981;
+       --bx-amber: #F59E0B;
+       --bx-red: #EF4444;
+
+       --bx-surface: #FFFFFF;
+       --bx-surface-soft: #F8FAFC;
+       --bx-surface-subtle: #F1F5F9;
+
+       --bx-text-heading: #0F172A;
+       --bx-text-body: #1E293B;
+       --bx-text-secondary: #475569;
+       --bx-text-muted: #64748B;
+       --bx-text-faint: #94A3B8;
+
+       --bx-border-subtle: #E2E8F0;
+       --bx-border-soft: #CBD5E1;
+       --bx-border-focus: rgba(47, 107, 255, 0.35);
+
+       --bx-shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(15, 23, 42, 0.03);
+       --bx-shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
+       --bx-shadow-lg: 0 12px 24px -4px rgba(15, 23, 42, 0.08), 0 4px 8px -2px rgba(15, 23, 42, 0.03);
    }
 
-   /* ===================== GLOBAL MODAL FIX ===================== */
+   /* ===================== GLOBAL MODALS ===================== */
    .modal-backdrop.show {
-       opacity: 0.4 !important;
+       opacity: 0.45 !important;
    }
 
    body.modal-open {
        opacity: 1 !important;
    }
 
-   .modal { z-index: 1050; }
-   .modal-backdrop { z-index: 1040; }
+   .modal-backdrop {
+       z-index: 10040 !important;
+   }
+
+   .modal {
+       z-index: 10050 !important;
+       padding-top: 0 !important;
+   }
+
+   .modal-dialog {
+       z-index: 10051 !important;
+       margin-top: 1.75rem !important;
+       margin-bottom: 1.75rem !important;
+   }
+
+   .modal-dialog-centered {
+       min-height: calc(100% - 3.5rem) !important;
+       margin-top: 1.75rem !important;
+       margin-bottom: 1.75rem !important;
+   }
 
    .modal-content {
-       background-color: var(--white-pure) !important;
-       box-shadow: 0 0.75rem 1.5rem rgba(124, 58, 237, 0.15);
-       border-radius: 10px;
-       border: 1px solid rgba(124, 58, 237, 0.1);
+       background-color: var(--bx-surface) !important;
+       box-shadow: 0 16px 36px -4px rgba(15, 23, 42, 0.14) !important;
+       border-radius: 16px !important;
+       border: 1px solid var(--bx-border-subtle) !important;
+       color: var(--bx-text-body);
    }
 
    .modal-header {
-       border-bottom: 1px solid rgba(124, 58, 237, 0.1);
-       color: var(--purple-dark);
+       border-bottom: 1px solid var(--bx-border-subtle) !important;
+       color: var(--bx-text-heading);
+       padding: 1.25rem 1.5rem;
    }
 
    .modal-title {
-       color: var(--purple-primary);
+       color: var(--bx-text-heading) !important;
        font-weight: 700;
+       font-size: 1.125rem;
    }
 
    .btn-close:hover {
-       background-color: var(--purple-soft);
-       border-radius: 4px;
+       background-color: var(--bx-surface-subtle);
+       border-radius: 8px;
    }
 
-   /* ===================== NAVBAR CORE PREMIUM FIX ===================== */
+   .modal-footer {
+       border-top: 1px solid var(--bx-border-subtle) !important;
+       padding: 1rem 1.5rem;
+   }
+
+   /* ===================== TOP NAVBAR ===================== */
    #layout-navbar {
+       position: relative;
+       z-index: 1030 !important;
        display: flex;
        flex-wrap: nowrap !important;
        align-items: center;
        width: 100%;
-       background: rgba(255, 255, 255, 0.92) !important;
-       backdrop-filter: blur(20px) saturate(180%);
-       -webkit-backdrop-filter: blur(20px) saturate(180%);
-       box-shadow: 0 12px 35px -10px rgba(15, 116, 76, 0.08), 0 2px 6px rgba(0, 0, 0, 0.03) !important;
-       border-radius: 20px;
-       border: 1px solid rgba(255, 255, 255, 0.9);
-       padding: 0.65rem 1.25rem;
-       font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+       background: var(--bx-navbar-bg, rgba(255, 255, 255, 0.94)) !important;
+       backdrop-filter: blur(16px);
+       -webkit-backdrop-filter: blur(16px);
+       box-shadow: var(--bx-shadow-sm) !important;
+       border-radius: 16px;
+       border: 1px solid var(--bx-border-subtle) !important;
+       padding: 0.75rem 1.25rem;
+       font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+       min-height: 64px;
+       transition: background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
    }
 
    #layout-navbar .nav-item,
    #layout-navbar .fw-bold,
    #layout-navbar .navbar-brand {
-       font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
-       font-size: 1.18rem !important;
-       font-weight: 800 !important;
-       letter-spacing: -0.015em;
+       font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+       font-size: 1rem !important;
+       font-weight: 700 !important;
+       letter-spacing: -0.01em;
+       color: var(--bx-text-heading) !important;
    }
 
    #layout-navbar .navbar-nav {
@@ -97,7 +154,6 @@
        display: contents;
    }
 
-   /* ===================== RIGHT ICONS & SEARCH FIX ===================== */
    .navbar-nav-right,
    #layout-navbar .navbar-nav-right {
        display: flex;
@@ -107,28 +163,55 @@
        gap: 10px;
    }
 
+   /* Search Box */
+   #layout-navbar .nav-item input[type="text"] {
+       background: var(--bx-surface-soft) !important;
+       border: 1px solid var(--bx-border-subtle) !important;
+       border-radius: 10px !important;
+       color: var(--bx-text-body) !important;
+       font-size: 0.875rem !important;
+       font-weight: 500;
+       transition: all 0.2s ease;
+   }
+
+   #layout-navbar .nav-item input[type="text"]::placeholder {
+       color: var(--bx-text-muted) !important;
+       opacity: 0.85;
+   }
+
+   #layout-navbar .nav-item input[type="text"]:focus,
+   #layout-navbar .nav-item:hover input[type="text"] {
+       border-color: var(--bx-blue-primary) !important;
+       background: var(--bx-surface) !important;
+       box-shadow: 0 0 0 3px rgba(47, 107, 255, 0.12) !important;
+   }
+
+   /* Header Action Buttons / Icons */
    .header-icon-box {
        display: flex;
        align-items: center;
        justify-content: center;
-       min-width: 40px;
-       height: 40px;
-       border-radius: 12px;
-       background: rgba(15, 116, 76, 0.06);
-       color: #0f744c;
-       transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+       min-width: 38px;
+       height: 38px;
+       border-radius: 10px;
+       background: var(--bx-surface-soft);
+       border: 1px solid var(--bx-border-subtle);
+       color: var(--bx-text-secondary);
+       transition: all 0.2s ease;
+       text-decoration: none;
    }
 
    .header-icon-box:hover {
-       color: #094c32;
-       background: rgba(15, 116, 76, 0.12);
-       transform: translateY(-2px) scale(1.06);
-       box-shadow: 0 6px 18px rgba(15, 116, 76, 0.15);
+       color: var(--bx-blue-primary);
+       background: var(--bx-blue-soft);
+       border-color: rgba(47, 107, 255, 0.2);
+       transform: translateY(-1px);
+       box-shadow: 0 2px 6px rgba(47, 107, 255, 0.08);
    }
 
    .header-icon-box i {
-       color: #0f744c;
-       font-size: 1.2rem;
+       color: inherit;
+       font-size: 1.15rem;
    }
 
    /* ===================== SEARCH FIELD CONTROL ===================== */
@@ -163,736 +246,1036 @@
        }
    }
 
-   /* ===================== EXTRA SAFETY ===================== */
+   /* Cleaned legacy purple conflict block */
+
+   .theme-toggle-btn {
+       width: 38px;
+       height: 38px;
+       border-radius: 10px;
+       border: 1px solid var(--bx-border-subtle);
+       background: var(--bx-surface-soft);
+       color: var(--bx-text-secondary);
+       display: inline-flex;
+       align-items: center;
+       justify-content: center;
+       cursor: pointer;
+       transition: all 0.2s ease;
+   }
+
+   .theme-toggle-btn:hover {
+       color: var(--bx-blue-primary);
+       background: var(--bx-blue-soft);
+       border-color: rgba(47, 107, 255, 0.2);
+       transform: translateY(-1px);
+   }
+
+   /* ===================== SIDEBAR ===================== */
    .layout-menu {
-       transition: transform 0.3s ease;
-       background: linear-gradient(135deg, var(--white-pure) 0%, var(--white-soft) 100%);
-       border-right: 1px solid rgba(124, 58, 237, 0.1);
+       transition: transform 0.3s ease, width 0.3s ease;
+       background: var(--bx-surface) !important;
+       border-right: 1px solid var(--bx-border-subtle) !important;
+       box-shadow: none !important;
    }
 
-   .layout-menu-active .layout-menu {
-       transform: translateX(0);
-   }
-
-   /* ===================== MENU THEME - PURPLE & WHITE ===================== */
    .bg-menu-theme {
-       background: linear-gradient(135deg, var(--white-pure) 0%, var(--white-soft) 100%) !important;
+       background: var(--bx-surface) !important;
    }
 
    .app-brand {
-       background: var(--white-pure);
-       border-bottom: 1px solid rgba(124, 58, 237, 0.1);
-   }
-
-   .app-brand-text {
-       color: var(--purple-primary) !important;
-       font-weight: 800 !important;
+       background: var(--bx-surface) !important;
+       border-bottom: 1px solid var(--bx-border-subtle);
+       padding: 1.125rem 1.25rem !important;
+       min-height: 68px;
+       display: flex;
+       align-items: center;
    }
 
    .app-brand-logo.demo {
-       width: 42px;
-       height: 42px;
-       border-radius: 12px;
+       width: 38px;
+       height: 38px;
+       border-radius: 10px;
        overflow: hidden;
        display: inline-flex;
        align-items: center;
        justify-content: center;
        flex: 0 0 auto;
-       box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
-       background: #ffffff;
-       padding: 4px;
+       background: transparent;
    }
 
    .app-brand-logo.demo img {
-       max-width: 100%;
-       max-height: 100%;
-       width: auto;
-       height: auto;
+       width: 100%;
+       height: 100%;
        object-fit: contain;
        display: block;
    }
 
-    .app-brand-text.demo {
-        max-width: 175px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        font-size: 1.05rem !important;
-        font-weight: 800 !important;
-        line-height: 1.25;
-        letter-spacing: -0.01em !important;
-        background: linear-gradient(135deg, #0569ff, #13d5e7 50%, #8f25ff);
-        -webkit-background-clip: text;
-        background-clip: text;
-        -webkit-text-fill-color: transparent !important;
-        color: transparent !important;
-    }
-
-   .menu-inner .menu-item .menu-link {
-       color: var(--text-dark);
-       transition: all 0.2s ease;
-   }
-
-   .menu-inner .menu-item .menu-link i {
-       color: var(--purple-primary);
-   }
-
-   .menu-inner .menu-item:hover > .menu-link {
-       background-color: var(--purple-hover);
-       color: var(--purple-primary);
-   }
-
-   .menu-inner .menu-item.active > .menu-link {
-       background: var(--purple-gradient);
-       color: var(--white-pure);
-       box-shadow: 0 4px 12px rgba(15, 116, 76, 0.16);
-   }
-
-   .menu-inner .menu-item.active > .menu-link i {
-       color: var(--white-pure);
-   }
-
-   .menu-inner .menu-item.active:not(.open) > .menu-link {
-       position: relative;
-       overflow: hidden;
-       animation: sidebarActiveGlow 1.8s ease-in-out infinite;
-   }
-
-   .menu-inner .menu-item.active:not(.open) > .menu-link::after {
-       content: "";
-       position: absolute;
-       right: 12px;
-       top: 50%;
-       width: 8px;
-       height: 8px;
-       border-radius: 999px;
-       background: #ffffff;
-       box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.9);
-       transform: translateY(-50%);
-       animation: sidebarActiveDot 1.25s ease-in-out infinite;
-   }
-
-    @keyframes sidebarActiveGlow {
-        0%, 100% {
-            box-shadow: 0 4px 12px rgba(15, 116, 76, 0.16);
-        }
-        50% {
-            box-shadow: 0 6px 16px rgba(15, 116, 76, 0.24);
-        }
-    }
-
-   @keyframes sidebarActiveDot {
-       0% {
-           box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.9);
-       }
-       70% {
-           box-shadow: 0 0 0 8px rgba(255, 255, 255, 0);
-       }
-       100% {
-           box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
-       }
-   }
-
-   .menu-inner .menu-item.open > .menu-link {
-       background-color: var(--purple-hover);
-       color: var(--purple-primary);
-   }
-
-   .menu-sub {
-       background: rgba(124, 58, 237, 0.02);
-   }
-
-   .menu-sub .menu-item .menu-link {
-       color: var(--text-soft);
-   }
-
-   .menu-sub .menu-item:hover .menu-link {
-       color: var(--purple-primary);
-       background-color: var(--purple-hover);
-   }
-
-   .menu-sub .menu-item.active .menu-link {
-       color: var(--purple-primary);
-       font-weight: 700;
-       background: linear-gradient(90deg, var(--purple-soft) 0%, rgba(124, 58, 237, 0.05) 100%);
-       border-left: 3px solid var(--purple-primary);
+   .app-brand-text.demo {
+       font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif !important;
+       font-size: 1.125rem !important;
+       font-weight: 800 !important;
+       letter-spacing: -0.02em !important;
+       color: var(--bx-text-heading) !important;
+       -webkit-text-fill-color: initial !important;
    }
 
    .menu-divider {
-       border-color: rgba(124, 58, 237, 0.1) !important;
+       border-color: var(--bx-border-subtle) !important;
+       margin: 0 !important;
    }
 
-   /* Dropdown Menu Purple Theme */
+   /* Menu Item Styling */
+   .menu-inner {
+       padding: 0.75rem 0.5rem !important;
+   }
+
+   .menu-inner .menu-item {
+       margin-bottom: 2px;
+   }
+
+   .menu-inner .menu-item .menu-link {
+       color: var(--bx-text-body) !important;
+       font-size: 0.875rem !important;
+       font-weight: 600 !important;
+       padding: 0.6rem 0.875rem !important;
+       border-radius: 10px !important;
+       transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+       position: relative;
+   }
+
+   .menu-inner .menu-item .menu-link i,
+   .menu-inner .menu-item .menu-link .menu-icon {
+       color: var(--bx-text-muted) !important;
+       font-size: 1.18rem !important;
+       margin-right: 0.75rem !important;
+       transition: color 0.18s ease, transform 0.18s ease;
+   }
+
+   /* Hover State */
+   .menu-inner .menu-item:hover > .menu-link {
+       background-color: var(--bx-blue-soft) !important;
+       color: var(--bx-blue-primary) !important;
+   }
+
+   .menu-inner .menu-item:hover > .menu-link i,
+   .menu-inner .menu-item:hover > .menu-link .menu-icon {
+       color: var(--bx-blue-primary) !important;
+       transform: translateX(1px);
+   }
+
+   /* Active State — Modern SaaS Accent */
+   .menu-inner .menu-item.active > .menu-link {
+       background: var(--bx-blue-soft) !important;
+       color: var(--bx-blue-primary) !important;
+       font-weight: 700 !important;
+       box-shadow: inset 3px 0 0 var(--bx-blue-primary) !important;
+   }
+
+   .menu-inner .menu-item.active > .menu-link i,
+   .menu-inner .menu-item.active > .menu-link .menu-icon {
+       color: var(--bx-blue-primary) !important;
+   }
+
+   /* Open state for parent menus */
+   .menu-inner .menu-item.open > .menu-link {
+       background-color: var(--bx-surface-soft) !important;
+       color: var(--bx-text-heading) !important;
+       font-weight: 650 !important;
+   }
+
+   .menu-inner .menu-item.open > .menu-link i {
+       color: var(--bx-blue-primary) !important;
+   }
+
+   /* Submenus */
+   .menu-sub {
+       background: transparent !important;
+       padding-left: 0.5rem !important;
+   }
+
+   .menu-sub .menu-item .menu-link {
+       color: var(--bx-text-secondary) !important;
+       font-weight: 550 !important;
+       font-size: 0.84rem !important;
+       padding: 0.48rem 0.875rem !important;
+       border-radius: 8px !important;
+   }
+
+   .menu-sub .menu-item:hover .menu-link {
+       color: var(--bx-blue-primary) !important;
+       background-color: var(--bx-blue-soft) !important;
+   }
+
+   .menu-sub .menu-item.active .menu-link {
+       color: var(--bx-blue-primary) !important;
+       font-weight: 700 !important;
+       background: var(--bx-blue-soft) !important;
+       box-shadow: inset 2px 0 0 var(--bx-blue-primary) !important;
+   }
+
+   /* Section Headers */
+   .menu-header {
+       padding: 1.25rem 1rem 0.4rem !important;
+   }
+
+   .menu-header-text {
+       font-size: 0.7rem !important;
+       font-weight: 750 !important;
+       text-transform: uppercase !important;
+       letter-spacing: 0.06em !important;
+       color: var(--bx-text-faint) !important;
+   }
+
+   /* ===================== DROPDOWNS ===================== */
    .dropdown-menu {
-       border: 1px solid rgba(124, 58, 237, 0.1);
-       box-shadow: var(--shadow-purple);
+       background: var(--bx-surface) !important;
+       border: 1px solid var(--bx-border-subtle) !important;
+       border-radius: 14px !important;
+       box-shadow: var(--bx-shadow-lg) !important;
+       padding: 0.5rem !important;
+   }
+
+   .dropdown-item {
+       color: var(--bx-text-body) !important;
+       font-weight: 550;
+       border-radius: 8px;
+       padding: 0.55rem 0.85rem;
+       transition: all 0.15s ease;
    }
 
    .dropdown-item:hover {
-       background-color: var(--purple-hover);
-       color: var(--purple-primary);
+       background-color: var(--bx-blue-soft) !important;
+       color: var(--bx-blue-primary) !important;
    }
 
    .dropdown-item i {
-       color: var(--purple-primary);
+       color: var(--bx-text-muted);
+       transition: color 0.15s ease;
    }
 
-   /* Badge Purple Theme */
-   .badge.bg-danger {
-       background: var(--purple-gradient) !important;
-       color: var(--white-pure);
+   .dropdown-item:hover i {
+       color: var(--bx-blue-primary);
    }
 
-   /* Form Controls Purple Theme */
-   .form-control:focus,
-   .form-select:focus {
-       border-color: var(--purple-light);
-       box-shadow: 0 0 0 0.25rem rgba(124, 58, 237, 0.1);
+   .dropdown-divider {
+       border-color: var(--bx-border-subtle) !important;
+       margin: 0.4rem 0 !important;
    }
 
-   .btn-primary {
-       background: var(--purple-gradient) !important;
-       border: none !important;
-       color: var(--white-pure) !important;
+   /* ===================== NOTIFICATIONS ===================== */
+   .notification-bell {
+       position: relative;
+       width: 38px;
+       height: 38px;
+       border-radius: 10px;
+       display: inline-flex;
+       align-items: center;
+       justify-content: center;
+       background: var(--bx-surface-soft);
+       border: 1px solid var(--bx-border-subtle);
+       color: var(--bx-text-secondary);
+       transition: all 0.2s ease;
+       text-decoration: none;
    }
 
-   .btn-primary:hover {
-       background: linear-gradient(135deg, var(--purple-dark) 0%, var(--purple-primary) 100%) !important;
-       box-shadow: var(--shadow-purple);
+   .notification-bell:hover {
+       background: var(--bx-blue-soft);
+       border-color: rgba(47, 107, 255, 0.2);
+       color: var(--bx-blue-primary);
+       transform: translateY(-1px);
    }
 
-   .btn-outline-primary {
-       border-color: var(--purple-primary) !important;
-       color: var(--purple-primary) !important;
-   }
-
-   .btn-outline-primary:hover {
-       background: var(--purple-gradient) !important;
-       color: var(--white-pure) !important;
-   }
-
-   /* Text Colors */
-   .text-primary {
-       color: var(--purple-primary) !important;
-   }
-
-   .text-dark {
-       color: var(--text-dark) !important;
-   }
-
-   .text-muted {
-       color: var(--text-soft) !important;
-   }
-
-   /* Links */
-   a {
-       color: var(--purple-primary);
-       transition: color 0.2s ease;
-   }
-
-   a:hover {
-       color: var(--purple-dark);
-   }
-
-   /* Notification Dropdown */
-   .notification-dropdown {
-       border-top: 3px solid var(--purple-primary);
-   }
-
-   .notification-dropdown li:hover {
-       background-color: var(--purple-hover);
+   .notification-bell.has-unread {
+       color: var(--bx-blue-primary);
    }
 
    .notification-bell.has-unread i {
-       color: #7C3AED !important;
-       animation: pmsBellShake 1.15s ease-in-out infinite;
+       animation: pmsBellShake 1.25s ease-in-out infinite;
        transform-origin: top center;
    }
 
-   .notification-item-unread {
-       background: linear-gradient(90deg, rgba(124, 58, 237, 0.12), rgba(255, 255, 255, 0.98));
-       border-left: 4px solid #7C3AED;
+   .notification-bell .badge {
+       position: absolute;
+       top: -5px;
+       right: -5px;
+       min-width: 18px;
+       height: 18px;
+       border-radius: 999px;
+       background: var(--bx-red) !important;
+       color: #FFFFFF !important;
+       font-size: 10px;
+       font-weight: 800;
+       display: inline-flex;
+       align-items: center;
+       justify-content: center;
+       border: 2px solid var(--bx-surface);
+       padding: 0 4px;
    }
 
-   .notification-item-read {
-       background: #fff;
-       opacity: 0.72;
+   .notification-dropdown {
+       width: min(420px, calc(100vw - 24px)) !important;
+       max-height: 540px;
+       overflow: hidden;
+       border-radius: 16px;
+       border: 1px solid var(--bx-border-subtle) !important;
+       box-shadow: var(--bx-shadow-lg) !important;
+       padding: 0 !important;
+   }
+
+   .notification-dropdown-head {
+       padding: 14px 18px;
+       background: var(--bx-surface-soft);
+       border-bottom: 1px solid var(--bx-border-subtle);
+   }
+
+   .notification-dropdown-body {
+       max-height: 380px;
+       overflow-y: auto;
+       padding: 6px;
+   }
+
+   .notification-card-link {
+       display: grid;
+       grid-template-columns: 40px 1fr auto;
+       gap: 12px;
+       align-items: start;
+       padding: 10px 12px;
+       border-radius: 10px;
+       text-decoration: none;
+       color: var(--bx-text-body);
+       border: 1px solid transparent;
+       transition: all 0.15s ease;
+   }
+
+   .notification-card-link:hover {
+       background: var(--bx-surface-soft);
+       border-color: var(--bx-border-subtle);
+   }
+
+   .notification-card-link.is-unread {
+       background: var(--bx-blue-soft);
+       border-color: rgba(47, 107, 255, 0.12);
+   }
+
+   .notification-avatar-icon {
+       width: 40px;
+       height: 40px;
+       border-radius: 10px;
+       display: inline-flex;
+       align-items: center;
+       justify-content: center;
+       color: #fff;
+       font-size: 16px;
+       background: var(--bx-blue-primary);
+   }
+
+   .notification-avatar-icon.color-warning { background: var(--bx-amber); }
+   .notification-avatar-icon.color-success { background: var(--bx-emerald); }
+   .notification-avatar-icon.color-danger { background: var(--bx-red); }
+   .notification-avatar-icon.color-info { background: var(--bx-cyan); }
+
+   .notification-title {
+       display: block;
+       font-size: 13.5px;
+       font-weight: 700;
+       color: var(--bx-text-heading);
+       line-height: 1.25;
+       margin-bottom: 3px;
+   }
+
+   .notification-message {
+       display: block;
+       font-size: 12px;
+       color: var(--bx-text-muted);
+       line-height: 1.35;
+       margin-bottom: 4px;
+   }
+
+   .notification-time {
+       display: inline-flex;
+       align-items: center;
+       gap: 4px;
+       font-size: 11px;
+       color: var(--bx-text-faint);
+       font-weight: 600;
    }
 
    .notification-unread-dot {
        width: 8px;
        height: 8px;
+       margin-top: 14px;
        border-radius: 50%;
-       background: #7C3AED;
-       box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.12);
-       flex: 0 0 8px;
-       margin-top: 6px;
+       background: var(--bx-blue-primary);
+   }
+
+   .notification-dropdown-foot {
+       display: flex;
+       justify-content: space-between;
+       gap: 10px;
+       padding: 10px 16px;
+       border-top: 1px solid var(--bx-border-subtle);
+       background: var(--bx-surface);
    }
 
    @keyframes pmsBellShake {
        0%, 100% { transform: rotate(0); }
-       15% { transform: rotate(12deg); }
-       30% { transform: rotate(-10deg); }
-       45% { transform: rotate(7deg); }
-       60% { transform: rotate(-5deg); }
+       15% { transform: rotate(10deg); }
+       30% { transform: rotate(-8deg); }
+       45% { transform: rotate(6deg); }
+       60% { transform: rotate(-4deg); }
        75% { transform: rotate(2deg); }
    }
 
-   /* Avatar border */
-   .avatar-online img {
-       width: 40px;
-       height: 40px;
-       min-width: 40px;
-       min-height: 40px;
-       max-width: 40px;
-       max-height: 40px;
-       border: 2px solid var(--purple-primary);
-       border-radius: 50% !important;
-       object-fit: cover;
-       object-position: center;
-       display: block;
+   /* ===================== BADGES & BUTTONS ===================== */
+   .btn-primary {
+       background: var(--bx-blue-primary) !important;
+       border-color: var(--bx-blue-primary) !important;
+       color: #FFFFFF !important;
+       font-weight: 600 !important;
+       border-radius: 10px !important;
+       box-shadow: 0 1px 3px rgba(47, 107, 255, 0.25) !important;
+       transition: all 0.2s ease !important;
    }
 
+   .btn-primary:hover {
+       background: var(--bx-blue-hover) !important;
+       border-color: var(--bx-blue-hover) !important;
+       box-shadow: 0 4px 12px rgba(47, 107, 255, 0.3) !important;
+       transform: translateY(-1px);
+   }
+
+   .btn-outline-primary {
+       border-color: var(--bx-blue-primary) !important;
+       color: var(--bx-blue-primary) !important;
+       font-weight: 600 !important;
+       border-radius: 10px !important;
+       background: transparent !important;
+       transition: all 0.2s ease !important;
+   }
+
+   .btn-outline-primary:hover {
+       background: var(--bx-blue-primary) !important;
+       color: #FFFFFF !important;
+       box-shadow: 0 2px 8px rgba(47, 107, 255, 0.25) !important;
+   }
+
+   .badge.bg-primary {
+       background: var(--bx-blue-primary) !important;
+       color: #FFFFFF !important;
+   }
+
+   .badge.bg-success {
+       background: var(--bx-emerald) !important;
+       color: #FFFFFF !important;
+   }
+
+   .badge.bg-warning {
+       background: var(--bx-amber) !important;
+       color: #FFFFFF !important;
+   }
+
+   .badge.bg-danger {
+       background: var(--bx-red) !important;
+       color: #FFFFFF !important;
+   }
+
+   /* ===================== USER AVATAR ===================== */
+   .avatar-online img,
    .navbar-profile-avatar {
-       width: 40px !important;
-       height: 40px !important;
-       aspect-ratio: 1 / 1;
+       width: 38px !important;
+       height: 38px !important;
        border-radius: 50% !important;
+       border: 2px solid var(--bx-blue-primary) !important;
        object-fit: cover;
-       object-position: center;
    }
 
-   /* Timer Icon */
-   .text-danger {
-       color: var(--purple-primary) !important;
+   /* Sticky Note Trigger */
+   .sticky-note-trigger {
+       position: relative;
    }
 
-   /* Modal Footer */
-   .modal-footer {
-       border-top: 1px solid rgba(124, 58, 237, 0.1);
+   .sticky-note-count {
+       position: absolute;
+       top: -6px;
+       right: -6px;
+       min-width: 18px;
+       height: 18px;
+       padding: 0 5px;
+       border-radius: 999px;
+       background: var(--bx-red);
+       color: #fff;
+       font-size: 10px;
+       font-weight: 800;
+       display: inline-flex;
+       align-items: center;
+       justify-content: center;
+       border: 2px solid var(--bx-surface);
    }
 
-   /* Active Timer Modal Header */
-   .modal-header.bg-danger {
-       background: var(--purple-gradient) !important;
+   .sidebar-notification-badge {
+       margin-left: auto;
+       min-width: 18px;
+       height: 18px;
+       padding: 0 5px;
+       border-radius: 999px;
+       display: none;
+       align-items: center;
+       justify-content: center;
+       font-size: 10px;
+       font-weight: 800;
+       line-height: 1;
+       color: #fff;
+       background: var(--bx-blue-primary);
    }
 
-   /* List Group Items */
-   .list-group-item {
-       border-left: 5px solid var(--purple-primary) !important;
-       border-color: rgba(124, 58, 237, 0.1);
+   .sidebar-notification-badge.is-visible {
+       display: inline-flex;
    }
 
-   /* ===================== END PURPLE THEME ===================== */
+   .sidebar-notification-badge.type-new { background: var(--bx-blue-primary); }
+   .sidebar-notification-badge.type-pending { background: var(--bx-amber); }
+   .sidebar-notification-badge.type-issue { background: var(--bx-red); }
+   .sidebar-notification-badge.type-warning { background: var(--bx-amber); }
+   .sidebar-notification-badge.type-unread { background: var(--bx-blue-primary); }
 
-   /* ===================== SIDEBAR FONT BOLD FIX ===================== */
-/* Make all sidebar menu text bold for better visibility */
-.menu-inner .menu-item .menu-link,
-.menu-inner .menu-item .menu-link div,
-.menu-inner .menu-item .menu-link .text-truncate,
-.menu-sub .menu-item .menu-link,
-.menu-sub .menu-item .menu-link div,
-.menu-sub .menu-item .menu-link .text-truncate {
-    font-weight: 600 !important;
-    color: #1F2937 !important; /* Dark gray for better contrast */
-}
+   /* Sticky Notes System Styling */
+   .sticky-note-dock {
+       position: fixed;
+       right: 20px;
+       bottom: 20px;
+       z-index: 1030;
+   }
 
-/* Make active menu items even bolder */
-.menu-inner .menu-item.active > .menu-link,
-.menu-inner .menu-item.active > .menu-link div,
-.menu-inner .menu-item.active > .menu-link .text-truncate {
-    font-weight: 700 !important;
-    color: #FFFFFF !important; /* White text on purple gradient */
-}
+   .sticky-note-card {
+       position: relative;
+       padding: 16px 14px 12px;
+       border-radius: 12px;
+       box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+       color: #1e293b;
+       overflow: hidden;
+       transition: transform 0.2s ease, box-shadow 0.2s ease;
+   }
 
-/* Active submenu items */
-.menu-sub .menu-item.active .menu-link,
-.menu-sub .menu-item.active .menu-link div,
-.menu-sub .menu-item.active .menu-link .text-truncate {
-    font-weight: 700 !important;
-    color: #7C3AED !important; /* Purple for active submenu items */
-}
+   .sticky-note-card:hover {
+       transform: translateY(-2px) rotate(0deg) !important;
+       box-shadow: 0 12px 28px rgba(15, 23, 42, 0.16);
+   }
 
-/* Hover states */
-.menu-inner .menu-item:hover > .menu-link,
-.menu-inner .menu-item:hover > .menu-link div,
-.menu-inner .menu-item:hover > .menu-link .text-truncate,
-.menu-sub .menu-item:hover .menu-link,
-.menu-sub .menu-item:hover .menu-link div,
-.menu-sub .menu-item:hover .menu-link .text-truncate {
-    font-weight: 600 !important;
-    color: #7C3AED !important; /* Purple on hover */
-}
+   .sticky-note-card.yellow { background: linear-gradient(135deg, #fffbeb, #fef3c7); border: 1px solid #fde68a; }
+   .sticky-note-card.blue { background: linear-gradient(135deg, #eff6ff, #dbeafe); border: 1px solid #bfdbfe; }
+   .sticky-note-card.red { background: linear-gradient(135deg, #fef2f2, #fee2e2); border: 1px solid #fecaca; }
+   .sticky-note-card.gray { background: linear-gradient(135deg, #f8fafc, #f1f5f9); border: 1px solid #e2e8f0; }
+   .sticky-note-card.purple { background: linear-gradient(135deg, #faf5ff, #f3e8ff); border: 1px solid #e9d5ff; }
+   .sticky-note-card.green { background: linear-gradient(135deg, #f0fdf4, #dcfce7); border: 1px solid #bbf7d0; }
 
-/* Section headers/ parent menu items with toggle */
-.menu-item.has-sub > .menu-link,
-.menu-item .menu-toggle {
-    font-weight: 650 !important;
-}
+   .sticky-note-card p {
+       margin: 0 0 8px;
+       font-size: 0.9rem;
+       font-weight: 600;
+       line-height: 1.4;
+       white-space: pre-line;
+   }
 
-/* Ensure submenu items are also bold */
-.menu-sub .menu-link {
-    font-weight: 600 !important;
-}
+   .sticky-note-meta {
+       font-size: 0.72rem;
+       font-weight: 650;
+       color: #64748b;
+   }
 
-/* Department submenu items fix */
-.menu-sub .menu-sub .menu-link,
-.menu-sub .menu-sub .menu-link div {
-    font-weight: 600 !important;
-}
+   /* Sticky Notes Dark Mode Styling */
+   html[data-pms-theme="dark"] .sticky-note-card,
+   html[data-theme="dark"] .sticky-note-card,
+   [data-pms-theme="dark"] .sticky-note-card {
+       color: #EEF1FB !important;
+       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35) !important;
+   }
 
-/* Override any existing font weights */
-.app-brand-text {
-    font-weight: 800 !important; /* Keep brand text extra bold */
-}
+   html[data-pms-theme="dark"] .sticky-note-card p,
+   html[data-theme="dark"] .sticky-note-card p,
+   [data-pms-theme="dark"] .sticky-note-card p {
+       color: #F8FAFC !important;
+   }
 
-/* Ensure all sidebar text is visible */
-.menu-text,
-[data-i18n] {
-    font-weight: 600 !important;
-}
+   html[data-pms-theme="dark"] .sticky-note-card .sticky-note-meta,
+   html[data-theme="dark"] .sticky-note-card .sticky-note-meta,
+   [data-pms-theme="dark"] .sticky-note-card .sticky-note-meta {
+       color: rgba(248, 250, 252, 0.75) !important;
+   }
 
-/* Fix for the department toggle text */
-.menu-item .menu-toggle .text-truncate,
-.menu-item.has-sub .menu-link .text-truncate {
-    font-weight: 650 !important;
-}
+   html[data-pms-theme="dark"] .sticky-note-card.yellow,
+   html[data-theme="dark"] .sticky-note-card.yellow,
+   [data-pms-theme="dark"] .sticky-note-card.yellow {
+       background: linear-gradient(135deg, rgba(245, 158, 11, 0.22), rgba(180, 83, 9, 0.35)) !important;
+       border: 1px solid rgba(245, 158, 11, 0.5) !important;
+   }
 
-.sticky-note-trigger {
-    position: relative;
-}
+   html[data-pms-theme="dark"] .sticky-note-card.blue,
+   html[data-theme="dark"] .sticky-note-card.blue,
+   [data-pms-theme="dark"] .sticky-note-card.blue {
+       background: linear-gradient(135deg, rgba(59, 130, 246, 0.22), rgba(29, 78, 216, 0.35)) !important;
+       border: 1px solid rgba(59, 130, 246, 0.5) !important;
+   }
 
-.sticky-note-count {
-    position: absolute;
-    top: -8px;
-    right: -10px;
-    min-width: 18px;
-    height: 18px;
-    padding: 0 5px;
-    border-radius: 999px;
-    background: #ef4444;
-    color: #fff;
-    font-size: 11px;
-    font-weight: 800;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 6px 14px rgba(239, 68, 68, 0.28);
-}
+   html[data-pms-theme="dark"] .sticky-note-card.red,
+   html[data-theme="dark"] .sticky-note-card.red,
+   [data-pms-theme="dark"] .sticky-note-card.red {
+       background: linear-gradient(135deg, rgba(239, 68, 68, 0.22), rgba(185, 28, 28, 0.35)) !important;
+       border: 1px solid rgba(239, 68, 68, 0.5) !important;
+   }
 
-.sidebar-notification-badge {
-    margin-left: auto;
-    min-width: 18px;
-    height: 18px;
-    padding: 0 5px;
-    border-radius: 999px;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    font-size: 10px;
-    font-weight: 800;
-    line-height: 1;
-    color: #fff;
-    background: #7C3AED;
-    box-shadow: 0 6px 14px rgba(124, 58, 237, 0.18);
-}
+   html[data-pms-theme="dark"] .sticky-note-card.gray,
+   html[data-theme="dark"] .sticky-note-card.gray,
+   [data-pms-theme="dark"] .sticky-note-card.gray {
+       background: linear-gradient(135deg, rgba(148, 163, 184, 0.2), rgba(71, 85, 105, 0.35)) !important;
+       border: 1px solid rgba(148, 163, 184, 0.5) !important;
+   }
 
-.sidebar-notification-badge.is-visible {
-    display: inline-flex;
-}
+   html[data-pms-theme="dark"] .sticky-note-card.purple,
+   html[data-theme="dark"] .sticky-note-card.purple,
+   [data-pms-theme="dark"] .sticky-note-card.purple {
+       background: linear-gradient(135deg, rgba(168, 85, 247, 0.22), rgba(126, 34, 206, 0.35)) !important;
+       border: 1px solid rgba(168, 85, 247, 0.5) !important;
+   }
 
-.sidebar-notification-badge.type-new { background: #2563eb; }
-.sidebar-notification-badge.type-pending { background: #f59e0b; }
-.sidebar-notification-badge.type-issue { background: #ef4444; }
-.sidebar-notification-badge.type-warning { background: #d97706; }
-.sidebar-notification-badge.type-unread { background: #7C3AED; }
+   html[data-pms-theme="dark"] .sticky-note-card.green,
+   html[data-theme="dark"] .sticky-note-card.green,
+   [data-pms-theme="dark"] .sticky-note-card.green {
+       background: linear-gradient(135deg, rgba(47, 107, 255, 0.22), rgba(4, 120, 87, 0.35)) !important;
+       border: 1px solid rgba(47, 107, 255, 0.5) !important;
+   }
 
-.notification-bell {
-    position: relative;
-    width: 42px;
-    height: 42px;
-    border-radius: 14px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background: #f8fafc;
-    border: 1px solid rgba(15, 23, 42, 0.08);
-    transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
-}
+   html[data-pms-theme="dark"] .sticky-note-actions button,
+   html[data-theme="dark"] .sticky-note-actions button,
+   [data-pms-theme="dark"] .sticky-note-actions button {
+       background: rgba(255, 255, 255, 0.15) !important;
+       color: #F8FAFC !important;
+       border: 1px solid rgba(255, 255, 255, 0.25) !important;
+   }
 
-.notification-bell:hover {
-    background: #eef2ff;
-    box-shadow: 0 12px 30px rgba(79, 70, 229, 0.16);
-    transform: translateY(-1px);
-}
+   html[data-pms-theme="dark"] .sticky-note-actions button:hover,
+   html[data-theme="dark"] .sticky-note-actions button:hover,
+   [data-pms-theme="dark"] .sticky-note-actions button:hover {
+       background: rgba(255, 255, 255, 0.35) !important;
+       color: #FFFFFF !important;
+   }
 
-.notification-bell.has-unread {
-    color: #4f46e5;
-    animation: notificationBellPulse 1.8s ease-in-out infinite;
-}
+   html[data-pms-theme="dark"] #addNoteModal .form-control,
+   html[data-theme="dark"] #addNoteModal .form-control,
+   [data-pms-theme="dark"] #addNoteModal .form-control,
+   html[data-pms-theme="dark"] #addNoteModal .form-select,
+   html[data-theme="dark"] #addNoteModal .form-select,
+   [data-pms-theme="dark"] #addNoteModal .form-select {
+       background-color: #141B3D !important;
+       color: #EEF1FB !important;
+       border-color: rgba(238, 241, 251, 0.16) !important;
+   }
 
-.notification-bell .badge {
-    position: absolute;
-    top: -6px;
-    right: -6px;
-    min-width: 20px;
-    height: 20px;
-    border-radius: 999px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 11px;
-    font-weight: 900;
-    border: 2px solid #fff;
-}
+   html[data-pms-theme="dark"] #addNoteModal .form-label,
+   html[data-theme="dark"] #addNoteModal .form-label,
+   [data-pms-theme="dark"] #addNoteModal .form-label,
+   html[data-pms-theme="dark"] #addNoteModal h6,
+   html[data-theme="dark"] #addNoteModal h6,
+   [data-pms-theme="dark"] #addNoteModal h6 {
+       color: #EEF1FB !important;
+   }
 
-.notification-dropdown {
-    width: min(430px, calc(100vw - 24px)) !important;
-    max-height: 560px;
-    overflow: hidden;
-    border-radius: 18px;
-}
+   html[data-pms-theme="dark"] #addNoteModal .btn-close,
+   html[data-theme="dark"] #addNoteModal .btn-close,
+   [data-pms-theme="dark"] #addNoteModal .btn-close {
+       filter: invert(1) grayscale(100%) brightness(200%) !important;
+   }
 
-.notification-dropdown-head {
-    padding: 16px 18px;
-    background: linear-gradient(135deg, #f8fafc, #eef2ff);
-    border-bottom: 1px solid rgba(15, 23, 42, 0.08);
-}
+   .sticky-note-actions {
+       position: absolute;
+       top: 8px;
+       right: 8px;
+       display: flex;
+       gap: 4px;
+   }
 
-.notification-dropdown-body {
-    max-height: 410px;
-    overflow-y: auto;
-    padding: 8px;
-}
+   .sticky-note-actions button {
+       width: 24px;
+       height: 24px;
+       border: 0;
+       border-radius: 6px;
+       background: rgba(255, 255, 255, 0.75);
+       color: #1e293b;
+       display: inline-flex;
+       align-items: center;
+       justify-content: center;
+       cursor: pointer;
+   }
 
-.notification-card-link {
-    display: grid;
-    grid-template-columns: 44px 1fr auto;
-    gap: 12px;
-    align-items: start;
-    padding: 12px;
-    border-radius: 14px;
-    text-decoration: none;
-    color: inherit;
-    border: 1px solid transparent;
-    transition: background .16s ease, border-color .16s ease, transform .16s ease;
-}
+   .sticky-notes-grid {
+       display: grid;
+       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+       gap: 14px;
+   }
 
-.notification-card-link:hover {
-    background: #f8fafc;
-    border-color: rgba(79, 70, 229, 0.14);
-    transform: translateY(-1px);
-    color: inherit;
-}
+   /* ===================== DARK MODE SUPPORT ===================== */
+   html[data-pms-theme="dark"],
+   html[data-theme="dark"],
+   html[data-bs-theme="dark"],
+   body[data-pms-theme="dark"],
+   body.dark-mode,
+   [data-pms-theme="dark"],
+   [data-theme="dark"] {
+       --bx-blue-primary: #2F6BFF;
+       --bx-blue-hover: #4F83FF;
+       --bx-blue-soft: rgba(47, 107, 255, 0.18);
+       --bx-blue-subtle: rgba(47, 107, 255, 0.08);
+       --bx-surface: #0F1530;
+       --bx-surface-soft: #141B3D;
+       --bx-surface-subtle: #1A2247;
+       --bx-text-heading: #EEF1FB;
+       --bx-text-body: #CBD5E1;
+       --bx-text-secondary: #9AA3C7;
+       --bx-text-muted: #6B739A;
+       --bx-text-faint: #4B5578;
+       --bx-border-subtle: rgba(238, 241, 251, 0.09);
+       --bx-border-soft: rgba(238, 241, 251, 0.16);
+       --bx-border-focus: rgba(47, 107, 255, 0.5);
+       --bx-navbar-bg: rgba(15, 21, 48, 0.94);
+   }
 
-.notification-card-link.is-unread {
-    background: #eef2ff;
-    border-color: rgba(79, 70, 229, 0.18);
-}
+   /* Layout & Navbar */
+   html[data-pms-theme="dark"] #layout-navbar,
+   html[data-theme="dark"] #layout-navbar,
+   html[data-bs-theme="dark"] #layout-navbar,
+   [data-pms-theme="dark"] #layout-navbar,
+   body.dark-mode #layout-navbar {
+       background: rgba(15, 21, 48, 0.94) !important;
+       border-color: rgba(238, 241, 251, 0.09) !important;
+       color: #CBD5E1 !important;
+   }
 
-.notification-avatar-icon {
-    width: 44px;
-    height: 44px;
-    border-radius: 14px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    font-size: 17px;
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
-    box-shadow: 0 10px 22px rgba(99, 102, 241, 0.24);
-}
+   html[data-pms-theme="dark"] #layout-navbar .fw-bold,
+   html[data-theme="dark"] #layout-navbar .fw-bold,
+   [data-pms-theme="dark"] #layout-navbar .fw-bold {
+       color: #EEF1FB !important;
+   }
 
-.notification-avatar-icon.color-warning { background: linear-gradient(135deg, #f59e0b, #f97316); }
-.notification-avatar-icon.color-success { background: linear-gradient(135deg, #10b981, #059669); }
-.notification-avatar-icon.color-danger { background: linear-gradient(135deg, #ef4444, #dc2626); }
-.notification-avatar-icon.color-info { background: linear-gradient(135deg, #06b6d4, #2563eb); }
+   html[data-pms-theme="dark"] #layout-navbar .navbar-search-wrapper,
+   [data-pms-theme="dark"] #layout-navbar .navbar-search-wrapper {
+       color: #CBD5E1 !important;
+   }
 
-.notification-title {
-    display: block;
-    font-size: 14px;
-    font-weight: 900;
-    line-height: 1.25;
-    margin-bottom: 4px;
-}
+   html[data-pms-theme="dark"] #layout-navbar .navbar-search-wrapper input,
+   [data-pms-theme="dark"] #layout-navbar .navbar-search-wrapper input {
+       background: #141B3D !important;
+       border: 1px solid rgba(238, 241, 251, 0.1) !important;
+       color: #EEF1FB !important;
+   }
 
-.notification-message {
-    display: block;
-    font-size: 12px;
-    color: #64748b;
-    line-height: 1.35;
-    margin-bottom: 6px;
-}
+   html[data-pms-theme="dark"] #layout-navbar .navbar-search-wrapper input::placeholder,
+   [data-pms-theme="dark"] #layout-navbar .navbar-search-wrapper input::placeholder {
+       color: #9AA3C7 !important;
+   }
 
-.notification-time {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 11px;
-    color: #94a3b8;
-    font-weight: 800;
-}
+   /* Header Icons */
+   html[data-pms-theme="dark"] .header-icon-box,
+   html[data-theme="dark"] .header-icon-box,
+   html[data-pms-theme="dark"] .theme-toggle-btn,
+   html[data-theme="dark"] .theme-toggle-btn,
+   html[data-pms-theme="dark"] .notification-bell,
+   html[data-theme="dark"] .notification-bell,
+   [data-pms-theme="dark"] .header-icon-box,
+   [data-pms-theme="dark"] .theme-toggle-btn,
+   [data-pms-theme="dark"] .notification-bell,
+   body.dark-mode .header-icon-box,
+   body.dark-mode .theme-toggle-btn,
+   body.dark-mode .notification-bell {
+       background: #141B3D !important;
+       border-color: rgba(238, 241, 251, 0.1) !important;
+       color: #CBD5E1 !important;
+   }
 
-.notification-unread-dot {
-    width: 9px;
-    height: 9px;
-    margin-top: 17px;
-    border-radius: 50%;
-    background: #4f46e5;
-    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.12);
-}
+   html[data-pms-theme="dark"] .header-icon-box:hover,
+   html[data-theme="dark"] .header-icon-box:hover,
+   html[data-pms-theme="dark"] .theme-toggle-btn:hover,
+   html[data-theme="dark"] .theme-toggle-btn:hover,
+   html[data-pms-theme="dark"] .notification-bell:hover,
+   html[data-theme="dark"] .notification-bell:hover,
+   [data-pms-theme="dark"] .header-icon-box:hover,
+   [data-pms-theme="dark"] .theme-toggle-btn:hover,
+   [data-pms-theme="dark"] .notification-bell:hover {
+       background: #1A2247 !important;
+       border-color: rgba(47, 107, 255, 0.35) !important;
+       color: #2F6BFF !important;
+   }
 
-.notification-dropdown-foot {
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
-    padding: 12px 16px;
-    border-top: 1px solid rgba(15, 23, 42, 0.08);
-    background: #fff;
-}
+   html[data-pms-theme="dark"] .header-icon-box i,
+   html[data-pms-theme="dark"] .header-icon-box i.text-dark,
+   html[data-pms-theme="dark"] .header-icon-box i.text-dark-grey,
+   [data-pms-theme="dark"] .header-icon-box i,
+   [data-pms-theme="dark"] .header-icon-box i.text-dark,
+   [data-pms-theme="dark"] .header-icon-box i.text-dark-grey,
+   body.dark-mode .header-icon-box i,
+   body.dark-mode .header-icon-box i.text-dark,
+   body.dark-mode .header-icon-box i.text-dark-grey {
+       color: #CBD5E1 !important;
+   }
 
-@keyframes notificationBellPulse {
-    0%, 100% { box-shadow: 0 0 0 rgba(79, 70, 229, 0); }
-    50% { box-shadow: 0 0 0 8px rgba(79, 70, 229, 0.08); }
-}
+   html[data-pms-theme="dark"] .header-icon-box:hover i,
+   html[data-pms-theme="dark"] .header-icon-box:hover i.text-dark,
+   [data-pms-theme="dark"] .header-icon-box:hover i {
+       color: #2F6BFF !important;
+   }
 
-.menu-link.sidebar-has-important {
-    position: relative;
-}
+   /* Sidebar Menu */
+   html[data-pms-theme="dark"] .layout-menu,
+   html[data-theme="dark"] .layout-menu,
+   html[data-bs-theme="dark"] .layout-menu,
+   [data-pms-theme="dark"] .layout-menu,
+   body.dark-mode .layout-menu {
+       background: #0B1026 !important;
+       border-color: rgba(238, 241, 251, 0.09) !important;
+   }
 
-.menu-link.sidebar-has-important::before {
-    content: "";
-    position: absolute;
-    inset: 7px 8px 7px auto;
-    width: 3px;
-    border-radius: 999px;
-    background: currentColor;
-    opacity: 0.55;
-    animation: sidebarBadgeGlow 1.65s ease-in-out infinite;
-}
+   html[data-pms-theme="dark"] .bg-menu-theme,
+   html[data-theme="dark"] .bg-menu-theme,
+   [data-pms-theme="dark"] .bg-menu-theme,
+   body.dark-mode .bg-menu-theme {
+       background: #0B1026 !important;
+   }
 
-.menu-item.sidebar-has-important-item > .menu-link {
-    background: rgba(245, 158, 11, 0.08);
-}
+   html[data-pms-theme="dark"] .app-brand,
+   html[data-theme="dark"] .app-brand,
+   [data-pms-theme="dark"] .app-brand,
+   body.dark-mode .app-brand {
+       background: #0B1026 !important;
+       border-color: rgba(238, 241, 251, 0.09) !important;
+   }
 
-@keyframes sidebarBadgeGlow {
-    0%, 100% { opacity: 0.35; box-shadow: 0 0 0 rgba(124, 58, 237, 0); }
-    50% { opacity: 0.9; box-shadow: 0 0 12px rgba(124, 58, 237, 0.45); }
-}
+   html[data-pms-theme="dark"] .app-brand-text.demo,
+   html[data-theme="dark"] .app-brand-text.demo,
+   [data-pms-theme="dark"] .app-brand-text.demo {
+       color: #EEF1FB !important;
+   }
 
-.sticky-note-dock {
-    position: fixed;
-    right: 22px;
-    bottom: 22px;
-    z-index: 1025;
-    width: min(340px, calc(100vw - 32px));
-    display: grid;
-    gap: 12px;
-    pointer-events: none;
-}
+   html[data-pms-theme="dark"] .menu-inner .menu-item .menu-link,
+   html[data-theme="dark"] .menu-inner .menu-item .menu-link,
+   [data-pms-theme="dark"] .menu-inner .menu-item .menu-link,
+   body.dark-mode .menu-inner .menu-item .menu-link {
+       color: #CBD5E1 !important;
+   }
 
-.sticky-note-card {
-    pointer-events: auto;
-    position: relative;
-    padding: 16px 16px 14px;
-    border-radius: 8px 8px 18px 8px;
-    color: #243029;
-    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.16);
-    transform-origin: top left;
-    animation: stickyFloatIn 0.55s ease both, stickySway 4.5s ease-in-out infinite;
-    overflow: hidden;
-}
+   html[data-pms-theme="dark"] .menu-inner .menu-item .menu-link i,
+   html[data-pms-theme="dark"] .menu-inner .menu-item .menu-link .menu-icon,
+   [data-pms-theme="dark"] .menu-inner .menu-item .menu-link i,
+   [data-pms-theme="dark"] .menu-inner .menu-item .menu-link .menu-icon {
+       color: #9AA3C7 !important;
+   }
 
-.sticky-note-card::before {
-    content: "";
-    position: absolute;
-    inset: 0 0 auto;
-    height: 10px;
-    background: rgba(255, 255, 255, 0.38);
-}
+   html[data-pms-theme="dark"] .menu-inner .menu-item:hover > .menu-link,
+   [data-pms-theme="dark"] .menu-inner .menu-item:hover > .menu-link {
+       background-color: #141B3D !important;
+       color: #EEF1FB !important;
+   }
 
-.sticky-note-card:nth-child(2n) {
-    animation-delay: 0.08s, 0.2s;
-    transform: rotate(1deg);
-}
+   html[data-pms-theme="dark"] .menu-inner .menu-item:hover > .menu-link i,
+   html[data-pms-theme="dark"] .menu-inner .menu-item:hover > .menu-link .menu-icon,
+   [data-pms-theme="dark"] .menu-inner .menu-item:hover > .menu-link i {
+       color: #2F6BFF !important;
+   }
 
-.sticky-note-card:nth-child(3n) {
-    animation-delay: 0.14s, 0.35s;
-    transform: rotate(-1deg);
-}
+   html[data-pms-theme="dark"] .menu-inner .menu-item.active > .menu-link,
+   [data-pms-theme="dark"] .menu-inner .menu-item.active > .menu-link {
+       background: rgba(47, 107, 255, 0.18) !important;
+       color: #60A5FA !important;
+       font-weight: 700 !important;
+       box-shadow: inset 3px 0 0 #2F6BFF !important;
+   }
 
-.sticky-note-card.yellow { background: linear-gradient(135deg, #fff7ad, #fde68a); }
-.sticky-note-card.blue { background: linear-gradient(135deg, #bfdbfe, #93c5fd); }
-.sticky-note-card.red { background: linear-gradient(135deg, #fecaca, #fca5a5); }
-.sticky-note-card.gray { background: linear-gradient(135deg, #f1f5f9, #cbd5e1); }
-.sticky-note-card.purple { background: linear-gradient(135deg, #ddd6fe, #c4b5fd); }
-.sticky-note-card.green { background: linear-gradient(135deg, #bbf7d0, #86efac); }
+   html[data-pms-theme="dark"] .menu-inner .menu-item.active > .menu-link i,
+   html[data-pms-theme="dark"] .menu-inner .menu-item.active > .menu-link .menu-icon,
+   [data-pms-theme="dark"] .menu-inner .menu-item.active > .menu-link i {
+       color: #2F6BFF !important;
+   }
 
-.sticky-note-card p {
-    margin: 0 0 10px;
-    font-size: 0.94rem;
-    font-weight: 650;
-    line-height: 1.35;
-    white-space: pre-line;
-}
+   html[data-pms-theme="dark"] .menu-inner .menu-item.open > .menu-link,
+   [data-pms-theme="dark"] .menu-inner .menu-item.open > .menu-link {
+       background-color: #141B3D !important;
+       color: #EEF1FB !important;
+   }
 
-.sticky-note-meta {
-    font-size: 0.72rem;
-    font-weight: 700;
-    color: rgba(31, 41, 55, 0.62);
-}
+   html[data-pms-theme="dark"] .menu-inner .menu-item.open > .menu-link i,
+   [data-pms-theme="dark"] .menu-inner .menu-item.open > .menu-link i {
+       color: #2F6BFF !important;
+   }
 
-.sticky-note-actions {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    display: flex;
-    gap: 4px;
-}
+   html[data-pms-theme="dark"] .menu-sub,
+   [data-pms-theme="dark"] .menu-sub {
+       background: rgba(7, 11, 26, 0.5) !important;
+       border-radius: 8px;
+   }
 
-.sticky-note-actions button {
-    width: 26px;
-    height: 26px;
-    border: 0;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.58);
-    color: #1f2937;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
+   html[data-pms-theme="dark"] .menu-sub .menu-item .menu-link,
+   [data-pms-theme="dark"] .menu-sub .menu-item .menu-link {
+       color: #9AA3C7 !important;
+   }
 
-.sticky-notes-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-    gap: 14px;
-}
+   html[data-pms-theme="dark"] .menu-sub .menu-item:hover .menu-link,
+   [data-pms-theme="dark"] .menu-sub .menu-item:hover .menu-link {
+       color: #EEF1FB !important;
+       background-color: #141B3D !important;
+   }
 
-@keyframes stickyFloatIn {
-    from { opacity: 0; transform: translateY(18px) rotate(-2deg) scale(0.96); }
-    to { opacity: 1; transform: translateY(0) rotate(var(--note-tilt, 0deg)) scale(1); }
-}
+   html[data-pms-theme="dark"] .menu-sub .menu-item.active .menu-link,
+   [data-pms-theme="dark"] .menu-sub .menu-item.active .menu-link {
+       color: #2F6BFF !important;
+       background: rgba(47, 107, 255, 0.16) !important;
+       box-shadow: inset 2px 0 0 #2F6BFF !important;
+   }
 
-@keyframes stickySway {
-    0%, 100% { translate: 0 0; }
-    50% { translate: 0 -4px; }
-}
+   html[data-pms-theme="dark"] .menu-header-text,
+   [data-pms-theme="dark"] .menu-header-text {
+       color: #6B739A !important;
+   }
 
-@media (max-width: 768px) {
-    .sticky-note-dock {
-        left: 12px;
-        right: 12px;
-        bottom: 12px;
-        width: auto;
+   /* Dropdowns in Dark Mode */
+   html[data-pms-theme="dark"] .dropdown-menu,
+   html[data-theme="dark"] .dropdown-menu,
+   html[data-bs-theme="dark"] .dropdown-menu,
+   [data-pms-theme="dark"] .dropdown-menu,
+   body.dark-mode .dropdown-menu {
+       background: #0F1530 !important;
+       border-color: rgba(238, 241, 251, 0.12) !important;
+       box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6) !important;
+       color: #CBD5E1 !important;
+   }
+
+   html[data-pms-theme="dark"] .dropdown-item,
+   html[data-pms-theme="dark"] .dropdown-item.text-dark,
+   [data-pms-theme="dark"] .dropdown-item,
+   [data-pms-theme="dark"] .dropdown-item.text-dark {
+       color: #CBD5E1 !important;
+   }
+
+   html[data-pms-theme="dark"] .dropdown-item:hover,
+   [data-pms-theme="dark"] .dropdown-item:hover {
+       background-color: #141B3D !important;
+       color: #2F6BFF !important;
+   }
+
+   html[data-pms-theme="dark"] .dropdown-item:hover i,
+   [data-pms-theme="dark"] .dropdown-item:hover i {
+       color: #2F6BFF !important;
+   }
+
+   html[data-pms-theme="dark"] .dropdown-header,
+   [data-pms-theme="dark"] .dropdown-header {
+       color: #9AA3C7 !important;
+   }
+
+   html[data-pms-theme="dark"] .dropdown-divider,
+   [data-pms-theme="dark"] .dropdown-divider {
+       border-color: rgba(238, 241, 251, 0.09) !important;
+   }
+
+   html[data-pms-theme="dark"] .dropdown-menu .bg-white,
+   html[data-pms-theme="dark"] .dropdown-menu li.bg-white,
+   [data-pms-theme="dark"] .dropdown-menu .bg-white,
+   [data-pms-theme="dark"] .dropdown-menu li.bg-white {
+       background-color: #141B3D !important;
+       color: #EEF1FB !important;
+   }
+
+   html[data-pms-theme="dark"] .dropdown-menu .text-dark,
+   [data-pms-theme="dark"] .dropdown-menu .text-dark {
+       color: #EEF1FB !important;
+   }
+
+   /* Modals in Dark Mode */
+   html[data-pms-theme="dark"] .modal-content,
+   html[data-theme="dark"] .modal-content,
+   html[data-bs-theme="dark"] .modal-content,
+   [data-pms-theme="dark"] .modal-content,
+   body.dark-mode .modal-content {
+       background-color: #0F1530 !important;
+       color: #CBD5E1 !important;
+       border-color: rgba(238, 241, 251, 0.12) !important;
+       box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.7) !important;
+   }
+
+   html[data-pms-theme="dark"] .modal-header,
+   html[data-theme="dark"] .modal-header,
+   html[data-pms-theme="dark"] .modal-footer,
+   html[data-theme="dark"] .modal-footer {
+       border-color: rgba(238, 241, 251, 0.09) !important;
+   }
+
+   html[data-pms-theme="dark"] .modal-title,
+   html[data-theme="dark"] .modal-title {
+       color: #EEF1FB !important;
+   }
+
+   html[data-pms-theme="dark"] .notification-dropdown-head,
+   html[data-theme="dark"] .notification-dropdown-head {
+       background: #141B3D !important;
+       border-color: rgba(238, 241, 251, 0.09) !important;
+   }
+
+   html[data-pms-theme="dark"] .notification-dropdown-foot,
+   html[data-theme="dark"] .notification-dropdown-foot {
+       background: #0F1530 !important;
+       border-color: rgba(238, 241, 251, 0.09) !important;
+   }
+
+   html[data-pms-theme="dark"] .notification-title,
+   html[data-theme="dark"] .notification-title {
+       color: #EEF1FB !important;
+   }
+
+   html[data-pms-theme="dark"] .notification-message,
+   html[data-theme="dark"] .notification-message {
+       color: #9AA3C7 !important;
+   }
+
+   html[data-pms-theme="dark"] .notification-card-link:hover,
+   html[data-theme="dark"] .notification-card-link:hover {
+       background: #141B3D !important;
+   }
+
+   @media (max-width: 992px) {
+       #layout-navbar {
+           padding: 0.5rem 0.75rem;
+       }
+       #layout-navbar input[type="text"] {
+           display: none !important;
+       }
+   }
+    /* Global Fix: Ensure all inline Add buttons (in input groups & flex containers) have ample size, minimum width, and never squish */
+    .d-flex > button,
+    .input-group > button,
+    .d-flex > .btn,
+    .input-group > .btn {
+        flex-shrink: 0 !important;
+        white-space: nowrap !important;
+        min-width: 76px;
+        padding-left: 0.9rem !important;
+        padding-right: 0.9rem !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
     }
-}
-
 </style>
 @php
     $adminRefreshVersion = file_exists(public_path('admin/assets/css/pms-refresh.css')) ? filemtime(public_path('admin/assets/css/pms-refresh.css')) : time();
     $logoVersion = file_exists(public_path('logo.png')) ? filemtime(public_path('logo.png')) : time();
     $companySetting = \App\Models\CompanySetting::first();
-    $brandLogo = $currentCompany?->logo ? asset($currentCompany->logo) : ($companySetting?->company_logo ? asset($companySetting->company_logo) : asset('logo.png') . '?v=' . $logoVersion);
+    $resolvedLogo = null;
+    if (!empty($currentCompany?->logo) && file_exists(public_path($currentCompany->logo))) {
+        $resolvedLogo = asset($currentCompany->logo);
+    } elseif (!empty($companySetting?->company_logo) && file_exists(public_path($companySetting->company_logo))) {
+        $resolvedLogo = asset($companySetting->company_logo);
+    } elseif (file_exists(public_path('logo.png'))) {
+        $resolvedLogo = asset('logo.png') . '?v=' . $logoVersion;
+    } elseif (file_exists(public_path('logos/bitroxia_logo.png'))) {
+        $resolvedLogo = asset('logos/bitroxia_logo.png');
+    } else {
+        $resolvedLogo = asset('logo.png');
+    }
+    $brandLogo = $resolvedLogo;
     $brandName = $currentCompany?->brand_name ?? ($companySetting?->company_name ?? 'Bitroxia');
 @endphp
 <link rel="stylesheet" href="{{ asset('admin/assets/css/pms-refresh.css') }}?v={{ $adminRefreshVersion }}">
@@ -924,8 +1307,8 @@
     $canAnyModule = fn (array $slugs) => collect($slugs)->contains(fn ($slug) => $canSeeModule($slug));
     $isEmployeeUser = strtolower((string) auth()->user()?->role) === 'employee';
     try {
-        $navbarNotifications = auth()->user()->notifications()->latest()->take(8)->get();
-        $navbarUnreadCount = auth()->user()->unreadNotifications()->count();
+        $navbarNotifications = auth()->user()?->notifications()->latest()->take(8)->get() ?? collect();
+        $navbarUnreadCount = auth()->user()?->unreadNotifications()->count() ?? 0;
     } catch (\Throwable $e) {
         $navbarNotifications = collect();
         $navbarUnreadCount = 0;
@@ -1010,7 +1393,7 @@
           <div class="app-brand demo">
             <a href="{{ route('dashboard') }}" class="app-brand-link">
               <span class="app-brand-logo demo">
-                <img src="{{ $brandLogo }}" alt="{{ $brandName }} logo">
+                <img src="{{ $brandLogo }}" alt="{{ $brandName }} logo" onerror="this.onerror=null;this.src='{{ asset('logo.png') }}';">
               </span>
               <span class="app-brand-text demo menu-text fw-bold ms-2">{{ $brandName }}</span>
             </a>
@@ -1059,13 +1442,10 @@
                     </a>
                 </li>
                 <li class="menu-item">
-                    <form method="POST" action="{{ route('logout') }}" id="sidebarSuspendedLogoutForm">
-                        @csrf
-                        <a href="javascript:void(0);" onclick="document.getElementById('sidebarSuspendedLogoutForm').submit();" class="menu-link text-muted">
-                            <i class="menu-icon tf-icons bx bx-log-out"></i>
-                            <div class="text-truncate">Log Out</div>
-                        </a>
-                    </form>
+                    <a href="{{ route('logout.get') }}" class="menu-link text-muted">
+                        <i class="menu-icon tf-icons bx bx-log-out"></i>
+                        <div class="text-truncate">Log Out</div>
+                    </a>
                 </li>
             @else
 
@@ -1207,7 +1587,7 @@
                     <li class="menu-item {{ (request()->routeIs('attendance.*') && !request()->routeIs('attendance.report')) ? 'active' : '' }}">
                           <a href="{{ route('attendance.index') }}" class="menu-link" data-sidebar-key="attendance">
                             <div class="text-truncate" data-i18n="Without menu">
-                              {{ auth()->user()->role == 'admin' ? 'Attendance' : 'My Attendance' }}
+                              {{ in_array(strtolower((string)(auth()->user()->role ?? '')), ['admin', 'superadmin', 'administrator'], true) ? 'Attendance' : 'My Attendance' }}
                             </div>
                           </a>
                     </li>
@@ -1215,9 +1595,14 @@
 
 
                 @if($canSeeModule('leaves'))
-                <li class="menu-item {{ request()->routeIs('leaves.*') ? 'active' : '' }}">
+                <li class="menu-item {{ (request()->routeIs('leaves.index') || request()->routeIs('leaves.show') || request()->routeIs('leaves.calendar') || request()->routeIs('leaves.archive') || request()->routeIs('leaves.apology-letters.*')) ? 'active' : '' }}">
                 <a href="{{ route('leaves.index') }}" class="menu-link" data-sidebar-key="leaves">
                     <div class="text-truncate" data-i18n="Without navbar">My Leaves</div>
+                </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('leaves.create') ? 'active' : '' }}">
+                <a href="{{ route('leaves.create') }}" class="menu-link" data-sidebar-key="leaves-apply">
+                    <div class="text-truncate">Apply Leave</div>
                 </a>
                 </li>
                 @endif
@@ -1401,17 +1786,17 @@
                 <ul class="menu-sub">
                     @if($canSeeModule('payroll'))
                         <li class="menu-item {{ request()->routeIs('payroll.index') ? 'active' : '' }}">
-                            <a href="{{ route('payroll.index') }}" class="menu-link"><div>Payroll</div></a>
+                            <a href="{{ \Illuminate\Support\Facades\Route::has('payroll.index') ? route('payroll.index') : url('/payroll') }}" class="menu-link"><div>Dashboard</div></a>
+                        </li>
+                    @endif
+                    @if($canSeeModule('payroll'))
+                        <li class="menu-item {{ request()->routeIs('payroll.processing') ? 'active' : '' }}">
+                            <a href="{{ \Illuminate\Support\Facades\Route::has('payroll.processing') ? route('payroll.processing') : url('/payroll/processing') }}" class="menu-link"><div>Processing</div></a>
                         </li>
                     @endif
                     @if($canSeeModule('payroll-architectures'))
                         <li class="menu-item {{ request()->routeIs('payroll.architectures.*') ? 'active' : '' }}">
-                            <a href="{{ route('payroll.architectures.index') }}" class="menu-link"><div>Payroll Architectures</div></a>
-                        </li>
-                    @endif
-                    @if($canSeeModule('payslips'))
-                        <li class="menu-item {{ request()->routeIs('payroll.payslips.*') ? 'active' : '' }}">
-                            <a href="{{ route('payroll.payslips.index') }}" class="menu-link"><div>Payslips</div></a>
+                            <a href="{{ route('payroll.architectures.index') }}" class="menu-link"><div>Architectures</div></a>
                         </li>
                     @endif
                     @if($canSeeModule('salary-structures'))
@@ -1424,59 +1809,77 @@
                             <a href="{{ route('payroll.cycles.index') }}" class="menu-link"><div>Payroll Cycles</div></a>
                         </li>
                     @endif
-                    @if($canSeeModule('payroll-policies'))
-                        <li class="menu-item {{ request()->routeIs('payroll.policies.*') ? 'active' : '' }}">
-                            <a href="{{ route('payroll.policies.index') }}" class="menu-link"><div>Payroll Policies</div></a>
+                    @if($canSeeModule('payslips'))
+                        <li class="menu-item {{ request()->routeIs('payroll.payslips.*') ? 'active' : '' }}">
+                            <a href="{{ route('payroll.payslips.index') }}" class="menu-link"><div>Payslips</div></a>
                         </li>
                     @endif
-                    @if($canSeeModule('deduction-rules'))
-                        <li class="menu-item {{ request()->routeIs('payroll.deduction-rules.*') ? 'active' : '' }}">
-                            <a href="{{ route('payroll.deduction-rules.index') }}" class="menu-link"><div>Deduction Rules</div></a>
+
+                    {{-- ── Payroll Policies Nested Group ────────────────────── --}}
+                    @if($canAnyModule(['payroll-policies', 'deduction-rules', 'bonus-rules', 'tax-rules', 'overtime-rules', 'formula-builder', 'payroll-reports', 'payroll-import-export', 'payroll-archive', 'payroll-audit-logs']))
+                        <li class="menu-item {{ request()->routeIs('payroll.policies.*') || request()->routeIs('payroll.deduction-rules.*') || request()->routeIs('payroll.bonus-rules.*') || request()->routeIs('payroll.tax-rules.*') || request()->routeIs('payroll.overtime-rules.*') || request()->routeIs('payroll.formula-builder.*') || request()->routeIs('payroll.reports.*') || request()->routeIs('payroll.import-export.*') || request()->routeIs('payroll.archive.*') || request()->routeIs('payroll.audit-logs.*') ? 'active open' : '' }}">
+                            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                                <i class="menu-icon tf-icons bx bx-shield-quarter" style="margin-left:4px;font-size:13px;"></i>
+                                <div class="text-truncate">Payroll Policies</div>
+                            </a>
+                            <ul class="menu-sub">
+                                @if($canSeeModule('payroll-policies'))
+                                    <li class="menu-item {{ request()->routeIs('payroll.policies.*') ? 'active' : '' }}">
+                                        <a href="{{ route('payroll.policies.index') }}" class="menu-link"><div>Policy Engine</div></a>
+                                    </li>
+                                @endif
+                                @if($canSeeModule('deduction-rules'))
+                                    <li class="menu-item {{ request()->routeIs('payroll.deduction-rules.*') ? 'active' : '' }}">
+                                        <a href="{{ route('payroll.deduction-rules.index') }}" class="menu-link"><div>Deduction Rules</div></a>
+                                    </li>
+                                @endif
+                                @if($canSeeModule('bonus-rules'))
+                                    <li class="menu-item {{ request()->routeIs('payroll.bonus-rules.*') ? 'active' : '' }}">
+                                        <a href="{{ route('payroll.bonus-rules.index') }}" class="menu-link"><div>Bonus Rules</div></a>
+                                    </li>
+                                @endif
+                                @if($canSeeModule('tax-rules'))
+                                    <li class="menu-item {{ request()->routeIs('payroll.tax-rules.*') ? 'active' : '' }}">
+                                        <a href="{{ route('payroll.tax-rules.index') }}" class="menu-link"><div>Tax Rules</div></a>
+                                    </li>
+                                @endif
+                                @if($canSeeModule('overtime-rules'))
+                                    <li class="menu-item {{ request()->routeIs('payroll.overtime-rules.*') ? 'active' : '' }}">
+                                        <a href="{{ route('payroll.overtime-rules.index') }}" class="menu-link"><div>Overtime Rules</div></a>
+                                    </li>
+                                @endif
+                                @if($canSeeModule('formula-builder'))
+                                    <li class="menu-item {{ request()->routeIs('payroll.formula-builder.*') ? 'active' : '' }}">
+                                        <a href="{{ route('payroll.formula-builder.index') }}" class="menu-link"><div>Formula Builder</div></a>
+                                    </li>
+                                @endif
+                                @if($canSeeModule('payroll-reports'))
+                                    <li class="menu-item {{ request()->routeIs('payroll.reports.*') ? 'active' : '' }}">
+                                        <a href="{{ route('payroll.reports.index') }}" class="menu-link"><div>Reports</div></a>
+                                    </li>
+                                @endif
+                                @if($canSeeModule('payroll-import-export'))
+                                    <li class="menu-item {{ request()->routeIs('payroll.import-export.*') ? 'active' : '' }}">
+                                        <a href="{{ route('payroll.import-export.index') }}" class="menu-link"><div>Import / Export</div></a>
+                                    </li>
+                                @endif
+                                @if($canSeeModule('payroll-archive'))
+                                    <li class="menu-item {{ request()->routeIs('payroll.archive.*') ? 'active' : '' }}">
+                                        <a href="{{ route('payroll.archive.index') }}" class="menu-link"><div>Archive</div></a>
+                                    </li>
+                                @endif
+                                @if($canSeeModule('payroll-audit-logs'))
+                                    <li class="menu-item {{ request()->routeIs('payroll.audit-logs.*') ? 'active' : '' }}">
+                                        <a href="{{ route('payroll.audit-logs.index') }}" class="menu-link"><div>Audit Logs</div></a>
+                                    </li>
+                                @endif
+                            </ul>
                         </li>
                     @endif
-                    @if($canSeeModule('bonus-rules'))
-                        <li class="menu-item {{ request()->routeIs('payroll.bonus-rules.*') ? 'active' : '' }}">
-                            <a href="{{ route('payroll.bonus-rules.index') }}" class="menu-link"><div>Bonus Rules</div></a>
-                        </li>
-                    @endif
-                    @if($canSeeModule('tax-rules'))
-                        <li class="menu-item {{ request()->routeIs('payroll.tax-rules.*') ? 'active' : '' }}">
-                            <a href="{{ route('payroll.tax-rules.index') }}" class="menu-link"><div>Tax Rules</div></a>
-                        </li>
-                    @endif
-                    @if($canSeeModule('overtime-rules'))
-                        <li class="menu-item {{ request()->routeIs('payroll.overtime-rules.*') ? 'active' : '' }}">
-                            <a href="{{ route('payroll.overtime-rules.index') }}" class="menu-link"><div>Overtime Rules</div></a>
-                        </li>
-                    @endif
-                    @if($canSeeModule('formula-builder'))
-                        <li class="menu-item {{ request()->routeIs('payroll.formula-builder.*') ? 'active' : '' }}">
-                            <a href="{{ route('payroll.formula-builder.index') }}" class="menu-link"><div>Formula Builder</div></a>
-                        </li>
-                    @endif
-                    @if($canSeeModule('payroll-reports'))
-                        <li class="menu-item {{ request()->routeIs('payroll.reports.*') ? 'active' : '' }}">
-                            <a href="{{ route('payroll.reports.index') }}" class="menu-link"><div>Payroll Reports</div></a>
-                        </li>
-                    @endif
-                    @if($canSeeModule('payroll-import-export'))
-                        <li class="menu-item {{ request()->routeIs('payroll.import-export.*') ? 'active' : '' }}">
-                            <a href="{{ route('payroll.import-export.index') }}" class="menu-link"><div>Import Export</div></a>
-                        </li>
-                    @endif
-                    @if($canSeeModule('payroll-archive'))
-                        <li class="menu-item {{ request()->routeIs('payroll.archive.*') ? 'active' : '' }}">
-                            <a href="{{ route('payroll.archive.index') }}" class="menu-link"><div>Payroll Archive</div></a>
-                        </li>
-                    @endif
-                    @if($canSeeModule('payroll-audit-logs'))
-                        <li class="menu-item {{ request()->routeIs('payroll.audit-logs.*') ? 'active' : '' }}">
-                            <a href="{{ route('payroll.audit-logs.index') }}" class="menu-link"><div>Audit Logs</div></a>
-                        </li>
-                    @endif
+
                     @if($canSeeModule('payroll-settings'))
                         <li class="menu-item {{ request()->routeIs('payroll.settings.*') ? 'active' : '' }}">
-                            <a href="{{ route('payroll.settings.index') }}" class="menu-link"><div>Payroll Settings</div></a>
+                            <a href="{{ route('payroll.settings.index') }}" class="menu-link"><div>Settings</div></a>
                         </li>
                     @endif
                 </ul>
@@ -1906,7 +2309,8 @@
 
           <nav
             class="layout-navbar container-xxl navbar-detached navbar navbar-expand-xl align-items-center bg-navbar-theme"
-            id="layout-navbar">
+            id="layout-navbar"
+            style="position: sticky !important; top: 0.75rem !important; z-index: 1030 !important;">
             <div class="layout-menu-toggle navbar-nav align-items-xl-center me-4 me-xl-0 d-xl-none">
               <a class="nav-item nav-link px-0 me-xl-6" href="javascript:void(0)">
                 <i class="icon-base bx bx-menu icon-md"></i>
@@ -1915,7 +2319,7 @@
 
             <a href="{{ route('dashboard') }}" class="mobile-navbar-brand d-xl-none" aria-label="{{ $brandName }} dashboard">
               <span class="mobile-navbar-logo">
-                <img src="{{ $brandLogo }}" alt="">
+                <img src="{{ $brandLogo }}" alt="{{ $brandName }} logo" onerror="this.onerror=null;this.src='{{ asset('logo.png') }}';">
               </span>
             </a>
 
@@ -1950,7 +2354,7 @@
                   <!-- Sticky Note Icon -->
                   <div class="nav-item me-3">
                       <a href="javascript:void(0);" class="d-block header-icon-box sticky-note-trigger" data-bs-toggle="modal" data-bs-target="#addNoteModal" title="Sticky Notes">
-                          <i class="bx bx-note icon-md text-dark"></i>
+                          <i class="bx bx-note icon-md"></i>
                           @if($stickyNotes->count())
                             <span class="sticky-note-count">{{ $stickyNotes->count() }}</span>
                           @endif
@@ -1970,7 +2374,7 @@
                           <!-- Start Timer -->
                           <div class="nav-item me-3">
                           <a href="javascript:void(0);" class="d-block header-icon-box" data-bs-toggle="modal" data-bs-target="#startTimerModal" title="Start Timer">
-                              <i class="bx bx-time-five icon-md text-dark"></i>
+                              <i class="bx bx-time-five icon-md"></i>
                           </a>
                           </div>
                       @endif
@@ -1981,17 +2385,17 @@
                       <li class="nav-item dropdown" data-bs-toggle="tooltip" data-bs-placement="top" title="Create new">
                         <a class="d-block header-icon-box" href="#" id="createNewDropdown" role="button"
                            data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bx bx-plus-circle icon-md text-dark"></i>
+                            <i class="bx bx-plus-circle icon-md"></i>
                         </a>
 
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="createNewDropdown">
                             <li title="Add Task">
-                                <a class="dropdown-item f-14 text-dark openRightModal" href="{{ route('tasks.create') }}">
+                                <a class="dropdown-item f-14 openRightModal" href="{{ route('tasks.create') }}">
                                     <i class="bx bx-plus me-2"></i> Add Task
                                 </a>
                             </li>
                             <li title="Create Ticket">
-                                <a class="dropdown-item f-14 text-dark openRightModal" href="{{ route('tickets.create') }}">
+                                <a class="dropdown-item f-14 openRightModal" href="{{ route('tickets.create') }}">
                                     <i class="bx bx-plus me-2"></i> Create Ticket
                                 </a>
                             </li>
@@ -2003,7 +2407,7 @@
                       <li class="nav-item dropdown" data-bs-toggle="tooltip" data-bs-placement="top" title="Assigned work">
                         <a class="d-block header-icon-box sticky-note-trigger" href="#" id="assignedWorkDropdown" role="button"
                            data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bx bx-plus-circle icon-md text-dark"></i>
+                            <i class="bx bx-plus-circle icon-md"></i>
                             @php $assignedWorkCount = $assignedWorkProjects->count() + $assignedWorkTasks->count() + $assignedWorkTickets->count(); @endphp
                             @if($assignedWorkCount)
                               <span class="sticky-note-count">{{ $assignedWorkCount }}</span>
@@ -2011,7 +2415,7 @@
                         </a>
 
                         <ul class="dropdown-menu dropdown-menu-end p-0" aria-labelledby="assignedWorkDropdown" style="width: 380px; max-height: 520px; overflow-y: auto;">
-                            <li class="px-3 py-2 border-bottom bg-white">
+                            <li class="px-3 py-2 border-bottom">
                                 <p class="mb-0 fw-bold">Assigned Work</p>
                                 <small class="text-muted">Projects, tasks, and tickets assigned to you</small>
                             </li>
@@ -2046,7 +2450,7 @@
                             @forelse($assignedWorkTickets as $ticketItem)
                                 <li class="px-3 py-2">
                                     <div class="d-flex justify-content-between gap-2">
-                                        <a class="text-dark text-decoration-none flex-grow-1" href="{{ route('tickets.show', $ticketItem->id) }}">
+                                        <a class="text-decoration-none flex-grow-1" href="{{ route('tickets.show', $ticketItem->id) }}">
                                             <div class="fw-semibold text-truncate">#{{ $ticketItem->id }} {{ $ticketItem->subject }}</div>
                                             <small class="text-muted">{{ $ticketItem->project?->name ?? 'No project' }} · {{ ucfirst($ticketItem->status) }}</small>
                                         </a>
@@ -2114,7 +2518,7 @@
                        <li class="nav-item dropdown" title="New notifications">
                         <a class="nav-link header-icon-box notification-bell {{ $totalHeaderUnread > 0 ? 'has-unread' : '' }}" href="#" id="navbarDropdown"
                            role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fa fa-bell f-16 text-dark-grey"></i>
+                            <i class="fa fa-bell f-16"></i>
                             @if($totalHeaderUnread > 0)
                                 <span class="badge bg-danger" id="navbarNotificationCount">{{ $totalHeaderUnread }}</span>
                             @endif
@@ -2305,15 +2709,9 @@
                     </li>
                     <li>
 
-                      <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-
-                            <x-dropdown-link :href="route('logout')"
-                                    onclick="event.preventDefault();
-                                                this.closest('form').submit();">
-                               <i class="icon-base bx bx-power-off icon-md me-3"></i><span>Log Out</span>
-                            </x-dropdown-link>
-                        </form>
+                      <a class="dropdown-item text-danger" href="{{ route('logout.get') }}">
+                         <i class="icon-base bx bx-power-off icon-md me-3"></i><span>Log Out</span>
+                      </a>
 
                     </li>
                   </ul>

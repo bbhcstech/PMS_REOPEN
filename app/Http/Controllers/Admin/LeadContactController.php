@@ -16,11 +16,40 @@ use App\Imports\LeadsImport;
 
 class LeadContactController extends Controller
 {
-    public function index(Request $request)
+    protected function authorizeLeadAccess(string $action = 'view'): void
     {
-        if (!auth()->check() || auth()->user()->role !== 'admin') {
+        if (!auth()->check()) {
             abort(403, 'Unauthorized');
         }
+
+        $user = auth()->user();
+
+        if (\Illuminate\Support\Facades\Auth::guard('super_admin')->check()) {
+            return;
+        }
+
+        $role = $user->normalizedRole();
+
+        if (in_array($role, ['admin', 'superadmin'], true)) {
+            return;
+        }
+
+        foreach (['leads-contacts', 'leads', 'crm-deals', 'crm'] as $slug) {
+            if ($user->hasModulePermission($slug, $action)) {
+                return;
+            }
+        }
+
+        if (in_array($role, ['manager', 'hr'], true)) {
+            return;
+        }
+
+        abort(403, 'Unauthorized');
+    }
+
+    public function index(Request $request)
+    {
+        $this->authorizeLeadAccess('view');
 
         $type = $request->get('type', 'all');
         $perPage = (int) $request->get('per_page', 10);
@@ -166,9 +195,7 @@ class LeadContactController extends Controller
 
     public function create()
     {
-        if (!auth()->check() || auth()->user()->role !== 'admin') {
-            abort(403);
-        }
+        $this->authorizeLeadAccess('create');
 
         $users = User::select('id', 'name')->get();
         return view('admin.leads.contacts.create', compact('users'));
@@ -176,9 +203,7 @@ class LeadContactController extends Controller
 
     public function store(Request $request)
     {
-        if (!auth()->check() || auth()->user()->role !== 'admin') {
-            abort(403);
-        }
+        $this->authorizeLeadAccess('create');
 
         $data = $request->validate([
             // Section: Basic Information
@@ -306,9 +331,7 @@ class LeadContactController extends Controller
 
     public function show($id)
     {
-        if (!auth()->check() || auth()->user()->role !== 'admin') {
-            abort(403);
-        }
+        $this->authorizeLeadAccess('view');
 
         $lead = LeadContact::with([
             'owner',
@@ -329,9 +352,7 @@ class LeadContactController extends Controller
 
     public function edit($id)
     {
-        if (!auth()->check() || auth()->user()->role !== 'admin') {
-            abort(403);
-        }
+        $this->authorizeLeadAccess('edit');
 
         $lead = LeadContact::findOrFail($id);
         $users = User::select('id', 'name')->get();
@@ -341,9 +362,7 @@ class LeadContactController extends Controller
 
     public function update(Request $request, $id)
     {
-        if (!auth()->check() || auth()->user()->role !== 'admin') {
-            abort(403);
-        }
+        $this->authorizeLeadAccess('edit');
 
         $lead = LeadContact::findOrFail($id);
         $oldStatus = $lead->status;
@@ -429,9 +448,7 @@ class LeadContactController extends Controller
 
     public function destroy($id)
     {
-        if (!auth()->check() || auth()->user()->role !== 'admin') {
-            abort(403);
-        }
+        $this->authorizeLeadAccess('delete');
 
         $lead = LeadContact::findOrFail($id);
         $lead->delete();
@@ -441,7 +458,18 @@ class LeadContactController extends Controller
 
     public function bulkDelete(Request $request)
     {
-        if (!auth()->check() || auth()->user()->role !== 'admin') {
+        if (!auth()->check()) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
+        }
+
+        $user = auth()->user();
+        $role = $user->normalizedRole();
+        $allowed = \Illuminate\Support\Facades\Auth::guard('super_admin')->check()
+            || in_array($role, ['admin', 'superadmin', 'manager', 'hr'], true)
+            || $user->hasModulePermission('leads-contacts', 'delete')
+            || $user->hasModulePermission('leads', 'delete');
+
+        if (!$allowed) {
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
 
@@ -619,9 +647,7 @@ class LeadContactController extends Controller
 
     public function export(Request $request)
     {
-        if (!auth()->check() || auth()->user()->role !== 'admin') {
-            abort(403, 'Unauthorized');
-        }
+        $this->authorizeLeadAccess('export');
 
         $type = $request->get('type', 'all');
         $ids = $request->get('ids', []);
@@ -631,9 +657,7 @@ class LeadContactController extends Controller
 
     public function import(Request $request)
     {
-        if (!auth()->check() || auth()->user()->role !== 'admin') {
-            abort(403);
-        }
+        $this->authorizeLeadAccess('create');
 
         $request->validate([
             'file' => 'required|mimes:csv,xlsx,xls|max:2048'
@@ -649,9 +673,7 @@ class LeadContactController extends Controller
 
     public function downloadTemplate()
     {
-        if (!auth()->check() || auth()->user()->role !== 'admin') {
-            abort(403);
-        }
+        $this->authorizeLeadAccess('view');
 
         $template = [
             ['contact_name', 'email', 'company_name', 'phone', 'lead_source', 'status', 'lead_owner_id']

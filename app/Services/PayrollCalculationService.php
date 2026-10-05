@@ -256,12 +256,38 @@ class PayrollCalculationService
 
         // Deductions & Rounding via active Policy Rules
         $dedRules = $policy->deductions_rules ?? [];
-        $pfAmt = (!empty($dedRules['pf_enabled'])) ? min((float)($dedRules['pf_max_limit'] ?? 1800), round($acBasic * (($dedRules['pf_percentage'] ?? 12) / 100), 2)) : 0.0;
-        $esiAmt = (!empty($dedRules['esi_enabled']) && $acGross <= 21000) ? round($acGross * (($dedRules['esi_percentage'] ?? 0.75) / 100), 2) : 0.0;
-        $ptAmt = (!empty($dedRules['pt_enabled'])) ? (float) ($dedRules['pt_fixed_amount'] ?? 200) : 0.0;
-        $totalDeductions = round($pfAmt + $esiAmt + $ptAmt, 2);
+        $pfAmt = (!empty($dedRules['pf_enabled']))
+            ? min((float)($dedRules['pf_max_limit'] ?? 1800), round($acBasic * (($dedRules['pf_percentage'] ?? 12) / 100), 2))
+            : min(1800.0, round($acBasic * 0.12, 2));
+        $esiAmt = (!empty($dedRules['esi_enabled']) && $acGross <= 21000)
+            ? round($acGross * (($dedRules['esi_percentage'] ?? 0.75) / 100), 2)
+            : ($acGross <= 21000 ? round($acGross * 0.0075, 2) : 0.0);
+        $ptAmt = (!empty($dedRules['pt_enabled']))
+            ? (float) ($dedRules['pt_fixed_amount'] ?? 200)
+            : ($acGross > 10000 ? 200.0 : 0.0);
+        $tdsAmt = (float) ($dedRules['tds_amount'] ?? 0.0);
+        $totalDeductions = round($pfAmt + $esiAmt + $ptAmt + $tdsAmt, 2);
 
-        $netSalary = max(0.0, round($acGross - $totalDeductions, 2));
+        // Employer / Company Contributions (Statutory)
+        $cpfAmt = min(1800.0, round($acBasic * 0.12, 2));
+        $cesiAmt = ($acGross <= 21000) ? round($acGross * 0.0325, 2) : 0.0;
+        $edliAmt = min(75.0, round($acBasic * 0.005, 2));
+        $companyContribution = round($cpfAmt + $cesiAmt + $edliAmt, 2);
+
+        // Bonuses & Allowances
+        $bonusRules = $policy->bonus_rules ?? [];
+        $attendanceBonus = ($attData['total_absent'] == 0 && $attData['presents'] >= $workingDays && !empty($bonusRules['attendance_bonus']))
+            ? (float) $bonusRules['attendance_bonus']
+            : 0.0;
+        $bestEmpBonus = (float) ($bonusRules['best_employee_bonus'] ?? 0.0);
+        $travelAllowance = (float) ($bonusRules['travel_allowance'] ?? 0.0);
+        $overtimePay = (float) ($bonusRules['overtime_pay'] ?? 0.0);
+        $commissionAmt = (float) ($bonusRules['commission'] ?? 0.0);
+        $adjustmentAmt = (float) ($bonusRules['adjustment'] ?? 0.0);
+        $totalBonus = round($attendanceBonus + $bestEmpBonus + $travelAllowance + $overtimePay + $commissionAmt + $adjustmentAmt, 2);
+
+        // Net Salary calculation
+        $netSalary = max(0.0, round(($acGross + $totalBonus) - $totalDeductions, 2));
 
         // Apply Rounding Policy
         $roundRules = $policy->rounding_rules ?? [];
@@ -273,6 +299,9 @@ class PayrollCalculationService
         } elseif ($mode === 'nearest_10') {
             $netSalary = round($netSalary / 10) * 10;
         }
+
+        $totalInHand = $netSalary;
+        $ctc = round($acGross + $totalBonus + $companyContribution, 2);
 
         $empDetail = $user->employeeDetail;
         $empId = $empDetail?->employee_id ?: ('EMP-' . str_pad($user->id, 3, '0', STR_PAD_LEFT));
@@ -311,16 +340,43 @@ class PayrollCalculationService
             'gross' => $salaryData['gross'],
             'has_salary_structure' => $salaryData['has_structure'],
 
-            // Actual Salary & Policy Rules Integration
+            // Actual Pro-rata Base
             'ac_basic' => $acBasic,
             'ac_hra' => $acHra,
             'ac_special' => $acSpecial,
             'ac_gross' => $acGross,
+
+            // Statutory Employee Deductions
+            'pf' => $pfAmt,
+            'esi' => $esiAmt,
+            'pt' => $ptAmt,
+            'tds' => $tdsAmt,
             'total_deductions' => $totalDeductions,
+            'total_deduction' => $totalDeductions,
+
+            // Statutory Employer Contributions
+            'cpf' => $cpfAmt,
+            'cesi' => $cesiAmt,
+            'edli' => $edliAmt,
+            'company_contribution' => $companyContribution,
+
+            // Bonuses & Allowances
+            'attendance_bonus' => $attendanceBonus,
+            'best_employee_bonus' => $bestEmpBonus,
+            'ta' => $travelAllowance,
+            'overtime' => $overtimePay,
+            'commission' => $commissionAmt,
+            'adjustment' => $adjustmentAmt,
+            'total_bonus' => $totalBonus,
+
+            // Final Totals
             'net_salary' => $netSalary,
+            'net_pay' => $netSalary,
+            'total_in_hand' => $totalInHand,
+            'ctc' => $ctc,
+
             'policy_id' => $policy->id,
             'policy_version' => $policy->version,
-
             'status' => 'Calculated',
         ];
     }
@@ -521,26 +577,68 @@ class PayrollCalculationService
 
             $payslipNo = 'PS-' . date('Ym', strtotime($payroll->period_start)) . '-' . str_pad($history->user_id, 4, '0', STR_PAD_LEFT);
 
+            $earnings = [
+                'Basic Salary' => (float) ($snap['ac_basic'] ?? $snap['basic'] ?? 0),
+                'House Rent Allowance (HRA)' => (float) ($snap['ac_hra'] ?? $snap['hra'] ?? 0),
+                'Special Allowance' => (float) ($snap['ac_special'] ?? $snap['special'] ?? 0),
+            ];
+            if (!empty($snap['attendance_bonus']) && (float)$snap['attendance_bonus'] > 0) {
+                $earnings['Attendance Bonus'] = (float) $snap['attendance_bonus'];
+            }
+            if (!empty($snap['best_employee_bonus']) && (float)$snap['best_employee_bonus'] > 0) {
+                $earnings['Performance Bonus'] = (float) $snap['best_employee_bonus'];
+            }
+            if (!empty($snap['ta']) && (float)$snap['ta'] > 0) {
+                $earnings['Travel Allowance'] = (float) $snap['ta'];
+            }
+            if (!empty($snap['overtime']) && (float)$snap['overtime'] > 0) {
+                $earnings['Overtime Pay'] = (float) $snap['overtime'];
+            }
+            if (!empty($snap['commission']) && (float)$snap['commission'] > 0) {
+                $earnings['Commission'] = (float) $snap['commission'];
+            }
+
+            $attendanceDeduction = round(max(0.0, ($snap['gross'] ?? 0) - ($snap['ac_gross'] ?? 0)), 2);
+            $deductions = [];
+            if ($attendanceDeduction > 0) {
+                $deductions['Attendance Deduction'] = $attendanceDeduction;
+            }
+            if (!empty($snap['pf']) && (float)$snap['pf'] > 0) {
+                $deductions['Provident Fund (PF)'] = (float) $snap['pf'];
+            }
+            if (!empty($snap['esi']) && (float)$snap['esi'] > 0) {
+                $deductions['Employee State Insurance (ESI)'] = (float) $snap['esi'];
+            }
+            if (!empty($snap['pt']) && (float)$snap['pt'] > 0) {
+                $deductions['Professional Tax (PT)'] = (float) $snap['pt'];
+            }
+            if (!empty($snap['tds']) && (float)$snap['tds'] > 0) {
+                $deductions['TDS / Income Tax'] = (float) $snap['tds'];
+            }
+
+            $grossSalary = (float) ($snap['ac_gross'] ?? $snap['gross'] ?? 0) + (float) ($snap['total_bonus'] ?? 0);
+            $totalDed = round(array_sum(array_values($deductions)), 2);
+            $netSalary = (float) ($snap['net_salary'] ?? $snap['net_pay'] ?? max(0.0, $grossSalary - $totalDed));
+
             Payslip::updateOrCreate(
                 [
                     'payroll_id' => $payroll->id,
                     'user_id' => $history->user_id,
                 ],
                 [
+                    'company_id' => $payroll->company_id,
                     'payroll_history_id' => $history->id,
                     'payslip_number' => $payslipNo,
                     'employee_snapshot' => $snap,
-                    'earnings' => [
-                        'basic' => $snap['ac_basic'] ?? $snap['basic'] ?? 0,
-                        'hra' => $snap['ac_hra'] ?? $snap['hra'] ?? 0,
-                        'special' => $snap['ac_special'] ?? $snap['special'] ?? 0,
+                    'earnings' => $earnings,
+                    'deductions' => $deductions,
+                    'taxes' => [
+                        'pt' => (float) ($snap['pt'] ?? 0),
+                        'tds' => (float) ($snap['tds'] ?? 0),
                     ],
-                    'deductions' => [
-                        'attendance_deduction' => round(($snap['gross'] ?? 0) - ($snap['ac_gross'] ?? 0), 2),
-                    ],
-                    'gross_salary' => $snap['gross'] ?? 0,
-                    'total_deductions' => round(($snap['gross'] ?? 0) - ($snap['ac_gross'] ?? 0), 2),
-                    'net_salary' => $snap['ac_gross'] ?? 0,
+                    'gross_salary' => round($grossSalary, 2),
+                    'total_deductions' => round($totalDed, 2),
+                    'net_salary' => round($netSalary, 2),
                     'status' => 'generated',
                     'generated_by' => $actorId,
                 ]

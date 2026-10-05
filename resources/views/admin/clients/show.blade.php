@@ -88,11 +88,11 @@
     /* Selected / Active tab styles - white text and icons */
     .custom-segmented-pills .nav-link.active,
     #clientTabs .nav-link.active {
-        background: #0f744c !important;
+        background: #2F6BFF !important;
         color: #ffffff !important;
         -webkit-text-fill-color: #ffffff !important;
         font-weight: 700 !important;
-        box-shadow: 0 4px 12px rgba(15, 116, 76, 0.25) !important;
+        box-shadow: 0 4px 12px rgba(47, 107, 255, 0.25) !important;
     }
     .custom-segmented-pills .nav-link.active,
     .custom-segmented-pills .nav-link.active *,
@@ -134,27 +134,116 @@
         font-size: 0.78rem;
         font-weight: 700;
         border-radius: 9999px;
-        color: #000000 !important;
         text-transform: capitalize;
         letter-spacing: 0.02em;
     }
-    .status-in-progress { background-color: #fef3c7 !important; border: 1px solid #fde68a; }
-    .status-completed   { background-color: #d1fae5 !important; border: 1px solid #a7f3d0; }
-    .status-on-hold     { background-color: #fee2e2 !important; border: 1px solid #fecaca; }
-    .status-not-started { background-color: #e2e8f0 !important; border: 1px solid #cbd5e1; }
-    .status-pending     { background-color: #e0f2fe !important; border: 1px solid #bae6fd; }
+    .status-in-progress,
+    .status-pending     { background-color: #fef3c7 !important; color: #b45309 !important; border: 1px solid #fde68a !important; }
+    .status-completed   { background-color: #E0E7FF !important; color: #2F6BFF !important; border: 1px solid #C7D2FE !important; }
+    .status-on-hold     { background-color: #fee2e2 !important; color: #b91c1c !important; border: 1px solid #fecaca !important; }
+    .status-not-started { background-color: #f1f5f9 !important; color: #475569 !important; border: 1px solid #cbd5e1 !important; }
+
+    html[data-pms-theme="dark"] .client-hero-card {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .segmented-tabs-wrapper {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.14) !important;
+    }
+    html[data-pms-theme="dark"] .custom-segmented-pills .nav-link,
+    html[data-pms-theme="dark"] #clientTabs .nav-link,
+    html[data-pms-theme="dark"] #clientTabs .nav-link:not(.active) {
+        color: #CBD5E1 !important;
+        -webkit-text-fill-color: #CBD5E1 !important;
+    }
+    html[data-pms-theme="dark"] .custom-segmented-pills .nav-link i,
+    html[data-pms-theme="dark"] .custom-segmented-pills .nav-link span,
+    html[data-pms-theme="dark"] .custom-segmented-pills .nav-link:not(.active) i,
+    html[data-pms-theme="dark"] .custom-segmented-pills .nav-link:not(.active) span,
+    html[data-pms-theme="dark"] #clientTabs .nav-link:not(.active) i,
+    html[data-pms-theme="dark"] #clientTabs .nav-link:not(.active) span {
+        color: #CBD5E1 !important;
+        -webkit-text-fill-color: #CBD5E1 !important;
+    }
+    html[data-pms-theme="dark"] .custom-segmented-pills .nav-link:hover:not(.active),
+    html[data-pms-theme="dark"] #clientTabs .nav-link:hover:not(.active) {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+        background: #1A2247 !important;
+    }
+    html[data-pms-theme="dark"] .custom-segmented-pills .nav-link:hover:not(.active) i,
+    html[data-pms-theme="dark"] .custom-segmented-pills .nav-link:hover:not(.active) span,
+    html[data-pms-theme="dark"] #clientTabs .nav-link:hover:not(.active) i,
+    html[data-pms-theme="dark"] #clientTabs .nav-link:hover:not(.active) span {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .custom-segmented-pills .nav-link.active,
+    html[data-pms-theme="dark"] #clientTabs .nav-link.active {
+        background: #2F6BFF !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        box-shadow: 0 4px 12px rgba(47, 107, 255, 0.35) !important;
+    }
+    html[data-pms-theme="dark"] .custom-segmented-pills .nav-link .tab-count-badge,
+    html[data-pms-theme="dark"] #clientTabs .nav-link .tab-count-badge {
+        background: #1A2247 !important;
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .client-detail-box {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.1) !important;
+    }
+    html[data-pms-theme="dark"] .client-detail-label {
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] .client-detail-val {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .status-in-progress,
+    html[data-pms-theme="dark"] .status-pending,
+    html[data-bs-theme="dark"] .status-in-progress,
+    html[data-bs-theme="dark"] .status-pending {
+        background-color: rgba(245, 158, 11, 0.22) !important;
+        color: #fbbf24 !important;
+        -webkit-text-fill-color: #fbbf24 !important;
+        border: 1px solid rgba(251, 191, 36, 0.35) !important;
+    }
+    html[data-pms-theme="dark"] .status-completed,
+    html[data-bs-theme="dark"] .status-completed {
+        background-color: rgba(47, 107, 255, 0.22) !important;
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
+        border: 1px solid rgba(79, 131, 255, 0.35) !important;
+    }
+    html[data-pms-theme="dark"] .status-on-hold,
+    html[data-bs-theme="dark"] .status-on-hold {
+        background-color: rgba(239, 68, 68, 0.22) !important;
+        color: #f87171 !important;
+        -webkit-text-fill-color: #f87171 !important;
+        border: 1px solid rgba(248, 113, 113, 0.35) !important;
+    }
+    html[data-pms-theme="dark"] .status-not-started,
+    html[data-bs-theme="dark"] .status-not-started {
+        background-color: rgba(148, 163, 184, 0.22) !important;
+        color: #cbd5e1 !important;
+        -webkit-text-fill-color: #cbd5e1 !important;
+        border: 1px solid rgba(203, 213, 225, 0.35) !important;
+    }
 </style>
 
 <div class="container-xxl flex-grow-1 container-p-y">
     {{-- Header Banner --}}
-    <div class="card border-0 shadow-sm rounded-4 mb-4" style="background: linear-gradient(135deg, #ffffff 0%, #f8fbf9 100%); border: 1px solid rgba(226, 232, 240, 0.85);">
+    <div class="card client-hero-card border-0 shadow-sm rounded-4 mb-4" style="background: linear-gradient(135deg, #ffffff 0%, #f8fbf9 100%); border: 1px solid rgba(226, 232, 240, 0.85);">
         <div class="card-body p-4">
             <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
                 <div class="d-flex align-items-center gap-3">
                     @if($client->profile_picture)
                         <img src="{{ asset($client->profile_picture) }}" alt="{{ $client->name }}" class="rounded-circle border shadow-sm" style="width: 64px; height: 64px; object-fit: cover;">
                     @else
-                        <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold shadow-sm" style="width: 64px; height: 64px; background: linear-gradient(135deg, #0f744c, #10b981); font-size: 1.5rem;">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold shadow-sm" style="width: 64px; height: 64px; background: linear-gradient(135deg, #2F6BFF, #10b981); font-size: 1.5rem;">
                             {{ strtoupper(substr($client->name ?? 'C', 0, 1)) }}
                         </div>
                     @endif

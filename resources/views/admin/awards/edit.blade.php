@@ -3,8 +3,16 @@
 
 @section('content')
 <div class="container py-4">
-    
-  @if($errors->any())
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="mb-0 fw-bold">Edit Award</h4>
+        <a href="{{ route('awards.index') }}" class="btn btn-outline-primary btn-sm px-3 rounded-pill d-inline-flex align-items-center gap-2">
+            <i class="bi bi-arrow-left"></i>
+            <span>Back to Recognition</span>
+        </a>
+    </div>
+
+    @if($errors->any())
   <div class="alert alert-danger">
       <ul class="mb-0">
           @foreach($errors->all() as $error)
@@ -32,7 +40,7 @@
                           </option>
                       @endforeach
                   </select>
-                  <button type="button" class="btn btn-sm btn-link ms-2" data-bs-toggle="modal" data-bs-target="#addAwardModal">+ Add</button>
+                  <button type="button" class="btn btn-outline-primary flex-shrink-0 text-nowrap px-3 ms-2" data-bs-toggle="modal" data-bs-target="#addAwardModal" style="white-space: nowrap; min-width: 75px;"><i class="fas fa-plus me-1"></i> Add</button>
               </div>
           </div>
 
