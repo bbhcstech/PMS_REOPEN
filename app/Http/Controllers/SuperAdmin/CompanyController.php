@@ -280,19 +280,7 @@ class CompanyController extends Controller
             ['name' => 'Leads & Contacts', 'slug' => 'leads-contacts', 'category' => 'CRM', 'icon' => 'bx-book-content', 'description' => 'Client leads and contact books.'],
             ['name' => 'CRM Deals', 'slug' => 'crm-deals', 'category' => 'CRM', 'icon' => 'bx-dollar-circle', 'description' => 'Sales pipelines and deal stages.'],
 
-            // Finance & Payroll
-            ['name' => 'Payroll', 'slug' => 'payroll', 'category' => 'FINANCE & PAYROLL', 'icon' => 'bx-wallet', 'description' => 'Salary structures, cycles, and payslips.'],
-            ['name' => 'Payroll Architectures', 'slug' => 'payroll-architectures', 'category' => 'FINANCE & PAYROLL', 'icon' => 'bx-pyramid', 'description' => 'Salary structure blueprints and templates.'],
-            ['name' => 'Payslips', 'slug' => 'payslips', 'category' => 'FINANCE & PAYROLL', 'icon' => 'bx-receipt', 'description' => 'Monthly employee payslip generation.'],
-            ['name' => 'Salary Structures', 'slug' => 'salary-structures', 'category' => 'FINANCE & PAYROLL', 'icon' => 'bx-calculator', 'description' => 'Employee salary breakdown definitions.'],
-            ['name' => 'Payroll Cycles', 'slug' => 'payroll-cycles', 'category' => 'FINANCE & PAYROLL', 'icon' => 'bx-refresh', 'description' => 'Monthly and bi-weekly pay runs.'],
-            ['name' => 'Payroll Policies', 'slug' => 'payroll-policies', 'category' => 'FINANCE & PAYROLL', 'icon' => 'bx-shield', 'description' => 'Company pay rules and compliance policies.'],
-            ['name' => 'Formula Builder', 'slug' => 'formula-builder', 'category' => 'FINANCE & PAYROLL', 'icon' => 'bx-code-alt', 'description' => 'Custom salary calculation formulas.'],
-            ['name' => 'Deduction Rules', 'slug' => 'deduction-rules', 'category' => 'FINANCE & PAYROLL', 'icon' => 'bx-minus-circle', 'description' => 'Tax, PF, insurance, and loan deduction rules.'],
-            ['name' => 'Bonus Rules', 'slug' => 'bonus-rules', 'category' => 'FINANCE & PAYROLL', 'icon' => 'bx-plus-circle', 'description' => 'Performance and holiday bonus calculations.'],
-            ['name' => 'Tax Rules', 'slug' => 'tax-rules', 'category' => 'FINANCE & PAYROLL', 'icon' => 'bx-dollar', 'description' => 'Income tax and slab configurations.'],
-            ['name' => 'Overtime Rules', 'slug' => 'overtime-rules', 'category' => 'FINANCE & PAYROLL', 'icon' => 'bx-stopwatch', 'description' => 'Overtime rate multipliers and thresholds.'],
-            ['name' => 'Payroll Reports', 'slug' => 'payroll-reports', 'category' => 'FINANCE & PAYROLL', 'icon' => 'bx-bar-chart', 'description' => 'Comprehensive financial and payroll reporting.'],
+            // Finance
             ['name' => 'Expenses', 'slug' => 'expenses', 'category' => 'FINANCE & PAYROLL', 'icon' => 'bx-receipt', 'description' => 'Expense claims and reimbursement tracking.'],
             ['name' => 'Billing & Invoices', 'slug' => 'billing', 'category' => 'FINANCE & PAYROLL', 'icon' => 'bx-credit-card', 'description' => 'Invoices and payment receipts.'],
 
@@ -321,7 +309,6 @@ class CompanyController extends Controller
             ['name' => 'Leave Settings', 'slug' => 'leave-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-calendar-minus', 'description' => 'Leave types, accrual policies, and quota rules.'],
             ['name' => 'Holiday Settings', 'slug' => 'holiday-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-gift', 'description' => 'Company and national holiday calendars.'],
             ['name' => 'Attendance Settings', 'slug' => 'attendance-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-calendar-check', 'description' => 'Clock-in radius, IP restrictions, and late thresholds.'],
-            ['name' => 'Payroll Settings', 'slug' => 'payroll-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-wallet', 'description' => 'Pay cycles, tax rules, and currency setup.'],
             ['name' => 'Recruitment Settings', 'slug' => 'recruitment-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-user-plus', 'description' => 'Job posting stages and candidate fields.'],
             ['name' => 'Performance Settings', 'slug' => 'performance-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-trending-up', 'description' => 'KPI metrics and appraisal cycles.'],
             ['name' => 'Notification Settings', 'slug' => 'notification-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-bell', 'description' => 'System, email, and push alert triggers.'],

@@ -186,8 +186,6 @@
             <span>Company workspace</span>
             <a href="{{ route('attendance.index', ['company_id' => $selectedCompanyId]) }}"><i class="fas fa-calendar-check"></i> Attendance</a>
             <a href="{{ route('leaves.index', ['company_id' => $selectedCompanyId]) }}"><i class="fas fa-calendar-days"></i> Leaves</a>
-            <a href="{{ route('payroll.index', ['company_id' => $selectedCompanyId]) }}"><i class="fas fa-wallet"></i> Payroll</a>
-            <a href="{{ route('payroll.payslips.index', ['company_id' => $selectedCompanyId]) }}"><i class="fas fa-file-invoice-dollar"></i> Payslips</a>
         </div>
     @endif
     @endif

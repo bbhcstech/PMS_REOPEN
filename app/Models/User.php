@@ -347,6 +347,16 @@ class User extends Authenticatable
         return $this->hasOne(EmployeeDetail::class);
     }
 
+    public function salaryAssignments()
+    {
+        return $this->hasMany(EmployeeSalaryAssignment::class, 'user_id');
+    }
+
+    public function salaryAssignment()
+    {
+        return $this->hasOne(EmployeeSalaryAssignment::class, 'user_id')->latestOfMany('effective_from');
+    }
+
     public function company()
     {
         return $this->belongsTo(Company::class);

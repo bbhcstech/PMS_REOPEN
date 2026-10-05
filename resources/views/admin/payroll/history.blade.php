@@ -1,6 +1,6 @@
 @extends('admin.layout.app')
 
-@section('title', 'Payslips — Admin Workspace')
+@section('title', 'Payroll History — Admin Workspace')
 
 @section('content')
 <div class="content-wrapper">
@@ -8,8 +8,8 @@
         @include('admin.payroll.partials.styles')
 
         <div class="topbar-crumb mb-3">
-            <h4 class="fw-bold py-1 mb-1"><span class="text-muted fw-light">Admin Workspace / Payroll /</span> Payslips</h4>
-            <div class="crumb text-muted small">Generate, view, print and download employee payslips</div>
+            <h4 class="fw-bold py-1 mb-1"><span class="text-muted fw-light">Admin Workspace / Payroll /</span> History</h4>
+            <div class="crumb text-muted small">View historical payroll records and audits</div>
         </div>
 
         @include('admin.payroll.partials.tabs')
@@ -29,12 +29,12 @@
 
         <div class="card">
             <div class="card-head d-flex align-items-center justify-content-between p-3 border-bottom flex-wrap gap-2">
-                <h5 class="mb-0">🧾 Employee Payslips</h5>
-                <div class="text-muted small">Generated for approved and finalized payroll periods</div>
+                <h5 class="mb-0">📚 Payroll History</h5>
+                <div class="text-muted small">Showing records across all processed runs</div>
             </div>
 
             <!-- Filters -->
-            <form method="GET" action="{{ route('payroll.payslips.index') }}" class="filters p-3 border-bottom bg-light">
+            <form method="GET" action="{{ route('payroll.history') }}" class="filters p-3 border-bottom bg-light">
                 <div class="search">
                     <input type="text" name="search" class="input form-control form-control-sm" placeholder="Search employee..." value="{{ request('search') }}">
                 </div>
@@ -66,9 +66,20 @@
                         @endforeach
                     </select>
                 </div>
+                <div class="field">
+                    <label class="form-label small mb-1">Status</label>
+                    <select name="status" class="form-select form-select-sm">
+                        <option value="">All Statuses</option>
+                        <option value="draft" {{ request('status') == 'draft' ? 'selected' : '' }}>Draft</option>
+                        <option value="calculated" {{ request('status') == 'calculated' ? 'selected' : '' }}>Calculated</option>
+                        <option value="reviewed" {{ request('status') == 'reviewed' ? 'selected' : '' }}>Reviewed</option>
+                        <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Approved</option>
+                        <option value="finalized" {{ request('status') == 'finalized' ? 'selected' : '' }}>Finalized</option>
+                    </select>
+                </div>
                 <div class="d-flex align-items-end gap-1">
                     <button type="submit" class="btn btn-sm btn-primary">Filter</button>
-                    <a href="{{ route('payroll.payslips.index') }}" class="btn btn-sm btn-outline-secondary">Reset</a>
+                    <a href="{{ route('payroll.history') }}" class="btn btn-sm btn-outline-secondary">Reset</a>
                 </div>
             </form>
 
@@ -78,8 +89,10 @@
                         <tr>
                             <th>Month</th>
                             <th>Employee</th>
-                            <th>Emp ID</th>
-                            <th>Designation / Dept</th>
+                            <th>Designation</th>
+                            <th class="num text-end">Gross</th>
+                            <th class="num text-end">Deductions</th>
+                            <th class="num text-end">Net Pay</th>
                             <th class="num text-end">In Hand</th>
                             <th class="num text-end">CTC</th>
                             <th>Status</th>
@@ -87,13 +100,14 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($payslips as $ps)
+                        @forelse($histories as $h)
                             @php
-                                $u = $ps->user;
+                                $u = $h->user;
                                 $empDetail = $u->employeeDetails ?? null;
-                                $monthName = date('M', mktime(0, 0, 0, $ps->month ?? ($ps->payroll->month ?? 1), 1));
-                                $yearVal = $ps->year ?? ($ps->payroll->year ?? date('Y'));
-                                $pStatus = strtolower($ps->payroll->status ?? 'approved');
+                                $desigName = $empDetail->designation->name ?? '—';
+                                $pStatus = strtolower($h->payroll->status ?? 'draft');
+                                $monthName = date('M', mktime(0, 0, 0, $h->month ?? ($h->payroll->month ?? 1), 1));
+                                $yearVal = $h->year ?? ($h->payroll->year ?? date('Y'));
                             @endphp
                             <tr>
                                 <td><span class="badge bg-label-primary">{{ $monthName }} {{ $yearVal }}</span></td>
@@ -104,51 +118,51 @@
                                         </div>
                                         <div>
                                             <div class="fw-semibold">{{ $u->name ?? 'N/A' }}</div>
-                                            <div class="meta text-muted small">{{ $u->email ?? '' }}</div>
+                                            <div class="meta text-muted small">{{ $empDetail->employee_id ?? 'EMP'.$u->id }}</div>
                                         </div>
                                     </div>
                                 </td>
-                                <td><span class="badge bg-light text-dark">{{ $empDetail->employee_id ?? 'EMP'.$u->id }}</span></td>
-                                <td>
-                                    <div class="small fw-semibold">{{ $empDetail->designation->name ?? '—' }}</div>
-                                    <div class="meta text-muted small">{{ $empDetail->department->name ?? '—' }}</div>
-                                </td>
-                                @php
-                                    $snap = $ps->employee_snapshot ?? [];
-                                    $totalInHand = $snap['total_in_hand'] ?? ($ps->net_salary ?? 0);
-                                    $totalCtc = $snap['ctc'] ?? ($ps->gross_salary ?? 0);
-                                @endphp
-                                <td class="num text-end text-success fw-bold">
-                                    ₹{{ number_format((float)$totalInHand, 2) }}
-                                </td>
-                                <td class="num text-end text-primary fw-semibold">
-                                    ₹{{ number_format((float)$totalCtc, 2) }}
-                                </td>
+                                <td>{{ $desigName }}</td>
+                                <td class="num text-end fw-semibold">₹{{ number_format((float)($h->gross_salary ?? 0), 2) }}</td>
+                                <td class="num text-end text-danger">₹{{ number_format((float)($h->total_deductions ?? 0), 2) }}</td>
+                                <td class="num text-end fw-bold">₹{{ number_format((float)($h->net_salary ?? 0), 2) }}</td>
+                                <td class="num text-end text-success fw-bold">₹{{ number_format((float)($h->total_in_hand ?? $h->net_salary ?? 0), 2) }}</td>
+                                <td class="num text-end text-primary fw-semibold">₹{{ number_format((float)($h->ctc ?? $h->gross_salary ?? 0), 2) }}</td>
                                 <td>
                                     @if($pStatus == 'finalized')
                                         <span class="pill finalized">🔒 Finalized</span>
-                                    @else
+                                    @elseif($pStatus == 'approved')
                                         <span class="pill approved">✅ Approved</span>
+                                    @elseif($pStatus == 'reviewed')
+                                        <span class="pill reviewed">👁 Reviewed</span>
+                                    @elseif($pStatus == 'calculated')
+                                        <span class="pill calculated">⚙️ Calculated</span>
+                                    @else
+                                        <span class="pill draft">🟡 Draft</span>
                                     @endif
                                 </td>
                                 <td class="text-end">
-                                    <a href="{{ route('payroll.payslips.view', $ps->id) }}" class="btn btn-sm btn-outline-info">
-                                        👁 View
-                                    </a>
-                                    <a href="{{ route('payroll.payslips.print', $ps->id) }}" target="_blank" class="btn btn-sm btn-outline-secondary">
-                                        🖨 Print
-                                    </a>
-                                    <a href="{{ route('payroll.payslips.pdf', $ps->id) }}" class="btn btn-sm btn-primary">
-                                        📥 PDF
-                                    </a>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{{ route('payroll.preview', $h->id) }}" class="btn btn-outline-secondary" title="View Breakdown">
+                                            👁
+                                        </a>
+                                        <a href="{{ route('payroll.payslips.view', $h->id) }}" class="btn btn-outline-info" title="View Payslip">
+                                            🧾
+                                        </a>
+                                        <a href="{{ route('payroll.payslips.print', $h->id) }}" target="_blank" class="btn btn-outline-secondary" title="Print Payslip">
+                                            🖨
+                                        </a>
+                                        <a href="{{ route('payroll.payslips.pdf', $h->id) }}" class="btn btn-outline-primary" title="Download PDF">
+                                            📥
+                                        </a>
+                                    </div>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="text-center py-4 text-muted">
-                                    <i class="bx bx-receipt fs-1 d-block mb-1"></i>
-                                    No payslips available for the selected criteria.
-                                    <br><small>Payslips are generated once payroll is approved or finalized.</small>
+                                <td colspan="10" class="text-center py-4 text-muted">
+                                    <i class="bx bx-calendar-x fs-1 d-block mb-1"></i>
+                                    No historical payroll records found for the selected criteria.
                                 </td>
                             </tr>
                         @endforelse
@@ -156,13 +170,13 @@
                 </table>
             </div>
 
-            @if($payslips->hasPages())
+            @if($histories->hasPages())
                 <div class="pagination p-3 border-top d-flex justify-content-between align-items-center">
                     <span class="text-muted small">
-                        Showing {{ $payslips->firstItem() }} to {{ $payslips->lastItem() }} of {{ $payslips->total() }} entries
+                        Showing {{ $histories->firstItem() }} to {{ $histories->lastItem() }} of {{ $histories->total() }} entries
                     </span>
                     <div>
-                        {{ $payslips->links() }}
+                        {{ $histories->links() }}
                     </div>
                 </div>
             @endif

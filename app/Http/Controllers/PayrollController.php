@@ -3,13 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Models\BonusRule;
+use App\Models\BusinessAddress;
+use App\Models\Company;
+use App\Models\CompanySetting;
 use App\Models\DeductionComponent;
+use App\Models\Department;
+use App\Models\Designation;
+use App\Models\EmployeeDetail;
+use App\Models\EmployeeSalaryAssignment;
 use App\Models\OvertimeRule;
 use App\Models\Payroll;
 use App\Models\PayrollArchitecture;
 use App\Models\PayrollArchitectureVersion;
 use App\Models\PayrollAuditLog;
 use App\Models\PayrollCycle;
+use App\Models\PayrollFormula;
 use App\Models\PayrollHistory;
 use App\Models\Payslip;
 use App\Models\PayslipTemplate;
@@ -17,9 +25,10 @@ use App\Models\SalaryComponent;
 use App\Models\SalaryStructure;
 use App\Models\SalaryStructureVersion;
 use App\Models\TaxRule;
-use App\Models\BusinessAddress;
-use App\Models\EmployeeDetail;
+use App\Models\User;
 use App\Services\PayrollCalculationService;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -27,20 +36,443 @@ use Illuminate\Support\Str;
 
 class PayrollController extends Controller
 {
+    /**
+     * 1. Payroll Dashboard
+     */
     public function index(Request $request)
     {
         $this->authorizePayroll('payroll');
         $companyId = $this->selectedCompanyId($request);
 
-        return view('admin.payroll.index', [
-            'activeArchitecture' => $this->companyQuery(PayrollArchitecture::query(), $companyId)->where('is_active', true)->first(),
-            'cycles' => $this->companyQuery(PayrollCycle::query(), $companyId)->latest()->take(5)->get(),
-            'payrolls' => $this->companyQuery(Payroll::with('cycle'), $companyId)->latest()->take(10)->get(),
-            'payslipCount' => $this->payslipQuery($companyId)->count(),
-            'historyCount' => $this->payrollHistoryQuery($companyId)->count(),
+        $selectedMonth = (int) $request->input('month', date('n'));
+        $selectedYear = (int) $request->input('year', date('Y'));
+
+        // Eligible employees count
+        $totalEmployees = User::where(function ($q) {
+                $q->where('role', '!=', 'superadmin')->orWhereNull('role');
+            })
+            ->when($companyId, fn ($q) => $q->where('company_id', $companyId))
+            ->count();
+
+        // Get latest payroll run for the selected/current period
+        $startDate = Carbon::createFromDate($selectedYear, $selectedMonth, 1)->startOfMonth()->format('Y-m-d');
+        $endDate = Carbon::createFromDate($selectedYear, $selectedMonth, 1)->endOfMonth()->format('Y-m-d');
+
+        $currentPayroll = Payroll::query()
+            ->where('period_start', '>=', $startDate)
+            ->where('period_end', '<=', $endDate)
+            ->when($companyId, fn ($q) => $q->where('company_id', $companyId))
+            ->latest()
+            ->first();
+
+        // If no payroll for selected month, fallback to the latest run across all time
+        $latestPayroll = $currentPayroll ?: Payroll::query()
+            ->when($companyId, fn ($q) => $q->where('company_id', $companyId))
+            ->latest()
+            ->first();
+
+        $processedCount = 0;
+        $grossTotal = 0.0;
+        $deductionTotal = 0.0;
+        $netTotal = 0.0;
+        $inHandTotal = 0.0;
+        $employerTotal = 0.0;
+        $ctcTotal = 0.0;
+
+        if ($latestPayroll) {
+            $processedCount = PayrollHistory::where('payroll_id', $latestPayroll->id)->count();
+            $grossTotal = (float) $latestPayroll->gross_total;
+            $deductionTotal = (float) $latestPayroll->deduction_total;
+            $netTotal = (float) $latestPayroll->net_total;
+            $inHandTotal = (float) ($latestPayroll->total_in_hand ?? $latestPayroll->net_total);
+            $employerTotal = (float) ($latestPayroll->total_employer_contribution ?? 0);
+            $ctcTotal = (float) ($latestPayroll->total_ctc ?? ($latestPayroll->gross_total + $employerTotal));
+        }
+
+        $pendingCount = max(0, $totalEmployees - $processedCount);
+
+        // Status breakdown counts
+        $finalizedCount = PayrollHistory::where('payroll_status', 'finalized')
+            ->when($latestPayroll, fn ($q) => $q->where('payroll_id', $latestPayroll->id))
+            ->count();
+        $approvedCount = PayrollHistory::where('payroll_status', 'approved')
+            ->when($latestPayroll, fn ($q) => $q->where('payroll_id', $latestPayroll->id))
+            ->count();
+        $reviewedCount = PayrollHistory::where('payroll_status', 'reviewed')
+            ->when($latestPayroll, fn ($q) => $q->where('payroll_id', $latestPayroll->id))
+            ->count();
+        $calculatedCount = PayrollHistory::where('payroll_status', 'calculated')
+            ->when($latestPayroll, fn ($q) => $q->where('payroll_id', $latestPayroll->id))
+            ->count();
+        $draftCount = ($latestPayroll && $latestPayroll->status === 'draft') ? $processedCount : 0;
+
+        $kpis = [
+            'total_employees' => $totalEmployees,
+            'payroll_processed' => $processedCount,
+            'payroll_pending' => $pendingCount,
+            'total_gross' => $grossTotal,
+            'total_deductions' => $deductionTotal,
+            'total_net_pay' => $netTotal,
+            'total_in_hand' => $inHandTotal,
+            'total_employer_contribution' => $employerTotal,
+            'total_ctc' => $ctcTotal,
+            'selected_month' => $selectedMonth,
+            'selected_year' => $selectedYear,
+            'month_name' => Carbon::createFromDate($selectedYear, $selectedMonth, 1)->format('F'),
+        ];
+
+        $statusBreakdown = [
+            'finalized' => $finalizedCount,
+            'approved' => $approvedCount,
+            'reviewed' => $reviewedCount,
+            'calculated' => $calculatedCount,
+            'draft' => $draftCount,
+            'total' => max(1, $processedCount),
+        ];
+
+        $recentPayrolls = $this->companyQuery(Payroll::query(), $companyId)->latest()->take(6)->get();
+        $structuresCount = SalaryStructure::where('status', 'active')->count();
+        $assignmentsCount = EmployeeSalaryAssignment::where('status', 'active')->count();
+        $payslipCount = $this->payslipQuery($companyId)->count();
+
+        return view('admin.payroll.index', compact(
+            'kpis',
+            'statusBreakdown',
+            'recentPayrolls',
+            'structuresCount',
+            'assignmentsCount',
+            'payslipCount',
+            'latestPayroll'
+        ));
+    }
+
+    /**
+     * 2. Salary Structures
+     */
+    public function salaryStructures(Request $request)
+    {
+        $this->authorizePayroll('payroll');
+        $companyId = $this->selectedCompanyId($request);
+
+        $query = SalaryStructure::with(['designation', 'assignments'])
+            ->when($companyId, function ($q) use ($companyId) {
+                if (Schema::hasColumn('salary_structures', 'company_id')) {
+                    $q->where('company_id', $companyId);
+                }
+            });
+
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'LIKE', "%{$search}%")
+                  ->orWhere('grade', 'LIKE', "%{$search}%")
+                  ->orWhereHas('designation', fn ($d) => $d->where('name', 'LIKE', "%{$search}%"));
+            });
+        }
+
+        if ($request->filled('designation_id') && $request->input('designation_id') !== 'all') {
+            $query->where('designation_id', $request->input('designation_id'));
+        }
+
+        if ($request->filled('grade') && $request->input('grade') !== 'all') {
+            $query->where('grade', $request->input('grade'));
+        }
+
+        if ($request->filled('status') && $request->input('status') !== 'all') {
+            $query->where('status', $request->input('status'));
+        }
+
+        $structures = $query->orderBy('id', 'desc')->paginate(15);
+        $designations = Designation::orderBy('name')->get();
+        $grades = ['D1', 'D2', 'S1', 'S2', 'M1', 'M2', 'E1', 'Standard'];
+
+        return view('admin.payroll.salary-structures', compact('structures', 'designations', 'grades'));
+    }
+
+    public function storeSalaryStructure(Request $request)
+    {
+        $this->authorizePayroll('payroll', 'create');
+
+        $data = $request->validate([
+            'designation_id' => ['required', 'exists:designations,id'],
+            'grade' => ['required', 'string', 'max:50'],
+            'basic_salary' => ['required', 'numeric', 'min:0'],
+            'hra_type' => ['required', 'in:percentage,fixed'],
+            'hra_value' => ['required', 'numeric', 'min:0'],
+            'special_allowance_type' => ['required', 'in:percentage,fixed'],
+            'special_allowance_value' => ['required', 'numeric', 'min:0'],
+            'effective_from' => ['required', 'date'],
+            'effective_to' => ['nullable', 'date', 'after_or_equal:effective_from'],
+            'status' => ['required', 'in:active,inactive'],
+            'description' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $designation = Designation::find($data['designation_id']);
+        $name = ($designation?->name ?: 'Designation') . ' - ' . $data['grade'];
+
+        $payload = array_merge($data, [
+            'name' => $name,
+            'code' => Str::slug($name) . '-' . Str::upper(Str::random(4)),
+            'created_by' => auth()->id(),
+            'version' => 1,
+            'is_active' => ($data['status'] === 'active'),
+        ]);
+
+        if (Schema::hasColumn('salary_structures', 'company_id')) {
+            $payload['company_id'] = auth()->user()?->company_id;
+        }
+
+        $structure = SalaryStructure::create($payload);
+
+        $this->audit('created_salary_structure', $structure, null, $structure->toArray(), $request);
+
+        return back()->with('success', 'Salary Structure created successfully.');
+    }
+
+    public function updateSalaryStructure(Request $request, SalaryStructure $structure)
+    {
+        $this->authorizePayroll('payroll', 'edit');
+
+        $data = $request->validate([
+            'designation_id' => ['required', 'exists:designations,id'],
+            'grade' => ['required', 'string', 'max:50'],
+            'basic_salary' => ['required', 'numeric', 'min:0'],
+            'hra_type' => ['required', 'in:percentage,fixed'],
+            'hra_value' => ['required', 'numeric', 'min:0'],
+            'special_allowance_type' => ['required', 'in:percentage,fixed'],
+            'special_allowance_value' => ['required', 'numeric', 'min:0'],
+            'effective_from' => ['required', 'date'],
+            'effective_to' => ['nullable', 'date', 'after_or_equal:effective_from'],
+            'status' => ['required', 'in:active,inactive'],
+            'description' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $designation = Designation::find($data['designation_id']);
+        $name = ($designation?->name ?: 'Designation') . ' - ' . $data['grade'];
+
+        $old = $structure->toArray();
+        $structure->update(array_merge($data, [
+            'name' => $name,
+            'is_active' => ($data['status'] === 'active'),
+        ]));
+
+        $this->audit('updated_salary_structure', $structure, $old, $structure->fresh()->toArray(), $request);
+
+        return back()->with('success', 'Salary Structure updated successfully.');
+    }
+
+    public function destroySalaryStructure(Request $request, SalaryStructure $structure)
+    {
+        $this->authorizePayroll('payroll', 'delete');
+
+        $old = $structure->toArray();
+        $structure->delete();
+
+        $this->audit('deleted_salary_structure', $structure, $old, null, $request);
+
+        return back()->with('success', 'Salary Structure deleted successfully.');
+    }
+
+    /**
+     * 3. Employee Salary Assignment
+     */
+    public function employeeSalary(Request $request)
+    {
+        $this->authorizePayroll('payroll');
+        $companyId = $this->selectedCompanyId($request);
+
+        $query = EmployeeSalaryAssignment::with([
+                'user.employeeDetail.department',
+                'user.employeeDetail.designation',
+                'designation',
+                'salaryStructure',
+            ])
+            ->when($companyId, fn ($q) => $q->where('company_id', $companyId));
+
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->whereHas('user', function ($uq) use ($search) {
+                $uq->where('name', 'LIKE', "%{$search}%")
+                   ->orWhere('email', 'LIKE', "%{$search}%")
+                   ->orWhereHas('employeeDetail', fn ($ed) => $ed->where('employee_id', 'LIKE', "%{$search}%"));
+            });
+        }
+
+        if ($request->filled('department_id') && $request->input('department_id') !== 'all') {
+            $query->whereHas('user.employeeDetail', fn ($ed) => $ed->where('department_id', $request->input('department_id')));
+        }
+
+        if ($request->filled('designation_id') && $request->input('designation_id') !== 'all') {
+            $query->where('designation_id', $request->input('designation_id'));
+        }
+
+        if ($request->filled('status') && $request->input('status') !== 'all') {
+            $query->where('status', $request->input('status'));
+        }
+
+        $assignments = $query->orderBy('id', 'desc')->paginate(15);
+
+        $employees = User::where(function ($q) {
+                $q->where('role', '!=', 'superadmin')->orWhereNull('role');
+            })
+            ->when($companyId, fn ($q) => $q->where('company_id', $companyId))
+            ->with(['employeeDetail.designation', 'employeeDetail.department'])
+            ->orderBy('name')
+            ->get();
+
+        $designations = Designation::orderBy('name')->get();
+        $departments = $this->getDepartments();
+        $structures = SalaryStructure::where('status', 'active')->orderBy('name')->get();
+
+        return view('admin.payroll.employee-salary', compact(
+            'assignments',
+            'employees',
+            'designations',
+            'departments',
+            'structures'
+        ));
+    }
+
+    public function storeEmployeeSalary(Request $request)
+    {
+        $this->authorizePayroll('payroll', 'create');
+
+        $data = $request->validate([
+            'user_id' => ['required', 'exists:users,id'],
+            'designation_id' => ['nullable', 'exists:designations,id'],
+            'grade' => ['nullable', 'string', 'max:50'],
+            'salary_structure_id' => ['nullable', 'exists:salary_structures,id'],
+            'actual_basic_salary' => ['required', 'numeric', 'min:0'],
+            'hra_type' => ['required', 'in:percentage,fixed'],
+            'hra_value' => ['required', 'numeric', 'min:0'],
+            'special_allowance_type' => ['required', 'in:percentage,fixed'],
+            'special_allowance_value' => ['required', 'numeric', 'min:0'],
+            'effective_from' => ['required', 'date'],
+            'effective_to' => ['nullable', 'date', 'after_or_equal:effective_from'],
+            'status' => ['required', 'in:active,inactive'],
+            'remarks' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $user = User::with('employeeDetail')->find($data['user_id']);
+        $designationId = $data['designation_id'] ?: ($user?->employeeDetail?->designation_id);
+        $grade = $data['grade'] ?: ($user?->employeeDetail?->designation?->level ?: 'Standard');
+
+        $payload = array_merge($data, [
+            'company_id' => $user?->company_id ?: auth()->user()?->company_id,
+            'designation_id' => $designationId,
+            'grade' => $grade,
+        ]);
+
+        // If newly active, inactivate older overlapping assignment for the same employee
+        if ($data['status'] === 'active') {
+            EmployeeSalaryAssignment::where('user_id', $data['user_id'])
+                ->where('status', 'active')
+                ->update(['effective_to' => Carbon::parse($data['effective_from'])->subDay()->format('Y-m-d')]);
+        }
+
+        $assignment = EmployeeSalaryAssignment::create($payload);
+
+        $this->audit('created_employee_salary_assignment', $assignment, null, $assignment->toArray(), $request);
+
+        return back()->with('success', 'Employee salary assigned successfully.');
+    }
+
+    public function updateEmployeeSalary(Request $request, EmployeeSalaryAssignment $assignment)
+    {
+        $this->authorizePayroll('payroll', 'edit');
+
+        $data = $request->validate([
+            'user_id' => ['required', 'exists:users,id'],
+            'designation_id' => ['nullable', 'exists:designations,id'],
+            'grade' => ['nullable', 'string', 'max:50'],
+            'salary_structure_id' => ['nullable', 'exists:salary_structures,id'],
+            'actual_basic_salary' => ['required', 'numeric', 'min:0'],
+            'hra_type' => ['required', 'in:percentage,fixed'],
+            'hra_value' => ['required', 'numeric', 'min:0'],
+            'special_allowance_type' => ['required', 'in:percentage,fixed'],
+            'special_allowance_value' => ['required', 'numeric', 'min:0'],
+            'effective_from' => ['required', 'date'],
+            'effective_to' => ['nullable', 'date', 'after_or_equal:effective_from'],
+            'status' => ['required', 'in:active,inactive'],
+            'remarks' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $old = $assignment->toArray();
+        $assignment->update($data);
+
+        $this->audit('updated_employee_salary_assignment', $assignment, $old, $assignment->fresh()->toArray(), $request);
+
+        return back()->with('success', 'Employee salary assignment updated successfully.');
+    }
+
+    public function destroyEmployeeSalary(Request $request, EmployeeSalaryAssignment $assignment)
+    {
+        $this->authorizePayroll('payroll', 'delete');
+
+        $old = $assignment->toArray();
+        $assignment->delete();
+
+        $this->audit('deleted_employee_salary_assignment', $assignment, $old, null, $request);
+
+        return back()->with('success', 'Employee salary assignment removed successfully.');
+    }
+
+    /**
+     * AJAX endpoint: Return structure defaults for designation or structure selection
+     */
+    public function structureDefaults(Request $request)
+    {
+        $this->authorizePayroll('payroll');
+
+        if ($request->filled('structure_id')) {
+            $structure = SalaryStructure::find($request->input('structure_id'));
+            if ($structure) {
+                return response()->json([
+                    'success' => true,
+                    'designation_id' => $structure->designation_id,
+                    'grade' => $structure->grade,
+                    'basic_salary' => (float) $structure->basic_salary,
+                    'hra_type' => $structure->hra_type ?: 'percentage',
+                    'hra_value' => (float) $structure->hra_value,
+                    'special_allowance_type' => $structure->special_allowance_type ?: 'percentage',
+                    'special_allowance_value' => (float) $structure->special_allowance_value,
+                ]);
+            }
+        }
+
+        if ($request->filled('designation_id')) {
+            $structure = SalaryStructure::where('designation_id', $request->input('designation_id'))
+                ->where('status', 'active')
+                ->latest()
+                ->first();
+
+            if ($structure) {
+                return response()->json([
+                    'success' => true,
+                    'structure_id' => $structure->id,
+                    'grade' => $structure->grade,
+                    'basic_salary' => (float) $structure->basic_salary,
+                    'hra_type' => $structure->hra_type ?: 'percentage',
+                    'hra_value' => (float) $structure->hra_value,
+                    'special_allowance_type' => $structure->special_allowance_type ?: 'percentage',
+                    'special_allowance_value' => (float) $structure->special_allowance_value,
+                ]);
+            }
+        }
+
+        return response()->json([
+            'success' => false,
+            'basic_salary' => 30000.0,
+            'hra_type' => 'percentage',
+            'hra_value' => 50.0,
+            'special_allowance_type' => 'percentage',
+            'special_allowance_value' => 50.0,
         ]);
     }
 
+    /**
+     * 4. Payroll Processing
+     */
     public function processing(Request $request, PayrollCalculationService $payrollService)
     {
         $this->authorizePayroll('payroll');
@@ -50,13 +482,13 @@ class PayrollController extends Controller
         $month = (int) $request->input('month', date('n'));
         $workingDays = (int) $request->input('working_days', 22);
         $office = $request->input('office', 'all');
+        $departmentId = $request->input('department_id') ? (int) $request->input('department_id') : null;
         $employeeType = $request->input('employee_type', 'all');
 
         $offices = BusinessAddress::pluck('branch_name')->filter()->unique()->toArray();
         $dbEmpAddresses = EmployeeDetail::pluck('business_address')->filter()->unique()->toArray();
-        $officesList = array_unique(array_merge(['BBH', 'Kolkata', 'Main Office'], $offices, $dbEmpAddresses));
-
-        $empTypesList = ['Full Time', 'Part Time', 'Contract', 'Internship', 'Remote'];
+        $officesList = array_unique(array_merge(['HQ', 'Main Office', 'BBH', 'Kolkata'], $offices, $dbEmpAddresses));
+        $departments = $this->getDepartments();
 
         // Check if existing payroll exists for period
         $existingPayroll = $payrollService->checkExistingPayroll($companyId, $year, $month, $office, $employeeType);
@@ -67,12 +499,9 @@ class PayrollController extends Controller
         if ($existingPayroll) {
             $payrollRun = $existingPayroll;
             $payrollItems = PayrollHistory::where('payroll_id', $existingPayroll->id)->orderBy('id', 'asc')->get();
-        } elseif ($request->boolean('generate') || $request->isMethod('post')) {
-            $payrollRun = $payrollService->processPayrollRun($companyId, $year, $month, $workingDays, $office, $employeeType, auth()->id());
-            $payrollItems = PayrollHistory::where('payroll_id', $payrollRun->id)->orderBy('id', 'asc')->get();
         } else {
-            // Auto calculate draft preview in-memory
-            $employees = $payrollService->getEligibleEmployees($companyId, $office, $employeeType);
+            // Auto calculate preview lines in memory
+            $employees = $payrollService->getEligibleEmployees($companyId, $office, $employeeType, $departmentId);
             $srNo = 1;
             foreach ($employees as $employee) {
                 $line = $payrollService->calculateEmployeePayrollLine($employee, $year, $month, $workingDays, $srNo++);
@@ -80,54 +509,67 @@ class PayrollController extends Controller
                     'id' => null,
                     'user_id' => $employee->id,
                     'snapshot' => $line,
-                    'gross_salary' => $line['gross'],
-                    'net_salary' => $line['ac_gross'],
+                    'gross_salary' => $line['gross_salary'],
+                    'net_salary' => $line['net_pay'],
+                    'total_in_hand' => $line['total_in_hand'],
+                    'ctc' => $line['ctc'],
                     'payroll_status' => 'Calculated',
                 ]);
             }
         }
 
-        // Calculate dynamic KPIs
+        // Summary calculations
         $totalEmployees = $payrollItems->count();
-        $grossPayroll = 0.0;
-        $actualPayroll = 0.0;
+        $totalGross = 0.0;
+        $totalDeductions = 0.0;
+        $totalNetPay = 0.0;
+        $totalInHand = 0.0;
+        $totalEmployer = 0.0;
+        $totalCtc = 0.0;
         $totalAbsent = 0.0;
         $totalPresent = 0.0;
         $totalLeave = 0.0;
 
         foreach ($payrollItems as $item) {
-            $snap = is_array($item->snapshot) ? $item->snapshot : (json_decode($item->snapshot ?? '{}', true) ?: []);
-            $grossPayroll += (float) ($snap['gross'] ?? 0);
-            $actualPayroll += (float) ($snap['ac_gross'] ?? 0);
-            $totalAbsent += (float) ($snap['total_absent'] ?? 0);
-            $totalPresent += (float) ($snap['presents'] ?? 0);
-            $totalLeave += (float) ($snap['total_leave'] ?? 0);
+            $s = is_array($item->snapshot) ? $item->snapshot : (json_decode($item->snapshot ?? '{}', true) ?: []);
+            $totalGross += (float) ($s['gross_salary'] ?? $s['gross'] ?? 0);
+            $totalDeductions += (float) ($s['total_deductions'] ?? 0);
+            $totalNetPay += (float) ($s['net_pay'] ?? $s['net_salary'] ?? 0);
+            $totalInHand += (float) ($s['total_in_hand'] ?? 0);
+            $totalEmployer += (float) ($s['total_employer_contribution'] ?? 0);
+            $totalCtc += (float) ($s['ctc'] ?? 0);
+            $totalAbsent += (float) ($s['total_absent'] ?? 0);
+            $totalPresent += (float) ($s['presents'] ?? 0);
+            $totalLeave += (float) ($s['total_leave'] ?? 0);
         }
 
         $summary = [
             'total_employees' => $totalEmployees,
-            'gross_payroll' => round($grossPayroll, 2),
-            'actual_payroll' => round($actualPayroll, 2),
+            'total_gross' => round($totalGross, 2),
+            'total_deductions' => round($totalDeductions, 2),
+            'total_net_pay' => round($totalNetPay, 2),
+            'total_in_hand' => round($totalInHand, 2),
+            'total_employer_contribution' => round($totalEmployer, 2),
+            'total_ctc' => round($totalCtc, 2),
             'total_absent' => round($totalAbsent, 2),
             'total_present' => round($totalPresent, 2),
             'total_leave' => round($totalLeave, 2),
-            'payslips_count' => $payrollRun ? Payslip::where('payroll_id', $payrollRun->id)->count() : 0,
-            'pending_review' => ($payrollRun && $payrollRun->status !== 'finalized') ? 1 : 0,
+            'status' => $payrollRun ? $payrollRun->status : 'Draft',
         ];
 
-        return view('admin.payroll.processing', [
-            'year' => $year,
-            'month' => $month,
-            'workingDays' => $workingDays,
-            'office' => $office,
-            'employeeType' => $employeeType,
-            'officesList' => $officesList,
-            'empTypesList' => $empTypesList,
-            'existingPayroll' => $existingPayroll,
-            'payrollRun' => $payrollRun,
-            'payrollItems' => $payrollItems,
-            'summary' => $summary,
-        ]);
+        return view('admin.payroll.processing', compact(
+            'year',
+            'month',
+            'workingDays',
+            'office',
+            'departmentId',
+            'departments',
+            'officesList',
+            'existingPayroll',
+            'payrollRun',
+            'payrollItems',
+            'summary'
+        ));
     }
 
     public function calculate(Request $request, PayrollCalculationService $payrollService)
@@ -139,6 +581,7 @@ class PayrollController extends Controller
             'month' => ['required', 'integer', 'min:1', 'max:12'],
             'working_days' => ['required', 'integer', 'min:1', 'max:31'],
             'office' => ['nullable', 'string'],
+            'department_id' => ['nullable', 'integer'],
             'employee_type' => ['nullable', 'string'],
         ]);
 
@@ -147,29 +590,98 @@ class PayrollController extends Controller
         $month = $request->integer('month');
         $workingDays = $request->integer('working_days');
         $office = $request->input('office', 'all');
+        $departmentId = $request->filled('department_id') ? $request->integer('department_id') : null;
         $employeeType = $request->input('employee_type', 'all');
 
         try {
-            $payroll = $payrollService->processPayrollRun($companyId, $year, $month, $workingDays, $office, $employeeType, auth()->id());
+            $payroll = $payrollService->processPayrollRun($companyId, $year, $month, $workingDays, $office, $employeeType, auth()->id(), $departmentId);
+
             return redirect()->route('payroll.processing', [
                 'year' => $year,
                 'month' => $month,
                 'working_days' => $workingDays,
                 'office' => $office,
-                'employee_type' => $employeeType,
+                'department_id' => $departmentId,
             ])->with('success', 'Payroll calculated successfully for ' . date('F Y', mktime(0, 0, 0, $month, 1, $year)) . '.');
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());
         }
     }
 
-    public function finalize(Request $request, Payroll $payroll, PayrollCalculationService $payrollService)
+    /**
+     * Preview single employee line item
+     */
+    public function preview(PayrollHistory $history)
+    {
+        $this->authorizePayroll('payroll');
+        $history->load(['user.employeeDetail.designation', 'user.employeeDetail.department', 'payroll']);
+
+        $snap = $history->snapshot;
+
+        return view('admin.payroll.preview', compact('history', 'snap'));
+    }
+
+    /**
+     * Update line item inputs (TA, commission, best employee bonus, adjustments)
+     */
+    public function updateLineInput(Request $request, PayrollHistory $history, PayrollCalculationService $payrollService)
+    {
+        $this->authorizePayroll('payroll', 'edit');
+
+        $inputs = $request->validate([
+            'ta' => ['nullable', 'numeric', 'min:0'],
+            'commission' => ['nullable', 'numeric', 'min:0'],
+            'best_employee_bonus' => ['nullable', 'numeric', 'min:0'],
+            'be_rank' => ['nullable', 'integer', 'in:0,1,2'],
+            'attendance_bonus' => ['nullable', 'numeric', 'min:0'],
+            'positive_adjustment' => ['nullable', 'numeric', 'min:0'],
+            'negative_adjustment' => ['nullable', 'numeric', 'min:0'],
+            'overtime_hours' => ['nullable', 'numeric', 'min:0'],
+            'overtime_rate' => ['nullable', 'numeric', 'min:0'],
+            'other_allowances' => ['nullable', 'numeric', 'min:0'],
+            'other_deductions' => ['nullable', 'numeric', 'min:0'],
+            'remarks' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        try {
+            $payrollService->updatePayrollHistoryLine($history, $inputs);
+            return back()->with('success', 'Employee payroll line updated and recalculated successfully.');
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+    }
+
+    public function markReviewed(Payroll $payroll, PayrollCalculationService $payrollService)
+    {
+        $this->authorizePayroll('payroll', 'edit');
+
+        try {
+            $payrollService->reviewPayroll($payroll, auth()->id());
+            return back()->with('success', 'Payroll marked as Reviewed successfully.');
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+    }
+
+    public function approve(Payroll $payroll, PayrollCalculationService $payrollService)
+    {
+        $this->authorizePayroll('payroll', 'edit');
+
+        try {
+            $payrollService->approvePayroll($payroll, auth()->id());
+            return back()->with('success', 'Payroll Approved successfully.');
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+    }
+
+    public function finalize(Payroll $payroll, PayrollCalculationService $payrollService)
     {
         $this->authorizePayroll('payroll', 'create');
 
         try {
             $payrollService->finalizePayroll($payroll, auth()->id());
-            return back()->with('success', 'Payroll run #' . $payroll->id . ' has been finalized successfully.');
+            return back()->with('success', 'Payroll run #' . $payroll->id . ' has been Finalized successfully. Complete snapshot preserved.');
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());
         }
@@ -187,9 +699,7 @@ class PayrollController extends Controller
         $employeeType = $meta['employee_type'] ?? 'all';
 
         try {
-            // Allow recalculating if status is draft, calculated, or review_required
             if ($payroll->status === 'finalized') {
-                // If explicit admin recalculation requested, unlock status
                 $payroll->update(['status' => 'calculated']);
             }
             $payrollService->processPayrollRun($payroll->company_id, $year, $month, $workingDays, $office, $employeeType, auth()->id());
@@ -199,16 +709,395 @@ class PayrollController extends Controller
         }
     }
 
-    public function generatePayslipsForRun(Request $request, Payroll $payroll, PayrollCalculationService $payrollService)
+    /**
+     * 5. Payroll History
+     */
+    public function history(Request $request)
     {
-        $this->authorizePayroll('payslips', 'create');
+        $this->authorizePayroll('payroll');
+        $companyId = $this->selectedCompanyId($request);
 
-        try {
-            $count = $payrollService->generatePayslips($payroll, auth()->id());
-            return back()->with('success', "{$count} Payslips generated successfully.");
-        } catch (\Exception $e) {
-            return back()->with('error', $e->getMessage());
+        $query = PayrollHistory::with([
+                'user.employeeDetail.designation',
+                'user.employeeDetail.department',
+                'payroll',
+            ])
+            ->when($companyId, fn ($q) => $q->whereHas('user', fn ($u) => $u->where('company_id', $companyId)));
+
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->whereHas('user', function ($uq) use ($search) {
+                $uq->where('name', 'LIKE', "%{$search}%")
+                   ->orWhere('email', 'LIKE', "%{$search}%")
+                   ->orWhereHas('employeeDetail', fn ($ed) => $ed->where('employee_id', 'LIKE', "%{$search}%"));
+            });
         }
+
+        if ($request->filled('month') && $request->input('month') !== 'all') {
+            $m = (int) $request->input('month');
+            $query->whereMonth('period_start', $m);
+        }
+
+        if ($request->filled('year') && $request->input('year') !== 'all') {
+            $y = (int) $request->input('year');
+            $query->whereYear('period_start', $y);
+        }
+
+        if ($request->filled('department_id') && $request->input('department_id') !== 'all') {
+            $query->whereHas('user.employeeDetail', fn ($ed) => $ed->where('department_id', $request->input('department_id')));
+        }
+
+        if ($request->filled('designation_id') && $request->input('designation_id') !== 'all') {
+            $query->whereHas('user.employeeDetail', fn ($ed) => $ed->where('designation_id', $request->input('designation_id')));
+        }
+
+        if ($request->filled('status') && $request->input('status') !== 'all') {
+            $query->where('payroll_status', $request->input('status'));
+        }
+
+        $histories = $query->orderBy('period_start', 'desc')->orderBy('id', 'desc')->paginate(20);
+        $departments = $this->getDepartments();
+        $designations = Designation::orderBy('name')->get();
+
+        return view('admin.payroll.history', compact('histories', 'departments', 'designations'));
+    }
+
+    /**
+     * 6. Payslips
+     */
+    public function payslips(Request $request)
+    {
+        $this->authorizePayroll('payslips');
+        $companyId = $this->selectedCompanyId($request);
+
+        $query = Payslip::with([
+                'user.employeeDetail.designation',
+                'user.employeeDetail.department',
+                'payroll',
+            ])
+            ->when($companyId, function ($q) use ($companyId) {
+                if (Schema::hasColumn('payslips', 'company_id')) {
+                    $q->where('company_id', $companyId);
+                } else {
+                    $q->whereHas('user', fn ($u) => $u->where('company_id', $companyId));
+                }
+            });
+
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('payslip_number', 'LIKE', "%{$search}%")
+                  ->orWhereHas('user', fn ($u) => $u->where('name', 'LIKE', "%{$search}%")
+                      ->orWhereHas('employeeDetail', fn ($ed) => $ed->where('employee_id', 'LIKE', "%{$search}%")));
+            });
+        }
+
+        if ($request->filled('month') && $request->input('month') !== 'all') {
+            $m = (int) $request->input('month');
+            $query->whereHas('payroll', fn ($p) => $p->whereMonth('period_start', $m));
+        }
+
+        if ($request->filled('year') && $request->input('year') !== 'all') {
+            $y = (int) $request->input('year');
+            $query->whereHas('payroll', fn ($p) => $p->whereYear('period_start', $y));
+        }
+
+        if ($request->filled('department_id') && $request->input('department_id') !== 'all') {
+            $query->whereHas('user.employeeDetail', fn ($ed) => $ed->where('department_id', $request->input('department_id')));
+        }
+
+        $payslips = $query->latest()->paginate(20);
+        $departments = $this->getDepartments();
+
+        return view('admin.payroll.payslips', compact('payslips', 'departments'));
+    }
+
+    /**
+     * 7. Formulas & Calculation Rules
+     */
+    public function formulas(Request $request)
+    {
+        $this->authorizePayroll('payroll');
+        $companyId = $this->selectedCompanyId($request);
+
+        $query = PayrollFormula::query();
+
+        if ($request->filled('category') && $request->input('category') !== 'all') {
+            $query->where('category', $request->input('category'));
+        }
+
+        if ($request->filled('status') && $request->input('status') !== 'all') {
+            $isActive = $request->input('status') === 'active';
+            $query->where('is_active', $isActive);
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'LIKE', "%{$search}%")
+                  ->orWhere('code', 'LIKE', "%{$search}%")
+                  ->orWhere('description', 'LIKE', "%{$search}%")
+                  ->orWhere('formula', 'LIKE', "%{$search}%");
+            });
+        }
+
+        $formulas = $query->orderBy('category')->orderBy('id', 'asc')->get();
+
+        $summary = [
+            'total' => PayrollFormula::count(),
+            'active' => PayrollFormula::where('is_active', true)->count(),
+            'earnings' => PayrollFormula::where('category', 'earnings')->count(),
+            'deductions' => PayrollFormula::where('category', 'deduction')->count(),
+            'bonuses' => PayrollFormula::where('category', 'bonus')->count(),
+            'statutory' => PayrollFormula::whereIn('category', ['custom', 'statutory'])->count(),
+        ];
+
+        $categories = [
+            'earnings' => 'Earnings & Base',
+            'deduction' => 'Deductions',
+            'bonus' => 'Bonuses & Incentives',
+            'custom' => 'Employer Contributions & CTC',
+        ];
+
+        $commonVariables = [
+            'BASIC' => 'Monthly Base Salary (from structure or assignment)',
+            'PAYABLE_DAYS' => 'Total days present + paid leaves + WFH',
+            'WORKING_DAYS' => 'Total scheduled working days in month (e.g. 22)',
+            'CURRENT_BASIC' => 'Prorated basic salary based on attendance',
+            'HRA' => 'House Rent Allowance amount',
+            'SPECIAL_ALLOWANCE' => 'Special Allowance amount',
+            'OTHER_ALLOWANCES' => 'Sum of other earnings',
+            'GROSS_SALARY' => 'Gross monthly earnings',
+            'PF' => 'Employee Provident Fund deduction',
+            'ESI' => 'Employee State Insurance deduction',
+            'PT' => 'Professional Tax deduction',
+            'TDS' => 'Tax Deducted at Source',
+            'TOTAL_DEDUCTIONS' => 'Sum of all employee deductions',
+            'NET_PAY' => 'Net salary before bonuses and incentives',
+            'WORKING_HOURS' => 'Total logged working hours in month',
+            'BE_RANK' => 'Best Employee performance rank (1 or 2)',
+            'OVERTIME_HOURS' => 'Total approved overtime hours',
+            'OVERTIME_RATE' => 'Hourly overtime rate multiplier',
+            'TA' => 'Approved Travel Allowance',
+            'COMMISSION' => 'Approved Commission amount',
+            'ADJUSTMENTS' => 'Net positive/negative payroll adjustment',
+            'TOTAL_ADDITIONAL_EARNINGS' => 'Sum of bonus, TA, OT, commission & adj',
+            'EMPLOYER_PF' => 'Employer PF matching contribution (12%)',
+            'EMPLOYER_ESI' => 'Employer ESI statutory contribution (3.25%)',
+            'EDLI' => 'Employer EDLI statutory contribution (0.5%)',
+            'TOTAL_EMPLOYER_CONTRIBUTION' => 'Sum of all employer statutory costs',
+        ];
+
+        return view('admin.payroll.formulas', compact('formulas', 'summary', 'categories', 'commonVariables'));
+    }
+
+    public function storeFormula(Request $request)
+    {
+        $this->authorizePayroll('payroll', 'create');
+
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'code' => ['required', 'string', 'max:60', 'unique:payroll_formulas,code'],
+            'category' => ['required', 'string', 'in:earnings,deduction,bonus,custom,statutory'],
+            'formula' => ['required', 'string'],
+            'description' => ['nullable', 'string', 'max:500'],
+            'effective_from' => ['nullable', 'date'],
+            'effective_to' => ['nullable', 'date', 'after_or_equal:effective_from'],
+            'is_active' => ['nullable'],
+        ]);
+
+        $cleanFormula = rtrim(trim($data['formula']), ";, \t\n\r\0\x0B");
+        preg_match_all('/\b[A-Z_]{2,}\b/', $cleanFormula, $varMatches);
+        $variablesUsed = array_values(array_unique($varMatches[0] ?? []));
+
+        $testInputs = $request->input('test_inputs', []);
+        if (is_string($testInputs)) {
+            $testInputs = json_decode($testInputs, true) ?: [];
+        }
+
+        $testResult = PayrollFormula::evaluate($cleanFormula, $testInputs);
+        $isValid = ($testResult !== false);
+
+        $formula = PayrollFormula::create([
+            'name' => $data['name'],
+            'code' => Str::upper(Str::slug($data['code'], '_')),
+            'category' => $data['category'],
+            'formula' => $cleanFormula,
+            'variables_used' => $variablesUsed,
+            'description' => $data['description'] ?? null,
+            'effective_from' => $data['effective_from'] ?: date('Y-m-d'),
+            'effective_to' => $data['effective_to'] ?: null,
+            'version' => 1,
+            'is_valid' => $isValid,
+            'is_active' => $request->boolean('is_active', true),
+            'test_inputs' => $testInputs,
+            'test_result' => $isValid ? (float)$testResult : null,
+            'last_validated_at' => now(),
+            'company_id' => auth()->user()?->company_id,
+            'created_by' => auth()->id(),
+        ]);
+
+        $this->audit('created_payroll_formula', $formula, null, $formula->toArray(), $request);
+
+        return back()->with('success', "Payroll formula '{$formula->name}' created and made effective successfully.");
+    }
+
+    public function updateFormula(Request $request, PayrollFormula $formula)
+    {
+        $this->authorizePayroll('payroll', 'edit');
+
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'category' => ['required', 'string', 'in:earnings,deduction,bonus,custom,statutory'],
+            'formula' => ['required', 'string'],
+            'description' => ['nullable', 'string', 'max:500'],
+            'effective_from' => ['nullable', 'date'],
+            'effective_to' => ['nullable', 'date', 'after_or_equal:effective_from'],
+            'is_active' => ['nullable'],
+        ]);
+
+        $old = $formula->toArray();
+        $cleanFormula = rtrim(trim($data['formula']), ";, \t\n\r\0\x0B");
+        preg_match_all('/\b[A-Z_]{2,}\b/', $cleanFormula, $varMatches);
+        $variablesUsed = array_values(array_unique($varMatches[0] ?? []));
+
+        $testInputs = $request->input('test_inputs', $formula->test_inputs ?: []);
+        if (is_string($testInputs)) {
+            $testInputs = json_decode($testInputs, true) ?: [];
+        }
+
+        $testResult = PayrollFormula::evaluate($cleanFormula, $testInputs);
+        $isValid = ($testResult !== false);
+
+        $formula->update([
+            'name' => $data['name'],
+            'category' => $data['category'],
+            'formula' => $cleanFormula,
+            'variables_used' => $variablesUsed,
+            'description' => $data['description'] ?? null,
+            'effective_from' => $data['effective_from'] ?: date('Y-m-d'),
+            'effective_to' => $data['effective_to'] ?: null,
+            'version' => ($formula->version ?? 1) + 1,
+            'is_valid' => $isValid,
+            'is_active' => $request->boolean('is_active', true),
+            'test_inputs' => $testInputs,
+            'test_result' => $isValid ? (float)$testResult : null,
+            'last_validated_at' => now(),
+            'updated_by' => auth()->id(),
+        ]);
+
+        $this->audit('updated_payroll_formula', $formula, $old, $formula->fresh()->toArray(), $request);
+
+        return back()->with('success', "Payroll formula '{$formula->name}' (v{$formula->version}) updated and made effective.");
+    }
+
+    public function toggleFormulaActive(Request $request, PayrollFormula $formula)
+    {
+        $this->authorizePayroll('payroll', 'edit');
+
+        $formula->is_active = !$formula->is_active;
+        if ($formula->is_active && empty($formula->effective_from)) {
+            $formula->effective_from = date('Y-m-d');
+        }
+        $formula->save();
+
+        $statusStr = $formula->is_active ? 'activated & made effective' : 'deactivated';
+        return back()->with('success', "Payroll formula '{$formula->name}' has been {$statusStr}.");
+    }
+
+    public function testFormulaLive(Request $request)
+    {
+        $this->authorizePayroll('payroll');
+
+        $formula = (string) $request->input('formula', '');
+        $inputs = (array) $request->input('variables', []);
+
+        if (trim($formula) === '') {
+            return response()->json(['success' => false, 'error' => 'Formula expression cannot be empty.']);
+        }
+
+        $result = PayrollFormula::evaluate($formula, $inputs);
+
+        if ($result === false) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Formula evaluation failed. Please check syntax and ensure only valid mathematical expressions are used.',
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'result' => round($result, 2),
+            'formatted' => '₹' . number_format($result, 2),
+        ]);
+    }
+
+    protected function resolvePayslipModel($payslip): Payslip
+    {
+        if ($payslip instanceof Payslip) {
+            return $payslip;
+        }
+
+        $found = Payslip::find($payslip);
+        if ($found) {
+            return $found;
+        }
+
+        // Fallback: check by payroll_history_id or PayrollHistory ID
+        $history = PayrollHistory::find($payslip) ?? PayrollHistory::where('id', $payslip)->first();
+        if ($history) {
+            $existing = Payslip::where('payroll_history_id', $history->id)->first();
+            if ($existing) {
+                return $existing;
+            }
+            $payroll = $history->payroll ?: Payroll::find($history->payroll_id);
+            if ($payroll) {
+                app(PayrollCalculationService::class)->generatePayslips($payroll, auth()->id());
+                $newPayslip = Payslip::where('payroll_history_id', $history->id)->first();
+                if ($newPayslip) {
+                    return $newPayslip;
+                }
+            }
+        }
+
+        abort(404, 'Payslip not found.');
+    }
+
+    public function viewPayslip($payslip)
+    {
+        $this->authorizePayroll('payslips');
+        $payslip = $this->resolvePayslipModel($payslip);
+        $payslip->load(['user.employeeDetail.designation', 'user.employeeDetail.department', 'payroll']);
+
+        $company = Company::find($payslip->company_id ?: auth()->user()?->company_id) ?: \App\Models\CompanySetting::first();
+        $snap = $payslip->employee_snapshot;
+
+        return view('admin.payroll.payslip-view', compact('payslip', 'company', 'snap'));
+    }
+
+    public function printPayslip($payslip)
+    {
+        $this->authorizePayroll('payslips');
+        $payslip = $this->resolvePayslipModel($payslip);
+        $payslip->load(['user.employeeDetail.designation', 'user.employeeDetail.department', 'payroll']);
+
+        $company = Company::find($payslip->company_id ?: auth()->user()?->company_id) ?: \App\Models\CompanySetting::first();
+        $snap = $payslip->employee_snapshot;
+
+        return view('admin.payroll.payslip-print', compact('payslip', 'company', 'snap'));
+    }
+
+    public function downloadPdf($payslip)
+    {
+        $this->authorizePayroll('payslips');
+        $payslip = $this->resolvePayslipModel($payslip);
+        $payslip->load(['user.employeeDetail.designation', 'user.employeeDetail.department', 'payroll']);
+
+        $company = Company::find($payslip->company_id ?: auth()->user()?->company_id) ?: \App\Models\CompanySetting::first();
+        $snap = $payslip->employee_snapshot;
+
+        $pdf = Pdf::loadView('admin.payroll.payslip-pdf', compact('payslip', 'company', 'snap'));
+        return $pdf->download('Payslip_' . $payslip->payslip_number . '.pdf');
     }
 
     public function sendPayslipSingle(Request $request, Payslip $payslip, PayrollCalculationService $payrollService)
@@ -226,14 +1115,7 @@ class PayrollController extends Controller
     {
         $this->authorizePayroll('payroll');
 
-        $query = PayrollHistory::where('payroll_id', $payroll->id);
-        if ($request->filled('selected_ids')) {
-            $ids = array_filter(explode(',', (string) $request->input('selected_ids')));
-            if (!empty($ids)) {
-                $query->whereIn('user_id', $ids);
-            }
-        }
-        $items = $query->get();
+        $items = PayrollHistory::where('payroll_id', $payroll->id)->get();
         $fileName = 'Payroll_' . date('Y_m', strtotime($payroll->period_start)) . '_Export.csv';
 
         $headers = [
@@ -246,29 +1128,13 @@ class PayrollController extends Controller
 
         $callback = function () use ($items) {
             $file = fopen('php://output', 'w');
-            
-            // CSV Header Row matching section 8 requirements
             fputcsv($file, [
-                'Sr. No',
-                'Employee ID',
-                'Employee Name',
-                'Initial Leave Balance',
-                'Full Leave',
-                'Half Leave',
-                'Current Leave Balance',
-                'Full Absent',
-                'Half Absent',
-                'Total Absent',
-                'Presents',
-                'Basic',
-                'HRA',
-                'Special',
-                'Gross',
-                'Actual Basic',
-                'Actual HRA',
-                'Actual Special',
-                'Actual Gross',
-                'Status',
+                'Sr No', 'Emp ID', 'Employee Name', 'Designation', 'Grade',
+                'Working Days', 'Present', 'Paid Leave', 'Unpaid Leave', 'Absent', 'Half Day', 'WFH', 'Working Hours',
+                'Basic', 'Current Basic', 'HRA', 'Special Allowance', 'Gross',
+                'PF', 'ESI', 'Total Deductions', 'Net Pay',
+                'Attendance Bonus', 'Best Emp Bonus', 'TA', 'Overtime', 'Commission', 'Adjustments', 'Total In Hand',
+                'Employer PF', 'Employer ESI', 'EDLI', 'CTC', 'Status'
             ]);
 
             foreach ($items as $item) {
@@ -277,690 +1143,55 @@ class PayrollController extends Controller
                     $s['sr_no'] ?? '-',
                     $s['employee_id'] ?? '-',
                     $s['employee_name'] ?? '-',
-                    $s['initial_leave_balance'] ?? 0,
-                    $s['full_leave'] ?? 0,
-                    $s['half_leave'] ?? 0,
-                    $s['current_leave_balance'] ?? 0,
-                    $s['full_absent'] ?? 0,
-                    $s['half_absent'] ?? 0,
-                    $s['total_absent'] ?? 0,
-                    $s['presents'] ?? 0,
+                    $s['designation'] ?? '-',
+                    $s['grade'] ?? '-',
+                    $s['working_days'] ?? 22,
+                    $s['present'] ?? 0,
+                    $s['paid_leave'] ?? 0,
+                    $s['unpaid_leave'] ?? 0,
+                    $s['absent'] ?? 0,
+                    $s['half_day'] ?? 0,
+                    $s['wfh'] ?? 0,
+                    $s['working_hours'] ?? 0,
                     $s['basic'] ?? 0,
-                    $s['hra'] ?? 0,
-                    $s['special'] ?? 0,
-                    $s['gross'] ?? 0,
-                    $s['ac_basic'] ?? 0,
-                    $s['ac_hra'] ?? 0,
-                    $s['ac_special'] ?? 0,
-                    $s['ac_gross'] ?? 0,
+                    $s['current_basic'] ?? 0,
+                    $s['current_hra'] ?? 0,
+                    $s['current_special'] ?? 0,
+                    $s['gross_salary'] ?? 0,
+                    $s['pf'] ?? 0,
+                    $s['esi'] ?? 0,
+                    $s['total_deductions'] ?? 0,
+                    $s['net_pay'] ?? 0,
+                    $s['attendance_bonus'] ?? 0,
+                    $s['best_employee_bonus'] ?? 0,
+                    $s['ta'] ?? 0,
+                    $s['overtime'] ?? 0,
+                    $s['commission'] ?? 0,
+                    $s['adjustment'] ?? 0,
+                    $s['total_in_hand'] ?? 0,
+                    $s['employer_pf'] ?? 0,
+                    $s['employer_esi'] ?? 0,
+                    $s['edli'] ?? 0,
+                    $s['ctc'] ?? 0,
                     $item->payroll_status ?? 'Calculated',
                 ]);
             }
-
             fclose($file);
         };
 
         return response()->stream($callback, 200, $headers);
     }
 
-    public function architectures()
+    /**
+     * Strict Authorization: Admin Workspace ONLY
+     */
+    private function authorizePayroll(string $moduleSlug = 'payroll', string $permission = 'view'): void
     {
-        $this->authorizePayroll('payroll-architectures');
-        $companyId = $this->selectedCompanyId(request());
-
-        return view('admin.payroll.architectures', [
-            'architectures' => $this->companyQuery(PayrollArchitecture::query(), $companyId)->latest()->get(),
-            'types' => ['standard', 'startup', 'hourly', 'contract', 'project_based', 'commission_based', 'custom'],
-        ]);
-    }
-
-    public function storeArchitecture(Request $request)
-    {
-        $this->authorizePayroll('payroll-architectures', 'create');
-
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'type' => ['required', 'string', 'max:50'],
-            'description' => ['nullable', 'string'],
-            'effective_date' => ['nullable', 'date'],
-        ]);
-
-        $architecturePayload = [
-            ...$data,
-            'code' => Str::slug($data['name']) . '-' . Str::upper(Str::random(4)),
-            'created_by' => auth()->id(),
-            'version' => 1,
-        ];
-        if (Schema::hasColumn('payroll_architectures', 'company_id')) {
-            $architecturePayload['company_id'] = auth()->user()?->company_id;
+        $role = strtolower((string)(auth()->user()?->role ?? ''));
+        if (!in_array($role, ['admin', 'superadmin', 'administrator'], true)) {
+            abort(403, 'Unauthorized. Payroll access is restricted strictly to Admin workspace.');
         }
 
-        $architecture = PayrollArchitecture::create($architecturePayload);
-
-        $this->versionArchitecture($architecture);
-        $this->audit('created_architecture', $architecture, null, $architecture->toArray(), $request);
-
-        return back()->with('success', 'Payroll architecture created.');
-    }
-
-    public function activateArchitecture(Request $request, PayrollArchitecture $architecture)
-    {
-        $this->authorizePayroll('payroll-architectures', 'edit');
-
-        DB::transaction(function () use ($request, $architecture) {
-            PayrollArchitecture::where('is_active', true)->update(['is_active' => false]);
-            $old = $architecture->toArray();
-            $architecture->update(['is_active' => true, 'version' => $architecture->version + 1]);
-            $this->versionArchitecture($architecture->fresh());
-            $this->audit('activated_architecture', $architecture, $old, $architecture->fresh()->toArray(), $request);
-        });
-
-        return back()->with('success', 'Active payroll architecture updated.');
-    }
-
-    public function salaryStructures()
-    {
-        $this->authorizePayroll('salary-structures');
-        $companyId = $this->selectedCompanyId(request());
-
-        return view('admin.payroll.salary-structures', [
-            'structures' => $this->companyQuery(SalaryStructure::withCount('components'), $companyId)->latest()->get(),
-            'components' => SalaryComponent::with('salaryStructure')->orderBy('sort_order')->latest()->get(),
-        ]);
-    }
-
-    public function storeSalaryStructure(Request $request)
-    {
-        $this->authorizePayroll('salary-structures', 'create');
-
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
-            'effective_date' => ['nullable', 'date'],
-        ]);
-
-        $structurePayload = [
-            ...$data,
-            'code' => Str::slug($data['name']) . '-' . Str::upper(Str::random(4)),
-            'created_by' => auth()->id(),
-            'version' => 1,
-        ];
-        if (Schema::hasColumn('salary_structures', 'company_id')) {
-            $structurePayload['company_id'] = auth()->user()?->company_id;
-        }
-
-        $structure = SalaryStructure::create($structurePayload);
-
-        $this->versionSalaryStructure($structure);
-        $this->audit('created_salary_structure', $structure, null, $structure->toArray(), $request);
-
-        return back()->with('success', 'Salary structure created.');
-    }
-
-    public function storeSalaryComponent(Request $request)
-    {
-        $this->authorizePayroll('salary-structures', 'create');
-
-        $data = $request->validate([
-            'salary_structure_id' => ['nullable', 'exists:salary_structures,id'],
-            'name' => ['required', 'string', 'max:255'],
-            'component_type' => ['required', 'string', 'max:60'],
-            'calculation_type' => ['required', 'string', 'max:60'],
-            'value' => ['nullable', 'numeric'],
-            'formula' => ['nullable', 'string'],
-            'taxable' => ['nullable', 'boolean'],
-            'required' => ['nullable', 'boolean'],
-            'effective_date' => ['nullable', 'date'],
-        ]);
-
-        $component = SalaryComponent::create([
-            ...$data,
-            'code' => Str::slug($data['name']),
-            'taxable' => $request->boolean('taxable'),
-            'required' => $request->boolean('required'),
-        ]);
-
-        $this->audit('created_salary_component', $component, null, $component->toArray(), $request);
-
-        return back()->with('success', 'Salary component added.');
-    }
-
-    public function deductionRules()
-    {
-        $this->authorizePayroll('deduction-rules');
-
-        return $this->rulesView('Deduction Rules', 'deduction-rules', DeductionComponent::latest()->get());
-    }
-
-    public function storeDeductionRule(Request $request)
-    {
-        $this->authorizePayroll('deduction-rules', 'create');
-        $rule = DeductionComponent::create($this->rulePayload($request, 'deduction_type'));
-        $this->audit('created_deduction_rule', $rule, null, $rule->toArray(), $request);
-
-        return back()->with('success', 'Deduction rule saved.');
-    }
-
-    public function bonusRules()
-    {
-        $this->authorizePayroll('bonus-rules');
-
-        return $this->rulesView('Bonus Rules', 'bonus-rules', BonusRule::latest()->get());
-    }
-
-    public function storeBonusRule(Request $request)
-    {
-        $this->authorizePayroll('bonus-rules', 'create');
-        $rule = BonusRule::create($this->rulePayload($request, 'bonus_type'));
-        $this->audit('created_bonus_rule', $rule, null, $rule->toArray(), $request);
-
-        return back()->with('success', 'Bonus rule saved.');
-    }
-
-    public function taxRules()
-    {
-        $this->authorizePayroll('tax-rules');
-
-        return $this->rulesView('Tax Rules', 'tax-rules', TaxRule::latest()->get());
-    }
-
-    public function storeTaxRule(Request $request)
-    {
-        $this->authorizePayroll('tax-rules', 'create');
-        $data = $this->baseRuleValidation($request);
-        $rule = TaxRule::create([
-            'code' => Str::slug($data['name']),
-            'name' => $data['name'],
-            'country' => $request->input('country', 'custom'),
-            'formula' => $data['formula'] ?? null,
-            'effective_date' => $data['effective_date'] ?? null,
-            'slabs' => $this->jsonInput($request->input('slabs')),
-            'exemptions' => $this->jsonInput($request->input('exemptions')),
-        ]);
-        $this->audit('created_tax_rule', $rule, null, $rule->toArray(), $request);
-
-        return back()->with('success', 'Tax rule saved.');
-    }
-
-    public function overtimeRules()
-    {
-        $this->authorizePayroll('overtime-rules');
-
-        return $this->rulesView('Overtime Rules', 'overtime-rules', OvertimeRule::latest()->get());
-    }
-
-    public function storeOvertimeRule(Request $request)
-    {
-        $this->authorizePayroll('overtime-rules', 'create');
-        $data = $this->baseRuleValidation($request);
-        $rule = OvertimeRule::create([
-            'code' => Str::slug($data['name']),
-            'name' => $data['name'],
-            'overtime_type' => $request->input('rule_type', 'weekday'),
-            'multiplier' => $request->input('multiplier', 1),
-            'formula' => $data['formula'] ?? null,
-            'effective_date' => $data['effective_date'] ?? null,
-        ]);
-        $this->audit('created_overtime_rule', $rule, null, $rule->toArray(), $request);
-
-        return back()->with('success', 'Overtime rule saved.');
-    }
-
-    public function cycles()
-    {
-        $this->authorizePayroll('payroll-cycles');
-        $companyId = $this->selectedCompanyId(request());
-
-        return view('admin.payroll.cycles', [
-            'cycles' => $this->companyQuery(PayrollCycle::query(), $companyId)->latest()->get(),
-            'cycleTypes' => ['monthly', 'weekly', 'biweekly', 'quarterly', 'half_yearly', 'yearly', 'custom'],
-        ]);
-    }
-
-    public function storeCycle(Request $request)
-    {
-        $this->authorizePayroll('payroll-cycles', 'create');
-
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'cycle_type' => ['required', 'string', 'max:60'],
-            'start_date' => ['required', 'date'],
-            'end_date' => ['required', 'date', 'after_or_equal:start_date'],
-            'pay_date' => ['nullable', 'date'],
-            'lock_date' => ['nullable', 'date'],
-            'description' => ['nullable', 'string'],
-        ]);
-
-        $cyclePayload = [
-            ...$data,
-            'created_by' => auth()->id(),
-        ];
-        if (Schema::hasColumn('payroll_cycles', 'company_id')) {
-            $cyclePayload['company_id'] = auth()->user()?->company_id;
-        }
-
-        $cycle = PayrollCycle::create($cyclePayload);
-        $this->audit('created_payroll_cycle', $cycle, null, $cycle->toArray(), $request);
-
-        return back()->with('success', 'Payroll cycle created.');
-    }
-
-    public function process(Request $request, PayrollCycle $cycle)
-    {
-        $this->authorizePayroll('payroll', 'create');
-
-        $payrollPayload = [
-            'payroll_cycle_id' => $cycle->id,
-            'status' => 'draft',
-            'period_start' => $cycle->start_date,
-            'period_end' => $cycle->end_date,
-            'pay_date' => $cycle->pay_date,
-            'generated_by' => auth()->id(),
-            'attendance_summary' => ['source' => 'attendance_leave_timesheet_integration'],
-        ];
-        if (Schema::hasColumn('payrolls', 'company_id')) {
-            $payrollPayload['company_id'] = ($cycle->company_id ?? null) ?: auth()->user()?->company_id;
-        }
-
-        $payroll = Payroll::create($payrollPayload);
-
-        $this->audit('generated_payroll_draft', $payroll, null, $payroll->toArray(), $request);
-
-        return redirect()->route('payroll.index')->with('success', 'Payroll draft generated.');
-    }
-
-    public function payslips()
-    {
-        $this->authorizePayroll('payslips');
-
-        return view('admin.payroll.payslips', [
-            'payslips' => $this->payslipQuery($this->selectedCompanyId(request()))->latest()->get(),
-            'templates' => PayslipTemplate::latest()->get(),
-        ]);
-    }
-
-    public function reports()
-    {
-        $this->authorizePayroll('payroll-reports');
-
-        return view('admin.payroll.reports', [
-            'payrolls' => $this->companyQuery(Payroll::query(), $this->selectedCompanyId(request()))->latest()->get(),
-            'histories' => $this->payrollHistoryQuery($this->selectedCompanyId(request()))->latest()->take(100)->get(),
-        ]);
-    }
-
-    public function auditLogs()
-    {
-        $this->authorizePayroll('payroll-audit-logs');
-
-        return view('admin.payroll.audit-logs', [
-            'logs' => PayrollAuditLog::latest()->paginate(50),
-        ]);
-    }
-
-    public function viewPayslip(Payslip $payslip)
-    {
-        $this->authorizePayroll('payslips');
-        $payslip->load('user');
-
-        return view('admin.payroll.payslip-view', compact('payslip'));
-    }
-
-    public function printPayslip(Payslip $payslip)
-    {
-        $this->authorizePayroll('payslips');
-        $payslip->load('user');
-
-        return view('admin.payroll.payslip-print', compact('payslip'));
-    }
-
-    public function exportReport(Request $request)
-    {
-        $this->authorizePayroll('payroll-reports');
-        $companyId = $this->selectedCompanyId($request);
-
-        $payrolls = $this->companyQuery(Payroll::query(), $companyId)->latest()->get();
-        $fileName = 'Payroll_Report_' . date('Y_m_d') . '.csv';
-
-        $headers = [
-            'Content-Type'        => 'text/csv',
-            'Content-Disposition' => "attachment; filename=\"{$fileName}\"",
-            'Pragma'              => 'no-cache',
-            'Cache-Control'       => 'must-revalidate, post-check=0, pre-check=0',
-        ];
-
-        $callback = function () use ($payrolls) {
-            $file = fopen('php://output', 'w');
-            fputcsv($file, ['Period Start', 'Period End', 'Status', 'Gross Total', 'Deduction Total', 'Tax Total', 'Net Total', 'Generated At']);
-            foreach ($payrolls as $payroll) {
-                fputcsv($file, [
-                    $payroll->period_start,
-                    $payroll->period_end,
-                    $payroll->status,
-                    $payroll->gross_total,
-                    $payroll->deduction_total,
-                    $payroll->tax_total,
-                    $payroll->net_total,
-                    $payroll->created_at?->format('Y-m-d H:i'),
-                ]);
-            }
-            fclose($file);
-        };
-
-        return response()->stream($callback, 200, $headers);
-    }
-
-    public function policies()
-    {
-        // Delegate to PayrollPolicyController
-        return app(\App\Http\Controllers\PayrollPolicyController::class)->index(request());
-    }
-
-    public function settings()
-    {
-        return $this->placeholder('settings');
-    }
-
-    public function importExport(Request $request)
-    {
-        $this->authorizePayroll('payroll-import-export');
-        $companyId = $this->selectedCompanyId($request);
-
-        return view('admin.payroll.import-export', [
-            'importLogs' => \App\Models\PayrollImportLog::latest()->take(20)->get(),
-            'exportLogs' => \App\Models\PayrollExportLog::latest()->take(20)->get(),
-        ]);
-    }
-
-    public function importPayroll(Request $request)
-    {
-        $this->authorizePayroll('payroll-import-export', 'create');
-
-        $request->validate([
-            'import_file' => 'required|file|mimes:csv,txt,xlsx|max:5120',
-        ]);
-
-        $file = $request->file('import_file');
-        $path = $file->store('payroll-imports', 'local');
-
-        $log = \App\Models\PayrollImportLog::create([
-            'file_name'    => $file->getClientOriginalName(),
-            'file_type'    => $file->getClientMimeType(),
-            'file_path'    => $path,
-            'status'       => 'pending',
-            'processed_by' => auth()->id(),
-        ]);
-
-        $this->audit('payroll_import_uploaded', $log, null, $log->toArray(), $request);
-
-        return back()->with('success', 'File "' . $file->getClientOriginalName() . '" uploaded. Processing will begin shortly.');
-    }
-
-    public function exportCsv(Request $request)
-    {
-        $this->authorizePayroll('payroll-import-export');
-        $companyId = $this->selectedCompanyId($request);
-
-        $histories = $this->payrollHistoryQuery($companyId)->latest()->take(5000)->get();
-        $fileName  = 'Payroll_Full_Export_' . date('Y_m_d') . '.csv';
-
-        $headers = [
-            'Content-Type'        => 'text/csv',
-            'Content-Disposition' => "attachment; filename=\"{$fileName}\"",
-        ];
-
-        $callback = function () use ($histories) {
-            $file = fopen('php://output', 'w');
-            fputcsv($file, ['User ID', 'Period Start', 'Period End', 'Gross Salary', 'Total Deductions', 'Net Salary', 'Status']);
-            foreach ($histories as $h) {
-                fputcsv($file, [
-                    $h->user_id,
-                    $h->period_start,
-                    $h->period_end,
-                    $h->gross_salary,
-                    $h->total_deductions,
-                    $h->net_salary,
-                    $h->payroll_status,
-                ]);
-            }
-            fclose($file);
-        };
-
-        return response()->stream($callback, 200, $headers);
-    }
-
-    public function downloadTemplate()
-    {
-        $this->authorizePayroll('payroll-import-export');
-
-        $headers = [
-            'Content-Type'        => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="payroll_import_template.csv"',
-        ];
-
-        $callback = function () {
-            $file = fopen('php://output', 'w');
-            fputcsv($file, ['employee_id', 'basic_salary', 'hra', 'special_allowance', 'gross_salary', 'pf_deduction', 'esi_deduction', 'pt_deduction', 'net_salary', 'period_month', 'period_year', 'notes']);
-            fputcsv($file, ['EMP-001', '30000', '12000', '8000', '50000', '1800', '375', '200', '47625', '1', '2025', 'Sample row']);
-            fclose($file);
-        };
-
-        return response()->stream($callback, 200, $headers);
-    }
-
-    public function archive(Request $request)
-    {
-        $this->authorizePayroll('payroll-archive');
-        $companyId = $this->selectedCompanyId($request);
-
-        return view('admin.payroll.archive', [
-            'archives'    => \App\Models\PayrollArchive::with('archiver')->latest()->paginate(25),
-            'payrolls'    => $this->companyQuery(Payroll::query(), $companyId)->where('status', 'finalized')->latest()->get(),
-        ]);
-    }
-
-    public function archivePayroll(Request $request, Payroll $payroll)
-    {
-        $this->authorizePayroll('payroll-archive', 'create');
-
-        $request->validate([
-            'reason' => 'nullable|string|max:500',
-        ]);
-
-        DB::transaction(function () use ($request, $payroll) {
-            \App\Models\PayrollArchive::create([
-                'archivable_type' => Payroll::class,
-                'archivable_id'   => $payroll->id,
-                'snapshot'        => $payroll->load('histories', 'payslips')->toArray(),
-                'archived_by'     => auth()->id(),
-                'archived_at'     => now(),
-                'reason'          => $request->input('reason', 'Manual archive'),
-            ]);
-            $payroll->update(['status' => 'archived']);
-            $this->audit('payroll_archived', $payroll, ['status' => $payroll->getOriginal('status')], ['status' => 'archived'], $request);
-        });
-
-        return back()->with('success', 'Payroll run #' . $payroll->id . ' archived successfully.');
-    }
-
-    public function formulaBuilder(Request $request)
-    {
-        $this->authorizePayroll('formula-builder');
-
-        return view('admin.payroll.formula-builder', [
-            'formulas'    => \App\Models\PayrollFormula::latest()->paginate(20),
-            'categories'  => ['earnings', 'deduction', 'tax', 'bonus', 'custom'],
-            'variables'   => [
-                'BASIC', 'HRA', 'SPECIAL', 'GROSS', 'NET',
-                'PF', 'ESI', 'PT', 'TDS', 'BONUS',
-                'OVERTIME', 'ATTENDANCE_DAYS', 'WORKING_DAYS',
-                'BASIC_PERCENTAGE', 'CTC', 'MONTH_DAYS',
-            ],
-        ]);
-    }
-
-    public function storeFormula(Request $request)
-    {
-        $this->authorizePayroll('formula-builder', 'create');
-
-        $data = $request->validate([
-            'name'     => 'required|string|max:255',
-            'category' => 'required|in:earnings,deduction,tax,bonus,custom',
-            'formula'  => 'required|string|max:2000',
-            'description' => 'nullable|string|max:1000',
-        ]);
-
-        // Extract variables used (uppercase tokens A-Z_)
-        preg_match_all('/\b([A-Z][A-Z_]+)\b/', strtoupper($data['formula']), $matches);
-        $variablesUsed = array_unique($matches[1] ?? []);
-
-        $formula = \App\Models\PayrollFormula::create([
-            'name'           => $data['name'],
-            'code'           => Str::slug($data['name']),
-            'category'       => $data['category'],
-            'description'    => $data['description'] ?? null,
-            'formula'        => $data['formula'],
-            'variables_used' => $variablesUsed,
-            'is_valid'       => false,
-            'is_active'      => true,
-            'company_id'     => auth()->user()?->company_id,
-            'created_by'     => auth()->id(),
-            'updated_by'     => auth()->id(),
-        ]);
-
-        $this->audit('formula_created', $formula, null, $formula->toArray(), $request);
-
-        return back()->with('success', 'Formula "' . $formula->name . '" saved successfully.');
-    }
-
-    public function validateFormula(Request $request)
-    {
-        $this->authorizePayroll('formula-builder', 'create');
-
-        $request->validate([
-            'formula' => 'required|string|max:2000',
-            'inputs'  => 'nullable|array',
-        ]);
-
-        $formula   = strtoupper($request->input('formula'));
-        $inputs    = $request->input('inputs', []);
-        $testVars  = array_map('floatval', $inputs);
-
-        $result = \App\Models\PayrollFormula::evaluate($formula, $testVars);
-
-        if ($result === false) {
-            return response()->json(['valid' => false, 'error' => 'Invalid formula syntax. Only numeric arithmetic expressions with uppercase variable names are allowed.']);
-        }
-
-        return response()->json(['valid' => true, 'result' => round($result, 2)]);
-    }
-
-    public function destroyFormula(Request $request, \App\Models\PayrollFormula $formula)
-    {
-        $this->authorizePayroll('formula-builder', 'delete');
-        $this->audit('formula_deleted', $formula, $formula->toArray(), null, $request);
-        $formula->delete();
-
-        return back()->with('success', 'Formula deleted.');
-    }
-
-    public function destroyArchitecture(Request $request, PayrollArchitecture $architecture)
-    {
-        $this->authorizePayroll('payroll-architectures', 'delete');
-        $this->audit('architecture_deleted', $architecture, $architecture->toArray(), null, $request);
-        $architecture->delete();
-
-        return back()->with('success', 'Architecture deleted.');
-    }
-
-    public function destroySalaryComponent(Request $request, SalaryComponent $component)
-    {
-        $this->authorizePayroll('salary-structures', 'delete');
-        $this->audit('salary_component_deleted', $component, $component->toArray(), null, $request);
-        $component->delete();
-
-        return back()->with('success', 'Salary component removed.');
-    }
-
-    public function destroyDeductionRule(Request $request, DeductionComponent $rule)
-    {
-        $this->authorizePayroll('deduction-rules', 'delete');
-        $this->audit('deduction_rule_deleted', $rule, $rule->toArray(), null, $request);
-        $rule->delete();
-
-        return back()->with('success', 'Deduction rule deleted.');
-    }
-
-    public function destroyBonusRule(Request $request, BonusRule $rule)
-    {
-        $this->authorizePayroll('bonus-rules', 'delete');
-        $this->audit('bonus_rule_deleted', $rule, $rule->toArray(), null, $request);
-        $rule->delete();
-
-        return back()->with('success', 'Bonus rule deleted.');
-    }
-
-    public function destroyTaxRule(Request $request, TaxRule $rule)
-    {
-        $this->authorizePayroll('tax-rules', 'delete');
-        $this->audit('tax_rule_deleted', $rule, $rule->toArray(), null, $request);
-        $rule->delete();
-
-        return back()->with('success', 'Tax rule deleted.');
-    }
-
-    public function destroyOvertimeRule(Request $request, OvertimeRule $rule)
-    {
-        $this->authorizePayroll('overtime-rules', 'delete');
-        $this->audit('overtime_rule_deleted', $rule, $rule->toArray(), null, $request);
-        $rule->delete();
-
-        return back()->with('success', 'Overtime rule deleted.');
-    }
-
-    public function updateCycleStatus(Request $request, PayrollCycle $cycle)
-    {
-        $this->authorizePayroll('payroll-cycles', 'create');
-
-        $request->validate(['status' => 'required|in:draft,open,processing,closed,cancelled']);
-        $old = $cycle->status;
-        $cycle->update(['status' => $request->status]);
-        $this->audit('cycle_status_updated', $cycle, ['status' => $old], ['status' => $request->status], $request);
-
-        return back()->with('success', 'Cycle status updated to ' . ucfirst($request->status) . '.');
-    }
-
-    public function destroyCycle(Request $request, PayrollCycle $cycle)
-    {
-        $this->authorizePayroll('payroll-cycles', 'delete');
-        $this->audit('cycle_deleted', $cycle, $cycle->toArray(), null, $request);
-        $cycle->delete();
-
-        return back()->with('success', 'Payroll cycle deleted.');
-    }
-
-    public function placeholder(string $module)
-    {
-        $slug = match ($module) {
-            'policies'      => 'payroll-policies',
-            'settings'      => 'payroll-settings',
-            'import-export' => 'payroll-import-export',
-            'archive'       => 'payroll-archive',
-            'formula-builder' => 'formula-builder',
-            default         => 'payroll',
-        };
-
-        $this->authorizePayroll($slug);
-
-        return view('admin.payroll.placeholder', [
-            'title'      => Str::headline($module),
-            'moduleSlug' => $slug,
-        ]);
-    }
-
-
-    private function authorizePayroll(string $moduleSlug, string $permission = 'view'): void
-    {
         if (! auth()->user()?->hasModulePermission($moduleSlug, $permission)) {
             abort(403, 'You do not have permission to access this payroll module.');
         }
@@ -969,31 +1200,22 @@ class PayrollController extends Controller
     private function payslipQuery(?int $companyId = null)
     {
         $query = Payslip::query();
-        if (auth()->user()->normalizedRole() === 'employee') {
-            $query->where('user_id', auth()->id());
-        } elseif (auth()->user()->normalizedRole() === 'manager') {
-            $query->whereIn('user_id', auth()->user()->visibleEmployeeIds());
-        } elseif ($companyId) {
+        if ($companyId) {
             if (Schema::hasColumn('payslips', 'company_id')) {
                 $query->where('company_id', $companyId);
             } else {
                 $query->whereHas('user', fn ($userQuery) => $userQuery->where('company_id', $companyId));
             }
         }
-
         return $query;
     }
 
     private function payrollHistoryQuery(?int $companyId = null)
     {
         $query = PayrollHistory::query();
-
-        if (auth()->user()->normalizedRole() === 'employee') {
-            $query->where('user_id', auth()->id());
-        } elseif ($companyId) {
+        if ($companyId) {
             $query->whereHas('user', fn ($userQuery) => $userQuery->where('company_id', $companyId));
         }
-
         return $query;
     }
 
@@ -1013,78 +1235,10 @@ class PayrollController extends Controller
 
     private function selectedCompanyId(Request $request): ?int
     {
-        if (auth()->user()?->normalizedRole() !== 'admin') {
-            return auth()->user()?->company_id;
+        if (auth()->check() && auth()->user()->company_id) {
+            return (int) auth()->user()->company_id;
         }
-
         return $request->integer('company_id') ?: null;
-    }
-
-    private function versionArchitecture(PayrollArchitecture $architecture): void
-    {
-        PayrollArchitectureVersion::updateOrCreate(
-            ['payroll_architecture_id' => $architecture->id, 'version' => $architecture->version],
-            [
-                'snapshot' => $architecture->toArray(),
-                'effective_date' => $architecture->effective_date,
-                'created_by' => auth()->id(),
-            ]
-        );
-    }
-
-    private function versionSalaryStructure(SalaryStructure $structure): void
-    {
-        SalaryStructureVersion::updateOrCreate(
-            ['salary_structure_id' => $structure->id, 'version' => $structure->version],
-            [
-                'snapshot' => $structure->load('components')->toArray(),
-                'effective_date' => $structure->effective_date,
-                'created_by' => auth()->id(),
-            ]
-        );
-    }
-
-    private function rulesView(string $title, string $slug, $rules)
-    {
-        return view('admin.payroll.rules', compact('title', 'slug', 'rules'));
-    }
-
-    private function rulePayload(Request $request, string $typeColumn): array
-    {
-        $data = $this->baseRuleValidation($request);
-
-        return [
-            'name' => $data['name'],
-            'code' => Str::slug($data['name']),
-            $typeColumn => $request->input('rule_type', 'custom'),
-            'calculation_type' => $request->input('calculation_type', 'formula'),
-            'value' => $request->input('value'),
-            'formula' => $data['formula'] ?? null,
-            'effective_date' => $data['effective_date'] ?? null,
-        ];
-    }
-
-    private function baseRuleValidation(Request $request): array
-    {
-        return $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'rule_type' => ['nullable', 'string', 'max:80'],
-            'calculation_type' => ['nullable', 'string', 'max:60'],
-            'value' => ['nullable', 'numeric'],
-            'formula' => ['nullable', 'string'],
-            'effective_date' => ['nullable', 'date'],
-        ]);
-    }
-
-    private function jsonInput(?string $value): ?array
-    {
-        if (! $value) {
-            return null;
-        }
-
-        $decoded = json_decode($value, true);
-
-        return is_array($decoded) ? $decoded : ['raw' => $value];
     }
 
     private function audit(string $action, object $model, ?array $oldValue, ?array $newValue, Request $request): void
@@ -1100,5 +1254,11 @@ class PayrollController extends Controller
             'new_value' => $newValue,
             'reason' => $request->input('reason'),
         ]);
+    }
+
+    private function getDepartments()
+    {
+        $col = Schema::hasColumn('departments', 'dpt_name') ? 'dpt_name' : (Schema::hasColumn('departments', 'name') ? 'name' : 'id');
+        return Department::orderBy($col, 'asc')->get();
     }
 }

@@ -28,4 +28,14 @@ class Payslip extends TenantModel
     {
         return $this->belongsTo(User::class);
     }
+
+    public function payroll()
+    {
+        return $this->belongsTo(Payroll::class);
+    }
+
+    public function payrollHistory()
+    {
+        return $this->belongsTo(PayrollHistory::class);
+    }
 }

@@ -50,7 +50,6 @@
             <label class="form-label fw-bold text-dark">Related Module (Optional)</label>
             <select name="related_module" class="form-select" style="border-radius: 8px;">
               <option value="">None / General</option>
-              <option value="Payroll">Payroll &amp; Payslips</option>
               <option value="HR & Attendance">HR &amp; Attendance</option>
               <option value="Projects & Tasks">Projects &amp; Tasks</option>
               <option value="Subscription & Billing">Subscription &amp; Billing</option>
