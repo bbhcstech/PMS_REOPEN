@@ -97,17 +97,8 @@
   }
 
   function removeLegacySelectionControls(controller, cell) {
-    if (!controller.legacySelectionColumn || !cell) return;
-    var inputs = cell.querySelectorAll('input[type="checkbox"]:not([data-pms-select])');
-
-    Array.prototype.forEach.call(inputs, function (input) {
-      var wrapper = input.closest('label, .form-check, .custom-control');
-      input.remove();
-
-      if (wrapper && cell.contains(wrapper) && !wrapper.querySelector('input, button, select, textarea, a') && !(wrapper.textContent || '').trim()) {
-        wrapper.remove();
-      }
-    });
+    // Keep legacy selection controls intact so application bulk forms and page scripts function properly
+    return;
   }
 
   function ensureTableScrolling(controller) {
@@ -209,7 +200,17 @@
     var row = headerRow(controller.table);
     if (!row || !row.cells.length) return;
     var cell = row.cells[0];
-    removeLegacySelectionControls(controller, cell);
+    if (controller.legacySelectionColumn) {
+      var existingAll = cell.querySelector('input[type="checkbox"]');
+      if (existingAll) {
+        controller.selectAll = existingAll;
+        if (!existingAll.hasAttribute('data-pms-select')) {
+          existingAll.setAttribute('data-pms-select', 'all');
+          existingAll.setAttribute('data-pms-table', controller.id);
+        }
+        return;
+      }
+    }
     cell.classList.add('pms-table-selection-cell');
     if (cell.querySelector('[data-pms-select="all"]')) {
       controller.selectAll = cell.querySelector('[data-pms-select="all"]');
@@ -228,7 +229,18 @@
       return;
     }
     var cell = row.cells[0];
-    removeLegacySelectionControls(controller, cell);
+    if (controller.legacySelectionColumn) {
+      var existingRowInput = cell.querySelector('input[type="checkbox"]');
+      if (existingRowInput) {
+        if (!existingRowInput.hasAttribute('data-pms-select')) {
+          existingRowInput.setAttribute('data-pms-select', 'row');
+          existingRowInput.setAttribute('data-pms-table', controller.id);
+        }
+        if (existingRowInput.checked) controller.selectedRows.add(row);
+        row.classList.toggle('pms-row-selected', existingRowInput.checked);
+        return;
+      }
+    }
     cell.classList.add('pms-table-selection-cell');
     var input = cell.querySelector(':scope > .pms-table-select > [data-pms-select="row"]');
     if (!input) {
@@ -436,10 +448,17 @@
 
       if (input.getAttribute('data-pms-select') === 'all') {
         dataRows(controller.table).forEach(function (row) {
-          var rowCheckbox = row.querySelector('[data-pms-select="row"][data-pms-table="' + controller.id + '"]');
+          var rowCheckbox = row.querySelector('[data-pms-select="row"][data-pms-table="' + controller.id + '"]') ||
+                            (row.cells[0] ? row.cells[0].querySelector('input[type="checkbox"]') : null);
+          if (rowCheckbox) {
+            var stateChanged = (rowCheckbox.checked !== input.checked);
+            rowCheckbox.checked = input.checked;
+            if (stateChanged) {
+              rowCheckbox.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+          }
           if (input.checked) controller.selectedRows.add(row);
           else controller.selectedRows.delete(row);
-          if (rowCheckbox) rowCheckbox.checked = input.checked;
           row.classList.toggle('pms-row-selected', input.checked);
         });
       } else {

@@ -218,8 +218,43 @@
                 </div>
 
                 <div class="col-md-4">
-                    <label>Postal Code</label>
-                    <input name="postal_code" id="postal_code" type="text" class="form-control" value="{{ old('postal_code', $client->postal_code) }}">
+                    <label class="d-flex align-items-center justify-content-between">
+                        <span>Postal Code / Pincode</span>
+                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle" style="font-size: 10px; font-weight: normal;">
+                            <i class="fas fa-magic me-1"></i>Auto-detects Area, City & State
+                        </span>
+                    </label>
+                    <div class="position-relative">
+                        <input name="postal_code" id="postal_code" type="text" class="form-control pe-5" value="{{ old('postal_code', $client->postal_code) }}" autocomplete="off">
+                        <div id="pincode_spinner" class="position-absolute end-0 top-50 translate-middle-y me-3" style="display: none; pointer-events: none;">
+                            <i class="fas fa-spinner fa-spin text-primary"></i>
+                        </div>
+                    </div>
+                    <div id="pincode_feedback_pill" class="mt-1" style="display: none;"></div>
+                </div>
+
+                <!-- Detected Area / Locality Selector (Auto-shown when pincode has multiple areas) -->
+                <div class="col-md-12" id="area_selection_wrapper" style="display: none;">
+                    <div class="p-3 rounded-3 my-2" style="background: rgba(37, 99, 235, 0.05); border: 1px solid rgba(37, 99, 235, 0.2);">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <label class="form-label fw-semibold text-primary mb-0">
+                                <i class="fas fa-map-marker-alt me-1"></i> Auto-Detected Areas / Localities for this Pincode
+                            </label>
+                            <span class="badge bg-primary text-white" id="area_count_badge">0 areas</span>
+                        </div>
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <select id="detected_area_select" class="form-select form-control">
+                                    <option value="">-- Choose specific area / post office --</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle me-1"></i> Selecting an area automatically populates Company Address below.
+                                </small>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="col-md-12">
@@ -549,6 +584,152 @@ $(document).ready(function () {
         $city.trigger('change.select2');
     }
 
+    let pincodeLookupTimer = null;
+    let currentPincodeAjax = null;
+
+    function showPincodeNotFound() {
+        $('#pincode_spinner').hide();
+        $('#pincode_feedback_pill').html(`
+            <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1" style="font-size: 11px;">
+                <i class="fas fa-times-circle me-1"></i> No data found
+            </span>
+        `).show();
+        $('#area_selection_wrapper').slideUp(150);
+    }
+
+    function performPincodeLookup(pincode) {
+        pincode = (pincode || '').trim().replace(/\s+/g, '');
+        const country = $('#company_country').val() || $('#country').val() || 'India';
+        const isIndia = !country || country.toLowerCase() === 'india';
+
+        // Abort previous in-flight request if user is typing
+        if (currentPincodeAjax && typeof currentPincodeAjax.abort === 'function') {
+            currentPincodeAjax.abort();
+            currentPincodeAjax = null;
+        }
+
+        if (!pincode) {
+            $('#pincode_spinner').hide();
+            $('#pincode_feedback_pill').hide();
+            $('#area_selection_wrapper').slideUp(150);
+            return;
+        }
+
+        // India pincodes must be 6 digits and start with 1-9
+        if (isIndia) {
+            if (pincode.length !== 6 || !/^[1-9]\d{5}$/.test(pincode)) {
+                showPincodeNotFound();
+                return;
+            }
+        } else {
+            if (pincode.length < 3) {
+                showPincodeNotFound();
+                return;
+            }
+        }
+
+        $('#pincode_spinner').show();
+        $('#pincode_feedback_pill').html('<span class="text-primary small"><i class="fas fa-spinner fa-spin me-1"></i> Checking location...</span>').show();
+
+        const lookupUrl = "{{ route('clients.lookup-pincode') }}";
+        
+        currentPincodeAjax = $.ajax({
+            url: lookupUrl,
+            type: 'GET',
+            data: { pincode: pincode, country: country },
+            timeout: 3500,
+            success: function(res) {
+                if (res && res.success) {
+                    applyPincodeLocationData(res, country);
+                } else {
+                    showPincodeNotFound();
+                }
+            },
+            error: function(xhr, status) {
+                if (status === 'abort') {
+                    $('#pincode_spinner').hide();
+                    return;
+                }
+                showPincodeNotFound();
+            },
+            complete: function() {
+                $('#pincode_spinner').hide();
+            }
+        });
+    }
+
+    function applyPincodeLocationData(data, country) {
+        const detectedState = data.state;
+        const detectedCity = data.city || data.district;
+        const areas = data.areas || [];
+
+        if (detectedState) {
+            let stateFound = false;
+            $('#state option').each(function() {
+                if ($(this).val().toLowerCase() === detectedState.toLowerCase()) {
+                    $('#state').val($(this).val()).trigger('change.select2');
+                    stateFound = true;
+                    return false;
+                }
+            });
+
+            if (!stateFound) {
+                const newOpt = new Option(detectedState, detectedState, true, true);
+                $('#state').append(newOpt).trigger('change.select2');
+            }
+
+            populateCities(country, detectedState, detectedCity);
+        }
+
+        if (detectedCity) {
+            setTimeout(function() {
+                let cityFound = false;
+                $('#city option').each(function() {
+                    if ($(this).val().toLowerCase() === detectedCity.toLowerCase()) {
+                        $('#city').val($(this).val()).trigger('change.select2');
+                        cityFound = true;
+                        return false;
+                    }
+                });
+
+                if (!cityFound) {
+                    const newOpt = new Option(detectedCity, detectedCity, true, true);
+                    $('#city').append(newOpt).trigger('change.select2');
+                }
+            }, 100);
+        }
+
+        const $areaSelect = $('#detected_area_select');
+        $areaSelect.empty();
+        $areaSelect.append(new Option('-- Choose specific area / post office --', '', true, true));
+
+        if (areas.length > 0) {
+            areas.forEach(function(area) {
+                $areaSelect.append(new Option(area, area));
+            });
+            $('#area_count_badge').text(areas.length + ' found');
+            $('#area_selection_wrapper').slideDown(200);
+
+            if ($areaSelect.hasClass('select2-hidden-accessible')) {
+                $areaSelect.select2('destroy');
+            }
+            $areaSelect.select2({
+                theme: "bootstrap-5",
+                width: '100%',
+                placeholder: "-- Choose specific area / post office --"
+            });
+        } else {
+            $('#area_selection_wrapper').slideUp(150);
+        }
+
+        const areaSummary = areas.length ? ` (${areas.length} areas found)` : '';
+        $('#pincode_feedback_pill').html(`
+            <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
+                <i class="fas fa-check-circle me-1"></i> Auto-detected: ${detectedCity ? detectedCity + ', ' : ''}${detectedState}${areaSummary}
+            </span>
+        `).show();
+    }
+
     function sanitizePhoneNumber(inputElement) {
         if (!inputElement) return '';
         const $input = $(inputElement);
@@ -860,6 +1041,64 @@ $(document).ready(function () {
         placeholder: "Select or type city",
         allowClear: true
     });
+
+    // Postal Code Auto-Detection
+    $('#postal_code').on('input paste change', function() {
+        clearTimeout(pincodeLookupTimer);
+        const val = $(this).val().trim();
+        if (!val) {
+            if (currentPincodeAjax && typeof currentPincodeAjax.abort === 'function') {
+                currentPincodeAjax.abort();
+                currentPincodeAjax = null;
+            }
+            $('#pincode_spinner').hide();
+            $('#pincode_feedback_pill').hide();
+            $('#area_selection_wrapper').slideUp(150);
+            return;
+        }
+        pincodeLookupTimer = setTimeout(function() {
+            performPincodeLookup(val);
+        }, 350);
+    });
+
+    $('#postal_code').on('blur', function() {
+        const val = $(this).val().trim();
+        if (!val) {
+            if (currentPincodeAjax && typeof currentPincodeAjax.abort === 'function') {
+                currentPincodeAjax.abort();
+                currentPincodeAjax = null;
+            }
+            $('#pincode_spinner').hide();
+            $('#pincode_feedback_pill').hide();
+            $('#area_selection_wrapper').slideUp(150);
+        } else {
+            performPincodeLookup(val);
+        }
+    });
+
+    // Selecting an auto-detected area populates company address
+    $('#detected_area_select').on('change', function() {
+        const selectedArea = $(this).val();
+        if (!selectedArea) return;
+
+        const $addr = $('textarea[name="company_address"]');
+        const currentAddr = $addr.val().trim();
+        const city = $('#city').val() || '';
+        const state = $('#state').val() || '';
+        const pin = $('#postal_code').val() || '';
+
+        if (!currentAddr) {
+            const fullAddr = [selectedArea, city, state, pin].filter(Boolean).join(', ');
+            $addr.val(fullAddr);
+        } else if (!currentAddr.toLowerCase().includes(selectedArea.toLowerCase())) {
+            $addr.val(selectedArea + ', ' + currentAddr);
+        }
+    });
+
+    // Trigger on load if postal_code already filled
+    if ($('#postal_code').val() && $('#postal_code').val().trim()) {
+        performPincodeLookup($('#postal_code').val().trim());
+    }
 
     updateMobileFormatHint();
     updateOfficePhoneFormatHint();
