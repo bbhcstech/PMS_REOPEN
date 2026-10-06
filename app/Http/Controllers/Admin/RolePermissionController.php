@@ -11,7 +11,7 @@ use Illuminate\View\View;
 
 class RolePermissionController extends Controller
 {
-    private array $roles = ['manager', 'hr', 'employee'];
+    private array $roles = ['admin', 'manager', 'hr', 'employee'];
     private array $permissions = ['view', 'create', 'edit', 'delete', 'approve', 'export', 'assign'];
 
     public function index(Request $request): View
@@ -20,9 +20,59 @@ class RolePermissionController extends Controller
 
         $this->ensureTenantModulesSynced();
 
-        $role = strtolower($request->query('role', 'manager'));
+        $role = strtolower($request->query('role', 'hr'));
         if (! in_array($role, $this->roles, true)) {
-            $role = 'manager';
+            $role = 'hr';
+        }
+
+        // Exclude role-specific management modules per role ("for a particular role that role do not come up under the role")
+        $excludedSlugsByRole = [
+            'hr' => [
+                'hr-management', 'manager-management', 'role-management',
+                'permission-management', 'role-permissions-settings', 'module-management',
+            ],
+            'manager' => [
+                'manager-management', 'hr-management', 'role-management',
+                'permission-management', 'role-permissions-settings', 'module-management',
+            ],
+            'employee' => [
+                'hr-management', 'manager-management', 'role-management',
+                'permission-management', 'user-management', 'role-permissions-settings',
+                'module-management', 'settings-dashboard', 'settings',
+                'payroll-settings', 'security-settings', 'localization-settings',
+                'terms-policy-settings', 'activity-logs', 'system-logs',
+            ],
+            'admin' => [],
+        ];
+
+        $excludedSlugs = $excludedSlugsByRole[$role] ?? [];
+        $modules = Module::with('parent')
+            ->where('is_active', true)
+            ->whereNotIn('slug', $excludedSlugs)
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get();
+
+        $savedPermissions = RolePermission::where('role', $role)->get()->keyBy('module_id');
+        $hasCustomSaved = $savedPermissions->contains(function ($item) {
+            return $item->can_view || $item->can_create || $item->can_edit || $item->can_delete || $item->can_approve || $item->can_export || $item->can_assign;
+        });
+
+        // Compute effective permissions for the view so previously granted or default permissions are pre-checked
+        $effectivePermissions = [];
+        foreach ($modules as $module) {
+            $saved = $savedPermissions->get($module->id);
+            $defaultPerms = $this->getDefaultPermissionsForRole($role, $module->slug);
+
+            foreach ($this->permissions as $perm) {
+                if ($role === 'admin') {
+                    $effectivePermissions[$module->id][$perm] = true;
+                } elseif ($hasCustomSaved && $saved) {
+                    $effectivePermissions[$module->id][$perm] = (bool) $saved->{'can_' . $perm};
+                } else {
+                    $effectivePermissions[$module->id][$perm] = in_array($perm, $defaultPerms, true);
+                }
+            }
         }
 
         $staffUsers = \App\Models\User::whereIn('role', ['admin', 'manager', 'hr', 'employee', 'user'])
@@ -33,8 +83,9 @@ class RolePermissionController extends Controller
             'roles' => $this->roles,
             'role' => $role,
             'permissions' => $this->permissions,
-            'modules' => Module::with('parent')->where('is_active', true)->orderBy('sort_order')->orderBy('name')->get(),
-            'savedPermissions' => RolePermission::where('role', $role)->get()->keyBy('module_id'),
+            'modules' => $modules,
+            'savedPermissions' => $savedPermissions,
+            'effectivePermissions' => $effectivePermissions,
             'staffUsers' => $staffUsers,
         ]);
     }
@@ -49,12 +100,39 @@ class RolePermissionController extends Controller
         abort_unless(in_array($role, $this->roles, true), 422);
 
         $submitted = $request->input('permissions', []);
-        
+
+        // Excluded modules for this role should not have permissions granted
+        $excludedSlugsByRole = [
+            'hr' => [
+                'hr-management', 'manager-management', 'role-management',
+                'permission-management', 'role-permissions-settings', 'module-management',
+            ],
+            'manager' => [
+                'manager-management', 'hr-management', 'role-management',
+                'permission-management', 'role-permissions-settings', 'module-management',
+            ],
+            'employee' => [
+                'hr-management', 'manager-management', 'role-management',
+                'permission-management', 'user-management', 'role-permissions-settings',
+                'module-management', 'settings-dashboard', 'settings',
+                'payroll-settings', 'security-settings', 'localization-settings',
+                'terms-policy-settings', 'activity-logs', 'system-logs',
+            ],
+            'admin' => [],
+        ];
+        $excludedSlugs = $excludedSlugsByRole[$role] ?? [];
+        $excludedModuleIds = Module::whereIn('slug', $excludedSlugs)->pluck('id')->all();
+
         // Query the valid module IDs currently present in the tenant modules table
         $tenantModuleIds = \Illuminate\Support\Facades\DB::connection('tenant')->table('modules')->pluck('id')->all();
 
         foreach ($tenantModuleIds as $moduleId) {
-            $modulePermissions = $submitted[$moduleId] ?? [];
+            if (in_array($moduleId, $excludedModuleIds, true)) {
+                $modulePermissions = [];
+            } else {
+                $modulePermissions = $submitted[$moduleId] ?? [];
+            }
+
             RolePermission::updateOrCreate(
                 ['role' => $role, 'module_id' => $moduleId],
                 collect($this->permissions)
@@ -64,7 +142,70 @@ class RolePermissionController extends Controller
         }
 
         return redirect()->route('admin.role-permissions.index', ['role' => $role])
-            ->with('success', 'Role permissions saved successfully.');
+            ->with('success', 'Role permissions saved successfully for ' . ucfirst($role) . '.');
+    }
+
+    public function getDefaultPermissionsForRole(string $role, string $slug): array
+    {
+        if ($role === 'admin') {
+            return $this->permissions;
+        }
+
+        $hrFullModules = [
+            'dashboard', 'notifications', 'my-documents', 'organization', 'employees',
+            'hr-employees', 'departments', 'designations', 'attendance', 'leaves',
+            'leave-management', 'holidays', 'recognition', 'awards', 'recruitment',
+            'appraisal', 'work', 'projects', 'tasks', 'timesheets', 'timelogs',
+            'payroll', 'payroll-architectures', 'payslips', 'salary-structures',
+            'payroll-cycles', 'payroll-policies', 'formula-builder', 'deduction-rules',
+            'bonus-rules', 'tax-rules', 'overtime-rules', 'payroll-reports', 'expenses',
+            'billing', 'reports', 'analytics', 'advanced-reports', 'events', 'community',
+            'collaborating-companies', 'clients', 'leads-contacts', 'tickets',
+        ];
+
+        $managerFullModules = [
+            'dashboard', 'notifications', 'my-documents', 'organization', 'teams',
+            'work', 'projects', 'tasks', 'timesheets', 'timelogs', 'attendance',
+            'leaves', 'leave-management', 'reports', 'analytics', 'recruitment',
+            'appraisal', 'recognition', 'awards', 'events', 'community',
+            'collaborating-companies', 'clients', 'leads-contacts', 'tickets',
+        ];
+
+        $employeeModules = [
+            'dashboard', 'notifications', 'my-documents', 'attendance', 'leaves',
+            'leave-management', 'holidays', 'recognition', 'awards', 'work',
+            'projects', 'tasks', 'timesheets', 'timelogs', 'payslips', 'events',
+            'community',
+        ];
+
+        if ($role === 'hr') {
+            if (in_array($slug, $hrFullModules, true)) {
+                return ['view', 'create', 'edit', 'delete', 'approve', 'export', 'assign'];
+            }
+            return ['view'];
+        }
+
+        if ($role === 'manager') {
+            if (in_array($slug, $managerFullModules, true)) {
+                return ['view', 'create', 'edit', 'delete', 'approve', 'export', 'assign'];
+            }
+            if (in_array($slug, ['employees', 'hr-employees'], true)) {
+                return ['view', 'export'];
+            }
+            return ['view'];
+        }
+
+        if ($role === 'employee') {
+            if (in_array($slug, ['my-documents', 'timesheets', 'timelogs', 'leaves', 'leave-management', 'attendance', 'tasks'], true)) {
+                return ['view', 'create', 'edit'];
+            }
+            if (in_array($slug, $employeeModules, true)) {
+                return ['view'];
+            }
+            return [];
+        }
+
+        return [];
     }
 
     /**
