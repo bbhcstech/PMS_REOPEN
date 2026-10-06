@@ -1240,24 +1240,8 @@
                             @enderror
                         </div>
 
-                        <div class="col-md-4">
-                            <label class="form-label-premium">
-                                <span><i class="fas fa-building"></i> Company</span>
-                                <span class="mandatory-badge">Required</span>
-                            </label>
-                            @php $selectedCompany = old('company_id') ?? auth()->user()?->company_id; @endphp
-                            <select name="company_id" id="company_id" class="form-select-premium" required>
-                                <option value="">Select Company</option>
-                                @foreach($companies as $company)
-                                    <option value="{{ $company->id }}" {{ (string) $selectedCompany === (string) $company->id ? 'selected' : '' }}>
-                                        {{ $company->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('company_id')
-                                <div class="invalid-feedback d-block">{{ $message }}</div>
-                            @enderror
-                        </div>
+                        @php $selectedCompany = old('company_id') ?? (auth()->user()?->company_id ?: ($companies->first()?->id ?? 1)); @endphp
+                        <input type="hidden" name="company_id" id="company_id" value="{{ $selectedCompany }}">
 
                         <div class="col-md-4">
                             <label class="form-label-premium">
