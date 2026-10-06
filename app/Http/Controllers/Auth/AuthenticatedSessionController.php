@@ -29,9 +29,13 @@ class AuthenticatedSessionController extends Controller
             )) {
                 return redirect()->route('developer.dashboard');
             }
-        }
 
-        $request->session()->regenerateToken();
+            if ($user && in_array(strtolower((string) ($user->role ?? '')), ['superadmin', 'super-admin'], true)) {
+                return redirect()->route('superadmin.dashboard');
+            }
+
+            return redirect()->route('dashboard');
+        }
 
         return response()
             ->view('auth.login')
@@ -54,9 +58,6 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
 
         // Multi-Tenant: Re-affirm the company session and lock the DB connection.
-        // We deliberately do NOT read user->company_id here because Auth::user() may
-        // have been loaded from the wrong DB connection before SetTenantConnection
-        // had a chance to switch it. The session is the single source of truth.
         $user = Auth::user();
         $isDeveloper = $user && (
             (method_exists($user, 'isDeveloper') && $user->isDeveloper()) ||
@@ -66,7 +67,23 @@ class AuthenticatedSessionController extends Controller
             str_contains(strtolower((string) ($user->designation ?? '')), 'engineer')
         );
 
-        if ($user && ! $isDeveloper) {
+        if ($isDeveloper) {
+            $primaryDb = trim((string) (config('database.connections.session_db.database') ?: config('database.connections.mysql.database', env('DB_DATABASE', 'thesmart_lara319'))));
+            $request->session()->put('current_company_db',   $primaryDb);
+            $request->session()->put('current_company_id',   $user->company_id ?: 1);
+            $request->session()->put('current_company_name', 'Platform Workspace');
+
+            config([
+                'database.connections.tenant.database' => $primaryDb,
+                'database.connections.mysql.database'  => $primaryDb,
+            ]);
+            \Illuminate\Support\Facades\DB::purge('tenant');
+            \Illuminate\Support\Facades\DB::purge('mysql');
+
+            return redirect()->route('developer.dashboard');
+        }
+
+        if ($user) {
             // Resolve company exclusively from session (set correctly by authenticate())
             $company = null;
             if (session('current_company_id')) {
@@ -75,7 +92,8 @@ class AuthenticatedSessionController extends Controller
                 } catch (\Throwable $e) {}
             }
 
-            $dbName     = $company?->db_name     ?: (session('current_company_db')   ?: config('database.connections.tenant.database'));
+            $primaryDb  = trim((string) (config('database.connections.session_db.database') ?: config('database.connections.mysql.database', env('DB_DATABASE', 'thesmart_lara319'))));
+            $dbName     = $company?->db_name ?: (session('current_company_db') ?: $primaryDb);
             $companyId   = $company?->id          ?: session('current_company_id');
             $companyName = $company?->name        ?: session('current_company_name');
 
@@ -104,18 +122,6 @@ class AuthenticatedSessionController extends Controller
 
         $user = Auth::user();
         $role = strtolower((string) ($user?->role ?? ''));
-        $designation = strtolower((string) ($user?->designation ?? ''));
-
-        // 1. Developer redirection (unconditional for any developer account)
-        if (
-            ($user && method_exists($user, 'isDeveloper') && $user->isDeveloper()) ||
-            in_array($role, ['developer', 'dev'], true) ||
-            str_contains($role, 'developer') ||
-            str_contains($designation, 'developer') ||
-            str_contains($designation, 'engineer')
-        ) {
-            return redirect()->route('developer.dashboard');
-        }
 
         if ($role === 'superadmin') {
             // If superadmin logged in via company credentials (tenant company session active), redirect to company dashboard
@@ -127,10 +133,6 @@ class AuthenticatedSessionController extends Controller
 
         if ($role === 'employee') {
             return redirect()->route('dashboard');
-        }
-
-        if (in_array($role, ['developer', 'dev'], true) || str_contains($designation, 'developer') || str_contains($designation, 'engineer')) {
-            return redirect()->route('developer.dashboard');
         }
 
         return redirect()->route('dashboard');
@@ -152,7 +154,7 @@ class AuthenticatedSessionController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        $defaultDb = env('DB_DATABASE', 'pms_last');
+        $defaultDb = trim((string) (config('database.connections.session_db.database') ?: config('database.connections.mysql.database', env('DB_DATABASE', 'thesmart_lara319'))));
         config([
             'database.connections.tenant.database' => $defaultDb,
             'database.connections.mysql.database'  => $defaultDb,

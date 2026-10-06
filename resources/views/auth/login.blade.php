@@ -747,6 +747,26 @@
                 <h1 class="auth-title">{{ $loginTitle ?? 'Welcome back' }}</h1>
                 <p class="auth-subtitle">Sign in to continue your workspace</p>
 
+                @if(session('error'))
+                    <div class="alert alert-danger p-3" role="alert">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-exclamation-circle me-2 fs-5" style="color: #b13e4a;"></i>
+                            <strong class="fs-6 fw-bold">{{ session('error') }}</strong>
+                            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    </div>
+                @endif
+
+                @if(session('warning'))
+                    <div class="alert alert-warning p-3" role="alert">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-exclamation-triangle me-2 fs-5" style="color: #d97706;"></i>
+                            <strong class="fs-6 fw-bold">{{ session('warning') }}</strong>
+                            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    </div>
+                @endif
+
                 @if(session('success'))
                     <div class="alert alert-success d-flex align-items-start" role="alert">
                         <i class="fas fa-check-circle me-3 fs-5" style="color: #1e8a5e;"></i>

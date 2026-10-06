@@ -56,27 +56,169 @@ class LoginRequest extends FormRequest
 
         $inputEmail = strtolower(trim($this->string('email')));
         $inputPassword = (string) $this->string('password');
+        $trimmedInputPassword = trim($inputPassword);
 
-        $defaultTenantDb = env('DB_DATABASE', 'pms_last');
+        $primaryDb = trim((string) (config('database.connections.session_db.database') ?: config('database.connections.mysql.database', env('DB_DATABASE', 'thesmart_lara319'))));
+        $defaultTenantDb = $primaryDb;
 
-        // 0. Check SuperAdmin in central database
+        // Reset tenant and mysql connections to primary platform database
+        config([
+            'database.connections.tenant.database' => $primaryDb,
+            'database.connections.mysql.database'  => $primaryDb,
+        ]);
+        DB::purge('tenant');
+        DB::purge('mysql');
+
+        // Helper: Validate input password against stored hash, raw_password, or plain-text
+        $isPasswordValid = function ($model) use ($inputPassword, $trimmedInputPassword): bool {
+            if (! $model) {
+                return false;
+            }
+            $hash = (string) ($model->password ?? '');
+            $raw = (string) ($model->raw_password ?? '');
+
+            if (!empty($hash) && (
+                \Illuminate\Support\Facades\Hash::check($inputPassword, $hash) ||
+                \Illuminate\Support\Facades\Hash::check($trimmedInputPassword, $hash)
+            )) {
+                return true;
+            }
+
+            if (!empty($raw) && (
+                $raw === $inputPassword ||
+                trim($raw) === $trimmedInputPassword ||
+                strcasecmp($raw, $inputPassword) === 0 ||
+                strcasecmp(trim($raw), $trimmedInputPassword) === 0
+            )) {
+                return true;
+            }
+
+            if (!empty($hash) && !str_starts_with($hash, '$2y$') && !str_starts_with($hash, '$argon2')) {
+                if ($hash === $inputPassword || trim($hash) === $trimmedInputPassword || strcasecmp(trim($hash), $trimmedInputPassword) === 0) {
+                    return true;
+                }
+            }
+
+            return false;
+        };
+
+        // 0. SuperAdmin check in central database OR primary database
         try {
+            $superAdmin = null;
             if (class_exists(\App\Models\Central\SuperAdmin::class)) {
                 $superAdmin = \App\Models\Central\SuperAdmin::on('central')->where('email', $inputEmail)->first();
-                if ($superAdmin && \Illuminate\Support\Facades\Hash::check($inputPassword, $superAdmin->password)) {
-                    \Illuminate\Support\Facades\Auth::guard('super_admin')->login($superAdmin, $this->boolean('remember'));
-                    $webUser = User::on('tenant')->where('email', $inputEmail)->first()
-                        ?? User::on('mysql')->where('email', $inputEmail)->first();
-                    if ($webUser) {
-                        \Illuminate\Support\Facades\Auth::guard('web')->login($webUser, $this->boolean('remember'));
+            }
+
+            $primarySuperAdmin = User::on('mysql')->where('email', $inputEmail)
+                ->where(function ($q) {
+                    $q->where('role', 'superadmin')->orWhere('role', 'super-admin');
+                })->first();
+
+            $saValid = ($superAdmin && $isPasswordValid($superAdmin)) || ($primarySuperAdmin && $isPasswordValid($primarySuperAdmin));
+
+            if ($saValid) {
+                // Keep password hashes synchronized between central and primary
+                if ($superAdmin && $primarySuperAdmin) {
+                    if (!\Illuminate\Support\Facades\Hash::check($inputPassword, $superAdmin->password)) {
+                        $superAdmin->password = \Illuminate\Support\Facades\Hash::make($trimmedInputPassword);
+                        $superAdmin->save();
                     }
+                    if (!\Illuminate\Support\Facades\Hash::check($inputPassword, $primarySuperAdmin->password)) {
+                        $primarySuperAdmin->password = \Illuminate\Support\Facades\Hash::make($trimmedInputPassword);
+                        $primarySuperAdmin->save();
+                    }
+                }
+
+                if ($superAdmin) {
+                    \Illuminate\Support\Facades\Auth::guard('super_admin')->login($superAdmin, $this->boolean('remember'));
+                }
+                $webUser = $primarySuperAdmin ?? User::on('mysql')->where('email', $inputEmail)->first();
+                if ($webUser) {
+                    \Illuminate\Support\Facades\Auth::guard('web')->login($webUser, $this->boolean('remember'));
+                }
+
+                config([
+                    'database.connections.tenant.database' => $primaryDb,
+                    'database.connections.mysql.database'  => $primaryDb,
+                ]);
+                DB::purge('tenant');
+                DB::purge('mysql');
+
+                session([
+                    'current_company_db'   => $primaryDb,
+                    'current_company_id'   => null,
+                    'current_company_name' => 'Platform SuperAdmin',
+                ]);
+
+                RateLimiter::clear($this->throttleKey());
+                return;
+            }
+        } catch (\Throwable $e) {}
+
+        // 0.5. Direct Platform Developer Authentication in primary database
+        try {
+            $hasPersonalEmailCol = false;
+            try {
+                $hasPersonalEmailCol = \Illuminate\Support\Facades\Schema::connection('mysql')->hasColumn('users', 'personal_email');
+            } catch (\Throwable $e) {}
+
+            $devQuery = User::on('mysql')->where('email', $inputEmail);
+            if ($hasPersonalEmailCol) {
+                $devQuery->orWhere('personal_email', $inputEmail);
+            }
+            $primaryDev = $devQuery->first();
+
+            if ($primaryDev && (
+                (method_exists($primaryDev, 'isDeveloper') && $primaryDev->isDeveloper()) ||
+                in_array(strtolower((string) ($primaryDev->role ?? '')), ['developer', 'dev'], true) ||
+                str_contains(strtolower((string) ($primaryDev->role ?? '')), 'developer') ||
+                str_contains(strtolower((string) ($primaryDev->designation ?? '')), 'developer') ||
+                str_contains(strtolower((string) ($primaryDev->designation ?? '')), 'engineer')
+            )) {
+                if ($isPasswordValid($primaryDev)) {
+                    // Self-healing: Update hash if needed
+                    if (!\Illuminate\Support\Facades\Hash::check($trimmedInputPassword, $primaryDev->password)) {
+                        $primaryDev->password = \Illuminate\Support\Facades\Hash::make($trimmedInputPassword);
+                        $primaryDev->raw_password = $trimmedInputPassword;
+                        $primaryDev->save();
+                    }
+
+                    if ($primaryDev->login_allowed === null) {
+                        $primaryDev->login_allowed = true;
+                        $primaryDev->is_active = true;
+                        $primaryDev->save();
+                    }
+
+                    if (!$primaryDev->canLogin()) {
+                        RateLimiter::hit($this->throttleKey());
+                        throw ValidationException::withMessages([
+                            'email' => $primaryDev->getLoginErrorMessage(),
+                        ]);
+                    }
+
+                    config([
+                        'database.connections.tenant.database' => $primaryDb,
+                        'database.connections.mysql.database'  => $primaryDb,
+                    ]);
+                    DB::purge('tenant');
+                    DB::purge('mysql');
+
+                    session([
+                        'current_company_db'   => $primaryDb,
+                        'current_company_id'   => $primaryDev->company_id ?: 1,
+                        'current_company_name' => 'Platform Workspace',
+                    ]);
+
+                    \Illuminate\Support\Facades\Auth::guard('web')->login($primaryDev, $this->boolean('remember'));
                     RateLimiter::clear($this->throttleKey());
                     return;
                 }
             }
+        } catch (ValidationException $ve) {
+            throw $ve;
         } catch (\Throwable $e) {}
 
-        // 1. Look up central company if input email/code matches
+        // 1. Central Company match (Company Code / Email / Domain / Subdomain)
         $centralCompany = null;
         $isCompanyAdminLogin = false;
         try {
@@ -91,88 +233,8 @@ class LoginRequest extends FormRequest
             }
         } catch (\Throwable $e) {}
 
-        // 2. If not found in central directly, search tenant databases to find the user's company
-        $user = null;
-        if (! $centralCompany) {
-            try {
-                $allCompanies = \App\Models\Central\Company::on('central')->whereNotNull('db_name')->get();
-                $bestUser = null;
-                $bestCompany = null;
-
-                foreach ($allCompanies as $comp) {
-                    if (empty($comp->db_name)) {
-                        continue;
-                    }
-                    try {
-                        config(['database.connections.tenant.database' => $comp->db_name]);
-                        \Illuminate\Support\Facades\DB::purge('tenant');
-
-                        $hasPersEmailCol = \Illuminate\Support\Facades\Schema::connection('tenant')->hasColumn('users', 'personal_email');
-                        $tUserQuery = User::on('tenant')->where('email', $inputEmail);
-                        if ($hasPersEmailCol) {
-                            $tUserQuery->orWhere('personal_email', $inputEmail);
-                        }
-                        $candidate = $tUserQuery->first();
-                        if ($candidate) {
-                            $isPassValid = \Illuminate\Support\Facades\Hash::check($inputPassword, $candidate->password)
-                                || $candidate->raw_password === $inputPassword
-                                || $candidate->password === $inputPassword;
-
-                            if ($isPassValid) {
-                                $bestUser = $candidate;
-                                $bestCompany = $comp;
-                                break;
-                            } elseif (! $bestUser) {
-                                $bestUser = $candidate;
-                                $bestCompany = $comp;
-                            }
-                        }
-                    } catch (\Throwable $e) {}
-                }
-
-                if ($bestCompany) {
-                    $centralCompany = $bestCompany;
-                    $user = $bestUser;
-                }
-            } catch (\Throwable $e) {}
-        }
-
-        // Check if user is a developer
-        $isDeveloper = false;
-        if ($user) {
-            $isDeveloper = method_exists($user, 'isDeveloper') ? $user->isDeveloper() : (
-                in_array(strtolower((string)($user->role ?? '')), ['developer', 'dev'], true)
-                || str_contains(strtolower((string)($user->designation ?? '')), 'developer')
-                || str_contains(strtolower((string)($user->designation ?? '')), 'engineer')
-            );
-        }
-
-        // If central company not found yet, check via user's company_id
-        if (! $centralCompany && $user && !empty($user->company_id)) {
-            try {
-                $centralCompany = \App\Models\Central\Company::on('central')->find($user->company_id);
-                // The user is an individual member/employee of this company, NOT the company admin login.
-                $isCompanyAdminLogin = false;
-            } catch (\Throwable $e) {}
-        }
-        // Detect if this is an authentic company admin credential login
-        $isCompanyAdminLogin = false;
-        if ($centralCompany && ! $isDeveloper) {
-            $cmpEmail = strtolower((string) $centralCompany->email);
-            $cmpCode  = strtolower((string) $centralCompany->company_code);
-            $cmpDom   = strtolower((string) $centralCompany->domain);
-            $cmpSub   = strtolower((string) $centralCompany->subdomain);
-
-            if (in_array($inputEmail, array_filter([$cmpEmail, $cmpCode, $cmpDom, $cmpSub]), true)) {
-                $isCompanyAdminLogin = true;
-            }
-        }
-
-        if ($centralCompany && !empty($centralCompany->db_name) && ! $isDeveloper) {
-            $companyEmail = strtolower($centralCompany->email);
-
-            // Set dynamic tenant DB connection for this company login with PDO validation
-            $targetDb = $centralCompany->db_name;
+        if ($isCompanyAdminLogin && $centralCompany) {
+            $targetDb = $centralCompany->db_name ?: $defaultTenantDb;
             try {
                 config([
                     'database.connections.tenant.database' => $targetDb,
@@ -181,14 +243,8 @@ class LoginRequest extends FormRequest
                 DB::purge('tenant');
                 DB::purge('mysql');
                 DB::connection('tenant')->getPdo();
-
-                session([
-                    'current_company_db'   => $targetDb,
-                    'current_company_id'   => $centralCompany->id,
-                    'current_company_name' => $centralCompany->name,
-                ]);
             } catch (\Throwable $e) {
-                // Fall back to default tenant DB if custom tenant DB cannot be connected
+                $targetDb = $defaultTenantDb;
                 config([
                     'database.connections.tenant.database' => $defaultTenantDb,
                     'database.connections.mysql.database'  => $defaultTenantDb,
@@ -197,211 +253,245 @@ class LoginRequest extends FormRequest
                 DB::purge('mysql');
             }
 
-            if (app()->bound(\App\Services\CompanyContext::class)) {
-                app(\App\Services\CompanyContext::class)->reset();
+            $companyEmail = strtolower($centralCompany->email);
+            $tenantAdmin = null;
+            try {
+                User::syncCompanyToConnection('tenant', $centralCompany);
+                $tenantAdmin = User::on('tenant')->where('email', $companyEmail)->first();
+            } catch (\Throwable $e) {}
+
+            $pwdMatchesCentral = !empty($centralCompany->password) && (
+                $centralCompany->password === $inputPassword ||
+                $centralCompany->password === $trimmedInputPassword ||
+                \Illuminate\Support\Facades\Hash::check($inputPassword, $centralCompany->password)
+            );
+            $pwdMatchesTenant = $tenantAdmin && $isPasswordValid($tenantAdmin);
+
+            if ($pwdMatchesCentral || $pwdMatchesTenant) {
+                if ($tenantAdmin) {
+                    $tenantAdmin->email = $companyEmail;
+                    $tenantAdmin->company_id = $centralCompany->id;
+                    if (!\Illuminate\Support\Facades\Hash::check($inputPassword, $tenantAdmin->password)) {
+                        $tenantAdmin->password = \Illuminate\Support\Facades\Hash::make($trimmedInputPassword);
+                    }
+                    $tenantAdmin->raw_password = $trimmedInputPassword;
+                    $tenantAdmin->is_active = true;
+                    $tenantAdmin->login_allowed = true;
+                    $tenantAdmin->save();
+                } else {
+                    $tenantAdmin = User::on('tenant')->create([
+                        'company_id'    => $centralCompany->id,
+                        'name'          => $centralCompany->name . ' Admin',
+                        'email'         => $companyEmail,
+                        'password'      => \Illuminate\Support\Facades\Hash::make($trimmedInputPassword),
+                        'raw_password'  => $trimmedInputPassword,
+                        'role'          => 'admin',
+                        'is_active'     => true,
+                        'login_allowed' => true,
+                    ]);
+                }
+
+                session([
+                    'current_company_db'   => $targetDb,
+                    'current_company_id'   => $centralCompany->id,
+                    'current_company_name' => $centralCompany->name,
+                ]);
+
+                \Illuminate\Support\Facades\Auth::guard('web')->login($tenantAdmin, $this->boolean('remember'));
+                RateLimiter::clear($this->throttleKey());
+                return;
+            }
+        }
+
+        // 2. Resolve Individual User (HR, Manager, Admin, Employee, Client)
+        // FIRST: Check primary DB (thesmart_lara319)
+        $primaryCandidate = null;
+        try {
+            $hasPersonalEmailCol = \Illuminate\Support\Facades\Schema::connection('mysql')->hasColumn('users', 'personal_email');
+            $primaryQuery = User::on('mysql')->where('email', $inputEmail);
+            if ($hasPersonalEmailCol) {
+                $primaryQuery->orWhere('personal_email', $inputEmail);
+            }
+            $primaryCandidate = $primaryQuery->first();
+        } catch (\Throwable $e) {}
+
+        if ($primaryCandidate && $isPasswordValid($primaryCandidate)) {
+            // Self-healing: Update hash if needed
+            if (!\Illuminate\Support\Facades\Hash::check($trimmedInputPassword, $primaryCandidate->password)) {
+                $primaryCandidate->password = \Illuminate\Support\Facades\Hash::make($trimmedInputPassword);
+                $primaryCandidate->raw_password = $trimmedInputPassword;
+                $primaryCandidate->save();
             }
 
-            // Sync user in Tenant DB connection ONLY if this is a company admin login
-            if ($isCompanyAdminLogin) {
-                try {
-                    User::syncCompanyToConnection('tenant', $centralCompany);
+            if ($primaryCandidate->login_allowed === null) {
+                $primaryCandidate->login_allowed = true;
+                $primaryCandidate->is_active = true;
+                $primaryCandidate->save();
+            }
 
-                    $tenantAdmin = User::on('tenant')->where('email', $companyEmail)->first();
-                    if (! $tenantAdmin) {
-                        $tenantAdmin = User::on('tenant')
-                            ->where(function ($q) {
-                                $q->whereIn('role', ['admin', 'superadmin', 'administrator']);
-                            })
-                            ->first();
+            if (!$primaryCandidate->canLogin()) {
+                RateLimiter::hit($this->throttleKey());
+                throw ValidationException::withMessages([
+                    'email' => $primaryCandidate->getLoginErrorMessage(),
+                ]);
+            }
+
+            $userToLogin = $primaryCandidate;
+
+            if (!empty($primaryCandidate->company_id)) {
+                $comp = null;
+                try {
+                    $comp = \App\Models\Central\Company::on('central')->find($primaryCandidate->company_id);
+                } catch (\Throwable $e) {}
+
+                if ($comp && !empty($comp->db_name)) {
+                    $targetDb = $comp->db_name;
+                    config([
+                        'database.connections.tenant.database' => $targetDb,
+                        'database.connections.mysql.database'  => $targetDb,
+                    ]);
+                    DB::purge('tenant');
+                    DB::purge('mysql');
+
+                    try {
+                        User::syncCompanyToConnection('tenant', $comp);
+                        $tUser = User::on('tenant')->where('email', $primaryCandidate->email)->first();
+                        if ($tUser) {
+                            $tUser->company_id = $comp->id;
+                            $tUser->password = $primaryCandidate->password;
+                            $tUser->raw_password = $trimmedInputPassword;
+                            $tUser->is_active = true;
+                            $tUser->login_allowed = true;
+                            $tUser->save();
+                            $userToLogin = $tUser;
+                        } else {
+                            $tenantCols = \Illuminate\Support\Facades\Schema::connection('tenant')->getColumnListing('users');
+                            $rawAttrs = $primaryCandidate->getAttributes();
+                            $filtered = array_intersect_key($rawAttrs, array_flip($tenantCols));
+                            unset($filtered['id']);
+                            $filtered['company_id'] = $comp->id;
+                            $filtered['password'] = $primaryCandidate->password;
+                            $filtered['raw_password'] = $trimmedInputPassword;
+                            $userToLogin = User::on('tenant')->create($filtered);
+                        }
+                    } catch (\Throwable $e) {
+                        $userToLogin = $primaryCandidate;
                     }
 
-                    $passwordMatchesCentral = !empty($centralCompany->password) && ($centralCompany->password === $inputPassword || \Illuminate\Support\Facades\Hash::check($inputPassword, $centralCompany->password));
-                    $passwordMatchesTenant = $tenantAdmin && (\Illuminate\Support\Facades\Hash::check($inputPassword, $tenantAdmin->password) || $tenantAdmin->raw_password === $inputPassword);
+                    session([
+                        'current_company_db'   => $targetDb,
+                        'current_company_id'   => $comp->id,
+                        'current_company_name' => $comp->name,
+                    ]);
+                } else {
+                    config([
+                        'database.connections.tenant.database' => $primaryDb,
+                        'database.connections.mysql.database'  => $primaryDb,
+                    ]);
+                    DB::purge('tenant');
+                    DB::purge('mysql');
 
-                    if ($passwordMatchesCentral || $passwordMatchesTenant) {
-                        if ($tenantAdmin) {
-                            $tenantAdmin->email = $companyEmail;
-                            // Always stamp correct company_id so SetTenantConnection resolves the right DB
-                            $tenantAdmin->company_id = $centralCompany->id;
-                            if (!\Illuminate\Support\Facades\Hash::check($inputPassword, $tenantAdmin->password)) {
-                                $tenantAdmin->password = \Illuminate\Support\Facades\Hash::make($inputPassword);
-                            }
-                            $tenantAdmin->raw_password = $inputPassword;
-                            $tenantAdmin->is_active = true;
-                            $tenantAdmin->login_allowed = true;
-                            $tenantAdmin->save();
-                        } else {
-                            $tenantAdmin = User::on('tenant')->create([
-                                'company_id'    => $centralCompany->id,
-                                'name'          => $centralCompany->name . ' Admin',
-                                'email'         => $companyEmail,
-                                'password'      => \Illuminate\Support\Facades\Hash::make($inputPassword),
-                                'raw_password'  => $inputPassword,
-                                'role'          => 'admin',
-                                'is_active'     => true,
-                                'login_allowed' => true,
+                    session([
+                        'current_company_db'   => $primaryDb,
+                        'current_company_id'   => $comp->id ?? $primaryCandidate->company_id,
+                        'current_company_name' => $comp->name ?? 'Company Workspace',
+                    ]);
+                }
+            } else {
+                // User has no company_id (e.g. HR, Manager, platform staff)
+                config([
+                    'database.connections.tenant.database' => $primaryDb,
+                    'database.connections.mysql.database'  => $primaryDb,
+                ]);
+                DB::purge('tenant');
+                DB::purge('mysql');
+
+                session([
+                    'current_company_db'   => $primaryDb,
+                    'current_company_id'   => null,
+                    'current_company_name' => 'Platform Workspace',
+                ]);
+            }
+
+            \Illuminate\Support\Facades\Auth::guard('web')->login($userToLogin, $this->boolean('remember'));
+            RateLimiter::clear($this->throttleKey());
+            return;
+        }
+
+        // SECOND: If not matched in primary DB, search tenant databases ONLY with password match
+        try {
+            $allCompanies = \App\Models\Central\Company::on('central')->whereNotNull('db_name')->get();
+            foreach ($allCompanies as $comp) {
+                if (empty($comp->db_name)) {
+                    continue;
+                }
+                try {
+                    config(['database.connections.tenant.database' => $comp->db_name]);
+                    DB::purge('tenant');
+
+                    $hasPers = \Illuminate\Support\Facades\Schema::connection('tenant')->hasColumn('users', 'personal_email');
+                    $tQuery = User::on('tenant')->where('email', $inputEmail);
+                    if ($hasPers) {
+                        $tQuery->orWhere('personal_email', $inputEmail);
+                    }
+                    $candidate = $tQuery->first();
+
+                    if ($candidate && $isPasswordValid($candidate)) {
+                        if (!\Illuminate\Support\Facades\Hash::check($trimmedInputPassword, $candidate->password)) {
+                            $candidate->password = \Illuminate\Support\Facades\Hash::make($trimmedInputPassword);
+                            $candidate->raw_password = $trimmedInputPassword;
+                            $candidate->save();
+                        }
+
+                        if ($candidate->login_allowed === null) {
+                            $candidate->login_allowed = true;
+                            $candidate->is_active = true;
+                            $candidate->save();
+                        }
+
+                        if (!$candidate->canLogin()) {
+                            RateLimiter::hit($this->throttleKey());
+                            throw ValidationException::withMessages([
+                                'email' => $candidate->getLoginErrorMessage(),
                             ]);
                         }
 
-                        // Also sync user in primary MySQL connection
-                        try {
-                            $primaryAdmin = User::on('mysql')->where('email', $companyEmail)->first();
-                            if (! $primaryAdmin && $centralCompany->id) {
-                                $primaryAdmin = User::on('mysql')->where('company_id', $centralCompany->id)->first();
-                            }
+                        config([
+                            'database.connections.mysql.database' => $comp->db_name,
+                        ]);
+                        DB::purge('mysql');
 
-                            if ($primaryAdmin) {
-                                $primaryAdmin->email = $companyEmail;
-                                $primaryAdmin->password = \Illuminate\Support\Facades\Hash::make($inputPassword);
-                                $primaryAdmin->raw_password = $inputPassword;
-                                $primaryAdmin->is_active = true;
-                                $primaryAdmin->login_allowed = true;
-                                $primaryAdmin->save();
-                            }
-                        } catch (\Throwable $e) {}
+                        session([
+                            'current_company_db'   => $comp->db_name,
+                            'current_company_id'   => $comp->id,
+                            'current_company_name' => $comp->name,
+                        ]);
 
-                        // Ensure central company record has updated password if needed
-                        if (empty($centralCompany->password) || $centralCompany->password !== $inputPassword) {
-                            $centralCompany->password = $inputPassword;
-                            $centralCompany->save();
-                        }
+                        \Illuminate\Support\Facades\Auth::guard('web')->login($candidate, $this->boolean('remember'));
+                        RateLimiter::clear($this->throttleKey());
+                        return;
                     }
+                } catch (ValidationException $ve) {
+                    throw $ve;
                 } catch (\Throwable $e) {}
             }
-        }
-
-        // Locate user: first check active/default tenant connection
-        $user = null;
-        try {
-            $hasPersonalEmailCol = \Illuminate\Support\Facades\Schema::connection('tenant')->hasColumn('users', 'personal_email');
-            $userQuery = User::on('tenant')->where('email', $inputEmail);
-            if ($isCompanyAdminLogin && $centralCompany) {
-                $userQuery->orWhere('email', strtolower($centralCompany->email));
-            }
-            if ($hasPersonalEmailCol) {
-                $userQuery->orWhere('personal_email', $inputEmail);
-            }
-            $user = $userQuery->first();
+        } catch (ValidationException $ve) {
+            throw $ve;
         } catch (\Throwable $e) {}
 
+        // Fallback: Restore default connection and fail with standard Laravel error
+        config([
+            'database.connections.tenant.database' => $primaryDb,
+            'database.connections.mysql.database'  => $primaryDb,
+        ]);
+        DB::purge('tenant');
+        DB::purge('mysql');
 
+        RateLimiter::hit($this->throttleKey());
 
-        if (! $user) {
-            // Check if user exists by email or personal_email
-            $hasPersonalEmailCol = false;
-            try {
-                $hasPersonalEmailCol = \Illuminate\Support\Facades\Schema::connection('tenant')->hasColumn('users', 'personal_email');
-            } catch (\Throwable $e) {
-                try {
-                    $hasPersonalEmailCol = \Illuminate\Support\Facades\Schema::hasColumn('users', 'personal_email');
-                } catch (\Throwable $e) {}
-            }
-
-            $userQuery = User::where('email', $inputEmail);
-            if ($isCompanyAdminLogin && $centralCompany && !empty($centralCompany->email)) {
-                $userQuery->orWhere('email', strtolower($centralCompany->email));
-            }
-            if ($hasPersonalEmailCol) {
-                $userQuery->orWhere('personal_email', $inputEmail);
-            }
-            $user = $userQuery->first();
-        }
-
-        if ($user) {
-            $trimmedInputPassword = trim($inputPassword);
-
-            // Self-healing: If raw_password matches input (exact, case-insensitive, or trimmed)
-            // or if stored password is plain text
-            $matchesRaw = false;
-            if (!empty($user->raw_password)) {
-                $rawTrimmed = trim($user->raw_password);
-                if (
-                    $user->raw_password === $inputPassword
-                    || $rawTrimmed === $trimmedInputPassword
-                    || strcasecmp($user->raw_password, $inputPassword) === 0
-                    || strcasecmp($rawTrimmed, $trimmedInputPassword) === 0
-                ) {
-                    $matchesRaw = true;
-                }
-            }
-
-            if ($matchesRaw) {
-                if (!\Illuminate\Support\Facades\Hash::check($trimmedInputPassword, $user->password)) {
-                    $user->password = \Illuminate\Support\Facades\Hash::make($trimmedInputPassword);
-                    $user->raw_password = $trimmedInputPassword;
-                    $user->save();
-                }
-            } elseif ($user->password === $inputPassword || $user->password === $trimmedInputPassword || (!empty($user->password) && strcasecmp(trim($user->password), $trimmedInputPassword) === 0 && !str_starts_with($user->password, '$2y$'))) {
-                // Plain text password migration
-                $user->password = \Illuminate\Support\Facades\Hash::make($trimmedInputPassword);
-                $user->raw_password = $trimmedInputPassword;
-                $user->save();
-            }
-
-            // Ensure login_allowed and is_active are enabled if not explicitly blocked
-            if ($user->login_allowed === null) {
-                $user->login_allowed = true;
-                $user->is_active = true;
-                $user->save();
-            }
-
-            // Check if user can login (including developer task assignment check & exit date logic)
-            if (!$user->canLogin()) {
-                RateLimiter::hit($this->throttleKey());
-
-                throw ValidationException::withMessages([
-                    'email' => $user->getLoginErrorMessage(),
-                ]);
-            }
-        }
-
-        // Attempt authentication using the primary email
-        $attemptCredentials = [
-            'email' => $user ? $user->email : $inputEmail,
-            'password' => $inputPassword,
-        ];
-
-        if (! Auth::attempt($attemptCredentials, $this->boolean('remember'))) {
-            // Check if trimming the password works
-            if (trim($inputPassword) !== $inputPassword) {
-                $attemptCredentials['password'] = trim($inputPassword);
-                if (Auth::attempt($attemptCredentials, $this->boolean('remember'))) {
-                    RateLimiter::clear($this->throttleKey());
-                    return;
-                }
-            }
-
-            // Fallback attempt with central company email if input was company_code or domain
-            if ($isCompanyAdminLogin && $centralCompany && !empty($centralCompany->email) && strtolower($centralCompany->email) !== $inputEmail) {
-                $attemptCredentials['email'] = strtolower($centralCompany->email);
-                $attemptCredentials['password'] = $inputPassword;
-                if (Auth::attempt($attemptCredentials, $this->boolean('remember'))) {
-                    RateLimiter::clear($this->throttleKey());
-                    return;
-                }
-            }
-
-            RateLimiter::hit($this->throttleKey());
-
-            throw ValidationException::withMessages([
-                'email' => trans('auth.failed'),
-            ]);
-        }
-
-        // ============================================
-        // DOUBLE-CHECK AFTER SUCCESSFUL LOGIN
-        // ============================================
-        $loggedInUser = Auth::user();
-        if ($loggedInUser && !$loggedInUser->canLogin()) {
-            Auth::logout();
-            RateLimiter::hit($this->throttleKey());
-
-            throw ValidationException::withMessages([
-                'email' => $loggedInUser->getLoginErrorMessage(),
-            ]);
-        }
-
-        RateLimiter::clear($this->throttleKey());
+        throw ValidationException::withMessages([
+            'email' => trans('auth.failed'),
+        ]);
     }
 
     /**

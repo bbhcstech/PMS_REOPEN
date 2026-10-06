@@ -20,16 +20,29 @@ class SetTenantConnection
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // 1. Bypass tenant DB switching for SuperAdmin & Developer routes
+        // 1. Bypass tenant DB switching for SuperAdmin routes
         if (
             $request->is('super-admin*') ||
-            $request->is('superadmin*') ||
-            $request->is('developer*')
+            $request->is('superadmin*')
         ) {
             return $next($request);
         }
 
-        $defaultDb = env('DB_DATABASE', 'pms_last');
+        // 1b. Developer routes always run on primary platform database
+        if ($request->is('developer*')) {
+            $primaryDb = trim((string) (config('database.connections.session_db.database') ?: config('database.connections.mysql.database', env('DB_DATABASE', 'thesmart_lara319'))));
+            if (config('database.connections.tenant.database') !== $primaryDb || config('database.connections.mysql.database') !== $primaryDb) {
+                config([
+                    'database.connections.tenant.database' => $primaryDb,
+                    'database.connections.mysql.database'  => $primaryDb,
+                ]);
+                DB::purge('tenant');
+                DB::purge('mysql');
+            }
+            return $next($request);
+        }
+
+        $defaultDb = trim((string) (config('database.connections.session_db.database') ?: config('database.connections.mysql.database', env('DB_DATABASE', 'thesmart_lara319'))));
         $isSuperAdmin = \Illuminate\Support\Facades\Auth::guard('super_admin')->check() ||
             (auth()->check() && in_array(strtolower((string)(auth()->user()->role ?? '')), ['superadmin', 'super-admin', 'super_admin'], true));
 
