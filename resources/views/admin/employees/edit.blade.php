@@ -1606,9 +1606,9 @@
                         <div class="col-md-4">
                             <label class="form-label-premium">
                                 <span><i class="fas fa-building"></i> Business Address</span>
-                                <span class="mandatory-badge">Required</span>
+                                <span class="optional-badge">Optional</span>
                             </label>
-                            <textarea name="business_address" class="form-control-premium" required rows="2">{{ old('business_address') ?? ($ed->business_address ?? $employee->business_address ?? 'Kolkata') }}</textarea>
+                            <textarea name="business_address" class="form-control-premium" rows="2">{{ old('business_address') ?? ($ed->business_address ?? $employee->business_address ?? 'Kolkata') }}</textarea>
                             @error('business_address')
                                 <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
