@@ -521,7 +521,17 @@
 
             <div class="col-md-4 mb-3">
                 <label>Mobile <sup class="text-danger">*</sup></label>
-                <input type="text" name="mobile" class="form-control" required>
+                <div class="input-group">
+                    <select name="mobile_country_code" class="form-select" style="max-width: 110px;" required>
+                        @php $taskCountries = isset($countries) && count($countries) ? $countries : \App\Models\Country::getAllWithPhoneCodes(); @endphp
+                        @foreach($taskCountries as $c)
+                            <option value="{{ $c->phone_code }}" {{ (old('mobile_country_code', '+91') == $c->phone_code) ? 'selected' : '' }}>
+                                {{ $c->iso_code ? $c->iso_code . ' ' : '' }}({{ $c->phone_code }})
+                            </option>
+                        @endforeach
+                    </select>
+                    <input type="text" name="mobile" class="form-control" placeholder="Mobile number" required>
+                </div>
             </div>
 
             <div class="col-md-4 mb-3">

@@ -198,12 +198,29 @@ class LeadContactController extends Controller
         $this->authorizeLeadAccess('create');
 
         $users = User::select('id', 'name')->get();
-        return view('admin.leads.contacts.create', compact('users'));
+        $countries = Country::orderBy('name')->get();
+        return view('admin.leads.contacts.create', compact('users', 'countries'));
     }
 
     public function store(Request $request)
     {
         $this->authorizeLeadAccess('create');
+
+        if ($request->filled('phone')) {
+            $rawP = trim((string) $request->phone);
+            $pCode = $request->input('phone_country_code', '+91');
+            if (! str_starts_with($rawP, '+')) {
+                $request->merge(['phone' => $pCode . ' ' . $rawP]);
+            }
+        }
+
+        if ($request->filled('mobile')) {
+            $rawM = trim((string) $request->mobile);
+            $mCode = $request->input('mobile_country_code', '+91');
+            if (! str_starts_with($rawM, '+')) {
+                $request->merge(['mobile' => $mCode . ' ' . $rawM]);
+            }
+        }
 
         $data = $request->validate([
             // Section: Basic Information
@@ -356,13 +373,30 @@ class LeadContactController extends Controller
 
         $lead = LeadContact::findOrFail($id);
         $users = User::select('id', 'name')->get();
+        $countries = Country::orderBy('name')->get();
 
-        return view('admin.leads.contacts.edit', compact('lead', 'users'));
+        return view('admin.leads.contacts.edit', compact('lead', 'users', 'countries'));
     }
 
     public function update(Request $request, $id)
     {
         $this->authorizeLeadAccess('edit');
+
+        if ($request->filled('phone')) {
+            $rawP = trim((string) $request->phone);
+            $pCode = $request->input('phone_country_code', '+91');
+            if (! str_starts_with($rawP, '+')) {
+                $request->merge(['phone' => $pCode . ' ' . $rawP]);
+            }
+        }
+
+        if ($request->filled('mobile')) {
+            $rawM = trim((string) $request->mobile);
+            $mCode = $request->input('mobile_country_code', '+91');
+            if (! str_starts_with($rawM, '+')) {
+                $request->merge(['mobile' => $mCode . ' ' . $rawM]);
+            }
+        }
 
         $lead = LeadContact::findOrFail($id);
         $oldStatus = $lead->status;

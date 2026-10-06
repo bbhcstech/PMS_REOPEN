@@ -204,14 +204,60 @@ html[data-pms-theme="dark"] .btn-cancel-modern:hover {
                         @error('email')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
 
+                    @php
+                        $leadPCode = '+91';
+                        $leadPNum = old('phone', $lead->phone);
+                        if ($leadPNum && str_starts_with($leadPNum, '+')) {
+                            foreach($countries ?? [] as $c) {
+                                if (str_starts_with($leadPNum, $c->phone_code)) {
+                                    $leadPCode = $c->phone_code;
+                                    $leadPNum = trim(substr($leadPNum, strlen($c->phone_code)));
+                                    break;
+                                }
+                            }
+                        }
+                        $selPCode = old('phone_country_code', $leadPCode);
+
+                        $leadMCode = '+91';
+                        $leadMNum = old('mobile', $lead->mobile);
+                        if ($leadMNum && str_starts_with($leadMNum, '+')) {
+                            foreach($countries ?? [] as $c) {
+                                if (str_starts_with($leadMNum, $c->phone_code)) {
+                                    $leadMCode = $c->phone_code;
+                                    $leadMNum = trim(substr($leadMNum, strlen($c->phone_code)));
+                                    break;
+                                }
+                            }
+                        }
+                        $selMCode = old('mobile_country_code', $leadMCode);
+                    @endphp
+
                     <div class="col-md-4">
                         <label class="form-label-modern">Primary Phone</label>
-                        <input type="text" name="phone" class="form-control form-control-modern" value="{{ old('phone', $lead->phone) }}" placeholder="e.g. +1 234 567 890">
+                        <div class="input-group">
+                            <select name="phone_country_code" class="form-select form-control-modern" style="max-width: 115px; flex-shrink: 0;">
+                                @foreach($countries ?? [] as $c)
+                                    <option value="{{ $c->phone_code }}" {{ $selPCode === $c->phone_code ? 'selected' : '' }}>
+                                        {{ $c->iso_code ? $c->iso_code . ' ' : '' }}({{ $c->phone_code }})
+                                    </option>
+                                @endforeach
+                            </select>
+                            <input type="text" name="phone" class="form-control form-control-modern" value="{{ $leadPNum }}" placeholder="Phone number">
+                        </div>
                     </div>
 
                     <div class="col-md-4">
                         <label class="form-label-modern">Mobile / Cell</label>
-                        <input type="text" name="mobile" class="form-control form-control-modern" value="{{ old('mobile', $lead->mobile) }}" placeholder="e.g. +1 987 654 321">
+                        <div class="input-group">
+                            <select name="mobile_country_code" class="form-select form-control-modern" style="max-width: 115px; flex-shrink: 0;">
+                                @foreach($countries ?? [] as $c)
+                                    <option value="{{ $c->phone_code }}" {{ $selMCode === $c->phone_code ? 'selected' : '' }}>
+                                        {{ $c->iso_code ? $c->iso_code . ' ' : '' }}({{ $c->phone_code }})
+                                    </option>
+                                @endforeach
+                            </select>
+                            <input type="text" name="mobile" class="form-control form-control-modern" value="{{ $leadMNum }}" placeholder="Mobile number">
+                        </div>
                     </div>
 
                     <div class="col-md-4">

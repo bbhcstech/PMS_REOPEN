@@ -2354,6 +2354,9 @@
                         @if($canSeeModule('localization-settings'))
                         <li class="menu-item {{ request()->routeIs('admin.settings.localization*') ? 'active' : '' }}"><a href="{{ route('admin.settings.localization') }}" class="menu-link"><div>Localization</div></a></li>
                         @endif
+                        @if($canSeeModule('localization-settings') || $canSeeModule('country-codes-settings') || in_array(strtolower((string)(auth()->user()?->role ?? '')), ['admin', 'superadmin'], true))
+                        <li class="menu-item {{ request()->routeIs('admin.settings.country-codes*') ? 'active' : '' }}"><a href="{{ route('admin.settings.country-codes.index') }}" class="menu-link"><div>Country Codes</div></a></li>
+                        @endif
                         @if($canSeeModule('terms-policy-settings'))
                         <li class="menu-item {{ request()->routeIs('admin.settings.terms-policy*') ? 'active' : '' }}"><a href="{{ route('admin.settings.terms-policy') }}" class="menu-link"><div>Terms &amp; Policy</div></a></li>
                         @endif
