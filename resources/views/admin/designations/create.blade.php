@@ -77,7 +77,7 @@
             @endif
 
             <!-- Unique Code Field -->
-            <div class="form-field">
+            <div class="form-field field-code">
                 <div class="field-icon">
                     <i class="fas fa-qrcode"></i>
                 </div>
@@ -140,7 +140,7 @@
             </div>
 
             <!-- Designation Name Field -->
-            <div class="form-field">
+            <div class="form-field field-name">
                 <div class="field-icon">
                     <i class="fas fa-user-tag"></i>
                 </div>
@@ -165,7 +165,7 @@
             </div>
 
             <!-- Parent Designation Field -->
-            <div class="form-field">
+            <div class="form-field field-parent">
                 <div class="field-icon">
                     <i class="fas fa-sitemap"></i>
                 </div>
@@ -179,16 +179,23 @@
                         name="parent_id"
                         class="form-control @error('parent_id') is-invalid @enderror"
                     >
-                        <option value="">-- None (Top-Level Designation) --</option>
+                        <option value="" data-level="-1">-- None (Top-Level Designation) --</option>
                         @foreach($designations as $parentDesig)
+                            @php
+                                $pLevel = (int) ($parentDesig->level ?? 0);
+                                $isL6 = $pLevel >= 6;
+                            @endphp
                             <option value="{{ $parentDesig->id }}"
-                                {{ (string) old('parent_id', $designation->parent_id ?? '') === (string) $parentDesig->id ? 'selected' : '' }}>
+                                data-level="{{ $pLevel }}"
+                                {{ (string) old('parent_id', $designation->parent_id ?? '') === (string) $parentDesig->id ? 'selected' : '' }}
+                                {{ $isL6 ? 'disabled class=text-muted' : '' }}>
                                 {{ $parentDesig->name }}
                                 @if(!empty($parentDesig->unique_code))
                                     ({{ $parentDesig->unique_code }})
                                 @endif
-                                @if($parentDesig->level !== null)
-                                    - Level {{ $parentDesig->level }}
+                                - Level {{ $pLevel }}
+                                @if($isL6)
+                                    [Max Level 6 - cannot have subordinates]
                                 @endif
                             </option>
                         @endforeach
@@ -196,12 +203,12 @@
                     @error('parent_id')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
-                    <span class="field-hint">Select parent designation this role reports to, or leave empty if top-level</span>
+                    <span class="field-hint" id="parent-field-hint">Select parent designation (Level 0-5 only; Level 6 is the max organizational limit)</span>
                 </div>
             </div>
 
             <!-- Level Field -->
-            <div class="form-field">
+            <div class="form-field field-level">
                 <div class="field-icon">
                     <i class="fas fa-layer-group"></i>
                 </div>
@@ -215,10 +222,11 @@
                         class="form-control @error('level') is-invalid @enderror"
                         required
                     >
-                        <option value="">Select Level</option>
+                        <option value="">Select Level (0 - 6)</option>
                         @for($i = 0; $i <= 6; $i++)
                             <option value="{{ $i }}"
-                                {{ old('level', $designation->level ?? '') == $i ? 'selected' : '' }}>
+                                data-level="{{ $i }}"
+                                {{ (string) old('level', $designation->level ?? '') === (string) $i ? 'selected' : '' }}>
                                 Level {{ $i }}
                             </option>
                         @endfor
@@ -226,7 +234,7 @@
                     @error('level')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
-                    <span class="field-hint">Organizational hierarchy level (0-6)</span>
+                    <span class="field-hint" id="level-field-hint">Organizational hierarchy level (strictly Level 0 to Level 6)</span>
                 </div>
             </div>
 
@@ -495,14 +503,24 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.2rem;
+        font-size: 1.25rem;
         flex-shrink: 0;
         transition: all 0.3s ease;
     }
 
+    .form-field .field-icon i {
+        display: inline-block;
+        line-height: 1;
+    }
+
+    .form-field.field-code .field-icon,
     .form-field:nth-child(1) .field-icon { background: linear-gradient(145deg, #EEF2FF, #E0E7FF); color: #2F6BFF; }
+    .form-field.field-name .field-icon,
     .form-field:nth-child(2) .field-icon { background: linear-gradient(145deg, #dbeafe, #bfdbfe); color: #2563eb; }
+    .form-field.field-parent .field-icon,
     .form-field:nth-child(3) .field-icon { background: linear-gradient(145deg, #fef3c7, #fde68a); color: #d97706; }
+    .form-field.field-level .field-icon,
+    .form-field:nth-child(4) .field-icon { background: linear-gradient(145deg, #ede9fe, #ddd6fe); color: #7c3aed; }
 
     .form-field:hover .field-icon {
         transform: scale(1.05);
@@ -1204,6 +1222,9 @@
     }
 
     /* Field Icons in Dark Mode */
+    html[data-pms-theme="dark"] .form-field.field-code .field-icon,
+    html[data-bs-theme="dark"] .form-field.field-code .field-icon,
+    [data-pms-theme="dark"] .form-field.field-code .field-icon,
     html[data-pms-theme="dark"] .form-field:nth-child(1) .field-icon,
     html[data-bs-theme="dark"] .form-field:nth-child(1) .field-icon,
     [data-pms-theme="dark"] .form-field:nth-child(1) .field-icon {
@@ -1213,6 +1234,9 @@
         border: 1px solid rgba(79, 131, 255, 0.4) !important;
     }
 
+    html[data-pms-theme="dark"] .form-field.field-name .field-icon,
+    html[data-bs-theme="dark"] .form-field.field-name .field-icon,
+    [data-pms-theme="dark"] .form-field.field-name .field-icon,
     html[data-pms-theme="dark"] .form-field:nth-child(2) .field-icon,
     html[data-bs-theme="dark"] .form-field:nth-child(2) .field-icon,
     [data-pms-theme="dark"] .form-field:nth-child(2) .field-icon {
@@ -1222,6 +1246,9 @@
         border: 1px solid rgba(56, 189, 248, 0.4) !important;
     }
 
+    html[data-pms-theme="dark"] .form-field.field-parent .field-icon,
+    html[data-bs-theme="dark"] .form-field.field-parent .field-icon,
+    [data-pms-theme="dark"] .form-field.field-parent .field-icon,
     html[data-pms-theme="dark"] .form-field:nth-child(3) .field-icon,
     html[data-bs-theme="dark"] .form-field:nth-child(3) .field-icon,
     [data-pms-theme="dark"] .form-field:nth-child(3) .field-icon {
@@ -1229,6 +1256,18 @@
         color: #fbbf24 !important;
         -webkit-text-fill-color: #fbbf24 !important;
         border: 1px solid rgba(245, 158, 11, 0.4) !important;
+    }
+
+    html[data-pms-theme="dark"] .form-field.field-level .field-icon,
+    html[data-bs-theme="dark"] .form-field.field-level .field-icon,
+    [data-pms-theme="dark"] .form-field.field-level .field-icon,
+    html[data-pms-theme="dark"] .form-field:nth-child(4) .field-icon,
+    html[data-bs-theme="dark"] .form-field:nth-child(4) .field-icon,
+    [data-pms-theme="dark"] .form-field:nth-child(4) .field-icon {
+        background: rgba(168, 85, 247, 0.22) !important;
+        color: #c084fc !important;
+        -webkit-text-fill-color: #c084fc !important;
+        border: 1px solid rgba(168, 85, 247, 0.4) !important;
     }
 
     html[data-pms-theme="dark"] .btn-secondary,
@@ -1265,12 +1304,13 @@
 document.addEventListener('DOMContentLoaded', function () {
     const codeInput = document.getElementById('unique_code');
     const modeInputs = document.querySelectorAll('input[name="code_generation_mode"]');
-
-    if (!codeInput || !modeInputs.length) {
-        return;
-    }
+    const parentSelect = document.getElementById('parent_id');
+    const levelSelect = document.getElementById('level');
+    const levelHint = document.getElementById('level-field-hint');
+    const form = document.querySelector('.form-content');
 
     function syncCodeMode() {
+        if (!codeInput || !modeInputs.length) return;
         const selectedMode = document.querySelector('input[name="code_generation_mode"]:checked')?.value || 'auto';
 
         if (selectedMode === 'custom') {
@@ -1295,6 +1335,85 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     syncCodeMode();
+
+    // Strict 0-6 hierarchy level synchronization
+    function syncParentAndLevel() {
+        if (!parentSelect || !levelSelect) return;
+
+        const selectedOption = parentSelect.options[parentSelect.selectedIndex];
+        const parentLevel = selectedOption ? parseInt(selectedOption.getAttribute('data-level'), 10) : -1;
+
+        if (parentLevel >= 0) {
+            // Parent is selected. Child level must be between (parentLevel + 1) and 6.
+            const minChildLevel = parentLevel + 1;
+
+            Array.from(levelSelect.options).forEach(opt => {
+                const val = parseInt(opt.value, 10);
+                if (opt.value === '') return;
+
+                if (val < minChildLevel || val > 6) {
+                    opt.disabled = true;
+                    opt.classList.add('text-muted');
+                } else {
+                    opt.disabled = false;
+                    opt.classList.remove('text-muted');
+                }
+            });
+
+            const currentLevel = parseInt(levelSelect.value, 10);
+            if (isNaN(currentLevel) || currentLevel < minChildLevel || currentLevel > 6) {
+                if (minChildLevel <= 6) {
+                    levelSelect.value = String(minChildLevel);
+                }
+            }
+
+            if (levelHint) {
+                levelHint.innerHTML = `<span style="color: #2F6BFF; font-weight: 600;"><i class="fas fa-info-circle"></i> Reports to Level ${parentLevel}: Subordinate level must be between Level ${minChildLevel} and Level 6.</span>`;
+            }
+        } else {
+            // Top-Level (no parent selected)
+            Array.from(levelSelect.options).forEach(opt => {
+                opt.disabled = false;
+                opt.classList.remove('text-muted');
+            });
+
+            if (levelHint) {
+                levelHint.textContent = 'Top-level designation: Organizational hierarchy level (strictly Level 0 to Level 6).';
+            }
+        }
+    }
+
+    if (parentSelect && levelSelect) {
+        parentSelect.addEventListener('change', syncParentAndLevel);
+        syncParentAndLevel();
+    }
+
+    // Client-side validation to guarantee 0-6 rule
+    if (form) {
+        form.addEventListener('submit', function (e) {
+            const lvl = parseInt(levelSelect?.value, 10);
+            if (isNaN(lvl) || lvl < 0 || lvl > 6) {
+                e.preventDefault();
+                alert('Designation level must be strictly between 0 and 6.');
+                return false;
+            }
+
+            const selectedOption = parentSelect?.options[parentSelect.selectedIndex];
+            const pLevel = selectedOption ? parseInt(selectedOption.getAttribute('data-level'), 10) : -1;
+
+            if (pLevel >= 6) {
+                e.preventDefault();
+                alert('A Level 6 designation cannot have subordinate designations as Level 6 is the maximum organizational level allowed.');
+                return false;
+            }
+
+            if (pLevel >= 0 && lvl <= pLevel) {
+                e.preventDefault();
+                alert(`Subordinate designation level (${lvl}) must be greater than parent designation level (${pLevel}). Minimum allowed level is ${pLevel + 1}.`);
+                return false;
+            }
+        });
+    }
 });
 </script>
 @endpush

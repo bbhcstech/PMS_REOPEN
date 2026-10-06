@@ -48,7 +48,7 @@
         <!-- View Fields -->
         <div class="view-fields">
             <!-- Unique Code -->
-            <div class="view-field">
+            <div class="view-field field-code">
                 <div class="field-icon">
                     <i class="fas fa-qrcode"></i>
                 </div>
@@ -60,7 +60,7 @@
             </div>
 
             <!-- Designation Name -->
-            <div class="view-field">
+            <div class="view-field field-name">
                 <div class="field-icon">
                     <i class="fas fa-user-tag"></i>
                 </div>
@@ -72,7 +72,7 @@
             </div>
 
             <!-- Parent Designation -->
-            <div class="view-field">
+            <div class="view-field field-parent">
                 <div class="field-icon">
                     <i class="fas fa-sitemap"></i>
                 </div>
@@ -101,7 +101,7 @@
             </div>
 
             <!-- Level -->
-            <div class="view-field">
+            <div class="view-field field-level">
                 <div class="field-icon">
                     <i class="fas fa-chart-line"></i>
                 </div>
@@ -125,7 +125,7 @@
             </div>
 
             <!-- Added By -->
-            <div class="view-field">
+            <div class="view-field field-added">
                 <div class="field-icon">
                     <i class="fas fa-user-plus"></i>
                 </div>
@@ -147,7 +147,7 @@
             </div>
 
             <!-- Updated By -->
-            <div class="view-field">
+            <div class="view-field field-updated">
                 <div class="field-icon">
                     <i class="fas fa-user-edit"></i>
                 </div>
@@ -470,12 +470,23 @@
         transform: translateY(-2px);
     }
 
+    .view-field.field-code .field-icon,
     .view-field:nth-child(1) .field-icon { background: linear-gradient(145deg, #EEF2FF, #E0E7FF); color: #2F6BFF; }
+    .view-field.field-name .field-icon,
     .view-field:nth-child(2) .field-icon { background: linear-gradient(145deg, #dbeafe, #bfdbfe); color: #2563eb; }
+    .view-field.field-parent .field-icon,
     .view-field:nth-child(3) .field-icon { background: linear-gradient(145deg, #fef3c7, #fde68a); color: #d97706; }
+    .view-field.field-level .field-icon,
     .view-field:nth-child(4) .field-icon { background: linear-gradient(145deg, #e0e7ff, #c7d2fe); color: #4f46e5; }
+    .view-field.field-added .field-icon,
     .view-field:nth-child(5) .field-icon { background: linear-gradient(145deg, #fce7f3, #fbcfe8); color: #db2777; }
+    .view-field.field-updated .field-icon,
     .view-field:nth-child(6) .field-icon { background: linear-gradient(145deg, #cffafe, #a5f3fc); color: #0891b2; }
+
+    .field-icon i {
+        display: inline-block;
+        line-height: 1;
+    }
 
     .field-icon {
         width: 52px;
