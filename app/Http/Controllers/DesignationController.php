@@ -7,52 +7,142 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rule;
 use Illuminate\Database\QueryException;
 
 class DesignationController extends Controller
 {
+    private static bool $schemaChecked = false;
+
+    public static function ensureDesignationColumnsExist(): void
+    {
+        if (self::$schemaChecked) {
+            return;
+        }
+        self::$schemaChecked = true;
+
+        try {
+            if (! Schema::hasTable('designations')) {
+                return;
+            }
+
+            $missing = [];
+            foreach (['company_id', 'parent_id', 'unique_code', 'level', 'order', 'status', 'archived_at'] as $col) {
+                if (! Schema::hasColumn('designations', $col)) {
+                    $missing[] = $col;
+                }
+            }
+
+            if (! empty($missing)) {
+                Schema::table('designations', function (\Illuminate\Database\Schema\Blueprint $table) use ($missing) {
+                    if (in_array('company_id', $missing, true)) {
+                        $table->unsignedBigInteger('company_id')->nullable()->index();
+                    }
+                    if (in_array('parent_id', $missing, true)) {
+                        $table->unsignedBigInteger('parent_id')->nullable()->index();
+                    }
+                    if (in_array('unique_code', $missing, true)) {
+                        $table->string('unique_code')->nullable();
+                    }
+                    if (in_array('level', $missing, true)) {
+                        $table->integer('level')->default(0);
+                    }
+                    if (in_array('order', $missing, true)) {
+                        $table->integer('order')->default(0);
+                    }
+                    if (in_array('status', $missing, true)) {
+                        $table->string('status', 50)->default('active');
+                    }
+                    if (in_array('archived_at', $missing, true)) {
+                        $table->timestamp('archived_at')->nullable();
+                    }
+                });
+            }
+        } catch (\Throwable $e) {}
+    }
+
     public function index(Request $request)
     {
+        self::ensureDesignationColumnsExist();
         $perPage = $request->get('per_page', 10);
 
-        // Order by level and name to ensure proper display
-        $designations = Designation::with(['addedBy', 'updatedBy', 'parent'])
-            ->whereNull('archived_at')
-            ->orderBy('level', 'asc')
-            ->orderBy('name', 'asc')
-            ->paginate($perPage);
+        $hasParentId = Schema::hasColumn('designations', 'parent_id');
+        $hasLevel = Schema::hasColumn('designations', 'level');
+        $hasArchivedAt = Schema::hasColumn('designations', 'archived_at');
 
-        // Get accurate global counts
-        $levelsCount = Designation::whereNull('archived_at')->distinct('level')->count('level');
-        $topLevelCount = Designation::whereNull('archived_at')->where(function ($q) {
-            $q->whereNull('parent_id')->orWhere('level', '<=', 2);
-        })->count();
-        $recentCount = Designation::whereNull('archived_at')->where('updated_at', '>=', now()->subDays(7))->count();
-        $archivedCount = Designation::whereNotNull('archived_at')->count();
+        // Order by level and name to ensure proper display
+        $withRelations = ['addedBy', 'updatedBy'];
+        if ($hasParentId) {
+            $withRelations[] = 'parent';
+        }
+
+        $query = Designation::with($withRelations);
+        if ($hasArchivedAt) {
+            $query->whereNull('archived_at');
+        }
+        if ($hasLevel) {
+            $query->orderBy('level', 'asc');
+        }
+        $designations = $query->orderBy('name', 'asc')->paginate($perPage);
+
+        // Get accurate global counts safely
+        $levelsCount = $hasLevel
+            ? Designation::when($hasArchivedAt, fn ($q) => $q->whereNull('archived_at'))->distinct('level')->count('level')
+            : 0;
+
+        $topLevelQuery = Designation::query();
+        if ($hasArchivedAt) {
+            $topLevelQuery->whereNull('archived_at');
+        }
+        if ($hasParentId && $hasLevel) {
+            $topLevelQuery->where(function ($q) {
+                $q->whereNull('parent_id')->orWhere('level', '<=', 2);
+            });
+        } elseif ($hasParentId) {
+            $topLevelQuery->whereNull('parent_id');
+        } elseif ($hasLevel) {
+            $topLevelQuery->where('level', '<=', 2);
+        }
+        $topLevelCount = $topLevelQuery->count();
+
+        $recentCount = Designation::when($hasArchivedAt, fn ($q) => $q->whereNull('archived_at'))
+            ->where('updated_at', '>=', now()->subDays(7))->count();
+
+        $archivedCount = $hasArchivedAt ? Designation::whereNotNull('archived_at')->count() : 0;
 
         return view('admin.designations.index', compact('designations', 'levelsCount', 'topLevelCount', 'recentCount', 'archivedCount'));
     }
 
     public function show(Designation $designation)
     {
-        $designation->load(['addedBy', 'updatedBy', 'parent', 'employeeDetails']);
+        self::ensureDesignationColumnsExist();
+        $relations = ['addedBy', 'updatedBy', 'employeeDetails'];
+        if (Schema::hasColumn('designations', 'parent_id')) {
+            $relations[] = 'parent';
+        }
+        $designation->load($relations);
         $hierarchy = $this->getHierarchyTree($designation);
         return view('admin.designations.show', compact('designation', 'hierarchy'));
     }
 
     private function getHierarchyTree(Designation $designation)
     {
+        $hasParentId = Schema::hasColumn('designations', 'parent_id');
         $ancestors = collect();
         $current = $designation;
 
-        while ($current->parent) {
-            $ancestors->prepend($current->parent);
-            $current = $current->parent;
+        if ($hasParentId) {
+            while ($current->parent) {
+                $ancestors->prepend($current->parent);
+                $current = $current->parent;
+            }
+            $children = $designation->children;
+            $descendants = method_exists($designation, 'descendants') ? $designation->descendants : collect();
+        } else {
+            $children = collect();
+            $descendants = collect();
         }
-
-        $children = $designation->children;
-        $descendants = $designation->descendants;
 
         return [
             'ancestors' => $ancestors,
@@ -63,10 +153,18 @@ class DesignationController extends Controller
 
     public function create()
     {
-        $designations = Designation::whereNull('archived_at')
-            ->orderBy('level', 'asc')
-            ->orderBy('name', 'asc')
-            ->get();
+        self::ensureDesignationColumnsExist();
+        $hasArchivedAt = Schema::hasColumn('designations', 'archived_at');
+        $hasLevel = Schema::hasColumn('designations', 'level');
+
+        $query = Designation::query();
+        if ($hasArchivedAt) {
+            $query->whereNull('archived_at');
+        }
+        if ($hasLevel) {
+            $query->orderBy('level', 'asc');
+        }
+        $designations = $query->orderBy('name', 'asc')->get();
         $nextCode = $this->generateNextCodePreview();
         return view('admin.designations.create', compact('designations', 'nextCode'));
     }
@@ -152,11 +250,18 @@ class DesignationController extends Controller
 
     public function edit(Designation $designation)
     {
-        $designations = Designation::whereNull('archived_at')
-            ->whereKeyNot($designation->id)
-            ->orderBy('level', 'asc')
-            ->orderBy('name', 'asc')
-            ->get();
+        self::ensureDesignationColumnsExist();
+        $hasArchivedAt = Schema::hasColumn('designations', 'archived_at');
+        $hasLevel = Schema::hasColumn('designations', 'level');
+
+        $query = Designation::whereKeyNot($designation->id);
+        if ($hasArchivedAt) {
+            $query->whereNull('archived_at');
+        }
+        if ($hasLevel) {
+            $query->orderBy('level', 'asc');
+        }
+        $designations = $query->orderBy('name', 'asc')->get();
         return view('admin.designations.create', compact('designation', 'designations'));
     }
 
@@ -275,21 +380,28 @@ class DesignationController extends Controller
 
     public function archiveDesignation(Designation $designation)
     {
-        if ($designation->archived_at) {
+        self::ensureDesignationColumnsExist();
+        $hasArchivedAt = Schema::hasColumn('designations', 'archived_at');
+        $hasParentId = Schema::hasColumn('designations', 'parent_id');
+
+        if ($hasArchivedAt && $designation->archived_at) {
             return redirect()->route('designations.index')
                 ->with('error', 'Designation is already archived.');
         }
 
-        DB::transaction(function () use ($designation) {
-            Designation::where('parent_id', $designation->id)->update([
-                'parent_id' => $designation->parent_id,
-                'last_updated_by' => Auth::id(),
-            ]);
+        DB::transaction(function () use ($designation, $hasParentId, $hasArchivedAt) {
+            if ($hasParentId) {
+                Designation::where('parent_id', $designation->id)->update([
+                    'parent_id' => $designation->parent_id,
+                    'last_updated_by' => Auth::id(),
+                ]);
+            }
 
-            $designation->forceFill([
-                'archived_at' => now(),
-                'last_updated_by' => Auth::id(),
-            ])->save();
+            $updateData = ['last_updated_by' => Auth::id()];
+            if ($hasArchivedAt) {
+                $updateData['archived_at'] = now();
+            }
+            $designation->forceFill($updateData)->save();
         });
 
         return redirect()->route('designations.index')
@@ -298,24 +410,42 @@ class DesignationController extends Controller
 
     public function archive(Request $request)
     {
+        self::ensureDesignationColumnsExist();
         $perPage = (int) $request->input('per_page', 10);
         $perPage = in_array($perPage, [10, 20, 30, 40, 50, 100], true) ? $perPage : 10;
 
-        $query = Designation::with(['addedBy', 'updatedBy', 'parent'])
-            ->whereNotNull('archived_at');
+        $hasParentId = Schema::hasColumn('designations', 'parent_id');
+        $hasUniqueCode = Schema::hasColumn('designations', 'unique_code');
+        $hasArchivedAt = Schema::hasColumn('designations', 'archived_at');
+
+        $with = ['addedBy', 'updatedBy'];
+        if ($hasParentId) {
+            $with[] = 'parent';
+        }
+
+        $query = Designation::with($with);
+        if ($hasArchivedAt) {
+            $query->whereNotNull('archived_at')->orderByDesc('archived_at');
+        } else {
+            $query->orderByDesc('id');
+        }
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', '%' . $search . '%')
-                    ->orWhere('unique_code', 'like', '%' . $search . '%')
-                    ->orWhereHas('parent', function ($parentQuery) use ($search) {
+            $query->where(function ($q) use ($search, $hasUniqueCode, $hasParentId) {
+                $q->where('name', 'like', '%' . $search . '%');
+                if ($hasUniqueCode) {
+                    $q->orWhere('unique_code', 'like', '%' . $search . '%');
+                }
+                if ($hasParentId) {
+                    $q->orWhereHas('parent', function ($parentQuery) use ($search) {
                         $parentQuery->where('name', 'like', '%' . $search . '%');
                     });
+                }
             });
         }
 
-        $designations = $query->orderByDesc('archived_at')->paginate($perPage)->withQueryString();
+        $designations = $query->paginate($perPage)->withQueryString();
 
         return view('admin.designations.archive', compact('designations'));
     }
@@ -407,31 +537,40 @@ class DesignationController extends Controller
         }
     public function bulkArchive(Request $request)
     {
+        self::ensureDesignationColumnsExist();
         $ids = $request->input('ids', []);
 
         if (empty($ids) || !is_array($ids)) {
             return back()->with('error', 'No designations selected.');
         }
 
-        $designations = Designation::whereNull('archived_at')
-            ->whereIn('id', $ids)
-            ->get();
+        $hasArchivedAt = Schema::hasColumn('designations', 'archived_at');
+        $hasParentId = Schema::hasColumn('designations', 'parent_id');
+
+        $query = Designation::whereIn('id', $ids);
+        if ($hasArchivedAt) {
+            $query->whereNull('archived_at');
+        }
+        $designations = $query->get();
 
         if ($designations->isEmpty()) {
             return back()->with('error', 'No active designations found for archive.');
         }
 
-        DB::transaction(function () use ($designations) {
+        DB::transaction(function () use ($designations, $hasParentId, $hasArchivedAt) {
             foreach ($designations as $designation) {
-                Designation::where('parent_id', $designation->id)->update([
-                    'parent_id' => $designation->parent_id,
-                    'last_updated_by' => Auth::id(),
-                ]);
+                if ($hasParentId) {
+                    Designation::where('parent_id', $designation->id)->update([
+                        'parent_id' => $designation->parent_id,
+                        'last_updated_by' => Auth::id(),
+                    ]);
+                }
 
-                $designation->forceFill([
-                    'archived_at' => now(),
-                    'last_updated_by' => Auth::id(),
-                ])->save();
+                $updateData = ['last_updated_by' => Auth::id()];
+                if ($hasArchivedAt) {
+                    $updateData['archived_at'] = now();
+                }
+                $designation->forceFill($updateData)->save();
             }
         });
 
@@ -441,11 +580,22 @@ class DesignationController extends Controller
 
     public function hierarchy()
     {
-        $designations = Designation::with('children')
-            ->whereNull('archived_at')
-            ->orderBy('order', 'asc')
-            ->orderBy('name', 'asc')
-            ->get();
+        self::ensureDesignationColumnsExist();
+        $hasParentId = Schema::hasColumn('designations', 'parent_id');
+        $hasArchivedAt = Schema::hasColumn('designations', 'archived_at');
+        $hasOrder = Schema::hasColumn('designations', 'order');
+
+        $query = Designation::query();
+        if ($hasParentId) {
+            $query->with('children');
+        }
+        if ($hasArchivedAt) {
+            $query->whereNull('archived_at');
+        }
+        if ($hasOrder) {
+            $query->orderBy('order', 'asc');
+        }
+        $designations = $query->orderBy('name', 'asc')->get();
         $chartPoints = $this->employeeHierarchyPoints();
 
         return view('admin.designations.hierarchy', compact('designations', 'chartPoints'));
