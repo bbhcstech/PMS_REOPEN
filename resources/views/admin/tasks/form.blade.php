@@ -695,8 +695,8 @@
 
 
             <div class="col-md-4 mb-3">
-                <label>Business Address <sup class="text-danger">*</sup></label>
-                <textarea name="business_address" class="form-control" required>Kolkata</textarea>
+                <label>Business Address</label>
+                <textarea name="business_address" class="form-control">Kolkata</textarea>
             </div>
             
             <div class="col-md-4 mb-3 d-flex align-items-center">

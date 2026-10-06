@@ -166,12 +166,8 @@
                             <input type="file" name="profile_picture" class="form-control" accept="image/jpeg,image/png,image/jpg" required>
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label class="form-label">Government ID Card <span class="text-danger">*</span></label>
-                            <input type="file" name="government_id_card" class="form-control" accept="image/jpeg,image/png,image/jpg" required>
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label">Business Address <span class="text-danger">*</span></label>
-                            <textarea name="business_address" class="form-control" required>Kolkata</textarea>
+                            <label class="form-label">Business Address</label>
+                            <textarea name="business_address" class="form-control">Kolkata</textarea>
                         </div>
                         <div class="col-md-4 mb-3">
                             <label class="form-label">Status <span class="text-danger">*</span></label>

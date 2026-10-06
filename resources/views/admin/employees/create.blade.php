@@ -1483,17 +1483,6 @@
                             @enderror
                         </div>
 
-                        <div class="col-md-4">
-                            <label class="form-label-premium">
-                                <span><i class="fas fa-id-card"></i> Government ID Card</span>
-                                <span class="mandatory-badge">Required</span>
-                            </label>
-                            <input type="file" name="government_id_card" class="form-control-premium" id="government_id_card" accept=".jpeg,.jpg,.png,image/jpeg,image/png" required>
-                            <small class="text-muted d-block mt-1" style="font-size: 0.7rem;">Upload a clear, straight, full-frame government ID photo without glare or shadows. Supported formats: JPEG, PNG, JPG. DOB on the ID must match the DOB above.</small>
-                            @error('government_id_card')
-                                <div class="invalid-feedback d-block">{{ $message }}</div>
-                            @enderror
-                        </div>
 
                         <div class="col-md-4">
                             <label class="form-label-premium">
@@ -1666,9 +1655,9 @@
                         <div class="col-md-4">
                             <label class="form-label-premium">
                                 <span><i class="fas fa-building"></i> Business Address</span>
-                                <span class="mandatory-badge">Required</span>
+                                <span class="optional-badge">Optional</span>
                             </label>
-                            <textarea name="business_address" class="form-control-premium" required rows="2">{{ old('business_address') ?? ($ed->business_address ?? $employee?->business_address ?? 'Kolkata') }}</textarea>
+                            <textarea name="business_address" class="form-control-premium" rows="2">{{ old('business_address') ?? ($ed->business_address ?? $employee?->business_address ?? 'Kolkata') }}</textarea>
                             @error('business_address')
                                 <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
