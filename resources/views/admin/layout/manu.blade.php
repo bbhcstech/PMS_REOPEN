@@ -2082,115 +2082,6 @@
             </li>
             @endif
 
-            @if($canSeeModule('payroll') && $canAnyModule(['payroll', 'payroll-architectures', 'payslips', 'salary-structures', 'payroll-policies', 'payroll-cycles', 'tax-rules', 'bonus-rules', 'deduction-rules', 'overtime-rules', 'payroll-reports', 'payroll-audit-logs', 'payroll-settings', 'payroll-import-export', 'payroll-archive', 'formula-builder']))
-            <li class="menu-item {{ request()->routeIs('payroll.*') ? 'active open' : '' }}">
-                <a href="javascript:void(0);" class="menu-link menu-toggle" data-sidebar-key="payroll">
-                    <i class="menu-icon tf-icons bx bx-wallet"></i>
-                    <div class="text-truncate">Payroll</div>
-                </a>
-
-                <ul class="menu-sub">
-                    @if($canSeeModule('payroll'))
-                        <li class="menu-item {{ request()->routeIs('payroll.index') ? 'active' : '' }}">
-                            <a href="{{ \Illuminate\Support\Facades\Route::has('payroll.index') ? route('payroll.index') : url('/payroll') }}" class="menu-link"><div>Dashboard</div></a>
-                        </li>
-                    @endif
-                    @if($canSeeModule('payroll'))
-                        <li class="menu-item {{ request()->routeIs('payroll.processing') ? 'active' : '' }}">
-                            <a href="{{ \Illuminate\Support\Facades\Route::has('payroll.processing') ? route('payroll.processing') : url('/payroll/processing') }}" class="menu-link"><div>Processing</div></a>
-                        </li>
-                    @endif
-                    @if($canSeeModule('payroll-architectures'))
-                        <li class="menu-item {{ request()->routeIs('payroll.architectures.*') ? 'active' : '' }}">
-                            <a href="{{ route('payroll.architectures.index') }}" class="menu-link"><div>Architectures</div></a>
-                        </li>
-                    @endif
-                    @if($canSeeModule('salary-structures'))
-                        <li class="menu-item {{ request()->routeIs('payroll.salary-structures.*') ? 'active' : '' }}">
-                            <a href="{{ route('payroll.salary-structures.index') }}" class="menu-link"><div>Salary Structures</div></a>
-                        </li>
-                    @endif
-                    @if($canSeeModule('payroll-cycles'))
-                        <li class="menu-item {{ request()->routeIs('payroll.cycles.*') ? 'active' : '' }}">
-                            <a href="{{ route('payroll.cycles.index') }}" class="menu-link"><div>Payroll Cycles</div></a>
-                        </li>
-                    @endif
-                    @if($canSeeModule('payslips'))
-                        <li class="menu-item {{ request()->routeIs('payroll.payslips.*') ? 'active' : '' }}">
-                            <a href="{{ route('payroll.payslips.index') }}" class="menu-link"><div>Payslips</div></a>
-                        </li>
-                    @endif
-
-                    {{-- ── Payroll Policies Nested Group ────────────────────── --}}
-                    @if($canAnyModule(['payroll-policies', 'deduction-rules', 'bonus-rules', 'tax-rules', 'overtime-rules', 'formula-builder', 'payroll-reports', 'payroll-import-export', 'payroll-archive', 'payroll-audit-logs']))
-                        <li class="menu-item {{ request()->routeIs('payroll.policies.*') || request()->routeIs('payroll.deduction-rules.*') || request()->routeIs('payroll.bonus-rules.*') || request()->routeIs('payroll.tax-rules.*') || request()->routeIs('payroll.overtime-rules.*') || request()->routeIs('payroll.formula-builder.*') || request()->routeIs('payroll.reports.*') || request()->routeIs('payroll.import-export.*') || request()->routeIs('payroll.archive.*') || request()->routeIs('payroll.audit-logs.*') ? 'active open' : '' }}">
-                            <a href="javascript:void(0);" class="menu-link menu-toggle">
-                                <i class="menu-icon tf-icons bx bx-shield-quarter" style="margin-left:4px;font-size:13px;"></i>
-                                <div class="text-truncate">Payroll Policies</div>
-                            </a>
-                            <ul class="menu-sub">
-                                @if($canSeeModule('payroll-policies'))
-                                    <li class="menu-item {{ request()->routeIs('payroll.policies.*') ? 'active' : '' }}">
-                                        <a href="{{ route('payroll.policies.index') }}" class="menu-link"><div>Policy Engine</div></a>
-                                    </li>
-                                @endif
-                                @if($canSeeModule('deduction-rules'))
-                                    <li class="menu-item {{ request()->routeIs('payroll.deduction-rules.*') ? 'active' : '' }}">
-                                        <a href="{{ route('payroll.deduction-rules.index') }}" class="menu-link"><div>Deduction Rules</div></a>
-                                    </li>
-                                @endif
-                                @if($canSeeModule('bonus-rules'))
-                                    <li class="menu-item {{ request()->routeIs('payroll.bonus-rules.*') ? 'active' : '' }}">
-                                        <a href="{{ route('payroll.bonus-rules.index') }}" class="menu-link"><div>Bonus Rules</div></a>
-                                    </li>
-                                @endif
-                                @if($canSeeModule('tax-rules'))
-                                    <li class="menu-item {{ request()->routeIs('payroll.tax-rules.*') ? 'active' : '' }}">
-                                        <a href="{{ route('payroll.tax-rules.index') }}" class="menu-link"><div>Tax Rules</div></a>
-                                    </li>
-                                @endif
-                                @if($canSeeModule('overtime-rules'))
-                                    <li class="menu-item {{ request()->routeIs('payroll.overtime-rules.*') ? 'active' : '' }}">
-                                        <a href="{{ route('payroll.overtime-rules.index') }}" class="menu-link"><div>Overtime Rules</div></a>
-                                    </li>
-                                @endif
-                                @if($canSeeModule('formula-builder'))
-                                    <li class="menu-item {{ request()->routeIs('payroll.formula-builder.*') ? 'active' : '' }}">
-                                        <a href="{{ route('payroll.formula-builder.index') }}" class="menu-link"><div>Formula Builder</div></a>
-                                    </li>
-                                @endif
-                                @if($canSeeModule('payroll-reports'))
-                                    <li class="menu-item {{ request()->routeIs('payroll.reports.*') ? 'active' : '' }}">
-                                        <a href="{{ route('payroll.reports.index') }}" class="menu-link"><div>Reports</div></a>
-                                    </li>
-                                @endif
-                                @if($canSeeModule('payroll-import-export'))
-                                    <li class="menu-item {{ request()->routeIs('payroll.import-export.*') ? 'active' : '' }}">
-                                        <a href="{{ route('payroll.import-export.index') }}" class="menu-link"><div>Import / Export</div></a>
-                                    </li>
-                                @endif
-                                @if($canSeeModule('payroll-archive'))
-                                    <li class="menu-item {{ request()->routeIs('payroll.archive.*') ? 'active' : '' }}">
-                                        <a href="{{ route('payroll.archive.index') }}" class="menu-link"><div>Archive</div></a>
-                                    </li>
-                                @endif
-                                @if($canSeeModule('payroll-audit-logs'))
-                                    <li class="menu-item {{ request()->routeIs('payroll.audit-logs.*') ? 'active' : '' }}">
-                                        <a href="{{ route('payroll.audit-logs.index') }}" class="menu-link"><div>Audit Logs</div></a>
-                                    </li>
-                                @endif
-                            </ul>
-                        </li>
-                    @endif
-
-                    @if($canSeeModule('payroll-settings'))
-                        <li class="menu-item {{ request()->routeIs('payroll.settings.*') ? 'active' : '' }}">
-                            <a href="{{ route('payroll.settings.index') }}" class="menu-link"><div>Settings</div></a>
-                        </li>
-                    @endif
-                </ul>
-            </li>
-            @endif
 
 <!--    //leads section -->
 
@@ -2259,6 +2150,19 @@
                 </a>
             </li>
 
+            {{-- Payroll Module (ADMIN WORKSPACE ONLY) --}}
+            @php
+                $isAdminWorkspaceUser = in_array(strtolower((string)(auth()->user()->role ?? '')), ['admin', 'superadmin', 'administrator'], true);
+            @endphp
+            @if($isAdminWorkspaceUser && $canSeeModule('payroll'))
+            <li class="menu-item {{ request()->routeIs('payroll.*') ? 'active' : '' }}">
+                <a href="{{ route('payroll.index') }}" class="menu-link">
+                    <i class="menu-icon tf-icons bx bx-money"></i>
+                    <div class="text-truncate" data-i18n="Payroll">Payroll</div>
+                </a>
+            </li>
+            @endif
+
             @if($canSeeModule('settings'))
                 <li class="menu-item {{ request()->routeIs('settings.*') || request()->routeIs('admin.settings.*') || request()->routeIs('admin.modules.*') || request()->routeIs('admin.role-permissions.*') || request()->routeIs('admin.role-accounts.*') ? 'active open' : '' }}">
                     <a href="javascript:void(0);" class="menu-link menu-toggle">
@@ -2312,9 +2216,7 @@
                         @if($canSeeModule('attendance-settings'))
                         <li class="menu-item {{ request()->routeIs('attendance.settings*') ? 'active' : '' }}"><a href="{{ route('attendance.settings') }}" class="menu-link"><div>Attendance Settings</div></a></li>
                         @endif
-                        @if($canSeeModule('payroll-settings'))
-                        <li class="menu-item {{ request()->routeIs('payroll.settings*') ? 'active' : '' }}"><a href="{{ route('payroll.settings.index') }}" class="menu-link"><div>Payroll Settings</div></a></li>
-                        @endif
+
                         @if($canSeeModule('recruitment-settings'))
                         <li class="menu-item {{ request()->routeIs('admin.settings.recruitment*') ? 'active' : '' }}"><a href="{{ route('admin.settings.recruitment') }}" class="menu-link"><div>Recruitment Settings</div></a></li>
                         @endif

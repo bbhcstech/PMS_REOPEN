@@ -20,29 +20,41 @@ class SetTenantConnection
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // 1. Bypass tenant DB switching for SuperAdmin routes
-        if (
-            $request->is('super-admin*') ||
-            $request->is('superadmin*')
-        ) {
-            return $next($request);
-        }
+        $defaultDb = config('database.connections.mysql.database') ?: env('DB_DATABASE', 'pms_last');
 
-        // 1b. Developer routes always run on primary platform database
-        if ($request->is('developer*')) {
-            $primaryDb = trim((string) (config('database.connections.session_db.database') ?: config('database.connections.mysql.database', env('DB_DATABASE', 'thesmart_lara319'))));
-            if (config('database.connections.tenant.database') !== $primaryDb || config('database.connections.mysql.database') !== $primaryDb) {
+        // Restore the login database before any guard retrieves its user.
+        $sessionDb = $request->session()->get('current_company_db');
+        if ($sessionDb) {
+            try {
+                if (config("database.connections.tenant.database") !== $sessionDb || config("database.connections.mysql.database") !== $sessionDb) {
+                    config([
+                        "database.connections.tenant.database" => $sessionDb,
+                        "database.connections.mysql.database"  => $sessionDb,
+                    ]);
+                    DB::purge('tenant');
+                    DB::purge('mysql');
+                    DB::connection('tenant')->getPdo();
+                }
+            } catch (\Throwable $e) {
+                // If session DB is invalid/inaccessible (e.g. pms_last on production server), revert to default
                 config([
-                    'database.connections.tenant.database' => $primaryDb,
-                    'database.connections.mysql.database'  => $primaryDb,
+                    "database.connections.tenant.database" => $defaultDb,
+                    "database.connections.mysql.database"  => $defaultDb,
                 ]);
                 DB::purge('tenant');
                 DB::purge('mysql');
+                $request->session()->put('current_company_db', $defaultDb);
             }
-            return $next($request);
         }
 
-        $defaultDb = trim((string) (config('database.connections.session_db.database') ?: config('database.connections.mysql.database', env('DB_DATABASE', 'thesmart_lara319'))));
+        // 1. Bypass tenant DB switching for SuperAdmin & Developer routes
+        if (
+            $request->is('super-admin*') ||
+            $request->is('superadmin*') ||
+            $request->is('developer*')
+        ) {
+            return $next($request);
+        }
         $isSuperAdmin = \Illuminate\Support\Facades\Auth::guard('super_admin')->check() ||
             (auth()->check() && in_array(strtolower((string)(auth()->user()->role ?? '')), ['superadmin', 'super-admin', 'super_admin'], true));
 
@@ -126,6 +138,7 @@ class SetTenantConnection
                 ]);
                 DB::purge('tenant');
                 DB::purge('mysql');
+                $request->session()->put('current_company_db', $defaultDb);
             }
         }
 

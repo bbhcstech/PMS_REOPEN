@@ -96,14 +96,6 @@ class SettingController extends Controller
                 'route' => 'attendance.settings',
                 'category' => 'HR'
             ],
-            'payroll-settings' => [
-                'name' => 'Payroll Settings',
-                'description' => 'Salary structure, pay cycle, deductions, allowances',
-                'icon' => 'bx bx-wallet',
-                'color' => 'primary',
-                'route' => 'payroll.settings.index',
-                'category' => 'Finance'
-            ],
             'recruitment-settings' => [
                 'name' => 'Recruitment Settings',
                 'description' => 'Job categories, recruitment stages, hiring configuration',

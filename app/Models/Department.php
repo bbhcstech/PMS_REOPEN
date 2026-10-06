@@ -22,6 +22,14 @@ class Department extends TenantModel
         'archived_at' => 'datetime',
     ];
 
+    /**
+     * Accessor to support $department->name across the application.
+     */
+    public function getNameAttribute(): string
+    {
+        return (string) ($this->attributes['dpt_name'] ?? $this->attributes['name'] ?? '');
+    }
+
     // Parent department (if any)
     public function parent()
 {

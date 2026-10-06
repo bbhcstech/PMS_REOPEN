@@ -37,6 +37,10 @@ return Application::configure(basePath: dirname(__DIR__))
                 return route('dashboard');
             }
         );
+        $middleware->prependToPriorityList(
+            \Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests::class,
+            SetTenantConnection::class
+        );
         $middleware->web(append: [
             SetTenantConnection::class,
             \App\Http\Middleware\EnsureCompanySubscriptionActive::class,

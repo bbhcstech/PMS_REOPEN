@@ -552,6 +552,16 @@
         border-color: #60A5FA;
     }
 
+    .col-header-label {
+        user-select: none;
+        cursor: pointer;
+        transition: color 0.2s ease;
+    }
+
+    .col-header-label:hover {
+        color: #2F6BFF !important;
+    }
+
     .btn-save-address {
         height: 50px;
         border-radius: 40px;
@@ -1216,7 +1226,7 @@
                 <input type="hidden" name="role" value="{{ $role }}">
 
                 <div class="address-card-elevated">
-                    <div class="card-header-custom">
+                    <div class="card-header-custom d-flex justify-content-between align-items-center flex-wrap gap-3">
                         <div class="card-header-left">
                             <div class="card-header-avatar shadow-sm">
                                 <i class="fas fa-table-cells"></i>
@@ -1226,22 +1236,48 @@
                                 <small class="text-muted">Grant or revoke granular action privileges for <strong style="color: #2F6BFF;">{{ ucfirst($role) }}</strong></small>
                             </div>
                         </div>
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <button type="button" class="btn btn-sm btn-outline-primary fw-semibold px-3 py-1.5 rounded-pill shadow-xs" id="btnGrantAll" title="Grant all permissions across all modules">
+                                <i class="fas fa-check-double me-1"></i> Grant Full Access
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-info fw-semibold px-3 py-1.5 rounded-pill shadow-xs" id="btnViewOnly" title="Select only View permission for all modules">
+                                <i class="fas fa-eye me-1"></i> View Only
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary fw-semibold px-3 py-1.5 rounded-pill shadow-xs" id="btnResetDefaults" title="Reset to standard default permissions for this role">
+                                <i class="fas fa-undo me-1"></i> Reset Defaults
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-danger fw-semibold px-3 py-1.5 rounded-pill shadow-xs" id="btnRevokeAll" title="Revoke all selected permissions">
+                                <i class="fas fa-times me-1"></i> Revoke All
+                            </button>
+                        </div>
                     </div>
 
                     <div class="table-responsive">
-                        <table class="matrix-table">
+                        <table class="matrix-table" data-pms-export="off">
                             <thead>
                                 <tr>
+                                    <th style="width: 48px;" class="text-center">
+                                        <div class="d-flex align-items-center justify-content-center">
+                                            <input type="checkbox" id="masterToggleAll" class="perm-checkbox" title="Toggle all permissions">
+                                        </div>
+                                    </th>
                                     <th style="min-width: 240px;">Module Name</th>
                                     @foreach($permissions as $permission)
-                                        <th class="text-center">{{ ucfirst($permission) }}</th>
+                                        <th class="text-center" style="min-width: 100px;">
+                                            <label class="col-header-label mb-0 cursor-pointer d-flex align-items-center justify-content-center gap-1.5" title="Toggle all {{ ucfirst($permission) }}">
+                                                <input type="checkbox" class="col-checkbox perm-checkbox" data-perm="{{ $permission }}">
+                                                <span>{{ ucfirst($permission) }}</span>
+                                            </label>
+                                        </th>
                                     @endforeach
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($modules as $module)
-                                    @php $saved = $savedPermissions->get($module->id); @endphp
-                                    <tr>
+                                    <tr data-module-id="{{ $module->id }}">
+                                        <td class="text-center">
+                                            <input type="checkbox" class="row-checkbox perm-checkbox" data-module-id="{{ $module->id }}" title="Toggle all actions for {{ $module->name }}">
+                                        </td>
                                         <td>
                                             <div class="module-title-box">
                                                 <strong>{{ $module->name }}</strong>
@@ -1249,8 +1285,11 @@
                                             </div>
                                         </td>
                                         @foreach($permissions as $permission)
+                                            @php
+                                                $isChecked = !empty($effectivePermissions[$module->id][$permission]);
+                                            @endphp
                                             <td class="text-center">
-                                                <input type="checkbox" class="perm-checkbox" name="permissions[{{ $module->id }}][]" value="{{ $permission }}" @checked($role === 'admin' || (bool) optional($saved)->{'can_' . $permission})>
+                                                <input type="checkbox" class="perm-checkbox action-checkbox" data-module-id="{{ $module->id }}" data-perm="{{ $permission }}" name="permissions[{{ $module->id }}][]" value="{{ $permission }}" @checked($isChecked)>
                                             </td>
                                         @endforeach
                                     </tr>
@@ -1270,4 +1309,125 @@
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const table = document.querySelector('.matrix-table');
+    if (!table) return;
+
+    const masterToggle = document.getElementById('masterToggleAll');
+    const colCheckboxes = table.querySelectorAll('.col-checkbox');
+    const rowCheckboxes = table.querySelectorAll('.row-checkbox');
+    const actionCheckboxes = table.querySelectorAll('.action-checkbox');
+
+    // Sync state of row, column, and master checkboxes based on individual action checkboxes
+    function syncStates() {
+        // 1. Sync Row checkboxes
+        rowCheckboxes.forEach(rowCb => {
+            const modId = rowCb.getAttribute('data-module-id');
+            const rowActions = table.querySelectorAll(`.action-checkbox[data-module-id="${modId}"]`);
+            if (!rowActions.length) return;
+            const checkedCount = Array.from(rowActions).filter(cb => cb.checked).length;
+            rowCb.checked = (checkedCount === rowActions.length);
+            rowCb.indeterminate = (checkedCount > 0 && checkedCount < rowActions.length);
+        });
+
+        // 2. Sync Column checkboxes
+        colCheckboxes.forEach(colCb => {
+            const perm = colCb.getAttribute('data-perm');
+            const colActions = table.querySelectorAll(`.action-checkbox[data-perm="${perm}"]`);
+            if (!colActions.length) return;
+            const checkedCount = Array.from(colActions).filter(cb => cb.checked).length;
+            colCb.checked = (checkedCount === colActions.length);
+            colCb.indeterminate = (checkedCount > 0 && checkedCount < colActions.length);
+        });
+
+        // 3. Sync Master checkbox
+        if (masterToggle) {
+            const total = actionCheckboxes.length;
+            const checkedTotal = Array.from(actionCheckboxes).filter(cb => cb.checked).length;
+            masterToggle.checked = (total > 0 && checkedTotal === total);
+            masterToggle.indeterminate = (checkedTotal > 0 && checkedTotal < total);
+        }
+    }
+
+    // Master Toggle Event
+    if (masterToggle) {
+        masterToggle.addEventListener('change', function () {
+            const isChecked = this.checked;
+            actionCheckboxes.forEach(cb => cb.checked = isChecked);
+            rowCheckboxes.forEach(cb => { cb.checked = isChecked; cb.indeterminate = false; });
+            colCheckboxes.forEach(cb => { cb.checked = isChecked; cb.indeterminate = false; });
+        });
+    }
+
+    // Row Toggle Event
+    rowCheckboxes.forEach(rowCb => {
+        rowCb.addEventListener('change', function () {
+            const modId = this.getAttribute('data-module-id');
+            const isChecked = this.checked;
+            table.querySelectorAll(`.action-checkbox[data-module-id="${modId}"]`).forEach(cb => {
+                cb.checked = isChecked;
+            });
+            syncStates();
+        });
+    });
+
+    // Column Toggle Event
+    colCheckboxes.forEach(colCb => {
+        colCb.addEventListener('change', function () {
+            const perm = this.getAttribute('data-perm');
+            const isChecked = this.checked;
+            table.querySelectorAll(`.action-checkbox[data-perm="${perm}"]`).forEach(cb => {
+                cb.checked = isChecked;
+            });
+            syncStates();
+        });
+    });
+
+    // Individual Action Checkbox Event
+    actionCheckboxes.forEach(cb => {
+        cb.addEventListener('change', syncStates);
+    });
+
+    // Toolbar Buttons
+    const btnGrantAll = document.getElementById('btnGrantAll');
+    if (btnGrantAll) {
+        btnGrantAll.addEventListener('click', function () {
+            actionCheckboxes.forEach(cb => cb.checked = true);
+            syncStates();
+        });
+    }
+
+    const btnViewOnly = document.getElementById('btnViewOnly');
+    if (btnViewOnly) {
+        btnViewOnly.addEventListener('click', function () {
+            actionCheckboxes.forEach(cb => {
+                cb.checked = (cb.getAttribute('data-perm') === 'view');
+            });
+            syncStates();
+        });
+    }
+
+    const btnRevokeAll = document.getElementById('btnRevokeAll');
+    if (btnRevokeAll) {
+        btnRevokeAll.addEventListener('click', function () {
+            actionCheckboxes.forEach(cb => cb.checked = false);
+            syncStates();
+        });
+    }
+
+    const btnResetDefaults = document.getElementById('btnResetDefaults');
+    if (btnResetDefaults) {
+        btnResetDefaults.addEventListener('click', function () {
+            window.location.reload();
+        });
+    }
+
+    // Initial sync on page load
+    syncStates();
+});
+</script>
+@endpush
 @endsection

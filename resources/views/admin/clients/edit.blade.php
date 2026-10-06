@@ -631,7 +631,7 @@ $(document).ready(function () {
         $('#pincode_spinner').show();
         $('#pincode_feedback_pill').html('<span class="text-primary small"><i class="fas fa-spinner fa-spin me-1"></i> Checking location...</span>').show();
 
-        const lookupUrl = "{{ route('clients.lookup-pincode') }}";
+        const lookupUrl = "{{ Route::has('clients.lookup-pincode') ? route('clients.lookup-pincode') : url('/clients/lookup-pincode') }}";
         
         currentPincodeAjax = $.ajax({
             url: lookupUrl,
