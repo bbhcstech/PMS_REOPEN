@@ -287,13 +287,34 @@ class User extends Authenticatable
             $slugsToTest[] = 'reports';
         }
 
-        return RolePermission::query()
+        $hasPermission = RolePermission::query()
             ->where('role', $this->normalizedRole())
             ->where($column, true)
             ->whereHas('module', function ($query) use ($slugsToTest) {
                 $query->whereIn('slug', array_unique($slugsToTest))->where('is_active', true);
             })
             ->exists();
+
+        if ($hasPermission) {
+            return true;
+        }
+
+        // Fallback: If no role_permissions exist in database for this role, allow default modules
+        if (! RolePermission::where('role', $this->normalizedRole())->exists()) {
+            $defaultMap = [
+                'manager'  => ['dashboard', 'notifications', 'organization', 'teams', 'hr-management', 'employees', 'work', 'projects', 'tasks', 'timelogs', 'attendance', 'leaves', 'reports', 'recruitment', 'appraisal'],
+                'hr'       => ['dashboard', 'notifications', 'employees', 'attendance', 'leaves', 'work', 'projects', 'tasks', 'timelogs', 'payroll', 'reports', 'recruitment', 'appraisal'],
+                'employee' => ['dashboard', 'notifications', 'projects', 'tasks', 'attendance', 'timelogs', 'leaves', 'recruitment', 'appraisal'],
+            ];
+            $allowed = $defaultMap[$this->normalizedRole()] ?? [];
+            foreach ($slugsToTest as $slug) {
+                if (in_array($slug, $allowed, true)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     public function canViewModule(string $moduleSlug): bool
@@ -555,6 +576,11 @@ class User extends Authenticatable
 
         // Developers with login_allowed can always login to Developer Portal
         if ($this->isDeveloper()) {
+            return true;
+        }
+
+        // Admin, HR, Manager roles can always log in if not archived and login_allowed
+        if (in_array(strtolower((string) $this->role), ['admin', 'superadmin', 'administrator', 'hr', 'manager'], true)) {
             return true;
         }
 

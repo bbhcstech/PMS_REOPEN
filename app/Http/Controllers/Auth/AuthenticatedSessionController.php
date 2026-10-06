@@ -81,8 +81,8 @@ class AuthenticatedSessionController extends Controller
 
             $defaultDb  = config('database.connections.mysql.database') ?: env('DB_DATABASE', 'pms_last');
             $dbName     = $company?->db_name ?: (session('current_company_db') ?: $defaultDb);
-            $companyId   = $company?->id      ?: session('current_company_id');
-            $companyName = $company?->name    ?: session('current_company_name');
+            $companyId   = $company?->id      ?: (session('current_company_id') ?: ($user->company_id ?: 1));
+            $companyName = $company?->name    ?: (session('current_company_name') ?: 'Company');
 
             // Verify if $dbName is accessible via PDO before using it
             try {
