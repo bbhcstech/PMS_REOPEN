@@ -2766,8 +2766,20 @@ html[data-pms-theme="dark"] .bootstrap-select .dropdown-menu li.selected a {
 /* --------------------------------------------------------------------------
    19. COMPANY NOTIFICATION CENTER & NATIVE FORM CONTROLS
    -------------------------------------------------------------------------- */
+html[data-pms-theme="dark"] select,
+html[data-pms-theme="dark"] .form-select,
+[data-pms-theme="dark"] select,
+[data-pms-theme="dark"] .form-select {
+  color-scheme: dark !important;
+  background-color: #141B3D !important;
+  color: #EEF1FB !important;
+}
+
 html[data-pms-theme="dark"] select option,
-html[data-pms-theme="dark"] .form-select option {
+html[data-pms-theme="dark"] .form-select option,
+[data-pms-theme="dark"] select option,
+[data-pms-theme="dark"] .form-select option {
+  color-scheme: dark !important;
   background-color: #141B3D !important;
   color: #EEF1FB !important;
 }

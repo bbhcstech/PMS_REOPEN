@@ -431,6 +431,15 @@
         color: #0F172A;
         padding-right: 18px;
         height: 50px;
+        cursor: pointer;
+        color-scheme: light;
+    }
+
+    .input-group-custom .form-select option {
+        background-color: #FFFFFF !important;
+        color: #0F172A !important;
+        font-weight: 600;
+        padding: 8px 12px;
     }
 
     .input-group-custom .form-select:focus {
@@ -1044,9 +1053,34 @@
 
     html[data-pms-theme="dark"] .input-group-custom .form-select,
     html[data-theme="dark"] .input-group-custom .form-select,
-    [data-pms-theme="dark"] .input-group-custom .form-select {
+    html[data-bs-theme="dark"] .input-group-custom .form-select,
+    body[data-pms-theme="dark"] .input-group-custom .form-select,
+    body[data-theme="dark"] .input-group-custom .form-select,
+    [data-pms-theme="dark"] .input-group-custom .form-select,
+    [data-theme="dark"] .input-group-custom .form-select,
+    [data-bs-theme="dark"] .input-group-custom .form-select,
+    .dark-mode .input-group-custom .form-select {
+        color-scheme: dark !important;
+        background-color: #1a2234 !important;
         color: #EEF1FB !important;
         -webkit-text-fill-color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .input-group-custom .form-select option,
+    html[data-theme="dark"] .input-group-custom .form-select option,
+    html[data-bs-theme="dark"] .input-group-custom .form-select option,
+    body[data-pms-theme="dark"] .input-group-custom .form-select option,
+    body[data-theme="dark"] .input-group-custom .form-select option,
+    [data-pms-theme="dark"] .input-group-custom .form-select option,
+    [data-theme="dark"] .input-group-custom .form-select option,
+    [data-bs-theme="dark"] .input-group-custom .form-select option,
+    .dark-mode .input-group-custom .form-select option {
+        color-scheme: dark !important;
+        background-color: #1a2234 !important;
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+        font-weight: 600;
+        padding: 8px 12px;
     }
 
     html[data-pms-theme="dark"] .input-group-custom .input-group-text i,

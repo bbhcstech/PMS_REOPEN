@@ -32,8 +32,6 @@ class Designation extends TenantModel
     {
         parent::boot();
 
-        \App\Http\Controllers\DesignationController::ensureDesignationColumnsExist();
-
         // Automatically generate unique_code after creation if column exists
         static::created(function ($model) {
             if (\Illuminate\Support\Facades\Schema::hasColumn('designations', 'unique_code') && empty($model->unique_code)) {
