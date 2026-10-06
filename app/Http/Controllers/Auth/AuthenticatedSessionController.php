@@ -53,6 +53,10 @@ class AuthenticatedSessionController extends Controller
         // the company session keys written inside authenticate() above).
         $request->session()->regenerate();
 
+        if (Auth::guard('super_admin')->check()) {
+            return redirect()->route('superadmin.dashboard');
+        }
+
         // Multi-Tenant: Re-affirm the company session and lock the DB connection.
         // We deliberately do NOT read user->company_id here because Auth::user() may
         // have been loaded from the wrong DB connection before SetTenantConnection
@@ -75,22 +79,35 @@ class AuthenticatedSessionController extends Controller
                 } catch (\Throwable $e) {}
             }
 
-            $dbName     = $company?->db_name     ?: (session('current_company_db')   ?: config('database.connections.tenant.database'));
-            $companyId   = $company?->id          ?: session('current_company_id');
-            $companyName = $company?->name        ?: session('current_company_name');
+            $defaultDb  = config('database.connections.mysql.database') ?: env('DB_DATABASE', 'pms_last');
+            $dbName     = $company?->db_name ?: (session('current_company_db') ?: $defaultDb);
+            $companyId   = $company?->id      ?: session('current_company_id');
+            $companyName = $company?->name    ?: session('current_company_name');
+
+            // Verify if $dbName is accessible via PDO before using it
+            try {
+                config([
+                    'database.connections.tenant.database' => $dbName,
+                    'database.connections.mysql.database'  => $dbName,
+                ]);
+                \Illuminate\Support\Facades\DB::purge('tenant');
+                \Illuminate\Support\Facades\DB::purge('mysql');
+                \Illuminate\Support\Facades\DB::connection('tenant')->getPdo();
+            } catch (\Throwable $e) {
+                // Inaccessible DB (e.g. pms_last on production server), fall back safely to default DB
+                $dbName = $defaultDb;
+                config([
+                    'database.connections.tenant.database' => $defaultDb,
+                    'database.connections.mysql.database'  => $defaultDb,
+                ]);
+                \Illuminate\Support\Facades\DB::purge('tenant');
+                \Illuminate\Support\Facades\DB::purge('mysql');
+            }
 
             // Write final, authoritative company context to session
             $request->session()->put('current_company_db',   $dbName);
             $request->session()->put('current_company_id',   $companyId);
             $request->session()->put('current_company_name', $companyName);
-
-            // Point both connections at the correct company DB
-            config([
-                'database.connections.tenant.database' => $dbName,
-                'database.connections.mysql.database'  => $dbName,
-            ]);
-            \Illuminate\Support\Facades\DB::purge('tenant');
-            \Illuminate\Support\Facades\DB::purge('mysql');
 
             if (app()->bound(\App\Services\CompanyContext::class)) {
                 app(\App\Services\CompanyContext::class)->reset();
@@ -152,7 +169,7 @@ class AuthenticatedSessionController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        $defaultDb = env('DB_DATABASE', 'pms_last');
+        $defaultDb = config('database.connections.mysql.database') ?: env('DB_DATABASE', 'pms_last');
         config([
             'database.connections.tenant.database' => $defaultDb,
             'database.connections.mysql.database'  => $defaultDb,

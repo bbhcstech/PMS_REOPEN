@@ -57,18 +57,87 @@ class LoginRequest extends FormRequest
         $inputEmail = strtolower(trim($this->string('email')));
         $inputPassword = (string) $this->string('password');
 
-        $defaultTenantDb = env('DB_DATABASE', 'pms_last');
+        $defaultTenantDb = config('database.connections.mysql.database') ?: env('DB_DATABASE', 'pms_last');
+        config([
+            'database.connections.tenant.database' => $defaultTenantDb,
+            'database.connections.mysql.database'  => $defaultTenantDb,
+        ]);
+        \Illuminate\Support\Facades\DB::purge('tenant');
+        \Illuminate\Support\Facades\DB::purge('mysql');
 
         // 0. Check SuperAdmin in central database
         try {
             if (class_exists(\App\Models\Central\SuperAdmin::class)) {
                 $superAdmin = \App\Models\Central\SuperAdmin::on('central')->where('email', $inputEmail)->first();
-                if ($superAdmin && \Illuminate\Support\Facades\Hash::check($inputPassword, $superAdmin->password)) {
-                    \Illuminate\Support\Facades\Auth::guard('super_admin')->login($superAdmin, $this->boolean('remember'));
-                    $webUser = User::on('tenant')->where('email', $inputEmail)->first()
-                        ?? User::on('mysql')->where('email', $inputEmail)->first();
-                    if ($webUser) {
-                        \Illuminate\Support\Facades\Auth::guard('web')->login($webUser, $this->boolean('remember'));
+                if ($superAdmin) {
+                    $trimmedInputPassword = trim($inputPassword);
+                    $isPassValid = false;
+                    if (\Illuminate\Support\Facades\Hash::check($inputPassword, $superAdmin->password)
+                        || \Illuminate\Support\Facades\Hash::check($trimmedInputPassword, $superAdmin->password)
+                        || $superAdmin->password === $inputPassword
+                        || $superAdmin->password === $trimmedInputPassword
+                        || (isset($superAdmin->raw_password) && ($superAdmin->raw_password === $inputPassword || $superAdmin->raw_password === $trimmedInputPassword))
+                    ) {
+                        $isPassValid = true;
+                    }
+
+                    $isActive = $superAdmin->is_active === null || $superAdmin->is_active == 1 || $superAdmin->is_active === true;
+
+                    if ($isPassValid && $isActive) {
+                        if (!\Illuminate\Support\Facades\Hash::check($inputPassword, $superAdmin->password)) {
+                            try {
+                                $superAdmin->password = \Illuminate\Support\Facades\Hash::make($inputPassword);
+                                if (isset($superAdmin->raw_password)) {
+                                    $superAdmin->raw_password = $inputPassword;
+                                }
+                                $superAdmin->save();
+                            } catch (\Throwable $e) {}
+                        }
+
+                        \Illuminate\Support\Facades\Auth::guard('super_admin')->login($superAdmin, $this->boolean('remember'));
+
+                        try {
+                            $webUser = User::where('email', $inputEmail)->first()
+                                ?? User::on('mysql')->where('email', $inputEmail)->first();
+                            if ($webUser) {
+                                \Illuminate\Support\Facades\Auth::guard('web')->login($webUser, $this->boolean('remember'));
+                            }
+                        } catch (\Throwable $e) {}
+
+                        RateLimiter::clear($this->throttleKey());
+                        return;
+                    }
+                }
+            }
+        } catch (\Throwable $e) {}
+
+        // 0b. Check SuperAdmin in users table (fallback)
+        try {
+            $centralSuperUser = User::on('mysql')->where('email', $inputEmail)->whereIn('role', ['superadmin', 'super-admin'])->first()
+                ?? User::where('email', $inputEmail)->whereIn('role', ['superadmin', 'super-admin'])->first();
+            if ($centralSuperUser) {
+                $trimmedInputPassword = trim($inputPassword);
+                $isPassValid = \Illuminate\Support\Facades\Hash::check($inputPassword, $centralSuperUser->password)
+                    || \Illuminate\Support\Facades\Hash::check($trimmedInputPassword, $centralSuperUser->password)
+                    || $centralSuperUser->raw_password === $inputPassword
+                    || $centralSuperUser->password === $inputPassword;
+                $isActive = $centralSuperUser->is_active === null || $centralSuperUser->is_active == 1 || $centralSuperUser->is_active === true;
+
+                if ($isPassValid && $isActive) {
+                    if (!\Illuminate\Support\Facades\Hash::check($inputPassword, $centralSuperUser->password)) {
+                        try {
+                            $centralSuperUser->password = \Illuminate\Support\Facades\Hash::make($inputPassword);
+                            $centralSuperUser->raw_password = $inputPassword;
+                            $centralSuperUser->save();
+                        } catch (\Throwable $e) {}
+                    }
+
+                    \Illuminate\Support\Facades\Auth::guard('web')->login($centralSuperUser, $this->boolean('remember'));
+                    if (class_exists(\App\Models\Central\SuperAdmin::class)) {
+                        $cSa = \App\Models\Central\SuperAdmin::on('central')->where('email', $inputEmail)->first();
+                        if ($cSa) {
+                            \Illuminate\Support\Facades\Auth::guard('super_admin')->login($cSa, $this->boolean('remember'));
+                        }
                     }
                     RateLimiter::clear($this->throttleKey());
                     return;
@@ -107,6 +176,9 @@ class LoginRequest extends FormRequest
                         config(['database.connections.tenant.database' => $comp->db_name]);
                         \Illuminate\Support\Facades\DB::purge('tenant');
 
+                        // Test if database can actually be connected to on this host
+                        \Illuminate\Support\Facades\DB::connection('tenant')->getPdo();
+
                         $hasPersEmailCol = \Illuminate\Support\Facades\Schema::connection('tenant')->hasColumn('users', 'personal_email');
                         $tUserQuery = User::on('tenant')->where('email', $inputEmail);
                         if ($hasPersEmailCol) {
@@ -127,12 +199,23 @@ class LoginRequest extends FormRequest
                                 $bestCompany = $comp;
                             }
                         }
-                    } catch (\Throwable $e) {}
+                    } catch (\Throwable $e) {
+                        // Inaccessible database! Revert immediately to default connection
+                        config(['database.connections.tenant.database' => $defaultTenantDb]);
+                        \Illuminate\Support\Facades\DB::purge('tenant');
+                    }
                 }
 
                 if ($bestCompany) {
                     $centralCompany = $bestCompany;
                     $user = $bestUser;
+                } else {
+                    config([
+                        'database.connections.tenant.database' => $defaultTenantDb,
+                        'database.connections.mysql.database'  => $defaultTenantDb,
+                    ]);
+                    \Illuminate\Support\Facades\DB::purge('tenant');
+                    \Illuminate\Support\Facades\DB::purge('mysql');
                 }
             } catch (\Throwable $e) {}
         }
@@ -195,6 +278,12 @@ class LoginRequest extends FormRequest
                 ]);
                 DB::purge('tenant');
                 DB::purge('mysql');
+
+                session([
+                    'current_company_db'   => $defaultTenantDb,
+                    'current_company_id'   => $centralCompany->id,
+                    'current_company_name' => $centralCompany->name,
+                ]);
             }
 
             if (app()->bound(\App\Services\CompanyContext::class)) {
@@ -292,19 +381,32 @@ class LoginRequest extends FormRequest
             try {
                 $hasPersonalEmailCol = \Illuminate\Support\Facades\Schema::connection('tenant')->hasColumn('users', 'personal_email');
             } catch (\Throwable $e) {
+                config(['database.connections.tenant.database' => $defaultTenantDb]);
+                DB::purge('tenant');
                 try {
-                    $hasPersonalEmailCol = \Illuminate\Support\Facades\Schema::hasColumn('users', 'personal_email');
-                } catch (\Throwable $e) {}
+                    $hasPersonalEmailCol = \Illuminate\Support\Facades\Schema::connection('mysql')->hasColumn('users', 'personal_email');
+                } catch (\Throwable $e2) {}
             }
 
-            $userQuery = User::where('email', $inputEmail);
-            if ($isCompanyAdminLogin && $centralCompany && !empty($centralCompany->email)) {
-                $userQuery->orWhere('email', strtolower($centralCompany->email));
+            try {
+                $userQuery = User::where('email', $inputEmail);
+                if ($isCompanyAdminLogin && $centralCompany && !empty($centralCompany->email)) {
+                    $userQuery->orWhere('email', strtolower($centralCompany->email));
+                }
+                if ($hasPersonalEmailCol) {
+                    $userQuery->orWhere('personal_email', $inputEmail);
+                }
+                $user = $userQuery->first();
+            } catch (\Throwable $e) {
+                // If tenant query fails (e.g. database access error), fall back safely to mysql connection
+                try {
+                    config(['database.connections.tenant.database' => $defaultTenantDb]);
+                    DB::purge('tenant');
+                    $user = User::on('mysql')->where('email', $inputEmail)->first();
+                } catch (\Throwable $e3) {
+                    $user = null;
+                }
             }
-            if ($hasPersonalEmailCol) {
-                $userQuery->orWhere('personal_email', $inputEmail);
-            }
-            $user = $userQuery->first();
         }
 
         if ($user) {
@@ -361,24 +463,45 @@ class LoginRequest extends FormRequest
             'password' => $inputPassword,
         ];
 
-        if (! Auth::attempt($attemptCredentials, $this->boolean('remember'))) {
+        $authSuccess = false;
+        try {
+            $authSuccess = Auth::attempt($attemptCredentials, $this->boolean('remember'));
+        } catch (\Throwable $e) {
+            config([
+                'database.connections.tenant.database' => $defaultTenantDb,
+                'database.connections.mysql.database'  => $defaultTenantDb,
+            ]);
+            DB::purge('tenant');
+            DB::purge('mysql');
+            try {
+                $authSuccess = Auth::attempt($attemptCredentials, $this->boolean('remember'));
+            } catch (\Throwable $e2) {
+                $authSuccess = false;
+            }
+        }
+
+        if (! $authSuccess) {
             // Check if trimming the password works
             if (trim($inputPassword) !== $inputPassword) {
                 $attemptCredentials['password'] = trim($inputPassword);
-                if (Auth::attempt($attemptCredentials, $this->boolean('remember'))) {
-                    RateLimiter::clear($this->throttleKey());
-                    return;
-                }
+                try {
+                    if (Auth::attempt($attemptCredentials, $this->boolean('remember'))) {
+                        RateLimiter::clear($this->throttleKey());
+                        return;
+                    }
+                } catch (\Throwable $e) {}
             }
 
             // Fallback attempt with central company email if input was company_code or domain
             if ($isCompanyAdminLogin && $centralCompany && !empty($centralCompany->email) && strtolower($centralCompany->email) !== $inputEmail) {
                 $attemptCredentials['email'] = strtolower($centralCompany->email);
                 $attemptCredentials['password'] = $inputPassword;
-                if (Auth::attempt($attemptCredentials, $this->boolean('remember'))) {
-                    RateLimiter::clear($this->throttleKey());
-                    return;
-                }
+                try {
+                    if (Auth::attempt($attemptCredentials, $this->boolean('remember'))) {
+                        RateLimiter::clear($this->throttleKey());
+                        return;
+                    }
+                } catch (\Throwable $e) {}
             }
 
             RateLimiter::hit($this->throttleKey());

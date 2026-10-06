@@ -9,21 +9,21 @@
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
 
-    <link rel="icon" type="image/x-icon" href="../assets/img/favicon/favicon.ico" />
+    <link rel="icon" type="image/x-icon" href="{{ asset('admin/assets/img/favicon/favicon.ico') }}" />
     @include('partials.pwa')
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="admin/assets/vendor/fonts/iconify-icons.css" />
+    <link rel="stylesheet" href="{{ asset('admin/assets/vendor/fonts/iconify-icons.css') }}" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/boxicons@latest/css/boxicons.min.css" />
-    <link rel="stylesheet" href="admin/assets/vendor/css/core.css" />
-    <link rel="stylesheet" href="admin/assets/css/demo.css" />
-    <link rel="stylesheet" href="admin/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
-    <link rel="stylesheet" href="admin/assets/vendor/css/pages/page-auth.css" />
+    <link rel="stylesheet" href="{{ asset('admin/assets/vendor/css/core.css') }}" />
+    <link rel="stylesheet" href="{{ asset('admin/assets/css/demo.css') }}" />
+    <link rel="stylesheet" href="{{ asset('admin/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css') }}" />
+    <link rel="stylesheet" href="{{ asset('admin/assets/vendor/css/pages/page-auth.css') }}" />
 
-    <script src="admin/assets/vendor/js/helpers.js"></script>
-    <script src="admin/assets/js/config.js"></script>
+    <script src="{{ asset('admin/assets/vendor/js/helpers.js') }}"></script>
+    <script src="{{ asset('admin/assets/js/config.js') }}"></script>
 
     <style>
         :root {
@@ -832,7 +832,7 @@
                     </div>
 
                     <div class="form-check terms-check">
-                        <input class="form-check-input" type="checkbox" id="terms_accepted" name="terms_accepted" value="1" required @checked(old('terms_accepted'))>
+                        <input class="form-check-input" type="checkbox" id="terms_accepted" name="terms_accepted" value="1" required @checked(old('terms_accepted', true))>
                         <label class="form-check-label" for="terms_accepted">
                             I agree to the
                             <a href="{{ route('company.terms') }}" class="terms-link" target="_blank" rel="noopener">Terms &amp; Conditions</a>
@@ -900,12 +900,12 @@
 
     @include('partials.pwa-install')
 
-    <script src="../assets/vendor/libs/jquery/jquery.js"></script>
-    <script src="../assets/vendor/libs/popper/popper.js"></script>
-    <script src="../assets/vendor/js/bootstrap.js"></script>
-    <script src="../assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
-    <script src="../assets/vendor/js/menu.js"></script>
-    <script src="../assets/js/main.js"></script>
+    <script src="{{ asset('admin/assets/vendor/libs/jquery/jquery.js') }}"></script>
+    <script src="{{ asset('admin/assets/vendor/libs/popper/popper.js') }}"></script>
+    <script src="{{ asset('admin/assets/vendor/js/bootstrap.js') }}"></script>
+    <script src="{{ asset('admin/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js') }}"></script>
+    <script src="{{ asset('admin/assets/vendor/js/menu.js') }}"></script>
+    <script src="{{ asset('admin/assets/js/main.js') }}"></script>
 
     <script>
         (function() {
