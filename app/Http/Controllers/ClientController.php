@@ -365,6 +365,13 @@ class ClientController extends Controller
                 }
             } catch (\Throwable $e) {}
 
+            // Defensive check: if active tenant connection table does not have status column, omit it
+            try {
+                if (!Schema::connection('tenant')->hasColumn('clients', 'status')) {
+                    unset($data['status']);
+                }
+            } catch (\Throwable $e) {}
+
             // never allow client_uid from request (it will be auto generated in model)
             unset($data['client_uid']);
 
