@@ -45,6 +45,9 @@
     .partner-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
     .partner-form-grid .full { grid-column: 1 / -1; }
     .partner-form-grid label { display: block; margin-bottom: 6px; color: #64748B; font-size: .76rem; font-weight: 950; text-transform: uppercase; }
+    .partner-form-label { display: flex !important; align-items: center !important; justify-content: space-between !important; margin-bottom: 6px !important; color: #64748B !important; font-size: .76rem !important; font-weight: 950 !important; text-transform: uppercase !important; letter-spacing: 0.03em !important; }
+    .partner-badge-optional { display: inline-flex; align-items: center; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; padding: 2px 8px; border-radius: 6px; background: rgba(148, 163, 184, 0.16); color: #64748B; border: 1px solid rgba(148, 163, 184, 0.28); line-height: 1.2; }
+    .partner-badge-required { display: inline-flex; align-items: center; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; padding: 2px 8px; border-radius: 6px; background: rgba(239, 68, 68, 0.12); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.28); line-height: 1.2; }
     .form-control, .form-select { min-height: 44px; border-radius: 12px; border: 1px solid #E2E8F0; font-weight: 700; }
     textarea.form-control { min-height: 110px; }
     .partner-form-actions { margin-top: 18px; }
@@ -201,8 +204,24 @@
     }
 
     html[data-pms-theme="dark"] .partner-form-grid label,
-    html[data-bs-theme="dark"] .partner-form-grid label {
+    html[data-bs-theme="dark"] .partner-form-grid label,
+    html[data-pms-theme="dark"] .partner-form-label,
+    html[data-bs-theme="dark"] .partner-form-label {
         color: #9AA3C7 !important;
+    }
+
+    html[data-pms-theme="dark"] .partner-badge-optional,
+    html[data-bs-theme="dark"] .partner-badge-optional {
+        background: rgba(148, 163, 184, 0.12) !important;
+        color: #94A3B8 !important;
+        border-color: rgba(148, 163, 184, 0.22) !important;
+    }
+
+    html[data-pms-theme="dark"] .partner-badge-required,
+    html[data-bs-theme="dark"] .partner-badge-required {
+        background: rgba(239, 68, 68, 0.18) !important;
+        color: #F87171 !important;
+        border-color: rgba(239, 68, 68, 0.35) !important;
     }
 
     html[data-pms-theme="dark"] .partner-form-preview,
