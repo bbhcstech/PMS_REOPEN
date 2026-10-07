@@ -24,7 +24,6 @@ class Leave extends TenantModel
         'paid_days',
         'unpaid_days',
         'reason',
-        'files',
         'attachment',
         'apology_note',
         'emergency_flag',
@@ -39,7 +38,6 @@ class Leave extends TenantModel
         'rejection_reason',
         'is_paid',
         'is_unpaid',
-        'paid',
         'payroll_deduction_flag',
         'admin_note',
         'leave_year',
@@ -57,7 +55,6 @@ class Leave extends TenantModel
         'half_day_flag' => 'boolean',
         'is_paid' => 'boolean',
         'is_unpaid' => 'boolean',
-        'paid' => 'boolean',
         'payroll_deduction_flag' => 'boolean',
         'approved_at' => 'datetime',
         'rejected_at' => 'datetime',
@@ -127,9 +124,19 @@ class Leave extends TenantModel
         return $raw ? \Carbon\Carbon::parse($raw)->startOfDay() : null;
     }
 
+    public function getFilesAttribute(): ?string
+    {
+        return $this->attachment ?: ($this->attributes['files'] ?? null);
+    }
+
+    public function getPaidAttribute(): bool
+    {
+        return (bool) ($this->attributes['paid'] ?? $this->is_paid);
+    }
+
     public function getAttachmentPathAttribute(): ?string
     {
-        return $this->attachment ?: $this->files;
+        return $this->attachment ?: ($this->attributes['files'] ?? null);
     }
 
     public function getTypeLabelAttribute(): string

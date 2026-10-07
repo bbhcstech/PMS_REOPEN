@@ -279,7 +279,6 @@ class LeaveService
                 'paid_days' => $paidPlan['paid_days'],
                 'unpaid_days' => $paidPlan['unpaid_days'],
                 'reason' => $data['reason'] ?? null,
-                'files' => $data['attachment'] ?? null,
                 'attachment' => $data['attachment'] ?? null,
                 'apology_note' => $data['apology_note'] ?? null,
                 'emergency_flag' => (bool) ($data['emergency_flag'] ?? false),
@@ -289,7 +288,6 @@ class LeaveService
                 'approval_status' => $status,
                 'is_paid' => ! $isUnpaid,
                 'is_unpaid' => $isUnpaid,
-                'paid' => ! $isUnpaid,
                 'payroll_deduction_flag' => $isUnpaid,
                 'leave_year' => $year['label'],
             ]);
@@ -319,7 +317,6 @@ class LeaveService
                     'type' => 'leave-without-pay',
                     'is_paid' => false,
                     'is_unpaid' => true,
-                    'paid' => false,
                     'paid_days' => 0,
                     'unpaid_days' => (float) ($leave->total_days ?: 1),
                     'payroll_deduction_flag' => true,
@@ -367,7 +364,6 @@ class LeaveService
                 'approved_at' => null,
                 'is_unpaid' => false,
                 'is_paid' => false,
-                'paid' => false,
                 'paid_days' => 0,
                 'unpaid_days' => 0,
                 'payroll_deduction_flag' => false,
@@ -700,7 +696,6 @@ class LeaveService
                 'unpaid_days' => $unpaidDays,
                 'is_paid' => $isFullyPaid,
                 'is_unpaid' => $hasUnpaidDays,
-                'paid' => $isFullyPaid,
                 'payroll_deduction_flag' => $hasUnpaidDays,
             ]);
 
