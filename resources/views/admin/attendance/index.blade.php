@@ -1739,7 +1739,7 @@
     .pms-toast-popup,
     .alert.position-fixed {
         position: fixed !important;
-        top: 24px !important;
+        top: 95px !important;
         right: 24px !important;
         z-index: 999999 !important;
         min-width: 320px !important;
@@ -2366,7 +2366,7 @@ document.addEventListener('DOMContentLoaded', function () {
         notification.className = `pms-toast-popup alert alert-${type} alert-dismissible fade show position-fixed`;
         notification.style.cssText = `
             position: fixed !important;
-            top: 24px !important;
+            top: 95px !important;
             right: 24px !important;
             z-index: 999999 !important;
             min-width: 320px !important;

@@ -231,6 +231,35 @@
         box-shadow: 0 4px 20px rgba(0,0,0,0.04);
     }
 
+    /* Banner previews are confined to events in the month calendar. */
+    #eventCalendar .event-calendar-has-banner {
+        display: block;
+        white-space: normal;
+        overflow: hidden;
+    }
+    #eventCalendar .event-calendar-banner-content {
+        width: 100%;
+        min-width: 0;
+        padding: 3px;
+        box-sizing: border-box;
+    }
+    #eventCalendar .event-calendar-banner {
+        display: block;
+        width: 100%;
+        height: 56px;
+        object-fit: cover;
+        border-radius: 4px;
+        margin-bottom: 4px;
+    }
+    #eventCalendar .event-calendar-banner-label {
+        display: block;
+        font-size: 0.75rem;
+        line-height: 1.3;
+        font-weight: 600;
+        overflow-wrap: anywhere;
+        color: inherit;
+    }
+
     /* Filter Bar Improvements */
     .events-filter-card {
         border-radius: 16px;
@@ -1574,6 +1603,29 @@
         }
     }
 
+    function renderCalendarEventContent(info) {
+        const bannerUrl = info.event.extendedProps.banner_url;
+        if (info.view.type !== 'dayGridMonth' || !bannerUrl) return true;
+
+        const content = document.createElement('div');
+        content.className = 'event-calendar-banner-content';
+
+        const banner = document.createElement('img');
+        banner.className = 'event-calendar-banner';
+        banner.src = bannerUrl;
+        banner.alt = info.event.title;
+        banner.loading = 'lazy';
+        banner.addEventListener('error', function() { banner.remove(); }, { once: true });
+        content.appendChild(banner);
+
+        const label = document.createElement('span');
+        label.className = 'event-calendar-banner-label';
+        label.textContent = (info.timeText ? info.timeText + ' ' : '') + info.event.title;
+        content.appendChild(label);
+
+        return { domNodes: [content] };
+    }
+
     function initCalendar() {
         const calendarEl = document.getElementById('eventCalendar');
         if (!calendarEl) return;
@@ -1587,6 +1639,11 @@
                 right: 'dayGridMonth,timeGridWeek,listMonth'
             },
             events: '{{ route("events.calendar-data") }}',
+            eventContent: renderCalendarEventContent,
+            eventClassNames: function(info) {
+                return info.view.type === 'dayGridMonth' && info.event.extendedProps.banner_url
+                    ? ['event-calendar-has-banner'] : [];
+            },
             eventClick: function(info) {
                 info.jsEvent.preventDefault();
                 showEventDetails(info.event.id);

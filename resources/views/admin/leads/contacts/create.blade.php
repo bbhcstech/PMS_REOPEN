@@ -251,8 +251,10 @@ html[data-pms-theme="dark"] .btn-cancel-modern:hover {
                                     </option>
                                 @endforeach
                             </select>
-                            <input type="text" name="phone" id="inputPhone" class="form-control form-control-modern" value="{{ old('phone') }}" placeholder="Phone number">
+                            <input type="tel" name="phone" id="inputPhone" class="form-control form-control-modern @error('phone') is-invalid @enderror" value="{{ old('phone') }}" placeholder="Phone number" maxlength="30">
                         </div>
+                        @error('phone')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                        @error('phone_country_code')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                     </div>
 
                     <div class="col-md-4">
@@ -266,8 +268,10 @@ html[data-pms-theme="dark"] .btn-cancel-modern:hover {
                                     </option>
                                 @endforeach
                             </select>
-                            <input type="text" name="mobile" id="inputMobile" class="form-control form-control-modern" value="{{ old('mobile') }}" placeholder="Mobile number">
+                            <input type="tel" name="mobile" id="inputMobile" class="form-control form-control-modern @error('mobile') is-invalid @enderror" value="{{ old('mobile') }}" placeholder="Mobile number" maxlength="30">
                         </div>
+                        @error('mobile')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                        @error('mobile_country_code')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                     </div>
 
                     <div class="col-md-4">

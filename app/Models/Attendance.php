@@ -17,7 +17,6 @@ class Attendance extends TenantModel
         'company_id',
         'department_id',
         'location_id',
-        'location',
         'latitude',
         'longitude',
         'clock_in_latitude',
@@ -63,9 +62,9 @@ class Attendance extends TenantModel
         'clock_out_datetime'
     ];
 
-    public function getLocationAttribute($value)
+    public function getLocationAttribute($value = null)
     {
-        return $value ?: ($this->attributes['clock_in_address'] ?? null);
+        return $value ?: ($this->attributes['location'] ?? $this->attributes['working_from'] ?? $this->attributes['clock_in_address'] ?? null);
     }
 
     public function getLatitudeAttribute($value)
