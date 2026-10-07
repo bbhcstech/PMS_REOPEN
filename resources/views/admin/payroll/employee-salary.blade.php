@@ -305,7 +305,7 @@
 
                     <div class="mb-3">
                         <label class="form-label small fw-bold">Actual Basic Salary (₹) *</label>
-                        <input type="number" step="0.01" name="actual_basic_salary" id="assign_basic" class="form-control form-control-sm" value="30000" required />
+                        <input type="number" step="0.01" name="actual_basic_salary" id="assign_basic" class="form-control form-control-sm" placeholder="0.00" value="{{ old('actual_basic_salary') }}" required />
                     </div>
 
                     <div class="row g-2 mb-3">
@@ -315,7 +315,7 @@
                                 <label class="small"><input type="radio" name="hra_type" id="hra_pct" value="percentage" checked> % of Basic</label>
                                 <label class="small"><input type="radio" name="hra_type" id="hra_fix" value="fixed"> Fixed</label>
                             </div>
-                            <input type="number" step="0.01" name="hra_value" id="assign_hra_val" class="form-control form-control-sm" value="50" required />
+                            <input type="number" step="0.01" name="hra_value" id="assign_hra_val" class="form-control form-control-sm" placeholder="0.00" value="{{ old('hra_value') }}" required />
                         </div>
                         <div class="col-md-6">
                             <label class="form-label small fw-bold">Special Allowance *</label>
@@ -323,7 +323,7 @@
                                 <label class="small"><input type="radio" name="special_allowance_type" id="spl_pct" value="percentage" checked> % of Basic</label>
                                 <label class="small"><input type="radio" name="special_allowance_type" id="spl_fix" value="fixed"> Fixed</label>
                             </div>
-                            <input type="number" step="0.01" name="special_allowance_value" id="assign_spl_val" class="form-control form-control-sm" value="50" required />
+                            <input type="number" step="0.01" name="special_allowance_value" id="assign_spl_val" class="form-control form-control-sm" placeholder="0.00" value="{{ old('special_allowance_value') }}" required />
                         </div>
                     </div>
 
@@ -373,9 +373,9 @@ function fetchStructureDefaults() {
     const structSel = document.getElementById('assign_structure_id');
     if (structSel.value) {
         const opt = structSel.options[structSel.selectedIndex];
-        document.getElementById('assign_basic').value = opt.getAttribute('data-basic') || 30000;
-        document.getElementById('assign_hra_val').value = opt.getAttribute('data-hra-val') || 50;
-        document.getElementById('assign_spl_val').value = opt.getAttribute('data-spl-val') || 50;
+        document.getElementById('assign_basic').value = opt.getAttribute('data-basic') || '';
+        document.getElementById('assign_hra_val').value = opt.getAttribute('data-hra-val') || '';
+        document.getElementById('assign_spl_val').value = opt.getAttribute('data-spl-val') || '';
         if (opt.getAttribute('data-hra-type') === 'fixed') {
             document.getElementById('hra_fix').checked = true;
         } else {

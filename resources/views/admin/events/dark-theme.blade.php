@@ -175,4 +175,31 @@
     :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .events-section #eventCalendar .fc-daygrid-dot-event {
         color: var(--event-text) !important;
     }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .events-section :is(.event-description-panel, .event-memories-panel, .event-memories-empty, .event-venue-icon) {
+        background: var(--event-surface-soft) !important;
+        border-color: var(--event-border) !important;
+        color: var(--event-text) !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) #eventDetailsModal :is(h4, h5, h6, p, span, strong, i, button) {
+        -webkit-text-fill-color: currentColor !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) #eventDetailsModal .rsvp-stat-going {
+        background: rgba(16, 185, 129, 0.14) !important;
+        border-color: rgba(52, 211, 153, 0.3) !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) #eventDetailsModal .rsvp-stat-maybe {
+        background: rgba(245, 158, 11, 0.14) !important;
+        border-color: rgba(251, 191, 36, 0.3) !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) #eventDetailsModal .rsvp-stat-not_going {
+        background: rgba(239, 68, 68, 0.14) !important;
+        border-color: rgba(248, 113, 113, 0.3) !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) #eventDetailsModal .bg-success-subtle {
+        background: rgba(16, 185, 129, 0.18) !important;
+    }
+    .events-section .event-memories-panel > .d-flex {
+        flex-wrap: wrap;
+        gap: 12px;
+    }
 </style>

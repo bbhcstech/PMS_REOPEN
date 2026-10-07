@@ -123,10 +123,13 @@
                         </div>
                         <div class="count">{{ $statusBreakdown['calculated'] }}</div>
                     </div>
+                    @php
+                        $draftPct = $tot > 0 ? round(($statusBreakdown['draft'] / $tot) * 100) : 0;
+                    @endphp
                     <div class="bd-row">
                         <div class="name">Draft / Other</div>
                         <div class="bd-bar">
-                            <div class="bd-fill" style="width: {{ 100 - ($finPct + $appPct + $revPct + $calcPct) }}%; background: #f59e0b;"></div>
+                            <div class="bd-fill" style="width: {{ $draftPct }}%; background: #f59e0b;"></div>
                         </div>
                         <div class="count">{{ $statusBreakdown['draft'] }}</div>
                     </div>
@@ -181,8 +184,8 @@
                         </div>
                         <div class="col-6">
                             <div class="info-box py-2">
-                                <div class="small text-muted">Active Workspaces</div>
-                                <div class="fs-5 fw-bold text-success">Admin Only</div>
+                                <div class="small text-muted">Total Payroll Runs</div>
+                                <div class="fs-5 fw-bold text-success">{{ $totalPayrollRuns }} Runs</div>
                             </div>
                         </div>
                     </div>

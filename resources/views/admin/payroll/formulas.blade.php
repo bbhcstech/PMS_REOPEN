@@ -36,6 +36,15 @@
     color: #ffffff;
     transform: translateY(-1px);
 }
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode, [data-pms-theme="dark"]) :is(.payroll-container, #createFormulaModal, #editFormulaModal) .var-pill {
+    background: #1e3a5f !important;
+    color: #bfdbfe !important;
+    -webkit-text-fill-color: currentColor !important;
+}
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode, [data-pms-theme="dark"]) :is(.payroll-container, #createFormulaModal, #editFormulaModal) .var-pill:hover {
+    background: #075985 !important;
+    color: #ffffff !important;
+}
 .category-badge-earnings { background: #dcfce7; color: #15803d; }
 .category-badge-deduction { background: #fee2e2; color: #b91c1c; }
 .category-badge-bonus { background: #fef3c7; color: #b45309; }

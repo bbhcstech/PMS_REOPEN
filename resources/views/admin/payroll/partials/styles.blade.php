@@ -292,9 +292,17 @@
     .pr-pill.active { background: #d1fae5; color: #065f46; }
     .pr-pill.inactive { background: #fee2e2; color: #991b1b; }
 
-    :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode, [data-pms-theme="dark"]) .pr-pill.finalized {
-        background: #334155; color: #e2e8f0;
+    :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode, [data-pms-theme="dark"]) .payroll-container .pr-pill {
+        background: var(--pr-pill-bg, #334155) !important;
+        color: var(--pr-pill-text, #e2e8f0) !important;
+        -webkit-text-fill-color: currentColor !important;
     }
+    .payroll-container .pr-pill.draft { --pr-pill-bg: #422f16; --pr-pill-text: #fde68a; }
+    .payroll-container .pr-pill.calculated { --pr-pill-bg: #1e3a5f; --pr-pill-text: #bfdbfe; }
+    .payroll-container .pr-pill.reviewed { --pr-pill-bg: #3b2861; --pr-pill-text: #ddd6fe; }
+    .payroll-container .pr-pill.approved,
+    .payroll-container .pr-pill.active { --pr-pill-bg: #134e3b; --pr-pill-text: #a7f3d0; }
+    .payroll-container .pr-pill.inactive { --pr-pill-bg: #5b242b; --pr-pill-text: #fecaca; }
 
     /* Cell Employee */
     .cell-employee {

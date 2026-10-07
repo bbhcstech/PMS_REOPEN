@@ -259,7 +259,7 @@
 
                     <div class="mb-3">
                         <label class="form-label small fw-bold">Basic Salary (₹) *</label>
-                        <input type="number" step="0.01" name="basic_salary" class="form-control form-control-sm" value="30000" required />
+                        <input type="number" step="0.01" name="basic_salary" class="form-control form-control-sm" placeholder="0.00" value="{{ old('basic_salary') }}" required />
                     </div>
 
                     <div class="row g-2 mb-3">

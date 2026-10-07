@@ -37,6 +37,35 @@ for (const type of ['timeGridWeek', 'listMonth']) {
 }
 const allDay = context.renderCalendarEventContent({ ...info, timeText: '' }).domNodes[0];
 assert.equal(allDay.children[1].textContent, info.event.title);
+const withTime = context.renderCalendarEventContent({ ...info, timeText: '', event: { ...info.event, extendedProps: { ...info.event.extendedProps, display_time: '09:00 AM' } } }).domNodes[0];
+assert.equal(withTime.children[1].textContent, '09:00 AM ' + info.event.title);
 assert.match(view, /eventContent:\s*renderCalendarEventContent/);
 assert.match(view, /eventClick:\s*function\(info\)\s*\{\s*info\.jsEvent\.preventDefault\(\);\s*showEventDetails\(info\.event\.id\);/);
-console.log('PASS: Banner rendering, safe titles, image failure fallback, all-day labels, default views, and event-click wiring.');
+assert.match(view, /id="eventCalendar" data-pms-export="off"/);
+const tableTools = readFileSync(new URL('../../public/admin/assets/js/pms-table-tools.js', import.meta.url), 'utf8');
+vm.runInContext(tableTools.match(/  function isEligible\(table\) \{[\s\S]*?(?=  function dataRows\()/)[0], context);
+const calendarTable = { tagName: 'TABLE', matches: () => false, closest: () => ({}), tHead: { querySelector: () => ({}) }, tBodies: [{}] };
+assert.equal(context.isEligible(calendarTable), false, 'Calendar must not receive table checkboxes/export tools');
+const normalTable = { ...calendarTable, closest: () => null };
+assert.equal(context.isEligible(normalTable), true, 'Other data tables must retain export tools');
+const calendarSource = view.match(/    function initCalendar\(\) \{[\s\S]*?(?=    function submitEventForm\()/)[0];
+let options, refetchCount = 0;
+context.document.getElementById = () => ({});
+context.sessionStorage = { getItem: () => null, setItem: () => {} };
+context.eventViewStorageKey = 'events-view:1:1';
+context.activeCalendarView = 'dayGridMonth';
+context.FullCalendar = { Calendar: class {
+    constructor(element, config) { options = config; }
+    getDate() { return new Date(2026, 9, 8); }
+    refetchEvents() { refetchCount++; }
+} };
+vm.runInContext(calendarSource, context);
+context.initCalendar();
+assert.equal(options.events.extraParams().view, 'dayGridMonth');
+options.datesSet({ view: { type: 'timeGridWeek' } });
+assert.equal(options.events.extraParams().view, 'timeGridWeek');
+assert.equal(refetchCount, 1);
+options.datesSet({ view: { type: 'dayGridMonth' } });
+assert.equal(options.events.extraParams().view, 'dayGridMonth');
+assert.equal(refetchCount, 2);
+console.log('PASS: Banner rendering, fallbacks, safe titles, view-specific refetching, event-click wiring, and calendar table-tool exclusion.');

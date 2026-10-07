@@ -302,9 +302,9 @@ class User extends Authenticatable
         // Fallback: If no role_permissions exist in database for this role, allow default modules
         if (! RolePermission::where('role', $this->normalizedRole())->exists()) {
             $defaultMap = [
-                'manager'  => ['dashboard', 'notifications', 'organization', 'teams', 'hr-management', 'employees', 'work', 'projects', 'tasks', 'timelogs', 'attendance', 'leaves', 'reports', 'recruitment', 'appraisal'],
-                'hr'       => ['dashboard', 'notifications', 'employees', 'attendance', 'leaves', 'work', 'projects', 'tasks', 'timelogs', 'payroll', 'reports', 'recruitment', 'appraisal'],
-                'employee' => ['dashboard', 'notifications', 'projects', 'tasks', 'attendance', 'timelogs', 'leaves', 'recruitment', 'appraisal'],
+                'manager'  => ['dashboard', 'notifications', 'organization', 'teams', 'hr-management', 'employees', 'work', 'projects', 'tasks', 'timelogs', 'attendance', 'leaves', 'reports', 'recruitment', 'appraisal', 'events', 'community'],
+                'hr'       => ['dashboard', 'notifications', 'employees', 'attendance', 'leaves', 'work', 'projects', 'tasks', 'timelogs', 'payroll', 'reports', 'recruitment', 'appraisal', 'events', 'community'],
+                'employee' => ['dashboard', 'notifications', 'projects', 'tasks', 'attendance', 'timelogs', 'leaves', 'recruitment', 'appraisal', 'events', 'community'],
             ];
             $allowed = $defaultMap[$this->normalizedRole()] ?? [];
             foreach ($slugsToTest as $slug) {

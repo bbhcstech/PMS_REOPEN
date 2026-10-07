@@ -196,7 +196,7 @@ class RolePermissionController extends Controller
         }
 
         if ($role === 'employee') {
-            if (in_array($slug, ['my-documents', 'timesheets', 'timelogs', 'leaves', 'leave-management', 'attendance', 'tasks'], true)) {
+            if (in_array($slug, ['my-documents', 'timesheets', 'timelogs', 'leaves', 'leave-management', 'attendance', 'tasks', 'community'], true)) {
                 return ['view', 'create', 'edit'];
             }
             if (in_array($slug, $employeeModules, true)) {

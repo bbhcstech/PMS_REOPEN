@@ -54,19 +54,19 @@ class PayrollController extends Controller
             ->when($companyId, fn ($q) => $q->where('company_id', $companyId))
             ->count();
 
-        // Get latest payroll run for the selected/current period
+        // Get payroll run for the selected period
         $startDate = Carbon::createFromDate($selectedYear, $selectedMonth, 1)->startOfMonth()->format('Y-m-d');
         $endDate = Carbon::createFromDate($selectedYear, $selectedMonth, 1)->endOfMonth()->format('Y-m-d');
 
         $currentPayroll = Payroll::query()
-            ->where('period_start', '>=', $startDate)
-            ->where('period_end', '<=', $endDate)
-            ->when($companyId, fn ($q) => $q->where('company_id', $companyId))
-            ->latest()
-            ->first();
-
-        // If no payroll for selected month, fallback to the latest run across all time
-        $latestPayroll = $currentPayroll ?: Payroll::query()
+            ->where(function ($q) use ($startDate, $endDate) {
+                $q->whereBetween('period_start', [$startDate, $endDate])
+                  ->orWhereBetween('period_end', [$startDate, $endDate])
+                  ->orWhere(function ($sub) use ($startDate, $endDate) {
+                      $sub->where('period_start', '<=', $startDate)
+                          ->where('period_end', '>=', $endDate);
+                  });
+            })
             ->when($companyId, fn ($q) => $q->where('company_id', $companyId))
             ->latest()
             ->first();
@@ -79,32 +79,54 @@ class PayrollController extends Controller
         $employerTotal = 0.0;
         $ctcTotal = 0.0;
 
-        if ($latestPayroll) {
-            $processedCount = PayrollHistory::where('payroll_id', $latestPayroll->id)->count();
-            $grossTotal = (float) $latestPayroll->gross_total;
-            $deductionTotal = (float) $latestPayroll->deduction_total;
-            $netTotal = (float) $latestPayroll->net_total;
-            $inHandTotal = (float) ($latestPayroll->total_in_hand ?? $latestPayroll->net_total);
-            $employerTotal = (float) ($latestPayroll->total_employer_contribution ?? 0);
-            $ctcTotal = (float) ($latestPayroll->total_ctc ?? ($latestPayroll->gross_total + $employerTotal));
+        $finalizedCount = 0;
+        $approvedCount = 0;
+        $reviewedCount = 0;
+        $calculatedCount = 0;
+        $draftCount = 0;
+
+        if ($currentPayroll) {
+            $processedCount = PayrollHistory::where('payroll_id', $currentPayroll->id)->count();
+            $grossTotal = (float) $currentPayroll->gross_total;
+            $deductionTotal = (float) $currentPayroll->deduction_total;
+            $netTotal = (float) $currentPayroll->net_total;
+            $inHandTotal = (float) ($currentPayroll->total_in_hand ?? $currentPayroll->net_total);
+            $employerTotal = (float) ($currentPayroll->total_employer_contribution ?? 0);
+            $ctcTotal = (float) ($currentPayroll->total_ctc ?? ($currentPayroll->gross_total + $employerTotal));
+
+            $finalizedCount = PayrollHistory::where('payroll_id', $currentPayroll->id)
+                ->where('payroll_status', 'finalized')
+                ->count();
+            $approvedCount = PayrollHistory::where('payroll_id', $currentPayroll->id)
+                ->where('payroll_status', 'approved')
+                ->count();
+            $reviewedCount = PayrollHistory::where('payroll_id', $currentPayroll->id)
+                ->where('payroll_status', 'reviewed')
+                ->count();
+            $calculatedCount = PayrollHistory::where('payroll_id', $currentPayroll->id)
+                ->where('payroll_status', 'calculated')
+                ->count();
+            $draftCount = ($currentPayroll->status === 'draft')
+                ? $processedCount
+                : max(0, $processedCount - ($finalizedCount + $approvedCount + $reviewedCount + $calculatedCount));
+        } else {
+            // Live real-time projection across eligible employees for the selected month/year
+            $payrollService = app(PayrollCalculationService::class);
+            $employees = $payrollService->getEligibleEmployees($companyId);
+            $workingDays = 22;
+            $srNo = 1;
+            foreach ($employees as $employee) {
+                $line = $payrollService->calculateEmployeePayrollLine($employee, $selectedYear, $selectedMonth, $workingDays, $srNo++);
+                $grossTotal += (float) ($line['gross_salary'] ?? 0);
+                $deductionTotal += (float) ($line['total_deductions'] ?? 0);
+                $netTotal += (float) ($line['net_pay'] ?? 0);
+                $inHandTotal += (float) ($line['total_in_hand'] ?? 0);
+                $employerTotal += (float) ($line['total_employer_contribution'] ?? 0);
+                $ctcTotal += (float) ($line['ctc'] ?? 0);
+            }
         }
 
         $pendingCount = max(0, $totalEmployees - $processedCount);
-
-        // Status breakdown counts
-        $finalizedCount = PayrollHistory::where('payroll_status', 'finalized')
-            ->when($latestPayroll, fn ($q) => $q->where('payroll_id', $latestPayroll->id))
-            ->count();
-        $approvedCount = PayrollHistory::where('payroll_status', 'approved')
-            ->when($latestPayroll, fn ($q) => $q->where('payroll_id', $latestPayroll->id))
-            ->count();
-        $reviewedCount = PayrollHistory::where('payroll_status', 'reviewed')
-            ->when($latestPayroll, fn ($q) => $q->where('payroll_id', $latestPayroll->id))
-            ->count();
-        $calculatedCount = PayrollHistory::where('payroll_status', 'calculated')
-            ->when($latestPayroll, fn ($q) => $q->where('payroll_id', $latestPayroll->id))
-            ->count();
-        $draftCount = ($latestPayroll && $latestPayroll->status === 'draft') ? $processedCount : 0;
 
         $kpis = [
             'total_employees' => $totalEmployees,
@@ -127,13 +149,19 @@ class PayrollController extends Controller
             'reviewed' => $reviewedCount,
             'calculated' => $calculatedCount,
             'draft' => $draftCount,
-            'total' => max(1, $processedCount),
+            'total' => max(1, $processedCount ?: $totalEmployees),
         ];
 
         $recentPayrolls = $this->companyQuery(Payroll::query(), $companyId)->latest()->take(6)->get();
-        $structuresCount = SalaryStructure::where('status', 'active')->count();
-        $assignmentsCount = EmployeeSalaryAssignment::where('status', 'active')->count();
+        $totalPayrollRuns = $this->companyQuery(Payroll::query(), $companyId)->count();
+        $structuresCount = SalaryStructure::where('status', 'active')
+            ->when($companyId && Schema::hasColumn('salary_structures', 'company_id'), fn ($q) => $q->where('company_id', $companyId))
+            ->count();
+        $assignmentsCount = EmployeeSalaryAssignment::where('status', 'active')
+            ->when($companyId, fn ($q) => $q->where('company_id', $companyId))
+            ->count();
         $payslipCount = $this->payslipQuery($companyId)->count();
+        $latestPayroll = $currentPayroll;
 
         return view('admin.payroll.index', compact(
             'kpis',
@@ -142,6 +170,7 @@ class PayrollController extends Controller
             'structuresCount',
             'assignmentsCount',
             'payslipCount',
+            'totalPayrollRuns',
             'latestPayroll'
         ));
     }
@@ -462,11 +491,11 @@ class PayrollController extends Controller
 
         return response()->json([
             'success' => false,
-            'basic_salary' => 30000.0,
+            'basic_salary' => 0.0,
             'hra_type' => 'percentage',
-            'hra_value' => 50.0,
+            'hra_value' => 0.0,
             'special_allowance_type' => 'percentage',
-            'special_allowance_value' => 50.0,
+            'special_allowance_value' => 0.0,
         ]);
     }
 
@@ -485,9 +514,17 @@ class PayrollController extends Controller
         $departmentId = $request->input('department_id') ? (int) $request->input('department_id') : null;
         $employeeType = $request->input('employee_type', 'all');
 
-        $offices = BusinessAddress::pluck('branch_name')->filter()->unique()->toArray();
-        $dbEmpAddresses = EmployeeDetail::pluck('business_address')->filter()->unique()->toArray();
-        $officesList = array_unique(array_merge(['HQ', 'Main Office', 'BBH', 'Kolkata'], $offices, $dbEmpAddresses));
+        $offices = BusinessAddress::when($companyId, fn ($q) => $q->where('company_id', $companyId))
+            ->pluck('branch_name')
+            ->filter()
+            ->unique()
+            ->toArray();
+        $dbEmpAddresses = EmployeeDetail::when($companyId, fn ($q) => $q->where('company_id', $companyId))
+            ->pluck('business_address')
+            ->filter()
+            ->unique()
+            ->toArray();
+        $officesList = array_values(array_filter(array_unique(array_merge($offices, $dbEmpAddresses))));
         $departments = $this->getDepartments();
 
         // Check if existing payroll exists for period
@@ -498,7 +535,13 @@ class PayrollController extends Controller
 
         if ($existingPayroll) {
             $payrollRun = $existingPayroll;
-            $payrollItems = PayrollHistory::where('payroll_id', $existingPayroll->id)->orderBy('id', 'asc')->get();
+            // Saved rows must obey the same employee filters as an unsaved preview.
+            $eligibleEmployeeIds = $payrollService
+                ->getEligibleEmployees($companyId, $office, $employeeType, $departmentId)
+                ->pluck('id');
+            $payrollItems = PayrollHistory::where('payroll_id', $existingPayroll->id)
+                ->whereIn('user_id', $eligibleEmployeeIds)
+                ->orderBy('id', 'asc')->get();
         } else {
             // Auto calculate preview lines in memory
             $employees = $payrollService->getEligibleEmployees($companyId, $office, $employeeType, $departmentId);

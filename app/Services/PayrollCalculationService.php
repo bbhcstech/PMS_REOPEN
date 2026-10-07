@@ -326,15 +326,15 @@ class PayrollCalculationService
             $source = 'employee_detail';
         }
 
-        // 4. Fallback defaults
+        // 4. Fallback defaults when no structure, assignment, or detail salary is configured
         if ($basic <= 0) {
-            $basic = 30000.00;
+            $basic = 0.00;
             $hraType = 'percentage';
-            $hraValue = 50.0;
+            $hraValue = 0.0;
             $specialType = 'percentage';
-            $specialValue = 50.0;
-            $grade = $empDetail?->designation?->level ?: 'D1';
-            $source = 'fallback';
+            $specialValue = 0.0;
+            $grade = $empDetail?->designation?->level ?: '-';
+            $source = 'unassigned';
         }
 
         // Calculate standard monthly components
@@ -354,7 +354,7 @@ class PayrollCalculationService
             'grade' => $grade,
             'source' => $source,
             'salary_structure_id' => $structureId,
-            'has_structure' => ($source !== 'fallback'),
+            'has_structure' => ($source !== 'unassigned' && $source !== 'default'),
         ];
     }
 
@@ -465,7 +465,7 @@ class PayrollCalculationService
             }
         }
 
-        $ptAmt = (!empty($dedRules['pt_enabled']))
+        $ptAmt = ($acGross > 0 && !empty($dedRules['pt_enabled']))
             ? (float) ($dedRules['pt_fixed_amount'] ?? 200)
             : ($acGross > 15000 ? 200.0 : 0.0);
         if ($activeFormulas->has('PROFESSIONAL_TAX')) {
@@ -478,7 +478,7 @@ class PayrollCalculationService
             }
         }
 
-        $tdsAmt = (float) ($lineInputs['tds'] ?? ($dedRules['tds_amount'] ?? 0.0));
+        $tdsAmt = (float) ($lineInputs['tds'] ?? ($acGross > 0 ? ($dedRules['tds_amount'] ?? 0.0) : 0.0));
         $otherDeductions = (float) ($lineInputs['other_deductions'] ?? 0.0);
 
         $totalEmployeeDeductions = round($pfAmt + $esiAmt + $ptAmt + $tdsAmt + $otherDeductions, 2);
@@ -512,10 +512,12 @@ class PayrollCalculationService
         // Working Hours > 180 -> 400; > 162 -> 200; else 0
         $workingHours = $attData['working_hours'];
         $calcAttendanceBonus = 0.0;
-        if ($workingHours > 180) {
-            $calcAttendanceBonus = 400.0;
-        } elseif ($workingHours > 162) {
-            $calcAttendanceBonus = 200.0;
+        if ($acGross > 0) {
+            if ($workingHours > 180) {
+                $calcAttendanceBonus = 400.0;
+            } elseif ($workingHours > 162) {
+                $calcAttendanceBonus = 200.0;
+            }
         }
         if ($activeFormulas->has('ATTENDANCE_BONUS')) {
             $eval = PayrollFormula::evaluate($activeFormulas['ATTENDANCE_BONUS']->formula, [
@@ -533,10 +535,12 @@ class PayrollCalculationService
         // Best Employee Bonus: Rank 1 -> 400; Rank 2 -> 200; else 0
         $beRank = (int) ($lineInputs['be_rank'] ?? 0);
         $bestEmpBonus = 0.0;
-        if ($beRank === 1) {
-            $bestEmpBonus = 400.0;
-        } elseif ($beRank === 2) {
-            $bestEmpBonus = 200.0;
+        if ($acGross > 0) {
+            if ($beRank === 1) {
+                $bestEmpBonus = 400.0;
+            } elseif ($beRank === 2) {
+                $bestEmpBonus = 200.0;
+            }
         }
         if ($activeFormulas->has('BEST_EMPLOYEE_BONUS')) {
             $eval = PayrollFormula::evaluate($activeFormulas['BEST_EMPLOYEE_BONUS']->formula, [
@@ -555,8 +559,8 @@ class PayrollCalculationService
 
         // Overtime Amount: Overtime Hours * Overtime Rate
         $overtimeHours = (float) ($lineInputs['overtime_hours'] ?? $attData['overtime_hours']);
-        $hourlyRate = $workingDays > 0 ? round($basic / ($workingDays * 8), 2) : 200.0;
-        $overtimeRate = (float) ($lineInputs['overtime_rate'] ?? max(150.0, $hourlyRate * 1.5));
+        $hourlyRate = ($workingDays > 0 && $basic > 0) ? round($basic / ($workingDays * 8), 2) : 0.0;
+        $overtimeRate = (float) ($lineInputs['overtime_rate'] ?? ($basic > 0 ? max(150.0, $hourlyRate * 1.5) : 0.0));
         $overtimePay = isset($lineInputs['overtime'])
             ? (float) $lineInputs['overtime']
             : round($overtimeHours * $overtimeRate, 2);
@@ -673,10 +677,10 @@ class PayrollCalculationService
 
         $empDetail = $user->employeeDetail;
         $empId = $empDetail?->employee_id ?: ('EMP' . str_pad($user->id, 3, '0', STR_PAD_LEFT));
-        $branch = $empDetail?->business_address ?: 'HQ';
-        $departmentName = $empDetail?->department?->dpt_name ?? ($empDetail?->department?->name ?? 'Development');
-        $designationName = $empDetail?->designation?->name ?: 'Developer';
-        $joiningDate = $empDetail?->joining_date ? Carbon::parse($empDetail->joining_date)->format('d M Y') : '12 Mar 2022';
+        $branch = $empDetail?->business_address ?: ($user->business_address ?? '-');
+        $departmentName = $empDetail?->department?->dpt_name ?? ($empDetail?->department?->name ?? ($user->department ?? '-'));
+        $designationName = $empDetail?->designation?->name ?: ($user->designation ?: '-');
+        $joiningDate = $empDetail?->joining_date ? Carbon::parse($empDetail->joining_date)->format('d M Y') : ($user->joining_date ? Carbon::parse($user->joining_date)->format('d M Y') : '-');
 
         return [
             'sr_no' => $srNo,
@@ -780,7 +784,7 @@ class PayrollCalculationService
             // Cost to Company
             'ctc' => $ctc,
 
-            'status' => 'Calculated',
+            'status' => ($salaryData['has_structure'] ? 'Calculated' : 'Unassigned'),
         ];
     }
 

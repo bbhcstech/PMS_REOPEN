@@ -276,6 +276,9 @@ class Company extends Model
                             return true;
                         }
                     }
+                    if (in_array($featureSlug, ['community'], true)) {
+                        return true;
+                    }
                     return false;
                 }
 

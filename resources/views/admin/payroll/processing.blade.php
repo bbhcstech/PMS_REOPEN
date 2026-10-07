@@ -194,11 +194,11 @@
                                     <div class="avatar-badge">{{ $initials }}</div>
                                     <div>
                                         <div class="name">{{ $s['employee_name'] ?? '-' }}</div>
-                                        <div class="meta">{{ $s['employee_id'] ?? '-' }} · {{ $s['department'] ?? 'General' }}</div>
+                                        <div class="meta">{{ $s['employee_id'] ?? '-' }} · {{ $s['department'] ?? '-' }}</div>
                                     </div>
                                 </div>
                             </td>
-                            <td>{{ $s['designation'] ?? '-' }} <span class="badge bg-label-secondary small">{{ $s['grade'] ?? 'D1' }}</span></td>
+                            <td>{{ $s['designation'] ?? '-' }} <span class="badge bg-label-secondary small">{{ $s['grade'] ?? '-' }}</span></td>
                             <td>
                                 <b>{{ $s['present'] ?? $s['presents'] ?? $workingDays }}/{{ $workingDays }}</b>
                                 @if(!empty($s['total_absent']) && (float)$s['total_absent'] > 0)

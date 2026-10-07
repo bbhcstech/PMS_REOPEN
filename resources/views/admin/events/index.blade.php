@@ -247,7 +247,7 @@
         display: block;
         width: 100%;
         height: 56px;
-        object-fit: cover;
+        object-fit: contain;
         border-radius: 4px;
         margin-bottom: 4px;
     }
@@ -258,6 +258,28 @@
         font-weight: 600;
         overflow-wrap: anywhere;
         color: inherit;
+    }
+
+    .event-description-panel, .event-memories-empty {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+    }
+    .event-memories-panel {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+    }
+    .event-memories-empty { border-style: dashed; }
+    .event-description-panel, .event-memories-panel, .rsvp-summary-card { padding: 20px; }
+    .event-description-panel > h6, .rsvp-summary-card > h6 { gap: 8px; }
+    .event-details-actions { flex-wrap: wrap; }
+    .rsvp-stat-going { background: #f0fdf4; border: 1px solid #d1fae5; }
+    .rsvp-stat-maybe { background: #fffbeb; border: 1px solid #fef3c7; }
+    .rsvp-stat-not_going { background: #fef2f2; border: 1px solid #fee2e2; }
+    @media (max-width: 767px) {
+        #eventCalendar { padding: 12px; }
+        #eventCalendar .fc-header-toolbar { flex-wrap: wrap; gap: 12px; }
+        #eventCalendar .fc-toolbar-title { font-size: 1.1rem; }
+        #eventCalendar .event-calendar-banner { height: 42px; }
     }
 
     /* Filter Bar Improvements */
@@ -847,6 +869,15 @@
     </div>
 
     {{-- FLASH MESSAGES --}}
+    @if($errors->any())
+        <div class="alert alert-danger" role="alert">
+            <ul class="mb-0">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
     @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             <i class="bx bx-check-circle me-1"></i> {{ session('success') }}
@@ -1166,7 +1197,7 @@
 
     {{-- CALENDAR VIEW SECTION --}}
     <div id="eventsCalendarView" class="d-none">
-        <div id="eventCalendar"></div>
+        <div id="eventCalendar" data-pms-export="off"></div>
     </div>
 
     {{-- GALLERY VIEW SECTION (NEW) --}}
@@ -1267,7 +1298,7 @@
                 </button>
             </div>
 
-            <form id="eventForm" enctype="multipart/form-data" method="POST" action="{{ route('events.store') }}" onsubmit="return validateEventDateTime();">
+            <form id="eventForm" enctype="multipart/form-data" method="POST" action="{{ route('events.store') }}" onsubmit="return submitEventForm();">
                 @csrf
                 <input type="hidden" name="_method" id="formMethod" value="POST">
                 <input type="hidden" name="event_id" id="eventId" value="">
@@ -1303,9 +1334,9 @@
                         <div class="col-md-6">
                             <label class="form-label premium-label">Organizer</label>
                             <select name="organizer_id" id="eventOrganizerInput" class="form-select premium-select">
-                                <option value="">Select Organizer</option>
+                                <option value="">Default organizer</option>
                                 @foreach($users as $usr)
-                                    <option value="{{ $usr->id }}" {{ auth()->id() == $usr->id ? 'selected' : '' }}>
+                                    <option value="{{ $usr->id }}">
                                         {{ $usr->name }} ({{ ucfirst($usr->role) }})
                                     </option>
                                 @endforeach
@@ -1545,6 +1576,8 @@
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
 <script>
     let calendarInstance = null;
+    let activeCalendarView = 'dayGridMonth';
+    const eventViewStorageKey = 'events-view:{{ $companyId }}:{{ auth()->id() }}';
     let selectedUploadFiles = [];
     let currentLightboxPhotos = [];
     let currentLightboxIndex = 0;
@@ -1562,6 +1595,10 @@
     document.addEventListener('DOMContentLoaded', function () {
         initCalendar();
         setupDragAndDrop();
+        try {
+            const savedView = sessionStorage.getItem(eventViewStorageKey);
+            if (['list', 'calendar', 'gallery'].includes(savedView)) switchView(savedView);
+        } catch (error) {}
 
         // Keyboard navigation for Lightbox
         document.addEventListener('keydown', function(e) {
@@ -1574,6 +1611,7 @@
     });
 
     function switchView(view) {
+        try { sessionStorage.setItem(eventViewStorageKey, view); } catch (error) {}
         const listDiv = document.getElementById('eventsListView');
         const calDiv = document.getElementById('eventsCalendarView');
         const galDiv = document.getElementById('eventsGalleryView');
@@ -1593,7 +1631,10 @@
         if (view === 'calendar') {
             calDiv.classList.remove('d-none');
             btnCal.classList.add('active');
-            if (calendarInstance) calendarInstance.render();
+            if (calendarInstance) {
+                calendarInstance.render();
+                calendarInstance.refetchEvents();
+            }
         } else if (view === 'gallery') {
             galDiv.classList.remove('d-none');
             btnGal.classList.add('active');
@@ -1620,7 +1661,8 @@
 
         const label = document.createElement('span');
         label.className = 'event-calendar-banner-label';
-        label.textContent = (info.timeText ? info.timeText + ' ' : '') + info.event.title;
+        const timeText = info.timeText || info.event.extendedProps.display_time || '';
+        label.textContent = (timeText ? timeText + ' ' : '') + info.event.title;
         content.appendChild(label);
 
         return { domNodes: [content] };
@@ -1630,15 +1672,32 @@
         const calendarEl = document.getElementById('eventCalendar');
         if (!calendarEl) return;
 
+        let initialDate;
+        try { initialDate = sessionStorage.getItem(eventViewStorageKey + ':date') || undefined; } catch (error) {}
+
         calendarInstance = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
+            initialDate: initialDate,
             height: 700,
             headerToolbar: {
                 left: 'prev,next today',
                 center: 'title',
                 right: 'dayGridMonth,timeGridWeek,listMonth'
             },
-            events: '{{ route("events.calendar-data") }}',
+            events: {
+                url: '{{ route("events.calendar-data") }}',
+                extraParams: function() { return { view: activeCalendarView }; }
+            },
+            datesSet: function(info) {
+                const changedView = activeCalendarView !== info.view.type;
+                activeCalendarView = info.view.type;
+                if (calendarInstance) {
+                    const date = calendarInstance.getDate();
+                    const localDate = date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
+                    try { sessionStorage.setItem(eventViewStorageKey + ':date', localDate); } catch (error) {}
+                    if (changedView) calendarInstance.refetchEvents();
+                }
+            },
             eventContent: renderCalendarEventContent,
             eventClassNames: function(info) {
                 return info.view.type === 'dayGridMonth' && info.event.extendedProps.banner_url
@@ -1649,6 +1708,14 @@
                 showEventDetails(info.event.id);
             }
         });
+    }
+
+    function submitEventForm() {
+        if (!validateEventDateTime()) return false;
+        if (!document.getElementById('eventsCalendarView').classList.contains('d-none')) {
+            try { sessionStorage.setItem(eventViewStorageKey + ':date', document.getElementById('eventStartDateInput').value); } catch (error) {}
+        }
+        return true;
     }
 
     function toggleLocationFields() {
@@ -1855,7 +1922,7 @@
                 photosHtml += `</div>`;
             } else {
                 photosHtml = `
-                    <div class="text-center py-4 rounded-3" style="background: #f8fafc; border: 1.5px dashed #cbd5e1;">
+                    <div class="event-memories-empty text-center py-4 rounded-3">
                         <i class="bx bx-images fs-2 text-muted mb-1"></i>
                         <p class="text-dark fw-bold small mb-1">No Event Memories Yet</p>
                         <p class="text-muted small mb-3">Upload photographs from this event to preserve the celebration for your team.</p>
@@ -1895,7 +1962,7 @@
 
                     <div class="col-sm-6">
                         <div class="event-meta-card p-3 rounded-3 d-flex align-items-center gap-3">
-                            <div class="meta-icon-box rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 42px; height: 42px; background: #fef2f2; border: 1px solid rgba(239, 68, 68, 0.25);">
+                            <div class="event-venue-icon meta-icon-box rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 42px; height: 42px; background: #fef2f2; border: 1px solid rgba(239, 68, 68, 0.25);">
                                 <i class="${e.location_type === 'online' ? 'bx bx-video text-info' : 'bx bx-map-pin text-danger'} fs-4"></i>
                             </div>
                             <div class="overflow-hidden">
@@ -1907,7 +1974,7 @@
                 </div>
 
                 {{-- ABOUT EVENT DESCRIPTION --}}
-                <div class="mb-4 p-3.5 rounded-3" style="background: #f8fafc; border: 1px solid #e2e8f0;">
+                <div class="event-description-panel mb-4 p-3.5 rounded-3">
                     <h6 class="fw-bold text-dark mb-2 d-flex align-items-center gap-1.5" style="font-size: 0.95rem;">
                         <i class="bx bx-align-left text-primary"></i> About Event
                     </h6>
@@ -1915,7 +1982,7 @@
                 </div>
 
                 {{-- EVENT MEMORIES / PHOTO GALLERY SECTION --}}
-                <div class="mb-4 p-3.5 rounded-3" style="background: #ffffff; border: 1px solid #e2e8f0; box-shadow: 0 2px 10px rgba(0,0,0,0.02);">
+                <div class="event-memories-panel mb-4 p-3.5 rounded-3">
                     <div class="d-flex align-items-center justify-content-between mb-3">
                         <div>
                             <h6 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2 fs-6">
@@ -1935,25 +2002,25 @@
 
                 {{-- RSVP SUMMARY METRICS --}}
                 ${e.rsvp_required ? `
-                <div class="card border-0 p-3.5 mb-3 rsvp-summary-card" style="border-radius: 16px; background: #f8fafc; border: 1px solid #e2e8f0 !important;">
+                <div class="card p-3.5 mb-3 rsvp-summary-card" style="border-radius: 16px;">
                     <h6 class="fw-bold text-dark mb-3 d-flex align-items-center gap-1.5" style="font-size: 0.95rem;">
                         <i class="bx bx-pie-chart-alt-2 text-primary"></i> RSVP Summary
                     </h6>
                     <div class="row g-3 text-center">
                         <div class="col-4">
-                            <div class="p-3 rounded-3 rsvp-stat-going" style="border: 1px solid #d1fae5; background-color: #f0fdf4 !important;">
+                            <div class="p-3 rounded-3 rsvp-stat-going">
                                 <span class="d-block small text-success fw-bold uppercase-label" style="font-size: 11px; letter-spacing: 0.5px;">Going</span>
                                 <h3 class="fw-extrabold text-success mb-0 mt-1">${rsvp.going}</h3>
                             </div>
                         </div>
                         <div class="col-4">
-                            <div class="p-3 rounded-3 rsvp-stat-maybe" style="border: 1px solid #fef3c7; background-color: #fffbeb !important;">
+                            <div class="p-3 rounded-3 rsvp-stat-maybe">
                                 <span class="d-block small text-warning fw-bold uppercase-label" style="font-size: 11px; letter-spacing: 0.5px;">Maybe</span>
                                 <h3 class="fw-extrabold text-warning mb-0 mt-1">${rsvp.maybe}</h3>
                             </div>
                         </div>
                         <div class="col-4">
-                            <div class="p-3 rounded-3 rsvp-stat-not_going" style="border: 1px solid #fee2e2; background-color: #fef2f2 !important;">
+                            <div class="p-3 rounded-3 rsvp-stat-not_going">
                                 <span class="d-block small text-danger fw-bold uppercase-label" style="font-size: 11px; letter-spacing: 0.5px;">Not Going</span>
                                 <h3 class="fw-extrabold text-danger mb-0 mt-1">${rsvp.not_going}</h3>
                             </div>
@@ -1963,7 +2030,7 @@
 
                 {{-- ACTION BUTTONS --}}
                 ${canManage ? `
-                <div class="d-flex justify-content-end gap-2 pt-3 border-top mt-4">
+                <div class="event-details-actions d-flex justify-content-end gap-2 pt-3 border-top mt-4">
                     <button type="button" class="btn btn-outline-primary btn-sm px-3 fw-bold d-inline-flex align-items-center gap-1" onclick="bootstrap.Modal.getInstance(document.getElementById('eventDetailsModal')).hide(); editEvent(${e.id});">
                         <i class="bx bx-edit"></i> Edit
                     </button>
