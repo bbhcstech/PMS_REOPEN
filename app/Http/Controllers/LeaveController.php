@@ -139,11 +139,9 @@ class LeaveController extends Controller
         $data['half_day_flag'] = $request->boolean('half_day_flag');
         $data['status'] = $isPureAdmin ? ($request->status ?: 'pending') : 'pending';
 
-        if ($request->hasFile('attachment')) {
-            $file = $request->file('attachment');
-            $name = time() . '-' . preg_replace('/[^A-Za-z0-9_.-]/', '-', $file->getClientOriginalName());
-            $file->move(public_path('admin/uploads/leave-file'), $name);
-            $data['attachment'] = 'admin/uploads/leave-file/' . $name;
+        $hasAttachment = $request->hasFile('attachment');
+        if ($hasAttachment) {
+            $data['attachment'] = 'pending_upload';
         }
 
         $errors = $this->leaveService->validateRequest(
@@ -156,6 +154,24 @@ class LeaveController extends Controller
 
         if ($errors) {
             return back()->withErrors($errors)->withInput();
+        }
+
+        if ($hasAttachment) {
+            $file = $request->file('attachment');
+            $uploadDir = public_path('admin/uploads/leave-file');
+            if (! file_exists($uploadDir)) {
+                @mkdir($uploadDir, 0755, true);
+            }
+            $name = time() . '-' . preg_replace('/[^A-Za-z0-9_.-]/', '-', $file->getClientOriginalName());
+            $destination = $uploadDir . DIRECTORY_SEPARATOR . $name;
+            if (@copy($file->getRealPath(), $destination)) {
+                $data['attachment'] = 'admin/uploads/leave-file/' . $name;
+            } else {
+                $file->move($uploadDir, $name);
+                $data['attachment'] = 'admin/uploads/leave-file/' . $name;
+            }
+        } else {
+            unset($data['attachment']);
         }
 
         $leave = $this->leaveService->createLeave($employee, $type, $data, $actor);
@@ -454,9 +470,18 @@ class LeaveController extends Controller
 
         if ($request->hasFile('attachment')) {
             $file = $request->file('attachment');
+            $uploadDir = public_path('admin/uploads/leave-file');
+            if (! file_exists($uploadDir)) {
+                @mkdir($uploadDir, 0755, true);
+            }
             $name = time() . '-' . preg_replace('/[^A-Za-z0-9_.-]/', '-', $file->getClientOriginalName());
-            $file->move(public_path('admin/uploads/leave-file'), $name);
-            $data['attachment'] = 'admin/uploads/leave-file/' . $name;
+            $destination = $uploadDir . DIRECTORY_SEPARATOR . $name;
+            if (@copy($file->getRealPath(), $destination)) {
+                $data['attachment'] = 'admin/uploads/leave-file/' . $name;
+            } else {
+                $file->move($uploadDir, $name);
+                $data['attachment'] = 'admin/uploads/leave-file/' . $name;
+            }
         }
 
         $start = Carbon::parse($data['start_date']);
@@ -478,7 +503,6 @@ class LeaveController extends Controller
             'total_days' => $this->leaveService->calculateDays($start, $end, $data['half_day_flag']),
             'reason' => $data['reason'],
             'attachment' => $data['attachment'] ?? $leave->attachment,
-            'files' => $data['attachment'] ?? $leave->files,
             'apology_note' => $data['apology_note'] ?? null,
             'emergency_flag' => $data['emergency_flag'],
             'half_day_flag' => $data['half_day_flag'],
@@ -626,7 +650,6 @@ class LeaveController extends Controller
         $leave->update([
             'is_paid' => $request->boolean('paid'),
             'is_unpaid' => ! $request->boolean('paid'),
-            'paid' => $request->boolean('paid'),
             'paid_days' => $request->boolean('paid') ? $totalDays : 0,
             'unpaid_days' => $request->boolean('paid') ? 0 : $totalDays,
             'payroll_deduction_flag' => ! $request->boolean('paid'),
