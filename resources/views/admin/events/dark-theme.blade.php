@@ -52,7 +52,79 @@
     :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .events-section .text-danger {
         color: #ff929d !important;
     }
-    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .events-section :is(.btn-action-icon, .kpi-icon-box) .bx {
+    /* KPI Stat Icon Boxes in Dark Mode */
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .events-section .kpi-icon-box {
+        width: 48px !important;
+        height: 48px !important;
+        border-radius: 12px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 1.5rem !important;
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08) !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .events-section .kpi-icon-box.bg-label-primary {
+        background: rgba(47, 107, 255, 0.22) !important;
+        border: 1px solid rgba(79, 131, 255, 0.45) !important;
+        box-shadow: 0 4px 14px rgba(47, 107, 255, 0.25) !important;
+        color: #60A5FA !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .events-section .kpi-icon-box.bg-label-primary .bx,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .events-section .kpi-icon-box.bg-label-primary i {
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .events-section .kpi-icon-box.bg-label-success {
+        background: rgba(16, 185, 129, 0.22) !important;
+        border: 1px solid rgba(52, 211, 153, 0.45) !important;
+        box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25) !important;
+        color: #34D399 !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .events-section .kpi-icon-box.bg-label-success .bx,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .events-section .kpi-icon-box.bg-label-success i {
+        color: #34D399 !important;
+        -webkit-text-fill-color: #34D399 !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .events-section .kpi-icon-box.bg-label-warning {
+        background: rgba(245, 158, 11, 0.22) !important;
+        border: 1px solid rgba(251, 191, 36, 0.45) !important;
+        box-shadow: 0 4px 14px rgba(245, 158, 11, 0.25) !important;
+        color: #FBBF24 !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .events-section .kpi-icon-box.bg-label-warning .bx,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .events-section .kpi-icon-box.bg-label-warning i {
+        color: #FBBF24 !important;
+        -webkit-text-fill-color: #FBBF24 !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .events-section .kpi-icon-box.bg-label-secondary {
+        background: rgba(148, 163, 184, 0.2) !important;
+        border: 1px solid rgba(148, 163, 184, 0.35) !important;
+        box-shadow: 0 4px 14px rgba(148, 163, 184, 0.2) !important;
+        color: #CBD5E1 !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .events-section .kpi-icon-box.bg-label-secondary .bx,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .events-section .kpi-icon-box.bg-label-secondary i {
+        color: #CBD5E1 !important;
+        -webkit-text-fill-color: #CBD5E1 !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .events-section .kpi-icon-box.bg-label-danger {
+        background: rgba(239, 68, 68, 0.22) !important;
+        border: 1px solid rgba(248, 113, 113, 0.45) !important;
+        box-shadow: 0 4px 14px rgba(239, 68, 68, 0.25) !important;
+        color: #F87171 !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .events-section .kpi-icon-box.bg-label-danger .bx,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .events-section .kpi-icon-box.bg-label-danger i {
+        color: #F87171 !important;
+        -webkit-text-fill-color: #F87171 !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .events-section .btn-action-icon .bx {
         color: inherit !important;
     }
     :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .events-section .btn-action-icon:is(:hover, :focus-visible) {
