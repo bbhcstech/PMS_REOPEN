@@ -2407,25 +2407,63 @@ $(document).ready(function () {
         $(this).removeClass('is-invalid');
     });
 
+    function closeModalSafely(modalId) {
+        const modalEl = document.getElementById(modalId);
+        if (modalEl && typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+            const bsModal = bootstrap.Modal.getInstance(modalEl) || bootstrap.Modal.getOrCreateInstance(modalEl);
+            if (bsModal) {
+                bsModal.hide();
+            }
+        }
+        $('#' + modalId).modal('hide');
+        setTimeout(function() {
+            $('.modal-backdrop').remove();
+            $('body').removeClass('modal-open').css({
+                overflow: '',
+                paddingRight: ''
+            });
+        }, 150);
+    }
+
+    $('.modal').on('hidden.bs.modal', function() {
+        $('body').removeClass('modal-open').css({
+            overflow: '',
+            paddingRight: ''
+        });
+        $('.modal-backdrop').remove();
+    });
+
     // AJAX Form: Add Client Category
     $('#addCategoryForm').submit(function(e) {
         e.preventDefault();
         const name = $('#categoryName').val().trim();
         if (!name) return;
 
+        const form = $(this);
+        const submitBtn = form.find('button[type="submit"]');
+        submitBtn.prop('disabled', true);
+
         $.ajax({
             type: 'POST',
             url: "{{ route('client-categories.store') }}",
-            data: $(this).serialize(),
+            data: form.serialize(),
             success: function(data) {
                 $('#client_category_id').append(
                     `<option value="${data.id}" selected>${data.name}</option>`
                 );
-                $('#addCategoryModal').modal('hide');
-                $('#addCategoryForm')[0].reset();
+                $('#client_category_id').val(data.id).trigger('change');
+                closeModalSafely('addCategoryModal');
+                form[0].reset();
             },
             error: function(xhr) {
-                alert('Error: ' + (xhr.responseJSON?.message || 'Failed to add category'));
+                if (xhr.status === 422 && xhr.responseJSON?.errors?.name) {
+                    alert(xhr.responseJSON.errors.name[0]);
+                } else {
+                    alert('Error: ' + (xhr.responseJSON?.message || 'Failed to add category'));
+                }
+            },
+            complete: function() {
+                submitBtn.prop('disabled', false);
             }
         });
     });
@@ -2436,19 +2474,31 @@ $(document).ready(function () {
         const name = $('#subcategoryName').val().trim();
         if (!name) return;
 
+        const form = $(this);
+        const submitBtn = form.find('button[type="submit"]');
+        submitBtn.prop('disabled', true);
+
         $.ajax({
             type: 'POST',
             url: "{{ route('client-sub-categories.store') }}",
-            data: $(this).serialize(),
+            data: form.serialize(),
             success: function(data) {
                 $('#client_sub_category_id').append(
                     `<option value="${data.id}" selected>${data.name}</option>`
                 );
-                $('#addSubCategoryModal').modal('hide');
-                $('#addSubCategoryForm')[0].reset();
+                $('#client_sub_category_id').val(data.id).trigger('change');
+                closeModalSafely('addSubCategoryModal');
+                form[0].reset();
             },
             error: function(xhr) {
-                alert('Error: ' + (xhr.responseJSON?.message || 'Failed to add subcategory'));
+                if (xhr.status === 422 && xhr.responseJSON?.errors?.name) {
+                    alert(xhr.responseJSON.errors.name[0]);
+                } else {
+                    alert('Error: ' + (xhr.responseJSON?.message || 'Failed to add subcategory'));
+                }
+            },
+            complete: function() {
+                submitBtn.prop('disabled', false);
             }
         });
     });
@@ -2459,21 +2509,29 @@ $(document).ready(function () {
         const name = $('#projectCategoryName').val().trim();
         if (!name) return;
 
+        const form = $(this);
+        const submitBtn = form.find('button[type="submit"]');
+        submitBtn.prop('disabled', true);
+
         $.ajax({
             type: 'POST',
             url: "{{ route('project-categories.store') }}",
-            data: $(this).serialize(),
+            data: form.serialize(),
             success: function(data) {
                 if (data.id && data.category_name) {
                     $('#project_category_id').append(
                         `<option value="${data.id}" selected>${data.category_name}</option>`
                     );
+                    $('#project_category_id').val(data.id).trigger('change');
                 }
-                $('#addProjectCategoryModal').modal('hide');
-                $('#addProjectCategoryForm')[0].reset();
+                closeModalSafely('addProjectCategoryModal');
+                form[0].reset();
             },
             error: function(xhr) {
                 alert('Error: ' + (xhr.responseJSON?.message || 'Failed to add project category'));
+            },
+            complete: function() {
+                submitBtn.prop('disabled', false);
             }
         });
     });
