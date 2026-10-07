@@ -483,7 +483,7 @@
                                 <input class="form-check-input" type="checkbox" id="selectAll">
                             </div>
                         </th>
-                        <th width="140">Emp ID</th>
+                        <th width="170">Emp ID</th>
                         <th>Employee Name</th>
                         <th width="190">Company</th>
                         <th width="200">Email</th>
@@ -535,7 +535,7 @@
                                         <img src="{{ asset($employee->profile_image) }}" alt="Profile" class="profile-image">
                                     @else
                                         <div class="profile-placeholder">
-                                            <i class="fas fa-user"></i>
+                                            <span class="profile-initials">{{ strtoupper(substr($employee->name ?? 'E', 0, 2)) }}</span>
                                         </div>
                                     @endif
                                     <div class="employee-details">
@@ -595,7 +595,7 @@
                                 <div class="role-info">
                                     <span class="role-name" style="color: var(--emp-role-color, #1f2937) !important; -webkit-text-fill-color: var(--emp-role-color, #1f2937) !important;">{{ $employee->employeeDetail?->designation?->name ?? '-' }}</span>
                                     <span class="reports-to" style="color: var(--emp-reports-color, #64748b) !important; -webkit-text-fill-color: var(--emp-reports-color, #64748b) !important;">
-                                        <i class="fas fa-user-friends" style="color: #22D3EE !important; -webkit-text-fill-color: #22D3EE !important;"></i>
+                                        <i class="fas fa-users" style="color: #22D3EE !important; -webkit-text-fill-color: #22D3EE !important;"></i>
                                         {{ $employee->employeeDetail?->reportingTo?->name ?? 'N/A' }}
                                     </span>
                                 </div>
@@ -617,7 +617,7 @@
                             </td>
                             <td>
                                 <div class="dropdown">
-                                    <button class="btn btn-sm btn-icon" type="button" data-bs-toggle="dropdown">
+                                    <button class="btn-action-dots" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Actions">
                                         <i class="fas fa-ellipsis-v"></i>
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end">
@@ -4175,6 +4175,264 @@
     html.dark .employee-dashboard .page-dots {
         color: #94A3B8 !important;
         -webkit-text-fill-color: #94A3B8 !important;
+    }
+
+    /* ===== EMPLOYEE TABLE ACTION BUTTONS (THREE DOTS) & DROPDOWN MENU ===== */
+    .btn-icon {
+        width: 36px !important;
+        height: 36px !important;
+        padding: 0 !important;
+        border-radius: 10px !important;
+        background: #f1f5f9;
+        border: 1px solid #cbd5e1;
+        color: #475569;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        transition: all 0.2s ease !important;
+        cursor: pointer !important;
+    }
+    .btn-icon:hover {
+        background: #e2e8f0;
+        color: #1e293b;
+        border-color: #94a3b8;
+    }
+
+    html[data-pms-theme="dark"] .btn-icon,
+    html[data-bs-theme="dark"] .btn-icon,
+    html[data-theme="dark"] .btn-icon,
+    html.dark .btn-icon,
+    body[data-pms-theme="dark"] .btn-icon,
+    body[data-bs-theme="dark"] .btn-icon,
+    body.dark-mode .btn-icon,
+    .dark-mode .btn-icon,
+    .dark .btn-icon,
+    html[data-pms-theme="dark"] td .btn-icon,
+    html[data-bs-theme="dark"] td .btn-icon,
+    html[data-theme="dark"] td .btn-icon,
+    html.dark td .btn-icon,
+    .dark-mode td .btn-icon,
+    .dark td .btn-icon {
+        background: rgba(30, 41, 59, 0.85) !important;
+        border: 1px solid rgba(255, 255, 255, 0.18) !important;
+        color: #f1f5f9 !important;
+        -webkit-text-fill-color: #f1f5f9 !important;
+        border-radius: 10px !important;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    html[data-pms-theme="dark"] .btn-icon:hover,
+    html[data-bs-theme="dark"] .btn-icon:hover,
+    html[data-theme="dark"] .btn-icon:hover,
+    html.dark .btn-icon:hover,
+    body[data-pms-theme="dark"] .btn-icon:hover,
+    body[data-bs-theme="dark"] .btn-icon:hover,
+    body.dark-mode .btn-icon:hover,
+    .dark-mode .btn-icon:hover,
+    .dark .btn-icon:hover,
+    html[data-pms-theme="dark"] td .btn-icon:hover,
+    html[data-bs-theme="dark"] td .btn-icon:hover,
+    html[data-theme="dark"] td .btn-icon:hover,
+    html.dark td .btn-icon:hover,
+    .dark-mode td .btn-icon:hover,
+    .dark td .btn-icon:hover {
+        background: rgba(59, 130, 246, 0.25) !important;
+        border-color: rgba(96, 165, 250, 0.6) !important;
+        color: #60a5fa !important;
+        -webkit-text-fill-color: #60a5fa !important;
+        transform: translateY(-1px) !important;
+    }
+
+    html[data-pms-theme="dark"] .btn-icon i,
+    html[data-bs-theme="dark"] .btn-icon i,
+    html[data-theme="dark"] .btn-icon i,
+    html.dark .btn-icon i,
+    body[data-pms-theme="dark"] .btn-icon i,
+    body[data-bs-theme="dark"] .btn-icon i,
+    body.dark-mode .btn-icon i,
+    .dark-mode .btn-icon i,
+    .dark .btn-icon i,
+    html[data-pms-theme="dark"] td .btn-icon i,
+    html[data-bs-theme="dark"] td .btn-icon i,
+    html[data-theme="dark"] td .btn-icon i,
+    html.dark td .btn-icon i,
+    .dark-mode td .btn-icon i,
+    .dark td .btn-icon i {
+        color: #f1f5f9 !important;
+        -webkit-text-fill-color: #f1f5f9 !important;
+    }
+
+    html[data-pms-theme="dark"] .btn-icon:hover i,
+    html[data-bs-theme="dark"] .btn-icon:hover i,
+    html[data-theme="dark"] .btn-icon:hover i,
+    html.dark .btn-icon:hover i,
+    body[data-pms-theme="dark"] .btn-icon:hover i,
+    body[data-bs-theme="dark"] .btn-icon:hover i,
+    body.dark-mode .btn-icon:hover i,
+    .dark-mode .btn-icon:hover i,
+    .dark .btn-icon:hover i {
+        color: #60a5fa !important;
+        -webkit-text-fill-color: #60a5fa !important;
+    }
+
+    /* Dropdown menu dark mode overrides */
+    html[data-pms-theme="dark"] .employee-list-table .dropdown-menu,
+    html[data-bs-theme="dark"] .employee-list-table .dropdown-menu,
+    html[data-theme="dark"] .employee-list-table .dropdown-menu,
+    html.dark .employee-list-table .dropdown-menu,
+    body[data-pms-theme="dark"] .employee-list-table .dropdown-menu,
+    body[data-bs-theme="dark"] .employee-list-table .dropdown-menu,
+    body.dark-mode .employee-list-table .dropdown-menu,
+    .dark-mode .employee-list-table .dropdown-menu,
+    .dark .employee-list-table .dropdown-menu {
+        background: #0f172a !important;
+        border: 1px solid #334155 !important;
+        box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6) !important;
+        border-radius: 12px !important;
+        padding: 6px !important;
+    }
+
+    html[data-pms-theme="dark"] .employee-list-table .dropdown-item,
+    html[data-bs-theme="dark"] .employee-list-table .dropdown-item,
+    html[data-theme="dark"] .employee-list-table .dropdown-item,
+    html.dark .employee-list-table .dropdown-item,
+    body[data-pms-theme="dark"] .employee-list-table .dropdown-item,
+    body[data-bs-theme="dark"] .employee-list-table .dropdown-item,
+    body.dark-mode .employee-list-table .dropdown-item,
+    .dark-mode .employee-list-table .dropdown-item,
+    .dark .employee-list-table .dropdown-item {
+        color: #e2e8f0 !important;
+        -webkit-text-fill-color: #e2e8f0 !important;
+        border-radius: 8px !important;
+        padding: 8px 14px !important;
+        font-weight: 500 !important;
+        font-size: 0.875rem !important;
+    }
+
+    html[data-pms-theme="dark"] .employee-list-table .dropdown-item:hover,
+    html[data-bs-theme="dark"] .employee-list-table .dropdown-item:hover,
+    html[data-theme="dark"] .employee-list-table .dropdown-item:hover,
+    html.dark .employee-list-table .dropdown-item:hover,
+    body[data-pms-theme="dark"] .employee-list-table .dropdown-item:hover,
+    body[data-bs-theme="dark"] .employee-list-table .dropdown-item:hover,
+    body.dark-mode .employee-list-table .dropdown-item:hover,
+    .dark-mode .employee-list-table .dropdown-item:hover,
+    .dark .employee-list-table .dropdown-item:hover {
+        background: rgba(59, 130, 246, 0.18) !important;
+        color: #60a5fa !important;
+        -webkit-text-fill-color: #60a5fa !important;
+    }
+
+    /* Checkbox & Avatar styling */
+    html[data-pms-theme="dark"] .employee-list-table .form-check-input,
+    html[data-bs-theme="dark"] .employee-list-table .form-check-input,
+    html[data-theme="dark"] .employee-list-table .form-check-input,
+    html.dark .employee-list-table .form-check-input,
+    body[data-pms-theme="dark"] .employee-list-table .form-check-input,
+    body[data-bs-theme="dark"] .employee-list-table .form-check-input,
+    body.dark-mode .employee-list-table .form-check-input,
+    .dark-mode .employee-list-table .form-check-input,
+    .dark .employee-list-table .form-check-input {
+        background-color: #1e293b !important;
+        border: 1.5px solid #475569 !important;
+        border-radius: 6px !important;
+        width: 18px !important;
+        height: 18px !important;
+        cursor: pointer !important;
+    }
+
+    html[data-pms-theme="dark"] .employee-list-table .form-check-input:checked,
+    html[data-bs-theme="dark"] .employee-list-table .form-check-input:checked,
+    html[data-theme="dark"] .employee-list-table .form-check-input:checked,
+    html.dark .employee-list-table .form-check-input:checked,
+    body[data-pms-theme="dark"] .employee-list-table .form-check-input:checked,
+    body[data-bs-theme="dark"] .employee-list-table .form-check-input:checked,
+    body.dark-mode .employee-list-table .form-check-input:checked,
+    .dark-mode .employee-list-table .form-check-input:checked,
+    .dark .employee-list-table .form-check-input:checked {
+        background-color: #3b82f6 !important;
+        border-color: #60a5fa !important;
+    }
+
+    html[data-pms-theme="dark"] .profile-placeholder,
+    html[data-bs-theme="dark"] .profile-placeholder,
+    html[data-theme="dark"] .profile-placeholder,
+    html.dark .profile-placeholder,
+    body[data-pms-theme="dark"] .profile-placeholder,
+    body[data-bs-theme="dark"] .profile-placeholder,
+    body.dark-mode .profile-placeholder,
+    .dark-mode .profile-placeholder,
+    .dark .profile-placeholder {
+        background: linear-gradient(135deg, rgba(79, 131, 255, 0.25), rgba(47, 107, 255, 0.4)) !important;
+        border: 1px solid rgba(79, 131, 255, 0.4) !important;
+        color: #60a5fa !important;
+        -webkit-text-fill-color: #60a5fa !important;
+        border-radius: 12px !important;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3) !important;
+        font-weight: 700 !important;
+    }
+
+    .profile-initials {
+        font-weight: 700;
+        font-size: 0.95rem;
+        letter-spacing: 0.5px;
+    }
+
+    /* ===== EMP ID BADGE OVERFLOW FIX ===== */
+    .employee-id-badge,
+    .employee-dashboard .employee-list-table .employee-id-badge {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 6px 14px !important;
+        width: auto !important;
+        max-width: none !important;
+        min-width: fit-content !important;
+        white-space: nowrap !important;
+        box-sizing: border-box !important;
+        border-radius: 8px !important;
+        font-size: 0.82rem !important;
+        font-weight: 700 !important;
+    }
+
+    .employee-dashboard .employee-list-table thead th:nth-child(2),
+    .employee-dashboard .employee-list-table tbody td:nth-child(2) {
+        width: 170px !important;
+        min-width: 170px !important;
+    }
+
+    /* ===== ACTION DOTS BUTTON VISIBILITY ===== */
+    .btn-action-dots {
+        width: 36px !important;
+        height: 36px !important;
+        min-width: 36px !important;
+        min-height: 36px !important;
+        padding: 0 !important;
+        border-radius: 10px !important;
+        background: #1e293b !important;
+        border: 1px solid rgba(255, 255, 255, 0.22) !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35) !important;
+    }
+    .btn-action-dots:hover {
+        background: #2563eb !important;
+        border-color: #60a5fa !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        transform: translateY(-1px) !important;
+    }
+    .btn-action-dots i {
+        font-size: 1.05rem !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        display: inline-block !important;
+        line-height: 1 !important;
     }
 </style>
 

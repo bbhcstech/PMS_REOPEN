@@ -1486,7 +1486,7 @@
 
                         <div class="col-md-4">
                             <label class="form-label-premium">
-                                <span><i class="fas fa-user-friends"></i> Reporting To</span>
+                                <span><i class="fas fa-users"></i> Reporting To</span>
                                 <span class="mandatory-badge">Required</span>
                             </label>
                             @php $selectedReporting = old('reporting_to') ?? ($ed->reporting_to ?? ''); @endphp

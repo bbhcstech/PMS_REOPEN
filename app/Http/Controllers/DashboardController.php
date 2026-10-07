@@ -913,7 +913,6 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
         'date'     => $today,
         'clock_in' => $clockInTime,
         'status'   => 'present',
-        'location' => $currentLocationLabel,
         'latitude' => $lat,
         'longitude' => $lng,
         'clock_in_latitude' => $lat,

@@ -17,7 +17,6 @@ class Attendance extends TenantModel
         'company_id',
         'department_id',
         'location_id',
-        'location',
         'latitude',
         'longitude',
         'clock_in_latitude',
@@ -109,6 +108,11 @@ class Attendance extends TenantModel
         try { return Carbon::parse($val); } catch (\Throwable $e) {}
 
         return null;
+    }
+
+    public function getLocationAttribute()
+    {
+        return $this->attributes['location'] ?? $this->attributes['working_from'] ?? $this->attributes['clock_in_address'] ?? null;
     }
 
     // combine date + clock_in into a Carbon (or null)
