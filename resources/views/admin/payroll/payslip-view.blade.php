@@ -3,6 +3,29 @@
 @section('title', 'Payslip Document — Admin Workspace')
 
 @section('content')
+@php
+    $payslip = $payslip ?? null;
+    $historyObj = $history ?? ($payslip?->payrollHistory ?? (($payslip?->payroll_id && $payslip?->user_id) ? \App\Models\PayrollHistory::where('payroll_id', $payslip->payroll_id)->where('user_id', $payslip->user_id)->first() : null));
+    $u = $user ?? ($payslip?->user ?? ($historyObj?->user ?? null));
+    $emp = $u?->employeeDetail ?? $u?->employeeDetails ?? null;
+    $payroll = $payslip?->payroll ?? ($historyObj?->payroll ?? null);
+    
+    $monthNum = (int)($payroll?->metadata['month'] ?? ($historyObj?->month ?? ($payroll?->month ?? (int)date('n', strtotime($payroll?->period_start ?? 'now')))));
+    $yearNum = (int)($payroll?->metadata['year'] ?? ($historyObj?->year ?? ($payroll?->year ?? (int)date('Y', strtotime($payroll?->period_start ?? 'now')))));
+    $monthName = date('F', mktime(0, 0, 0, $monthNum, 1));
+    $pStatus = strtolower($payroll?->status ?? 'approved');
+
+    // Snapshot breakdown
+    $snap = $snap ?? ($payslip?->employee_snapshot ?? ($historyObj?->snapshot ?? []));
+    $b = is_array($snap) ? $snap : (is_string($snap) ? json_decode($snap, true) : []);
+
+    $companyName = $company?->name ?? config('app.name', 'PMS Company');
+    $companyAddress = $company?->address ?? 'Corporate Headquarters';
+    $branchName = $emp?->branch?->name ?? 'HQ';
+    $activeId = $payslip?->id ?? ($historyObj?->id ?? 1);
+    $payslipNum = $payslip?->payslip_number ?? ('PAY-' . $yearNum . '-' . str_pad($monthNum, 2, '0', STR_PAD_LEFT) . '-' . str_pad($activeId, 3, '0', STR_PAD_LEFT));
+@endphp
+
 <div class="content-wrapper">
     <div class="container-xxl flex-grow-1 container-p-y">
         @include('admin.payroll.partials.styles')
@@ -16,35 +39,14 @@
                 <a href="{{ route('payroll.payslips.index') }}" class="btn btn-outline-secondary btn-sm">
                     ← Back to Payslips
                 </a>
-                <a href="{{ route('payroll.payslip.print', $history->id) }}" target="_blank" class="btn btn-outline-dark btn-sm">
+                <a href="{{ route('payroll.payslips.print', $activeId) }}" target="_blank" class="btn btn-outline-dark btn-sm">
                     🖨 Print
                 </a>
-                <a href="{{ route('payroll.payslip.pdf', $history->id) }}" class="btn btn-primary btn-sm">
+                <a href="{{ route('payroll.payslips.pdf', $activeId) }}" class="btn btn-primary btn-sm">
                     📥 Download PDF
                 </a>
             </div>
         </div>
-
-        @php
-            $historyObj = $history ?? ($payslip->payrollHistory ?? \App\Models\PayrollHistory::where('payroll_id', $payslip->payroll_id ?? 0)->where('user_id', $payslip->user_id ?? 0)->first());
-            $u = $user ?? ($payslip->user ?? ($historyObj->user ?? null));
-            $emp = $u?->employeeDetail ?? $u?->employeeDetails ?? null;
-            $payroll = $payslip->payroll ?? ($historyObj->payroll ?? null);
-            
-            $monthNum = (int)($payroll->metadata['month'] ?? ($historyObj->month ?? ($payroll->month ?? (int)date('n', strtotime($payroll->period_start ?? 'now')))));
-            $yearNum = (int)($payroll->metadata['year'] ?? ($historyObj->year ?? ($payroll->year ?? (int)date('Y', strtotime($payroll->period_start ?? 'now')))));
-            $monthName = date('F', mktime(0, 0, 0, $monthNum, 1));
-            $pStatus = strtolower($payroll->status ?? 'approved');
-
-            // Snapshot breakdown
-            $snap = $snap ?? ($payslip->employee_snapshot ?? ($historyObj->snapshot ?? []));
-            $b = is_array($snap) ? $snap : (is_string($snap) ? json_decode($snap, true) : []);
-
-            $companyName = $company->name ?? config('app.name', 'PMS Company');
-            $companyAddress = $company->address ?? 'Corporate Headquarters';
-            $branchName = $emp?->branch?->name ?? 'HQ';
-            $activeId = $payslip->id ?? ($historyObj->id ?? 1);
-        @endphp
 
         <div class="payslip shadow-sm my-3">
             <div class="payslip-head">
@@ -60,19 +62,19 @@
             <div class="grid2">
                 <div>
                     <h4 style="font-size:11.5px;color:var(--muted);text-transform:uppercase;margin-bottom:8px">Employee Details</h4>
-                    <div class="info-row"><span class="k">Name</span><span class="v">{{ $u->name ?? 'N/A' }}</span></div>
-                    <div class="info-row"><span class="k">Employee ID</span><span class="v">{{ $emp->employee_id ?? 'EMP'.$u->id }}</span></div>
-                    <div class="info-row"><span class="k">Designation</span><span class="v">{{ $emp->designation->name ?? '—' }}</span></div>
-                    <div class="info-row"><span class="k">Department</span><span class="v">{{ $emp->department->name ?? '—' }}</span></div>
+                    <div class="info-row"><span class="k">Name</span><span class="v">{{ $u?->name ?? 'N/A' }}</span></div>
+                    <div class="info-row"><span class="k">Employee ID</span><span class="v">{{ $emp?->employee_id ?? ('EMP' . ($u?->id ?? '')) }}</span></div>
+                    <div class="info-row"><span class="k">Designation</span><span class="v">{{ $emp?->designation?->name ?? '—' }}</span></div>
+                    <div class="info-row"><span class="k">Department</span><span class="v">{{ $emp?->department?->name ?? '—' }}</span></div>
                     <div class="info-row"><span class="k">Branch</span><span class="v">{{ $branchName }}</span></div>
-                    <div class="info-row"><span class="k">Grade</span><span class="v">{{ $emp->grade ?? ($b['grade'] ?? '—') }}</span></div>
-                    <div class="info-row"><span class="k">Joining Date</span><span class="v">{{ $emp->joining_date ? date('d M Y', strtotime($emp->joining_date)) : '—' }}</span></div>
+                    <div class="info-row"><span class="k">Grade</span><span class="v">{{ $emp?->grade ?? ($b['grade'] ?? '—') }}</span></div>
+                    <div class="info-row"><span class="k">Joining Date</span><span class="v">{{ $emp?->joining_date ? date('d M Y', strtotime($emp->joining_date)) : '—' }}</span></div>
                 </div>
                 <div>
                     <h4 style="font-size:11.5px;color:var(--muted);text-transform:uppercase;margin-bottom:8px">Payroll Details</h4>
                     <div class="info-row"><span class="k">Payroll Month</span><span class="v">{{ $monthName }} {{ $yearNum }}</span></div>
-                    <div class="info-row"><span class="k">Pay Date</span><span class="v">{{ $history->payroll->finalized_at ? date('d M Y', strtotime($history->payroll->finalized_at)) : date('t M Y', mktime(0, 0, 0, $monthNum, 1, $yearNum)) }}</span></div>
-                    <div class="info-row"><span class="k">Payroll ID</span><span class="v">PAY-{{ $yearNum }}-{{ str_pad($monthNum, 2, '0', STR_PAD_LEFT) }}-{{ str_pad($history->id, 3, '0', STR_PAD_LEFT) }}</span></div>
+                    <div class="info-row"><span class="k">Pay Date</span><span class="v">{{ ($payroll && $payroll->finalized_at) ? date('d M Y', strtotime($payroll->finalized_at)) : date('t M Y', mktime(0, 0, 0, $monthNum, 1, $yearNum)) }}</span></div>
+                    <div class="info-row"><span class="k">Payroll ID</span><span class="v">{{ $payslipNum }}</span></div>
                     <div class="info-row"><span class="k">Status</span><span class="v">
                         @if($pStatus == 'finalized')
                             <span class="pill finalized">🔒 Finalized</span>

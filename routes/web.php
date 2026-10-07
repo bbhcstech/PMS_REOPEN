@@ -1278,6 +1278,9 @@ Route::middleware(['auth'])->prefix('payroll')->name('payroll.')->group(function
     Route::get('/payslips/{payslip}/print', [PayrollController::class, 'printPayslip'])->name('payslips.print');
     Route::get('/payslips/{payslip}/pdf', [PayrollController::class, 'downloadPdf'])->name('payslips.pdf');
     Route::post('/payslips/{payslip}/send', [PayrollController::class, 'sendPayslipSingle'])->name('payslips.send');
+    Route::get('/payslip/{payslip}', [PayrollController::class, 'viewPayslip'])->name('payslip.view');
+    Route::get('/payslip/{payslip}/print', [PayrollController::class, 'printPayslip'])->name('payslip.print');
+    Route::get('/payslip/{payslip}/pdf', [PayrollController::class, 'downloadPdf'])->name('payslip.pdf');
 
     // 7. Formulas & Calculation Rules
     Route::get('/formulas', [PayrollController::class, 'formulas'])->name('formulas.index');

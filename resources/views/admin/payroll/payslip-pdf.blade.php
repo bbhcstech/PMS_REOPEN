@@ -1,8 +1,28 @@
+@php
+    $payslip = $payslip ?? ($samplePayslip ?? null);
+    $historyObj = $history ?? ($payslip?->payrollHistory ?? (($payslip?->payroll_id && $payslip?->user_id) ? \App\Models\PayrollHistory::where('payroll_id', $payslip->payroll_id)->where('user_id', $payslip->user_id)->first() : null));
+    $u = $user ?? ($payslip?->user ?? ($historyObj?->user ?? null));
+    $emp = $u?->employeeDetail ?? $u?->employeeDetails ?? null;
+    $payroll = $payslip?->payroll ?? ($historyObj?->payroll ?? null);
+
+    $monthNum = (int)($payroll?->metadata['month'] ?? ($historyObj?->month ?? ($payroll?->month ?? (int)date('n', strtotime($payroll?->period_start ?? 'now')))));
+    $yearNum = (int)($payroll?->metadata['year'] ?? ($historyObj?->year ?? ($payroll?->year ?? (int)date('Y', strtotime($payroll?->period_start ?? 'now')))));
+    $monthName = date('F', mktime(0, 0, 0, $monthNum, 1));
+    $pStatus = strtolower($payroll?->status ?? 'approved');
+
+    $snap = $snap ?? ($payslip?->employee_snapshot ?? ($historyObj?->snapshot ?? []));
+    $b = is_array($snap) ? $snap : (is_string($snap) ? json_decode($snap, true) : []);
+
+    $companyName = $company?->name ?? config('app.name', 'PMS Company');
+    $companyAddress = $company?->address ?? 'Corporate Headquarters';
+    $branchName = $emp?->branch?->name ?? 'HQ';
+    $payslipNumber = $payslip?->payslip_number ?? ('PAY-' . $yearNum . '-' . str_pad($monthNum, 2, '0', STR_PAD_LEFT) . '-' . str_pad($historyObj?->id ?? 1, 3, '0', STR_PAD_LEFT));
+@endphp
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Payslip - {{ $history->user->name ?? 'Employee' }} - {{ date('F Y', mktime(0, 0, 0, $history->month ?? 1, 1, $history->year ?? date('Y'))) }}</title>
+    <title>Payslip - {{ $u?->name ?? 'Employee' }} - {{ $monthName }} {{ $yearNum }}</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -157,27 +177,6 @@
     </style>
 </head>
 <body>
-
-@php
-    $payslip = $payslip ?? ($samplePayslip ?? null);
-    $historyObj = $history ?? ($payslip?->payrollHistory ?? \App\Models\PayrollHistory::where('payroll_id', $payslip?->payroll_id ?? 0)->where('user_id', $payslip?->user_id ?? 0)->first());
-    $u = $user ?? ($payslip?->user ?? ($historyObj?->user ?? null));
-    $emp = $u?->employeeDetail ?? $u?->employeeDetails ?? null;
-    $payroll = $payslip?->payroll ?? ($historyObj?->payroll ?? null);
-
-    $monthNum = (int)($payroll?->metadata['month'] ?? ($historyObj?->month ?? ($payroll?->month ?? (int)date('n', strtotime($payroll?->period_start ?? 'now')))));
-    $yearNum = (int)($payroll?->metadata['year'] ?? ($historyObj?->year ?? ($payroll?->year ?? (int)date('Y', strtotime($payroll?->period_start ?? 'now')))));
-    $monthName = date('F', mktime(0, 0, 0, $monthNum, 1));
-    $pStatus = strtolower($payroll?->status ?? 'approved');
-
-    $snap = $snap ?? ($payslip?->employee_snapshot ?? ($historyObj?->snapshot ?? []));
-    $b = is_array($snap) ? $snap : (is_string($snap) ? json_decode($snap, true) : []);
-
-    $companyName = $company?->name ?? config('app.name', 'PMS Company');
-    $companyAddress = $company->address ?? 'Corporate Headquarters';
-    $branchName = $emp?->branch?->name ?? 'HQ';
-    $payslipNumber = $payslip->payslip_number ?? ('PAY-' . $yearNum . '-' . str_pad($monthNum, 2, '0', STR_PAD_LEFT) . '-' . str_pad($historyObj->id ?? 1, 3, '0', STR_PAD_LEFT));
-@endphp
 
 <div class="payslip-wrap">
     <div class="header">

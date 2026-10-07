@@ -1120,36 +1120,39 @@ class PayrollController extends Controller
     {
         $this->authorizePayroll('payslips');
         $payslip = $this->resolvePayslipModel($payslip);
-        $payslip->load(['user.employeeDetail.designation', 'user.employeeDetail.department', 'payroll']);
+        $payslip->load(['user.employeeDetail.designation', 'user.employeeDetail.department', 'payroll', 'payrollHistory']);
 
         $company = Company::find($payslip->company_id ?: auth()->user()?->company_id) ?: \App\Models\CompanySetting::first();
         $snap = $payslip->employee_snapshot;
+        $history = $payslip->payrollHistory ?: PayrollHistory::where('payroll_id', $payslip->payroll_id)->where('user_id', $payslip->user_id)->first();
 
-        return view('admin.payroll.payslip-view', compact('payslip', 'company', 'snap'));
+        return view('admin.payroll.payslip-view', compact('payslip', 'company', 'snap', 'history'));
     }
 
     public function printPayslip($payslip)
     {
         $this->authorizePayroll('payslips');
         $payslip = $this->resolvePayslipModel($payslip);
-        $payslip->load(['user.employeeDetail.designation', 'user.employeeDetail.department', 'payroll']);
+        $payslip->load(['user.employeeDetail.designation', 'user.employeeDetail.department', 'payroll', 'payrollHistory']);
 
         $company = Company::find($payslip->company_id ?: auth()->user()?->company_id) ?: \App\Models\CompanySetting::first();
         $snap = $payslip->employee_snapshot;
+        $history = $payslip->payrollHistory ?: PayrollHistory::where('payroll_id', $payslip->payroll_id)->where('user_id', $payslip->user_id)->first();
 
-        return view('admin.payroll.payslip-print', compact('payslip', 'company', 'snap'));
+        return view('admin.payroll.payslip-print', compact('payslip', 'company', 'snap', 'history'));
     }
 
     public function downloadPdf($payslip)
     {
         $this->authorizePayroll('payslips');
         $payslip = $this->resolvePayslipModel($payslip);
-        $payslip->load(['user.employeeDetail.designation', 'user.employeeDetail.department', 'payroll']);
+        $payslip->load(['user.employeeDetail.designation', 'user.employeeDetail.department', 'payroll', 'payrollHistory']);
 
         $company = Company::find($payslip->company_id ?: auth()->user()?->company_id) ?: \App\Models\CompanySetting::first();
         $snap = $payslip->employee_snapshot;
+        $history = $payslip->payrollHistory ?: PayrollHistory::where('payroll_id', $payslip->payroll_id)->where('user_id', $payslip->user_id)->first();
 
-        $pdf = Pdf::loadView('admin.payroll.payslip-pdf', compact('payslip', 'company', 'snap'));
+        $pdf = Pdf::loadView('admin.payroll.payslip-pdf', compact('payslip', 'company', 'snap', 'history'));
         return $pdf->download('Payslip_' . $payslip->payslip_number . '.pdf');
     }
 
