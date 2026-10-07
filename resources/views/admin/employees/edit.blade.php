@@ -1078,6 +1078,10 @@
         <div class="orb orb-2"></div>
     </div>
 
+    @php
+        $returnUrl = request('return_url') ?: old('return_url', route('employees.index'));
+    @endphp
+
     <div class="container-fluid">
         <div class="page-header-enterprise fade-up-stagger">
             <div class="header-title">
@@ -1085,7 +1089,7 @@
                 <p style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; font-weight: 800 !important;">Update employee information and configuration settings</p>
             </div>
             <div>
-                <a href="{{ route('employees.index') }}" class="btn-header-enterprise">
+                <a href="{{ $returnUrl }}" class="btn-header-enterprise">
                     <i class="fas fa-arrow-left"></i>
                     BACK TO DIRECTORY
                 </a>
@@ -1130,6 +1134,8 @@
                 <form id="employeeForm" action="{{ route('employees.update', $employee->id) }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
+
+                    <input type="hidden" name="return_url" value="{{ $returnUrl }}">
 
                     <!-- Hidden fields for new designation/department -->
                     <input type="hidden" name="new_designation" id="new_designation" value="">
@@ -1512,7 +1518,7 @@
                                 <span><i class="fas fa-code"></i> Skills</span>
                                 <span class="optional-badge">Optional</span>
                             </label>
-                            <textarea name="skills" class="form-control-premium" rows="2" placeholder="Comma separated skills (e.g., Laravel, Vue.js, React)">{{ old('skills') ?? ($ed->skills ?? $employee->skills ?? '') }}</textarea>
+                            <textarea name="skills" class="form-control-premium" rows="2" placeholder="Comma separated skills (e.g., Laravel, Vue.js, React)">{{ old('skills') ?? (!empty($ed?->clean_skills_array) ? implode(', ', $ed->clean_skills_array) : '') }}</textarea>
                         </div>
 
                         <div class="col-12">
@@ -1642,7 +1648,7 @@
                     </div>
 
                     <div class="action-buttons">
-                        <a href="{{ route('employees.index') }}" class="btn-cancel">
+                        <a href="{{ $returnUrl }}" class="btn-cancel">
                             <i class="fas fa-times"></i> Discard
                         </a>
                         <button type="submit" class="btn-submit" id="submitBtn">

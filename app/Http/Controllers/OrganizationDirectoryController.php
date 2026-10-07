@@ -217,7 +217,16 @@ class OrganizationDirectoryController extends Controller
 
         $data = $request->validate([
             'directory_about' => ['nullable', 'string', 'max:3000'],
-            'skills' => ['nullable', 'string', 'max:1500'],
+            'skills' => [
+                'nullable',
+                'string',
+                'max:1500',
+                function ($attribute, $value, $fail) {
+                    if ($value && preg_match('/(SQLSTATE|Column not found|Unknown column|INSERT INTO|SELECT |syntax error)/i', $value)) {
+                        $fail('Skills cannot contain database error messages or raw query strings.');
+                    }
+                },
+            ],
             'linkedin_url' => ['nullable', 'url', 'max:255'],
             'portfolio_url' => ['nullable', 'url', 'max:255'],
             'facebook_url' => ['nullable', 'url', 'max:255'],
@@ -227,6 +236,14 @@ class OrganizationDirectoryController extends Controller
         ]);
 
         unset($data['cv_file']);
+
+        if (array_key_exists('skills', $data)) {
+            if ($data['skills'] !== null) {
+                $cleanedSkills = array_filter(array_map('trim', explode(',', str_replace(['·', '|'], ',', $data['skills']))));
+                $cleanedSkills = array_filter($cleanedSkills, fn($s) => strlen($s) > 0 && strlen($s) <= 60 && !preg_match('/(SQLSTATE|Column not found|INSERT INTO|SELECT |`)/i', $s));
+                $data['skills'] = !empty($cleanedSkills) ? implode(', ', $cleanedSkills) : null;
+            }
+        }
 
         $cvPath = $this->storeEmployeeCv($request, $employee->employeeDetail->cv_path);
         if ($cvPath) {

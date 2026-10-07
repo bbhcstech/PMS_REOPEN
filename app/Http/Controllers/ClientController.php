@@ -132,7 +132,7 @@ class ClientController extends Controller
         $fyString = substr($fyStart, -2) . '-' . substr($fyEnd, -2);
         $prefix   = 'bit' . $fyString . '/';
 
-        $last = DB::table('projects')
+        $last = (new Project)->getConnection()->table('projects')
             ->where('project_code', 'like', $prefix.'%')
             ->orderBy('id', 'desc')
             ->value('project_code');

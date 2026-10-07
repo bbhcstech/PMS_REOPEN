@@ -908,20 +908,32 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
 
     $currentLocationLabel = mb_substr($currentLocationLabel, 0, 255);
 
-    $attendance = Attendance::create([
-        'user_id'  => $userId,
-        'date'     => $today,
-        'clock_in' => $clockInTime,
-        'status'   => 'present',
-        'location' => $currentLocationLabel,
-        'latitude' => $lat,
-        'longitude' => $lng,
-        'clock_in_latitude' => $lat,
+    $attendanceData = [
+        'user_id'            => $userId,
+        'date'               => $today,
+        'clock_in'           => $clockInTime,
+        'status'             => 'present',
+        'clock_in_latitude'  => $lat,
         'clock_in_longitude' => $lng,
-        'clock_in_address' => $currentLocationLabel,
-        'clock_in_photo' => $photoPath,
-        'work_from_type' => $distance <= self::OFFICE_RADIUS_METERS ? 'office' : 'field',
-    ]);
+        'clock_in_address'   => $currentLocationLabel,
+        'clock_in_photo'     => $photoPath,
+        'work_from_type'     => $distance <= self::OFFICE_RADIUS_METERS ? 'office' : 'field',
+    ];
+
+    if (Schema::hasColumn('attendances', 'location')) {
+        $attendanceData['location'] = $currentLocationLabel;
+    }
+    if (Schema::hasColumn('attendances', 'latitude')) {
+        $attendanceData['latitude'] = $lat;
+    }
+    if (Schema::hasColumn('attendances', 'longitude')) {
+        $attendanceData['longitude'] = $lng;
+    }
+    if (Schema::hasColumn('attendances', 'company_id')) {
+        $attendanceData['company_id'] = auth()->user()?->company_id;
+    }
+
+    $attendance = Attendance::create($attendanceData);
     $this->applyOrganizationAttendanceRules($attendance);
 
     return back()->with('success', 'Clocked in at ' . $now->format('h:i A') . '. Current location saved.');

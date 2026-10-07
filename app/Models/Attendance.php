@@ -63,6 +63,21 @@ class Attendance extends TenantModel
         'clock_out_datetime'
     ];
 
+    public function getLocationAttribute($value)
+    {
+        return $value ?: ($this->attributes['clock_in_address'] ?? null);
+    }
+
+    public function getLatitudeAttribute($value)
+    {
+        return $value !== null ? (float) $value : (isset($this->attributes['clock_in_latitude']) ? (float) $this->attributes['clock_in_latitude'] : null);
+    }
+
+    public function getLongitudeAttribute($value)
+    {
+        return $value !== null ? (float) $value : (isset($this->attributes['clock_in_longitude']) ? (float) $this->attributes['clock_in_longitude'] : null);
+    }
+
     // fully-qualified relation to avoid namespace issues
     public function user()
     {

@@ -2352,4 +2352,41 @@
         color: #60A5FA !important;
         -webkit-text-fill-color: #60A5FA !important;
     }
+
+    .org-skill-badge {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        padding: 6px 14px !important;
+        background: #ECFDF5 !important;
+        color: #047857 !important;
+        border: 1px solid #A7F3D0 !important;
+        border-radius: 9999px !important;
+        font-size: 0.78rem !important;
+        font-weight: 600 !important;
+        line-height: 1.4 !important;
+        white-space: normal !important;
+        text-transform: none !important;
+        box-shadow: 0 1px 2px rgba(16, 185, 129, 0.06) !important;
+        transition: all 0.2s ease !important;
+    }
+    .org-skill-badge:hover {
+        background: #D1FAE5 !important;
+        border-color: #6EE7B7 !important;
+        transform: translateY(-1px) !important;
+    }
+
+    html[data-pms-theme="dark"] .org-skill-badge,
+    html[data-bs-theme="dark"] .org-skill-badge,
+    html[data-theme="dark"] .org-skill-badge {
+        background: rgba(16, 185, 129, 0.15) !important;
+        border-color: rgba(52, 211, 153, 0.3) !important;
+        color: #34D399 !important;
+        -webkit-text-fill-color: #34D399 !important;
+    }
+    html[data-pms-theme="dark"] .org-skill-badge:hover,
+    html[data-bs-theme="dark"] .org-skill-badge:hover,
+    html[data-theme="dark"] .org-skill-badge:hover {
+        background: rgba(16, 185, 129, 0.25) !important;
+    }
 </style>

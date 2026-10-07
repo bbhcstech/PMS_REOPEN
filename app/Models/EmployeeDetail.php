@@ -93,4 +93,35 @@ class EmployeeDetail extends TenantModel
 
         return 'permanent';
     }
+
+    /**
+     * Get clean array of employee skills, safely ignoring any accidental SQL error traces or invalid logs.
+     *
+     * @return array
+     */
+    public function getCleanSkillsArrayAttribute(): array
+    {
+        $raw = (string) ($this->skills ?? '');
+        if (trim($raw) === '') {
+            return [];
+        }
+
+        // If content is an SQL exception dump, error string, or stack trace, ignore it completely
+        if (preg_match('/(SQLSTATE|Column not found|Unknown column|INSERT INTO|SELECT |syntax error|SQL:|\bFROM\b|\bWHERE\b)/i', $raw)) {
+            return [];
+        }
+
+        $items = array_filter(array_map('trim', explode(',', str_replace(['·', '|'], ',', $raw))));
+
+        return array_values(array_filter($items, function ($item) {
+            return strlen($item) > 0
+                && strlen($item) <= 60
+                && !preg_match('/(SQLSTATE|SELECT |INSERT |UPDATE |DELETE |FROM |WHERE |`|\(|\))/i', $item);
+        }));
+    }
+
+    public function getSkillsArrayAttribute(): array
+    {
+        return $this->clean_skills_array;
+    }
 }

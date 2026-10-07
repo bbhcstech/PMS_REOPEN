@@ -517,6 +517,12 @@ class EmployeeController extends Controller
                 'employment_type', 'marital_status', 'business_address', 'status', 'exit_date'
             ]);
 
+            if (isset($employeeData['skills'])) {
+                $rawSkills = array_filter(array_map('trim', explode(',', str_replace(['·', '|'], ',', (string) $employeeData['skills']))));
+                $safeSkills = array_filter($rawSkills, fn($s) => strlen($s) > 0 && strlen($s) <= 60 && !preg_match('/(SQLSTATE|Column not found|INSERT INTO|SELECT |`)/i', $s));
+                $employeeData['skills'] = !empty($safeSkills) ? implode(', ', $safeSkills) : null;
+            }
+
             // Add mobile without prefix for employee detail
             $employeeData['mobile'] = $request->mobile;
             $employeeData['user_id'] = $user->id;
@@ -693,6 +699,14 @@ class EmployeeController extends Controller
                 );
             } catch (\Throwable $notifEx) {
                 Log::warning('Employee creation notification failed', ['error' => $notifEx->getMessage()]);
+            }
+
+            if ($request->filled('return_url')) {
+                $returnUrl = $request->input('return_url');
+                if (\Illuminate\Support\Str::startsWith($returnUrl, [url('/'), '/'])) {
+                    return redirect($returnUrl)
+                        ->with('success', 'Employee added successfully and notified.');
+                }
             }
 
             return redirect()->route('employees.index')
@@ -987,6 +1001,12 @@ class EmployeeController extends Controller
                 'employment_type', 'marital_status', 'business_address', 'status', 'exit_date'
             ]);
 
+            if (isset($data['skills'])) {
+                $rawSkills = array_filter(array_map('trim', explode(',', str_replace(['·', '|'], ',', (string) $data['skills']))));
+                $safeSkills = array_filter($rawSkills, fn($s) => strlen($s) > 0 && strlen($s) <= 60 && !preg_match('/(SQLSTATE|Column not found|INSERT INTO|SELECT |`)/i', $s));
+                $data['skills'] = !empty($safeSkills) ? implode(', ', $safeSkills) : null;
+            }
+
             // Add mobile without prefix for employee detail
             $data['mobile'] = $request->mobile;
             if (Schema::hasColumn('employee_details', 'company_id')) {
@@ -1092,6 +1112,14 @@ class EmployeeController extends Controller
                 route('employees.show', $user->id),
                 ['employee_id' => $user->id, 'type' => 'employee_updated', 'icon' => 'fa-user-pen']
             );
+
+            if ($request->filled('return_url')) {
+                $returnUrl = $request->input('return_url');
+                if (\Illuminate\Support\Str::startsWith($returnUrl, [url('/'), '/'])) {
+                    return redirect($returnUrl)
+                        ->with('success', 'Employee updated successfully.');
+                }
+            }
 
             return redirect()->route('employees.index')
                 ->with('success', 'Employee updated successfully.');

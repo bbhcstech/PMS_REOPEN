@@ -794,10 +794,11 @@
         border-color: rgba(248, 113, 113, 0.25) !important;
     }
 </style>
+@include('admin.events.dark-theme')
 @endpush
 
 @section('content')
-<div class="container-xxl flex-grow-1 container-p-y">
+<div class="container-xxl flex-grow-1 container-p-y events-section">
 
     {{-- HEADER BLOCK --}}
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
@@ -1225,7 +1226,7 @@
 {{-- ========================================================================= --}}
 {{-- CREATE / EDIT EVENT MODAL (PREMIUM DESIGN) --}}
 {{-- ========================================================================= --}}
-<div class="modal fade" id="eventModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade events-section" id="eventModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content border-0" style="border-radius: 20px; overflow: hidden; box-shadow: 0 15px 50px rgba(0,0,0,0.18);">
             <div class="modal-header py-3.5 px-4 text-white" style="background: linear-gradient(135deg, #4F83FF 0%, #2F6BFF 100%);">
@@ -1374,7 +1375,7 @@
 {{-- ========================================================================= --}}
 {{-- EVENT DETAILS & EVENT MEMORIES MODAL --}}
 {{-- ========================================================================= --}}
-<div class="modal fade" id="eventDetailsModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade events-section" id="eventDetailsModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content border-0" style="border-radius: 18px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.15);">
             <div class="modal-header bg-light py-3 border-bottom">
@@ -1399,7 +1400,7 @@
 {{-- ========================================================================= --}}
 {{-- MULTI-PHOTO UPLOADER MODAL (FACEBOOK-LIKE DRAG & DROP) --}}
 {{-- ========================================================================= --}}
-<div class="modal fade" id="photoUploadModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade events-section" id="photoUploadModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content border-0" style="border-radius: 20px; overflow: hidden; box-shadow: 0 15px 50px rgba(0,0,0,0.2);">
             <div class="modal-header text-white" style="background: linear-gradient(135deg, #4F83FF 0%, #2F6BFF 100%);">
@@ -1470,7 +1471,7 @@
 {{-- ========================================================================= --}}
 {{-- FULLSCREEN PHOTO LIGHTBOX MODAL --}}
 {{-- ========================================================================= --}}
-<div class="modal fade" id="photoLightboxModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade events-section" id="photoLightboxModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content lightbox-modal-content">
             <div class="modal-header border-bottom py-3 px-4 bg-light">
@@ -1498,7 +1499,7 @@
                 </div>
 
                 {{-- Photo Meta & Caption --}}
-                <div class="mt-3 px-3 py-2.5 rounded-3" style="background: #f8fafc; border: 1px solid #e2e8f0;">
+                <div class="lightbox-photo-meta mt-3 px-3 py-2.5 rounded-3" style="background: #f8fafc; border: 1px solid #e2e8f0;">
                     <p class="text-dark fw-bold small mb-1.5 fs-6" id="lightboxCaption"></p>
                     <div class="d-flex align-items-center justify-content-between text-muted small">
                         <span id="lightboxUploader" class="fw-semibold text-dark"><i class="bx bx-user text-primary me-1"></i> Uploaded by Admin</span>

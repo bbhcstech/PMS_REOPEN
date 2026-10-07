@@ -15,6 +15,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class LeaveService
 {
@@ -468,26 +469,42 @@ class LeaveService
             : (((float) ($leave->paid_days ?? 0)) <= 0 ? 'unpaid_leave' : 'leave');
 
         foreach (CarbonPeriod::create($startDate, $endDate) as $date) {
+            $payload = [
+                'status' => $attendanceStatus,
+            ];
+            if (Schema::hasColumn('attendances', 'company_id')) {
+                $payload['company_id'] = $employee->company_id;
+            }
+            if (Schema::hasColumn('attendances', 'location')) {
+                $payload['location'] = $leave->is_unpaid ? 'Unpaid Leave' : 'Leave';
+            }
+            if (Schema::hasColumn('attendances', 'working_from')) {
+                $payload['working_from'] = $leave->is_unpaid ? 'Unpaid Leave' : 'Leave';
+            }
+
             try {
                 Attendance::updateOrCreate(
                     ['user_id' => $employee->id, 'date' => $date->toDateString()],
-                    [
-                        'company_id' => $employee->company_id,
-                        'status' => $attendanceStatus,
-                        'location' => $leave->is_unpaid ? 'Unpaid Leave' : 'Leave',
-                        'working_from' => $leave->is_unpaid ? 'Unpaid Leave' : 'Leave',
-                    ]
+                    $payload
                 );
             } catch (\Throwable $e) {
                 if ($attendanceStatus === 'unpaid_leave') {
+                    $fallbackPayload = [
+                        'status' => 'leave',
+                    ];
+                    if (Schema::hasColumn('attendances', 'company_id')) {
+                        $fallbackPayload['company_id'] = $employee->company_id;
+                    }
+                    if (Schema::hasColumn('attendances', 'location')) {
+                        $fallbackPayload['location'] = 'Unpaid Leave';
+                    }
+                    if (Schema::hasColumn('attendances', 'working_from')) {
+                        $fallbackPayload['working_from'] = 'Unpaid Leave';
+                    }
+
                     Attendance::updateOrCreate(
                         ['user_id' => $employee->id, 'date' => $date->toDateString()],
-                        [
-                            'company_id' => $employee->company_id,
-                            'status' => 'leave',
-                            'location' => 'Unpaid Leave',
-                            'working_from' => 'Unpaid Leave',
-                        ]
+                        $fallbackPayload
                     );
                 } else {
                     throw $e;
