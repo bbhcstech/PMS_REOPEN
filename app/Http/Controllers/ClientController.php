@@ -132,10 +132,14 @@ class ClientController extends Controller
         $fyString = substr($fyStart, -2) . '-' . substr($fyEnd, -2);
         $prefix   = 'bit' . $fyString . '/';
 
-        $last = (new Project)->getConnection()->table('projects')
-            ->where('project_code', 'like', $prefix.'%')
-            ->orderBy('id', 'desc')
-            ->value('project_code');
+        $last = null;
+        $projectConn = (new Project)->getConnection();
+        if ($projectConn->getSchemaBuilder()->hasTable('projects') && $projectConn->getSchemaBuilder()->hasColumn('projects', 'project_code')) {
+            $last = $projectConn->table('projects')
+                ->where('project_code', 'like', $prefix.'%')
+                ->orderBy('id', 'desc')
+                ->value('project_code');
+        }
 
         $lastNum = 0;
         if ($last && preg_match('/\/(\d{4})$/', $last, $m)) {
