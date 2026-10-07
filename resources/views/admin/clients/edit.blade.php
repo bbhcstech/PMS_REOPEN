@@ -75,7 +75,28 @@
 
                 <div class="col-md-4">
                     <label>Mobile <sup class="text-danger">*</sup></label>
-                    <input name="mobile" id="client_mobile" type="text" class="form-control" value="{{ $client->mobile }}" required>
+                    <div class="input-group">
+                        <select name="mobile_country_code" id="mobile_country_code" class="form-select" style="max-width: 115px; flex-shrink: 0;">
+                            @php
+                                $cMobCode = '+91';
+                                if ($client->mobile && str_starts_with($client->mobile, '+')) {
+                                    foreach($countries as $c) {
+                                        if (str_starts_with($client->mobile, $c->phone_code)) {
+                                            $cMobCode = $c->phone_code;
+                                            break;
+                                        }
+                                    }
+                                }
+                                $selMobCode = old('mobile_country_code', $cMobCode);
+                            @endphp
+                            @foreach ($countries as $country)
+                                <option value="{{ $country->phone_code }}" data-country="{{ $country->name }}" data-min-digits="{{ $country->min_digits ?? 10 }}" data-max-digits="{{ $country->max_digits ?? 10 }}" {{ $selMobCode == $country->phone_code ? 'selected' : '' }}>
+                                    {{ $country->iso_code ? $country->iso_code . ' ' : '' }}({{ $country->phone_code }})
+                                </option>
+                            @endforeach
+                        </select>
+                        <input name="mobile" id="client_mobile" type="text" class="form-control" value="{{ $client->mobile }}" required>
+                    </div>
                     <small class="text-muted d-block" id="mobile_format_hint">Format: +91XXXXXXXXXX (10 digits)</small>
                     <div class="invalid-feedback" id="mobile_feedback">Please enter a valid mobile number for selected country.</div>
                 </div>
@@ -198,7 +219,28 @@
 
                 <div class="col-md-3">
                     <label>Office Phone</label>
-                    <input name="office_phone" id="office_phone" type="text" class="form-control" value="{{ old('office_phone', $client->office_phone) }}">
+                    <div class="input-group">
+                        <select name="office_country_code" id="office_country_code" class="form-select" style="max-width: 115px; flex-shrink: 0;">
+                            @php
+                                $cOffCode = '+91';
+                                if ($client->office_phone && str_starts_with($client->office_phone, '+')) {
+                                    foreach($countries as $c) {
+                                        if (str_starts_with($client->office_phone, $c->phone_code)) {
+                                            $cOffCode = $c->phone_code;
+                                            break;
+                                        }
+                                    }
+                                }
+                                $selOffCode = old('office_country_code', $cOffCode);
+                            @endphp
+                            @foreach ($countries as $country)
+                                <option value="{{ $country->phone_code }}" data-country="{{ $country->name }}" data-min-digits="{{ $country->min_digits ?? 10 }}" data-max-digits="{{ $country->max_digits ?? 10 }}" {{ $selOffCode == $country->phone_code ? 'selected' : '' }}>
+                                    {{ $country->iso_code ? $country->iso_code . ' ' : '' }}({{ $country->phone_code }})
+                                </option>
+                            @endforeach
+                        </select>
+                        <input name="office_phone" id="office_phone" type="text" class="form-control" value="{{ old('office_phone', $client->office_phone) }}">
+                    </div>
                     <div class="invalid-feedback" id="office_phone_feedback"></div>
                     <small class="text-muted d-block" id="office_phone_format_hint">Format: +91XXXXXXXXXX (10 digits)</small>
                 </div>
@@ -465,20 +507,20 @@ $(document).ready(function () {
     window.locationData = @json(\App\Support\LocationData::data());
 
     function getSelectedCountryPhoneRules() {
-        const $opt = $('#country option:selected');
-        const dialCode = $opt.data('dial-code') || '+91';
-        const minDigits = parseInt($opt.data('min-digits')) || 10;
-        const maxDigits = parseInt($opt.data('max-digits')) || 10;
-        const countryName = $opt.val() || 'India';
+        const $mOpt = $('#mobile_country_code option:selected');
+        const dialCode = $mOpt.val() || $('#country option:selected').data('dial-code') || '+91';
+        const minDigits = parseInt($mOpt.data('min-digits')) || parseInt($('#country option:selected').data('min-digits')) || 10;
+        const maxDigits = parseInt($mOpt.data('max-digits')) || parseInt($('#country option:selected').data('max-digits')) || 10;
+        const countryName = $mOpt.data('country') || $('#country').val() || 'India';
         return { dialCode, minDigits, maxDigits, countryName };
     }
 
     function getCompanyCountryPhoneRules() {
-        const $opt = $('#company_country option:selected');
-        let dialCode = $opt.data('dial-code');
-        let minDigits = parseInt($opt.data('min-digits'));
-        let maxDigits = parseInt($opt.data('max-digits'));
-        let countryName = $opt.val();
+        const $oOpt = $('#office_country_code option:selected');
+        let dialCode = $oOpt.val() || $('#company_country option:selected').data('dial-code');
+        let minDigits = parseInt($oOpt.data('min-digits')) || parseInt($('#company_country option:selected').data('min-digits'));
+        let maxDigits = parseInt($oOpt.data('max-digits')) || parseInt($('#company_country option:selected').data('max-digits'));
+        let countryName = $oOpt.data('country') || $('#company_country').val();
 
         if (!dialCode) {
             return getSelectedCountryPhoneRules();
@@ -956,6 +998,10 @@ $(document).ready(function () {
         if ($(this).val()) {
             $(this).removeClass('is-invalid');
         }
+        const selDial = $(this).find('option:selected').data('dial-code');
+        if (selDial && $('#mobile_country_code').val() !== selDial) {
+            $('#mobile_country_code').val(selDial);
+        }
         const rules = getSelectedCountryPhoneRules();
         updateMobileFormatHint(rules);
 
@@ -986,6 +1032,23 @@ $(document).ready(function () {
         }
     });
 
+    $('#mobile_country_code').on('change', function() {
+        const selCountry = $(this).find('option:selected').data('country');
+        if (selCountry && $('#country').val() !== selCountry) {
+            $('#country').val(selCountry).trigger('change');
+        } else {
+            const rules = getSelectedCountryPhoneRules();
+            updateMobileFormatHint(rules);
+            const $mobile = $('#client_mobile');
+            let currentVal = $mobile.val().trim();
+            let nationalDigits = currentVal.replace(/^\+\d*/, '').replace(/\D/g, '').substring(0, rules.maxDigits);
+            $mobile.val(rules.dialCode + nationalDigits);
+            if ($mobile.val() && $mobile.val() !== rules.dialCode) {
+                validateMobileInput('client_mobile', true);
+            }
+        }
+    });
+
     // ✅ Company Country dropdown
     $('#company_country').select2({
         theme: "bootstrap-5",
@@ -998,6 +1061,10 @@ $(document).ready(function () {
             companyCountryTouchedByUser = true;
         }
         const countryVal = $(this).val();
+        const selOfficeDial = $(this).find('option:selected').data('dial-code');
+        if (selOfficeDial && $('#office_country_code').val() !== selOfficeDial) {
+            $('#office_country_code').val(selOfficeDial);
+        }
         const rules = getCompanyCountryPhoneRules();
         updateOfficePhoneFormatHint(rules);
 
@@ -1022,6 +1089,18 @@ $(document).ready(function () {
 
         populateStates(countryVal, $('#state').val());
         populateCities(countryVal, $('#state').val(), $('#city').val());
+    });
+
+    $('#office_country_code').on('change', function() {
+        const rules = getCompanyCountryPhoneRules();
+        updateOfficePhoneFormatHint(rules);
+        const $office = $('#office_phone');
+        let currentVal = $office.val().trim();
+        if (currentVal && currentVal !== '+') {
+            let nationalDigits = currentVal.replace(/^\+\d*/, '').replace(/\D/g, '').substring(0, rules.maxDigits);
+            $office.val(rules.dialCode + nationalDigits);
+            validateMobileInput('office_phone', false);
+        }
     });
 
     // State & City dropdowns with tags

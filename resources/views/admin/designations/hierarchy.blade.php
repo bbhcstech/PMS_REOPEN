@@ -1748,17 +1748,34 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('chartLoading')?.classList.remove('d-none');
 
         const hierarchy = [];
+        let exceedsMaxDepth = false;
 
-        function traverseList(list, parentId = null) {
+        function traverseList(list, parentId = null, currentDepth = 0) {
             Array.from(list.children).forEach((item, index) => {
                 const id = item.dataset.id;
                 hierarchy.push({ id, parent_id: parentId, order: index });
-                const children = item.querySelector('ul');
-                if (children) traverseList(children, id);
+                if (currentDepth > 6) {
+                    exceedsMaxDepth = true;
+                }
+                const children = item.querySelector(':scope > ul');
+                if (children) traverseList(children, id, currentDepth + 1);
             });
         }
 
-        traverseList(hierarchyList);
+        traverseList(hierarchyList, null, 0);
+
+        if (exceedsMaxDepth) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Hierarchy Depth Limit Exceeded',
+                text: 'The organizational hierarchy cannot exceed Level 6. Please re-arrange the designations so that no role exceeds Level 6.',
+                confirmButtonColor: '#2F6BFF'
+            });
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = originalHtml;
+            document.getElementById('chartLoading')?.classList.add('d-none');
+            return;
+        }
 
         fetch('{{ route("designations.save-hierarchy") }}', {
             method: 'POST',

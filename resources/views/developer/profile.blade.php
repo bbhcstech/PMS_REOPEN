@@ -144,7 +144,31 @@
                     <label style="font-size: 13px; font-weight: 700; color: var(--slate-heading); display: block; margin-bottom: 8px;">
                         Mobile Contact Number:
                     </label>
-                    <input type="text" name="mobile" value="{{ old('mobile', $dev->mobile ?? $empDetail?->mobile) }}" placeholder="+91 98765 43210" style="width: 100%; padding: 11px 14px; border-radius: var(--radius-md); font-size: 13.5px; font-weight: 500; outline: none; box-shadow: var(--shadow-xs);">
+                    @php
+                        $devCountries = \App\Models\Country::getAllWithPhoneCodes();
+                        $devMob = old('mobile', $dev->mobile ?? $empDetail?->mobile);
+                        $devCode = '+91';
+                        if ($devMob && str_starts_with($devMob, '+')) {
+                            foreach($devCountries as $c) {
+                                if (str_starts_with($devMob, $c->phone_code)) {
+                                    $devCode = $c->phone_code;
+                                    $devMob = trim(substr($devMob, strlen($c->phone_code)));
+                                    break;
+                                }
+                            }
+                        }
+                        $selDevCode = old('mobile_country_code', $devCode);
+                    @endphp
+                    <div style="display: flex; gap: 8px;">
+                        <select name="mobile_country_code" style="width: 120px; padding: 11px 10px; border-radius: var(--radius-md); font-size: 13.5px; font-weight: 500; outline: none; border: 1px solid var(--border-color, #e2e8f0); background: #fff;">
+                            @foreach($devCountries as $c)
+                                <option value="{{ $c->phone_code }}" {{ $selDevCode == $c->phone_code ? 'selected' : '' }}>
+                                    {{ $c->iso_code ? $c->iso_code . ' ' : '' }}({{ $c->phone_code }})
+                                </option>
+                            @endforeach
+                        </select>
+                        <input type="text" name="mobile" value="{{ $devMob }}" placeholder="98765 43210" style="flex: 1; padding: 11px 14px; border-radius: var(--radius-md); font-size: 13.5px; font-weight: 500; outline: none; border: 1px solid var(--border-color, #e2e8f0); box-shadow: var(--shadow-xs);">
+                    </div>
                 </div>
 
                 <div>

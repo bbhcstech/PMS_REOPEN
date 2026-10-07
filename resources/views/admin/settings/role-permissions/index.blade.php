@@ -1242,6 +1242,7 @@
                                 <span class="input-group-text"><i class="fas fa-user-tag"></i></span>
                                 <select name="role" class="form-select" onchange="this.form.submit()">
                                     @foreach($roles as $option)
+                                        @continue(strtolower($option) === 'admin')
                                         <option value="{{ $option }}" @selected($role === $option)>{{ ucfirst($option) }}</option>
                                     @endforeach
                                 </select>

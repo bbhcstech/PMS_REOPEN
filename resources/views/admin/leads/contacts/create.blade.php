@@ -242,12 +242,32 @@ html[data-pms-theme="dark"] .btn-cancel-modern:hover {
 
                     <div class="col-md-4">
                         <label class="form-label-modern">Primary Phone</label>
-                        <input type="text" name="phone" id="inputPhone" class="form-control form-control-modern" value="{{ old('phone') }}" placeholder="e.g. +1 234 567 890">
+                        <div class="input-group">
+                            <select name="phone_country_code" class="form-select form-control-modern" style="max-width: 115px; flex-shrink: 0;">
+                                @php $selPCode = old('phone_country_code', '+91'); @endphp
+                                @foreach($countries ?? [] as $c)
+                                    <option value="{{ $c->phone_code }}" {{ $selPCode === $c->phone_code ? 'selected' : '' }}>
+                                        {{ $c->iso_code ? $c->iso_code . ' ' : '' }}({{ $c->phone_code }})
+                                    </option>
+                                @endforeach
+                            </select>
+                            <input type="text" name="phone" id="inputPhone" class="form-control form-control-modern" value="{{ old('phone') }}" placeholder="Phone number">
+                        </div>
                     </div>
 
                     <div class="col-md-4">
                         <label class="form-label-modern">Mobile / Cell</label>
-                        <input type="text" name="mobile" id="inputMobile" class="form-control form-control-modern" value="{{ old('mobile') }}" placeholder="e.g. +1 987 654 321">
+                        <div class="input-group">
+                            <select name="mobile_country_code" class="form-select form-control-modern" style="max-width: 115px; flex-shrink: 0;">
+                                @php $selMCode = old('mobile_country_code', '+91'); @endphp
+                                @foreach($countries ?? [] as $c)
+                                    <option value="{{ $c->phone_code }}" {{ $selMCode === $c->phone_code ? 'selected' : '' }}>
+                                        {{ $c->iso_code ? $c->iso_code . ' ' : '' }}({{ $c->phone_code }})
+                                    </option>
+                                @endforeach
+                            </select>
+                            <input type="text" name="mobile" id="inputMobile" class="form-control form-control-modern" value="{{ old('mobile') }}" placeholder="Mobile number">
+                        </div>
                     </div>
 
                     <div class="col-md-4">

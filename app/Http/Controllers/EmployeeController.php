@@ -1477,12 +1477,40 @@ class EmployeeController extends Controller
             ], 422);
         }
 
+        $level = (int) $data['level'];
+        if ($level < 0 || $level > 6) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors'  => ['level' => ['Designation level must be strictly between 0 and 6.']]
+            ], 422);
+        }
+
+        if (!empty($data['parent_id'])) {
+            $parent = \App\Models\Designation::find($data['parent_id']);
+            if ($parent) {
+                $parentLevel = (int) ($parent->level ?? 0);
+                if ($parentLevel >= 6) {
+                    return response()->json([
+                        'message' => 'Validation failed',
+                        'errors'  => ['parent_id' => ['A Level 6 designation cannot have subordinate designations as Level 6 is the maximum organizational level allowed.']]
+                    ], 422);
+                }
+
+                if ($level <= $parentLevel) {
+                    return response()->json([
+                        'message' => 'Validation failed',
+                        'errors'  => ['level' => ['Subordinate designation level (' . $level . ') must be greater than parent designation level (Level ' . $parentLevel . '). Minimum allowed level is ' . ($parentLevel + 1) . '.']]
+                    ], 422);
+                }
+            }
+        }
+
         try {
 
             $designation = \App\Models\Designation::create([
                 'name' => $data['name'],
                 'parent_id' => $data['parent_id'] ?? null,
-                'level' => $data['level'],
+                'level' => $level,
                 'status' => $data['status'] ?? 'Active',
                 'added_by' => auth()->id()
             ]);

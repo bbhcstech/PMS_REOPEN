@@ -149,8 +149,15 @@
                         <div class="col-md-4 mb-3">
                             <label class="form-label">Mobile <span class="text-danger">*</span></label>
                             <div class="input-group">
-                                <input type="text" name="mobile_country_code" class="form-control" value="+91" style="max-width: 90px;" required>
-                                <input type="text" name="mobile" class="form-control" pattern="[1-9][0-9]{9}" required>
+                                <select name="mobile_country_code" class="form-select" style="max-width: 110px;" required>
+                                    @php $modalCountries = isset($countries) && count($countries) ? $countries : \App\Models\Country::getAllWithPhoneCodes(); @endphp
+                                    @foreach($modalCountries as $c)
+                                        <option value="{{ $c->phone_code }}" {{ (old('mobile_country_code', '+91') == $c->phone_code) ? 'selected' : '' }}>
+                                            {{ $c->iso_code ? $c->iso_code . ' ' : '' }}({{ $c->phone_code }})
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <input type="text" name="mobile" class="form-control" placeholder="Mobile number" required>
                             </div>
                         </div>
                         <div class="col-md-4 mb-3">

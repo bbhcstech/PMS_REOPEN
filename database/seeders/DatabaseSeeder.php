@@ -28,6 +28,7 @@ class DatabaseSeeder extends Seeder
 
         //  CALL SETTINGS SEEDER
         $this->call([
+            CountrySeeder::class,
             ProfileSettingSeeder::class,
             RoleManagementSeeder::class,
             PayrollModuleSeeder::class,

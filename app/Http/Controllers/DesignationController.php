@@ -181,6 +181,41 @@ class DesignationController extends Controller
         return 'DGN-' . str_pad($nextId, 4, '0', STR_PAD_LEFT);
     }
 
+    /**
+     * Helper: get all descendant IDs recursively for a given designation ID.
+     */
+    public function getAllDescendantIds(int $id): array
+    {
+        $descendants = [];
+        $children = Designation::where('parent_id', $id)->pluck('id')->all();
+        foreach ($children as $childId) {
+            $childId = (int) $childId;
+            $descendants[] = $childId;
+            $descendants = array_merge($descendants, $this->getAllDescendantIds($childId));
+        }
+        return array_values(array_unique($descendants));
+    }
+
+    /**
+     * Helper: get the maximum subtree depth below a designation.
+     * Returns 0 if leaf node, 1 if direct children only, etc.
+     */
+    public function getMaxSubtreeDepth(int $id, int $currentDepth = 0): int
+    {
+        $children = Designation::where('parent_id', $id)->pluck('id')->all();
+        if (empty($children)) {
+            return $currentDepth;
+        }
+        $max = $currentDepth;
+        foreach ($children as $childId) {
+            $subDepth = $this->getMaxSubtreeDepth((int) $childId, $currentDepth + 1);
+            if ($subDepth > $max) {
+                $max = $subDepth;
+            }
+        }
+        return $max;
+    }
+
     public function store(Request $request)
     {
         $request->merge([
@@ -203,11 +238,45 @@ class DesignationController extends Controller
             ],
         ]);
 
+        $level = (int) $request->level;
+
+        // Strict level range validation (0 - 6 only)
+        if ($level < 0 || $level > 6) {
+            $errorMsg = 'Designation level must be strictly between 0 and 6.';
+            if ($request->ajax()) {
+                return response()->json(['status' => 'error', 'message' => $errorMsg, 'errors' => ['level' => [$errorMsg]]], 422);
+            }
+            return back()->withErrors(['level' => $errorMsg])->withInput();
+        }
+
+        // Parent designation hierarchy validation
+        if ($request->filled('parent_id')) {
+            $parent = Designation::find($request->parent_id);
+            if ($parent) {
+                $parentLevel = (int) ($parent->level ?? 0);
+                if ($parentLevel >= 6) {
+                    $errorMsg = 'A Level 6 designation cannot have subordinate designations as Level 6 is the maximum organizational level allowed.';
+                    if ($request->ajax()) {
+                        return response()->json(['status' => 'error', 'message' => $errorMsg, 'errors' => ['parent_id' => [$errorMsg]]], 422);
+                    }
+                    return back()->withErrors(['parent_id' => $errorMsg])->withInput();
+                }
+
+                if ($level <= $parentLevel) {
+                    $errorMsg = 'Subordinate designation level (' . $level . ') must be greater than parent designation level (Level ' . $parentLevel . '). Minimum allowed level is ' . ($parentLevel + 1) . '.';
+                    if ($request->ajax()) {
+                        return response()->json(['status' => 'error', 'message' => $errorMsg, 'errors' => ['level' => [$errorMsg]]], 422);
+                    }
+                    return back()->withErrors(['level' => $errorMsg])->withInput();
+                }
+            }
+        }
+
         try {
             $designationData = [
                 'name'            => $request->name,
                 'parent_id'       => $request->parent_id ?: null,
-                'level'           => $request->level,
+                'level'           => $level,
                 'added_by'        => Auth::id(),
                 'last_updated_by' => Auth::id(),
             ];
@@ -254,7 +323,10 @@ class DesignationController extends Controller
         $hasArchivedAt = Schema::hasColumn('designations', 'archived_at');
         $hasLevel = Schema::hasColumn('designations', 'level');
 
-        $query = Designation::whereKeyNot($designation->id);
+        // Exclude the designation itself and all of its descendants to prevent circular hierarchy
+        $excludeIds = array_merge([$designation->id], $this->getAllDescendantIds($designation->id));
+
+        $query = Designation::whereNotIn('id', $excludeIds);
         if ($hasArchivedAt) {
             $query->whereNull('archived_at');
         }
@@ -284,11 +356,64 @@ class DesignationController extends Controller
             'level'     => ['required', 'integer', 'min:0', 'max:6']
         ]);
 
+        $level = (int) $request->level;
+
+        // Strict level range validation (0 - 6 only)
+        if ($level < 0 || $level > 6) {
+            $errorMsg = 'Designation level must be strictly between 0 and 6.';
+            if ($request->ajax()) {
+                return response()->json(['status' => 'error', 'message' => $errorMsg, 'errors' => ['level' => [$errorMsg]]], 422);
+            }
+            return back()->withErrors(['level' => $errorMsg])->withInput();
+        }
+
+        // Circular hierarchy loop check
+        if ($request->filled('parent_id')) {
+            $descendantIds = $this->getAllDescendantIds($designation->id);
+            if (in_array((int) $request->parent_id, $descendantIds, true)) {
+                $errorMsg = 'Cannot select a subordinate designation as the parent (circular hierarchy detected).';
+                if ($request->ajax()) {
+                    return response()->json(['status' => 'error', 'message' => $errorMsg, 'errors' => ['parent_id' => [$errorMsg]]], 422);
+                }
+                return back()->withErrors(['parent_id' => $errorMsg])->withInput();
+            }
+
+            $parent = Designation::find($request->parent_id);
+            if ($parent) {
+                $parentLevel = (int) ($parent->level ?? 0);
+                if ($parentLevel >= 6) {
+                    $errorMsg = 'A Level 6 designation cannot have subordinate designations as Level 6 is the maximum organizational level allowed.';
+                    if ($request->ajax()) {
+                        return response()->json(['status' => 'error', 'message' => $errorMsg, 'errors' => ['parent_id' => [$errorMsg]]], 422);
+                    }
+                    return back()->withErrors(['parent_id' => $errorMsg])->withInput();
+                }
+
+                if ($level <= $parentLevel) {
+                    $errorMsg = 'Subordinate designation level (' . $level . ') must be greater than parent designation level (Level ' . $parentLevel . '). Minimum allowed level is ' . ($parentLevel + 1) . '.';
+                    if ($request->ajax()) {
+                        return response()->json(['status' => 'error', 'message' => $errorMsg, 'errors' => ['level' => [$errorMsg]]], 422);
+                    }
+                    return back()->withErrors(['level' => $errorMsg])->withInput();
+                }
+            }
+        }
+
+        // Subtree depth limit check: if this designation has descendants, new level + max descendant depth cannot exceed 6
+        $maxSubtreeDepth = $this->getMaxSubtreeDepth($designation->id);
+        if ($level + $maxSubtreeDepth > 6) {
+            $errorMsg = 'Updating this designation to Level ' . $level . ' would cause subordinate designations to exceed the maximum Level 6 limit (subtree depth reaches Level ' . ($level + $maxSubtreeDepth) . ').';
+            if ($request->ajax()) {
+                return response()->json(['status' => 'error', 'message' => $errorMsg, 'errors' => ['level' => [$errorMsg]]], 422);
+            }
+            return back()->withErrors(['level' => $errorMsg])->withInput();
+        }
+
         try {
             $designation->update([
                 'name'            => $request->name,
                 'parent_id'       => $request->parent_id ?: null,
-                'level'           => $request->level,
+                'level'           => $level,
                 'last_updated_by' => Auth::id(),
             ]);
 
@@ -336,11 +461,41 @@ class DesignationController extends Controller
             'level'     => ['required', 'integer', 'min:0', 'max:6']
         ]);
 
+        $level = (int) $request->level;
+
+        // Strict level range validation (0 - 6 only)
+        if ($level < 0 || $level > 6) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Designation level must be strictly between 0 and 6.'
+            ], 422);
+        }
+
+        if ($request->filled('parent_id')) {
+            $parent = Designation::find($request->parent_id);
+            if ($parent) {
+                $parentLevel = (int) ($parent->level ?? 0);
+                if ($parentLevel >= 6) {
+                    return response()->json([
+                        'status'  => 'error',
+                        'message' => 'A Level 6 designation cannot have subordinate designations as Level 6 is the maximum organizational level allowed.'
+                    ], 422);
+                }
+
+                if ($level <= $parentLevel) {
+                    return response()->json([
+                        'status'  => 'error',
+                        'message' => 'Subordinate designation level (' . $level . ') must be greater than parent designation level (Level ' . $parentLevel . '). Minimum allowed level is ' . ($parentLevel + 1) . '.'
+                    ], 422);
+                }
+            }
+        }
+
         try {
             $designation = Designation::create([
                 'name'            => $request->name,
                 'parent_id'       => $request->parent_id ?: null,
-                'level'           => $request->level,
+                'level'           => $level,
                 'added_by'        => Auth::id(),
                 'last_updated_by' => Auth::id(),
             ]);
@@ -651,14 +806,63 @@ class DesignationController extends Controller
             'hierarchy.*.order' => ['required', 'integer', 'min:0'],
         ]);
 
+        // Build parent map to validate depth & detect cycles
+        $parentMap = [];
+        $ids = [];
         foreach ($validated['hierarchy'] as $item) {
-            Designation::whereKey($item['id'])->update([
-                'parent_id' => $item['parent_id'],
-                'order' => $item['order'],
-                'last_updated_by' => Auth::id(),
-            ]);
+            $itemId = (int) $item['id'];
+            $parentId = $item['parent_id'] !== null ? (int) $item['parent_id'] : null;
+            $parentMap[$itemId] = $parentId;
+            $ids[] = $itemId;
         }
 
-        return response()->json(['message' => 'Hierarchy saved successfully!']);
+        // Validate depths & cycles
+        $calculatedLevels = [];
+        foreach ($ids as $id) {
+            $current = $id;
+            $depth = 0;
+            $visited = [];
+
+            while (isset($parentMap[$current]) && $parentMap[$current] !== null) {
+                if (in_array($current, $visited, true)) {
+                    return response()->json([
+                        'status'  => 'error',
+                        'message' => 'Circular hierarchy loop detected in organization structure.'
+                    ], 422);
+                }
+                $visited[] = $current;
+                $current = $parentMap[$current];
+                $depth++;
+
+                if ($depth > 6) {
+                    return response()->json([
+                        'status'  => 'error',
+                        'message' => 'Hierarchy depth exceeds maximum allowed Level 6. Only organizational levels 0 to 6 are permitted.'
+                    ], 422);
+                }
+            }
+            $calculatedLevels[$id] = $depth;
+        }
+
+        // Save hierarchy and synchronize level
+        DB::transaction(function () use ($validated, $calculatedLevels) {
+            foreach ($validated['hierarchy'] as $item) {
+                $itemId = (int) $item['id'];
+                $parentId = $item['parent_id'] !== null ? (int) $item['parent_id'] : null;
+                $level = $calculatedLevels[$itemId] ?? 0;
+
+                Designation::whereKey($itemId)->update([
+                    'parent_id'       => $parentId,
+                    'order'           => (int) $item['order'],
+                    'level'           => min(6, max(0, $level)),
+                    'last_updated_by' => Auth::id(),
+                ]);
+            }
+        });
+
+        return response()->json([
+            'status'  => 'success',
+            'message' => 'Hierarchy saved successfully!'
+        ]);
     }
 }

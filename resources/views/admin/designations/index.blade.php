@@ -302,7 +302,7 @@
             </div>
 
             <div class="pagination-info">
-                <i class="fas fa-chart-simple"></i>
+                <i class="fas fa-chart-line"></i>
                 Showing {{ $designations->firstItem() ?? 0 }} to {{ $designations->lastItem() ?? 0 }} of {{ $designations->total() }} designations
             </div>
 
@@ -1089,6 +1089,12 @@
         justify-content: center;
         font-size: 1.1rem;
         transition: all 0.2s ease;
+        flex-shrink: 0;
+    }
+
+    .mini-icon i {
+        display: inline-block;
+        line-height: 1;
     }
 
     .designation-row:hover .mini-icon {

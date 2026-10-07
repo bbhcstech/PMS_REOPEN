@@ -1642,7 +1642,7 @@
                                     </td>
                                     <td>
                                         <span class="deleted-badge">
-                                            <i class="far fa-calendar-alt"></i>
+                                            <i class="fas fa-calendar-alt"></i>
                                             {{ $designation->archived_at ? $designation->archived_at->format('d M Y h:i A') : 'Unknown' }}
                                         </span>
                                     </td>
@@ -1651,7 +1651,7 @@
                                             <form action="{{ route('designations.restore', $designation->id) }}" method="POST" onsubmit="return confirm('Restore this designation to the active list?');">
                                                 @csrf
                                                 <button type="submit" class="action-btn btn-restore" title="Restore">
-                                                    <i class="fas fa-trash-restore"></i>
+                                                    <i class="fas fa-rotate-left"></i>
                                                 </button>
                                             </form>
                                         </div>
@@ -1664,7 +1664,7 @@
                     @if($designations->hasPages())
                         <div class="pagination-container">
                             <div>
-                                <i class="fas fa-chart-simple me-1" style="color: var(--primary-teal);"></i>
+                                <i class="fas fa-chart-line me-1" style="color: var(--primary-teal);"></i>
                                 Showing {{ $designations->firstItem() ?? 0 }} to {{ $designations->lastItem() ?? 0 }} of {{ $designations->total() }}
                             </div>
                             <div>{{ $designations->links() }}</div>
