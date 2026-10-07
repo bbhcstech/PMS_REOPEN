@@ -256,6 +256,7 @@ class EventController extends Controller
                 'borderColor' => $color,
                 'textColor' => '#ffffff',
                 'extendedProps' => [
+                    'banner_url' => $e->banner_url,
                     'event_type' => $e->event_type,
                     'status' => $e->status,
                     'location' => $e->location ?: ($e->meeting_url ?: 'N/A'),

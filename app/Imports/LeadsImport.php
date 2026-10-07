@@ -3,6 +3,7 @@
 namespace App\Imports;
 
 use App\Models\LeadContact;
+use App\Support\LeadContactValidation;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
@@ -12,6 +13,7 @@ class LeadsImport implements ToModel, WithHeadingRow, WithValidation
 {
     public function model(array $row)
     {
+        $row = $this->prepareForValidation($row, 0);
         return new LeadContact([
             'contact_name' => $row['contact_name'] ?? $row['name'] ?? null,
             'email' => $row['email'] ?? null,
@@ -39,7 +41,19 @@ class LeadsImport implements ToModel, WithHeadingRow, WithValidation
     {
         return [
             'contact_name' => 'required',
-            'email' => 'required|email',
+            ...LeadContactValidation::rules(),
         ];
+    }
+
+    public function prepareForValidation(array $data, int $index): array
+    {
+        // Spreadsheets can expose digit-only telephone cells as numbers.
+        foreach (['phone', 'mobile'] as $field) {
+            $value = $data[$field] ?? null;
+            if (is_int($value) || (is_float($value) && is_finite($value) && floor($value) === $value)) {
+                $data[$field] = sprintf('%.0f', $value);
+            }
+        }
+        return LeadContactValidation::prepare($data);
     }
 }

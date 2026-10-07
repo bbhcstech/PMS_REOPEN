@@ -10,6 +10,8 @@ use App\Models\Client;
 use App\Models\CrmActivity;
 use App\Models\CrmFollowUp;
 use App\Models\User;
+use App\Models\Country;
+use App\Support\LeadContactValidation;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\LeadsExport;
 use App\Imports\LeadsImport;
@@ -206,30 +208,14 @@ class LeadContactController extends Controller
     {
         $this->authorizeLeadAccess('create');
 
-        if ($request->filled('phone')) {
-            $rawP = trim((string) $request->phone);
-            $pCode = $request->input('phone_country_code', '+91');
-            if (! str_starts_with($rawP, '+')) {
-                $request->merge(['phone' => $pCode . ' ' . $rawP]);
-            }
-        }
-
-        if ($request->filled('mobile')) {
-            $rawM = trim((string) $request->mobile);
-            $mCode = $request->input('mobile_country_code', '+91');
-            if (! str_starts_with($rawM, '+')) {
-                $request->merge(['mobile' => $mCode . ' ' . $rawM]);
-            }
-        }
+        $request->merge(LeadContactValidation::prepare($request->all()));
 
         $data = $request->validate([
             // Section: Basic Information
             'salutation' => 'nullable|string|max:20',
             'contact_name' => 'required|string|max:255',
             'job_title' => 'nullable|string|max:255',
-            'email' => 'required|email|max:255',
-            'phone' => 'nullable|string|max:30',
-            'mobile' => 'nullable|string|max:30',
+            ...LeadContactValidation::rules(),
             'alternate_phone' => 'nullable|string|max:30',
             'whatsapp' => 'nullable|string|max:30',
             'company_name' => 'nullable|string|max:255',
@@ -268,6 +254,7 @@ class LeadContactController extends Controller
             'description' => 'nullable|string',
         ]);
 
+        unset($data['phone_country_code'], $data['mobile_country_code']);
         $data['create_deal'] = $request->has('create_deal');
         $data['added_by'] = auth()->id();
         $data['status'] = $data['status'] ?? 'new';
@@ -382,21 +369,7 @@ class LeadContactController extends Controller
     {
         $this->authorizeLeadAccess('edit');
 
-        if ($request->filled('phone')) {
-            $rawP = trim((string) $request->phone);
-            $pCode = $request->input('phone_country_code', '+91');
-            if (! str_starts_with($rawP, '+')) {
-                $request->merge(['phone' => $pCode . ' ' . $rawP]);
-            }
-        }
-
-        if ($request->filled('mobile')) {
-            $rawM = trim((string) $request->mobile);
-            $mCode = $request->input('mobile_country_code', '+91');
-            if (! str_starts_with($rawM, '+')) {
-                $request->merge(['mobile' => $mCode . ' ' . $rawM]);
-            }
-        }
+        $request->merge(LeadContactValidation::prepare($request->all()));
 
         $lead = LeadContact::findOrFail($id);
         $oldStatus = $lead->status;
@@ -407,9 +380,7 @@ class LeadContactController extends Controller
             'salutation' => 'nullable|string|max:20',
             'contact_name' => 'required|string|max:255',
             'job_title' => 'nullable|string|max:255',
-            'email' => 'required|email|max:255',
-            'phone' => 'nullable|string|max:30',
-            'mobile' => 'nullable|string|max:30',
+            ...LeadContactValidation::rules(),
             'alternate_phone' => 'nullable|string|max:30',
             'whatsapp' => 'nullable|string|max:30',
             'company_name' => 'nullable|string|max:255',
@@ -437,6 +408,7 @@ class LeadContactController extends Controller
             'description' => 'nullable|string',
         ]);
 
+        unset($data['phone_country_code'], $data['mobile_country_code']);
         if ($request->has('products') && is_array($request->products)) {
             $data['products'] = json_encode($request->products);
         }
