@@ -1034,7 +1034,7 @@
                                 </div>
                             </div>
                             <div class="info-item">
-                                <div class="info-label"><i class="fas fa-user-friends"></i> Reporting To</div>
+                                <div class="info-label"><i class="fas fa-users"></i> Reporting To</div>
                                 <div class="info-value">{{ $detail?->reportingTo->name ?? 'N/A' }}</div>
                             </div>
                             <div class="info-item">

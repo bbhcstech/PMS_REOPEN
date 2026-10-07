@@ -184,6 +184,15 @@ return new class extends Migration
                 }
             });
         }
+
+        // 11. Ensure attendances table has working_from column
+        if (Schema::hasTable('attendances')) {
+            Schema::table('attendances', function (Blueprint $table) {
+                if (! Schema::hasColumn('attendances', 'working_from')) {
+                    $table->string('working_from', 191)->nullable()->after('status');
+                }
+            });
+        }
     }
 
     /**
