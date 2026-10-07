@@ -27,6 +27,85 @@
         box-shadow: 0 10px 30px -10px rgba(47, 107, 255, 0.08);
     }
 
+    .header-card-elevated .avatar-badge,
+    .header-card-elevated .header-icon-badge {
+        width: 52px;
+        height: 52px;
+        border-radius: 18px;
+        background: linear-gradient(135deg, #4F83FF, #2F6BFF);
+        color: #ffffff !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        box-shadow: 0 8px 20px -4px rgba(47, 107, 255, 0.4);
+        flex-shrink: 0;
+    }
+
+    .header-card-elevated .avatar-badge i,
+    .header-card-elevated .avatar-badge [class*="fa"],
+    .header-card-elevated .avatar-badge svg,
+    .header-card-elevated .header-icon-badge i,
+    .header-card-elevated .header-icon-badge [class*="fa"],
+    .header-card-elevated .header-icon-badge svg {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        background: transparent !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+    }
+
+    /* File input vertical alignment & fit fix */
+    .user-docs-shell input[type="file"].form-control,
+    .user-docs-shell .doc-file-input {
+        display: flex !important;
+        align-items: center !important;
+        min-height: 44px !important;
+        height: 44px !important;
+        padding: 4px 10px !important;
+        line-height: 1.5 !important;
+        background: #FFFFFF !important;
+        border: 1px solid rgba(47, 107, 255, 0.2) !important;
+        color: #0F172A !important;
+        overflow: hidden !important;
+        cursor: pointer !important;
+    }
+
+    .user-docs-shell input[type="file"].form-control::file-selector-button,
+    .user-docs-shell input[type="file"].form-control::-webkit-file-upload-button,
+    .user-docs-shell .doc-file-input::file-selector-button,
+    .user-docs-shell .doc-file-input::-webkit-file-upload-button {
+        margin: 0 !important;
+        margin-inline-end: 12px !important;
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+        margin-left: 0 !important;
+        padding: 6px 14px !important;
+        border-radius: 8px !important;
+        border: 1px solid rgba(47, 107, 255, 0.25) !important;
+        background: #EEF2FF !important;
+        color: #2F6BFF !important;
+        -webkit-text-fill-color: #2F6BFF !important;
+        font-weight: 600 !important;
+        font-size: 0.84rem !important;
+        line-height: 1.2 !important;
+        align-self: center !important;
+        vertical-align: middle !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+    }
+
+    .user-docs-shell input[type="file"].form-control:hover::file-selector-button,
+    .user-docs-shell input[type="file"].form-control:hover::-webkit-file-upload-button,
+    .user-docs-shell .doc-file-input:hover::file-selector-button,
+    .user-docs-shell .doc-file-input:hover::-webkit-file-upload-button {
+        background: #2F6BFF !important;
+        color: #FFFFFF !important;
+        -webkit-text-fill-color: #FFFFFF !important;
+        border-color: #2F6BFF !important;
+    }
+
     .doc-slot-card {
         background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(15px);
@@ -168,6 +247,17 @@
     html[data-pms-theme="dark"] .header-card-elevated strong {
         color: #93C5FD !important;
     }
+    html[data-pms-theme="dark"] .header-card-elevated .avatar-badge i,
+    html[data-pms-theme="dark"] .header-card-elevated .avatar-badge [class*="fa"],
+    html[data-pms-theme="dark"] .header-card-elevated .avatar-badge svg,
+    html[data-pms-theme="dark"] .header-card-elevated .header-icon-badge i,
+    html[data-pms-theme="dark"] .header-card-elevated .header-icon-badge [class*="fa"],
+    html[data-pms-theme="dark"] .header-card-elevated .header-icon-badge svg {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        background: transparent !important;
+        opacity: 1 !important;
+    }
     html[data-pms-theme="dark"] .badge.bg-success-subtle {
         background: rgba(47, 107, 255, 0.18) !important;
         color: #93C5FD !important;
@@ -203,6 +293,45 @@
         background-color: #1A2247 !important;
         border: 1px solid rgba(238, 241, 251, 0.16) !important;
         color: #9AA3C7 !important;
+    }
+
+    /* Dark theme file input alignment & colors */
+    html[data-pms-theme="dark"] .user-docs-shell input[type="file"].form-control,
+    html[data-pms-theme="dark"] .user-docs-shell .doc-file-input {
+        background: #141B3D !important;
+        background-color: #141B3D !important;
+        border: 1px solid rgba(238, 241, 251, 0.16) !important;
+        color: #CBD5E1 !important;
+        -webkit-text-fill-color: #CBD5E1 !important;
+    }
+
+    html[data-pms-theme="dark"] .user-docs-shell input[type="file"].form-control::file-selector-button,
+    html[data-pms-theme="dark"] .user-docs-shell input[type="file"].form-control::-webkit-file-upload-button,
+    html[data-pms-theme="dark"] .user-docs-shell .doc-file-input::file-selector-button,
+    html[data-pms-theme="dark"] .user-docs-shell .doc-file-input::-webkit-file-upload-button {
+        margin: 0 !important;
+        margin-inline-end: 12px !important;
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+        margin-left: 0 !important;
+        padding: 6px 14px !important;
+        border-radius: 8px !important;
+        border: 1px solid rgba(238, 241, 251, 0.25) !important;
+        background: #1A2247 !important;
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+        align-self: center !important;
+        vertical-align: middle !important;
+    }
+
+    html[data-pms-theme="dark"] .user-docs-shell input[type="file"].form-control:hover::file-selector-button,
+    html[data-pms-theme="dark"] .user-docs-shell input[type="file"].form-control:hover::-webkit-file-upload-button,
+    html[data-pms-theme="dark"] .user-docs-shell .doc-file-input:hover::file-selector-button,
+    html[data-pms-theme="dark"] .user-docs-shell .doc-file-input:hover::-webkit-file-upload-button {
+        background: #2F6BFF !important;
+        color: #FFFFFF !important;
+        -webkit-text-fill-color: #FFFFFF !important;
+        border-color: #2F6BFF !important;
     }
 
     /* 4. Navigation Pills & Tabs */
@@ -336,8 +465,8 @@
         <!-- Page Header -->
         <div class="header-card-elevated d-flex justify-content-between align-items-center flex-wrap gap-3">
             <div class="d-flex align-items-center gap-3">
-                <div class="avatar-badge" style="width: 52px; height: 52px; border-radius: 18px; background: linear-gradient(135deg, #4F83FF, #2F6BFF); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; box-shadow: 0 8px 20px -4px rgba(47, 107, 255, 0.4);">
-                    <i class="fas fa-file-shield"></i>
+                <div class="avatar-badge header-icon-badge" style="width: 52px; height: 52px; border-radius: 18px; background: linear-gradient(135deg, #4F83FF, #2F6BFF); color: #ffffff !important; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; box-shadow: 0 8px 20px -4px rgba(47, 107, 255, 0.4);">
+                    <i class="fas fa-file-shield" style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important;"></i>
                 </div>
                 <div>
                     <h1 class="fs-4 fw-bold text-dark mb-1">My Official Documents</h1>
@@ -382,7 +511,7 @@
 
                     <div class="col-md-4">
                         <label class="form-label fw-bold text-dark small mb-1">Select File <span class="text-danger">*</span> (Max: {{ $maxSizeMb }} MB)</label>
-                        <input type="file" name="document_file" class="form-control rounded-3" required>
+                        <input type="file" name="document_file" class="form-control doc-file-input rounded-3" required>
                     </div>
 
                     <div class="col-md-3">
