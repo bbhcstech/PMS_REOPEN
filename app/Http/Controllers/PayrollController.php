@@ -514,16 +514,26 @@ class PayrollController extends Controller
         $departmentId = $request->input('department_id') ? (int) $request->input('department_id') : null;
         $employeeType = $request->input('employee_type', 'all');
 
-        $offices = BusinessAddress::when($companyId, fn ($q) => $q->where('company_id', $companyId))
-            ->pluck('branch_name')
+        $addressQuery = BusinessAddress::query();
+        $addrConn = $addressQuery->getModel()->getConnectionName() ?: config('database.default');
+        if ($companyId && Schema::connection($addrConn)->hasColumn('business_addresses', 'company_id')) {
+            $addressQuery->where('company_id', $companyId);
+        }
+        $offices = $addressQuery->pluck('branch_name')
             ->filter()
             ->unique()
             ->toArray();
-        $dbEmpAddresses = EmployeeDetail::when($companyId, fn ($q) => $q->where('company_id', $companyId))
-            ->pluck('business_address')
+
+        $empDetailQuery = EmployeeDetail::query();
+        $empConn = $empDetailQuery->getModel()->getConnectionName() ?: config('database.default');
+        if ($companyId && Schema::connection($empConn)->hasColumn('employee_details', 'company_id')) {
+            $empDetailQuery->where('company_id', $companyId);
+        }
+        $dbEmpAddresses = $empDetailQuery->pluck('business_address')
             ->filter()
             ->unique()
             ->toArray();
+
         $officesList = array_values(array_filter(array_unique(array_merge($offices, $dbEmpAddresses))));
         $departments = $this->getDepartments();
 
@@ -1269,7 +1279,8 @@ class PayrollController extends Controller
         }
 
         $model = $query->getModel();
-        if (Schema::hasColumn($model->getTable(), 'company_id')) {
+        $conn = $model->getConnectionName() ?: config('database.default');
+        if (Schema::connection($conn)->hasColumn($model->getTable(), 'company_id')) {
             $query->where($model->getTable() . '.company_id', $companyId);
         }
 

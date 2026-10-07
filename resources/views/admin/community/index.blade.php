@@ -233,6 +233,25 @@
     .role-manager { background: #dbeafe; color: #1e40af; }
     .role-employee { background: #f1f5f9; color: #475569; }
 
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .community-container .msg-role-badge {
+        background: var(--community-role-bg, #334155) !important;
+        color: var(--community-role-text, #e2e8f0) !important;
+        -webkit-text-fill-color: currentColor !important;
+    }
+    .community-container .role-admin { --community-role-bg: #422f16; --community-role-text: #fde68a; }
+    .community-container .role-hr { --community-role-bg: #3b2861; --community-role-text: #ddd6fe; }
+    .community-container .role-manager { --community-role-bg: #1e3a5f; --community-role-text: #bfdbfe; }
+    .community-container .role-employee { --community-role-bg: #334155; --community-role-text: #e2e8f0; }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .community-container #messageInput.composer-textarea,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .community-container #messageInput.composer-textarea:focus {
+        background: transparent !important;
+        border: 0 !important;
+        outline: none !important;
+        box-shadow: none !important;
+        min-width: 0;
+    }
+
     .msg-time {
         font-size: 0.72rem;
         color: #94a3b8;
