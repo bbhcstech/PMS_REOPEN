@@ -38,7 +38,10 @@
 
                 <div class="col-md-3">
                     <label>Email <sup class="text-danger">*</sup></label>
-                    <input name="email" required type="email" class="form-control" value="{{ $client->email }}">
+                    <input name="email" required type="email" class="form-control @error('email') is-invalid @enderror" value="{{ old('email', $client->email) }}">
+                    @error('email')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
                 </div>
 
                 <div class="col-md-4">

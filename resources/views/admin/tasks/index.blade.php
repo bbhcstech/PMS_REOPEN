@@ -34,7 +34,7 @@
 
         <div class="header-card">
             <div class="header-left">
-                <div class="header-icon">
+                <div class="header-icon" id="tasksHeaderIcon">
                     <i class="fas fa-list-check"></i>
                 </div>
                 <div>
@@ -399,6 +399,22 @@
     }
     html[data-pms-theme="dark"] body .tasks-page .header-actions .btn-icon {
         color: #93C5FD !important;
+    }
+    html:not([data-pms-theme="dark"]) body .tasks-page .header-actions .btn-icon {
+        color: #2F6BFF !important;
+    }
+    html:not([data-pms-theme="dark"]) body .tasks-page .header-actions .task-toolbar-icon,
+    html:not([data-pms-theme="dark"]) body .tasks-page .header-actions .task-toolbar-icon * {
+        fill: none !important;
+        stroke: #2F6BFF !important;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+    html:not([data-pms-theme="dark"]) #tasksHeaderIcon > i {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        background: transparent !important;
     }
     html[data-pms-theme="dark"] .tasks-page .filter-group label {
         color: #EEF1FB !important;

@@ -164,8 +164,8 @@
                         <!-- Email -->
                         <div class="col-md-3">
                             <label class="form-label fw-semibold text-secondary">Email <sup class="text-danger">*</sup></label>
-                            <input name="email" id="client_email" type="email" class="form-control form-control-custom" placeholder="e.g. admin@bloodlife.com" value="{{ old('email') }}" required>
-                            <div class="invalid-feedback">Please enter a valid email address.</div>
+                            <input name="email" id="client_email" type="email" class="form-control form-control-custom @error('email') is-invalid @enderror" placeholder="e.g. admin@bloodlife.com" value="{{ old('email') }}" required>
+                            <div class="invalid-feedback">{{ $errors->first('email') ?: 'Please enter a valid email address.' }}</div>
                         </div>
 
                         <!-- Password -->

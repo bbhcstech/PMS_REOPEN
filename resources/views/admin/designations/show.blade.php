@@ -561,6 +561,7 @@
     }
 
     .level-badge {
+        background: #2F6BFF;
         padding: 6px 16px;
         border-radius: 40px;
         color: #ffffff !important;

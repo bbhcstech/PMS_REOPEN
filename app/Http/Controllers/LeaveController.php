@@ -918,7 +918,7 @@ class LeaveController extends Controller
         if ($request->filled('type')) {
             $query->where(function ($q) use ($request) {
                 $q->where('type', $request->type)
-                  ->orWhereHas('leaveType', fn ($lt) => $lt->where('type_name', 'like', '%' . $request->type . '%'));
+                  ->orWhereHas('leaveType', fn ($lt) => $lt->where('name', 'like', '%' . $request->type . '%')->orWhere('code', 'like', '%' . $request->type . '%'));
             });
         }
         if ($request->filled('from')) {

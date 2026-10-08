@@ -584,7 +584,7 @@
                                                     data-title="{{ $doc->document_type }}"
                                                     data-file="{{ $doc->file_name }}"
                                                     data-uploader="{{ $doc->user->name ?? 'Me' }}"
-                                                    data-views='@json($doc->views)'
+                                                    data-history-url="{{ route('my-documents.history', ['type' => $doc->table_type ?? $userRole, 'id' => $doc->id]) }}"
                                                     title="Seen By Who">
                                                     <i class="fas fa-info"></i>
                                                 </button>
@@ -722,7 +722,7 @@
                                                         data-title="{{ $doc->document_type }}"
                                                         data-file="{{ $doc->file_name }}"
                                                         data-uploader="{{ $doc->user->name ?? 'Staff' }}"
-                                                        data-views='@json($doc->views)'
+                                                        data-history-url="{{ route('my-documents.history', ['type' => $doc->table_type, 'id' => $doc->id]) }}"
                                                         title="Seen By Who">
                                                         <i class="fas fa-info"></i>
                                                     </button>
@@ -771,7 +771,8 @@ document.addEventListener('DOMContentLoaded', function() {
         return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
 
-    document.addEventListener('click', function(e) {
+    var historyRequest = 0;
+    document.addEventListener('click', async function(e) {
         var btn = e.target.closest('.btn-show-doc-info');
         if (!btn) return;
 
@@ -779,11 +780,27 @@ document.addEventListener('DOMContentLoaded', function() {
         var filename = btn.getAttribute('data-file') || '';
         var uploader = btn.getAttribute('data-uploader') || '';
         var views = [];
+        var requestId = ++historyRequest;
+        var body = document.getElementById('globalDocInfoBody');
+        var modalEl = document.getElementById('globalDocInfoModal');
+        var modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+        body.innerHTML = '<p class="text-muted mb-0">Loading document access history...</p>';
+        modal.show();
         try {
-            views = JSON.parse(btn.getAttribute('data-views') || '[]');
+            var response = await fetch(btn.getAttribute('data-history-url'), {
+                headers: { 'Accept': 'application/json' },
+                cache: 'no-store'
+            });
+            if (!response.ok) throw new Error('History request failed');
+            views = await response.json();
+            if (!Array.isArray(views)) throw new Error('Invalid history response');
         } catch(err) {
-            views = [];
+            if (requestId === historyRequest) {
+                body.innerHTML = '<p class="text-danger mb-0">Unable to load document access history. Please try again.</p>';
+            }
+            return;
         }
+        if (requestId !== historyRequest) return;
 
         var html = '<div class="mb-3 p-3 bg-light rounded-3">';
         html += '<div class="fw-bold text-dark fs-6">' + escapeHtml(title) + '</div>';
@@ -814,9 +831,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         document.getElementById('globalDocInfoBody').innerHTML = html;
-        var modalEl = document.getElementById('globalDocInfoModal');
-        var modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
-        modal.show();
     });
 
     // Auto-switch tab if specified in URL query string or hash

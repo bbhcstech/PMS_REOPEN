@@ -162,9 +162,9 @@ class AwardController extends Controller
     public function edit($id)
     {
         $award = Award::findOrFail($id);
-        $users = \App\Models\User::where('role', 'employee')->get();
+        $employees = \App\Models\User::where('role', 'employee')->get();
         $appreciations = Appreciations::where('status', 'active')->get();
-        return view('admin.awards.edit', compact('award', 'users', 'appreciations'));
+        return view('admin.awards.edit', compact('award', 'employees', 'appreciations'));
     }
 
     public function appreciationEdit($id)

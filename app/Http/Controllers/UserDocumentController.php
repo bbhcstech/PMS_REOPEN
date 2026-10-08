@@ -330,7 +330,7 @@ class UserDocumentController extends Controller
         return back()->with('success', 'Document removed successfully.');
     }
 
-    public function download(Request $request, $type, $id)
+    protected function resolveAccessibleDocument($type, $id): array
     {
         $user = Auth::user();
         $userRole = strtolower($user->role ?? 'employee');
@@ -354,7 +354,7 @@ class UserDocumentController extends Controller
         }
 
         if (!$doc) {
-            return back()->with('error', 'Document record not found.');
+            return [null, $tableName];
         }
 
         // Authorization check:
@@ -389,6 +389,26 @@ class UserDocumentController extends Controller
         if ($targetUser && $myCompanyId && $targetUser->company_id && $targetUser->company_id != $myCompanyId) {
             abort(403, 'Cross-company document access forbidden.');
         }
+
+        return [$doc, $tableName];
+    }
+
+    public function history($type, $id)
+    {
+        [$doc] = $this->resolveAccessibleDocument($type, $id);
+        abort_unless($doc, 404, 'Document record not found.');
+
+        return response()->json($doc->views()->with('viewer')->get())
+            ->header('Cache-Control', 'no-store, private');
+    }
+
+    public function download(Request $request, $type, $id)
+    {
+        [$doc, $tableName] = $this->resolveAccessibleDocument($type, $id);
+        if (!$doc) {
+            return back()->with('error', 'Document record not found.');
+        }
+        $user = Auth::user();
 
         $fullPath = public_path($doc->file_path);
         if (!file_exists($fullPath)) {

@@ -238,7 +238,7 @@ class EmployeeController extends Controller
 
         return view('admin.employees.create', [
             'companies'        => $companies,
-            'designations'    => Designation::orderBy('name')->get(),
+            'designations'    => Designation::withinLevelLimit()->orderBy('name')->get(),
             'departments'     => Department::with('parent')
                                     ->when(Schema::hasColumn('departments', 'dpt_name'), fn ($q) => $q->orderBy('dpt_name'), fn ($q) => $q->orderBy('id'))
                                     ->get(),
@@ -456,8 +456,8 @@ class EmployeeController extends Controller
             return back()->withErrors(['mobile' => 'This mobile number is already registered.'])->withInput();
         }
 
-        if ($request->designation_id !== 'new' && ! Designation::whereKey($request->designation_id)->exists()) {
-            return back()->withErrors(['designation_id' => 'Please select a valid designation.'])->withInput();
+        if ($request->designation_id !== 'new' && ! Designation::withinLevelLimit()->whereKey($request->designation_id)->exists()) {
+            return back()->withErrors(['designation_id' => 'Please select a designation within your company level limit.'])->withInput();
         }
 
         if ($request->parent_dpt_id !== 'new' && ! ParentDepartment::whereKey($request->parent_dpt_id)->exists()) {
@@ -593,6 +593,11 @@ class EmployeeController extends Controller
                         'last_updated_by' => auth()->id(),
                     ]
                 );
+                if (! Designation::withinLevelLimit()->whereKey($designation->id)->exists()) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        'designation_id' => 'This designation exceeds your company level limit.',
+                    ]);
+                }
                 $employeeData['designation_id'] = $designation->id;
             } else {
                 $employeeData['designation_id'] = $request->filled('designation_id') ? $request->designation_id : null;
@@ -774,7 +779,7 @@ class EmployeeController extends Controller
                 ->orWhere('id', $employee->company_id)
                 ->orderBy('name')
                 ->get(),
-            'designations' => Designation::orderBy('name')->get(),
+            'designations' => Designation::withinLevelLimit()->orderBy('name')->get(),
             'departments' => Department::all(),
             'users' => User::where('role', 'employee')
                 ->whereHas('employeeDetail', function ($q) {
@@ -943,6 +948,9 @@ class EmployeeController extends Controller
 
         $request->validate([
             'employee_id'        => $employeeIdRule,
+            'designation_id'     => 'required',
+            'new_designation'    => 'required_if:designation_id,new|nullable|string|max:191',
+            'new_designation_level' => 'required_if:designation_id,new|nullable|integer|min:0|max:' . \App\Services\DesignationLevels::maximum(),
             'name'               => 'required|string',
             'company_id'         => 'required|exists:companies,id',
             'email'              => $emailUniqueRule,
@@ -967,6 +975,10 @@ class EmployeeController extends Controller
             'x_url'              => 'nullable|url|max:255',
             'cv_file'            => 'nullable|file|mimes:pdf,doc,docx|max:4096',
         ], $customMessages);
+
+        if ($request->designation_id !== 'new' && ! Designation::withinLevelLimit()->whereKey($request->designation_id)->exists()) {
+            return back()->withErrors(['designation_id' => 'Please select a designation within your company level limit.'])->withInput();
+        }
 
         $mobileWithCodeForValidation = $dialCode . $request->mobile;
         if (User::where('mobile', $mobileWithCodeForValidation)->where('id', '!=', $user->id)->exists()) {
@@ -1097,6 +1109,11 @@ class EmployeeController extends Controller
                         'last_updated_by' => auth()->id(),
                     ]
                 );
+                if (! Designation::withinLevelLimit()->whereKey($designation->id)->exists()) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        'designation_id' => 'This designation exceeds your company level limit.',
+                    ]);
+                }
                 $data['designation_id'] = $designation->id;
             }
 

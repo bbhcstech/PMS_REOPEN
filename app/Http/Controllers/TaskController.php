@@ -29,6 +29,7 @@ class TaskController extends Controller
 
 public function index(Request $request, ?Project $project = null) 
 {
+    \App\Services\TaskPrioritySchema::ensure();
     $query = Task::with(['project', 'assignees', 'subTasks.assignee', 'timers', 'latestUpdate.user'])
         ->whereNull('parent_id');
     $user = auth()->user();
@@ -215,6 +216,8 @@ public function create(Request $request)
  public function store(Request $request)
 {
    abort_unless($this->canCreateWorkItems(), 403);
+   \App\Services\TaskPrioritySchema::ensure();
+   \App\Services\TaskLabelsSchema::ensure();
 
     if ($request->has('assigned_to') && !is_array($request->assigned_to)) {
         $request->merge(['assigned_to' => array_filter(explode(',', (string) $request->assigned_to))]);
@@ -412,6 +415,8 @@ public function create(Request $request)
 public function update(Request $request, Task $task)
 {
     abort_unless($this->canCreateWorkItems(), 403);
+    \App\Services\TaskPrioritySchema::ensure();
+    \App\Services\TaskLabelsSchema::ensure();
 
     $request->validate([
         'task_short_code'  => 'required|string|max:255',

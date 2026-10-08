@@ -1310,7 +1310,7 @@
                                             @if(!empty($designation->unique_code))
                                                 ({{ $designation->unique_code }})
                                             @endif
-                                            @if(!empty($designation->level))
+                                            @if($designation->level !== null)
                                                 - Level {{ $designation->level }}
                                             @endif
                                         </option>

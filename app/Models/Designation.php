@@ -82,6 +82,14 @@ class Designation extends TenantModel
     }
 
     // RELATIONSHIPS
+    public function scopeWithinLevelLimit($query)
+    {
+        return $query->where(function ($levels) {
+            $levels->whereNull('level')
+                ->orWhereBetween('level', [0, \App\Services\DesignationLevels::maximum()]);
+        });
+    }
+
     public function addedBy()
     {
         return $this->belongsTo(User::class, 'added_by');

@@ -87,18 +87,18 @@
     <div class="card-body p-3">
       <form method="GET" action="{{ route('admin.company-complaints.index') }}" class="row g-2 align-items-center">
         
-        <div class="col-md-2 d-flex align-items-center gap-2">
-          <label class="form-label mb-0 fw-bold text-dark fs-7">Show</label>
-          <select name="per_page" class="form-select form-select-sm fw-bold" style="border-radius: 8px;" onchange="this.form.submit()">
+        <div class="col-md-auto d-flex align-items-center gap-2 flex-nowrap">
+          <label for="complaints_per_page" class="form-label mb-0 fw-bold text-dark fs-7 text-nowrap flex-shrink-0">Show</label>
+          <select id="complaints_per_page" name="per_page" class="form-select form-select-sm fw-bold w-auto flex-shrink-0" style="border-radius: 8px; min-width: 76px;" onchange="this.form.submit()">
             <option value="10" {{ request('per_page', 10) == 10 ? 'selected' : '' }}>10</option>
             <option value="25" {{ request('per_page') == 25 ? 'selected' : '' }}>25</option>
             <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50</option>
             <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100</option>
           </select>
-          <span class="fs-7 text-muted fw-bold">entries</span>
+          <span class="fs-7 text-muted fw-bold text-nowrap flex-shrink-0">entries</span>
         </div>
 
-        <div class="col-md-4">
+        <div class="col-md">
           <input type="text" name="search" value="{{ request('search') }}" placeholder="Search Ticket ID, Subject, Category..." class="form-control form-control-sm" style="border-radius: 8px;" />
         </div>
 

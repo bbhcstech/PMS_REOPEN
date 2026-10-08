@@ -65,7 +65,7 @@
                 @method('PUT')
                 <div>
                     <label for="maximum_level" class="form-label">Maximum designation level</label>
-                    <input id="maximum_level" name="maximum_level" type="number" class="form-control" min="6" max="100" required value="{{ old('maximum_level', \App\Services\DesignationLevels::maximum()) }}">
+                    <input id="maximum_level" name="maximum_level" type="number" class="form-control" min="6" step="1" required value="{{ old('maximum_level', \App\Services\DesignationLevels::maximum()) }}">
                     @error('maximum_level')<div class="text-danger">{{ $message }}</div>@enderror
                 </div>
                 <button type="submit" class="btn btn-primary">Save level limit</button>
@@ -399,6 +399,9 @@
             <span class="level l4"><i class="fas fa-trophy"></i> L4 (Sr. Manager)</span>
             <span class="level l5"><i class="fas fa-medal"></i> L5 (Associate Director)</span>
             <span class="level l6"><i class="fas fa-star-of-life"></i> L6 (Director)</span>
+            @for($i = 7, $maximumLevel = \App\Services\DesignationLevels::maximum(); $i <= $maximumLevel; $i++)
+                <span class="level l{{ $i }}"><i class="fas fa-layer-group"></i> L{{ $i }}</span>
+            @endfor
         </div>
     </div>
 </div>
@@ -1152,6 +1155,8 @@
 
     /* Level Badges & High-Contrast Level Pills */
     .level {
+        background: #e0e7ff;
+        color: #1e40af;
         padding: 6px 16px;
         border-radius: 40px;
         font-size: 0.78rem;

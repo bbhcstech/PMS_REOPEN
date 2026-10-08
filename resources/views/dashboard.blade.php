@@ -901,6 +901,42 @@
         margin: 0;
     }
 
+    /* Keep Work Analytics horizontal in light mode despite shared chart styles. */
+    html:not([data-pms-theme="dark"]) .industry-analytics-card .industry-bars {
+        grid-template-columns: minmax(0, 1fr);
+        min-height: 0;
+        align-items: stretch;
+        gap: 1rem;
+        padding-top: 0;
+    }
+
+    html:not([data-pms-theme="dark"]) .industry-analytics-card .industry-bar {
+        grid-template-columns: minmax(0, 1fr) 100px;
+        justify-items: stretch;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    html:not([data-pms-theme="dark"]) .industry-analytics-card .industry-bar span {
+        width: 100%;
+        height: 12px;
+        min-height: 0;
+        background: #e2e8f0;
+        box-shadow: none;
+    }
+
+    html:not([data-pms-theme="dark"]) .industry-analytics-card .industry-bar span::after {
+        background: #2f6bff;
+    }
+
+    html:not([data-pms-theme="dark"]) .industry-analytics-card .industry-bar.is-muted span::after {
+        background: #10b981;
+    }
+
+    html:not([data-pms-theme="dark"]) .industry-analytics-card .industry-bar label {
+        color: #334155 !important;
+    }
+
     /* ======================================================
        AUTOMATIC MODULES & SHORTCUTS
        ====================================================== */
@@ -958,6 +994,16 @@
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+    }
+
+    html:not([data-pms-theme="dark"]) .saas-module-card .saas-module-icon > i.bx {
+        font-family: boxicons !important;
+        font-weight: normal !important;
+        font-style: normal;
+        background: transparent !important;
+        color: #2f6bff !important;
+        -webkit-text-fill-color: #2f6bff !important;
+        filter: none;
     }
 
     .saas-module-card small {
@@ -1381,6 +1427,54 @@
         height: 100%;
         background: var(--bx-blue);
         border-radius: 999px;
+    }
+
+    #totalEmployeesCard {
+        background: linear-gradient(145deg, #1e4fcc, #2f6bff) !important;
+        border-color: rgba(255, 255, 255, 0.2) !important;
+    }
+
+    #totalEmployeesCard .stat-title,
+    #totalEmployeesCard .stat-title a,
+    #totalEmployeesCard .stat-value,
+    #totalEmployeesCard .stat-trend,
+    #totalEmployeesCard .stat-trend span,
+    #totalEmployeesCard .stat-trend i,
+    #totalEmployeesCard .stat-dropdown > button,
+    #totalEmployeesCard .stat-dropdown > button i {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    #totalEmployeesCard i.bx {
+        font-weight: normal !important;
+        filter: none;
+    }
+
+    #totalEmployeesCard .stat-dropdown > button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+    }
+
+    #totalEmployeesCard .stat-dropdown > button:hover,
+    #totalEmployeesCard .stat-dropdown > button:focus-visible {
+        background: rgba(255, 255, 255, 0.18) !important;
+    }
+
+    #totalEmployeesCard .stat-progress {
+        background: transparent !important;
+    }
+
+    #totalEmployeesCard .progress-container {
+        background: rgba(255, 255, 255, 0.25) !important;
+    }
+
+    #totalEmployeesCard .progress-bar {
+        background: #ffffff !important;
     }
 
     /* ======================================================
@@ -1890,14 +1984,26 @@
                 $activeModules = $activeModules->filter(fn ($m) => $currentCompany->hasFeature($m->slug))->values();
             }
             $moduleScale = max(collect($moduleMetricMap)->filter(fn ($value) => is_numeric($value))->max() ?? 1, 1);
-            $autoModuleCards = $activeModules->map(function ($module, $index) use ($moduleRouteFallbacks, $moduleMetricMap, $moduleScale, $safeRouteUrl) {
+            $moduleIconFallbacks = [
+                'employees' => 'bx-user',
+                'tickets' => 'bx-support',
+                'designations' => 'bx-id-card',
+                'departments' => 'bx-buildings',
+                'attendance' => 'bx-user-check',
+                'leaves' => 'bx-calendar-minus',
+                'holidays' => 'bx-calendar',
+                'projects' => 'bx-folder',
+                'tasks' => 'bx-task',
+                'timelogs' => 'bx-time-five',
+            ];
+            $autoModuleCards = $activeModules->map(function ($module, $index) use ($moduleRouteFallbacks, $moduleMetricMap, $moduleScale, $safeRouteUrl, $moduleIconFallbacks) {
                 $route = $module->route_name ?: ($moduleRouteFallbacks[$module->slug] ?? null);
                 $url = $safeRouteUrl($route);
                 $metric = $moduleMetricMap[$module->slug] ?? 1;
                 return [
                     'name' => $module->name,
                     'slug' => $module->slug,
-                    'icon' => $module->icon ?: 'bx-grid-alt',
+                    'icon' => $module->icon ?: ($moduleIconFallbacks[$module->slug] ?? 'bx-grid-alt'),
                     'route' => $route,
                     'url' => $url,
                     'value' => $metric,
@@ -1908,14 +2014,14 @@
             if ($autoModuleCards->isEmpty()) {
                 $autoModuleCards = collect($moduleRouteFallbacks)->filter(function ($route, $slug) use ($currentCompany) {
                     return $currentCompany ? $currentCompany->hasFeature($slug) : true;
-                })->map(function ($route, $slug) use ($moduleMetricMap, $moduleScale, $safeRouteUrl) {
+                })->map(function ($route, $slug) use ($moduleMetricMap, $moduleScale, $safeRouteUrl, $moduleIconFallbacks) {
                     $url = $safeRouteUrl($route);
                     $metric = $moduleMetricMap[$slug] ?? 1;
 
                     return [
                         'name' => \Illuminate\Support\Str::headline($slug),
                         'slug' => $slug,
-                        'icon' => 'bx-grid-alt',
+                        'icon' => $moduleIconFallbacks[$slug] ?? 'bx-grid-alt',
                         'route' => $route,
                         'url' => $url,
                         'value' => $metric,
@@ -2289,13 +2395,13 @@
                 @endphp
 
                 <!-- Total Employees -->
-                <div class="stat-card">
+                <div class="stat-card" id="totalEmployeesCard">
                     <div class="stat-header">
                         <div class="stat-icon">
                             <i class="bx bx-group"></i>
                         </div>
                         <div class="stat-dropdown">
-                            <button class="btn p-0" type="button" data-bs-toggle="dropdown">
+                            <button class="btn p-0" type="button" data-bs-toggle="dropdown" aria-label="Total Employees actions">
                                 <i class="bx bx-dots-vertical-rounded"></i>
                             </button>
                             <div class="dropdown-menu dropdown-menu-end">

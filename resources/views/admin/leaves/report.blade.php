@@ -4,6 +4,20 @@
 
 @section('content')
 
+<style>
+    #leaveReportSummary .leave-report-summary-card {
+        background: var(--bx-surface, #ffffff) !important;
+        border-color: var(--bx-border, #e2e8f0) !important;
+        color: var(--bx-ink, #0f172a) !important;
+    }
+
+    #leaveReportSummary .leave-report-summary-card h6,
+    #leaveReportSummary .leave-report-summary-card h4 {
+        color: var(--bx-ink, #0f172a) !important;
+        -webkit-text-fill-color: var(--bx-ink, #0f172a) !important;
+    }
+</style>
+
   <main class="main">
     <div class="content-wrapper py-4 px-3" style="background-color: #f5f7fa; min-height: 100vh;">
         <div class="container-fluid">
@@ -47,9 +61,9 @@
                 </div>
             </form>
 
-            <div class="row mb-4">
+            <div class="row mb-4" id="leaveReportSummary">
                 <div class="col-md-3">
-                    <div class="card text-white bg-info">
+                    <div class="card leave-report-summary-card">
                         <div class="card-body text-center">
                             <h6>Total Leaves</h6>
                             <h4>{{ $summary['total'] }}</h4>
@@ -57,7 +71,7 @@
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="card text-white bg-success">
+                    <div class="card leave-report-summary-card">
                         <div class="card-body text-center">
                             <h6>Approved</h6>
                             <h4>{{ $summary['approved'] }}</h4>
@@ -65,7 +79,7 @@
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="card text-white bg-warning">
+                    <div class="card leave-report-summary-card">
                         <div class="card-body text-center">
                             <h6>Pending</h6>
                             <h4>{{ $summary['pending'] }}</h4>
@@ -73,7 +87,7 @@
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="card text-white bg-danger">
+                    <div class="card leave-report-summary-card">
                         <div class="card-body text-center">
                             <h6>Rejected</h6>
                             <h4>{{ $summary['rejected'] }}</h4>

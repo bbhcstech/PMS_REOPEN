@@ -46,6 +46,11 @@ Auth::guard('web')->setUser($actor);
 function checkLevels($ok, $message) { if (! $ok) throw new RuntimeException($message); }
 checkLevels(DesignationLevels::maximum() === 6, 'Default limit is not L6.');
 checkLevels(Designation::pluck('id')->all() === [1], 'Designation company scope leaked rows.');
+checkLevels(! Designation::withinLevelLimit()->whereKey(1)->exists(), 'Legacy L8 was offered under the L6 limit.');
+try {
+    Designation::create(['name' => 'Rejected L7', 'level' => 7]);
+    throw new RuntimeException('L7 accepted under default L6 limit.');
+} catch (ValidationException $e) {}
 try {
     Designation::create(['name' => 'Rejected', 'level' => 8]);
     throw new RuntimeException('HR created L8 under default limit.');
@@ -65,6 +70,7 @@ try {
 $actor->role = 'admin';
 (new DesignationController)->updateLevelSettings(Request::create('/', 'PUT', ['maximum_level' => 8]));
 checkLevels(DesignationLevels::maximum() === 8, 'Admin setting was not applied.');
+checkLevels(Designation::withinLevelLimit()->whereKey(1)->exists(), 'L8 did not become available after admin raised the limit.');
 $actor->role = 'hr';
 Designation::create(['name' => 'Allowed L8', 'level' => 8]);
 $actor->company_id = 2;
@@ -75,6 +81,13 @@ $actor->role = 'admin';
 try {
     (new DesignationController)->updateLevelSettings(Request::create('/', 'PUT', ['maximum_level' => 6]));
     throw new RuntimeException('Limit lowered below existing levels.');
+} catch (ValidationException $e) {}
+(new DesignationController)->updateLevelSettings(Request::create('/', 'PUT', ['maximum_level' => 101]));
+checkLevels(DesignationLevels::maximum() === 101, 'Admin maximum was still capped at 100.');
+Designation::create(['name' => 'Allowed L101', 'level' => 101]);
+try {
+    Designation::create(['name' => 'Rejected L102', 'level' => 102]);
+    throw new RuntimeException('L102 accepted above configured L101 limit.');
 } catch (ValidationException $e) {}
 foreach (['designations/create', 'designations/index', 'designations/hierarchy', 'employees/create', 'employees/edit'] as $view) {
     $compiled = app('blade.compiler')->compileString(file_get_contents(resource_path('views/admin/' . $view . '.blade.php')));

@@ -203,7 +203,7 @@
                     @error('parent_id')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
-                    <span class="field-hint" id="parent-field-hint">Select parent designation (Level 0-5 only; Level {{ \App\Services\DesignationLevels::maximum() }} is the max organizational limit)</span>
+                    <span class="field-hint" id="parent-field-hint">Select parent designation (Level 0-{{ \App\Services\DesignationLevels::maximum() - 1 }} only; Level {{ \App\Services\DesignationLevels::maximum() }} is the max organizational limit)</span>
                 </div>
             </div>
 

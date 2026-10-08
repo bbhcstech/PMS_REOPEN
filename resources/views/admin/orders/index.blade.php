@@ -4,6 +4,41 @@
 
 @section('content')
 <style>
+    #ordersTable .payment-dropdown-btn {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        width: auto !important;
+        height: auto !important;
+        min-height: 0 !important;
+        min-width: 0 !important;
+        padding: 0 !important;
+        border: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        gap: 0;
+        line-height: 1;
+    }
+    #ordersTable .payment-dropdown-btn::after {
+        display: none !important;
+    }
+    #ordersTable .payment-dropdown-btn .badge {
+        display: inline-flex;
+        align-items: center;
+        min-height: 32px;
+        white-space: nowrap;
+    }
+    #ordersTable .payment-dropdown-btn:focus-visible {
+        outline: 2px solid var(--bx-blue, #2f6bff);
+        outline-offset: 3px;
+        border-radius: 999px;
+    }
+    #ordersTable .payment-dropdown-menu .dropdown-item:hover,
+    #ordersTable .payment-dropdown-menu .dropdown-item:focus {
+        background: var(--bx-surface-2, #f1f5f9) !important;
+        color: var(--bx-ink, #0f172a) !important;
+        -webkit-text-fill-color: var(--bx-ink, #0f172a) !important;
+    }
     .payment-dropdown-btn {
         transition: all 0.2s ease-in-out;
         cursor: pointer;

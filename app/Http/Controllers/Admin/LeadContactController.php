@@ -681,10 +681,6 @@ class LeadContactController extends Controller
     {
         $this->authorizeLeadAccess('view');
 
-        $template = [
-            ['contact_name', 'email', 'company_name', 'phone', 'lead_source', 'status', 'lead_owner_id']
-        ];
-
-        return Excel::download(new LeadsExport($template), 'leads-template.xlsx');
+        return Excel::download(new \App\Exports\LeadsTemplateExport(), 'leads-template.xlsx');
     }
 }

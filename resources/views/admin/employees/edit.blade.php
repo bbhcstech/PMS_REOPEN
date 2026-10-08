@@ -1241,7 +1241,7 @@
                                             @if(!empty($designation->unique_code))
                                                 ({{ $designation->unique_code }})
                                             @endif
-                                            @if(!empty($designation->level))
+                                            @if($designation->level !== null)
                                                 - Level {{ $designation->level }}
                                             @endif
                                         </option>
@@ -1336,13 +1336,18 @@
                             </label>
                             <div class="input-group-premium">
                                 @php
-                                    $rawMobile = old('mobile_with_code') ?? ($ed->mobile ?? ($employee->mobile ?? ''));
+                                    $savedMobile = trim((string) ($employee->mobile ?? ''));
+                                    if ($savedMobile === '') {
+                                        $savedMobile = trim((string) ($ed->mobile ?? ''));
+                                    }
+                                    $rawMobile = old('mobile_with_code') ?? $savedMobile;
                                     $selectedMobileCode = old('mobile_country_code');
                                     $mobileValue = old('mobile');
+                                    $selectedCountry = old('country') ?? ($ed->country ?? ($employee->country ?? ''));
 
-                                    if (empty($selectedMobileCode) || empty($mobileValue)) {
+                                    if ($selectedMobileCode === null || $mobileValue === null) {
                                         $countryMap = \App\Support\CountryPhone::map();
-                                        $selectedMobileCode = '+91';
+                                        $selectedMobileCode = \App\Support\CountryPhone::meta($selectedCountry)['dial_code'];
                                         $mobileValue = $rawMobile;
 
                                         if (!empty($rawMobile)) {
@@ -1360,6 +1365,8 @@
                                                 }
                                             }
                                         }
+                                        $selectedMobileCode = old('mobile_country_code', $selectedMobileCode);
+                                        $mobileValue = old('mobile', $mobileValue);
                                     }
                                     $selectedCountry = old('country') ?? ($ed->country ?? ($employee->country ?? ''));
                                 @endphp
@@ -1380,7 +1387,7 @@
                                 <div id="mobile-error" class="invalid-feedback mobile-error d-none"></div>
                             </div>
                             <small id="mobile_help_text" class="text-muted d-block mt-1" style="font-size: 0.7rem;">Select the country code and enter a 10-digit phone number.</small>
-                            <input type="hidden" name="mobile_with_code" id="mobile_with_code" value="{{ old('mobile_with_code') ?? ($ed->mobile ?? $employee->mobile ?? '') }}">
+                            <input type="hidden" name="mobile_with_code" id="mobile_with_code" value="{{ old('mobile_with_code') ?? $savedMobile }}">
                             <input type="hidden" id="employee_id_val" value="{{ $employee->id }}">
                             @error('mobile_country_code')
                                 <div class="invalid-feedback d-block">{{ $message }}</div>

@@ -100,7 +100,35 @@
                     <span>Contact Phone <span class="text-danger">*</span></span>
                     <span class="partner-badge-required">Required</span>
                 </label>
-                <input type="text" name="contact_phone" class="form-control" value="{{ old('contact_phone', $company->contact_phone) }}" required>
+                @php
+                    $phoneCountries = \App\Support\CountryPhone::map();
+                    $phoneCode = '+91';
+                    $phoneNumber = trim((string) $company->contact_phone);
+                    if (str_starts_with($phoneNumber, '+')) {
+                        $compactPhone = preg_replace('/[\s().-]+/', '', $phoneNumber);
+                        $dialCodes = array_unique(array_column($phoneCountries, 'dial_code'));
+                        usort($dialCodes, fn ($a, $b) => strlen($b) <=> strlen($a));
+                        foreach ($dialCodes as $code) {
+                            if (str_starts_with($compactPhone, $code)) {
+                                $phoneCode = $code;
+                                $phoneNumber = substr($compactPhone, strlen($code));
+                                break;
+                            }
+                        }
+                    }
+                    $phoneCode = old('contact_phone_country_code', $phoneCode);
+                    $phoneNumber = old('contact_phone', $phoneNumber);
+                @endphp
+                <div class="d-flex gap-2">
+                    <select name="contact_phone_country_code" id="contact_phone_country_code" class="form-select" aria-label="Contact phone country code" style="flex: 0 1 190px; min-width: 100px;" required>
+                        @foreach($phoneCountries as $countryName => $meta)
+                            <option value="{{ $meta['dial_code'] }}" data-min-digits="{{ $meta['min_digits'] }}" data-max-digits="{{ $meta['max_digits'] }}" @selected($phoneCode === $meta['dial_code'])>{{ $countryName }} ({{ $meta['dial_code'] }})</option>
+                        @endforeach
+                    </select>
+                    <input type="tel" id="contact_phone" name="contact_phone" class="form-control" style="min-width: 0; flex: 1;" inputmode="numeric" value="{{ $phoneNumber }}" aria-label="Contact phone number" required>
+                </div>
+                <small id="contact_phone_help" class="text-muted d-block mt-1"></small>
+                @error('contact_phone_country_code')<small class="text-danger d-block mt-1">{{ $message }}</small>@enderror
                 @error('contact_phone')<small class="text-danger d-block mt-1">{{ $message }}</small>@enderror
             </div>
             <div>
@@ -167,6 +195,21 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    const phoneInput = document.getElementById('contact_phone');
+    const phoneCountry = document.getElementById('contact_phone_country_code');
+    function updatePhoneRules() {
+        const option = phoneCountry.options[phoneCountry.selectedIndex];
+        const minDigits = Number(option.dataset.minDigits);
+        const maxDigits = Number(option.dataset.maxDigits);
+        phoneInput.minLength = minDigits;
+        phoneInput.maxLength = maxDigits;
+        phoneInput.pattern = '[1-9][0-9]{' + (minDigits - 1) + ',' + (maxDigits - 1) + '}';
+        document.getElementById('contact_phone_help').textContent = minDigits === maxDigits
+            ? 'Enter a ' + minDigits + '-digit phone number without the country code.'
+            : 'Enter ' + minDigits + ' to ' + maxDigits + ' digits without the country code.';
+    }
+    phoneCountry.addEventListener('change', updatePhoneRules);
+    updatePhoneRules();
     const emailInput = document.getElementById('contact_email');
     if (!emailInput) return;
 

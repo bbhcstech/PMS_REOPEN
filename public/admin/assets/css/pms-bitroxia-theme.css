@@ -5657,13 +5657,13 @@ html.dark .reports-to,
 html[data-pms-theme="dark"] td .reports-to,
 html[data-bs-theme="dark"] td .reports-to,
 html[data-theme="dark"] td .reports-to,
-html[data-pms-theme="dark"] .employee-dashboard .reports-to *,
-html[data-bs-theme="dark"] .employee-dashboard .reports-to *,
-html[data-theme="dark"] .employee-dashboard .reports-to *,
-html.dark .employee-dashboard .reports-to *,
-body[data-pms-theme="dark"] .employee-dashboard .reports-to *,
-body[data-bs-theme="dark"] .employee-dashboard .reports-to *,
-body.dark .employee-dashboard .reports-to * {
+html[data-pms-theme="dark"] .employee-dashboard .reports-to *:not(i),
+html[data-bs-theme="dark"] .employee-dashboard .reports-to *:not(i),
+html[data-theme="dark"] .employee-dashboard .reports-to *:not(i),
+html.dark .employee-dashboard .reports-to *:not(i),
+body[data-pms-theme="dark"] .employee-dashboard .reports-to *:not(i),
+body[data-bs-theme="dark"] .employee-dashboard .reports-to *:not(i),
+body.dark .employee-dashboard .reports-to *:not(i) {
   color: #94A3B8 !important;
   -webkit-text-fill-color: #94A3B8 !important;
   font-weight: 500 !important;
@@ -5680,9 +5680,16 @@ body.dark .employee-dashboard .reports-to i,
 html[data-pms-theme="dark"] .reports-to i,
 html[data-bs-theme="dark"] .reports-to i,
 html[data-theme="dark"] .reports-to i,
-html.dark .reports-to i {
+html.dark .reports-to i,
+html[data-pms-theme="dark"] td .reports-to i,
+html[data-bs-theme="dark"] td .reports-to i,
+html[data-theme="dark"] td .reports-to i {
   color: #22D3EE !important;
   -webkit-text-fill-color: #22D3EE !important;
+  font-family: "Font Awesome 6 Free", "Font Awesome 5 Free" !important;
+  font-weight: 900 !important;
+  font-style: normal !important;
+  display: inline-block !important;
 }
 
 /* Status Column Badges */

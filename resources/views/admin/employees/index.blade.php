@@ -595,7 +595,7 @@
                                 <div class="role-info">
                                     <span class="role-name" style="color: var(--emp-role-color, #1f2937) !important; -webkit-text-fill-color: var(--emp-role-color, #1f2937) !important;">{{ $employee->employeeDetail?->designation?->name ?? '-' }}</span>
                                     <span class="reports-to" style="color: var(--emp-reports-color, #64748b) !important; -webkit-text-fill-color: var(--emp-reports-color, #64748b) !important;">
-                                        <i class="fas fa-users" style="color: #22D3EE !important; -webkit-text-fill-color: #22D3EE !important;"></i>
+                                        <i class="fa-solid fa-users fas" style="color: #22D3EE !important; -webkit-text-fill-color: #22D3EE !important; font-family: 'Font Awesome 6 Free', 'Font Awesome 5 Free' !important; font-weight: 900 !important; font-style: normal !important; display: inline-block !important;"></i>
                                         {{ $employee->employeeDetail?->reportingTo?->name ?? 'N/A' }}
                                     </span>
                                 </div>
@@ -1823,6 +1823,13 @@
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+    }
+
+    .reports-to i {
+        font-family: "Font Awesome 6 Free", "Font Awesome 5 Free" !important;
+        font-weight: 900 !important;
+        font-style: normal !important;
+        display: inline-block !important;
     }
 
     /* Status Badge */
@@ -3833,13 +3840,13 @@
     html[data-pms-theme="dark"] td .reports-to,
     html[data-bs-theme="dark"] td .reports-to,
     html[data-theme="dark"] td .reports-to,
-    html[data-pms-theme="dark"] .employee-dashboard .reports-to *,
-    html[data-bs-theme="dark"] .employee-dashboard .reports-to *,
-    html[data-theme="dark"] .employee-dashboard .reports-to *,
-    html.dark .employee-dashboard .reports-to *,
-    body[data-pms-theme="dark"] .employee-dashboard .reports-to *,
-    body[data-bs-theme="dark"] .employee-dashboard .reports-to *,
-    body.dark .employee-dashboard .reports-to * {
+    html[data-pms-theme="dark"] .employee-dashboard .reports-to *:not(i),
+    html[data-bs-theme="dark"] .employee-dashboard .reports-to *:not(i),
+    html[data-theme="dark"] .employee-dashboard .reports-to *:not(i),
+    html.dark .employee-dashboard .reports-to *:not(i),
+    body[data-pms-theme="dark"] .employee-dashboard .reports-to *:not(i),
+    body[data-bs-theme="dark"] .employee-dashboard .reports-to *:not(i),
+    body.dark .employee-dashboard .reports-to *:not(i) {
         color: #94A3B8 !important;
         -webkit-text-fill-color: #94A3B8 !important;
         font-weight: 500 !important;
@@ -3856,9 +3863,16 @@
     html[data-pms-theme="dark"] .reports-to i,
     html[data-bs-theme="dark"] .reports-to i,
     html[data-theme="dark"] .reports-to i,
-    html.dark .reports-to i {
+    html.dark .reports-to i,
+    html[data-pms-theme="dark"] td .reports-to i,
+    html[data-bs-theme="dark"] td .reports-to i,
+    html[data-theme="dark"] td .reports-to i {
         color: #22D3EE !important;
         -webkit-text-fill-color: #22D3EE !important;
+        font-family: "Font Awesome 6 Free", "Font Awesome 5 Free" !important;
+        font-weight: 900 !important;
+        font-style: normal !important;
+        display: inline-block !important;
     }
 
     /* 7. Status Column Badges */

@@ -32,6 +32,14 @@ use Illuminate\Validation\Rule;
 
 class ClientController extends Controller
 {
+    private function duplicateEmailMessage(Request $request): string
+    {
+        $email = $request->input('email');
+        return is_string($email)
+            ? 'The email address "' . $email . '" has already been taken. Please use a different email address.'
+            : 'This email address has already been taken. Please use a different email address.';
+    }
+
     public function index(Request $request)
     {
         // base query
@@ -264,7 +272,7 @@ class ClientController extends Controller
             // Account Details
             'salutation'             => 'nullable|string|max:10',
             'name'                   => 'required|string|max:255',
-            'email'                  => ['required', 'email', Rule::unique('tenant.clients', 'email'), Rule::unique('tenant.users', 'email')],
+            'email'                  => ['bail', 'required', 'email', Rule::unique('tenant.clients', 'email'), Rule::unique('tenant.users', 'email')],
             'password'               => ['required', 'string', 'min:8', 'regex:/[A-Z]/', 'regex:/[a-z]/', 'regex:/[0-9]/', 'regex:/[^A-Za-z0-9]/'],
             'country'                => 'nullable',
             'mobile'                 => ['required', 'regex:' . $phoneConfig['mobileRegex']],
@@ -336,6 +344,7 @@ class ClientController extends Controller
         ];
 
         $validationMessages = array_merge($phoneConfig['messages'], [
+            'email.unique' => $this->duplicateEmailMessage($request),
             'password.required'         => 'Password is required.',
             'password.min'              => 'Password must be at least 8 characters long.',
             'password.regex'            => 'Password must contain at least 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character.',
@@ -564,7 +573,7 @@ class ClientController extends Controller
             if ($e instanceof \Illuminate\Database\QueryException
                 && in_array((int) ($e->errorInfo[1] ?? 0), [1062, 19], true)
                 && str_contains(strtolower($e->getMessage()), 'email')) {
-                return back()->withInput($request->except('password'))->withErrors(['email' => 'This email is already used by an account. Please use a different email.']);
+                return back()->withInput($request->except('password'))->withErrors(['email' => $this->duplicateEmailMessage($request)]);
             }
             return back()->withInput($request->except('password'))->withErrors(['error' => 'Failed to create client. Please try again.']);
         }
@@ -588,6 +597,7 @@ class ClientController extends Controller
         $phoneConfig = $this->getPhoneRulesAndNormalize($request);
 
         $validationMessages = array_merge($phoneConfig['messages'], [
+            'email.unique' => $this->duplicateEmailMessage($request),
             'password.min'   => 'Password must be at least 8 characters long.',
             'password.regex' => 'Password must contain at least 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character.',
         ]);
@@ -595,7 +605,7 @@ class ClientController extends Controller
         $request->validate([
             'salutation'             => 'nullable|string|max:10',
             'name'                   => 'required|string|max:255',
-            'email'                  => ['required', 'email', Rule::unique('tenant.clients', 'email')->ignore($client->id), Rule::unique('tenant.users', 'email')->ignore($user?->id)],
+            'email'                  => ['bail', 'required', 'email', Rule::unique('tenant.clients', 'email')->ignore($client->id), Rule::unique('tenant.users', 'email')->ignore($user?->id)],
             'password'               => ['nullable', 'string', 'min:8', 'regex:/[A-Z]/', 'regex:/[a-z]/', 'regex:/[0-9]/', 'regex:/[^A-Za-z0-9]/'],
             'country'                => 'nullable',
             'mobile'                 => ['required', 'regex:' . $phoneConfig['mobileRegex']],

@@ -177,6 +177,11 @@
             <button type="button" id="exportProjectsCsv" class="btn btn-outline">
                 <i class="fas fa-file-export"></i> Export
             </button>
+            @if($isAdmin)
+                <a href="{{ route('projects.archive') }}" class="btn btn-outline">
+                    <i class="fas fa-archive"></i> Archive
+                </a>
+            @endif
         </div>
 
         <div class="toolbar-right">

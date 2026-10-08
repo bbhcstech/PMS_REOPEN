@@ -602,6 +602,7 @@
     }
 
     .legend-badge {
+        background: #2F6BFF;
         padding: 4px 10px;
         border-radius: 30px;
         font-size: 0.7rem;
@@ -729,6 +730,7 @@
     }
 
     .designation-level {
+        background: #2F6BFF;
         padding: 4px 12px;
         border-radius: 20px;
         font-size: 0.7rem;

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bitroxia-pms-v5';
+const CACHE_NAME = 'bitroxia-pms-v6';
 const OFFLINE_URL = '/offline.html';
 const APP_SHELL = [
   OFFLINE_URL,
@@ -45,13 +45,9 @@ self.addEventListener('fetch', event => {
 
   const url = new URL(request.url);
 
+  // Let the browser load pages directly. A failed worker fetch must not
+  // replace a live application page with a misleading offline response.
   if (request.mode === 'navigate') {
-    if (url.origin === self.location.origin && isSessionPage(url.pathname)) {
-      event.respondWith(networkOnlyPage(request));
-      return;
-    }
-
-    event.respondWith(networkFirstPage(request));
     return;
   }
 
@@ -62,36 +58,6 @@ self.addEventListener('fetch', event => {
 
 function isStaticAsset(pathname) {
   return /\.(?:css|js|png|jpg|jpeg|gif|webp|svg|ico|woff2?|ttf|eot)$/i.test(pathname);
-}
-
-function isSessionPage(pathname) {
-  return pathname === '/login'
-    || pathname === '/logout'
-    || pathname.startsWith('/dashboard')
-    || pathname.startsWith('/admin')
-    || pathname.startsWith('/developer')
-    || pathname.startsWith('/super-admin')
-    || pathname.startsWith('/superadmin')
-    || pathname.startsWith('/hr-login')
-    || pathname.startsWith('/manager-login')
-    || pathname.startsWith('/profile');
-}
-
-async function networkOnlyPage(request) {
-  try {
-    return await fetch(request);
-  } catch (error) {
-    return caches.match(OFFLINE_URL);
-  }
-}
-
-async function networkFirstPage(request) {
-  try {
-    const response = await fetch(request);
-    return response;
-  } catch (error) {
-    return caches.match(OFFLINE_URL);
-  }
 }
 
 async function cacheFirstAsset(request) {

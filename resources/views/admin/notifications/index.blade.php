@@ -101,6 +101,18 @@
     background: #eff6ff;
     color: #2563eb;
   }
+  .kpi-stat-card .kpi-icon-total > i.bx {
+    font-family: boxicons !important;
+    font-weight: normal !important;
+    background: transparent !important;
+    color: #2563eb !important;
+    -webkit-text-fill-color: #2563eb !important;
+    filter: none;
+  }
+  html[data-pms-theme="dark"] .kpi-stat-card .kpi-icon-total > i.bx {
+    color: #60A5FA !important;
+    -webkit-text-fill-color: #60A5FA !important;
+  }
   .kpi-icon-unread {
     background: #fffbeb;
     color: #d97706;
@@ -192,6 +204,10 @@
   }
 
   /* Notification Items */
+  html[data-pms-theme="dark"] .notif-card-item .notif-severity-icon > i {
+    color: var(--notif-icon-color) !important;
+  }
+
   html[data-pms-theme="dark"] .notif-card-item {
     background: #0F1530 !important;
     border: 1px solid rgba(238, 241, 251, 0.09) !important;
@@ -433,7 +449,7 @@
     <div class="col-md-4">
       <div class="kpi-stat-card p-3 d-flex align-items-center gap-3">
         <div class="kpi-icon-box kpi-icon-total p-3 rounded-4 fs-3">
-          <i class="bx bx-bell-ring"></i>
+          <i class="bx bx-bell" aria-hidden="true"></i>
         </div>
         <div>
           <div class="fs-4 fw-bolder kpi-number" style="letter-spacing: -0.5px;">{{ number_format($kpis['total'] ?? 0) }}</div>
@@ -645,7 +661,7 @@
         <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
           <div class="d-flex align-items-center gap-2 flex-wrap">
             <!-- Icon Circle -->
-            <div style="width: 32px; height: 32px; border-radius: 50%; background: {{ $iconBg }}; color: {{ $iconColor }}; display: flex; align-items: center; justify-content: center; font-size: 16px;" class="flex-shrink-0">
+            <div style="--notif-icon-color: {{ $iconColor }}; width: 32px; height: 32px; border-radius: 50%; background: {{ $iconBg }}; color: {{ $iconColor }}; display: flex; align-items: center; justify-content: center; font-size: 16px;" class="flex-shrink-0 notif-severity-icon">
               <i class="bx {{ $iconClass }}"></i>
             </div>
 

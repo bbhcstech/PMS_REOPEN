@@ -18,7 +18,7 @@ class DesignationController extends Controller
     public function updateLevelSettings(Request $request)
     {
         abort_unless(in_array(strtolower((string) auth()->user()?->role), ['admin', 'administrator'], true), 403);
-        $data = $request->validate(['maximum_level' => ['required', 'integer', 'min:6', 'max:100']]);
+        $data = $request->validate(['maximum_level' => ['required', 'integer', 'min:6', 'max:2147483647']]);
         $maximum = (int) $data['maximum_level'];
         if (Designation::where('level', '>', $maximum)->exists()) {
             throw \Illuminate\Validation\ValidationException::withMessages([

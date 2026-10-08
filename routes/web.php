@@ -1227,6 +1227,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('leads/contacts/create', [LeadContactController::class, 'create'])->name('leads.contacts.create');
     Route::post('leads/contacts/store', [LeadContactController::class, 'store'])->name('leads.contacts.store');
     Route::post('leads/contacts/check-duplicate', [LeadContactController::class, 'checkDuplicate'])->name('leads.contacts.check-duplicate');
+    Route::get('leads/contacts/template', [LeadContactController::class, 'downloadTemplate'])->name('leads.contacts.template');
     Route::get('leads/contacts/{id}', [LeadContactController::class, 'show'])->name('leads.contacts.show');
     Route::get('leads/contacts/{id}/edit', [LeadContactController::class, 'edit'])->name('leads.contacts.edit');
     Route::put('leads/contacts/{id}', [LeadContactController::class, 'update'])->name('leads.contacts.update');
@@ -1241,7 +1242,6 @@ Route::middleware(['auth'])->group(function () {
 
     // Import/Export
     Route::get('/leads/contacts/export', [LeadContactController::class, 'export'])->name('leads.contacts.export');
-    Route::get('leads/contacts/template', [LeadContactController::class, 'downloadTemplate'])->name('leads.contacts.template');
     Route::post('leads/contacts/import', [LeadContactController::class, 'import'])->name('leads.contacts.import');
 });
 
@@ -1493,6 +1493,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/my-documents/upload', [\App\Http\Controllers\UserDocumentController::class, 'upload'])->name('my-documents.upload');
     Route::delete('/my-documents/{type}/{id}', [\App\Http\Controllers\UserDocumentController::class, 'destroy'])->name('my-documents.destroy');
     Route::get('/my-documents/download/{type}/{id}', [\App\Http\Controllers\UserDocumentController::class, 'download'])->name('my-documents.download');
+    Route::get('/my-documents/history/{type}/{id}', [\App\Http\Controllers\UserDocumentController::class, 'history'])->name('my-documents.history');
 
     Route::get('/admin/settings/security', [SecuritySettingsController::class, 'index'])->name('admin.settings.security');
     Route::post('/admin/settings/security', [SecuritySettingsController::class, 'update'])->name('admin.settings.security.update');
