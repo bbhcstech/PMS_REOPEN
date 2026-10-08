@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\AppSetting;
 use App\Models\User;
 use App\Services\SystemNotificationService;
+use App\Services\WorkScheduleService;
 
 class WorkScheduleController extends Controller
 {
@@ -20,6 +21,7 @@ class WorkScheduleController extends Controller
             'shift_enabled' => AppSetting::valueFor('work_shift_enabled', '0'),
             'special_days' => json_decode(AppSetting::valueFor('work_special_days', '[]'), true) ?? [],
             'employee_modes' => json_decode(AppSetting::valueFor('work_employee_modes', '{}'), true) ?? [],
+            'employee_wfh_dates' => json_decode(AppSetting::valueFor('work_employee_wfh_dates', '[]'), true) ?? [],
         ];
 
         $employees = User::whereIn('role', ['employee', 'hr', 'manager'])
@@ -320,5 +322,48 @@ class WorkScheduleController extends Controller
         ]);
 
         return back()->with('success', "Employee work location settings updated successfully. Notifications sent for {$updatedCount} updated employee schedule(s).");
+    }
+
+    public function addEmployeeWfhDate(Request $request)
+    {
+        if (auth()->user()?->role !== 'admin') {
+            if ($request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'Unauthorized. Only Administrators can assign WFH dates.'], 403);
+            }
+            return back()->with('error', 'Unauthorized. Only Administrators can assign WFH dates.');
+        }
+
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'date' => 'required|date',
+            'reason' => 'nullable|string|max:255',
+        ]);
+
+        $entry = WorkScheduleService::assignEmployeeWfhDate((int)$request->user_id, $request->date, $request->reason ?? '');
+
+        $targetUser = User::find($request->user_id);
+        $name = $targetUser ? $targetUser->name : 'Employee';
+        $formattedDate = date('M d, Y', strtotime($request->date));
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => "Assigned Work From Home to {$name} on {$formattedDate}. Notifications sent.",
+                'entry' => $entry
+            ]);
+        }
+
+        return back()->with('success', "Assigned Work From Home to {$name} on {$formattedDate}. Notifications sent to employee and HR.");
+    }
+
+    public function deleteEmployeeWfhDate($id)
+    {
+        if (auth()->user()?->role !== 'admin') {
+            return back()->with('error', 'Unauthorized. Only Administrators can remove WFH date assignments.');
+        }
+
+        WorkScheduleService::deleteEmployeeWfhDate($id);
+
+        return back()->with('success', 'Employee Work From Home date assignment removed successfully.');
     }
 }

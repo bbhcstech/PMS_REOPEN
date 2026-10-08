@@ -684,6 +684,7 @@
         background: #f8fafc;
     }
     .clock-camera-preview {
+        position: relative;
         width: 100%;
         aspect-ratio: 4 / 3;
         background: #0f172a;
@@ -691,21 +692,29 @@
         overflow: hidden;
     }
     .clock-camera-preview video,
-    .clock-camera-preview canvas,
     .clock-camera-preview img {
         width: 100%;
         height: 100%;
         object-fit: cover;
     }
     .clock-camera-preview canvas,
+    #clockCameraCanvas {
+        display: none !important;
+        visibility: hidden !important;
+        position: absolute !important;
+        width: 0 !important;
+        height: 0 !important;
+        pointer-events: none !important;
+        opacity: 0 !important;
+    }
     .clock-camera-preview img {
         display: none;
     }
     .clock-camera-preview.has-photo video {
-        display: none;
+        display: none !important;
     }
     .clock-camera-preview.has-photo img {
-        display: block;
+        display: block !important;
     }
     .clock-modal-btn {
         display: inline-flex;
@@ -966,6 +975,9 @@
                                     );
                                 $clockedInOutsideOffice = strtolower((string) $attendance->work_from_type) === 'field';
                                 $attendanceDateStr = ($attendance->date instanceof \Carbon\Carbon ? $attendance->date->format('Y-m-d') : (string) $attendance->date);
+                                $defaultTz = (config('app.timezone') && config('app.timezone') !== 'UTC') ? config('app.timezone') : 'Asia/Kolkata';
+                                $clockInIsoString = $attendance->clock_in ? \Carbon\Carbon::parse($attendanceDateStr . ' ' . $attendance->clock_in, $defaultTz)->toIso8601String() : '';
+                                $clockOutIsoString = $attendance->clock_out ? \Carbon\Carbon::parse($attendanceDateStr . ' ' . $attendance->clock_out, $defaultTz)->toIso8601String() : '';
                             @endphp
                             @if($clockInLocationText)
                                 <div class="clock-location-note">
@@ -988,8 +1000,10 @@
                                     <span>{{ $attendance->clock_out ? 'Worked Time' : 'Working Time' }}</span>
                                     <strong
                                         id="employeeWorkTimer"
-                                        data-clock-in="{{ \Carbon\Carbon::parse($attendanceDateStr . ' ' . $attendance->clock_in, config('app.timezone', 'Asia/Kolkata'))->toIso8601String() }}"
-                                        data-clock-out="{{ $attendance->clock_out ? \Carbon\Carbon::parse($attendanceDateStr . ' ' . $attendance->clock_out, config('app.timezone', 'Asia/Kolkata'))->toIso8601String() : '' }}"
+                                        data-clock-in="{{ $clockInIsoString }}"
+                                        data-clock-out="{{ $clockOutIsoString }}"
+                                        data-raw-time="{{ $attendance->clock_in }}"
+                                        data-raw-date="{{ $attendanceDateStr }}"
                                         data-fixed-duration="{{ $attendance->clock_out ? $workedDurationLabel : '' }}"
                                     >{{ $attendance->clock_out ? $workedDurationLabel : '00:00:00' }}</strong>
                                 </div>
@@ -1431,7 +1445,7 @@
             <div class="clock-camera-body">
                 <div class="clock-camera-preview" id="clockCameraPreview">
                     <video id="clockCameraVideo" autoplay playsinline muted></video>
-                    <canvas id="clockCameraCanvas"></canvas>
+                    <canvas id="clockCameraCanvas" style="display: none !important; position: absolute; width: 0; height: 0; pointer-events: none;"></canvas>
                     <img id="clockCameraPhoto" alt="Captured clock in photo">
                 </div>
                 <p class="text-muted mt-3 mb-0 small">Take a clear face photo. You can flip camera on mobile, retake, then use photo for clock in.</p>
@@ -1630,9 +1644,16 @@
         stopCamera();
         capturedSelfie = '';
         preview?.classList.remove('has-photo');
-
+        if (photo) {
+            photo.removeAttribute('src');
+            photo.style.display = 'none';
+        }
         if (video) {
+            video.style.display = 'block';
             video.style.transform = cameraFacingMode === 'user' ? 'scaleX(-1)' : 'scaleX(1)';
+        }
+        if (canvas) {
+            canvas.style.display = 'none';
         }
 
         const constraintsList = [
@@ -1679,6 +1700,17 @@
         stopCamera();
         modal?.classList.remove('is-open');
         modal?.setAttribute('aria-hidden', 'true');
+        preview?.classList.remove('has-photo');
+        if (photo) {
+            photo.removeAttribute('src');
+            photo.style.display = 'none';
+        }
+        if (video) {
+            video.style.display = 'block';
+        }
+        if (canvas) {
+            canvas.style.display = 'none';
+        }
     };
 
     const requestLocation = () => new Promise((resolve, reject) => {
@@ -1811,12 +1843,28 @@
         capturedSelfie = canvas.toDataURL('image/jpeg', 0.92);
         photo.src = capturedSelfie;
         preview?.classList.add('has-photo');
+        if (video) {
+            video.style.display = 'none';
+        }
+        if (photo) {
+            photo.style.display = 'block';
+        }
+        if (canvas) {
+            canvas.style.display = 'none';
+        }
     });
 
     retakeCamera?.addEventListener('click', () => {
         capturedSelfie = '';
         if (photo) {
             photo.removeAttribute('src');
+            photo.style.display = 'none';
+        }
+        if (video) {
+            video.style.display = 'block';
+        }
+        if (canvas) {
+            canvas.style.display = 'none';
         }
         preview?.classList.remove('has-photo');
     });
@@ -1904,22 +1952,47 @@
             if (el !== hrClockDate) el.textContent = formatLocalDate(now);
         });
 
-        if (workTimer && workTimer.dataset.clockIn) {
+        if (workTimer && (workTimer.dataset.clockIn || workTimer.dataset.rawTime)) {
             if (workTimer.dataset.fixedDuration) {
                 workTimer.textContent = workTimer.dataset.fixedDuration;
                 return;
             }
 
-            const started = new Date(workTimer.dataset.clockIn);
-            const ended = workTimer.dataset.clockOut ? new Date(workTimer.dataset.clockOut) : now;
-            if (workTimer.dataset.clockOut && ended < started) {
-                ended.setDate(ended.getDate() + 1);
+            const parseTime = (isoStr, rawTime, rawDate) => {
+                let d = isoStr ? new Date(isoStr) : null;
+                const nowMs = Date.now();
+                if (!d || isNaN(d.getTime()) || (d.getTime() - nowMs > 30000 && rawTime)) {
+                    const parts = (rawTime || '').split(':').map(Number);
+                    if (parts.length >= 2) {
+                        const localDate = new Date();
+                        if (rawDate) {
+                            const dp = rawDate.split('-').map(Number);
+                            if (dp.length === 3) {
+                                localDate.setFullYear(dp[0], dp[1] - 1, dp[2]);
+                            }
+                        }
+                        localDate.setHours(parts[0], parts[1], parts[2] || 0, 0);
+                        d = localDate;
+                    }
+                }
+                return d;
+            };
+
+            const started = parseTime(workTimer.dataset.clockIn, workTimer.dataset.rawTime, workTimer.dataset.rawDate);
+            const ended = workTimer.dataset.clockOut
+                ? (parseTime(workTimer.dataset.clockOut, '', '') || now)
+                : now;
+
+            if (started) {
+                if (workTimer.dataset.clockOut && ended < started) {
+                    ended.setDate(ended.getDate() + 1);
+                }
+                const diffSeconds = Math.max(0, Math.floor((ended - started) / 1000));
+                const hours = String(Math.floor(diffSeconds / 3600)).padStart(2, '0');
+                const minutes = String(Math.floor((diffSeconds % 3600) / 60)).padStart(2, '0');
+                const seconds = String(diffSeconds % 60).padStart(2, '0');
+                workTimer.textContent = `${hours}:${minutes}:${seconds}`;
             }
-            const diffSeconds = Math.max(0, Math.floor((ended - started) / 1000));
-            const hours = String(Math.floor(diffSeconds / 3600)).padStart(2, '0');
-            const minutes = String(Math.floor((diffSeconds % 3600) / 60)).padStart(2, '0');
-            const seconds = String(diffSeconds % 60).padStart(2, '0');
-            workTimer.textContent = `${hours}:${minutes}:${seconds}`;
         }
     };
 

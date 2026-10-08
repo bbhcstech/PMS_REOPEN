@@ -24,6 +24,7 @@ use App\Models\Designation;
 use App\Models\StickyNote;
 use App\Models\User;
 use App\Services\SystemNotificationService;
+use App\Services\WorkScheduleService;
 use Carbon\Carbon;
 
 
@@ -76,38 +77,7 @@ class DashboardController extends Controller
 
     private function applyOrganizationAttendanceRules(Attendance $attendance): Attendance
     {
-        $setting = $this->attendancePolicy();
-        $attendance->append(['total_seconds', 'clock_in_datetime', 'clock_out_datetime']);
-
-        $clockIn = $attendance->clock_in_datetime;
-        $seconds = (int) ($attendance->total_seconds ?? 0);
-        $lateTime = Carbon::parse($attendance->date->format('Y-m-d') . ' ' . $setting->late_time);
-        $isLate = $clockIn && $clockIn->gt($lateTime);
-        $hasCompletedShift = $attendance->clock_in && $attendance->clock_out;
-        $dayOffSeconds = (int) $setting->day_off_threshold_minutes * 60;
-        $halfDaySeconds = (int) $setting->half_day_threshold_minutes * 60;
-
-        if ($hasCompletedShift && $seconds < $dayOffSeconds) {
-            $attendance->status = 'day_off';
-            $attendance->late = $isLate ? 'yes' : 'no';
-            $attendance->half_day = 'no';
-        } elseif ($hasCompletedShift && $seconds < $halfDaySeconds) {
-            $attendance->status = 'half_day';
-            $attendance->late = $isLate ? 'yes' : 'no';
-            $attendance->half_day = 'yes';
-        } elseif ($isLate) {
-            $attendance->status = 'late';
-            $attendance->late = 'yes';
-            $attendance->half_day = 'no';
-        } elseif ($clockIn) {
-            $attendance->status = 'present';
-            $attendance->late = 'no';
-            $attendance->half_day = 'no';
-        }
-
-        $attendance->save();
-
-        return $attendance;
+        return WorkScheduleService::applyOrganizationAttendanceRules($attendance, $this->attendancePolicy());
     }
 
     private function attendancePolicy(): AttendanceSetting
@@ -908,16 +878,20 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
 
     $currentLocationLabel = mb_substr($currentLocationLabel, 0, 255);
 
+    $isWfhAssigned = WorkScheduleService::isUserWfhOnDate($userId, $today);
+    $workFromType = $isWfhAssigned ? 'wfh' : ($distance <= self::OFFICE_RADIUS_METERS ? 'office' : 'field');
+    $initialStatus = $isWfhAssigned ? 'wfh' : 'present';
+
     $attendanceData = [
         'user_id'            => $userId,
         'date'               => $today,
         'clock_in'           => $clockInTime,
-        'status'             => 'present',
+        'status'             => $initialStatus,
         'clock_in_latitude'  => $lat,
         'clock_in_longitude' => $lng,
         'clock_in_address'   => $currentLocationLabel,
         'clock_in_photo'     => $photoPath,
-        'work_from_type'     => $distance <= self::OFFICE_RADIUS_METERS ? 'office' : 'field',
+        'work_from_type'     => $workFromType,
     ];
 
     if (Schema::hasColumn('attendances', 'location')) {
@@ -936,7 +910,8 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
     $attendance = Attendance::create($attendanceData);
     $this->applyOrganizationAttendanceRules($attendance);
 
-    return back()->with('success', 'Clocked in at ' . $now->format('h:i A') . '. Current location saved.');
+    $wfhMsg = $isWfhAssigned ? ' (Assigned Work From Home)' : '';
+    return back()->with('success', 'Clocked in at ' . $now->format('h:i A') . $wfhMsg . '. Current location saved.');
 }
 
    public function markEmployeeWelcomeSeen(Request $request)

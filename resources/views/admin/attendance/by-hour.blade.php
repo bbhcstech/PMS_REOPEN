@@ -1759,6 +1759,12 @@
                                                             $cellSeconds += $outDt->diffInSeconds($inDt);
                                                         } elseif ($inDt && ! $outDt) {
                                                             $hasOpenSession = true;
+                                                            $defaultTz = (config('app.timezone') && config('app.timezone') !== 'UTC') ? config('app.timezone') : 'Asia/Kolkata';
+                                                            $now = Carbon::now($defaultTz);
+                                                            $diffSec = $now->getTimestamp() - $inDt->getTimestamp();
+                                                            if ($diffSec > 0 && $diffSec <= 86400) {
+                                                                $cellSeconds += (int) $diffSec;
+                                                            }
                                                         } else {
                                                             $hasBadSession = true;
                                                         }
@@ -1786,6 +1792,7 @@
                                                     'dayoff' => 'Day Off',
                                                     'leave' => 'On Leave',
                                                     'holiday' => 'Holiday',
+                                                    'wfh' => 'Work From Home',
                                                 ][$recordStatus] ?? 'Present';
 
                                                 $statusClass = [
@@ -1796,6 +1803,7 @@
                                                     'dayoff' => 'dayoff',
                                                     'leave' => 'leave',
                                                     'holiday' => 'holiday',
+                                                    'wfh' => 'wfh',
                                                 ][$recordStatus] ?? 'present';
 
                                                 $statusIcon = [
@@ -1806,6 +1814,7 @@
                                                     'dayoff' => 'fa-calendar',
                                                     'leave' => 'fa-plane-departure',
                                                     'holiday' => 'fa-star',
+                                                    'wfh' => 'fa-laptop-house',
                                                 ][$recordStatus] ?? 'fa-check';
 
                                                 $statusTitle = $statusLabel . ' - ' . $plainDisplay . ' worked on ' . $date->format('d M Y');
@@ -1814,29 +1823,26 @@
                                             } else {
                                                 $today = Carbon::now()->format('Y-m-d');
 
+                                                $cellOccassion = $firstRecord->occassion ?? ($cell instanceof \App\Models\Attendance ? $cell->occassion : (is_object($cell) && property_exists($cell, 'occassion') ? $cell->occassion : null));
+                                                $cellReason = $firstRecord->reason ?? ($cell instanceof \App\Models\Attendance ? $cell->reason : (is_object($cell) && property_exists($cell, 'reason') ? $cell->reason : null));
+
                                                 if ($status === 'holiday') {
                                                     $statusLabel = 'Holiday';
-                                                    $statusTitle = ($cell->occassion ?? 'Holiday') . ' on ' . $date->format('d M Y');
+                                                    $statusTitle = ($cellOccassion ?? 'Holiday') . ' on ' . $date->format('d M Y');
                                                     $statusClass = 'holiday';
                                                     $statusIcon = 'fa-star';
                                                     $canEditDay = false;
-                                                } elseif ($status === 'leave') {
-                                                    $statusLabel = 'On Leave';
-                                                    $statusTitle = ($cell->reason ?? 'Leave') . ' on ' . $date->format('d M Y');
-                                                    $statusClass = 'leave';
-                                                    $statusIcon = 'fa-plane-departure';
-                                                    $canEditDay = false;
-                                                } elseif ($date->isSaturday()) {
+                                                } elseif ($status === 'wfh') {
                                                     $statusLabel = 'Work From Home';
-                                                    $statusTitle = 'Saturday - Work From Home on ' . $date->format('d M Y');
+                                                    $statusTitle = ($cellReason ?? 'Work From Home') . ' on ' . $date->format('d M Y');
                                                     $statusClass = 'wfh';
                                                     $statusIcon = 'fa-laptop-house';
                                                     $canEditDay = false;
-                                                } elseif ($date->isSunday()) {
-                                                    $statusLabel = 'Holiday';
-                                                    $statusTitle = 'Sunday Holiday on ' . $date->format('d M Y');
-                                                    $statusClass = 'holiday';
-                                                    $statusIcon = 'fa-star';
+                                                } elseif ($status === 'leave') {
+                                                    $statusLabel = 'On Leave';
+                                                    $statusTitle = ($cellReason ?? 'Leave') . ' on ' . $date->format('d M Y');
+                                                    $statusClass = 'leave';
+                                                    $statusIcon = 'fa-plane-departure';
                                                     $canEditDay = false;
                                                 } elseif ($dateKey <= $today) {
                                                     $statusLabel = 'Absent';
@@ -1860,11 +1866,10 @@
                                                 'clock_in' => $firstRecord && $firstRecord->clock_in ? Carbon::parse($firstRecord->clock_in)->format('h:i A') : '-',
                                                 'clock_out' => $firstRecord && $firstRecord->clock_out ? Carbon::parse($firstRecord->clock_out)->format('h:i A') : '-',
                                                 'total' => $plainDisplay,
-                                                'note' => $statusClass === 'wfh'
-                                                    ? 'Auto Saturday WFH'
-                                                    : ($statusClass === 'holiday' && $date->isSunday()
-                                                        ? 'Auto Sunday Holiday'
-                                                        : ($hasOpenSession ? 'Open session' : ($hasBadSession ? 'Bad data detected' : ''))),
+                                                'is_open' => $hasOpenSession,
+                                                'clock_in_raw' => $firstRecord && $firstRecord->clock_in ? $firstRecord->clock_in : '',
+                                                'total_seconds' => $cellSeconds,
+                                                'note' => ($cellOccassion ?? $cellReason) ?: ($hasOpenSession ? 'Open session' : ($hasBadSession ? 'Bad data detected' : '')),
                                             ];
                                         @endphp
                                         <td class="{{ $isWeekend ? 'weekend' : '' }} {{ $isToday ? 'today' : '' }}">
@@ -2213,12 +2218,18 @@ document.addEventListener('DOMContentLoaded', function () {
                     '<i class="fas fa-pen me-1"></i>Edit</button>';
             }
 
+            var totalCellHtml = escapeHourHtml(record.total);
+            if (record.is_open && record.clock_in && record.clock_in !== '-') {
+                totalCellHtml = '<span class="live-hour-work-timer fw-bold text-success" data-clock-in="' + escapeHourHtml(record.clock_in_raw || '') + '" data-date="' + escapeHourHtml(record.date || '') + '" data-seconds="' + escapeHourHtml(record.total_seconds || 0) + '">' + escapeHourHtml(record.total) + '</span>' +
+                    ' <span class="badge bg-success-subtle text-success small ms-1"><i class="fas fa-spinner fa-spin me-1"></i>Working</span>';
+            }
+
             return '<tr>' +
                 '<td><strong>' + escapeHourHtml(record.day) + '</strong><div class="small text-muted">' + escapeHourHtml(record.date) + '</div></td>' +
                 '<td>' + escapeHourHtml(record.status) + '</td>' +
                 '<td>' + escapeHourHtml(record.clock_in) + '</td>' +
                 '<td>' + escapeHourHtml(record.clock_out) + '</td>' +
-                '<td>' + escapeHourHtml(record.total) + '</td>' +
+                '<td>' + totalCellHtml + '</td>' +
                 '<td>' + escapeHourHtml(record.note || '-') + '</td>' +
                 (editMode ? '<td class="text-center">' + editButton + '</td>' : '') +
             '</tr>';
@@ -2246,6 +2257,40 @@ document.addEventListener('DOMContentLoaded', function () {
                 '</div>' +
             '</div>'
         );
+
+        if (window.hourAttendanceTimerInterval) {
+            clearInterval(window.hourAttendanceTimerInterval);
+            window.hourAttendanceTimerInterval = null;
+        }
+
+        var updateHourOpenShifts = function() {
+            var now = new Date();
+            $('#hourAttendanceModal .live-hour-work-timer').each(function() {
+                var el = $(this);
+                var rawDate = el.attr('data-date');
+                var rawTime = el.attr('data-clock-in');
+                if (!rawDate || !rawTime) return;
+                var parts = rawTime.split(':').map(Number);
+                var dp = rawDate.split('-').map(Number);
+                if (parts.length >= 2 && dp.length === 3) {
+                    var start = new Date(dp[0], dp[1] - 1, dp[2], parts[0], parts[1], parts[2] || 0);
+                    var diffSec = Math.max(0, Math.floor((now - start) / 1000));
+                    var h = Math.floor(diffSec / 3600);
+                    var m = Math.floor((diffSec % 3600) / 60);
+                    var s = diffSec % 60;
+                    var fmt = String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+                    el.text(fmt);
+                }
+            });
+        };
+
+        window.hourAttendanceTimerInterval = setInterval(updateHourOpenShifts, 1000);
+        $('#hourAttendanceModal').off('hidden.bs.modal.hourTimer').on('hidden.bs.modal.hourTimer', function() {
+            if (window.hourAttendanceTimerInterval) {
+                clearInterval(window.hourAttendanceTimerInterval);
+                window.hourAttendanceTimerInterval = null;
+            }
+        });
 
         const modal = getHourAttendanceModal();
         if (modal) {

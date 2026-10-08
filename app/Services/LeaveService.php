@@ -481,6 +481,9 @@ class LeaveService
             if (Schema::hasColumn('attendances', 'working_from')) {
                 $payload['working_from'] = $leave->is_unpaid ? 'Unpaid Leave' : 'Leave';
             }
+            if (Schema::hasColumn('attendances', 'clock_in_address')) {
+                $payload['clock_in_address'] = $leave->is_unpaid ? 'Unpaid Leave' : 'Leave';
+            }
 
             try {
                 Attendance::updateOrCreate(
@@ -500,6 +503,9 @@ class LeaveService
                     }
                     if (Schema::hasColumn('attendances', 'working_from')) {
                         $fallbackPayload['working_from'] = 'Unpaid Leave';
+                    }
+                    if (Schema::hasColumn('attendances', 'clock_in_address')) {
+                        $fallbackPayload['clock_in_address'] = 'Unpaid Leave';
                     }
 
                     Attendance::updateOrCreate(
