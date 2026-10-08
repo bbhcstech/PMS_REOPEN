@@ -18,8 +18,8 @@ class AuthenticatedSessionController extends Controller
      */
     public function create(Request $request): Response|RedirectResponse
     {
-        if (Auth::check()) {
-            $user = Auth::user();
+        if (Auth::guard('web')->check()) {
+            $user = Auth::guard('web')->user();
             if ($user && (
                 (method_exists($user, 'isDeveloper') && $user->isDeveloper()) ||
                 in_array(strtolower((string) ($user->role ?? '')), ['developer', 'dev'], true) ||
@@ -29,6 +29,14 @@ class AuthenticatedSessionController extends Controller
             )) {
                 return redirect()->route('developer.dashboard');
             }
+            if ($user && strtolower((string) ($user->role ?? '')) === 'superadmin') {
+                return redirect()->route('superadmin.dashboard');
+            }
+            return redirect()->route('dashboard');
+        }
+
+        if (Auth::guard('super_admin')->check()) {
+            return redirect()->route('superadmin.dashboard');
         }
 
         $request->session()->regenerateToken();
@@ -53,15 +61,14 @@ class AuthenticatedSessionController extends Controller
         // the company session keys written inside authenticate() above).
         $request->session()->regenerate();
 
-        if (Auth::guard('super_admin')->check()) {
-            return redirect()->route('superadmin.dashboard');
-        }
-
-        // Multi-Tenant: Re-affirm the company session and lock the DB connection.
-        // We deliberately do NOT read user->company_id here because Auth::user() may
-        // have been loaded from the wrong DB connection before SetTenantConnection
-        // had a chance to switch it. The session is the single source of truth.
         $user = Auth::user();
+
+        // If a standard company user is logged in (manager, hr, employee, admin, etc.), clear any stale super_admin guard
+        if ($user && strtolower((string) ($user->role ?? '')) !== 'superadmin') {
+            if (Auth::guard('super_admin')->check()) {
+                Auth::guard('super_admin')->logout();
+            }
+        }
         $isDeveloper = $user && (
             (method_exists($user, 'isDeveloper') && $user->isDeveloper()) ||
             in_array(strtolower((string) ($user->role ?? '')), ['developer', 'dev'], true) ||
@@ -134,7 +141,7 @@ class AuthenticatedSessionController extends Controller
             return redirect()->route('developer.dashboard');
         }
 
-        if ($role === 'superadmin') {
+        if ($role === 'superadmin' || (! $user && Auth::guard('super_admin')->check())) {
             // If superadmin logged in via company credentials (tenant company session active), redirect to company dashboard
             if (session('current_company_id') && session('current_company_id') != 1) {
                 return redirect()->route('dashboard');

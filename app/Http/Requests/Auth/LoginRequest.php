@@ -285,6 +285,7 @@ class LoginRequest extends FormRequest
                         'current_company_name' => $cComp?->name ?: 'Company',
                     ]);
 
+                    \Illuminate\Support\Facades\Auth::guard('super_admin')->logout();
                     \Illuminate\Support\Facades\Auth::guard('web')->login($stdUser, $this->boolean('remember'));
                     RateLimiter::clear($this->throttleKey());
                     return;
@@ -684,6 +685,9 @@ class LoginRequest extends FormRequest
         // ============================================
         $loggedInUser = Auth::user();
         if ($loggedInUser) {
+            if (strtolower((string) ($loggedInUser->role ?? '')) !== 'superadmin') {
+                \Illuminate\Support\Facades\Auth::guard('super_admin')->logout();
+            }
             if (! session('current_company_id')) {
                 $userCompId = $loggedInUser->company_id ?: 1;
                 $resComp = null;
