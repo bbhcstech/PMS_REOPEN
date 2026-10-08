@@ -91,6 +91,16 @@ class AppraisalController extends Controller
 
         $evaluator = auth()->user();
 
+        // If an appraisal was previously deleted, restore it when re-evaluating
+        $existingRecord = Appraisal::withTrashed()
+            ->where('employee_id', $request->employee_id)
+            ->where('appraisal_period', $request->appraisal_period)
+            ->first();
+
+        if ($existingRecord && $existingRecord->trashed()) {
+            $existingRecord->restore();
+        }
+
         Appraisal::updateOrCreate(
             [
                 'employee_id' => $request->employee_id,
@@ -148,12 +158,19 @@ class AppraisalController extends Controller
      */
     private function ensureEmployeeAppraisal(User $employee, string $period, bool $forceRecalculate = false): Appraisal
     {
-        $existing = Appraisal::where('employee_id', $employee->id)
+        $existing = Appraisal::withTrashed()
+            ->where('employee_id', $employee->id)
             ->where('appraisal_period', $period)
             ->first();
 
+        // If record exists (even if soft-deleted by user), do not auto-recreate it unless forced
         if ($existing && !$forceRecalculate) {
             return $existing;
+        }
+
+        // If explicitly forced to recalculate, restore soft-deleted record if needed
+        if ($existing && $existing->trashed() && $forceRecalculate) {
+            $existing->restore();
         }
 
         // Calculate Project Metrics
@@ -163,8 +180,17 @@ class AppraisalController extends Controller
         }
 
         // Tasks stats
-        $completedTasks = Task::where('task_short_code', 'like', "%{$employee->id}%")
-            ->orWhere('description', 'like', "%{$employee->name}%")
+        $completedTasks = Task::where(function ($query) use ($employee) {
+                $query->where('assigned_to', $employee->id)
+                    ->orWhereRaw('FIND_IN_SET(?, assigned_to)', [$employee->id])
+                    ->orWhereHas('assignees', function ($q) use ($employee) {
+                        $q->where('users.id', $employee->id);
+                    });
+            })
+            ->where(function ($query) {
+                $query->where('is_completed', 1)
+                    ->orWhereIn('status', ['completed', 'Finished', 'done']);
+            })
             ->count();
         if ($completedTasks === 0) {
             $completedTasks = rand(4, 12);
