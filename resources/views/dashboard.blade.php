@@ -996,10 +996,15 @@
         white-space: nowrap;
     }
 
-    html:not([data-pms-theme="dark"]) .saas-module-card .saas-module-icon > i.bx {
+    html:not([data-pms-theme="dark"]) .saas-module-card .saas-module-icon > i.bx,
+    html:not([data-pms-theme="dark"]) .saas-module-card .saas-module-icon > i.bx::before {
         font-family: boxicons !important;
         font-weight: normal !important;
-        font-style: normal;
+        font-style: normal !important;
+        font-size: 20px !important;
+        line-height: 1 !important;
+        text-transform: none !important;
+        letter-spacing: normal !important;
         background: transparent !important;
         color: #2f6bff !important;
         -webkit-text-fill-color: #2f6bff !important;
@@ -1446,9 +1451,27 @@
         -webkit-text-fill-color: #ffffff !important;
     }
 
-    #totalEmployeesCard i.bx {
+    #totalEmployeesCard i.bx,
+    #totalEmployeesCard i.bx::before {
+        font-family: boxicons !important;
         font-weight: normal !important;
+        font-style: normal !important;
+        line-height: 1 !important;
+        background: transparent !important;
         filter: none;
+    }
+
+    #totalEmployeesCard .stat-icon {
+        background: rgba(255, 255, 255, 0.22) !important;
+        border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    }
+
+    #totalEmployeesCard .stat-icon i::before,
+    #totalEmployeesCard .stat-trend i::before,
+    #totalEmployeesCard .stat-dropdown > button i::before {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        opacity: 1 !important;
     }
 
     #totalEmployeesCard .stat-dropdown > button {
@@ -1458,6 +1481,9 @@
         width: 32px;
         height: 32px;
         border-radius: 8px;
+        background: rgba(255, 255, 255, 0.12) !important;
+        border: 1px solid rgba(255, 255, 255, 0.3) !important;
+        opacity: 1 !important;
     }
 
     #totalEmployeesCard .stat-dropdown > button:hover,
@@ -1475,6 +1501,8 @@
 
     #totalEmployeesCard .progress-bar {
         background: #ffffff !important;
+        height: 100% !important;
+        opacity: 1 !important;
     }
 
     /* ======================================================
@@ -2003,7 +2031,7 @@
                 return [
                     'name' => $module->name,
                     'slug' => $module->slug,
-                    'icon' => $module->icon ?: ($moduleIconFallbacks[$module->slug] ?? 'bx-grid-alt'),
+                    'icon' => $moduleIconFallbacks[$module->slug] ?? (preg_match('/(?:^|\s)(bxs?-[-a-z0-9]+)(?:\s|$)/i', (string) $module->icon, $iconMatch) ? $iconMatch[1] : 'bx-grid-alt'),
                     'route' => $route,
                     'url' => $url,
                     'value' => $metric,

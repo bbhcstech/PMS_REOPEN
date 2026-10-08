@@ -1123,6 +1123,58 @@ html[data-pms-theme="dark"] .step-item.completed .step-title {
     }
 }
 
+/* Scoped project department and employee multi-selects. */
+#clientWizardForm .client-project-members .select2-selection--multiple {
+    background: var(--bx-surface, #fff) !important;
+    border: 1px solid var(--bx-border-strong, #cbd5e1) !important;
+    border-radius: 8px !important;
+    min-height: 48px;
+    padding: 5px 8px;
+}
+#clientWizardForm .client-project-members .select2-selection__rendered {
+    display: inline !important;
+    padding: 0 !important;
+    line-height: 1.5 !important;
+}
+#clientWizardForm .client-project-members .select2-selection__choice {
+    background: var(--bx-surface-2, rgba(59, 130, 246, .15)) !important;
+    color: var(--bx-ink, #1e293b) !important;
+    border: 1px solid var(--bx-border-strong, #94a3b8) !important;
+    border-radius: 6px !important;
+    line-height: 1.5 !important;
+    margin: 3px 5px 3px 0 !important;
+    padding: 3px 8px 3px 28px !important;
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+#clientWizardForm .client-project-members .select2-selection__choice__remove {
+    color: inherit !important;
+    background: transparent !important;
+    border-color: var(--bx-border-strong, #94a3b8) !important;
+    height: 100%;
+}
+#clientWizardForm .client-project-members .select2-search__field {
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    color: var(--bx-ink, #1e293b) !important;
+    -webkit-text-fill-color: var(--bx-ink, #1e293b) !important;
+    height: 26px !important;
+    padding: 0 !important;
+    margin-top: 5px;
+}
+.client-project-options {
+    background: var(--bx-surface, #fff) !important;
+    color: var(--bx-ink, #1e293b) !important;
+    border-color: var(--bx-border-strong, #cbd5e1) !important;
+}
+.client-project-options .select2-results__option {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    padding: 8px 12px;
+}
 /* Select2 Dark Mode & Visibility Fixes */
 .select2-container .select2-selection--single,
 .select2-container--classic .select2-selection--single,
@@ -2399,6 +2451,8 @@ $(document).ready(function () {
     // Multi-select Select2
     $('#project_department_ids, #project_employee_ids').select2({
         width: '100%',
+        selectionCssClass: 'client-project-members',
+        dropdownCssClass: 'client-project-options',
         placeholder: "Select options"
     });
 
@@ -2518,11 +2572,12 @@ $(document).ready(function () {
             url: "{{ route('project-categories.store') }}",
             data: form.serialize(),
             success: function(data) {
-                if (data.id && data.category_name) {
+                const category = data.cat;
+                if (category && category.id && category.category_name) {
                     $('#project_category_id').append(
-                        `<option value="${data.id}" selected>${data.category_name}</option>`
+                        new Option(category.category_name, category.id, true, true)
                     );
-                    $('#project_category_id').val(data.id).trigger('change');
+                    $('#project_category_id').val(category.id).trigger('change');
                 }
                 closeModalSafely('addProjectCategoryModal');
                 form[0].reset();

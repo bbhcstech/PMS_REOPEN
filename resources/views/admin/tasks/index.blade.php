@@ -44,16 +44,16 @@
             </div>
             <div class="header-actions">
                 <button type="button" class="btn-icon" data-task-search-focus title="Search">
-                    <svg class="task-toolbar-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="7.5"/><path d="m16 16 5 5"/></svg>
+                    <svg class="task-toolbar-icon" viewBox="0 0 24 24" aria-hidden="true"><circle style="fill: none !important; stroke: currentColor !important; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;" fill="none" stroke="currentColor" cx="10.5" cy="10.5" r="7.5"/><path style="fill: none !important; stroke: currentColor !important; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;" fill="none" stroke="currentColor" d="m16 16 5 5"/></svg>
                 </button>
                 <a href="{{ route('users.tasks.board') }}" class="btn-icon" title="Task Board">
-                    <svg class="task-toolbar-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M12 3v18M3 8h18"/></svg>
+                    <svg class="task-toolbar-icon" viewBox="0 0 24 24" aria-hidden="true"><rect style="fill: none !important; stroke: currentColor !important; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;" fill="none" stroke="currentColor" x="3" y="3" width="18" height="18" rx="2"/><path style="fill: none !important; stroke: currentColor !important; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;" fill="none" stroke="currentColor" d="M12 3v18M3 8h18"/></svg>
                 </a>
                 <a href="{{ route('tasks.calendar') }}" class="btn-icon" title="Calendar">
-                    <svg class="task-toolbar-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 11h18M7 15h2m6 0h2M7 18h2m6 0h2"/></svg>
+                    <svg class="task-toolbar-icon" viewBox="0 0 24 24" aria-hidden="true"><rect style="fill: none !important; stroke: currentColor !important; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;" fill="none" stroke="currentColor" x="3" y="5" width="18" height="16" rx="2"/><path style="fill: none !important; stroke: currentColor !important; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;" fill="none" stroke="currentColor" d="M7 3v4m10-4v4M3 11h18M7 15h2m6 0h2M7 18h2m6 0h2"/></svg>
                 </a>
                 <a href="{{ route('tasks.waiting-approval') }}" class="btn-icon" title="Waiting Approval">
-                    <svg class="task-toolbar-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2 21h20L12 3Zm0 6v5m0 3v1"/></svg>
+                    <svg class="task-toolbar-icon" viewBox="0 0 24 24" aria-hidden="true"><path style="fill: none !important; stroke: currentColor !important; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;" fill="none" stroke="currentColor" d="M12 3 2 21h20L12 3Zm0 6v5m0 3v1"/></svg>
                 </a>
             </div>
         </div>

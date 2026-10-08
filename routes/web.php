@@ -993,6 +993,7 @@ Route::get('/my-awards', [AwardController::class, 'myAwards'])->name('awards.my-
 
     Route::post('/projects/bulk-delete', [ProjectController::class, 'bulkDelete'])->name('projects.bulk-delete');
     Route::post('/projects/bulk-status', [ProjectController::class, 'bulkStatus'])->name('projects.bulk-status');
+    Route::post('/projects/bulk-archive', [ProjectController::class, 'bulkArchive'])->name('projects.bulk-archive');
     Route::post('/projects/import', [ProjectController::class, 'import'])->name('projects.import');
     Route::patch('admin/projects/{project}/status', [ProjectController::class, 'toggleStatus'])->name('projects.toggleStatus');
     Route::post('projects/{project}/updates', [ProjectController::class, 'storeUpdate'])->name('projects.updates.store');

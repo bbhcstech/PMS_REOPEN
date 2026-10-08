@@ -197,6 +197,23 @@
 document.addEventListener('DOMContentLoaded', function () {
     const phoneInput = document.getElementById('contact_phone');
     const phoneCountry = document.getElementById('contact_phone_country_code');
+    phoneInput.addEventListener('beforeinput', function (event) {
+        if (event.inputType === 'insertText' && event.data && /[^0-9]/.test(event.data)) {
+            event.preventDefault();
+        }
+    });
+    phoneInput.addEventListener('input', function () {
+        const value = phoneInput.value;
+        const caret = phoneInput.selectionStart;
+        const digits = value.replace(/[^0-9]/g, '');
+        if (value !== digits) {
+            phoneInput.value = digits;
+            if (caret !== null) {
+                const position = value.slice(0, caret).replace(/[^0-9]/g, '').length;
+                phoneInput.setSelectionRange(position, position);
+            }
+        }
+    });
     function updatePhoneRules() {
         const option = phoneCountry.options[phoneCountry.selectedIndex];
         const minDigits = Number(option.dataset.minDigits);

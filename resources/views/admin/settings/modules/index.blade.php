@@ -521,6 +521,56 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
     }
 
     /* Toast Notification Animation */
+    #moduleManagementPage .mm-toast-alert {
+        --mm-notice-bg: #f0fdf4;
+        --mm-notice-text: #14532d;
+        --mm-notice-border: #15803d;
+        background: var(--mm-notice-bg) !important;
+        border-color: var(--mm-notice-border) !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"]) #moduleManagementPage .mm-toast-alert {
+        --mm-notice-bg: #052e23;
+        --mm-notice-text: #d1fae5;
+        --mm-notice-border: #34d399;
+    }
+
+    #moduleManagementPage .mm-toast-alert .text-success,
+    #moduleManagementPage .mm-toast-alert .text-dark {
+        color: var(--mm-notice-text) !important;
+        -webkit-text-fill-color: var(--mm-notice-text) !important;
+    }
+
+    #moduleManagementPage .mm-toast-alert .rounded-circle {
+        background: #15803d !important;
+        flex-shrink: 0;
+    }
+
+    #moduleManagementPage .mm-toast-alert .bx,
+    #moduleManagementPage .mm-toast-alert .bx::before {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        background: transparent !important;
+        font-family: boxicons !important;
+        font-weight: normal !important;
+    }
+
+    #moduleManagementPage .mm-toast-alert .btn-close {
+        background: none !important;
+        color: var(--mm-notice-text) !important;
+        -webkit-text-fill-color: var(--mm-notice-text) !important;
+        opacity: 1;
+        flex-shrink: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    #moduleManagementPage .mm-toast-alert .btn-close::before {
+        content: '\00d7';
+        font: 24px/1 Arial, sans-serif;
+    }
+
     .mm-toast-alert {
         border-left: 4px solid var(--mm-emerald);
         border-radius: 8px;
@@ -639,7 +689,7 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
     }
 </style>
 
-<div class="container-xxl flex-grow-1 container-p-y">
+<div class="container-xxl flex-grow-1 container-p-y" id="moduleManagementPage">
 
     <!-- Page Header & Action -->
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3 mm-animate-fade">

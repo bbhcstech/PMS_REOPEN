@@ -1401,7 +1401,7 @@
                                             );
                                         $clockedInOutsideOffice = strtolower((string) $attendance->work_from_type) === 'field';
                                         $attendanceDateStr = ($attendance->date instanceof \Carbon\Carbon ? $attendance->date->format('Y-m-d') : (string) $attendance->date);
-                                        $defaultTz = (config('app.timezone') && config('app.timezone') !== 'UTC') ? config('app.timezone') : 'Asia/Kolkata';
+                                        $defaultTz = $employeeTimezone ?? ((config('app.timezone') && config('app.timezone') !== 'UTC') ? config('app.timezone') : 'Asia/Kolkata');
                                         $clockInIsoString = $attendance->clock_in ? \Carbon\Carbon::parse($attendanceDateStr . ' ' . $attendance->clock_in, $defaultTz)->toIso8601String() : '';
                                         $clockOutIsoString = $attendance->clock_out ? \Carbon\Carbon::parse($attendanceDateStr . ' ' . $attendance->clock_out, $defaultTz)->toIso8601String() : '';
                                     @endphp
@@ -3097,4 +3097,3 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
     });
 </script>
 @endpush
-

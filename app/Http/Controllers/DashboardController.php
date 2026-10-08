@@ -473,7 +473,8 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
         // ✅ Employee logic
         if ($userRole === 'employee') {
             $user = Auth::user()->loadMissing(['employeeDetail.designation', 'employeeDetail.department']);
-            $today = now()->toDateString();
+            $employeeTimezone = $this->resolveEmployeeTimezone(session('attendance_timezone.' . $user->id));
+            $today = Carbon::now($employeeTimezone)->toDateString();
 
             $showEmployeeWelcome = ! $user->employee_welcome_seen_at;
 
@@ -484,8 +485,8 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
 
 
             // Fetch week data
-            $startOfWeek = Carbon::now()->startOfWeek(); // Monday
-            $endOfWeek = Carbon::now()->endOfWeek();     // Sunday
+            $startOfWeek = Carbon::now($employeeTimezone)->startOfWeek(); // Monday
+            $endOfWeek = Carbon::now($employeeTimezone)->endOfWeek();     // Sunday
 
             $weeklyLogs = Attendance::where('user_id', $user->id)
                 ->whereBetween('date', [$startOfWeek->toDateString(), $endOfWeek->toDateString()])
@@ -629,6 +630,7 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
         $tasks = $myTasks;
 
         return view('employee-dashboard', compact(
+            'employeeTimezone',
             'user',
             'projects',
             'tasks',
@@ -816,7 +818,8 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
         }
 
         // 3. Fallback to app configuration or default to India (Asia/Kolkata)
-        return config('app.timezone') ?: 'Asia/Kolkata';
+        $configuredTimezone = config('app.timezone');
+        return $configuredTimezone && $configuredTimezone !== 'UTC' ? $configuredTimezone : 'Asia/Kolkata';
     }
 
    public function clockIn(Request $request)
@@ -832,9 +835,10 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
 
     $timezone = $this->resolveEmployeeTimezone(
         $request->input('clock_in_timezone'),
-        (float) $validated['clock_in_latitude'],
-        (float) $validated['clock_in_longitude']
+        isset($validated['clock_in_latitude']) ? (float) $validated['clock_in_latitude'] : null,
+        isset($validated['clock_in_longitude']) ? (float) $validated['clock_in_longitude'] : null
     );
+    $request->session()->put('attendance_timezone.' . auth()->id(), $timezone);
 
     $now = Carbon::now($timezone);
     $today = $now->toDateString();
@@ -934,7 +938,7 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
 
    public function clockOut(Request $request)
 {
-    $timezone = $this->resolveEmployeeTimezone($request->input('clock_out_timezone') ?? $request->input('timezone'));
+    $timezone = $this->resolveEmployeeTimezone($request->input('clock_out_timezone') ?? $request->input('timezone') ?? session('attendance_timezone.' . auth()->id()));
     $now = Carbon::now($timezone);
     $today = $now->toDateString();
     $userId = auth()->id();

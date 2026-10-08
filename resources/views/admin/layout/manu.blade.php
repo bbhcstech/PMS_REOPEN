@@ -773,17 +773,21 @@
 
    .sidebar-notification-badge {
        margin-left: auto;
-       min-width: 18px;
-       height: 18px;
-       padding: 0 5px;
+       flex: 0 0 auto;
+       min-width: 22px;
+       height: 22px;
+       padding: 0 6px;
        border-radius: 999px;
        display: none;
        align-items: center;
        justify-content: center;
-       font-size: 10px;
+       font-size: 11px;
        font-weight: 800;
        line-height: 1;
-       color: #fff;
+       color: #fff !important;
+       -webkit-text-fill-color: #fff !important;
+       white-space: nowrap;
+       font-variant-numeric: tabular-nums;
        background: var(--bx-blue-primary);
    }
 
@@ -791,11 +795,21 @@
        display: inline-flex;
    }
 
+   #layout-menu .menu-toggle .sidebar-notification-badge {
+       margin-right: 24px;
+   }
+
    .sidebar-notification-badge.type-new { background: var(--bx-blue-primary); }
    .sidebar-notification-badge.type-pending { background: var(--bx-amber); }
    .sidebar-notification-badge.type-issue { background: var(--bx-red); }
    .sidebar-notification-badge.type-warning { background: var(--bx-amber); }
    .sidebar-notification-badge.type-unread { background: var(--bx-blue-primary); }
+
+   #layout-menu .sidebar-notification-badge.type-pending,
+   #layout-menu .sidebar-notification-badge.type-warning {
+       color: #1e293b !important;
+       -webkit-text-fill-color: #1e293b !important;
+   }
 
    /* Sticky Notes System Styling */
    .sticky-note-dock {

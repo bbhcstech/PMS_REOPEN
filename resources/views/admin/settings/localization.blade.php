@@ -723,6 +723,17 @@
         cursor: not-allowed !important;
     }
 
+    .localization-settings-page .loc-input-group input[name="currency_symbol"][readonly] {
+        font-family: "Nirmala UI", "Noto Sans Bengali", "Segoe UI", Arial, sans-serif !important;
+        font-size: 1.35rem !important;
+        font-weight: 600 !important;
+        line-height: 1.5 !important;
+        color: var(--loc-input-color) !important;
+        -webkit-text-fill-color: var(--loc-input-color) !important;
+        opacity: 1 !important;
+        cursor: default !important;
+    }
+
     .localization-settings-page .input-group-custom .form-select:disabled,
     .localization-settings-page .loc-input-group .form-select:disabled {
         background-color: var(--loc-input-readonly-bg) !important;

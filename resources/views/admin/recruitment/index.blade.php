@@ -207,10 +207,11 @@
         color: var(--rec-green-700) !important;
         font-size: 1.15rem;
     }
-    .badge-rec-readonly {
-        background: #f1f5f9;
-        color: #475569;
-        border: 1px solid #cbd5e1;
+    .recruitment-shell .badge-rec-readonly {
+        background: #f1f5f9 !important;
+        color: #475569 !important;
+        -webkit-text-fill-color: #475569 !important;
+        border: 1px solid #cbd5e1 !important;
         padding: 0.6rem 1rem;
         border-radius: 12px;
         font-weight: 600;
@@ -218,6 +219,23 @@
         display: inline-flex;
         align-items: center;
         gap: 6px;
+        max-width: 100%;
+        white-space: normal;
+    }
+
+    .recruitment-shell .badge-rec-readonly i,
+    .recruitment-shell .badge-rec-readonly i::before {
+        color: inherit !important;
+        -webkit-text-fill-color: inherit !important;
+        background: transparent !important;
+        flex-shrink: 0;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"]) .recruitment-shell .badge-rec-readonly {
+        background: #1e293b !important;
+        color: #e2e8f0 !important;
+        -webkit-text-fill-color: #e2e8f0 !important;
+        border-color: #475569 !important;
     }
 
     /* ===== POLICY CARD (HERO ELEMENT) ===== */

@@ -178,9 +178,9 @@
                 <i class="fas fa-file-export"></i> Export
             </button>
             @if($isAdmin)
-                <a href="{{ route('projects.archive') }}" class="btn btn-outline">
+                <button type="button" id="bulkArchiveProjects" class="btn btn-outline" disabled>
                     <i class="fas fa-archive"></i> Archive
-                </a>
+                </button>
             @endif
         </div>
 
@@ -350,7 +350,7 @@
                             </td>
                             <td class="action-cell">
                                 <div class="dropdown project-action-dropdown">
-                                    <button class="action-btn" type="button" data-bs-toggle="dropdown" data-bs-boundary="viewport" data-bs-display="static" aria-expanded="false">
+                                    <button class="action-btn" type="button" data-project-action-toggle aria-haspopup="menu" aria-expanded="false">
                                         <i class="fas fa-ellipsis-v"></i>
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end">
@@ -2045,7 +2045,8 @@
         display: block !important;
     }
 
-    .projects-page .project-action-dropdown .dropdown-item {
+    .projects-page .project-action-dropdown .dropdown-item,
+    body > .project-floating-action-menu .dropdown-item {
         align-items: center;
         border-radius: 10px;
         display: flex;
@@ -2054,10 +2055,17 @@
         white-space: normal;
     }
 
-    .projects-page .project-action-dropdown .dropdown-item i {
+    .projects-page .project-action-dropdown .dropdown-item i,
+    body > .project-floating-action-menu .dropdown-item i {
         flex: 0 0 18px;
         margin: 0 !important;
         text-align: center;
+    }
+
+    body > .project-floating-action-menu .dropdown-header {
+        color: var(--bx-text-heading, #0f172a) !important;
+        white-space: normal;
+        overflow-wrap: anywhere;
     }
 
     /* ===== PROJECTS INDEX & MODALS DARK MODE ===== */
@@ -2403,6 +2411,28 @@ document.addEventListener('DOMContentLoaded', function () {
     const bulkStatus = document.getElementById('bulkProjectStatus');
     const bulkApply = document.getElementById('applyBulkProjectStatus');
     const bulkDelete = document.getElementById('bulkDeleteProjects');
+    const bulkArchive = document.getElementById('bulkArchiveProjects');
+
+    if (bulkArchive) {
+        bulkArchive.addEventListener('click', async function () {
+            const ids = selectedIds();
+            if (!ids.length || !confirm('Archive selected projects?')) return;
+            bulkArchive.disabled = true;
+            try {
+                const response = await fetch("{{ route('projects.bulk-archive') }}", {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf },
+                    body: JSON.stringify({ ids })
+                });
+                const result = await response.json();
+                if (!response.ok || !result.success) throw new Error(result.message || 'Unable to archive selected projects.');
+                window.location.reload();
+            } catch (error) {
+                alert(error.message || 'Unable to archive selected projects.');
+                refreshBulkControls();
+            }
+        });
+    }
 
     function selectedIds() {
         return checkboxes().filter(box => box.checked).map(box => box.value);
@@ -2413,6 +2443,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (bulkStatus) bulkStatus.disabled = selected.length === 0;
         if (bulkApply) bulkApply.disabled = selected.length === 0;
         if (bulkDelete) bulkDelete.disabled = selected.length === 0;
+        if (bulkArchive) bulkArchive.disabled = selected.length === 0;
 
         if (!selectAll) return;
         const all = checkboxes();
@@ -2605,83 +2636,6 @@ document.addEventListener('DOMContentLoaded', function () {
         alert('Pinned projects view is ready for a pin data field. No pinned project flag exists yet.');
     });
 
-    document.querySelectorAll('.project-action-dropdown').forEach(dropdown => {
-        const button = dropdown.querySelector('[data-bs-toggle="dropdown"]');
-        const menu = dropdown.querySelector('.dropdown-menu');
-
-        if (!button || !menu) return;
-
-        let originalParent = null;
-        let originalNextSibling = null;
-
-        function positionFloatingMenu() {
-            const rect = button.getBoundingClientRect();
-            const viewportGap = 12;
-            const menuWidth = Math.min(240, window.innerWidth - viewportGap * 2);
-            menu.style.setProperty('min-width', '0', 'important');
-            menu.style.width = menuWidth + 'px';
-            menu.style.maxHeight = Math.min(440, window.innerHeight * 0.6, window.innerHeight - viewportGap * 2) + 'px';
-            const menuHeight = menu.offsetHeight || Math.min(320, window.innerHeight - viewportGap * 2);
-
-            let left = rect.right - menuWidth;
-            if (left < viewportGap) left = viewportGap;
-            if (left + menuWidth > window.innerWidth - viewportGap) {
-                left = window.innerWidth - menuWidth - viewportGap;
-            }
-
-            const spaceBelow = window.innerHeight - rect.bottom;
-            const spaceAbove = rect.top;
-            let top;
-
-            if (spaceBelow < menuHeight && spaceAbove > spaceBelow) {
-                top = Math.max(viewportGap, rect.top - menuHeight - 6);
-            } else {
-                top = Math.min(window.innerHeight - menuHeight - viewportGap, rect.bottom + 6);
-            }
-
-            menu.style.position = 'fixed';
-            menu.style.top = Math.max(viewportGap, top) + 'px';
-            menu.style.left = left + 'px';
-            menu.style.right = 'auto';
-            menu.style.bottom = 'auto';
-            menu.style.transform = 'none';
-            menu.style.zIndex = '99999';
-        }
-
-        button.addEventListener('show.bs.dropdown', function () {
-            originalParent = menu.parentNode;
-            originalNextSibling = menu.nextSibling;
-            document.body.appendChild(menu);
-            menu.classList.add('project-floating-action-menu');
-            positionFloatingMenu();
-        });
-
-        button.addEventListener('shown.bs.dropdown', function () {
-            positionFloatingMenu();
-        });
-
-        button.addEventListener('hidden.bs.dropdown', function () {
-            menu.classList.remove('project-floating-action-menu');
-            menu.removeAttribute('style');
-
-            if (originalParent) {
-                originalParent.insertBefore(menu, originalNextSibling);
-            }
-        });
-
-        window.addEventListener('resize', function () {
-            if (menu.classList.contains('project-floating-action-menu')) {
-                positionFloatingMenu();
-            }
-        });
-
-        window.addEventListener('scroll', function () {
-            if (menu.classList.contains('project-floating-action-menu')) {
-                positionFloatingMenu();
-            }
-        }, true);
-    });
-
     document.querySelectorAll('[data-template-project]').forEach(button => {
         button.addEventListener('click', function () {
             const projectId = this.dataset.templateProject;
@@ -2778,6 +2732,91 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     refreshBulkControls();
+});
+</script>
+<script>
+// Keep project row menus outside every table overflow and stacking context.
+document.addEventListener('DOMContentLoaded', function () {
+    let active = null;
+    function closeMenu(restoreFocus = false) {
+        if (!active) return;
+        const { button, menu, marker } = active;
+        active = null;
+        menu.classList.remove('show', 'project-floating-action-menu');
+        menu.removeAttribute('style');
+        marker.replaceWith(menu);
+        button.setAttribute('aria-expanded', 'false');
+        if (restoreFocus) button.focus();
+    }
+    function positionMenu() {
+        if (!active) return;
+        const { button, menu } = active;
+        const rect = button.getBoundingClientRect();
+        const gap = 12;
+        const width = Math.min(260, window.innerWidth - gap * 2);
+        const below = Math.max(0, window.innerHeight - rect.bottom - gap - 6);
+        const above = Math.max(0, rect.top - gap - 6);
+        const upwards = above > below;
+        const height = Math.max(1, Math.min(440, upwards ? above : below));
+        menu.style.setProperty('min-width', '0', 'important');
+        menu.style.setProperty('width', width + 'px', 'important');
+        menu.style.setProperty('max-height', height + 'px', 'important');
+        menu.style.setProperty('transform', 'none', 'important');
+        menu.style.setProperty('right', 'auto', 'important');
+        menu.style.setProperty('bottom', 'auto', 'important');
+        menu.style.setProperty('left', Math.max(gap, Math.min(rect.right - width, window.innerWidth - width - gap)) + 'px', 'important');
+        const top = upwards ? rect.top - menu.offsetHeight - 6 : rect.bottom + 6;
+        menu.style.setProperty('top', Math.max(gap, Math.min(top, window.innerHeight - menu.offsetHeight - gap)) + 'px', 'important');
+    }
+    document.querySelectorAll('[data-project-action-toggle]').forEach(button => {
+        const menu = button.parentElement.querySelector('.dropdown-menu');
+        if (!menu) return;
+        function openMenu() {
+            if (active && active.button === button) { closeMenu(); return; }
+            closeMenu();
+            const marker = document.createComment('project action menu');
+            menu.replaceWith(marker);
+            document.body.appendChild(menu);
+            active = { button, menu, marker };
+            menu.classList.add('project-floating-action-menu', 'show');
+            button.setAttribute('aria-expanded', 'true');
+            positionMenu();
+        }
+        button.addEventListener('click', function (event) {
+            event.preventDefault();
+            openMenu();
+        });
+        button.addEventListener('keydown', function (event) {
+            if (event.key !== 'ArrowDown') return;
+            event.preventDefault();
+            if (!active || active.button !== button) openMenu();
+            menu.querySelector('.dropdown-item')?.focus();
+        });
+    });
+    document.addEventListener('click', function (event) {
+        if (!active || active.button.contains(event.target)) return;
+        if (!active.menu.contains(event.target)) { closeMenu(); return; }
+        if (event.target.closest('.dropdown-item')) {
+            // Allow delegated modal, copy-link and form handlers to finish first.
+            setTimeout(() => closeMenu(), 0);
+        }
+    });
+    document.addEventListener('keydown', function (event) {
+        if (!active) return;
+        if (event.key === 'Escape') { event.preventDefault(); closeMenu(true); return; }
+        if (!active.menu.contains(event.target) || !['ArrowDown', 'ArrowUp'].includes(event.key)) return;
+        event.preventDefault();
+        const items = Array.from(active.menu.querySelectorAll('.dropdown-item:not(:disabled)'));
+        const index = items.indexOf(document.activeElement);
+        items[(index + (event.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length]?.focus();
+    });
+    document.addEventListener('focusin', function (event) {
+        if (active && !active.menu.contains(event.target) && !active.button.contains(event.target)) closeMenu();
+    });
+    window.addEventListener('resize', positionMenu);
+    window.addEventListener('scroll', function (event) {
+        if (active && !active.menu.contains(event.target)) positionMenu();
+    }, true);
 });
 </script>
 @endsection

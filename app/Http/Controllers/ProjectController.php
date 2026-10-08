@@ -848,6 +848,26 @@ public function clientstore(Request $request)
         return view('admin.projects.archive', compact('projects'));
     }
 
+    public function bulkArchive(Request $request)
+    {
+        abort_unless($this->canManageProjects(), 403);
+        $validated = $request->validate([
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'required|integer|distinct',
+        ]);
+
+        $count = (new Project())->getConnection()->transaction(function () use ($validated) {
+            $projects = Project::whereIn('id', $validated['ids'])->lockForUpdate()->get();
+            abort_unless($projects->count() === count($validated['ids']), 422, 'Some selected projects are unavailable. Refresh the list and try again.');
+            foreach ($projects as $project) {
+                $project->delete();
+            }
+            return $projects->count();
+        });
+
+        return response()->json(['success' => true, 'archived' => $count]);
+    }
+
     // Archive a project (soft delete)
     public function archiveProject(Project $project)
     {

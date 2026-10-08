@@ -3377,9 +3377,10 @@
 
         .employee-dashboard .employee-list-table .employee-id-badge {
             max-width: 100% !important;
-            overflow: visible !important;
+            overflow: hidden !important;
             text-overflow: clip !important;
-            white-space: nowrap !important;
+            white-space: normal !important;
+            overflow-wrap: anywhere !important;
         }
 
         .employee-dashboard .employee-list-table thead th:nth-child(3),
@@ -4395,14 +4396,17 @@
     /* ===== EMP ID BADGE OVERFLOW FIX ===== */
     .employee-id-badge,
     .employee-dashboard .employee-list-table .employee-id-badge {
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        padding: 6px 14px !important;
+        display: inline-block !important;
+        padding: 6px 10px !important;
         width: auto !important;
-        max-width: none !important;
-        min-width: fit-content !important;
-        white-space: nowrap !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        white-space: normal !important;
+        overflow-wrap: anywhere !important;
+        word-break: normal !important;
+        overflow: hidden !important;
+        vertical-align: middle;
+        line-height: 1.45;
         box-sizing: border-box !important;
         border-radius: 8px !important;
         font-size: 0.82rem !important;

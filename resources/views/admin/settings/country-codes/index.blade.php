@@ -54,13 +54,52 @@
         display: inline-block;
     }
 
-    .stat-metric-card {
-        background: #FFFFFF;
-        border: 1px solid rgba(47, 107, 255, 0.12);
+    .country-codes-page .stat-metric-card {
+        background: var(--cc-card-bg) !important;
+        border: 1px solid var(--cc-card-border) !important;
         border-radius: 16px;
         padding: 1.25rem 1.5rem;
         box-shadow: 0 4px 12px rgba(15, 23, 42, 0.03);
         transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"]) .country-codes-page {
+        --cc-card-bg: #141b3d;
+        --cc-card-border: #334155;
+        --cc-text-title: #f1f5f9;
+        --cc-text-muted: #cbd5e1;
+        --cc-primary: #93c5fd;
+    }
+
+    .country-codes-page .stat-metric-card h3 {
+        color: var(--cc-text-title) !important;
+        -webkit-text-fill-color: var(--cc-text-title) !important;
+        overflow-wrap: anywhere;
+    }
+
+    .country-codes-page .stat-metric-card .text-muted {
+        color: var(--cc-text-muted) !important;
+        -webkit-text-fill-color: var(--cc-text-muted) !important;
+    }
+
+    .country-codes-page .stat-metric-card h3.text-primary,
+    .country-codes-page .stat-metric-card i.bx,
+    .country-codes-page .stat-metric-card i.bx::before {
+        color: var(--cc-primary) !important;
+        -webkit-text-fill-color: var(--cc-primary) !important;
+    }
+
+    .country-codes-page .stat-metric-card i.bx,
+    .country-codes-page .stat-metric-card i.bx::before {
+        font-family: boxicons !important;
+        font-weight: normal !important;
+        font-style: normal !important;
+        background: transparent !important;
+    }
+
+    .country-codes-page .stat-metric-card .rounded-circle {
+        flex-shrink: 0;
+        margin-left: 12px;
     }
 
     .stat-metric-card:hover {
