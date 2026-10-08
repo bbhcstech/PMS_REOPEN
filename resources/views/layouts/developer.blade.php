@@ -949,6 +949,7 @@
                 </div>
             @endif
 
+            @include('partials.page-back-navigation')
             @yield('content')
         </main>
     </div>
@@ -998,4 +999,3 @@
     @yield('scripts')
 </body>
 </html>
-

@@ -112,6 +112,7 @@
     @include('frontend.layouts-frontend.header')
 
     <!-- Main Content -->
+    @include('partials.page-back-navigation')
     @yield('content')
 
     <!-- Footer -->

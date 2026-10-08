@@ -2321,6 +2321,7 @@
         </div>
       @endif
 
+      @include('partials.page-back-navigation')
       @yield('content')
     </div>
   </div>

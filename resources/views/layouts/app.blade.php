@@ -34,6 +34,7 @@
 
             <!-- Page Content -->
             <main>
+                @include('partials.page-back-navigation')
                 {{ $slot }}
             </main>
         </div>
