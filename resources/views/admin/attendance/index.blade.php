@@ -2616,12 +2616,18 @@ document.addEventListener('DOMContentLoaded', function () {
                       'data-date="' + escapeHtml(r.date) + '">' +
                       '<i class="fas fa-pen me-1"></i>Edit</button>'
                     : '';
+                var totalCellHtml = escapeHtml(r.total);
+                if (r.is_open && r.clock_in && r.clock_in !== '-') {
+                    totalCellHtml = '<span class="live-index-work-timer fw-bold text-success" data-clock-in="' + escapeHtml(r.clock_in_raw || '') + '" data-date="' + escapeHtml(r.date || '') + '" data-seconds="' + escapeHtml(r.total_seconds || 0) + '">' + escapeHtml(r.total) + '</span>' +
+                        ' <span class="badge bg-success-subtle text-success small ms-1"><i class="fas fa-spinner fa-spin me-1"></i>Working</span>';
+                }
+
                 return '<tr>' +
                     '<td><strong>' + escapeHtml(r.day) + '</strong><div class="small text-muted">' + escapeHtml(r.date) + '</div></td>' +
                     '<td>' + escapeHtml(r.status) + '</td>' +
                     '<td>' + escapeHtml(r.clock_in) + '</td>' +
                     '<td>' + escapeHtml(r.clock_out) + '</td>' +
-                    '<td>' + escapeHtml(r.total) + '</td>' +
+                    '<td>' + totalCellHtml + '</td>' +
                     '<td>' + escapeHtml(r.note || '-') + '</td>' +
                     (editMode ? '<td class="text-center">' + editBtn + '</td>' : '') +
                     '</tr>';
@@ -2650,6 +2656,40 @@ document.addEventListener('DOMContentLoaded', function () {
                     '</div>' +
                 '</div>'
             );
+
+            if (window.indexAttendanceTimerInterval) {
+                clearInterval(window.indexAttendanceTimerInterval);
+                window.indexAttendanceTimerInterval = null;
+            }
+
+            var updateIndexOpenShifts = function() {
+                var now = new Date();
+                $('#attendanceDetailsModal .live-index-work-timer').each(function() {
+                    var el = $(this);
+                    var rawDate = el.attr('data-date');
+                    var rawTime = el.attr('data-clock-in');
+                    if (!rawDate || !rawTime) return;
+                    var parts = rawTime.split(':').map(Number);
+                    var dp = rawDate.split('-').map(Number);
+                    if (parts.length >= 2 && dp.length === 3) {
+                        var start = new Date(dp[0], dp[1] - 1, dp[2], parts[0], parts[1], parts[2] || 0);
+                        var diffSec = Math.max(0, Math.floor((now - start) / 1000));
+                        var h = Math.floor(diffSec / 3600);
+                        var m = Math.floor((diffSec % 3600) / 60);
+                        var s = diffSec % 60;
+                        var fmt = String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+                        el.text(fmt);
+                    }
+                });
+            };
+
+            window.indexAttendanceTimerInterval = setInterval(updateIndexOpenShifts, 1000);
+            $('#attendanceDetailsModal').off('hidden.bs.modal.indexTimer').on('hidden.bs.modal.indexTimer', function() {
+                if (window.indexAttendanceTimerInterval) {
+                    clearInterval(window.indexAttendanceTimerInterval);
+                    window.indexAttendanceTimerInterval = null;
+                }
+            });
 
             var modal = getAttendanceModal();
             if (modal) modal.show();

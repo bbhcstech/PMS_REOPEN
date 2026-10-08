@@ -1456,6 +1456,8 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/admin/settings/work-schedule/special-day/{id}', [WorkScheduleController::class, 'deleteSpecialDay'])->name('admin.settings.work-schedule.special-day.destroy');
     Route::post('/admin/settings/work-schedule/employee-mode', [WorkScheduleController::class, 'updateEmployeeMode'])->name('admin.settings.work-schedule.employee-mode.update');
     Route::post('/admin/settings/work-schedule/employee-modes-bulk', [WorkScheduleController::class, 'bulkUpdateEmployeeModes'])->name('admin.settings.work-schedule.employee-modes-bulk.update');
+    Route::post('/admin/settings/work-schedule/employee-wfh-date', [WorkScheduleController::class, 'addEmployeeWfhDate'])->name('admin.settings.work-schedule.employee-wfh-date.store');
+    Route::delete('/admin/settings/work-schedule/employee-wfh-date/{id}', [WorkScheduleController::class, 'deleteEmployeeWfhDate'])->name('admin.settings.work-schedule.employee-wfh-date.destroy');
 
     Route::get('/admin/settings/leave', [LeaveSettingsController::class, 'index'])->name('admin.settings.leave');
     Route::post('/admin/settings/leave', [LeaveSettingsController::class, 'update'])->name('admin.settings.leave.update');

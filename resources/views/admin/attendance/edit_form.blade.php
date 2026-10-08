@@ -91,6 +91,7 @@
                     <option value="day_off" {{ $status == 'day_off' ? 'selected' : '' }}>Day Off</option>
                     <option value="leave" {{ $status == 'leave' ? 'selected' : '' }}>Leave</option>
                     <option value="holiday" {{ $status == 'holiday' ? 'selected' : '' }}>Holiday</option>
+                    <option value="wfh" {{ $status == 'wfh' ? 'selected' : '' }}>Work From Home (WFH)</option>
                 </select>
                 <i class="fas fa-chevron-down field-icon"></i>
             </div>

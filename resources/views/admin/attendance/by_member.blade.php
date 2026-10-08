@@ -1564,12 +1564,6 @@
                                                 $status = 'half_day';
                                             }
 
-                                            if ($status === 'absent' && $date->isSaturday()) {
-                                                $status = 'wfh';
-                                            } elseif ($status === 'absent' && $date->isSunday()) {
-                                                $status = 'holiday';
-                                            }
-
                                             $statusClass = [
                                                 'present' => 'present',
                                                 'absent' => 'absent',
@@ -1611,13 +1605,14 @@
                                                 $statusTitle .= ' - ' . $att->occassion;
                                             }
 
-                                            if (in_array($status, ['present', 'late'], true)) {
+                                            if (in_array($status, ['present', 'late', 'wfh'], true)) {
                                                 $presentCount++;
                                             } elseif ($status === 'half_day') {
                                                 $presentCount += 0.5;
                                             }
 
                                             $daySeconds = $isRealAttendance ? (int) ($att->total_seconds ?? 0) : 0;
+                                            $isOpenShift = $isRealAttendance && $att->clock_in && !$att->clock_out;
                                             $monthRecords[] = [
                                                 'date' => $dateKey,
                                                 'day' => $date->format('d D'),
@@ -1625,8 +1620,11 @@
                                                 'status' => $statusLabel,
                                                 'clock_in' => $isRealAttendance && $att->clock_in ? \Carbon\Carbon::parse($att->clock_in)->format('h:i A') : '-',
                                                 'clock_out' => $isRealAttendance && $att->clock_out ? \Carbon\Carbon::parse($att->clock_out)->format('h:i A') : '-',
-                                                'total' => $isRealAttendance ? sprintf('%02d:%02d:%02d', intdiv($daySeconds, 3600), intdiv($daySeconds % 3600, 60), $daySeconds % 60) : '-',
-                                                'note' => $att->occassion ?? $att->reason ?? ($status === 'wfh' ? 'Auto Saturday WFH' : ($status === 'holiday' && $date->isSunday() ? 'Auto Sunday Holiday' : '')),
+                                                'total' => $isRealAttendance && ($att->clock_in || $daySeconds > 0) ? sprintf('%02d:%02d:%02d', intdiv($daySeconds, 3600), intdiv($daySeconds % 3600, 60), $daySeconds % 60) : '-',
+                                                'is_open' => $isOpenShift,
+                                                'clock_in_raw' => $isRealAttendance && $att->clock_in ? $att->clock_in : '',
+                                                'total_seconds' => $daySeconds,
+                                                'note' => $att->occassion ?? $att->reason ?? '',
                                             ];
 
                                             $canOpenDetails = $isRealAttendance && !in_array($status, ['absent'], true);
@@ -2043,12 +2041,18 @@ document.addEventListener('DOMContentLoaded', function () {
                     '<i class="fas fa-pen me-1"></i>Edit</button>';
             }
 
+            var totalCellHtml = escapeMemberHtml(record.total);
+            if (record.is_open && record.clock_in && record.clock_in !== '-') {
+                totalCellHtml = '<span class="live-member-work-timer fw-bold text-success" data-clock-in="' + escapeMemberHtml(record.clock_in_raw || '') + '" data-date="' + escapeMemberHtml(record.date || '') + '" data-seconds="' + escapeMemberHtml(record.total_seconds || 0) + '">' + escapeMemberHtml(record.total) + '</span>' +
+                    ' <span class="badge bg-success-subtle text-success small ms-1"><i class="fas fa-spinner fa-spin me-1"></i>Working</span>';
+            }
+
             return '<tr>' +
                 '<td><strong>' + escapeMemberHtml(record.day) + '</strong><div class="small text-muted">' + escapeMemberHtml(record.date) + '</div></td>' +
                 '<td>' + escapeMemberHtml(record.status) + '</td>' +
                 '<td>' + escapeMemberHtml(record.clock_in) + '</td>' +
                 '<td>' + escapeMemberHtml(record.clock_out) + '</td>' +
-                '<td>' + escapeMemberHtml(record.total) + '</td>' +
+                '<td>' + totalCellHtml + '</td>' +
                 '<td>' + escapeMemberHtml(record.note || '-') + '</td>' +
                 (editMode ? '<td class="text-center">' + editButton + '</td>' : '') +
             '</tr>';
@@ -2077,6 +2081,40 @@ document.addEventListener('DOMContentLoaded', function () {
                 '</div>' +
             '</div>'
         );
+
+        if (window.memberAttendanceTimerInterval) {
+            clearInterval(window.memberAttendanceTimerInterval);
+            window.memberAttendanceTimerInterval = null;
+        }
+
+        var updateMemberOpenShifts = function() {
+            var now = new Date();
+            $('#memberAttendanceModal .live-member-work-timer').each(function() {
+                var el = $(this);
+                var rawDate = el.attr('data-date');
+                var rawTime = el.attr('data-clock-in');
+                if (!rawDate || !rawTime) return;
+                var parts = rawTime.split(':').map(Number);
+                var dp = rawDate.split('-').map(Number);
+                if (parts.length >= 2 && dp.length === 3) {
+                    var start = new Date(dp[0], dp[1] - 1, dp[2], parts[0], parts[1], parts[2] || 0);
+                    var diffSec = Math.max(0, Math.floor((now - start) / 1000));
+                    var h = Math.floor(diffSec / 3600);
+                    var m = Math.floor((diffSec % 3600) / 60);
+                    var s = diffSec % 60;
+                    var fmt = String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+                    el.text(fmt);
+                }
+            });
+        };
+
+        window.memberAttendanceTimerInterval = setInterval(updateMemberOpenShifts, 1000);
+        $('#memberAttendanceModal').off('hidden.bs.modal.memberTimer').on('hidden.bs.modal.memberTimer', function() {
+            if (window.memberAttendanceTimerInterval) {
+                clearInterval(window.memberAttendanceTimerInterval);
+                window.memberAttendanceTimerInterval = null;
+            }
+        });
 
         const modal = getMemberAttendanceModal();
         if (modal) {

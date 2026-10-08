@@ -21,6 +21,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Notifications\ClockInNotification;
 use App\Services\SystemNotificationService;
+use App\Services\WorkScheduleService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
@@ -165,38 +166,7 @@ class AttendanceController extends Controller
 
     private function applyOrganizationAttendanceRules(Attendance $attendance): Attendance
     {
-        $setting = $this->attendancePolicy();
-        $attendance->append(['total_seconds', 'clock_in_datetime', 'clock_out_datetime']);
-
-        $clockIn = $attendance->clock_in_datetime;
-        $seconds = (int) ($attendance->total_seconds ?? 0);
-        $lateTime = Carbon::parse($attendance->date->format('Y-m-d') . ' ' . $setting->late_time);
-        $isLate = $clockIn && $clockIn->gt($lateTime);
-        $hasCompletedShift = $attendance->clock_in && $attendance->clock_out;
-        $dayOffSeconds = (int) $setting->day_off_threshold_minutes * 60;
-        $halfDaySeconds = (int) $setting->half_day_threshold_minutes * 60;
-
-        if ($hasCompletedShift && $seconds < $dayOffSeconds) {
-            $attendance->status = 'day_off';
-            $attendance->late = $isLate ? 'yes' : 'no';
-            $attendance->half_day = 'no';
-        } elseif ($hasCompletedShift && $seconds < $halfDaySeconds) {
-            $attendance->status = 'half_day';
-            $attendance->late = $isLate ? 'yes' : 'no';
-            $attendance->half_day = 'yes';
-        } elseif ($isLate) {
-            $attendance->status = 'late';
-            $attendance->late = 'yes';
-            $attendance->half_day = 'no';
-        } elseif ($clockIn) {
-            $attendance->status = 'present';
-            $attendance->late = 'no';
-            $attendance->half_day = 'no';
-        }
-
-        $attendance->save();
-
-        return $attendance;
+        return WorkScheduleService::applyOrganizationAttendanceRules($attendance, $this->attendancePolicy());
     }
 
     private function attendancePolicy(): AttendanceSetting
@@ -370,15 +340,8 @@ class AttendanceController extends Controller
         $startDate = Carbon::create($year, $month, 1);
         $endDate = $startDate->copy()->endOfMonth();
 
-        // Step 1: holidays
-        $holidays = Holiday::whereBetween('date', [$startDate, $endDate])
-            ->get()
-            ->mapWithKeys(function ($holiday) {
-                return [
-                    Carbon::parse($holiday->date)->format('Y-m-d') => $holiday->occassion ?? $holiday->title ?? 'Holiday',
-                ];
-            })
-            ->toArray();
+        // Step 1: holidays & non-working days from work schedule and company holidays
+        $holidays = WorkScheduleService::getHolidaysAndOffDays($startDate, $endDate, $companyId);
 
         // Step 2: load users and attendances based on role
         if ($this->isAdminUser($user) || $this->canManageAttendance($user)) {
@@ -487,7 +450,7 @@ class AttendanceController extends Controller
 
         $leaves = $leavesQuery->get();
 
-        // Step 3: initialize attendanceMap and mark holidays
+        // Step 3: initialize attendanceMap and mark holidays / assigned WFH
         $attendanceMap = [];
         foreach ($users as $u) {
             for ($d = $startDate->copy(); $d->lte($endDate); $d->addDay()) {
@@ -497,8 +460,18 @@ class AttendanceController extends Controller
                 if (array_key_exists($formattedDate, $holidays)) {
                     $attendanceMap[$u->id][$formattedDate] = (object)[
                         'status' => 'holiday',
-                        'occassion' => $holidays[$formattedDate]
+                        'occassion' => $holidays[$formattedDate]['occassion'] ?? 'Holiday',
+                        'is_weekly_off' => $holidays[$formattedDate]['is_weekly_off'] ?? false,
                     ];
+                } else {
+                    $wfhAssignment = WorkScheduleService::isUserWfhOnDate($u->id, $formattedDate);
+                    if ($wfhAssignment !== null) {
+                        $attendanceMap[$u->id][$formattedDate] = (object)[
+                            'status' => 'wfh',
+                            'work_from_type' => 'wfh',
+                            'reason' => $wfhAssignment['reason'] ?? 'Work From Home',
+                        ];
+                    }
                 }
             }
         }
@@ -506,6 +479,7 @@ class AttendanceController extends Controller
         // Step 4: merge attendance records (Eloquent models)
         foreach ($attendances as $att) {
             $dateKey = Carbon::parse($att->date)->format('Y-m-d');
+            $this->applyOrganizationAttendanceRules($att);
             $attendanceMap[$att->user_id][$dateKey] = $att;
         }
 
@@ -529,13 +503,16 @@ class AttendanceController extends Controller
             }
         }
 
-        // Step 6: fill remaining as absent
+        // Step 6: fill remaining past dates as absent
+        $todayStr = now()->format('Y-m-d');
         foreach ($users as $u) {
             for ($date = $startDate->copy(); $date->lte($endDate); $date->addDay()) {
                 $formattedDate = $date->format('Y-m-d');
 
-                if (!isset($attendanceMap[$u->id][$formattedDate])) {
-                    $attendanceMap[$u->id][$formattedDate] = (object)[ 'status' => 'absent' ];
+                if (!isset($attendanceMap[$u->id][$formattedDate]) || $attendanceMap[$u->id][$formattedDate] === null) {
+                    $attendanceMap[$u->id][$formattedDate] = $formattedDate <= $todayStr
+                        ? (object)[ 'status' => 'absent' ]
+                        : null;
                 }
             }
         }
@@ -578,7 +555,7 @@ class AttendanceController extends Controller
         $data = $request->validate([
             'user_id' => 'required|exists:users,id',
             'date' => 'required|date',
-            'status' => 'required|in:present,absent,holiday,late,half_day,leave,day_off,unpaid_leave',
+            'status' => 'required|in:present,absent,holiday,late,half_day,leave,day_off,unpaid_leave,wfh',
             'clock_in' => 'nullable|date_format:H:i',
         ]);
 
@@ -586,15 +563,17 @@ class AttendanceController extends Controller
         $attendancePayload = [
             'status' => $data['status'],
             'clock_in' => $data['clock_in'] ? Carbon::createFromFormat('H:i', $data['clock_in'])->format('H:i:s') : null,
+            'work_from_type' => $data['status'] === 'wfh' ? 'wfh' : 'office',
         ];
         if (Schema::hasColumn('attendances', 'company_id')) {
             $attendancePayload['company_id'] = $attendanceEmployee?->company_id;
         }
 
-        Attendance::updateOrCreate(
+        $record = Attendance::updateOrCreate(
             ['user_id' => $data['user_id'], 'date' => $data['date']],
             $attendancePayload
         );
+        $this->applyOrganizationAttendanceRules($record);
 
         return back()->with('success', 'Attendance updated');
     }
@@ -869,9 +848,9 @@ class AttendanceController extends Controller
 
         $year = is_numeric($yearRaw) ? (int)$yearRaw : (int) now()->year;
 
-        // pick users list
-        $employeeOptions = User::where('role', 'employee')->orderBy('name')->get();
-        $users = User::where('role', 'employee')
+        // pick users list (employees, hr, managers)
+        $employeeOptions = User::whereIn('role', ['employee', 'hr', 'manager'])->orderBy('name')->get();
+        $users = User::whereIn('role', ['employee', 'hr', 'manager'])
             ->when($userId, function ($query) use ($userId) {
                 return $query->where('id', (int) $userId);
             })
@@ -1344,7 +1323,7 @@ class AttendanceController extends Controller
         $year = (int) $request->input('year', now()->year);
         $userId = $request->input('user_id');
 
-        $users = User::where('role', 'employee')
+        $users = User::whereIn('role', ['employee', 'hr', 'manager'])
             ->with('employeeDetail.designation')
             ->when($userId, function ($q) use ($userId) {
                 return $q->where('id', (int) $userId);
@@ -1381,14 +1360,7 @@ class AttendanceController extends Controller
         $startDate = Carbon::createFromDate($year, $month, 1);
         $endDate = $startDate->copy()->endOfMonth();
 
-        $holidays = Holiday::whereBetween('date', [$startDate, $endDate])
-            ->get()
-            ->mapWithKeys(function ($holiday) {
-                return [
-                    Carbon::parse($holiday->date)->format('Y-m-d') => $holiday->occassion ?? $holiday->title ?? 'Holiday',
-                ];
-            })
-            ->toArray();
+        $holidays = WorkScheduleService::getHolidaysAndOffDays($startDate, $endDate);
 
         $leaves = Leave::whereIn('user_id', $users->pluck('id'))
             ->whereMonth('date', $month)
@@ -1406,13 +1378,30 @@ class AttendanceController extends Controller
             ];
         }
 
+        $todayStr = now()->format('Y-m-d');
         foreach ($users as $u) {
             for ($d = $startDate->copy(); $d->lte($endDate); $d->addDay()) {
                 $dateKey = $d->format('Y-m-d');
-                if (! isset($attendanceMap[$u->id][$dateKey])) {
-                    $attendanceMap[$u->id][$dateKey] = array_key_exists($dateKey, $holidays)
-                        ? (object)['status' => 'holiday', 'occassion' => $holidays[$dateKey]]
-                        : (object)['status' => 'absent'];
+                if (! isset($attendanceMap[$u->id][$dateKey]) || $attendanceMap[$u->id][$dateKey] === null) {
+                    if (array_key_exists($dateKey, $holidays)) {
+                        $attendanceMap[$u->id][$dateKey] = (object)[
+                            'status' => 'holiday',
+                            'occassion' => $holidays[$dateKey]['occassion'] ?? 'Holiday'
+                        ];
+                    } else {
+                        $wfhAssignment = WorkScheduleService::isUserWfhOnDate($u->id, $dateKey);
+                        if ($wfhAssignment !== null) {
+                            $attendanceMap[$u->id][$dateKey] = (object)[
+                                'status' => 'wfh',
+                                'work_from_type' => 'wfh',
+                                'reason' => $wfhAssignment['reason'] ?? 'Work From Home',
+                            ];
+                        } else {
+                            $attendanceMap[$u->id][$dateKey] = $dateKey <= $todayStr
+                                ? (object)['status' => 'absent']
+                                : null;
+                        }
+                    }
                 }
             }
         }
@@ -1840,8 +1829,18 @@ class AttendanceController extends Controller
                 return response('<div class="alert alert-danger">You can only view your own attendance details.</div>', 403);
             }
 
-            // Rest of your existing showAttendanceDetails method...
-            // ... [keep your existing showAttendanceDetails method code]
+            $defaultTz = (config('app.timezone') && config('app.timezone') !== 'UTC') ? config('app.timezone') : 'Asia/Kolkata';
+            $companyTimezone = $defaultTz;
+            $startTime = $attendance->clock_in_datetime;
+            $endTime = $attendance->clock_out_datetime;
+            $firstClockIn = $startTime ? $startTime->format('h:i A') : 'N/A';
+            $lastClockOut = $endTime ? $endTime->format('h:i A') : 'N/A';
+            $notClockedOut = empty($attendance->clock_out);
+            $totalTimeSeconds = $attendance->total_seconds;
+            $totalTimeFormatted = $attendance->total_duration;
+            $attendanceDate = Carbon::parse($attendance->date, $defaultTz);
+            $attendanceSettings = AttendanceSetting::first();
+            $normalizedActivities = [];
 
             return view('admin.attendance.attendance_details', [
                 'attendance' => $attendance,
@@ -2194,14 +2193,18 @@ class AttendanceController extends Controller
                 $now = Carbon::now($timezone);
                 $today = $now->toDateString();
 
+                $isWfhAssigned = WorkScheduleService::isUserWfhOnDate($user->id, $today);
+                $workFromType = $isWfhAssigned ? 'wfh' : 'office';
+                $initialStatus = $isWfhAssigned ? 'wfh' : 'present';
+
                 // find or create today's attendance row
                 $attendance = Attendance::firstOrCreate(
                     ['user_id' => $user->id, 'date' => $today],
                     array_filter([
                         'company_id' => Schema::hasColumn('attendances', 'company_id') ? $user->company_id : null,
-                        'status' => 'present',
-                        'working_from' => 'office',
-                        'work_from_type' => 'other'
+                        'status' => $initialStatus,
+                        'working_from' => $isWfhAssigned ? 'home' : 'office',
+                        'work_from_type' => $workFromType
                     ], fn ($value) => ! is_null($value))
                 );
 

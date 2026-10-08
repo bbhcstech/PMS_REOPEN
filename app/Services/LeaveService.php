@@ -474,8 +474,7 @@ class LeaveService
                     [
                         'company_id' => $employee->company_id,
                         'status' => $attendanceStatus,
-                        'location' => $leave->is_unpaid ? 'Unpaid Leave' : 'Leave',
-                        'working_from' => $leave->is_unpaid ? 'Unpaid Leave' : 'Leave',
+                        'clock_in_address' => $leave->is_unpaid ? 'Unpaid Leave' : 'Leave',
                     ]
                 );
             } catch (\Throwable $e) {
@@ -485,8 +484,7 @@ class LeaveService
                         [
                             'company_id' => $employee->company_id,
                             'status' => 'leave',
-                            'location' => 'Unpaid Leave',
-                            'working_from' => 'Unpaid Leave',
+                            'clock_in_address' => 'Unpaid Leave',
                         ]
                     );
                 } else {
