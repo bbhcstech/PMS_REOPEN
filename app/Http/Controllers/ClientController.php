@@ -28,6 +28,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Cache;
 use Carbon\Carbon;
+use Illuminate\Validation\Rule;
 
 class ClientController extends Controller
 {
@@ -263,7 +264,7 @@ class ClientController extends Controller
             // Account Details
             'salutation'             => 'nullable|string|max:10',
             'name'                   => 'required|string|max:255',
-            'email'                  => 'required|email|unique:clients,email',
+            'email'                  => ['required', 'email', Rule::unique('tenant.clients', 'email'), Rule::unique('tenant.users', 'email')],
             'password'               => ['required', 'string', 'min:8', 'regex:/[A-Z]/', 'regex:/[a-z]/', 'regex:/[0-9]/', 'regex:/[^A-Za-z0-9]/'],
             'country'                => 'nullable',
             'mobile'                 => ['required', 'regex:' . $phoneConfig['mobileRegex']],
@@ -344,7 +345,9 @@ class ClientController extends Controller
 
         $request->validate($rules, $validationMessages);
 
-        DB::beginTransaction();
+        $connection = (new Client())->getConnection();
+        $transactionLevel = $connection->transactionLevel();
+        $connection->beginTransaction();
         try {
             $data = $request->only([
                 'salutation', 'name', 'email', 'country', 'mobile', 'gender', 'language',
@@ -552,13 +555,18 @@ class ClientController extends Controller
                 ]);
             }
 
-            DB::commit();
+            $connection->commit();
 
             return redirect()->route('clients.index')->with('success', 'Client added successfully.');
         } catch (\Exception $e) {
-            DB::rollBack();
+            $connection->rollBack($transactionLevel);
             Log::error('Client multi-step store failed: ' . $e->getMessage());
-            return back()->withInput()->withErrors(['error' => 'Failed to create client: ' . $e->getMessage()]);
+            if ($e instanceof \Illuminate\Database\QueryException
+                && in_array((int) ($e->errorInfo[1] ?? 0), [1062, 19], true)
+                && str_contains(strtolower($e->getMessage()), 'email')) {
+                return back()->withInput($request->except('password'))->withErrors(['email' => 'This email is already used by an account. Please use a different email.']);
+            }
+            return back()->withInput($request->except('password'))->withErrors(['error' => 'Failed to create client. Please try again.']);
         }
     }
 
@@ -575,7 +583,7 @@ class ClientController extends Controller
     public function update(Request $request, $id)
     {
         $client = Client::findOrFail($id);
-        $user   = User::where('email', $client->email)->first();
+        $user   = User::where('email', $client->email)->where('role', 'client')->first();
 
         $phoneConfig = $this->getPhoneRulesAndNormalize($request);
 
@@ -587,7 +595,7 @@ class ClientController extends Controller
         $request->validate([
             'salutation'             => 'nullable|string|max:10',
             'name'                   => 'required|string|max:255',
-            'email'                  => 'required|email|unique:clients,email,' . $id,
+            'email'                  => ['required', 'email', Rule::unique('tenant.clients', 'email')->ignore($client->id), Rule::unique('tenant.users', 'email')->ignore($user?->id)],
             'password'               => ['nullable', 'string', 'min:8', 'regex:/[A-Z]/', 'regex:/[a-z]/', 'regex:/[0-9]/', 'regex:/[^A-Za-z0-9]/'],
             'country'                => 'nullable',
             'mobile'                 => ['required', 'regex:' . $phoneConfig['mobileRegex']],

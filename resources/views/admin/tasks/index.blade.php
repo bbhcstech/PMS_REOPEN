@@ -44,16 +44,16 @@
             </div>
             <div class="header-actions">
                 <button type="button" class="btn-icon" data-task-search-focus title="Search">
-                    <i class="fas fa-search"></i>
+                    <svg class="task-toolbar-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="7.5"/><path d="m16 16 5 5"/></svg>
                 </button>
                 <a href="{{ route('users.tasks.board') }}" class="btn-icon" title="Task Board">
-                    <i class="fas fa-columns"></i>
+                    <svg class="task-toolbar-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M12 3v18M3 8h18"/></svg>
                 </a>
                 <a href="{{ route('tasks.calendar') }}" class="btn-icon" title="Calendar">
-                    <i class="fas fa-calendar-alt"></i>
+                    <svg class="task-toolbar-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 11h18M7 15h2m6 0h2M7 18h2m6 0h2"/></svg>
                 </a>
                 <a href="{{ route('tasks.waiting-approval') }}" class="btn-icon" title="Waiting Approval">
-                    <i class="fas fa-triangle-exclamation"></i>
+                    <svg class="task-toolbar-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2 21h20L12 3Zm0 6v5m0 3v1"/></svg>
                 </a>
             </div>
         </div>
@@ -384,6 +384,21 @@
         background: #141B3D !important;
         border-color: rgba(238, 241, 251, 0.14) !important;
         color: #CBD5E1 !important;
+    }
+    html body .tasks-page .header-actions .task-toolbar-icon {
+        width: 22px;
+        height: 22px;
+        fill: none !important;
+        stroke: currentColor !important;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        background: transparent !important;
+        filter: none !important;
+        flex-shrink: 0;
+    }
+    html[data-pms-theme="dark"] body .tasks-page .header-actions .btn-icon {
+        color: #93C5FD !important;
     }
     html[data-pms-theme="dark"] .tasks-page .filter-group label {
         color: #EEF1FB !important;

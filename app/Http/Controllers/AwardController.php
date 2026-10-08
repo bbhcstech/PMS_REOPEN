@@ -134,6 +134,7 @@ class AwardController extends Controller
         Award::create([
             'user_id' => $request->user_id,
             'appreciation_id' => $request->appreciation_id,
+            'title' => Appreciations::findOrFail($request->appreciation_id)->title,
             'award_date' => $request->award_date,
             'photo' => $photoPath,
         ]);
@@ -198,6 +199,7 @@ class AwardController extends Controller
         $award->update([
             'user_id' => $request->user_id,
             'appreciation_id' => $request->appreciation_id,
+            'title' => Appreciations::findOrFail($request->appreciation_id)->title,
             'award_date' => $request->award_date,
             'photo' => $photoPath,
         ]);

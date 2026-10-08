@@ -292,7 +292,7 @@
 
     .archived-employee-page {
         position: relative;
-        background: linear-gradient(145deg, #f5faf7 0%, #edf6f1 52%, #f8fbf9 100%) !important;
+        background: linear-gradient(145deg, #f8fafc 0%, #f1f5f9 52%, #f8fafc 100%) !important;
         overflow: hidden;
     }
 
@@ -319,6 +319,7 @@
 
     .orb-1 { width: 50vw; height: 50vw; background: var(--secondary); top: -20%; right: -10%; }
     .orb-2 { width: 40vw; height: 40vw; background: var(--accent); bottom: -10%; left: -10%; animation-delay: -5s; }
+    .archived-employee-page .ambient-bg-archive .orb-2 { background: var(--primary); }
     .orb-3 { width: 35vw; height: 35vw; background: var(--primary); top: 40%; left: 30%; animation-delay: -10s; }
 
     @keyframes floatOrb {

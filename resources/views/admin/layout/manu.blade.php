@@ -2253,12 +2253,14 @@
             @endif
 
             <!-- Platform Support & Complaints -->
+            @if(strtolower(trim((string) (auth()->user()->role ?? ''))) !== 'hr')
             <li class="menu-item {{ request()->routeIs('admin.company-complaints.*') ? 'active' : '' }}">
                 <a href="{{ route('admin.company-complaints.index') }}" class="menu-link">
                     <i class="menu-icon tf-icons bx bx-support"></i>
                     <div class="text-truncate">Platform Support &amp; Complaints</div>
                 </a>
             </li>
+            @endif
 
             {{-- Payroll Module (ADMIN WORKSPACE ONLY) --}}
             @php

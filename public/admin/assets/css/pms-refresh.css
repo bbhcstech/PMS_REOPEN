@@ -7962,6 +7962,37 @@ body.dark-mode .popover .popover-body {
   color: #CBD5E1 !important;
 }
 
+/* HR nested active backgrounds also apply to child links; keep their labels readable. */
+#layout-menu .menu-link[data-sidebar-key="hr"] + .menu-sub .menu-item.active .menu-link,
+#layout-menu .menu-link[data-sidebar-key="hr"] + .menu-sub .menu-item.active .menu-link > :is(div, span, i),
+#layout-menu .menu-item.active > .menu-link[data-sidebar-key="departments"] + .menu-sub .menu-link,
+#layout-menu .menu-item.active > .menu-link[data-sidebar-key="departments"] + .menu-sub .menu-link > :is(div, span, i) {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+/* Decorative page backgrounds share neutral surfaces across admin pages. */
+html body :is(.ambient-bg, .ambient-bg-archive) {
+  background: #F6F7FC !important;
+}
+
+html body :is(.ambient-bg, .ambient-bg-archive)::before {
+  background: linear-gradient(135deg, rgba(47, 107, 255, 0.08), transparent 70%) !important;
+}
+
+html body :is(.ambient-bg, .ambient-bg-archive) :is(.orb, .orb-archive) {
+  background: #2F6BFF !important;
+}
+
+html body .ambient-orb {
+  background: radial-gradient(circle, rgba(47, 107, 255, 0.12), transparent 70%) !important;
+}
+
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, html.dark-mode) body :is(.ambient-bg, .ambient-bg-archive),
+html :is(body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"], body.dark, body.dark-mode) :is(.ambient-bg, .ambient-bg-archive) {
+  background: #070B1A !important;
+}
+
 html[data-pms-theme="dark"] .popover .popover-header,
 html[data-theme="dark"] .popover .popover-header,
 html[data-bs-theme="dark"] .popover .popover-header,

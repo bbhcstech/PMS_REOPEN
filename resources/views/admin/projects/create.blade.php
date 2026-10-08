@@ -1258,6 +1258,8 @@
     }
 </style>
 
+@include('admin.projects.partials.member-select-styles')
+
 @push('js')
 <script>
     // Shortcode toggle + hidden fallback sync

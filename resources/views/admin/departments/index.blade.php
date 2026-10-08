@@ -2187,6 +2187,16 @@
         -webkit-text-fill-color: #fbbf24 !important;
     }
 
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark) .sub-department-page .stat-card .stat-icon i,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark) .sub-department-page .stat-card .stat-icon i::before {
+        background: transparent !important;
+        color: inherit !important;
+        -webkit-text-fill-color: currentColor !important;
+        box-shadow: none !important;
+        filter: none !important;
+        opacity: 1 !important;
+    }
+
     html[data-pms-theme="dark"] .sub-department-page .department-code,
     html[data-theme="dark"] .sub-department-page .department-code,
     html[data-bs-theme="dark"] .sub-department-page .department-code {

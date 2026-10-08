@@ -54,17 +54,17 @@
         </div>
         <div class="header-actions">
             <button type="button" class="btn-icon" data-project-search-focus title="Search">
-                <i class="fas fa-search"></i>
+                <svg class="project-toolbar-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg>
             </button>
             <a href="{{ route('projects.index') }}" class="btn-icon active" title="List View" aria-label="List View">
-                <i class="fas fa-list-ul"></i>
+                <svg class="project-toolbar-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5h12M9 12h12M9 19h12M3 5h1M3 12h1M3 19h1"/></svg>
             </a>
             <a href="{{ route('projects.calendar') }}" class="btn-icon" title="Calendar">
-                <i class="fas fa-calendar-alt"></i>
+                <svg class="project-toolbar-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18M7 14h2M15 14h2M7 17h2"/></svg>
             </a>
             @if($isAdmin)
                 <a href="{{ route('projects.archive') }}" class="btn-icon" title="Archive">
-                    <i class="fas fa-archive"></i>
+                    <svg class="project-toolbar-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="5" rx="1"/><path d="M5 8v12h14V8M9 12h6"/></svg>
                 </a>
             @endif
         </div>
@@ -345,7 +345,7 @@
                             </td>
                             <td class="action-cell">
                                 <div class="dropdown project-action-dropdown">
-                                    <button class="action-btn" type="button" data-bs-toggle="dropdown" data-bs-boundary="viewport" data-bs-display="dynamic" aria-expanded="false">
+                                    <button class="action-btn" type="button" data-bs-toggle="dropdown" data-bs-boundary="viewport" data-bs-display="static" aria-expanded="false">
                                         <i class="fas fa-ellipsis-v"></i>
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end">
@@ -2363,6 +2363,31 @@
     :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .empty-state p {
         color: #9AA3C7 !important;
     }
+    html body .projects-page .header-actions .btn-icon .project-toolbar-icon {
+        width: 22px !important;
+        height: 22px !important;
+        fill: none !important;
+        stroke: currentColor !important;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        background: transparent !important;
+        filter: none !important;
+    }
+
+    :is([data-pms-theme="dark"], [data-bs-theme="dark"], [data-theme="dark"], .dark, .dark-mode) .projects-page .header-actions .btn-icon .project-toolbar-icon {
+        color: #93c5fd !important;
+    }
+
+    /* Keep glyphs transparent and follow the button's state color. */
+    html body .projects-page :is(.header-actions .btn-icon, .view-toggle .view-btn) > i,
+    html body .projects-page :is(.header-actions .btn-icon, .view-toggle .view-btn) > i::before {
+        background: transparent !important;
+        background-image: none !important;
+        color: inherit !important;
+        -webkit-text-fill-color: currentColor !important;
+        box-shadow: none !important;
+    }
 </style>
 
 <script>
@@ -2586,9 +2611,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
         function positionFloatingMenu() {
             const rect = button.getBoundingClientRect();
-            const menuWidth = 240;
-            const menuHeight = Math.min(menu.offsetHeight || 320, window.innerHeight * 0.6);
             const viewportGap = 12;
+            const menuWidth = Math.min(240, window.innerWidth - viewportGap * 2);
+            menu.style.setProperty('min-width', '0', 'important');
+            menu.style.width = menuWidth + 'px';
+            menu.style.maxHeight = Math.min(440, window.innerHeight * 0.6, window.innerHeight - viewportGap * 2) + 'px';
+            const menuHeight = menu.offsetHeight || Math.min(320, window.innerHeight - viewportGap * 2);
 
             let left = rect.right - menuWidth;
             if (left < viewportGap) left = viewportGap;
@@ -2607,7 +2635,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             menu.style.position = 'fixed';
-            menu.style.top = top + 'px';
+            menu.style.top = Math.max(viewportGap, top) + 'px';
             menu.style.left = left + 'px';
             menu.style.right = 'auto';
             menu.style.bottom = 'auto';
@@ -2615,7 +2643,7 @@ document.addEventListener('DOMContentLoaded', function () {
             menu.style.zIndex = '99999';
         }
 
-        dropdown.addEventListener('show.bs.dropdown', function () {
+        button.addEventListener('show.bs.dropdown', function () {
             originalParent = menu.parentNode;
             originalNextSibling = menu.nextSibling;
             document.body.appendChild(menu);
@@ -2623,11 +2651,11 @@ document.addEventListener('DOMContentLoaded', function () {
             positionFloatingMenu();
         });
 
-        dropdown.addEventListener('shown.bs.dropdown', function () {
+        button.addEventListener('shown.bs.dropdown', function () {
             positionFloatingMenu();
         });
 
-        dropdown.addEventListener('hide.bs.dropdown', function () {
+        button.addEventListener('hidden.bs.dropdown', function () {
             menu.classList.remove('project-floating-action-menu');
             menu.removeAttribute('style');
 

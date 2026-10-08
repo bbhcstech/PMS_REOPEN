@@ -118,6 +118,24 @@
         flex-direction: column;
     }
 
+    .user-docs-page .doc-file-actions {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        min-width: 0;
+    }
+
+    .user-docs-page .doc-file-actions > a {
+        flex: 1 1 0;
+        width: auto;
+        min-width: 0;
+    }
+
+    .user-docs-page .doc-file-actions > form {
+        flex: 0 0 auto;
+        margin: 0;
+    }
+
     .doc-slot-card:hover {
         transform: translateY(-4px);
         box-shadow: 0 14px 35px -5px rgba(47, 107, 255, 0.12);
@@ -583,8 +601,8 @@
                                             </div>
                                         </div>
 
-                                        <div class="d-flex gap-2 align-items-center">
-                                            <a href="{{ route('my-documents.download', ['type' => $doc->table_type ?? $userRole, 'id' => $doc->id]) }}" class="btn btn-sm btn-outline-success w-100 rounded-pill py-2 font-weight-bold">
+                                        <div class="doc-file-actions">
+                                            <a href="{{ route('my-documents.download', ['type' => $doc->table_type ?? $userRole, 'id' => $doc->id]) }}" class="btn btn-sm btn-outline-success rounded-pill py-2 font-weight-bold">
                                                 <i class="fas fa-download me-1"></i> Download
                                             </a>
                                             <form method="POST" action="{{ route('my-documents.destroy', ['type' => $doc->table_type ?? $userRole, 'id' => $doc->id]) }}" onsubmit="return confirm('Delete this uploaded document?');">

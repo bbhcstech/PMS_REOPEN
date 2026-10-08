@@ -111,7 +111,12 @@
 
             <!-- Calendar Wrapper -->
             <div class="calendar-wrapper">
-                <div id="project-calendar" class="calendar-container"></div>
+                <div class="d-flex justify-content-end mb-3">
+                    <button type="button" id="exportProjectCalendar" class="btn btn-outline-primary">
+                        <i class="fas fa-download me-2" aria-hidden="true"></i> Export
+                    </button>
+                </div>
+                <div id="project-calendar" class="calendar-container" data-pms-export="off"></div>
             </div>
 
             <!-- Calendar Footer -->
@@ -938,6 +943,28 @@ document.addEventListener('DOMContentLoaded', function() {
     const calendarEl = document.getElementById('project-calendar');
     const events = {!! json_encode($events) !!};
 
+    document.getElementById('exportProjectCalendar').addEventListener('click', function () {
+        function csvCell(value) {
+            let text = String(value ?? '');
+            if (/^[=+@\-\t\r]/.test(text)) text = "'" + text;
+            return '"' + text.replace(/"/g, '""') + '"';
+        }
+        const rows = [['Project / Event', 'Start', 'End', 'Status']];
+        events.forEach(event => rows.push([
+            event.title, event.start, event.end,
+            event.status ?? event.extendedProps?.status ?? ''
+        ]));
+        const csv = '\uFEFF' + rows.map(row => row.map(csvCell).join(',')).join('\r\n');
+        const url = URL.createObjectURL(new Blob([csv], {type: 'text/csv;charset=utf-8;'}));
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'project-calendar.csv';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    });
+
     // Calculate stats
     const totalEvents = events.length;
     const upcomingEvents = events.filter(e => {
@@ -966,7 +993,7 @@ document.addEventListener('DOMContentLoaded', function() {
         headerToolbar: {
             left: 'prev,next today',
             center: 'title',
-            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+            right: 'dayGridMonth timeGridWeek timeGridDay'
         },
         events: events,
         eventColor: '#2F6BFF',

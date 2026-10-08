@@ -625,6 +625,28 @@ class DesignationController extends Controller
         return view('admin.designations.archive', compact('designations'));
     }
 
+    public function deleteArchived($id)
+    {
+        abort_unless(auth()->user()?->hasModulePermission('designations', 'delete'), 403);
+        $connection = (new Designation())->getConnection();
+        try {
+            return $connection->transaction(function () use ($id) {
+                $designation = Designation::whereNotNull('archived_at')->lockForUpdate()->findOrFail($id);
+                if ($designation->employeeDetails()->exists()
+                    || Designation::where('parent_id', $designation->id)->exists()) {
+                    return back()->with('error', 'This designation cannot be deleted while employees or subordinate designations are linked to it.');
+                }
+                $designation->delete();
+                return redirect()->route('designations.archive')->with('success', 'Archived designation permanently deleted.');
+            });
+        } catch (QueryException $e) {
+            if (($e->errorInfo[0] ?? null) !== '23000') {
+                throw $e;
+            }
+            return back()->with('error', 'This designation cannot be deleted because other records reference it.');
+        }
+    }
+
     public function restore($id)
     {
         $designation = Designation::whereNotNull('archived_at')->findOrFail($id);

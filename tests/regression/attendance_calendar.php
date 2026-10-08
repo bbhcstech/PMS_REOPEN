@@ -34,7 +34,7 @@ checkCalendar($days['2026-10-09']['status'] === 'not_marked', 'Future day was ma
 checkCalendar($result['totals']['seconds'] === 70200 && $result['totals']['late'] === 1 && $result['totals']['wfh'] === 1, 'Monthly totals are incorrect.');
 $leap = (new AttendanceCalendar)->build(Carbon::parse('2024-02-01'), collect(), collect(), collect(), (object) ['joining_date' => '2024-02-05'], $workingDays);
 checkCalendar(count($leap['days']) === 29 && $leap['days'][0]['status'] === 'not_joined', 'Leap year or joining date handling failed.');
-foreach (['calendar', 'create', 'index'] as $view) {
+foreach (['calendar', 'create'] as $view) {
     $compiled = app('blade.compiler')->compileString(file_get_contents(resource_path('views/admin/attendance/' . $view . '.blade.php')));
     token_get_all($compiled, TOKEN_PARSE);
 }
@@ -73,4 +73,6 @@ try {
 \Illuminate\Support\Facades\Auth::guard('web')->setUser(\App\Models\User::findOrFail(3));
 $self = $controller->index(\Illuminate\Http\Request::create('/attendance', 'GET'))->getData();
 checkCalendar($self['employees']->pluck('id')->all() === [3], 'Employee can see other employee options.');
+$legacy = $controller->index(\Illuminate\Http\Request::create('/attendance', 'GET', ['view' => 'grid']));
+checkCalendar($legacy->name() === 'admin.attendance.calendar', 'Legacy grid URL must show the calendar.');
 echo "Attendance calendar and template checks passed.\n";

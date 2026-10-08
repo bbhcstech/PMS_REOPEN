@@ -7,8 +7,53 @@
     .dataTables_wrapper .dt-buttons {
         display: none !important;
     }
+
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(.dark-mode):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .awards-page {
+        --awards-surface: #ffffff;
+        --awards-muted-surface: #f8fafc;
+        --awards-border: #cbd5e1;
+        --awards-text: #334155;
+    }
+
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(.dark-mode):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .awards-page #awardTable_wrapper .dataTables_empty {
+        background: var(--awards-muted-surface) !important;
+        color: var(--awards-text) !important;
+        padding: 32px 16px !important;
+        box-shadow: none !important;
+    }
+
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(.dark-mode):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .awards-page #awardTable input[type="checkbox"] {
+        appearance: auto !important;
+        -webkit-appearance: checkbox !important;
+        width: 18px !important;
+        height: 18px !important;
+        min-width: 18px;
+        margin: 0;
+        vertical-align: middle;
+        accent-color: #2563eb;
+    }
+
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(.dark-mode):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .awards-page #awardTable_wrapper .dataTables_filter input,
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(.dark-mode):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .awards-page #datatableRange {
+        background: var(--awards-surface) !important;
+        color: var(--awards-text) !important;
+        border-color: var(--awards-border) !important;
+    }
+
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(.dark-mode):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .awards-page #bulkAction:disabled,
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(.dark-mode):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .awards-page #applyAction:disabled,
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(.dark-mode):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .awards-page #bulkDeleteBtn:disabled,
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(.dark-mode):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .awards-page #awardTable_wrapper .paginate_button.disabled {
+        background: var(--awards-muted-surface) !important;
+        color: var(--awards-text) !important;
+        border-color: var(--awards-border) !important;
+        -webkit-text-fill-color: var(--awards-text) !important;
+        opacity: 1;
+        cursor: not-allowed;
+        box-shadow: none !important;
+    }
 </style>
-<div class="container py-4">
+<div class="container py-4 awards-page">
 
     <!-- ===================== ADMIN VIEW ===================== -->
     @if(auth()->user()->role === 'admin')

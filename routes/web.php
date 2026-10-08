@@ -715,6 +715,8 @@ Route::middleware(['auth', 'module.access'])->group(function () {
         ->name('designations.archive.action');
     Route::post('designations/{id}/restore', [DesignationController::class, 'restore'])
         ->name('designations.restore');
+    Route::delete('designations/{id}/permanent', [DesignationController::class, 'deleteArchived'])
+        ->name('designations.delete-archived');
 
     // Bulk delete designations
     Route::post('designations/bulk-delete', [DesignationController::class, 'bulkDelete'])

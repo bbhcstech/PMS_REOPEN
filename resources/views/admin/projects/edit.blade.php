@@ -1071,6 +1071,8 @@
     }
 </style>
 
+@include('admin.projects.partials.member-select-styles')
+
 @push('js')
 <script>
     $(document).ready(function () {

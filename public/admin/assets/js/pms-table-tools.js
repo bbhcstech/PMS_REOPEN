@@ -447,19 +447,21 @@
       if (!input || input.getAttribute('data-pms-table') !== controller.id) return;
 
       if (input.getAttribute('data-pms-select') === 'all') {
+        // Row change handlers update the header state; preserve the user's intent.
+        var selectAllChecked = input.checked;
         dataRows(controller.table).forEach(function (row) {
           var rowCheckbox = row.querySelector('[data-pms-select="row"][data-pms-table="' + controller.id + '"]') ||
                             (row.cells[0] ? row.cells[0].querySelector('input[type="checkbox"]') : null);
           if (rowCheckbox) {
-            var stateChanged = (rowCheckbox.checked !== input.checked);
-            rowCheckbox.checked = input.checked;
+            var stateChanged = (rowCheckbox.checked !== selectAllChecked);
+            rowCheckbox.checked = selectAllChecked;
             if (stateChanged) {
               rowCheckbox.dispatchEvent(new Event('change', { bubbles: true }));
             }
           }
-          if (input.checked) controller.selectedRows.add(row);
+          if (selectAllChecked) controller.selectedRows.add(row);
           else controller.selectedRows.delete(row);
-          row.classList.toggle('pms-row-selected', input.checked);
+          row.classList.toggle('pms-row-selected', selectAllChecked);
         });
       } else {
         var selectedRow = input.closest('tr');

@@ -4484,6 +4484,37 @@
     }
 </style>
 
+<style>
+    :is([data-pms-theme="dark"], [data-bs-theme="dark"], [data-theme="dark"], .dark, .dark-mode) .employee-dashboard .stat-card .stat-icon > i,
+    :is([data-pms-theme="dark"], [data-bs-theme="dark"], [data-theme="dark"], .dark, .dark-mode) .employee-dashboard .stat-card .stat-icon > i::before {
+        background: transparent !important;
+        background-image: none !important;
+        color: #38bdf8 !important;
+        -webkit-text-fill-color: #38bdf8 !important;
+        box-shadow: none !important;
+    }
+</style>
+
+<style>
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(.dark-mode):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .employee-dashboard .employee-list-table .btn-action-dots {
+        background: #f1f5f9 !important;
+        border: 1px solid #cbd5e1 !important;
+        color: #334155 !important;
+        box-shadow: 0 2px 4px rgba(15, 23, 42, 0.06) !important;
+    }
+
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(.dark-mode):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .employee-dashboard .employee-list-table .btn-action-dots:hover {
+        background: #e2e8f0 !important;
+        border-color: #94a3b8 !important;
+    }
+
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(.dark-mode):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .employee-dashboard .employee-list-table .btn-action-dots > i,
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(.dark-mode):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .employee-dashboard .employee-list-table .btn-action-dots > i::before {
+        color: #334155 !important;
+        -webkit-text-fill-color: #334155 !important;
+    }
+</style>
+
 {{-- JavaScript - COMPLETELY UNCHANGED FUNCTIONALITY --}}
 @push('js')
 <script>

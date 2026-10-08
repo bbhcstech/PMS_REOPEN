@@ -14,7 +14,6 @@
     <header class="ac-panel ac-heading">
         <div class="ac-title"><span class="ac-title-icon" aria-hidden="true">📅</span><div><span class="ac-eyebrow">PEOPLE · ATTENDANCE</span><h1>Attendance calendar</h1><p>A clear picture of every working day.</p></div></div>
         <div class="ac-actions">
-            <a class="ac-button" href="{{ route('attendance.index', ['view' => 'grid', 'month' => $month, 'year' => $year]) }}">Grid / table view</a>
             @if($canManage)
                 <a class="ac-button" href="{{ route('attendance.archive') }}">Archived</a>
                 <a class="ac-button" href="{{ route('attendance.settings') }}">Settings</a>

@@ -152,7 +152,7 @@ public function create(Request $request)
     $designations   = Designation::all();
     $countries      = Country::all();
     $employee       = null;
-    $currency       = Currency::all();
+    $currency       = Currency::orderBy('currency_name')->get();
     $prtdepartments = ParentDepartment::latest()->get();
 
     // preview next project code like TASK_005
@@ -222,7 +222,7 @@ public function store(Request $request)
         'employee_ids.*' => 'integer|exists:users,id',
         'department_ids'   => 'required|array|min:1',
         'department_ids.*' => 'integer|exists:departments,id',
-        'currency_id' => 'nullable|integer',
+        'currency_id' => 'nullable|integer|exists:tenant.currencies,id',
         'project_budget' => 'nullable|numeric',
         'hours_allocated' => 'nullable|numeric',
         'priority' => 'nullable|in:low,medium,high,critical',
@@ -280,7 +280,10 @@ public function store(Request $request)
         }
     }
 
+    $connection = (new Project())->getConnection();
+    $transactionLevel = $connection->transactionLevel();
     try {
+        $connection->beginTransaction();
         $authUserId = auth()->id() ?: (User::first()?->id ?? null);
         $project = Project::create([
             'project_type' => $projectType,
@@ -310,11 +313,6 @@ public function store(Request $request)
             'allow_client_notification' => $request->has('allow_client_notification') ? 1 : 0,
             'manual_timelog' => $request->has('manual_timelog') ? 1 : 0,
         ]);
-
-        // commit shortcode transaction if used
-        if ($request->input('shortcode_option') !== 'manual' && DB::transactionLevel() > 0) {
-            DB::commit();
-        }
 
         // file upload
         if ($request->hasFile('project_file')) {
@@ -347,12 +345,14 @@ public function store(Request $request)
         $this->recordProjectUpdate($project, $project->status, (int) ($project->completion_percent ?? 0), $project->remarks, auth()->id());
         Log::info('Project created with users:', ['project' => $project->toArray(), 'users' => $project->users->pluck('id','name')->toArray()]);
 
+        $connection->commit();
+
         return redirect()->route('projects.index')->with('success', 'Project created successfully.');
-    } catch (\Exception $e) {
-        if (DB::transactionLevel() > 0) {
-            DB::rollBack();
+    } catch (\Throwable $e) {
+        if ($connection->transactionLevel() > $transactionLevel) {
+            $connection->rollBack($transactionLevel);
         }
-        Log::error('Project create failed: ' . $e->getMessage());
+        Log::error('Project create failed: ' . $e->getMessage(), ['exception' => $e]);
         return back()->withInput()->withErrors(['general' => 'Failed to create project.']);
     }
 }
@@ -378,7 +378,7 @@ public function edit($id)
     $designations   = Designation::all();
     $countries      = Country::all();
     $employee       = null;
-    $currency       = Currency::all();
+    $currency       = Currency::orderBy('currency_name')->get();
     $prtdepartments = ParentDepartment::latest()->get();
 
     return view('admin.projects.edit', compact(
@@ -418,7 +418,7 @@ public function edit($id)
         'employee_ids.*'  => 'integer|exists:users,id',
         'department_ids'   => 'sometimes|array|min:1',
         'department_ids.*' => 'integer|exists:departments,id',
-        'currency_id'     => 'nullable|integer',
+        'currency_id'     => 'nullable|integer|exists:tenant.currencies,id',
         'project_budget'  => 'nullable|numeric',
         'hours_allocated' => 'nullable|numeric',
         'priority'        => 'nullable|in:low,medium,high,critical',
@@ -1270,4 +1270,3 @@ public function import(Request $request)
     }
 }
 }
-

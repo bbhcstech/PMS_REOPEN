@@ -849,6 +849,18 @@
         background: linear-gradient(145deg, #4F83FF, #2F6BFF);
     }
 
+    .archive-container .action-group .btn-delete-archived {
+        background: #b91c1c !important;
+        color: #ffffff !important;
+    }
+
+    .archive-container .action-group .btn-delete-archived > i,
+    .archive-container .action-group .btn-delete-archived > i::before {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        background: transparent !important;
+    }
+
     /* ===== EMPTY STATE ===== */
     .empty-state {
         text-align: center;
@@ -1472,10 +1484,14 @@
         color: #60A5FA !important;
         -webkit-text-fill-color: #60A5FA !important;
     }
-    /* Keep the Total Archived count readable on its blue light-theme card. */
-    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .archive-container .stats-grid > .stat-card:first-child .stat-info h3 {
-        color: #ffffff !important;
-        -webkit-text-fill-color: #ffffff !important;
+    /* Match the Total Archived card to the other light-theme summary cards. */
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(.dark-mode):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .archive-container .stats-grid > .stat-card:first-child {
+        background: #ffffff !important;
+        border-color: #e2e8f0 !important;
+    }
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(.dark-mode):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .archive-container .stats-grid > .stat-card:first-child .stat-info :is(h3, h6) {
+        color: #0f172a !important;
+        -webkit-text-fill-color: #0f172a !important;
     }
 </style>
 
@@ -1659,6 +1675,15 @@
                                                     <i class="fas fa-rotate-left"></i>
                                                 </button>
                                             </form>
+                                            @if(auth()->user()->hasModulePermission('designations', 'delete'))
+                                                <form action="{{ route('designations.delete-archived', $designation->id) }}" method="POST" onsubmit="return confirm('Permanently delete this archived designation? This cannot be undone.');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="action-btn btn-delete-archived" title="Delete permanently" aria-label="Delete archived designation permanently">
+                                                        <i class="fas fa-trash-alt" aria-hidden="true"></i>
+                                                    </button>
+                                                </form>
+                                            @endif
                                         </div>
                                     </td>
                                 </tr>
