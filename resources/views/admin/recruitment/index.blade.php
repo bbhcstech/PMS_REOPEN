@@ -552,11 +552,18 @@
         font-size: 1.5rem;
         flex-shrink: 0;
     }
-    .rec-metric-icon.emerald { background: #EEF2FF; color: #2F6BFF; }
-    .rec-metric-icon.blue { background: #eff6ff; color: #2563eb; }
-    .rec-metric-icon.amber { background: #fffbeb; color: #d97706; }
-    .rec-metric-icon.green { background: #f0fdf4; color: #16a34a; }
+    .rec-metric-icon.emerald { background: #EEF2FF; color: #2F6BFF; --rec-metric-glyph: #2F6BFF; }
+    .rec-metric-icon.blue { background: #eff6ff; color: #2563eb; --rec-metric-glyph: #2563eb; }
+    .rec-metric-icon.amber { background: #fffbeb; color: #d97706; --rec-metric-glyph: #b45309; }
+    .rec-metric-icon.green { background: #f0fdf4; color: #16a34a; --rec-metric-glyph: #15803d; }
     .rec-metric-icon i { color: inherit !important; }
+
+    /* Override the global white dark-theme glyphs on these pale icon tiles. */
+    :is([data-pms-theme="dark"], [data-bs-theme="dark"], [data-theme="dark"], .dark, .dark-mode) .recruitment-shell .rec-metric-card .rec-metric-icon > i,
+    :is([data-pms-theme="dark"], [data-bs-theme="dark"], [data-theme="dark"], .dark, .dark-mode) .recruitment-shell .rec-metric-card .rec-metric-icon > i::before {
+        color: var(--rec-metric-glyph) !important;
+        -webkit-text-fill-color: var(--rec-metric-glyph) !important;
+    }
     .rec-metric-info h4 {
         margin: 0 0 0.15rem 0;
         font-weight: 800;

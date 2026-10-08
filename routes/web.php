@@ -697,6 +697,9 @@ Route::middleware(['auth', 'module.access'])->group(function () {
     |----------------------------------------------------------------------
     */
 
+    Route::put('designations/level-settings', [DesignationController::class, 'updateLevelSettings'])
+        ->name('designations.level-settings');
+
     // Designation hierarchy
     Route::get('designations/designation-hierarchy', [DesignationController::class, 'hierarchy'])
         ->name('designations.hierarchy');

@@ -42,6 +42,37 @@ class EmployeeController extends Controller
         }
     }
 
+    private function employeeCompany(?int $requestedId = null): Company
+    {
+        $actor = auth()->user();
+        $isSuperAdmin = strtolower((string) ($actor?->role ?? '')) === 'superadmin';
+        $companyId = $isSuperAdmin
+            ? ($requestedId ?: app(\App\Services\CompanyContext::class)->id())
+            : (int) $actor?->company_id;
+
+        abort_unless($companyId, 403, 'No company is assigned to this account.');
+        abort_if(! $isSuperAdmin && $requestedId && $requestedId !== $companyId, 403, 'You can only manage employees for your company.');
+
+        return Company::findOrFail($companyId);
+    }
+
+    private function validateJoiningAge(Request $request): void
+    {
+        $request->validate([
+            'joining_date' => 'required|date',
+            'dob' => 'required|date',
+        ]);
+
+        $birthDate = Carbon::parse($request->input('dob'))->startOfDay();
+        $joiningDate = Carbon::parse($request->input('joining_date'))->startOfDay();
+
+        if ($joiningDate->lt($birthDate->copy()->addYearsNoOverflow(18))) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'joining_date' => 'The employee must be at least 18 years old on the joining date. The joining date cannot be before the date of birth.',
+            ]);
+        }
+    }
+
 
     // ===========================================================
     // ===== REPORTING-TO INTEGRITY : subordinate check helper ===
@@ -201,12 +232,9 @@ class EmployeeController extends Controller
         $this->ensureAdmin();
 
         // compute preview id (does NOT reserve it — store() will recompute to avoid races)
-        $nextEmployeeId = $this->computeNextEmployeeIdWithLock();
-
-        $companies = Company::where('status', 'active')->orderBy('name')->get();
-        if ($companies->isEmpty()) {
-            $companies = Company::orderBy('name')->get();
-        }
+        $company = $this->employeeCompany();
+        $nextEmployeeId = $this->computeNextEmployeeIdWithLock($company->id);
+        $companies = collect([$company]);
 
         return view('admin.employees.create', [
             'companies'        => $companies,
@@ -217,6 +245,7 @@ class EmployeeController extends Controller
             'prtdepartments'  => ParentDepartment::when(Schema::hasColumn('parent_departments', 'dpt_name'), fn ($q) => $q->orderBy('dpt_name'), fn ($q) => $q->orderBy('id'))
                                     ->get(),
             'users'           => User::whereIn('role', ['admin', 'manager', 'hr', 'employee', 'administrator', 'superadmin'])
+                                    ->where('company_id', $company->id)
                                     ->whereNull('archived_at')
                                     ->orderBy('name')
                                     ->get(),
@@ -279,17 +308,20 @@ class EmployeeController extends Controller
     public function store(Request $request, GovernmentIdDobVerifier $governmentIdDobVerifier)
     {
         $this->ensureAdmin();
+        $company = $this->employeeCompany($request->integer('company_id') ?: null);
+        $request->merge(['company_id' => $company->id]);
+        $this->validateJoiningAge($request);
 
         // ==============================================
         // CRITICAL FIX: EXIT DATE VALIDATION LOGIC
         // ==============================================
-        if ($request->status === 'Inactive' && empty($request->exit_date)) {
-            return back()->withErrors(['exit_date' => 'Exit date is required when status is Inactive.'])->withInput();
-        }
+        if ($request->status === 'Inactive') {
+            if (empty($request->exit_date)) {
+                return back()->withErrors(['exit_date' => 'Exit date is required when status is Inactive.'])->withInput();
+            }
 
-        if ($request->exit_date) {
-            $exitDate = Carbon::parse($request->exit_date);
-            $joiningDate = Carbon::parse($request->joining_date);
+            $exitDate = Carbon::parse($request->exit_date)->startOfDay();
+            $joiningDate = Carbon::parse($request->joining_date)->startOfDay();
 
             // Exit date must be after joining date
             if ($exitDate->lte($joiningDate)) {
@@ -305,15 +337,12 @@ class EmployeeController extends Controller
                 // Exit date future - allow login
                 $request->merge(['login_allowed' => 1]);
             }
+        } else {
+            // When status is Active, clear exit_date
+            $request->merge(['exit_date' => null]);
         }
 
         // Auto-fill fallback values for fields if omitted
-        if (! $request->filled('company_id')) {
-            $defaultCompany = auth()->user()?->company_id ?: Company::value('id');
-            if ($defaultCompany) {
-                $request->merge(['company_id' => $defaultCompany]);
-            }
-        }
         if (! $request->filled('mobile_country_code')) {
             $request->merge(['mobile_country_code' => '+91']);
         }
@@ -344,7 +373,7 @@ class EmployeeController extends Controller
         // Prepare validation rules
         $validationRules = [
             'name'              => 'required|string',
-            'company_id'        => 'required|exists:companies,id',
+            'company_id'        => 'required|exists:central.companies,id',
             'email'             => 'required|email|unique:users,email',
             'mobile_country_code' => 'required|string|regex:/^\+\d{1,4}$/',
             'mobile'            => ['required', 'string', 'regex:/^[1-9]\d*$/', "min:{$minDigits}", "max:{$maxDigits}"],
@@ -352,6 +381,8 @@ class EmployeeController extends Controller
             'reporting_to'      => 'nullable|integer|exists:users,id',
             'business_address'  => 'nullable|string',
             'status'            => 'required|in:Active,Inactive',
+            'exit_date'         => 'nullable|date',
+            'user_role'         => 'nullable|string|in:employee,admin,manager,hr',
             'login_allowed'     => 'required|in:0,1',
             'employment_type'   => 'required|in:full_time,part_time,on_contract,internship,trainee',
             'password'          => [
@@ -380,7 +411,7 @@ class EmployeeController extends Controller
             'parent_dpt_id'     => 'required',
             'department_id'     => 'nullable',
             'new_designation'   => 'required_if:designation_id,new|nullable|string|max:191',
-            'new_designation_level' => 'required_if:designation_id,new|nullable|integer|min:0|max:6',
+            'new_designation_level' => 'required_if:designation_id,new|nullable|integer|min:0|max:' . \App\Services\DesignationLevels::maximum(),
             'new_department'    => 'required_if:parent_dpt_id,new|nullable|string|max:191',
             'new_sub_department' => 'required_if:department_id,new|nullable|string|max:191',
 
@@ -488,7 +519,7 @@ class EmployeeController extends Controller
                 'mobile'        => $mobileWithCode,
                 'password'      => $passwordHash,
                 'raw_password'  => $plainPassword,
-                'role'          => 'employee',
+                'role'          => $request->input('user_role', $request->input('role', 'employee')),
                 'profile_image' => $profileImagePath,
                 'login_allowed' => $request->login_allowed ?? 1,
                 'email_notifications' => $request->email_notifications ?? 1,
@@ -514,8 +545,18 @@ class EmployeeController extends Controller
                 'hourly_rate', 'slack_member_id', 'skills',
                 'linkedin_url', 'portfolio_url', 'facebook_url', 'instagram_url', 'x_url',
                 'probation_end_date', 'notice_start_date', 'notice_end_date',
-                'employment_type', 'marital_status', 'business_address', 'status', 'exit_date'
+                'employment_type', 'marital_status', 'business_address', 'status'
             ]);
+            unset($employeeData['user_role']);
+
+            if ($request->status === 'Active') {
+                $employeeData['exit_date'] = null;
+            } elseif ($request->filled('exit_date')) {
+                $employeeData['exit_date'] = Carbon::parse($request->exit_date)->format('Y-m-d');
+            } else {
+                $employeeData['exit_date'] = null;
+            }
+            $employeeData['login_allowed'] = (bool) ($request->login_allowed ?? 1);
 
             if (isset($employeeData['skills'])) {
                 $rawSkills = array_filter(array_map('trim', explode(',', str_replace(['·', '|'], ',', (string) $employeeData['skills']))));
@@ -834,21 +875,27 @@ class EmployeeController extends Controller
     public function update(Request $request, $id)
     {
         $this->ensureAdmin();
+        $this->validateJoiningAge($request);
+
+        // load user & detail first so we can build validation rules that ignore current records
+        $user = User::findOrFail($id);
+        $detail = $user->employeeDetail;
 
         // ==============================================
         // CRITICAL FIX: EXIT DATE VALIDATION LOGIC
         // ==============================================
-        if ($request->status === 'Inactive' && empty($request->exit_date)) {
-            return back()->withErrors(['exit_date' => 'Exit date is required when status is Inactive.'])->withInput();
-        }
+        if ($request->status === 'Inactive') {
+            if (empty($request->exit_date)) {
+                return back()->withErrors(['exit_date' => 'Exit date is required when status is Inactive.'])->withInput();
+            }
 
-        if ($request->exit_date) {
-            $exitDate = Carbon::parse($request->exit_date);
-            $joiningDate = Carbon::parse($request->joining_date);
-
-            // Exit date must be after joining date
-            if ($exitDate->lte($joiningDate)) {
-                return back()->withErrors(['exit_date' => 'Exit date must be after joining date.'])->withInput();
+            $exitDate = Carbon::parse($request->exit_date)->startOfDay();
+            $joiningDateValue = $request->joining_date ?: ($detail?->joining_date ?? $user->joining_date);
+            if ($joiningDateValue) {
+                $joiningDate = Carbon::parse($joiningDateValue)->startOfDay();
+                if ($exitDate->lte($joiningDate)) {
+                    return back()->withErrors(['exit_date' => 'Exit date must be after joining date.'])->withInput();
+                }
             }
 
             // Auto-set login_allowed based on exit date
@@ -860,11 +907,10 @@ class EmployeeController extends Controller
                 // Exit date future - allow login
                 $request->merge(['login_allowed' => 1]);
             }
+        } else {
+            // When status is Active, clear exit_date
+            $request->merge(['exit_date' => null]);
         }
-
-        // load user & detail first so we can build validation rules that ignore current records
-        $user = User::findOrFail($id);
-        $detail = $user->employeeDetail;
 
         // Only check email uniqueness when the email is actually being changed.
         $emailUniqueRule = 'required|email|max:255';
@@ -904,6 +950,8 @@ class EmployeeController extends Controller
             'mobile'             => $mobileRule,
             'business_address'   => 'nullable|string',
             'status'             => 'required|in:Active,Inactive',
+            'exit_date'          => 'nullable|date',
+            'user_role'          => 'nullable|string|in:employee,admin,manager,hr',
             'login_allowed'      => 'required|in:0,1',
             'department_id'      => 'nullable|exists:departments,id',
             'profile_picture'    => 'nullable|image|max:2048',
@@ -979,6 +1027,11 @@ class EmployeeController extends Controller
             $user->mobile = $mobileWithCode; // Store with +91 prefix
             $user->login_allowed = $request->login_allowed ?? 1;
             $user->email_notifications = $request->email_notifications ?? 1;
+            if ($request->filled('user_role')) {
+                $user->role = $request->input('user_role');
+            } elseif ($request->filled('role')) {
+                $user->role = $request->input('role');
+            }
             if ($request->filled('password')) {
                 \App\Services\PasswordManagementService::updatePassword(Auth::user(), $user, $request->password);
             }
@@ -994,12 +1047,23 @@ class EmployeeController extends Controller
             $data = $request->only([
                 'designation_id', 'parent_dpt_id', 'department_id', 'employee_id',
                 'salutation', 'country', 'gender', 'joining_date', 'dob', 'reporting_to',
-                'language', 'user_role', 'address', 'about', 'directory_about',
+                'language', 'address', 'about', 'directory_about',
                 'hourly_rate', 'slack_member_id', 'skills',
                 'linkedin_url', 'portfolio_url', 'facebook_url', 'instagram_url', 'x_url',
                 'probation_end_date', 'notice_start_date', 'notice_end_date',
-                'employment_type', 'marital_status', 'business_address', 'status', 'exit_date'
+                'employment_type', 'marital_status', 'business_address', 'status'
             ]);
+            unset($data['user_role']);
+
+            if ($request->status === 'Active') {
+                $data['exit_date'] = null;
+            } elseif ($request->filled('exit_date')) {
+                $data['exit_date'] = Carbon::parse($request->exit_date)->format('Y-m-d');
+            } else {
+                $data['exit_date'] = null;
+            }
+
+            $data['login_allowed'] = (bool) $user->login_allowed;
 
             if (isset($data['skills'])) {
                 $rawSkills = array_filter(array_map('trim', explode(',', str_replace(['·', '|'], ',', (string) $data['skills']))));
@@ -1278,8 +1342,13 @@ class EmployeeController extends Controller
             }
         }
 
-        EmployeeDetail::whereIn('user_id', $request->employee_ids)
-            ->update(['status' => $request->status]);
+        if ($request->status === 'Active') {
+            EmployeeDetail::whereIn('user_id', $request->employee_ids)
+                ->update(['status' => 'Active', 'exit_date' => null]);
+        } else {
+            EmployeeDetail::whereIn('user_id', $request->employee_ids)
+                ->update(['status' => $request->status]);
+        }
 
         return response()->json(['message' => 'Updated successfully']);
     }
@@ -1493,8 +1562,8 @@ class EmployeeController extends Controller
 
         $validator = \Validator::make($data, [
             'name'      => 'required|string|max:191|unique:designations,name',
-            'parent_id' => 'nullable|exists:designations,id',
-            'level'     => 'required|integer|min:0|max:6',
+            'parent_id' => ['nullable', \Illuminate\Validation\Rule::exists('tenant.designations', 'id')->where(fn ($query) => $query->whereIn('id', Designation::pluck('id')))],
+            'level'     => 'required|integer|min:0|max:' . \App\Services\DesignationLevels::maximum(),
             'status'    => 'nullable|in:Active,Inactive'
         ]);
 
@@ -1506,10 +1575,10 @@ class EmployeeController extends Controller
         }
 
         $level = (int) $data['level'];
-        if ($level < 0 || $level > 6) {
+        if ($level < 0 || $level > \App\Services\DesignationLevels::maximum()) {
             return response()->json([
                 'message' => 'Validation failed',
-                'errors'  => ['level' => ['Designation level must be strictly between 0 and 6.']]
+                'errors'  => ['level' => ['Designation level must be within the configured company limit.']]
             ], 422);
         }
 
@@ -1517,10 +1586,10 @@ class EmployeeController extends Controller
             $parent = \App\Models\Designation::find($data['parent_id']);
             if ($parent) {
                 $parentLevel = (int) ($parent->level ?? 0);
-                if ($parentLevel >= 6) {
+                if ($parentLevel >= \App\Services\DesignationLevels::maximum()) {
                     return response()->json([
                         'message' => 'Validation failed',
-                        'errors'  => ['parent_id' => ['A Level 6 designation cannot have subordinate designations as Level 6 is the maximum organizational level allowed.']]
+                        'errors'  => ['parent_id' => ['A designation at the company maximum level cannot have subordinate designations.']]
                     ], 422);
                 }
 
@@ -1709,8 +1778,13 @@ class EmployeeController extends Controller
      */
     private function computeNextEmployeeIdWithLock(?int $companyId = null): string
     {
-        $company = $companyId ? Company::find($companyId) : app(\App\Services\CompanyContext::class)->current();
-        $prefix = $company?->employee_id_prefix ?: 'BBH-EMP';
+        $company = $this->employeeCompany($companyId);
+        $companyId = (int) $company->id;
+        $prefix = trim((string) $company->employee_id_prefix);
+        if ($prefix === '') {
+            $prefix = strtoupper(Str::slug($company->short_name ?: $company->name)) . '-EMP';
+        }
+        $prefix = rtrim($prefix, '-');
         $digits = 4;
 
         $like = $prefix . '-%';
@@ -1718,6 +1792,7 @@ class EmployeeController extends Controller
 
         $last = EmployeeDetail::where('employee_id', 'LIKE', $like)
             ->when($companyId && Schema::connection($conn)->hasColumn('employee_details', 'company_id'), fn ($query) => $query->where('company_id', $companyId))
+            ->whereHas('user', fn ($query) => $query->where('company_id', $companyId))
             ->orderBy('id', 'desc')
             ->lockForUpdate()
             ->first();

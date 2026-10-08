@@ -96,7 +96,7 @@
                             <ul class="dropdown-menu dropdown-menu-end">
                                 <li><a class="dropdown-item" href="#" data-level="all">Show All Levels</a></li>
                                 <li><hr class="dropdown-divider"></li>
-                                @for($i = 0; $i <= 6; $i++)
+                                @for($i = 0; $i <= \App\Services\DesignationLevels::maximum(); $i++)
                                     <li><a class="dropdown-item" href="#" data-level="{{ $i }}">Level {{ $i }} Only</a></li>
                                 @endfor
                             </ul>
@@ -118,7 +118,7 @@
                         <div class="hierarchy-container">
                             <div class="level-legend">
                                 <span><i class="fas fa-chart-line"></i> Level Legend:</span>
-                                @for($i = 0; $i <= 6; $i++)
+                                @for($i = 0; $i <= \App\Services\DesignationLevels::maximum(); $i++)
                                     <span class="legend-badge l{{ $i }}">L{{ $i }}</span>
                                 @endfor
                                 <button type="button" class="expand-all-btn" id="expandAll">
@@ -1754,7 +1754,7 @@ document.addEventListener('DOMContentLoaded', function() {
             Array.from(list.children).forEach((item, index) => {
                 const id = item.dataset.id;
                 hierarchy.push({ id, parent_id: parentId, order: index });
-                if (currentDepth > 6) {
+                if (currentDepth > {{ \App\Services\DesignationLevels::maximum() }}) {
                     exceedsMaxDepth = true;
                 }
                 const children = item.querySelector(':scope > ul');
@@ -1768,7 +1768,7 @@ document.addEventListener('DOMContentLoaded', function() {
             Swal.fire({
                 icon: 'error',
                 title: 'Hierarchy Depth Limit Exceeded',
-                text: 'The organizational hierarchy cannot exceed Level 6. Please re-arrange the designations so that no role exceeds Level 6.',
+                text: 'The organizational hierarchy cannot exceed Level {{ \App\Services\DesignationLevels::maximum() }}. Please re-arrange the designations within your company limit.',
                 confirmButtonColor: '#2F6BFF'
             });
             saveBtn.disabled = false;
@@ -1853,6 +1853,13 @@ document.addEventListener('DOMContentLoaded', function() {
     function isDarkModeActive() {
         const html = document.documentElement;
         const body = document.body;
+        // The application's explicit theme takes precedence over stale nested attributes.
+        for (const element of [html, body]) {
+            for (const attribute of ['data-pms-theme', 'data-bs-theme', 'data-theme']) {
+                const theme = element.getAttribute(attribute);
+                if (theme === 'light' || theme === 'dark') return theme === 'dark';
+            }
+        }
         return html.getAttribute('data-pms-theme') === 'dark' ||
                html.getAttribute('data-bs-theme') === 'dark' ||
                html.getAttribute('data-theme') === 'dark' ||
@@ -1860,6 +1867,7 @@ document.addEventListener('DOMContentLoaded', function() {
                body.getAttribute('data-pms-theme') === 'dark' ||
                body.getAttribute('data-bs-theme') === 'dark' ||
                body.classList.contains('dark') ||
+               body.classList.contains('dark-mode') ||
                document.querySelector('[data-pms-theme="dark"]') !== null ||
                document.querySelector('[data-bs-theme="dark"]') !== null;
     }
@@ -1920,6 +1928,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const isDark = isDarkModeActive();
         latestChartPoints = points;
+        // Recreate theme-dependent chart markup, including dark-mode inline overrides.
+        if (chart && typeof chart.dispose === 'function') chart.dispose();
+        const chartDiv = document.getElementById('chartDiv');
+        chartDiv.replaceChildren();
+        chartDiv.style.removeProperty('background');
+        chartDiv.style.removeProperty('background-color');
         chart = JSC.chart('chartDiv', {
             type: 'organizational',
             box: { fill: isDark ? '#0F1530' : 'transparent' },
@@ -1974,6 +1988,20 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(res => res.json())
         .then(data => initOrganizationalChart(data.points || []))
         .catch(() => initOrganizationalChart(latestChartPoints));
+    }
+
+    let previousChartTheme = isDarkModeActive();
+    const chartThemeObserver = new MutationObserver(() => {
+        const currentTheme = isDarkModeActive();
+        if (currentTheme === previousChartTheme) return;
+        previousChartTheme = currentTheme;
+        initOrganizationalChart(latestChartPoints);
+    });
+    for (const element of [document.documentElement, document.body]) {
+        chartThemeObserver.observe(element, {
+            attributes: true,
+            attributeFilter: ['data-pms-theme', 'data-bs-theme', 'data-theme', 'class']
+        });
     }
 
     // Chart controls

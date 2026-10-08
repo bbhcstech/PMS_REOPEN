@@ -1472,6 +1472,11 @@
         color: #60A5FA !important;
         -webkit-text-fill-color: #60A5FA !important;
     }
+    /* Keep the Total Archived count readable on its blue light-theme card. */
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .archive-container .stats-grid > .stat-card:first-child .stat-info h3 {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
 </style>
 
 <div class="archive-container">

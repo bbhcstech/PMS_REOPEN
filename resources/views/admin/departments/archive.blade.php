@@ -746,6 +746,34 @@
         color: #cbd5e1 !important;
         border: 1px solid rgba(79, 131, 255, 0.2) !important;
     }
+    /* Light-theme contrast for the filled archive controls only. */
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .sub-archive-page :is(.back-button, .search-button, .badge-premium, .action-btn.btn-view, .action-btn.btn-restore),
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .sub-archive-page :is(.back-button, .search-button, .badge-premium, .action-btn.btn-view, .action-btn.btn-restore) *,
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .sub-archive-page :is(.back-button, .search-button, .badge-premium, .action-btn.btn-view, .action-btn.btn-restore) i::before {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .sub-archive-page .archive-header .badge-premium {
+        width: auto !important;
+        height: auto !important;
+        min-height: 0 !important;
+        padding: 0.35rem 1.1rem !important;
+        border-radius: 999px !important;
+        line-height: 1.5 !important;
+    }
+    /* Preserve readable glyphs and values on the pale table badges in dark theme. */
+    :is([data-pms-theme="dark"], [data-bs-theme="dark"], [data-theme="dark"], .dark, .dark-mode) .sub-archive-page .archive-table .pill.parent {
+        --archive-pill-foreground: #0369a1;
+    }
+    :is([data-pms-theme="dark"], [data-bs-theme="dark"], [data-theme="dark"], .dark, .dark-mode) .sub-archive-page .archive-table .pill.employee {
+        --archive-pill-foreground: #15803d;
+    }
+    :is([data-pms-theme="dark"], [data-bs-theme="dark"], [data-theme="dark"], .dark, .dark-mode) .sub-archive-page .archive-table .pill:is(.parent, .employee),
+    :is([data-pms-theme="dark"], [data-bs-theme="dark"], [data-theme="dark"], .dark, .dark-mode) .sub-archive-page .archive-table .pill:is(.parent, .employee) > i,
+    :is([data-pms-theme="dark"], [data-bs-theme="dark"], [data-theme="dark"], .dark, .dark-mode) .sub-archive-page .archive-table .pill:is(.parent, .employee) > i::before {
+        color: var(--archive-pill-foreground) !important;
+        -webkit-text-fill-color: var(--archive-pill-foreground) !important;
+    }
 </style>
 
 <div class="sub-archive-page">

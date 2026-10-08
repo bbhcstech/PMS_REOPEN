@@ -56,6 +56,26 @@
         $recentCount = $recentCount ?? $designations->where('updated_at', '>=', now()->subDays(7))->count();
     @endphp
 
+    @if(in_array(strtolower((string) auth()->user()?->role), ['admin', 'administrator'], true))
+        <section class="card p-3 mb-4" aria-labelledby="designation-level-settings">
+            <h3 id="designation-level-settings">Designation level settings</h3>
+            <p>Levels start at L0. This company's maximum applies to everyone who can manage designations.</p>
+            <form method="POST" action="{{ route('designations.level-settings') }}" class="d-flex align-items-end gap-3 flex-wrap">
+                @csrf
+                @method('PUT')
+                <div>
+                    <label for="maximum_level" class="form-label">Maximum designation level</label>
+                    <input id="maximum_level" name="maximum_level" type="number" class="form-control" min="6" max="100" required value="{{ old('maximum_level', \App\Services\DesignationLevels::maximum()) }}">
+                    @error('maximum_level')<div class="text-danger">{{ $message }}</div>@enderror
+                </div>
+                <button type="submit" class="btn btn-primary">Save level limit</button>
+            </form>
+        </section>
+    @endif
+    @if(\App\Models\Designation::where('level', '>', \App\Services\DesignationLevels::maximum())->exists())
+        <div class="alert alert-warning">Some existing designations exceed this company's level limit. Edit their levels or ask your administrator to raise the limit. New designations must follow the configured limit.</div>
+    @endif
+
     <!-- Stats Cards -->
     <div class="stats">
         <div class="stat-card">
@@ -138,7 +158,7 @@
         <!-- Level Filters Bar -->
         <div class="level-filters-bar">
             <span class="filter-label"><i class="fas fa-filter"></i> Filter by Level:</span>
-            @for($i = 0; $i <= 6; $i++)
+            @for($i = 0; $i <= \App\Services\DesignationLevels::maximum(); $i++)
                 <button class="level-filter-btn" data-level="{{ $i }}">L{{ $i }}</button>
             @endfor
             <button class="level-filter-btn reset-btn" onclick="resetFilters()"><i class="fas fa-undo-alt"></i> All</button>
@@ -470,6 +490,13 @@
         font-size: 32px;
         box-shadow: 0 12px 24px -8px rgba(47, 107, 255, 0.3);
         transition: all 0.3s ease;
+    }
+
+    /* Preserve contrast on the blue header tile in light theme. */
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .designation-page .header-card .header-icon > i,
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .designation-page .header-card .header-icon > i::before {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
     }
 
     .header-card:hover .header-icon {

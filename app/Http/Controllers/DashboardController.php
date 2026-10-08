@@ -732,6 +732,7 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
                     'employee_details.status',
                     'employee_details.gender',
                     'employee_details.user_role',
+                    'users.role',
                     'users.id as user_id',
                     'users.name',
                     'users.email',
@@ -747,6 +748,7 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
                 $q->where('users.name', 'like', "%{$query}%")
                   ->orWhere('users.email', 'like', "%{$query}%")
                   ->orWhere('users.mobile', 'like', "%{$query}%")
+                  ->orWhere('users.role', 'like', "%{$query}%")
                   ->orWhere('designations.name', 'like', "%{$query}%")
                   ->orWhere('employee_details.employee_id', 'like', "%{$query}%")
                   ->orWhere('employee_details.status', 'like', "%{$query}%")

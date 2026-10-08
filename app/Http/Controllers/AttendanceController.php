@@ -323,6 +323,9 @@ class AttendanceController extends Controller
      */
     public function index(Request $request)
     {
+        if ($request->input('view') !== 'grid') {
+            return $this->calendar($request);
+        }
         $user = Auth::user();
 
         if (!$user) {
@@ -349,10 +352,11 @@ class AttendanceController extends Controller
                 $q->whereNotIn(DB::raw('LOWER(COALESCE(role, ""))'), ['client']);
             });
 
-            if ($companyId) {
-                $usersQuery->where('company_id', $companyId);
-            } elseif ($user->company_id && strtolower((string)$user->role) === 'hr') {
+            if ($user->company_id) {
+                abort_if($companyId && $companyId !== (int) $user->company_id, 403);
                 $usersQuery->where('company_id', $user->company_id);
+            } elseif ($companyId) {
+                $usersQuery->where('company_id', $companyId);
             }
 
             if ($userId) {
@@ -538,6 +542,65 @@ class AttendanceController extends Controller
             'periodTotals',
             'archivedCount'
         ));
+    }
+
+    private function calendar(Request $request)
+    {
+        $actor = Auth::user();
+        abort_unless($actor, 401);
+        abort_unless($actor->company_id, 403, 'No company assigned to this account.');
+        $request->validate([
+            'month' => 'nullable|integer|min:1|max:12',
+            'year' => 'nullable|integer|min:2000|max:2100',
+            'user_id' => 'nullable|integer',
+        ]);
+        $month = $request->integer('month') ?: now()->month;
+        $year = $request->integer('year') ?: now()->year;
+        $start = Carbon::create($year, $month, 1)->startOfDay();
+        $end = $start->copy()->endOfMonth();
+        $canManage = $this->isAdminUser($actor) || $this->canManageAttendance($actor);
+        $query = User::with('employeeDetail')->where('company_id', $actor->company_id)
+            ->whereRaw('LOWER(COALESCE(role, ?)) <> ?', ['', 'client'])->whereNull('archived_at');
+        if (! $canManage) {
+            if ($this->isManagerOrHrUser($actor) && method_exists($actor, 'visibleEmployeeIds')) {
+                $query->whereIn('id', collect($actor->visibleEmployeeIds())->push($actor->id)->unique());
+            } else {
+                $query->whereKey($actor->id);
+            }
+        }
+        $employees = $query->orderBy('name')->get();
+        $selectedEmployee = $request->filled('user_id')
+            ? $employees->firstWhere('id', $request->integer('user_id'))
+            : ($employees->firstWhere('id', $actor->id) ?? $employees->first());
+        abort_if($request->filled('user_id') && ! $selectedEmployee, 403, 'You cannot view this employee.');
+        $records = $selectedEmployee ? Attendance::where('user_id', $selectedEmployee->id)
+            ->whereNull('archived_at')->whereBetween('date', [$start->toDateString(), $end->toDateString()])->orderBy('id')->get() : collect();
+        $holidayQuery = Holiday::whereBetween('date', [$start->toDateString(), $end->toDateString()]);
+        if (Schema::connection('tenant')->hasColumn('holidays', 'archived_at')) $holidayQuery->whereNull('archived_at');
+        if (Schema::connection('tenant')->hasColumn('holidays', 'company_id')) {
+            // Older holiday rows belong to the current tenant database and have no company_id.
+            $holidayQuery->where(fn ($query) => $query->where('company_id', $actor->company_id)->orWhereNull('company_id'));
+        }
+        $holidays = $holidayQuery->get();
+        $leaves = collect();
+        if ($selectedEmployee) {
+            $leaveQuery = Leave::where('user_id', $selectedEmployee->id)->where('status', 'approved');
+            if (Schema::connection('tenant')->hasColumn('leaves', 'archived_at')) $leaveQuery->whereNull('archived_at');
+            $leaveQuery->where(function ($query) use ($start, $end) {
+                $query->whereBetween('date', [$start->toDateString(), $end->toDateString()]);
+                if (Schema::connection('tenant')->hasColumn('leaves', 'start_date')) {
+                    $query->orWhere(function ($range) use ($start, $end) {
+                        $range->whereDate('start_date', '<=', $end)->whereDate('end_date', '>=', $start);
+                    });
+                }
+            });
+            $leaves = $leaveQuery->get();
+        }
+        $calendar = app(\App\Services\AttendanceCalendar::class)->build(
+            $start, $records, $holidays, $leaves, $selectedEmployee?->employeeDetail,
+            \App\Models\AppSetting::getCompanyWorkingDays()
+        );
+        return view('admin.attendance.calendar', compact('employees', 'selectedEmployee', 'month', 'year', 'start', 'calendar', 'canManage'));
     }
 
     /**
@@ -924,7 +987,7 @@ class AttendanceController extends Controller
     /**
      * Create Attendance - ADMIN ONLY
      */
-    public function create()
+    public function create(Request $request)
     {
         $user = Auth::user();
 
@@ -935,7 +998,10 @@ class AttendanceController extends Controller
         }
 
         $departments = Department::get();
-        $users = \App\Models\User::where('role', 'employee')->get();
+        $users = \App\Models\User::where('company_id', $user->company_id)
+            ->whereRaw('LOWER(COALESCE(role, ?)) <> ?', ['', 'client'])->whereNull('archived_at')->orderBy('name')->get();
+        $request->validate(['date' => 'nullable|date_format:Y-m-d', 'user_id' => 'nullable|integer']);
+        abort_if($request->filled('user_id') && ! $users->contains('id', $request->integer('user_id')), 403);
         $year = now()->format('Y');
         $month = now()->format('m');
         $location = CompanyAddress::all();
@@ -984,6 +1050,8 @@ class AttendanceController extends Controller
 
         $request->validate([
             'user_id'   => 'required',
+            'location_id' => 'nullable|integer|exists:tenant.company_addresses,id',
+            'clock_in_address' => 'nullable|string|max:1000',
             'user_id.*' => 'sometimes|exists:users,id',
             'clock_in'  => ['nullable', function ($attribute, $value, $fail) {
                 if (!preg_match('/^(?:[01]\d|2[0-3]):[0-5]\d$/', $value)) {
@@ -1023,6 +1091,7 @@ class AttendanceController extends Controller
                         'status'         => $request->status,
                         'working_from'   => $request->working_from,
                         'location_id'    => $request->location_id,
+                        'clock_in_address' => $request->input('clock_in_address'),
                         'work_from_type' => $request->work_from_type,
                         'late'           => ($request->late == 'yes') ? 'yes' : 'no',
                         'half_day'       => ($request->half_day == 'yes') ? 'yes' : 'no',
@@ -1086,6 +1155,7 @@ class AttendanceController extends Controller
                     'status'         => $request->status,
                     'working_from'   => $request->working_from,
                     'location_id'    => $request->location_id,
+                    'clock_in_address' => $request->input('clock_in_address'),
                     'work_from_type' => $request->work_from_type,
                     'late'           => ($request->late == 'yes') ? 'yes' : 'no',
                     'half_day'       => ($request->half_day == 'yes') ? 'yes' : 'no',
@@ -1988,6 +2058,8 @@ class AttendanceController extends Controller
 
         $request->validate([
             'clock_in'  => 'nullable|date_format:H:i',
+            'location_id' => 'nullable|integer|exists:tenant.company_addresses,id',
+            'clock_in_address' => 'nullable|string|max:1000',
             'clock_out' => 'nullable|date_format:H:i',
             'status'    => 'required|string'
         ]);
@@ -1998,7 +2070,10 @@ class AttendanceController extends Controller
             'status'    => $request->status,
         ];
 
-        if ($request->filled('location_id')) {
+        if ($request->has('clock_in_address')) {
+            $updateData['clock_in_address'] = $request->input('clock_in_address');
+        }
+        if ($request->has('location_id')) {
             $updateData['location_id'] = $request->location_id;
         }
         if ($request->filled('work_from_type')) {

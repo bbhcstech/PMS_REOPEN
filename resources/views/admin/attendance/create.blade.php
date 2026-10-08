@@ -810,7 +810,7 @@
                             <select name="department_id" class="form-select" required>
                                 <option value="0">-- Select Department --</option>
                                 @foreach ($departments as $team)
-                                    <option value="{{ $team->id }}">{{ $team->dpt_name }}</option>
+                                    <option value="{{ $team->id }}" @selected(old('department_id', $users->firstWhere('id', (int) request('user_id'))?->employeeDetail?->department_id) == $team->id)>{{ $team->dpt_name }}</option>
                                 @endforeach
                             </select>
                             @error('department_id')
@@ -827,7 +827,7 @@
                                     id="selectEmployee" data-live-search="true" data-size="8">
                                 <option value="">-- Select Employees --</option>
                                 @foreach($users as $user)
-                                    <option value="{{ $user->id }}">{{ $user->name }} ({{ $user->designation ?? 'N/A' }})</option>
+                                    <option value="{{ $user->id }}" @selected(in_array($user->id, (array) old('user_id', request('user_id') ? [request('user_id')] : [])))>{{ $user->name }} ({{ $user->designation ?? 'N/A' }})</option>
                                 @endforeach
                             </select>
                             @error('user_id')
@@ -840,13 +840,17 @@
                             <label class="form-label">
                                 <i class="fas fa-map-marker-alt"></i> Location <span class="required-star">*</span>
                             </label>
-                            <select name="location_id" id="location_id" class="form-select" required>
+                            <select name="location_id" id="location_id" class="form-select">
+                                <option value="">Custom location / select a saved location</option>
                                 @foreach ($location as $locations)
-                                    <option @if ($locations->is_default == 1) selected @endif value="{{ $locations->id }}">
+                                    <option @selected(old('location_id', $locations->is_default == 1 ? $locations->id : null) == $locations->id) value="{{ $locations->id }}">
                                         {{ $locations->location }}
                                     </option>
                                 @endforeach
                             </select>
+                            <label for="attendance_location" class="form-label mt-2">Custom location / address</label>
+                            <input type="text" name="clock_in_address" id="attendance_location" class="form-control" maxlength="1000" value="{{ old('clock_in_address') }}" placeholder="Enter the employee's attendance location">
+                            @error('clock_in_address')<span class="text-danger">{{ $message }}</span>@enderror
                             @error('location_id')
                                 <span class="text-danger">{{ $message }}</span>
                             @enderror
@@ -859,11 +863,11 @@
                             </label>
                             <div class="radio-group">
                                 <label class="radio-option">
-                                    <input class="form-check-input" type="radio" name="mark_attendance_by" value="month" checked>
+                                    <input class="form-check-input" type="radio" name="mark_attendance_by" value="month" @checked(!request('date'))>
                                     <span class="radio-label">Month</span>
                                 </label>
                                 <label class="radio-option">
-                                    <input class="form-check-input" type="radio" name="mark_attendance_by" value="date">
+                                    <input class="form-check-input" type="radio" name="mark_attendance_by" value="date" @checked(request('date'))>
                                     <span class="radio-label">Date Range</span>
                                 </label>
                             </div>
@@ -909,7 +913,7 @@
                             <label class="form-label">
                                 <i class="fas fa-calendar-week"></i> Date Range <span class="required-star">*</span>
                             </label>
-                            <input type="text" class="form-control" id="date_range" name="date_range" placeholder="MM/DD/YYYY - MM/DD/YYYY">
+                            <input type="text" class="form-control" id="date_range" name="date_range" placeholder="MM/DD/YYYY - MM/DD/YYYY" value="{{ old('date_range', request('date') ? \Carbon\Carbon::parse(request('date'))->format('m/d/Y') . ' - ' . \Carbon\Carbon::parse(request('date'))->format('m/d/Y') : '') }}">
                             <span class="form-text"><i class="fas fa-info-circle"></i> Select start and end dates</span>
                             @error('date_range')
                                 <span class="text-danger">{{ $message }}</span>

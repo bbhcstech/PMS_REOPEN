@@ -307,8 +307,8 @@ class Company extends Model
                 'expenses' => ['expenses'],
                 'billing' => ['billing', 'expenses'],
                 'clients', 'client' => ['clients', 'client', 'leads-contacts'],
-                'products' => ['products'],
-                'orders' => ['orders'],
+                'products' => ['products', 'projects', 'work'],
+                'orders' => ['orders', 'projects', 'work'],
                 'events' => ['events'],
                 'my-documents', 'documents' => ['my-documents', 'documents'],
                 'community' => ['community'],
@@ -384,7 +384,7 @@ class Company extends Model
                             return true;
                         }
                     }
-                    if (in_array($featureSlug, ['community'], true)) {
+                    if (in_array($featureSlug, ['community', 'products', 'orders'], true)) {
                         return true;
                     }
                     return false;
@@ -397,7 +397,7 @@ class Company extends Model
 
                 // Free tier default allowed features
                 if (in_array($planSlug, ['free', 'trial', 'starter'], true)) {
-                    $freeAllowed = ['dashboard', 'notifications', 'organization', 'hr', 'employees', 'attendance', 'leave-management', 'leaves', 'holidays', 'events', 'my-documents', 'community', 'tickets', 'settings'];
+                    $freeAllowed = ['dashboard', 'notifications', 'organization', 'hr', 'employees', 'attendance', 'leave-management', 'leaves', 'holidays', 'events', 'my-documents', 'community', 'tickets', 'settings', 'products', 'orders'];
                     foreach ($slugs as $slug) {
                         if (in_array($slug, $freeAllowed, true)) {
                             return true;
@@ -420,7 +420,7 @@ class Company extends Model
     {
         $parentKey = match ($featureSlug) {
             'designations', 'departments', 'parent-departments', 'attendance', 'leaves', 'leave-management', 'holidays', 'awards', 'recognition', 'recruitment', 'appraisal', 'employees', 'user-management' => 'hr',
-            'projects', 'tasks', 'timelogs', 'timesheets' => 'work',
+            'projects', 'tasks', 'timelogs', 'timesheets', 'products', 'orders' => 'work',
             'deals', 'crm', 'crm-deals', 'leads-contacts' => 'leads',
             'expenses', 'billing', 'payslips', 'salary-structures', 'payroll-architectures' => 'payroll',
             'teams' => 'organization',

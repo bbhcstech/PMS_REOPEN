@@ -2220,7 +2220,7 @@
                     </li>
                 @endif
 
-                @if($canSeeModule('products'))
+                @if($canSeeModule('products') || in_array(auth()->user()?->normalizedRole(), ['admin', 'superadmin'], true))
                 <!-- Products -->
                 <li class="menu-item {{ request()->routeIs('products.*') ? 'active' : '' }}">
                     <a href="{{ route('products.index') }}" class="menu-link" data-sidebar-key="products">
@@ -2230,7 +2230,7 @@
                 </li>
                 @endif
 
-                @if($canSeeModule('orders'))
+                @if($canSeeModule('orders') || in_array(auth()->user()?->normalizedRole(), ['admin', 'superadmin'], true))
                 <!-- Orders -->
                 <li class="menu-item {{ request()->routeIs('orders.*') ? 'active' : '' }}">
                     <a href="{{ route('orders.index') }}" class="menu-link" data-sidebar-key="orders">

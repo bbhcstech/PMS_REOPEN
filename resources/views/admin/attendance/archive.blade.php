@@ -262,6 +262,28 @@
             padding: 1.25rem;
         }
     }
+    :is([data-pms-theme="dark"], [data-bs-theme="dark"], [data-theme="dark"], .dark, .dark-mode) .attendance-archive-page {
+        background: #070b1a !important;
+    }
+    :is([data-pms-theme="dark"], [data-bs-theme="dark"], [data-theme="dark"], .dark, .dark-mode) .attendance-archive-page :is(.archive-header, .archive-card) {
+        background: #0f1530 !important;
+        border-color: #29355b !important;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25) !important;
+    }
+    :is([data-pms-theme="dark"], [data-bs-theme="dark"], [data-theme="dark"], .dark, .dark-mode) .attendance-archive-page :is(h1, h3, h5, h6) {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+    :is([data-pms-theme="dark"], [data-bs-theme="dark"], [data-theme="dark"], .dark, .dark-mode) .attendance-archive-page :is(.archive-header p, .archive-card p, .empty-state) {
+        color: #cbd5e1 !important;
+        -webkit-text-fill-color: #cbd5e1 !important;
+    }
+    :is([data-pms-theme="dark"], [data-bs-theme="dark"], [data-theme="dark"], .dark, .dark-mode) .attendance-archive-page :is(.back-button, .total-badge) {
+        background: #17203f !important;
+        border: 1px solid #34446f !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
 </style>
 
 <div class="attendance-archive-page">

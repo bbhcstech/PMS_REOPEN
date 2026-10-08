@@ -161,6 +161,7 @@ class RolePermissionController extends Controller
             'bonus-rules', 'tax-rules', 'overtime-rules', 'payroll-reports', 'expenses',
             'billing', 'reports', 'analytics', 'advanced-reports', 'events', 'community',
             'collaborating-companies', 'clients', 'leads-contacts', 'tickets',
+            'products', 'orders',
         ];
 
         $managerFullModules = [
@@ -169,13 +170,14 @@ class RolePermissionController extends Controller
             'leaves', 'leave-management', 'reports', 'analytics', 'recruitment',
             'appraisal', 'recognition', 'awards', 'events', 'community',
             'collaborating-companies', 'clients', 'leads-contacts', 'tickets',
+            'products', 'orders',
         ];
 
         $employeeModules = [
             'dashboard', 'notifications', 'my-documents', 'attendance', 'leaves',
             'leave-management', 'holidays', 'recognition', 'awards', 'work',
             'projects', 'tasks', 'timesheets', 'timelogs', 'payslips', 'events',
-            'community',
+            'community', 'products', 'orders',
         ];
 
         if ($role === 'hr') {

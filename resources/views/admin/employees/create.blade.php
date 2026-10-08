@@ -1246,7 +1246,7 @@
                             @enderror
                         </div>
 
-                        @php $selectedCompany = old('company_id') ?? (auth()->user()?->company_id ?: ($companies->first()?->id ?? 1)); @endphp
+                        @php $selectedCompany = $companies->first()?->id; @endphp
                         <input type="hidden" name="company_id" id="company_id" value="{{ $selectedCompany }}">
 
                         <div class="col-md-4">
@@ -1690,9 +1690,12 @@
                         <div class="col-md-4" id="exit-date-container" style="display: {{ $status === 'Inactive' ? 'block' : 'none' }};">
                             <label class="form-label-premium">
                                 <span><i class="fas fa-calendar-times"></i> Exit Date</span>
-                                <span class="optional-badge">Optional</span>
+                                <span class="mandatory-badge" id="exit-date-badge">Required</span>
                             </label>
-                            <input type="date" name="exit_date" id="exit_date" class="form-control-premium" value="{{ old('exit_date') ?? fmtDate($ed->exit_date ?? '') }}">
+                            <input type="date" name="exit_date" id="exit_date" class="form-control-premium @error('exit_date') is-invalid @enderror" value="{{ old('exit_date') ?? fmtDate($ed->exit_date ?? '') }}">
+                            @error('exit_date')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
                         </div>
                     </div>
 
@@ -1791,8 +1794,8 @@
 
                             <div class="mb-3">
                                 <label class="form-label fw-bold" style="color: var(--primary);">Designation Level <span class="text-danger">*</span></label>
-                                <input type="number" min="0" max="6" name="level" class="form-control-premium" id="designationLevel" placeholder="Enter level (0-6)" required>
-                                <small class="text-muted">Level range: 0-6 (e.g., 0=Intern, 1=Associate, 2=Sr. Associate, etc.)</small>
+                                <input type="number" min="0" max="{{ \App\Services\DesignationLevels::maximum() }}" name="level" class="form-control-premium" id="designationLevel" placeholder="Enter level (0-{{ \App\Services\DesignationLevels::maximum() }})" required>
+                                <small class="text-muted">Level range: 0-{{ \App\Services\DesignationLevels::maximum() }} (e.g., 0=Intern, 1=Associate, 2=Sr. Associate, etc.)</small>
                             </div>
                         </div>
 
@@ -1899,7 +1902,11 @@ const $el = id => document.getElementById(id);
 function toggleExitDate() {
     const isInactive = $el('status-inactive') && $el('status-inactive').checked;
     const container = $el('exit-date-container');
+    const exitDateInput = $el('exit_date');
     if (container) container.style.display = isInactive ? 'block' : 'none';
+    if (!isInactive && exitDateInput) {
+        exitDateInput.value = '';
+    }
 }
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -2377,13 +2384,13 @@ $(document).ready(function() {
         }
 
         if (level === '' || level === null) {
-            $('#designation-error').removeClass('d-none').text('Please enter a level between 0-6.');
+            $('#designation-error').removeClass('d-none').text('Please enter a level between 0-{{ \App\Services\DesignationLevels::maximum() }}.');
             return;
         }
 
         const levelNum = parseInt(level);
-        if (isNaN(levelNum) || levelNum < 0 || levelNum > 6) {
-            $('#designation-error').removeClass('d-none').text('Level must be a whole number between 0-6.');
+        if (isNaN(levelNum) || levelNum < 0 || levelNum > {{ \App\Services\DesignationLevels::maximum() }}) {
+            $('#designation-error').removeClass('d-none').text('Level must be a whole number between 0-{{ \App\Services\DesignationLevels::maximum() }}.');
             return;
         }
 

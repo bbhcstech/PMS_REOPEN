@@ -286,6 +286,10 @@ class User extends Authenticatable
         if (str_contains($moduleSlug, 'reports')) {
             $slugsToTest[] = 'reports';
         }
+        if (in_array($moduleSlug, ['products', 'orders'], true)) {
+            $slugsToTest[] = 'projects';
+            $slugsToTest[] = 'work';
+        }
 
         $hasPermission = RolePermission::query()
             ->where('role', $this->normalizedRole())
@@ -302,9 +306,9 @@ class User extends Authenticatable
         // Fallback: If no role_permissions exist in database for this role, allow default modules
         if (! RolePermission::where('role', $this->normalizedRole())->exists()) {
             $defaultMap = [
-                'manager'  => ['dashboard', 'notifications', 'organization', 'teams', 'hr-management', 'employees', 'work', 'projects', 'tasks', 'timelogs', 'attendance', 'leaves', 'reports', 'recruitment', 'appraisal', 'events', 'community'],
-                'hr'       => ['dashboard', 'notifications', 'employees', 'attendance', 'leaves', 'work', 'projects', 'tasks', 'timelogs', 'payroll', 'reports', 'recruitment', 'appraisal', 'events', 'community'],
-                'employee' => ['dashboard', 'notifications', 'projects', 'tasks', 'attendance', 'timelogs', 'leaves', 'recruitment', 'appraisal', 'events', 'community'],
+                'manager'  => ['dashboard', 'notifications', 'organization', 'teams', 'hr-management', 'employees', 'work', 'projects', 'tasks', 'timelogs', 'attendance', 'leaves', 'reports', 'recruitment', 'appraisal', 'events', 'community', 'products', 'orders'],
+                'hr'       => ['dashboard', 'notifications', 'employees', 'attendance', 'leaves', 'work', 'projects', 'tasks', 'timelogs', 'payroll', 'reports', 'recruitment', 'appraisal', 'events', 'community', 'products', 'orders'],
+                'employee' => ['dashboard', 'notifications', 'projects', 'tasks', 'attendance', 'timelogs', 'leaves', 'recruitment', 'appraisal', 'events', 'community', 'products', 'orders'],
             ];
             $allowed = $defaultMap[$this->normalizedRole()] ?? [];
             foreach ($slugsToTest as $slug) {

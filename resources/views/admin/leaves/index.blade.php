@@ -73,6 +73,17 @@
         <p>{{ $policyNotice }}</p>
     </section>
 
+    <style>
+        /* Light-theme contrast only for the blue header tile and total card. */
+        html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .leave-page .leave-hero .leave-hero-icon > i,
+        html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .leave-page .leave-hero .leave-hero-icon > i::before,
+        html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .leave-page .leave-stats > .stat-card:first-child :is(span, strong, i),
+        html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .leave-page .leave-stats > .stat-card:first-child i::before {
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
+        }
+    </style>
+
     <!-- Stats Cards -->
     <section class="leave-stats">
         <div class="stat-card">

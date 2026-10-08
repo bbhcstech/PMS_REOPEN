@@ -15,6 +15,26 @@ class DesignationController extends Controller
 {
     private static bool $schemaChecked = false;
 
+    public function updateLevelSettings(Request $request)
+    {
+        abort_unless(in_array(strtolower((string) auth()->user()?->role), ['admin', 'administrator'], true), 403);
+        $data = $request->validate(['maximum_level' => ['required', 'integer', 'min:6', 'max:100']]);
+        $maximum = (int) $data['maximum_level'];
+        if (Designation::where('level', '>', $maximum)->exists()) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'maximum_level' => 'Correct existing designations above this limit before lowering it.',
+            ]);
+        }
+        DB::connection('central')->transaction(function () use ($maximum) {
+            $company = \App\Models\Company::whereKey(\App\Services\DesignationLevels::companyId())->lockForUpdate()->firstOrFail();
+            $settings = $company->settings ?? [];
+            $settings['designation_max_level'] = $maximum;
+            $company->settings = $settings;
+            $company->save();
+        });
+        return back()->with('success', 'Company designation level limit updated.');
+    }
+
     public static function ensureDesignationColumnsExist(): void
     {
         if (self::$schemaChecked) {
@@ -226,8 +246,8 @@ class DesignationController extends Controller
 
         $request->validate([
             'name'                 => ['required', 'string', 'max:255', Rule::unique('designations', 'name')],
-            'parent_id'            => ['nullable', 'exists:designations,id'],
-            'level'                => ['required', 'integer', 'min:0', 'max:6'],
+            'parent_id'            => ['nullable', Rule::exists('tenant.designations', 'id')->where(fn ($q) => $q->whereIn('id', Designation::pluck('id')))],
+            'level'                => ['required', 'integer', 'min:0', 'max:' . \App\Services\DesignationLevels::maximum()],
             'code_generation_mode' => ['required', Rule::in(['auto', 'custom'])],
             'unique_code'          => [
                 'required_if:code_generation_mode,custom',
@@ -241,8 +261,8 @@ class DesignationController extends Controller
         $level = (int) $request->level;
 
         // Strict level range validation (0 - 6 only)
-        if ($level < 0 || $level > 6) {
-            $errorMsg = 'Designation level must be strictly between 0 and 6.';
+        if ($level < 0 || $level > \App\Services\DesignationLevels::maximum()) {
+            $errorMsg = 'Designation level must be within the configured company limit.';
             if ($request->ajax()) {
                 return response()->json(['status' => 'error', 'message' => $errorMsg, 'errors' => ['level' => [$errorMsg]]], 422);
             }
@@ -254,8 +274,8 @@ class DesignationController extends Controller
             $parent = Designation::find($request->parent_id);
             if ($parent) {
                 $parentLevel = (int) ($parent->level ?? 0);
-                if ($parentLevel >= 6) {
-                    $errorMsg = 'A Level 6 designation cannot have subordinate designations as Level 6 is the maximum organizational level allowed.';
+                if ($parentLevel >= \App\Services\DesignationLevels::maximum()) {
+                    $errorMsg = 'A designation at the company maximum level cannot have subordinate designations.';
                     if ($request->ajax()) {
                         return response()->json(['status' => 'error', 'message' => $errorMsg, 'errors' => ['parent_id' => [$errorMsg]]], 422);
                     }
@@ -350,17 +370,17 @@ class DesignationController extends Controller
             ],
             'parent_id' => [
                 'nullable',
-                'exists:designations,id',
+                Rule::exists('tenant.designations', 'id')->where(fn ($q) => $q->whereIn('id', Designation::pluck('id'))),
                 Rule::notIn([$designation->id]),
             ],
-            'level'     => ['required', 'integer', 'min:0', 'max:6']
+            'level'     => ['required', 'integer', 'min:0', 'max:' . \App\Services\DesignationLevels::maximum()]
         ]);
 
         $level = (int) $request->level;
 
         // Strict level range validation (0 - 6 only)
-        if ($level < 0 || $level > 6) {
-            $errorMsg = 'Designation level must be strictly between 0 and 6.';
+        if ($level < 0 || $level > \App\Services\DesignationLevels::maximum()) {
+            $errorMsg = 'Designation level must be within the configured company limit.';
             if ($request->ajax()) {
                 return response()->json(['status' => 'error', 'message' => $errorMsg, 'errors' => ['level' => [$errorMsg]]], 422);
             }
@@ -381,8 +401,8 @@ class DesignationController extends Controller
             $parent = Designation::find($request->parent_id);
             if ($parent) {
                 $parentLevel = (int) ($parent->level ?? 0);
-                if ($parentLevel >= 6) {
-                    $errorMsg = 'A Level 6 designation cannot have subordinate designations as Level 6 is the maximum organizational level allowed.';
+                if ($parentLevel >= \App\Services\DesignationLevels::maximum()) {
+                    $errorMsg = 'A designation at the company maximum level cannot have subordinate designations.';
                     if ($request->ajax()) {
                         return response()->json(['status' => 'error', 'message' => $errorMsg, 'errors' => ['parent_id' => [$errorMsg]]], 422);
                     }
@@ -401,8 +421,8 @@ class DesignationController extends Controller
 
         // Subtree depth limit check: if this designation has descendants, new level + max descendant depth cannot exceed 6
         $maxSubtreeDepth = $this->getMaxSubtreeDepth($designation->id);
-        if ($level + $maxSubtreeDepth > 6) {
-            $errorMsg = 'Updating this designation to Level ' . $level . ' would cause subordinate designations to exceed the maximum Level 6 limit (subtree depth reaches Level ' . ($level + $maxSubtreeDepth) . ').';
+        if ($level + $maxSubtreeDepth > \App\Services\DesignationLevels::maximum()) {
+            $errorMsg = 'Updating this designation to Level ' . $level . ' would cause subordinate designations to exceed the configured company level limit (subtree depth reaches Level ' . ($level + $maxSubtreeDepth) . ').';
             if ($request->ajax()) {
                 return response()->json(['status' => 'error', 'message' => $errorMsg, 'errors' => ['level' => [$errorMsg]]], 422);
             }
@@ -457,17 +477,17 @@ class DesignationController extends Controller
 
         $request->validate([
             'name'      => ['required', 'string', 'max:255', Rule::unique('designations', 'name')],
-            'parent_id' => ['nullable', 'exists:designations,id'],
-            'level'     => ['required', 'integer', 'min:0', 'max:6']
+            'parent_id' => ['nullable', Rule::exists('tenant.designations', 'id')->where(fn ($q) => $q->whereIn('id', Designation::pluck('id')))],
+            'level'     => ['required', 'integer', 'min:0', 'max:' . \App\Services\DesignationLevels::maximum()]
         ]);
 
         $level = (int) $request->level;
 
         // Strict level range validation (0 - 6 only)
-        if ($level < 0 || $level > 6) {
+        if ($level < 0 || $level > \App\Services\DesignationLevels::maximum()) {
             return response()->json([
                 'status'  => 'error',
-                'message' => 'Designation level must be strictly between 0 and 6.'
+                'message' => 'Designation level must be within the configured company limit.'
             ], 422);
         }
 
@@ -475,10 +495,10 @@ class DesignationController extends Controller
             $parent = Designation::find($request->parent_id);
             if ($parent) {
                 $parentLevel = (int) ($parent->level ?? 0);
-                if ($parentLevel >= 6) {
+                if ($parentLevel >= \App\Services\DesignationLevels::maximum()) {
                     return response()->json([
                         'status'  => 'error',
-                        'message' => 'A Level 6 designation cannot have subordinate designations as Level 6 is the maximum organizational level allowed.'
+                        'message' => 'A designation at the company maximum level cannot have subordinate designations.'
                     ], 422);
                 }
 
@@ -764,6 +784,7 @@ class DesignationController extends Controller
     private function employeeHierarchyPoints()
     {
         $employees = User::with(['employeeDetail.designation'])
+            ->where('company_id', \App\Services\DesignationLevels::companyId())
             ->where('role', 'employee')
             ->whereNull('archived_at')
             ->whereDoesntHave('employeeDetail', function ($query) {
@@ -801,13 +822,13 @@ class DesignationController extends Controller
     {
         $validated = $request->validate([
             'hierarchy' => ['required', 'array'],
-            'hierarchy.*.id' => ['required', 'integer', 'exists:designations,id'],
-            'hierarchy.*.parent_id' => ['nullable', 'integer', 'exists:designations,id'],
+            'hierarchy.*.id' => ['required', 'integer', Rule::exists('tenant.designations', 'id')->where(fn ($q) => $q->whereIn('id', Designation::pluck('id')))],
+            'hierarchy.*.parent_id' => ['nullable', 'integer', Rule::exists('tenant.designations', 'id')->where(fn ($q) => $q->whereIn('id', Designation::pluck('id')))],
             'hierarchy.*.order' => ['required', 'integer', 'min:0'],
         ]);
 
         // Build parent map to validate depth & detect cycles
-        $parentMap = [];
+        $parentMap = Designation::pluck('parent_id', 'id')->all();
         $ids = [];
         foreach ($validated['hierarchy'] as $item) {
             $itemId = (int) $item['id'];
@@ -834,10 +855,10 @@ class DesignationController extends Controller
                 $current = $parentMap[$current];
                 $depth++;
 
-                if ($depth > 6) {
+                if ($depth > \App\Services\DesignationLevels::maximum()) {
                     return response()->json([
                         'status'  => 'error',
-                        'message' => 'Hierarchy depth exceeds maximum allowed Level 6. Only organizational levels 0 to 6 are permitted.'
+                        'message' => 'Hierarchy depth exceeds the configured company designation level limit.'
                     ], 422);
                 }
             }
@@ -854,7 +875,7 @@ class DesignationController extends Controller
                 Designation::whereKey($itemId)->update([
                     'parent_id'       => $parentId,
                     'order'           => (int) $item['order'],
-                    'level'           => min(6, max(0, $level)),
+                    'level'           => $level,
                     'last_updated_by' => Auth::id(),
                 ]);
             }

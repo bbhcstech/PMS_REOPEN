@@ -162,7 +162,7 @@
                                 <input class="form-check-input" type="checkbox" id="table-select-all">
                             </div>
                         </th>
-                        <th><i class="fas fa-hashtag"></i> #</th>
+                        <th>#</th>
                         <th><i class="fas fa-code"></i> Sub Department Code</th>
                         <th><i class="fas fa-building"></i> Sub Department</th>
                         <th><i class="fas fa-arrow-right"></i> Parent Department</th>
@@ -397,6 +397,13 @@
         font-size: 32px;
         box-shadow: 0 12px 24px -8px rgba(47, 107, 255, 0.3);
         transition: all 0.3s ease;
+    }
+
+    /* Keep the header glyph visible on its blue tile in light theme. */
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .sub-department-page .header-card .header-icon > i,
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .sub-department-page .header-card .header-icon > i::before {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
     }
 
     .header-card:hover .header-icon {
@@ -1326,6 +1333,40 @@
     .page-dots {
         color: #9ca3af;
         padding: 0 6px;
+    }
+
+    /* Keep list checkboxes from shrinking under shared form styles. */
+    .sub-department-page input.form-check-input[type="checkbox"] {
+        appearance: auto !important;
+        -webkit-appearance: checkbox !important;
+        accent-color: #2563eb;
+        width: 18px !important;
+        height: 18px !important;
+        min-width: 18px !important;
+        min-height: 18px !important;
+        flex: 0 0 18px !important;
+        float: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background-image: none !important;
+        vertical-align: middle !important;
+        cursor: pointer;
+    }
+    .sub-department-page .department-list-table .form-check {
+        justify-content: center;
+        min-height: 18px;
+        padding-left: 0 !important;
+        margin-bottom: 0 !important;
+    }
+    .sub-department-page .department-list-table .department-info > div:last-child {
+        min-width: 0;
+    }
+    .sub-department-page .department-list-table :is(.department-name, .parent-name) {
+        overflow-wrap: anywhere;
+    }
+    .sub-department-page input.form-check-input[type="checkbox"]:focus-visible {
+        outline: 2px solid #2563eb !important;
+        outline-offset: 3px;
     }
 
     /* Form Check */

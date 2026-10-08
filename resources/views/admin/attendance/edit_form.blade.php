@@ -40,16 +40,20 @@
                 <i class="fas fa-map-marker-alt"></i> Location <sup class="required-star">*</sup>
             </label>
             <div class="form-field">
-                <select name="location_id" class="form-control" required>
+                <select name="location_id" class="form-control">
+                    <option value="">Custom location / select a saved location</option>
                     @foreach ($location as $loc)
                         <option value="{{ $loc->id }}"
-                            {{ ($attendance->location_id ?? old('location_id')) == $loc->id ? 'selected' : ($loc->is_default ? 'selected' : '') }}>
+                            @selected(old('location_id', $attendance->location_id) == $loc->id)>
                             {{ $loc->location }}
                         </option>
                     @endforeach
                 </select>
                 <i class="fas fa-chevron-down field-icon"></i>
             </div>
+            <label for="attendance_location" class="form-label mt-2">Custom location / address</label>
+            <input type="text" name="clock_in_address" id="attendance_location" class="form-control" maxlength="1000" value="{{ old('clock_in_address', $attendance->clock_in_address) }}" placeholder="Enter the employee's attendance location">
+            @error('clock_in_address')<span class="text-danger">{{ $message }}</span>@enderror
         </div>
 
         <!-- Clock In -->

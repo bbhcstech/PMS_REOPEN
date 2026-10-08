@@ -4434,6 +4434,54 @@
         display: inline-block !important;
         line-height: 1 !important;
     }
+    /* Keep list controls sized consistently without changing selection behavior. */
+    .employee-dashboard .employee-list-table input.form-check-input[type="checkbox"] {
+        appearance: none !important;
+        -webkit-appearance: none !important;
+        display: inline-block !important;
+        width: 18px !important;
+        height: 18px !important;
+        min-width: 18px !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        vertical-align: middle !important;
+        border: 2px solid #94a3b8 !important;
+        border-radius: 4px !important;
+        background-color: #ffffff !important;
+        background-image: none !important;
+        cursor: pointer;
+    }
+    .employee-dashboard .employee-list-table input.form-check-input[type="checkbox"]:checked,
+    .employee-dashboard .employee-list-table input.form-check-input[type="checkbox"]:indeterminate {
+        background-color: #2563eb !important;
+        border-color: #2563eb !important;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='white' stroke-linecap='round' stroke-linejoin='round' stroke-width='2.5' d='m3 8 3 3 7-7'/%3E%3C/svg%3E") !important;
+        background-position: center !important;
+        background-size: 14px 14px !important;
+        background-repeat: no-repeat !important;
+    }
+    .employee-dashboard .employee-list-table input.form-check-input[type="checkbox"]:indeterminate {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath stroke='white' stroke-linecap='round' stroke-width='2.5' d='M4 8h8'/%3E%3C/svg%3E") !important;
+    }
+    .employee-dashboard .employee-list-table input.form-check-input[type="checkbox"]:focus-visible,
+    .employee-dashboard .employee-list-table .btn-action-dots:focus-visible {
+        outline: 2px solid #2563eb !important;
+        outline-offset: 3px !important;
+    }
+    .employee-dashboard .employee-list-table input.form-check-input[type="checkbox"]:disabled {
+        opacity: 0.5 !important;
+        cursor: not-allowed !important;
+    }
+    .employee-dashboard .employee-list-table .btn-action-dots > i,
+    .employee-dashboard .employee-list-table .btn-action-dots > i::before {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .employee-dashboard .stat-card.total .stat-icon > i,
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .employee-dashboard .stat-card.total .stat-icon > i::before {
+        color: #2563eb !important;
+        -webkit-text-fill-color: #2563eb !important;
+    }
 </style>
 
 {{-- JavaScript - COMPLETELY UNCHANGED FUNCTIONALITY --}}

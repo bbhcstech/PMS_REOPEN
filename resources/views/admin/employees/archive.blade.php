@@ -400,6 +400,12 @@
         box-shadow: 0 14px 26px rgba(47, 107, 255, 0.22);
         flex-shrink: 0;
     }
+    /* Keep the header glyph visible over its blue tile in both themes. */
+    .employee-dashboard.archived-employee-page .archive-hero .archive-hero-icon > i,
+    .employee-dashboard.archived-employee-page .archive-hero .archive-hero-icon > i::before {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
     .archive-hero h1 { color: #070B1A; -webkit-text-fill-color: #070B1A; font-weight: 800; letter-spacing: -0.02em; }
     .archive-hero p { color: #475569; -webkit-text-fill-color: #475569; font-weight: 600; }
 

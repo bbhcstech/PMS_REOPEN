@@ -27,11 +27,30 @@ class EmployeeDetail extends TenantModel
         'notice_start_date' => 'date',
         'notice_end_date' => 'date',
         'created_at' => 'datetime',
+        'exit_date' => 'date',
         'updated_at' => 'datetime',
         'login_allowed' => 'boolean',
         'email_notifications' => 'boolean',
         'hourly_rate' => 'decimal:2'
     ];
+
+    public function setUserRoleAttribute($value)
+    {
+        $this->attributes['user_role'] = (is_numeric($value) && (int) $value > 0) ? (int) $value : null;
+    }
+
+    public function setExitDateAttribute($value)
+    {
+        if (empty($value)) {
+            $this->attributes['exit_date'] = null;
+        } else {
+            try {
+                $this->attributes['exit_date'] = Carbon::parse($value)->format('Y-m-d');
+            } catch (\Throwable $e) {
+                $this->attributes['exit_date'] = $value;
+            }
+        }
+    }
 
     public function user()
     {

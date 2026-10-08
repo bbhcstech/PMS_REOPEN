@@ -159,4 +159,12 @@
 </div>
 
 @include('admin.parent_departments.partials.show-styles')
+<style>
+    /* Keep this header glyph visible on its blue tile in light theme. */
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .department-view-page .header-card .header-icon > i,
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .department-view-page .header-card .header-icon > i::before {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+</style>
 @endsection

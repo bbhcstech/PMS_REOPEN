@@ -1816,6 +1816,7 @@
                     <i class="fas fa-calendar-check me-2"></i>Employee Attendance Dashboard
                 </h1>
                 <p><i class="fas fa-info-circle me-1"></i>Monitor and manage employee attendance records</p>
+                <a href="{{ route('attendance.index', ['month' => $month, 'year' => $year]) }}" class="btn-filter">Calendar view</a>
             </div>
 
             @if($canManage)
