@@ -67,14 +67,14 @@ class Attendance extends TenantModel
         return $value ?: ($this->attributes['location'] ?? $this->attributes['working_from'] ?? $this->attributes['clock_in_address'] ?? null);
     }
 
-    public function getLatitudeAttribute($value)
+    public function getLatitudeAttribute($value = null)
     {
-        return $value !== null ? (float) $value : (isset($this->attributes['clock_in_latitude']) ? (float) $this->attributes['clock_in_latitude'] : null);
+        return $value !== null ? (float) $value : (isset($this->attributes['clock_in_latitude']) ? (float) $this->attributes['clock_in_latitude'] : (isset($this->attributes['latitude']) ? (float) $this->attributes['latitude'] : null));
     }
 
-    public function getLongitudeAttribute($value)
+    public function getLongitudeAttribute($value = null)
     {
-        return $value !== null ? (float) $value : (isset($this->attributes['clock_in_longitude']) ? (float) $this->attributes['clock_in_longitude'] : null);
+        return $value !== null ? (float) $value : (isset($this->attributes['clock_in_longitude']) ? (float) $this->attributes['clock_in_longitude'] : (isset($this->attributes['longitude']) ? (float) $this->attributes['longitude'] : null));
     }
 
     // fully-qualified relation to avoid namespace issues
@@ -313,20 +313,6 @@ class Attendance extends TenantModel
     /*
      * Accessors ensuring backward-compatible property access
      */
-    public function getLocationAttribute()
-    {
-        return $this->attributes['location'] ?? ($this->attributes['clock_in_address'] ?? null);
-    }
-
-    public function getLatitudeAttribute()
-    {
-        return $this->attributes['latitude'] ?? ($this->attributes['clock_in_latitude'] ?? null);
-    }
-
-    public function getLongitudeAttribute()
-    {
-        return $this->attributes['longitude'] ?? ($this->attributes['clock_in_longitude'] ?? null);
-    }
 
     public function getLateAttribute()
     {
