@@ -2958,7 +2958,7 @@
                 @php
                   use App\Models\User;
                   $user = auth()->user();
-                  $employeeDesignation = $user?->employeeDetail?->designation?->name ?? $user?->designation ?? 'Employee';
+                  $employeeDesignation = $user?->employeeDetail?->designation?->name ?? $user?->designation ?? null;
                   $employeeDepartment = $user?->employeeDetail?->department?->dpt_name ?? null;
                 @endphp
 
@@ -2977,9 +2977,11 @@
 
                       <div class="d-none d-md-block text-start">
                         <h6 class="mb-0 text-truncate" style="font-size: 14px;">{{ $user->name }}</h6>
-                        <small class="text-muted d-block text-truncate" style="max-width: 180px;">
-                          {{ $employeeDesignation }}
-                        </small>
+                        @if($employeeDesignation && strtolower($employeeDesignation) !== 'employee')
+                          <small class="text-muted d-block text-truncate" style="max-width: 180px;">
+                            {{ $employeeDesignation }}
+                          </small>
+                        @endif
                         @if($user?->role === 'employee' && $employeeDepartment)
                           <small class="text-muted d-block text-truncate" style="max-width: 180px;">
                             {{ $employeeDepartment }}
@@ -3002,7 +3004,11 @@
 
                           <div class="flex-grow-1">
                               <h6 class="mb-0">{{ $user->name }}</h6>
-                              <small class="text-body-secondary d-block">{{ $employeeDesignation }} ({{ ucfirst($user->role) }})</small>
+                              @if($employeeDesignation && strtolower($employeeDesignation) !== 'employee')
+                                <small class="text-body-secondary d-block">{{ $employeeDesignation }} ({{ ucfirst($user->role) }})</small>
+                              @else
+                                <small class="text-body-secondary d-block">{{ ucfirst($user->role) }}</small>
+                              @endif
                               @if($user?->role === 'employee' && $employeeDepartment)
                                 <small class="text-body-secondary d-block">Department: {{ $employeeDepartment }}</small>
                               @endif

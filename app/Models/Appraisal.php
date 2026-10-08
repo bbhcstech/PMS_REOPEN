@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Appraisal extends TenantModel
 {
+    use SoftDeletes;
+
     protected $table = 'appraisals';
 
     protected $fillable = [

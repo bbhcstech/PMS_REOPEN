@@ -69,10 +69,16 @@
         font-size: 1.4rem;
         flex-shrink: 0;
     }
-    .metric-icon.purple { background: #ede9fe; color: #7C3AED; }
-    .metric-icon.blue { background: #dbeafe; color: #2563eb; }
-    .metric-icon.green { background: #dcfce7; color: #16a34a; }
-    .metric-icon.amber { background: #fef3c7; color: #d97706; }
+    .metric-icon i {
+        color: inherit !important;
+        -webkit-text-fill-color: currentColor !important;
+        font-size: 1.45rem !important;
+        line-height: 1 !important;
+    }
+    .metric-icon.purple { background: #ede9fe !important; color: #7C3AED !important; }
+    .metric-icon.blue { background: #dbeafe !important; color: #2563eb !important; }
+    .metric-icon.green { background: #dcfce7 !important; color: #16a34a !important; }
+    .metric-icon.amber { background: #fef3c7 !important; color: #d97706 !important; }
     .metric-info h4 {
         margin: 0;
         font-weight: 800;
@@ -226,6 +232,33 @@
         border-radius: 999px;
     }
 
+    /* Employee Avatar & Initial Badge */
+    .appraisal-shell .avatar {
+        position: relative;
+        width: 34px !important;
+        height: 34px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        flex-shrink: 0 !important;
+    }
+    .appraisal-shell .avatar-initial,
+    .appraisal-shell .avatar-initial.bg-label-purple {
+        width: 34px !important;
+        height: 34px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border-radius: 50% !important;
+        font-size: 0.85rem !important;
+        font-weight: 700 !important;
+        background: #ede9fe !important;
+        color: #6d28d9 !important;
+        -webkit-text-fill-color: #6d28d9 !important;
+        border: 1px solid #ddd6fe !important;
+        box-shadow: 0 2px 4px rgba(109, 40, 217, 0.12) !important;
+    }
+
     /* Dark Mode Overrides */
     html[data-pms-theme="dark"] .app-header h3 {
         color: #EEF1FB !important;
@@ -276,6 +309,49 @@
     }
     html[data-pms-theme="dark"] .score-progress {
         background: #141B3D !important;
+    }
+    html[data-pms-theme="dark"] .appraisal-shell .appraisal-filter-card {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .appraisal-shell .appraisal-filter-card .form-label {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .appraisal-shell .appraisal-filter-card .btn-outline-secondary {
+        color: #E2E8F0 !important;
+        -webkit-text-fill-color: #E2E8F0 !important;
+        border-color: rgba(238, 241, 251, 0.22) !important;
+        background: rgba(255, 255, 255, 0.06) !important;
+    }
+    html[data-pms-theme="dark"] .appraisal-shell .appraisal-filter-card .btn-outline-secondary:hover {
+        background: rgba(255, 255, 255, 0.15) !important;
+        border-color: rgba(238, 241, 251, 0.45) !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    /* High-Contrast Employee Avatar Badge in Dark Mode */
+    html[data-pms-theme="dark"] .appraisal-shell .avatar-initial,
+    html[data-pms-theme="dark"] .appraisal-shell .avatar-initial.bg-label-purple,
+    html[data-bs-theme="dark"] .appraisal-shell .avatar-initial,
+    html[data-bs-theme="dark"] .appraisal-shell .avatar-initial.bg-label-purple,
+    html[data-theme="dark"] .appraisal-shell .avatar-initial,
+    html[data-theme="dark"] .appraisal-shell .avatar-initial.bg-label-purple,
+    html.dark .appraisal-shell .avatar-initial,
+    html.dark .appraisal-shell .avatar-initial.bg-label-purple,
+    body[data-pms-theme="dark"] .appraisal-shell .avatar-initial,
+    body[data-pms-theme="dark"] .appraisal-shell .avatar-initial.bg-label-purple,
+    [data-pms-theme="dark"] .appraisal-shell .avatar-initial,
+    [data-pms-theme="dark"] .appraisal-shell .avatar-initial.bg-label-purple,
+    .dark .appraisal-shell .avatar-initial,
+    .dark .appraisal-shell .avatar-initial.bg-label-purple {
+        background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%) !important;
+        background-color: #7c3aed !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        border: 1px solid rgba(196, 181, 253, 0.5) !important;
+        box-shadow: 0 0 10px rgba(124, 58, 237, 0.45) !important;
+        font-weight: 700 !important;
     }
 
     /* ===== APPRAISAL TABLE ACTION BUTTONS (HIGH CONTRAST) ===== */
@@ -502,6 +578,175 @@
         color: #e2e8f0 !important;
         border-color: rgba(255, 255, 255, 0.18) !important;
     }
+
+    /* ===== DARK MODE FOR METRIC SUMMARY CARDS & ICONS ===== */
+    html[data-pms-theme="dark"] .appraisal-shell .metric-card,
+    html[data-bs-theme="dark"] .appraisal-shell .metric-card,
+    html[data-theme="dark"] .appraisal-shell .metric-card,
+    html.dark .appraisal-shell .metric-card,
+    body[data-pms-theme="dark"] .appraisal-shell .metric-card,
+    [data-pms-theme="dark"] .appraisal-shell .metric-card,
+    .dark .appraisal-shell .metric-card {
+        background: #111827 !important;
+        border-color: rgba(255, 255, 255, 0.08) !important;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    html[data-pms-theme="dark"] .appraisal-shell .metric-info h4,
+    html[data-bs-theme="dark"] .appraisal-shell .metric-info h4,
+    html[data-theme="dark"] .appraisal-shell .metric-info h4,
+    html.dark .appraisal-shell .metric-info h4,
+    body[data-pms-theme="dark"] .appraisal-shell .metric-info h4,
+    [data-pms-theme="dark"] .appraisal-shell .metric-info h4,
+    .dark .appraisal-shell .metric-info h4 {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    html[data-pms-theme="dark"] .appraisal-shell .metric-info span,
+    html[data-bs-theme="dark"] .appraisal-shell .metric-info span,
+    html[data-theme="dark"] .appraisal-shell .metric-info span,
+    html.dark .appraisal-shell .metric-info span,
+    body[data-pms-theme="dark"] .appraisal-shell .metric-info span,
+    [data-pms-theme="dark"] .appraisal-shell .metric-info span,
+    .dark .appraisal-shell .metric-info span {
+        color: #94a3b8 !important;
+        -webkit-text-fill-color: #94a3b8 !important;
+    }
+
+    /* Reset global icon wash-out filters for metric icons */
+    html[data-pms-theme="dark"] .appraisal-shell .metric-icon i,
+    html[data-bs-theme="dark"] .appraisal-shell .metric-icon i,
+    html[data-theme="dark"] .appraisal-shell .metric-icon i,
+    html.dark .appraisal-shell .metric-icon i,
+    body[data-pms-theme="dark"] .appraisal-shell .metric-icon i,
+    [data-pms-theme="dark"] .appraisal-shell .metric-icon i,
+    .dark .appraisal-shell .metric-icon i {
+        filter: none !important;
+        font-size: 1.55rem !important;
+        line-height: 1 !important;
+    }
+
+    /* 1. Purple Metric Icon (Total Evaluated) */
+    html[data-pms-theme="dark"] .appraisal-shell .metric-icon.purple,
+    html[data-bs-theme="dark"] .appraisal-shell .metric-icon.purple,
+    html[data-theme="dark"] .appraisal-shell .metric-icon.purple,
+    html.dark .appraisal-shell .metric-icon.purple,
+    body[data-pms-theme="dark"] .appraisal-shell .metric-icon.purple,
+    [data-pms-theme="dark"] .appraisal-shell .metric-icon.purple,
+    .dark .appraisal-shell .metric-icon.purple {
+        background: rgba(139, 92, 246, 0.22) !important;
+        border: 1px solid rgba(167, 139, 250, 0.45) !important;
+        color: #c4b5fd !important;
+        box-shadow: 0 0 16px rgba(139, 92, 246, 0.25) !important;
+    }
+    html[data-pms-theme="dark"] .appraisal-shell .metric-icon.purple i,
+    html[data-bs-theme="dark"] .appraisal-shell .metric-icon.purple i,
+    html[data-theme="dark"] .appraisal-shell .metric-icon.purple i,
+    html.dark .appraisal-shell .metric-icon.purple i,
+    body[data-pms-theme="dark"] .appraisal-shell .metric-icon.purple i,
+    [data-pms-theme="dark"] .appraisal-shell .metric-icon.purple i,
+    .dark .appraisal-shell .metric-icon.purple i {
+        color: #c4b5fd !important;
+        -webkit-text-fill-color: #c4b5fd !important;
+    }
+
+    /* 2. Blue Metric Icon (Avg Overall Score) */
+    html[data-pms-theme="dark"] .appraisal-shell .metric-icon.blue,
+    html[data-bs-theme="dark"] .appraisal-shell .metric-icon.blue,
+    html[data-theme="dark"] .appraisal-shell .metric-icon.blue,
+    html.dark .appraisal-shell .metric-icon.blue,
+    body[data-pms-theme="dark"] .appraisal-shell .metric-icon.blue,
+    [data-pms-theme="dark"] .appraisal-shell .metric-icon.blue,
+    .dark .appraisal-shell .metric-icon.blue {
+        background: rgba(59, 130, 246, 0.22) !important;
+        border: 1px solid rgba(96, 165, 250, 0.45) !important;
+        color: #93c5fd !important;
+        box-shadow: 0 0 16px rgba(59, 130, 246, 0.25) !important;
+    }
+    html[data-pms-theme="dark"] .appraisal-shell .metric-icon.blue i,
+    html[data-bs-theme="dark"] .appraisal-shell .metric-icon.blue i,
+    html[data-theme="dark"] .appraisal-shell .metric-icon.blue i,
+    html.dark .appraisal-shell .metric-icon.blue i,
+    body[data-pms-theme="dark"] .appraisal-shell .metric-icon.blue i,
+    [data-pms-theme="dark"] .appraisal-shell .metric-icon.blue i,
+    .dark .appraisal-shell .metric-icon.blue i {
+        color: #93c5fd !important;
+        -webkit-text-fill-color: #93c5fd !important;
+    }
+
+    /* 3. Green Metric Icon (Top Performers) */
+    html[data-pms-theme="dark"] .appraisal-shell .metric-icon.green,
+    html[data-bs-theme="dark"] .appraisal-shell .metric-icon.green,
+    html[data-theme="dark"] .appraisal-shell .metric-icon.green,
+    html.dark .appraisal-shell .metric-icon.green,
+    body[data-pms-theme="dark"] .appraisal-shell .metric-icon.green,
+    [data-pms-theme="dark"] .appraisal-shell .metric-icon.green,
+    .dark .appraisal-shell .metric-icon.green {
+        background: rgba(16, 185, 129, 0.22) !important;
+        border: 1px solid rgba(52, 211, 153, 0.45) !important;
+        color: #6ee7b7 !important;
+        box-shadow: 0 0 16px rgba(16, 185, 129, 0.25) !important;
+    }
+    html[data-pms-theme="dark"] .appraisal-shell .metric-icon.green i,
+    html[data-bs-theme="dark"] .appraisal-shell .metric-icon.green i,
+    html[data-theme="dark"] .appraisal-shell .metric-icon.green i,
+    html.dark .appraisal-shell .metric-icon.green i,
+    body[data-pms-theme="dark"] .appraisal-shell .metric-icon.green i,
+    [data-pms-theme="dark"] .appraisal-shell .metric-icon.green i,
+    .dark .appraisal-shell .metric-icon.green i {
+        color: #6ee7b7 !important;
+        -webkit-text-fill-color: #6ee7b7 !important;
+    }
+
+    /* 4. Amber Metric Icon (Needs Improvement) */
+    html[data-pms-theme="dark"] .appraisal-shell .metric-icon.amber,
+    html[data-bs-theme="dark"] .appraisal-shell .metric-icon.amber,
+    html[data-theme="dark"] .appraisal-shell .metric-icon.amber,
+    html.dark .appraisal-shell .metric-icon.amber,
+    body[data-pms-theme="dark"] .appraisal-shell .metric-icon.amber,
+    [data-pms-theme="dark"] .appraisal-shell .metric-icon.amber,
+    .dark .appraisal-shell .metric-icon.amber {
+        background: rgba(245, 158, 11, 0.22) !important;
+        border: 1px solid rgba(251, 191, 36, 0.45) !important;
+        color: #fde68a !important;
+        box-shadow: 0 0 16px rgba(245, 158, 11, 0.25) !important;
+    }
+    html[data-pms-theme="dark"] .appraisal-shell .metric-icon.amber i,
+    html[data-bs-theme="dark"] .appraisal-shell .metric-icon.amber i,
+    html[data-theme="dark"] .appraisal-shell .metric-icon.amber i,
+    html.dark .appraisal-shell .metric-icon.amber i,
+    body[data-pms-theme="dark"] .appraisal-shell .metric-icon.amber i,
+    [data-pms-theme="dark"] .appraisal-shell .metric-icon.amber i,
+    .dark .appraisal-shell .metric-icon.amber i {
+        color: #fde68a !important;
+        -webkit-text-fill-color: #fde68a !important;
+    }
+
+    /* Tab links in dark mode */
+    html[data-pms-theme="dark"] .appraisal-shell #appraisalTabs .nav-link:not(.active),
+    html[data-bs-theme="dark"] .appraisal-shell #appraisalTabs .nav-link:not(.active),
+    html[data-theme="dark"] .appraisal-shell #appraisalTabs .nav-link:not(.active),
+    html.dark .appraisal-shell #appraisalTabs .nav-link:not(.active),
+    body[data-pms-theme="dark"] .appraisal-shell #appraisalTabs .nav-link:not(.active),
+    [data-pms-theme="dark"] .appraisal-shell #appraisalTabs .nav-link:not(.active),
+    .dark .appraisal-shell #appraisalTabs .nav-link:not(.active) {
+        color: #e2e8f0 !important;
+        -webkit-text-fill-color: #e2e8f0 !important;
+    }
+    html[data-pms-theme="dark"] .appraisal-shell #appraisalTabs .nav-link:not(.active):hover,
+    html[data-bs-theme="dark"] .appraisal-shell #appraisalTabs .nav-link:not(.active):hover,
+    [data-pms-theme="dark"] .appraisal-shell #appraisalTabs .nav-link:not(.active):hover {
+        background: rgba(255, 255, 255, 0.05) !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+    html[data-pms-theme="dark"] .text-purple,
+    html[data-bs-theme="dark"] .text-purple,
+    [data-pms-theme="dark"] .text-purple {
+        color: #c4b5fd !important;
+        -webkit-text-fill-color: #c4b5fd !important;
+    }
 </style>
 
 <div class="container-xxl flex-grow-1 container-p-y appraisal-shell">
@@ -586,17 +831,17 @@
     </div>
 
     {{-- FILTER BAR & PERIOD SELECTOR --}}
-    <div class="card mb-4 border-0 shadow-sm">
+    <div class="card appraisal-filter-card mb-4 border-0 shadow-sm">
         <div class="card-body">
             <form method="GET" action="{{ route('appraisal.index') }}" class="row g-3">
-                <div class="col-md-5">
+                <div class="col-xl-5 col-lg-4 col-md-4 col-12">
                     <label class="form-label fw-bold">Search Personnel</label>
                     <div class="input-group input-group-merge">
                         <span class="input-group-text"><i class="bx bx-search"></i></span>
                         <input type="text" name="search" class="form-control" placeholder="Search by name, email, designation..." value="{{ request('search') }}">
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-xl-4 col-lg-4 col-md-4 col-12">
                     <label class="form-label fw-bold">Appraisal Period</label>
                     <select name="period" class="form-select" onchange="this.form.submit()">
                         <option value="2026 Q3" {{ $selectedPeriod == '2026 Q3' ? 'selected' : '' }}>2026 Q3 (Current Quarter)</option>
@@ -605,9 +850,13 @@
                         <option value="Annual 2025" {{ $selectedPeriod == 'Annual 2025' ? 'selected' : '' }}>Annual 2025</option>
                     </select>
                 </div>
-                <div class="col-md-3 d-flex align-items-end gap-1">
-                    <button type="submit" class="btn btn-primary w-100"><i class="bx bx-filter-alt"></i> Filter</button>
-                    <a href="{{ route('appraisal.index') }}" class="btn btn-outline-secondary" title="Reset Filters"><i class="bx bx-refresh"></i></a>
+                <div class="col-xl-3 col-lg-4 col-md-4 col-12 d-flex align-items-end gap-2">
+                    <button type="submit" class="btn btn-primary flex-grow-1 text-nowrap d-flex align-items-center justify-content-center gap-1" style="height: 38.6px;">
+                        <i class="bx bx-filter-alt"></i> Filter
+                    </button>
+                    <a href="{{ route('appraisal.index') }}" class="btn btn-outline-secondary flex-grow-1 text-nowrap d-flex align-items-center justify-content-center gap-1" title="Reset Filters" style="height: 38.6px;">
+                        <i class="bx bx-refresh"></i> Reset
+                    </a>
                 </div>
             </form>
         </div>
@@ -665,8 +914,12 @@
                             <tr>
                                 <td>
                                     <div class="d-flex align-items-center gap-2">
-                                        <div class="avatar avatar-sm">
-                                            <span class="avatar-initial rounded-circle bg-label-purple fw-bold">{{ strtoupper(substr($appr->employee?->name ?? 'E', 0, 1)) }}</span>
+                                        <div class="avatar avatar-sm flex-shrink-0">
+                                            @if(!empty($appr->employee?->profile_image))
+                                                <img src="{{ asset($appr->employee->profile_image) }}" alt="{{ $appr->employee->name }}" class="rounded-circle" style="width: 34px; height: 34px; object-fit: cover;">
+                                            @else
+                                                <span class="avatar-initial rounded-circle bg-label-purple fw-bold">{{ strtoupper(substr($appr->employee?->name ?? 'E', 0, 1)) }}</span>
+                                            @endif
                                         </div>
                                         <div>
                                             <div class="fw-bold text-dark fs-6">{{ $appr->employee?->name ?? 'Employee' }}</div>
@@ -883,7 +1136,18 @@
                         <tbody>
                             @forelse($appraisals as $appr)
                             <tr>
-                                <td class="fw-bold text-dark">{{ $appr->employee?->name }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="avatar avatar-sm flex-shrink-0">
+                                            @if(!empty($appr->employee?->profile_image))
+                                                <img src="{{ asset($appr->employee->profile_image) }}" alt="{{ $appr->employee->name }}" class="rounded-circle" style="width: 34px; height: 34px; object-fit: cover;">
+                                            @else
+                                                <span class="avatar-initial rounded-circle bg-label-purple fw-bold">{{ strtoupper(substr($appr->employee?->name ?? 'E', 0, 1)) }}</span>
+                                            @endif
+                                        </div>
+                                        <span class="fw-bold text-dark">{{ $appr->employee?->name }}</span>
+                                    </div>
+                                </td>
                                 <td><span class="badge px-3 py-1.5 fw-bold" style="background: #ede9fe; color: #6d28d9; border: 1px solid #ddd6fe;">{{ $appr->projects_count }} Project(s)</span></td>
                                 <td><span class="badge px-3 py-1.5 fw-bold" style="background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd;">{{ $appr->completed_tasks }} Task(s)</span></td>
                                 <td>
@@ -927,7 +1191,18 @@
                         <tbody>
                             @forelse($appraisals as $appr)
                             <tr>
-                                <td class="fw-bold text-dark">{{ $appr->employee?->name }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="avatar avatar-sm flex-shrink-0">
+                                            @if(!empty($appr->employee?->profile_image))
+                                                <img src="{{ asset($appr->employee->profile_image) }}" alt="{{ $appr->employee->name }}" class="rounded-circle" style="width: 34px; height: 34px; object-fit: cover;">
+                                            @else
+                                                <span class="avatar-initial rounded-circle bg-label-purple fw-bold">{{ strtoupper(substr($appr->employee?->name ?? 'E', 0, 1)) }}</span>
+                                            @endif
+                                        </div>
+                                        <span class="fw-bold text-dark">{{ $appr->employee?->name }}</span>
+                                    </div>
+                                </td>
                                 <td><span class="fw-bold text-dark">{{ $appr->present_days }} / {{ $appr->total_working_days }} Days</span></td>
                                 <td><span class="fw-extrabold text-success fs-6">{{ number_format($appr->attendance_percentage, 1) }}%</span></td>
                                 <td><span class="fw-extrabold text-dark fs-6">{{ number_format($appr->attendance_score, 1) }} / 100</span></td>
@@ -969,7 +1244,18 @@
                         <tbody>
                             @forelse($appraisals as $appr)
                             <tr>
-                                <td class="fw-bold text-dark">{{ $appr->employee?->name }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="avatar avatar-sm flex-shrink-0">
+                                            @if(!empty($appr->employee?->profile_image))
+                                                <img src="{{ asset($appr->employee->profile_image) }}" alt="{{ $appr->employee->name }}" class="rounded-circle" style="width: 34px; height: 34px; object-fit: cover;">
+                                            @else
+                                                <span class="avatar-initial rounded-circle bg-label-purple fw-bold">{{ strtoupper(substr($appr->employee?->name ?? 'E', 0, 1)) }}</span>
+                                            @endif
+                                        </div>
+                                        <span class="fw-bold text-dark">{{ $appr->employee?->name }}</span>
+                                    </div>
+                                </td>
                                 <td><span class="fw-bold text-dark">{{ number_format($appr->teamwork_score, 1) }}</span></td>
                                 <td><span class="fw-bold text-dark">{{ number_format($appr->communication_score, 1) }}</span></td>
                                 <td><span class="fw-bold text-dark">{{ number_format($appr->punctuality_score, 1) }}</span></td>
