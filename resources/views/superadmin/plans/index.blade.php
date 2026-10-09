@@ -1443,6 +1443,19 @@
         <form method="POST" action="{{ route('super-admin.plans.store') }}" id="planModalForm">
             @csrf
             <input type="hidden" name="_method" id="planModalMethod" value="POST">
+            <input type="hidden" name="plan_form" value="1">
+            <input type="hidden" name="plan_edit_id" id="planEditId" value="">
+
+            @if ($errors->any() && old('plan_form'))
+                <div class="flash-alert error" role="alert" style="display: block; margin-bottom: 18px;">
+                    <strong>The plan could not be saved. Please correct the following:</strong>
+                    <ul style="margin: 8px 0 0; padding-left: 20px;">
+                        @foreach ($errors->all() as $message)
+                            <li>{{ $message }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
 
             <div style="display: flex; flex-direction: column; gap: 18px; margin-bottom: 24px;">
                 <!-- PLAN NAME -->
@@ -1729,6 +1742,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (titleEl) titleEl.innerText = 'Create New Subscription Plan';
             if (planForm) planForm.action = "{{ route('super-admin.plans.store') }}";
             if (methodInput) methodInput.value = 'POST';
+            document.getElementById('planEditId').value = '';
             if (nameInput) {
                 Array.from(nameInput.options).forEach(option => {
                     option.disabled = option.value !== '' && option.dataset.missing !== '1';
@@ -1750,6 +1764,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (titleEl) titleEl.innerText = 'Edit ' + data.name + ' Subscription Plan';
         if (planForm) planForm.action = data.id ? ("/super-admin/plans/" + data.id) : "{{ route('super-admin.plans.store') }}";
         if (methodInput) methodInput.value = data.id ? 'PUT' : 'POST';
+        document.getElementById('planEditId').value = data.id || '';
         if (nameInput) {
             Array.from(nameInput.options).forEach(option => {
                 option.disabled = option.value !== data.name;
@@ -1764,6 +1779,31 @@ document.addEventListener('DOMContentLoaded', function() {
         updateLivePreview();
         if (planModal) planModal.classList.add('open');
     }
+
+    @if ($errors->any() && old('plan_form'))
+        @php
+            $failedEditPlan = $plans->firstWhere('id', old('plan_edit_id'));
+        @endphp
+        @if ($failedEditPlan)
+            openEditModalWithData({
+                id: @json($failedEditPlan->id),
+                name: @json($failedEditPlan->name),
+                price: @json(old('monthly_price')),
+                users: @json(old('max_users')),
+                storage: @json(old('max_storage_gb')),
+                status: @json(old('is_active', '1'))
+            });
+        @else
+            if (openCreateBtn) openCreateBtn.click();
+            if (nameInput) nameInput.value = @json(old('name', ''));
+            if (priceInput) priceInput.value = @json(old('monthly_price', ''));
+            if (usersInput) usersInput.value = @json(old('max_users', ''));
+            if (storageInput) storageInput.value = @json(old('max_storage_gb', ''));
+            if (statusSelect) statusSelect.value = @json(old('is_active', '1'));
+            updateLivePreview();
+            if (planModal) planModal.classList.add('open');
+        @endif
+    @endif
 
     document.querySelectorAll('.open-plan-edit').forEach(btn => {
         btn.addEventListener('click', function() {
