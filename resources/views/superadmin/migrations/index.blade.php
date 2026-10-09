@@ -937,10 +937,10 @@
     </div>
 
     <div style="display: flex; align-items: center; gap: 10px;">
-        <button class="btn-action-secondary" id="resetFiltersBtn">
+        <button type="button" class="btn-action-secondary" id="resetFiltersBtn">
             <i class="fas fa-filter-circle-xmark"></i> Reset
         </button>
-        <button class="btn-action-secondary" id="exportMigrationsBtn">
+        <button type="button" class="btn-action-secondary" id="exportMigrationsBtn">
             <i class="fas fa-download"></i> Export
         </button>
     </div>
@@ -1287,7 +1287,7 @@
                 <button class="btn-action-secondary" id="copyLogsBtn">
                     <i class="fas fa-copy"></i> Copy Logs
                 </button>
-                <button class="btn-action-secondary" id="downloadLogsBtn">
+                <button type="button" class="btn-action-secondary" id="downloadLogsBtn">
                     <i class="fas fa-download"></i> Download Logs
                 </button>
             </div>
@@ -1375,59 +1375,11 @@
 @endsection
 
 @push('scripts')
+<script src="{{ asset('admin/assets/js/pms-migration-table.js') }}?v={{ filemtime(public_path('admin/assets/js/pms-migration-table.js')) }}" defer></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
-    // 1. Table Search & Filtering
-    const searchInput = document.getElementById('migrationSearchInput');
-    const filterStatus = document.getElementById('filterStatus');
-    const filterTenant = document.getElementById('filterTenant');
-    const filterVersion = document.getElementById('filterVersion');
-    const resetFiltersBtn = document.getElementById('resetFiltersBtn');
-
-    function filterTableRows() {
-        const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
-        const statusVal = filterStatus ? filterStatus.value : 'all';
-        const tenantVal = filterTenant ? filterTenant.value : 'all';
-        const versionVal = filterVersion ? filterVersion.value : 'all';
-
-        const rows = document.querySelectorAll('.tenant-migration-row');
-        rows.forEach(row => {
-            const name = row.getAttribute('data-name')?.toLowerCase() || '';
-            const code = row.getAttribute('data-code')?.toLowerCase() || '';
-            const db = row.getAttribute('data-db')?.toLowerCase() || '';
-            const status = row.getAttribute('data-status') || '';
-            const id = row.getAttribute('data-id') || '';
-            const pending = parseInt(row.getAttribute('data-pending') || '0', 10);
-
-            let matchesSearch = !query || name.includes(query) || code.includes(query) || db.includes(query);
-            let matchesStatus = statusVal === 'all' || status === statusVal;
-            let matchesTenant = tenantVal === 'all' || id === tenantVal;
-            let matchesVersion = versionVal === 'all' || (versionVal === 'latest' && pending === 0) || (versionVal === 'outdated' && pending > 0);
-
-            if (matchesSearch && matchesStatus && matchesTenant && matchesVersion) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
-            }
-        });
-    }
-
-    if (searchInput) searchInput.addEventListener('input', filterTableRows);
-    if (filterStatus) filterStatus.addEventListener('change', filterTableRows);
-    if (filterTenant) filterTenant.addEventListener('change', filterTableRows);
-    if (filterVersion) filterVersion.addEventListener('change', filterTableRows);
-
-    if (resetFiltersBtn) {
-        resetFiltersBtn.addEventListener('click', function() {
-            if (searchInput) searchInput.value = '';
-            if (filterStatus) filterStatus.value = 'all';
-            if (filterTenant) filterTenant.value = 'all';
-            if (filterVersion) filterVersion.value = 'all';
-            filterTableRows();
-        });
-    }
 
     // 2. Refresh Status Button
     const refreshStatusBtn = document.getElementById('refreshStatusBtn');
@@ -1737,6 +1689,30 @@ document.addEventListener('DOMContentLoaded', function() {
     if (closeLogsModalBtn && migrationLogsModal) {
         closeLogsModalBtn.addEventListener('click', function() {
             migrationLogsModal.classList.remove('open');
+        });
+    }
+
+    // Download the complete log currently displayed for the selected tenant.
+    const downloadLogsBtn = document.getElementById('downloadLogsBtn');
+    if (downloadLogsBtn) {
+        downloadLogsBtn.addEventListener('click', function() {
+            const title = document.getElementById('logsModalTitle').innerText;
+            const subtitle = document.getElementById('logsModalSubtitle').innerText;
+            const text = document.getElementById('terminalLogsContent').innerText;
+            const database = subtitle.replace(/^(Tenant )?Database:\s*/i, '').trim()
+                .replace(/[^a-zA-Z0-9_-]/g, '_') || 'tenant';
+            const blob = new Blob([title + '\n' + subtitle + '\n\n' + text + '\n'], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'migration-logs-' + database + '.txt';
+            document.body.appendChild(link);
+            try {
+                link.click();
+            } finally {
+                link.remove();
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
+            }
         });
     }
 

@@ -82,7 +82,7 @@ class CompanyController extends Controller
     public function metrics(Request $request): View
     {
         try {
-            $companies = Company::on('central')->with(['subscriptions.plan'])->latest()->get();
+            $companies = Company::on('central')->with(['subscriptions.plan', 'activeSubscription.plan'])->latest()->get();
         } catch (\Throwable $e) {
             $companies = collect();
         }
@@ -129,7 +129,10 @@ class CompanyController extends Controller
 
         $currentCompanyDb = session('current_company_db');
 
-        return view('superadmin.companies.metrics', compact('companies', 'totalUsers', 'totalRevenue', 'planCounts', 'currentCompanyDb'));
+        $companyGrowth = app(\App\Services\CompanyGrowth::class)->series($companies);
+        $distributionCounts = app(\App\Services\SubscriptionDistribution::class)->counts($companies);
+
+        return view('superadmin.companies.metrics', compact('companies', 'totalUsers', 'totalRevenue', 'planCounts', 'currentCompanyDb', 'companyGrowth', 'distributionCounts'));
     }
 
     /**

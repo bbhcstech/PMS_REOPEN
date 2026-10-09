@@ -1519,13 +1519,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/admin/settings/localization', [LocalizationController::class, 'index'])->name('admin.settings.localization');
     Route::post('/admin/settings/localization', [LocalizationController::class, 'update'])->name('admin.settings.localization.update');
 
-    // Country Codes Settings Routes
-    Route::get('/admin/settings/country-codes', [\App\Http\Controllers\Admin\Settings\CountryCodeController::class, 'index'])->name('admin.settings.country-codes.index');
-    Route::post('/admin/settings/country-codes', [\App\Http\Controllers\Admin\Settings\CountryCodeController::class, 'store'])->name('admin.settings.country-codes.store');
-    Route::put('/admin/settings/country-codes/{country_code}', [\App\Http\Controllers\Admin\Settings\CountryCodeController::class, 'update'])->name('admin.settings.country-codes.update');
-    Route::delete('/admin/settings/country-codes/{country_code}', [\App\Http\Controllers\Admin\Settings\CountryCodeController::class, 'destroy'])->name('admin.settings.country-codes.destroy');
-    Route::post('/admin/settings/country-codes/resync', [\App\Http\Controllers\Admin\Settings\CountryCodeController::class, 'resync'])->name('admin.settings.country-codes.resync');
-
     // Recruitment Module Routes (Under HR)
     Route::get('/admin/hr/recruitment', [RecruitmentController::class, 'index'])->name('recruitment.index');
     Route::post('/admin/hr/recruitment', [RecruitmentController::class, 'store'])->name('recruitment.store');

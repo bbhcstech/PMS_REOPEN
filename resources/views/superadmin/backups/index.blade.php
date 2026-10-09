@@ -1616,6 +1616,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     let currentDrawerCompanyId = null;
     let currentDrawerFileName = null;
+    let currentDrawerLogLabel = '';
 
     openDrawerBtns.forEach(btn => {
         btn.addEventListener('click', function() {
@@ -1623,6 +1624,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const compName = this.getAttribute('data-name');
             const compCode = this.getAttribute('data-code');
             const dbName = this.getAttribute('data-db');
+            currentDrawerLogLabel = [compName, dbName].filter(Boolean).join(' · ');
             const lastBackup = this.getAttribute('data-last');
             const size = this.getAttribute('data-size');
             currentDrawerFileName = this.getAttribute('data-file');
@@ -1918,6 +1920,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         if (logsBody && data.logs) {
                             logsBody.innerHTML = data.logs.map(l => `<div>[${l.timestamp}] ${l.status}  ${l.message}</div>`).join('');
                         }
+                        const logsSubtitle = document.getElementById('logsModalSubtitle');
+                        if (logsSubtitle) logsSubtitle.textContent = currentDrawerLogLabel || 'Tenant Execution Transcript';
                         logsModal.classList.add('open');
                     }
                 })
@@ -1927,13 +1931,69 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (closeLogsModalBtn) closeLogsModalBtn.addEventListener('click', () => logsModal.classList.remove('open'));
 
+    function currentLogsText() {
+        const logsBody = document.getElementById('logsTerminalBody');
+        return logsBody ? logsBody.innerText.trim() : '';
+    }
+
+    // Brief inline confirmation on the clicked button, then restore its label.
+    function flashLogsButton(button, html) {
+        if (!button) return;
+        if (!button.dataset.originalHtml) button.dataset.originalHtml = button.innerHTML;
+        button.innerHTML = html;
+        clearTimeout(button._flashTimer);
+        button._flashTimer = setTimeout(() => { button.innerHTML = button.dataset.originalHtml; }, 2000);
+    }
+
+    // navigator.clipboard only exists on HTTPS pages; fall back to a hidden textarea elsewhere.
+    function copyTextFallback(text) {
+        const area = document.createElement('textarea');
+        area.value = text;
+        area.setAttribute('readonly', '');
+        area.style.cssText = 'position: fixed; top: -1000px; left: -1000px; opacity: 0;';
+        (logsModal || document.body).appendChild(area);
+        area.select();
+        area.setSelectionRange(0, text.length);
+        let copied = false;
+        try { copied = document.execCommand('copy'); } catch (e) { copied = false; }
+        area.remove();
+        return copied;
+    }
+
     if (copyLogsBtn) {
         copyLogsBtn.addEventListener('click', function() {
-            const logsBody = document.getElementById('logsTerminalBody');
-            if (logsBody) {
-                navigator.clipboard.writeText(logsBody.innerText);
-                alert('Execution logs copied to clipboard.');
+            const text = currentLogsText();
+            if (!text) return;
+            const done = () => flashLogsButton(copyLogsBtn, '<i class="fas fa-check"></i> Copied!');
+            const failed = () => flashLogsButton(copyLogsBtn, '<i class="fas fa-triangle-exclamation"></i> Copy failed');
+
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text).then(done).catch(() => (copyTextFallback(text) ? done() : failed()));
+            } else {
+                copyTextFallback(text) ? done() : failed();
             }
+        });
+    }
+
+    const downloadLogsBtn = document.getElementById('downloadLogsBtn');
+    if (downloadLogsBtn) {
+        downloadLogsBtn.addEventListener('click', function() {
+            const text = currentLogsText();
+            if (!text) return;
+            const title = (document.getElementById('logsModalSubtitle')?.innerText || 'tenant').trim();
+            const status = (document.getElementById('logsStatusBanner')?.innerText || '').trim();
+            const header = `${(document.getElementById('logsModalTitle')?.innerText || 'Backup Execution Log').trim()}\n${title}\n${status}\nExported: ${new Date().toLocaleString()}\n\n`;
+            const safeName = title.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '') || 'tenant';
+            const blob = new Blob([header + text + '\n'], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `backup_log_${safeName}_${new Date().toISOString().slice(0, 10)}.txt`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+            flashLogsButton(downloadLogsBtn, '<i class="fas fa-check"></i> Downloaded');
         });
     }
 

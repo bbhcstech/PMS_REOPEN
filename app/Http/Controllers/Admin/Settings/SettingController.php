@@ -168,14 +168,6 @@ class SettingController extends Controller
                 'route' => 'admin.settings.localization',
                 'category' => 'System'
             ],
-            'country-codes' => [
-                'name' => 'Country Codes',
-                'description' => 'Country phone calling codes, dial prefixes, and mobile digit rules',
-                'icon' => 'bx bx-phone-call',
-                'color' => 'primary',
-                'route' => 'admin.settings.country-codes.index',
-                'category' => 'System'
-            ],
         ];
 
         if (! \Illuminate\Support\Facades\Auth::guard('super_admin')->check()

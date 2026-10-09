@@ -1013,9 +1013,9 @@
     $minAllowedTierLevel = max($currentTierLevel, $highestTierLevel);
 @endphp
 
-<div class="animate-card">
+<div class="animate-card" data-live-key="company-workspace-{{ $company->id }}">
     <!-- TOP NAVIGATION BAR -->
-    <div class="top-nav-bar">
+    <div class="top-nav-bar" data-live-key="company-workspace-navigation">
         <a href="{{ route('super-admin.companies.index') }}" class="back-btn-link">
             <i class="bx bx-arrow-back"></i> Back to Companies Directory
         </a>
@@ -1026,18 +1026,18 @@
 
     <!-- FLASH ALERTS -->
     @if(session('success'))
-        <div class="flash-alert-success">
+        <div class="flash-alert-success" data-live-key="company-workspace-success">
             <i class="bx bx-check-circle" style="font-size: 22px; color: var(--success);"></i> {{ session('success') }}
         </div>
     @endif
     @if(session('error') || $errors->has('error'))
-        <div class="flash-alert-error" style="background: var(--danger-bg); border: 1.5px solid var(--danger-border); color: var(--danger); padding: 14px 20px; border-radius: 12px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; font-weight: 600; font-size: 14px;">
+        <div class="flash-alert-error" data-live-key="company-workspace-error" style="background: var(--danger-bg); border: 1.5px solid var(--danger-border); color: var(--danger); padding: 14px 20px; border-radius: 12px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; font-weight: 600; font-size: 14px;">
             <i class="bx bx-error-circle" style="font-size: 22px; color: var(--danger);"></i> {{ session('error') ?? $errors->first('error') }}
         </div>
     @endif
 
     <!-- COMPANY HEADER CARD -->
-    <div class="company-header-card">
+    <div class="company-header-card" data-live-key="company-workspace-header">
         <div class="company-header-left">
             <div class="company-avatar-box">
                 @if($company->logo && file_exists(public_path($company->logo)))
@@ -1087,7 +1087,7 @@
     </div>
 
     <!-- SUMMARY METRICS ROW (5 CARDS) -->
-    <div class="metrics-summary-grid">
+    <div class="metrics-summary-grid" data-live-key="company-workspace-metrics">
         <div class="metric-summary-card">
             <div class="header-row">
                 <div class="label">USERS</div>
@@ -1148,7 +1148,7 @@
     </div>
 
     <!-- QUICK ACTIONS TOOLBAR BAR -->
-    <div class="quick-actions-bar">
+    <div class="quick-actions-bar" data-live-key="company-workspace-actions">
         <span style="font-size: 11px; font-weight: 800; color: var(--text-subtle); text-transform: uppercase; margin-right: 4px; letter-spacing: 0.5px;">Quick Actions:</span>
         <button class="btn-custom btn-outline-custom btn-xs-custom tab-jump-trigger" data-jump-tab="tab-settings"><i class="bx bx-edit"></i> Edit Company</button>
         <button class="btn-custom btn-outline-custom btn-xs-custom trigger-plan-modal"><i class="bx bx-layer"></i> Manage Subscription</button>
@@ -1160,7 +1160,7 @@
     </div>
 
     <!-- NAVIGATION TABS -->
-    <div class="nav-tabs-wrapper">
+    <div class="nav-tabs-wrapper" data-live-key="company-workspace-tabs">
         <div class="nav-tabs-scroll">
             <button class="tab-btn active" data-tab="tab-overview"><i class="bx bx-grid-alt"></i> Overview</button>
             <button class="tab-btn" data-tab="tab-users"><i class="bx bx-group"></i> Users ({{ $tenantUsers->count() }})</button>

@@ -1119,16 +1119,16 @@
 <!-- ROW 1: COMPANY GROWTH CHART & SUBSCRIPTION DISTRIBUTION -->
 <div class="dashboard-grid-2col">
     <!-- Company Growth Analytics -->
-    <div class="analytics-card">
+    <div class="analytics-card" data-live-key="company-growth" id="companyGrowthCard" data-growth="{{ json_encode($companyGrowth) }}">
         <div class="analytics-card-header">
             <div>
                 <div class="analytics-card-title"><i class="fas fa-chart-line" style="color: var(--primary);"></i> Company Growth</div>
-                <div class="analytics-card-subtitle">Historical trajectory of registered vs active tenant companies</div>
+                <div class="analytics-card-subtitle">Registered companies and currently active companies by registration date</div>
             </div>
             <div class="chart-time-pills">
-                <button class="chart-time-btn" data-freq="daily">Daily</button>
-                <button class="chart-time-btn" data-freq="weekly">Weekly</button>
-                <button class="chart-time-btn active" data-freq="monthly">Monthly</button>
+                <button type="button" class="chart-time-btn" data-freq="daily">Daily</button>
+                <button type="button" class="chart-time-btn" data-freq="weekly">Weekly</button>
+                <button type="button" class="chart-time-btn active" data-freq="monthly">Monthly</button>
             </div>
         </div>
         <div style="height: 280px; position: relative;">
@@ -1137,7 +1137,7 @@
     </div>
 
     <!-- Subscription Distribution Donut (STRICTLY 4 PLANS) -->
-    <div class="analytics-card">
+    <div class="analytics-card" id="subscriptionDistributionCard" data-live-key="subscription-distribution" data-distribution="{{ json_encode($distributionCounts) }}">
         <div class="analytics-card-header">
             <div>
                 <div class="analytics-card-title"><i class="fas fa-pie-chart" style="color: #7c3aed;"></i> Subscription Distribution</div>
@@ -1153,27 +1153,27 @@
         </div>
         <div class="plan-legend-grid">
             @php
-                $totalPlanSum = max(1, array_sum($planCounts ?? []));
-                $freePct = round((($planCounts['FREE'] ?? 0) / $totalPlanSum) * 100);
-                $goldPct = round((($planCounts['GOLD'] ?? 0) / $totalPlanSum) * 100);
-                $platPct = round((($planCounts['PLATINUM'] ?? 0) / $totalPlanSum) * 100);
-                $diaPct = round((($planCounts['DIAMOND'] ?? 0) / $totalPlanSum) * 100);
+                $totalPlanSum = max(1, array_sum($distributionCounts ?? []));
+                $freePct = round((($distributionCounts['FREE'] ?? 0) / $totalPlanSum) * 100);
+                $goldPct = round((($distributionCounts['GOLD'] ?? 0) / $totalPlanSum) * 100);
+                $platPct = round((($distributionCounts['PLATINUM'] ?? 0) / $totalPlanSum) * 100);
+                $diaPct = round((($distributionCounts['DIAMOND'] ?? 0) / $totalPlanSum) * 100);
             @endphp
             <div class="plan-legend-item">
                 <div><span class="plan-dot" style="background: var(--plan-free);"></span> <strong>FREE</strong></div>
-                <span>{{ $freePct }}% ({{ $planCounts['FREE'] ?? 0 }})</span>
+                <span>{{ $freePct }}% ({{ $distributionCounts['FREE'] ?? 0 }})</span>
             </div>
             <div class="plan-legend-item">
                 <div><span class="plan-dot" style="background: var(--plan-gold);"></span> <strong>GOLD</strong></div>
-                <span>{{ $goldPct }}% ({{ $planCounts['GOLD'] ?? 0 }})</span>
+                <span>{{ $goldPct }}% ({{ $distributionCounts['GOLD'] ?? 0 }})</span>
             </div>
             <div class="plan-legend-item">
                 <div><span class="plan-dot" style="background: var(--plan-platinum);"></span> <strong>PLATINUM</strong></div>
-                <span>{{ $platPct }}% ({{ $planCounts['PLATINUM'] ?? 0 }})</span>
+                <span>{{ $platPct }}% ({{ $distributionCounts['PLATINUM'] ?? 0 }})</span>
             </div>
             <div class="plan-legend-item">
                 <div><span class="plan-dot" style="background: var(--plan-diamond);"></span> <strong>DIAMOND</strong></div>
-                <span>{{ $diaPct }}% ({{ $planCounts['DIAMOND'] ?? 0 }})</span>
+                <span>{{ $diaPct }}% ({{ $distributionCounts['DIAMOND'] ?? 0 }})</span>
             </div>
         </div>
     </div>
@@ -1591,78 +1591,10 @@
 @endsection
 
 @push('scripts')
+<script src="{{ asset('admin/assets/js/pms-subscription-distribution.js') }}?v={{ @filemtime(public_path('admin/assets/js/pms-subscription-distribution.js')) }}" defer></script>
+<script src="{{ asset('admin/assets/js/pms-company-growth.js') }}?v={{ @filemtime(public_path('admin/assets/js/pms-company-growth.js')) }}" defer></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // 1. Company Growth Line/Area Chart
-    const growthCtx = document.getElementById('growthChartCanvas')?.getContext('2d');
-    if (growthCtx) {
-        new Chart(growthCtx, {
-            type: 'line',
-            data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
-                datasets: [
-                    {
-                        label: 'Total Companies',
-                        data: [4, 8, 12, 19, 25, 34, 42, {{ max(42, $companies->count()) }}],
-                        borderColor: '#2563eb',
-                        backgroundColor: 'rgba(37, 99, 235, 0.08)',
-                        fill: true,
-                        tension: 0.35,
-                        borderWidth: 3
-                    },
-                    {
-                        label: 'Active Companies',
-                        data: [4, 7, 11, 18, 23, 31, 39, {{ max(39, $companies->where('status', 'active')->count()) }}],
-                        borderColor: '#16a34a',
-                        backgroundColor: 'transparent',
-                        borderDash: [4, 4],
-                        tension: 0.35,
-                        borderWidth: 2
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'top', labels: { font: { family: 'Inter', size: 12 } } }
-                },
-                scales: {
-                    y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
-                    x: { grid: { display: false } }
-                }
-            }
-        });
-    }
-
-    // 2. Subscription Distribution Donut Chart (EXACTLY 4 PLANS)
-    const donutCtx = document.getElementById('subscriptionDonutCanvas')?.getContext('2d');
-    if (donutCtx) {
-        new Chart(donutCtx, {
-            type: 'doughnut',
-            data: {
-                labels: ['FREE', 'GOLD', 'PLATINUM', 'DIAMOND'],
-                datasets: [{
-                    data: [
-                        {{ $planCounts['FREE'] ?? 0 }},
-                        {{ $planCounts['GOLD'] ?? 0 }},
-                        {{ $planCounts['PLATINUM'] ?? 0 }},
-                        {{ $planCounts['DIAMOND'] ?? 0 }}
-                    ],
-                    backgroundColor: ['#64748b', '#d97706', '#0284c7', '#7c3aed'],
-                    borderWidth: 3,
-                    borderColor: '#ffffff'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                cutout: '72%',
-                plugins: { legend: { display: false } }
-            }
-        });
-    }
-
     // 3. Revenue Overview Area Chart
     const revCtx = document.getElementById('revenueChartCanvas')?.getContext('2d');
     if (revCtx) {

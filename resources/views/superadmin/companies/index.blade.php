@@ -1476,39 +1476,58 @@
             </div>
             <span class="badge badge-success">Live Catalog</span>
         </div>
+        @php
+            // One source of truth for both the legend and the doughnut: each company's current plan is its
+            // active subscription, otherwise its latest running trial/active subscription; else "No Plan".
+            if ($companies instanceof \Illuminate\Database\Eloquent\Collection) {
+                try { $companies->loadMissing(['activeSubscription.plan', 'subscriptions.plan']); } catch (\Throwable $e) {}
+            }
+            $currentPlanSlug = function ($company) {
+                $plan = $company->activeSubscription?->plan;
+                if (! $plan) {
+                    $running = collect($company->subscriptions ?? [])
+                        ->filter(fn ($s) => in_array(strtolower((string) $s->status), ['active', 'trial'], true)
+                            && (! $s->ends_at || \Carbon\Carbon::parse($s->ends_at)->endOfDay()->gte(now())))
+                        ->sortByDesc('id')
+                        ->first();
+                    $plan = $running?->plan;
+                }
+                $slug = strtolower(trim((string) ($plan?->slug ?: $plan?->name)));
+                return in_array($slug, ['free', 'gold', 'platinum', 'diamond'], true) ? $slug : ($plan ? 'other' : 'none');
+            };
+            $planBuckets = [
+                'free'     => ['label' => 'FREE',     'color' => '#cbd5e1', 'count' => 0],
+                'gold'     => ['label' => 'GOLD',     'color' => '#f59e0b', 'count' => 0],
+                'platinum' => ['label' => 'PLATINUM', 'color' => '#2563eb', 'count' => 0],
+                'diamond'  => ['label' => 'DIAMOND',  'color' => '#7c3aed', 'count' => 0],
+                'other'    => ['label' => 'OTHER PLAN', 'color' => '#14b8a6', 'count' => 0],
+                'none'     => ['label' => 'NO PLAN',  'color' => '#64748b', 'count' => 0],
+            ];
+            foreach ($companies as $planCompany) {
+                $planBuckets[$currentPlanSlug($planCompany)]['count']++;
+            }
+            // The four catalog tiers always show; "Other" / "No Plan" only when they contain companies.
+            $planBuckets = array_filter($planBuckets, fn ($bucket, $slug) => in_array($slug, ['free', 'gold', 'platinum', 'diamond'], true) || $bucket['count'] > 0, ARRAY_FILTER_USE_BOTH);
+            $planChartData = [
+                'labels' => array_values(array_column($planBuckets, 'label')),
+                'counts' => array_values(array_column($planBuckets, 'count')),
+                'colors' => array_values(array_column($planBuckets, 'color')),
+            ];
+        @endphp
         <div class="donut-container">
-            <div class="chart-wrap">
+            <div class="chart-wrap" id="planDonutData" data-plan-chart='@json($planChartData)'>
                 <canvas id="planDonutChart"></canvas>
             </div>
             <div class="legend">
+                @foreach($planBuckets as $bucket)
                 <div class="item">
                     <div class="left-info">
-                        <span class="dot" style="background: #cbd5e1;"></span>
-                        <span class="name">FREE</span>
+                        <span class="dot" style="background: {{ $bucket['color'] }};"></span>
+                        <span class="name">{{ $bucket['label'] }}</span>
                     </div>
-                    <span class="count">{{ $companies->filter(fn($c) => strtolower($c->activeSubscription?->plan?->name ?? '') === 'free')->count() }}</span>
+                    <span class="count">{{ $bucket['count'] }}</span>
                 </div>
-                <div class="item">
-                    <div class="left-info">
-                        <span class="dot" style="background: var(--amber-accent);"></span>
-                        <span class="name">GOLD</span>
-                    </div>
-                    <span class="count">{{ $companies->filter(fn($c) => strtolower($c->activeSubscription?->plan?->name ?? '') === 'gold')->count() }}</span>
-                </div>
-                <div class="item">
-                    <div class="left-info">
-                        <span class="dot" style="background: var(--blue-accent);"></span>
-                        <span class="name">PLATINUM</span>
-                    </div>
-                    <span class="count">{{ $companies->filter(fn($c) => strtolower($c->activeSubscription?->plan?->name ?? '') === 'platinum')->count() }}</span>
-                </div>
-                <div class="item">
-                    <div class="left-info">
-                        <span class="dot" style="background: var(--purple-accent);"></span>
-                        <span class="name">DIAMOND</span>
-                    </div>
-                    <span class="count">{{ $companies->filter(fn($c) => strtolower($c->activeSubscription?->plan?->name ?? '') === 'diamond')->count() }}</span>
-                </div>
+                @endforeach
                 <div class="total">
                     <span>Total Subscriptions</span>
                     <span>{{ $companies->count() }}</span>
@@ -1918,22 +1937,52 @@ document.addEventListener('DOMContentLoaded', function() {
     // 1. Chart.js Donut Chart
     const ctx = document.getElementById('planDonutChart');
     if (ctx && typeof Chart !== 'undefined') {
+        // Real per-plan company counts, computed server-side together with the legend.
+        let planChart = { labels: [], counts: [], colors: [] };
+        try { planChart = JSON.parse((document.getElementById('planDonutData')?.getAttribute('data-plan-chart')) || '{}'); } catch (e) {}
+        const hasData = (planChart.counts || []).some(count => Number(count) > 0);
+
+        // Keep the doughnut in step with the legend when the live-records refresh brings new counts.
+        let lastPlanChartJson = (document.getElementById('planDonutData')?.getAttribute('data-plan-chart'));
+        document.addEventListener('pms:records-updated', function () {
+            const json = (document.getElementById('planDonutData')?.getAttribute('data-plan-chart'));
+            if (!json || json === lastPlanChartJson) return;
+            lastPlanChartJson = json;
+            try {
+                const next = JSON.parse(json);
+                const chart = Chart.getChart(ctx);
+                if (!chart) return;
+                const nextHasData = (next.counts || []).some(count => Number(count) > 0);
+                chart.data.labels = nextHasData ? next.labels : ['No subscriptions'];
+                chart.data.datasets[0].data = nextHasData ? next.counts : [1];
+                chart.data.datasets[0].backgroundColor = nextHasData ? next.colors : ['rgba(148, 163, 184, 0.25)'];
+                chart.options.plugins.tooltip.enabled = nextHasData;
+                chart.update();
+            } catch (e) {}
+        });
+
         new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: ['FREE', 'GOLD', 'PLATINUM', 'DIAMOND'],
+                labels: hasData ? planChart.labels : ['No subscriptions'],
                 datasets: [{
-                    data: [12, 18, 24, 15],
-                    backgroundColor: ['#cbd5e1', '#f59e0b', '#2563eb', '#7c3aed'],
+                    data: hasData ? planChart.counts : [1],
+                    backgroundColor: hasData ? planChart.colors : ['rgba(148, 163, 184, 0.25)'],
                     borderWidth: 0,
-                    hoverOffset: 4
+                    hoverOffset: hasData ? 4 : 0
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { display: false }
+                    legend: { display: false },
+                    tooltip: {
+                        enabled: hasData,
+                        callbacks: {
+                            label: (item) => ` ${item.raw} ${Number(item.raw) === 1 ? 'company' : 'companies'}`
+                        }
+                    }
                 },
                 cutout: '72%'
             }
