@@ -36,7 +36,7 @@
     const region = document.querySelector('[data-live-records]');
     if (!region) return;
     let busy = false, stopped = false, timer, failures = 0;
-    const protect = 'input, select, textarea, button, script, style, link, canvas, iframe, [contenteditable], [data-live-chat], [data-live-preserve], .modal, .modal-backdrop, .drawer-overlay, .offcanvas, .select2-container, .dataTables_wrapper, .pms-table-tools, [role="tablist"]';
+    const protect = 'input, select, textarea, button, script, style, link, canvas, iframe, [contenteditable], [data-live-chat], [data-live-preserve], .modal, .modal-backdrop, .modal-overlay, .drawer-overlay, .offcanvas, .select2-container, .dataTables_wrapper, .pms-table-tools, [role="tablist"]';
     function key(node) {
         if (node.nodeType !== 1) return null;
         if (node.id) return node.tagName + '#' + node.id;
@@ -64,13 +64,23 @@
         // Status badges are server-owned rather than interactive state.
         if (current.matches('.badge, .status-badge, .badge-status')) current.className = fresh.className;
         const old = Array.from(current.childNodes);
-        const keyed = new Map(old.map(node => [key(node), node]).filter(([id]) => id));
+        // A key only identifies a node when it is unique among both the old and the fresh siblings
+        // (e.g. two rows sharing data-company-id). Shared keys fall back to positional matching;
+        // otherwise rows get mismatched and protected buttons end up duplicated.
+        const oldCounts = new Map(), freshCounts = new Map();
+        old.forEach(node => { const id = key(node); if (id) oldCounts.set(id, (oldCounts.get(id) || 0) + 1); });
+        fresh.childNodes.forEach(node => { const id = key(node); if (id) freshCounts.set(id, (freshCounts.get(id) || 0) + 1); });
+        const uniqueKey = node => {
+            const id = key(node);
+            return id && (oldCounts.get(id) || 0) <= 1 && (freshCounts.get(id) || 0) <= 1 ? id : null;
+        };
+        const keyed = new Map(old.map(node => [uniqueKey(node), node]).filter(([id]) => id));
         const used = new Set();
         let anchor = current.firstChild;
         for (const next of fresh.childNodes) {
             if (next.nodeType === 1 && next.matches('script, style, link')) continue;
-            const id = key(next);
-            let match = id ? keyed.get(id) : old.find(node => !used.has(node) && !key(node) && node.nodeType === next.nodeType && (node.nodeType !== 1 || node.tagName === next.tagName));
+            const id = uniqueKey(next);
+            let match = id ? keyed.get(id) : old.find(node => !used.has(node) && !uniqueKey(node) && node.nodeType === next.nodeType && (node.nodeType !== 1 || node.tagName === next.tagName));
             if (match && !used.has(match)) {
                 used.add(match);
                 if (match !== anchor) current.insertBefore(match, anchor);
@@ -106,7 +116,7 @@
     }
     async function refresh() {
         if (busy || stopped) return;
-        if (document.hidden || document.querySelector('.modal.show, .offcanvas.show, .drawer-overlay.active, .plan-modal-backdrop.open')) { timer = setTimeout(refresh, 5000); return; }
+        if (document.hidden || document.querySelector('.modal.show, .offcanvas.show, .drawer-overlay.active, .drawer-overlay.open, .modal-overlay.active, .modal-overlay.show, .plan-modal-backdrop.open')) { timer = setTimeout(refresh, 5000); return; }
         busy = true;
         const url = location.href;
         try {

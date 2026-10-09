@@ -2851,9 +2851,21 @@
         const msgText = `PMS Developer Portal Credentials for ${name}:\nLogin Email: ${email}\nLogin Password: ${pwdText}\nLogin Portal: ${loginUrl}\nActive Tasks: ${activeTasks || 0}`;
         const encodedText = encodeURIComponent(msgText);
 
+        // mailto: needs a desktop mail app; without one the browser only opens a blank tab.
+        // Open a pre-filled web compose window instead (recipient, subject and credentials body).
         document.getElementById('credMailtoBtn').onclick = function() {
-            const subject = encodeURIComponent(`Developer Workspace Credentials - ${name}`);
-            window.location.href = `mailto:${personalEmail || email}?subject=${subject}&body=${encodedText}`;
+            const recipient = (personalEmail || email || '').trim();
+            const composeUrl = 'https://mail.google.com/mail/?view=cm&fs=1'
+                + '&to=' + encodeURIComponent(recipient)
+                + '&su=' + encodeURIComponent(`Developer Workspace Credentials - ${name}`)
+                + '&body=' + encodedText;
+            const composeWindow = window.open(composeUrl, '_blank');
+            if (composeWindow) {
+                composeWindow.opener = null;
+            } else {
+                // Popup blocked: fall back to the system mail app.
+                window.location.href = `mailto:${encodeURIComponent(recipient)}?subject=${encodeURIComponent(`Developer Workspace Credentials - ${name}`)}&body=${encodedText}`;
+            }
         };
 
         document.getElementById('credWhatsappBtn').onclick = function() {

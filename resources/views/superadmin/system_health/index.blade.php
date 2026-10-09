@@ -590,7 +590,75 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
+        gap: 16px;
         background: #f8fafc;
+        flex-shrink: 0;
+    }
+
+    .drawer-panel,
+    .drawer-panel * {
+        box-sizing: border-box;
+    }
+
+    .drawer-panel {
+        overflow: hidden;
+    }
+
+    /* Drawer content: same side spacing as the header, never wider than the panel */
+    .drawer-body {
+        flex: 1 1 auto;
+        min-width: 0;
+        width: 100%;
+        padding: 20px 24px 28px;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .drawer-body #drawerServiceDesc {
+        line-height: 1.55;
+        overflow-wrap: anywhere;
+    }
+
+    .drawer-metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .drawer-metrics-grid > div {
+        min-width: 0;
+    }
+
+    #drawerChecksList > div {
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+    }
+
+    #drawerChecksList > div > span:first-child {
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+
+    #drawerChecksList > div > span:last-child {
+        flex-shrink: 0;
+    }
+
+    @media (max-width: 575.98px) {
+        .drawer-panel {
+            max-width: 100vw;
+        }
+
+        .drawer-header,
+        .drawer-body {
+            padding-left: 16px;
+            padding-right: 16px;
+        }
+
+        .drawer-metrics-grid {
+            grid-template-columns: minmax(0, 1fr);
+        }
     }
 
     /* ============================================================
@@ -1116,31 +1184,23 @@
                     <i class="fas fa-chart-line" style="color: var(--primary); margin-right: 8px;"></i>
                     Platform Response Time Latency (ms)
                 </div>
-                <div class="time-range-pills">
-                    <button class="time-pill">1H</button>
-                    <button class="time-pill">6H</button>
-                    <button class="time-pill active">24H</button>
-                    <button class="time-pill">7D</button>
-                    <button class="time-pill">30D</button>
-                </div>
+                <form method="GET" action="{{ url()->current() }}" class="time-range-pills">
+                    @foreach(request()->except('latency_range') as $key => $value)
+                        @if(is_scalar($value))
+                        <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                        @endif
+                    @endforeach
+                    @foreach(array_keys(\App\Services\PlatformLatency::RANGES) as $range)
+                    <button type="submit" name="latency_range" value="{{ $range }}" class="time-pill {{ $latencyChart['range'] === $range ? 'active' : '' }}" aria-pressed="{{ $latencyChart['range'] === $range ? 'true' : 'false' }}">{{ $range }}</button>
+                    @endforeach
+                </form>
             </div>
 
             <div style="height: 180px; display: flex; align-items: flex-end; gap: 12px; padding: 20px 10px; background: var(--bg-subtle); border-radius: var(--radius-md); border: 1px solid var(--border-color);">
-                @php
-                    $points = [
-                        ['time' => '00:00', 'api' => 22, 'db' => 12],
-                        ['time' => '04:00', 'api' => 18, 'db' => 10],
-                        ['time' => '08:00', 'api' => 35, 'db' => 24],
-                        ['time' => '12:00', 'api' => 28, 'db' => 15],
-                        ['time' => '16:00', 'api' => 42, 'db' => 28],
-                        ['time' => '20:00', 'api' => 25, 'db' => 14],
-                        ['time' => 'Now',   'api' => 24, 'db' => 12.4],
-                    ];
-                @endphp
-                @foreach($points as $pt)
+                @foreach($latencyChart['points'] as $pt)
                 <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; height: 100%; justify-content: flex-end;">
-                    <div style="width: 100%; max-width: 28px; background: var(--primary); height: {{ $pt['api'] * 2 }}%; border-radius: 4px 4px 0 0; position: relative;" title="API Latency: {{ $pt['api'] }}ms">
-                        <div style="position: absolute; bottom: 0; left: 0; right: 0; background: var(--purple); height: {{ $pt['db'] * 2 }}%; border-radius: 4px 4px 0 0;" title="DB Latency: {{ $pt['db'] }}ms"></div>
+                    <div style="width: 100%; max-width: 28px; background: var(--primary); height: {{ max($pt['api'] ?? 0, $pt['db'] ?? 0) / $latencyChart['scale'] * 85 }}%; border-radius: 4px 4px 0 0; position: relative;" title="{{ $pt['api'] === null ? 'No samples in this interval' : 'API Latency: '.$pt['api'].'ms' }}">
+                        <div style="position: absolute; bottom: 0; left: 0; right: 0; background: var(--purple); height: {{ ($pt['db'] ?? 0) / max(0.1, $pt['api'] ?? 0, $pt['db'] ?? 0) * 100 }}%; border-radius: 4px 4px 0 0;" title="{{ $pt['db'] === null ? 'No samples in this interval' : 'DB Latency: '.$pt['db'].'ms' }}"></div>
                     </div>
                     <span style="font-size: 11px; font-weight: 700; color: var(--text-subtle);">{{ $pt['time'] }}</span>
                 </div>
@@ -1149,10 +1209,10 @@
 
             <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 14px; font-size: 12px;">
                 <div style="display: flex; align-items: center; gap: 16px;">
-                    <span style="display: flex; align-items: center; gap: 6px; color: var(--text-muted); font-weight: 600;"><span style="width: 10px; height: 10px; border-radius: 2px; background: var(--primary);"></span> API Response (24ms)</span>
-                    <span style="display: flex; align-items: center; gap: 6px; color: var(--text-muted); font-weight: 600;"><span style="width: 10px; height: 10px; border-radius: 2px; background: var(--purple);"></span> Database Response (12.4ms)</span>
+                    <span style="display: flex; align-items: center; gap: 6px; color: var(--text-muted); font-weight: 600;"><span style="width: 10px; height: 10px; border-radius: 2px; background: var(--primary);"></span> API Response ({{ $latencyChart['api'] === null ? 'No samples' : $latencyChart['api'].'ms' }})</span>
+                    <span style="display: flex; align-items: center; gap: 6px; color: var(--text-muted); font-weight: 600;"><span style="width: 10px; height: 10px; border-radius: 2px; background: var(--purple);"></span> Database Response ({{ $latencyChart['db'] === null ? 'No samples' : $latencyChart['db'].'ms' }})</span>
                 </div>
-                <span style="color: var(--text-subtle); font-weight: 500;">99.9th percentile: 45ms</span>
+                <span style="color: var(--text-subtle); font-weight: 500;">99.9th percentile: {{ $latencyChart['percentile'] === null ? 'No samples' : $latencyChart['percentile'].'ms' }}</span>
             </div>
         </div>
 
@@ -1465,9 +1525,9 @@
                     Active Incidents &amp; Alerts
                 </div>
             </div>
-            <div style="display: flex; flex-direction: column; gap: 12px;">
-                @forelse($incidents as $inc)
-                <div class="incident-item-row" style="display: flex; align-items: flex-start; gap: 12px; padding: 12px; background: var(--bg-subtle); border-radius: 8px; border-left: 3px solid {{ $inc['severity'] === 'warning' ? 'var(--warning)' : 'var(--primary)' }};">
+            <div style="display: flex; flex-direction: column; gap: 12px;" id="activeIncidentsList">
+                @foreach($incidents as $inc)
+                <div class="incident-item-row" data-incident-id="{{ $inc['id'] }}" style="display: flex; align-items: flex-start; gap: 12px; padding: 12px; background: var(--bg-subtle); border-radius: 8px; border-left: 3px solid {{ $inc['severity'] === 'warning' ? 'var(--warning)' : 'var(--primary)' }};">
                     <div style="flex: 1;">
                         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 2px;">
                             <span class="incident-id-badge" style="font-family: monospace; font-size: 11px; font-weight: 800; color: #475569;">{{ $inc['id'] }}</span>
@@ -1475,14 +1535,16 @@
                         </div>
                         <div style="font-size: 11px; color: var(--text-subtle);">Target: {{ $inc['company'] }} • {{ $inc['service'] }} • {{ $inc['detected'] }}</div>
                     </div>
-                    <button class="btn-action-secondary" style="padding: 3px 8px; font-size: 11px;">Dismiss</button>
+                    <button type="button"
+                            class="btn-action-secondary dismiss-incident-btn"
+                            data-dismiss-url="{{ route('super-admin.system-health.incidents.dismiss', $inc['id']) }}"
+                            style="padding: 3px 8px; font-size: 11px; flex-shrink: 0;">Dismiss</button>
                 </div>
-                @empty
-                <div style="text-align: center; color: var(--success); font-weight: 700; padding: 20px; font-size: 13px;">
+                @endforeach
+                <div id="noActiveIncidents" style="text-align: center; color: var(--success); font-weight: 700; padding: 20px; font-size: 13px; {{ count($incidents) ? 'display: none;' : '' }}">
                     <i class="fas fa-circle-check" style="font-size: 24px; margin-bottom: 6px; display: block;"></i>
                     No active system incidents reported. All monitored services operating normally.
                 </div>
-                @endforelse
             </div>
         </div>
 
@@ -1531,7 +1593,7 @@
             </p>
 
             <!-- Metrics grid -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;">
+            <div class="drawer-metrics-grid">
                 <div style="background: var(--bg-subtle); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
                     <span style="font-size: 11px; color: var(--text-subtle); font-weight: 700; text-transform: uppercase;">Response Latency</span>
                     <div style="font-size: 20px; font-weight: 800; color: var(--primary);" id="drawerServiceLatency">24 ms</div>
@@ -1663,6 +1725,52 @@ document.addEventListener('DOMContentLoaded', function() {
     autoRefreshSelect.addEventListener('change', setupAutoRefresh);
     manualRefreshBtn.addEventListener('click', triggerCheck);
     setupAutoRefresh();
+
+    // Dismiss Active Incidents (persisted server-side)
+    document.querySelectorAll('.dismiss-incident-btn').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const row = btn.closest('.incident-item-row');
+            const originalLabel = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'Dismissing...';
+
+            fetch(btn.dataset.dismissUrl, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                }
+            })
+            .then(function (response) {
+                if (!response.ok) {
+                    throw new Error('Request failed (' + response.status + ')');
+                }
+                return response.json();
+            })
+            .then(function () {
+                row.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+                row.style.opacity = '0';
+                row.style.transform = 'translateX(12px)';
+                setTimeout(function () {
+                    row.remove();
+                    if (!document.querySelector('#activeIncidentsList .incident-item-row')) {
+                        const empty = document.getElementById('noActiveIncidents');
+                        if (empty) empty.style.display = '';
+                    }
+                }, 250);
+            })
+            .catch(function () {
+                btn.disabled = false;
+                btn.textContent = originalLabel;
+                alert('Could not dismiss this incident. Please try again.');
+            });
+        });
+    });
 
     // 2. Slide-Over Service Details Drawer
     const drawerOverlay = document.getElementById('serviceDetailsDrawer');

@@ -13,6 +13,7 @@ class CompanySuspension
         $data['reason'] = trim((string) ($data['reason'] ?? ''));
         validator($data, ['reason_category' => ['required', \Illuminate\Validation\Rule::in(self::REASONS)],
             'reason' => 'required|string|min:10|max:2000'])->validate();
+        CompanySuspensionSchema::ensure();
         return DB::connection('central')->transaction(function () use ($id, $data) {
             $company = Company::whereKey($id)->lockForUpdate()->firstOrFail();
             abort_if($company->manually_suspended, 409, 'This company is already suspended.');
@@ -32,6 +33,7 @@ class CompanySuspension
     public function reactivate(int $id): Company
     {
         abort_unless(TenantScope::isPlatformAdmin(), 403);
+        CompanySuspensionSchema::ensure();
         return DB::connection('central')->transaction(function () use ($id) {
             $company = Company::whereKey($id)->lockForUpdate()->firstOrFail();
             abort_unless($company->manually_suspended || $company->status === 'suspended', 409, 'This company is not suspended.');

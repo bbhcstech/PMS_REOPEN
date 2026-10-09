@@ -7,6 +7,7 @@ class CompanySuspensionController extends Controller
 {
     public function index() {
         abort_unless(TenantScope::isPlatformAdmin(), 403);
+        \App\Services\CompanySuspensionSchema::ensure();
         $companies = Company::where(fn ($q) => $q->where('manually_suspended', true)->orWhere('status', 'suspended'))
             ->orderByDesc('suspended_at')->paginate(20);
         return view('superadmin.companies.suspended', compact('companies'));

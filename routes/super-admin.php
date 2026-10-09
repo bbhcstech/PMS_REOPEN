@@ -116,6 +116,9 @@ Route::prefix('super-admin')->name('super-admin.')->group(function () {
         Route::get('/system-health', [CompanyController::class, 'systemHealth'])->name('system-health.index');
         Route::get('/system-health/service/{name}', [CompanyController::class, 'systemHealthService'])->name('system-health.service');
         Route::post('/system-health/check', [CompanyController::class, 'runHealthCheck'])->name('system-health.check');
+        Route::post('/system-health/incidents/{incident}/dismiss', [CompanyController::class, 'dismissIncident'])
+            ->where('incident', 'INC-[0-9]+')
+            ->name('system-health.incidents.dismiss');
 
         // Platform Alert & Notification Center
         Route::get('/alerts', [CompanyController::class, 'alerts'])->name('alerts.index');

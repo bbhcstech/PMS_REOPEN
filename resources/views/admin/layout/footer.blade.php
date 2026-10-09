@@ -143,7 +143,7 @@
         @stack('js')
         @include('partials.phone-fields')
 @stack('scripts')  <!-- ✅ Correct way to render pushed scripts -->
-        <script src="{{ asset('admin/assets/js/pms-live-records.js') }}" data-session-url="{{ route('company.session-status') }}" data-login-url="{{ route('login') }}" defer></script>
+        <script src="{{ asset('admin/assets/js/pms-live-records.js') }}?v={{ @filemtime(public_path('admin/assets/js/pms-live-records.js')) }}" data-session-url="{{ route('company.session-status') }}" data-login-url="{{ route('login') }}" defer></script>
         <script src="{{ asset('admin/assets/js/pms-table-tools.js') }}?v={{ $adminTableToolsVersion }}"></script>
         @php
           $adminThemeVersion = file_exists(public_path('admin/assets/css/pms-bitroxia-theme.css')) ? filemtime(public_path('admin/assets/css/pms-bitroxia-theme.css')) : time();

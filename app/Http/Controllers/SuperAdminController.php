@@ -1011,6 +1011,7 @@ class SuperAdminController extends Controller
 
             // If company has a tenant database, sync developer record to tenant DB
             if ($comp && !empty($comp->db_name)) {
+                $assignmentOriginalDatabase = config('database.connections.tenant.database');
                 try {
                     config(['database.connections.tenant.database' => $comp->db_name]);
                     DB::purge('tenant');
@@ -1033,6 +1034,10 @@ class SuperAdminController extends Controller
                         ]);
                     }
                 } catch (\Throwable $e) {}
+                finally {
+                    config(['database.connections.tenant.database' => $assignmentOriginalDatabase]);
+                    DB::purge('tenant');
+                }
             }
 
             // Send credential email for NEW developer account safely (non-blocking)
@@ -1100,6 +1105,7 @@ class SuperAdminController extends Controller
             $creatorId = DB::table('users')->value('id');
         }
 
+        \App\Services\DeveloperTaskSchema::ensure();
         $taskId = DB::table('tasks')->insertGetId([
             'company_id' => $companyId,
             'title' => $data['task_title'],
@@ -1132,12 +1138,14 @@ class SuperAdminController extends Controller
 
         // If company has a tenant database, sync task and assignment to tenant DB
         if ($companyId) {
+            $assignmentOriginalDatabase = config('database.connections.tenant.database');
             try {
                 $comp = Company::find($companyId);
                 if ($comp && !empty($comp->db_name)) {
                     config(['database.connections.tenant.database' => $comp->db_name]);
                     DB::purge('tenant');
                     if (Schema::connection('tenant')->hasTable('tasks')) {
+                        \App\Services\DeveloperTaskSchema::ensure('tenant');
                         DB::connection('tenant')->table('tasks')->insertOrIgnore([
                             'id' => $taskId,
                             'company_id' => $companyId,
@@ -1170,6 +1178,12 @@ class SuperAdminController extends Controller
                     }
                 }
             } catch (\Throwable $e) {}
+            finally {
+                if (config('database.connections.tenant.database') !== $assignmentOriginalDatabase) {
+                    config(['database.connections.tenant.database' => $assignmentOriginalDatabase]);
+                    DB::purge('tenant');
+                }
+            }
         }
 
         // Log task history

@@ -1116,6 +1116,11 @@ class CompanyController extends Controller
         ]);
 
         $slug = Str::slug($data['name']);
+        if (\App\Models\Central\Plan::where('slug', $slug)->exists()) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'name' => "The {$data['name']} plan already exists. Edit the existing plan to change its settings.",
+            ]);
+        }
         $storageMb = (int) ($data['max_storage_gb'] * 1024);
 
         $planData = [
@@ -1134,8 +1139,10 @@ class CompanyController extends Controller
 
         try {
             \App\Models\Central\Plan::on('central')->create($planData);
-        } catch (\Throwable $e) {
-            \App\Models\SubscriptionPlan::create($planData);
+        } catch (\Illuminate\Database\UniqueConstraintViolationException $e) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'name' => "The {$data['name']} plan already exists. Edit the existing plan to change its settings.",
+            ]);
         }
 
         return redirect()->route('super-admin.plans.index')
@@ -2418,6 +2425,12 @@ class CompanyController extends Controller
      */
     public function tenantAudit(Request $request)
     {
+        $request->validate([
+            'search' => 'nullable|string|max:500', 'actor' => 'nullable|string',
+            'company' => 'nullable|integer', 'action' => 'nullable|string',
+            'module' => 'nullable|string', 'result' => 'nullable|in:success,failed,warning',
+            'date' => 'nullable|in:today,yesterday,7days,30days',
+        ]);
         $companies = Company::on('central')->latest()->get();
         if ($companies->isEmpty()) {
             $companies = \App\Models\Company::latest()->get();
@@ -2429,7 +2442,6 @@ class CompanyController extends Controller
                 $auditLogsRaw = \App\Models\AuditLog::on('central')
                     ->with(['company', 'user'])
                     ->latest()
-                    ->take(100)
                     ->get();
             } catch (\Throwable $ex) {}
         }
@@ -2440,7 +2452,6 @@ class CompanyController extends Controller
                 $saLogsRaw = \App\Models\Central\SuperAdminActivityLog::on('central')
                     ->with(['company', 'superAdmin'])
                     ->latest()
-                    ->take(100)
                     ->get();
             } catch (\Throwable $ex) {}
         }
@@ -2701,6 +2712,7 @@ class CompanyController extends Controller
         }
 
         $securityTimeline = $allEvents->whereIn('severity', ['critical', 'warning'])->take(6)->values();
+        $allEvents = \App\Services\ActivityLogFilters::apply($allEvents, $request);
 
         return view('superadmin.tenant_audit.index', compact(
             'companies',
@@ -2717,27 +2729,10 @@ class CompanyController extends Controller
      */
     public function tenantAuditEvent(Request $request, $id): \Illuminate\Http\JsonResponse
     {
-        return response()->json([
-            'success' => true,
-            'event'   => [
-                'id'           => $id,
-                'company_name' => 'Original Company',
-                'tenant_code'  => 'TEN-001',
-                'user'         => 'admin@company.com',
-                'role'         => 'Company Admin',
-                'timestamp'    => now()->format('d M Y, h:i:s A'),
-                'module'       => 'User Management',
-                'action'       => 'Update Permission',
-                'status'       => 'success',
-                'severity'     => 'info',
-                'description'  => 'Company administrator updated employee role permissions for department managers.',
-                'ip_address'   => '192.168.1.24',
-                'user_agent'   => 'Windows NT 10.0 / Chrome 120.0',
-                'request_id'   => 'REQ-' . strtoupper(substr(md5($id), 0, 8)),
-                'old_values'   => ['permission_level' => 'read_only', 'view_reports' => false],
-                'new_values'   => ['permission_level' => 'admin_access', 'view_reports' => true],
-            ]
-        ]);
+        abort_unless(\App\Services\TenantScope::isPlatformAdmin(), 403);
+        $event = $this->tenantAudit(Request::create('/super-admin/activity-logs'))->getData()['allEvents']->firstWhere('id', $id);
+        abort_unless($event, 404, 'Activity log not found.');
+        return response()->json(['success' => true, 'event' => $event]);
     }
 
     /**
@@ -2785,6 +2780,9 @@ class CompanyController extends Controller
      */
     public function systemHealth(Request $request)
     {
+        $latencyStarted = microtime(true);
+        $latencyRange = $request->query('latency_range', '24H');
+        $request->validate(['latency_range' => ['sometimes', \Illuminate\Validation\Rule::in(array_keys(\App\Services\PlatformLatency::RANGES))]]);
         // 1. Live Central DB Latency Ping
         $dbStart = microtime(true);
         $dbConnected = false;
@@ -3044,6 +3042,13 @@ class CompanyController extends Controller
             ],
         ];
 
+        // Incidents the Super Admin has dismissed stay hidden
+        $dismissedIncidents = $this->dismissedIncidentIds();
+        $incidents = array_values(array_filter(
+            $incidents,
+            fn ($incident) => ! in_array($incident['id'], $dismissedIncidents, true)
+        ));
+
         // 10. Recent System Events Timeline
         $timelineEvents = [
             ['time' => now()->format('h:i A'), 'title' => 'Database health check completed', 'desc' => 'Latency 12.4ms • Ping OK', 'status' => 'success'],
@@ -3053,7 +3058,18 @@ class CompanyController extends Controller
             ['time' => now()->subHour()->format('h:i A'), 'title' => 'Storage threshold check', 'desc' => 'Disk usage 68% (15.5 GB free)', 'status' => 'info'],
         ];
 
+        (require database_path('migrations/central/2026_10_09_200000_create_platform_latency_samples.php'))->up();
+        $pingStarted = microtime(true);
+        DB::connection('central')->select('SELECT 1');
+        $chartDbMs = round((microtime(true) - $pingStarted) * 1000, 1);
+        DB::connection('central')->table('platform_latency_samples')->insert([
+            'api_ms' => round((microtime(true) - $latencyStarted) * 1000, 1),
+            'db_ms' => $chartDbMs, 'sampled_at' => now(),
+        ]);
+        DB::connection('central')->table('platform_latency_samples')->where('sampled_at', '<', now()->subDays(30))->delete();
+        $latencyChart = app(\App\Services\PlatformLatency::class)->chart($latencyRange);
         return view('superadmin.system_health.index', compact(
+            'latencyChart',
             'companies',
             'globalStatus',
             'globalStatusText',
@@ -3070,6 +3086,56 @@ class CompanyController extends Controller
             'dbLatencyMs',
             'dbConnected'
         ));
+    }
+
+    /**
+     * Dismiss an Active Incident on the System Health page.
+     * Stored in storage/app so it survives cache clears and deployments' optimize:clear.
+     */
+    public function dismissIncident(Request $request, string $incident): \Illuminate\Http\JsonResponse|RedirectResponse
+    {
+        $this->authorizeSuperAdmin();
+
+        $incidentId = strtoupper($incident);
+        abort_unless(preg_match('/^INC-\d+$/', $incidentId) === 1, 404);
+
+        $dismissed = $this->dismissedIncidentIds();
+        if (! in_array($incidentId, $dismissed, true)) {
+            $dismissed[] = $incidentId;
+            \Illuminate\Support\Facades\Storage::disk('local')->put(
+                self::DISMISSED_INCIDENTS_FILE,
+                json_encode(array_values($dismissed), JSON_PRETTY_PRINT)
+            );
+        }
+
+        $message = "Incident {$incidentId} dismissed.";
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json(['success' => true, 'message' => $message, 'incident' => $incidentId]);
+        }
+
+        return back()->with('success', $message);
+    }
+
+    private const DISMISSED_INCIDENTS_FILE = 'system-health/dismissed-incidents.json';
+
+    /**
+     * @return array<int, string>
+     */
+    private function dismissedIncidentIds(): array
+    {
+        try {
+            $disk = \Illuminate\Support\Facades\Storage::disk('local');
+            if (! $disk->exists(self::DISMISSED_INCIDENTS_FILE)) {
+                return [];
+            }
+
+            $ids = json_decode((string) $disk->get(self::DISMISSED_INCIDENTS_FILE), true);
+
+            return is_array($ids) ? array_values(array_filter($ids, 'is_string')) : [];
+        } catch (\Throwable $e) {
+            return [];
+        }
     }
 
     /**
@@ -3157,6 +3223,7 @@ class CompanyController extends Controller
 
                     $rawAlerts[] = [
                         'id'               => $dNotif->id,
+                        'notification_record_id' => $dNotif->id,
                         'title'            => $dNotif->title,
                         'description'      => $dNotif->message,
                         'category'         => $dNotif->related_module ?: 'company',
@@ -3344,6 +3411,19 @@ class CompanyController extends Controller
         ];
 
         $allAlerts = array_merge($rawAlerts, $platformAlerts);
+        // Persist acknowledgement of generated alerts without changing severity or resolution.
+        $generatedAlerts = array_filter($allAlerts, fn ($alert) => !isset($alert['notification_record_id']));
+        $readGenerated = \App\Services\PlatformAlertReads::apply($generatedAlerts);
+        foreach ($readGenerated as $index => $alert) $allAlerts[$index] = $alert;
+
+        // Persisted "Resolve" actions, plus a stable key per alert for the Read / Resolve / Inspect buttons
+        // (generated alert ids are a per-render counter and can collide with notification ids).
+        try {
+            $allAlerts = \App\Services\PlatformAlertResolutions::apply($allAlerts);
+        } catch (\Throwable $e) {}
+        foreach ($allAlerts as $index => $alert) {
+            $allAlerts[$index]['alert_key'] = \App\Services\PlatformAlertResolutions::alertKey($alert);
+        }
 
         // Sort Alerts by Intelligent Priority:
         // 1. Critical + Action Required
@@ -3412,9 +3492,15 @@ class CompanyController extends Controller
      */
     public function markAlertRead(Request $request, $id): \Illuminate\Http\JsonResponse
     {
+        abort_unless(\App\Services\TenantScope::isPlatformAdmin(), 403);
+
+        $alert = $this->findAlertByKey($request, (string) $id);
+        $this->persistAlertRead($alert);
+
         return response()->json([
             'success' => true,
-            'message' => "Alert #{$id} marked as read.",
+            'message' => 'Alert marked as read.',
+            'status'  => 'read',
         ]);
     }
 
@@ -3423,10 +3509,49 @@ class CompanyController extends Controller
      */
     public function resolveAlert(Request $request, $id): \Illuminate\Http\JsonResponse
     {
+        abort_unless(\App\Services\TenantScope::isPlatformAdmin(), 403);
+
+        $alert = $this->findAlertByKey($request, (string) $id);
+        DB::connection('central')->transaction(function () use ($alert) {
+            $this->persistAlertRead($alert);
+            \App\Services\PlatformAlertResolutions::mark($alert);
+        });
+
         return response()->json([
             'success' => true,
-            'message' => "Alert #{$id} marked as resolved.",
+            'message' => 'Alert marked as resolved.',
+            'status'  => 'resolved',
         ]);
+    }
+
+    /**
+     * Locate an alert from the current feed by its stable alert key.
+     */
+    private function findAlertByKey(Request $request, string $alertKey): array
+    {
+        abort_unless(preg_match('/^(notif-\d+|[a-f0-9]{64})$/', $alertKey) === 1, 404, 'Unknown alert.');
+
+        $alerts = $this->alerts($request)->getData()['allAlerts'];
+        foreach ($alerts as $alert) {
+            if (($alert['alert_key'] ?? null) === $alertKey) {
+                return $alert;
+            }
+        }
+
+        abort(404, 'This alert no longer exists. Refresh the page.');
+    }
+
+    private function persistAlertRead(array $alert): void
+    {
+        if (isset($alert['notification_record_id'])) {
+            \App\Models\Central\CentralNotification::on('central')
+                ->whereKey($alert['notification_record_id'])
+                ->update(['is_read' => true, 'read_at' => now()]);
+
+            return;
+        }
+
+        \App\Services\PlatformAlertReads::mark([$alert]);
     }
 
     /**
@@ -3434,6 +3559,14 @@ class CompanyController extends Controller
      */
     public function markAllAlertsRead(Request $request): \Illuminate\Http\JsonResponse
     {
+        abort_unless(\App\Services\TenantScope::isPlatformAdmin(), 403);
+        $alerts = $this->alerts($request)->getData()['allAlerts'];
+        DB::connection('central')->transaction(function () use ($alerts) {
+            \App\Models\Central\CentralNotification::where(function ($query) {
+                $query->whereNull('target_audience')->orWhereIn('target_audience', ['super_admin', 'both', 'all']);
+            })->where('is_read', false)->update(['is_read' => true, 'read_at' => now()]);
+            \App\Services\PlatformAlertReads::mark(array_filter($alerts, fn ($alert) => !isset($alert['notification_record_id'])));
+        });
         return response()->json([
             'success' => true,
             'message' => "All active alerts marked as read.",

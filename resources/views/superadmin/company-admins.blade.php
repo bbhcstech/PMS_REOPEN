@@ -1267,6 +1267,7 @@
                         $statusKey = $isSuspended ? 'suspended' : ($isBlocked ? 'inactive' : 'active');
                     @endphp
                     <tr class="admin-row"
+                        data-live-key="admin-{{ $admin->id }}"
                         data-id="{{ $admin->id }}"
                         data-name="{{ $admin->name }}"
                         data-email="{{ $admin->email }}"
