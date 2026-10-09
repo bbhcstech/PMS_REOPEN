@@ -6,12 +6,12 @@
 @section('content')
 <div class="designation-page">
     <!-- Breadcrumb -->
-    <div class="breadcrumb">
+    <div class="breadcrumb" data-live-key="designation-breadcrumb">
         <i class="fas fa-building"></i> Admin / Settings / Designations
     </div>
 
     <!-- Header Card -->
-    <div class="header-card">
+    <div class="header-card" data-live-key="designation-header">
         <div class="header-left">
             <div class="header-icon">
                 <i class="fas fa-briefcase"></i>
@@ -57,7 +57,7 @@
     @endphp
 
     @if(in_array(strtolower((string) auth()->user()?->role), ['admin', 'administrator'], true))
-        <section class="card p-3 mb-4" aria-labelledby="designation-level-settings">
+        <section class="card p-3 mb-4" aria-labelledby="designation-level-settings" data-live-key="designation-level-settings">
             <h3 id="designation-level-settings">Designation level settings</h3>
             <p>Companies start with levels L0–L6. When an admin adds a designation at the maximum level, the next level becomes available automatically for this company. You can also change the limit here.</p>
             <form method="POST" action="{{ route('designations.level-settings') }}" class="d-flex align-items-end gap-3 flex-wrap">
@@ -73,11 +73,11 @@
         </section>
     @endif
     @if(\App\Models\Designation::where('level', '>', \App\Services\DesignationLevels::maximum())->exists())
-        <div class="alert alert-warning">Some existing designations exceed this company's level limit. Edit their levels or ask your administrator to raise the limit. New designations must follow the configured limit.</div>
+        <div class="alert alert-warning" data-live-key="designation-level-warning">Some existing designations exceed this company's level limit. Edit their levels or ask your administrator to raise the limit. New designations must follow the configured limit.</div>
     @endif
 
     <!-- Stats Cards -->
-    <div class="stats">
+    <div class="stats" data-live-key="designation-stats">
         <div class="stat-card">
             <div class="stat-icon">
                 <i class="fas fa-users"></i>
@@ -122,7 +122,7 @@
 
     <!-- Alert Messages -->
     @if(session('success'))
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
+    <div class="alert alert-success alert-dismissible fade show" role="alert" data-live-key="designation-success">
         <i class="fas fa-check-circle"></i>
         <strong>Success!</strong> {{ session('success') }}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
@@ -130,7 +130,7 @@
     @endif
 
     @if(session('error'))
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+    <div class="alert alert-danger alert-dismissible fade show" role="alert" data-live-key="designation-error">
         <i class="fas fa-exclamation-triangle"></i>
         <strong>Error!</strong> {{ session('error') }}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
@@ -138,7 +138,7 @@
     @endif
 
     <!-- Main Table Card -->
-    <div class="table-card">
+    <div class="table-card" data-live-key="designation-list">
         <div class="table-header">
             <div class="table-title">
                 <div class="table-title-icon">
@@ -389,7 +389,7 @@
     </div>
 
     <!-- Level Legend -->
-    <div class="legend-card">
+    <div class="legend-card" data-live-key="designation-legend">
         <div class="legend-content">
             <span class="legend-title"><i class="fas fa-palette"></i> Level Legend:</span>
             <span class="level l0"><i class="fas fa-seedling"></i> L0 (Intern)</span>

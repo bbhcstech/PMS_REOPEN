@@ -1234,7 +1234,7 @@
     </div>
 
     <!-- 4. ADMINISTRATOR GRID TABLE (ROW AND COLUMN SEPARATED) -->
-    <div class="table-card">
+    <div class="table-card" id="companyAdminResults">
         <div class="table-container">
             <table class="grid-table" id="adminTable">
                 <thead>
@@ -1704,6 +1704,7 @@
 @endsection
 
 @push('scripts')
+<script src="{{ asset('admin/assets/js/pms-company-admin-search.js') }}?v={{ filemtime(public_path('admin/assets/js/pms-company-admin-search.js')) }}" defer></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // 1. Export Dropdown Menu
@@ -1727,8 +1728,10 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentAdminId = null;
     let currentAdminData = {};
 
-    document.querySelectorAll('.open-drawer-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
+    document.addEventListener('click', function(event) {
+        const btn = event.target.closest('.open-drawer-btn');
+        if (!btn) return;
+        (function() {
             currentAdminId = this.getAttribute('data-id');
             const name = this.getAttribute('data-name');
             const email = this.getAttribute('data-email');
@@ -1792,7 +1795,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('editLoginAllowed').checked = loginAllowed;
 
             drawerOverlay.classList.add('open');
-        });
+        }).call(btn);
     });
 
     closeDrawerBtn?.addEventListener('click', function() { drawerOverlay.classList.remove('open'); });
