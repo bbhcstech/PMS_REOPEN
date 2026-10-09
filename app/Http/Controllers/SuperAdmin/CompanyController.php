@@ -194,7 +194,8 @@ class CompanyController extends Controller
         $currentCompanyDb = session('current_company_db');
 
         $planMonthlyRevenue = app(\App\Services\PlanMonthlyRevenue::class)->totals($companies);
-        return view('superadmin.plans.index', compact('plans', 'companies', 'currentCompanyDb', 'planMonthlyRevenue'));
+        $catalogDistribution = app(\App\Services\SubscriptionDistribution::class)->currentCounts($companies);
+        return view('superadmin.plans.index', compact('plans', 'companies', 'currentCompanyDb', 'planMonthlyRevenue', 'catalogDistribution'));
     }
 
     /**

@@ -11,7 +11,7 @@
         button { padding:12px 20px; border:0; border-radius:8px; background:#2563eb; color:white; cursor:pointer; font:inherit; }
     </style>
 </head>
-<body>
+<body data-restriction-status="expired" data-restriction-url="{{ route('subscription.suspended') }}">
 <main>
     <h1>Subscription Expired</h1>
     <p><strong>{{ $company->name }}</strong> can no longer access workspace features.</p>
@@ -20,5 +20,6 @@
     <p>Your assigned plan remains unchanged. Contact Super Admin to extend it. Only Super Admin can renew your subscription and restore access.</p>
     <form method="POST" action="{{ route('logout') }}">@csrf<button type="submit">Log out</button></form>
 </main>
+<script src="{{ asset('admin/assets/js/pms-restriction-status.js') }}?v={{ @filemtime(public_path('admin/assets/js/pms-restriction-status.js')) }}" defer></script>
 </body>
 </html>

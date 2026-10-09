@@ -789,51 +789,7 @@ class SuperAdminController extends Controller
             ['path' => Paginator::resolveCurrentPath(), 'query' => $request->query()]
         );
 
-        $assignmentHistory = collect();
-        if (Schema::hasTable('tasks')) {
-            try {
-                $histQuery = DB::table('tasks')
-                    ->leftJoin('users as dev', 'tasks.assigned_to', '=', 'dev.id');
-                if (Schema::hasTable('companies')) {
-                    $histQuery->leftJoin('companies', 'tasks.company_id', '=', 'companies.id');
-                }
-                $histQuery->leftJoin('users as assigner', 'tasks.created_by', '=', 'assigner.id');
-
-                $assignmentHistory = $histQuery->select(
-                    'tasks.*',
-                    'dev.name as developer_name',
-                    'dev.email as developer_email',
-                    Schema::hasTable('companies') ? 'companies.name as company_name' : DB::raw('NULL as company_name'),
-                    'assigner.name as assigner_name'
-                )
-                ->where(function ($q) {
-                    $q->whereNull('tasks.deleted_at')
-                      ->orWhere('tasks.deleted_at', '=', '0000-00-00 00:00:00');
-                })
-                ->orderByRaw('COALESCE(tasks.updated_at, tasks.created_at) DESC')
-                ->limit(50)
-                ->get();
-
-                // If any developer_name is null, attempt fallback resolution via assigned_task_user
-                if ($assignmentHistory->contains(fn ($h) => empty($h->developer_name))) {
-                    $missingTaskIds = $assignmentHistory->filter(fn ($h) => empty($h->developer_name))->pluck('id')->toArray();
-                    $pivots = DB::table('assigned_task_user')
-                        ->join('users', 'assigned_task_user.user_id', '=', 'users.id')
-                        ->whereIn('assigned_task_user.task_id', $missingTaskIds)
-                        ->select('assigned_task_user.task_id', 'users.name', 'users.email')
-                        ->get()
-                        ->keyBy('task_id');
-
-                    $assignmentHistory->transform(function ($h) use ($pivots) {
-                        if (empty($h->developer_name) && isset($pivots[$h->id])) {
-                            $h->developer_name = $pivots[$h->id]->name;
-                            $h->developer_email = $pivots[$h->id]->email;
-                        }
-                        return $h;
-                    });
-                }
-            } catch (\Throwable $e) {}
-        }
+        $assignmentHistory = app(\App\Services\DeveloperAssignmentHistory::class)->records();
 
         $totalDevsCount = User::whereIn('role', ['developer', 'employee', 'dev'])->orWhere('designation', 'like', '%developer%')->count();
         $activeDevsCount = User::whereIn('role', ['developer', 'employee', 'dev'])->whereNull('archived_at')->where('login_allowed', true)->count();
@@ -944,9 +900,11 @@ class SuperAdminController extends Controller
             'project_id' => ['nullable', 'integer'],
             'priority' => ['required', 'in:low,medium,high,critical'],
             'start_date' => ['nullable', 'date'],
-            'due_date' => ['nullable', 'date'],
+            'due_date' => ['required', 'date', 'after_or_equal:' . ($request->filled('start_date') ? 'start_date' : now()->toDateString())],
             'estimate_hours' => ['nullable', 'numeric', 'min:1', 'max:500'],
             'attachments' => ['nullable', 'string'],
+        ], [
+            'due_date.after_or_equal' => 'Deadline must be on or after the Start Date.',
         ]);
 
         $developerEmail = strtolower(trim($data['developer_email']));
@@ -973,7 +931,7 @@ class SuperAdminController extends Controller
             $compCompanyId = !empty($data['company_id']) ? $data['company_id'] : null;
             $comp = $compCompanyId ? Company::find($compCompanyId) : Company::first();
 
-            $tempPassword = \Illuminate\Support\Str::random(10);
+            $tempPassword = \App\Support\DeveloperPassword::generate();
             $devName = !empty($data['developer_name']) ? $data['developer_name'] : explode('@', $developerEmail)[0];
             $devDesignation = !empty($data['designation']) ? $data['designation'] : 'Developer';
 
@@ -1275,7 +1233,7 @@ class SuperAdminController extends Controller
         $compCompanyId = !empty($data['company_id']) ? $data['company_id'] : null;
         $comp = $compCompanyId ? Company::find($compCompanyId) : Company::first();
 
-        $tempPassword = \Illuminate\Support\Str::random(10);
+        $tempPassword = \App\Support\DeveloperPassword::generate();
 
         $user = User::create([
             'company_id' => $comp?->id,
@@ -1549,7 +1507,7 @@ class SuperAdminController extends Controller
         $this->authorizeSuperAdmin();
 
         $request->validate([
-            'password' => ['nullable', 'string', 'min:8', 'max:128'],
+            'password' => ['nullable', 'string', 'max:128', \Illuminate\Validation\Rules\Password::min(8)->mixedCase()->numbers()->symbols()],
             'password_confirmation' => ['nullable', 'string', 'same:password'],
         ], [
             'password.min' => 'Password must be at least 8 characters long.',
@@ -1558,7 +1516,7 @@ class SuperAdminController extends Controller
         ]);
 
         $developer = User::findOrFail($id);
-        $newPassword = $request->input('password') ?: \Illuminate\Support\Str::random(10);
+        $newPassword = $request->input('password') ?: \App\Support\DeveloperPassword::generate();
 
         $developer->update([
             'password' => Hash::make($newPassword),

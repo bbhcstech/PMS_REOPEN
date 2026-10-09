@@ -1323,7 +1323,7 @@
 <!-- 2-COLUMN ANALYTICS SECTION -->
 <div class="analytics-2col-grid">
     <!-- Subscription Distribution Donut -->
-    <div class="chart-card-wrapper">
+    <div class="chart-card-wrapper" id="catalogDistributionCard" data-live-key="catalog-distribution" data-distribution="{{ json_encode($catalogDistribution) }}">
         <div class="chart-card-head">
             <div class="chart-card-title"><i class="fas fa-chart-pie" style="color: var(--primary);"></i> Subscription Distribution</div>
             <span style="font-size: 12px; color: var(--text-subtle);">Active company count</span>
@@ -1630,34 +1630,10 @@
 @endsection
 
 @push('scripts')
+<script src="{{ asset('admin/assets/js/pms-catalog-distribution.js') }}?v={{ @filemtime(public_path('admin/assets/js/pms-catalog-distribution.js')) }}" defer></script>
 <script src="{{ asset('admin/assets/js/pms-plan-revenue.js') }}?v={{ @filemtime(public_path('admin/assets/js/pms-plan-revenue.js')) }}" defer></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // 1. Subscription Donut Chart
-    const planDonutCtx = document.getElementById('planDonutCanvas')?.getContext('2d');
-    if (planDonutCtx) {
-        new Chart(planDonutCtx, {
-            type: 'doughnut',
-            data: {
-                labels: ['FREE', 'GOLD', 'PLATINUM', 'DIAMOND'],
-                datasets: [{
-                    data: [42, 31, 18, 9],
-                    backgroundColor: ['#64748b', '#d97706', '#0284c7', '#7c3aed'],
-                    borderWidth: 3,
-                    borderColor: '#ffffff'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                cutout: '70%',
-                plugins: {
-                    legend: { position: 'right', labels: { font: { family: 'Inter', size: 12 } } }
-                }
-            }
-        });
-    }
-
     // 3. Modal Dialog Triggers & Dynamic Live Preview Binding
     const planModal = document.getElementById('planModalDialog');
     const planForm = document.getElementById('planModalForm');

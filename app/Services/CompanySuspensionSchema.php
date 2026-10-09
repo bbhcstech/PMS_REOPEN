@@ -16,11 +16,23 @@ class CompanySuspensionSchema
                 (require database_path('migrations/central/' . $file))->up();
             }
         }
+        $needsMigration = false;
         foreach (['suspension_category', 'suspension_reason', 'suspended_by'] as $column) {
             if (!$schema->hasColumn('companies', $column)) {
-                (require database_path('migrations/central/2026_10_09_190000_add_company_suspension_reasons.php'))->up();
+                $needsMigration = true;
                 break;
             }
+        }
+        // Legacy installs keep company_subscriptions.status as an enum without "suspended": a suspension
+        // then stores a blank status that reactivation can never restore (company shows "expired").
+        if (! $needsMigration) {
+            try {
+                $type = strtolower((string) $schema->getColumnType('company_subscriptions', 'status'));
+                $needsMigration = ! in_array($type, ['varchar', 'string', 'text', 'char'], true);
+            } catch (\Throwable $e) {}
+        }
+        if ($needsMigration) {
+            (require database_path('migrations/central/2026_10_09_190000_add_company_suspension_reasons.php'))->up();
         }
     }
 }

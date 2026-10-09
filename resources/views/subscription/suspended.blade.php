@@ -242,7 +242,7 @@
         @media(max-width:480px) { .locked-plan-grid { grid-template-columns:1fr; } }
     </style>
 </head>
-<body>
+<body data-restriction-status="{{ strtolower($company->status ?? 'suspended') }}" data-restriction-url="{{ route('subscription.suspended') }}">
 
 @php
     $isManualSuspension = (bool) ($company->manually_suspended ?? false);
@@ -568,5 +568,6 @@ function switchTab(tab) {
     document.getElementById('tab-' + tab).classList.add('active');
 }
 </script>
+<script src="{{ asset('admin/assets/js/pms-restriction-status.js') }}?v={{ @filemtime(public_path('admin/assets/js/pms-restriction-status.js')) }}" defer></script>
 </body>
 </html>

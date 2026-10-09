@@ -39,18 +39,26 @@ use App\Http\Controllers\TaskCategoryController;
 use App\Http\Controllers\TaskCommentController;
 use App\Http\Controllers\TaskController;
 
-Route::get('/subscription/suspended', function () {
+Route::get('/subscription/suspended', function (\Illuminate\Http\Request $request) {
     $company = app(\App\Services\CompanyContext::class)->current();
     if (! $company && auth()->check() && auth()->user()?->company_id) {
         $company = \App\Models\Central\Company::on('central')->find(auth()->user()->company_id);
     }
     abort_unless($company, 404);
-    if (app(\App\Services\SubscriptionService::class)->isExpired($company)) {
+    $company = \App\Models\Central\Company::on('central')->findOrFail($company->id);
+    $status = app(\App\Services\SubscriptionService::class)->syncCompanyStatus($company);
+    if ($request->expectsJson()) {
+        return response()->json(['status' => $status])->header('Cache-Control', 'private, no-store');
+    }
+    if (in_array($status, ['active', 'trial'], true)) {
+        return redirect()->route('dashboard')->with('success', 'Your company access has been restored. Welcome back.');
+    }
+    if ($status === 'expired') {
         $subscription = $company->subscriptions()->with('plan')->latest('id')->first();
         return view('subscription.expired', compact('company', 'subscription'));
     }
     return view('subscription.suspended', compact('company'));
-})->name('subscription.suspended');
+})->middleware('auth:web,super_admin')->name('subscription.suspended');
 use App\Http\Controllers\TaskLabelController;
 use App\Http\Controllers\TaskTimerController;
 use App\Http\Controllers\TicketController;

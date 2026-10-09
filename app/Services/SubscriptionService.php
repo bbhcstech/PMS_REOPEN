@@ -88,7 +88,8 @@ class SubscriptionService
 
         if ($sub && $sub->ends_at) {
             $subEnds = is_string($sub->ends_at) ? Carbon::parse($sub->ends_at) : $sub->ends_at;
-            if ($sub->status === 'expired' || $subEnds->isPast()) {
+            // The end date is the last day of access (inclusive), matching activeSubscription and the expiry shown to users.
+            if ($sub->status === 'expired' || $subEnds->copy()->endOfDay()->isPast()) {
                 return 'expired';
             }
             return 'active';
@@ -117,9 +118,41 @@ class SubscriptionService
     /**
      * Synchronize company status to the database idempotently.
      */
+    /**
+     * Bring back subscriptions that a Super Admin suspension paused, once the company is no longer suspended:
+     * still-running terms become active again, ended ones expired. Blank statuses are included because legacy
+     * enum columns could not store "suspended". Returns the number of subscriptions restored.
+     */
+    public function restorePausedSubscriptions(Company|\App\Models\Company $company): int
+    {
+        $centralComp = $this->resolveCentralCompany($company);
+        if (!empty($centralComp->manually_suspended) || strtolower((string) $centralComp->status) === 'suspended') {
+            return 0;
+        }
+
+        $today = now()->toDateString();
+        $paused = fn () => Subscription::on('central')
+            ->where('company_id', $centralComp->id)
+            ->where(function ($q) {
+                $q->whereIn('status', ['suspended', ''])->orWhereNull('status');
+            });
+
+        $restored = (clone $paused())->where(function ($q) use ($today) {
+            $q->whereNull('ends_at')->orWhereDate('ends_at', '>=', $today);
+        })->update(['status' => 'active']);
+
+        $restored += (clone $paused())->whereDate('ends_at', '<', $today)->update(['status' => 'expired']);
+
+        return $restored;
+    }
+
     public function syncCompanyStatus(Company|\App\Models\Company $company): string
     {
         $centralComp = $this->resolveCentralCompany($company);
+        // Self-heal companies whose subscriptions stayed paused after a reactivation.
+        try {
+            $this->restorePausedSubscriptions($centralComp);
+        } catch (\Throwable $e) {}
         $newStatus = $this->evaluateCompanyStatus($centralComp);
 
         if ($centralComp->status !== $newStatus) {
@@ -129,7 +162,7 @@ class SubscriptionService
                     Subscription::on('central')
                         ->where('company_id', $centralComp->id)
                         ->whereIn('status', ['active', 'trial'])
-                        ->where('ends_at', '<', now())
+                        ->whereDate('ends_at', '<', now()->toDateString())
                         ->update(['status' => 'expired']);
                 } catch (\Throwable $e) {}
             }

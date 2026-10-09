@@ -40,14 +40,12 @@ class CompanySuspension
             $company->manually_suspended = false;
             $company->suspended_at = null;
             $company->status = 'active';
-            // Clear the manual status before evaluating the remaining subscription term.
+            // Clear the manual status, restore the paused subscriptions, THEN evaluate the remaining term.
+            // (Evaluating first saw no running subscription and wrongly marked the company "expired".)
             $company->save();
+            app(SubscriptionService::class)->restorePausedSubscriptions($company);
             $company->status = app(SubscriptionService::class)->evaluateCompanyStatus($company);
             $company->save();
-            Subscription::where('company_id', $id)->where('status', 'suspended')
-                ->where('ends_at', '>=', now())->update(['status' => 'active']);
-            Subscription::where('company_id', $id)->where('status', 'suspended')
-                ->where('ends_at', '<', now())->update(['status' => 'expired']);
             $this->notify($company, 'COMPANY_REACTIVATED', 'Company suspension lifted', 'Super Admin lifted your company suspension. Subscription dates remain unchanged. Current status: ' . $company->status . '.');
             return $company;
         });
@@ -74,6 +72,6 @@ class CompanySuspension
         CentralNotification::createNotification(['company_id' => $company->id, 'type' => $type,
             'title' => $title, 'message' => $message, 'severity' => $type === 'COMPANY_SUSPENDED' ? 'WARNING' : 'INFO',
             'related_module' => 'Companies', 'related_record_id' => (string) $company->id,
-            'action_url' => route('subscription.suspended'), 'target_audience' => 'company_admin']);
+            'action_url' => route($type === 'COMPANY_REACTIVATED' && in_array($company->status, ['active', 'trial'], true) ? 'dashboard' : 'subscription.suspended'), 'target_audience' => 'company_admin']);
     }
 }
