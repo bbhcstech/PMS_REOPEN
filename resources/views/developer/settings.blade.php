@@ -38,7 +38,7 @@
                     New Password:
                 </label>
                 <div style="position: relative; display: flex; align-items: center;">
-                    <input type="password" name="new_password" id="dev_new_password" required minlength="8" placeholder="Minimum 8 characters" style="width: 100%; padding: 11px 42px 11px 14px; border-radius: var(--radius-md); border: 1px solid var(--border-color); font-size: 13.5px; font-weight: 500; outline: none; box-shadow: var(--shadow-xs); background: var(--bg-surface); color: var(--slate-dark);">
+                    <input type="password" name="new_password" id="dev_new_password" required minlength="8" placeholder="Minimum 8 characters" aria-describedby="dev_password_requirements" style="width: 100%; padding: 11px 42px 11px 14px; border-radius: var(--radius-md); border: 1px solid var(--border-color); font-size: 13.5px; font-weight: 500; outline: none; box-shadow: var(--shadow-xs); background: var(--bg-surface); color: var(--slate-dark);">
                     <button type="button" class="btn-dev-toggle-pwd" data-target="dev_new_password" style="position: absolute; right: 8px; background: none; border: none; padding: 6px; cursor: pointer; color: var(--slate-muted); display: flex; align-items: center; justify-content: center; font-size: 18px;" title="Show or hide password" aria-label="Toggle password visibility">
                         <i class="bx bx-show"></i>
                     </button>
@@ -69,6 +69,20 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    const password = document.getElementById('dev_new_password');
+    const confirmation = document.getElementById('dev_new_password_confirmation');
+    function validatePassword() {
+        const value = password.value;
+        const valid = value.length >= 8 && /[A-Z]/.test(value) && /[a-z]/.test(value) && /[0-9]/.test(value) && /[^\p{L}\p{N}\s]/u.test(value);
+        password.setCustomValidity(value && !valid ? 'Use at least 8 characters with one uppercase letter, one lowercase letter, one number, and one special character.' : '');
+        confirmation.setCustomValidity(confirmation.value && confirmation.value !== value ? 'The password confirmation does not match.' : '');
+    }
+    password.addEventListener('input', validatePassword);
+    confirmation.addEventListener('input', validatePassword);
+    password.form.addEventListener('submit', function (event) {
+        validatePassword();
+        if (!this.reportValidity()) event.preventDefault();
+    });
     document.querySelectorAll('.btn-dev-toggle-pwd').forEach(function (btn) {
         btn.addEventListener('click', function (e) {
             e.preventDefault();

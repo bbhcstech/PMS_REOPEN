@@ -1588,7 +1588,7 @@
     <h2>Platform Analytics &amp; Metrics</h2>
   </div>
   <div class="charts-row" data-live-key="dashboard-charts">
-    <div class="chart-card">
+    <div class="chart-card" id="dashboardPlanDistribution" data-counts='@json($dashboardPlanCounts)'>
       <div class="card-header">
         <div>
           <div class="title"><i class="bx bx-bar-chart-alt-2" style="color:#2563eb; margin-right:6px;"></i> Companies Distribution by Plan</div>
@@ -2684,61 +2684,11 @@
       }
     }
 
+    </script>
+    <script src="{{ asset('admin/assets/js/pms-dashboard-plan-distribution.js') }}"></script>
+    <script>
     // ---------- CHARTS (Chart.js Gradient & Curves) ----------
     document.addEventListener('DOMContentLoaded', function() {
-      // Dynamic Data from Backend
-      const planLabels = [
-        @foreach($plans as $plan)
-          "{{ $plan->name }}",
-        @endforeach
-      ];
-      const planCounts = [
-        @foreach($plans as $plan)
-          {{ $companies->filter(fn($c) => $c->activeSubscription?->plan_id == $plan->id)->count() ?: rand(1, 4) }},
-        @endforeach
-      ];
-
-      // Bar Chart: Companies by Plan
-      const ctxBar = document.getElementById('barChart');
-      if (ctxBar) {
-        const barCtx = ctxBar.getContext('2d');
-        new Chart(barCtx, {
-          type: 'bar',
-          data: {
-            labels: planLabels.length ? planLabels : ['Starter', 'Pro', 'Enterprise'],
-            datasets: [{
-              label: 'Companies',
-              data: planCounts.length ? planCounts : [8, 6, 4],
-              backgroundColor: ['#2F6BFF', '#8B5CF6', '#22D3EE', '#10B981', '#F59E0B'],
-              borderRadius: 8,
-              borderSkipped: false,
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            animation: {
-              duration: 1400,
-              easing: 'easeOutQuart'
-            },
-            plugins: {
-              legend: { display: false }
-            },
-            scales: {
-              y: { 
-                beginAtZero: true, 
-                grid: { color: 'rgba(226, 232, 240, 0.6)' }, 
-                ticks: { stepSize: 1, font: { family: 'Plus Jakarta Sans', size: 11, weight: '600' } } 
-              },
-              x: { 
-                grid: { display: false },
-                ticks: { font: { family: 'Plus Jakarta Sans', size: 11, weight: '700' } }
-              }
-            }
-          }
-        });
-      }
-
       // Doughnut Chart: Company Status Distribution
       const ctxPie = document.getElementById('pieChart');
       if (ctxPie) {

@@ -86,6 +86,10 @@ class SuperAdminController extends Controller
             ->paginate($perPage, ['*'], 'companies_page')
             ->withQueryString();
 
+        $dashboardPlanCounts = app(\App\Services\SubscriptionDistribution::class)->currentCounts(
+            Company::with('subscriptions.plan')->get()
+        );
+
         $plans = SubscriptionPlan::standard()->where('is_active', true)->orderBy('sort_order')->orderBy('name')->get();
         $modules = Module::where('is_active', true)->orderBy('sort_order')->orderBy('name')->get();
         $companyOptions = Company::orderBy('name')->get();
@@ -94,6 +98,7 @@ class SuperAdminController extends Controller
         $recentActivities = AuditLog::with(['company', 'user'])->latest()->take(100)->get();
 
         return view('superadmin.dashboard', compact(
+            'dashboardPlanCounts',
             'stats',
             'companies',
             'plans',
@@ -1094,53 +1099,54 @@ class SuperAdminController extends Controller
             ]);
         } catch (\Throwable $e) {}
 
-        // If company has a tenant database, sync task and assignment to tenant DB
-        if ($companyId) {
+        // Tenant IDs are independent of the platform registry IDs.
+        if ($requestedCompanyId) {
+            $sourceTask = (array) DB::table('tasks')->where('id', $taskId)->first();
+            $sourceProject = $projectId ? DB::table('projects')->where('id', $projectId)->first() : null;
             $assignmentOriginalDatabase = config('database.connections.tenant.database');
             try {
-                $comp = Company::find($companyId);
-                if ($comp && !empty($comp->db_name)) {
+                $comp = Company::find($requestedCompanyId);
+                if ($comp && !empty($comp->db_name) && $comp->db_name !== $assignmentOriginalDatabase) {
                     config(['database.connections.tenant.database' => $comp->db_name]);
                     DB::purge('tenant');
+                    $tenant = DB::connection('tenant');
                     if (Schema::connection('tenant')->hasTable('tasks')) {
+                        $tenantDeveloper = $tenant->table('users')->where('email', $developer->email)->first();
+                        if (!$tenantDeveloper) {
+                            $attributes = array_intersect_key($developer->getAttributes(), array_flip(Schema::connection('tenant')->getColumnListing('users')));
+                            unset($attributes['id']);
+                            $attributes['company_id'] = $comp->id;
+                            $tenantDeveloperId = $tenant->table('users')->insertGetId($attributes);
+                        } else {
+                            $tenantDeveloperId = $tenantDeveloper->id;
+                        }
                         \App\Services\DeveloperTaskSchema::ensure('tenant');
-                        DB::connection('tenant')->table('tasks')->insertOrIgnore([
-                            'id' => $taskId,
-                            'company_id' => $companyId,
-                            'title' => $data['task_title'],
-                            'description' => $data['description'] ?? '',
-                            'additional_instructions' => $data['additional_instructions'] ?? null,
-                            'attachments' => $data['attachments'] ?? null,
-                            'project_id' => $projectId,
-                            'assigned_to' => $developer->id,
-                            'created_by' => $creatorId,
-                            'priority' => strtolower($data['priority']),
-                            'start_date' => !empty($data['start_date']) ? \Carbon\Carbon::parse($data['start_date'])->toDateTimeString() : now()->toDateTimeString(),
-                            'due_date' => !empty($data['due_date']) ? \Carbon\Carbon::parse($data['due_date'])->toDateTimeString() : now()->addDays(5)->toDateTimeString(),
-                            'estimate_hours' => $estimateHours,
-                            'status' => 'assigned',
-                            'deleted_at' => null,
-                            'created_at' => now(),
-                            'updated_at' => now(),
-                        ]);
-                    }
-                    if (Schema::connection('tenant')->hasTable('assigned_task_user')) {
-                        DB::connection('tenant')->table('assigned_task_user')->insertOrIgnore([
-                            'task_id' => $taskId,
-                            'user_id' => $developer->id,
-                            'assigned_by' => $creatorId,
-                            'assigned_at' => now(),
-                            'created_at' => now(),
-                            'updated_at' => now(),
-                        ]);
+                        $tenant->transaction(function () use ($tenant, $sourceTask, $sourceProject, $tenantDeveloperId, $comp, $taskId) {
+                            $attributes = $sourceTask;
+                            unset($attributes['id']);
+                            $attributes['platform_task_id'] = $taskId;
+                            $attributes['assigned_to'] = $tenantDeveloperId;
+                            $attributes['company_id'] = $tenant->table('companies')->where('id', $comp->id)->value('id');
+                            $attributes['created_by'] = $tenantDeveloperId;
+                            $attributes['project_id'] = $sourceProject && Schema::connection('tenant')->hasTable('projects')
+                                ? $tenant->table('projects')->where('name', $sourceProject->name)->value('id') : null;
+                            $attributes = array_intersect_key($attributes, array_flip(Schema::connection('tenant')->getColumnListing('tasks')));
+                            $tenantTaskId = $tenant->table('tasks')->insertGetId($attributes);
+                            if (Schema::connection('tenant')->hasTable('assigned_task_user')) {
+                                $tenant->table('assigned_task_user')->insert([
+                                    'task_id' => $tenantTaskId, 'user_id' => $tenantDeveloperId,
+                                    'assigned_by' => $tenantDeveloperId, 'assigned_at' => now(),
+                                    'created_at' => now(), 'updated_at' => now(),
+                                ]);
+                            }
+                        });
                     }
                 }
-            } catch (\Throwable $e) {}
-            finally {
-                if (config('database.connections.tenant.database') !== $assignmentOriginalDatabase) {
-                    config(['database.connections.tenant.database' => $assignmentOriginalDatabase]);
-                    DB::purge('tenant');
-                }
+            } catch (\Throwable $e) {
+                report($e);
+            } finally {
+                config(['database.connections.tenant.database' => $assignmentOriginalDatabase]);
+                DB::purge('tenant');
             }
         }
 
@@ -1431,7 +1437,13 @@ class SuperAdminController extends Controller
                     config(['database.connections.tenant.database' => $comp->db_name]);
                     DB::purge('tenant');
                     if (Schema::connection('tenant')->hasTable('tasks')) {
-                        DB::connection('tenant')->table('tasks')->where('id', $id)->update($updateData);
+                        $tenantTasks = DB::connection('tenant')->table('tasks');
+                        if (Schema::connection('tenant')->hasColumn('tasks', 'platform_task_id')) {
+                            $tenantTasks->where('platform_task_id', $id);
+                        } else {
+                            $tenantTasks->where('id', $id);
+                        }
+                        $tenantTasks->update($updateData);
                     }
                 }
             } catch (\Throwable $e) {}
