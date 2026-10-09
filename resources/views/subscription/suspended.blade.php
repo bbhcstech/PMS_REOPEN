@@ -245,7 +245,7 @@
     // Load notifications inline
     try {
         $companyId = $company->id ?? null;
-        $companyNotifications = $companyId
+        $companyNotifications = ($companyId && in_array(strtolower((string) auth()->user()?->role), ['admin', 'administrator', 'superadmin'], true))
             ? \App\Models\Central\CentralNotification::on('central')
                 ->where('company_id', $companyId)
                 ->where(function ($q) {

@@ -9,6 +9,11 @@ class SubscriptionPlan extends Model
     protected $connection = 'central';
     protected $table = 'plans';
 
+    public function scopeStandard($query)
+    {
+        return $query->whereIn('slug', \App\Support\SupportedPlans::SLUGS);
+    }
+
     protected $fillable = [
         'name', 'slug', 'description', 'monthly_price', 'yearly_price',
         'max_users', 'max_projects', 'max_clients', 'max_storage_mb',

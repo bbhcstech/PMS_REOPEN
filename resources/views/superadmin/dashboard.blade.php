@@ -1820,7 +1820,31 @@
               </span>
             </td>
             <td>
-              <span class="status-badge info">{{ $company->activeSubscription?->plan?->name ?? 'No Plan' }}</span>
+              @php
+                $displaySub = ($company->activeSubscription?->plan ? $company->activeSubscription : null) ?? $company->latestSubscription;
+                $displayPlanName = $displaySub?->plan?->name
+                    ?? ($company->highest_plan_slug ? strtoupper($company->highest_plan_slug) : null);
+
+                $displaySubStatus = strtolower((string) ($displaySub?->status ?? ''));
+                $displaySubExpired = $displaySub?->ends_at && $displaySub->ends_at->lt(now()->startOfDay());
+                $displayPlanState = match (true) {
+                    ! $displaySub => null,
+                    $displaySubExpired || $displaySubStatus === 'expired' => 'Expired',
+                    $displaySubStatus === 'trial' => 'Trial',
+                    $displaySubStatus === 'pending' => 'Pending',
+                    default => null,
+                };
+                $displayPlanBadge = match ($displayPlanState) {
+                    'Expired' => 'critical',
+                    'Trial', 'Pending' => 'warning',
+                    default => 'info',
+                };
+              @endphp
+              @if($displayPlanName)
+                <span class="status-badge {{ $displayPlanBadge }}">{{ $displayPlanName }}{{ $displayPlanState ? ' · ' . $displayPlanState : '' }}</span>
+              @else
+                <span class="status-badge info">No Plan</span>
+              @endif
             </td>
             <td>
               <span style="font-size:12px; color:var(--slate-muted); font-weight:600;">
@@ -1829,7 +1853,7 @@
             </td>
             <td>
               <span style="font-size:12px; color:var(--slate-muted); font-weight:600;">
-                {{ $company->activeSubscription?->ends_at?->format('M d, Y') ?? '—' }}
+                {{ $displaySub?->ends_at?->format('M d, Y') ?? ($company->trial_ends_at ? \Carbon\Carbon::parse($company->trial_ends_at)->format('M d, Y') : '—') }}
               </span>
             </td>
             <td style="color: var(--slate-muted, #94a3b8); font-size: 12px; font-weight: 500; white-space: nowrap;">

@@ -3,13 +3,20 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Services\NotificationUrlResolver;
 use App\Services\SidebarNotificationService;
 use App\Services\SystemNotificationService;
 use Illuminate\Notifications\DatabaseNotification;
 
 class NotificationController extends Controller
 {
+    /**
+     * Company-level platform alerts (subscription, billing) are meant for company administrators only.
+     */
+    private function canSeeCompanyAlerts(): bool
+    {
+        return in_array(strtolower((string) auth()->user()?->role), ['admin', 'administrator', 'superadmin'], true);
+    }
+
     /**
      * Display all or unread notifications
      */
@@ -25,7 +32,7 @@ class NotificationController extends Controller
         }
 
         $centralNotifications = collect();
-        if ($companyId && class_exists(\App\Models\Central\CentralNotification::class)) {
+        if ($companyId && $this->canSeeCompanyAlerts() && class_exists(\App\Models\Central\CentralNotification::class)) {
             try {
                 try {
                     app(\App\Services\SubscriptionNotificationEngine::class)->scanAndGenerateAlerts($companyId);
@@ -100,9 +107,9 @@ class NotificationController extends Controller
         $company = app(\App\Services\CompanyContext::class)->current();
         $companyId = $company?->id ?? auth()->user()?->company_id;
 
-        if ($companyId && class_exists(\App\Models\Central\CentralNotification::class)) {
+        if ($companyId && $this->canSeeCompanyAlerts() && class_exists(\App\Models\Central\CentralNotification::class)) {
             try {
-                $centralNotif = \App\Models\Central\CentralNotification::on('central')
+                $centralNotif =\App\Models\Central\CentralNotification::on('central')
                     ->where('company_id', $companyId)
                     ->where('id', $id)
                     ->first();
@@ -128,8 +135,7 @@ class NotificationController extends Controller
         }
 
         if (! request()->expectsJson() && ! request()->ajax()) {
-            $url = request('redirect_url') ?: ($notification ? NotificationUrlResolver::resolve($notification) : null);
-            return $url && $url !== 'javascript:void(0)' ? redirect($url) : back()->with('success', 'Notification marked as read.');
+            return back()->with('success', 'Notification marked as read.');
         }
 
         return response()->json([
@@ -141,15 +147,11 @@ class NotificationController extends Controller
 
     public function open($id)
     {
+        // Notifications are display-only: opening one marks it read and never redirects to the related resource.
         $notification = auth()->user()->notifications()->where('id', $id)->firstOrFail();
         $notification->markAsRead();
 
-        $data = $notification->data ?? [];
-        if (data_get($data, 'clickable') === false || data_get($data, 'type') === 'own_password_changed') {
-            return back()->with('info', 'This notification is view-only.');
-        }
-
-        return redirect(NotificationUrlResolver::resolve($notification));
+        return redirect()->route('notifications.all');
     }
 
     /**
@@ -160,7 +162,7 @@ class NotificationController extends Controller
         $company = app(\App\Services\CompanyContext::class)->current();
         $companyId = $company?->id ?? auth()->user()?->company_id;
 
-        if ($companyId && class_exists(\App\Models\Central\CentralNotification::class)) {
+        if ($companyId && $this->canSeeCompanyAlerts() && class_exists(\App\Models\Central\CentralNotification::class)) {
             try {
                 \App\Models\Central\CentralNotification::on('central')
                     ->where('company_id', $companyId)
@@ -223,8 +225,6 @@ class NotificationController extends Controller
                 'read_at' => $notification->read_at,
                 'created_at' => optional($notification->created_at)->diffForHumans(),
                 'data' => $notification->data,
-                'open_url' => route('notifications.open', $notification->id),
-                'target_url' => NotificationUrlResolver::resolve($notification),
             ]);
 
         return response()->json([

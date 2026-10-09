@@ -244,11 +244,7 @@
                         <div class="col-md-4">
                             <label class="form-label fw-semibold text-secondary">Change Language</label>
                             <select name="language" id="language" class="form-select form-control-custom select2">
-                                <option value="en" data-flag="https://flagcdn.com/w20/gb.png" {{ old('language', 'en') == 'en' ? 'selected' : '' }}>English</option>
-                                <option value="bn" data-flag="https://flagcdn.com/w20/bd.png" {{ old('language', 'bn') == 'bn' ? 'selected' : '' }}>Bengali</option>
-                                <option value="hi" data-flag="https://flagcdn.com/w20/in.png" {{ old('language', 'hi') == 'hi' ? 'selected' : '' }}>Hindi</option>
-                                <option value="fr" data-flag="https://flagcdn.com/w20/fr.png" {{ old('language', 'fr') == 'fr' ? 'selected' : '' }}>French</option>
-                                <option value="de" data-flag="https://flagcdn.com/w20/de.png" {{ old('language', 'de') == 'de' ? 'selected' : '' }}>German</option>
+                                @include('admin.clients.partials.language-options', ['selectedLanguage' => old('language', 'en')])
                             </select>
                         </div>
 
@@ -559,6 +555,8 @@
                                 <i class="fas fa-tag text-primary me-1"></i> Project Name
                             </label>
                             <input type="text" name="project_name" id="project_name" class="form-control form-control-custom" placeholder="e.g. Website Redesign & Branding" value="{{ old('project_name') }}">
+                            <div id="project_name_feedback" class="invalid-feedback">Project Name is required for Save and Continue.</div>
+                            @error('project_name')<div class="text-danger small">{{ $message }}</div>@enderror
                         </div>
 
                         <!-- Start Date -->
@@ -667,9 +665,13 @@
                     <button type="button" class="btn btn-outline-secondary px-4 rounded-pill prev-step-btn" onclick="goToStep(2)">
                         <i class="fas fa-arrow-left me-2"></i> Previous
                     </button>
-                    <button type="button" class="btn btn-primary px-5 py-2 rounded-pill shadow-sm next-step-btn" onclick="goToStep(4)">
+                    <div class="d-flex gap-2 flex-wrap justify-content-end">
+                    <input type="hidden" name="project_submit_mode" id="project_submit_mode" value="{{ old('project_submit_mode', 'final') }}">
+                    <button type="button" class="btn btn-outline-secondary px-4 py-2 rounded-pill" onclick="continueProjectStep('later')">Add Later and Continue</button>
+                    <button type="button" class="btn btn-primary px-5 py-2 rounded-pill shadow-sm next-step-btn" onclick="continueProjectStep('final')">
                         Save and Continue <i class="fas fa-arrow-right ms-2"></i>
                     </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -705,8 +707,9 @@
                                     <i class="fas fa-file-invoice-dollar me-1"></i> Deal Information
                                 </h6>
                                 <div class="mb-3">
-                                    <label class="form-label fw-semibold text-secondary">Deal Name</label>
-                                    <input type="text" class="form-control form-control-custom" id="deal_name" name="deal_name" placeholder="e.g. Annual Software License & Retainer" value="{{ old('deal_name') }}">
+                                    <label class="form-label fw-semibold text-secondary">Deal Name <sup class="text-danger">*</sup></label>
+                                    <input type="text" class="form-control form-control-custom @error('deal_name') is-invalid @enderror" id="deal_name" name="deal_name" placeholder="e.g. Annual Software License & Retainer" value="{{ old('deal_name') }}">
+                                    <div class="invalid-feedback">{{ $errors->first('deal_name') ?: 'Deal Name is required for Final Submit. Use "Add Later and Submit" to skip the deal.' }}</div>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label fw-semibold text-secondary" id="deal_value_label">Deal Value (<span id="deal_currency_symbol_label">{{ ($currencies ?? collect())->where('currency_code', old('deal_currency', 'INR'))->first()?->currency_symbol ?? '₹' }}</span>)</label>
@@ -837,9 +840,15 @@
                     <button type="button" class="btn btn-outline-secondary px-4 rounded-pill prev-step-btn" onclick="goToStep(3)">
                         <i class="fas fa-arrow-left me-2"></i> Previous
                     </button>
-                    <button type="button" class="btn btn-success btn-lg px-5 py-2 rounded-pill shadow" id="finalSubmitBtn">
-                        <i class="fas fa-check-circle me-2"></i> Final Submit
-                    </button>
+                    <input type="hidden" name="deal_submit_mode" id="deal_submit_mode" value="{{ old('deal_submit_mode', 'final') }}">
+                    <div class="d-flex flex-wrap align-items-center justify-content-end gap-3">
+                        <button type="button" class="btn btn-outline-primary btn-lg px-4 py-2 rounded-pill" id="addLaterSubmitBtn">
+                            <i class="fas fa-clock me-2"></i> Add Later and Submit
+                        </button>
+                        <button type="button" class="btn btn-success btn-lg px-5 py-2 rounded-pill shadow" id="finalSubmitBtn">
+                            <i class="fas fa-check-circle me-2"></i> Final Submit
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -889,7 +898,7 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Parent Category <span class="text-danger">*</span></label>
-                            <select name="client_category_id" class="form-select form-control-custom" required>
+                            <select name="client_category_id" id="modal_parent_category_id" class="form-select form-control-custom" required>
                                 <option value="">Select Category</option>
                                 @foreach($categories as $category)
                                     <option value="{{ $category->id }}">{{ $category->name }}</option>
@@ -1955,6 +1964,12 @@ function validateStep(step) {
     }
 
     if (step === 3) {
+        if ($('#project_submit_mode').val() === 'later') return true;
+        if (!$('#project_name').val().trim()) {
+            $('#project_name').addClass('is-invalid').focus();
+            return false;
+        }
+        $('#project_name').removeClass('is-invalid');
         if (!validateProjectDates()) {
             isValid = false;
             $('#project_deadline').focus();
@@ -1969,6 +1984,15 @@ function validateStep(step) {
     }
 
     return isValid;
+}
+
+function continueProjectStep(mode) {
+    $('#project_submit_mode').val(mode);
+    if (mode === 'later') {
+        $('#project_name, #project_deadline').removeClass('is-invalid');
+        $('#project_deadline_feedback').hide();
+    }
+    return goToStep(4);
 }
 
 function goToStep(targetStep) {
@@ -2502,10 +2526,26 @@ $(document).ready(function () {
             url: "{{ route('client-categories.store') }}",
             data: form.serialize(),
             success: function(data) {
-                $('#client_category_id').append(
-                    `<option value="${data.id}" selected>${data.name}</option>`
-                );
-                $('#client_category_id').val(data.id).trigger('change');
+                const newId = String(data.id);
+                const newName = data.name;
+
+                // 1. Add and select in main form Client Category dropdown
+                if ($('#client_category_id option[value="' + newId + '"]').length === 0) {
+                    $('#client_category_id').append(
+                        $('<option>', { value: newId, text: newName })
+                    );
+                }
+                $('#client_category_id').val(newId).trigger('change');
+
+                // 2. Add and select in Add Sub Category Modal's Parent Category dropdown
+                const $subCatParent = $('#modal_parent_category_id, #addSubCategoryModal select[name="client_category_id"]');
+                if ($subCatParent.find('option[value="' + newId + '"]').length === 0) {
+                    $subCatParent.append(
+                        $('<option>', { value: newId, text: newName })
+                    );
+                }
+                $subCatParent.val(newId).trigger('change');
+
                 closeModalSafely('addCategoryModal');
                 form[0].reset();
             },
@@ -2520,6 +2560,50 @@ $(document).ready(function () {
                 submitBtn.prop('disabled', false);
             }
         });
+    });
+
+    // Ensure Parent Category dropdown in Add Sub Category Modal is always fresh and synchronized
+    $('#addSubCategoryModal').on('show.bs.modal', function() {
+        const $subCatParent = $('#modal_parent_category_id, #addSubCategoryModal select[name="client_category_id"]');
+        const selectedMainCategory = $('#client_category_id').val();
+
+        // Synchronize options from main form
+        $('#client_category_id option').each(function() {
+            const val = $(this).val();
+            const text = $(this).text();
+            if (val && $subCatParent.find('option[value="' + val + '"]').length === 0) {
+                $subCatParent.append($('<option>', { value: val, text: text }));
+            }
+        });
+
+        // Fetch fresh categories list from server as fail-safe
+        $.ajax({
+            type: 'GET',
+            url: "{{ route('client-categories.index') }}",
+            dataType: 'json',
+            success: function(categories) {
+                if (Array.isArray(categories)) {
+                    categories.forEach(function(cat) {
+                        const catId = String(cat.id);
+                        if ($subCatParent.find('option[value="' + catId + '"]').length === 0) {
+                            $subCatParent.append($('<option>', { value: catId, text: cat.name }));
+                        }
+                        if ($('#client_category_id option[value="' + catId + '"]').length === 0) {
+                            $('#client_category_id').append($('<option>', { value: catId, text: cat.name }));
+                        }
+                    });
+                    const activeCat = $('#client_category_id').val();
+                    if (activeCat && (!$subCatParent.val() || $subCatParent.val() === '')) {
+                        $subCatParent.val(activeCat);
+                    }
+                }
+            }
+        });
+
+        // Pre-select parent category if chosen in main form
+        if (selectedMainCategory && (!$subCatParent.val() || $subCatParent.val() === '')) {
+            $subCatParent.val(selectedMainCategory);
+        }
     });
 
     // AJAX Form: Add Client Sub-Category
@@ -2537,10 +2621,21 @@ $(document).ready(function () {
             url: "{{ route('client-sub-categories.store') }}",
             data: form.serialize(),
             success: function(data) {
-                $('#client_sub_category_id').append(
-                    `<option value="${data.id}" selected>${data.name}</option>`
-                );
-                $('#client_sub_category_id').val(data.id).trigger('change');
+                const newSubId = String(data.id);
+                const newSubName = data.name;
+                const parentId = data.client_category_id || $('#modal_parent_category_id').val() || form.find('select[name="client_category_id"]').val();
+
+                if ($('#client_sub_category_id option[value="' + newSubId + '"]').length === 0) {
+                    $('#client_sub_category_id').append(
+                        $('<option>', { value: newSubId, text: newSubName })
+                    );
+                }
+                $('#client_sub_category_id').val(newSubId).trigger('change');
+
+                if (parentId && (!$('#client_category_id').val() || $('#client_category_id').val() !== String(parentId))) {
+                    $('#client_category_id').val(String(parentId)).trigger('change');
+                }
+
                 closeModalSafely('addSubCategoryModal');
                 form[0].reset();
             },
@@ -2645,10 +2740,33 @@ $(document).ready(function () {
     // Initialize date constraints on page load
     syncProjectDateConstraints();
 
-    // Direct Final Submit click handler
+    // Submit handlers: "final" creates the client with a deal, "later" creates the client without a deal
     $('#finalSubmitBtn').on('click', function(e) {
         e.preventDefault();
+        submitClientWizard('final', $(this));
+    });
 
+    $('#addLaterSubmitBtn').on('click', function(e) {
+        e.preventDefault();
+        submitClientWizard('later', $(this));
+    });
+
+    $('#deal_name').on('input', function() {
+        if ($(this).val().trim()) {
+            $(this).removeClass('is-invalid');
+        }
+    });
+
+    // Server rejected a missing deal name: reopen the deal step so the user sees it
+    @if($errors->has('project_name'))
+        goToStep(3);
+        $('#project_name').addClass('is-invalid').focus();
+    @elseif($errors->has('deal_name'))
+        goToStep(4);
+        $('#deal_name').focus();
+    @endif
+
+    function submitClientWizard(mode, submitBtn) {
         // Validate Step 1 (Mandatory client fields)
         if (!validateStep(1)) {
             goToStep(1);
@@ -2667,11 +2785,26 @@ $(document).ready(function () {
             return false;
         }
 
-        // Validate Step 4 (Deal dates)
-        if (!validateStep(4)) {
-            goToStep(4);
-            return false;
+        if (mode === 'final') {
+            // Validate Step 4 (Deal Name is mandatory for Final Submit)
+            if (!$('#deal_name').val().trim()) {
+                goToStep(4);
+                $('#deal_name').addClass('is-invalid').focus();
+                return false;
+            }
+
+            // Validate Step 4 (Deal dates)
+            if (!validateStep(4)) {
+                goToStep(4);
+                return false;
+            }
+        } else {
+            // Deal is skipped entirely: clear any deal validation state
+            $('#deal_name, #deal_next_follow_up').removeClass('is-invalid');
+            $('#deal_next_follow_up_feedback').hide();
         }
+
+        $('#deal_submit_mode').val(mode);
 
         // If without_deadline is checked, ensure deadline input value is cleared
         if ($('#project_without_deadline').is(':checked')) {
@@ -2679,13 +2812,13 @@ $(document).ready(function () {
         }
         $('#project_deadline').prop('disabled', false);
 
-        // Show loading state
-        const submitBtn = $(this);
-        submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i> Submitting...');
+        // Show loading state on both submit buttons
+        $('#finalSubmitBtn, #addLaterSubmitBtn').prop('disabled', true);
+        submitBtn.html('<i class="fas fa-spinner fa-spin me-2"></i> Submitting...');
 
         // Submit form directly to server
         document.getElementById('clientWizardForm').submit();
-    });
+    }
 });
 </script>
 

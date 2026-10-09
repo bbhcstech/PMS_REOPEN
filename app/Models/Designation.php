@@ -78,6 +78,9 @@ class Designation extends TenantModel
                 $model->unique_code = 'DGN-' . str_pad($model->id, 4, '0', STR_PAD_LEFT);
                 $model->saveQuietly();
             }
+            $model->getConnection()->afterCommit(function () use ($model) {
+                \App\Services\DesignationLevels::expandAfterAdminCreation((int) $model->level);
+            });
         });
     }
 

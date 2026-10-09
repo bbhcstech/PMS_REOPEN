@@ -1302,7 +1302,7 @@
                                 <select name="designation_id" id="designation_id" class="form-select-premium" required style="flex: 1;">
                                     <option value="">Select Designation</option>
                                     @if(old('designation_id') === 'new' && old('new_designation'))
-                                        <option value="new" selected>{{ old('new_designation') }} - Level {{ old('new_designation_level') }} (New, pending employee save)</option>
+                                        <option value="new" selected>{{ old('new_designation') }} - Level {{ old('new_designation_level') }}</option>
                                     @endif
                                     @foreach($designations as $designation)
                                         <option value="{{ $designation->id }}" {{ $selectedDesignation == $designation->id ? 'selected' : '' }}>
@@ -2189,7 +2189,7 @@ $(document).ready(function() {
         $select.find('option[value="' + value + '"]').remove();
         $select.append($('<option>', {
             value: value,
-            text: label + ' (New, pending employee save)',
+            text: label + ($select.attr('id') === 'designation_id' ? '' : ' (New, pending employee save)'),
             selected: true
         }));
         $select.trigger('change');

@@ -604,6 +604,7 @@
        color: var(--bx-text-body);
        border: 1px solid transparent;
        transition: all 0.15s ease;
+       cursor: default;
    }
 
    .notification-card-link:hover {
@@ -2305,7 +2306,7 @@
                         @if($canSeeModule('organization-details-settings'))
                         <li class="menu-item {{ request()->routeIs('admin.settings.organization-details*') ? 'active' : '' }}"><a href="{{ route('admin.settings.organization-details') }}" class="menu-link"><div>Organization Details</div></a></li>
                         @endif
-                        @if($canSeeModule('business-address-settings'))
+                        @if($canSeeModule('business-address-settings') && in_array(strtolower((string) auth()->user()?->role), ['admin', 'administrator', 'superadmin', 'hr', 'manager'], true))
                         <li class="menu-item {{ request()->routeIs('admin.settings.business-address*') ? 'active' : '' }}"><a href="{{ route('admin.settings.business-address.index') }}" class="menu-link"><div>Branches / Locations</div></a></li>
                         @endif
                         @if($canSeeModule('departments'))
@@ -2827,7 +2828,8 @@
                       try {
                           $hdrCompany = app(\App\Services\CompanyContext::class)->current();
                           $hdrCompanyId = $hdrCompany?->id ?? auth()->user()?->company_id;
-                          if ($hdrCompanyId && class_exists(\App\Models\Central\CentralNotification::class)) {
+                          $hdrCanSeeCompanyAlerts = in_array(strtolower((string) auth()->user()?->role), ['admin', 'administrator', 'superadmin'], true);
+                          if ($hdrCompanyId && $hdrCanSeeCompanyAlerts && class_exists(\App\Models\Central\CentralNotification::class)) {
                                try {
                                    app(\App\Services\SubscriptionNotificationEngine::class)->scanAndGenerateAlerts($hdrCompanyId);
                                } catch (\Throwable $e) {}
@@ -2876,8 +2878,7 @@
 
                                 <li class="notification-dropdown-body">
                            @foreach($headerCentralNotifications as $cntf)
-                             <a href="{{ $cntf->action_url ?: route('notifications.all') }}"
-                                class="notification-card-link {{ !$cntf->is_read ? 'is-unread' : '' }}" style="border-left: 3px solid {{ $cntf->severity === 'CRITICAL' ? '#ef4444' : ($cntf->severity === 'WARNING' ? '#f59e0b' : '#3b82f6') }};">
+                             <div class="notification-card-link {{ !$cntf->is_read ? 'is-unread' : '' }}" style="border-left: 3px solid {{ $cntf->severity === 'CRITICAL' ? '#ef4444' : ($cntf->severity === 'WARNING' ? '#f59e0b' : '#3b82f6') }};">
                                  <span class="notification-avatar-icon color-{{ $cntf->severity === 'CRITICAL' ? 'danger' : ($cntf->severity === 'WARNING' ? 'warning' : 'info') }}">
                                      <i class="fas {{ $cntf->severity === 'CRITICAL' ? 'fa-exclamation-triangle' : ($cntf->severity === 'WARNING' ? 'fa-bell-circle-exclamation' : 'fa-bell') }}"></i>
                                  </span>
@@ -2896,7 +2897,7 @@
                                  @if(!$cntf->is_read)
                                      <span class="notification-unread-dot" style="background: #ef4444;"></span>
                                  @endif
-                             </a>
+                             </div>
                            @endforeach
                            @forelse($navbarNotifications as $notification)
                             @php
@@ -2907,36 +2908,15 @@
                                 $color = data_get($data, 'color', 'info');
                                 $title = data_get($data, 'title', $type);
                                 $message = data_get($data, 'message', '');
-
-                                if ($taskId = data_get($data, 'task_id')) {
-                                    $link = route('tasks.show', $taskId);
-                                } elseif ($ticketId = data_get($data, 'ticket_id')) {
-                                    $link = route('tickets.show', $ticketId);
-                                } elseif ($projectId = data_get($data, 'project_id')) {
-                                    $link = route('projects.show', $projectId);
-                                } elseif ($employeeId = data_get($data, 'employee_id')) {
-                                    $link = route('employees.show', $employeeId);
-                                } else {
-                                    $link = data_get($data, 'url', '#');
-                                }
-                                $isClickable = data_get($data, 'clickable', true) !== false && data_get($data, 'type') !== 'own_password_changed';
                             @endphp
 
-    @if($isClickable)
-        <a href="{{ route('notifications.open', $notification->id) }}"
-           class="notification-card-link {{ $isUnread ? 'is-unread' : '' }}">
-    @else
-        <div class="notification-card-link {{ $isUnread ? 'is-unread' : '' }}" style="cursor: default; opacity: 0.95;">
-    @endif
+        <div class="notification-card-link {{ $isUnread ? 'is-unread' : '' }}">
         <span class="notification-avatar-icon color-{{ $color }}">
             <i class="fas {{ $icon }}"></i>
         </span>
         <span class="flex-grow-1">
             <span class="notification-title d-flex align-items-center justify-content-between">
                 <span>{{ $title }}</span>
-                @if(!$isClickable)
-                    <span class="badge bg-secondary text-white rounded-pill px-2 py-0.5" style="font-size: 0.65rem;">View Only</span>
-                @endif
             </span>
             @if($message)
                 <span class="notification-message">{{ \Illuminate\Support\Str::limit($message, 92) }}</span>
@@ -2946,11 +2926,7 @@
         @if($isUnread)
             <span class="notification-unread-dot"></span>
         @endif
-    @if($isClickable)
-        </a>
-    @else
         </div>
-    @endif
 @empty
     <div class="px-3 py-5 text-center text-muted">
         <i class="fas fa-bell-slash fa-2x mb-2 d-block"></i>
@@ -3203,11 +3179,33 @@
                   bell.addEventListener('shown.bs.dropdown', silentlyMarkBellNotificationsRead);
               }
 
+              // Session ended server-side (e.g. company deleted by Super Admin): leave the workspace immediately
+              function redirectIfSessionEnded(response) {
+                  if (response && (response.status === 401 || response.headers.get('X-Company-Deleted') === '1')) {
+                      window.location.href = @json(route('login'));
+                      return true;
+                  }
+                  return false;
+              }
+
+              if (window.jQuery) {
+                  window.jQuery(document).ajaxError(function (event, xhr) {
+                      if (xhr && (xhr.status === 401 || xhr.getResponseHeader('X-Company-Deleted') === '1')) {
+                          window.location.href = @json(route('login'));
+                      }
+                  });
+              }
+
               function checkNotifications() {
                   fetch('{{ route('notifications.unreadCount') }}', {
                       headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
                   })
-                  .then(response => response.json())
+                  .then(response => {
+                      if (redirectIfSessionEnded(response)) {
+                          return Promise.reject('session-ended');
+                      }
+                      return response.json();
+                  })
                   .then(data => {
                       const count = Number(data.count || 0);
                       if (count > previousUnread) {

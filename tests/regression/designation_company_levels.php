@@ -84,12 +84,37 @@ try {
 } catch (ValidationException $e) {}
 (new DesignationController)->updateLevelSettings(Request::create('/', 'PUT', ['maximum_level' => 101]));
 checkLevels(DesignationLevels::maximum() === 101, 'Admin maximum was still capped at 100.');
-Designation::create(['name' => 'Allowed L101', 'level' => 101]);
 try {
-    Designation::create(['name' => 'Rejected L102', 'level' => 102]);
-    throw new RuntimeException('L102 accepted above configured L101 limit.');
+    Designation::create(['name' => 'Rejected L102 before expansion', 'level' => 102]);
+    throw new RuntimeException('L102 accepted before expansion.');
 } catch (ValidationException $e) {}
-foreach (['designations/create', 'designations/index', 'designations/hierarchy', 'employees/create', 'employees/edit'] as $view) {
+DB::beginTransaction();
+Designation::create(['name' => 'Rolled back L101', 'level' => 101]);
+checkLevels(DesignationLevels::maximum() === 101, 'Uncommitted creation expanded the limit.');
+DB::rollBack();
+checkLevels(DesignationLevels::maximum() === 101, 'Rolled back creation expanded the limit.');
+Designation::create(['name' => 'Allowed L101', 'level' => 101]);
+checkLevels(DesignationLevels::maximum() === 102, 'Admin creation at maximum did not unlock next level.');
+$actor->role = 'hr';
+Designation::create(['name' => 'HR L102', 'level' => 102]);
+checkLevels(DesignationLevels::maximum() === 102, 'HR creation expanded the limit.');
+try {
+    Designation::create(['name' => 'Rejected L103', 'level' => 103]);
+    throw new RuntimeException('L103 accepted above configured L102 limit.');
+} catch (ValidationException $e) {}
+$actor->company_id = 2;
+checkLevels(DesignationLevels::maximum() === 10, 'Automatic expansion changed another company.');
+DB::connection('central')->table('companies')->insert(['id' => 3, 'name' => 'New company', 'settings' => '{}']);
+$actor->company_id = 3;
+$actor->role = 'admin';
+checkLevels(DesignationLevels::maximum() === 6, 'New company did not start at L6.');
+Designation::create(['name' => 'Admin L2', 'level' => 2]);
+checkLevels(DesignationLevels::maximum() === 6, 'Creation below maximum expanded the limit.');
+Designation::create(['name' => 'Admin L6', 'level' => 6]);
+checkLevels(DesignationLevels::maximum() === 7, 'Admin L6 did not unlock L7.');
+Designation::create(['name' => 'Admin L7', 'level' => 7]);
+checkLevels(DesignationLevels::maximum() === 8, 'Admin L7 did not unlock L8.');
+foreach (['designations/create', 'designations/index', 'designations/hierarchy', 'employees/create', 'employees/edit', 'notifications/index'] as $view) {
     $compiled = app('blade.compiler')->compileString(file_get_contents(resource_path('views/admin/' . $view . '.blade.php')));
     token_get_all($compiled, TOKEN_PARSE);
 }

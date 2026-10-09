@@ -78,6 +78,7 @@ class PlanEligibilityService
         $minLevel = max($highest, $current);
 
         $plans = Plan::on('central')
+            ->standard()
             ->where('is_active', true)
             ->orderBy('sort_order')
             ->orderBy('monthly_price', 'asc')

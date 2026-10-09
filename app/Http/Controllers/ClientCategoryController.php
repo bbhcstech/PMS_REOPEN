@@ -10,9 +10,9 @@ use Carbon\Carbon;
 class ClientCategoryController extends Controller
 {
     public function index()
-        {
-            return ClientCategory::all();
-        }
+    {
+        return ClientCategory::orderBy('name')->get();
+    }
         
     public function store(Request $request)
     {

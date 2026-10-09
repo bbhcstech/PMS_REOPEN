@@ -25,61 +25,25 @@ class SubscriptionCatalogSeeder extends Seeder
             );
         });
 
-        $plans = [
-            [
-                'name' => 'Starter',
-                'slug' => 'starter',
-                'description' => 'For small teams starting with core project and HR workflows.',
-                'monthly_price' => 49,
-                'yearly_price' => 499,
-                'max_users' => 15,
-                'max_projects' => 20,
-                'max_clients' => 50,
-                'max_storage_mb' => 2048,
-                'features' => ['Core dashboards', 'Projects', 'Employee records', 'Email support'],
-                'sort_order' => 10,
-                'modules' => ['projects', 'hr-employees'],
-            ],
-            [
-                'name' => 'Professional',
-                'slug' => 'professional',
-                'description' => 'For growing companies that need attendance, leaves, tickets, and reports.',
-                'monthly_price' => 149,
-                'yearly_price' => 1499,
-                'max_users' => 75,
-                'max_projects' => 150,
-                'max_clients' => 300,
-                'max_storage_mb' => 10240,
-                'features' => ['Everything in Starter', 'Attendance', 'Leave management', 'Support tickets'],
-                'sort_order' => 20,
-                'modules' => ['projects', 'hr-employees', 'attendance', 'leaves', 'tickets'],
-            ],
-            [
-                'name' => 'Enterprise',
-                'slug' => 'enterprise',
-                'description' => 'For larger organizations with CRM, contracts, and premium controls.',
-                'monthly_price' => 399,
-                'yearly_price' => 3999,
-                'max_users' => 500,
-                'max_projects' => 1000,
-                'max_clients' => 2000,
-                'max_storage_mb' => 102400,
-                'features' => ['Everything in Professional', 'CRM deals', 'Contracts', 'Priority support'],
-                'sort_order' => 30,
-                'modules' => ['projects', 'hr-employees', 'attendance', 'leaves', 'tickets', 'crm-deals', 'contracts'],
-            ],
-        ];
+        $plans = [];
+        foreach (\App\Support\SupportedPlans::defaults() as $slug => $values) {
+            $plans[] = $values + [
+                'slug' => $slug,
+                'sort_order' => array_search($slug, \App\Support\SupportedPlans::SLUGS, true) + 1,
+                'modules' => $slug === 'free' ? ['projects', 'hr-employees'] : $modules->pluck('slug')->all(),
+            ];
+        }
 
         foreach ($plans as $planData) {
             $moduleSlugs = $planData['modules'];
             unset($planData['modules']);
 
-            $plan = SubscriptionPlan::updateOrCreate(
+            $plan = SubscriptionPlan::firstOrCreate(
                 ['slug' => $planData['slug']],
                 $planData + ['is_active' => true]
             );
 
-            $plan->modules()->sync($modules->whereIn('slug', $moduleSlugs)->pluck('id')->all());
+            $plan->modules()->syncWithoutDetaching($modules->whereIn('slug', $moduleSlugs)->pluck('id')->all());
         }
     }
 }

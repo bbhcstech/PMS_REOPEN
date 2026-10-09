@@ -161,7 +161,9 @@ class ClientController extends Controller
         $dealCategories = DealCategory::all();
         $dealAgents     = User::all();
 
+        $languages = \App\Models\Language::dropdownOptions();
         return view('admin.clients.create', compact(
+            'languages',
             'categories',
             'subcategories',
             'users',
@@ -301,7 +303,8 @@ class ClientController extends Controller
             'company_logo'           => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
 
             // Project Details (Optional)
-            'project_name'           => 'nullable|string|max:255',
+            'project_submit_mode'    => 'nullable|in:final,later',
+            'project_name'           => 'required_if:project_submit_mode,final|nullable|string|max:255',
             'project_start_date'     => 'nullable|date',
             'project_deadline'       => [
                 'nullable',
@@ -322,8 +325,9 @@ class ClientController extends Controller
             'project_department_ids' => 'nullable|array',
             'project_employee_ids'   => 'nullable|array',
 
-            // Deal Details (Optional)
-            'deal_name'              => 'nullable|string|max:255',
+            // Deal Details: "final" submit requires a deal name, "later" skips the deal entirely
+            'deal_submit_mode'       => 'nullable|in:final,later',
+            'deal_name'              => 'required|string|max:255',
             'deal_currency'          => 'nullable|string|max:10',
             'deal_value'             => 'nullable|numeric|min:0',
             'deal_close_date'        => 'nullable|date',
@@ -350,7 +354,26 @@ class ClientController extends Controller
             'password.regex'            => 'Password must contain at least 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character.',
             'project_deadline.after'    => 'The project deadline must be a date later than the start date.',
             'deal_next_follow_up.after' => 'The next follow-up date must be a date later than the close date.',
+            'deal_name.required'        => 'Deal Name is required for Final Submit. Use "Add Later and Submit" to create the client without a deal.',
+            'project_name.required_if' => 'Project Name is required for Save and Continue. Use "Add Later and Continue" to skip the project.',
         ]);
+
+        $addProjectLater = $request->input('project_submit_mode') === 'later';
+        if ($addProjectLater) {
+            foreach (array_keys($rules) as $field) {
+                if ((str_starts_with($field, 'project_') && $field !== 'project_submit_mode') || $field === 'completion_percent') {
+                    unset($rules[$field]);
+                }
+            }
+        }
+        $addDealLater = $request->input('deal_submit_mode') === 'later';
+        if ($addDealLater) {
+            foreach (array_keys($rules) as $field) {
+                if (str_starts_with($field, 'deal_') && $field !== 'deal_submit_mode') {
+                    unset($rules[$field]);
+                }
+            }
+        }
 
         $request->validate($rules, $validationMessages);
 
@@ -433,9 +456,10 @@ class ClientController extends Controller
 
             // create client (client_uid is auto-generated in Client model boot())
             $client = Client::create($data);
+            $authUserId = auth()->id() ?: (User::first()?->id ?? null);
 
             // Step 3: Create Project if project name is filled
-            if ($request->filled('project_name')) {
+            if (! $addProjectLater && $request->filled('project_name')) {
                 $projectCode = null;
                 if ($request->input('project_shortcode_option') === 'manual' && $request->filled('project_shortcode_manual')) {
                     $projectCode = $request->input('project_shortcode_manual');
@@ -465,8 +489,6 @@ class ClientController extends Controller
                 $currencyId = $request->filled('project_currency_id') 
                     ? $request->project_currency_id 
                     : (Currency::where('currency_code', 'INR')->value('id') ?? Currency::first()?->id ?? 4);
-
-                $authUserId = auth()->id() ?: (User::first()?->id ?? null);
 
                 $project = Project::create([
                     'client_id'                 => $client->id,
@@ -544,8 +566,8 @@ class ClientController extends Controller
                 ]);
             }
 
-            // Step 4: Create Deal if deal name is filled
-            if ($request->filled('deal_name')) {
+            // Step 4: Create Deal unless the user chose "Add Later and Submit"
+            if (! $addDealLater && $request->filled('deal_name')) {
                 Deal::create([
                     'deal_name'        => $request->deal_name,
                     'lead_name'        => $request->input('deal_lead_name') ?: $client->name,
@@ -586,7 +608,8 @@ class ClientController extends Controller
         $users         = User::all();
         $countries     = Country::all();
 
-        return view('admin.clients.edit', compact('client', 'categories', 'subcategories', 'users', 'countries'));
+        $languages = \App\Models\Language::dropdownOptions();
+        return view('admin.clients.edit', compact('client', 'categories', 'subcategories', 'users', 'countries', 'languages'));
     }
 
     public function update(Request $request, $id)

@@ -178,6 +178,11 @@ class SettingController extends Controller
             ],
         ];
 
+        if (! \Illuminate\Support\Facades\Auth::guard('super_admin')->check()
+            && ! in_array(strtolower((string) auth()->user()?->role), ['admin', 'administrator', 'superadmin', 'hr', 'manager'], true)) {
+            unset($settingsGroups['branches-locations']);
+        }
+
         return view('admin.settings.index', compact('settingsGroups'));
     }
 }

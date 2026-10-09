@@ -462,16 +462,16 @@
             <label class="profile-label">Gender</label>
             <select name="gender" class="profile-control">
               <option value="">Select gender</option>
-              <option value="Male" {{ old('gender', $user->gender ?? '') == 'Male' ? 'selected' : '' }}>Male</option>
-              <option value="Female" {{ old('gender', $user->gender ?? '') == 'Female' ? 'selected' : '' }}>Female</option>
-              <option value="Other" {{ old('gender', $user->gender ?? '') == 'Other' ? 'selected' : '' }}>Other</option>
+              <option value="Male" {{ strtolower(old('gender', $user->gender ?? '')) == 'male' ? 'selected' : '' }}>Male</option>
+              <option value="Female" {{ strtolower(old('gender', $user->gender ?? '')) == 'female' ? 'selected' : '' }}>Female</option>
+              <option value="Other" {{ strtolower(old('gender', $user->gender ?? '')) == 'other' ? 'selected' : '' }}>Other</option>
             </select>
           </div>
 
           <!-- DATE OF BIRTH -->
           <div>
             <label class="profile-label">Date of Birth</label>
-            <input type="date" name="date_of_birth" class="profile-control" value="{{ old('date_of_birth', isset($user->date_of_birth) ? \Carbon\Carbon::parse($user->date_of_birth)->format('Y-m-d') : '') }}" />
+            <input type="date" name="date_of_birth" class="profile-control" value="{{ old('date_of_birth', ($user->date_of_birth ?? $user->dob ?? null) ? \Carbon\Carbon::parse($user->date_of_birth ?? $user->dob)->format('Y-m-d') : '') }}" />
           </div>
 
           <!-- GOVERNMENT ID CARD -->
@@ -479,7 +479,7 @@
             <label class="profile-label">Government ID Card</label>
             <div class="file-input-box" onclick="document.getElementById('govtIdInput').click();">
               <label for="govtIdInput">Choose File</label>
-              <span id="govtIdFileName">No file chosen</span>
+              <span id="govtIdFileName">{{ ($user->govt_id_card ?? $user->government_id_card) ? basename($user->govt_id_card ?? $user->government_id_card) : 'No file chosen' }}</span>
               <input type="file" name="govt_id_card" id="govtIdInput" accept=".pdf,image/*" onchange="updateFileName(this, 'govtIdFileName')" />
             </div>
             <div class="field-help-text">Required when changing date of birth.</div>
@@ -490,9 +490,9 @@
             <label class="profile-label">Marital Status</label>
             <select name="marital_status" class="profile-control">
               <option value="">Select status</option>
-              <option value="Single" {{ old('marital_status', $user->marital_status ?? '') == 'Single' ? 'selected' : '' }}>Single</option>
-              <option value="Married" {{ old('marital_status', $user->marital_status ?? '') == 'Married' ? 'selected' : '' }}>Married</option>
-              <option value="Other" {{ old('marital_status', $user->marital_status ?? '') == 'Other' ? 'selected' : '' }}>Other</option>
+              <option value="Single" {{ strtolower(old('marital_status', $user->marital_status ?? '')) == 'single' ? 'selected' : '' }}>Single</option>
+              <option value="Married" {{ strtolower(old('marital_status', $user->marital_status ?? '')) == 'married' ? 'selected' : '' }}>Married</option>
+              <option value="Other" {{ strtolower(old('marital_status', $user->marital_status ?? '')) == 'other' ? 'selected' : '' }}>Other</option>
             </select>
           </div>
 

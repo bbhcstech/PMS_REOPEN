@@ -140,6 +140,16 @@ class Company extends Model
             ->latest();
     }
 
+    /**
+     * Most recent non-cancelled subscription (active, trial, pending or expired), used for display
+     * when the company has no currently running paid subscription.
+     */
+    public function latestSubscription()
+    {
+        return $this->hasOne(CompanySubscription::class)
+            ->ofMany(['id' => 'max'], fn ($query) => $query->where('status', '!=', 'cancelled'));
+    }
+
     public function modules(): BelongsToMany
     {
         return $this->belongsToMany(Module::class, 'company_modules')

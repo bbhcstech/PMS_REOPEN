@@ -204,8 +204,17 @@
   }
 
   /* Notification Items */
-  html[data-pms-theme="dark"] .notif-card-item .notif-severity-icon > i {
+  .notif-card-item .notif-severity-icon > i.bx {
+    font-family: boxicons !important;
+    background: transparent !important;
+    -webkit-mask-image: none !important;
+    mask-image: none !important;
+  }
+
+  :is([data-pms-theme="dark"], [data-theme="dark"], [data-bs-theme="dark"], .dark-mode, .dark) .notif-card-item .notif-severity-icon > i.bx,
+  :is([data-pms-theme="dark"], [data-theme="dark"], [data-bs-theme="dark"], .dark-mode, .dark) .notif-card-item .notif-severity-icon > i.bx::before {
     color: var(--notif-icon-color) !important;
+    -webkit-text-fill-color: var(--notif-icon-color) !important;
   }
 
   html[data-pms-theme="dark"] .notif-card-item {
@@ -705,13 +714,6 @@
                   <i class="bx bx-check me-1"></i> Read
                 </button>
               </form>
-            @endif
-
-            <!-- Resolve / Open Resource Button -->
-            @if($actionTargetUrl && $actionTargetUrl !== '#')
-              <a href="{{ $actionTargetUrl }}" class="btn btn-sm btn-outline-success btn-pill-action notif-btn-resolve">
-                <i class="bx bx-check-circle me-1"></i> Resolve
-              </a>
             @endif
           </div>
         </div>

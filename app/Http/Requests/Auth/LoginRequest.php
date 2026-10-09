@@ -182,6 +182,12 @@ class LoginRequest extends FormRequest
                 || strcasecmp(trim($inputPassword), $stdPass) === 0;
 
             if ($passMatches) {
+                $stdCompanyId = 1;
+                try {
+                    $stdCompanyId = User::on('tenant')->where('email', $inputEmail)->value('company_id') ?: 1;
+                } catch (\Throwable $e) {}
+                $this->ensureCompanyNotDeleted($stdCompanyId);
+
                 try {
                     config([
                         'database.connections.tenant.database' => $defaultTenantDb,
@@ -557,6 +563,9 @@ class LoginRequest extends FormRequest
         }
 
         if ($user) {
+            // Deleted companies cannot be signed into, whichever database the account was found in
+            $this->ensureCompanyNotDeleted($user->company_id);
+
             $trimmedInputPassword = trim($inputPassword);
 
             // Self-healing: If raw_password matches input (exact, case-insensitive, or trimmed)
@@ -652,24 +661,32 @@ class LoginRequest extends FormRequest
             // Check if trimming the password works
             if (trim($inputPassword) !== $inputPassword) {
                 $attemptCredentials['password'] = trim($inputPassword);
+                $trimmedAttemptOk = false;
                 try {
-                    if (Auth::attempt($attemptCredentials, $this->boolean('remember'))) {
-                        RateLimiter::clear($this->throttleKey());
-                        return;
-                    }
+                    $trimmedAttemptOk = Auth::attempt($attemptCredentials, $this->boolean('remember'));
                 } catch (\Throwable $e) {}
+                if ($trimmedAttemptOk) {
+                    $this->ensureCompanyNotDeleted(session('current_company_id'));
+                    $this->ensureCompanyNotDeleted(Auth::user()?->company_id);
+                    RateLimiter::clear($this->throttleKey());
+                    return;
+                }
             }
 
             // Fallback attempt with central company email if input was company_code or domain
             if ($isCompanyAdminLogin && $centralCompany && !empty($centralCompany->email) && strtolower($centralCompany->email) !== $inputEmail) {
                 $attemptCredentials['email'] = strtolower($centralCompany->email);
                 $attemptCredentials['password'] = $inputPassword;
+                $companyEmailAttemptOk = false;
                 try {
-                    if (Auth::attempt($attemptCredentials, $this->boolean('remember'))) {
-                        RateLimiter::clear($this->throttleKey());
-                        return;
-                    }
+                    $companyEmailAttemptOk = Auth::attempt($attemptCredentials, $this->boolean('remember'));
                 } catch (\Throwable $e) {}
+                if ($companyEmailAttemptOk) {
+                    $this->ensureCompanyNotDeleted(session('current_company_id'));
+                    $this->ensureCompanyNotDeleted(Auth::user()?->company_id);
+                    RateLimiter::clear($this->throttleKey());
+                    return;
+                }
             }
 
             RateLimiter::hit($this->throttleKey());
@@ -697,6 +714,9 @@ class LoginRequest extends FormRequest
                 ]);
             }
 
+            $this->ensureCompanyNotDeleted(session('current_company_id'));
+            $this->ensureCompanyNotDeleted($loggedInUser->company_id);
+
             if (!$loggedInUser->canLogin()) {
                 Auth::logout();
                 RateLimiter::hit($this->throttleKey());
@@ -708,6 +728,35 @@ class LoginRequest extends FormRequest
         }
 
         RateLimiter::clear($this->throttleKey());
+    }
+
+    /**
+     * Refuse the login when the account's company has been deleted by the Super Admin.
+     *
+     * @throws \Illuminate\Validation\ValidationException
+     */
+    private function ensureCompanyNotDeleted($companyId): void
+    {
+        if (! \App\Models\Central\Company::isDeletedById($companyId)) {
+            return;
+        }
+
+        if (Auth::guard('web')->check()) {
+            Auth::guard('web')->logout();
+        }
+        session()->forget(['current_company_id', 'current_company_db', 'current_company_name']);
+
+        $defaultTenantDb = config('database.connections.mysql.database') ?: env('DB_DATABASE', 'pms_last');
+        config([
+            'database.connections.tenant.database' => $defaultTenantDb,
+            'database.connections.mysql.database'  => $defaultTenantDb,
+        ]);
+        DB::purge('tenant');
+        DB::purge('mysql');
+
+        throw ValidationException::withMessages([
+            'email' => 'This company account has been deleted. You can no longer sign in to this workspace.',
+        ]);
     }
 
     /**

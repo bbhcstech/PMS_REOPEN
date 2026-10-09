@@ -610,9 +610,11 @@
                     </div>
                 </div>
 
+                @if(!$isSettingsReadOnly)
                 <a href="{{ route('admin.settings.business-address.create') }}" class="btn-add-address">
                     <i class="fas fa-plus-circle"></i> Add New Address
                 </a>
+                @endif
             </div>
 
             <!-- Alert Notifications -->
@@ -806,9 +808,11 @@
                             </div>
                             <h4 class="fw-bold mb-2" style="color: #0F172A;">No Business Addresses Found</h4>
                             <p class="text-muted mb-4 max-w-md mx-auto small">Add your first business address to configure official branch locations, contact info, logo, and tax details.</p>
+                            @if(!$isSettingsReadOnly)
                             <a href="{{ route('admin.settings.business-address.create') }}" class="btn-add-address">
                                 <i class="fas fa-plus-circle"></i> Add First Address
                             </a>
+                            @endif
                         </div>
                     @endif
                 </div>

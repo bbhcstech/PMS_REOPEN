@@ -79,14 +79,14 @@ class SuperAdminController extends Controller
             $perPage = 10;
         }
 
-        $companies = Company::with(['activeSubscription.plan', 'users' => function ($query) {
+        $companies = Company::with(['activeSubscription.plan', 'latestSubscription.plan', 'users' => function ($query) {
                 $query->where('role', 'admin')->latest()->limit(2);
             }])
             ->latest()
             ->paginate($perPage, ['*'], 'companies_page')
             ->withQueryString();
 
-        $plans = SubscriptionPlan::where('is_active', true)->orderBy('sort_order')->orderBy('name')->get();
+        $plans = SubscriptionPlan::standard()->where('is_active', true)->orderBy('sort_order')->orderBy('name')->get();
         $modules = Module::where('is_active', true)->orderBy('sort_order')->orderBy('name')->get();
         $companyOptions = Company::orderBy('name')->get();
         $recentAdmins = User::where('role', 'admin')->with('company')->latest()->take(6)->get();
@@ -1791,13 +1791,26 @@ class SuperAdminController extends Controller
                 ->where('id', '!=', $saUser->id)
                 ->exists();
         } else {
-            $emailTaken = \Illuminate\Support\Facades\DB::table($user->getTable())
+            $emailTaken = $user->getConnection()->table($user->getTable())
                 ->where('email', $data['email'])
                 ->where('id', '!=', $user->id)
                 ->exists();
         }
         if ($emailTaken) {
             return back()->withInput()->withErrors(['email' => 'This email is already taken by another administrator.']);
+        }
+
+        $schemaBuilder = $user->getConnection()->getSchemaBuilder();
+        $tableColumns = $schemaBuilder->getColumnListing($user->getTable());
+        if ($user instanceof \App\Models\Central\SuperAdmin) {
+            // Repair missing profile columns on older central databases before saving.
+            $profileColumns = ['mobile', 'gender', 'date_of_birth', 'marital_status', 'country', 'language', 'address', 'about', 'govt_id_card', 'email_notifications', 'google_calendar'];
+            if (array_diff($profileColumns, $tableColumns)) {
+                (require database_path('migrations/central/2026_09_29_000001_add_profile_fields_to_super_admins_table.php'))->up();
+            }
+        } elseif (! in_array('date_of_birth', $tableColumns, true) && in_array('dob', $tableColumns, true) && array_key_exists('date_of_birth', $data)) {
+            $data['dob'] = $data['date_of_birth'];
+            unset($data['date_of_birth']);
         }
 
         if ($request->hasFile('profile_image')) {
@@ -1827,12 +1840,17 @@ class SuperAdminController extends Controller
             unset($data['govt_id_card']);
         }
 
-        $data['email_notifications'] = $request->has('email_notifications');
-        $data['google_calendar'] = $request->has('google_calendar');
+        $data['email_notifications'] = $request->boolean('email_notifications');
+        $data['google_calendar'] = $request->boolean('google_calendar');
 
         // Use the model's own connection (central) to get the column list — NOT the default DB facade
         $schemaBuilder = $user->getConnection()->getSchemaBuilder();
         $tableColumns  = $schemaBuilder->getColumnListing($user->getTable());
+
+        if (! in_array('govt_id_card', $tableColumns, true) && in_array('government_id_card', $tableColumns, true) && array_key_exists('govt_id_card', $data)) {
+            $data['government_id_card'] = $data['govt_id_card'];
+            unset($data['govt_id_card']);
+        }
 
         $updateData = [];
         foreach ($data as $key => $val) {
@@ -1842,7 +1860,9 @@ class SuperAdminController extends Controller
         }
 
         if (!empty($updateData)) {
-            $user->fill($updateData)->save();
+            // Data is already validated and limited to existing profile columns.
+            // Legacy and central account models have different fillable lists.
+            $user->forceFill($updateData)->save();
             // Refresh the session so navbar avatar and name reflect changes immediately
             if ($user instanceof \App\Models\Central\SuperAdmin) {
                 auth('super_admin')->setUser($user->fresh());

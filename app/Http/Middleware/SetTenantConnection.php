@@ -22,6 +22,12 @@ class SetTenantConnection
     {
         $defaultDb = config('database.connections.mysql.database') ?: env('DB_DATABASE', 'pms_last');
 
+        // A company deleted by the Super Admin must not keep working: end every session bound to it.
+        $sessionCompanyId = $request->session()->get('current_company_id');
+        if ($sessionCompanyId && \App\Models\Central\Company::isDeletedById($sessionCompanyId)) {
+            return $this->endDeletedCompanySession($request, $next, $defaultDb);
+        }
+
         // Restore the login database before any guard retrieves its user.
         $sessionDb = $request->session()->get('current_company_db');
         if ($sessionDb) {
@@ -85,8 +91,12 @@ class SetTenantConnection
                     } catch (\Throwable $e) {}
                 }
 
-                // SECONDARY: No session yet (e.g. first request after seeding).
+                // SECONDARY: No session yet (e.g. first request after seeding or a "remember me" re-login).
                 // Fall back to company_id on the user — safe only when no session exists.
+                if (! session('current_company_id') && \App\Models\Central\Company::isDeletedById($user->company_id ?? null)) {
+                    return $this->endDeletedCompanySession($request, $next, $defaultDb);
+                }
+
                 if (!$company && !empty($user->company_id)) {
                     try {
                         $company = \App\Models\Central\Company::on('central')->find($user->company_id);
@@ -147,5 +157,64 @@ class SetTenantConnection
         }
 
         return $next($request);
+    }
+
+    /**
+     * The session's company was deleted by the Super Admin.
+     * Company users are logged out (remember-me cookie included) and sent to login;
+     * a Super Admin who was viewing that company only loses the company context.
+     */
+    private function endDeletedCompanySession(Request $request, Closure $next, string $defaultDb): Response
+    {
+        $this->useDatabase($defaultDb);
+
+        // Only the central super_admin guard is trusted here: a web-guard user id from the deleted
+        // company's DB could resolve to an unrelated user once the connection falls back to default.
+        $isSuperAdmin = false;
+        try {
+            $isSuperAdmin = \Illuminate\Support\Facades\Auth::guard('super_admin')->check();
+        } catch (\Throwable $e) {}
+
+        if ($isSuperAdmin) {
+            $request->session()->forget(['current_company_id', 'current_company_db', 'current_company_name']);
+
+            if (app()->bound(\App\Services\CompanyContext::class)) {
+                app(\App\Services\CompanyContext::class)->reset();
+            }
+
+            return $next($request);
+        }
+
+        try {
+            \Illuminate\Support\Facades\Auth::guard('web')->logout();
+        } catch (\Throwable $e) {}
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        if (app()->bound(\App\Services\CompanyContext::class)) {
+            app(\App\Services\CompanyContext::class)->reset();
+        }
+
+        $message = 'Your company account has been deleted. You have been signed out and can no longer access this workspace.';
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'message'  => $message,
+                'redirect' => route('login'),
+            ], 401)->header('X-Company-Deleted', '1');
+        }
+
+        return redirect()->route('login')->with('error', $message);
+    }
+
+    private function useDatabase(string $database): void
+    {
+        config([
+            'database.connections.tenant.database' => $database,
+            'database.connections.mysql.database'  => $database,
+        ]);
+        DB::purge('tenant');
+        DB::purge('mysql');
     }
 }

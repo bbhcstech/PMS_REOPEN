@@ -136,7 +136,7 @@ class CompanyController extends Controller
     public function plans(Request $request): View
     {
         try {
-            $plans = \App\Models\Central\Plan::on('central')->orderBy('monthly_price', 'asc')->orderBy('id')->get();
+            $plans = \App\Models\Central\Plan::on('central')->standard()->orderBy('monthly_price', 'asc')->orderBy('id')->get();
         } catch (\Throwable $e) {
             $plans = collect();
         }
@@ -160,7 +160,7 @@ class CompanyController extends Controller
             }
 
             try {
-                $plans = \App\Models\Central\Plan::on('central')->orderBy('monthly_price', 'asc')->orderBy('id')->get();
+                $plans = \App\Models\Central\Plan::on('central')->standard()->orderBy('monthly_price', 'asc')->orderBy('id')->get();
             } catch (\Throwable $e) {
                 $plans = collect();
             }
@@ -213,7 +213,7 @@ class CompanyController extends Controller
         } catch (\Throwable $e) {}
 
         try {
-            $plans = \App\Models\Central\Plan::on('central')->with('modules')->orderBy('sort_order')->orderBy('monthly_price', 'asc')->get();
+            $plans = \App\Models\Central\Plan::on('central')->standard()->with('modules')->orderBy('sort_order')->orderBy('monthly_price', 'asc')->get();
         } catch (\Throwable $e) {
             $plans = collect();
         }
@@ -238,7 +238,7 @@ class CompanyController extends Controller
             }
 
             try {
-                $plans = \App\Models\Central\Plan::on('central')->with('modules')->orderBy('sort_order')->orderBy('monthly_price', 'asc')->get();
+                $plans = \App\Models\Central\Plan::on('central')->standard()->with('modules')->orderBy('sort_order')->orderBy('monthly_price', 'asc')->get();
             } catch (\Throwable $e) {
                 $plans = collect();
             }
@@ -565,6 +565,8 @@ class CompanyController extends Controller
             'admin_password_confirmation.same' => 'Password confirmation does not match.',
         ]);
 
+        // Resolve before provisioning so an invalid paid selection cannot become Free.
+        $targetPlan = app(\App\Services\ProvisioningPlan::class)->resolve($request);
         $rawSlug = strtolower(trim($data['slug']));
         $slug = preg_replace('/[^a-z0-9_]/', '', $rawSlug);
         
@@ -679,77 +681,56 @@ class CompanyController extends Controller
 
         // Provision central subscription record for the new tenant based on selected plan
         try {
-            $rawPlanInput = $request->input('subscription_plan')
-                ?? $request->input('plan_slug')
-                ?? $request->input('plan_id')
-                ?? $request->input('plan')
-                ?? 'free';
+            DB::connection('central')->transaction(function () use ($company, $targetPlan) {
+                $startsAt = now();
+                $endsAt = now()->addDays(30);
 
-            $planSlug = strtolower(trim((string)$rawPlanInput));
+                /** @var \App\Services\SubscriptionService $subService */
+                $subService = app(\App\Services\SubscriptionService::class);
 
-            $targetPlan = \App\Models\Central\Plan::on('central')->where('slug', $planSlug)->first()
-                ?? \App\Models\Central\Plan::on('central')->find($rawPlanInput)
-                ?? \App\Models\Central\Plan::on('central')->where('name', 'LIKE', $planSlug)->first();
+                if ($targetPlan && strtolower($targetPlan->slug) !== 'free') {
+                    $sub = $subService->activateOrUpgradePlan(
+                        company: $company,
+                        plan: $targetPlan,
+                        billingCycle: 'monthly',
+                        performedBy: auth('super_admin')->user()?->name ?? auth()->user()?->name ?? 'Super Admin Provisioning'
+                    );
 
-            if (! $targetPlan) {
-                $defaultPlans = [
-                    'free'     => ['name' => 'FREE', 'slug' => 'free', 'description' => 'Essential features for small teams.', 'monthly_price' => 0, 'yearly_price' => 0, 'max_users' => 5, 'max_storage_mb' => 5120],
-                    'gold'     => ['name' => 'GOLD', 'slug' => 'gold', 'description' => 'Popular for growing businesses.', 'monthly_price' => 4999, 'yearly_price' => 49990, 'max_users' => 25, 'max_storage_mb' => 25600],
-                    'platinum' => ['name' => 'PLATINUM', 'slug' => 'platinum', 'description' => 'Advanced capabilities for scaling enterprise.', 'monthly_price' => 9999, 'yearly_price' => 99990, 'max_users' => 100, 'max_storage_mb' => 102400],
-                    'diamond'  => ['name' => 'DIAMOND', 'slug' => 'diamond', 'description' => 'Maximum limits and dedicated resources.', 'monthly_price' => 19999, 'yearly_price' => 199990, 'max_users' => 0, 'max_storage_mb' => 512000],
-                ];
+                    $sub->update([
+                        'starts_at' => $startsAt->toDateString(),
+                        'ends_at'   => $endsAt->toDateString(),
+                        'status'    => 'active',
+                    ]);
 
-                $dp = $defaultPlans[$planSlug] ?? $defaultPlans['free'];
-                try {
-                    $targetPlan = \App\Models\Central\Plan::on('central')->firstOrCreate(['slug' => $dp['slug']], $dp);
-                } catch (\Throwable $e) {}
-            }
-
-            $startsAt = now();
-            $endsAt = now()->addDays(30);
-
-            /** @var \App\Services\SubscriptionService $subService */
-            $subService = app(\App\Services\SubscriptionService::class);
-
-            if ($targetPlan && strtolower($targetPlan->slug) !== 'free') {
-                $sub = $subService->activateOrUpgradePlan(
-                    company: $company,
-                    plan: $targetPlan,
-                    billingCycle: 'monthly',
-                    performedBy: auth('super_admin')->user()?->name ?? auth()->user()?->name ?? 'Super Admin Provisioning'
-                );
-
-                $sub->update([
-                    'starts_at' => $startsAt->toDateString(),
-                    'ends_at'   => $endsAt->toDateString(),
-                    'status'    => 'active',
-                ]);
-
-                $company->update([
-                    'max_users'          => $targetPlan->max_users > 0 ? $targetPlan->max_users : 999999,
-                    'max_storage_mb'     => $targetPlan->max_storage_mb > 0 ? $targetPlan->max_storage_mb : 512000,
-                    'status'             => 'active',
-                    'trial_ends_at'      => $endsAt,
-                    'highest_plan_level' => \App\Services\PlanEligibilityService::getPlanLevel($targetPlan),
-                    'highest_plan_slug'  => strtolower($targetPlan->slug),
-                ]);
-            } else {
-                $sub = $subService->initializeTrial($company);
-                $sub->update([
-                    'starts_at'     => $startsAt->toDateString(),
-                    'ends_at'       => $endsAt->toDateString(),
-                    'trial_ends_at' => $endsAt->toDateString(),
-                    'status'        => 'trial',
-                ]);
-                $company->update([
-                    'status'        => 'trial',
-                    'trial_ends_at' => $endsAt,
-                ]);
-            }
+                    $company->update([
+                        'max_users'          => $targetPlan->max_users > 0 ? $targetPlan->max_users : 999999,
+                        'max_storage_mb'     => $targetPlan->max_storage_mb > 0 ? $targetPlan->max_storage_mb : 512000,
+                        'status'             => 'active',
+                        'trial_ends_at'      => $endsAt,
+                        'highest_plan_level' => \App\Services\PlanEligibilityService::getPlanLevel($targetPlan),
+                        'highest_plan_slug'  => strtolower($targetPlan->slug),
+                    ]);
+                } else {
+                    $sub = $subService->initializeTrial($company);
+                    $sub->update([
+                        'starts_at'     => $startsAt->toDateString(),
+                        'ends_at'       => $endsAt->toDateString(),
+                        'trial_ends_at' => $endsAt->toDateString(),
+                        'status'        => 'trial',
+                    ]);
+                    $company->update([
+                        'status'        => 'trial',
+                        'trial_ends_at' => $endsAt,
+                        'max_users'     => $targetPlan->max_users > 0 ? $targetPlan->max_users : 999999,
+                        'max_storage_mb' => $targetPlan->max_storage_mb > 0 ? $targetPlan->max_storage_mb : 512000,
+                    ]);
+                }
+            });
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::error("Central subscription creation info: " . $e->getMessage());
 
             if (isset($targetPlan) && $targetPlan) {
+                $company->refresh();
                 $targetLevel = \App\Services\PlanEligibilityService::getPlanLevel($targetPlan);
                 \App\Models\Central\Subscription::on('central')->create([
                     'company_id'         => $company->id,
@@ -758,19 +739,21 @@ class CompanyController extends Controller
                     'starts_at'          => now()->toDateString(),
                     'ends_at'            => now()->addDays(30)->toDateString(),
                     'price'              => $targetPlan->monthly_price ?? 0,
-                    'status'             => 'active',
+                    'status'             => strtolower($targetPlan->slug) === 'free' ? 'trial' : 'active',
                     'auto_renew'         => true,
                     'highest_plan_level' => $targetLevel,
                     'current_plan_level' => $targetLevel,
                     'activated_at'       => now(),
                 ]);
 
-                $company->update([
-                    'status'             => 'active',
+                $company->forceFill([
+                    'status'             => strtolower($targetPlan->slug) === 'free' ? 'trial' : 'active',
                     'trial_ends_at'      => now()->addDays(30),
                     'highest_plan_level' => $targetLevel,
                     'highest_plan_slug'  => strtolower($targetPlan->slug),
-                ]);
+                    'max_users'          => $targetPlan->max_users > 0 ? $targetPlan->max_users : 999999,
+                    'max_storage_mb'     => $targetPlan->max_storage_mb > 0 ? $targetPlan->max_storage_mb : 512000,
+                ])->save();
             }
         }
 
@@ -1182,8 +1165,11 @@ class CompanyController extends Controller
      */
     public function storePlan(Request $request): RedirectResponse
     {
+        if (is_string($request->input('name'))) {
+            $request->merge(['name' => strtoupper(trim($request->input('name')))]);
+        }
         $data = $request->validate([
-            'name'           => 'required|string|max:255',
+            'name'           => ['required', 'string', \Illuminate\Validation\Rule::in(['FREE', 'GOLD', 'PLATINUM', 'DIAMOND'])],
             'description'    => 'nullable|string',
             'monthly_price'  => 'required|numeric|min:0',
             'max_users'      => 'required|integer|min:0',
@@ -1223,8 +1209,11 @@ class CompanyController extends Controller
      */
     public function updatePlan(Request $request, $id): RedirectResponse
     {
+        if (is_string($request->input('name'))) {
+            $request->merge(['name' => strtoupper(trim($request->input('name')))]);
+        }
         $data = $request->validate([
-            'name'           => 'required|string|max:255',
+            'name'           => ['required', 'string', \Illuminate\Validation\Rule::in(['FREE', 'GOLD', 'PLATINUM', 'DIAMOND'])],
             'description'    => 'nullable|string',
             'monthly_price'  => 'required|numeric|min:0',
             'max_users'      => 'required|integer|min:0',
@@ -3597,4 +3586,3 @@ class CompanyController extends Controller
         ]);
     }
 }
-

@@ -56,6 +56,25 @@ class Company extends Model
         'manually_suspended'     => 'boolean',
     ];
 
+    /**
+     * True when the company has been deleted by the Super Admin (soft-deleted in the central DB).
+     * Fails open (false) when the central DB cannot be reached so an outage never locks everyone out.
+     */
+    public static function isDeletedById($companyId): bool
+    {
+        if (empty($companyId)) {
+            return false;
+        }
+
+        try {
+            $company = static::on('central')->withTrashed()->find($companyId);
+
+            return (bool) $company?->trashed();
+        } catch (\Throwable $e) {
+            return false;
+        }
+    }
+
     public function getDisplayNameAttribute(): string
     {
         return $this->name ?: ($this->short_name ?: 'Workspace');

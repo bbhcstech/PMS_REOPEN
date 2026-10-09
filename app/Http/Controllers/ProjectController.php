@@ -30,6 +30,15 @@ class ProjectController extends Controller
 {
    public function index(Request $request)
 {
+    $request->validate([
+        'start_date' => 'nullable|date',
+        'end_date' => $request->filled('start_date')
+            ? 'nullable|date|after_or_equal:start_date'
+            : 'nullable|date',
+    ], [
+        'end_date.after_or_equal' => 'The end date must be equal to or later than the start date.',
+    ]);
+
     $viewer = auth()->user();
     $isEmployee = $viewer?->role === 'employee';
 

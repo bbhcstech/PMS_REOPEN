@@ -335,6 +335,8 @@ class AttendanceController extends Controller
             'month' => 'nullable|integer|min:1|max:12',
             'year' => 'nullable|integer|min:2000|max:2100',
             'user_id' => 'nullable|integer',
+            'search' => 'nullable|string|max:100',
+            'page' => 'nullable|integer|min:1',
         ]);
         $month = $request->integer('month') ?: now()->month;
         $year = $request->integer('year') ?: now()->year;
@@ -351,11 +353,18 @@ class AttendanceController extends Controller
             }
         }
         $employees = $query->orderBy('name')->get();
+        $teamView = $request->query('view') === 'team';
+        $visibleEmployees = $employees;
+        if ($teamView && $request->filled('search')) {
+            $search = mb_strtolower(trim($request->query('search')));
+            $visibleEmployees = $employees->filter(fn ($employee) => str_contains(mb_strtolower($employee->name . ' ' . $employee->email . ' ' . ($employee->employeeDetail?->employee_id ?? '')), $search))->values();
+        }
         $selectedEmployee = $request->filled('user_id')
             ? $employees->firstWhere('id', $request->integer('user_id'))
             : ($employees->firstWhere('id', $actor->id) ?? $employees->first());
         abort_if($request->filled('user_id') && ! $selectedEmployee, 403, 'You cannot view this employee.');
-        $records = $selectedEmployee ? Attendance::where('user_id', $selectedEmployee->id)
+        $recordEmployeeIds = $teamView ? $visibleEmployees->pluck('id') : collect($selectedEmployee ? [$selectedEmployee->id] : []);
+        $records = $recordEmployeeIds->isNotEmpty() ? Attendance::whereIn('user_id', $recordEmployeeIds)
             ->whereNull('archived_at')->whereBetween('date', [$start->toDateString(), $end->toDateString()])->orderBy('id')->get() : collect();
         $holidayQuery = Holiday::whereBetween('date', [$start->toDateString(), $end->toDateString()]);
         if (Schema::connection('tenant')->hasColumn('holidays', 'archived_at')) $holidayQuery->whereNull('archived_at');
@@ -365,8 +374,8 @@ class AttendanceController extends Controller
         }
         $holidays = $holidayQuery->get();
         $leaves = collect();
-        if ($selectedEmployee) {
-            $leaveQuery = Leave::where('user_id', $selectedEmployee->id)->where('status', 'approved');
+        if ($recordEmployeeIds->isNotEmpty()) {
+            $leaveQuery = Leave::whereIn('user_id', $recordEmployeeIds)->where('status', 'approved');
             if (Schema::connection('tenant')->hasColumn('leaves', 'archived_at')) $leaveQuery->whereNull('archived_at');
             $leaveQuery->where(function ($query) use ($start, $end) {
                 $query->whereBetween('date', [$start->toDateString(), $end->toDateString()]);
@@ -377,6 +386,41 @@ class AttendanceController extends Controller
                 }
             });
             $leaves = $leaveQuery->get();
+        }
+        if ($teamView) {
+            $builder = app(\App\Services\AttendanceCalendar::class);
+            $workingDays = \App\Models\AppSetting::getCompanyWorkingDays();
+            $recordsByEmployee = $records->groupBy('user_id');
+            $leavesByEmployee = $leaves->groupBy('user_id');
+            $rows = $visibleEmployees->map(fn ($employee) => [
+                'employee' => $employee,
+                'calendar' => $builder->build($start, $recordsByEmployee->get($employee->id, collect()), $holidays, $leavesByEmployee->get($employee->id, collect()), $employee->employeeDetail, $workingDays),
+            ]);
+            if ($request->query('format') === 'csv') {
+                return response()->streamDownload(function () use ($rows) {
+                    $output = fopen('php://output', 'w');
+                    fputcsv($output, ['Employee', 'Employee ID', 'Email', 'Date', 'Status', 'Work from home', 'Hours', 'Clock in', 'Clock out', 'Clock-in address', 'Clock-out address']);
+                    $safe = static fn ($value) => preg_match('/^[=+@\-\t\r\n]/u', (string) $value) ? "'" . $value : $value;
+                    foreach ($rows as $row) {
+                        foreach ($row['calendar']['days'] as $day) {
+                            $sessions = $day['daily']->isEmpty() ? collect([null]) : $day['daily'];
+                            foreach ($sessions as $session) {
+                                fputcsv($output, array_map($safe, [$row['employee']->name, $row['employee']->employeeDetail?->employee_id, $row['employee']->email, $day['key'], $day['status'], $day['wfh'] ? 'Yes' : 'No', $this->secondsToHhmm($session ? (int) $session->total_seconds : 0), $session?->clock_in, $session?->clock_out, $session?->clock_in_address, $session?->clock_out_address]));
+                            }
+                        }
+                    }
+                    fclose($output);
+                }, sprintf('attendance-%04d-%02d.csv', $year, $month), ['Content-Type' => 'text/csv; charset=UTF-8']);
+            }
+            $summary = ['employees' => $rows->count(), 'present' => 0, 'absent' => 0, 'seconds' => 0];
+            foreach ($rows as $row) {
+                $summary['present'] += $row['calendar']['totals']['present'] + $row['calendar']['totals']['late'];
+                $summary['absent'] += $row['calendar']['totals']['absent'];
+                $summary['seconds'] += $row['calendar']['totals']['seconds'];
+            }
+            $page = $request->integer('page') ?: 1;
+            $teamRows = new \Illuminate\Pagination\LengthAwarePaginator($rows->forPage($page, 25)->values(), $rows->count(), 25, $page, ['path' => $request->url(), 'query' => $request->except('page', 'format')]);
+            return view('admin.attendance.team', compact('teamRows', 'summary', 'month', 'year', 'start', 'canManage'));
         }
         $calendar = app(\App\Services\AttendanceCalendar::class)->build(
             $start, $records, $holidays, $leaves, $selectedEmployee?->employeeDetail,

@@ -7183,3 +7183,16 @@ html[data-theme="dark"] .pms-expiring-banner .pms-banner-btn-secondary,
   color: #e2e8f0 !important;
   background: rgba(255, 255, 255, 0.08) !important;
 }
+
+/* Admin layouts load Boxicons fonts alongside Iconify's .bx masks.
+   Render font glyphs once, without the mask's solid square background. */
+html body i.bx,
+.stat-icon i.bx {
+  font-family: boxicons !important;
+  font-weight: normal !important;
+  font-style: normal !important;
+  background: transparent !important;
+  -webkit-mask-image: none !important;
+  mask-image: none !important;
+  vertical-align: middle;
+}

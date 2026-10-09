@@ -7377,9 +7377,26 @@ body[data-pms-theme="dark"] .btn-icon i,
 .dark .btn-icon i {
   color: #EEF1FB !important;
   -webkit-text-fill-color: #EEF1FB !important;
-  background-color: #EEF1FB !important;
   opacity: 1 !important;
   visibility: visible !important;
+}
+
+html[data-pms-theme="dark"] .btn-icon svg,
+html[data-bs-theme="dark"] .btn-icon svg,
+html[data-theme="dark"] .btn-icon svg,
+html.dark .btn-icon svg,
+body[data-pms-theme="dark"] .btn-icon svg,
+[data-pms-theme="dark"] .btn-icon svg,
+.dark .btn-icon svg,
+html[data-pms-theme="dark"] .btn-icon svg *,
+html[data-bs-theme="dark"] .btn-icon svg *,
+html[data-theme="dark"] .btn-icon svg *,
+html.dark .btn-icon svg *,
+body[data-pms-theme="dark"] .btn-icon svg *,
+[data-pms-theme="dark"] .btn-icon svg *,
+.dark .btn-icon svg * {
+  background: transparent !important;
+  background-color: transparent !important;
 }
 
 html[data-pms-theme="dark"] .btn-icon:hover,

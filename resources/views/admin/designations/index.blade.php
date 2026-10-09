@@ -59,7 +59,7 @@
     @if(in_array(strtolower((string) auth()->user()?->role), ['admin', 'administrator'], true))
         <section class="card p-3 mb-4" aria-labelledby="designation-level-settings">
             <h3 id="designation-level-settings">Designation level settings</h3>
-            <p>Levels start at L0. This company's maximum applies to everyone who can manage designations.</p>
+            <p>Companies start with levels L0–L6. When an admin adds a designation at the maximum level, the next level becomes available automatically for this company. You can also change the limit here.</p>
             <form method="POST" action="{{ route('designations.level-settings') }}" class="d-flex align-items-end gap-3 flex-wrap">
                 @csrf
                 @method('PUT')

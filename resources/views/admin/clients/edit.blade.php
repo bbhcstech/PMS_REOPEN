@@ -17,8 +17,9 @@
 
         {{-- Account Details --}}
         <div class="card mb-4">
-            <div class="card-header bg-primary text-white">Account Details</div>
-            &nbsp;
+            <div class="card-header py-3 px-4 border-bottom">
+                <h5 class="mb-0 fw-bold text-dark">Account Details</h5>
+            </div>
             <div class="card-body row g-3">
 
                 <div class="col-md-3">
@@ -134,11 +135,7 @@
                 <div class="col-md-4 mb-3">
                     <label class="form-label fw-semibold">Change Language</label>
                     <select name="language" id="language" class="form-select form-select-sm select2">
-                        <option value="en" data-flag="https://flagcdn.com/w20/gb.png" {{ $client->language == 'en' ? 'selected' : '' }}>English</option>
-                        <option value="bn" data-flag="https://flagcdn.com/w20/bd.png" {{ $client->language == 'bn' ? 'selected' : '' }}>Bengali</option>
-                        <option value="hi" data-flag="https://flagcdn.com/w20/in.png" {{ $client->language == 'hi' ? 'selected' : '' }}>Hindi</option>
-                        <option value="fr" data-flag="https://flagcdn.com/w20/fr.png" {{ $client->language == 'fr' ? 'selected' : '' }}>French</option>
-                        <option value="de" data-flag="https://flagcdn.com/w20/de.png" {{ $client->language == 'de' ? 'selected' : '' }}>German</option>
+                        @include('admin.clients.partials.language-options', ['selectedLanguage' => old('language', $client->language)])
                     </select>
                 </div>
 
@@ -180,8 +177,9 @@
 
         {{-- Company Details --}}
         <div class="card mb-4">
-            <div class="card-header bg-secondary text-white">Company Details</div>
-            &nbsp;
+            <div class="card-header py-3 px-4 border-bottom">
+                <h5 class="mb-0 fw-bold text-dark">Company Details</h5>
+            </div>
             <div class="card-body row g-3">
                 <div class="col-md-6">
                     <label>Company Name</label>
