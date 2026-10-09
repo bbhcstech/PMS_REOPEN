@@ -1220,46 +1220,36 @@
     </div>
 
     <!-- Company Status Distribution -->
-    <div class="analytics-card">
+    @php
+        $companyStatusCounts = array_fill_keys(['active', 'trial', 'suspended', 'expired', 'pending', 'inactive'], 0);
+        foreach ($companies as $statusCompany) {
+            $status = strtolower(trim((string) $statusCompany->status));
+            if (array_key_exists($status, $companyStatusCounts)) $companyStatusCounts[$status]++;
+        }
+    @endphp
+    <div class="analytics-card" id="companyStatusCard" data-live-key="company-status" data-status-counts="{{ json_encode($companyStatusCounts) }}">
         <div class="analytics-card-header">
             <div>
                 <div class="analytics-card-title"><i class="fas fa-sliders" style="color: #0284c7;"></i> Company Status</div>
-                <div class="analytics-card-subtitle">Active, trial, pending, and suspended status counts</div>
+                <div class="analytics-card-subtitle">Current tenant company status counts</div>
             </div>
         </div>
         <div style="height: 230px; position: relative;">
             <canvas id="statusChartCanvas"></canvas>
         </div>
         <div style="display: flex; justify-content: space-around; font-size: 12px; margin-top: 12px; flex-wrap: wrap; gap: 8px;">
-            <div><span style="color: #16a34a; font-weight: 700;">● Active</span>: {{ $companies->where('status', 'active')->count() }}</div>
-            <div><span style="color: #d97706; font-weight: 700;">● Trial</span>: {{ $companies->where('status', 'trial')->count() }}</div>
-            <div><span style="color: #dc2626; font-weight: 700;">● Suspended</span>: {{ $companies->where('status', 'suspended')->count() }}</div>
-            <div><span style="color: #f43f5e; font-weight: 700;">● Expired</span>: {{ $companies->where('status', 'expired')->count() }}</div>
+            <div><span style="color: #16a34a; font-weight: 700;">● Active</span>: <span data-company-status="active">{{ $companyStatusCounts['active'] }}</span></div>
+            <div><span style="color: #d97706; font-weight: 700;">● Trial</span>: <span data-company-status="trial">{{ $companyStatusCounts['trial'] }}</span></div>
+            <div><span style="color: #dc2626; font-weight: 700;">● Suspended</span>: <span data-company-status="suspended">{{ $companyStatusCounts['suspended'] }}</span></div>
+            <div><span style="color: #f43f5e; font-weight: 700;">● Expired</span>: <span data-company-status="expired">{{ $companyStatusCounts['expired'] }}</span></div>
+            <div data-status-extra="pending" @if(!$companyStatusCounts['pending']) hidden @endif><span style="color:#0284c7; font-weight:700;">? Pending</span>: <span data-company-status="pending">{{ $companyStatusCounts['pending'] }}</span></div>
+            <div data-status-extra="inactive" @if(!$companyStatusCounts['inactive']) hidden @endif><span style="color:#64748b; font-weight:700;">? Inactive</span>: <span data-company-status="inactive">{{ $companyStatusCounts['inactive'] }}</span></div>
         </div>
     </div>
 </div>
 
-<!-- ROW 3: USER GROWTH & PLATFORM ACTIVITY -->
-<div class="dashboard-grid-2col">
-    <!-- User Growth Analytics -->
-    <div class="analytics-card" id="platformUserGrowthCard" data-live-key="platform-user-growth" data-user-growth="{{ json_encode($platformUserGrowth) }}">
-        <div class="analytics-card-header">
-            <div>
-                <div class="analytics-card-title"><i class="fas fa-users-line" style="color: #2563eb;"></i> Platform User Growth</div>
-                <div class="analytics-card-subtitle">Registered users and currently active users by onboarding date</div>
-            </div>
-            <div class="chart-time-pills" style="flex-wrap:wrap; gap:6px;">
-                <select id="userGrowthFrequency" class="chart-time-btn" aria-label="User growth period"><option value="yearly">Yearly</option><option value="weekly">Weekly</option></select>
-                <select id="userGrowthYear" class="chart-time-btn" aria-label="User growth year"></select>
-                <input id="userGrowthMonth" type="month" class="chart-time-btn" aria-label="User growth month" value="{{ now()->format('Y-m') }}" max="{{ now()->format('Y-m') }}" hidden>
-            </div>
-        </div>
-        @if($platformUserGrowth['unavailable'] > 0)<div class="analytics-card-subtitle">Data unavailable for {{ $platformUserGrowth['unavailable'] }} tenant databases.</div>@endif
-        <div style="height: 240px; position: relative;">
-            <canvas id="userGrowthCanvas"></canvas>
-        </div>
-    </div>
-
+<!-- ROW 3: PLATFORM ACTIVITY -->
+<div class="dashboard-grid-2col" style="grid-template-columns: 1fr;">
     <!-- Platform Activity Timeline -->
     <div class="analytics-card">
         <div class="analytics-card-header">
@@ -1620,7 +1610,7 @@
 @endsection
 
 @push('scripts')
-<script src="{{ asset('admin/assets/js/pms-platform-user-growth.js') }}?v={{ @filemtime(public_path('admin/assets/js/pms-platform-user-growth.js')) }}" defer></script>
+<script src="{{ asset('admin/assets/js/pms-company-status.js') }}?v={{ @filemtime(public_path('admin/assets/js/pms-company-status.js')) }}" defer></script>
 <script src="{{ asset('admin/assets/js/pms-subscription-distribution.js') }}?v={{ @filemtime(public_path('admin/assets/js/pms-subscription-distribution.js')) }}" defer></script>
 <script src="{{ asset('admin/assets/js/pms-company-growth.js') }}?v={{ @filemtime(public_path('admin/assets/js/pms-company-growth.js')) }}" defer></script>
 <script>
@@ -1733,33 +1723,6 @@ document.addEventListener('DOMContentLoaded', function() {
             renderRevenueSummary(revenueRange);
         }
     });
-
-    // 4. Company Status Donut Chart
-    const statusCtx = document.getElementById('statusChartCanvas')?.getContext('2d');
-    if (statusCtx) {
-        new Chart(statusCtx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Active', 'Trial', 'Suspended', 'Expired'],
-                datasets: [{
-                    data: [
-                        {{ max(0, $companies->where('status', 'active')->count()) }},
-                        {{ $companies->where('status', 'trial')->count() }},
-                        {{ $companies->where('status', 'suspended')->count() }},
-                        {{ $companies->where('status', 'expired')->count() }}
-                    ],
-                    backgroundColor: ['#16a34a', '#d97706', '#dc2626', '#f43f5e'],
-                    borderWidth: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                cutout: '65%',
-                plugins: { legend: { display: false } }
-            }
-        });
-    }
 
     // 6. Master Table Search Filter
     const searchInput = document.getElementById('companyMetricsSearchInput');

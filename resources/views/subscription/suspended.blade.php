@@ -231,6 +231,15 @@
             flex-wrap: wrap;
             gap: 0.75rem;
         }
+        .locked-plan-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:16px; }
+        .locked-reference-plan { padding:20px; height:100%; opacity:1; border-top:3px solid var(--tier-color); display:flex; flex-direction:column; }
+        .plan-card.locked-reference-plan:hover { transform:none; border-color:var(--border-soft); border-top-color:var(--tier-color); }
+        .locked-plan-heading { display:flex; align-items:center; justify-content:space-between; gap:8px; color:var(--tier-color); }
+        .locked-plan-heading h5 { font-size:1rem; letter-spacing:.03em; }
+        .locked-plan-limits { color:#cbd5e1; line-height:1.8; font-size:.85rem; margin-bottom:18px; }
+        .locked-plan-status { margin-top:auto; padding:10px; border:1px solid #475569; border-radius:10px; color:#cbd5e1; text-align:center; font-size:.85rem; background:#263449; }
+        @media(max-width:900px) { .locked-plan-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+        @media(max-width:480px) { .locked-plan-grid { grid-template-columns:1fr; } }
     </style>
 </head>
 <body>
@@ -361,7 +370,8 @@
             {{-- Show plans for reference only (all disabled) --}}
             @php
                 try {
-                    $allPlans = \App\Models\Central\Plan::on('central')->orderBy('monthly_price')->get();
+                    $allPlans = \App\Models\Central\Plan::on('central')->standard()->get()
+                        ->unique('slug')->sortBy(fn ($plan) => array_search(strtolower($plan->slug), ['free', 'gold', 'platinum', 'diamond']))->values();
                 } catch (\Throwable $e) {
                     $allPlans = collect();
                 }
@@ -371,18 +381,17 @@
                 <h6 class="fw-bold text-sub text-center mt-4 mb-3" style="font-size:0.8rem; letter-spacing: 0.06em; text-transform:uppercase;">
                     Plan Reference (Locked — Contact Admin to Restore Access)
                 </h6>
-                <div class="row g-3 mb-2">
+                <div class="locked-plan-grid mb-2">
                     @foreach($allPlans as $plan)
-                        <div class="col-md-4">
-                            <div class="plan-card disabled-plan">
-                                <h5 class="fw-bold mb-0 text-white">{{ $plan->name }}</h5>
+                        <div>
+                            <div class="plan-card locked-reference-plan" style="--tier-color: {{ ['free' => '#94a3b8', 'gold' => '#fbbf24', 'platinum' => '#38bdf8', 'diamond' => '#a78bfa'][strtolower($plan->slug)] }};">
+                                <div class="locked-plan-heading"><h5 class="fw-bold mb-0">{{ strtoupper($plan->slug) }}</h5><i class="bx bx-lock-alt" aria-label="Access locked"></i></div>
                                 <div class="mt-2 mb-3">
                                     <span class="fs-3 fw-bold text-white">₹{{ number_format($plan->monthly_price, 0) }}</span>
                                     <span style="color:#64748b;">/ month</span>
                                 </div>
-                                <button class="btn btn-upgrade" disabled>
-                                    <i class="bx bx-lock-alt me-1"></i> Locked
-                                </button>
+                                <div class="locked-plan-limits">{{ $plan->max_users > 0 ? number_format($plan->max_users) . ' users' : 'Unlimited users' }}<br>{{ $plan->max_storage_mb > 0 ? number_format($plan->max_storage_mb / 1024, 0) . ' GB storage' : 'Unlimited storage' }}</div>
+                                <div class="locked-plan-status"><i class="bx bx-lock-alt"></i> Access locked</div>
                             </div>
                         </div>
                     @endforeach

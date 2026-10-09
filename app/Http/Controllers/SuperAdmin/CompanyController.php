@@ -131,7 +131,6 @@ class CompanyController extends Controller
 
         $companyGrowth = app(\App\Services\CompanyGrowth::class)->series($companies);
         $distributionCounts = app(\App\Services\SubscriptionDistribution::class)->counts($companies);
-        $platformUserGrowth = app(\App\Services\PlatformUserGrowth::class)->data($companies);
 
         try {
             $revenueOverview = app(\App\Services\RevenueOverview::class)->series($companies);
@@ -139,7 +138,7 @@ class CompanyController extends Controller
             $revenueOverview = [];
         }
 
-        return view('superadmin.companies.metrics', compact('companies', 'totalUsers', 'totalRevenue', 'planCounts', 'currentCompanyDb', 'companyGrowth', 'distributionCounts', 'platformUserGrowth', 'revenueOverview'));
+        return view('superadmin.companies.metrics', compact('companies', 'totalUsers', 'totalRevenue', 'planCounts', 'currentCompanyDb', 'companyGrowth', 'distributionCounts', 'revenueOverview'));
     }
 
     /**
