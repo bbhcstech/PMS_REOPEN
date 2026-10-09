@@ -67,6 +67,7 @@
 }
 </style>
 <div class="container-fluid px-4 py-4" style="max-width: 960px;" data-live-chat>
+@include('partials.subscription-downgrade-request')
 
   <div class="d-flex justify-content-between align-items-center mb-3">
     <a href="{{ route('admin.company-complaints.index') }}" class="btn btn-sm btn-light border fw-bold" style="border-radius: 8px;">

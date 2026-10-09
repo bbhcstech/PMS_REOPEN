@@ -21,8 +21,8 @@ class RoleAccountController extends Controller
         return view('admin.settings.role-accounts.index', [
             'role' => $role,
             'title' => ucfirst($role) . ' Management',
-            'accounts' => User::where('role', $role)->when(auth()->user()?->role !== 'superadmin', fn ($q) => $q->where('company_id', auth()->user()?->company_id))->orderBy('name')->get(),
-            'companies' => Company::where('status', 'active')->when(auth()->user()?->role !== 'superadmin', fn ($q) => $q->whereKey(auth()->user()?->company_id))->orderBy('name')->get(),
+            'accounts' => User::where('role', $role)->when(!\App\Services\TenantScope::isPlatformAdmin(), fn ($q) => $q->where('company_id', \App\Services\TenantScope::companyFilter()))->orderBy('name')->get(),
+            'companies' => Company::where('status', 'active')->when(!\App\Services\TenantScope::isPlatformAdmin(), fn ($q) => $q->whereKey(\App\Services\TenantScope::companyFilter()))->orderBy('name')->get(),
         ]);
     }
 

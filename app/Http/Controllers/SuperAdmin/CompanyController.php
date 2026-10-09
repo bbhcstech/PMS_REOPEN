@@ -1066,42 +1066,10 @@ class CompanyController extends Controller
 
     public function suspend($id): RedirectResponse|\Illuminate\Http\JsonResponse
     {
-        try {
-            $company = Company::on('central')->find($id) ?? \App\Models\Company::find($id);
-
-            if ($company) {
-                $company->status = 'suspended';
-                $company->manually_suspended = true;  // Mark as Super Admin manual suspension
-                $company->suspended_at = now();
-                $company->save();
-
-                // Also sync central subscriptions to suspended status
-                try {
-                    \App\Models\Central\Subscription::on('central')
-                        ->where('company_id', $company->id)
-                        ->update(['status' => 'suspended']);
-                } catch (\Throwable $e) {}
-
-                if (request()->wantsJson()) {
-                    return response()->json([
-                        'success' => true,
-                        'message' => "Tenant company '{$company->name}' subscription access has been suspended.",
-                        'status' => 'suspended',
-                        'company_id' => $company->id
-                    ]);
-                }
-            }
-        } catch (\Throwable $e) {}
-
-        if (request()->wantsJson()) {
-            return response()->json(['success' => true, 'message' => 'Subscription access suspended successfully.']);
-        }
-
-        return redirect()->back()
-            ->with('success', "Tenant company subscription access has been suspended.");
+        $company = app(\App\Services\CompanySuspension::class)->suspend((int) $id, request()->all());
+        if (request()->wantsJson()) return response()->json(['success' => true, 'message' => 'Company suspended with the recorded reason.', 'status' => $company->status, 'company_id' => $company->id]);
+        return redirect()->route('superadmin.companies.suspended')->with('success', 'Company suspended. You can now reactivate it, send the reason on WhatsApp, or permanently delete it.');
     }
-
-
     /**
      * Deactivate a tenant company.
      */
@@ -1125,41 +1093,11 @@ class CompanyController extends Controller
      */
     public function activate($id): RedirectResponse|\Illuminate\Http\JsonResponse
     {
-        try {
-            $company = Company::on('central')->findOrFail($id);
-        } catch (\Throwable $e) {
-            $company = \App\Models\Company::findOrFail($id);
-        }
-
-        $company->manually_suspended = false;  // Super Admin explicitly lifts suspension
-        $company->suspended_at = null;
-
-        $status = app(\App\Services\SubscriptionService::class)->evaluateCompanyStatus($company);
-        $company->status = ($status === 'expired') ? 'expired' : 'active';
-        $company->save();
-
-        if ($company->status === 'active') {
-            try {
-                \App\Models\Central\Subscription::on('central')
-                    ->where('company_id', $company->id)
-                    ->where('status', 'suspended')
-                    ->update(['status' => 'active']);
-            } catch (\Throwable $e) {}
-        }
-
-        if (request()->wantsJson()) {
-            return response()->json([
-                'success' => true,
-                'message' => "Tenant company '{$company->name}' suspension has been lifted. Current status: " . ucfirst($company->status) . ".",
-                'status' => $company->status,
-                'company_id' => $company->id
-            ]);
-        }
-
-        return redirect()->back()
-            ->with('success', "Tenant company '{$company->name}' is now active.");
+        $company = app(\App\Services\CompanySuspension::class)->reactivate((int) $id);
+        $message = 'Company suspension lifted. Current status: ' . ucfirst($company->status) . '.';
+        if (request()->wantsJson()) return response()->json(['success' => true, 'message' => $message, 'status' => $company->status, 'company_id' => $company->id]);
+        return back()->with('success', $message);
     }
-
     /**
      * Store a newly created subscription plan.
      */

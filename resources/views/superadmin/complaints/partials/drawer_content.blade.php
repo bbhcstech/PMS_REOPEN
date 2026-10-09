@@ -584,6 +584,7 @@
 </style>
 
 <div class="drawer-wrapper" data-live-chat>
+@include('partials.subscription-downgrade-request', ['platformReview' => true])
 
   <!-- ==================== 1. HERO TICKET INFO & QUICK ACTIONS ==================== -->
   <div class="drawer-hero-card">

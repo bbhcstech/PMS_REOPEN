@@ -2573,48 +2573,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            this.disabled = true;
-            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Suspending...';
-
-            const url = "/super-admin/companies/" + compId + "/suspend";
-
-            fetch(url, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': "{{ csrf_token() }}",
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(res => res.json())
-            .then(data => {
-                this.disabled = false;
-                this.innerHTML = 'Confirm Suspension';
-                suspendModal.classList.remove('open');
-                if (drawer) drawer.classList.remove('open');
-
-                showToast(data.message || 'Subscription access suspended successfully.');
-
-                const row = document.querySelector('tr[data-company-id="' + compId + '"]') || document.querySelector('input.row-sub-cb[value="' + compId + '"]')?.closest('tr');
-                if (row) {
-                    row.setAttribute('data-status', 'suspended');
-                    const statusPill = row.querySelector('.status-pill');
-                    if (statusPill) {
-                        statusPill.className = 'status-pill status-suspended';
-                        statusPill.innerHTML = '<span class="dot"></span> Suspended';
-                    }
-                }
-
-                setTimeout(() => window.location.reload(), 500);
-            })
-            .catch(() => {
-                this.disabled = false;
-                this.innerHTML = 'Confirm Suspension';
-                suspendModal.classList.remove('open');
-                if (drawer) drawer.classList.remove('open');
-                showToast('Subscription access suspended.');
-                setTimeout(() => window.location.reload(), 500);
-            });
+            window.location.href = "{{ url('/superadmin/companies') }}/" + compId + "/suspension";
         });
     }
 

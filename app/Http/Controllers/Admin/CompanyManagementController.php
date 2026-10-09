@@ -27,7 +27,7 @@ class CompanyManagementController extends Controller
     {
         $this->authorizePlatformAdmin();
 
-        $countryMap = \App\Support\CountryPhone::map();
+        $countryMap = \App\Support\CountryPhone::formMap();
         $selectedCountryCode = '+91';
         $selectedCountry = 'India';
         $phoneDigits = '';
@@ -61,7 +61,7 @@ class CompanyManagementController extends Controller
         $this->authorizeAdmin();
         \App\Services\TenantScope::authorizeCompany($company->id);
 
-        $countryMap = \App\Support\CountryPhone::map();
+        $countryMap = \App\Support\CountryPhone::formMap();
         $selectedCountryCode = '+91';
         $selectedCountry = 'India';
         $phoneDigits = $company->phone ?? '';

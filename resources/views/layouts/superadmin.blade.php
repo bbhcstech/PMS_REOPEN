@@ -2029,8 +2029,11 @@
       <!-- TENANT MANAGEMENT -->
       <div class="nav-label">Tenant Management</div>
       <a href="{{ Route::has('superadmin.companies.index') ? route('superadmin.companies.index') : (Route::has('super-admin.companies.index') ? route('super-admin.companies.index') : url('/superadmin/companies')) }}" 
-         class="{{ request()->routeIs('*companies.index') || request()->routeIs('*companies.list') || ((request()->routeIs('*companies.*')) && !request()->routeIs('*companies.metrics')) ? 'active' : '' }}">
+         class="{{ request()->routeIs('*companies.index') || request()->routeIs('*companies.list') || ((request()->routeIs('*companies.*')) && !request()->routeIs('*companies.metrics', '*companies.suspended')) ? 'active' : '' }}">
         <i class="bx bx-building-house icon"></i> Companies
+      </a>
+      <a href="{{ route('superadmin.companies.suspended') }}" class="{{ request()->routeIs('*companies.suspended') ? 'active' : '' }}">
+        <i class="bx bx-pause-circle icon"></i> Suspended Companies
       </a>
       <a href="{{ Route::has('superadmin.companies.metrics') ? route('superadmin.companies.metrics') : (Route::has('super-admin.companies.metrics') ? route('super-admin.companies.metrics') : url('/superadmin/companies/metrics')) }}" 
          class="{{ request()->routeIs('*companies.metrics') ? 'active' : '' }}">
@@ -2529,7 +2532,8 @@
 
   @include('admin.layout.toasts')
 
-  @stack('scripts')
-  <script src="{{ asset('admin/assets/js/pms-live-records.js') }}" defer></script>
+  @include('partials.phone-fields')
+@stack('scripts')
+  <script src="{{ asset('admin/assets/js/pms-live-records.js') }}" data-session-url="{{ route('company.session-status') }}" data-login-url="{{ route('login') }}" defer></script>
 </body>
 </html>

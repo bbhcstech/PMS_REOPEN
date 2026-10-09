@@ -675,7 +675,6 @@
         color: #9AA3C7 !important;
     }
 </style>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@23/build/css/intlTelInput.css">
 @endpush
 
 @section('content')
@@ -1055,20 +1054,8 @@
         }
 
         function initPhoneValidation() {
-            if (!window.intlTelInput) return;
-
-            const utilsScript = 'https://cdn.jsdelivr.net/npm/intl-tel-input@23/build/js/utils.js';
-
-            const iti = window.intlTelInput(phoneInput, {
-                utilsScript: utilsScript,
-                initialCountry: 'in', // Default country code is India (+91)
-                separateDialCode: true,
-                strictMode: true,     // Restrict input to digits and limit to country maximum
-                preferredCountries: ['in', 'ae', 'us', 'gb', 'sa', 'sg', 'ca', 'au'],
-                placeholderNumberType: 'MOBILE',
-                autoPlaceholder: 'polite',
-                formatOnDisplay: true,
-            });
+            if (!window.PmsPhoneFields) return;
+            const iti = window.PmsPhoneFields.attach(phoneInput, { initialCountry: 'in' });
 
             // Get country digits expectation
             function getExpectedDigits(countryIso) {
@@ -1247,7 +1234,7 @@
                 countryInput.addEventListener('change', function () {
                     const val = countryInput.value.trim().toLowerCase();
                     if (!val) return;
-                    const allCountries = window.intlTelInputGlobals ? window.intlTelInputGlobals.getCountryData() : [];
+                    const allCountries = window.PmsPhoneFields.countries;
                     const matched = allCountries.find(c => 
                         c.name.toLowerCase() === val || 
                         c.name.toLowerCase().startsWith(val) ||
@@ -1304,15 +1291,7 @@
             }
         }
 
-        // Load intl-tel-input script dynamically
-        if (window.intlTelInput) {
-            initPhoneValidation();
-        } else {
-            const itiScript = document.createElement('script');
-            itiScript.src = 'https://cdn.jsdelivr.net/npm/intl-tel-input@23/build/js/intlTelInput.min.js';
-            itiScript.onload = initPhoneValidation;
-            document.head.appendChild(itiScript);
-        }
+        if (window.PmsPhoneFields) initPhoneValidation();
     });
 </script>
 @endpush

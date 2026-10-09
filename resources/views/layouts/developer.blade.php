@@ -999,6 +999,7 @@
     </script>
     @include('admin.layout.toasts')
     @yield('scripts')
-    <script src="{{ asset('admin/assets/js/pms-live-records.js') }}" defer></script>
+    @include('partials.phone-fields')
+<script src="{{ asset('admin/assets/js/pms-live-records.js') }}" data-session-url="{{ route('company.session-status') }}" data-login-url="{{ route('login') }}" defer></script>
 </body>
 </html>

@@ -111,6 +111,7 @@ class NotificationController extends Controller
             try {
                 $centralNotif =\App\Models\Central\CentralNotification::on('central')
                     ->where('company_id', $companyId)
+                    ->whereIn('target_audience', ['company_admin', 'all'])
                     ->where('id', $id)
                     ->first();
 
@@ -166,6 +167,7 @@ class NotificationController extends Controller
             try {
                 \App\Models\Central\CentralNotification::on('central')
                     ->where('company_id', $companyId)
+                    ->whereIn('target_audience', ['company_admin', 'all'])
                     ->where('is_read', false)
                     ->update([
                         'is_read' => true,
@@ -317,7 +319,8 @@ class NotificationController extends Controller
     {
         $request->validate([
             'user_ids' => 'required|array',
-            'user_ids.*' => 'exists:users,id',
+            'user_ids.*' => ['integer', \Illuminate\Validation\Rule::exists('tenant.users', 'id')
+                ->where('company_id', \App\Services\TenantScope::companyFilter())],
             'title' => 'required|string|max:255',
             'message' => 'required|string',
         ]);

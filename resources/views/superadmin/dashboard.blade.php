@@ -2730,11 +2730,7 @@
 
     // Suspend and Delete handlers
     function confirmSuspendCompany(id, name) {
-      if (confirm("Are you sure you want to suspend access for company '" + name + "'?")) {
-        const form = document.getElementById('dashboardSuspendForm');
-        form.action = "{{ url('/superadmin/companies') }}/" + id + "/suspend";
-        form.submit();
-      }
+      window.location.href = "{{ url('/superadmin/companies') }}/" + id + "/suspension";
     }
 
     function confirmDeleteCompany(id, name) {

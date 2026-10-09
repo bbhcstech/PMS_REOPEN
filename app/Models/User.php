@@ -13,6 +13,15 @@ class User extends Authenticatable
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
+    public function notifications()
+    {
+        return $this->morphMany(CompanyDatabaseNotification::class, 'notifiable')
+            ->where(function ($query) {
+                $query->where('data->company_id', (int) $this->company_id)
+                    ->orWhereNull('data->company_id');
+            })->latest();
+    }
+
     protected static function booted(): void
     {
         static::saving(function (User $user) {

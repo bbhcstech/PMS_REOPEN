@@ -51,7 +51,10 @@ class Country extends TenantModel
             }
 
             if (! \Illuminate\Support\Facades\Schema::connection($conn)->hasTable('countries')) {
-                return;
+                \Illuminate\Support\Facades\Schema::connection($conn)->create('countries', function (\Illuminate\Database\Schema\Blueprint $table) {
+                    $table->bigIncrements('id');
+                    $table->string('name', 191)->unique();
+                });
             }
 
             // Older company databases were created with only id + name, which made the
@@ -67,16 +70,19 @@ class Country extends TenantModel
             $map = \App\Support\CountryPhone::map();
             foreach ($map as $name => $meta) {
                 $flagUrl = 'https://flagcdn.com/w20/' . strtolower($meta['iso'] ?? 'in') . '.png';
-                \Illuminate\Support\Facades\DB::connection($conn)->table('countries')->updateOrInsert(
-                    ['name' => $name],
-                    [
+                $metadata = [
                         'phone_code' => $meta['dial_code'] ?? '+91',
                         'iso_code'   => strtoupper($meta['iso'] ?? 'IN'),
                         'min_digits' => (int) ($meta['min_digits'] ?? 10),
                         'max_digits' => (int) ($meta['max_digits'] ?? 10),
                         'flag_url'   => $flagUrl,
-                    ]
-                );
+                    ];
+                $existing = \Illuminate\Support\Facades\DB::connection($conn)->table('countries')->where('name', $name);
+                if (!(clone $existing)->exists()) {
+                    \Illuminate\Support\Facades\DB::connection($conn)->table('countries')->insert(['name' => $name] + $metadata);
+                } elseif (!(clone $existing)->value('phone_code')) {
+                    $existing->update($metadata);
+                }
             }
 
             $checked[$checkKey] = true;

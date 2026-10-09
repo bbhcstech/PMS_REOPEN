@@ -14,11 +14,13 @@ class ComplaintConversationFeed
         $messages = $ticket->conversations()->reorder('id')->where('id', '>', $after)->with('attachments')->limit(100)->get();
         return response()->json([
             'success' => true,
+            'identity' => trim(view('partials.live-records-identity')->render()),
             'html' => view($platform ? 'superadmin.complaints.partials.messages' : 'admin.complaints.messages', compact('ticket', 'messages'))->render(),
             'last_id' => $messages->max('id') ?? $after,
             'count' => $ticket->conversations()->count(),
             'has_more' => $messages->count() === 100,
             'status' => $ticket->status,
+            'plan_request_status' => $ticket->plan_request_status,
         ])->header('Cache-Control', 'private, no-store');
     }
 }

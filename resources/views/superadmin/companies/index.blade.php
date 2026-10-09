@@ -1907,11 +1907,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script>
 function confirmSuspendCompany(id, name) {
-    if (confirm("Are you sure you want to suspend access for company '" + name + "'?")) {
-        const form = document.getElementById('companiesIndexSuspendForm');
-        form.action = "{{ url('/superadmin/companies') }}/" + id + "/suspend";
-        form.submit();
-    }
+    window.location.href = "{{ url('/superadmin/companies') }}/" + id + "/suspension";
 }
 function confirmActivateCompany(id, name) {
     if (confirm("Are you sure you want to lift suspension and activate access for company '" + name + "'?")) {

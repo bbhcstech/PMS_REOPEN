@@ -1160,6 +1160,7 @@
      | COMMUNITY MESSAGING CORE JAVASCRIPT
      | ========================================================================= */
     const CURRENT_USER_ID = {{ auth()->id() }};
+    const CURRENT_COMPANY_ID = {{ auth()->user()->company_id }};
     const CAN_MANAGE = {{ $canManage ? 'true' : 'false' }};
 
     let lastLoadedMessageId = 0;
@@ -1172,7 +1173,7 @@
     document.addEventListener('DOMContentLoaded', function() {
         fetchInitialMessages();
 
-        // Start delta polling every 3.5 seconds
+        // Start delta polling every 2 seconds
         pollingInterval = setInterval(pollNewMessages, 2000);
         document.addEventListener('visibilitychange', () => { if (!document.hidden) pollNewMessages(); });
 
@@ -1197,6 +1198,7 @@
         .then(res => res.json())
         .then(data => {
             if (data.success) {
+                if (Number(data.company_id) !== CURRENT_COMPANY_ID) { clearInterval(pollingInterval); return; }
                 renderMessagesTimeline(data.messages, true);
                 if (data.messages.length > 0) {
                     lastLoadedMessageId = Math.max(...data.messages.map(m => m.id));
@@ -1226,6 +1228,7 @@
         .then(res => res.json())
         .then(data => {
             if (data.success) {
+                if (Number(data.company_id) !== CURRENT_COMPANY_ID) { clearInterval(pollingInterval); return; }
                 if (data.messages && data.messages.length > 0) {
                     appendNewMessages(data.messages);
                     lastLoadedMessageId = Math.max(...data.messages.map(m => m.id));
@@ -1699,6 +1702,7 @@
         .then(res => res.json())
         .then(data => {
             if (data.success) {
+                if (data.company_id !== undefined && Number(data.company_id) !== CURRENT_COMPANY_ID) { clearInterval(pollingInterval); return; }
                 renderMessagesTimeline(data.messages, true);
             }
         });

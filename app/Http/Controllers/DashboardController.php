@@ -314,6 +314,9 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
     public function index()
     {
         $user = auth()->user();
+        if ($user?->company_staff_role_id) {
+            return view('admin.company-role-dashboard', app(\App\Services\CompanyRoleDashboard::class)->data($user));
+        }
         if ($user && (
             (method_exists($user, 'isDeveloper') && $user->isDeveloper()) ||
             in_array(strtolower((string) ($user->role ?? '')), ['developer', 'dev'], true) ||
@@ -1099,6 +1102,9 @@ public function ticketDashboard(Request $request)
 
 public function hrindex(Request $request)
 {
+    if (auth()->user()?->company_staff_role_id) {
+        return view('admin.company-role-dashboard', app(\App\Services\CompanyRoleDashboard::class)->data(auth()->user()));
+    }
         $today = Carbon::today();
         // Parse date range
        $startDate = $request->filled('start_date') ? Carbon::parse($request->start_date)->startOfDay() : now()->startOfMonth();

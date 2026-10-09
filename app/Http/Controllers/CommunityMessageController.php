@@ -104,6 +104,7 @@ class CommunityMessageController extends Controller
         $user = Auth::user();
 
         $afterId = $request->query('after_id');
+        $request->validate(['after_id' => 'nullable|integer|min:0', 'before_id' => 'nullable|integer|min:1', 'search' => 'nullable|string|max:255']);
         $beforeId = $request->query('before_id');
         $search = trim($request->query('search', ''));
 
@@ -117,7 +118,7 @@ class CommunityMessageController extends Controller
                   ->orWhereHas('user', function ($uq) use ($search) {
                       $uq->where('name', 'like', "%{$search}%");
                   });
-            });
+            })->limit(100);
         } elseif ($request->has('after_id')) {
             $query->where('id', '>', (int)$afterId)->orderBy('id')->limit(100);
         } elseif ($beforeId) {
@@ -161,6 +162,7 @@ class CommunityMessageController extends Controller
         return response()->json([
             'success' => true,
             'messages' => $formatted,
+            'company_id' => $companyId,
             'pinned_messages' => $pinnedMessages,
             'can_manage' => $this->canManage(),
         ]);
@@ -190,6 +192,10 @@ class CommunityMessageController extends Controller
         $companyId = $this->getCompanyId();
         $user = Auth::user();
 
+        if ($request->filled('parent_id')) {
+            CommunityMessage::forTenant($companyId)->findOrFail($request->input('parent_id'));
+        }
+
         $attachmentPath = null;
         $attachmentName = null;
         $attachmentType = null;
@@ -215,16 +221,8 @@ class CommunityMessageController extends Controller
                 $attachmentType = 'file';
             }
 
-            $filename = 'community_' . time() . '_' . Str::random(8) . '.' . $ext;
-            $uploadDir = "uploads/community/{$companyId}";
-            $destinationPath = public_path($uploadDir);
-
-            if (!file_exists($destinationPath)) {
-                mkdir($destinationPath, 0755, true);
-            }
-
-            $file->move($destinationPath, $filename);
-            $attachmentPath = "{$uploadDir}/{$filename}";
+            $attachmentPath = $file->store("community/{$companyId}", 'local');
+            abort_unless($attachmentPath, 503, 'Attachment storage is unavailable.');
         }
 
         $msg = CommunityMessage::create([
@@ -290,6 +288,24 @@ class CommunityMessageController extends Controller
             'success' => true,
             'message' => $this->formatMessage($msg, $user),
         ]);
+    }
+
+    public function attachment($id)
+    {
+        $companyId = $this->getCompanyId();
+        $msg = CommunityMessage::forTenant($companyId)->findOrFail($id);
+        $path = $msg->attachment_path;
+        abort_unless($path && !str_contains($path, '..'), 404);
+        if (str_starts_with($path, "community/{$companyId}/")) {
+            abort_unless(Storage::disk('local')->exists($path), 404);
+            return response()->file(Storage::disk('local')->path($path), [
+                'Cache-Control' => 'private, no-store', 'X-Content-Type-Options' => 'nosniff',
+                'Content-Security-Policy' => "default-src 'none'; sandbox",
+            ]);
+        }
+        // Existing uploads are served through the same authorization gate.
+        abort_unless(str_starts_with($path, "uploads/community/{$companyId}/") && is_file(public_path($path)), 404);
+        return response()->file(public_path($path), ['Cache-Control' => 'private, no-store', 'X-Content-Type-Options' => 'nosniff', 'Content-Security-Policy' => "default-src 'none'; sandbox"]);
     }
 
     /**
@@ -416,7 +432,7 @@ class CommunityMessageController extends Controller
             : strtoupper(substr($senderName, 0, 2));
 
         $parentData = null;
-        if ($msg->parent) {
+        if ($msg->parent && (int) $msg->parent->company_id === (int) $msg->company_id) {
             $parentData = [
                 'id' => $msg->parent->id,
                 'sender_name' => $msg->parent->user?->name ?? 'User',

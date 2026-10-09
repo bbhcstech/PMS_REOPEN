@@ -276,12 +276,18 @@ html[data-pms-theme="dark"] .btn-cancel-modern:hover {
 
                     <div class="col-md-4">
                         <label class="form-label-modern">Alternate Phone</label>
-                        <input type="text" name="alternate_phone" class="form-control form-control-modern" value="{{ old('alternate_phone') }}" placeholder="e.g. Office Ext 102">
+                        <div class="pms-phone-group">
+@include('partials.phone-country-select', ['phoneField' => 'alternate_phone', 'phoneValue' => ''])
+<input type="text" name="alternate_phone" class="form-control form-control-modern" value="{{ old('alternate_phone') }}" placeholder="Alternate phone number">
+</div>
                     </div>
 
                     <div class="col-md-4">
                         <label class="form-label-modern">WhatsApp Number</label>
-                        <input type="text" name="whatsapp" class="form-control form-control-modern" value="{{ old('whatsapp') }}" placeholder="e.g. +1 234 567 890">
+                        <div class="pms-phone-group">
+@include('partials.phone-country-select', ['phoneField' => 'whatsapp', 'phoneValue' => ''])
+<input type="text" name="whatsapp" class="form-control form-control-modern" value="{{ old('whatsapp') }}" placeholder="e.g. +1 234 567 890">
+</div>
                     </div>
 
                     <div class="col-md-4">

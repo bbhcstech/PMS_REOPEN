@@ -212,7 +212,7 @@ class Attendance extends TenantModel
     public function hasTableColumn(string $column): bool
     {
         $connectionName = $this->getConnectionName() ?: config('database.default');
-        $key = $connectionName . ':' . $this->getTable();
+        $key = $connectionName . ':' . $this->getConnection()->getDatabaseName() . ':' . $this->getTable();
 
         if (! isset(static::$columnsCache[$key])) {
             try {

@@ -313,12 +313,25 @@ class SubscriptionService
         Plan|\App\Models\SubscriptionPlan $plan,
         string $billingCycle = 'monthly',
         ?string $performedBy = null,
-        ?string $reason = null
+        ?string $reason = null,
+        ?int $supportRequestId = null
     ): Subscription {
         $centralComp = $this->resolveCentralCompany($company);
 
         // Enforce Plan Lock & Downgrade Validation
-        $this->eligibilityService->validatePlanChange($centralComp, $plan);
+        $supportRequest = null;
+        if ($supportRequestId !== null) {
+            abort_unless(TenantScope::isPlatformAdmin(), 403);
+            $supportRequest = \App\Models\Central\CompanyComplaint::whereKey($supportRequestId)
+                ->where('company_id', $centralComp->id)->where('requested_plan_id', $plan->id)
+                ->where('plan_request_status', 'pending')->firstOrFail();
+            $active = $centralComp->activeSubscription;
+            if (!$active || (int) $active->plan_id !== (int) $supportRequest->requested_from_plan_id) {
+                throw new \InvalidArgumentException('The subscription changed after this request. Ask the company to submit a new request.');
+            }
+        } else {
+            $this->eligibilityService->validatePlanChange($centralComp, $plan);
+        }
 
         $targetLevel = PlanEligibilityService::getPlanLevel($plan);
         $currentLevel = PlanEligibilityService::getCurrentLevel($centralComp);
@@ -328,7 +341,9 @@ class SubscriptionService
         $previousPlan = $previousSub?->plan;
 
         // Determine Lifecycle Action
-        if ($highestLevel === PlanEligibilityService::LEVEL_FREE) {
+        if ($supportRequest) {
+            $action = 'PLAN_DOWNGRADED_BY_APPROVAL';
+        } elseif ($highestLevel === PlanEligibilityService::LEVEL_FREE) {
             $action = 'PLAN_PURCHASED';
         } elseif ($targetLevel > $currentLevel) {
             $action = 'PLAN_UPGRADED';
@@ -344,7 +359,7 @@ class SubscriptionService
 
         return DB::connection('central')->transaction(function () use (
             $centralComp, $company, $plan, $billingCycle, $targetLevel, $newHighestLevel, $newHighestSlug,
-            $startsAt, $endsAt, $action, $previousSub, $previousPlan, $performedBy, $reason
+            $startsAt, $endsAt, $action, $previousSub, $previousPlan, $performedBy, $reason, $supportRequest
         ) {
             // SAFETY GUARD: Renewal must NOT automatically remove a Super Admin manual suspension.
             // Subscription is renewed, but company status remains 'suspended' until Super Admin explicitly lifts it.
@@ -360,7 +375,9 @@ class SubscriptionService
             }
             $centralComp->highest_plan_level = $newHighestLevel;
             $centralComp->highest_plan_slug = $newHighestSlug;
+            if ($supportRequest || $centralComp->approved_plan_floor !== null) $centralComp->approved_plan_floor = $targetLevel;
             $centralComp->save();
+            if ($supportRequest) $supportRequest->update(['plan_request_status' => 'approved', 'plan_reviewed_by' => auth('super_admin')->id() ?? auth()->id(), 'plan_reviewed_at' => now()]);
 
             if ($company !== $centralComp) {
                 try {

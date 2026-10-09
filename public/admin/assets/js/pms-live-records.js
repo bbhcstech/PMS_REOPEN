@@ -1,5 +1,38 @@
 (() => {
     if (window.PmsLiveRecords) return;
+    const script = document.currentScript;
+    let sessionEnded = false, checkingSession = false;
+    window.PmsCompanySessionEnded = () => {
+        if (sessionEnded) return;
+        sessionEnded = true;
+        const notice = document.createElement('div');
+        notice.className = 'alert alert-danger'; notice.setAttribute('role', 'alert');
+        notice.style.cssText = 'position:fixed;top:16px;left:16px;right:16px;z-index:2147483647';
+        notice.textContent = 'Your company has been deleted by the Super Admin. You have been signed out.';
+        document.body.append(notice);
+        const login = new URL(script?.dataset.loginUrl || '/login', location.href);
+        login.searchParams.set('company_deleted', '1');
+        setTimeout(() => location.replace(login.href), 1200);
+    };
+    async function checkCompanySession() {
+        if (document.hidden || checkingSession || sessionEnded || !script?.dataset.sessionUrl) return;
+        checkingSession = true;
+        try {
+            const response = await fetch(script.dataset.sessionUrl, { headers: { Accept: 'application/json' }, cache: 'no-store', signal: AbortSignal.timeout(10000) });
+            if (response.headers.get('X-Company-Deleted') === '1') window.PmsCompanySessionEnded();
+            if (response.status === 402) {
+                const restriction = await response.json();
+                if (restriction.manually_suspended && restriction.restriction_url) {
+                    const target = new URL(restriction.restriction_url, location.href);
+                    if (target.origin === location.origin) location.replace(target.href);
+                }
+            }
+        } catch (_) { /* Retry after temporary network failures. */ }
+        finally { checkingSession = false; }
+    }
+    const sessionTimer = setInterval(checkCompanySession, 5000);
+    document.addEventListener('visibilitychange', checkCompanySession);
+    window.addEventListener('pagehide', () => clearInterval(sessionTimer));
     const region = document.querySelector('[data-live-records]');
     if (!region) return;
     let busy = false, stopped = false, timer, failures = 0;
@@ -78,6 +111,7 @@
         const url = location.href;
         try {
             const response = await fetch(url, { headers: { Accept: 'text/html', 'X-PMS-Live-Records': '1' }, cache: 'no-store', signal: AbortSignal.timeout(20000) });
+            if (response.headers.get('X-Company-Deleted') === '1') { window.PmsCompanySessionEnded(); stopped = true; return; }
             if (response.redirected || [401, 403, 419].includes(response.status)) { stopped = true; return; }
             if (!response.ok) throw new Error('Record refresh unavailable');
             const page = new DOMParser().parseFromString(await response.text(), 'text/html');

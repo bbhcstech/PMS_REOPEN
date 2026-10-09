@@ -15,6 +15,17 @@ use Carbon\Carbon;
 
 class ComplaintController extends Controller
 {
+    public function subscriptionDecision(Request $request, $id): RedirectResponse
+    {
+        abort_unless(\App\Services\TenantScope::isPlatformAdmin(), 403);
+        $data = $request->validate(['decision' => 'required|in:approved,rejected']);
+        try {
+            $ticket = app(\App\Services\SubscriptionDowngradeRequests::class)->decide((int) $id, $data['decision']);
+        } catch (\InvalidArgumentException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+        return back()->with('success', 'Subscription request ' . $ticket->plan_request_status . '.');
+    }
     protected ComplaintService $complaintService;
 
     public function __construct(ComplaintService $complaintService)

@@ -20,16 +20,43 @@ class SetTenantConnection
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $defaultDb = config('database.connections.mysql.database') ?: env('DB_DATABASE', 'pms_last');
+        $defaultDb = DB::connection('session_db')->getDatabaseName();
+        // Preserve credentials parsed from DB_URL, while preventing its database
+        // component from overriding the company database chosen below.
+        $mysqlConfiguration = DB::connection('mysql')->getConfig();
+        $mysqlConfiguration['url'] = null;
+        config(['database.connections.mysql' => $mysqlConfiguration]);
+        app(\App\Services\CompanyContext::class)->reset();
 
         // A company deleted by the Super Admin must not keep working: end every session bound to it.
         $sessionCompanyId = $request->session()->get('current_company_id');
-        if ($sessionCompanyId && \App\Models\Central\Company::isDeletedById($sessionCompanyId)) {
+        $registeredCompany = null;
+        if ($sessionCompanyId) {
+            try {
+                $registeredCompany = \App\Models\Central\Company::on('central')->withTrashed()->find($sessionCompanyId);
+            } catch (\Throwable $e) {
+                abort(503, 'Company registry is temporarily unavailable.');
+            }
+        }
+        if ($registeredCompany?->trashed()) {
             return $this->endDeletedCompanySession($request, $next, $defaultDb);
         }
 
         // Restore the login database before any guard retrieves its user.
         $sessionDb = $request->session()->get('current_company_db');
+        // A database name is never an authority: bind it to the central company registry
+        // before the tenant guard can load a user with a colliding numeric ID.
+        if ($sessionCompanyId || $sessionDb) {
+            abort_unless($registeredCompany && $registeredCompany->db_name
+                && (!$sessionDb || $sessionDb === $registeredCompany->db_name), 403, 'Invalid company workspace. Please sign in again.');
+            $sessionDb = $registeredCompany->db_name;
+            $request->session()->put('current_company_db', $sessionDb);
+        } else {
+            // Clear database state left by a previous request in a persistent worker.
+            if (config('database.connections.tenant.database') !== $defaultDb || config('database.connections.mysql.database') !== $defaultDb) {
+                $this->useDatabase($defaultDb);
+            }
+        }
         if ($sessionDb) {
             try {
                 if (config("database.connections.tenant.database") !== $sessionDb || config("database.connections.mysql.database") !== $sessionDb) {
@@ -39,19 +66,24 @@ class SetTenantConnection
                     ]);
                     DB::purge('tenant');
                     DB::purge('mysql');
-                    DB::connection('tenant')->getPdo();
                 }
+                DB::connection('tenant')->getPdo();
+                DB::connection('mysql')->getPdo();
             } catch (\Throwable $e) {
-                // If session DB is invalid/inaccessible (e.g. pms_last on production server), revert to default
-                config([
-                    "database.connections.tenant.database" => $defaultDb,
-                    "database.connections.mysql.database"  => $defaultDb,
-                ]);
                 DB::purge('tenant');
                 DB::purge('mysql');
-                $request->session()->put('current_company_db', $defaultDb);
+                abort(503, 'Your company workspace is temporarily unavailable.');
             }
         }
+
+        $boundUser = \Illuminate\Support\Facades\Auth::guard('web')->user();
+        if ($boundUser?->company_id && !$sessionCompanyId && !\App\Services\TenantScope::isPlatformAdmin()) {
+            abort(403, 'Company session is missing. Please sign in again.');
+        }
+        if ($sessionCompanyId && $boundUser && !\App\Services\TenantScope::isPlatformAdmin()) {
+            abort_unless((int) $boundUser->company_id === (int) $sessionCompanyId, 403, 'Account does not belong to this company workspace.');
+        }
+        app(\App\Services\CompanyContext::class)->reset($registeredCompany);
 
         // 1. Bypass tenant DB switching for SuperAdmin & Developer routes
         if (
@@ -59,10 +91,9 @@ class SetTenantConnection
             $request->is('superadmin*') ||
             $request->is('developer*')
         ) {
-            return $next($request);
+            return $this->privateResponse($next($request));
         }
-        $isSuperAdmin = \Illuminate\Support\Facades\Auth::guard('super_admin')->check() ||
-            (auth()->check() && in_array(strtolower((string)(auth()->user()->role ?? '')), ['superadmin', 'super-admin', 'super_admin'], true));
+        $isSuperAdmin = \App\Services\TenantScope::isPlatformAdmin();
 
         $user = \Illuminate\Support\Facades\Auth::guard('web')->user() ?? auth()->user();
         $targetDb = null;
@@ -86,9 +117,7 @@ class SetTenantConnection
                 // (before we've had a chance to switch it), causing a stale-user
                 // chicken-and-egg problem that redirects to the wrong company.
                 if (session('current_company_id')) {
-                    try {
-                        $company = \App\Models\Central\Company::on('central')->find(session('current_company_id'));
-                    } catch (\Throwable $e) {}
+                    $company = $registeredCompany;
                 }
 
                 // SECONDARY: No session yet (e.g. first request after seeding or a "remember me" re-login).
@@ -104,6 +133,7 @@ class SetTenantConnection
                 }
 
                 if ($company && !empty($company->db_name)) {
+                    abort_unless((int) $company->id === (int) $user->company_id, 403, 'Account does not belong to this company workspace.');
                     $targetDb = $company->db_name;
                     // Keep session consistent
                     session([
@@ -112,7 +142,7 @@ class SetTenantConnection
                         'current_company_name' => $company->name,
                     ]);
                 } else {
-                    $targetDb = session('current_company_db') ?: $defaultDb;
+                    abort(403, 'No valid company workspace is assigned to this account.');
                 }
             } else {
                 $targetDb = session('current_company_db') ?: $defaultDb;
@@ -141,22 +171,26 @@ class SetTenantConnection
                 DB::connection('tenant')->getPdo();
                 DB::connection('mysql')->getPdo();
             } catch (\Throwable $e) {
-                // If target DB cannot be connected to, fall back safely to default database
-                config([
-                    'database.connections.tenant.database' => $defaultDb,
-                    'database.connections.mysql.database'  => $defaultDb,
-                ]);
                 DB::purge('tenant');
                 DB::purge('mysql');
-                $request->session()->put('current_company_db', $defaultDb);
+                abort(503, 'Your company workspace is temporarily unavailable.');
             }
         }
 
         if (app()->bound(\App\Services\CompanyContext::class)) {
-            app(\App\Services\CompanyContext::class)->reset();
+            app(\App\Services\CompanyContext::class)->reset($registeredCompany ?? $company ?? null);
         }
 
-        return $next($request);
+        return $this->privateResponse($next($request));
+    }
+
+    private function privateResponse(Response $response): Response
+    {
+        if (\Illuminate\Support\Facades\Auth::guard('web')->check() || \Illuminate\Support\Facades\Auth::guard('super_admin')->check()) {
+            $response->headers->set('Cache-Control', 'private, no-store');
+            $response->setVary('Cookie', false);
+        }
+        return $response;
     }
 
     /**
@@ -166,8 +200,6 @@ class SetTenantConnection
      */
     private function endDeletedCompanySession(Request $request, Closure $next, string $defaultDb): Response
     {
-        $this->useDatabase($defaultDb);
-
         // Only the central super_admin guard is trusted here: a web-guard user id from the deleted
         // company's DB could resolve to an unrelated user once the connection falls back to default.
         $isSuperAdmin = false;
@@ -176,6 +208,7 @@ class SetTenantConnection
         } catch (\Throwable $e) {}
 
         if ($isSuperAdmin) {
+            $this->useDatabase($defaultDb);
             $request->session()->forget(['current_company_id', 'current_company_db', 'current_company_name']);
 
             if (app()->bound(\App\Services\CompanyContext::class)) {
@@ -185,12 +218,14 @@ class SetTenantConnection
             return $next($request);
         }
 
-        try {
-            \Illuminate\Support\Facades\Auth::guard('web')->logout();
-        } catch (\Throwable $e) {}
-
+        // Do not reload the deleted tenant's numeric user ID in the primary DB
+        // merely to revoke a session: it could belong to an unrelated account.
+        $guard = \Illuminate\Support\Facades\Auth::guard('web');
+        $guard->forgetUser();
+        \Illuminate\Support\Facades\Cookie::queue(\Illuminate\Support\Facades\Cookie::forget($guard->getRecallerName()));
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+        $this->useDatabase($defaultDb);
 
         if (app()->bound(\App\Services\CompanyContext::class)) {
             app(\App\Services\CompanyContext::class)->reset();
@@ -199,6 +234,7 @@ class SetTenantConnection
         $message = 'Your company account has been deleted. You have been signed out and can no longer access this workspace.';
 
         if ($request->expectsJson() || $request->ajax()) {
+            $request->session()->flash('error', $message);
             return response()->json([
                 'message'  => $message,
                 'redirect' => route('login'),

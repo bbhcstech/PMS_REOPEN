@@ -1895,12 +1895,7 @@
                                 </button>
                             </form>
                         @else
-                            <form method="POST" action="{{ route('super-admin.companies.suspend', $company->id) }}" onsubmit="return confirm('Are you sure you want to SUSPEND {{ addslashes($company->name) }}? Tenant users will be temporarily locked out.');">
-                                @csrf
-                                <button type="submit" class="btn-custom btn-warning-custom btn-sm-custom" style="width: 100%; padding: 10px 16px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                                    <i class="bx bx-pause-circle"></i> Suspend Company
-                                </button>
-                            </form>
+                            <a href="{{ route('superadmin.companies.suspension', $company->id) }}" class="btn-custom btn-warning-custom btn-sm-custom"><i class="bx bx-pause-circle"></i> Suspend Company</a>
                         @endif
                     </div>
                 </div>

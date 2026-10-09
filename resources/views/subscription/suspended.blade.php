@@ -304,6 +304,9 @@
         <p class="mb-3" style="max-width: 620px; margin: 0 auto; color: #94a3b8;">
             @if($isManualSuspension)
                 Your organization <strong>{{ $company->name ?? 'Organization' }}</strong> has been <strong>manually suspended</strong> by the platform Super Admin.
+                @if($company->suspension_reason)
+                <span class="d-block mt-3"><strong>{{ $company->suspension_category }}</strong><br>{{ $company->suspension_reason }}</span>
+                @endif
                 Access can only be restored by the Super Admin. Please contact your platform administrator.
             @else
                 Your organization <strong>{{ $company->name ?? 'Organization' }}</strong> has been temporarily restricted because your subscription or Free Trial period has ended.

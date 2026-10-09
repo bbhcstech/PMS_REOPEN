@@ -132,7 +132,7 @@ class CollaboratingCompanyController extends Controller
                 'max:255',
                 'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/',
             ],
-            'contact_phone_country_code' => ['required', \Illuminate\Validation\Rule::in(array_column(\App\Support\CountryPhone::map(), 'dial_code'))],
+            'contact_phone_country_code' => ['required', \Illuminate\Validation\Rule::in(array_column(\App\Support\CountryPhone::formMap(), 'dial_code'))],
             'contact_phone' => ['bail', 'required', 'string', 'regex:/^[1-9][0-9]*$/', 'min:' . $minDigits, 'max:' . $maxDigits],
             'website' => ['required', 'url', 'max:255'],
             'status' => ['required', 'in:active,inactive'],

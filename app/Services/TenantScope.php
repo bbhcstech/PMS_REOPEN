@@ -23,9 +23,10 @@ class TenantScope
             }
         } catch (\Throwable $e) {}
 
-        $role = strtolower((string) (Auth::guard('web')->user()?->role ?? ''));
+        $user = Auth::guard('web')->user();
+        $role = strtolower((string) ($user?->role ?? ''));
 
-        return in_array($role, ['superadmin', 'super-admin', 'super_admin'], true);
+        return !$user?->company_id && in_array($role, ['superadmin', 'super-admin', 'super_admin'], true);
     }
 
     /**
@@ -35,11 +36,13 @@ class TenantScope
     public static function companyId(): ?int
     {
         $sessionCompanyId = (int) session('current_company_id');
+        $userCompanyId = (int) (Auth::guard('web')->user()?->company_id ?? 0);
+        if ($sessionCompanyId > 0 && !static::isPlatformAdmin()) {
+            abort_unless($userCompanyId === $sessionCompanyId, 403, 'Account and company workspace do not match.');
+        }
         if ($sessionCompanyId > 0) {
             return $sessionCompanyId;
         }
-
-        $userCompanyId = (int) (Auth::guard('web')->user()?->company_id ?? 0);
 
         return $userCompanyId > 0 ? $userCompanyId : null;
     }

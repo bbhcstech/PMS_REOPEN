@@ -560,6 +560,13 @@ class SuperAdminController extends Controller
         ]);
 
         $oldStatus = $company->status;
+        if ($data['status'] === 'suspended') {
+            app(\App\Services\CompanySuspension::class)->suspend($company->id, $request->all());
+            return redirect()->route('superadmin.companies.suspended')->with('success', 'Company suspended with the recorded reason.');
+        }
+        if ($company->manually_suspended) {
+            return back()->with('error', 'Use Reactivate in Suspended Companies to lift this suspension.');
+        }
         $company->update(['status' => $data['status']]);
 
         $this->logAction('company.status_updated', $company, [
@@ -575,8 +582,19 @@ class SuperAdminController extends Controller
         $this->authorizeSuperAdmin();
 
         $name = $company->name;
+        abort_unless(\App\Services\TenantScope::isPlatformAdmin(), 403);
+        try {
+            app(\App\Services\CompanyDestruction::class)->destroy($company);
+        } catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
+            return back()->with('error', $e->getMessage());
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Company database cleanup failed.', ['company_id' => $company->id]);
+            $deleted = Company::withTrashed()->find($company->id)?->trashed();
+            return back()->with('error', $deleted
+                ? 'Company access has been revoked, but database cleanup failed. The server administrator must finish cleanup.'
+                : 'Company deletion could not be completed. No other company was changed.');
+        }
         $this->logAction('company.deleted', $company, ['company_name' => $name]);
-        $company->delete();
 
         return back()->with('success', "Company '{$name}' deleted successfully.");
     }

@@ -101,6 +101,7 @@ class EnsureCompanySubscriptionActive
                                     : 'Your subscription has expired. Please renew your plan to restore access.',
                                 'subscription_status' => $isManualSuspension ? 'suspended' : 'expired',
                                 'manually_suspended'  => $isManualSuspension,
+                                'restriction_url'     => route('subscription.suspended'),
                                 'company'             => $centralComp->name ?? 'Organization',
                             ], 402);
                         }

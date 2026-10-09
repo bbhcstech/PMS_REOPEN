@@ -18,8 +18,12 @@ class AuthenticatedSessionController extends Controller
      */
     public function create(Request $request): Response|RedirectResponse
     {
+        if ($request->boolean('company_deleted')) {
+            $request->session()->flash('error', 'Your company has been deleted by the Super Admin. You have been signed out and can no longer sign in to that company.');
+        }
         if (Auth::check()) {
             $user = Auth::user();
+            if ($user?->company_staff_role_id) return redirect()->route('dashboard');
             if ($user && (
                 (method_exists($user, 'isDeveloper') && $user->isDeveloper()) ||
                 in_array(strtolower((string) ($user->role ?? '')), ['developer', 'dev'], true) ||
@@ -70,47 +74,13 @@ class AuthenticatedSessionController extends Controller
             str_contains(strtolower((string) ($user->designation ?? '')), 'engineer')
         );
 
-        if ($user && ! $isDeveloper) {
-            // Resolve company exclusively from session (set correctly by authenticate())
-            $company = null;
-            if (session('current_company_id')) {
-                try {
-                    $company = \App\Models\Central\Company::on('central')->find(session('current_company_id'));
-                } catch (\Throwable $e) {}
-            }
-
-            $defaultDb  = config('database.connections.mysql.database') ?: env('DB_DATABASE', 'pms_last');
-            $dbName     = $company?->db_name ?: (session('current_company_db') ?: $defaultDb);
-            $companyId   = $company?->id      ?: (session('current_company_id') ?: ($user->company_id ?: 1));
-            $companyName = $company?->name    ?: (session('current_company_name') ?: 'Company');
-
-            // Verify if $dbName is accessible via PDO before using it
-            try {
-                config([
-                    'database.connections.tenant.database' => $dbName,
-                    'database.connections.mysql.database'  => $dbName,
-                ]);
-                \Illuminate\Support\Facades\DB::purge('tenant');
-                \Illuminate\Support\Facades\DB::purge('mysql');
-                \Illuminate\Support\Facades\DB::connection('tenant')->getPdo();
-            } catch (\Throwable $e) {
-                // Inaccessible DB (e.g. pms_last on production server), fall back safely to default DB
-                $dbName = $defaultDb;
-                config([
-                    'database.connections.tenant.database' => $defaultDb,
-                    'database.connections.mysql.database'  => $defaultDb,
-                ]);
-                \Illuminate\Support\Facades\DB::purge('tenant');
-                \Illuminate\Support\Facades\DB::purge('mysql');
-            }
-
-            // Write final, authoritative company context to session
-            $request->session()->put('current_company_db',   $dbName);
-            $request->session()->put('current_company_id',   $companyId);
-            $request->session()->put('current_company_name', $companyName);
-
-            if (app()->bound(\App\Services\CompanyContext::class)) {
-                app(\App\Services\CompanyContext::class)->reset();
+        if ($user && $user->company_id) {
+            $company = \App\Models\Central\Company::find(session('current_company_id'));
+            if (!$company || (int) $company->id !== (int) $user->company_id
+                || $company->db_name !== config('database.connections.tenant.database')) {
+                $request->session()->forget([Auth::guard('web')->getName(), 'current_company_id', 'current_company_db', 'current_company_name']);
+                Auth::guard('web')->forgetUser();
+                throw \Illuminate\Validation\ValidationException::withMessages(['email' => trans('auth.failed')]);
             }
         }
 
@@ -122,6 +92,7 @@ class AuthenticatedSessionController extends Controller
         $user = Auth::user();
         $role = strtolower((string) ($user?->role ?? ''));
         $designation = strtolower((string) ($user?->designation ?? ''));
+        if ($user?->company_staff_role_id) return redirect()->route('dashboard');
 
         // 1. Developer redirection (unconditional for any developer account)
         if (

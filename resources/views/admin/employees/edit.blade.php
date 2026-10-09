@@ -1346,7 +1346,7 @@
                                     $selectedCountry = old('country') ?? ($ed->country ?? ($employee->country ?? ''));
 
                                     if ($selectedMobileCode === null || $mobileValue === null) {
-                                        $countryMap = \App\Support\CountryPhone::map();
+                                        $countryMap = \App\Support\CountryPhone::formMap();
                                         $selectedMobileCode = \App\Support\CountryPhone::meta($selectedCountry)['dial_code'];
                                         $mobileValue = $rawMobile;
 

@@ -9,6 +9,14 @@ $views = [
     'admin/complaints/show', 'admin/complaints/messages', 'superadmin/complaints/show',
     'superadmin/complaints/index', 'superadmin/complaints/partials/drawer_content',
     'superadmin/complaints/partials/messages', 'admin/community/index', 'superadmin/dashboard',
+    'admin/complaints/create', 'partials/subscription-downgrade-request',
+    'superadmin/companies/suspend', 'superadmin/companies/suspended', 'superadmin/companies/index',
+    'superadmin/companies/show', 'superadmin/subscriptions/index', 'subscription/suspended',
+    'partials/phone-fields', 'partials/phone-country-select', 'admin/leads/contacts/create',
+    'admin/leads/contacts/edit', 'admin/letterhead/index', 'admin/leaves/create',
+    'admin/settings/business-address/create', 'admin/settings/business-address/edit',
+    'admin/companies/form', 'admin/collaborating-companies/form', 'admin/employees/edit',
+    'admin/company-role-dashboard',
 ];
 foreach ($views as $view) {
     $compiled = app('blade.compiler')->compileString(file_get_contents(resource_path("views/$view.blade.php")));

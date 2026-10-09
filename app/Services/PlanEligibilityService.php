@@ -69,13 +69,14 @@ class PlanEligibilityService
 
     /**
      * Get all plans allowed for a company to purchase/renew/upgrade to.
-     * FREE is strictly excluded if company has ever been on a paid plan.
+     * Lower plans, including Free after a paid plan, require a Support Desk approval.
      */
     public function getAllowedPlans(Company|\App\Models\Company $company): Collection
     {
         $highest = self::getHighestLevel($company);
         $current = self::getCurrentLevel($company);
-        $minLevel = max($highest, $current);
+        $floor = $company->approved_plan_floor ?? $highest;
+        $minLevel = max($floor, $current);
 
         $plans = Plan::on('central')
             ->standard()
@@ -84,15 +85,15 @@ class PlanEligibilityService
             ->orderBy('monthly_price', 'asc')
             ->get();
 
-        return $plans->filter(function (Plan $plan) use ($minLevel, $highest) {
+        return $plans->filter(function (Plan $plan) use ($minLevel, $floor) {
             $level = self::getPlanLevel($plan);
 
-            // Once a company enters a paid tier, FREE plan can NEVER be selected
-            if ($highest > self::LEVEL_FREE && $level === self::LEVEL_FREE) {
+            // Free becomes available only after an approved return to Free.
+            if ($floor > self::LEVEL_FREE && $level === self::LEVEL_FREE) {
                 return false;
             }
 
-            // Cannot select a plan lower than the highest level achieved
+            // Stay at the approved current tier or upgrade; further reductions need review.
             return $level >= $minLevel;
         })->values();
     }
@@ -135,15 +136,16 @@ class PlanEligibilityService
     {
         $targetLevel = self::getPlanLevel($targetPlan);
         $highestLevel = self::getHighestLevel($company);
+        $minimum = max($company->approved_plan_floor ?? $highestLevel, self::getCurrentLevel($company));
 
-        if ($highestLevel > self::LEVEL_FREE && $targetLevel === self::LEVEL_FREE) {
-            throw new InvalidArgumentException("Plan Lock Policy Violation: Once a company has entered a paid subscription tier, it can NEVER return to the FREE plan.");
+        if ($minimum > self::LEVEL_FREE && $targetLevel === self::LEVEL_FREE) {
+            throw new InvalidArgumentException('Returning to Free requires a Support Desk request approved by Super Admin.');
         }
 
-        if ($targetLevel < $highestLevel) {
-            $highestName = strtoupper(self::getSlugForLevel($highestLevel));
+        if ($targetLevel < $minimum) {
+            $highestName = strtoupper(self::getSlugForLevel($minimum));
             $targetName = strtoupper($targetPlan->name ?? self::getSlugForLevel($targetLevel));
-            throw new InvalidArgumentException("Plan Lock Policy Violation: Cannot downgrade from {$highestName} to {$targetName}. Companies may only renew their current tier or upgrade to a higher tier.");
+            throw new InvalidArgumentException("Cannot directly reduce {$highestName} to {$targetName}. Submit a Support Desk request for Super Admin approval.");
         }
     }
 }

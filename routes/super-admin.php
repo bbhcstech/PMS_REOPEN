@@ -37,6 +37,8 @@ Route::prefix('super-admin')->name('super-admin.')->group(function () {
         // Company management & impersonation
         Route::get('/', [CompanyController::class, 'index']);
         Route::get('/companies', [CompanyController::class, 'index'])->name('companies.index');
+        Route::get('/companies/suspended', [\App\Http\Controllers\SuperAdmin\CompanySuspensionController::class, 'index'])->name('companies.suspended');
+        Route::get('/companies/{company}/suspension', [\App\Http\Controllers\SuperAdmin\CompanySuspensionController::class, 'create'])->whereNumber('company')->name('companies.suspension');
         Route::get('/companies/metrics', [CompanyController::class, 'metrics'])->name('companies.metrics');
         Route::get('/plans', [CompanyController::class, 'plans'])->name('plans.index');
         Route::post('/plans', [CompanyController::class, 'storePlan'])->name('plans.store');
@@ -151,6 +153,7 @@ Route::prefix('super-admin')->name('super-admin.')->group(function () {
         Route::get('/complaints/{id}', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'show'])->name('complaints.show');
         Route::get('/complaints/{id}/messages', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'messages'])->name('complaints.messages');
         Route::post('/complaints/{id}/respond', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'respond'])->name('complaints.respond');
+        Route::post('/complaints/{id}/subscription-decision', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'subscriptionDecision'])->name('complaints.subscription-decision');
         Route::match(['GET', 'POST', 'PATCH'], '/complaints/{id}/status', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'updateStatus'])->name('complaints.status');
         Route::match(['GET', 'POST', 'PATCH'], '/complaints/{id}/assign', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'assign'])->name('complaints.assign');
         Route::get('/complaints/{id}/attachment/{attachmentId}', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'downloadAttachment'])->name('complaints.attachment');

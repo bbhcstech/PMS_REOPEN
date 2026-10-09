@@ -11,11 +11,12 @@
 <pre id="result">RUNNING</pre>
 <script>
 const requests = [];
-let packet = { success: true, html: '<div data-message-id="1">Incoming message</div>', last_id: 1, count: 1 };
+let packet = { success: true, identity: 'alpha', html: '<div data-message-id="1">Incoming message</div>', last_id: 1, count: 1 };
 let failPost = false;
 let page = `<html><body><div data-live-records data-live-identity="alpha"><div id="summary">2 projects</div><form id="draft"><input id="draftInput" value="Server value"><textarea id="draftText">Server value</textarea></form><div id="tabs"><div role="tablist"><button>Tab 1</button></div><div class="tab-pane" id="pane">New summary</div></div><table id="records"><tbody><tr data-record-id="2"><td>New row</td><td><a href="/records/2">Open</a></td><td><input type="checkbox" value="2"></td></tr><tr data-record-id="1"><td>Updated name</td><td><a href="/records/1">Open</a></td><td><input type="checkbox" value="1"></td></tr></tbody></table><div data-live-chat id="liveChat">Do not overwrite chat</div></div></body></html>`;
 window.fetch = async (url, options = {}) => {
     requests.push({ url: String(url), method: options.method || 'GET', headers: options.headers });
+    if (String(url).includes('/session-status')) return new Response(JSON.stringify({ message: 'Company deleted' }), { status: 401, headers: { 'X-Company-Deleted': '1' } });
     if (String(url).includes('/feed')) return new Response(JSON.stringify(packet), { status: 200, headers: { 'Content-Type': 'application/json' } });
     if (options.method === 'POST') return new Response(JSON.stringify(failPost ? { message: 'Validation failed' } : { success: true }), { status: failPost ? 422 : 200, headers: { 'Content-Type': 'application/json' } });
     return new Response(page, { status: 200, headers: { 'Content-Type': 'text/html' } });
@@ -52,13 +53,22 @@ window.fetch = async (url, options = {}) => {
         const form = document.querySelector('[data-live-reply]'); const textarea = form.querySelector('textarea');
         failPost = true; textarea.value = 'Keep failed draft'; form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })); await wait();
         check(textarea.value === 'Keep failed draft' && form.querySelector('[data-live-error]'), 'Failed send discarded draft or hid error');
-        failPost = false; packet = { success: true, html: '<div data-message-id="2">Sent reply</div>', last_id: 2, count: 2 };
+        failPost = false; packet = { success: true, identity: 'alpha', html: '<div data-message-id="2">Sent reply</div>', last_id: 2, count: 2 };
         form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })); await wait();
         check(chat.querySelector('[data-message-id="2"]'), 'Sent reply did not appear without navigation');
+        packet = { success: true, identity: 'beta', html: '<div data-message-id="3">Foreign company chat</div>', last_id: 3, count: 3 };
+        document.dispatchEvent(new Event('visibilitychange')); await wait();
+        check(!chat.querySelector('[data-message-id="3"]'), 'Chat from another company/account was injected');
         page = page.replace('data-live-identity="alpha"', 'data-live-identity="beta"').replace('2 projects', 'Foreign company data');
         await window.PmsLiveRecords.refresh();
         check(document.getElementById('summary').textContent === '2 projects', 'Different identity data was injected');
         check(requests.some(r => r.url.includes('after_id=0')) && requests.some(r => r.method === 'POST'), 'Live GET/send requests were not made');
+        const nativeTimer = window.setTimeout; let logoutScheduled = false;
+        window.setTimeout = (callback, delay, ...args) => { if (delay === 1200) { logoutScheduled = true; return 0; } return nativeTimer(callback, delay, ...args); };
+        document.querySelector('script[src$="pms-live-records.js"]').dataset.sessionUrl = 'http://localhost/session-status';
+        document.dispatchEvent(new Event('visibilitychange')); await wait();
+        check(logoutScheduled && Array.from(document.querySelectorAll('[role="alert"]')).some(el => el.textContent.includes('company has been deleted')), 'Deleted-company heartbeat did not notify and schedule logout');
+        window.setTimeout = nativeTimer;
         document.getElementById('result').textContent = 'PASS: automatic incoming/sent chat, deduplication, failure recovery, record creation/updates, drafts, focus, selection, handlers, tabs and identity isolation.';
     } catch (error) { document.getElementById('result').textContent = 'FAIL: ' + error.message; }
 })();

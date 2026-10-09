@@ -10,6 +10,17 @@ class SystemNotificationService
 {
     public const ERP_ROLES = ['admin', 'manager', 'hr', 'employee', 'user'];
 
+    private static function companyId(?int $requested = null): int
+    {
+        $current = TenantScope::companyId();
+        if ($current && $requested && $current !== $requested) {
+            throw new \LogicException('Notifications cannot cross company workspaces.');
+        }
+        $companyId = $current ?: $requested;
+        if (!$companyId) throw new \LogicException('A company is required for tenant notifications.');
+        return $companyId;
+    }
+
     public static function roleUsers(?int $companyId = null): Collection
     {
         return User::query()
@@ -17,9 +28,7 @@ class SystemNotificationService
             ->where(function ($query) {
                 $query->where('is_active', true)->orWhereNull('is_active');
             })
-            ->when($companyId, fn ($query) => $query->where(function ($companyQuery) use ($companyId) {
-                $companyQuery->where('company_id', $companyId)->orWhereNull('company_id');
-            }))
+            ->where('company_id', self::companyId($companyId))
             ->get();
     }
 
@@ -27,9 +36,7 @@ class SystemNotificationService
     {
         return User::query()
             ->whereIn('role', ['admin', 'hr'])
-            ->when($companyId, fn ($query) => $query->where(function ($companyQuery) use ($companyId) {
-                $companyQuery->where('company_id', $companyId)->orWhereNull('company_id');
-            }))
+            ->where('company_id', self::companyId($companyId))
             ->get();
     }
 
@@ -37,9 +44,7 @@ class SystemNotificationService
     {
         return User::query()
             ->whereIn('role', ['admin', 'hr', 'manager'])
-            ->when($companyId, fn ($query) => $query->where(function ($companyQuery) use ($companyId) {
-                $companyQuery->where('company_id', $companyId)->orWhereNull('company_id');
-            }))
+            ->where('company_id', self::companyId($companyId))
             ->get();
     }
 
@@ -47,9 +52,7 @@ class SystemNotificationService
     {
         return User::query()
             ->where('role', 'employee')
-            ->when($companyId, fn ($query) => $query->where(function ($companyQuery) use ($companyId) {
-                $companyQuery->where('company_id', $companyId)->orWhereNull('company_id');
-            }))
+            ->where('company_id', self::companyId($companyId))
             ->get();
     }
 
@@ -57,9 +60,7 @@ class SystemNotificationService
     {
         return User::query()
             ->where('role', 'admin')
-            ->when($companyId, fn ($query) => $query->where(function ($companyQuery) use ($companyId) {
-                $companyQuery->where('company_id', $companyId)->orWhereNull('company_id');
-            }))
+            ->where('company_id', self::companyId($companyId))
             ->get();
     }
 
@@ -89,7 +90,8 @@ class SystemNotificationService
         $actor = auth()->user();
         $companyId ??= $actor?->company_id;
 
-        self::send(self::roleUsers($companyId), $title, $message, $url, $data + [
+        $companyId = self::companyId($companyId);
+        self::send(self::roleUsers($companyId), $title, $message, $url, ['company_id' => $companyId] + $data + [
             'type' => 'erp_activity',
             'icon' => 'fa-bell',
             'color' => 'info',
@@ -113,17 +115,20 @@ class SystemNotificationService
 
     public static function send($users, string $title, string $message, ?string $url = null, array $data = []): void
     {
+        $companyId = self::companyId(isset($data['company_id']) ? (int) $data['company_id'] : null);
         try {
-            if (! \Illuminate\Support\Facades\Schema::hasTable('notifications')) {
+            if (! \Illuminate\Support\Facades\Schema::connection('tenant')->hasTable('notifications')) {
                 return;
             }
 
             collect($users)
                 ->filter()
+                ->filter(fn (User $user) => (int) $user->company_id === $companyId
+                    && $user->getConnection()->getDatabaseName() === \Illuminate\Support\Facades\DB::connection('tenant')->getDatabaseName())
                 ->unique('id')
-                ->each(function (User $user) use ($title, $message, $url, $data) {
+                ->each(function (User $user) use ($title, $message, $url, $data, $companyId) {
                     try {
-                        $user->notify(new SystemNotification($data + [
+                        $user->notify(new SystemNotification(['company_id' => $companyId] + $data + [
                             'title' => $title,
                             'message' => $message,
                             'url' => $url,

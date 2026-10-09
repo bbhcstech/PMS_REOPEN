@@ -32,6 +32,7 @@ class CompanyComplaint extends Model
         'assigned_to_name',
         'assigned_at',
         'last_reply_at',
+        'requested_plan_id', 'requested_from_plan_id', 'plan_request_status', 'plan_reviewed_by', 'plan_reviewed_at',
     ];
 
     protected $casts = [
@@ -43,6 +44,8 @@ class CompanyComplaint extends Model
     {
         return $this->belongsTo(Company::class, 'company_id');
     }
+
+    public function requestedPlan(): BelongsTo { return $this->belongsTo(Plan::class, 'requested_plan_id'); }
 
     public function conversations(): HasMany
     {

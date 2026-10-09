@@ -22,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
             guests: '/login',
             users: function (\Illuminate\Http\Request $request) {
                 $user = auth()->user();
+                if ($user?->company_staff_role_id) return route('dashboard');
                 if ($user && (
                     (method_exists($user, 'isDeveloper') && $user->isDeveloper()) ||
                     in_array(strtolower((string) ($user->role ?? '')), ['developer', 'dev'], true) ||
@@ -44,6 +45,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             SetTenantConnection::class,
             \App\Http\Middleware\EnsureCompanySubscriptionActive::class,
+            \App\Http\Middleware\NormalizePhoneCountryCodes::class,
             \App\Http\Middleware\BlockTicketsInAdminWorkspace::class,
         ]);
         $middleware->alias([

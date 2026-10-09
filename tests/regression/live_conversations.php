@@ -79,14 +79,37 @@ Auth::guard('web')->setUser($actor);
 $community = new App\Http\Controllers\CommunityMessageController();
 liveCheck($community->fetchMessages(liveRequest(['after_id' => 0]))->getData(true)['messages'] === [], 'Empty community failed.');
 $shared = App\Models\CommunityMessage::create(['company_id' => 1, 'user_id' => 7, 'message' => 'Shared with company roles']);
-App\Models\CommunityMessage::create(['company_id' => 2, 'user_id' => 7, 'message' => 'Foreign company message']);
+$foreign = App\Models\CommunityMessage::create(['company_id' => 2, 'user_id' => 7, 'message' => 'Foreign company message']);
 foreach (['admin', 'hr', 'manager', 'employee'] as $role) {
     $actor->role = $role;
     $data = $community->fetchMessages(liveRequest(['after_id' => 0]))->getData(true);
     liveCheck(count($data['messages']) === 1 && $data['messages'][0]['id'] === $shared->id, "$role did not receive an isolated company message.");
     liveCheck($community->fetchMessages(liveRequest(['after_id' => $shared->id]))->getData(true)['messages'] === [], 'Community cursor repeated a message.');
 }
+try { $community->store(liveRequest(['message' => 'Foreign reply', 'parent_id' => $foreign->id])); throw new RuntimeException('Cross-company reply accepted.'); }
+catch (Illuminate\Database\Eloquent\ModelNotFoundException $e) {}
+foreach (['update', 'destroy', 'react', 'togglePin', 'attachment'] as $action) {
+    $actor->role = 'admin';
+    try {
+        $action === 'attachment' ? $community->$action($foreign->id)
+            : $community->$action(liveRequest(['message' => 'Changed', 'emoji' => 'ok']), $foreign->id);
+        throw new RuntimeException("Foreign message $action succeeded.");
+    } catch (Illuminate\Database\Eloquent\ModelNotFoundException $e) {}
+}
+$privateRoot = sys_get_temp_dir() . '/pms-community-' . bin2hex(random_bytes(8));
+config(['filesystems.disks.local.root' => $privateRoot]);
+Illuminate\Support\Facades\Storage::forgetDisk('local');
+$upload = Request::create('/community/messages', 'POST', ['message' => 'Private attachment'], [], [
+    'attachment' => Illuminate\Http\UploadedFile::fake()->create('private.txt', 1, 'text/plain'),
+]);
+$upload->setLaravelSession(app('session')->driver());
+$uploadResult = $community->store($upload)->getData(true);
+$attached = App\Models\CommunityMessage::findOrFail($uploadResult['message']['id']);
+liveCheck(str_starts_with($attached->attachment_path, 'community/1/') && !is_file(public_path($attached->attachment_path)), 'Attachment remained public.');
+liveCheck(str_contains($uploadResult['message']['attachment_url'], '/attachment'), 'Attachment bypassed the authorized route.');
+liveCheck($community->attachment($attached->id)->getFile()->isFile(), 'Own attachment inaccessible.');
+Illuminate\Support\Facades\Storage::disk('local')->delete($attached->attachment_path);
 app(CompanyContext::class)->reset(Company::find(2));
 try { $community->fetchMessages(liveRequest(['after_id' => 0])); throw new RuntimeException('Mismatched company context accepted.'); }
 catch (Symfony\Component\HttpKernel\Exception\HttpException $e) { liveCheck($e->getStatusCode() === 403, 'Wrong community access failure.'); }
-echo "PASS: empty community, messages across company roles, cursor deduplication and tenant isolation.\n";
+echo "PASS: community role/cursor isolation, foreign reply/edit/delete/react/pin/download denial and private attachments.\n";

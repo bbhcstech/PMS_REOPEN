@@ -92,12 +92,16 @@ use App\Http\Controllers\Admin\RecruitmentController;
 
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\CommunityMessageController;
+Route::get('/company/session-status', function () {
+    return response()->json(['company_id' => \App\Services\TenantScope::companyId()]);
+})->middleware('auth:web,super_admin')->name('company.session-status');
 
 Route::middleware(['auth'])->group(function () {
     // Community Message Module Routes
     Route::middleware(['feature:community'])->group(function () {
         Route::get('/community', [CommunityMessageController::class, 'index'])->name('community.index');
         Route::get('/community/messages', [CommunityMessageController::class, 'fetchMessages'])->name('community.messages');
+        Route::get('/community/messages/{id}/attachment', [CommunityMessageController::class, 'attachment'])->name('community.attachment');
         Route::post('/community/messages', [CommunityMessageController::class, 'store'])->name('community.store');
         Route::put('/community/messages/{id}', [CommunityMessageController::class, 'update'])->name('community.update');
         Route::delete('/community/messages/{id}', [CommunityMessageController::class, 'destroy'])->name('community.destroy');
@@ -381,6 +385,8 @@ Route::middleware(['auth:super_admin,web', 'platform.superadmin'])->prefix('supe
     Route::post('/subscriptions/toggle-override', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'toggleCompanyOverride'])->name('subscriptions.toggle-override');
     Route::get('/companies', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'index'])->name('companies.list');
     Route::get('/companies/directory', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'index'])->name('companies.index');
+    Route::get('/companies/suspended', [\App\Http\Controllers\SuperAdmin\CompanySuspensionController::class, 'index'])->name('companies.suspended');
+    Route::get('/companies/{company}/suspension', [\App\Http\Controllers\SuperAdmin\CompanySuspensionController::class, 'create'])->whereNumber('company')->name('companies.suspension');
     Route::get('/companies/create', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'create'])->name('companies.create');
     Route::get('/companies/metrics', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'metrics'])->name('companies.metrics');
     Route::get('/companies/{company}', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'show'])->where('company', '[0-9]+')->name('companies.show');
@@ -413,6 +419,7 @@ Route::middleware(['auth:super_admin,web', 'platform.superadmin'])->prefix('supe
     Route::get('/complaints/{id}', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'show'])->name('complaints.show');
     Route::get('/complaints/{id}/messages', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'messages'])->name('complaints.messages');
     Route::post('/complaints/{id}/respond', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'respond'])->name('complaints.respond');
+    Route::post('/complaints/{id}/subscription-decision', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'subscriptionDecision'])->name('complaints.subscription-decision');
     Route::match(['GET', 'POST', 'PATCH'], '/complaints/{id}/status', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'updateStatus'])->name('complaints.status');
     Route::match(['GET', 'POST', 'PATCH'], '/complaints/{id}/assign', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'assign'])->name('complaints.assign');
     Route::get('/complaints/{id}/attachment/{attachmentId}', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'downloadAttachment'])->name('complaints.attachment');

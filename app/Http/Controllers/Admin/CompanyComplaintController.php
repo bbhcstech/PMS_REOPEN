@@ -98,7 +98,10 @@ class CompanyComplaintController extends Controller
             'Payroll', 'HR', 'Security', 'Performance', 'Feature Request', 'Bug Report', 'Other'
         ];
 
-        return view('admin.complaints.create', compact('company', 'categories'));
+        $currentLevel = \App\Services\PlanEligibilityService::getCurrentLevel($company);
+        $plans = \App\Models\Central\Plan::standard()->where('is_active', true)->orderBy('sort_order')->get()
+            ->filter(fn ($plan) => \App\Services\PlanEligibilityService::getPlanLevel($plan) < $currentLevel);
+        return view('admin.complaints.create', compact('company', 'categories', 'plans'));
     }
 
     /**
@@ -114,12 +117,15 @@ class CompanyComplaintController extends Controller
             'attachment'        => 'nullable|file|max:5120',
             'related_module'    => 'nullable|string|max:100',
             'related_record_id' => 'nullable|string|max:100',
+            'requested_plan_id' => ['nullable', 'integer', \Illuminate\Validation\Rule::exists('central.plans', 'id')->where(fn ($q) => $q->whereIn('slug', \App\Support\SupportedPlans::SLUGS)->where('is_active', true))],
         ]);
 
         $company = $this->getActiveCompany();
         $user = auth()->user();
 
-        $complaint = $this->complaintService->createComplaint($request->all(), $company, $user);
+        $complaint = $request->filled('requested_plan_id')
+            ? app(\App\Services\SubscriptionDowngradeRequests::class)->create($request->all(), $company, $user)
+            : $this->complaintService->createComplaint($request->all(), $company, $user);
 
         return redirect()->route('admin.company-complaints.show', $complaint->id)
             ->with('success', "Ticket created successfully! Your Ticket ID is: {$complaint->ticket_id}");

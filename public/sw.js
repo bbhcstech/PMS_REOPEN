@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bitroxia-pms-v6';
+const CACHE_NAME = 'bitroxia-pms-v9';
 const OFFLINE_URL = '/offline.html';
 const APP_SHELL = [
   OFFLINE_URL,
@@ -57,7 +57,11 @@ self.addEventListener('fetch', event => {
 });
 
 function isStaticAsset(pathname) {
-  return /\.(?:css|js|png|jpg|jpeg|gif|webp|svg|ico|woff2?|ttf|eot)$/i.test(pathname);
+  // Only shared application assets may persist across account/company changes.
+  // Uploaded files and authenticated download routes must always reach the server.
+  const shared = /^\/(?:frontend\/|admin\/assets\/|assets\/|build\/|vendor\/|pwa\/|css\/|js\/|fonts\/)/.test(pathname)
+    || pathname === '/logo.png';
+  return shared && /\.(?:css|js|png|jpg|jpeg|gif|webp|svg|ico|woff2?|ttf|eot)$/i.test(pathname);
 }
 
 async function cacheFirstAsset(request) {
@@ -67,7 +71,7 @@ async function cacheFirstAsset(request) {
   }
 
   const response = await fetch(request);
-  if (response && response.status === 200) {
+  if (response && response.status === 200 && !/private|no-store/i.test(response.headers.get('Cache-Control') || '')) {
     const cache = await caches.open(CACHE_NAME);
     cache.put(request, response.clone());
   }

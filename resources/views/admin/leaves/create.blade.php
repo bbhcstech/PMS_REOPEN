@@ -625,7 +625,6 @@
 </style>
 
 {{-- intl-tel-input CSS --}}
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@23/build/css/intlTelInput.css">
 
 
 @push('js')
@@ -876,18 +875,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const phoneIcon    = document.getElementById('phoneValidIcon');
 
     function initPhoneValidation() {
-        if (!phoneInput || !window.intlTelInput) return;
-
-        const utilsScript = 'https://cdn.jsdelivr.net/npm/intl-tel-input@23/build/js/utils.js';
-
-        const iti = window.intlTelInput(phoneInput, {
-            utilsScript: utilsScript,
-            initialCountry: 'in',           // default to India (+91)
-            separateDialCode: true,
-            strictMode: true,               // restrict input characters and limit digits to country maximum
-            preferredCountries: ['in', 'ae', 'us', 'gb', 'sa', 'pk'],
-            placeholderNumberType: 'MOBILE',
-        });
+        if (!phoneInput || !window.PmsPhoneFields) return;
+        const iti = window.PmsPhoneFields.attach(phoneInput, { initialCountry: 'in' });
 
         function getValidationMessage() {
             const countryData = iti.getSelectedCountryData();
@@ -1000,15 +989,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // Load intl-tel-input dynamically if not already present
-    if (window.intlTelInput) {
-        initPhoneValidation();
-    } else {
-        const itiScript = document.createElement('script');
-        itiScript.src = 'https://cdn.jsdelivr.net/npm/intl-tel-input@23/build/js/intlTelInput.min.js';
-        itiScript.onload = initPhoneValidation;
-        document.head.appendChild(itiScript);
-    }
+    if (window.PmsPhoneFields) initPhoneValidation();
 });
 </script>
 @endpush

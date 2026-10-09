@@ -27,9 +27,11 @@
             const url = new URL(state.feed.dataset.liveFeed, location.href);
             url.searchParams.set('after_id', state.last);
             const response = await fetch(url, { headers, cache: 'no-store', signal: AbortSignal.timeout(15000) });
+            if (response.headers.get('X-Company-Deleted') === '1') window.PmsCompanySessionEnded?.();
             if ([401, 403, 404, 419].includes(response.status) || response.redirected) { state.stopped = true; return; }
             if (!response.ok) throw new Error('Conversation unavailable');
             const data = await response.json();
+            if (state.identity && data.identity !== state.identity) { state.stopped = true; return; }
             if (!state.feed.isConnected || !data.success) return;
             const scroll = state.feed.closest('.drawer-body') || document.scrollingElement;
             const nearBottom = scroll.scrollHeight - scroll.scrollTop - scroll.clientHeight < 100;
@@ -38,6 +40,14 @@
             state.feed.dataset.lastId = state.last;
             const root = state.feed.closest('[data-live-chat]');
             root.querySelectorAll('[data-live-message-count]').forEach(el => { el.textContent = data.count; });
+            if (['pending', 'approved', 'rejected', 'stale'].includes(data.plan_request_status)) {
+                root.querySelectorAll('[data-live-plan-request-status]').forEach(el => {
+                    el.textContent = data.plan_request_status.charAt(0).toUpperCase() + data.plan_request_status.slice(1);
+                });
+                if (data.plan_request_status !== 'pending') {
+                    root.querySelectorAll('[data-live-plan-request-pending]').forEach(el => el.remove());
+                }
+            }
             if (nearBottom) scroll.scrollTop = scroll.scrollHeight;
             if (data.has_more) delay = 0;
             state.failures = 0;
@@ -54,7 +64,8 @@
         document.querySelectorAll('[data-live-feed]').forEach(feed => {
             if (known.has(feed)) return;
             known.add(feed);
-            const state = { feed, last: Number(feed.dataset.lastId || 0), busy: false };
+            const state = { feed, last: Number(feed.dataset.lastId || 0), busy: false,
+                identity: feed.closest('[data-live-records]')?.dataset.liveIdentity };
             states.add(state); poll(state);
         });
     }

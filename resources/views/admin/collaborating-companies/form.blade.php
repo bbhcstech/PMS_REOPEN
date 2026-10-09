@@ -101,7 +101,7 @@
                     <span class="partner-badge-required">Required</span>
                 </label>
                 @php
-                    $phoneCountries = \App\Support\CountryPhone::map();
+                    $phoneCountries = \App\Support\CountryPhone::formMap();
                     $phoneCode = '+91';
                     $phoneNumber = trim((string) $company->contact_phone);
                     if (str_starts_with($phoneNumber, '+')) {

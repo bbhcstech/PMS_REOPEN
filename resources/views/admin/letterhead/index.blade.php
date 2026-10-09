@@ -1352,8 +1352,11 @@
                                         </div>
                                         <div class="col-md-4">
                                             <label class="form-label fw-bold text-dark">Primary Phone</label>
-                                            <input type="text" name="phone" id="f_phone" class="form-control rounded-3" 
+                                            <div class="pms-phone-group">
+@include('partials.phone-country-select', ['phoneField' => 'phone', 'phoneValue' => ''])
+<input type="text" name="phone" id="f_phone" class="form-control rounded-3"
                                                    placeholder="e.g. +1 (800) 458-9200" oninput="syncLivePreview()">
+</div>
                                         </div>
                                         <div class="col-md-4">
                                             <label class="form-label fw-bold text-dark">Official Email</label>
@@ -2042,6 +2045,7 @@
 
     // Real-Time Live Preview Sync Engine
     function syncLivePreview() {
+        window.PmsPhoneFields?.scan();
         const orgName = document.getElementById('f_company_name').value || document.getElementById('f_name').value || 'Company Name';
         const tagline = document.getElementById('f_tagline').value || 'Corporate Document Subtitle';
         const address = [
@@ -2051,7 +2055,7 @@
         ].filter(Boolean).join(', ') || 'Silicon Tower 4, Level 8, CA 94107';
 
         const contact = [
-            document.getElementById('f_phone').value ? 'Phone: ' + document.getElementById('f_phone').value : '',
+            document.getElementById('f_phone').value ? 'Phone: ' + (window.PmsPhoneFields?.formatted(document.getElementById('f_phone')) || document.getElementById('f_phone').value) : '',
             document.getElementById('f_email').value ? document.getElementById('f_email').value : ''
         ].filter(Boolean).join(' | ') || 'Phone: +1 800-458-9200 | contact@bitroxia.com';
 
