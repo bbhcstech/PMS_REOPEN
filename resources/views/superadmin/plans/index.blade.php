@@ -5,6 +5,9 @@
 @section('page_subtitle', 'Manage subscription plans, pricing, limits, features, and availability across the platform.')
 
 @section('content')
+@php
+    $missingPlanSlugs = array_diff(\App\Support\SupportedPlans::SLUGS, $plans->pluck('slug')->all());
+@endphp
 <style>
     /* ============================================================
        PLANS CATALOG DESIGN SYSTEM TOKENS
@@ -1145,9 +1148,13 @@
                 </a>
             </div>
         </div>
+        @if (count($missingPlanSlugs))
         <button class="btn-custom btn-primary-custom" id="openCreatePlanModalBtn">
             <i class="fas fa-plus"></i> Create Plan
         </button>
+        @else
+        <span class="text-muted">All four tiers exist. Edit a plan below to change its settings.</span>
+        @endif
     </div>
 </div>
 
@@ -1442,9 +1449,15 @@
                 <div>
                     <label style="font-size: 11.5px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 6px;">PLAN NAME</label>
                     <div class="modal-input-wrap">
-                        <input type="text" name="name" id="modalPlanNameInput" required placeholder="GOLD" class="modal-input-field" />
+                        <select name="name" id="modalPlanNameInput" required class="modal-input-field">
+                            <option value="">Select a supported tier</option>
+                            @foreach (\App\Support\SupportedPlans::SLUGS as $slug)
+                                <option value="{{ strtoupper($slug) }}" data-missing="{{ in_array($slug, $missingPlanSlugs, true) ? '1' : '0' }}">{{ strtoupper($slug) }}</option>
+                            @endforeach
+                        </select>
                         <i class="bx bx-tag"></i>
                     </div>
+                    <small class="text-muted">Supported tiers: FREE, GOLD, PLATINUM, and DIAMOND. Each tier can exist once.</small>
                 </div>
 
                 <!-- MONTHLY PRICE & MAX USERS -->
@@ -1716,7 +1729,12 @@ document.addEventListener('DOMContentLoaded', function() {
             if (titleEl) titleEl.innerText = 'Create New Subscription Plan';
             if (planForm) planForm.action = "{{ route('super-admin.plans.store') }}";
             if (methodInput) methodInput.value = 'POST';
-            if (nameInput) nameInput.value = '';
+            if (nameInput) {
+                Array.from(nameInput.options).forEach(option => {
+                    option.disabled = option.value !== '' && option.dataset.missing !== '1';
+                });
+                nameInput.value = '';
+            }
             if (priceInput) priceInput.value = '';
             if (usersInput) usersInput.value = '';
             if (storageInput) storageInput.value = '';
@@ -1732,7 +1750,12 @@ document.addEventListener('DOMContentLoaded', function() {
         if (titleEl) titleEl.innerText = 'Edit ' + data.name + ' Subscription Plan';
         if (planForm) planForm.action = data.id ? ("/super-admin/plans/" + data.id) : "{{ route('super-admin.plans.store') }}";
         if (methodInput) methodInput.value = data.id ? 'PUT' : 'POST';
-        if (nameInput) nameInput.value = data.name;
+        if (nameInput) {
+            Array.from(nameInput.options).forEach(option => {
+                option.disabled = option.value !== data.name;
+            });
+            nameInput.value = data.name;
+        }
         if (priceInput) priceInput.value = data.price;
         if (usersInput) usersInput.value = data.users;
         if (storageInput) storageInput.value = data.storage;

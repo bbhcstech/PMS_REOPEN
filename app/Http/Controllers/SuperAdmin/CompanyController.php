@@ -1113,6 +1113,8 @@ class CompanyController extends Controller
             'max_users'      => 'required|integer|min:0',
             'max_storage_gb' => 'required|numeric|min:0',
             'is_active'      => 'required|boolean',
+        ], [
+            'name.in' => 'Only FREE, GOLD, PLATINUM, and DIAMOND plans are supported. Edit an existing tier to change its settings.',
         ]);
 
         $slug = Str::slug($data['name']);
@@ -1164,12 +1166,20 @@ class CompanyController extends Controller
             'max_users'      => 'required|integer|min:0',
             'max_storage_gb' => 'required|numeric|min:0',
             'is_active'      => 'required|boolean',
+        ], [
+            'name.in' => 'Only FREE, GOLD, PLATINUM, and DIAMOND plans are supported. Edit an existing tier to change its settings.',
         ]);
 
         try {
             $plan = \App\Models\Central\Plan::on('central')->findOrFail($id);
         } catch (\Throwable $e) {
             $plan = \App\Models\SubscriptionPlan::findOrFail($id);
+        }
+
+        if (Str::slug($data['name']) !== $plan->slug) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'name' => 'The plan tier cannot be changed. Edit the settings of the selected tier instead.',
+            ]);
         }
 
         $plan->name = strtoupper($data['name']);

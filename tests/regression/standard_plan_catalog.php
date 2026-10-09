@@ -18,6 +18,8 @@ DB::purge('central');
 $schema = Schema::connection('central');
 $schema->create('plans', function ($t) {
     $t->id(); $t->string('slug')->unique(); $t->string('name');
+    $t->text('description')->nullable();
+    $t->integer('max_projects')->default(0); $t->integer('max_clients')->default(0);
     $t->decimal('monthly_price')->default(0); $t->decimal('yearly_price')->default(0);
     $t->integer('max_users')->default(0); $t->integer('max_storage_mb')->default(0);
     $t->boolean('is_active')->default(true); $t->integer('sort_order')->default(0); $t->timestamps();
@@ -58,4 +60,28 @@ foreach ([$legacy->slug, $legacy->id] as $selection) {
     } catch (ValidationException $e) {}
 }
 catalogCheck((new ProvisioningPlan)->resolve(Request::create('/', 'POST', ['subscription_plan' => 'Gold']))->id === $gold->id, 'Supported provisioning changed.');
-echo "PASS: four-plan catalog, retirement, repeat seeding, configured prices, historical subscriptions and provisioning validation.\n";
+$controller = app(App\Http\Controllers\SuperAdmin\CompanyController::class);
+$payload = ['monthly_price' => 4999, 'max_users' => 25, 'max_storage_gb' => 25, 'is_active' => 1];
+foreach (['Custom Tier', ' gold '] as $name) {
+    try {
+        $controller->storePlan(Request::create('/', 'POST', $payload + ['name' => $name]));
+        throw new RuntimeException('Unsupported or duplicate tier was accepted.');
+    } catch (ValidationException $e) {
+        catalogCheck(isset($e->errors()['name']), 'Tier rejection must identify the name field.');
+        catalogCheck(! str_contains($e->errors()['name'][0], 'selected name is invalid'), 'Tier rejection must explain the restriction.');
+    }
+}
+try {
+    $controller->updatePlan(Request::create('/', 'PUT', $payload + ['name' => 'DIAMOND']), $gold->id);
+    throw new RuntimeException('A plan was renamed to another tier.');
+} catch (ValidationException $e) {}
+catalogCheck($gold->fresh()->name === 'GOLD', 'Tier identity changed after rejected rename.');
+Plan::where('slug', 'diamond')->delete();
+$controller->storePlan(Request::create('/', 'POST', $payload + ['name' => ' diamond ']));
+catalogCheck(Plan::where('slug', 'diamond')->count() === 1, 'Missing supported tier was not created.');
+catalogCheck(Plan::where('slug', 'diamond')->first()->max_storage_mb === 25600, 'Created tier storage was not converted to MB.');
+$controller->updatePlan(Request::create('/', 'PUT', $payload + ['name' => ' gold ']), $gold->id);
+catalogCheck($gold->fresh()->monthly_price == 4999, 'Supported tier settings could not be updated.');
+$compiled = app('blade.compiler')->compileString(file_get_contents(resource_path('views/superadmin/plans/index.blade.php')));
+token_get_all($compiled, TOKEN_PARSE);
+echo "PASS: four-plan catalog, retirement, seeding, history, provisioning, tier creation, duplicate validation and editing.\n";
