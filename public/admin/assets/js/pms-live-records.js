@@ -36,7 +36,7 @@
     const region = document.querySelector('[data-live-records]');
     if (!region) return;
     let busy = false, stopped = false, timer, failures = 0;
-    const protect = 'input, select, textarea, button, script, style, link, canvas, iframe, [contenteditable], [data-live-chat], [data-live-preserve], .modal, .modal-backdrop, .modal-overlay, .drawer-overlay, .offcanvas, .select2-container, .dataTables_wrapper, .pms-table-tools, [role="tablist"]';
+    const protect = 'input, select, textarea, button, script, style, link, canvas, iframe, [contenteditable], [data-live-chat], [data-live-preserve], .modal, .modal-backdrop, .modal-overlay, .drawer-overlay, .offcanvas, .pms-table-select, .select2-container, .dataTables_wrapper, .pms-table-tools, [role="tablist"]';
     function key(node) {
         if (node.nodeType !== 1) return null;
         if (node.id) return node.tagName + '#' + node.id;
@@ -80,7 +80,11 @@
         for (const next of fresh.childNodes) {
             if (next.nodeType === 1 && next.matches('script, style, link')) continue;
             const id = uniqueKey(next);
-            let match = id ? keyed.get(id) : old.find(node => !used.has(node) && !uniqueKey(node) && node.nodeType === next.nodeType && (node.nodeType !== 1 || node.tagName === next.tagName));
+            // Positional matching never pairs a server node with a client-only node (e.g. the
+            // table-tools toolbar injected before a .table-responsive); otherwise the real table
+            // is left unmatched and removed, and the list flickers in and out on every refresh.
+            let match = id ? keyed.get(id) : old.find(node => !used.has(node) && !uniqueKey(node) && node.nodeType === next.nodeType
+                && (node.nodeType !== 1 || (node.tagName === next.tagName && node.matches(protect) === next.matches(protect))));
             if (match && !used.has(match)) {
                 used.add(match);
                 if (match !== anchor) current.insertBefore(match, anchor);
