@@ -996,7 +996,7 @@
           @empty
             <tr>
               <td colspan="12" style="text-align: center; padding: 48px 16px; color: var(--cmp-text-muted);">
-                <i class="bx bx-inbox" style="font-size: 48px; opacity: 0.4; display: block; margin-bottom: 12px;"></i>
+                <i class="bx bx-archive-in" style="font-size: 48px; opacity: 0.4; display: block; margin-bottom: 12px;"></i>
                 <div style="font-size: 16px; font-weight: 700; color: var(--cmp-text-main);">No complaints found</div>
                 <div style="font-size: 13px;">No company support tickets match your search filters.</div>
               </td>
@@ -1050,6 +1050,7 @@
 @endsection
 
 @push('scripts')
+<script src="{{ asset('admin/assets/js/pms-complaint-live.js') }}" defer></script>
 <script>
 function toggleSelectAll(master) {
   const checkboxes = document.querySelectorAll('.ticket-checkbox');

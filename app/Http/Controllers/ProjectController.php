@@ -159,7 +159,7 @@ public function create(Request $request)
     $categories     = ProjectCategory::all();
     $departments    = Department::with('parent')->latest()->get();
     $designations   = Designation::all();
-    $countries      = Country::all();
+    $countries      = Country::forForms();
     $employee       = null;
     $currency       = Currency::orderBy('currency_name')->get();
     $prtdepartments = ParentDepartment::latest()->get();
@@ -385,7 +385,7 @@ public function edit($id)
     $categories     = ProjectCategory::all();
     $departments    = Department::with('parent')->latest()->get();
     $designations   = Designation::all();
-    $countries      = Country::all();
+    $countries      = Country::forForms();
     $employee       = null;
     $currency       = Currency::orderBy('currency_name')->get();
     $prtdepartments = ParentDepartment::latest()->get();

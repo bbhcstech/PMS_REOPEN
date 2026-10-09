@@ -1027,16 +1027,19 @@ class LeaveController extends Controller
 
     private function selectedCompanyId(Request $request): ?int
     {
-        if (! $this->isAdmin()) {
-            return Auth::user()?->company_id;
-        }
-
-        return $request->integer('company_id') ?: null;
+        // Tenant isolation: only the platform Super Admin may pick another company (or all companies).
+        return \App\Services\TenantScope::companyFilter($request->integer('company_id') ?: null);
     }
 
     private function authorizeLeaveAccess(Leave $leave): void
     {
         if ($this->isAdmin()) {
+            // Admin/HR/manager may act on any leave, but only within their own company.
+            $leaveCompanyId = $leave->company_id ?? $leave->user?->company_id;
+            if ($leaveCompanyId) {
+                \App\Services\TenantScope::authorizeCompany($leaveCompanyId);
+            }
+
             return;
         }
 

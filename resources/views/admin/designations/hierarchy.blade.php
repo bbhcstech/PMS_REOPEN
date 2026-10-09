@@ -602,21 +602,34 @@
     }
 
     .legend-badge {
-        background: #2F6BFF;
-        padding: 4px 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 4px 11px;
+        min-width: 32px;
         border-radius: 30px;
-        font-size: 0.7rem;
+        font-size: 0.72rem;
         font-weight: 700;
-        color: white;
+        line-height: 1.2;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+        letter-spacing: 0.02em;
+        text-align: center;
     }
 
-    .legend-badge.l0 { background: #111827; }
-    .legend-badge.l1 { background: #2F6BFF; }
-    .legend-badge.l2 { background: #10b981; }
-    .legend-badge.l3 { background: #3b82f6; }
-    .legend-badge.l4 { background: #f59e0b; }
-    .legend-badge.l5 { background: #f97316; }
-    .legend-badge.l6 { background: #ef4444; }
+    .legend-badge.l0 {
+        background: #0F172A !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        border: 1px solid rgba(255, 255, 255, 0.22);
+    }
+    .legend-badge.l1 { background: #2F6BFF !important; color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; }
+    .legend-badge.l2 { background: #10b981 !important; color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; }
+    .legend-badge.l3 { background: #3b82f6 !important; color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; }
+    .legend-badge.l4 { background: #f59e0b !important; color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; }
+    .legend-badge.l5 { background: #f97316 !important; color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; }
+    .legend-badge.l6 { background: #ef4444 !important; color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; }
 
     .expand-all-btn {
         margin-left: auto;
@@ -697,13 +710,7 @@
         background: #edf8f2;
     }
 
-    .designation-info {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        flex: 1;
-    }
-
+    .designation-node-icon,
     .designation-icon-small {
         width: 38px;
         height: 38px;
@@ -713,30 +720,67 @@
         align-items: center;
         justify-content: center;
         color: #2F6BFF;
+        margin-right: 12px;
+        flex-shrink: 0;
     }
 
+    .designation-node-copy,
     .designation-details {
         flex: 1;
+        display: flex;
+        flex-direction: column;
     }
 
+    .designation-node-copy strong,
     .designation-name {
         font-weight: 700;
         color: #070B1A;
+        font-size: 0.85rem;
     }
 
+    .designation-node-copy span,
     .designation-parent {
         font-size: 0.7rem;
         color: #94A3B8;
     }
 
+    .node-level,
     .designation-level {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         background: #2F6BFF;
-        padding: 4px 12px;
+        padding: 4px 10px;
+        min-width: 32px;
         border-radius: 20px;
-        font-size: 0.7rem;
+        font-size: 0.72rem;
         font-weight: 700;
-        color: white;
+        line-height: 1.2;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        text-align: center;
     }
+
+    .node-level.level-0,
+    .designation-level.level-0 {
+        background: #0F172A !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        border: 1px solid rgba(255, 255, 255, 0.22);
+    }
+    .node-level.level-1,
+    .designation-level.level-1 { background: #2F6BFF !important; color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; }
+    .node-level.level-2,
+    .designation-level.level-2 { background: #10b981 !important; color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; }
+    .node-level.level-3,
+    .designation-level.level-3 { background: #3b82f6 !important; color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; }
+    .node-level.level-4,
+    .designation-level.level-4 { background: #f59e0b !important; color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; }
+    .node-level.level-5,
+    .designation-level.level-5 { background: #f97316 !important; color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; }
+    .node-level.level-6,
+    .designation-level.level-6 { background: #ef4444 !important; color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; }
 
     .toggle-children {
         background: none;
@@ -880,7 +924,7 @@
         border-radius: 4px;
     }
 
-    .legend-color.l0 { background: #111827; }
+    .legend-color.l0 { background: #0F172A; border: 1px solid rgba(255, 255, 255, 0.25); }
     .legend-color.l1 { background: #2F6BFF; }
     .legend-color.l2 { background: #10b981; }
     .legend-color.l3 { background: #3b82f6; }
@@ -1038,7 +1082,7 @@
     }
 
     /* Level Colors */
-    .l0-bg { background: #111827; }
+    .l0-bg { background: #0F172A; }
     .l1-bg { background: #2F6BFF; }
     .l2-bg { background: #10b981; }
     .l3-bg { background: #3b82f6; }
@@ -1329,6 +1373,36 @@
     html[data-pms-theme="dark"] .designation-hierarchy-page .level-legend span:first-child,
     html[data-bs-theme="dark"] .designation-hierarchy-page .level-legend span:first-child {
         color: #60A5FA !important;
+    }
+
+    html[data-pms-theme="dark"] .designation-hierarchy-page .legend-badge,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .legend-badge,
+    [data-pms-theme="dark"] .designation-hierarchy-page .legend-badge,
+    html[data-pms-theme="dark"] .designation-hierarchy-page .node-level,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .node-level,
+    [data-pms-theme="dark"] .designation-hierarchy-page .node-level {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    html[data-pms-theme="dark"] .designation-hierarchy-page .legend-badge.l0,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .legend-badge.l0,
+    [data-pms-theme="dark"] .designation-hierarchy-page .legend-badge.l0,
+    html[data-pms-theme="dark"] .designation-hierarchy-page .node-level.level-0,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .node-level.level-0,
+    [data-pms-theme="dark"] .designation-hierarchy-page .node-level.level-0 {
+        background: #1E293B !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        border: 1px solid rgba(148, 163, 184, 0.45) !important;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+    }
+
+    html[data-pms-theme="dark"] .designation-hierarchy-page .legend-color.l0,
+    html[data-bs-theme="dark"] .designation-hierarchy-page .legend-color.l0,
+    [data-pms-theme="dark"] .designation-hierarchy-page .legend-color.l0 {
+        background: #1E293B !important;
+        border: 1px solid rgba(148, 163, 184, 0.45) !important;
     }
 
     html[data-pms-theme="dark"] .designation-hierarchy-page .expand-all-btn,
@@ -1658,6 +1732,40 @@
         color: #60A5FA !important;
         border: 1px solid rgba(79, 131, 255, 0.3) !important;
     }
+
+    /* Permanent Watermark / Branding Removal for JSCharting */
+    #brandingLogo,
+    [id="brandingLogo"],
+    [id*="brandingLogo"],
+    [id*="branding"],
+    #chartDiv #brandingLogo,
+    #chartDiv [id*="branding"],
+    #chartDiv g:has(#brandingLogo),
+    #chartDiv svg g:has(#brandingLogo),
+    #chartDiv svg [id*="brandingLogo"],
+    #chartDiv svg g[id="brandingLogo"],
+    #chartDiv a[href*="jscharting"],
+    #chartDiv [title*="JSCharting"],
+    #chartDiv g:has([title*="JSCharting"]) {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+        width: 0 !important;
+        height: 0 !important;
+        max-width: 0 !important;
+        max-height: 0 !important;
+        clip: rect(0, 0, 0, 0) !important;
+        clip-path: inset(100%) !important;
+        transform: scale(0) !important;
+    }
+
+    #brandingLogo *,
+    [id="brandingLogo"] * {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+    }
 </style>
 
 @push('js')
@@ -1920,6 +2028,38 @@ document.addEventListener('DOMContentLoaded', function() {
                 line.style.setProperty('stroke-width', '2.5px', 'important');
             });
         }
+
+        removeChartWatermark();
+    }
+
+    function removeChartWatermark() {
+        const chartDiv = document.getElementById('chartDiv');
+        if (!chartDiv) return;
+
+        // 1. Remove branding elements and their wrapper container groups
+        chartDiv.querySelectorAll('#brandingLogo, [id="brandingLogo"], [id*="brandingLogo"], [id*="branding"]').forEach(el => {
+            const containerGroup = el.closest('g');
+            if (containerGroup && containerGroup !== chartDiv.querySelector('svg') && containerGroup.parentNode) {
+                containerGroup.remove();
+            } else {
+                el.remove();
+            }
+        });
+
+        // 2. Remove any title element referencing JSCharting and its container
+        chartDiv.querySelectorAll('title').forEach(title => {
+            if (title.textContent && title.textContent.toLowerCase().includes('jscharting')) {
+                const group = title.closest('g') || title.parentElement;
+                if (group && group !== chartDiv.querySelector('svg') && group.parentNode) {
+                    group.remove();
+                } else {
+                    title.remove();
+                }
+            }
+        });
+
+        // 3. Remove any links pointing to jscharting
+        chartDiv.querySelectorAll('a[href*="jscharting"]').forEach(el => el.remove());
     }
 
     function initOrganizationalChart(points = chartPoints) {
@@ -1938,6 +2078,8 @@ document.addEventListener('DOMContentLoaded', function() {
         chartDiv.style.removeProperty('background-color');
         chart = JSC.chart('chartDiv', {
             type: 'organizational',
+            overlapBranding: true,
+            debug: false,
             box: { fill: isDark ? '#0F1530' : 'transparent' },
             fill: isDark ? '#0F1530' : 'transparent',
             palette: ['#2F6BFF', '#10b981', '#3b82f6', '#f59e0b', '#f97316', '#ef4444'],
@@ -1977,6 +2119,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
         applyChartZoom();
         applyDarkChartFixes();
+        removeChartWatermark();
+        setTimeout(removeChartWatermark, 10);
+        setTimeout(removeChartWatermark, 50);
+        setTimeout(removeChartWatermark, 150);
+        setTimeout(removeChartWatermark, 300);
+        setTimeout(removeChartWatermark, 600);
+        setTimeout(removeChartWatermark, 1000);
         setTimeout(applyDarkChartFixes, 50);
         setTimeout(applyDarkChartFixes, 300);
         setTimeout(applyDarkChartFixes, 1000);
@@ -2057,6 +2206,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize
     initOrganizationalChart();
+
+    // Observe and instantly strip any dynamically injected JSCharting watermark
+    const targetChartDiv = document.getElementById('chartDiv');
+    if (targetChartDiv) {
+        const watermarkObserver = new MutationObserver(() => {
+            removeChartWatermark();
+        });
+        watermarkObserver.observe(targetChartDiv, { childList: true, subtree: true });
+    }
 
     // Keep the employee hierarchy current when new employees are added or updated.
     window.addEventListener('focus', updateOrganizationalChart);

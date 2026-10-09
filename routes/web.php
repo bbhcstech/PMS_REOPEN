@@ -369,7 +369,7 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'module.access'])
     ->name('dashboard');
 
-Route::middleware(['auth:super_admin,web'])->prefix('superadmin')->name('superadmin.')->group(function () {
+Route::middleware(['auth:super_admin,web', 'platform.superadmin'])->prefix('superadmin')->name('superadmin.')->group(function () {
     Route::get('/', [SuperAdminController::class, 'dashboard'])->name('dashboard');
     Route::get('/profile', [SuperAdminController::class, 'profile'])->name('profile');
     Route::post('/profile', [SuperAdminController::class, 'updateProfile'])->name('profile.update');
@@ -411,6 +411,7 @@ Route::middleware(['auth:super_admin,web'])->prefix('superadmin')->name('superad
     Route::get('/complaints/export', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'export'])->name('complaints.export');
     Route::get('/complaints/unread-count', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'unreadCount'])->name('complaints.unread-count');
     Route::get('/complaints/{id}', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'show'])->name('complaints.show');
+    Route::get('/complaints/{id}/messages', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'messages'])->name('complaints.messages');
     Route::post('/complaints/{id}/respond', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'respond'])->name('complaints.respond');
     Route::match(['GET', 'POST', 'PATCH'], '/complaints/{id}/status', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'updateStatus'])->name('complaints.status');
     Route::match(['GET', 'POST', 'PATCH'], '/complaints/{id}/assign', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'assign'])->name('complaints.assign');
@@ -441,7 +442,7 @@ Route::middleware(['auth:super_admin,web'])->prefix('superadmin')->name('superad
 });
 
 // Standalone route aliases for super-admin.* and admins.*
-Route::middleware(['auth:super_admin,web'])->group(function () {
+Route::middleware(['auth:super_admin,web', 'platform.superadmin'])->group(function () {
     Route::get('/company-admins/export', [\App\Http\Controllers\SuperAdminController::class, 'exportAdmins'])->name('admins.export');
     Route::get('/company-admins', [\App\Http\Controllers\SuperAdminController::class, 'companyAdmins'])->name('admins.index');
     Route::post('/company-admins', [\App\Http\Controllers\SuperAdminController::class, 'storeAdmin'])->name('admins.store');
@@ -763,6 +764,10 @@ Route::middleware(['auth', 'module.access'])->group(function () {
         ->name('employees.restore');
 
     Route::resource('employees', EmployeeController::class);
+    Route::get('admin/upper-level-employees', [\App\Http\Controllers\Admin\UpperLevelEmployeeController::class, 'index'])->name('admin.upper-level-employees.index');
+    Route::post('admin/upper-level-employees/roles', [\App\Http\Controllers\Admin\UpperLevelEmployeeController::class, 'storeRole'])->name('admin.upper-level-employees.roles.store');
+    Route::post('admin/upper-level-employees', [\App\Http\Controllers\Admin\UpperLevelEmployeeController::class, 'store'])->name('admin.upper-level-employees.store');
+    Route::put('admin/upper-level-employees/{id}', [\App\Http\Controllers\Admin\UpperLevelEmployeeController::class, 'update'])->name('admin.upper-level-employees.update');
 
 
     // Add this route in your routes/web.php file
@@ -1533,6 +1538,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/admin/company-complaints/create', [\App\Http\Controllers\Admin\CompanyComplaintController::class, 'create'])->name('admin.company-complaints.create');
     Route::post('/admin/company-complaints', [\App\Http\Controllers\Admin\CompanyComplaintController::class, 'store'])->name('admin.company-complaints.store');
     Route::get('/admin/company-complaints/{id}', [\App\Http\Controllers\Admin\CompanyComplaintController::class, 'show'])->name('admin.company-complaints.show');
+    Route::get('/admin/company-complaints/{id}/messages', [\App\Http\Controllers\Admin\CompanyComplaintController::class, 'messages'])->name('admin.company-complaints.messages');
     Route::post('/admin/company-complaints/{id}/reply', [\App\Http\Controllers\Admin\CompanyComplaintController::class, 'reply'])->name('admin.company-complaints.reply');
     Route::match(['POST', 'PATCH'], '/admin/company-complaints/{id}/reopen', [\App\Http\Controllers\Admin\CompanyComplaintController::class, 'reopen'])->name('admin.company-complaints.reopen');
     Route::get('/admin/company-complaints/{id}/attachment/{attachmentId}', [\App\Http\Controllers\Admin\CompanyComplaintController::class, 'downloadAttachment'])->name('admin.company-complaints.attachment');

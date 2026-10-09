@@ -1875,7 +1875,7 @@
 
                 <!-- RULE EXPLANATION BANNER -->
                 <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: var(--radius-md); padding: 12px 14px; margin-bottom: 16px; color: #166534; font-size: 12px; display: flex; align-items: center; gap: 10px;">
-                    <i class="bx bx-shield-check" style="font-size: 20px; color: #16a34a; flex-shrink: 0;"></i>
+                    <i class="bx bx-check-shield" style="font-size: 20px; color: #16a34a; flex-shrink: 0;"></i>
                     <span><strong>1 Developer = 1 Account Rule:</strong> If the selected developer already exists, the task will be assigned to their existing account. No new account, password, or login credentials email will be generated.</span>
                 </div>
 

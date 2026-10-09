@@ -1283,7 +1283,7 @@
                         elseif (str_contains(strtolower($actStr), 'sub') || str_contains(strtolower($actStr), 'plan')) { $iconClass = 'bx-credit-card'; $bgIconColor = 'var(--purple-light)'; $textIconColor = 'var(--purple)'; }
                         elseif (str_contains(strtolower($actStr), 'user')) { $iconClass = 'bx-user-plus'; $bgIconColor = 'var(--cyan-light)'; $textIconColor = 'var(--cyan)'; }
                         elseif (str_contains(strtolower($actStr), 'permission') || str_contains(strtolower($actStr), 'role')) { $iconClass = 'bx-key'; $bgIconColor = '#fdf2f8'; $textIconColor = '#be185d'; }
-                        elseif (str_contains(strtolower($actStr), 'backup')) { $iconClass = 'bx-hard-drive'; $bgIconColor = 'var(--warning-light)'; $textIconColor = 'var(--warning)'; }
+                        elseif (str_contains(strtolower($actStr), 'backup')) { $iconClass = 'bx-hdd'; $bgIconColor = 'var(--warning-light)'; $textIconColor = 'var(--warning)'; }
                         elseif (str_contains(strtolower($actStr), 'migration')) { $iconClass = 'bx-git-repo-forked'; $bgIconColor = 'var(--success-light)'; $textIconColor = 'var(--success)'; }
                         elseif (str_contains(strtolower($actStr), 'login')) { $iconClass = 'bx-log-in-circle'; $bgIconColor = 'var(--success-light)'; $textIconColor = 'var(--success)'; }
                         elseif (str_contains(strtolower($actStr), 'security')) { $iconClass = 'bx-shield-quarter'; $bgIconColor = 'var(--danger-light)'; $textIconColor = 'var(--danger)'; }
@@ -1462,7 +1462,7 @@
     <div class="audit-safeguard-box" style="background: var(--bg-surface); border-radius: var(--radius-lg); border: 1px solid var(--border-color); padding: 18px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; box-shadow: var(--shadow-sm);">
         <div style="display: flex; align-items: center; gap: 14px;">
             <div class="audit-safeguard-icon" style="width: 42px; height: 42px; border-radius: 10px; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 22px;">
-                <i class="bx bx-shield-check"></i>
+                <i class="bx bx-check-shield"></i>
             </div>
             <div>
                 <h4 style="font-size: 14px; font-weight: 800; color: var(--text-main); margin: 0 0 2px 0;">Audit Integrity &amp; Compliance Safeguard</h4>

@@ -13,7 +13,11 @@ class OrganizationDirectoryController extends Controller
 {
     public function index(Request $request)
     {
+        // Tenant isolation: company users only ever see their own company's directory.
+        $scopeCompanyId = \App\Services\TenantScope::companyFilter($request->integer('company_id') ?: null);
+
         $allEmployeesQuery = User::query()
+            ->when($scopeCompanyId, fn ($q) => $q->where('users.company_id', $scopeCompanyId))
             ->with([
                 'company',
                 'employeeDetail.designation',
@@ -108,7 +112,7 @@ class OrganizationDirectoryController extends Controller
             'designations' => Designation::whereNull('archived_at')->count(),
         ];
 
-        $companies = \App\Models\Company::where('status', 'active')->orderBy('name')->get();
+        $companies = \App\Services\TenantScope::visibleCompanies();
         $departments = Department::whereNull('archived_at')
             ->when(Schema::hasColumn('departments', 'dpt_name'), fn ($q) => $q->orderBy('dpt_name'), fn ($q) => $q->orderBy('id'))
             ->get();
@@ -201,6 +205,7 @@ class OrganizationDirectoryController extends Controller
 
         abort_unless($employee->role === 'employee' && is_null($employee->archived_at), 404);
         abort_if(optional($employee->employeeDetail)->status === 'Inactive', 404);
+        \App\Services\TenantScope::authorizeCompany($employee->company_id);
 
         return view('admin.organization-directory.show', compact('employee'));
     }
@@ -213,6 +218,7 @@ class OrganizationDirectoryController extends Controller
 
         abort_unless($employee->role === 'employee' && is_null($employee->archived_at), 404);
         abort_if(optional($employee->employeeDetail)->status === 'Inactive', 404);
+        \App\Services\TenantScope::authorizeCompany($employee->company_id);
         abort_unless($employee->employeeDetail, 404);
 
         $data = $request->validate([

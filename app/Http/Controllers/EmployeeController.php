@@ -91,9 +91,14 @@ class EmployeeController extends Controller
     {
         $viewer = auth()->user();
         $selectedCompanyId = $request->integer('company_id') ?: null;
+        if ($viewer && $viewer->normalizedRole() !== 'superadmin') {
+            abort_unless($viewer->company_id, 403);
+            abort_if($selectedCompanyId && $selectedCompanyId !== (int) $viewer->company_id, 403);
+            $selectedCompanyId = (int) $viewer->company_id;
+        }
 
         $query = User::with(['company', 'employeeDetail.designation', 'employeeDetail.department'])
-            ->where('role', 'employee')
+            ->whereIn('role', ['employee', 'hr', 'manager'])
             ->whereNull('archived_at');
 
         $viewerRole = $viewer?->normalizedRole();
@@ -155,11 +160,12 @@ class EmployeeController extends Controller
         $employees = $query->orderBy('created_at', 'desc')->paginate(15)->appends($request->query());
 
         $companies = Company::where('status', 'active')
+            ->when($selectedCompanyId, fn ($q) => $q->whereKey($selectedCompanyId))
             ->orderBy('name')
             ->get();
 
         $companyStats = $companies->map(function (Company $company) {
-            $activeQuery = User::where('role', 'employee')
+            $activeQuery = User::whereIn('role', ['employee', 'hr', 'manager'])
                 ->whereNull('archived_at')
                 ->where('company_id', $company->id);
 
@@ -173,7 +179,7 @@ class EmployeeController extends Controller
 
             return [
                 'company' => $company,
-                'employees' => User::where('role', 'employee')
+                'employees' => User::whereIn('role', ['employee', 'hr', 'manager'])
                     ->whereNull('archived_at')
                     ->where('company_id', $company->id)
                     ->count(),
@@ -183,14 +189,10 @@ class EmployeeController extends Controller
 
         // prepare dropdown list options but exclude notice/probation entries so selects don't show them
         $employeeDetails = EmployeeDetail::with(['user', 'reportingTo'])
-            ->whereHas('user', function ($q) use ($viewer, $selectedCompanyId, $isGlobalAdmin, $isAdminOrHr) {
+            ->whereHas('user', function ($q) use ($selectedCompanyId) {
                 $q->whereNull('archived_at');
 
-                if ($viewer && ! $isGlobalAdmin && $viewer->company_id) {
-                    $q->where('company_id', $viewer->company_id);
-                }
-
-                if ($viewer && $isAdminOrHr && $selectedCompanyId) {
+                if ($selectedCompanyId) {
                     $q->where('company_id', $selectedCompanyId);
                 }
             })
@@ -215,7 +217,7 @@ class EmployeeController extends Controller
                 }))
                 ->orderBy('name')
                 ->get(),
-            'employee_data' => User::with('company')->get(),
+            'employee_data' => User::with('company')->when($selectedCompanyId, fn ($q) => $q->where('company_id', $selectedCompanyId))->get(),
             'employeeDetails' => $employeeDetails,
             'breadcrumb' => [
                 ['title' => 'Dashboard', 'url' => route('dashboard')],
@@ -249,7 +251,7 @@ class EmployeeController extends Controller
                                     ->whereNull('archived_at')
                                     ->orderBy('name')
                                     ->get(),
-            'countries'       => Country::orderBy('name')->get(),
+            'countries'       => Country::forForms(),
             'employee'        => null,
             'nextEmployeeId'  => $nextEmployeeId,
         ]);
@@ -308,6 +310,7 @@ class EmployeeController extends Controller
     public function store(Request $request, GovernmentIdDobVerifier $governmentIdDobVerifier)
     {
         $this->ensureAdmin();
+        $this->guardEmployeeRole($request);
         $company = $this->employeeCompany($request->integer('company_id') ?: null);
         $request->merge(['company_id' => $company->id]);
         $this->validateJoiningAge($request);
@@ -772,6 +775,11 @@ class EmployeeController extends Controller
         $this->ensureAdmin();
 
         $employee = User::with('employeeDetail')->findOrFail($id);
+        if ($employee->company_staff_role_id) {
+            abort_unless(in_array(auth()->user()?->normalizedRole(), ['admin', 'administrator'], true)
+                && (int) $employee->company_id === (int) auth()->user()?->company_id, 403);
+            return redirect()->route('admin.upper-level-employees.index', ['edit' => $employee->id]);
+        }
 
         return view('admin.employees.edit', [
             'employee' => $employee,
@@ -786,7 +794,7 @@ class EmployeeController extends Controller
                     $q->where('status', 'Active');
                 })
                 ->orderBy('name')->get(),
-            'countries' => Country::all(),
+            'countries' => Country::forForms(),
             'prtdepartments' => ParentDepartment::latest()->get(),
         ]);
     }
@@ -884,6 +892,8 @@ class EmployeeController extends Controller
 
         // load user & detail first so we can build validation rules that ignore current records
         $user = User::findOrFail($id);
+        abort_if(auth()->user()->normalizedRole() !== 'superadmin' && (int) $user->company_id !== (int) auth()->user()->company_id, 403);
+        $this->guardEmployeeRole($request, $user);
         $detail = $user->employeeDetail;
 
         // ==============================================
@@ -1217,6 +1227,7 @@ class EmployeeController extends Controller
     public function destroy($id)
     {
         $this->ensureAdmin();
+        $this->guardManagedEmployees([$id]);
 
         // ======================================================
         // ===== REPORTING-TO INTEGRITY : block protected delete
@@ -1284,6 +1295,7 @@ class EmployeeController extends Controller
     public function restore($id)
     {
         $this->ensureAdmin();
+        $this->guardManagedEmployees([$id]);
 
         $employee = User::whereNotNull('archived_at')
             ->findOrFail($id);
@@ -1307,6 +1319,7 @@ class EmployeeController extends Controller
             'employee_ids' => 'required|array',
             'employee_ids.*' => 'integer|exists:users,id',
         ]);
+        $this->guardManagedEmployees($request->employee_ids);
 
         $restored = User::whereNotNull('archived_at')
             ->whereIn('id', $request->employee_ids)
@@ -1344,6 +1357,7 @@ class EmployeeController extends Controller
             'employee_ids' => 'required|array',
             'status' => 'required|in:Active,Inactive',
         ]);
+        $this->guardManagedEmployees($request->employee_ids);
 
         // If setting to Inactive, check for exit dates
         if ($request->status === 'Inactive') {
@@ -1381,6 +1395,7 @@ class EmployeeController extends Controller
             'employee_ids' => 'required|array',
             'employee_ids.*' => 'integer|exists:users,id'
         ]);
+        $this->guardManagedEmployees($request->employee_ids);
 
         DB::beginTransaction();
         try {
@@ -1547,6 +1562,7 @@ class EmployeeController extends Controller
         ]);
 
         $user = User::findOrFail($request->user_id);
+        abort_if($user->company_staff_role_id, 403, 'This account is managed by its company admin.');
         $user->update([
             'name' => $request->name,
             'password' => Hash::make($request->password)
@@ -1793,6 +1809,29 @@ class EmployeeController extends Controller
     /**
      * Compute next employee ID.
      */
+    private function guardManagedEmployees(array $ids): void
+    {
+        foreach (User::whereIn('id', $ids)->get() as $target) {
+            abort_if(auth()->user()?->normalizedRole() !== 'superadmin' && (int) $target->company_id !== (int) auth()->user()?->company_id, 403);
+            $this->guardEmployeeRole(request(), $target);
+        }
+    }
+
+    private function guardEmployeeRole(Request $request, ?User $target = null): void
+    {
+        $actorRole = auth()->user()?->normalizedRole();
+        if (! in_array($actorRole, ['admin', 'administrator', 'superadmin'], true)) {
+            abort_if($target && ($target->role !== 'employee' || $target->company_staff_role_id), 403, 'Only a company admin can manage upper level employee accounts.');
+            $requestedRole = $request->input('user_role', $request->input('role', 'employee'));
+            abort_unless($requestedRole === 'employee', 403, 'Only a company admin can assign privileged roles.');
+        }
+        // Role identity and permissions for these accounts are managed together
+        // through the admin-only section, not a generic employee form.
+        if ($target?->company_staff_role_id) {
+            abort(403, 'Manage this account in Add Upper Level Employee.');
+        }
+    }
+
     private function computeNextEmployeeIdWithLock(?int $companyId = null): string
     {
         $company = $this->employeeCompany($companyId);

@@ -8025,3 +8025,72 @@ body.dark-mode .popover .popover-header {
   border-bottom-color: rgba(238, 241, 251, 0.15) !important;
   color: #FFFFFF !important;
 }
+
+/* Permanent JSCharting Watermark / Logo / Branding Removal */
+#brandingLogo,
+[id="brandingLogo"],
+[id*="brandingLogo"],
+[id*="branding"],
+#chartDiv #brandingLogo,
+#chartDiv [id*="branding"],
+#chartDiv g:has(#brandingLogo),
+#chartDiv svg g:has(#brandingLogo),
+#chartDiv svg [id*="brandingLogo"],
+#chartDiv svg g[id="brandingLogo"],
+#chartDiv a[href*="jscharting"],
+#chartDiv [title*="JSCharting"],
+#chartDiv g:has([title*="JSCharting"]) {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  max-width: 0 !important;
+  max-height: 0 !important;
+  clip: rect(0, 0, 0, 0) !important;
+  clip-path: inset(100%) !important;
+  transform: scale(0) !important;
+}
+
+#brandingLogo *,
+[id="brandingLogo"] * {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+}
+
+/* Designation Hierarchy Level Badges */
+.content-wrapper .legend-badge,
+.content-wrapper .node-level,
+.content-wrapper .designation-level {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.content-wrapper .legend-badge.l0,
+.content-wrapper .node-level.level-0,
+.content-wrapper .designation-level.level-0 {
+  background: #0F172A !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+}
+
+html[data-pms-theme="dark"] .content-wrapper .legend-badge.l0,
+html[data-bs-theme="dark"] .content-wrapper .legend-badge.l0,
+[data-pms-theme="dark"] .content-wrapper .legend-badge.l0,
+html[data-pms-theme="dark"] .content-wrapper .node-level.level-0,
+html[data-bs-theme="dark"] .content-wrapper .node-level.level-0,
+[data-pms-theme="dark"] .content-wrapper .node-level.level-0 {
+  background: #1E293B !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  border: 1px solid rgba(148, 163, 184, 0.45) !important;
+}
+
+

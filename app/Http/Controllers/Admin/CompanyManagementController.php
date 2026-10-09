@@ -15,14 +15,17 @@ class CompanyManagementController extends Controller
     {
         $this->authorizeAdmin();
 
-        $companies = Company::orderBy('name')->paginate(15);
+        // Company users only ever see their own company; the platform Super Admin sees all.
+        $companies = Company::when(! \App\Services\TenantScope::isPlatformAdmin(), fn ($q) => $q->whereKey(\App\Services\TenantScope::companyId() ?: 0))
+            ->orderBy('name')
+            ->paginate(15);
 
         return view('admin.companies.index', compact('companies'));
     }
 
     public function create(): View
     {
-        $this->authorizeAdmin();
+        $this->authorizePlatformAdmin();
 
         $countryMap = \App\Support\CountryPhone::map();
         $selectedCountryCode = '+91';
@@ -40,7 +43,7 @@ class CompanyManagementController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $this->authorizeAdmin();
+        $this->authorizePlatformAdmin();
 
         $data = $this->validated($request);
         $data['logo'] = $this->upload($request, 'logo');
@@ -56,6 +59,7 @@ class CompanyManagementController extends Controller
     public function edit(Company $company): View
     {
         $this->authorizeAdmin();
+        \App\Services\TenantScope::authorizeCompany($company->id);
 
         $countryMap = \App\Support\CountryPhone::map();
         $selectedCountryCode = '+91';
@@ -99,8 +103,15 @@ class CompanyManagementController extends Controller
     public function update(Request $request, Company $company): RedirectResponse
     {
         $this->authorizeAdmin();
+        \App\Services\TenantScope::authorizeCompany($company->id);
 
         $data = $this->validated($request, $company);
+
+        // A company cannot change its own platform status or identity code (e.g. lift a suspension).
+        if (! \App\Services\TenantScope::isPlatformAdmin()) {
+            $data['status'] = $company->status;
+            $data['company_code'] = $company->company_code;
+        }
 
         if ($logo = $this->upload($request, 'logo')) {
             $data['logo'] = $logo;
@@ -137,7 +148,7 @@ class CompanyManagementController extends Controller
 
     public function activate(Company $company): RedirectResponse
     {
-        $this->authorizeAdmin();
+        $this->authorizePlatformAdmin();
 
         $company->update(['status' => 'active']);
 
@@ -146,7 +157,7 @@ class CompanyManagementController extends Controller
 
     public function deactivate(Company $company): RedirectResponse
     {
-        $this->authorizeAdmin();
+        $this->authorizePlatformAdmin();
 
         $company->update(['status' => 'inactive']);
 
@@ -280,6 +291,11 @@ class CompanyManagementController extends Controller
             'primary_color' => $request->input('primary_color', '#7C3AED'),
             'secondary_color' => $request->input('secondary_color', '#8B5CF6'),
         ];
+    }
+
+    private function authorizePlatformAdmin(): void
+    {
+        abort_unless(\App\Services\TenantScope::isPlatformAdmin(), 403, 'Only the platform Super Admin can create or change the status of companies.');
     }
 
     private function authorizeAdmin(): void

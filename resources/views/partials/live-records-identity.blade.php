@@ -1,0 +1,1 @@
+{{ hash('sha256', (auth('super_admin')->check() ? 'platform:' . auth('super_admin')->id() : 'tenant:' . auth()->id()) . ':' . (auth()->user()?->role ?? '') . ':' . session('current_company_id', auth()->user()?->company_id) . ':' . config('database.connections.tenant.database')) }}

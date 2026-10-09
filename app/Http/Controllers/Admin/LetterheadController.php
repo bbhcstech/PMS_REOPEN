@@ -80,7 +80,9 @@ class LetterheadController extends Controller
         ];
 
         // Organization dataset options for form dropdowns
-        $companies = Company::orderBy('name')->get();
+        $companies = \App\Services\TenantScope::isPlatformAdmin()
+            ? Company::orderBy('name')->get()
+            : Company::whereKey(\App\Services\TenantScope::companyId() ?: 0)->get();
         $branches = BusinessAddress::orderBy('branch_name')->get();
         $departments = Department::orderBy('dpt_name')->get();
         $projects = Project::orderBy('name')->get();
@@ -139,7 +141,9 @@ class LetterheadController extends Controller
         // Organization dataset options
         $letterheads = Letterhead::where('status', 'active')->orderBy('is_default', 'desc')->get();
         $defaultLetterhead = Letterhead::where('is_default', true)->first() ?: $letterheads->first();
-        $companies = Company::orderBy('name')->get();
+        $companies = \App\Services\TenantScope::isPlatformAdmin()
+            ? Company::orderBy('name')->get()
+            : Company::whereKey(\App\Services\TenantScope::companyId() ?: 0)->get();
         $branches = BusinessAddress::orderBy('branch_name')->get();
         $departments = Department::orderBy('dpt_name')->get();
         $projects = Project::orderBy('name')->get();
@@ -331,7 +335,9 @@ class LetterheadController extends Controller
             ]);
         }
 
-        $companies = Company::orderBy('name')->get();
+        $companies = \App\Services\TenantScope::isPlatformAdmin()
+            ? Company::orderBy('name')->get()
+            : Company::whereKey(\App\Services\TenantScope::companyId() ?: 0)->get();
         $branches = BusinessAddress::orderBy('branch_name')->get();
         $departments = Department::orderBy('dpt_name')->get();
         $projects = Project::orderBy('name')->get();
@@ -899,6 +905,8 @@ class LetterheadController extends Controller
 
     public function upload(Request $request, Company $company): RedirectResponse
     {
+        \App\Services\TenantScope::authorizeCompany($company->id);
+
         $request->validate([
             'letterhead_file' => 'required|file|mimes:pdf,doc,docx|max:10240',
         ]);
@@ -936,6 +944,8 @@ class LetterheadController extends Controller
 
     public function download(Company $company): BinaryFileResponse|RedirectResponse
     {
+        \App\Services\TenantScope::authorizeCompany($company->id);
+
         if (! $company->hasLetterhead() || ! File::exists(public_path($company->letterhead_file))) {
             return redirect()->back()->with('error', 'No letterhead file found for ' . $company->name);
         }
@@ -948,6 +958,8 @@ class LetterheadController extends Controller
 
     public function destroyLegacy(Company $company): RedirectResponse
     {
+        \App\Services\TenantScope::authorizeCompany($company->id);
+
         if ($company->letterhead_file && File::exists(public_path($company->letterhead_file))) {
             File::delete(public_path($company->letterhead_file));
         }
@@ -988,6 +1000,10 @@ class LetterheadController extends Controller
 
     private function populateContextualNames(array &$data): void
     {
+        if (! empty($data['company_id'])) {
+            \App\Services\TenantScope::authorizeCompany($data['company_id']);
+        }
+
         if (! empty($data['company_id']) && empty($data['company_name'])) {
             $company = Company::find($data['company_id']);
             $data['company_name'] = $company?->name;

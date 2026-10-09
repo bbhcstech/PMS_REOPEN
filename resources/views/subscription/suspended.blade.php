@@ -323,7 +323,7 @@
     {{-- ── Tab Navigation ── --}}
     <div class="section-tabs">
         <div class="section-tab active" id="tab-plans" onclick="switchTab('plans')">
-            <i class="bx bx-zap me-1"></i>
+            <i class="bx bxs-zap me-1"></i>
             @if($isManualSuspension) Status &amp; Info @else Plans &amp; Renewal @endif
         </div>
         <div class="section-tab" id="tab-notifications" onclick="switchTab('notifications')">
@@ -451,7 +451,7 @@
                                     <input type="hidden" name="plan_id" value="{{ $plan->id }}">
                                     <input type="hidden" name="billing_cycle" value="monthly">
                                     <button type="submit" class="btn btn-upgrade">
-                                        <i class="bx bx-zap me-1"></i>
+                                        <i class="bx bxs-zap me-1"></i>
                                         {{ $isCurrent ? 'Renew ' : 'Activate ' }}{{ $plan->name }}
                                     </button>
                                 </form>

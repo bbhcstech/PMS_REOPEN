@@ -1,0 +1,65 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Live record checks</title></head><body>
+<div data-live-records data-live-identity="alpha">
+  <div id="summary">1 project</div>
+  <form id="draft"><input id="draftInput" value="Original"><textarea id="draftText">Original</textarea></form>
+  <div id="tabs"><div role="tablist"><button class="active">Tab 2</button></div><div class="tab-pane active" id="pane">Old summary</div></div>
+  <div class="pms-table-tools" id="localTools">Local export settings</div>
+  <table id="records"><tbody><tr data-record-id="1"><td>Old name</td><td><a href="/records/1">Open</a></td><td><input type="checkbox" value="1"></td></tr></tbody></table>
+  <div data-live-chat id="liveChat"><span data-live-message-count>0</span><div data-live-feed="http://localhost/feed" data-last-id="0"></div>
+  <form data-live-reply action="http://localhost/reply"><textarea name="message">Draft reply</textarea><button type="submit">Send</button></form></div>
+</div>
+<pre id="result">RUNNING</pre>
+<script>
+const requests = [];
+let packet = { success: true, html: '<div data-message-id="1">Incoming message</div>', last_id: 1, count: 1 };
+let failPost = false;
+let page = `<html><body><div data-live-records data-live-identity="alpha"><div id="summary">2 projects</div><form id="draft"><input id="draftInput" value="Server value"><textarea id="draftText">Server value</textarea></form><div id="tabs"><div role="tablist"><button>Tab 1</button></div><div class="tab-pane" id="pane">New summary</div></div><table id="records"><tbody><tr data-record-id="2"><td>New row</td><td><a href="/records/2">Open</a></td><td><input type="checkbox" value="2"></td></tr><tr data-record-id="1"><td>Updated name</td><td><a href="/records/1">Open</a></td><td><input type="checkbox" value="1"></td></tr></tbody></table><div data-live-chat id="liveChat">Do not overwrite chat</div></div></body></html>`;
+window.fetch = async (url, options = {}) => {
+    requests.push({ url: String(url), method: options.method || 'GET', headers: options.headers });
+    if (String(url).includes('/feed')) return new Response(JSON.stringify(packet), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    if (options.method === 'POST') return new Response(JSON.stringify(failPost ? { message: 'Validation failed' } : { success: true }), { status: failPost ? 422 : 200, headers: { 'Content-Type': 'application/json' } });
+    return new Response(page, { status: 200, headers: { 'Content-Type': 'text/html' } });
+};
+</script>
+<script src="../../public/admin/assets/js/pms-live-records.js"></script>
+<script src="../../public/admin/assets/js/pms-complaint-live.js"></script>
+<script>
+(async () => {
+    const check = (ok, message) => { if (!ok) throw Error(message); };
+    const wait = () => new Promise(resolve => setTimeout(resolve, 20));
+    try {
+        const input = document.getElementById('draftInput'); input.value = 'Unsaved draft'; input.focus();
+        document.getElementById('draftText').value = 'Unsaved text';
+        const original = document.querySelector('tr[data-record-id="1"]');
+        const checkbox = original.querySelector('input'); checkbox.checked = true;
+        let clicks = 0; original.querySelector('a').addEventListener('click', event => { event.preventDefault(); clicks++; });
+        await wait();
+        check(document.querySelector('[data-message-id="1"]'), 'Incoming message did not appear from an empty chat');
+        await window.PmsLiveRecords.refresh();
+        check(document.getElementById('summary').textContent === '2 projects', 'Summary did not update');
+        check(document.querySelectorAll('#records tbody tr').length === 2, 'New record did not appear');
+        check(document.querySelector('tr[data-record-id="1"]') === original, 'Existing row/listeners were replaced');
+        check(original.cells[0].textContent === 'Updated name', 'Existing record did not update');
+        original.querySelector('a').click(); check(clicks === 1, 'Record handler was lost');
+        check(checkbox.checked && input.value === 'Unsaved draft' && document.getElementById('draftText').value === 'Unsaved text', 'Draft or selection was overwritten');
+        check(document.activeElement === input, 'Focus was lost');
+        check(document.getElementById('pane').classList.contains('active') && document.getElementById('pane').textContent === 'New summary', 'Tab state or data was lost');
+        check(document.getElementById('localTools'), 'Runtime toolbar was removed');
+        check(document.querySelector('[data-message-id="1"]'), 'Generic refresh overwrote live chat');
+        const chat = document.querySelector('[data-live-feed]');
+        window.PmsComplaintLive.append(chat, '<div data-message-id="1">Duplicate</div>');
+        check(chat.children.length === 1, 'Polling duplicated messages');
+        const form = document.querySelector('[data-live-reply]'); const textarea = form.querySelector('textarea');
+        failPost = true; textarea.value = 'Keep failed draft'; form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })); await wait();
+        check(textarea.value === 'Keep failed draft' && form.querySelector('[data-live-error]'), 'Failed send discarded draft or hid error');
+        failPost = false; packet = { success: true, html: '<div data-message-id="2">Sent reply</div>', last_id: 2, count: 2 };
+        form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })); await wait();
+        check(chat.querySelector('[data-message-id="2"]'), 'Sent reply did not appear without navigation');
+        page = page.replace('data-live-identity="alpha"', 'data-live-identity="beta"').replace('2 projects', 'Foreign company data');
+        await window.PmsLiveRecords.refresh();
+        check(document.getElementById('summary').textContent === '2 projects', 'Different identity data was injected');
+        check(requests.some(r => r.url.includes('after_id=0')) && requests.some(r => r.method === 'POST'), 'Live GET/send requests were not made');
+        document.getElementById('result').textContent = 'PASS: automatic incoming/sent chat, deduplication, failure recovery, record creation/updates, drafts, focus, selection, handlers, tabs and identity isolation.';
+    } catch (error) { document.getElementById('result').textContent = 'FAIL: ' + error.message; }
+})();
+</script></body></html>

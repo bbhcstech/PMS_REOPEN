@@ -138,7 +138,7 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
         'package'        => 'bx bx-package',
         'layers'         => 'bx bx-layer',
         'toggle-right'   => 'bx bx-toggle-right',
-        'percent'        => 'bx bx-percent',
+        'percent'        => 'bx bx-calculator',
     ];
 
     if (isset($bareMap[$icon])) {

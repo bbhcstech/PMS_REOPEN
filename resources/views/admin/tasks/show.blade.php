@@ -831,7 +831,7 @@
                     <h5><i class="bx bx-file-blank text-success"></i> Task Specification & Attributes</h5>
                     @if(($task->estimate_hours ?? 0) > 0 || ($task->estimate_minutes ?? 0) > 0)
                         <span class="badge bg-label-info text-dark">
-                            <i class="bx bx-hourglass-split me-1"></i>Est: {{ (int)($task->estimate_hours ?? 0) }}h {{ (int)($task->estimate_minutes ?? 0) }}m
+                            <i class="bx bx-hourglass me-1"></i>Est: {{ (int)($task->estimate_hours ?? 0) }}h {{ (int)($task->estimate_minutes ?? 0) }}m
                         </span>
                     @endif
                 </div>

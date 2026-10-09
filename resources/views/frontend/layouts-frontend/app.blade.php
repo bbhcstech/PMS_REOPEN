@@ -113,7 +113,11 @@
 
     <!-- Main Content -->
     @include('partials.page-back-navigation')
+    @auth
+    <div data-live-records data-live-identity="@include('partials.live-records-identity')" style="display:contents">
+    @endauth
     @yield('content')
+    @auth </div> @endauth
 
     <!-- Footer -->
     @include('frontend.layouts-frontend.footer')
@@ -132,5 +136,6 @@
     @include('admin.layout.toasts')
 
     @stack('scripts')
+    @auth <script src="{{ asset('admin/assets/js/pms-live-records.js') }}" defer></script> @endauth
 </body>
 </html>

@@ -5,6 +5,8 @@
 @section('page_subtitle', 'Central Multi-Tenant Control Hub')
 
 @section('content')
+@if(session('success'))<div class="alert alert-success" role="status">{{ session('success') }}</div>@endif
+@if($errors->any())<div class="alert alert-danger" role="alert">@foreach($errors->all() as $error)<div>{{ $error }}</div>@endforeach</div>@endif
   <style>
     /* ===== WELCOME / COMMANDo CENTER ===== */
     /* ===== WELCOME / COMMAND CENTER HERO CARD BANNER ===== */
@@ -936,7 +938,7 @@
       border-color: rgba(255, 255, 255, 0.1);
     }
     .plan-card-option:hover { border-color: #0284c7; }
-    .plan-card-option.selected { border-color: #0284c7; background: rgba(2, 132, 199, 0.08); }
+    .plan-card-option:has(input:checked) { border-color: #0284c7; background: rgba(2, 132, 199, 0.08); }
 
     /* MODALS */
     .modal-overlay {
@@ -1886,7 +1888,7 @@
                     <a href="javascript:void(0)" class="trigger-detail-drawer" data-company-id="{{ $company->id }}" data-company-name="{{ $company->name }}" data-company-email="{{ $company->email }}" data-company-db="{{ $company->db_name }}" data-company-logo="{{ $company->logo ? asset($company->logo) : '' }}">
                       <i class="bx bx-info-circle" style="color: #38bdf8;"></i> Quick Details
                     </a>
-                    <a href="javascript:void(0)" class="trigger-plan-modal" data-company-id="{{ $company->id }}">
+                    <a href="javascript:void(0)" class="trigger-plan-modal" data-company-id="{{ $company->id }}" data-current-plan-id="{{ $displaySub?->plan_id }}">
                       <i class="bx bx-layer" style="color: #c084fc;"></i> Change Subscription
                     </a>
                     <div class="divider"></div>
@@ -2339,13 +2341,14 @@
 
       <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px;">
         @forelse($plans as $plan)
-          <div class="plan-card-option {{ $loop->first ? 'selected' : '' }}" data-plan-id="{{ $plan->id }}" onclick="selectPlanCard(this, '{{ $plan->id }}')">
+          <label class="plan-card-option" style="display:block" data-plan-id="{{ $plan->id }}">
+            <input type="radio" name="plan_id" value="{{ $plan->id }}" form="assignPlanForm" required @checked($loop->first) style="position:absolute;opacity:0;width:1px;height:1px;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
               <span class="status-badge info" style="font-weight: 800; text-transform: uppercase;">{{ $plan->name }}</span>
               <strong style="font-size: 15px; color: var(--slate-dark);">${{ number_format($plan->monthly_price, 0) }} / mo</strong>
             </div>
             <div style="font-size: 12px; color: var(--slate-muted); margin-top: 4px;">{{ $plan->description ?? ($plan->max_users > 0 ? $plan->max_users . ' Users Max' : 'Unlimited Users') }}</div>
-          </div>
+          </label>
         @empty
           <div class="plan-card-option selected">
             <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -2359,7 +2362,6 @@
       <form id="assignPlanForm" method="POST" action="{{ Route::has('superadmin.subscriptions.assign') ? route('superadmin.subscriptions.assign') : url('/superadmin/subscriptions/assign') }}">
         @csrf
         <input type="hidden" name="company_id" id="modalPlanCompanyId" value="">
-        <input type="hidden" name="plan_id" id="modalPlanSelectedId" value="{{ $plans->first()?->id ?? 1 }}">
         <div style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid rgba(226, 232, 240, 0.8); padding-top: 16px;">
           <button type="button" class="btn btn-secondary" id="closePlanModalBtn">Cancel</button>
           <button type="submit" class="btn btn-primary" id="confirmPlanChangeBtn">Confirm Change</button>
@@ -2787,13 +2789,17 @@
       const planModal = document.getElementById('planChangeModal');
       const closePlanBtn = document.getElementById('closePlanModalBtn');
 
-      document.querySelectorAll('.trigger-plan-modal').forEach(trigger => {
-        trigger.addEventListener('click', function(e) {
+      document.addEventListener('click', function(e) {
+          const trigger = e.target.closest('.trigger-plan-modal');
+          if (!trigger) return;
           e.preventDefault();
-          const id = this.getAttribute('data-company-id');
+          const id = trigger.getAttribute('data-company-id');
           document.getElementById('modalPlanCompanyId').value = id;
+          const currentPlan = trigger.getAttribute('data-current-plan-id');
+          const choices = Array.from(document.querySelectorAll('#planChangeModal input[name="plan_id"]'));
+          const selected = choices.find(input => input.value === currentPlan) || choices[0];
+          choices.forEach(input => { input.checked = input === selected; });
           if (planModal) planModal.classList.add('open');
-        });
       });
 
       if (closePlanBtn && planModal) {
@@ -2807,10 +2813,8 @@
     });
 
     function selectPlanCard(card, planId) {
-      document.querySelectorAll('.plan-card-option').forEach(c => c.classList.remove('selected'));
-      card.classList.add('selected');
-      const hiddenInput = document.getElementById('modalPlanSelectedId');
-      if (hiddenInput) hiddenInput.value = planId;
+      const input = card.querySelector('input[name="plan_id"]');
+      if (input) input.checked = true;
     }
 
     // ---------- CHARTS (Chart.js Gradient & Curves) ----------

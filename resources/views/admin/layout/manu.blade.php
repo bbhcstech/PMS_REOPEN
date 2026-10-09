@@ -1746,7 +1746,7 @@
 
                 <li class="menu-item {{ request()->routeIs('subscription.suspended') ? 'active' : '' }}">
                     <a href="{{ route('subscription.suspended') }}" class="menu-link text-danger fw-bold">
-                        <i class="menu-icon tf-icons bx bx-zap text-danger"></i>
+                        <i class="menu-icon tf-icons bx bxs-zap text-danger"></i>
                         <div class="text-truncate">Reactivate Plan</div>
                     </a>
                 </li>
@@ -1833,6 +1833,13 @@
                 $isHrSidebarUser = strtolower((string)(auth()->user()?->role ?? '')) === 'hr';
             @endphp
 
+            @if(in_array(strtolower((string) auth()->user()?->role), ['admin', 'administrator'], true))
+                <li class="menu-item {{ request()->routeIs('admin.upper-level-employees.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.upper-level-employees.index') }}" class="menu-link">
+                        <i class="menu-icon tf-icons bx bx-user-plus"></i><div>Add Upper Level Employee</div>
+                    </a>
+                </li>
+            @endif
             @if($isHrSidebarUser)
                 {{-- HR Role: Show all HR features directly as top-level sidebar items without outer HR dropdown wrapper --}}
                 @if($canSeeModule('employees'))
@@ -2258,7 +2265,8 @@
                 <!-- //ticket section . -->
 
 
-            @if($canSeeModule('tickets'))
+            {{-- Admin Workspace uses Platform Support & Complaints instead of tickets --}}
+            @if($canSeeModule('tickets') && ! \App\Support\TicketAccess::hiddenForCurrentUser())
             <li class="menu-item {{ request()->routeIs('tickets.*') || request()->routeIs('ticket-groups.*') ? 'active' : '' }}">
                   <a href="{{ route('tickets.index') }}" class="menu-link" data-sidebar-key="tickets">
                        <i class="menu-icon tf-icons bx bx-receipt"></i>
@@ -2731,11 +2739,13 @@
                                     <i class="bx bx-plus me-2"></i> Add Task
                                 </a>
                             </li>
+                            @unless(\App\Support\TicketAccess::hiddenForCurrentUser())
                             <li title="Create Ticket">
                                 <a class="dropdown-item f-14 openRightModal" href="{{ route('tickets.create') }}">
                                     <i class="bx bx-plus me-2"></i> Create Ticket
                                 </a>
                             </li>
+                            @endunless
                         </ul>
                     </li>
                   </div>
@@ -3240,7 +3250,9 @@
                       <div class="mb-3">
                           <label for="type">Search For:</label>
                           <select name="type" id="type" class="form-select">
+                              @unless(\App\Support\TicketAccess::hiddenForCurrentUser())
                               <option value="ticket">Ticket</option>
+                              @endunless
                               <option value="task">Task</option>
                               <option value="project">Project</option>
                               <option value="employee">Employee</option>
@@ -3600,7 +3612,7 @@
                         </div>
                     </div>
                     <a href="{{ route('subscription.suspended') }}" class="btn btn-danger fw-bold rounded-pill px-4 pms-banner-btn">
-                        <i class="bx bx-zap me-1"></i> Reactivate Plan
+                        <i class="bx bxs-zap me-1"></i> Reactivate Plan
                     </a>
                 </div>
               @elseif($showExpiringBanner && $bannerDaysLeft !== null && $bannerDaysLeft <= 7 && $bannerDaysLeft >= 0)

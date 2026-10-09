@@ -1876,6 +1876,9 @@
                     'Designations' => 'designations',
                     default => strtolower($link['label']),
                 };
+                if ($slug === 'tickets' && \App\Support\TicketAccess::hiddenForCurrentUser()) {
+                    return false;
+                }
                 return $currentCompany ? $currentCompany->hasFeature($slug) : true;
             })->values()->all();
 
@@ -1890,6 +1893,9 @@
                 ['label' => 'Reports', 'slug' => 'reports', 'hint' => 'Attendance and operations reporting', 'route' => 'attendance.report', 'value' => 'View', 'percent' => max(35, $dashboardAttendancePercent), 'color' => '#6366F1'],
             ];
             $adminPieCharts = collect($adminPieCharts)->filter(function ($chart) use ($currentCompany) {
+                if ($chart['slug'] === 'tickets' && \App\Support\TicketAccess::hiddenForCurrentUser()) {
+                    return false;
+                }
                 return $currentCompany ? $currentCompany->hasFeature($chart['slug']) : true;
             })->values()->all();
 
@@ -2010,6 +2016,11 @@
             }
             if ($currentCompany && method_exists($currentCompany, 'hasFeature')) {
                 $activeModules = $activeModules->filter(fn ($m) => $currentCompany->hasFeature($m->slug))->values();
+            }
+            // Admin Workspace uses Platform Support & Complaints instead of tickets
+            if (\App\Support\TicketAccess::hiddenForCurrentUser()) {
+                $activeModules = $activeModules->reject(fn ($m) => $m->slug === 'tickets' || str_starts_with((string) $m->route_name, 'tickets.'))->values();
+                unset($moduleRouteFallbacks['tickets']);
             }
             $moduleScale = max(collect($moduleMetricMap)->filter(fn ($value) => is_numeric($value))->max() ?? 1, 1);
             $moduleIconFallbacks = [

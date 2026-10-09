@@ -971,7 +971,7 @@
 <div class="container-fluid px-4 py-3">
 
     {{-- MAIN COMMUNITY CHAT CONTAINER --}}
-    <div class="community-container" id="communityContainer">
+    <div class="community-container" id="communityContainer" data-live-preserve>
 
         {{-- 1. HEADER BAR --}}
         <div class="community-header">
@@ -1166,13 +1166,15 @@
     let selectedFile = null;
     let currentReplyParentId = null;
     let pollingInterval = null;
+    let isPollingMessages = false;
     let isUserNearBottom = true;
 
     document.addEventListener('DOMContentLoaded', function() {
         fetchInitialMessages();
 
         // Start delta polling every 3.5 seconds
-        pollingInterval = setInterval(pollNewMessages, 3500);
+        pollingInterval = setInterval(pollNewMessages, 2000);
+        document.addEventListener('visibilitychange', () => { if (!document.hidden) pollNewMessages(); });
 
         // Timeline Scroll Listener
         const timeline = document.getElementById('chatTimeline');
@@ -1212,7 +1214,8 @@
      * Poll new messages (delta polling)
      */
     function pollNewMessages() {
-        if (!lastLoadedMessageId) return;
+        if (document.hidden || isPollingMessages) return;
+        isPollingMessages = true;
 
         fetch(`{{ route('community.messages') }}?after_id=${lastLoadedMessageId}`, {
             headers: {
@@ -1235,7 +1238,8 @@
                 }
             }
         })
-        .catch(err => console.error('Polling error:', err));
+        .catch(err => console.error('Polling error:', err))
+        .finally(() => { isPollingMessages = false; });
     }
 
     /**
@@ -1469,7 +1473,7 @@
                 clearSelectedAttachment();
                 handleMessageInput();
                 appendNewMessages([data.message]);
-                lastLoadedMessageId = Math.max(lastLoadedMessageId, data.message.id);
+                pollNewMessages();
                 scrollToBottom();
             } else {
                 alert(data.error || 'Failed to send message.');

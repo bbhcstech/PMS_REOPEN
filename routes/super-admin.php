@@ -22,9 +22,13 @@ Route::prefix('super-admin')->name('super-admin.')->group(function () {
         Route::post('/login', [AuthController::class, 'login']);
     });
 
-    // Authenticated super admin routes (supports super_admin and web auth guards)
-    Route::middleware(['auth:super_admin,web'])->group(function () {
-        Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    Route::post('/logout', [AuthController::class, 'logout'])
+        ->middleware(['auth:super_admin,web'])
+        ->name('logout');
+
+    // Platform Super Admin only: company users (admin, HR, manager, employee) are tenant users
+    // and must never reach the cross-company management portal.
+    Route::middleware(['auth:super_admin,web', 'platform.superadmin'])->group(function () {
 
         // Super Admin Profile Management
         Route::get('/profile', [\App\Http\Controllers\SuperAdminController::class, 'profile'])->name('profile');
@@ -145,10 +149,10 @@ Route::prefix('super-admin')->name('super-admin.')->group(function () {
         Route::get('/complaints/export', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'export'])->name('complaints.export');
         Route::get('/complaints/unread-count', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'unreadCount'])->name('complaints.unread-count');
         Route::get('/complaints/{id}', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'show'])->name('complaints.show');
+        Route::get('/complaints/{id}/messages', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'messages'])->name('complaints.messages');
         Route::post('/complaints/{id}/respond', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'respond'])->name('complaints.respond');
         Route::match(['GET', 'POST', 'PATCH'], '/complaints/{id}/status', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'updateStatus'])->name('complaints.status');
         Route::match(['GET', 'POST', 'PATCH'], '/complaints/{id}/assign', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'assign'])->name('complaints.assign');
         Route::get('/complaints/{id}/attachment/{attachmentId}', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'downloadAttachment'])->name('complaints.attachment');
     });
 });
-

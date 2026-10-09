@@ -21,12 +21,15 @@ class CommunityMessageController extends Controller
      */
     protected function getCompanyId(): int
     {
+        abort_unless(Auth::check(), 403);
         $contextId = app(CompanyContext::class)->id();
         if ($contextId) {
+            abort_if(! \App\Services\TenantScope::isPlatformAdmin() && (int) Auth::user()->company_id !== (int) $contextId, 403);
             return (int) $contextId;
         }
 
-        return (int) (Auth::user()?->company_id ?? 1);
+        abort_unless(Auth::user()?->company_id, 403);
+        return (int) Auth::user()->company_id;
     }
 
     /**
@@ -115,8 +118,8 @@ class CommunityMessageController extends Controller
                       $uq->where('name', 'like', "%{$search}%");
                   });
             });
-        } elseif ($afterId) {
-            $query->where('id', '>', (int)$afterId);
+        } elseif ($request->has('after_id')) {
+            $query->where('id', '>', (int)$afterId)->orderBy('id')->limit(100);
         } elseif ($beforeId) {
             $query->where('id', '<', (int)$beforeId)->orderBy('id', 'desc')->limit(30);
         } else {
@@ -135,7 +138,7 @@ class CommunityMessageController extends Controller
         });
 
         // Mark last read if fetching new messages
-        if ($afterId && $messages->isNotEmpty() && $user) {
+        if ($request->has('after_id') && $messages->isNotEmpty() && $user) {
             $maxId = $messages->max('id');
             CommunityUserState::updateOrCreate(
                 ['company_id' => $companyId, 'user_id' => $user->id],

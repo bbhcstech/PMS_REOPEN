@@ -142,6 +142,7 @@
         @yield('js')
         @stack('js')
         @stack('scripts')  <!-- ✅ Correct way to render pushed scripts -->
+        <script src="{{ asset('admin/assets/js/pms-live-records.js') }}" defer></script>
         <script src="{{ asset('admin/assets/js/pms-table-tools.js') }}?v={{ $adminTableToolsVersion }}"></script>
         @php
           $adminThemeVersion = file_exists(public_path('admin/assets/css/pms-bitroxia-theme.css')) ? filemtime(public_path('admin/assets/css/pms-bitroxia-theme.css')) : time();

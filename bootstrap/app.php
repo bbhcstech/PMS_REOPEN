@@ -44,6 +44,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             SetTenantConnection::class,
             \App\Http\Middleware\EnsureCompanySubscriptionActive::class,
+            \App\Http\Middleware\BlockTicketsInAdminWorkspace::class,
         ]);
         $middleware->alias([
             'admin' => RoleMiddleware::class,
@@ -52,6 +53,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => RoleMiddleware::class,
             'feature' => \App\Http\Middleware\CheckFeatureAccess::class,
             'developer.access' => \App\Http\Middleware\EnsureDeveloperAccess::class,
+            'platform.superadmin' => \App\Http\Middleware\EnsurePlatformSuperAdmin::class,
             'subscription.active' => \App\Http\Middleware\EnsureCompanySubscriptionActive::class,
         ]);
     })

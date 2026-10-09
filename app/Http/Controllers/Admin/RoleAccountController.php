@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class RoleAccountController extends Controller
@@ -20,14 +21,15 @@ class RoleAccountController extends Controller
         return view('admin.settings.role-accounts.index', [
             'role' => $role,
             'title' => ucfirst($role) . ' Management',
-            'accounts' => User::where('role', $role)->orderBy('name')->get(),
-            'companies' => Company::where('status', 'active')->orderBy('name')->get(),
+            'accounts' => User::where('role', $role)->when(auth()->user()?->role !== 'superadmin', fn ($q) => $q->where('company_id', auth()->user()?->company_id))->orderBy('name')->get(),
+            'companies' => Company::where('status', 'active')->when(auth()->user()?->role !== 'superadmin', fn ($q) => $q->whereKey(auth()->user()?->company_id))->orderBy('name')->get(),
         ]);
     }
 
     public function store(Request $request, string $role): RedirectResponse
     {
         $this->authorizeAdmin();
+        $this->guardCompany($request);
         $role = $this->normalizeManagedRole($role);
 
         $data = $request->validate([
@@ -54,6 +56,7 @@ class RoleAccountController extends Controller
     public function update(Request $request, string $role, User $user): RedirectResponse
     {
         $this->authorizeAdmin();
+        $this->guardCompany($request, $user);
         $role = $this->normalizeManagedRole($role);
         abort_unless($user->normalizedRole() === $role, 404);
 
@@ -85,6 +88,7 @@ class RoleAccountController extends Controller
     public function resetPassword(Request $request, string $role, User $user): RedirectResponse
     {
         $this->authorizeAdmin();
+        $this->guardCompany($request, $user);
         $role = $this->normalizeManagedRole($role);
         abort_unless($user->normalizedRole() === $role, 404);
 
@@ -100,6 +104,17 @@ class RoleAccountController extends Controller
         abort_unless(in_array($role, ['hr', 'manager'], true), 404);
 
         return $role;
+    }
+
+    private function guardCompany(Request $request, ?User $target = null): void
+    {
+        abort_if($target?->company_staff_role_id, 403, 'Manage this account in Add Upper Level Employee.');
+        if (Auth::guard('super_admin')->check() || auth()->user()?->role === 'superadmin') return;
+        $companyId = (int) auth()->user()?->company_id;
+        abort_unless($companyId, 403);
+        abort_if($target && (int) $target->company_id !== $companyId, 403);
+        abort_if($request->filled('company_id') && $request->integer('company_id') !== $companyId, 403);
+        $request->merge(['company_id' => $companyId]);
     }
 
     private function authorizeAdmin(): void

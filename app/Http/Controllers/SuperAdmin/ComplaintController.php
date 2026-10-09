@@ -31,7 +31,7 @@ class ComplaintController extends Controller
         if (auth()->check()) {
             $user = auth()->user();
             $role = strtolower((string) ($user->role ?? ''));
-            if ($role === 'superadmin' || $role === 'admin') {
+            if ($role === 'superadmin') {
                 return;
             }
         }
@@ -346,6 +346,13 @@ class ComplaintController extends Controller
         }
 
         return redirect()->back()->with('success', 'Response posted and Company Admin notified successfully.');
+    }
+
+    public function messages(Request $request, $id): JsonResponse
+    {
+        abort_unless(\App\Services\TenantScope::isPlatformAdmin(), 403);
+        $ticket = CompanyComplaint::on('central')->findOrFail($id);
+        return app(\App\Services\ComplaintConversationFeed::class)->response($request, $ticket, true);
     }
 
     /**

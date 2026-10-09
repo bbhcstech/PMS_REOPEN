@@ -147,8 +147,8 @@
         </div>
     </div>
 
-    @if(auth()->user()?->normalizedRole() === 'admin')
-    {{-- Company Selector - SaaS company workspace filter --}}
+    @if(\App\Services\TenantScope::isPlatformAdmin())
+    {{-- Company Selector - SaaS company workspace filter (platform Super Admin only; company users see only their own company) --}}
     <div class="company-switcher-grid !grid !grid-cols-1 !gap-3 sm:!grid-cols-2 lg:!grid-cols-3 2xl:!grid-cols-6 !mb-5" style="position: relative !important; z-index: 1 !important;">
         <a href="{{ route('employees.index', request()->except(['company_id', 'page'])) }}"
            class="company-switch-card {{ empty($selectedCompanyId) ? 'active' : '' }}">
@@ -627,7 +627,7 @@
                                             </a>
                                         </li>
                                         <li>
-                                            <a class="dropdown-item" href="{{ route('employees.edit', $employee->id) }}">
+                                            <a class="dropdown-item" href="{{ $employee->company_staff_role_id ? route('admin.upper-level-employees.index', ['edit' => $employee->id]) : route('employees.edit', $employee->id) }}">
                                                 <i class="fas fa-edit text-info me-2"></i> Edit Profile
                                             </a>
                                         </li>

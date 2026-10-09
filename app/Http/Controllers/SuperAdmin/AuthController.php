@@ -25,7 +25,7 @@ class AuthController extends Controller
             if ($isDev) {
                 return redirect()->route('developer.dashboard');
             }
-            if (in_array(strtolower((string) ($user->role ?? '')), ['superadmin', 'admin'], true)) {
+            if (\App\Services\TenantScope::isPlatformAdmin()) {
                 return redirect()->route('superadmin.dashboard');
             }
             return redirect()->route('dashboard');

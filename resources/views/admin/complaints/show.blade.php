@@ -66,7 +66,7 @@
     color: #f8fafc !important;
 }
 </style>
-<div class="container-fluid px-4 py-4" style="max-width: 960px;">
+<div class="container-fluid px-4 py-4" style="max-width: 960px;" data-live-chat>
 
   <div class="d-flex justify-content-between align-items-center mb-3">
     <a href="{{ route('admin.company-complaints.index') }}" class="btn btn-sm btn-light border fw-bold" style="border-radius: 8px;">
@@ -135,33 +135,12 @@
   <!-- Timeline Feed -->
   <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px;">
     <div class="card-header bg-white p-3 border-bottom">
-      <h6 class="fw-bold mb-0 text-dark"><i class="bx bx-conversation me-1 text-primary"></i> Conversation History ({{ $ticket->conversations->count() }} messages)</h6>
+      <h6 class="fw-bold mb-0 text-dark"><i class="bx bx-conversation me-1 text-primary"></i> Conversation History (<span data-live-message-count>{{ $ticket->conversations->count() }}</span> messages)</h6>
     </div>
 
     <div class="card-body p-4">
-      <div class="d-flex flex-column gap-3">
-        @foreach($ticket->conversations as $conv)
-          @php $isSelf = $conv->sender_type === 'company_admin'; @endphp
-          <div class="d-flex {{ $isSelf ? 'justify-content-start' : 'justify-content-end' }}">
-            <div class="chat-msg-bubble {{ $isSelf ? 'chat-msg-self' : 'chat-msg-other' }}">
-              <div class="chat-msg-meta mb-1">
-                {{ $conv->sender_name }} • {{ $conv->created_at?->format('d M, h:i A') }} ({{ $isSelf ? 'You' : 'Super Admin' }})
-              </div>
-              <div class="fs-6 chat-msg-body" style="white-space: pre-wrap; line-height: 1.5;">{{ $conv->message }}</div>
-
-              @if($conv->attachments->count() > 0)
-                <div class="mt-2 pt-2 border-top">
-                  <div class="fs-8 fw-bold mb-1">Attachments:</div>
-                  @foreach($conv->attachments as $att)
-                    <a href="{{ route('admin.company-complaints.attachment', [$ticket->id, $att->id]) }}" target="_blank" class="fs-7 text-primary d-block text-decoration-none">
-                      <i class="bx bx-paperclip"></i> {{ $att->original_name }} ({{ round($att->file_size / 1024, 1) }} KB)
-                    </a>
-                  @endforeach
-                </div>
-              @endif
-            </div>
-          </div>
-        @endforeach
+      <div class="d-flex flex-column gap-3" data-live-feed="{{ route('admin.company-complaints.messages', $ticket->id) }}" data-last-id="{{ $ticket->conversations->max('id') ?? 0 }}">
+        @include('admin.complaints.messages', ['messages' => $ticket->conversations])
       </div>
     </div>
   </div>
@@ -171,7 +150,7 @@
     <div class="card border-0 shadow-sm" style="border-radius: 16px;">
       <div class="card-body p-4">
         <h6 class="fw-bold mb-3 text-dark"><i class="bx bx-reply me-1 text-success"></i> Reply to Super Admin</h6>
-        <form method="POST" action="{{ route('admin.company-complaints.reply', $ticket->id) }}" enctype="multipart/form-data">
+        <form method="POST" action="{{ route('admin.company-complaints.reply', $ticket->id) }}" enctype="multipart/form-data" data-live-reply>
           @csrf
           <div class="mb-3">
             <textarea name="message" rows="4" class="form-control" placeholder="Write your response or upload additional info..." required style="border-radius: 8px;"></textarea>
@@ -193,3 +172,6 @@
 
 </div>
 @endsection
+@push('scripts')
+<script src="{{ asset('admin/assets/js/pms-complaint-live.js') }}" defer></script>
+@endpush

@@ -111,7 +111,7 @@ class ClientController extends Controller
 
         $clients    = $query->latest()->paginate(25);
         $categories = ClientCategory::all();
-        $countries  = Country::all();
+        $countries  = Country::forForms();
 
         return view('admin.clients.index', compact('clients', 'categories', 'countries'));
     }   
@@ -120,7 +120,7 @@ class ClientController extends Controller
         $categories    = ClientCategory::all();
         $subcategories = ClientSubCategory::with('category')->get();
         $users         = User::all();
-        $countries     = Country::all();
+        $countries     = Country::forForms();
 
         // preview next client code (same logic as in Client model boot method)
         $nextId = (Client::max('id') ?? 0) + 1;
@@ -606,7 +606,7 @@ class ClientController extends Controller
         $categories    = ClientCategory::all();
         $subcategories = ClientSubCategory::with('category')->get();
         $users         = User::all();
-        $countries     = Country::all();
+        $countries     = Country::forForms();
 
         $languages = \App\Models\Language::dropdownOptions();
         return view('admin.clients.edit', compact('client', 'categories', 'subcategories', 'users', 'countries', 'languages'));
@@ -816,7 +816,7 @@ class ClientController extends Controller
 
         $clients    = $query->get();
         $categories = ClientCategory::all();
-        $countries  = Country::all();
+        $countries  = Country::forForms();
 
         return view('admin.clients.verification-pending', compact('clients', 'categories', 'countries'));
     }

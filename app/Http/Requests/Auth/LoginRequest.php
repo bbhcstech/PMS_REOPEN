@@ -566,6 +566,17 @@ class LoginRequest extends FormRequest
             // Deleted companies cannot be signed into, whichever database the account was found in
             $this->ensureCompanyNotDeleted($user->company_id);
 
+            if ($user->company_staff_role_id) {
+                try {
+                    app(\App\Services\CompanyStaffLogin::class)->authenticate($user, $inputPassword, $this->boolean('remember'));
+                } catch (ValidationException $e) {
+                    RateLimiter::hit($this->throttleKey());
+                    throw $e;
+                }
+                RateLimiter::clear($this->throttleKey());
+                return;
+            }
+
             $trimmedInputPassword = trim($inputPassword);
 
             // Self-healing: If raw_password matches input (exact, case-insensitive, or trimmed)

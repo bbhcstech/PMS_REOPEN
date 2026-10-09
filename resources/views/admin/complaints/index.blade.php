@@ -25,6 +25,13 @@
     </div>
   @endif
 
+  @if(session('info'))
+    <div class="alert alert-info alert-dismissible fade show border-0 shadow-sm mb-4" role="alert" style="border-radius: 12px;">
+      <i class="bx bx-info-circle me-2 fs-5 align-middle"></i> {{ session('info') }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  @endif
+
   <!-- KPI Stat Cards -->
   <div class="row g-3 mb-4">
     <div class="col-md-2 col-sm-6">
@@ -216,7 +223,7 @@
           @empty
             <tr>
               <td colspan="9" class="text-center py-5 text-muted">
-                <i class="bx bx-inbox fs-1 d-block mb-2 opacity-50"></i>
+                <i class="bx bx-archive-in fs-1 d-block mb-2 opacity-50"></i>
                 <div class="fw-bold fs-6 text-dark">No support complaints found</div>
                 <p class="fs-7 mb-0">Have an issue or need assistance? Click "Raise a Complaint" above to submit a ticket to Super Admin.</p>
               </td>

@@ -35,7 +35,9 @@
             <!-- Page Content -->
             <main>
                 @include('partials.page-back-navigation')
+                <div data-live-records data-live-identity="@include('partials.live-records-identity')" style="display:contents">
                 {{ $slot }}
+                </div>
             </main>
         </div>
         <script>
@@ -68,5 +70,6 @@
         </script>
         @include('partials.password-changed-modal')
         @include('admin.layout.toasts')
+        <script src="{{ asset('admin/assets/js/pms-live-records.js') }}" defer></script>
     </body>
 </html>

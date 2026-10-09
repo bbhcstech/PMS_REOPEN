@@ -164,7 +164,7 @@ public function create(Request $request)
     $departments = Department::with('parent')->latest()->get();
     $designations = Designation::all();
     $users = User::where('role', 'employee')->orderBy('name')->get();
-    $countries = Country::all();
+    $countries = Country::forForms();
     $employee = null;
     $prtdepartments = ParentDepartment::latest()->get();
 
@@ -217,6 +217,7 @@ public function create(Request $request)
 {
    abort_unless($this->canCreateWorkItems(), 403);
    $this->validateTaskDates($request);
+   \App\Services\TaskFormSchema::ensure();
    \App\Services\TaskPrioritySchema::ensure();
    \App\Services\TaskLabelsSchema::ensure();
 
@@ -395,7 +396,7 @@ public function create(Request $request)
         $designations = Designation::all();
          $departments = Department::with('parent')->latest()->get();
         $users = User::where('role', 'employee')->orderBy('name')->get();
-       $countries = Country::all();
+       $countries = Country::forForms();
        $employee = null;
        $prtdepartments = ParentDepartment::latest()->get();
 
@@ -417,6 +418,7 @@ public function update(Request $request, Task $task)
 {
     abort_unless($this->canCreateWorkItems(), 403);
     $this->validateTaskDates($request);
+    \App\Services\TaskFormSchema::ensure();
     \App\Services\TaskPrioritySchema::ensure();
     \App\Services\TaskLabelsSchema::ensure();
 

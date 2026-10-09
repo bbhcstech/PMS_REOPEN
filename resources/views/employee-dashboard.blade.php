@@ -1682,7 +1682,7 @@
                     </div>
                     <div class="col-lg-3 col-md-6">
                         <div class="employee-rule">
-                            <i class="bx bx-plane-alt text-info fs-3 me-2"></i>
+                            <i class="bx bxs-plane-alt text-info fs-3 me-2"></i>
                             <span class="employee-rule-text">Approved leave is shown automatically from the leave table.</span>
                         </div>
                     </div>

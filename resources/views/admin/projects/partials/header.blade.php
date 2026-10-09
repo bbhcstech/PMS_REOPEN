@@ -71,6 +71,11 @@
         ],
     ];
 
+    // Admin Workspace uses Platform Support & Complaints instead of tickets
+    if (\App\Support\TicketAccess::hiddenForCurrentUser()) {
+        unset($tabs['tickets']);
+    }
+
     $statusOptions = [
         'pending' => 'Pending',
         'not started' => 'Not Started',

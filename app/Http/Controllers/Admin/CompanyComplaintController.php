@@ -150,8 +150,18 @@ class CompanyComplaintController extends Controller
     /**
      * Send Reply to Super Admin.
      */
-    public function reply(Request $request, $id): RedirectResponse
+    public function messages(Request $request, $id): JsonResponse
     {
+        $company = $this->getActiveCompany();
+        abort_unless(auth()->user() && (int) auth()->user()->company_id === (int) $company->id, 403);
+        $ticket = CompanyComplaint::on('central')->where('company_id', $company->id)->findOrFail($id);
+        return app(\App\Services\ComplaintConversationFeed::class)->response($request, $ticket);
+    }
+
+    public function reply(Request $request, $id): RedirectResponse|JsonResponse
+    {
+        $company = $this->getActiveCompany();
+        abort_unless(auth()->user() && (int) auth()->user()->company_id === (int) $company->id, 403);
         $request->validate([
             'message'       => 'required|string|min:2',
             'attachments.*' => 'nullable|file|max:5120',
@@ -176,6 +186,8 @@ class CompanyComplaintController extends Controller
         }
 
         $this->complaintService->addResponse($ticket, $request->message, $user, 'company_admin', $files);
+
+        if ($request->expectsJson()) return response()->json(['success' => true]);
 
         return redirect()->back()->with('success', 'Response sent successfully to Super Admin.');
     }

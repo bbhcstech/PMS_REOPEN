@@ -950,7 +950,9 @@
             @endif
 
             @include('partials.page-back-navigation')
+            <div data-live-records data-live-identity="@include('partials.live-records-identity')" style="display:contents">
             @yield('content')
+            </div>
         </main>
     </div>
 
@@ -997,5 +999,6 @@
     </script>
     @include('admin.layout.toasts')
     @yield('scripts')
+    <script src="{{ asset('admin/assets/js/pms-live-records.js') }}" defer></script>
 </body>
 </html>

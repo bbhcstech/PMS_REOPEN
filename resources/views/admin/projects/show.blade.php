@@ -549,10 +549,11 @@
             </div>
         </div>
 
-        {{-- Row 6: Burndown & Tickets --}}
+        {{-- Row 6: Burndown & Tickets (tickets are not part of the Admin Workspace) --}}
+        @php $hideProjectTickets = \App\Support\TicketAccess::hiddenForCurrentUser(); @endphp
         <div class="row g-4 mb-4">
             {{-- 10. Burndown Feature Summary --}}
-            <div class="col-lg-6">
+            <div class="{{ $hideProjectTickets ? 'col-12' : 'col-lg-6' }}">
                 <div class="overview-card h-100">
                     <div class="overview-card-header d-flex justify-content-between align-items-center">
                         <div class="d-flex align-items-center gap-2">
@@ -589,6 +590,7 @@
             </div>
 
             {{-- 11. Tickets Feature Summary --}}
+            @unless($hideProjectTickets)
             <div class="col-lg-6">
                 <div class="overview-card h-100">
                     <div class="overview-card-header d-flex justify-content-between align-items-center">
@@ -625,6 +627,7 @@
                     </div>
                 </div>
             </div>
+            @endunless
         </div>
 
         {{-- Employee Update Form (if employee) --}}

@@ -1337,17 +1337,19 @@ class CompanyController extends Controller
      */
     public function assignPlan(Request $request): RedirectResponse|\Illuminate\Http\JsonResponse
     {
+        abort_unless(\App\Services\TenantScope::isPlatformAdmin(), 403);
         $request->validate([
-            'company_id' => 'required',
-            'plan_id' => 'required',
+            'company_id' => 'required|integer|exists:central.companies,id',
+            'plan_id' => ['required', \Illuminate\Validation\Rule::exists('central.plans', 'id')->where(fn ($q) => $q->whereIn('slug', \App\Support\SupportedPlans::SLUGS)->where('is_active', true))],
             'billing_cycle' => 'nullable|in:monthly,yearly',
         ]);
 
         $companyId = $request->input('company_id');
         $planId = $request->input('plan_id');
-        $cycle = $request->input('billing_cycle', 'monthly');
+        $cycle = $request->input('billing_cycle') ?: 'monthly';
 
         try {
+            \App\Services\SubscriptionChangeSchema::ensure();
             // Resolve Company
             $company = Company::on('central')->find($companyId) ?? \App\Models\Company::find($companyId);
             if (!$company) {
@@ -1357,31 +1359,7 @@ class CompanyController extends Controller
                 return back()->withErrors(['error' => 'Tenant company not found.']);
             }
             
-            // Resolve Plan
-            $plan = \App\Models\Central\Plan::on('central')->find($planId)
-                 ?? \App\Models\Central\Plan::on('central')->where('slug', strtolower($planId))->orWhere('name', 'LIKE', $planId)->first()
-                 ?? \App\Models\SubscriptionPlan::find($planId)
-                 ?? \App\Models\SubscriptionPlan::where('slug', strtolower($planId))->orWhere('name', 'LIKE', $planId)->first();
-
-            if (! $plan) {
-                $targetSlug = strtolower($planId);
-                $dpMap = [
-                    'free' => ['name' => 'FREE', 'slug' => 'free', 'monthly_price' => 0, 'yearly_price' => 0, 'max_users' => 5, 'max_storage_mb' => 5120],
-                    'gold' => ['name' => 'GOLD', 'slug' => 'gold', 'monthly_price' => 4999, 'yearly_price' => 49990, 'max_users' => 25, 'max_storage_mb' => 25600],
-                    'platinum' => ['name' => 'PLATINUM', 'slug' => 'platinum', 'monthly_price' => 9999, 'yearly_price' => 99990, 'max_users' => 100, 'max_storage_mb' => 102400],
-                    'diamond' => ['name' => 'DIAMOND', 'slug' => 'diamond', 'monthly_price' => 19999, 'yearly_price' => 199990, 'max_users' => 0, 'max_storage_mb' => 512000],
-                ];
-
-                $dpData = $dpMap[$targetSlug] ?? $dpMap['gold'];
-
-                try {
-                    $plan = \App\Models\Central\Plan::on('central')->firstOrCreate(['slug' => $dpData['slug']], $dpData);
-                } catch (\Throwable $e) {
-                    try {
-                        $plan = \App\Models\SubscriptionPlan::firstOrCreate(['slug' => $dpData['slug']], $dpData);
-                    } catch (\Throwable $ex) {}
-                }
-            }
+            $plan = \App\Models\Central\Plan::on('central')->standard()->where('is_active', true)->findOrFail($planId);
 
             if ($company && $plan) {
                 /** @var \App\Services\SubscriptionService $subService */
@@ -1389,21 +1367,25 @@ class CompanyController extends Controller
 
                 $isManual = (bool) ($company->manually_suspended ?? false);
 
-                $sub = $subService->activateOrUpgradePlan(
-                    company: $company,
-                    plan: $plan,
-                    billingCycle: $cycle,
-                    performedBy: auth('super_admin')->user()?->name ?? auth()->user()?->name ?? 'Super Admin Command Center'
-                );
+                $sub = DB::connection('central')->transaction(function () use (&$company, $plan, $cycle, $subService, &$isManual) {
+                    $company = Company::on('central')->whereKey($company->id)->lockForUpdate()->firstOrFail();
+                    $isManual = (bool) $company->manually_suspended;
+                    $sub = $subService->activateOrUpgradePlan(
+                        company: $company,
+                        plan: $plan,
+                        billingCycle: $cycle,
+                        performedBy: auth('super_admin')->user()?->name ?? auth()->user()?->name ?? 'Super Admin Command Center'
+                    );
 
-                // Update resource limits on company record, preserving manual suspension if set
-                $newCompanyStatus = $isManual ? 'suspended' : 'active';
-                $company->update([
-                    'max_users'      => $plan->max_users > 0 ? $plan->max_users : 999999,
-                    'max_storage_mb' => $plan->max_storage_mb > 0 ? $plan->max_storage_mb : 512000,
-                    'status'         => $newCompanyStatus,
-                    'trial_ends_at'  => $sub->ends_at,
-                ]);
+                    // Preserve manual suspension while applying the chosen limits.
+                    $company->update([
+                        'max_users'      => $plan->max_users > 0 ? $plan->max_users : 999999,
+                        'max_storage_mb' => $plan->max_storage_mb > 0 ? $plan->max_storage_mb : 512000,
+                        'status'         => $isManual ? 'suspended' : 'active',
+                        'trial_ends_at'  => $sub->ends_at,
+                    ]);
+                    return $sub;
+                });
 
                 $startFmt = $sub->starts_at->format('M d, Y, h:i A');
                 $endFmt = $sub->ends_at->format('M d, Y, h:i A');
@@ -1418,7 +1400,7 @@ class CompanyController extends Controller
                         'company_id'          => $company->id,
                         'starts_at_formatted' => $startFmt,
                         'ends_at_formatted'   => $endFmt,
-                        'status'              => 'active',
+                        'status'              => $isManual ? 'suspended' : 'active',
                     ]);
                 }
 

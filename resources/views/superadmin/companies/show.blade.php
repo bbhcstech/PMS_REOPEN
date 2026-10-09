@@ -1109,7 +1109,7 @@
         <div class="metric-summary-card">
             <div class="header-row">
                 <div class="label">STORAGE</div>
-                <div class="icon-box icon-box-purple"><i class="bx bx-hard-drive"></i></div>
+                <div class="icon-box icon-box-purple"><i class="bx bx-hdd"></i></div>
             </div>
             <div class="value">0%</div>
             <div class="subtext">0 MB / {{ $company->max_storage_mb ?? 10000 }} MB</div>
@@ -1730,7 +1730,7 @@
                     <div class="form-field-group">
                         <label class="form-field-label" for="company_max_storage_edit">Max Storage (MB)</label>
                         <div class="input-with-icon-wrapper">
-                            <i class="bx bx-hard-drive input-icon"></i>
+                            <i class="bx bx-hdd input-icon"></i>
                             <input type="number" min="50" name="max_storage_mb" id="company_max_storage_edit" class="form-control-custom" value="{{ old('max_storage_mb', $company->max_storage_mb ?? 1024) }}" />
                         </div>
                     </div>

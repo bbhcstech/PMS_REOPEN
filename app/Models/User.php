@@ -136,6 +136,7 @@ class User extends Authenticatable
     }
 
     protected $fillable = [
+        'company_staff_role_id',
         'name',
         'company_id',
         'email',
@@ -370,6 +371,11 @@ class User extends Authenticatable
     public function employeeDetail()
     {
         return $this->hasOne(EmployeeDetail::class);
+    }
+
+    public function companyStaffRole()
+    {
+        return $this->belongsTo(CompanyStaffRole::class);
     }
 
     public function salaryAssignments()

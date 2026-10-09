@@ -200,7 +200,7 @@ class LeadContactController extends Controller
         $this->authorizeLeadAccess('create');
 
         $users = User::select('id', 'name')->get();
-        $countries = Country::orderBy('name')->get();
+        $countries = Country::forForms();
         return view('admin.leads.contacts.create', compact('users', 'countries'));
     }
 
@@ -360,7 +360,7 @@ class LeadContactController extends Controller
 
         $lead = LeadContact::findOrFail($id);
         $users = User::select('id', 'name')->get();
-        $countries = Country::orderBy('name')->get();
+        $countries = Country::forForms();
 
         return view('admin.leads.contacts.edit', compact('lead', 'users', 'countries'));
     }
