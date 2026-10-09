@@ -60,4 +60,14 @@ $html = Blade::render(substr($template, $start, $end - $start), ['plans' => App\
 $dom = new DOMDocument; @$dom->loadHTML($html); $xpath = new DOMXPath($dom);
 subscriptionCheck($xpath->query('//input[@type="radio" and @name="plan_id" and @form="assignPlanForm"]')->length === 4, 'Plan cards do not submit the selected tier.');
 subscriptionCheck($xpath->query('//input[@type="hidden" and @name="plan_id"]')->length === 0, 'Hidden default plan overrides selection.');
-echo "PASS: legacy central schema repair, selected-plan persistence, billing/limits, isolation, suspension, downgrade policy, atomic rollback and native modal selections.\n";
+$companiesTemplate = file_get_contents(dirname(__DIR__, 2) . '/resources/views/superadmin/companies/index.blade.php');
+$start = strpos($companiesTemplate, '<!-- CHANGE SUBSCRIPTION MODAL -->');
+$end = strpos($companiesTemplate, '<!-- COMPANY DETAIL DRAWER -->', $start);
+$html = Blade::render(substr($companiesTemplate, $start, $end - $start), ['plans' => Plan::standard()->where('is_active', true)->get()]);
+$dom = new DOMDocument; @$dom->loadHTML($html); $xpath = new DOMXPath($dom);
+subscriptionCheck($xpath->query('//form[@id="companyPlanChangeForm" and @method="POST"]')->length === 1, 'Companies modal must submit a real subscription form.');
+subscriptionCheck($xpath->query('//form[@id="companyPlanChangeForm"]//input[@type="radio" and @name="plan_id"]')->length === 4, 'Companies modal must submit the selected plan ID.');
+subscriptionCheck($xpath->query('//form[@id="companyPlanChangeForm"]//input[@name="company_id"]')->length === 1, 'Companies modal must submit the selected company.');
+subscriptionCheck($xpath->query('//form[@id="companyPlanChangeForm"]//button[@id="confirmPlanChangeBtn" and @type="submit"]')->length === 1, 'Confirm Change must submit instead of just closing the dialog.');
+token_get_all(app('blade.compiler')->compileString($companiesTemplate), TOKEN_PARSE);
+echo "PASS: selected-plan persistence, billing/limits, isolation, suspension, downgrade policy, rollback and Dashboard/Companies native modal submissions.\n";

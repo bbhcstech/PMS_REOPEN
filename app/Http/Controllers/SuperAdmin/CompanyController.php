@@ -71,7 +71,9 @@ class CompanyController extends Controller
 
         $currentCompanyDb = session('current_company_db');
 
-        return view('superadmin.companies.index', compact('companies', 'currentCompanyDb'));
+        $plans = \App\Models\Central\Plan::standard()->where('is_active', true)->orderBy('sort_order')->orderBy('id')->get();
+
+        return view('superadmin.companies.index', compact('companies', 'plans', 'currentCompanyDb'));
     }
 
     /**
@@ -244,154 +246,8 @@ class CompanyController extends Controller
             }
         }
 
-        // Comprehensive list of all Admin Panel features and modules
-        $allSystemModules = [
-            // Core Platform
-            ['name' => 'Dashboard', 'slug' => 'dashboard', 'category' => 'CORE PLATFORM', 'icon' => 'bx-grid-alt', 'description' => 'Overview analytics and key operational widgets.'],
-            ['name' => 'Notifications', 'slug' => 'notifications', 'category' => 'CORE PLATFORM', 'icon' => 'bx-bell', 'description' => 'System alerts and messaging feed.'],
-            ['name' => 'Organization Directory', 'slug' => 'organization', 'category' => 'CORE PLATFORM', 'icon' => 'bx-sitemap', 'description' => 'Company structure and hierarchy.'],
-            ['name' => 'My Documents', 'slug' => 'my-documents', 'category' => 'CORE PLATFORM', 'icon' => 'bx-file', 'description' => 'Personal and employee document repository.'],
-            ['name' => 'Community', 'slug' => 'community', 'category' => 'CORE PLATFORM', 'icon' => 'bx-chat', 'description' => 'Company-wide group messaging and announcements channel.'],
-            ['name' => 'Events', 'slug' => 'events', 'category' => 'CORE PLATFORM', 'icon' => 'bx-calendar-event', 'description' => 'Company events, celebrations, and calendar activities.'],
-
-            // HR & People
-            ['name' => 'HR Management', 'slug' => 'hr', 'category' => 'HR & PEOPLE', 'icon' => 'bx-user-check', 'description' => 'Core HR workflows and admin controls.'],
-            ['name' => 'Employees', 'slug' => 'employees', 'category' => 'HR & PEOPLE', 'icon' => 'bx-user', 'description' => 'Employee database, profiles, and records.'],
-            ['name' => 'Departments', 'slug' => 'departments', 'category' => 'HR & PEOPLE', 'icon' => 'bx-building', 'description' => 'Department division management.'],
-            ['name' => 'Designations', 'slug' => 'designations', 'category' => 'HR & PEOPLE', 'icon' => 'bx-badge-check', 'description' => 'Role titles and designation matrix.'],
-            ['name' => 'Attendance', 'slug' => 'attendance', 'category' => 'HR & PEOPLE', 'icon' => 'bx-time', 'description' => 'Clock in/out tracking, logs, and geolocation.'],
-            ['name' => 'Leave Management', 'slug' => 'leave-management', 'category' => 'HR & PEOPLE', 'icon' => 'bx-calendar-event', 'description' => 'Leave requests, approvals, and balances.'],
-            ['name' => 'Holidays', 'slug' => 'holidays', 'category' => 'HR & PEOPLE', 'icon' => 'bx-gift', 'description' => 'Company and national holiday calendars.'],
-            ['name' => 'Recognition & Awards', 'slug' => 'recognition', 'category' => 'HR & PEOPLE', 'icon' => 'bx-award', 'description' => 'Employee appreciations and rewards.'],
-            ['name' => 'Recruitment', 'slug' => 'recruitment', 'category' => 'HR & PEOPLE', 'icon' => 'bx-user-plus', 'description' => 'Job postings, candidates, and recruitment pipeline.'],
-            ['name' => 'Appraisal & Performance', 'slug' => 'appraisal', 'category' => 'HR & PEOPLE', 'icon' => 'bx-trending-up', 'description' => 'Employee performance appraisals and reviews.'],
-
-            // Work Management
-            ['name' => 'Work', 'slug' => 'work', 'category' => 'WORK MANAGEMENT', 'icon' => 'bx-briefcase', 'description' => 'Work suite parent container.'],
-            ['name' => 'Projects', 'slug' => 'projects', 'category' => 'WORK MANAGEMENT', 'icon' => 'bx-folder-open', 'description' => 'Project tracking, milestones, and files.'],
-            ['name' => 'Tasks', 'slug' => 'tasks', 'category' => 'WORK MANAGEMENT', 'icon' => 'bx-task', 'description' => 'Task assignments, Kanban, and subtasks.'],
-            ['name' => 'Timesheets', 'slug' => 'timesheets', 'category' => 'WORK MANAGEMENT', 'icon' => 'bx-time-five', 'description' => 'Daily and weekly work timelogs.'],
-            ['name' => 'Teams', 'slug' => 'teams', 'category' => 'WORK MANAGEMENT', 'icon' => 'bx-group', 'description' => 'Cross-functional team assignments.'],
-            ['name' => 'Collaborating Companies', 'slug' => 'collaborating-companies', 'category' => 'WORK MANAGEMENT', 'icon' => 'bx-buildings', 'description' => 'External vendor and partner company directory.'],
-            ['name' => 'Clients', 'slug' => 'clients', 'category' => 'WORK MANAGEMENT', 'icon' => 'bx-user-voice', 'description' => 'Client records and account directory.'],
-            ['name' => 'Contracts & Templates', 'slug' => 'contracts', 'category' => 'WORK MANAGEMENT', 'icon' => 'bx-file-blank', 'description' => 'Contract creation, templates, and digital signatures.'],
-
-            // CRM
-            ['name' => 'Leads & Contacts', 'slug' => 'leads-contacts', 'category' => 'CRM', 'icon' => 'bx-book-content', 'description' => 'Client leads and contact books.'],
-            ['name' => 'CRM Deals', 'slug' => 'crm-deals', 'category' => 'CRM', 'icon' => 'bx-dollar-circle', 'description' => 'Sales pipelines and deal stages.'],
-
-            // Finance
-            ['name' => 'Expenses', 'slug' => 'expenses', 'category' => 'FINANCE & PAYROLL', 'icon' => 'bx-receipt', 'description' => 'Expense claims and reimbursement tracking.'],
-            ['name' => 'Billing & Invoices', 'slug' => 'billing', 'category' => 'FINANCE & PAYROLL', 'icon' => 'bx-credit-card', 'description' => 'Invoices and payment receipts.'],
-
-            // Support & Complaints
-            ['name' => 'Tickets', 'slug' => 'tickets', 'category' => 'SUPPORT & COMPLAINTS', 'icon' => 'bx-support', 'description' => 'Helpdesk tickets and issue resolution.'],
-            ['name' => 'Platform Support & Complaints', 'slug' => 'company-complaints', 'category' => 'SUPPORT & COMPLAINTS', 'icon' => 'bx-message-square-error', 'description' => 'Tenant feedback, issues, and platform support ticket escalations.'],
-
-            // Reporting & Analytics
-            ['name' => 'Standard Reports', 'slug' => 'reports', 'category' => 'REPORTING & ANALYTICS', 'icon' => 'bx-bar-chart-alt-2', 'description' => 'Core attendance and leave reports.'],
-            ['name' => 'Analytics Dashboard', 'slug' => 'analytics', 'category' => 'REPORTING & ANALYTICS', 'icon' => 'bx-line-chart', 'description' => 'Real-time performance analytics.'],
-            ['name' => 'Advanced Reports', 'slug' => 'advanced-reports', 'category' => 'REPORTING & ANALYTICS', 'icon' => 'bx-pie-chart-alt-2', 'description' => 'Custom exports and intelligence summaries.'],
-
-            // Administration & Security
-            ['name' => 'User Management', 'slug' => 'user-management', 'category' => 'ADMINISTRATION & SECURITY', 'icon' => 'bx-user-voice', 'description' => 'User provisioning and account status.'],
-            ['name' => 'Role Management', 'slug' => 'role-management', 'category' => 'ADMINISTRATION & SECURITY', 'icon' => 'bx-shield-quarter', 'description' => 'RBAC definitions and access policies.'],
-            ['name' => 'Module Management', 'slug' => 'module-management', 'category' => 'ADMINISTRATION & SECURITY', 'icon' => 'bx-cube', 'description' => 'Module toggles and system settings.'],
-            ['name' => 'Activity Logs', 'slug' => 'activity-logs', 'category' => 'ADMINISTRATION & SECURITY', 'icon' => 'bx-history', 'description' => 'Platform security and audit trails.'],
-            ['name' => 'Settings', 'slug' => 'settings', 'category' => 'ADMINISTRATION & SECURITY', 'icon' => 'bx-cog', 'description' => 'System setup and global preferences.'],
-
-            // System & Settings Sub-Features
-            ['name' => 'Settings Dashboard', 'slug' => 'settings-dashboard', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-cog', 'description' => 'Global settings control dashboard.'],
-            ['name' => 'Company Profile Settings', 'slug' => 'company-profile-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-id-card', 'description' => 'Company identity, branding, and contact info.'],
-            ['name' => 'Organization Details Settings', 'slug' => 'organization-details-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-buildings', 'description' => 'Corporate details, fiscal year, and structure.'],
-            ['name' => 'Branches & Locations Settings', 'slug' => 'business-address-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-map-pin', 'description' => 'Branch offices, addresses, and geographic locations.'],
-            ['name' => 'Work Schedule Settings', 'slug' => 'work-schedule-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-time-five', 'description' => 'Work shifts, office hours, and weekly schedules.'],
-            ['name' => 'Leave Settings', 'slug' => 'leave-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-calendar-minus', 'description' => 'Leave types, accrual policies, and quota rules.'],
-            ['name' => 'Holiday Settings', 'slug' => 'holiday-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-gift', 'description' => 'Company and national holiday calendars.'],
-            ['name' => 'Attendance Settings', 'slug' => 'attendance-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-calendar-check', 'description' => 'Clock-in radius, IP restrictions, and late thresholds.'],
-            ['name' => 'Recruitment Settings', 'slug' => 'recruitment-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-user-plus', 'description' => 'Job posting stages and candidate fields.'],
-            ['name' => 'Performance Settings', 'slug' => 'performance-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-trending-up', 'description' => 'KPI metrics and appraisal cycles.'],
-            ['name' => 'Notification Settings', 'slug' => 'notification-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-bell', 'description' => 'System, email, and push alert triggers.'],
-            ['name' => 'Email Settings', 'slug' => 'email-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-envelope', 'description' => 'SMTP mail gateway and email templates.'],
-            ['name' => 'Document Settings', 'slug' => 'document-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-file', 'description' => 'Document categories and storage rules.'],
-            ['name' => 'Security Settings', 'slug' => 'security-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-shield', 'description' => '2FA, password policy, and session timeouts.'],
-            ['name' => 'Change Password', 'slug' => 'change-password-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-key', 'description' => 'User password security update.'],
-            ['name' => 'Role & Permissions Settings', 'slug' => 'role-permissions-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-shield-quarter', 'description' => 'RBAC definitions and permission matrix.'],
-            ['name' => 'Localization Settings', 'slug' => 'localization-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-globe', 'description' => 'Timezone, language, and date format setup.'],
-            ['name' => 'Terms & Policy Settings', 'slug' => 'terms-policy-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-paperclip', 'description' => 'Terms of service and privacy policy pages.'],
-        ];
-
-        // Ensure all canonical modules exist in central database
-        foreach ($allSystemModules as $i => $sm) {
-            try {
-                \App\Models\Module::on('central')->firstOrCreate(
-                    ['slug' => $sm['slug']],
-                    [
-                        'name' => $sm['name'],
-                        'category' => $sm['category'],
-                        'icon' => $sm['icon'],
-                        'description' => $sm['description'],
-                        'is_active' => true,
-                        'sort_order' => $i + 1,
-                    ]
-                );
-            } catch (\Throwable $e) {}
-        }
-
-        // Auto-sync any custom modules from tenant modules table or new sidebar features into central database
-        try {
-            $tenantModules = \App\Models\Module::get();
-            foreach ($tenantModules as $tm) {
-                if ($tm->slug) {
-                    \App\Models\Module::on('central')->firstOrCreate(
-                        ['slug' => $tm->slug],
-                        [
-                            'name' => $tm->name,
-                            'category' => $tm->category ?? 'CUSTOM MODULES',
-                            'icon' => $tm->icon ?? 'bx-cube',
-                            'description' => $tm->description ?? 'Admin panel feature module.',
-                            'is_active' => true,
-                            'sort_order' => $tm->sort_order ?? 99,
-                        ]
-                    );
-                }
-            }
-        } catch (\Throwable $e) {}
-
-        // Dynamic Auto-Discovery: Scan sidebar layout file to ensure any newly added tenant feature appears automatically in Super Admin
-        try {
-            $manuFile = resource_path('views/admin/layout/manu.blade.php');
-            if (file_exists($manuFile)) {
-                $manuContent = file_get_contents($manuFile);
-                preg_match_all('/data-sidebar-key=["\']([^"\']+)["\']/', $manuContent, $matches);
-                if (! empty($matches[1])) {
-                    foreach (array_unique($matches[1]) as $sidebarKey) {
-                        $slug = strtolower(trim($sidebarKey));
-                        if ($slug && strlen($slug) > 1) {
-                            $name = ucwords(str_replace(['-', '_'], ' ', $slug));
-                            \App\Models\Module::on('central')->firstOrCreate(
-                                ['slug' => $slug],
-                                [
-                                    'name' => $name,
-                                    'category' => 'CORE PLATFORM',
-                                    'icon' => 'bx-cube',
-                                    'description' => "Company {$name} feature module.",
-                                    'is_active' => true,
-                                    'sort_order' => 80,
-                                ]
-                            );
-                        }
-                    }
-                }
-            }
-        } catch (\Throwable $e) {}
-
-        // Fetch all registered modules for Super Admin Subscriptions interface
-        try {
-            $modules = \App\Models\Module::on('central')->orderBy('sort_order')->orderBy('name')->get();
-        } catch (\Throwable $e) {
-            $modules = collect();
-        }
+        // Use implemented Admin workspace features, including inactive modules.
+        $modules = app(\App\Services\AdminWorkspaceModules::class)->all();
 
         // Fetch central audit logs for timeline
         try {

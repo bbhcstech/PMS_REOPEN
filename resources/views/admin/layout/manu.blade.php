@@ -2252,7 +2252,7 @@
                 </li>
                 @endif
 
-                @if($canSeeModule('orders') || in_array(auth()->user()?->normalizedRole(), ['admin', 'superadmin'], true))
+                @if($canSeeModule('orders'))
                 <!-- Orders -->
                 <li class="menu-item {{ request()->routeIs('orders.*') ? 'active' : '' }}">
                     <a href="{{ route('orders.index') }}" class="menu-link" data-sidebar-key="orders">

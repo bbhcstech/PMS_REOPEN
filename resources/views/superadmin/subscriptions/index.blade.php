@@ -1845,6 +1845,7 @@
                                 </div>
                                 <div>
                                     <strong style="color: var(--text-main); font-size: 13.5px;">{{ $mod->name }}</strong>
+                                    <span class="badge-status {{ $mod->is_active ? 'badge-status-active' : 'badge-status-suspended' }}">{{ $mod->is_active ? 'Active' : 'Inactive' }}</span>
                                     <div style="font-size: 11.5px; color: var(--text-subtle);">{{ $mod->description ?? 'Module functionality.' }}</div>
                                 </div>
                             </div>
@@ -1978,10 +1979,11 @@
                         <td style="text-align: left;">
                             <div style="display: flex; align-items: center; gap: 10px;">
                                 <div style="width: 28px; height: 28px; border-radius: 6px; background: #f1f5f9; color: #3b82f6; display: flex; align-items: center; justify-content: center; font-size: 13px;">
-                                    <i class="fas {{ $mod->icon ?? 'fa-cube' }}"></i>
+                                    <i class="{{ str_starts_with($mod->icon ?? '', 'bx-') ? 'bx ' . $mod->icon : 'fas fa-cube' }}"></i>
                                 </div>
                                 <div>
                                     <strong style="color: var(--text-main); font-size: 13.5px;">{{ $mod->name }}</strong>
+                                    <span class="badge-status {{ $mod->is_active ? 'badge-status-active' : 'badge-status-suspended' }}">{{ $mod->is_active ? 'Active' : 'Inactive' }}</span>
                                     <div style="font-size: 11.5px; color: var(--text-subtle);">{{ $mod->description ?? 'Module functionality' }}</div>
                                 </div>
                             </div>
@@ -3171,12 +3173,12 @@ document.addEventListener('DOMContentLoaded', function() {
             if (overrideStatusCell) {
                 if (hasExplicitOverride) {
                     if (overrideValue === 1) {
-                        overrideStatusCell.innerHTML = `<span style="font-size: 11px; font-weight: 700; color: #16a34a; background: #f0fdf4; border: 1px solid #bbf7d0; padding: 3px 8px; border-radius: 4px;"><i class="fas fa-circle-check"></i> Super Admin Granted</span>`;
+                        overrideStatusCell.innerHTML = `<span style="font-size: 11px; font-weight: 700; color: #16a34a; background: #f0fdf4; border: 1px solid #bbf7d0; padding: 3px 8px; border-radius: 4px;"><i class="fas fa-circle-check"></i> Active · Super Admin Granted</span>`;
                     } else {
-                        overrideStatusCell.innerHTML = `<span style="font-size: 11px; font-weight: 700; color: #dc2626; background: #fef2f2; border: 1px solid #fecaca; padding: 3px 8px; border-radius: 4px;"><i class="fas fa-ban"></i> Super Admin Revoked</span>`;
+                        overrideStatusCell.innerHTML = `<span style="font-size: 11px; font-weight: 700; color: #dc2626; background: #fef2f2; border: 1px solid #fecaca; padding: 3px 8px; border-radius: 4px;"><i class="fas fa-ban"></i> Inactive · Super Admin Revoked</span>`;
                     }
                 } else {
-                    overrideStatusCell.innerHTML = `<span style="font-size: 11px; font-weight: 700; color: var(--text-subtle); background: #f1f5f9; padding: 3px 8px; border-radius: 4px;">Plan Default</span>`;
+                    overrideStatusCell.innerHTML = `<span style="font-size: 11px; font-weight: 700; color: ${isIncludedInBasePlan ? '#16a34a' : '#dc2626'}; background: ${isIncludedInBasePlan ? '#f0fdf4' : '#fef2f2'}; padding: 3px 8px; border-radius: 4px;">${isIncludedInBasePlan ? 'Active' : 'Inactive'} · Plan Default</span>`;
                 }
             }
         });
@@ -3236,7 +3238,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 body: JSON.stringify({ company_id: compId, module_id: modId, enabled: enabled })
             })
-            .then(res => res.json())
+            .then(async res => {
+                const data = await res.json();
+                if (!res.ok || data.success === false) throw new Error(data.message || 'Unable to update feature access.');
+                return data;
+            })
             .then(data => {
                 if (window.companyOverridesMap && window.companyOverridesMap[compId]) {
                     if (!window.companyOverridesMap[compId].overrides) {
@@ -3248,14 +3254,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 showToast(data.message || 'Company feature override updated successfully.');
             })
             .catch(() => {
-                if (window.companyOverridesMap && window.companyOverridesMap[compId]) {
-                    if (!window.companyOverridesMap[compId].overrides) {
-                        window.companyOverridesMap[compId].overrides = {};
-                    }
-                    window.companyOverridesMap[compId].overrides[modId] = enabled;
-                }
                 renderCompanyFeatureOverrides(compId);
-                showToast('Company feature override updated.');
+                showToast('Feature access could not be saved. Please try again.');
             });
         });
     });
