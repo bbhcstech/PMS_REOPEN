@@ -18,7 +18,7 @@ class EnsureCompanySubscriptionActive
         if (
             $request->is('super-admin*') ||
             $request->is('superadmin*') ||
-            $request->is('developer*')
+            ($request->is('developer*') && !Auth::user()?->company_id && !session('current_company_id'))
         ) {
             return $next($request);
         }
@@ -78,27 +78,17 @@ class EnsureCompanySubscriptionActive
                         $routeName === 'super-admin.leave-impersonation' ||
                         $routeName === 'superadmin.leave-impersonation' ||
                         $request->is('super-admin/leave-impersonation*') ||
-                        $request->is('superadmin/leave-impersonation*') ||
-                        str_starts_with($routeName, 'notifications.') ||
-                        str_starts_with($routeName, 'admin.company-notifications.')
+                        $request->is('superadmin/leave-impersonation*')
                     );
 
-                    // Subscription renewal / plan-assignment routes are ONLY allowed when auto-expired.
-                    // If Super Admin manually suspended the company, renewal must not automatically restore access.
-                    $isRenewalRoute = (
-                        str_starts_with($routeName, 'super-admin.subscriptions.') ||
-                        str_starts_with($routeName, 'superadmin.subscriptions.') ||
-                        str_starts_with($routeName, 'subscriptions.')
-                    );
-
-                    $isAllowedWhenRestricted = $isBaseAllowed || ($isRenewalRoute && !$isManualSuspension);
+                    $isAllowedWhenRestricted = $isBaseAllowed;
 
                     if (!$isAllowedWhenRestricted) {
                         if ($request->expectsJson() || $request->is('api/*')) {
                             return response()->json([
                                 'error'               => $isManualSuspension
                                     ? 'Your organization has been suspended by the platform administrator. Please contact support.'
-                                    : 'Your subscription has expired. Please renew your plan to restore access.',
+                                    : 'Your subscription has expired. Contact Super Admin to extend your plan and restore access.',
                                 'subscription_status' => $isManualSuspension ? 'suspended' : 'expired',
                                 'manually_suspended'  => $isManualSuspension,
                                 'restriction_url'     => route('subscription.suspended'),
@@ -109,7 +99,10 @@ class EnsureCompanySubscriptionActive
                         return redirect()->route('subscription.suspended');
                     }
                 }
-            } catch (\Throwable $e) {}
+            } catch (\Throwable $e) {
+                report($e);
+                return response('Company subscription could not be verified. Please try again shortly.', 503);
+            }
         }
 
         return $next($request);

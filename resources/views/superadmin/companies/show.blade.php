@@ -964,7 +964,10 @@
 
 @php
     $planNames = ['FREE', 'GOLD', 'PLATINUM', 'DIAMOND'];
-    $rawPlan = strtoupper($company->activeSubscription?->plan?->name ?? 'FREE');
+    $workspaceSubscription = $company->activeSubscription
+        ?? $company->subscriptions()->with('plan')->latest('id')->first();
+    $workspacePlan = $workspaceSubscription?->plan;
+    $rawPlan = strtoupper(trim((string) ($workspacePlan?->slug ?: $workspacePlan?->name ?: 'FREE')));
     if (!in_array($rawPlan, $planNames)) { $rawPlan = 'FREE'; }
     $planClass = strtolower($rawPlan);
     $companyStatus = strtolower($company->status ?? 'active');
@@ -1139,10 +1142,7 @@
                 <span class="plan-badge plan-{{ $planClass }}">{{ $rawPlan }}</span>
             </div>
             <div class="subtext">
-                @if($rawPlan === 'DIAMOND') ₹19,999 / mo
-                @elseif($rawPlan === 'PLATINUM') ₹9,999 / mo
-                @elseif($rawPlan === 'GOLD') ₹4,999 / mo
-                @else ₹0 / mo @endif
+                ?{{ number_format((float) ($workspaceSubscription?->price ?? $workspacePlan?->monthly_price ?? 0)) }} / {{ $workspaceSubscription?->billing_cycle === 'yearly' ? 'yr' : 'mo' }}
             </div>
         </div>
     </div>

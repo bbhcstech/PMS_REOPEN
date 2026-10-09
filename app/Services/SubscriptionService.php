@@ -82,13 +82,13 @@ class SubscriptionService
         // 3. Check for subscriptions in central DB
         $sub = Subscription::on('central')
             ->where('company_id', $centralComp->id)
-            ->latest('ends_at')
+            ->whereIn('status', ['active', 'trial', 'expired', 'suspended'])
             ->latest('id')
             ->first();
 
         if ($sub && $sub->ends_at) {
             $subEnds = is_string($sub->ends_at) ? Carbon::parse($sub->ends_at) : $sub->ends_at;
-            if ($subEnds->isPast()) {
+            if ($sub->status === 'expired' || $subEnds->isPast()) {
                 return 'expired';
             }
             return 'active';
@@ -128,8 +128,8 @@ class SubscriptionService
                 try {
                     Subscription::on('central')
                         ->where('company_id', $centralComp->id)
-                        ->where('status', 'active')
-                        ->whereDate('ends_at', '<', now()->toDateString())
+                        ->whereIn('status', ['active', 'trial'])
+                        ->where('ends_at', '<', now())
                         ->update(['status' => 'expired']);
                 } catch (\Throwable $e) {}
             }

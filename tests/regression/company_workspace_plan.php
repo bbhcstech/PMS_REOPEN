@@ -1,0 +1,20 @@
+<?php
+use App\Models\Central\{Plan, Subscription};
+use Illuminate\Support\Facades\Blade;
+require __DIR__.'/dashboard_subscription_change.php';
+$view=file_get_contents(resource_path('views/superadmin/companies/show.blade.php'));
+$start=strpos($view,'@php');$end=strpos($view,'@endphp',$start)+strlen('@endphp');
+$template=substr($view,$start,$end-$start)."\n".'{{ $rawPlan }}|{{ $planClass }}|{{ $workspaceSubscription?->price }}';
+$platinum=Plan::where('slug','platinum')->firstOrFail();
+$sub=Subscription::where('company_id',$a->id)->latest('id')->firstOrFail();
+$sub->update(['plan_id'=>$platinum->id,'status'=>'active','ends_at'=>now()->addMonth(),'price'=>9999]);
+$output=trim(Blade::render($template,['company'=>$a->fresh()]));
+subscriptionCheck($output==='PLATINUM|platinum|9999.00','Active workspace tier or price mismatch: '.$output);
+$sub->update(['status'=>'expired','ends_at'=>now()->subDay()]);
+$output=trim(Blade::render($template,['company'=>$a->fresh()]));
+subscriptionCheck($output==='PLATINUM|platinum|9999.00','Expired assigned tier displayed Free: '.$output);
+$sub->update(['status'=>'trial','ends_at'=>now()->addMonth()]);
+$output=trim(Blade::render($template,['company'=>$a->fresh()]));
+subscriptionCheck($output==='PLATINUM|platinum|9999.00','Missing active relation displayed Free: '.$output);
+token_get_all(app('blade.compiler')->compileString($view),TOKEN_PARSE);
+echo "PASS: workspace active/expired/missing-active-relation Platinum label, class, real price and Blade compilation.\n";

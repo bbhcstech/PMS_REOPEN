@@ -1251,6 +1251,7 @@ class CompanyController extends Controller
      */
     public function extendSubscription(Request $request, $id): RedirectResponse|\Illuminate\Http\JsonResponse
     {
+        abort_unless(\App\Services\TenantScope::isPlatformAdmin(), 403);
         $days = (int) $request->input('days', 30);
         if ($days <= 0) $days = 30;
 

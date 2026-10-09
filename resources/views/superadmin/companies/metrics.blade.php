@@ -1446,7 +1446,13 @@
             <tbody>
                 @forelse($companies as $comp)
                     @php
-                        $sub = $comp->subscriptions->where('status', 'active')->first() ?? $comp->subscriptions->first();
+                        // Current subscription = the NEWEST running one (a plan change adds a newer row), so the
+                        // assigned plan, cycle, revenue and dates follow subscription changes.
+                        $ledgerSubs = $comp->subscriptions->sortByDesc('id');
+                        $sub = $ledgerSubs->first(fn ($s) => strtolower((string) $s->status) === 'active' && (! $s->ends_at || $s->ends_at->copy()->endOfDay()->gte(now())))
+                            ?? $ledgerSubs->first(fn ($s) => in_array(strtolower((string) $s->status), ['active', 'trial'], true))
+                            ?? $ledgerSubs->first(fn ($s) => strtolower((string) $s->status) !== 'cancelled')
+                            ?? $ledgerSubs->first();
                         $plan = $sub?->plan;
                         $planName = $plan ? strtoupper($plan->name) : 'FREE';
                         $cycle = $sub?->billing_cycle ? ucfirst($sub->billing_cycle) : 'Monthly';
@@ -1464,14 +1470,17 @@
                             <div class="company-db" style="font-size: 11.5px; color: var(--text-subtle); font-family: monospace; margin-top: 2px;">{{ $comp->db_name }}</div>
                         </td>
                         <td style="border: 1px solid #e2e8f0; padding: 12px 14px; text-align: center; white-space: nowrap;">
+                            {{-- data-live-key includes the plan, so a live refresh swaps the whole badge (text + colour) when the plan changes --}}
                             @if($planName === 'FREE')
-                                <span class="plan-badge-item badge-free" style="background: #f1f5f9; color: #475569; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11px; border: 1px solid #cbd5e1; display: inline-block;">FREE</span>
+                                <span class="plan-badge-item badge-free" data-live-key="ledger-plan-{{ $comp->id }}-{{ $planName }}" style="background: #f1f5f9; color: #475569; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11px; border: 1px solid #cbd5e1; display: inline-block;">FREE</span>
                             @elseif($planName === 'GOLD')
-                                <span class="plan-badge-item badge-gold" style="background: #fffbeb; color: #d97706; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11px; border: 1px solid #fde68a; display: inline-block;">GOLD</span>
+                                <span class="plan-badge-item badge-gold" data-live-key="ledger-plan-{{ $comp->id }}-{{ $planName }}" style="background: #fffbeb; color: #d97706; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11px; border: 1px solid #fde68a; display: inline-block;">GOLD</span>
                             @elseif($planName === 'PLATINUM')
-                                <span class="plan-badge-item badge-platinum" style="background: #f0f9ff; color: #0284c7; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11px; border: 1px solid #bae6fd; display: inline-block;">PLATINUM</span>
+                                <span class="plan-badge-item badge-platinum" data-live-key="ledger-plan-{{ $comp->id }}-{{ $planName }}" style="background: #f0f9ff; color: #0284c7; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11px; border: 1px solid #bae6fd; display: inline-block;">PLATINUM</span>
+                            @elseif($planName === 'DIAMOND')
+                                <span class="plan-badge-item badge-diamond" data-live-key="ledger-plan-{{ $comp->id }}-{{ $planName }}" style="background: #f5f3ff; color: #7c3aed; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11px; border: 1px solid #ddd6fe; display: inline-block;">DIAMOND</span>
                             @else
-                                <span class="plan-badge-item badge-diamond" style="background: #f5f3ff; color: #7c3aed; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11px; border: 1px solid #ddd6fe; display: inline-block;">DIAMOND</span>
+                                <span class="plan-badge-item badge-custom" data-live-key="ledger-plan-{{ $comp->id }}-{{ $planName }}" style="background: #f0fdfa; color: #0f766e; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11px; border: 1px solid #99f6e4; display: inline-block;">{{ $planName }}</span>
                             @endif
                         </td>
                         <td style="border: 1px solid #e2e8f0; padding: 12px 14px; font-weight: 600; color: var(--text-main); white-space: nowrap;">
@@ -1860,13 +1869,13 @@ document.addEventListener('DOMContentLoaded', function() {
             const cb = row.querySelector('.company-row-checkbox');
             const companyName = cb?.dataset.name || row.querySelector('.company-title')?.innerText?.trim() || '';
             const dbName = cb?.dataset.db || row.querySelector('.company-db')?.innerText?.trim() || '';
-            const plan = cb?.dataset.plan || row.querySelector('.plan-badge-item')?.innerText?.trim() || '';
-            const cycle = cb?.dataset.cycle || row.querySelector('td:nth-child(4)')?.innerText?.trim() || '';
-            const revenue = cb?.dataset.price || row.querySelector('td:nth-child(5)')?.innerText?.trim() || '';
+            const plan = row.querySelector('.plan-badge-item')?.innerText?.trim() || cb?.dataset.plan || '';
+            const cycle = row.querySelector('td:nth-child(4)')?.innerText?.trim() || cb?.dataset.cycle || '';
+            const revenue = row.querySelector('td:nth-child(5)')?.innerText?.trim() || cb?.dataset.price || '';
             const users = row.querySelector('td:nth-child(6)')?.innerText?.trim() || '';
-            const starts = cb?.dataset.starts || row.querySelector('td:nth-child(7)')?.innerText?.trim() || '';
-            const ends = cb?.dataset.ends || row.querySelector('td:nth-child(8)')?.innerText?.trim() || '';
-            const status = cb?.dataset.status || row.querySelector('.status-badge-item')?.innerText?.trim() || '';
+            const starts = row.querySelector('td:nth-child(7)')?.innerText?.trim() || cb?.dataset.starts || '';
+            const ends = row.querySelector('td:nth-child(8)')?.innerText?.trim() || cb?.dataset.ends || '';
+            const status = row.querySelector('.status-badge-item')?.innerText?.trim() || cb?.dataset.status || '';
 
             return [
                 companyName,

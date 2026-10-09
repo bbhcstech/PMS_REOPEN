@@ -44,8 +44,10 @@ Route::get('/subscription/suspended', function () {
     if (! $company && auth()->check() && auth()->user()?->company_id) {
         $company = \App\Models\Central\Company::on('central')->find(auth()->user()->company_id);
     }
-    if (! $company) {
-        $company = \App\Models\Central\Company::on('central')->first();
+    abort_unless($company, 404);
+    if (app(\App\Services\SubscriptionService::class)->isExpired($company)) {
+        $subscription = $company->subscriptions()->with('plan')->latest('id')->first();
+        return view('subscription.expired', compact('company', 'subscription'));
     }
     return view('subscription.suspended', compact('company'));
 })->name('subscription.suspended');

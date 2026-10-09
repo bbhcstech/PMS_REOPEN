@@ -1410,7 +1410,7 @@
             continue;
         }
 
-        $subItem = $c->activeSubscription;
+        $subItem = ($c->activeSubscription ?? $c->subscriptions->sortByDesc('id')->first());
         $expiryObj = $subItem?->ends_at ?? $c->trial_ends_at;
         if ($expiryObj) {
             $dLeft = (int) $todayObj->diffInDays(\Carbon\Carbon::parse($expiryObj)->startOfDay(), false);
@@ -1498,7 +1498,7 @@
             <span class="lbl">Gold Plans</span>
             <div class="icon-box" style="background: #fffbeb; color: #d97706;"><i class="fas fa-crown"></i></div>
         </div>
-        <div class="val">{{ number_format($companies->filter(fn($c) => strtolower($c->activeSubscription?->plan?->name ?? '') === 'gold')->count()) }}</div>
+        <div class="val">{{ number_format($companies->filter(fn($c) => strtolower(($c->activeSubscription ?? $c->subscriptions->sortByDesc('id')->first())?->plan?->name ?? '') === 'gold')->count()) }}</div>
         <div class="sub positive">Popular tier</div>
     </div>
 
@@ -1508,7 +1508,7 @@
             <span class="lbl">Platinum &amp; Diamond</span>
             <div class="icon-box" style="background: #f5f3ff; color: #7c3aed;"><i class="fas fa-gem"></i></div>
         </div>
-        <div class="val">{{ number_format($companies->filter(fn($c) => in_array(strtolower($c->activeSubscription?->plan?->name ?? ''), ['platinum', 'diamond'], true))->count()) }}</div>
+        <div class="val">{{ number_format($companies->filter(fn($c) => in_array(strtolower(($c->activeSubscription ?? $c->subscriptions->sortByDesc('id')->first())?->plan?->name ?? ''), ['platinum', 'diamond'], true))->count()) }}</div>
         <div class="sub positive">High-tier enterprise</div>
     </div>
 </div>
@@ -1594,7 +1594,7 @@
                 <tbody>
                     @forelse($companies as $index => $company)
                     @php
-                        $sub = $company->activeSubscription;
+                        $sub = ($company->activeSubscription ?? $company->subscriptions->sortByDesc('id')->first());
                         $plan = $sub?->plan;
                         $planName = strtoupper($plan?->name ?? 'FREE');
                         $pClass = strtolower($planName);
@@ -1715,7 +1715,7 @@
             $yPrice = $planObj?->yearly_price ?? ($mPrice * 10);
             $uLimit = $planObj?->max_users ?? match($pName) { 'FREE' => 5, 'GOLD' => 25, 'PLATINUM' => 100, 'DIAMOND' => 0 };
             $sGb = round(($planObj?->max_storage_mb ?? match($pName) { 'FREE' => 5120, 'GOLD' => 25600, 'PLATINUM' => 102400, 'DIAMOND' => 512000 }) / 1024);
-            $subCount = $companies->filter(fn($c) => strtoupper($c->activeSubscription?->plan?->name ?? ($idx === 0 ? 'FREE' : '')) === $pName)->count();
+            $subCount = $companies->filter(fn($c) => strtoupper(($c->activeSubscription ?? $c->subscriptions->sortByDesc('id')->first())?->plan?->name ?? ($idx === 0 ? 'FREE' : '')) === $pName)->count();
             $totalModCount = max(1, $modules->count());
             $enabledModCount = $planObj && method_exists($planObj, 'modules') && $planObj->modules->count() > 0 
                 ? $planObj->modules->count() 
@@ -1944,7 +1944,7 @@
                     <label style="font-size: 12px; font-weight: 700; color: var(--text-subtle); text-transform: uppercase;">Select Tenant Company:</label>
                     <select id="overrideCompanySelect" style="width: 100%; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--border-color); font-size: 14px; font-weight: 700; font-family: inherit; margin-top: 4px; display: block; background: #fff;">
                         @foreach($companies as $c)
-                            <option value="{{ $c->id }}">{{ $c->name }} (Current Plan: {{ strtoupper($c->activeSubscription?->plan?->name ?? 'FREE') }})</option>
+                            <option value="{{ $c->id }}">{{ $c->name }} (Current Plan: {{ strtoupper(($c->activeSubscription ?? $c->subscriptions->sortByDesc('id')->first())?->plan?->name ?? 'FREE') }})</option>
                         @endforeach
                     </select>
                 </div>
@@ -2253,7 +2253,7 @@
                 <label style="font-size: 12px; font-weight: 700; color: var(--text-subtle); text-transform: uppercase;">Select Tenant Company:</label>
                 <select name="company_id" id="modalCompanySelect" style="width: 100%; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--border-color); font-size: 14px; font-weight: 700; font-family: inherit; margin-top: 4px; background: var(--bg-surface); color: var(--text-main);">
                     @foreach($companies as $c)
-                        <option value="{{ $c->id }}">{{ $c->name }} (Current: {{ strtoupper($c->activeSubscription?->plan?->name ?? 'FREE') }})</option>
+                        <option value="{{ $c->id }}">{{ $c->name }} (Current: {{ strtoupper(($c->activeSubscription ?? $c->subscriptions->sortByDesc('id')->first())?->plan?->name ?? 'FREE') }})</option>
                     @endforeach
                 </select>
             </div>
@@ -3111,10 +3111,10 @@ document.addEventListener('DOMContentLoaded', function() {
         "{{ $c->id }}": {
             "id": "{{ $c->id }}",
             "name": @json($c->name),
-            "plan": "{{ strtoupper($c->activeSubscription?->plan?->name ?? 'FREE') }}",
+            "plan": "{{ strtoupper(($c->activeSubscription ?? $c->subscriptions->sortByDesc('id')->first())?->plan?->name ?? 'FREE') }}",
             "highest_level": {{ (int) ($c->highest_plan_level ?? 0) }},
             "highest_slug": "{{ strtolower($c->highest_plan_slug ?? 'free') }}",
-            "plan_features": @json($c->activeSubscription?->plan?->features ?? []),
+            "plan_features": @json(($c->activeSubscription ?? $c->subscriptions->sortByDesc('id')->first())?->plan?->features ?? []),
             "overrides": {
                 @foreach($c->companyModules as $cm)
                 "{{ $cm->id }}": {{ $cm->pivot->is_enabled ? 1 : 0 }},
