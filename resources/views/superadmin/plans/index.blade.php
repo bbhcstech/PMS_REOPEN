@@ -1334,7 +1334,7 @@
     </div>
 
     <!-- Plan Performance Bar Chart -->
-    <div class="chart-card-wrapper">
+    <div class="chart-card-wrapper" id="planRevenueCard" data-live-key="plan-revenue" data-plan-revenue="{{ json_encode($planMonthlyRevenue) }}">
         <div class="chart-card-head">
             <div class="chart-card-title"><i class="fas fa-chart-bar" style="color: var(--success);"></i> Plan Revenue Performance</div>
             <span style="font-size: 12px; color: var(--text-subtle);">Monthly MRR generated</span>
@@ -1630,6 +1630,7 @@
 @endsection
 
 @push('scripts')
+<script src="{{ asset('admin/assets/js/pms-plan-revenue.js') }}?v={{ @filemtime(public_path('admin/assets/js/pms-plan-revenue.js')) }}" defer></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // 1. Subscription Donut Chart
@@ -1652,32 +1653,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 cutout: '70%',
                 plugins: {
                     legend: { position: 'right', labels: { font: { family: 'Inter', size: 12 } } }
-                }
-            }
-        });
-    }
-
-    // 2. Plan Revenue Bar Chart
-    const planPerfCtx = document.getElementById('planPerformanceCanvas')?.getContext('2d');
-    if (planPerfCtx) {
-        new Chart(planPerfCtx, {
-            type: 'bar',
-            data: {
-                labels: ['FREE', 'GOLD', 'PLATINUM', 'DIAMOND'],
-                datasets: [{
-                    label: 'MRR Contribution (₹)',
-                    data: [0, 189962, 309969, 339983],
-                    backgroundColor: ['#64748b', '#d97706', '#0284c7', '#7c3aed'],
-                    borderRadius: 6
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
-                    x: { grid: { display: false } }
                 }
             }
         });

@@ -178,14 +178,14 @@ class CompanyController extends Controller
         }
 
         try {
-            $companies = Company::on('central')->latest()->get();
+            $companies = Company::on('central')->with('subscriptions.plan')->latest()->get();
         } catch (\Throwable $e) {
             $companies = collect();
         }
 
         if ($companies->isEmpty()) {
             try {
-                $companies = \App\Models\Company::latest()->get();
+                $companies = \App\Models\Company::with('subscriptions.plan')->latest()->get();
             } catch (\Throwable $e) {
                 $companies = collect();
             }
@@ -193,7 +193,8 @@ class CompanyController extends Controller
 
         $currentCompanyDb = session('current_company_db');
 
-        return view('superadmin.plans.index', compact('plans', 'companies', 'currentCompanyDb'));
+        $planMonthlyRevenue = app(\App\Services\PlanMonthlyRevenue::class)->totals($companies);
+        return view('superadmin.plans.index', compact('plans', 'companies', 'currentCompanyDb', 'planMonthlyRevenue'));
     }
 
     /**
