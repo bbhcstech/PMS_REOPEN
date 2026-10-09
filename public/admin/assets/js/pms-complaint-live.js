@@ -22,7 +22,7 @@
         if (state.busy) { state.again = true; return; }
         if (!visible(state.feed)) { state.timer = setTimeout(() => poll(state), 2000); return; }
         state.busy = true;
-        let delay = 2000;
+        let delay = 1000;
         try {
             const url = new URL(state.feed.dataset.liveFeed, location.href);
             url.searchParams.set('after_id', state.last);
@@ -31,7 +31,7 @@
             if ([401, 403, 404, 419].includes(response.status) || response.redirected) { state.stopped = true; return; }
             if (!response.ok) throw new Error('Conversation unavailable');
             const data = await response.json();
-            if (state.identity && data.identity !== state.identity) { state.stopped = true; return; }
+            if (state.identity && String(data.identity || '').trim() !== state.identity) { state.stopped = true; return; }
             if (!state.feed.isConnected || !data.success) return;
             const scroll = state.feed.closest('.drawer-body') || document.scrollingElement;
             const nearBottom = scroll.scrollHeight - scroll.scrollTop - scroll.clientHeight < 100;
@@ -65,7 +65,7 @@
             if (known.has(feed)) return;
             known.add(feed);
             const state = { feed, last: Number(feed.dataset.lastId || 0), busy: false,
-                identity: feed.closest('[data-live-records]')?.dataset.liveIdentity };
+                identity: feed.closest('[data-live-records]')?.dataset.liveIdentity?.trim() };
             states.add(state); poll(state);
         });
     }

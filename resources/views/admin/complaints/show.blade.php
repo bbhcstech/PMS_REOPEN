@@ -174,5 +174,5 @@
 </div>
 @endsection
 @push('scripts')
-<script src="{{ asset('admin/assets/js/pms-complaint-live.js') }}" defer></script>
+<script src="{{ asset('admin/assets/js/pms-complaint-live.js') }}?v={{ @filemtime(public_path('admin/assets/js/pms-complaint-live.js')) }}" defer></script>
 @endpush

@@ -1195,13 +1195,27 @@
                 <button class="chart-time-btn" data-range="1y">1Y</button>
             </div>
         </div>
-        <div style="height: 240px; position: relative;">
+        @php
+            // Indian digit grouping (₹2,48,500) for the server-rendered footer.
+            $inr = function ($amount) {
+                $amount = (float) $amount;
+                $negative = $amount < 0;
+                $whole = (string) (int) round(abs($amount));
+                $last3 = substr($whole, -3);
+                $rest = substr($whole, 0, -3);
+                $grouped = $rest !== '' ? preg_replace('/\B(?=(\d{2})+(?!\d))/', ',', $rest) . ',' . $last3 : $last3;
+                return ($negative ? '-' : '') . '₹' . $grouped;
+            };
+            $revenueSummary = $revenueOverview['30d']['summary'] ?? ['mrr' => 0, 'growth_pct' => 0, 'arpu' => 0, 'period' => '30D'];
+            $revenueGrowth = $revenueSummary['growth_pct'];
+        @endphp
+        <div style="height: 240px; position: relative;" id="revenueOverviewData" data-revenue='@json($revenueOverview ?? [])'>
             <canvas id="revenueChartCanvas"></canvas>
         </div>
         <div style="display: flex; justify-content: space-between; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border-subtle); font-size: 13px;">
-            <div><span style="color: var(--text-subtle);">MRR:</span> <strong style="color: var(--text-main);">₹2,48,500</strong></div>
-            <div><span style="color: var(--text-subtle);">Growth:</span> <strong style="color: var(--success);">+18.2% MoM</strong></div>
-            <div><span style="color: var(--text-subtle);">ARPU / Tenant:</span> <strong style="color: var(--text-main);">₹1,941</strong></div>
+            <div><span style="color: var(--text-subtle);">MRR:</span> <strong style="color: var(--text-main);" id="revenueMrrValue">{{ $inr($revenueSummary['mrr']) }}</strong></div>
+            <div><span style="color: var(--text-subtle);">Growth:</span> <strong style="color: {{ $revenueGrowth !== null && $revenueGrowth < 0 ? 'var(--danger, #dc2626)' : 'var(--success)' }};" id="revenueGrowthValue">{{ $revenueGrowth === null ? 'New revenue' : (($revenueGrowth > 0 ? '+' : '') . number_format($revenueGrowth, 1) . '%') }} <span id="revenueGrowthPeriod">vs {{ $revenueSummary['period'] }}</span></strong></div>
+            <div><span style="color: var(--text-subtle);">ARPU / Tenant:</span> <strong style="color: var(--text-main);" id="revenueArpuValue">{{ $inr($revenueSummary['arpu']) }}</strong></div>
         </div>
     </div>
 
@@ -1228,13 +1242,19 @@
 <!-- ROW 3: USER GROWTH & PLATFORM ACTIVITY -->
 <div class="dashboard-grid-2col">
     <!-- User Growth Analytics -->
-    <div class="analytics-card">
+    <div class="analytics-card" id="platformUserGrowthCard" data-live-key="platform-user-growth" data-user-growth="{{ json_encode($platformUserGrowth) }}">
         <div class="analytics-card-header">
             <div>
                 <div class="analytics-card-title"><i class="fas fa-users-line" style="color: #2563eb;"></i> Platform User Growth</div>
-                <div class="analytics-card-subtitle">Active vs total user onboarding trends</div>
+                <div class="analytics-card-subtitle">Registered users and currently active users by onboarding date</div>
+            </div>
+            <div class="chart-time-pills" style="flex-wrap:wrap; gap:6px;">
+                <select id="userGrowthFrequency" class="chart-time-btn" aria-label="User growth period"><option value="yearly">Yearly</option><option value="weekly">Weekly</option></select>
+                <select id="userGrowthYear" class="chart-time-btn" aria-label="User growth year"></select>
+                <input id="userGrowthMonth" type="month" class="chart-time-btn" aria-label="User growth month" value="{{ now()->format('Y-m') }}" max="{{ now()->format('Y-m') }}" hidden>
             </div>
         </div>
+        @if($platformUserGrowth['unavailable'] > 0)<div class="analytics-card-subtitle">Data unavailable for {{ $platformUserGrowth['unavailable'] }} tenant databases.</div>@endif
         <div style="height: 240px; position: relative;">
             <canvas id="userGrowthCanvas"></canvas>
         </div>
@@ -1591,43 +1611,119 @@
 @endsection
 
 @push('scripts')
+<script src="{{ asset('admin/assets/js/pms-platform-user-growth.js') }}?v={{ @filemtime(public_path('admin/assets/js/pms-platform-user-growth.js')) }}" defer></script>
 <script src="{{ asset('admin/assets/js/pms-subscription-distribution.js') }}?v={{ @filemtime(public_path('admin/assets/js/pms-subscription-distribution.js')) }}" defer></script>
 <script src="{{ asset('admin/assets/js/pms-company-growth.js') }}?v={{ @filemtime(public_path('admin/assets/js/pms-company-growth.js')) }}" defer></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // 3. Revenue Overview Area Chart
+    // Real MRR history per range (7D / 30D / 90D / 1Y), computed server-side from subscriptions.
     const revCtx = document.getElementById('revenueChartCanvas')?.getContext('2d');
+    const revenueDataEl = document.getElementById('revenueOverviewData');
+    const revenueRangeBtns = document.querySelectorAll('.chart-time-btn[data-range]');
+    let revenueChart = null;
+    let revenueRange = document.querySelector('.chart-time-btn[data-range].active')?.getAttribute('data-range') || '30d';
+    let revenueJson = revenueDataEl ? revenueDataEl.getAttribute('data-revenue') : '{}';
+
+    const formatInr = (value) => '₹' + Math.round(Number(value) || 0).toLocaleString('en-IN');
+
+    function readRevenueData() {
+        try { return JSON.parse(revenueJson || '{}') || {}; } catch (e) { return {}; }
+    }
+
+    function renderRevenue(range) {
+        const series = readRevenueData()[range];
+        if (!series) return;
+        revenueRange = range;
+
+        revenueRangeBtns.forEach(btn => btn.classList.toggle('active', btn.getAttribute('data-range') === range));
+
+        if (revenueChart) {
+            revenueChart.data.labels = series.labels;
+            revenueChart.data.datasets[0].data = series.values;
+            revenueChart.data.datasets[0].pointRadius = series.values.length > 14 ? 2 : 4;
+            revenueChart.update();
+        }
+
+        renderRevenueSummary(range);
+    }
+
+    function renderRevenueSummary(range) {
+        const series = readRevenueData()[range];
+        if (!series) return;
+        const summary = series.summary || {};
+        const mrrEl = document.getElementById('revenueMrrValue');
+        const arpuEl = document.getElementById('revenueArpuValue');
+        const growthEl = document.getElementById('revenueGrowthValue');
+        if (mrrEl) mrrEl.textContent = formatInr(summary.mrr);
+        if (arpuEl) arpuEl.textContent = formatInr(summary.arpu);
+        if (growthEl) {
+            const growth = summary.growth_pct;
+            const text = growth === null || growth === undefined
+                ? 'New revenue'
+                : (growth > 0 ? '+' : '') + Number(growth).toFixed(1) + '%';
+            growthEl.innerHTML = '';
+            growthEl.append(document.createTextNode(text + ' '));
+            const period = document.createElement('span');
+            period.id = 'revenueGrowthPeriod';
+            period.textContent = 'vs ' + (summary.period || range.toUpperCase());
+            growthEl.append(period);
+            growthEl.style.color = growth !== null && growth < 0 ? 'var(--danger, #dc2626)' : 'var(--success)';
+        }
+    }
+
     if (revCtx) {
-        new Chart(revCtx, {
+        const initial = readRevenueData()[revenueRange] || { labels: [], values: [] };
+        revenueChart = new Chart(revCtx, {
             type: 'line',
             data: {
-                labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                labels: initial.labels,
                 datasets: [{
                     label: 'MRR (₹)',
-                    data: [
-                        {{ round(($totalRevenue > 0 ? $totalRevenue : 248500) * 0.7) }},
-                        {{ round(($totalRevenue > 0 ? $totalRevenue : 248500) * 0.82) }},
-                        {{ round(($totalRevenue > 0 ? $totalRevenue : 248500) * 0.93) }},
-                        {{ $totalRevenue > 0 ? $totalRevenue : 248500 }}
-                    ],
+                    data: initial.values,
                     borderColor: '#16a34a',
                     backgroundColor: 'rgba(22, 163, 74, 0.08)',
                     fill: true,
                     tension: 0.35,
-                    borderWidth: 3
+                    borderWidth: 3,
+                    pointRadius: initial.values.length > 14 ? 2 : 4
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { callbacks: { label: (item) => ' MRR ' + formatInr(item.raw) } }
+                },
                 scales: {
-                    y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
-                    x: { grid: { display: false } }
+                    y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { callback: (value) => formatInr(value) } },
+                    x: { grid: { display: false }, ticks: { autoSkip: true, maxTicksLimit: 10, maxRotation: 0 } }
                 }
             }
         });
+        renderRevenue(revenueRange);
     }
+
+    revenueRangeBtns.forEach(btn => {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            renderRevenue(this.getAttribute('data-range'));
+        });
+    });
+
+    // Live-records refresh updates data-revenue; redraw the selected range with the new figures.
+    // The refresh also rewrites the footer text with the server's default (30D) figures,
+    // so re-apply the selected range's footer every time; redraw the chart only when data changed.
+    document.addEventListener('pms:records-updated', function () {
+        const next = revenueDataEl ? revenueDataEl.getAttribute('data-revenue') : null;
+        if (next && next !== revenueJson) {
+            revenueJson = next;
+            renderRevenue(revenueRange);
+        } else {
+            renderRevenueSummary(revenueRange);
+        }
+    });
 
     // 4. Company Status Donut Chart
     const statusCtx = document.getElementById('statusChartCanvas')?.getContext('2d');
@@ -1652,32 +1748,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 maintainAspectRatio: false,
                 cutout: '65%',
                 plugins: { legend: { display: false } }
-            }
-        });
-    }
-
-    // 5. User Growth Line Chart
-    const userCtx = document.getElementById('userGrowthCanvas')?.getContext('2d');
-    if (userCtx) {
-        new Chart(userCtx, {
-            type: 'bar',
-            data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
-                datasets: [{
-                    label: 'Total Platform Users',
-                    data: [45, 90, 140, 210, 320, 410, 520, {{ max(520, $totalUsers) }}],
-                    backgroundColor: '#2563eb',
-                    borderRadius: 6
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
-                    x: { grid: { display: false } }
-                }
             }
         });
     }
