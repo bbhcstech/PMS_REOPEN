@@ -724,7 +724,7 @@ class CompanyController extends Controller
                 'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/',
                 \Illuminate\Validation\Rule::unique('central.companies', 'email')->ignore($company->id),
             ],
-            'phone'               => ['nullable', 'string', 'max:50'],
+            'phone'               => ['nullable', 'string', 'max:50', new \App\Rules\CompanyPhoneNumber],
             'website'             => ['nullable', 'string', 'max:255'],
             'domain'              => ['nullable', 'string', 'max:255'],
             'subdomain'           => ['nullable', 'string', 'max:100'],

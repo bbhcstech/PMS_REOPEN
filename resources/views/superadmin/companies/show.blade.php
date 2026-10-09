@@ -1651,7 +1651,7 @@
                     </div>
 
                     <div class="form-field-group">
-                        <label class="form-field-label" for="company_phone_edit">Phone Number</label>
+                        <label class="form-field-label" for="company_phone_edit_display">Phone Number</label>
                         @php
                             $compPhone = old('phone', $company->phone);
                             $compPhoneCode = '+91';
@@ -1663,14 +1663,16 @@
                         <div style="display: flex;">
                             <select id="company_edit_country_code" class="country-code-select" style="width: 110px; flex-shrink: 0; padding: 9px 8px; border: 1px solid var(--border-subtle, #cbd5e1); border-right: 0; border-top-left-radius: 8px; border-bottom-left-radius: 8px; font-size: 13px; outline: none;">
                                 @foreach(\App\Models\Country::getAllWithPhoneCodes() as $c)
-                                    <option value="{{ $c->phone_code }}" {{ $compPhoneCode == $c->phone_code ? 'selected' : '' }}>
+                                    <option value="{{ $c->phone_code }}" data-min-digits="{{ $c->min_digits }}" data-max-digits="{{ $c->max_digits }}" {{ $compPhoneCode == $c->phone_code ? 'selected' : '' }}>
                                         {{ $c->iso_code ? $c->iso_code . ' ' : '' }}({{ $c->phone_code }})
                                     </option>
                                 @endforeach
                             </select>
-                            <input type="text" id="company_phone_edit_display" class="form-control-custom" value="{{ $compPhone }}" placeholder="9876543210" style="border-top-left-radius: 0; border-bottom-left-radius: 0; width: 100%;" />
+                            <input type="tel" inputmode="numeric" autocomplete="tel-national" id="company_phone_edit_display" class="form-control-custom" value="{{ $compPhone }}" placeholder="9876543210" aria-describedby="company_phone_edit_hint" style="border-top-left-radius: 0; border-bottom-left-radius: 0; width: 100%;" />
                             <input type="hidden" name="phone" id="company_phone_edit" value="{{ old('phone', $company->phone) }}" />
                         </div>
+                        <small id="company_phone_edit_hint" class="text-muted"></small>
+                        @error('phone')<div class="text-danger">{{ $message }}</div>@enderror
                     </div>
 
                     <div class="form-field-group full-width">
@@ -1964,6 +1966,7 @@
 </div>
 
 @push('scripts')
+<script src="{{ asset('admin/assets/js/pms-company-edit-phone.js') }}?v={{ filemtime(public_path('admin/assets/js/pms-company-edit-phone.js')) }}" defer></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Tab switching logic
@@ -2172,24 +2175,8 @@ document.addEventListener('DOMContentLoaded', function() {
         pwdEditInput.addEventListener('blur', validateEditPassword);
     }
 
-    const phoneDisp = document.getElementById('company_phone_edit_display');
-    const phoneCode = document.getElementById('company_edit_country_code');
-    const phoneHidden = document.getElementById('company_phone_edit');
-    if (phoneDisp && phoneCode && phoneHidden) {
-        function updateEditPhone() {
-            const val = phoneDisp.value.trim();
-            phoneHidden.value = val ? (phoneCode.value + ' ' + val) : '';
-        }
-        phoneDisp.addEventListener('input', updateEditPhone);
-        phoneCode.addEventListener('change', updateEditPhone);
-    }
-
     if (editForm) {
         editForm.addEventListener('submit', function(e) {
-            if (phoneDisp && phoneCode && phoneHidden) {
-                const val = phoneDisp.value.trim();
-                phoneHidden.value = val ? (phoneCode.value + ' ' + val) : '';
-            }
             if (!validateEditPassword()) {
                 e.preventDefault();
                 pwdEditInput.focus();
