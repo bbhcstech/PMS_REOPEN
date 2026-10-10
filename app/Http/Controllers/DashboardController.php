@@ -52,15 +52,16 @@ class DashboardController extends Controller
     private function storeClockInPhoto(string $selfieData, int $userId, string $today): ?string
     {
         if (! preg_match('/^data:image\/(png|jpe?g);base64,/', $selfieData)) {
-            return null;
+            abort(422, 'Capture a valid photo before clocking in.');
         }
 
         $imageData = preg_replace('/^data:image\/(png|jpe?g);base64,/', '', $selfieData);
         $decoded = base64_decode($imageData, true);
 
         if ($decoded === false) {
-            return null;
+            abort(422, 'Capture a valid photo before clocking in.');
         }
+        abort_if(strlen($decoded) > 5 * 1024 * 1024 || ! @getimagesizefromstring($decoded), 422, 'Invalid clock-in photo.');
         if (\App\Services\WorkforceAccess::isAuthority(auth()->user())) {
             abort_if(strlen($decoded) > 5 * 1024 * 1024 || ! @getimagesizefromstring($decoded), 422, 'Invalid clock-in photo.');
             $path = 'authority-attendance/' . auth()->user()->company_id . '/' . \Illuminate\Support\Str::uuid() . '.jpg';
@@ -840,7 +841,7 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
         'clock_in_longitude' => ['nullable', 'numeric', 'between:-180,180'],
         'clock_in_accuracy' => ['nullable', 'numeric', 'min:0'],
         'clock_in_address' => ['nullable', 'string', 'max:255'],
-        'clock_in_selfie' => ['nullable', 'string'],
+        'clock_in_selfie' => ['required', 'string', 'max:7000000'],
         'clock_in_timezone' => ['nullable', 'string', 'max:50'],
     ]);
 
@@ -886,6 +887,7 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
         $photoPath = !empty($validated['clock_in_selfie'])
             ? $this->storeClockInPhoto($validated['clock_in_selfie'], $userId, $today)
             : null;
+        abort_unless($photoPath, 500, 'Could not save your clock-in photo. Please try again.');
 
         $clockInTime = $now->format('H:i:s');
         $currentLocationLabel = trim((string) ($validated['clock_in_address'] ?? ''));

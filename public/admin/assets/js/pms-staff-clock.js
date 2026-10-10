@@ -192,28 +192,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return compactAddress(data.address) || (data.display_name || '').slice(0, 180);
         };
 
-        const skipCamera = document.getElementById('clockCameraSkip');
 
-        const generateFallbackSelfie = () => {
-            const cvs = document.createElement('canvas');
-            cvs.width = 400;
-            cvs.height = 400;
-            const ctx = cvs.getContext('2d');
-            ctx.fillStyle = '#1e293b';
-            ctx.fillRect(0, 0, 400, 400);
-            ctx.fillStyle = '#10b981';
-            ctx.beginPath();
-            ctx.arc(200, 160, 60, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.arc(200, 340, 110, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 20px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText('Clock-In Selfie (N/A)', 200, 370);
-            return cvs.toDataURL('image/jpeg', 0.85);
-        };
 
         if (clockInForm) {
             clockInForm.addEventListener('submit', async event => {
@@ -257,22 +236,21 @@ document.addEventListener('DOMContentLoaded', function () {
                     accuracyInput.value = positionAccuracy;
                     addressInput.value = locationLabel;
 
-                    // 2. Try to open camera for selfie, with graceful fallback on permission error
+                    // 2. Open the camera; permission errors must not clock in
                     try {
                         setClockStatus('Opening camera for selfie photo...', 'info');
                         await openCamera();
                     } catch (camErr) {
                         console.warn('Camera permission error or unavailable:', camErr);
-                        setClockStatus('Camera permission unavailable. Completing clock-in with default photo...', 'info');
-                        selfieInput.value = generateFallbackSelfie();
-                        canSubmitClockIn = true;
-                        clockInForm.submit();
+                        setClockStatus('Camera access is required. Allow camera permission and capture your photo to clock in.', 'error');
+                        selfieInput.value = '';
+                        canSubmitClockIn = false;
                     }
                 } catch (error) {
                     console.error('Clock in error:', error);
-                    selfieInput.value = selfieInput.value || generateFallbackSelfie();
-                    canSubmitClockIn = true;
-                    clockInForm.submit();
+                    selfieInput.value = '';
+                    canSubmitClockIn = false;
+                    setClockStatus('Camera access and a captured photo are required to clock in.', 'error');
                 } finally {
                     clockInButton.disabled = false;
                 }
@@ -339,22 +317,14 @@ document.addEventListener('DOMContentLoaded', function () {
             preview?.classList.remove('has-photo');
         });
 
-        skipCamera?.addEventListener('click', () => {
-            if (!selfieInput.value) {
-                selfieInput.value = generateFallbackSelfie();
-            }
-            canSubmitClockIn = true;
-            setClockStatus('Clocking in without photo...', 'success');
-            closeCameraModal();
-            clockInForm.submit();
-        });
+
 
         useCamera?.addEventListener('click', () => {
             if (!capturedSelfie) {
-                selfieInput.value = generateFallbackSelfie();
-            } else {
-                selfieInput.value = capturedSelfie;
+                setClockStatus('Capture your photo before clocking in.', 'error');
+                return;
             }
+            selfieInput.value = capturedSelfie;
 
             if (timezoneInput) {
                 timezoneInput.value = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata';

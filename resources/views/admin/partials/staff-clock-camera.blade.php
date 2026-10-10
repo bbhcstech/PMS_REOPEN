@@ -16,7 +16,6 @@
                         <button type="button" class="clock-modal-btn secondary" id="clockCameraFlip"><i class="bx bx-refresh"></i> Flip</button>
                         <button type="button" class="clock-modal-btn" id="clockCameraCapture"><i class="bx bx-camera"></i> Capture</button>
                         <button type="button" class="clock-modal-btn secondary" id="clockCameraRetake"><i class="bx bx-undo"></i> Retake</button>
-                        <button type="button" class="clock-modal-btn secondary" id="clockCameraSkip"><i class="bx bx-check-circle"></i> Skip Photo & Clock In</button>
                         <button type="button" class="clock-modal-btn success" id="clockCameraUse"><i class="bx bx-check"></i> Use Photo & Clock In</button>
                     </div>
                 </div>

@@ -1173,6 +1173,74 @@
             </div>
         @endif
     </div>
+
+    <!-- SENT LETTERS (Write & Send Letter history) -->
+    <div class="lh-table-card mt-4" id="sentLettersCard">
+        <div class="p-3 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+                <h5 class="fw-bold mb-0">Sent Letters</h5>
+                <small class="text-muted">Letters written from Write &amp; Send Letter, newest first.</small>
+            </div>
+            <a href="{{ route('letterhead.create') }}" class="btn btn-sm btn-primary"><i class="bx bx-send me-1"></i> Write &amp; Send Letter</a>
+        </div>
+        <div class="table-responsive">
+            <table class="lh-table">
+                <thead>
+                    <tr>
+                        <th>Letter</th>
+                        <th>Recipient</th>
+                        <th>Letter Head</th>
+                        <th>Status</th>
+                        <th>Sent By</th>
+                        <th>Date</th>
+                        <th class="text-end">PDF</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($sentLetters ?? [] as $sentLetter)
+                        <tr data-live-key="sent-letter-{{ $sentLetter->id }}">
+                            <td>
+                                <div class="fw-bold">{{ $sentLetter->subject }}</div>
+                                @if($sentLetter->ref_no)<small class="text-muted">{{ $sentLetter->ref_no }}</small>@endif
+                            </td>
+                            <td>
+                                <div class="fw-semibold">{{ $sentLetter->recipient_name ?: '—' }}</div>
+                                <small class="text-muted">{{ $sentLetter->recipient_email ?: 'No email' }}</small>
+                            </td>
+                            <td>{{ $sentLetter->letterhead?->name ?? '—' }}</td>
+                            <td>
+                                <span class="badge {{ $sentLetter->delivery_status === 'sent' ? 'bg-label-success' : ($sentLetter->delivery_status === 'failed' ? 'bg-label-danger' : 'bg-label-secondary') }}"
+                                      @if($sentLetter->delivery_status === 'failed' && $sentLetter->delivery_error) title="{{ $sentLetter->delivery_error }}" @endif>
+                                    {{ $sentLetter->delivery_label }}
+                                </span>
+                            </td>
+                            <td>{{ $sentLetter->sender?->name ?? '—' }}</td>
+                            <td>
+                                <div>{{ $sentLetter->created_at?->format('M d, Y') }}</div>
+                                <small class="text-muted">{{ $sentLetter->created_at?->format('h:i A') }}</small>
+                            </td>
+                            <td class="text-end">
+                                @if($sentLetter->pdf_path)
+                                    <a href="{{ route('letterhead.sent-letters.pdf', $sentLetter->id) }}" class="btn btn-sm btn-outline-primary"><i class="bx bx-download me-1"></i> PDF</a>
+                                @else
+                                    <small class="text-muted">—</small>
+                                @endif
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">No letters sent yet. Use Write &amp; Send Letter to create one.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+        @if(($sentLetters ?? null) && $sentLetters->hasPages())
+            <div class="p-3 border-top d-flex justify-content-end">
+                {{ $sentLetters->links('pagination::bootstrap-5') }}
+            </div>
+        @endif
+    </div>
 </div>
 
 <!-- ========================================================================= -->

@@ -7,7 +7,7 @@
     $labels = ['present' => ['✅', 'Present'], 'late' => ['⏰', 'Late'], 'half_day' => ['🌓', 'Half day'], 'absent' => ['❌', 'Absent'], 'holiday' => ['🎉', 'Holiday'], 'leave' => ['🌴', 'Leave'], 'unpaid_leave' => ['📋', 'Unpaid leave'], 'day_off' => ['☕', 'Day off'], 'not_marked' => ['○', 'Not marked'], 'not_joined' => ['—', 'Before joining']];
     $previous = $start->copy()->subMonth();
     $next = $start->copy()->addMonth();
-    $navigation = fn ($date) => route($attendanceRoute, ['user_id' => $selectedEmployee?->id, 'month' => $date->month, 'year' => $date->year]);
+    $navigation = fn ($date) => route($attendanceRoute, array_merge($canManage ? ['user_id' => $selectedEmployee?->id] : [], ['month' => $date->month, 'year' => $date->year]));
     $hours = fn ($seconds) => sprintf('%dh %02dm', intdiv((int) $seconds, 3600), intdiv((int) $seconds % 3600, 60));
     $exportRows = collect($calendar['days'])->map(fn ($day) => [$day['key'], $day['status'], $day['seconds'], $day['wfh'] ? 'Yes' : 'No'])->values();
 @endphp
@@ -26,9 +26,13 @@
     @if(session('success'))<div role="status" class="ac-panel">{{ session('success') }}</div>@endif
     <form class="ac-panel ac-toolbar" method="GET" action="{{ route($attendanceRoute) }}">
 <input type="hidden" name="staff_category" value="{{ request('staff_category', 'employee') }}">
+        @if($canManage)
         <div class="ac-employee-picker"><label for="ac-employee">Employee</label><select name="user_id" id="ac-employee" required>
             @foreach($employees as $employee)<option value="{{ $employee->id }}" @selected($selectedEmployee?->id === $employee->id)>{{ $employee->name }}{{ $employee->employeeDetail?->employee_id ? ' · ' . $employee->employeeDetail->employee_id : '' }}</option>@endforeach
         </select></div>
+        @else
+        <div class="ac-employee-picker"><label>Employee</label><div class="ac-current-employee">{{ $selectedEmployee?->name }}{{ $selectedEmployee?->employeeDetail?->employee_id ? ' · ' . $selectedEmployee->employeeDetail->employee_id : '' }}</div></div>
+        @endif
         <a class="ac-button ac-arrow" href="{{ $navigation($previous) }}" aria-label="Previous month">‹</a>
         <div><label for="ac-month">Month</label><select id="ac-month" name="month">@foreach(range(1, 12) as $m)<option value="{{ $m }}" @selected($month === $m)>{{ \Carbon\Carbon::create(2000, $m, 1)->format('F') }}</option>@endforeach</select></div>
         <div><label for="ac-year">Year</label><input id="ac-year" name="year" type="number" min="2000" max="2100" value="{{ $year }}" required></div>

@@ -14,6 +14,13 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
+    @if(!empty($calculationFailures))
+        <div class="alert alert-warning" role="status">
+            <strong>{{ count($calculationFailures) }} employee(s) could not be calculated and are not listed:</strong>
+            {{ implode(', ', array_slice($calculationFailures, 0, 10)) }}{{ count($calculationFailures) > 10 ? ' …' : '' }}.
+            Please check their salary assignment, salary structure and attendance records.
+        </div>
+    @endif
     @if(session('error'))
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
             {{ session('error') }}

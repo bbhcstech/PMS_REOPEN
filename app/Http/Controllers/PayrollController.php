@@ -542,45 +542,56 @@ class PayrollController extends Controller
         if ($companyId && Schema::connection($addrConn)->hasColumn('business_addresses', 'company_id')) {
             $addressQuery->where('company_id', $companyId);
         }
-        $offices = $addressQuery->pluck('branch_name')
+        $offices = $this->dashboardSection('processing office list', fn () => $addressQuery->pluck('branch_name')
             ->filter()
             ->unique()
-            ->toArray();
+            ->toArray(), []);
 
         $empDetailQuery = EmployeeDetail::query();
         $empConn = $empDetailQuery->getModel()->getConnectionName() ?: config('database.default');
         if ($companyId && Schema::connection($empConn)->hasColumn('employee_details', 'company_id')) {
             $empDetailQuery->where('company_id', $companyId);
         }
-        $dbEmpAddresses = $empDetailQuery->pluck('business_address')
+        $dbEmpAddresses = $this->dashboardSection('processing employee offices', fn () => $empDetailQuery->pluck('business_address')
             ->filter()
             ->unique()
-            ->toArray();
+            ->toArray(), []);
 
         $officesList = array_values(array_filter(array_unique(array_merge($offices, $dbEmpAddresses))));
-        $departments = $this->getDepartments();
+        $departments = $this->dashboardSection('processing departments', fn () => $this->getDepartments(), collect());
 
         // Check if existing payroll exists for period
-        $existingPayroll = $payrollService->checkExistingPayroll($companyId, $year, $month, $office, $employeeType);
+        $existingPayroll = $this->dashboardSection('processing existing payroll',
+            fn () => $payrollService->checkExistingPayroll($companyId, $year, $month, $office, $employeeType), null);
 
         $payrollRun = null;
         $payrollItems = collect();
+        $calculationFailures = [];
 
         if ($existingPayroll) {
             $payrollRun = $existingPayroll;
             // Saved rows must obey the same employee filters as an unsaved preview.
-            $eligibleEmployeeIds = $payrollService
+            $eligibleEmployeeIds = $this->dashboardSection('processing eligible employees', fn () => $payrollService
                 ->getEligibleEmployees($companyId, $office, $employeeType, $departmentId)
-                ->pluck('id');
+                ->pluck('id'), collect());
             $payrollItems = PayrollHistory::where('payroll_id', $existingPayroll->id)
                 ->whereIn('user_id', $eligibleEmployeeIds)
                 ->orderBy('id', 'asc')->get();
         } else {
             // Auto calculate preview lines in memory
-            $employees = $payrollService->getEligibleEmployees($companyId, $office, $employeeType, $departmentId);
+            $employees = $this->dashboardSection('processing eligible employees',
+                fn () => $payrollService->getEligibleEmployees($companyId, $office, $employeeType, $departmentId), collect());
             $srNo = 1;
             foreach ($employees as $employee) {
-                $line = $payrollService->calculateEmployeePayrollLine($employee, $year, $month, $workingDays, $srNo++);
+                // An employee whose salary/attendance data cannot be calculated is listed in a warning
+                // (and logged) instead of turning the whole Processing page into a 500 error.
+                $line = $this->dashboardSection('payroll processing for user #' . $employee->id,
+                    fn () => $payrollService->calculateEmployeePayrollLine($employee, $year, $month, $workingDays, $srNo), null);
+                if (! is_array($line)) {
+                    $calculationFailures[] = $employee->name ?: ('Employee #' . $employee->id);
+                    continue;
+                }
+                $srNo++;
                 $payrollItems->push((object)[
                     'id' => null,
                     'user_id' => $employee->id,
@@ -644,7 +655,8 @@ class PayrollController extends Controller
             'existingPayroll',
             'payrollRun',
             'payrollItems',
-            'summary'
+            'summary',
+            'calculationFailures'
         ));
     }
 

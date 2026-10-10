@@ -87,7 +87,15 @@ class LetterheadController extends Controller
         $departments = Department::orderBy('dpt_name')->get();
         $projects = Project::orderBy('name')->get();
 
+        \App\Models\LetterheadSentLetter::ensureTable();
+        $sentLetters = \App\Models\LetterheadSentLetter::with(['letterhead', 'sender'])
+            ->when(! \App\Services\TenantScope::isPlatformAdmin(), fn ($q) => $q->where('company_id', \App\Services\TenantScope::companyId() ?: 0))
+            ->latest('id')
+            ->paginate(10, ['*'], 'letters_page')
+            ->withQueryString();
+
         return view('admin.letterhead.index', compact(
+            'sentLetters',
             'letterheads',
             'stats',
             'companies',
@@ -832,15 +840,88 @@ class LetterheadController extends Controller
             'subject' => 'required|string|max:300',
             'body' => 'required|string',
             'recipient_email' => 'nullable|email',
+            'recipient_name' => 'nullable|string|max:255',
         ]);
 
-        $recipient = $request->input('recipient_email') ?: 'hr@bengalithub.com';
+        \App\Models\LetterheadSentLetter::ensureTable();
+        $user = auth()->user();
+        $recipientEmail = trim((string) $request->input('recipient_email')) ?: null;
 
-        // Log and redirect
-        Log::info('Official letter submitted: ' . $request->input('subject') . ' to ' . $recipient);
+        // Same PDF as "Export PDF" (letterhead, layout and any uploaded header/footer images).
+        $pdfPath = null;
+        $pdfBytes = null;
+        try {
+            $pdfBytes = $this->exportPdf($request)->getContent();
+            if (is_string($pdfBytes) && str_starts_with($pdfBytes, '%PDF')) {
+                $pdfPath = 'letterhead-letters/' . (int) ($user?->company_id ?? 0) . '/letter_' . now()->format('YmdHis') . '_' . Str::random(8) . '.pdf';
+                \Illuminate\Support\Facades\Storage::disk('local')->put($pdfPath, $pdfBytes);
+            } else {
+                $pdfBytes = null;
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Letter PDF could not be generated: ' . $e->getMessage());
+        }
 
-        return redirect()->route('letterhead.create')
-            ->with('success', 'Letter "' . $request->input('subject') . '" has been prepared and sent to ' . $recipient . ' successfully.');
+        $letterheadId = $request->filled('letterhead_id') ? (int) $request->input('letterhead_id') : null;
+        if (! $letterheadId) {
+            $letterheadId = (Letterhead::where('is_default', true)->first() ?: Letterhead::first())?->id;
+        }
+
+        $letter = \App\Models\LetterheadSentLetter::create([
+            'company_id' => $user?->company_id,
+            'letterhead_id' => $letterheadId,
+            'template_key' => $request->input('template_key'),
+            'ref_no' => $request->input('ref_no'),
+            'letter_date' => $request->input('date') ?: now()->format('F d, Y'),
+            'recipient_name' => $request->input('recipient_name'),
+            'recipient_email' => $recipientEmail,
+            'subject' => $request->input('subject'),
+            'body' => $request->input('body'),
+            'signatory_name' => $request->input('signatory_name') ?: $user?->name,
+            'signatory_title' => $request->input('signatory_title'),
+            'pdf_path' => $pdfPath,
+            'delivery_status' => 'saved',
+            'sent_by' => $user?->id,
+        ]);
+
+        if (! $recipientEmail) {
+            return redirect()->route('letterhead.index')
+                ->with('success', 'Letter "' . $letter->subject . '" was saved under Sent Letters. Add a recipient email to send it by email.');
+        }
+
+        try {
+            \Illuminate\Support\Facades\Mail::raw($letter->body, function ($message) use ($letter, $recipientEmail, $pdfBytes) {
+                $message->to($recipientEmail, $letter->recipient_name ?: null)->subject($letter->subject);
+                if ($pdfBytes) {
+                    $message->attachData($pdfBytes, Str::slug(Str::limit($letter->subject, 40, '')) . '.pdf', ['mime' => 'application/pdf']);
+                }
+            });
+            $letter->update(['delivery_status' => 'sent']);
+
+            return redirect()->route('letterhead.index')
+                ->with('success', 'Letter "' . $letter->subject . '" was sent to ' . $recipientEmail . ' and saved under Sent Letters.');
+        } catch (\Throwable $e) {
+            Log::error('Letter email failed: ' . $e->getMessage(), ['letter_id' => $letter->id]);
+            $letter->update(['delivery_status' => 'failed', 'delivery_error' => Str::limit($e->getMessage(), 1000)]);
+
+            return redirect()->route('letterhead.index')
+                ->with('error', 'Letter "' . $letter->subject . '" was saved under Sent Letters, but the email to ' . $recipientEmail . ' could not be sent. Please check the mail settings.');
+        }
+    }
+
+    /** Download the PDF stored when the letter was sent. */
+    public function downloadSentLetter($id)
+    {
+        \App\Models\LetterheadSentLetter::ensureTable();
+        $letter = \App\Models\LetterheadSentLetter::query()
+            ->when(! \App\Services\TenantScope::isPlatformAdmin(), fn ($q) => $q->where('company_id', \App\Services\TenantScope::companyId() ?: 0))
+            ->findOrFail($id);
+        abort_unless($letter->pdf_path && \Illuminate\Support\Facades\Storage::disk('local')->exists($letter->pdf_path), 404, 'The PDF for this letter is not available.');
+
+        return \Illuminate\Support\Facades\Storage::disk('local')->download(
+            $letter->pdf_path,
+            'Letter_' . Str::slug(Str::limit($letter->subject, 40, '')) . '.pdf'
+        );
     }
 
     /**

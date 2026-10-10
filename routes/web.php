@@ -608,6 +608,7 @@ Route::middleware(['auth', 'module.access'])->group(function () {
         Route::post('/letterhead/export-word', [LetterheadController::class, 'exportWord'])->name('letterhead.export-word');
         Route::get('/letterhead/demo-download', [LetterheadController::class, 'demoDownload'])->name('letterhead.demo-download');
         Route::post('/letterhead/send-letter', [LetterheadController::class, 'sendLetter'])->name('letterhead.send-letter');
+        Route::get('/letterhead/sent-letters/{id}/pdf', [LetterheadController::class, 'downloadSentLetter'])->name('letterhead.sent-letters.pdf');
         Route::get('/letterhead/{letterhead}', [LetterheadController::class, 'show'])->name('letterhead.show');
         Route::get('/letterhead/{letterhead}/edit', [LetterheadController::class, 'edit'])->name('letterhead.edit');
         Route::put('/letterhead/{letterhead}', [LetterheadController::class, 'update'])->name('letterhead.update');
@@ -646,6 +647,7 @@ Route::middleware(['auth', 'module.access'])->group(function () {
     Route::post('/letterhead/export-word', [LetterheadController::class, 'exportWord'])->name('letterhead.export-word');
     Route::get('/letterhead/demo-download', [LetterheadController::class, 'demoDownload'])->name('letterhead.demo-download');
     Route::post('/letterhead/send-letter', [LetterheadController::class, 'sendLetter'])->name('letterhead.send-letter');
+    Route::get('/letterhead/sent-letters/{id}/pdf', [LetterheadController::class, 'downloadSentLetter'])->name('letterhead.sent-letters.pdf');
     Route::get('/letterhead/{letterhead}', [LetterheadController::class, 'show'])->name('letterhead.show');
     Route::get('/letterhead/{letterhead}/edit', [LetterheadController::class, 'edit'])->name('letterhead.edit');
     Route::put('/letterhead/{letterhead}', [LetterheadController::class, 'update'])->name('letterhead.update');

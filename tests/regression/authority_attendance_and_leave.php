@@ -46,6 +46,23 @@ $employee = User::create(['company_id' => 1, 'name' => 'Normal employee', 'email
 $dashboard = new DashboardController;
 Auth::guard('web')->setUser($staff);
 $clockRequest = req(['clock_in_timezone' => 'Asia/Kolkata', 'user_id' => $employee->id, 'company_id' => 99, 'clock_in' => '01:00:00']);
+try {
+    $dashboard->clockIn($clockRequest);
+    throw new RuntimeException('Clock-in without a photo was accepted.');
+} catch (\Illuminate\Validation\ValidationException $e) {
+    staffCheck(isset($e->errors()['clock_in_selfie']), 'Missing photo validation error.');
+}
+staffCheck(Attendance::count() === 0, 'Rejected clock-in wrote an attendance record.');
+\Illuminate\Support\Facades\Storage::fake('local');
+$clockRequest->merge(['clock_in_selfie' => 'data:image/png;base64,'.base64_encode('invalid image')]);
+try {
+    $dashboard->clockIn($clockRequest);
+    throw new RuntimeException('Clock-in with an invalid image was accepted.');
+} catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
+    staffCheck($e->getStatusCode() === 422, 'Invalid photo returned the wrong status.');
+}
+staffCheck(Attendance::count() === 0, 'Invalid image wrote an attendance record.');
+$clockRequest->merge(['clock_in_selfie' => 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aD1sAAAAASUVORK5CYII=']);
 $dashboard->clockIn($clockRequest);
 $record = Attendance::firstOrFail();
 staffCheck($record->user_id === $staff->id && $record->company_id === 1 && $record->clock_in === '09:00:00', 'Clock-in trusted forged user, company or time.');

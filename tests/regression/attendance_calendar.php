@@ -75,6 +75,21 @@ try {
 \Illuminate\Support\Facades\Auth::guard('web')->setUser(\App\Models\User::findOrFail(3));
 $self = $controller->index(\Illuminate\Http\Request::create('/attendance', 'GET'))->getData();
 checkCalendar($self['employees']->pluck('id')->all() === [3], 'Employee can see other employee options.');
+checkCalendar($self['selectedEmployee']->id === 3, 'My attendance did not default to the logged-in employee.');
+try {
+    $controller->index(\Illuminate\Http\Request::create('/attendance', 'GET', ['user_id' => 1]));
+    throw new RuntimeException('Employee could select another company member.');
+} catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
+    checkCalendar($e->getStatusCode() === 403, 'Unexpected self-attendance access error.');
+}
+$calendarSource = file_get_contents(resource_path('views/admin/attendance/calendar.blade.php'));
+preg_match('/<form class="ac-panel ac-toolbar"[\s\S]*?<\/form>/', $calendarSource, $toolbarMatch);
+$toolbarData = ['attendanceRoute' => 'attendance.index', 'navigation' => fn ($date) => '/attendance?month='.$date->month, 'previous' => $self['start']->copy()->subMonth(), 'next' => $self['start']->copy()->addMonth()] + $self;
+$toolbar = \Illuminate\Support\Facades\Blade::render($toolbarMatch[0], $toolbarData);
+checkCalendar(!str_contains($toolbar, 'name="user_id"') && str_contains($toolbar, 'Local employee'), 'My attendance still offers employee selection.');
+$toolbarData['canManage'] = true;
+$toolbar = \Illuminate\Support\Facades\Blade::render($toolbarMatch[0], $toolbarData);
+checkCalendar(str_contains($toolbar, 'name="user_id"'), 'Administrator employee selection was removed.');
 $legacy = $controller->index(\Illuminate\Http\Request::create('/attendance', 'GET', ['view' => 'grid']));
 checkCalendar($legacy->name() === 'admin.attendance.calendar', 'Legacy grid URL must show the calendar.');
 

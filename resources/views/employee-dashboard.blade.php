@@ -1353,8 +1353,8 @@
                     <div class="col-lg-4">
                         <div class="employee-clock">
                             <div class="text-lg-end">
-                                <div class="employee-time" id="employeeLiveTime">{{ now()->format('h:i A') }}</div>
-                                <div id="employeeLiveDate">{{ now()->format('l, d M Y') }}</div>
+                                <div class="employee-time" id="employeeLiveTime" data-live-preserve>{{ now($employeeTimezone)->format('h:i A') }}</div>
+                                <div id="employeeLiveDate" data-live-preserve>{{ now($employeeTimezone)->format('l, d M Y') }}</div>
                             </div>
 
                             @if ($attendance && $attendance->clock_in && !$attendance->clock_out)
@@ -1419,8 +1419,8 @@
                                     @endif
                                     <div class="clock-live-grid">
                                         <div class="clock-live-box">
-                                            <span id="employeeClockZoneLabel">Current Time</span>
-                                            <strong id="employeeIstClock">{{ now()->format('h:i:s A') }}</strong>
+                                            <span id="employeeClockZoneLabel" data-live-preserve>Current Time</span>
+                                            <strong id="employeeIstClock" data-live-preserve>{{ now($defaultTz)->format('h:i:s A') }}</strong>
                                         </div>
                                         <div class="clock-live-box">
                                             <span>{{ $attendance->clock_out ? 'Worked Time' : 'Working Time' }}</span>
@@ -1459,7 +1459,6 @@
                         <button type="button" class="clock-modal-btn secondary" id="clockCameraFlip"><i class="bx bx-refresh"></i> Flip</button>
                         <button type="button" class="clock-modal-btn" id="clockCameraCapture"><i class="bx bx-camera"></i> Capture</button>
                         <button type="button" class="clock-modal-btn secondary" id="clockCameraRetake"><i class="bx bx-undo"></i> Retake</button>
-                        <button type="button" class="clock-modal-btn secondary" id="clockCameraSkip"><i class="bx bx-check-circle"></i> Skip Photo & Clock In</button>
                         <button type="button" class="clock-modal-btn success" id="clockCameraUse"><i class="bx bx-check"></i> Use Photo & Clock In</button>
                     </div>
                 </div>
@@ -1694,7 +1693,7 @@
                 <div class="employee-card-header d-flex justify-content-between align-items-center mb-3">
                     <div>
                         <h3 class="employee-card-title mb-1"><i class="bx bx-folder-open text-primary me-2"></i>My Projects</h3>
-                        <p class="employee-muted mb-0">Overview of all assigned projects. Click the action menu (⋮) to view and edit your tasks.</p>
+                        <p class="employee-muted mb-0">Overview of all assigned projects. Click the action menu (Ã¢â€¹Â®) to view and edit your tasks.</p>
                     </div>
                     <span class="badge bg-primary rounded-pill px-3 py-2 fs-6">{{ ($myProjects ?? collect())->count() }} Projects</span>
                 </div>
@@ -2557,28 +2556,7 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
             return compactAddress(data.address) || (data.display_name || '').slice(0, 180);
         };
 
-        const skipCamera = document.getElementById('clockCameraSkip');
 
-        const generateFallbackSelfie = () => {
-            const cvs = document.createElement('canvas');
-            cvs.width = 400;
-            cvs.height = 400;
-            const ctx = cvs.getContext('2d');
-            ctx.fillStyle = '#1e293b';
-            ctx.fillRect(0, 0, 400, 400);
-            ctx.fillStyle = '#10b981';
-            ctx.beginPath();
-            ctx.arc(200, 160, 60, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.arc(200, 340, 110, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 20px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText('Clock-In Selfie (N/A)', 200, 370);
-            return cvs.toDataURL('image/jpeg', 0.85);
-        };
 
         if (clockInForm) {
             clockInForm.addEventListener('submit', async event => {
@@ -2622,22 +2600,21 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
                     accuracyInput.value = positionAccuracy;
                     addressInput.value = locationLabel;
 
-                    // 2. Try to open camera for selfie, with graceful fallback on permission error
+                    // 2. Open the camera; permission errors must not clock in
                     try {
                         setClockStatus('Opening camera for selfie photo...', 'info');
                         await openCamera();
                     } catch (camErr) {
                         console.warn('Camera permission error or unavailable:', camErr);
-                        setClockStatus('Camera permission unavailable. Completing clock-in with default photo...', 'info');
-                        selfieInput.value = generateFallbackSelfie();
-                        canSubmitClockIn = true;
-                        clockInForm.submit();
+                        setClockStatus('Camera access is required. Allow camera permission and capture your photo to clock in.', 'error');
+                        selfieInput.value = '';
+                        canSubmitClockIn = false;
                     }
                 } catch (error) {
                     console.error('Clock in error:', error);
-                    selfieInput.value = selfieInput.value || generateFallbackSelfie();
-                    canSubmitClockIn = true;
-                    clockInForm.submit();
+                    selfieInput.value = '';
+                    canSubmitClockIn = false;
+                    setClockStatus('Camera access and a captured photo are required to clock in.', 'error');
                 } finally {
                     clockInButton.disabled = false;
                 }
@@ -2704,22 +2681,14 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
             preview?.classList.remove('has-photo');
         });
 
-        skipCamera?.addEventListener('click', () => {
-            if (!selfieInput.value) {
-                selfieInput.value = generateFallbackSelfie();
-            }
-            canSubmitClockIn = true;
-            setClockStatus('Clocking in without photo...', 'success');
-            closeCameraModal();
-            clockInForm.submit();
-        });
+
 
         useCamera?.addEventListener('click', () => {
             if (!capturedSelfie) {
-                selfieInput.value = generateFallbackSelfie();
-            } else {
-                selfieInput.value = capturedSelfie;
+                setClockStatus('Capture your photo before clocking in.', 'error');
+                return;
             }
+            selfieInput.value = capturedSelfie;
 
             if (timezoneInput) {
                 timezoneInput.value = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata';
@@ -2798,6 +2767,14 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
 
         const updateClockWidgets = () => {
             const now = new Date();
+            // A live dashboard refresh may insert new clock nodes after clock-in.
+            // Always update the visible nodes rather than detached originals.
+            const istClock = document.getElementById('employeeIstClock');
+            const workTimer = document.getElementById('employeeWorkTimer');
+            const liveTime = document.getElementById('employeeLiveTime');
+            const liveDate = document.getElementById('employeeLiveDate');
+            const heroTime = document.getElementById('employeeHeroTime');
+            const heroDate = document.getElementById('employeeHeroDate');
 
             if (liveTime) {
                 liveTime.textContent = formatLocalTime(now, false);
