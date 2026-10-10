@@ -929,6 +929,13 @@
                 <span>Dashboard</span>
             </a>
 
+            @if(auth()->user()?->company_id && !\App\Services\TenantScope::isPlatformAdmin())
+            <a href="{{ route('company.ai.index') }}" class="dev-nav-item {{ request()->routeIs('company.ai.*') ? 'active' : '' }}">
+                <i class="bx bx-bot"></i>
+                <span>Company Assistant</span>
+            </a>
+            @endif
+
             <a href="{{ route('developer.my-work') }}" class="dev-nav-item {{ request()->routeIs('developer.my-work') ? 'active' : '' }}">
                 <i class="bx bx-check-square"></i>
                 <span>My Work</span>
@@ -1156,5 +1163,6 @@
     @stack('js')
     @include('partials.phone-fields')
 <script src="{{ asset('admin/assets/js/pms-live-records.js') }}?v={{ @filemtime(public_path('admin/assets/js/pms-live-records.js')) }}" data-session-url="{{ route('company.session-status') }}" data-login-url="{{ route('login') }}" defer></script>
+    @include('partials.ai-assistant-launcher')
 </body>
 </html>

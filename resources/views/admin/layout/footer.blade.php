@@ -149,5 +149,6 @@
           $adminThemeVersion = file_exists(public_path('admin/assets/css/pms-bitroxia-theme.css')) ? filemtime(public_path('admin/assets/css/pms-bitroxia-theme.css')) : time();
         @endphp
         <link rel="stylesheet" href="{{ asset('admin/assets/css/pms-bitroxia-theme.css') }}?v={{ $adminThemeVersion }}" />
+        @include('partials.ai-assistant-launcher')
       </body>
     </html>

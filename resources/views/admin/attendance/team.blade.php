@@ -8,7 +8,7 @@
     $link = fn ($date) => route($attendanceRoute, ['view' => 'team', 'month' => $date->month, 'year' => $date->year, 'search' => request('search')]);
     $totalColumns = ['present' => 'Present', 'late' => 'Late', 'absent' => 'Absent', 'half_day' => 'Half day', 'holiday' => 'Holiday', 'leave' => 'Leave', 'unpaid_leave' => 'Unpaid', 'day_off' => 'Day off', 'wfh' => 'WFH'];
 @endphp
-<div class="attendance-team-page">
+<div id="attendance-team-page" class="attendance-team-page">
     <header class="at-panel at-header">
         <div><span class="at-eyebrow">PEOPLE / ATTENDANCE</span><h1>{{ request('staff_category') === 'authority' ? 'Higher-level attendance' : 'Employee attendance' }}</h1><p>Every employee, every day — one monthly overview.</p></div>
         <div class="at-actions">
@@ -97,5 +97,20 @@ html body .attendance-team-page .at-status.at-absent{background:#ffe1e6!importan
 html body .attendance-team-page :is(.at-status.at-half_day,.at-status.at-leave){background:#ece3ff!important;color:#6534a4!important;-webkit-text-fill-color:#6534a4!important}
 html body .attendance-team-page .at-status.at-holiday{background:#dce9ff!important;color:#2358a7!important;-webkit-text-fill-color:#2358a7!important}
 html body .attendance-team-page .at-status.at-unpaid_leave{background:#ffe5f1!important;color:#972b61!important;-webkit-text-fill-color:#972b61!important}
+
+/* Keep daily codes readable despite the global dark theme's white table text. */
+:is([data-pms-theme="dark"],[data-theme="dark"],[data-bs-theme="dark"],.dark,.dark-mode) #attendance-team-page .at-status {
+    background:var(--at-status-bg,#e8edf5)!important;
+    color:var(--at-status-ink,#334155)!important;
+    -webkit-text-fill-color:var(--at-status-ink,#334155)!important;
+    opacity:1!important;
+    filter:none!important;
+}
+#attendance-team-page :is(.at-status.at-present,.at-status.at-wfh){--at-status-bg:#d8f5e8;--at-status-ink:#116247}
+#attendance-team-page .at-status.at-late{--at-status-bg:#fff0cc;--at-status-ink:#825000}
+#attendance-team-page .at-status.at-absent{--at-status-bg:#ffe1e6;--at-status-ink:#a5263e}
+#attendance-team-page :is(.at-status.at-half_day,.at-status.at-leave){--at-status-bg:#ece3ff;--at-status-ink:#6534a4}
+#attendance-team-page .at-status.at-holiday{--at-status-bg:#dce9ff;--at-status-ink:#2358a7}
+#attendance-team-page .at-status.at-unpaid_leave{--at-status-bg:#ffe5f1;--at-status-ink:#972b61}
 </style>
 @endsection

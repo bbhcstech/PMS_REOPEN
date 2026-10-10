@@ -2556,5 +2556,6 @@
   @include('partials.phone-fields')
 @stack('scripts')
   <script src="{{ asset('admin/assets/js/pms-live-records.js') }}?v={{ @filemtime(public_path('admin/assets/js/pms-live-records.js')) }}" data-session-url="{{ route('company.session-status') }}" data-login-url="{{ route('login') }}" defer></script>
+  @include('partials.ai-assistant-launcher')
 </body>
 </html>
