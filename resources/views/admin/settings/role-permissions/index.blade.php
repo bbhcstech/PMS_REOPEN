@@ -1430,7 +1430,7 @@
             </div>
 
             <!-- Permissions Matrix Table Card -->
-            <form method="POST" action="{{ route('admin.role-permissions.update') }}">
+            <form method="POST" action="{{ route('admin.role-permissions.update') }}" id="rolePermissionsForm">
                 @csrf
                 <input type="hidden" name="role" value="{{ $role }}">
 
@@ -1529,6 +1529,45 @@ document.addEventListener('DOMContentLoaded', function () {
     const colCheckboxes = table.querySelectorAll('.col-checkbox');
     const rowCheckboxes = table.querySelectorAll('.row-checkbox');
     const actionCheckboxes = table.querySelectorAll('.action-checkbox');
+    const form = document.getElementById('rolePermissionsForm');
+    let saving = false;
+    form.addEventListener('submit', async event => {
+        event.preventDefault();
+        if (saving) return;
+        saving = true;
+        const button = form.querySelector('button[type="submit"]');
+        const original = button.innerHTML;
+        button.disabled = true;
+        button.textContent = 'Saving...';
+        const permissions = {};
+        actionCheckboxes.forEach(checkbox => {
+            const moduleId = checkbox.dataset.moduleId;
+            permissions[moduleId] ??= [];
+            if (checkbox.checked) permissions[moduleId].push(checkbox.value);
+        });
+        try {
+            const response = await fetch(form.action, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': form.querySelector('[name="_token"]').value,
+                },
+                body: JSON.stringify({ role: form.querySelector('[name="role"]').value, permissions }),
+            });
+            const data = await response.json();
+            if (!response.ok || data.success !== true) throw new Error(data.message || 'Could not save permissions. Please try again.');
+            window.showToast(data.message, 'success');
+        } catch (error) {
+            window.showToast(error.message || 'Could not save permissions. Please try again.', 'error');
+        } finally {
+            saving = false;
+            button.disabled = false;
+            button.innerHTML = original;
+        }
+    });
 
     // Sync state of row, column, and master checkboxes based on individual action checkboxes
     function syncStates() {

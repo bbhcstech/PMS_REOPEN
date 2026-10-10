@@ -319,9 +319,46 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 
+        const clockOutForm = document.getElementById('employeeClockOutForm');
+        let clockAction = 'in';
+        let openingClockOutCamera = false;
+        clockOutForm?.addEventListener('submit', async event => {
+            event.preventDefault();
+            if (openingClockOutCamera) return;
+            openingClockOutCamera = true;
+            clockAction = 'out';
+            const button = clockOutForm.querySelector('button[type="submit"]');
+            if (button) button.disabled = true;
+            try {
+                document.getElementById('clockOutSelfie').value = '';
+                setClockStatus('Capture your photo to complete clock out.', 'info');
+                await openCamera();
+            } catch (error) {
+                closeCameraModal();
+                setClockStatus('Allow camera access and capture a photo to clock out.', 'error');
+                alert('Allow camera access and capture a photo to clock out.');
+            } finally {
+                openingClockOutCamera = false;
+                if (button) button.disabled = false;
+            }
+        });
+
         useCamera?.addEventListener('click', () => {
+            if (clockAction === 'out') {
+                if (!capturedSelfie) {
+                    alert('Capture your photo before clocking out.');
+                    return;
+                }
+                document.getElementById('clockOutSelfie').value = capturedSelfie;
+                document.getElementById('clockOutTimezone').value = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata';
+                closeCameraModal();
+                clockOutForm.querySelector('button[type="submit"]').disabled = true;
+                clockOutForm.submit();
+                return;
+            }
+
             if (!capturedSelfie) {
-                setClockStatus('Capture your photo before clocking in.', 'error');
+                setClockStatus('Capture your attendance photo before continuing.', 'error');
                 return;
             }
             selfieInput.value = capturedSelfie;
@@ -335,15 +372,7 @@ document.addEventListener('DOMContentLoaded', function () {
             clockInForm.submit();
         });
 
-        const clockOutForm = document.getElementById('employeeClockOutForm');
-        if (clockOutForm) {
-            clockOutForm.addEventListener('submit', () => {
-                const clockOutTz = document.getElementById('clockOutTimezone');
-                if (clockOutTz) {
-                    clockOutTz.value = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata';
-                }
-            });
-        }
+
 
 
 });

@@ -11,6 +11,7 @@
         <form method="POST" action="{{ route('dashboard.clockout') }}" id="employeeClockOutForm">
             @csrf
             <input type="hidden" name="clock_out_timezone" id="clockOutTimezone">
+            <input type="hidden" name="clock_out_selfie" id="clockOutSelfie">
             <button class="employee-action-btn is-out" type="submit"><i class="bx bx-log-out-circle"></i> Clock Out</button>
         </form>
     @elseif(! $attendance?->clock_in)

@@ -49,23 +49,22 @@ class DashboardController extends Controller
         return $earthRadius * (2 * atan2(sqrt($a), sqrt(1 - $a)));
     }
 
-    private function storeClockInPhoto(string $selfieData, int $userId, string $today): ?string
+    private function storeClockInPhoto(string $selfieData, int $userId, string $today, string $phase = 'in'): ?string
     {
         if (! preg_match('/^data:image\/(png|jpe?g);base64,/', $selfieData)) {
-            abort(422, 'Capture a valid photo before clocking in.');
+            abort(422, 'Capture a valid attendance photo before continuing.');
         }
 
         $imageData = preg_replace('/^data:image\/(png|jpe?g);base64,/', '', $selfieData);
         $decoded = base64_decode($imageData, true);
 
         if ($decoded === false) {
-            abort(422, 'Capture a valid photo before clocking in.');
+            abort(422, 'Capture a valid attendance photo before continuing.');
         }
-        abort_if(strlen($decoded) > 5 * 1024 * 1024 || ! @getimagesizefromstring($decoded), 422, 'Invalid clock-in photo.');
+        abort_if(strlen($decoded) > 5 * 1024 * 1024 || ! @getimagesizefromstring($decoded), 422, 'Invalid attendance photo.');
         if (\App\Services\WorkforceAccess::isAuthority(auth()->user())) {
-            abort_if(strlen($decoded) > 5 * 1024 * 1024 || ! @getimagesizefromstring($decoded), 422, 'Invalid clock-in photo.');
             $path = 'authority-attendance/' . auth()->user()->company_id . '/' . \Illuminate\Support\Str::uuid() . '.jpg';
-            abort_unless(\Illuminate\Support\Facades\Storage::disk('local')->put($path, $decoded), 500, 'Could not save your clock-in photo.');
+            abort_unless(\Illuminate\Support\Facades\Storage::disk('local')->put($path, $decoded), 500, 'Could not save your attendance photo.');
             return $path;
         }
 
@@ -74,7 +73,7 @@ class DashboardController extends Controller
             mkdir($directory, 0755, true);
         }
 
-        $fileName = 'clock-in-' . $userId . '-' . $today . '-' . time() . '.jpg';
+        $fileName = 'clock-' . $phase . '-' . $userId . '-' . $today . '-' . \Illuminate\Support\Str::uuid() . '.jpg';
         $absolutePath = $directory . DIRECTORY_SEPARATOR . $fileName;
 
         return file_put_contents($absolutePath, $decoded) !== false
@@ -855,6 +854,10 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
     $request->session()->put('attendance_timezone.' . auth()->id(), $timezone);
 
     $now = Carbon::now($timezone);
+    app(\App\Services\AttendanceAutoClockOut::class)->closeDue((int) $actor->company_id, (int) $actor->id, $now);
+    if ($now->gte($now->copy()->setTime(23, 58, 0))) {
+        return back()->with('error', 'Clock-in closes at 11:58 PM. Please clock in after midnight for the next day.');
+    }
     $today = $now->toDateString();
     $userId = auth()->id();
 
@@ -873,7 +876,7 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
         $lng
     );
 
-    return DB::connection('tenant')->transaction(function () use ($request, $validated, $now, $today, $userId, $lat, $lng, $distance) {
+    return DB::connection('tenant')->transaction(function () use ($request, $validated, $now, $today, $userId, $lat, $lng, $distance, $timezone) {
         User::whereKey($userId)->lockForUpdate()->firstOrFail();
         $existing = Attendance::where('user_id', $userId)
             ->where('date', $today)
@@ -912,6 +915,7 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
             'user_id'            => $userId,
             'date'               => $today,
             'clock_in'           => $clockInTime,
+            'clock_in_timezone'  => $timezone,
             'status'             => $initialStatus,
             'clock_in_latitude'  => $lat,
             'clock_in_longitude' => $lng,
@@ -959,17 +963,20 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
 
    public function clockOut(Request $request)
 {
-    \App\Services\WorkforceAccess::authorizeActor();
+    $actor = \App\Services\WorkforceAccess::authorizeActor();
     \App\Services\WorkforceRecordSchema::ensure();
     $timezone = $this->resolveEmployeeTimezone($request->input('clock_out_timezone') ?? $request->input('timezone') ?? session('attendance_timezone.' . auth()->id()));
     $now = Carbon::now($timezone);
     $today = $now->toDateString();
     $userId = auth()->id();
 
-    return DB::connection('tenant')->transaction(function () use ($now, $today, $userId) {
+    app(\App\Services\AttendanceAutoClockOut::class)->closeDue((int) $actor->company_id, (int) $actor->id, $now);
+
+    return DB::connection('tenant')->transaction(function () use ($request, $now, $today, $userId) {
         User::whereKey($userId)->lockForUpdate()->firstOrFail();
         $attendance = Attendance::where('user_id', $userId)
             ->where('date', $today)
+            ->lockForUpdate()
             ->first();
 
         // If not found for today's local date (e.g. crossing midnight), look for latest open clock-in
@@ -978,6 +985,7 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
                 ->whereNotNull('clock_in')
                 ->whereNull('clock_out')
                 ->latest('date')
+                ->lockForUpdate()
                 ->first();
         }
 
@@ -989,12 +997,21 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
             return back()->with('error', 'You have already clocked out today.');
         }
 
-        $attendance->update([
-            'clock_out' => $now->format('H:i:s')
-        ]);
+        $sessionNow = Carbon::now($attendance->sessionTimezone());
+        $cutoff = $attendance->auto_clock_out_at;
+        $out = $sessionNow->copy()->min($cutoff);
+        $attendance->clock_out = $out->format('H:i:s');
+        $attendance->auto_clocked_out = $sessionNow->gte($cutoff);
+        if (!$attendance->auto_clocked_out) {
+            $validated = $request->validate(['clock_out_selfie' => ['required', 'string', 'max:7500000']]);
+            $attendance->clock_out_photo = $this->storeClockInPhoto($validated['clock_out_selfie'], $userId, $attendance->date->toDateString(), 'out');
+            abort_unless($attendance->clock_out_photo, 500, 'Could not save your clock-out photo. Please try again.');
+        }
+        if ($attendance->hasTableColumn('total_hours')) $attendance->total_hours = round($attendance->total_seconds / 3600, 2);
+        $attendance->save();
         $this->applyOrganizationAttendanceRules($attendance->fresh());
 
-        return back()->with('success', 'Clocked out at ' . $now->format('h:i A'));
+        return back()->with('success', 'Clocked out at ' . $out->format('h:i A'));
     }, 5);
 }
 

@@ -183,6 +183,9 @@ class SetTenantConnection
             app(\App\Services\CompanyContext::class)->reset($registeredCompany ?? $company ?? null);
         }
 
+        if ($user?->company_id && ! $isSuperAdmin) {
+            app(\App\Services\AttendanceAutoClockOut::class)->closeDue((int) $user->company_id, (int) $user->id);
+        }
         return $this->privateResponse($next($request));
     }
 

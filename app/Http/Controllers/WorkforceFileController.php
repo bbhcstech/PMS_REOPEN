@@ -13,7 +13,9 @@ class WorkforceFileController extends Controller
         $actor = WorkforceAccess::authorizeActor();
         \App\Services\TenantScope::authorizeCompany($attendance->user?->company_id);
         abort_unless(WorkforceAccess::isAdmin($actor) || (int) $attendance->user_id === (int) $actor->id, 403);
-        return $this->file($attendance->getRawOriginal('clock_in_photo'), 'authority-attendance', (int) $actor->company_id);
+        $phase = request()->query('phase', 'in');
+        abort_unless(in_array($phase, ['in', 'out'], true), 404);
+        return $this->file($attendance->getRawOriginal($phase === 'out' ? 'clock_out_photo' : 'clock_in_photo'), 'authority-attendance', (int) $actor->company_id);
     }
 
     public function attachment(Leave $leave)

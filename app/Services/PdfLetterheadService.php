@@ -36,7 +36,7 @@ class PdfLetterheadService
             $bgFile = 'assets/letterhead/presets/bengal_it_hub_a4.svg';
         }
 
-        $fullBgPath = $bgFile ? public_path($bgFile) : null;
+        $fullBgPath = \App\Services\LetterheadImage::absolute($bgFile);
         $isBgPdf = $fullBgPath && file_exists($fullBgPath) && strtolower(pathinfo($fullBgPath, PATHINFO_EXTENSION)) === 'pdf';
 
         // SCENARIO 1: Whole A4 Page Background is a PDF File -> Use FPDI to overlay content

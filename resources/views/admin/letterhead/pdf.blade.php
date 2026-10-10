@@ -5,14 +5,14 @@
     @php
         $doc = $letter ?? ($sampleLetter ?? []);
         $paragraphs = $doc['body_paragraphs'] ?? (isset($doc['body']) ? preg_split('/\r\n|\r|\n/', $doc['body']) : []);
-        
-        // Determine layout mode and image assets
+
+        // Layout mode and image assets (relative public paths or absolute fitted files)
         $layoutMode = $doc['layout_mode'] ?? ($letterhead?->layout_mode ?: 'custom_header_footer');
         $fullPageImage = $doc['background_page_image'] ?? ($letterhead?->background_page_image ?? null);
         $headerImage = $doc['header_image'] ?? ($letterhead?->header_image ?? null);
         $footerImage = $doc['footer_image'] ?? ($letterhead?->footer_image ?? null);
 
-        // Fallbacks to default Bengal IT Hub presets if not explicitly provided
+        // Fallbacks to the default presets if nothing was provided
         if ($layoutMode === 'full_a4_page' && !$fullPageImage) {
             $fullPageImage = 'assets/letterhead/presets/bengal_it_hub_a4.svg';
         }
@@ -23,93 +23,82 @@
             $footerImage = 'assets/letterhead/presets/bengal_footer.svg';
         }
 
-        $hasFullBg = ($layoutMode === 'full_a4_page' && $fullPageImage && file_exists(public_path($fullPageImage)));
-        $hasHeaderImg = ($headerImage && file_exists(public_path($headerImage)));
-        $hasFooterImg = ($footerImage && file_exists(public_path($footerImage)));
+        $fullPageFile = $layoutMode === 'full_a4_page' ? \App\Services\LetterheadImage::absolute($fullPageImage) : null;
+        $headerFile = $fullPageFile ? null : \App\Services\LetterheadImage::absolute($headerImage);
+        $footerFile = $fullPageFile ? null : \App\Services\LetterheadImage::absolute($footerImage);
+
+        // Fixed slot sizes on A4 (210mm wide): header 1240x160 px, footer 1240x140 px.
+        $headerHeight = round(210 * \App\Services\LetterheadImage::HEADER[1] / \App\Services\LetterheadImage::HEADER[0], 2); // 27.1mm
+        $footerHeight = round(210 * \App\Services\LetterheadImage::FOOTER[1] / \App\Services\LetterheadImage::FOOTER[0], 2); // 23.71mm
+
+        // Page margins reserve the header/footer on EVERY page, so text never runs under them and
+        // only as many pages as the content needs are produced.
+        $marginTop = $fullPageFile ? 42 : ($headerFile ? $headerHeight + 8 : 20);
+        $marginBottom = $fullPageFile ? 34 : ($footerFile ? $footerHeight + 8 : 20);
+
+        // Raster images are embedded (works for temporary fitted copies outside the PDF engine's file root).
+        $imageSrc = function (?string $file) {
+            if (! $file) return null;
+            $info = @getimagesize($file);
+            if (is_array($info) && ! empty($info['mime'])) return 'data:' . $info['mime'] . ';base64,' . base64_encode((string) file_get_contents($file));
+            return $file;
+        };
+        $accent = $letterhead?->primary_color ?: '#2F6BFF';
+        $companyName = $letterhead?->company_name ?: 'Bengal IT Hub Private Limited';
     @endphp
     <title>{{ $doc['subject'] ?? ($letterhead?->name ?? 'Official Document') }}</title>
     <style>
         @page {
-            margin: 0;
             size: A4 portrait;
+            margin: {{ $marginTop }}mm 0 {{ $marginBottom }}mm 0;
         }
 
         body {
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-family: 'DejaVu Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
             color: #1e293b;
-            font-size: 10pt;
-            line-height: 1.55;
+            font-size: 9.5pt;
+            line-height: 1.6;
             margin: 0;
             padding: 0;
         }
 
-        /* FULL A4 PAGE BACKGROUND IMAGE */
-        @if($hasFullBg)
-            .bg-full-page {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 210mm;
-                height: 297mm;
-                margin: 0;
-                padding: 0;
-                z-index: -1000;
-            }
-        @endif
+        /* Header / footer live in the page margins and repeat on every page. */
+        .lh-header {
+            position: fixed;
+            top: -{{ $marginTop }}mm;
+            left: 0;
+            right: 0;
+            height: {{ $headerHeight }}mm;
+            overflow: hidden;
+        }
+        .lh-footer {
+            position: fixed;
+            bottom: -{{ $marginBottom }}mm;
+            left: 0;
+            right: 0;
+            height: {{ $footerHeight }}mm;
+            overflow: hidden;
+        }
+        .lh-header img, .lh-footer img {
+            display: block;
+            width: 210mm;
+        }
+        .lh-header img { height: {{ $headerHeight }}mm; }
+        .lh-footer img { height: {{ $footerHeight }}mm; }
 
-        /* HEADER IMAGE ONLY - FIXED SIZE */
-        @if(!$hasFullBg && $hasHeaderImg)
-            .lh-header-image-container {
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                width: 100%;
-                height: 125px;
-                overflow: hidden;
-                text-align: center;
-                z-index: 100;
-            }
-            .lh-header-image-container img {
-                width: 100%;
-                height: 125px;
-                display: block;
-            }
-        @endif
-
-        /* FOOTER IMAGE ONLY - FIXED SIZE */
-        @if(!$hasFullBg && $hasFooterImg)
-            .lh-footer-image-container {
-                position: fixed;
-                bottom: 0;
-                left: 0;
-                right: 0;
-                width: 100%;
-                height: 105px;
-                overflow: hidden;
-                text-align: center;
-                z-index: 100;
-            }
-            .lh-footer-image-container img {
-                width: 100%;
-                height: 105px;
-                display: block;
-            }
-        @endif
-
-        /* CONTENT CONTAINER WITH DYNAMIC CLEARANCE PADDING */
-        .content-wrap {
-            padding-top: {{ $hasFullBg ? 140 : ($hasHeaderImg ? 145 : 40) }}px;
-            padding-bottom: {{ $hasFullBg ? 120 : ($hasFooterImg ? 125 : 40) }}px;
-            padding-left: 65px;
-            padding-right: 65px;
+        .bg-full-page {
+            position: fixed;
+            top: -{{ $marginTop }}mm;
+            left: 0;
+            width: 210mm;
+            height: 297mm;
+            z-index: -1000;
         }
 
-        /* WATERMARK */
-        @if($letterhead && $letterhead->watermark_enabled && $letterhead->watermark_text && !$hasFullBg)
+        @if($letterhead && $letterhead->watermark_enabled && $letterhead->watermark_text && !$fullPageFile)
         .watermark-container {
             position: fixed;
-            top: 40%;
+            top: 38%;
             left: 10%;
             width: 80%;
             text-align: center;
@@ -117,165 +106,150 @@
             transform: rotate({{ $letterhead->watermark_rotation ?: -45 }}deg);
             z-index: -500;
         }
-
         .watermark-text {
             font-size: {{ $letterhead->watermark_size ?: 44 }}pt;
             font-weight: bold;
-            color: {{ $letterhead->primary_color ?: '#2F6BFF' }};
+            color: {{ $accent }};
             text-transform: uppercase;
             letter-spacing: 6px;
         }
         @endif
 
-        /* DOCUMENT METADATA */
+        .content-wrap {
+            padding: 0 20mm;
+        }
+
         .doc-meta-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 5px;
-            margin-bottom: 14px;
+            margin: 0 0 6mm 0;
         }
-
         .doc-meta-table td {
-            font-size: 9pt;
+            font-size: 8.5pt;
             vertical-align: top;
+            padding: 0;
         }
-
-        .doc-ref {
+        .doc-label {
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            font-size: 7pt;
             font-weight: bold;
+        }
+        .doc-value {
             color: #0f172a;
+            font-weight: bold;
+            font-size: 9pt;
         }
-
-        .doc-date {
-            text-align: right;
-            color: #475569;
-            font-weight: 600;
-        }
+        .doc-date { text-align: right; }
 
         .recipient-box {
-            margin-bottom: 16px;
+            margin: 0 0 6mm 0;
             font-size: 9.5pt;
-            line-height: 1.4;
+            line-height: 1.5;
         }
-
+        .recipient-to {
+            color: #64748b;
+            font-size: 8pt;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            font-weight: bold;
+        }
         .recipient-name {
             font-weight: bold;
             color: #0f172a;
+            font-size: 10.5pt;
         }
+        .recipient-line { color: #475569; }
 
         .doc-subject {
-            font-size: 10.5pt;
-            font-weight: bold;
-            color: #2F6BFF;
-            margin: 12px 0 14px 0;
-            text-decoration: underline;
-            text-underline-offset: 3px;
-        }
-
-        .doc-body p {
-            margin-bottom: 12px;
-            text-align: justify;
-            font-size: 9.5pt;
-            line-height: 1.55;
-            color: #334155;
-        }
-
-        /* SIGNATURE SECTION */
-        .signature-section {
-            margin-top: 24px;
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .sig-block {
-            width: 50%;
-            vertical-align: top;
-        }
-
-        .sig-space {
-            height: 30px;
-        }
-
-        .sig-line {
-            border-top: 1px solid #94a3b8;
-            width: 170px;
-            margin-top: 6px;
-            margin-bottom: 3px;
-        }
-
-        .sig-name {
-            font-size: 9pt;
+            margin: 0 0 6mm 0;
+            padding: 3mm 4mm;
+            border-left: 3px solid {{ $accent }};
+            background: #f1f5ff;
+            font-size: 10pt;
             font-weight: bold;
             color: #0f172a;
         }
+        .doc-subject span { color: {{ $accent }}; }
 
-        .sig-title {
-            font-size: 8pt;
-            color: #64748b;
+        .doc-body p {
+            margin: 0 0 4mm 0;
+            text-align: justify;
+            font-size: 9.5pt;
+            line-height: 1.65;
+            color: #334155;
+        }
+
+        .signature-section {
+            margin-top: 10mm;
+            width: 100%;
+            border-collapse: collapse;
+            page-break-inside: avoid;
+        }
+        .sig-block { width: 60%; vertical-align: bottom; padding: 0; }
+        .seal-block { width: 40%; vertical-align: bottom; text-align: right; padding: 0; }
+        .sig-closing { color: #475569; font-size: 9pt; margin-bottom: 12mm; }
+        .sig-line { border-top: 1px solid #94a3b8; width: 60mm; margin-bottom: 2mm; }
+        .sig-name { font-size: 10pt; font-weight: bold; color: #0f172a; }
+        .sig-title { font-size: 8.5pt; color: #64748b; }
+        .seal {
+            display: inline-block;
+            border: 1px dashed #cbd5e1;
+            border-radius: 6px;
+            padding: 3mm 5mm;
+            font-size: 7pt;
+            color: #94a3b8;
+            letter-spacing: 0.8px;
         }
     </style>
 </head>
 <body>
 
-    <!-- 1. FULL A4 PAGE BACKGROUND IMAGE -->
-    @if($hasFullBg)
-        <img src="{{ public_path($fullPageImage) }}" class="bg-full-page">
+    @if($fullPageFile)
+        <img src="{{ $imageSrc($fullPageFile) }}" class="bg-full-page" alt="">
     @endif
 
-    <!-- 2. HEADER IMAGE (Placed at Header Position - Fixed Size) -->
-    @if(!$hasFullBg && $hasHeaderImg)
-        <div class="lh-header-image-container">
-            <img src="{{ public_path($headerImage) }}" width="100%" height="125">
-        </div>
+    @if($headerFile)
+        <div class="lh-header"><img src="{{ $imageSrc($headerFile) }}" alt=""></div>
     @endif
 
-    <!-- 3. FOOTER IMAGE (Placed at Footer Position - Fixed Size) -->
-    @if(!$hasFullBg && $hasFooterImg)
-        <div class="lh-footer-image-container">
-            <img src="{{ public_path($footerImage) }}" width="100%" height="105">
-        </div>
+    @if($footerFile)
+        <div class="lh-footer"><img src="{{ $imageSrc($footerFile) }}" alt=""></div>
     @endif
 
-    <!-- 4. WATERMARK -->
-    @if($letterhead && $letterhead->watermark_enabled && $letterhead->watermark_text && !$hasFullBg)
-    <div class="watermark-container">
-        <div class="watermark-text">{{ $letterhead->watermark_text }}</div>
-    </div>
+    @if($letterhead && $letterhead->watermark_enabled && $letterhead->watermark_text && !$fullPageFile)
+        <div class="watermark-container"><div class="watermark-text">{{ $letterhead->watermark_text }}</div></div>
     @endif
 
-    <!-- 5. MAIN CONTENT SECTION (Floats clean in between Header & Footer) -->
     <div class="content-wrap">
-        
-        <!-- REFERENCE NUMBER & DATE -->
         <table class="doc-meta-table">
             <tr>
-                <td class="doc-ref">Ref No: {{ $doc['ref_no'] ?? ('REF/' . date('Y') . '/IT-0842') }}</td>
-                <td class="doc-date">Date: {{ $doc['date'] ?? now()->format('F d, Y') }}</td>
+                <td>
+                    <div class="doc-label">Reference No.</div>
+                    <div class="doc-value">{{ $doc['ref_no'] ?? ('REF/' . date('Y') . '/IT-0842') }}</div>
+                </td>
+                <td class="doc-date">
+                    <div class="doc-label">Date</div>
+                    <div class="doc-value">{{ $doc['date'] ?? now()->format('F d, Y') }}</div>
+                </td>
             </tr>
         </table>
 
-        <!-- RECIPIENT -->
         @if(!empty($doc['recipient_name']))
-        <div class="recipient-box">
-            <div><strong>To,</strong></div>
-            <div class="recipient-name">{{ $doc['recipient_name'] }}</div>
-            @if(!empty($doc['recipient_email']))
-                <div>{{ $doc['recipient_email'] }}</div>
-            @endif
-            @if(!empty($doc['recipient_org']))
-                <div>{{ $doc['recipient_org'] }}</div>
-            @endif
-            @if(!empty($doc['recipient_address']))
-                <div>{{ $doc['recipient_address'] }}</div>
-            @endif
-        </div>
+            <div class="recipient-box">
+                <div class="recipient-to">To</div>
+                <div class="recipient-name">{{ $doc['recipient_name'] }}</div>
+                @if(!empty($doc['recipient_email']))<div class="recipient-line">{{ $doc['recipient_email'] }}</div>@endif
+                @if(!empty($doc['recipient_org']))<div class="recipient-line">{{ $doc['recipient_org'] }}</div>@endif
+                @if(!empty($doc['recipient_address']))<div class="recipient-line">{{ $doc['recipient_address'] }}</div>@endif
+            </div>
         @endif
 
-        <!-- SUBJECT LINE -->
         @if(!empty($doc['subject']))
-        <div class="doc-subject">Subject: {{ $doc['subject'] }}</div>
+            <div class="doc-subject"><span>Subject:</span> {{ $doc['subject'] }}</div>
         @endif
 
-        <!-- LETTER BODY CONTENT -->
         <div class="doc-body">
             @if(count($paragraphs) > 0)
                 @foreach($paragraphs as $para)
@@ -289,25 +263,20 @@
             @endif
         </div>
 
-        <!-- SIGNATURE BLOCK -->
         <table class="signature-section">
             <tr>
                 <td class="sig-block">
-                    <div class="sig-space"></div>
+                    <div class="sig-closing">Sincerely,</div>
                     <div class="sig-line"></div>
-                    <div class="sig-name">{{ $doc['signatory_name'] ?? (auth()->user()?->name ?: 'Arthur Pendelton') }}</div>
+                    <div class="sig-name">{{ $doc['signatory_name'] ?? (auth()->user()?->name ?: 'Authorized Signatory') }}</div>
                     <div class="sig-title">{{ $doc['signatory_title'] ?? 'Authorized Signatory' }}</div>
-                    <div class="sig-title">{{ $letterhead?->company_name ?: 'Bengal IT Hub Private Limited' }}</div>
+                    <div class="sig-title">{{ $companyName }}</div>
                 </td>
-                <td class="sig-block" style="text-align: right;">
-                    <div class="sig-space"></div>
-                    <div style="display: inline-block; text-align: center; border: 1px dashed #cbd5e1; border-radius: 6px; padding: 8px 14px; font-size: 7.5pt; color: #94a3b8;">
-                        [ OFFICIAL SEAL ]
-                    </div>
+                <td class="seal-block">
+                    <div class="seal">OFFICIAL SEAL</div>
                 </td>
             </tr>
         </table>
-
     </div>
 
 </body>

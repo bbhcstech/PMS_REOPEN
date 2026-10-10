@@ -72,7 +72,7 @@ staffCheck(Attendance::count() === 1, 'Duplicate clock-in created a second row.'
 denied(fn () => (new AttendanceController)->update(req(['status' => 'present', 'clock_in' => '01:00']), $record));
 denied(fn () => (new AttendanceController)->authorityIndex(req([])));
 Carbon::setTestNow(Carbon::parse('2026-10-12 18:00:00', 'Asia/Kolkata'));
-$dashboard->clockOut(req(['clock_out_timezone' => 'Asia/Kolkata', 'clock_out' => '10:00']));
+$dashboard->clockOut(req(['clock_out_timezone' => 'Asia/Kolkata', 'clock_out' => '10:00', 'clock_out_selfie' => $clockRequest->input('clock_in_selfie')]));
 staffCheck($record->fresh()->clock_out === '18:00:00', 'Clock-out accepted a forged time.');
 $dashboard->clockOut(req(['clock_out_timezone' => 'Asia/Kolkata']));
 staffCheck($record->fresh()->clock_out === '18:00:00', 'Repeated clock-out overwrote attendance.');

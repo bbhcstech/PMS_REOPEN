@@ -563,7 +563,7 @@
             <!-- RIGHT COLUMN: LETTER GENERATOR FORM                           -->
             <!-- ============================================================= -->
             <div>
-                <form id="letterMainForm" method="POST" action="{{ route('letterhead.send-letter') }}" enctype="multipart/form-data">
+                <form id="letterMainForm" method="POST" action="{{ route('letterhead.export-pdf') }}" enctype="multipart/form-data" onsubmit="return false;">
                     @csrf
                     <input type="hidden" name="ref_no" id="formRefNo" value="REF/{{ date('Y') }}/IT-{{ strtoupper(Str::random(4)) }}">
                     <input type="hidden" name="date" id="formDate" value="{{ now()->format('F d, Y') }}">
@@ -718,10 +718,6 @@
                                 <i class="fas fa-file-word"></i> Download Word (.docx)
                             </button>
 
-                            <!-- Send to HR -->
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-paper-plane"></i> Send to HR
-                            </button>
                         </div>
                     </div>
                 </form>

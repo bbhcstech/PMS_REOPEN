@@ -14,6 +14,10 @@ class Attendance extends TenantModel
     {
         return $value && str_starts_with($value, 'authority-attendance/') ? route('attendance.photo', $this->id) : $value;
     }
+    public function getClockOutPhotoAttribute($value)
+    {
+        return $value && str_starts_with($value, 'authority-attendance/') ? route('attendance.photo', ['attendance' => $this->id, 'phase' => 'out']) : $value;
+    }
     // explicit mapping to your table
     protected $table = 'attendances';
 
@@ -28,12 +32,15 @@ class Attendance extends TenantModel
         'clock_in_longitude',
         'clock_in_address',
         'clock_in_photo',
+        'clock_out_photo',
         'clock_out_latitude',
         'clock_out_longitude',
         'clock_out_address',
         'date',
         'status',
         'clock_in',
+        'clock_in_timezone',
+        'auto_clocked_out',
         'clock_out',
         'working_from',
         'late',
@@ -46,6 +53,7 @@ class Attendance extends TenantModel
 
     protected $casts = [
         'date' => 'date',
+        'auto_clocked_out' => 'boolean',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         // keep clock_in/clock_out as strings (DB stores TIME)
@@ -105,7 +113,7 @@ class Attendance extends TenantModel
             return Carbon::instance($value);
         }
 
-        $defaultTz = (config('app.timezone') && config('app.timezone') !== 'UTC') ? config('app.timezone') : 'Asia/Kolkata';
+        $defaultTz = $this->sessionTimezone();
 
         $val = trim((string) $value);
         if ($attendanceDate instanceof \DateTimeInterface) {
@@ -157,6 +165,20 @@ class Attendance extends TenantModel
     }
 
     // seconds between in/out. If out < in => treat out as next day.
+    public function sessionTimezone(): string
+    {
+        $timezone = $this->clock_in_timezone ?: config('app.timezone', 'Asia/Kolkata');
+        return in_array($timezone, \DateTimeZone::listIdentifiers(), true) ? $timezone : 'Asia/Kolkata';
+    }
+
+    public function getAutoClockOutAtAttribute(): ?Carbon
+    {
+        $in = $this->clock_in_datetime;
+        if (!$in) return null;
+        $cutoff = $in->copy()->setTime(23, 58, 0);
+        // Legacy entries made after cutoff must never become a 24-hour session.
+        return $cutoff->lt($in) ? $in->copy() : $cutoff;
+    }
     // If clocked in without clock_out (open session), calculates elapsed active work time.
     public function getTotalSecondsAttribute()
     {
@@ -177,17 +199,11 @@ class Attendance extends TenantModel
         }
 
         // Active/open shift without clock_out yet:
-        $defaultTz = (config('app.timezone') && config('app.timezone') !== 'UTC') ? config('app.timezone') : 'Asia/Kolkata';
-        $now = Carbon::now($defaultTz);
+        $now = Carbon::now($this->sessionTimezone())->min($this->auto_clock_out_at);
         $diff = $now->getTimestamp() - $in->getTimestamp();
 
         if ($diff > 0) {
-            // For active sessions within 24 hours, return live elapsed work seconds
-            if ($diff <= 86400) {
-                return (int) $diff;
-            }
-            // For unclosed shifts older than 24 hours, cap at standard day shift (8.5 hours = 30600 seconds)
-            return 30600;
+            return (int) $diff;
         }
 
         return 0;

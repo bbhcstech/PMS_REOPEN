@@ -934,8 +934,10 @@
 
                 <div class="employee-clock hr-clock">
                     @if ($attendance && $attendance->clock_in && !$attendance->clock_out)
-                        <form method="POST" action="{{ route('dashboard.clockout') }}">
+                        <form method="POST" action="{{ route('dashboard.clockout') }}" id="employeeClockOutForm">
                             @csrf
+<input type="hidden" name="clock_out_timezone" id="clockOutTimezone">
+<input type="hidden" name="clock_out_selfie" id="clockOutSelfie">
                             <button class="employee-action-btn is-out w-100 justify-content-center" type="submit">
                                 <i class="bx bx-log-out-circle"></i> Clock Out
                             </button>
@@ -1439,22 +1441,22 @@
     <div class="clock-camera-modal" id="clockCameraModal" aria-hidden="true">
         <div class="clock-camera-panel">
             <div class="clock-camera-header">
-                <h5 class="mb-0 fw-bold">Capture Clock In Photo</h5>
+                <h5 class="mb-0 fw-bold">Capture Attendance Photo</h5>
                 <button type="button" class="clock-modal-btn danger" id="clockCameraClose"><i class="bx bx-x"></i> Close</button>
             </div>
             <div class="clock-camera-body">
                 <div class="clock-camera-preview" id="clockCameraPreview">
                     <video id="clockCameraVideo" autoplay playsinline muted></video>
                     <canvas id="clockCameraCanvas" style="display: none !important; position: absolute; width: 0; height: 0; pointer-events: none;"></canvas>
-                    <img id="clockCameraPhoto" alt="Captured clock in photo">
+                    <img id="clockCameraPhoto" alt="Captured attendance photo">
                 </div>
-                <p class="text-muted mt-3 mb-0 small">Take a clear face photo. You can flip camera on mobile, retake, then use photo for clock in.</p>
+                <p class="text-muted mt-3 mb-0 small">Take a clear face photo. You can flip camera on mobile, retake, then use your photo to complete attendance.</p>
             </div>
             <div class="clock-camera-footer">
                 <button type="button" class="clock-modal-btn secondary" id="clockCameraFlip"><i class="bx bx-refresh"></i> Flip</button>
                 <button type="button" class="clock-modal-btn" id="clockCameraCapture"><i class="bx bx-camera"></i> Capture</button>
                 <button type="button" class="clock-modal-btn secondary" id="clockCameraRetake"><i class="bx bx-undo"></i> Retake</button>
-                <button type="button" class="clock-modal-btn success" id="clockCameraUse"><i class="bx bx-check"></i> Use Photo & Clock In</button>
+                <button type="button" class="clock-modal-btn success" id="clockCameraUse"><i class="bx bx-check"></i> Use Photo & Confirm</button>
             </div>
         </div>
     </div>
@@ -1869,7 +1871,44 @@
         preview?.classList.remove('has-photo');
     });
 
-    useCamera?.addEventListener('click', () => {
+    const clockOutForm = document.getElementById('employeeClockOutForm');
+        let clockAction = 'in';
+        let openingClockOutCamera = false;
+        clockOutForm?.addEventListener('submit', async event => {
+            event.preventDefault();
+            if (openingClockOutCamera) return;
+            openingClockOutCamera = true;
+            clockAction = 'out';
+            const button = clockOutForm.querySelector('button[type="submit"]');
+            if (button) button.disabled = true;
+            try {
+                document.getElementById('clockOutSelfie').value = '';
+                setClockStatus('Capture your photo to complete clock out.', 'info');
+                await openCamera();
+            } catch (error) {
+                closeCameraModal();
+                setClockStatus('Allow camera access and capture a photo to clock out.', 'error');
+                alert('Allow camera access and capture a photo to clock out.');
+            } finally {
+                openingClockOutCamera = false;
+                if (button) button.disabled = false;
+            }
+        });
+
+        useCamera?.addEventListener('click', () => {
+            if (clockAction === 'out') {
+                if (!capturedSelfie) {
+                    alert('Capture your photo before clocking out.');
+                    return;
+                }
+                document.getElementById('clockOutSelfie').value = capturedSelfie;
+                document.getElementById('clockOutTimezone').value = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata';
+                closeCameraModal();
+                clockOutForm.querySelector('button[type="submit"]').disabled = true;
+                clockOutForm.submit();
+                return;
+            }
+
         if (!capturedSelfie) {
             setClockStatus('Please capture your photo before using it.', 'error');
             return;

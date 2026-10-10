@@ -683,31 +683,39 @@ class LetterheadController extends Controller
         $footerImagePath = $letterhead?->footer_image ?: 'assets/letterhead/presets/bengal_footer.svg';
         $bgPageImagePath = $letterhead?->background_page_image ?: 'assets/letterhead/presets/bengal_it_hub_a4.svg';
 
-        $destinationPath = public_path('uploads/letterhead');
-        if (! file_exists($destinationPath)) {
-            mkdir($destinationPath, 0755, true);
-        }
+        // Images uploaded for this one letter are used from temporary copies and deleted after the PDF is
+        // built (nothing is left behind on the server). Header/footer images are fitted to their fixed size.
+        $temporaryFiles = [];
+        $temporaryCopy = function ($file) use (&$temporaryFiles): ?string {
+            $copy = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'lh_' . bin2hex(random_bytes(8)) . '.' . strtolower($file->getClientOriginalExtension() ?: 'bin');
+            if (! @copy($file->getRealPath(), $copy)) return null;
+            $temporaryFiles[] = $copy;
+            return $copy;
+        };
 
         if ($request->hasFile('header_image')) {
-            $headerFile = $request->file('header_image');
-            $headerName = 'header_' . time() . '_' . Str::random(6) . '.' . $headerFile->getClientOriginalExtension();
-            $headerFile->move($destinationPath, $headerName);
-            $headerImagePath = 'uploads/letterhead/' . $headerName;
+            $fitted = \App\Services\LetterheadImage::fitUpload($request->file('header_image'), \App\Services\LetterheadImage::HEADER);
+            if ($fitted) $temporaryFiles[] = $fitted;
+            $headerImagePath = $fitted ?: $temporaryCopy($request->file('header_image'));
         }
 
         if ($request->hasFile('footer_image')) {
-            $footerFile = $request->file('footer_image');
-            $footerName = 'footer_' . time() . '_' . Str::random(6) . '.' . $footerFile->getClientOriginalExtension();
-            $footerFile->move($destinationPath, $footerName);
-            $footerImagePath = 'uploads/letterhead/' . $footerName;
+            $fitted = \App\Services\LetterheadImage::fitUpload($request->file('footer_image'), \App\Services\LetterheadImage::FOOTER);
+            if ($fitted) $temporaryFiles[] = $fitted;
+            $footerImagePath = $fitted ?: $temporaryCopy($request->file('footer_image'));
         }
 
         if ($request->hasFile('background_page_image')) {
-            $bgFile = $request->file('background_page_image');
-            $bgName = 'bg_page_' . time() . '_' . Str::random(6) . '.' . $bgFile->getClientOriginalExtension();
-            $bgFile->move($destinationPath, $bgName);
-            $bgPageImagePath = 'uploads/letterhead/' . $bgName;
+            $bgPageImagePath = $temporaryCopy($request->file('background_page_image'));
             $layoutMode = 'full_a4_page';
+        }
+
+        // Saved letterhead images are fitted too (cached copy, reused for every letter).
+        if (! $request->hasFile('header_image')) {
+            $headerImagePath = \App\Services\LetterheadImage::fitStored($headerImagePath, \App\Services\LetterheadImage::HEADER);
+        }
+        if (! $request->hasFile('footer_image')) {
+            $footerImagePath = \App\Services\LetterheadImage::fitStored($footerImagePath, \App\Services\LetterheadImage::FOOTER);
         }
 
         if ($layoutMode === 'full_a4_page') {
@@ -734,7 +742,13 @@ class LetterheadController extends Controller
 
         $fileName = 'Letter_' . Str::slug(substr($letter['subject'], 0, 30)) . '_' . date('Ymd') . '.pdf';
 
-        return PdfLetterheadService::generate($letter, $letterhead, $fileName);
+        try {
+            return PdfLetterheadService::generate($letter, $letterhead, $fileName);
+        } finally {
+            foreach ($temporaryFiles as $temporaryFile) {
+                @unlink($temporaryFile);
+            }
+        }
     }
 
     /**

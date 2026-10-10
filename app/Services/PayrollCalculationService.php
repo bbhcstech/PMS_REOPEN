@@ -175,16 +175,10 @@ class PayrollCalculationService
 
                 // Calculate daily hours
                 $hours = 0.0;
-                if ($att->total_hours !== null && is_numeric($att->total_hours)) {
+                if ($att->clock_in) {
+                    $hours = round((int) $att->total_seconds / 3600, 2);
+                } elseif ($att->total_hours !== null && is_numeric($att->total_hours)) {
                     $hours = (float) $att->total_hours;
-                } elseif ($att->clock_in && $att->clock_out) {
-                    try {
-                        $cin = Carbon::parse($att->clock_in);
-                        $cout = Carbon::parse($att->clock_out);
-                        $hours = round($cout->diffInMinutes($cin) / 60, 2);
-                    } catch (\Throwable $e) {
-                        $hours = 8.0;
-                    }
                 } else {
                     $hours = $isHalfDay ? 4.0 : 8.0;
                 }

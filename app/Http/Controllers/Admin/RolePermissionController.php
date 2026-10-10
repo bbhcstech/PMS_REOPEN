@@ -7,6 +7,8 @@ use App\Models\Module;
 use App\Models\RolePermission;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class RolePermissionController extends Controller
@@ -110,7 +112,7 @@ class RolePermissionController extends Controller
         ]);
     }
 
-    public function update(Request $request): RedirectResponse
+    public function update(Request $request): RedirectResponse|JsonResponse
     {
         $this->authorizeAdmin();
 
@@ -119,7 +121,12 @@ class RolePermissionController extends Controller
         $role = strtolower($request->input('role', ''));
         abort_unless(array_key_exists($role, $this->companyRoles()), 422);
 
-        $submitted = $request->input('permissions', []);
+        $validated = $request->validate([
+            'permissions' => ['sometimes', 'array'],
+            'permissions.*' => ['array'],
+            'permissions.*.*' => ['string', 'in:' . implode(',', $this->permissions)],
+        ]);
+        $submitted = $validated['permissions'] ?? [];
 
         // Excluded modules for this role should not have permissions granted
         $excludedSlugsByRole = [
@@ -146,23 +153,30 @@ class RolePermissionController extends Controller
         // Query the valid module IDs currently present in the tenant modules table
         $tenantModuleIds = \Illuminate\Support\Facades\DB::connection('tenant')->table('modules')->pluck('id')->all();
 
-        foreach ($tenantModuleIds as $moduleId) {
-            if (in_array($moduleId, $excludedModuleIds, true)) {
-                $modulePermissions = [];
-            } else {
-                $modulePermissions = $submitted[$moduleId] ?? [];
-            }
+        DB::connection('tenant')->transaction(function () use ($tenantModuleIds, $excludedModuleIds, $submitted, $role) {
+            foreach ($tenantModuleIds as $moduleId) {
+                if (in_array($moduleId, $excludedModuleIds, true)) {
+                    $modulePermissions = [];
+                } else {
+                    $modulePermissions = $submitted[$moduleId] ?? [];
+                }
 
-            RolePermission::updateOrCreate(
-                ['role' => $role, 'module_id' => $moduleId],
-                collect($this->permissions)
-                    ->mapWithKeys(fn ($permission) => ['can_' . $permission => in_array($permission, $modulePermissions, true)])
-                    ->all()
-            );
+                RolePermission::updateOrCreate(
+                    ['role' => $role, 'module_id' => $moduleId],
+                    collect($this->permissions)
+                        ->mapWithKeys(fn ($permission) => ['can_' . $permission => in_array($permission, $modulePermissions, true)])
+                        ->all()
+                );
+            }
+        });
+
+        $message = 'Role permissions saved successfully for ' . $this->companyRoles()[$role] . '.';
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true, 'message' => $message, 'role' => $role]);
         }
 
         return redirect()->route('admin.role-permissions.index', ['role' => $role])
-            ->with('success', 'Role permissions saved successfully for ' . ucfirst($role) . '.');
+            ->with('success', $message);
     }
 
     public function getDefaultPermissionsForRole(string $role, string $slug): array
