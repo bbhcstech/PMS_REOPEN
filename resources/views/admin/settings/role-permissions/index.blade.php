@@ -1200,7 +1200,7 @@
                     </div>
                     <div class="stat-info">
                         <h6>Active Role</h6>
-                        <h3>{{ ucfirst($role) }}</h3>
+                        <h3>{{ ($roleLabels[$role] ?? ucfirst($role)) }}</h3>
                     </div>
                 </div>
                 <div class="stat-card">
@@ -1243,7 +1243,7 @@
                                 <select name="role" class="form-select" onchange="this.form.submit()">
                                     @foreach($roles as $option)
                                         @continue(strtolower($option) === 'admin')
-                                        <option value="{{ $option }}" @selected($role === $option)>{{ ucfirst($option) }}</option>
+                                        <option value="{{ $option }}" @selected($role === $option)>{{ ($roleLabels[$option] ?? ucfirst($option)) }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -1268,7 +1268,7 @@
                             </div>
                             <div>
                                 <h5 class="mb-0 fw-bold fs-5" style="color: #0F172A;">Module Access Control Matrix</h5>
-                                <small class="text-muted">Grant or revoke granular action privileges for <strong style="color: #2F6BFF;">{{ ucfirst($role) }}</strong></small>
+                                <small class="text-muted">Grant or revoke granular action privileges for <strong style="color: #2F6BFF;">{{ ($roleLabels[$role] ?? ucfirst($role)) }}</strong></small>
                             </div>
                         </div>
                         <div class="d-flex align-items-center gap-2 flex-wrap">
@@ -1334,7 +1334,7 @@
                     </div>
 
                     <div class="p-4 border-top d-flex justify-content-between align-items-center flex-wrap gap-3" style="background: rgba(248, 250, 252, 0.6);">
-                        <small class="text-muted"><i class="fas fa-shield-halved me-1" style="color: #2F6BFF;"></i>Changes will immediately affect users assigned to the <strong>{{ ucfirst($role) }}</strong> role.</small>
+                        <small class="text-muted"><i class="fas fa-shield-halved me-1" style="color: #2F6BFF;"></i>Changes will immediately affect users assigned to the <strong>{{ ($roleLabels[$role] ?? ucfirst($role)) }}</strong> role.</small>
                         <button type="submit" class="btn-save-address">
                             <i class="fas fa-save me-1.5"></i> Save Permissions
                         </button>

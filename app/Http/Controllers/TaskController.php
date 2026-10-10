@@ -362,6 +362,11 @@ public function create(Request $request)
         return redirect()->back()->with('success', 'Task created. Add another.');
     }
 
+    if ($request->boolean('embedded_task_form')) {
+        $request->session()->flash('success', 'Task created successfully.');
+        return response()->view('admin.tasks.partials.created');
+    }
+
     // Redirect to project board if coming from board
     if ($request->has('redirect_to_board') && $request->input('redirect_to_board') == 'yes') {
         return redirect()->route('projects.tasks.board', $request->project_id)

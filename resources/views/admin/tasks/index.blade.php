@@ -135,7 +135,7 @@
     <div class="toolbar">
         <div class="toolbar-left">
             @if($canManageTasks)
-                <a href="{{ route('tasks.create', $project ? ['project_id' => $project->id] : []) }}" class="btn btn-primary">
+                <a href="{{ route('tasks.create', array_merge($project ? ['project_id' => $project->id] : [], ['embedded' => 1])) }}" class="btn btn-primary" data-task-form-open>
                     <i class="fas fa-plus-circle"></i> Add Task
                 </a>
             @endif
@@ -803,4 +803,5 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 @endpush
+@include('admin.tasks.partials.create-dialog')
 @endsection

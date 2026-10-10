@@ -247,6 +247,17 @@ class User extends Authenticatable
         return strtolower((string) $this->role);
     }
 
+    public function permissionRole(): string
+    {
+        if ($this->company_staff_role_id && $this->company_id) {
+            $staffRole = CompanyStaffRole::where('company_id', $this->company_id)->find($this->company_staff_role_id);
+            if ($staffRole && RolePermission::where('role', $staffRole->permissionKey())->exists()) {
+                return $staffRole->permissionKey();
+            }
+        }
+        return $this->normalizedRole();
+    }
+
     public function isDeveloper(): bool
     {
         $role = strtolower((string) ($this->role ?? ''));
@@ -301,8 +312,9 @@ class User extends Authenticatable
             $slugsToTest[] = 'work';
         }
 
+        $permissionRole = $this->permissionRole();
         $hasPermission = RolePermission::query()
-            ->where('role', $this->normalizedRole())
+            ->where('role', $permissionRole)
             ->where($column, true)
             ->whereHas('module', function ($query) use ($slugsToTest) {
                 $query->whereIn('slug', array_unique($slugsToTest))->where('is_active', true);
@@ -314,7 +326,7 @@ class User extends Authenticatable
         }
 
         // Fallback: If no role_permissions exist in database for this role, allow default modules
-        if (! RolePermission::where('role', $this->normalizedRole())->exists()) {
+        if (! RolePermission::where('role', $permissionRole)->exists()) {
             $defaultMap = [
                 'manager'  => ['dashboard', 'notifications', 'organization', 'teams', 'hr-management', 'employees', 'work', 'projects', 'tasks', 'timelogs', 'attendance', 'leaves', 'reports', 'recruitment', 'appraisal', 'events', 'community', 'products', 'orders'],
                 'hr'       => ['dashboard', 'notifications', 'employees', 'attendance', 'leaves', 'work', 'projects', 'tasks', 'timelogs', 'payroll', 'reports', 'recruitment', 'appraisal', 'events', 'community', 'products', 'orders'],

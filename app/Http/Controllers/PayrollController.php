@@ -58,7 +58,7 @@ class PayrollController extends Controller
         $startDate = Carbon::createFromDate($selectedYear, $selectedMonth, 1)->startOfMonth()->format('Y-m-d');
         $endDate = Carbon::createFromDate($selectedYear, $selectedMonth, 1)->endOfMonth()->format('Y-m-d');
 
-        $currentPayroll = Payroll::query()
+        $currentPayroll = $this->dashboardSection('current payroll run', fn () => Payroll::query()
             ->where(function ($q) use ($startDate, $endDate) {
                 $q->whereBetween('period_start', [$startDate, $endDate])
                   ->orWhereBetween('period_end', [$startDate, $endDate])
@@ -69,7 +69,7 @@ class PayrollController extends Controller
             })
             ->when($companyId, fn ($q) => $q->where('company_id', $companyId))
             ->latest()
-            ->first();
+            ->first(), null);
 
         $processedCount = 0;
         $grossTotal = 0.0;
@@ -86,6 +86,7 @@ class PayrollController extends Controller
         $draftCount = 0;
 
         if ($currentPayroll) {
+            $this->dashboardSection('payroll run totals', function () use ($currentPayroll, &$processedCount, &$grossTotal, &$deductionTotal, &$netTotal, &$inHandTotal, &$employerTotal, &$ctcTotal, &$finalizedCount, &$approvedCount, &$reviewedCount, &$calculatedCount, &$draftCount) {
             $processedCount = PayrollHistory::where('payroll_id', $currentPayroll->id)->count();
             $grossTotal = (float) $currentPayroll->gross_total;
             $deductionTotal = (float) $currentPayroll->deduction_total;
@@ -109,14 +110,18 @@ class PayrollController extends Controller
             $draftCount = ($currentPayroll->status === 'draft')
                 ? $processedCount
                 : max(0, $processedCount - ($finalizedCount + $approvedCount + $reviewedCount + $calculatedCount));
+            }, null);
         } else {
             // Live real-time projection across eligible employees for the selected month/year
             $payrollService = app(PayrollCalculationService::class);
-            $employees = $payrollService->getEligibleEmployees($companyId);
+            $employees = $this->dashboardSection('eligible employees', fn () => $payrollService->getEligibleEmployees($companyId), collect());
             $workingDays = 22;
             $srNo = 1;
             foreach ($employees as $employee) {
-                $line = $payrollService->calculateEmployeePayrollLine($employee, $selectedYear, $selectedMonth, $workingDays, $srNo++);
+                // One employee's incomplete salary/attendance data must not take the whole dashboard down.
+                $line = $this->dashboardSection('payroll projection for user #' . $employee->id,
+                    fn () => $payrollService->calculateEmployeePayrollLine($employee, $selectedYear, $selectedMonth, $workingDays, $srNo), []);
+                $srNo++;
                 $grossTotal += (float) ($line['gross_salary'] ?? 0);
                 $deductionTotal += (float) ($line['total_deductions'] ?? 0);
                 $netTotal += (float) ($line['net_pay'] ?? 0);
@@ -152,15 +157,15 @@ class PayrollController extends Controller
             'total' => max(1, $processedCount ?: $totalEmployees),
         ];
 
-        $recentPayrolls = $this->companyQuery(Payroll::query(), $companyId)->latest()->take(6)->get();
-        $totalPayrollRuns = $this->companyQuery(Payroll::query(), $companyId)->count();
-        $structuresCount = SalaryStructure::where('status', 'active')
+        $recentPayrolls = $this->dashboardSection('recent payroll runs', fn () => $this->companyQuery(Payroll::query(), $companyId)->latest()->take(6)->get(), collect());
+        $totalPayrollRuns = $this->dashboardSection('payroll run count', fn () => $this->companyQuery(Payroll::query(), $companyId)->count(), 0);
+        $structuresCount = $this->dashboardSection('salary structure count', fn () => SalaryStructure::where('status', 'active')
             ->when($companyId && Schema::hasColumn('salary_structures', 'company_id'), fn ($q) => $q->where('company_id', $companyId))
-            ->count();
-        $assignmentsCount = EmployeeSalaryAssignment::where('status', 'active')
-            ->when($companyId, fn ($q) => $q->where('company_id', $companyId))
-            ->count();
-        $payslipCount = $this->payslipQuery($companyId)->count();
+            ->count(), 0);
+        $assignmentsCount = $this->dashboardSection('salary assignment count', fn () => EmployeeSalaryAssignment::where('status', 'active')
+            ->when($companyId && Schema::hasColumn('employee_salary_assignments', 'company_id'), fn ($q) => $q->where('company_id', $companyId))
+            ->count(), 0);
+        $payslipCount = $this->dashboardSection('payslip count', fn () => $this->payslipQuery($companyId)->count(), 0);
         $latestPayroll = $currentPayroll;
 
         return view('admin.payroll.index', compact(
@@ -173,6 +178,24 @@ class PayrollController extends Controller
             'totalPayrollRuns',
             'latestPayroll'
         ));
+    }
+
+    /**
+     * Runs one dashboard data section; a failure is logged with its cause and the section falls back
+     * to an empty value instead of turning the whole Payroll page into a 500 error.
+     */
+    private function dashboardSection(string $section, callable $callback, $default)
+    {
+        try {
+            return $callback();
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Payroll dashboard section failed: ' . $section, [
+                'company_id' => auth()->user()?->company_id,
+                'error' => $e->getMessage(),
+                'file' => $e->getFile() . ':' . $e->getLine(),
+            ]);
+            return $default;
+        }
     }
 
     /**

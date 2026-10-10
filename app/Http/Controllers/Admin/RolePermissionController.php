@@ -14,14 +14,34 @@ class RolePermissionController extends Controller
     private array $roles = ['manager', 'hr', 'employee'];
     private array $permissions = ['view', 'create', 'edit', 'delete', 'approve', 'export', 'assign'];
 
+    private function companyRoles(): array
+    {
+        $roles = array_combine($this->roles, array_map('ucfirst', $this->roles));
+        $companyId = auth()->user()?->company_id;
+        if ($companyId && \Illuminate\Support\Facades\Schema::connection('tenant')->hasTable('company_staff_roles')) {
+            foreach (\App\Models\CompanyStaffRole::where('company_id', $companyId)->orderBy('name')->get() as $staffRole) {
+                $roles[$staffRole->permissionKey()] = $staffRole->name;
+            }
+        }
+        return $roles;
+    }
+
+    private function accessRole(string $role): string
+    {
+        if (in_array($role, $this->roles, true)) return $role;
+        return \App\Models\CompanyStaffRole::where('company_id', auth()->user()->company_id)
+            ->findOrFail((int) substr($role, strrpos($role, ':') + 1))->access_role;
+    }
+
     public function index(Request $request): View
     {
         $this->authorizeAdmin();
 
         $this->ensureTenantModulesSynced();
 
+        $roleLabels = $this->companyRoles();
         $role = strtolower($request->query('role', 'hr'));
-        if (! in_array($role, $this->roles, true)) {
+        if (! array_key_exists($role, $roleLabels)) {
             $role = 'hr';
         }
 
@@ -45,7 +65,8 @@ class RolePermissionController extends Controller
             'admin' => [],
         ];
 
-        $excludedSlugs = $excludedSlugsByRole[$role] ?? [];
+        $accessRole = $this->accessRole($role);
+        $excludedSlugs = $excludedSlugsByRole[$accessRole] ?? [];
         $modules = Module::with('parent')
             ->where('is_active', true)
             ->whereNotIn('slug', $excludedSlugs)
@@ -54,15 +75,13 @@ class RolePermissionController extends Controller
             ->get();
 
         $savedPermissions = RolePermission::where('role', $role)->get()->keyBy('module_id');
-        $hasCustomSaved = $savedPermissions->contains(function ($item) {
-            return $item->can_view || $item->can_create || $item->can_edit || $item->can_delete || $item->can_approve || $item->can_export || $item->can_assign;
-        });
+        $hasCustomSaved = $savedPermissions->isNotEmpty();
 
         // Compute effective permissions for the view so previously granted or default permissions are pre-checked
         $effectivePermissions = [];
         foreach ($modules as $module) {
             $saved = $savedPermissions->get($module->id);
-            $defaultPerms = $this->getDefaultPermissionsForRole($role, $module->slug);
+            $defaultPerms = $this->getDefaultPermissionsForRole($accessRole, $module->slug);
 
             foreach ($this->permissions as $perm) {
                 if ($role === 'admin') {
@@ -80,7 +99,8 @@ class RolePermissionController extends Controller
             ->get(['id', 'name', 'email', 'role']);
 
         return view('admin.settings.role-permissions.index', [
-            'roles' => $this->roles,
+            'roles' => array_keys($roleLabels),
+            'roleLabels' => $roleLabels,
             'role' => $role,
             'permissions' => $this->permissions,
             'modules' => $modules,
@@ -97,7 +117,7 @@ class RolePermissionController extends Controller
         $this->ensureTenantModulesSynced();
 
         $role = strtolower($request->input('role', ''));
-        abort_unless(in_array($role, $this->roles, true), 422);
+        abort_unless(array_key_exists($role, $this->companyRoles()), 422);
 
         $submitted = $request->input('permissions', []);
 
@@ -120,7 +140,7 @@ class RolePermissionController extends Controller
             ],
             'admin' => [],
         ];
-        $excludedSlugs = $excludedSlugsByRole[$role] ?? [];
+        $excludedSlugs = $excludedSlugsByRole[$this->accessRole($role)] ?? [];
         $excludedModuleIds = Module::whereIn('slug', $excludedSlugs)->pluck('id')->all();
 
         // Query the valid module IDs currently present in the tenant modules table

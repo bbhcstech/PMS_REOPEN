@@ -1,6 +1,14 @@
 @extends('admin.layout.app')
 
 @section('content')
+@if(request()->boolean('embedded'))
+<style>
+#header, #sidebar, #footer, .pms-page-back-navigation, [data-page-back-navigation], #pms-ai-assistant-launcher { display: none !important; }
+#main.main { margin: 0 !important; padding: 12px !important; }
+#main > .container { max-width: none; padding: 0; }
+#main > .container > .nav-tabs { display: none; }
+</style>
+@endif
 <main id="main" class="main">
     <div class="container">
         @if(isset($project))
@@ -41,6 +49,9 @@
 
             <form method="POST" action="{{ route('tasks.store') }}" class="card-body"  enctype="multipart/form-data">
                 @csrf
+                @if(request()->boolean('embedded'))
+                    <input type="hidden" name="embedded_task_form" value="1">
+                @endif
 
                 <h5 class="text-primary mb-3">Task Info</h5>
                 <div class="row mb-3">
@@ -360,7 +371,11 @@
                 <button type="submit" name="action" value="save" class="btn btn-primary">Save</button>
                 <button type="submit" name="action" value="save_add_more" class="btn btn-secondary">Save & Add More</button>
                 
-                <a href="{{ route('tasks.index') }}" class="btn btn-secondary">Cancel</a>
+                @if(request()->boolean('embedded'))
+                    <button type="button" class="btn btn-secondary" onclick="window.parent.postMessage('task-form-cancel', window.location.origin)">Cancel</button>
+                @else
+                    <a href="{{ route('tasks.index') }}" class="btn btn-secondary">Cancel</a>
+                @endif
             </div>
 
             </form>
