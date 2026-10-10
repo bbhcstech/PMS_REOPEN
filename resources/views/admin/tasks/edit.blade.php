@@ -84,8 +84,6 @@
 <!-- Modal for Adding New Label -->
 <div class="modal fade" id="taskLabelsModal" tabindex="-1" aria-labelledby="taskLabelsModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-xl">
-    <form action="{{ route('labels.store') }}" method="POST">
-      @csrf
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">Task Labels</h5>
@@ -94,6 +92,8 @@
 
         <div class="modal-body">
           {{-- Form Section --}}
+          <form id="taskLabelCreateForm" action="{{ route('labels.store') }}" method="POST">
+          @csrf
           <div class="row g-3 mb-4">
             <div class="col-md-4">
               <label class="form-label">Label Name <span class="text-danger">*</span></label>
@@ -121,6 +121,7 @@
             </div>
           </div>
 
+          </form>
           {{-- Table Section --}}
           <div class="table-responsive">
             <table class="table table-bordered table-striped">
@@ -159,10 +160,9 @@
         </div>
 
         <div class="modal-footer">
-          <button type="submit" class="btn btn-primary">Add Label</button>
+          <button type="submit" form="taskLabelCreateForm" class="btn btn-primary">Add Label</button>
         </div>
       </div>
-    </form>
   </div>
 </div>
 
@@ -223,6 +223,7 @@
 </div>
 
 @push('scripts')
+<script src="{{ asset('admin/assets/js/pms-task-labels.js') }}?v={{ filemtime(public_path('admin/assets/js/pms-task-labels.js')) }}"></script>
 <!-- include jQuery and select2 (if your layout already includes them, you can remove these) -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>

@@ -1279,8 +1279,8 @@ class PayrollController extends Controller
     private function authorizePayroll(string $moduleSlug = 'payroll', string $permission = 'view'): void
     {
         $role = strtolower((string)(auth()->user()?->role ?? ''));
-        if (!in_array($role, ['admin', 'superadmin', 'administrator'], true)) {
-            abort(403, 'Unauthorized. Payroll access is restricted strictly to Admin workspace.');
+        if (!in_array($role, ['admin', 'superadmin', 'administrator', 'hr'], true)) {
+            abort(403, 'Unauthorized. Payroll management is restricted to Admin and permitted HR accounts.');
         }
 
         if (! auth()->user()?->hasModulePermission($moduleSlug, $permission)) {

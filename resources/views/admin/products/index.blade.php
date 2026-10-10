@@ -315,6 +315,7 @@
             <table class="table table-hover align-middle mb-0" data-pms-toolbar-host="homeProjectTools">
                 <thead class="bg-light">
                     <tr class="text-secondary text-uppercase fw-semibold" style="font-size: 0.76rem;">
+                        <th data-pms-selection-column class="pms-table-selection-cell" scope="col"><label class="pms-table-select"><input type="checkbox" class="pms-table-select__input" aria-label="Select all home projects"></label></th>
                         <th class="ps-4">Project / Product</th>
                         <th>Assigned Team</th>
                         <th>Progress</th>
@@ -344,6 +345,7 @@
                         @endphp
                         <tr>
                             <!-- Project / Product Name -->
+                            <td data-pms-selection-column class="pms-table-selection-cell"><label class="pms-table-select"><input type="checkbox" class="pms-table-select__input" aria-label="Select {{ $project->name }} for export"></label></td>
                             <td class="ps-4">
                                 <div class="d-flex align-items-center gap-3">
                                     <div class="rounded-3 bg-info-subtle text-info p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
@@ -467,7 +469,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="text-center py-5 text-muted">
+                            <td colspan="8" class="text-center py-5 text-muted">
                                 <i class="bx bx-home-alt fs-1 d-block mb-2 text-secondary"></i>
                                 No Home Projects found.
                             </td>
@@ -501,6 +503,7 @@
             <table class="table table-hover align-middle mb-0" data-pms-toolbar-host="clientProjectTools">
                 <thead class="bg-light">
                     <tr class="text-secondary text-uppercase fw-semibold" style="font-size: 0.76rem;">
+                        <th data-pms-selection-column class="pms-table-selection-cell" scope="col"><label class="pms-table-select"><input type="checkbox" class="pms-table-select__input" aria-label="Select all client projects"></label></th>
                         <th class="ps-4">Project / Product</th>
                         <th>Client Details</th>
                         <th>Assigned Team</th>
@@ -531,6 +534,7 @@
                         @endphp
                         <tr>
                             <!-- Project / Product Name -->
+                            <td data-pms-selection-column class="pms-table-selection-cell"><label class="pms-table-select"><input type="checkbox" class="pms-table-select__input" aria-label="Select {{ $project->name }} for export"></label></td>
                             <td class="ps-4">
                                 <div class="d-flex align-items-center gap-3">
                                     <div class="rounded-3 bg-success-subtle text-success p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
@@ -678,7 +682,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="text-center py-5 text-muted">
+                            <td colspan="9" class="text-center py-5 text-muted">
                                 <i class="bx bx-buildings fs-1 d-block mb-2 text-secondary"></i>
                                 No Client Projects found.
                             </td>

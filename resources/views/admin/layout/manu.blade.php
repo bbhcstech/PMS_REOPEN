@@ -2304,11 +2304,11 @@
             </li>
             @endif
 
-            {{-- Payroll Module (ADMIN WORKSPACE ONLY) --}}
+            {{-- Payroll access follows saved permissions for Admin and HR. --}}
             @php
-                $isAdminWorkspaceUser = in_array(strtolower((string)(auth()->user()->role ?? '')), ['admin', 'superadmin', 'administrator'], true);
+                $canUsePayrollWorkspace = in_array(strtolower((string)(auth()->user()->role ?? '')), ['admin', 'superadmin', 'administrator', 'hr'], true);
             @endphp
-            @if($isAdminWorkspaceUser && $canSeeModule('payroll'))
+            @if($canUsePayrollWorkspace && $canSeeModule('payroll'))
             <li class="menu-item {{ request()->routeIs('payroll.*') ? 'active' : '' }}">
                 <a href="{{ route('payroll.index') }}" class="menu-link">
                     <i class="menu-icon tf-icons bx bx-money"></i>
