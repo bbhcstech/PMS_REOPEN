@@ -822,6 +822,38 @@
         letter-spacing: 0.02em;
     }
 
+    /* Company column: small logo beside the company name (the logo had no size and rendered at full resolution). */
+    .org-company-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        max-width: 240px;
+        min-width: 0;
+        vertical-align: middle;
+    }
+    .org-company-chip .org-company-logo {
+        width: 28px !important;
+        height: 28px !important;
+        min-width: 28px;
+        max-width: 28px !important;
+        max-height: 28px !important;
+        flex: 0 0 28px;
+        border-radius: 8px;
+        object-fit: cover;
+        border: 1px solid var(--org-border, rgba(148, 163, 184, 0.35));
+        background: #ffffff;
+    }
+    .org-company-chip > i {
+        flex: 0 0 auto;
+        font-size: 1rem;
+    }
+    .org-company-chip > span {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-weight: 600;
+    }
     .org-dept-tag {
         display: inline-flex;
         align-items: center;

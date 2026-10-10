@@ -44,7 +44,9 @@
     const region = document.querySelector('[data-live-records]');
     if (!region) return;
     let busy = false, stopped = false, timer, failures = 0;
-    const protect = 'input, select, textarea, button, script, style, link, canvas, iframe, [contenteditable], [data-live-chat], [data-live-preserve], .modal, .modal-backdrop, .modal-overlay, .drawer-overlay, .offcanvas, .pms-table-select, .select2-container, .dataTables_wrapper, .pms-table-tools, [role="tablist"]';
+    // .alert-dismissible: one-time flash messages exist only in the page after a save; the refreshed copy has none,
+    // so they must never take part in positional matching (that shifted every following block into its neighbour).
+    const protect = 'input, select, textarea, button, script, style, link, canvas, iframe, [contenteditable], [data-live-chat], [data-live-preserve], .alert-dismissible, .modal, .modal-backdrop, .modal-overlay, .drawer-overlay, .offcanvas, .pms-table-select, .select2-container, .dataTables_wrapper, .pms-table-tools, [role="tablist"]';
     function key(node) {
         if (node.nodeType !== 1) return null;
         if (node.id) return node.tagName + '#' + node.id;
@@ -87,6 +89,8 @@
         let anchor = current.firstChild;
         for (const next of fresh.childNodes) {
             if (next.nodeType === 1 && next.matches('script, style, link')) continue;
+            // Keep a flash message where it is instead of moving the refreshed content in front of it.
+            while (anchor && anchor.nodeType === 1 && anchor.matches('.alert-dismissible') && !used.has(anchor)) anchor = anchor.nextSibling;
             const id = uniqueKey(next);
             // Positional matching never pairs a server node with a client-only node (e.g. the
             // table-tools toolbar injected before a .table-responsive); otherwise the real table

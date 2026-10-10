@@ -672,6 +672,53 @@
     [data-pms-theme="dark"] .iti__dial-code {
         color: #9AA3C7 !important;
     }
+
+    /* Primary-branch switch: self-contained sizing and colours so theme form rules cannot collapse it to a line. */
+    html body .default-toggle-box .form-check.form-switch {
+        flex: 0 0 auto;
+        min-height: 0;
+        margin: 0 !important;
+        padding: 0 !important;
+        display: flex;
+        align-items: center;
+    }
+    html body .default-toggle-box .form-switch .form-check-input {
+        float: none !important;
+        flex: 0 0 auto;
+        width: 3rem !important;
+        min-width: 3rem !important;
+        height: 1.6rem !important;
+        margin: 0 !important;
+        border-radius: 999px !important;
+        border: 2px solid #94A3B8 !important;
+        background-color: #E2E8F0 !important;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%2364748B'/%3e%3c/svg%3e") !important;
+        background-repeat: no-repeat !important;
+        background-position: left center !important;
+        background-size: contain !important;
+        opacity: 1 !important;
+        cursor: pointer;
+        appearance: none;
+        -webkit-appearance: none;
+        transition: background-position .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out;
+    }
+    html body .default-toggle-box .form-switch .form-check-input:checked {
+        border-color: #2F6BFF !important;
+        background-color: #2F6BFF !important;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23ffffff'/%3e%3c/svg%3e") !important;
+        background-position: right center !important;
+    }
+    html body .default-toggle-box .form-switch .form-check-input:focus-visible {
+        outline: 3px solid rgba(47, 107, 255, 0.45);
+        outline-offset: 2px;
+        box-shadow: none !important;
+    }
+    html body.dark-mode .default-toggle-box .form-switch .form-check-input:not(:checked),
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"]) .default-toggle-box .form-switch .form-check-input:not(:checked) {
+        border-color: #64748B !important;
+        background-color: #1E2747 !important;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23CBD5E1'/%3e%3c/svg%3e") !important;
+    }
 </style>
 @endpush
 
