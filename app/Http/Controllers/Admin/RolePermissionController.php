@@ -69,12 +69,8 @@ class RolePermissionController extends Controller
 
         $accessRole = $this->accessRole($role);
         $excludedSlugs = $excludedSlugsByRole[$accessRole] ?? [];
-        $modules = Module::with('parent')
-            ->where('is_active', true)
-            ->whereNotIn('slug', $excludedSlugs)
-            ->orderBy('sort_order')
-            ->orderBy('name')
-            ->get();
+        $modules = app(\App\Services\AdminWorkspaceModules::class)->permissionMatrixModules()
+            ->reject(fn ($module) => in_array($module->slug, $excludedSlugs, true))->values();
 
         $savedPermissions = RolePermission::where('role', $role)->get()->keyBy('module_id');
         $hasCustomSaved = $savedPermissions->isNotEmpty();
@@ -152,9 +148,12 @@ class RolePermissionController extends Controller
 
         // Query the valid module IDs currently present in the tenant modules table
         $tenantModuleIds = \Illuminate\Support\Facades\DB::connection('tenant')->table('modules')->pluck('id')->all();
+        $visibleModuleIds = app(\App\Services\AdminWorkspaceModules::class)->permissionMatrixModules()->pluck('id')->all();
 
-        DB::connection('tenant')->transaction(function () use ($tenantModuleIds, $excludedModuleIds, $submitted, $role) {
+        DB::connection('tenant')->transaction(function () use ($tenantModuleIds, $excludedModuleIds, $visibleModuleIds, $submitted, $role) {
             foreach ($tenantModuleIds as $moduleId) {
+                // A hidden registry row must not be revoked just because it is absent from the form.
+                if (!in_array($moduleId, $visibleModuleIds, true) && !in_array($moduleId, $excludedModuleIds, true)) continue;
                 if (in_array($moduleId, $excludedModuleIds, true)) {
                     $modulePermissions = [];
                 } else {

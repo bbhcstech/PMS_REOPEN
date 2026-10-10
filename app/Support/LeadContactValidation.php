@@ -10,7 +10,7 @@ class LeadContactValidation
             $data['email'] = trim($data['email']);
         }
 
-        foreach (['phone', 'mobile'] as $field) {
+        foreach (['phone', 'mobile', 'alternate_phone', 'whatsapp'] as $field) {
             if (!isset($data[$field]) || !is_string($data[$field])) {
                 continue;
             }
@@ -76,6 +76,8 @@ class LeadContactValidation
             'email' => ['bail', 'required', 'string', 'max:255', 'email:rfc', 'regex:/^[^@\s]+@[^@\s]+\.[^@\s]+$/D'],
             'phone' => ['bail', 'nullable', 'string', 'max:30', $phone],
             'mobile' => ['bail', 'nullable', 'string', 'max:30', $phone],
+            'alternate_phone' => ['bail', 'nullable', 'string', 'max:30', $phone],
+            'whatsapp' => ['bail', 'nullable', 'string', 'max:30', $phone],
             'phone_country_code' => ['bail', 'nullable', 'string', $countryCode],
             'mobile_country_code' => ['bail', 'nullable', 'string', $countryCode],
         ];

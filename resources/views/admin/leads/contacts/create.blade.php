@@ -1,6 +1,7 @@
 @extends('admin.layout.app')
 
 @section('content')
+<script src="{{ asset('admin/assets/js/pms-lead-phone-length.js') }}?v={{ filemtime(public_path('admin/assets/js/pms-lead-phone-length.js')) }}" defer></script>
 
 <style>
 .form-card-modern {

@@ -11,10 +11,10 @@ config(['database.connections.central' => config('database.connections.tenant')]
 DB::purge('central');
 foreach (['tenant', 'central'] as $connection) {
     Schema::connection($connection)->create('modules', function ($t) {
-        $t->id(); $t->string('slug'); $t->string('name'); $t->boolean('is_active')->default(true);
+        $t->id(); $t->string('slug'); $t->string('name'); $t->boolean('is_active')->default(true); $t->string('route_name')->nullable(); $t->string('route_prefix')->nullable(); $t->unsignedBigInteger('parent_id')->nullable(); $t->integer('sort_order')->default(0);
     });
     for ($id = 1; $id <= 170; $id++) {
-        DB::connection($connection)->table('modules')->insert(['id' => $id, 'slug' => $id === 170 ? 'role-management' : 'module-' . $id, 'name' => 'Module ' . $id]);
+        DB::connection($connection)->table('modules')->insert(['id' => $id, 'slug' => $id === 170 ? 'role-management' : 'module-' . $id, 'name' => 'Module ' . $id, 'route_name' => 'projects.index']);
     }
 }
 Schema::table('role_permissions', function ($t) {

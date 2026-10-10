@@ -993,3 +993,88 @@ body.dark .pms-table-export__option:hover {
   color: #ffffff !important;
   -webkit-text-fill-color: #ffffff !important;
 }
+
+
+/* ==========================================================================
+   Unified workspace table design (company roles only: this stylesheet is not
+   loaded by the Super Admin or Developer layouts). Header bar + card rows,
+   matching the employee dashboard "My Projects" table.
+   ========================================================================== */
+@media (min-width: 769px) {
+  html body .pms-exportable-table.pms-exportable-table.pms-exportable-table.pms-exportable-table {
+    --pms-tbl-head-bg: #f3f6fb;
+    --pms-tbl-head-text: #344054;
+    --pms-tbl-row-bg: #ffffff;
+    --pms-tbl-row-hover: #f8faff;
+    --pms-tbl-border: #e3e9f5;
+    --pms-tbl-select-bg: #f5f8fd;
+    --pms-tbl-text: #1e293b;
+    border-collapse: separate !important;
+    border-spacing: 0 8px !important;
+    background: transparent !important;
+    margin-top: -8px !important;
+  }
+
+  html body .pms-exportable-table.pms-exportable-table.pms-exportable-table.pms-exportable-table > thead > tr > th {
+    background: var(--pms-tbl-head-bg) !important;
+    color: var(--pms-tbl-head-text) !important;
+    -webkit-text-fill-color: var(--pms-tbl-head-text) !important;
+    border: 0 !important;
+    padding: 16px 16px !important;
+    font-size: 0.78rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    vertical-align: middle !important;
+    white-space: nowrap;
+  }
+  html body .pms-exportable-table.pms-exportable-table.pms-exportable-table.pms-exportable-table > thead > tr > th:first-child { border-radius: 12px 0 0 12px !important; }
+  html body .pms-exportable-table.pms-exportable-table.pms-exportable-table.pms-exportable-table > thead > tr > th:last-child { border-radius: 0 12px 12px 0 !important; }
+
+  html body .pms-exportable-table.pms-exportable-table.pms-exportable-table.pms-exportable-table > tbody > tr {
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+  html body .pms-exportable-table.pms-exportable-table.pms-exportable-table.pms-exportable-table > tbody > tr > td {
+    background: var(--pms-tbl-row-bg) !important;
+    color: var(--pms-tbl-text);
+    border-top: 1px solid var(--pms-tbl-border) !important;
+    border-bottom: 1px solid var(--pms-tbl-border) !important;
+    border-left: 0 !important;
+    border-right: 0 !important;
+    padding: 14px 16px !important;
+    vertical-align: middle !important;
+    transition: background-color 160ms ease;
+  }
+  html body .pms-exportable-table.pms-exportable-table.pms-exportable-table.pms-exportable-table > tbody > tr > td:first-child {
+    border-left: 1px solid var(--pms-tbl-border) !important;
+    border-radius: 14px 0 0 14px !important;
+  }
+  html body .pms-exportable-table.pms-exportable-table.pms-exportable-table.pms-exportable-table > tbody > tr > td:last-child {
+    border-right: 1px solid var(--pms-tbl-border) !important;
+    border-radius: 0 14px 14px 0 !important;
+  }
+  html body .pms-exportable-table.pms-exportable-table.pms-exportable-table.pms-exportable-table > tbody > tr > td:only-child { border-radius: 14px !important; }
+  html body .pms-exportable-table.pms-exportable-table.pms-exportable-table.pms-exportable-table > tbody > tr:hover > td { background: var(--pms-tbl-row-hover) !important; }
+
+  /* Selection column: tinted strip on the left of every row. */
+  html body .pms-exportable-table.pms-exportable-table.pms-exportable-table.pms-exportable-table > tbody > tr > .pms-table-selection-cell,
+  html body .pms-exportable-table.pms-exportable-table.pms-exportable-table.pms-exportable-table > tbody > tr > [data-pms-selection-column] {
+    background: var(--pms-tbl-select-bg) !important;
+  }
+  html body .pms-exportable-table.pms-exportable-table.pms-exportable-table.pms-exportable-table > thead > tr > .pms-table-selection-cell,
+  html body .pms-exportable-table.pms-exportable-table.pms-exportable-table.pms-exportable-table > thead > tr > [data-pms-selection-column] {
+    background: color-mix(in srgb, var(--pms-tbl-head-bg) 80%, #94a3b8 20%) !important;
+  }
+
+  :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"]) body .pms-exportable-table.pms-exportable-table.pms-exportable-table.pms-exportable-table,
+  html body.dark-mode .pms-exportable-table {
+    --pms-tbl-head-bg: #1f2853;
+    --pms-tbl-head-text: #eef1fb;
+    --pms-tbl-row-bg: #10183a;
+    --pms-tbl-row-hover: #141f48;
+    --pms-tbl-border: rgba(96, 165, 250, 0.14);
+    --pms-tbl-select-bg: #16204a;
+    --pms-tbl-text: #eef1fb;
+  }
+}

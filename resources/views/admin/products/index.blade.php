@@ -61,7 +61,7 @@
         align-items: center !important;
         justify-content: center !important;
         line-height: 1 !important;
-        background-color: currentColor !important;
+        background-color: transparent !important;
         opacity: 1 !important;
         visibility: visible !important;
     }
@@ -117,7 +117,7 @@
     .dark .table td .btn-icon i {
         color: #EEF1FB !important;
         -webkit-text-fill-color: #EEF1FB !important;
-        background-color: #EEF1FB !important;
+        background-color: transparent !important;
         opacity: 1 !important;
         visibility: visible !important;
     }
@@ -131,7 +131,22 @@
     .dark .table td .btn-icon:hover i {
         color: #FFFFFF !important;
         -webkit-text-fill-color: #FFFFFF !important;
-        background-color: #FFFFFF !important;
+        background-color: transparent !important;
+    }
+    .project-selection-tools .pms-table-tools {
+        margin: 0;
+        border-radius: 0;
+        border: 0;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+    }
+    #homeProjectTools .pms-table-tools__status::before { content: 'Home projects · '; }
+    #clientProjectTools .pms-table-tools__status::before { content: 'Client projects · '; }
+    .table .project-actions-icon {
+        width: 20px;
+        height: 20px;
+        fill: currentColor;
+        background: transparent !important;
+        pointer-events: none;
     }
 </style>
 
@@ -295,8 +310,9 @@
                 {{ count($homeProjects) }} Home Project(s)
             </span>
         </div>
+        <div id="homeProjectTools" class="project-selection-tools" aria-label="Home project selection and export"></div>
         <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
+            <table class="table table-hover align-middle mb-0" data-pms-toolbar-host="homeProjectTools">
                 <thead class="bg-light">
                     <tr class="text-secondary text-uppercase fw-semibold" style="font-size: 0.76rem;">
                         <th class="ps-4">Project / Product</th>
@@ -426,8 +442,8 @@
                             <!-- Actions -->
                             <td class="text-end pe-4">
                                 <div class="dropdown">
-                                    <button class="btn btn-sm btn-icon btn-light rounded-circle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <i class="bx bx-dots-vertical-rounded"></i>
+                                    <button class="btn btn-sm btn-icon btn-light rounded-circle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Actions for {{ $project->name }}">
+                                        <svg class="project-actions-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3">
                                         <li>
@@ -480,8 +496,9 @@
                 {{ count($clientProjects) }} Client Project(s)
             </span>
         </div>
+        <div id="clientProjectTools" class="project-selection-tools" aria-label="Client project selection and export"></div>
         <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
+            <table class="table table-hover align-middle mb-0" data-pms-toolbar-host="clientProjectTools">
                 <thead class="bg-light">
                     <tr class="text-secondary text-uppercase fw-semibold" style="font-size: 0.76rem;">
                         <th class="ps-4">Project / Product</th>
@@ -629,8 +646,8 @@
                             <!-- Actions -->
                             <td class="text-end pe-4">
                                 <div class="dropdown">
-                                    <button class="btn btn-sm btn-icon btn-light rounded-circle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <i class="bx bx-dots-vertical-rounded"></i>
+                                    <button class="btn btn-sm btn-icon btn-light rounded-circle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Actions for {{ $project->name }}">
+                                        <svg class="project-actions-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3">
                                         <li>

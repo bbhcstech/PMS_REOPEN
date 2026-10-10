@@ -216,8 +216,6 @@ class LeadContactController extends Controller
             'contact_name' => 'required|string|max:255',
             'job_title' => 'nullable|string|max:255',
             ...LeadContactValidation::rules(),
-            'alternate_phone' => 'nullable|string|max:30',
-            'whatsapp' => 'nullable|string|max:30',
             'company_name' => 'nullable|string|max:255',
             'website' => 'nullable|url|max:255',
 
@@ -381,8 +379,6 @@ class LeadContactController extends Controller
             'contact_name' => 'required|string|max:255',
             'job_title' => 'nullable|string|max:255',
             ...LeadContactValidation::rules(),
-            'alternate_phone' => 'nullable|string|max:30',
-            'whatsapp' => 'nullable|string|max:30',
             'company_name' => 'nullable|string|max:255',
             'website' => 'nullable|url|max:255',
 
