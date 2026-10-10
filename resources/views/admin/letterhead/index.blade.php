@@ -850,6 +850,17 @@
         color: #60A5FA !important;
         border-bottom-color: #60A5FA !important;
     }
+    /* Letter Head header on phones: stack icon/title, wrap the badge and text inside the card. */
+    @media (max-width: 768px) {
+        .lh-header-banner { padding: 1.25rem !important; gap: 1rem; }
+        .lh-banner-left { flex-direction: column; align-items: flex-start; gap: 0.9rem; width: 100%; min-width: 0; }
+        .lh-banner-left > div { min-width: 0; width: 100%; }
+        .lh-banner-title { flex-wrap: wrap; font-size: 1.35rem; gap: 0.5rem; }
+        .lh-live-pill { white-space: nowrap; }
+        .lh-banner-subtitle { overflow-wrap: anywhere; }
+        .lh-header-banner > div:last-child { width: 100%; }
+        .lh-header-banner .btn-lh-emerald { width: 100%; justify-content: center; }
+    }
 </style>
 
 <div class="container-xxl flex-grow-1 container-p-y lh-mgmt-shell lh-fade-in">

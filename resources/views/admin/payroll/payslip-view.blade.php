@@ -100,6 +100,14 @@
                         <td>Leave: <b>{{ $b['total_leave'] ?? ($historyObj->leave_days ?? 0) }}</b></td>
                         <td>Absent: <b>{{ $b['total_absent'] ?? ($historyObj->absent_days ?? 0) }}</b></td>
                     </tr>
+                    @if(array_key_exists('unpaid_deduction_percentage', $b))
+                    <tr>
+                        <td>Paid leave: <b>{{ $b['paid_leave'] ?? 0 }}</b></td>
+                        <td>Unpaid leave: <b>{{ $b['unpaid_leave'] ?? 0 }}</b></td>
+                        <td>Rate per unpaid day: <b>{{ $b['unpaid_deduction_percentage'] }}% of monthly salary</b></td>
+                        <td>Unpaid adjustment: <b>{{ $b['unpaid_salary_deduction_percent'] ?? 0 }}%</b> (included in earnings)</td>
+                    </tr>
+                    @endif
                     <tr>
                         <td>Half Day: <b>{{ $b['half_days'] ?? ($historyObj->half_days ?? 0) }}</b></td>
                         <td>WFH: <b>{{ $b['wfh_days'] ?? ($historyObj->wfh_days ?? 0) }}</b></td>

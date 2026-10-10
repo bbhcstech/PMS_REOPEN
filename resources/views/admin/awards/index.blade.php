@@ -2,6 +2,7 @@
 @section('title', 'Awards List')
 
 @section('content')
+@php($canCreateRecognition = auth()->user()?->hasModulePermission('awards', 'create') ?? false)
 <style>
     /* Hide duplicate visible DataTables button bar */
     .dataTables_wrapper .dt-buttons {
@@ -74,10 +75,10 @@
     @endif
 
     <div class="d-flex align-items-center mb-3
-        @if(auth()->user()->role === 'admin') justify-content-between @else justify-content-end @endif">
+        @if($canCreateRecognition) justify-content-between @else justify-content-end @endif">
 
         <!-- Left side: Add Appreciation button (only for admin) -->
-        @if(auth()->user()->role === 'admin')
+        @if($canCreateRecognition)
             <div>
                 <a href="{{ route('awards.create') }}" class="btn btn-primary">
                     <i class="bi bi-plus-circle"></i> &nbsp; Assign Award

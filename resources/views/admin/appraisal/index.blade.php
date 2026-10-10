@@ -747,6 +747,46 @@
         color: #c4b5fd !important;
         -webkit-text-fill-color: #c4b5fd !important;
     }
+    /* Appraisal on phones: swipeable one-row tabs and table headers that wrap instead of overflowing. */
+    @media (max-width: 768px) {
+        .appraisal-shell #appraisalTabs {
+            flex-wrap: nowrap !important;
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+            gap: 0.4rem;
+            padding-bottom: 2px;
+            max-width: 100%;
+        }
+        .appraisal-shell #appraisalTabs .nav-item {
+            flex: 0 0 auto;
+        }
+        .appraisal-shell #appraisalTabs .nav-link {
+            white-space: nowrap;
+            font-size: 0.82rem;
+            padding: 0.6rem 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        .appraisal-shell .app-table-card > .p-3.text-white.d-flex {
+            flex-direction: column;
+            align-items: flex-start !important;
+            gap: 0.6rem;
+        }
+        .appraisal-shell .app-table-card > .p-3.text-white.d-flex h5 {
+            font-size: 1.05rem;
+            line-height: 1.35;
+        }
+        .appraisal-shell .app-table-card > .p-3.text-white.d-flex .badge {
+            white-space: normal;
+            text-align: left;
+            line-height: 1.4;
+            max-width: 100%;
+            font-size: 0.75rem;
+        }
+    }
 </style>
 
 <div class="container-xxl flex-grow-1 container-p-y appraisal-shell">

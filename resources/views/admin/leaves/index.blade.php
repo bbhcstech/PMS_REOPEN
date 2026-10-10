@@ -127,9 +127,8 @@
                 </div>
                 <div class="balance-meter"><span style="width: {{ $balance->allocated_leaves > 0 ? min(100, ($balance->used_leaves / $balance->allocated_leaves) * 100) : 0 }}%"></span></div>
                 <div class="balance-pills">
-                    <span>SL {{ $balance->sick_allocated - $balance->sick_used }}/{{ $balance->sick_allocated }}</span>
-                    <span>CL {{ $balance->casual_allocated - $balance->casual_used }}/{{ $balance->casual_allocated }}</span>
-                    <span>ML {{ $balance->maternity_allocated - $balance->maternity_used }}/{{ $balance->maternity_allocated }}</span>
+                    <span>Sick used: {{ $balance->sick_used }}</span>
+                    <span>Casual used: {{ $balance->casual_used }}</span>
                     <span>Unpaid {{ $balance->unpaid_used }}</span>
                 </div>
                 @if($isAdmin)
@@ -417,7 +416,7 @@
                     <div><label>Annual Leaves</label><input type="number" step="0.5" name="annual_leaves" class="form-control" value="{{ $policy->annual_leaves }}" required></div>
                     <div><label>Sick Leave Limit</label><input type="number" step="0.5" name="sick_leave_limit" class="form-control" value="{{ $policy->sick_leave_limit }}" required></div>
                     <div><label>Casual Leave Limit</label><input type="number" step="0.5" name="casual_leave_limit" class="form-control" value="{{ $policy->casual_leave_limit }}" required></div>
-                    <div><label>Maternity Leave Limit</label><input type="number" step="0.5" name="maternity_leave_limit" class="form-control" value="{{ $policy->maternity_leave_limit }}" required></div>
+                    <div><label>Monthly salary deduction per unpaid day (%)</label><input type="number" step="0.01" min="0" max="100" name="unpaid_deduction_percentage" class="form-control" value="{{ \App\Models\AppSetting::valueFor('leave_unpaid_deduction_percentage', '3.33') }}" required><small>Example: 2% × 2 unpaid days = 4% of monthly salary. Maximum total deduction is the salary available.</small></div>
                     <div><label>CL Advance Days</label><input type="number" name="casual_advance_days" class="form-control" value="{{ $policy->casual_advance_days }}" required></div>
                     <div><label>Manual Review Days</label><input type="number" name="casual_manual_review_days" class="form-control" value="{{ $policy->casual_manual_review_days }}" required></div>
                     <div><label>Max Carry Forward</label><input type="number" name="max_carry_forward" class="form-control" value="{{ $policy->max_carry_forward }}"></div>
@@ -430,8 +429,6 @@
                         'hr_approval_required' => 'HR approval mandatory',
                         'allow_sick_apology' => 'Allow Sick Leave apology',
                         'allow_carry_forward' => 'Allow carry forward',
-                        'maternity_is_paid' => 'Maternity leave is paid',
-                        'maternity_requires_document' => 'Maternity document required',
                     ] as $field => $label)
                         <label class="switch-line">
                             <input type="checkbox" name="{{ $field }}" value="1" {{ $policy->{$field} ? 'checked' : '' }}>
@@ -442,6 +439,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addLeaveTypeModal">Add Leave Type</button>
                 <button class="btn btn-primary">Save Policy</button>
             </div>
         </form>
@@ -539,6 +537,21 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
             </div>
+        </form>
+    </div>
+</div>
+<div class="modal fade" id="addLeaveTypeModal" tabindex="-1" aria-labelledby="addLeaveTypeTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <form class="modal-content" method="POST" action="{{ route('leaves.store-type') }}">
+            @csrf
+            <div class="modal-header"><h5 id="addLeaveTypeTitle" class="modal-title">Add Company Leave Type</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
+            <div class="modal-body">
+                <p class="text-muted">This type is available only in your company and shares its annual paid leave allowance. Days beyond that allowance are unpaid.</p>
+                <label for="newLeaveTypeName">Name</label><input id="newLeaveTypeName" name="name" class="form-control mb-3" maxlength="100" required placeholder="e.g. Bereavement Leave">
+                <label for="newLeaveTypeCode">Code</label><input id="newLeaveTypeCode" name="code" class="form-control mb-3" maxlength="20" pattern="[A-Z][A-Z0-9_]{1,19}" required placeholder="e.g. BL">
+                <label><input type="checkbox" name="requires_document" value="1"> Supporting document required</label>
+            </div>
+            <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button class="btn btn-primary">Add Leave Type</button></div>
         </form>
     </div>
 </div>

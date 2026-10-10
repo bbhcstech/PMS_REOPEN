@@ -143,7 +143,7 @@ class LeaveController extends Controller
             : $actor;
         \App\Services\TenantScope::authorizeCompany($employee->company_id);
 
-        $type = LeaveType::findOrFail($request->leave_type_id);
+        $type = LeaveType::where('is_active', true)->findOrFail($request->leave_type_id);
         $data = $request->validated();
         if (Schema::hasColumn('leaves', 'company_id')) {
             $data['company_id'] = $employee->company_id;
@@ -608,7 +608,8 @@ class LeaveController extends Controller
             'annual_leaves' => ['required', 'numeric', 'min:0'],
             'sick_leave_limit' => ['required', 'numeric', 'min:0'],
             'casual_leave_limit' => ['required', 'numeric', 'min:0'],
-            'maternity_leave_limit' => ['required', 'numeric', 'min:0'],
+            'maternity_leave_limit' => ['nullable', 'numeric', 'min:0'],
+            'unpaid_deduction_percentage' => ['required', 'numeric', 'min:0', 'max:100'],
             'casual_advance_days' => ['required', 'integer', 'min:0', 'max:60'],
             'casual_manual_review_days' => ['required', 'integer', 'min:0', 'max:30'],
             'auto_approve_casual_leave' => ['nullable'],
@@ -641,6 +642,18 @@ class LeaveController extends Controller
         );
 
         return back()->with('success', 'Leave policy updated and employee balances recalculated successfully.');
+    }
+
+    public function storeLeaveType(Request $request)
+    {
+        $this->ensureAdmin();
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:100', 'unique:tenant.leave_types,name'],
+            'code' => ['required', 'regex:/^[A-Z][A-Z0-9_]{1,19}$/', 'unique:tenant.leave_types,code'],
+            'requires_document' => ['nullable', 'boolean'],
+        ]);
+        LeaveType::create($data + ['annual_limit' => 0, 'is_paid' => true, 'is_active' => true, 'sort_order' => 10]);
+        return back()->with('success', 'Leave type added for this company. It uses the shared annual paid allowance.');
     }
 
     public function resetEmployeeLeaves($id)

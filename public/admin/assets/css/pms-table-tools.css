@@ -1,4 +1,14 @@
 /* Shared admin table export controls and animated grid separators. */
+.pms-table-tools--outside {
+  margin-bottom: 12px;
+  border-radius: 14px !important;
+  overflow: visible !important;
+}
+.pms-table-tools:has(.pms-table-export.is-open) { z-index: 1090; }
+.pms-table-export.opens-up .pms-table-export__menu {
+  top: auto;
+  bottom: calc(100% + 0.45rem);
+}
 .pms-table-tools {
   --pms-table-accent: #2F6BFF;
   --pms-table-line: rgba(47, 107, 255, 0.22);

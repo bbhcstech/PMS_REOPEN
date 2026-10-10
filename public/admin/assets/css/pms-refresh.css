@@ -2718,7 +2718,7 @@ body:has(form[action*="employees"]) h6 {
 }
 
 .employee-dashboard p,
-.employee-dashboard span:not(.badge):not(.status-dot):not(.stat-value),
+.employee-dashboard span:not(.badge):not(.status-dot):not(.stat-value):not(.employee-rule-text):not(.employee-rule-bold):not(.employee-project-client),
 .employee-dashboard label,
 .employee-dashboard td,
 .employee-dashboard th,
@@ -3164,6 +3164,46 @@ html[data-pms-theme="dark"] .employee-show-container i,
 html[data-pms-theme="dark"] body:has(form[action*="employees"]) i {
   color: var(--pms-primary-strong) !important;
   -webkit-text-fill-color: var(--pms-primary-strong) !important;
+}
+
+/* Attendance Rules & Regulations dark mode text visibility */
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode, [data-pms-theme="dark"]) .employee-dashboard .employee-rule-text,
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode, [data-pms-theme="dark"]) .employee-rule-text {
+  color: #CBD5E1 !important;
+  -webkit-text-fill-color: #CBD5E1 !important;
+  font-weight: 400 !important;
+}
+
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode, [data-pms-theme="dark"]) .employee-dashboard .employee-rule-bold,
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode, [data-pms-theme="dark"]) .employee-rule-bold {
+  color: #FFFFFF !important;
+  -webkit-text-fill-color: #FFFFFF !important;
+  font-weight: 700 !important;
+}
+
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode, [data-pms-theme="dark"]) .employee-rule i.text-warning {
+  color: #f59e0b !important;
+  -webkit-text-fill-color: #f59e0b !important;
+}
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode, [data-pms-theme="dark"]) .employee-rule i.text-primary {
+  color: #2f6bff !important;
+  -webkit-text-fill-color: #2f6bff !important;
+}
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode, [data-pms-theme="dark"]) .employee-rule i.text-danger {
+  color: #ef4444 !important;
+  -webkit-text-fill-color: #ef4444 !important;
+}
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode, [data-pms-theme="dark"]) .employee-rule i.text-info {
+  color: #22d3ee !important;
+  -webkit-text-fill-color: #22d3ee !important;
+}
+
+/* My Projects Client / Category dark mode text visibility */
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode, [data-pms-theme="dark"]) .employee-dashboard .employee-table .employee-project-client,
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode, [data-pms-theme="dark"]) .employee-table .employee-project-client,
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode, [data-pms-theme="dark"]) .employee-dashboard .employee-table td span.employee-project-client {
+  color: #EEF1FB !important;
+  -webkit-text-fill-color: #EEF1FB !important;
 }
 
 /* Final Employee UI normalization: equal cards, cleaner spacing, readable text. */

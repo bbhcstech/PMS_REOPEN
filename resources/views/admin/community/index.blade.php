@@ -51,7 +51,7 @@
     }
     .community-icon-avatar i {
         color: #ffffff !important;
-        background-color: #ffffff !important;
+        background-color: transparent !important;
         -webkit-text-fill-color: #ffffff !important;
         font-size: 1.85rem !important;
         line-height: 1 !important;
@@ -977,7 +977,7 @@
         <div class="community-header">
             <div class="community-title-box">
                 <div class="community-icon-avatar">
-                    <i class="bx bx-chat" style="color: #ffffff !important; background-color: #ffffff !important; -webkit-text-fill-color: #ffffff !important;"></i>
+                    <i class="bx bx-chat" aria-hidden="true"></i>
                 </div>
                 <div>
                     <h5 class="fw-extrabold text-dark mb-0 d-flex align-items-center gap-2">

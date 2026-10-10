@@ -104,6 +104,7 @@ class AwardController extends Controller
 
     public function create()
     {
+        abort_unless(Auth::user()?->hasModulePermission('awards', 'create'), 403);
         $employees = \App\Models\User::where('role', 'employee')->get();
         $appreciations = Appreciations::where('status', 'active')->get();
         return view('admin.awards.create', compact('employees', 'appreciations'));
@@ -111,11 +112,13 @@ class AwardController extends Controller
 
     public function appreciationCreate()
     {
+        abort_unless(Auth::user()?->hasModulePermission('awards', 'create'), 403);
         return view('admin.awards.appreciation-create');
     }
 
     public function store(Request $request)
     {
+        abort_unless(Auth::user()?->hasModulePermission('awards', 'create'), 403);
         $request->validate([
             'user_id' => 'required|exists:users,id',
             'appreciation_id' => 'required|exists:appreciations,id',
@@ -144,6 +147,7 @@ class AwardController extends Controller
 
     public function appreciationStore(Request $request)
     {
+        abort_unless(Auth::user()?->hasModulePermission('awards', 'create'), 403);
         $request->validate([
             'title' => 'required|string|max:255',
             'color_code' => 'required|string|max:7',

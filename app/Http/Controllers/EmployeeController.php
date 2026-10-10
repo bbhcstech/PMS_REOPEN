@@ -1470,34 +1470,40 @@ class EmployeeController extends Controller
         $rawEmail = (string) $request->input('email', '');
         $sanitized = trim($rawEmail);
         $sanitized = preg_replace('/^(www\.|mailto:)/i', '', $sanitized);
-        $request->merge(['email' => $sanitized]);
+        $request->merge(['email' => strtolower($sanitized)]);
 
         $request->validate([
-            'email' => 'required|email:rfc,dns',
+            'email' => 'required|email:rfc',
             'message' => 'nullable|string|max:1000'
         ]);
 
-        Log::info('Invite request received', [
-            'original'  => $rawEmail,
-            'sanitized' => $sanitized
-        ]);
+        $companyId = (int) (\App\Services\TenantScope::companyId() ?: auth()->user()?->company_id);
+        $company = $companyId ? \App\Models\Central\Company::on('central')->find($companyId) : null;
+        if (! $company) {
+            return response()->json(['message' => 'Your company workspace could not be determined. Please sign in again.'], 422);
+        }
 
-        DB::beginTransaction();
+        $email = $request->email;
+        $existing = User::query()->withoutGlobalScopes()->where('email', $email)->first();
+        if ($existing && (int) $existing->company_id !== $companyId) {
+            return response()->json(['message' => 'This email address is already used by another account.'], 422);
+        }
 
+        DB::connection('tenant')->beginTransaction();
         try {
-            $email = $request->email;
+            $user = $existing ?: User::create([
+                'name' => Str::before($email, '@'),
+                'email' => $email,
+                'company_id' => $companyId,
+                'password' => Hash::make(Str::random(32)),
+                'role' => 'employee',
+                'login_allowed' => 1,
+            ]);
+            if (! $user->company_id) {
+                $user->forceFill(['company_id' => $companyId])->save();
+            }
 
-            $user = User::firstOrCreate(
-                ['email' => $email],
-                [
-                    'name' => Str::before($email, '@'),
-                    'password' => Hash::make(Str::random(12)),
-                    'role' => 'employee',
-                    'login_allowed' => 1 // Default to allowed
-                ]
-            );
-
-            if (!$user->employeeDetail) {
+            if (! $user->employeeDetail) {
                 EmployeeDetail::create([
                     'user_id' => $user->id,
                     'status' => 'Active',
@@ -1506,81 +1512,23 @@ class EmployeeController extends Controller
                 ]);
             }
 
-            DB::commit();
+            $inviteUrl = \App\Http\Controllers\EmployeeInviteController::inviteUrl($user, $companyId);
 
-            $inviteUrl = URL::temporarySignedRoute(
-                'employees.invite.accept',
-                now()->addDays(7),
-                ['user' => $user->id]
-            );
+            // The invite is only kept when the email actually goes out.
+            Mail::to($user->email)->send(new \App\Mail\EmployeeInvite($user, $request->message, $inviteUrl, $company->name));
 
-            try {
-                Mail::to($user->email)->send(
-                    new \App\Mail\EmployeeInvite($user, $request->message, $inviteUrl)
-                );
+            DB::connection('tenant')->commit();
+            Log::info('Employee invite sent', ['to' => $user->email, 'company_id' => $companyId]);
 
-                Log::info('Invite sent via SMTP', ['to' => $user->email]);
+            return response()->json(['message' => 'Invitation sent to ' . $user->email . '. The link is valid for ' . \App\Http\Controllers\EmployeeInviteController::VALID_DAYS . ' days.']);
+        } catch (\Throwable $e) {
+            DB::connection('tenant')->rollBack();
+            Log::error('Employee invite failed', ['email' => $email, 'error' => $e->getMessage()]);
 
-                return response()->json(['message' => 'Invite sent successfully']);
-            } catch (\Exception $e) {
-                Log::error('SMTP email failed', ['error' => $e->getMessage()]);
-                return response()->json([
-                    'message' => 'Invite created but email sending failed',
-                    'error' => $e->getMessage()
-                ], 500);
-            }
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Invite error', ['error' => $e->getMessage()]);
             return response()->json([
-                'message' => 'Error sending invite',
-                'error' => $e->getMessage()
+                'message' => 'The invitation email could not be sent, so no invite was created. Please check the mail settings and try again.',
             ], 500);
         }
-    }
-
-    /**
-     * Accept invite view.
-     */
-    public function acceptInvite(Request $request)
-    {
-        $user = User::with('employeeDetail')->findOrFail($request->user);
-
-        return view('auth.employee-invite-accept', compact('user'));
-    }
-
-    /**
-     * Accept invite submit.
-     */
-    public function acceptInviteSubmit(Request $request)
-    {
-        $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'name' => 'required',
-            'password' => 'required|min:9|confirmed'
-        ]);
-
-        $user = User::findOrFail($request->user_id);
-        abort_if($user->company_staff_role_id, 403, 'This account is managed by its company admin.');
-        $user->update([
-            'name' => $request->name,
-            'password' => Hash::make($request->password)
-        ]);
-
-        $detail = $user->employeeDetail;
-        $detail->status = 'Active';
-
-        if (empty($detail->employee_id)) {
-            // computeNextEmployeeIdWithLock is transactional internally now
-            $detail->employee_id = $this->computeNextEmployeeIdWithLock();
-        }
-
-        $detail->save();
-
-        Auth::login($user);
-
-        return redirect()->route('dashboard')->with('success', 'Account activated.');
     }
 
     /**

@@ -658,9 +658,6 @@
                                         @if(in_array($userRole, ['admin', 'hr', 'manager']))
                                              <option value="manager" {{ request('role_type') === 'manager' ? 'selected' : '' }}>Manager Database</option>
                                         @endif
-                                        @if($userRole === 'admin')
-                                             <option value="admin" {{ request('role_type') === 'admin' ? 'selected' : '' }}>Admin Database</option>
-                                        @endif
                                     </select>
                                 </div>
                                 <div class="col-md-1">

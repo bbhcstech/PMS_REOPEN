@@ -168,7 +168,7 @@
         '<button class="pms-table-export__toggle" type="button" aria-haspopup="menu" aria-expanded="false">' +
           icon('download') + '<span>Export</span>' + icon('chevron') +
         '</button>' +
-        '<div class="pms-table-export__menu" role="menu">' +
+        '<div class="pms-table-export__menu" role="menu" popover="manual">' +
           '<button class="pms-table-export__option" type="button" role="menuitem" data-export-scope="all">' + icon('rows') + '<span>Export all</span></button>' +
           '<button class="pms-table-export__option" type="button" role="menuitem" data-export-scope="selected">' + icon('download') + '<span>Export selected</span></button>' +
         '</div>' +
@@ -196,6 +196,20 @@
     var toolbarHost = toolbarHostId ? document.getElementById(toolbarHostId) : null;
     if (toolbarHost) toolbarHost.appendChild(toolbar);
     else if (parent) parent.insertBefore(toolbar, anchor);
+    // Place the controls outside clipping cards rather than inside their overflow area.
+    if (!toolbarHost) {
+      var clippingCard = null;
+      var ancestor = toolbar.parentElement;
+      while (ancestor && ancestor !== document.body && !ancestor.matches('.content-wrapper, .container, .container-fluid, .container-xxl, .employee-dashboard')) {
+        var overflow = window.getComputedStyle(ancestor);
+        if (/(hidden|clip|auto|scroll)/.test(overflow.overflow + ' ' + overflow.overflowY)) clippingCard = ancestor;
+        ancestor = ancestor.parentElement;
+      }
+      if (clippingCard && clippingCard.parentNode) {
+        clippingCard.parentNode.insertBefore(toolbar, clippingCard);
+        toolbar.classList.add('pms-table-tools--outside');
+      }
+    }
     controller.toolbar = toolbar;
   }
 
@@ -428,6 +442,8 @@
     var exportBox = controller.toolbar.querySelector('.pms-table-export');
     var toggle = controller.toolbar.querySelector('.pms-table-export__toggle');
     if (exportBox) exportBox.classList.remove('is-open');
+    var menu = controller.toolbar.querySelector('.pms-table-export__menu');
+    if (menu && typeof menu.hidePopover === 'function' && menu.matches(':popover-open')) menu.hidePopover();
     if (toggle) toggle.setAttribute('aria-expanded', 'false');
   }
 
@@ -484,11 +500,31 @@
         var isOpen = !exportBox.classList.contains('is-open');
         document.querySelectorAll('.pms-table-export.is-open').forEach(function (openMenu) {
           openMenu.classList.remove('is-open');
+          var popup = openMenu.querySelector('.pms-table-export__menu');
+          if (popup && typeof popup.hidePopover === 'function' && popup.matches(':popover-open')) popup.hidePopover();
           var openToggle = openMenu.querySelector('.pms-table-export__toggle');
           if (openToggle) openToggle.setAttribute('aria-expanded', 'false');
         });
         exportBox.classList.toggle('is-open', isOpen);
+        var toggleRect = toggle.getBoundingClientRect();
+        exportBox.classList.toggle('opens-up', window.innerHeight - toggleRect.bottom < 140 && toggleRect.top > 140);
         toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        var popupMenu = exportBox.querySelector('.pms-table-export__menu');
+        if (isOpen && popupMenu) {
+          // Native popovers render above overflow and stacking contexts while retaining event handlers.
+          if (typeof popupMenu.showPopover === 'function') popupMenu.showPopover();
+          popupMenu.style.setProperty('position', 'fixed', 'important');
+          popupMenu.style.setProperty('margin', '0', 'important');
+          popupMenu.style.setProperty('right', 'auto', 'important');
+          popupMenu.style.setProperty('bottom', 'auto', 'important');
+          popupMenu.style.setProperty('max-width', 'calc(100vw - 16px)', 'important');
+          var popupBounds = popupMenu.getBoundingClientRect();
+          var popupLeft = Math.max(8, Math.min(toggleRect.right - popupBounds.width, window.innerWidth - popupBounds.width - 8));
+          var popupTop = toggleRect.bottom + 8;
+          if (popupTop + popupBounds.height > window.innerHeight - 8) popupTop = toggleRect.top - popupBounds.height - 8;
+          popupMenu.style.setProperty('left', popupLeft + 'px', 'important');
+          popupMenu.style.setProperty('top', Math.max(8, popupTop) + 'px', 'important');
+        }
         var isDarkClick = isDarkMode();
         if (isDarkClick) {
           var tSpan = toggle.querySelector('span');
@@ -654,6 +690,8 @@
       if (event.target.closest('.pms-table-export')) return;
       document.querySelectorAll('.pms-table-export.is-open').forEach(function (menu) {
         menu.classList.remove('is-open');
+        var popup = menu.querySelector('.pms-table-export__menu');
+        if (popup && typeof popup.hidePopover === 'function' && popup.matches(':popover-open')) popup.hidePopover();
         var toggle = menu.querySelector('.pms-table-export__toggle');
         if (toggle) toggle.setAttribute('aria-expanded', 'false');
       });
@@ -663,6 +701,8 @@
       if (event.key !== 'Escape') return;
       document.querySelectorAll('.pms-table-export.is-open').forEach(function (menu) {
         menu.classList.remove('is-open');
+        var popup = menu.querySelector('.pms-table-export__menu');
+        if (popup && typeof popup.hidePopover === 'function' && popup.matches(':popover-open')) popup.hidePopover();
         var toggle = menu.querySelector('.pms-table-export__toggle');
         if (toggle) {
           toggle.setAttribute('aria-expanded', 'false');

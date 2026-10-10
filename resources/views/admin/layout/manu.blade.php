@@ -2128,12 +2128,14 @@
                   <li class="menu-item {{ request()->routeIs('reports.finance') ? 'active' : '' }}">
                     <a href="{{ route('reports.finance') }}" class="menu-link">
                       <div class="text-truncate">Finance Report</div>
+                      <span class="badge rounded-pill ms-auto" style="background: rgba(245, 158, 11, 0.18); color: #B45309; font-size: 0.62rem; font-weight: 800;">Soon</span>
                     </a>
                   </li>
 
                   <li class="menu-item {{ request()->routeIs('reports.income-vs-expense') ? 'active' : '' }}">
                     <a href="{{ route('reports.income-vs-expense') }}" class="menu-link">
                       <div class="text-truncate">Income Vs Expense</div>
+                      <span class="badge rounded-pill ms-auto" style="background: rgba(245, 158, 11, 0.18); color: #B45309; font-size: 0.62rem; font-weight: 800;">Soon</span>
                     </a>
                   </li>
 
@@ -2152,6 +2154,7 @@
                   <li class="menu-item {{ request()->routeIs('reports.expense') ? 'active' : '' }}">
                     <a href="{{ route('reports.expense') }}" class="menu-link">
                       <div class="text-truncate">Expense Report</div>
+                      <span class="badge rounded-pill ms-auto" style="background: rgba(245, 158, 11, 0.18); color: #B45309; font-size: 0.62rem; font-weight: 800;">Soon</span>
                     </a>
                   </li>
 

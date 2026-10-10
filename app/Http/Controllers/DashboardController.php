@@ -639,7 +639,9 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
         $projects = $myProjects;
         $tasks = $myTasks;
 
+        $dashboardStatusCharts = app(\App\Services\EmployeeDashboardCharts::class)->forUser($user);
         return view('employee-dashboard', compact(
+            'dashboardStatusCharts',
             'employeeTimezone',
             'user',
             'projects',

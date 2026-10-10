@@ -900,6 +900,18 @@
     .employee-chart.small {
         min-height: 220px;
     }
+    .dashboard-status-chart { --chart-center: #fff; --chart-label: #64748b; padding: 12px 0; }
+    .dashboard-status-ring { width: 190px; height: 190px; border-radius: 50%; margin: 0 auto 24px; display: grid; place-items: center; }
+    .dashboard-status-center { width: 132px; height: 132px; border-radius: 50%; background: var(--chart-center); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .dashboard-status-center strong { font-size: 1.8rem; line-height: 1.2; color: var(--employee-text, #172033); }
+    .dashboard-status-center span { font-size: 0.75rem; color: var(--chart-label); margin-top: 5px; }
+    .dashboard-status-legend { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+    .dashboard-status-legend li { display: grid; grid-template-columns: 10px minmax(0, 1fr) auto 48px; align-items: center; gap: 10px; font-size: 0.82rem; }
+    .dashboard-status-dot { width: 9px; height: 9px; border-radius: 50%; }
+    .dashboard-status-legend small { color: var(--chart-label); text-align: right; }
+    .dashboard-status-empty { min-height: 220px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; text-align: center; }
+    .dashboard-status-empty span { color: var(--chart-label); font-size: 0.82rem; }
+    :is([data-pms-theme="dark"], [data-theme="dark"], [data-bs-theme="dark"], .dark, .dark-mode) .dashboard-status-chart { --chart-center: #10152f; --chart-label: #a5b4ce; --employee-text: #eef1fb; color: #eef1fb; }
 
     .employee-status-grid {
         display: grid;
@@ -1134,6 +1146,50 @@
         color: #9AA3C7 !important;
     }
 
+    /* My Projects table: progress column (status + % above a full-width bar) and readable client text. */
+    .employee-table td.employee-project-progress > .d-flex { gap: 10px; }
+    .employee-table td.employee-project-progress .progress {
+        display: flex !important;
+        width: 100% !important;
+        height: 6px !important;
+        overflow: hidden;
+        border-radius: 999px;
+        background: rgba(148, 163, 184, 0.28) !important;
+    }
+    .employee-table td.employee-project-progress .progress-bar { border-radius: 999px; }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"]) body .employee-table td.employee-project-progress .progress,
+    html body.dark-mode .employee-table td.employee-project-progress .progress { background: rgba(148, 163, 184, 0.22) !important; }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode, [data-pms-theme="dark"]) .employee-table .employee-project-client,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode, [data-pms-theme="dark"]) .employee-dashboard .employee-table .employee-project-client,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode, [data-pms-theme="dark"]) .employee-table td.employee-project-progress small {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+        opacity: 1 !important;
+    }
+    /* Summary Attendance counts (Present, Absent, ...): dimmed by theme-wide text-fill rules in dark mode. */
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"]) body .employee-status-grid .employee-status-chip > span:last-child,
+    html body.dark-mode .employee-status-grid .employee-status-chip > span:last-child {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+        opacity: 1 !important;
+        font-weight: 800;
+    }
+
+    /* Designation / Department labels and values: theme-wide text-fill rules dimmed them in dark mode. */
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"]) body .employee-profile-meta .employee-profile-meta-item span,
+    html body.dark-mode .employee-profile-meta .employee-profile-meta-item span {
+        color: #B4BEDF !important;
+        -webkit-text-fill-color: #B4BEDF !important;
+        opacity: 1 !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"]) body .employee-profile-meta .employee-profile-meta-item strong,
+    html body.dark-mode .employee-profile-meta .employee-profile-meta-item strong {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+        opacity: 1 !important;
+    }
+
     html[data-pms-theme="dark"] .employee-quick-action,
     body[data-pms-theme="dark"] .employee-quick-action,
     [data-pms-theme="dark"] .employee-quick-action {
@@ -1163,22 +1219,18 @@
         color: #ffffff !important;
     }
 
-    html[data-pms-theme="dark"] .employee-rule *,
-    body[data-pms-theme="dark"] .employee-rule *,
-    [data-pms-theme="dark"] .employee-rule *,
-    body.dark .employee-rule *,
-    html.dark .employee-rule *,
-    [data-bs-theme="dark"] .employee-rule *,
-    .dark .employee-rule *,
-    .dark-mode .employee-rule *,
-    html[data-pms-theme="dark"] .employee-rule span,
-    body[data-pms-theme="dark"] .employee-rule span,
-    [data-pms-theme="dark"] .employee-rule span,
-    body.dark .employee-rule span,
-    html.dark .employee-rule span,
-    [data-bs-theme="dark"] .employee-rule span,
-    .dark .employee-rule span,
-    .dark-mode .employee-rule span,
+    html[data-pms-theme="dark"] .employee-rule .employee-rule-text,
+    body[data-pms-theme="dark"] .employee-rule .employee-rule-text,
+    [data-pms-theme="dark"] .employee-rule .employee-rule-text,
+    body.dark .employee-rule .employee-rule-text,
+    html.dark .employee-rule .employee-rule-text,
+    [data-bs-theme="dark"] .employee-rule .employee-rule-text,
+    .dark .employee-rule .employee-rule-text,
+    .dark-mode .employee-rule .employee-rule-text,
+    html[data-pms-theme="dark"] .employee-dashboard .employee-rule-text,
+    body[data-pms-theme="dark"] .employee-dashboard .employee-rule-text,
+    [data-pms-theme="dark"] .employee-dashboard .employee-rule-text,
+    body.dark-mode .employee-dashboard .employee-rule-text,
     html[data-pms-theme="dark"] .employee-rule-text,
     body[data-pms-theme="dark"] .employee-rule-text,
     [data-pms-theme="dark"] .employee-rule-text,
@@ -1186,7 +1238,24 @@
     html.dark .employee-rule-text,
     [data-bs-theme="dark"] .employee-rule-text,
     .dark .employee-rule-text,
-    .dark-mode .employee-rule-text,
+    .dark-mode .employee-rule-text {
+        color: #CBD5E1 !important;
+        -webkit-text-fill-color: #CBD5E1 !important;
+        font-weight: 400 !important;
+    }
+
+    html[data-pms-theme="dark"] .employee-rule .employee-rule-bold,
+    body[data-pms-theme="dark"] .employee-rule .employee-rule-bold,
+    [data-pms-theme="dark"] .employee-rule .employee-rule-bold,
+    body.dark .employee-rule .employee-rule-bold,
+    html.dark .employee-rule .employee-rule-bold,
+    [data-bs-theme="dark"] .employee-rule .employee-rule-bold,
+    .dark .employee-rule .employee-rule-bold,
+    .dark-mode .employee-rule .employee-rule-bold,
+    html[data-pms-theme="dark"] .employee-dashboard .employee-rule-bold,
+    body[data-pms-theme="dark"] .employee-dashboard .employee-rule-bold,
+    [data-pms-theme="dark"] .employee-dashboard .employee-rule-bold,
+    body.dark-mode .employee-dashboard .employee-rule-bold,
     html[data-pms-theme="dark"] .employee-rule strong,
     body[data-pms-theme="dark"] .employee-rule strong,
     [data-pms-theme="dark"] .employee-rule strong,
@@ -1204,7 +1273,25 @@
     .dark .employee-rule-bold,
     .dark-mode .employee-rule-bold {
         color: #ffffff !important;
-        font-weight: 600 !important;
+        -webkit-text-fill-color: #ffffff !important;
+        font-weight: 700 !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode, [data-pms-theme="dark"]) .employee-rule i.text-warning {
+        color: #f59e0b !important;
+        -webkit-text-fill-color: #f59e0b !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode, [data-pms-theme="dark"]) .employee-rule i.text-primary {
+        color: #2f6bff !important;
+        -webkit-text-fill-color: #2f6bff !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode, [data-pms-theme="dark"]) .employee-rule i.text-danger {
+        color: #ef4444 !important;
+        -webkit-text-fill-color: #ef4444 !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode, [data-pms-theme="dark"]) .employee-rule i.text-info {
+        color: #22d3ee !important;
+        -webkit-text-fill-color: #22d3ee !important;
     }
 
     html[data-pms-theme="dark"] .employee-status-chip,
@@ -1271,6 +1358,14 @@
     body[data-pms-theme="dark"] .clock-camera-footer,
     [data-pms-theme="dark"] .clock-camera-footer {
         border-color: rgba(238, 241, 251, 0.1) !important;
+    }
+    :is([data-pms-theme="dark"], [data-theme="dark"], [data-bs-theme="dark"], .dark, .dark-mode) .employee-calendar-list .employee-calendar-row > span:first-child {
+        color: #eef1fb !important;
+        -webkit-text-fill-color: #eef1fb !important;
+    }
+    :is([data-pms-theme="dark"], [data-theme="dark"], [data-bs-theme="dark"], .dark, .dark-mode) .employee-joinings-anniversaries .employee-people-item > span {
+        color: #eef1fb !important;
+        -webkit-text-fill-color: #eef1fb !important;
     }
 </style>
 
@@ -1629,7 +1724,7 @@
                             <h3 class="employee-card-title">Tasks Pie Chart</h3>
                             <span class="employee-icon primary"><i class="bx bx-task"></i></span>
                         </div>
-                        <div id="employeeTaskChart" class="employee-chart small"></div>
+                        <div id="employeeTaskChart" class="employee-chart small">@include('partials.dashboard-status-chart', ['counts' => $dashboardStatusCharts['tasks'] ?? [], 'subject' => 'tasks'])</div>
                     </div>
                 </div>
                 <div class="col-xl-4 col-lg-6">
@@ -1638,7 +1733,7 @@
                             <h3 class="employee-card-title">Projects Pie Chart</h3>
                             <span class="employee-icon success"><i class="bx bx-briefcase"></i></span>
                         </div>
-                        <div id="employeeProjectChart" class="employee-chart small"></div>
+                        <div id="employeeProjectChart" class="employee-chart small">@include('partials.dashboard-status-chart', ['counts' => $dashboardStatusCharts['projects'] ?? [], 'subject' => 'projects'])</div>
                     </div>
                 </div>
                 <div class="col-xl-4 col-lg-12">
@@ -1647,7 +1742,7 @@
                             <h3 class="employee-card-title">Tickets Pie Chart</h3>
                             <span class="employee-icon warning"><i class="bx bx-support"></i></span>
                         </div>
-                        <div id="employeeTicketChart" class="employee-chart small"></div>
+                        <div id="employeeTicketChart" class="employee-chart small">@include('partials.dashboard-status-chart', ['counts' => $dashboardStatusCharts['tickets'] ?? [], 'subject' => 'tickets'])</div>
                     </div>
                 </div>
             </div>
@@ -1693,7 +1788,7 @@
                 <div class="employee-card-header d-flex justify-content-between align-items-center mb-3">
                     <div>
                         <h3 class="employee-card-title mb-1"><i class="bx bx-folder-open text-primary me-2"></i>My Projects</h3>
-                        <p class="employee-muted mb-0">Overview of all assigned projects. Click the action menu (Ã¢â€¹Â®) to view and edit your tasks.</p>
+                        <p class="employee-muted mb-0">Overview of all assigned projects. Click the action menu (⋮) to view and edit your tasks.</p>
                     </div>
                     <span class="badge bg-primary rounded-pill px-3 py-2 fs-6">{{ ($myProjects ?? collect())->count() }} Projects</span>
                 </div>
@@ -1738,7 +1833,7 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <span class="text-dark">{{ $project->client->company_name ?? ($project->client->name ?? 'Internal Project') }}</span>
+                                        <span class="text-dark employee-project-client">{{ $project->client->company_name ?? ($project->client->name ?? 'Internal Project') }}</span>
                                     </td>
                                     <td>
                                         <small class="d-block text-muted">
@@ -1748,7 +1843,7 @@
                                             <i class="bx bx-flag me-1 text-danger"></i>{{ $project->deadline ? Carbon::parse($project->deadline)->format('d M, Y') : 'No Deadline' }}
                                         </small>
                                     </td>
-                                    <td style="min-width: 170px;">
+                                    <td class="employee-project-progress" style="min-width: 170px;">
                                         <div class="d-flex align-items-center justify-content-between mb-1">
                                             <span class="badge {{ $projStatusClass }} text-capitalize" style="font-size: 0.75rem;">
                                                 {{ $project->status ?? 'Not Started' }}
@@ -2014,6 +2109,7 @@
                             <h3 class="employee-card-title">Joinings & Anniversaries</h3>
                             <span class="employee-icon danger"><i class="bx bx-party"></i></span>
                         </div>
+                        <div class="employee-joinings-anniversaries">
                         <p class="fw-bold mb-2">Today's Joinings</p>
                         @forelse($todaysJoinings as $emp)
                             <div class="employee-people-item"><span>{{ $emp->user->name ?? 'N/A' }}</span></div>
@@ -2023,10 +2119,11 @@
 
                         <p class="fw-bold mt-3 mb-2">Work Anniversaries</p>
                         @forelse($workAnniversaries as $emp)
-                            <div class="employee-people-item"><span>{{ $emp->user->name ?? 'N/A' }}</span><strong>{{ Carbon::parse($emp->joining_date)->diffInYears() }} year(s)</strong></div>
+                            <div class="employee-people-item"><span>{{ $emp->user->name ?? 'N/A' }}</span><strong>{{ number_format(Carbon::parse($emp->joining_date)->diffInYears(), 3, '.', '') }} year(s)</strong></div>
                         @empty
                             <p class="employee-empty">No record found.</p>
                         @endforelse
+                        </div>
                     </div>
                 </div>
             </div>
@@ -2921,7 +3018,7 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
 
         const renderChart = (selector, options) => {
             const element = document.querySelector(selector);
-            if (!element) {
+            if (!element || element.querySelector('.dashboard-status-chart')) {
                 return;
             }
 

@@ -46,7 +46,7 @@
     let busy = false, stopped = false, timer, failures = 0;
     // .alert-dismissible: one-time flash messages exist only in the page after a save; the refreshed copy has none,
     // so they must never take part in positional matching (that shifted every following block into its neighbour).
-    const protect = 'input, select, textarea, button, script, style, link, canvas, iframe, [contenteditable], [data-live-chat], [data-live-preserve], .alert-dismissible, .modal, .modal-backdrop, .modal-overlay, .drawer-overlay, .offcanvas, .pms-table-select, .select2-container, .dataTables_wrapper, .pms-table-tools, [role="tablist"]';
+    const protect = 'input, select, textarea, button, script, style, link, canvas, .apexcharts-canvas, .fc, iframe, [contenteditable], [data-live-chat], [data-live-preserve], .alert-dismissible, .modal, .modal-backdrop, .modal-overlay, .drawer-overlay, .offcanvas, .pms-table-select, .select2-container, .dataTables_wrapper, .pms-table-tools, [role="tablist"]';
     function key(node) {
         if (node.nodeType !== 1) return null;
         if (node.id) return node.tagName + '#' + node.id;

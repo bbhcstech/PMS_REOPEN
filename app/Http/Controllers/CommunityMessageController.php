@@ -338,9 +338,7 @@ class CommunityMessageController extends Controller
         $msg = CommunityMessage::forTenant($companyId)->findOrFail($id);
 
         $isOwner = ($msg->user_id === $user->id);
-        $canManage = $this->canManage();
-
-        if (!$isOwner && !$canManage) {
+        if (! $this->canDeleteMessage($msg, $user)) {
             return response()->json([
                 'success' => false,
                 'error' => 'You do not have permission to delete this message.'
@@ -484,8 +482,18 @@ class CommunityMessageController extends Controller
             'date_group' => $msg->formatted_date,
             'created_at_iso' => $msg->created_at ? $msg->created_at->toIso8601String() : '',
             'can_edit' => ($currentUser && $msg->user_id === $currentUser->id && !$isDeleted),
-            'can_delete' => ($currentUser && ($msg->user_id === $currentUser->id || $this->canManage()) && !$isDeleted),
+            'can_delete' => $this->canDeleteMessage($msg, $currentUser),
         ];
+    }
+
+    private function canDeleteMessage(CommunityMessage $message, ?User $user): bool
+    {
+        if (! $user || $message->trashed() || (int) $message->company_id !== (int) $user->company_id) {
+            return false;
+        }
+
+        return (int) $message->user_id === (int) $user->id
+            || \App\Services\WorkforceAccess::isAdmin($user);
     }
 
     /**

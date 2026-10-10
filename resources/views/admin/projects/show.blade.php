@@ -438,33 +438,14 @@
                         <div class="d-flex align-items-center gap-2">
                             <div class="header-icon"><i class="fas fa-wallet"></i></div>
                             <h2>Expenses</h2>
-                            <span class="badge bg-light text-dark fw-bold border ms-1">₹{{ number_format($totalExpenses, 2) }}</span>
+                            <span class="badge bg-warning-subtle text-warning-emphasis fw-bold border ms-1">Coming soon</span>
                         </div>
-                        <a href="{{ route('expenses.index', $project->id) }}" class="feature-view-all">
-                            View All <i class="fas fa-arrow-right ms-1"></i>
-                        </a>
                     </div>
                     <div class="overview-card-body">
-                        <div class="mini-item-list">
-                            @forelse($project->expenses ? $project->expenses->sortByDesc('id')->take(3) : [] as $exp)
-                                <div class="mini-list-row">
-                                    <div class="overflow-hidden">
-                                        <strong class="d-block small text-dark text-truncate" title="{{ $exp->item_name }}">{{ $exp->item_name }}</strong>
-                                        <small class="text-muted" style="font-size: 0.72rem;">{{ $exp->purchase_date ? \Carbon\Carbon::parse($exp->purchase_date)->format('d M Y') : '' }}</small>
-                                    </div>
-                                    <div class="text-end flex-shrink-0">
-                                        <strong class="text-dark small">₹{{ number_format($exp->price, 2) }}</strong>
-                                        <span class="badge {{ $exp->status === 'approved' ? 'bg-success' : 'bg-secondary' }} d-block mt-1" style="font-size: 0.65rem;">
-                                            {{ ucfirst($exp->status) }}
-                                        </span>
-                                    </div>
-                                </div>
-                            @empty
-                                <div class="empty-feature text-center py-3">
-                                    <i class="fas fa-wallet text-muted fa-2x mb-1"></i>
-                                    <p class="text-muted mb-0 small">No project expenses recorded yet.</p>
-                                </div>
-                            @endforelse
+                        {{-- Finance features are not released yet (see FinanceComingSoon middleware). --}}
+                        <div class="empty-feature text-center py-3">
+                            <i class="fas fa-wallet text-muted fa-2x mb-1"></i>
+                            <p class="text-muted mb-0 small">Project expenses are coming soon. This finance section is not developed yet.</p>
                         </div>
                     </div>
                 </div>

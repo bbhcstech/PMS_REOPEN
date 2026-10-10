@@ -197,7 +197,7 @@
                 <div class="modal-header">
                     <h5 class="modal-title">
                         <i class="fas fa-paper-plane me-2"></i>
-                        Invite to Xinksoft Technologies
+                        Invite to {{ session('current_company_name') ?: (auth()->user()?->company?->name ?? config('app.name')) }}
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -230,7 +230,7 @@
                                     <label class="form-label fw-bold">Email Address <span class="text-danger">*</span></label>
                                     <div class="input-group">
                                         <span class="input-group-text"><i class="fas fa-at"></i></span>
-                                        <input type="email" name="email" id="inviteEmail" class="form-control" placeholder="e.g. johndoe@xinksoft.com" required>
+                                        <input type="email" name="email" id="inviteEmail" class="form-control" placeholder="e.g. name@example.com" autocomplete="email" required>
                                     </div>
                                 </div>
                                 <div class="mb-4">
@@ -258,7 +258,7 @@
                                     <label class="list-group-item border-0 bg-light mt-2">
                                         <input class="form-check-input me-2" type="radio" name="linkOption" id="domainEmail">
                                         <span class="fw-medium">Restrict to company domain</span>
-                                        <small class="text-muted d-block mt-1">Only @xinksoft.com emails allowed</small>
+                                        <small class="text-muted d-block mt-1">Only your company email domain is allowed</small>
                                     </label>
                                 </div>
                             </div>
@@ -468,7 +468,7 @@
                 </div>
             </div>
             <div class="table-actions !flex !w-full !flex-wrap !items-center !gap-2 sm:!w-auto sm:!justify-end">
-                <button id="btn-bulk-delete" class="btn btn-bulk-delete !justify-center" disabled>
+                <button id="btn-bulk-delete" class="btn btn-bulk-delete is-awaiting-selection !justify-center" aria-disabled="true" title="Select inactive employees to archive">
                     <i class="fas fa-box-archive me-2"></i>Archive Inactive
                 </button>
             </div>
@@ -1413,6 +1413,83 @@
     .btn-bulk-delete:disabled {
         opacity: 0.5;
         cursor: not-allowed;
+    }
+
+    /* Invite modal: solid panel (the page showed through) and an email field that stays on one row. */
+    #inviteModal .modal-content {
+        background: #ffffff !important;
+        opacity: 1 !important;
+        backdrop-filter: none !important;
+        border: 1px solid rgba(47, 107, 255, 0.14) !important;
+        border-radius: 18px !important;
+        box-shadow: 0 24px 60px rgba(15, 23, 42, 0.25) !important;
+    }
+    #inviteModal .input-group {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        align-items: stretch !important;
+    }
+    #inviteModal .input-group > .input-group-text {
+        flex: 0 0 auto !important;
+        width: auto !important;
+    }
+    #inviteModal .input-group > .form-control {
+        flex: 1 1 auto !important;
+        width: 1% !important;
+        min-width: 0 !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"]) #inviteModal .modal-content,
+    html body.dark-mode #inviteModal .modal-content {
+        background: #0F1530 !important;
+        border-color: rgba(96, 165, 250, 0.22) !important;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55) !important;
+    }
+
+    /* Archive Inactive with nothing selected: looks inactive but still explains itself when tapped. */
+    .employee-dashboard .btn-bulk-delete.is-awaiting-selection { opacity: 0.6; }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"]) .employee-dashboard .btn-bulk-delete.is-awaiting-selection {
+        opacity: 0.65 !important;
+        background: rgba(239, 68, 68, 0.18) !important;
+        border-color: rgba(248, 113, 113, 0.3) !important;
+    }
+
+    /* Mobile cards: the row checkbox must be clearly visible and large enough to tap. */
+    @media (max-width: 768px) {
+        .employee-dashboard #employeeTable tbody tr > td[data-pms-selection-column] {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: flex-start !important;
+            width: auto !important;
+            max-width: none !important;
+            min-width: 0 !important;
+            min-height: 36px;
+            padding: 4px 0 !important;
+            background: transparent !important;
+            border: 0 !important;
+            box-shadow: none !important;
+        }
+        .employee-dashboard #employeeTable tbody tr > td[data-pms-selection-column] .form-check {
+            margin: 0 !important;
+            padding: 0 !important;
+            min-height: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+        }
+        html body .employee-dashboard #employeeTable tbody tr > td[data-pms-selection-column] input.employee-checkbox {
+            float: none !important;
+            width: 24px !important;
+            height: 24px !important;
+            min-width: 24px !important;
+            margin: 0 !important;
+            border: 2px solid #64748B !important;
+            border-radius: 6px !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+        :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"]) body .employee-dashboard #employeeTable tbody tr > td[data-pms-selection-column] input.employee-checkbox:not(:checked) {
+            background-color: #0F1530 !important;
+            border-color: #93C5FD !important;
+        }
     }
 
     /* Table Styles */
@@ -4531,6 +4608,77 @@
         color: #334155 !important;
         -webkit-text-fill-color: #334155 !important;
     }
+    /* Mobile employee cards override desktop column sizing and utility widths. */
+    @media (max-width: 768px) {
+        .employee-dashboard { padding: 12px !important; }
+        .employee-dashboard .table-card > .table-responsive { padding: 12px; }
+        .employee-dashboard #employeeTable,
+        .employee-dashboard #employeeTable tbody {
+            display: block !important;
+            width: 100% !important;
+            min-width: 0 !important;
+            max-width: 100% !important;
+        }
+        .employee-dashboard #employeeTable thead { display: none !important; }
+        .employee-dashboard #employeeTable tbody tr {
+            display: grid !important;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 0 12px;
+            width: 100% !important;
+            height: auto !important;
+            margin: 0 0 12px !important;
+            padding: 12px !important;
+            border-radius: 14px;
+        }
+        .employee-dashboard #employeeTable tbody tr > td {
+            display: block !important;
+            grid-column: 1 / -1;
+            width: auto !important;
+            min-width: 0 !important;
+            max-width: 100% !important;
+            height: auto !important;
+            padding: 9px 0 !important;
+            text-align: left !important;
+            white-space: normal !important;
+            overflow-wrap: anywhere;
+            border: 0 !important;
+        }
+        .employee-dashboard #employeeTable tbody tr > td::before {
+            position: static !important;
+            display: block;
+            width: auto !important;
+            margin-bottom: 4px;
+            font-size: 0.7rem;
+            color: var(--emp-designation-color, #64748b) !important;
+            -webkit-text-fill-color: var(--emp-designation-color, #64748b) !important;
+        }
+        .employee-dashboard #employeeTable tbody tr > td:first-child:not([colspan]) {
+            grid-column: 1;
+            grid-row: 1;
+            padding: 0 !important;
+        }
+        .employee-dashboard #employeeTable tbody tr > td:last-child:not([colspan]) {
+            grid-column: 2;
+            grid-row: 1;
+            padding: 0 !important;
+            text-align: right !important;
+        }
+        .employee-dashboard #employeeTable td:first-child::before,
+        .employee-dashboard #employeeTable td:last-child::before { display: none; }
+        .employee-dashboard #employeeTable .employee-info { width: 100%; min-width: 0; }
+        .employee-dashboard #employeeTable .profile-image,
+        .employee-dashboard #employeeTable .profile-placeholder { flex-shrink: 0; }
+        .employee-dashboard #employeeTable .employee-name,
+        .employee-dashboard #employeeTable .employee-designation,
+        .employee-dashboard #employeeTable .email-link {
+            white-space: normal !important;
+            overflow-wrap: anywhere;
+        }
+        .employee-dashboard #employeeTable .profile-initials {
+            color: #2F6BFF !important;
+            -webkit-text-fill-color: #2F6BFF !important;
+        }
+    }
 </style>
 
 {{-- JavaScript - COMPLETELY UNCHANGED FUNCTIONALITY --}}
@@ -4627,7 +4775,8 @@ $(document).ready(function () {
             $(btn).prop('disabled', selectedCount === 0);
         });
 
-        $('#btn-bulk-delete').prop('disabled', selectedCount === 0);
+        // Stays tappable with no selection so the button explains what to do (a disabled button gave no feedback on mobile).
+        $('#btn-bulk-delete').toggleClass('is-awaiting-selection', selectedCount === 0).attr('aria-disabled', selectedCount === 0 ? 'true' : 'false');
         $('tbody tr').removeClass('selected');
         $('.employee-checkbox:checked:not(:disabled)').closest('tr').addClass('selected');
     }
@@ -4768,7 +4917,7 @@ $(document).ready(function () {
         let skippedCount = selectedEmployees.length - selectedIds.length;
 
         if (!selectedEmployees.length) {
-            alert('Please select at least one employee.');
+            alert('Select the inactive employees to archive first: tick their checkboxes (or tap their rows), then press Archive Inactive.');
             return;
         }
 
@@ -4839,7 +4988,7 @@ $(document).ready(function () {
     // Share link
     $('#shareLinkBtn').on('click', function() {
         const link = $('#inviteLink').val();
-        window.location.href = `mailto:?subject=Join Xinksoft Technologies&body=${encodeURIComponent(link)}`;
+        window.location.href = `mailto:?subject=${encodeURIComponent(@json('Join ' . (session('current_company_name') ?: config('app.name'))))}&body=${encodeURIComponent(link)}`;
     });
 
     // Blocked delete
@@ -4859,14 +5008,12 @@ $(document).ready(function () {
     updateSelectAllCheckbox();
 
     // Mobile labels
-    if ($(window).width() < 768) {
-        $('#employeeTable thead th').each(function(index) {
+    $('#employeeTable thead th').each(function(index) {
             const headerText = $(this).text().trim();
             $('#employeeTable tbody tr').each(function() {
-                $(this).find('td').eq(index).attr('data-label', headerText);
+                $(this).find('td:not([colspan])').eq(index).attr('data-label', headerText);
             });
-        });
-    }
+    });
 });
 </script>
 

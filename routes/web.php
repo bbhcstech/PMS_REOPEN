@@ -801,11 +801,7 @@ Route::middleware(['auth', 'module.access'])->group(function () {
 
 
     // Employee invites
-    Route::get('employees/invite/accept', [EmployeeController::class, 'acceptInvite'])
-        ->name('employees.invite.accept')
-        ->middleware('signed');
-    Route::post('employees/invite/accept', [EmployeeController::class, 'acceptInviteSubmit'])
-        ->name('employees.invite.complete');
+    // Employee invite acceptance is public (the invitee is not signed in): see the signed routes below.
     Route::post('employees/send-invite', [EmployeeController::class, 'sendInvite'])
         ->name('employees.sendInvite');
     // add this
@@ -913,6 +909,7 @@ Route::middleware(['auth', 'module.access'])->group(function () {
 
 
     Route::post('/leaves/policy', [LeaveController::class, 'updatePolicy'])->name('leaves.update-policy');
+    Route::post('/leaves/types', [LeaveController::class, 'storeLeaveType'])->name('leaves.store-type');
     Route::post('/leaves/reset/{id}', [LeaveController::class, 'resetEmployeeLeaves'])->name('leaves.reset-employee-leaves');
     Route::get('/leaves/export', [LeaveController::class, 'export'])->name('leaves.export');
    /*
@@ -1652,4 +1649,14 @@ Route::fallback(function (\Illuminate\Http\Request $request) {
     }
 
     abort(404);
+});
+
+// Employee invitations: signed, single-use links that open the invited company's workspace.
+Route::middleware('signed')->group(function () {
+    Route::get('invite/employee/{company}/{user}', [\App\Http\Controllers\EmployeeInviteController::class, 'show'])
+        ->whereNumber(['company', 'user'])
+        ->name('employee-invite.show');
+    Route::post('invite/employee/{company}/{user}', [\App\Http\Controllers\EmployeeInviteController::class, 'complete'])
+        ->whereNumber(['company', 'user'])
+        ->name('employee-invite.complete');
 });

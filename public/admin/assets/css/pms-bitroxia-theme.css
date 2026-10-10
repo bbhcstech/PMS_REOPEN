@@ -6685,23 +6685,33 @@ body[data-pms-theme="dark"] .employee-rule,
 body.dark .employee-rule,
 html.dark .employee-rule,
 .dark .employee-rule,
-.dark-mode .employee-rule {
+.dark-mode .employee-rule,
+html[data-pms-theme="dark"] .employee-dashboard .employee-rule,
+html[data-theme="dark"] .employee-dashboard .employee-rule,
+html[data-bs-theme="dark"] .employee-dashboard .employee-rule,
+body.dark-mode .employee-dashboard .employee-rule,
+[data-pms-theme="dark"] .employee-dashboard .employee-rule {
   background: #141B3D !important;
   border: 1px solid rgba(238, 241, 251, 0.16) !important;
   color: #EEF1FB !important;
 }
 
-html[data-pms-theme="dark"] .employee-rule *,
-html[data-theme="dark"] .employee-rule *,
-html[data-bs-theme="dark"] .employee-rule *,
-body[data-pms-theme="dark"] .employee-rule *,
-[data-pms-theme="dark"] .employee-rule *,
-[data-theme="dark"] .employee-rule *,
-[data-bs-theme="dark"] .employee-rule *,
-body.dark .employee-rule *,
-html.dark .employee-rule *,
-.dark .employee-rule *,
-.dark-mode .employee-rule *,
+html[data-pms-theme="dark"] .employee-rule .employee-rule-text,
+html[data-theme="dark"] .employee-rule .employee-rule-text,
+html[data-bs-theme="dark"] .employee-rule .employee-rule-text,
+body[data-pms-theme="dark"] .employee-rule .employee-rule-text,
+[data-pms-theme="dark"] .employee-rule .employee-rule-text,
+[data-theme="dark"] .employee-rule .employee-rule-text,
+[data-bs-theme="dark"] .employee-rule .employee-rule-text,
+body.dark .employee-rule .employee-rule-text,
+html.dark .employee-rule .employee-rule-text,
+.dark .employee-rule .employee-rule-text,
+.dark-mode .employee-rule .employee-rule-text,
+html[data-pms-theme="dark"] .employee-dashboard .employee-rule-text,
+html[data-theme="dark"] .employee-dashboard .employee-rule-text,
+html[data-bs-theme="dark"] .employee-dashboard .employee-rule-text,
+body.dark-mode .employee-dashboard .employee-rule-text,
+[data-pms-theme="dark"] .employee-dashboard .employee-rule-text,
 html[data-pms-theme="dark"] .employee-rule-text,
 html[data-theme="dark"] .employee-rule-text,
 html[data-bs-theme="dark"] .employee-rule-text,
@@ -6713,8 +6723,25 @@ html.dark .employee-rule-text,
 .dark-mode .employee-rule-text {
   color: #CBD5E1 !important;
   -webkit-text-fill-color: #CBD5E1 !important;
+  font-weight: 400 !important;
 }
 
+html[data-pms-theme="dark"] .employee-rule .employee-rule-bold,
+html[data-theme="dark"] .employee-rule .employee-rule-bold,
+html[data-bs-theme="dark"] .employee-rule .employee-rule-bold,
+body[data-pms-theme="dark"] .employee-rule .employee-rule-bold,
+[data-pms-theme="dark"] .employee-rule .employee-rule-bold,
+[data-theme="dark"] .employee-rule .employee-rule-bold,
+[data-bs-theme="dark"] .employee-rule .employee-rule-bold,
+body.dark .employee-rule .employee-rule-bold,
+html.dark .employee-rule .employee-rule-bold,
+.dark .employee-rule .employee-rule-bold,
+.dark-mode .employee-rule .employee-rule-bold,
+html[data-pms-theme="dark"] .employee-dashboard .employee-rule-bold,
+html[data-theme="dark"] .employee-dashboard .employee-rule-bold,
+html[data-bs-theme="dark"] .employee-dashboard .employee-rule-bold,
+body.dark-mode .employee-dashboard .employee-rule-bold,
+[data-pms-theme="dark"] .employee-dashboard .employee-rule-bold,
 html[data-pms-theme="dark"] .employee-rule-bold,
 html[data-theme="dark"] .employee-rule-bold,
 html[data-bs-theme="dark"] .employee-rule-bold,
@@ -6729,6 +6756,55 @@ html.dark .employee-rule-bold,
   color: #FFFFFF !important;
   -webkit-text-fill-color: #FFFFFF !important;
   font-weight: 700 !important;
+}
+
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode, [data-pms-theme="dark"]) .employee-rule i.text-warning {
+  color: #f59e0b !important;
+  -webkit-text-fill-color: #f59e0b !important;
+}
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode, [data-pms-theme="dark"]) .employee-rule i.text-primary {
+  color: #2f6bff !important;
+  -webkit-text-fill-color: #2f6bff !important;
+}
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode, [data-pms-theme="dark"]) .employee-rule i.text-danger {
+  color: #ef4444 !important;
+  -webkit-text-fill-color: #ef4444 !important;
+}
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode, [data-pms-theme="dark"]) .employee-rule i.text-info {
+  color: #22d3ee !important;
+  -webkit-text-fill-color: #22d3ee !important;
+}
+
+/* ==========================================================================
+   MY PROJECTS CLIENT / CATEGORY DARK MODE CONTRAST FIX
+   ========================================================================== */
+html[data-pms-theme="dark"] .employee-dashboard .employee-table .employee-project-client,
+html[data-theme="dark"] .employee-dashboard .employee-table .employee-project-client,
+html[data-bs-theme="dark"] .employee-dashboard .employee-table .employee-project-client,
+body[data-pms-theme="dark"] .employee-dashboard .employee-table .employee-project-client,
+[data-pms-theme="dark"] .employee-dashboard .employee-table .employee-project-client,
+[data-theme="dark"] .employee-dashboard .employee-table .employee-project-client,
+[data-bs-theme="dark"] .employee-dashboard .employee-table .employee-project-client,
+body.dark-mode .employee-dashboard .employee-table .employee-project-client,
+html.dark .employee-dashboard .employee-table .employee-project-client,
+.dark .employee-dashboard .employee-table .employee-project-client,
+.dark-mode .employee-dashboard .employee-table .employee-project-client,
+html[data-pms-theme="dark"] .employee-table .employee-project-client,
+html[data-theme="dark"] .employee-table .employee-project-client,
+html[data-bs-theme="dark"] .employee-table .employee-project-client,
+body[data-pms-theme="dark"] .employee-table .employee-project-client,
+[data-pms-theme="dark"] .employee-table .employee-project-client,
+body.dark-mode .employee-table .employee-project-client,
+html.dark .employee-table .employee-project-client,
+.dark .employee-table .employee-project-client,
+.dark-mode .employee-table .employee-project-client,
+html[data-pms-theme="dark"] .employee-dashboard .employee-table td span.employee-project-client,
+html[data-theme="dark"] .employee-dashboard .employee-table td span.employee-project-client,
+html[data-bs-theme="dark"] .employee-dashboard .employee-table td span.employee-project-client,
+body.dark-mode .employee-dashboard .employee-table td span.employee-project-client,
+[data-pms-theme="dark"] .employee-dashboard .employee-table td span.employee-project-client {
+  color: #EEF1FB !important;
+  -webkit-text-fill-color: #EEF1FB !important;
 }
 
 /* ==========================================================================

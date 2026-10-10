@@ -47,6 +47,7 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\EnsureCompanySubscriptionActive::class,
             \App\Http\Middleware\NormalizePhoneCountryCodes::class,
             \App\Http\Middleware\BlockTicketsInAdminWorkspace::class,
+            \App\Http\Middleware\FinanceComingSoon::class,
             \App\Http\Middleware\ProtectWorkforceRecords::class,
         ]);
         $middleware->alias([

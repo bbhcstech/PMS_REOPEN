@@ -158,7 +158,7 @@ class LeaveService
         $approvedCount = Leave::where('user_id', $employee->id)->where('status', 'approved')->count();
         $rejected = Leave::where('user_id', $employee->id)->where('status', 'rejected')->count();
 
-        $paidUsed = $usedByCode['SL'] + $usedByCode['CL'] + $usedByCode['ML'];
+        $paidUsed = array_sum($usedByCode);
         $allocated = (float) $balance->allocated_leaves;
 
         $balance->forceFill([
@@ -260,7 +260,7 @@ class LeaveService
             throw new \InvalidArgumentException('Employee is required to create a leave request.');
         }
 
-        return DB::transaction(function () use ($employee, $type, $data, $actor) {
+        return DB::connection('tenant')->transaction(function () use ($employee, $type, $data, $actor) {
             $start = Carbon::parse($data['start_date']);
             $end = Carbon::parse($data['end_date']);
             $days = $this->calculateDays($start, $end, (bool) ($data['half_day_flag'] ?? false));
@@ -551,9 +551,17 @@ class LeaveService
 
     public function updatePolicy(array $data, ?User $actor = null): LeavePolicy
     {
-        return DB::transaction(function () use ($data, $actor) {
+        return DB::connection('tenant')->transaction(function () use ($data, $actor) {
             $policy = $this->policy();
             $before = $policy->toArray();
+            $before['unpaid_deduction_percentage'] = \App\Models\AppSetting::valueFor('leave_unpaid_deduction_percentage', '3.33');
+            if (array_key_exists('unpaid_deduction_percentage', $data)) {
+                \App\Models\AppSetting::updateOrCreate(
+                    ['key' => 'leave_unpaid_deduction_percentage'],
+                    ['value' => (string) $data['unpaid_deduction_percentage']]
+                );
+                unset($data['unpaid_deduction_percentage']);
+            }
             $policy->fill($data)->save();
             $policy = $policy->fresh();
 
@@ -561,7 +569,7 @@ class LeaveService
                 'leave_policy_id' => $policy->id,
                 'changed_by' => $actor?->id,
                 'before_snapshot' => $before,
-                'after_snapshot' => $policy->toArray(),
+                'after_snapshot' => $policy->toArray() + ['unpaid_deduction_percentage' => \App\Models\AppSetting::valueFor('leave_unpaid_deduction_percentage', '3.33')],
             ]);
 
             $this->syncLeaveTypesWithPolicy($policy);
@@ -582,7 +590,7 @@ class LeaveService
     {
         $policy = $policy ?: $this->policy();
 
-        return "Organization Leave Policy: The leave year runs from April to March. Every employee receives {$policy->annual_leaves} paid leaves per year: {$policy->sick_leave_limit} Sick Leaves and {$policy->casual_leave_limit} Casual Leaves. Maternity Leave is currently {$policy->maternity_leave_limit} by default and may be configured by HR. Sick Leave can be applied on the same day or after absence with an apology request. Casual Leave should be applied at least {$policy->casual_advance_days} days in advance. If Casual Leave is applied within a shorter period, HR approval is required based on organization needs. After all paid leaves are used, further leave will be treated as unpaid leave or absent as per HR decision.";
+        return "Company Leave Policy: Every employee receives {$policy->annual_leaves} paid leave days per leave year, shared across Sick, Casual and any company-added leave types. Leave beyond the remaining annual allowance is unpaid. Sick Leave supports same-day requests and apologies where enabled. Casual Leave should be requested {$policy->casual_advance_days} days in advance. Your company admin can change the annual allowance, leave types and unpaid salary deduction percentage in Leave Settings.";
     }
 
     public function typeCode(Leave $leave): string
@@ -620,14 +628,9 @@ class LeaveService
             return ['paid_days' => 0, 'unpaid_days' => $days];
         }
 
-        $typeRemaining = match ($type->code) {
-            'SL' => max(0, (float) $balance->sick_allocated - (float) $balance->sick_used),
-            'CL' => max(0, (float) $balance->casual_allocated - (float) $balance->casual_used),
-            'ML' => max(0, (float) $balance->maternity_allocated - (float) $balance->maternity_used),
-            default => max(0, (float) $balance->remaining_leaves),
-        };
         $totalRemaining = max(0, (float) $balance->allocated_leaves - (float) $balance->used_leaves);
-        $remaining = min($typeRemaining, $totalRemaining);
+        // Paid leave uses the shared annual allowance, regardless of its category.
+        $remaining = $totalRemaining;
 
         $paid = min($remaining, $days);
 
@@ -639,13 +642,13 @@ class LeaveService
         $types = [
             ['code' => 'SL', 'name' => 'Sick Leave', 'annual_limit' => $policy->sick_leave_limit, 'is_paid' => true, 'requires_document' => false, 'allows_apology' => $policy->allow_sick_apology, 'sort_order' => 1],
             ['code' => 'CL', 'name' => 'Casual Leave', 'annual_limit' => $policy->casual_leave_limit, 'is_paid' => true, 'requires_document' => false, 'allows_apology' => false, 'sort_order' => 2],
-            ['code' => 'ML', 'name' => 'Maternity Leave', 'annual_limit' => $policy->maternity_leave_limit, 'is_paid' => $policy->maternity_is_paid, 'requires_document' => $policy->maternity_requires_document, 'allows_apology' => false, 'sort_order' => 3],
-            ['code' => 'UL', 'name' => 'Unpaid Leave', 'annual_limit' => 0, 'is_paid' => false, 'requires_document' => false, 'allows_apology' => false, 'sort_order' => 4],
         ];
 
         foreach ($types as $type) {
             LeaveType::updateOrCreate(['code' => $type['code']], $type + ['is_active' => true]);
         }
+        // Preserve historical requests; these legacy categories are no longer selectable.
+        LeaveType::whereIn('code', ['ML', 'UL'])->update(['is_active' => false]);
     }
 
     private function syncEmployeePolicyBalances(User $employee, LeavePolicy $policy): void
@@ -703,30 +706,21 @@ class LeaveService
     private function normalizeApprovedLeavePayroll($approvedLeaves, LeaveBalance $balance)
     {
         $remainingTotal = max(0, (float) $balance->allocated_leaves);
-        $remainingByCode = [
-            'SL' => max(0, (float) $balance->sick_allocated),
-            'CL' => max(0, (float) $balance->casual_allocated),
-            'ML' => max(0, (float) $balance->maternity_allocated),
-        ];
 
         foreach ($approvedLeaves as $leave) {
             $days = (float) ($leave->total_days ?: 1);
             $code = $this->typeCode($leave);
             $typeIsPaid = (bool) ($leave->leaveType?->is_paid ?? ($code !== 'UL'));
 
-            if (! $typeIsPaid || $code === 'UL') {
+            if (! $typeIsPaid || $code === 'UL' || $leave->type === 'leave-without-pay') {
                 $paidDays = 0.0;
                 $unpaidDays = $days;
             } else {
-                $codeRemaining = $remainingByCode[$code] ?? $remainingTotal;
-                $availablePaidDays = min($remainingTotal, max(0, $codeRemaining));
+                $availablePaidDays = $remainingTotal;
                 $paidDays = min($days, $availablePaidDays);
                 $unpaidDays = max(0, $days - $paidDays);
                 $remainingTotal = max(0, $remainingTotal - $paidDays);
 
-                if (array_key_exists($code, $remainingByCode)) {
-                    $remainingByCode[$code] = max(0, $remainingByCode[$code] - $paidDays);
-                }
             }
 
             $isFullyPaid = $paidDays > 0 && $unpaidDays <= 0;

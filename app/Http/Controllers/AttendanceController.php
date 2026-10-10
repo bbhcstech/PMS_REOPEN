@@ -88,8 +88,11 @@ class AttendanceController extends Controller
      * Build a Carbon datetime from a separate date (Y-m-d) and a time value (H:i or H:i:s or Carbon)
      * Returns null on failure.
      */
-    private function buildDateTimeFromDateAndTime(?string $date, $timeValue): ?\Carbon\Carbon
+    private function buildDateTimeFromDateAndTime($date, $timeValue): ?\Carbon\Carbon
     {
+        if ($date instanceof \DateTimeInterface) {
+            $date = $date->format('Y-m-d');
+        }
         if (empty($date) || $timeValue === null || $timeValue === '') {
             return null;
         }
@@ -899,6 +902,26 @@ class AttendanceController extends Controller
 
         $request->validate([
             'user_id'   => 'required',
+            'mark_attendance_by' => 'nullable|in:month,date',
+            'year' => 'required_if:mark_attendance_by,month|nullable|integer|min:2000|max:2100',
+            'month' => 'required_if:mark_attendance_by,month|nullable|integer|min:1|max:12',
+            'date' => 'required_without:mark_attendance_by|nullable|date_format:Y-m-d',
+            'date_range' => ['required_if:mark_attendance_by,date', 'nullable', function ($attribute, $value, $fail) {
+                $parts = explode(' - ', $value);
+                if (count($parts) !== 2) {
+                    $fail('Select a valid date range (MM/DD/YYYY - MM/DD/YYYY).');
+                    return;
+                }
+                try {
+                    $start = Carbon::createFromFormat('!m/d/Y', trim($parts[0]));
+                    $end = Carbon::createFromFormat('!m/d/Y', trim($parts[1]));
+                    if ($start->format('m/d/Y') !== trim($parts[0]) || $end->format('m/d/Y') !== trim($parts[1]) || $end->lt($start)) {
+                        $fail('Select a valid date range with the end on or after the start.');
+                    }
+                } catch (\Throwable $e) {
+                    $fail('Select a valid date range (MM/DD/YYYY - MM/DD/YYYY).');
+                }
+            }],
             'location_id' => 'nullable|integer|exists:tenant.company_addresses,id',
             'clock_in_address' => 'nullable|string|max:1000',
             'user_id.*' => 'sometimes|exists:users,id',
@@ -919,16 +942,24 @@ class AttendanceController extends Controller
         if (!is_array($userIds)) $userIds = [$userIds];
 
         // If user selected mark by date-range (bulk)
-        if ($request->mark_attendance_by === 'date' && $request->date_range) {
-            [$start, $end] = explode(' - ', $request->date_range);
-
-            $startDate = Carbon::createFromFormat('m/d/Y', trim($start));
-            $endDate   = Carbon::createFromFormat('m/d/Y', trim($end));
+        if (in_array($request->mark_attendance_by, ['month', 'date'], true)) {
+            if ($request->mark_attendance_by === 'month') {
+                $startDate = Carbon::create($request->integer('year'), $request->integer('month'), 1)->startOfDay();
+                $endDate = $startDate->copy()->endOfMonth();
+            } else {
+                [$start, $end] = explode(' - ', $request->date_range);
+                $startDate = Carbon::createFromFormat('!m/d/Y', trim($start));
+                $endDate = Carbon::createFromFormat('!m/d/Y', trim($end));
+            }
 
             $period = CarbonPeriod::create($startDate, $endDate);
 
             foreach ($userIds as $userId) {
                 foreach ($period as $date) {
+                    $existing = Attendance::where('user_id', $userId)->whereDate('date', $date)->first();
+                    if ($existing && ! $request->has('overwrite_attendance')) {
+                        continue;
+                    }
 
                     // store time-only strings for DB TIME columns (H:i:s)
                     $clockInVal = $request->clock_in ? Carbon::createFromFormat('H:i', $request->clock_in)->format('H:i:s') : null;
@@ -952,13 +983,8 @@ class AttendanceController extends Controller
                         $attendancePayload['company_id'] = $employeeForAttendance?->company_id;
                     }
 
-                    $record = Attendance::updateOrCreate(
-                        [
-                            'user_id' => $userId,
-                            'date'    => $date->toDateString(),
-                        ],
-                        $attendancePayload
-                    );
+                    $record = $existing ?? new Attendance(['user_id' => $userId, 'date' => $date->toDateString()]);
+                    $record->fill($attendancePayload)->save();
                     $record = $this->applyOrganizationAttendanceRules($record);
 
                     // prepare a Carbon instance for the notification (combine date + time)
@@ -1016,13 +1042,8 @@ class AttendanceController extends Controller
                     $attendancePayload['company_id'] = $employeeForAttendance?->company_id;
                 }
 
-                $record = Attendance::updateOrCreate(
-                    [
-                        'user_id' => $userId,
-                        'date'    => $request->date,
-                    ],
-                    $attendancePayload
-                );
+                $record = $existing ?? new Attendance(['user_id' => $userId, 'date' => $request->date]);
+                $record->fill($attendancePayload)->save();
                 $record = $this->applyOrganizationAttendanceRules($record);
 
                 // prepare a Carbon instance for the notification

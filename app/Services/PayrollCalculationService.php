@@ -75,13 +75,12 @@ class PayrollCalculationService
         $endDate = $startDate->copy()->endOfMonth();
 
         // 1. Initial Leave Balance
+        $leaveYear = (new LeaveService)->leaveYearDates($startDate);
         $leaveBalanceRecord = LeaveBalance::where('user_id', $user->id)
-            ->where(function ($q) use ($year) {
-                $q->where('year', $year)->orWhere('leave_year', $year);
-            })
+            ->where('year', $leaveYear['year'])
             ->first();
 
-        $initialBalance = 18.0;
+        $initialBalance = (float) (\App\Models\LeavePolicy::first()?->annual_leaves ?? 18);
         if ($leaveBalanceRecord) {
             $initialBalance = (float) ($leaveBalanceRecord->allocated_leaves ?? $leaveBalanceRecord->remaining_leaves ?? 18.0);
         } elseif (isset($user->annual_leave_balance) && $user->annual_leave_balance > 0) {
@@ -108,7 +107,12 @@ class PayrollCalculationService
 
         foreach ($leaves as $leave) {
             $isHalf = $leave->half_day_flag || strtolower((string)$leave->type) === 'half_day' || strtolower((string)$leave->duration) === 'half_day';
-            $days = $isHalf ? 0.5 : (float) ($leave->total_days ?: 1.0);
+            $leaveStart = Carbon::parse($leave->start_date ?: $leave->date)->startOfDay();
+            $leaveEnd = Carbon::parse($leave->end_date ?: $leave->date ?: $leave->start_date)->startOfDay();
+            $overlapStart = $leaveStart->copy()->max($startDate);
+            $overlapEnd = $leaveEnd->copy()->min($endDate);
+            if ($overlapEnd->lt($overlapStart)) continue;
+            $days = $isHalf ? 0.5 : (float) ($overlapStart->diffInDays($overlapEnd->copy()->startOfDay()) + 1);
 
             if ($isHalf) {
                 $halfLeaveCount += 1.0;
@@ -116,17 +120,16 @@ class PayrollCalculationService
                 $fullLeaveCount += $days;
             }
 
-            // Check if paid vs unpaid
-            $isUnpaid = $leave->is_unpaid || (isset($leave->paid_days) && (float)$leave->paid_days == 0 && (float)$leave->unpaid_days > 0);
-            if ($isUnpaid) {
-                $unpaidLeaveDays += $days;
-            } else {
-                $paidLeaveDays += $days;
-            }
+            // Paid days occupy the beginning of the request; only count this month's portion.
+            $paidTotal = $leave->paid_days !== null ? (float) $leave->paid_days : ($leave->is_unpaid ? 0 : (float) ($leave->total_days ?: $days));
+            $offset = (float) $leaveStart->diffInDays($overlapStart);
+            $paidInMonth = min($days, max(0, $paidTotal - $offset));
+            $paidLeaveDays += $paidInMonth;
+            $unpaidLeaveDays += max(0, $days - $paidInMonth);
         }
 
         $totalLeaveUsed = $fullLeaveCount + ($halfLeaveCount * 0.5);
-        $currentBalance = max(0.0, $initialBalance - $totalLeaveUsed);
+        $currentBalance = (float) ($leaveBalanceRecord?->remaining_leaves ?? max(0.0, $initialBalance - $paidLeaveDays));
 
         return [
             'initial_balance' => round($initialBalance, 2),
@@ -152,6 +155,10 @@ class PayrollCalculationService
             ->get();
 
         $leaveData = $this->getLeaveData($user, $year, $month);
+        $approvedLeaveDates = Leave::where('user_id', $user->id)->where('status', 'approved')
+            ->where(fn ($q) => $q->whereBetween('date', [$startDate->toDateString(), $endDate->toDateString()])
+                ->orWhere(fn ($range) => $range->whereDate('start_date', '<=', $endDate)->whereDate('end_date', '>=', $startDate)))
+            ->get(['date', 'start_date', 'end_date']);
 
         $fullAbsent = 0.0;
         $halfAbsent = 0.0;
@@ -163,7 +170,7 @@ class PayrollCalculationService
         if ($attendances->count() > 0) {
             foreach ($attendances as $att) {
                 $status = strtolower((string)$att->status);
-                $isHalfDay = $att->half_day || $status === 'half_day' || str_contains($status, 'half');
+                $isHalfDay = in_array(strtolower((string) $att->half_day), ['yes', '1', 'true'], true) || $status === 'half_day' || str_contains($status, 'half');
                 $isWfh = ($att->work_from_type === 'work_from_home' || in_array($status, ['work_from_home', 'wfh']));
 
                 // Calculate daily hours
@@ -187,9 +194,16 @@ class PayrollCalculationService
                     $overtimeHours += ($hours - 8.0);
                 }
 
-                if ($status === 'absent') {
+                // Approved leave is accounted for separately, even when its attendance is marked absent.
+                $attendanceDate = Carbon::parse($att->date)->startOfDay();
+                $isApprovedLeave = $approvedLeaveDates->contains(function ($leave) use ($attendanceDate) {
+                    $start = Carbon::parse($leave->start_date ?: $leave->date)->startOfDay();
+                    $end = Carbon::parse($leave->end_date ?: $leave->date ?: $leave->start_date)->endOfDay();
+                    return $attendanceDate->betweenIncluded($start, $end);
+                });
+                if ($status === 'absent' && ! $isApprovedLeave) {
                     $fullAbsent += 1.0;
-                } elseif ($isHalfDay) {
+                } elseif ($isHalfDay && ! $isApprovedLeave) {
                     $halfAbsent += 1.0;
                     $presentDays += 0.5;
                 } elseif ($isWfh) {
@@ -224,7 +238,9 @@ class PayrollCalculationService
         // Current Basic pro-rata payable days formula:
         // Working Days - Absent - Unpaid Leaves - (Half Days / 2)
         // Note: Paid leave does NOT deduct salary!
-        $payableDays = max(0.0, min((float)$workingDays, $workingDays - $totalAbsent));
+        $unpaidPercentage = max(0, min(100, (float) \App\Models\AppSetting::valueFor('leave_unpaid_deduction_percentage', '3.33')));
+        $unpaidSalaryDays = $unpaidLeave * $workingDays * $unpaidPercentage / 100;
+        $payableDays = max(0.0, min((float)$workingDays, $workingDays - $fullAbsent - ($halfAbsent * 0.5) - $unpaidSalaryDays));
 
         return [
             'full_absent' => round($fullAbsent, 2),
@@ -237,6 +253,8 @@ class PayrollCalculationService
             'working_hours' => round($workingHours, 1),
             'overtime_hours' => round($overtimeHours, 1),
             'payable_days' => round($payableDays, 2),
+            'unpaid_deduction_percentage' => $unpaidPercentage,
+            'unpaid_salary_deduction_percent' => min(100, round($unpaidLeave * $unpaidPercentage, 2)),
         ];
     }
 
@@ -701,6 +719,8 @@ class PayrollCalculationService
             'presents' => $attData['presents'],
             'paid_leave' => $attData['paid_leave'],
             'unpaid_leave' => $attData['unpaid_leave'],
+            'unpaid_deduction_percentage' => $attData['unpaid_deduction_percentage'],
+            'unpaid_salary_deduction_percent' => $attData['unpaid_salary_deduction_percent'],
             'full_absent' => $attData['full_absent'],
             'half_absent' => $attData['half_absent'],
             'absent' => $attData['total_absent'],

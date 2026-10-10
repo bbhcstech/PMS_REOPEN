@@ -916,6 +916,23 @@
         background-color: rgba(239, 68, 68, 0.12) !important;
         border-color: rgba(248, 113, 113, 0.25) !important;
     }
+    /* Keep native Organizer options and role group labels readable in dark mode. */
+    :is([data-pms-theme="dark"], [data-theme="dark"], [data-bs-theme="dark"], .dark, .dark-mode) #eventOrganizerInput {
+        color-scheme: dark;
+    }
+    :is([data-pms-theme="dark"], [data-theme="dark"], [data-bs-theme="dark"], .dark, .dark-mode) #eventOrganizerInput :is(option, optgroup) {
+        background-color: #151c3b !important;
+        color: #eef1fb !important;
+        -webkit-text-fill-color: #eef1fb !important;
+    }
+    :is([data-pms-theme="dark"], [data-theme="dark"], [data-bs-theme="dark"], .dark, .dark-mode) #eventOrganizerInput optgroup {
+        font-weight: 600;
+    }
+    :is([data-pms-theme="dark"], [data-theme="dark"], [data-bs-theme="dark"], .dark, .dark-mode) #eventOrganizerInput option:checked {
+        background-color: #2f6bff !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
 </style>
 @include('admin.events.dark-theme')
 @endpush
