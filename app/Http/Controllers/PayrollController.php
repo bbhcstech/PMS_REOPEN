@@ -1286,6 +1286,9 @@ class PayrollController extends Controller
         if (! auth()->user()?->hasModulePermission($moduleSlug, $permission)) {
             abort(403, 'You do not have permission to access this payroll module.');
         }
+
+        // Company databases not migrated after a deploy are missing payroll tables/columns (500 on every page).
+        \App\Services\PayrollSchema::ensure();
     }
 
     private function payslipQuery(?int $companyId = null)
