@@ -292,7 +292,7 @@
             <h1><i class="fas fa-archive me-2"></i>Archived Attendance</h1>
             <p><i class="fas fa-info-circle me-1"></i>Restore archived attendance records whenever they need to return to the active table.</p>
         </div>
-        <a href="{{ route('attendance.index') }}" class="back-button">
+        <a href="{{ route(request('staff_category') === 'authority' ? 'admin.authority-attendance' : 'attendance.index') }}" class="back-button">
             <i class="fas fa-arrow-left"></i>Back to Active Attendance
         </a>
     </div>
@@ -318,7 +318,8 @@
             <span class="total-badge"><i class="fas fa-database me-1"></i>Total: {{ $totalArchived }}</span>
         </div>
 
-        <form method="GET" action="{{ route('attendance.archive') }}" class="archive-search-bar">
+        <form method="GET" action="{{ route('attendance.archive', ['staff_category' => request('staff_category')]) }}" class="archive-search-bar">
+            <input type="hidden" name="staff_category" value="{{ request('staff_category', 'employee') }}">
             <div class="search-input">
                 <i class="fas fa-search"></i>
                 <input type="text" name="search" value="{{ request('search') }}" placeholder="Search employee, status, date...">
@@ -330,7 +331,7 @@
             </select>
             <button type="submit" class="search-button"><i class="fas fa-search"></i>Search</button>
             @if(request()->hasAny(['search', 'per_page']))
-                <a href="{{ route('attendance.archive') }}" class="reset-button"><i class="fas fa-rotate-left"></i>Reset</a>
+                <a href="{{ route('attendance.archive', ['staff_category' => request('staff_category')]) }}" class="reset-button"><i class="fas fa-rotate-left"></i>Reset</a>
             @endif
         </form>
 

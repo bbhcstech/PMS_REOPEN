@@ -9,6 +9,11 @@ use Carbon\Carbon;
 
 class Attendance extends TenantModel
 {
+    use \App\Models\Concerns\HasWorkforceRecords;
+    public function getClockInPhotoAttribute($value)
+    {
+        return $value && str_starts_with($value, 'authority-attendance/') ? route('attendance.photo', $this->id) : $value;
+    }
     // explicit mapping to your table
     protected $table = 'attendances';
 

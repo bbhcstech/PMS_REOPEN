@@ -3,7 +3,7 @@
 @section('title', 'Designation Hierarchy')
 
 @section('content')
-<main class="designation-hierarchy-page">
+<main id="designation-hierarchy-page" class="designation-hierarchy-page" data-live-preserve>
     <div class="container-fluid px-4">
 
         <!-- Page Header -->
@@ -212,7 +212,7 @@
                         </div>
 
                         <!-- Chart Container -->
-                        <div id="chartDiv" class="chart-container"></div>
+                        <div id="employeeOrgTree" class="chart-container pms-org-viewport" aria-label="Employee reporting hierarchy"></div>
 
                         <!-- Loading Overlay -->
                         <div id="chartLoading" class="chart-loading d-none">
@@ -646,6 +646,21 @@
 
     .expand-all-btn:hover {
         background: #E0E7FF;
+    }
+
+    .hierarchy-alert-dark.swal2-popup {
+        background: #141B3D !important;
+        color: #EEF1FB !important;
+        border: 1px solid rgba(79, 131, 255, 0.3);
+    }
+    .hierarchy-alert-dark :is(.swal2-title, .swal2-html-container) {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+    }
+    .hierarchy-alert-dark .swal2-success-circular-line-left,
+    .hierarchy-alert-dark .swal2-success-circular-line-right,
+    .hierarchy-alert-dark .swal2-success-fix {
+        background: #141B3D !important;
     }
 
     /* Hierarchy Tree */
@@ -1769,8 +1784,63 @@
 </style>
 
 @push('js')
+<style id="pmsOrgTreeStyles">
+    .pms-org-viewport { overflow: auto; cursor: grab; user-select: none; position: relative; overscroll-behavior: contain; }
+    .pms-org-viewport.is-panning { cursor: grabbing; }
+    .pms-org-canvas { display: inline-block; min-width: 100%; box-sizing: border-box; padding: 64px 32px 120px; text-align: center; }
+    .pms-org-tree, .pms-org-tree ul { list-style: none; margin: 0; padding: 0; display: flex; justify-content: center; align-items: flex-start; }
+    .pms-org-tree { gap: 28px; }
+    .pms-org-tree ul { position: relative; padding-top: 26px; }
+    .pms-org-tree li { position: relative; display: flex; flex-direction: column; align-items: center; padding: 26px 10px 0; }
+    .pms-org-tree > li { padding-top: 0; }
+    /* Connector lines */
+    .pms-org-tree ul li::before, .pms-org-tree ul li::after { content: ""; position: absolute; top: 0; right: 50%; width: 50%; height: 26px; border-top: 2px solid #93B4FF; }
+    .pms-org-tree ul li::after { right: auto; left: 50%; border-left: 2px solid #93B4FF; }
+    .pms-org-tree ul li:only-child::before { display: none; }
+    .pms-org-tree ul li:only-child::after { border-top: 0; }
+    .pms-org-tree ul li:first-child::before, .pms-org-tree ul li:last-child::after { border-top: 0; }
+    .pms-org-tree ul li:last-child::before { border-right: 2px solid #93B4FF; border-radius: 0 10px 0 0; }
+    .pms-org-tree ul li:first-child:not(:only-child)::after { border-radius: 10px 0 0 0; }
+    .pms-org-tree ul::before { content: ""; position: absolute; top: 0; left: 50%; height: 26px; border-left: 2px solid #93B4FF; }
+    /* Employee card */
+    .pms-org-node { position: relative; display: flex; align-items: center; gap: 10px; min-width: 190px; max-width: 240px; padding: 10px 14px 10px 12px; background: #ffffff; border: 1px solid #DCE5FF; border-left: 5px solid #94A3B8; border-radius: 14px; box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08); text-align: left; transition: transform .15s ease, box-shadow .15s ease; font-family: inherit; }
+    .pms-org-node:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(47, 107, 255, 0.18); }
+    .pms-org-avatar { flex: 0 0 36px; width: 36px; height: 36px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; background: #94A3B8; }
+    .pms-org-text { display: flex; flex-direction: column; min-width: 0; flex: 1 1 auto; }
+    .pms-org-name { font-size: 13px; font-weight: 700; color: #0F172A !important; -webkit-text-fill-color: #0F172A !important; line-height: 1.25; overflow-wrap: anywhere; }
+    .pms-org-role { font-size: 11.5px; font-weight: 500; color: #64748B !important; -webkit-text-fill-color: #64748B !important; line-height: 1.3; overflow-wrap: anywhere; }
+    .pms-org-badge { flex: 0 0 auto; align-self: flex-start; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 999px; color: #2F6BFF !important; -webkit-text-fill-color: #2F6BFF !important; background: #EEF2FF; }
+    .pms-org-count { position: absolute; left: 50%; bottom: -10px; transform: translateX(-50%); min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; font-size: 10.5px; font-weight: 800; line-height: 20px; text-align: center; color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; background: #2F6BFF; border: 2px solid #ffffff; z-index: 1; }
+    .pms-org-l0 { border-left-color: #0F172A; } .pms-org-l0 .pms-org-avatar { background: #0F172A; }
+    .pms-org-l1 { border-left-color: #2F6BFF; } .pms-org-l1 .pms-org-avatar { background: #2F6BFF; }
+    .pms-org-l2 { border-left-color: #10b981; } .pms-org-l2 .pms-org-avatar { background: #10b981; }
+    .pms-org-l3 { border-left-color: #3b82f6; } .pms-org-l3 .pms-org-avatar { background: #3b82f6; }
+    .pms-org-l4 { border-left-color: #f59e0b; } .pms-org-l4 .pms-org-avatar { background: #f59e0b; }
+    .pms-org-l5 { border-left-color: #f97316; } .pms-org-l5 .pms-org-avatar { background: #f97316; }
+    .pms-org-l6 { border-left-color: #ef4444; } .pms-org-l6 .pms-org-avatar { background: #ef4444; }
+    .pms-org-empty { height: 100%; min-height: 260px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; color: #64748B; text-align: center; padding: 24px; cursor: default; }
+    .pms-org-empty i { font-size: 34px; color: #93B4FF; margin-bottom: 6px; }
+    .pms-org-empty strong { color: #0F172A !important; -webkit-text-fill-color: #0F172A !important; font-size: 15px; }
+</style>
+<style>
+    .fullscreen-mode .pms-org-viewport { height: calc(100vh - 150px); }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body.dark-mode) #employeeOrgTree .pms-org-node { background: #151C3D !important; border-color: rgba(96, 165, 250, 0.28); box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35); }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body.dark-mode) #employeeOrgTree .pms-org-l0 { border-left-color: #E2E8F0; }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body.dark-mode) #employeeOrgTree .pms-org-l0 .pms-org-avatar { background: #334155 !important; }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body.dark-mode) #employeeOrgTree .pms-org-name,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body.dark-mode) #employeeOrgTree .pms-org-empty strong { color: #F1F5F9 !important; -webkit-text-fill-color: #F1F5F9 !important; }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body.dark-mode) #employeeOrgTree .pms-org-role,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body.dark-mode) #employeeOrgTree .pms-org-empty { color: #A5B4D4 !important; -webkit-text-fill-color: #A5B4D4 !important; }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body.dark-mode) #employeeOrgTree .pms-org-avatar,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body.dark-mode) #employeeOrgTree .pms-org-count { color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body.dark-mode) #employeeOrgTree .pms-org-badge { background: rgba(96, 165, 250, 0.16) !important; color: #93C5FD !important; -webkit-text-fill-color: #93C5FD !important; }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body.dark-mode) #employeeOrgTree .pms-org-count { border-color: #0F1530; }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body.dark-mode) #employeeOrgTree .pms-org-tree :is(ul, li)::before,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body.dark-mode) #employeeOrgTree .pms-org-tree li::after { border-color: #4F7DD9; }
+</style>
+<script src="{{ asset('admin/assets/vendor/libs/html2canvas/html2canvas.min.js') }}"></script>
+<script>if (typeof html2canvas === 'undefined') { document.write('<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"><\/script>'); }</script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-<script src="https://code.jscharting.com/latest/jscharting.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
@@ -1810,44 +1880,43 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Expand/Collapse All
+    function setBranchExpanded(node, expanded) {
+        const list = node.querySelector(':scope > ul');
+        const button = node.querySelector(':scope > .designation-item .toggle-children');
+        if (!list) return;
+        list.hidden = !expanded;
+        list.style.display = expanded ? '' : 'none';
+        if (button) {
+            button.setAttribute('aria-expanded', String(expanded));
+            const icon = button.querySelector('i');
+            if (icon) icon.className = expanded ? 'fas fa-chevron-down' : 'fas fa-chevron-right';
+        }
+    }
+
     document.getElementById('expandAll')?.addEventListener('click', function() {
-        const allToggles = document.querySelectorAll('.toggle-children');
-        const allChildLists = document.querySelectorAll('.hierarchy-list ul');
-
-        // Check if any are collapsed
-        const hasCollapsed = Array.from(allChildLists).some(list => list.style.display === 'none');
-
-        allChildLists.forEach(list => {
-            list.style.display = hasCollapsed ? '' : 'none';
-        });
-
-        allToggles.forEach(btn => {
-            const icon = btn.querySelector('i');
-            if (hasCollapsed) {
-                icon.className = 'fas fa-chevron-down';
-            } else {
-                icon.className = 'fas fa-chevron-right';
-            }
-        });
+        hierarchyList?.querySelectorAll('.hierarchy-node').forEach(node => setBranchExpanded(node, true));
     });
 
-    // Toggle children function (global for onclick)
-    window.toggleChildren = function(element) {
-        const parentItem = element.closest('.designation-item');
-        const childList = parentItem.querySelector('ul');
-        const icon = element.querySelector('i');
+    // Delegation also handles nodes restored by Reset Changes.
+    hierarchyList?.addEventListener('click', function(event) {
+        const button = event.target.closest('.toggle-children');
+        if (!button) return;
+        const node = button.closest('.hierarchy-node');
+        const list = node?.querySelector(':scope > ul');
+        if (list) setBranchExpanded(node, list.hidden || getComputedStyle(list).display === 'none');
+    });
 
-        if (childList) {
-            if (childList.style.display === 'none') {
-                childList.style.display = '';
-                icon.className = 'fas fa-chevron-down';
-            } else {
-                childList.style.display = 'none';
-                icon.className = 'fas fa-chevron-right';
-            }
-        }
-    };
+    function hierarchyAlert(options) {
+        const dark = isDarkModeActive();
+        return Swal.fire({
+            ...options,
+            background: dark ? '#141B3D' : '#ffffff',
+            color: dark ? '#EEF1FB' : '#1e293b',
+            confirmButtonColor: '#2F6BFF',
+            cancelButtonColor: dark ? '#334155' : '#64748b',
+            customClass: { popup: dark ? 'hierarchy-alert hierarchy-alert-dark' : 'hierarchy-alert' }
+        });
+    }
 
     // Save hierarchy
     const saveBtn = document.getElementById('saveHierarchy');
@@ -1872,10 +1941,10 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
 
-        traverseList(hierarchyList, null, 0);
+        if (hierarchyList) traverseList(hierarchyList, null, 0);
 
         if (exceedsMaxDepth) {
-            Swal.fire({
+            hierarchyAlert({
                 icon: 'error',
                 title: 'Hierarchy Depth Limit Exceeded',
                 text: 'The organizational hierarchy cannot exceed Level {{ \App\Services\DesignationLevels::maximum() }}. Please re-arrange the designations within your company limit.',
@@ -1902,19 +1971,20 @@ document.addEventListener('DOMContentLoaded', function() {
             return data;
         })
         .then(data => {
-            Swal.fire({
+            hierarchyAlert({
                 icon: 'success',
                 title: 'Success!',
                 text: data.message || 'Hierarchy saved successfully',
                 timer: 2000,
                 showConfirmButton: false,
+                toast: true,
                 position: 'top-end'
             });
             document.getElementById('lastSaved').textContent = new Date().toLocaleString();
             updateOrganizationalChart();
         })
         .catch(error => {
-            Swal.fire({
+            hierarchyAlert({
                 icon: 'error',
                 title: 'Error!',
                 text: error.message || 'Failed to save hierarchy',
@@ -1932,7 +2002,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Reset hierarchy
     document.getElementById('resetHierarchy')?.addEventListener('click', function() {
-        Swal.fire({
+        hierarchyAlert({
             title: 'Reset Changes?',
             text: 'This will discard all unsaved changes.',
             icon: 'warning',
@@ -1947,188 +2017,116 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Initialize chart
-    let chart;
     const chartPoints = @json($chartPoints ?? []);
 
     let chartZoom = 1;
     let latestChartPoints = chartPoints;
+    let renderedChartSignature = null;
+
+    function orgTreeContainer() {
+        return document.getElementById('employeeOrgTree');
+    }
+
+    function orgTreeCanvas() {
+        return orgTreeContainer()?.querySelector('.pms-org-canvas') || null;
+    }
 
     function applyChartZoom() {
-        const chartDiv = document.getElementById('chartDiv');
-        if (chartDiv) {
-            chartDiv.style.transform = `scale(${chartZoom})`;
-        }
+        const canvas = orgTreeCanvas();
+        if (canvas) canvas.style.zoom = chartZoom;
     }
 
-    function isDarkModeActive() {
-        const html = document.documentElement;
-        const body = document.body;
-        // The application's explicit theme takes precedence over stale nested attributes.
-        for (const element of [html, body]) {
-            for (const attribute of ['data-pms-theme', 'data-bs-theme', 'data-theme']) {
-                const theme = element.getAttribute(attribute);
-                if (theme === 'light' || theme === 'dark') return theme === 'dark';
-            }
-        }
-        return html.getAttribute('data-pms-theme') === 'dark' ||
-               html.getAttribute('data-bs-theme') === 'dark' ||
-               html.getAttribute('data-theme') === 'dark' ||
-               html.classList.contains('dark') ||
-               body.getAttribute('data-pms-theme') === 'dark' ||
-               body.getAttribute('data-bs-theme') === 'dark' ||
-               body.classList.contains('dark') ||
-               body.classList.contains('dark-mode') ||
-               document.querySelector('[data-pms-theme="dark"]') !== null ||
-               document.querySelector('[data-bs-theme="dark"]') !== null;
+    function orgEscape(value) {
+        return String(value ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
     }
 
-    function applyDarkChartFixes() {
-        const isDark = isDarkModeActive();
-        const chartDiv = document.getElementById('chartDiv');
-        if (!chartDiv) return;
-
-        if (isDark) {
-            chartDiv.style.setProperty('background', '#0F1530', 'important');
-            chartDiv.style.setProperty('background-color', '#0F1530', 'important');
-
-            chartDiv.querySelectorAll('div').forEach(el => {
-                el.style.setProperty('background', 'transparent', 'important');
-                el.style.setProperty('background-color', 'transparent', 'important');
-            });
-
-            chartDiv.querySelectorAll('svg').forEach(svg => {
-                svg.style.setProperty('background', 'transparent', 'important');
-                svg.style.setProperty('background-color', 'transparent', 'important');
-            });
-
-            chartDiv.querySelectorAll('rect').forEach(rect => {
-                const fill = rect.getAttribute('fill');
-                if (!fill || fill.toLowerCase() === '#ffffff' || fill.toLowerCase() === 'white' || fill.toLowerCase() === '#fafefb' || fill.toLowerCase() === '#f5fbf7' || fill.includes('255')) {
-                    rect.setAttribute('fill', '#0F1530');
-                    rect.style.setProperty('fill', '#0F1530', 'important');
-                }
-            });
-
-            chartDiv.querySelectorAll('path').forEach(path => {
-                const fill = path.getAttribute('fill');
-                const stroke = path.getAttribute('stroke');
-                if (fill === 'none' || fill === 'transparent' || stroke) {
-                    path.setAttribute('stroke', '#60A5FA');
-                    path.setAttribute('stroke-width', '2.5');
-                    path.style.setProperty('stroke', '#60A5FA', 'important');
-                    path.style.setProperty('stroke-width', '2.5px', 'important');
-                    path.style.setProperty('stroke-opacity', '1', 'important');
-                }
-            });
-
-            chartDiv.querySelectorAll('line').forEach(line => {
-                line.setAttribute('stroke', '#60A5FA');
-                line.setAttribute('stroke-width', '2.5');
-                line.style.setProperty('stroke', '#60A5FA', 'important');
-                line.style.setProperty('stroke-width', '2.5px', 'important');
-            });
-        }
-
-        removeChartWatermark();
+    function orgInitials(name) {
+        const words = String(name || '').trim().split(/\s+/).filter(Boolean);
+        if (!words.length) return '?';
+        return (words.length > 1 ? words[0][0] + words[1][0] : words[0].slice(0, 2)).toUpperCase();
     }
 
-    function removeChartWatermark() {
-        const chartDiv = document.getElementById('chartDiv');
-        if (!chartDiv) return;
+    function orgLevelClass(levelNumber) {
+        const level = Number(levelNumber);
+        return Number.isInteger(level) && level >= 0 && level <= 6 ? 'pms-org-l' + level : 'pms-org-lnone';
+    }
 
-        // 1. Remove branding elements and their wrapper container groups
-        chartDiv.querySelectorAll('#brandingLogo, [id="brandingLogo"], [id*="brandingLogo"], [id*="branding"]').forEach(el => {
-            const containerGroup = el.closest('g');
-            if (containerGroup && containerGroup !== chartDiv.querySelector('svg') && containerGroup.parentNode) {
-                containerGroup.remove();
-            } else {
-                el.remove();
+    /** Build the reporting tree from {id, parent, name, level, level_number} points. */
+    function buildOrgTree(points) {
+        const byId = new Map();
+        points.forEach(point => byId.set(String(point.id), Object.assign({}, point, { children: [] })));
+        const roots = [];
+        byId.forEach(node => {
+            const parentId = node.parent ? String(node.parent) : null;
+            const parent = parentId && parentId !== String(node.id) ? byId.get(parentId) : null;
+            (parent ? parent.children : roots).push(node);
+        });
+        // Nodes caught in a reporting loop are unreachable from any root: show them as top-level.
+        const reachable = new Set();
+        const walk = node => { if (reachable.has(node)) return; reachable.add(node); node.children.forEach(walk); };
+        roots.forEach(walk);
+        byId.forEach(node => {
+            if (!reachable.has(node)) {
+                const owner = [...byId.values()].find(candidate => candidate.children.includes(node));
+                if (owner) owner.children = owner.children.filter(child => child !== node);
+                roots.push(node);
+                walk(node);
             }
         });
+        return roots;
+    }
 
-        // 2. Remove any title element referencing JSCharting and its container
-        chartDiv.querySelectorAll('title').forEach(title => {
-            if (title.textContent && title.textContent.toLowerCase().includes('jscharting')) {
-                const group = title.closest('g') || title.parentElement;
-                if (group && group !== chartDiv.querySelector('svg') && group.parentNode) {
-                    group.remove();
-                } else {
-                    title.remove();
-                }
-            }
-        });
-
-        // 3. Remove any links pointing to jscharting
-        chartDiv.querySelectorAll('a[href*="jscharting"]').forEach(el => el.remove());
+    function renderOrgNode(node) {
+        const children = node.children.length
+            ? '<ul>' + node.children.map(renderOrgNode).join('') + '</ul>'
+            : '';
+        const levelText = Number.isInteger(Number(node.level_number)) && node.level_number !== null ? 'L' + node.level_number : '';
+        return '<li>' +
+            '<div class="pms-org-node ' + orgLevelClass(node.level_number) + '" title="' + orgEscape(node.name + ' — ' + (node.level || '')) + '">' +
+                '<span class="pms-org-avatar">' + orgEscape(orgInitials(node.name)) + '</span>' +
+                '<span class="pms-org-text">' +
+                    '<span class="pms-org-name">' + orgEscape(node.name) + '</span>' +
+                    '<span class="pms-org-role">' + orgEscape(node.level || 'No designation') + '</span>' +
+                '</span>' +
+                (levelText ? '<span class="pms-org-badge">' + orgEscape(levelText) + '</span>' : '') +
+                (node.children.length ? '<span class="pms-org-count" title="Direct reports">' + node.children.length + '</span>' : '') +
+            '</div>' +
+            children +
+        '</li>';
     }
 
     function initOrganizationalChart(points = chartPoints) {
-        if (typeof JSC === 'undefined') {
-            console.warn('JScharting not loaded');
+        const container = orgTreeContainer();
+        if (!container) return;
+        latestChartPoints = Array.isArray(points) ? points : [];
+        const signature = JSON.stringify(latestChartPoints);
+        // Unchanged data keeps the current view (scroll position and zoom) instead of redrawing.
+        if (signature === renderedChartSignature && orgTreeCanvas()) return;
+        renderedChartSignature = signature;
+
+        if (!latestChartPoints.length) {
+            container.innerHTML = '<div class="pms-org-empty"><i class="fas fa-sitemap"></i><strong>No reporting structure yet</strong><span>Employees appear here once they are added with a reporting manager.</span></div>';
             return;
         }
 
-        const isDark = isDarkModeActive();
-        latestChartPoints = points;
-        // Recreate theme-dependent chart markup, including dark-mode inline overrides.
-        if (chart && typeof chart.dispose === 'function') chart.dispose();
-        const chartDiv = document.getElementById('chartDiv');
-        chartDiv.replaceChildren();
-        chartDiv.style.removeProperty('background');
-        chartDiv.style.removeProperty('background-color');
-        chart = JSC.chart('chartDiv', {
-            type: 'organizational',
-            overlapBranding: true,
-            debug: false,
-            box: { fill: isDark ? '#0F1530' : 'transparent' },
-            fill: isDark ? '#0F1530' : 'transparent',
-            palette: ['#2F6BFF', '#10b981', '#3b82f6', '#f59e0b', '#f97316', '#ef4444'],
-            defaultSeries: {
-                shape: {
-                    outline: { width: 1.5, color: isDark ? '#60A5FA' : 'white' },
-                    fill: '#2F6BFF'
-                },
-                connectorLine: {
-                    color: isDark ? '#60A5FA' : '#2F6BFF',
-                    width: 2.5,
-                    caps: { end: { type: 'arrow', size: 6 } }
-                },
-                label: {
-                    style: { fontSize: 12, color: 'white', fontWeight: '600' },
-                    verticalAlign: 'middle',
-                    autoWrap: true,
-                    maxWidth: 120
-                }
-            },
-            title: { label: { text: 'Employee Reporting Hierarchy', style: { fontSize: 16, color: isDark ? '#ffffff' : '#495057' } } },
-            legend: { visible: false },
-            defaultPoint: {
-                tooltip: '<b>%name</b><br>Designation: %level',
-                label_text: '%name',
-                connectorLine: {
-                    color: isDark ? '#60A5FA' : '#2F6BFF',
-                    width: 2.5,
-                    caps: { end: { type: 'arrow', size: 6 } }
-                }
-            },
-            series: [{
-                name: 'Employees',
-                points: latestChartPoints
-            }]
-        });
-
+        const scrollLeft = container.scrollLeft;
+        const scrollTop = container.scrollTop;
+        const hadCanvas = !!orgTreeCanvas();
+        container.innerHTML = '<div class="pms-org-canvas"><ul class="pms-org-tree">' + buildOrgTree(latestChartPoints).map(renderOrgNode).join('') + '</ul></div>';
         applyChartZoom();
-        applyDarkChartFixes();
-        removeChartWatermark();
-        setTimeout(removeChartWatermark, 10);
-        setTimeout(removeChartWatermark, 50);
-        setTimeout(removeChartWatermark, 150);
-        setTimeout(removeChartWatermark, 300);
-        setTimeout(removeChartWatermark, 600);
-        setTimeout(removeChartWatermark, 1000);
-        setTimeout(applyDarkChartFixes, 50);
-        setTimeout(applyDarkChartFixes, 300);
-        setTimeout(applyDarkChartFixes, 1000);
+        if (hadCanvas) {
+            container.scrollLeft = scrollLeft;
+            container.scrollTop = scrollTop;
+        } else {
+            centerOrgTree();
+        }
+    }
+
+    function centerOrgTree() {
+        const container = orgTreeContainer();
+        if (!container) return;
+        container.scrollLeft = Math.max(0, (container.scrollWidth - container.clientWidth) / 2);
+        container.scrollTop = 0;
     }
 
     function updateOrganizationalChart() {
@@ -2141,19 +2139,28 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(() => initOrganizationalChart(latestChartPoints));
     }
 
-    let previousChartTheme = isDarkModeActive();
-    const chartThemeObserver = new MutationObserver(() => {
-        const currentTheme = isDarkModeActive();
-        if (currentTheme === previousChartTheme) return;
-        previousChartTheme = currentTheme;
-        initOrganizationalChart(latestChartPoints);
-    });
-    for (const element of [document.documentElement, document.body]) {
-        chartThemeObserver.observe(element, {
-            attributes: true,
-            attributeFilter: ['data-pms-theme', 'data-bs-theme', 'data-theme', 'class']
+    // Drag to pan the chart (mouse); touch devices scroll natively.
+    (function enableOrgTreePanning() {
+        const container = orgTreeContainer();
+        if (!container) return;
+        let drag = null;
+        container.addEventListener('mousedown', event => {
+            if (event.button !== 0) return;
+            drag = { x: event.clientX, y: event.clientY, left: container.scrollLeft, top: container.scrollTop };
+            container.classList.add('is-panning');
+            event.preventDefault();
         });
-    }
+        window.addEventListener('mousemove', event => {
+            if (!drag) return;
+            container.scrollLeft = drag.left - (event.clientX - drag.x);
+            container.scrollTop = drag.top - (event.clientY - drag.y);
+        });
+        window.addEventListener('mouseup', () => {
+            if (!drag) return;
+            drag = null;
+            container.classList.remove('is-panning');
+        });
+    })();
 
     // Chart controls
     document.getElementById('zoomIn')?.addEventListener('click', () => {
@@ -2167,33 +2174,280 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('resetZoom')?.addEventListener('click', () => {
         chartZoom = 1;
         applyChartZoom();
+        centerOrgTree();
     });
+
+    /** Capture high-resolution PNG data URL from the rendered tree using html2canvas */
+    async function captureOrgChartPng() {
+        const canvas = orgTreeCanvas();
+        if (!canvas) {
+            throw new Error('No organizational chart found on the page.');
+        }
+
+        const tree = canvas.querySelector('.pms-org-tree');
+        if (!tree || !tree.children.length) {
+            throw new Error('No reporting structure to export yet. Please add employees with reporting managers first.');
+        }
+
+        if (typeof html2canvas !== 'function') {
+            throw new Error('Chart image generator library is still loading. Please try again in a moment.');
+        }
+
+        const container = orgTreeContainer();
+        const prevScrollLeft = container ? container.scrollLeft : 0;
+        const prevScrollTop = container ? container.scrollTop : 0;
+        const prevZoom = canvas.style.zoom;
+
+        try {
+            canvas.style.zoom = '1';
+            if (container) {
+                container.scrollLeft = 0;
+                container.scrollTop = 0;
+            }
+
+            const isDark = isDarkModeActive();
+            const backgroundColor = isDark ? '#0F1530' : '#ffffff';
+
+            const rendered = await html2canvas(canvas, {
+                scale: 2,
+                backgroundColor: backgroundColor,
+                useCORS: true,
+                logging: false,
+                allowTaint: true,
+                scrollX: 0,
+                scrollY: 0,
+                onclone: (clonedDoc) => {
+                    const clonedCanvas = clonedDoc.querySelector('.pms-org-canvas');
+                    if (clonedCanvas) {
+                        clonedCanvas.style.zoom = '1';
+                        clonedCanvas.style.transform = 'none';
+                        clonedCanvas.style.padding = '40px 32px 60px';
+                    }
+                }
+            });
+
+            return rendered.toDataURL('image/png');
+        } finally {
+            canvas.style.zoom = prevZoom;
+            if (container) {
+                container.scrollLeft = prevScrollLeft;
+                container.scrollTop = prevScrollTop;
+            }
+        }
+    }
 
     // Export chart
-    document.getElementById('exportChartBtn')?.addEventListener('click', (e) => {
+    document.getElementById('exportChartBtn')?.addEventListener('click', async (e) => {
         e.preventDefault();
-        chart?.export({
-            format: 'png',
-            width: 1920,
-            height: 1080,
-            download: true,
-            filename: 'organizational-chart-' + new Date().toISOString().split('T')[0]
-        });
+        const exportBtn = document.getElementById('exportChartBtn');
+        const origContent = exportBtn ? exportBtn.innerHTML : '';
+        if (exportBtn) {
+            exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Exporting...';
+        }
+
+        try {
+            const dataUrl = await captureOrgChartPng();
+            const link = document.createElement('a');
+            const todayStr = new Date().toISOString().split('T')[0];
+            link.href = dataUrl;
+            link.download = `organization-hierarchy-${todayStr}.png`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+
+            hierarchyAlert({
+                icon: 'success',
+                title: 'Export Complete!',
+                text: 'The organizational chart has been downloaded as a high-resolution PNG image.',
+                timer: 3000,
+                showConfirmButton: false,
+                toast: true,
+                position: 'top-end'
+            });
+        } catch (error) {
+            console.error('Export chart failed:', error);
+            hierarchyAlert({
+                icon: 'warning',
+                title: 'Export Notice',
+                text: error.message || 'Unable to export chart image at this time. Please use Print Chart instead.',
+                confirmButtonColor: '#2F6BFF'
+            });
+        } finally {
+            if (exportBtn) {
+                exportBtn.innerHTML = origContent;
+            }
+        }
     });
 
-    // Print chart
-    document.getElementById('printChartBtn')?.addEventListener('click', (e) => {
+    // Print chart via invisible iframe (100% bypasses browser popup blockers)
+    document.getElementById('printChartBtn')?.addEventListener('click', async (e) => {
         e.preventDefault();
-        const printWindow = window.open('', '_blank');
-        printWindow.document.write(`
-            <html>
-                <head><title>Employee Hierarchy</title><style>body{margin:0;padding:20px;font-family:Arial}</style></head>
-                <body><h2>Employee Reporting Hierarchy</h2><p>Generated on ${new Date().toLocaleString()}</p>
-                <img src="${chart?.export({ format: 'png', width: 1000, height: 700 }).dataUrl}" style="max-width:100%"></body>
-            </html>
-        `);
-        printWindow.document.close();
-        setTimeout(() => printWindow.print(), 500);
+        const printBtn = document.getElementById('printChartBtn');
+        const origContent = printBtn ? printBtn.innerHTML : '';
+        if (printBtn) {
+            printBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Preparing Print...';
+        }
+
+        try {
+            const canvas = orgTreeCanvas();
+            const tree = canvas ? canvas.querySelector('.pms-org-tree') : null;
+            if (!tree || !tree.children.length) {
+                throw new Error('No reporting structure to print yet. Please add employees with reporting managers first.');
+            }
+
+            const companyName = document.title.split('-')[0].trim() || 'Bitroxia PMS';
+            const timestamp = new Date().toLocaleString();
+
+            let dataUrl = null;
+            try {
+                dataUrl = await captureOrgChartPng();
+            } catch (renderErr) {
+                console.warn('html2canvas render skipped, falling back to pure HTML print markup:', renderErr);
+            }
+
+            let iframe = document.getElementById('pmsOrgPrintIframe');
+            if (!iframe) {
+                iframe = document.createElement('iframe');
+                iframe.id = 'pmsOrgPrintIframe';
+                iframe.style.position = 'fixed';
+                iframe.style.right = '0';
+                iframe.style.bottom = '0';
+                iframe.style.width = '0';
+                iframe.style.height = '0';
+                iframe.style.border = '0';
+                iframe.style.visibility = 'hidden';
+                document.body.appendChild(iframe);
+            }
+
+            const doc = iframe.contentDocument || iframe.contentWindow.document;
+            doc.open();
+
+            if (dataUrl) {
+                doc.write(`<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Organization Hierarchy - ${companyName}</title>
+  <style>
+    @page { size: landscape; margin: 10mm; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 12px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: #ffffff;
+      color: #0f172a;
+    }
+    .print-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #2F6BFF;
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+    }
+    .print-title { font-size: 22px; font-weight: 800; color: #0f172a; margin: 0; }
+    .print-subtitle { font-size: 13px; color: #64748b; margin-top: 4px; }
+    .print-meta { text-align: right; font-size: 12px; color: #64748b; line-height: 1.4; }
+    .print-chart-wrap {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      margin: 12px 0 20px;
+    }
+    .print-chart-img {
+      max-width: 100%;
+      height: auto;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
+    .print-footer {
+      border-top: 1px solid #e2e8f0;
+      padding-top: 10px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: #94a3b8;
+    }
+  </style>
+</head>
+<body>
+  <div class="print-header">
+    <div>
+      <h1 class="print-title">Organization Hierarchy</h1>
+      <div class="print-subtitle">Employee Reporting Structure &amp; Leadership Levels</div>
+    </div>
+    <div class="print-meta">
+      <div><strong>${companyName}</strong></div>
+      <div>Printed on: ${timestamp}</div>
+    </div>
+  </div>
+  <div class="print-chart-wrap">
+    <img src="${dataUrl}" class="print-chart-img" alt="Organization Chart" />
+  </div>
+  <div class="print-footer">
+    <div>Bitroxia PMS &bull; Enterprise Organizational Directory</div>
+    <div>Confidential &bull; Internal Company Records</div>
+  </div>
+</body>
+</html>`);
+            } else {
+                const styles = document.getElementById('pmsOrgTreeStyles')?.textContent || '';
+                doc.write(`<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Organization Hierarchy - ${companyName}</title>
+  <style>
+    @page { size: landscape; margin: 10mm; }
+    body { margin: 0; padding: 20px; font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; background: #ffffff; color: #0f172a; }
+    .print-header { border-bottom: 2px solid #2F6BFF; padding-bottom: 10px; margin-bottom: 20px; }
+    .print-title { font-size: 22px; font-weight: 800; margin: 0; }
+    .print-meta { font-size: 12px; color: #64748b; margin-top: 4px; }
+    ${styles}
+    .pms-org-canvas { zoom: 1 !important; padding: 20px !important; }
+  </style>
+</head>
+<body class="pms-org-export">
+  <div class="print-header">
+    <h1 class="print-title">Organization Hierarchy</h1>
+    <div class="print-meta">${companyName} &bull; Generated on ${timestamp}</div>
+  </div>
+  ${canvas ? canvas.outerHTML : '<p>No reporting structure yet.</p>'}
+</body>
+</html>`);
+            }
+            doc.close();
+
+            const img = doc.querySelector('img');
+            const triggerPrint = () => {
+                setTimeout(() => {
+                    iframe.contentWindow.focus();
+                    iframe.contentWindow.print();
+                }, 250);
+            };
+
+            if (img && !img.complete) {
+                img.onload = triggerPrint;
+                img.onerror = triggerPrint;
+            } else {
+                triggerPrint();
+            }
+        } catch (error) {
+            console.error('Print chart failed:', error);
+            hierarchyAlert({
+                icon: 'warning',
+                title: 'Print Notice',
+                text: error.message || 'Unable to generate print layout. Please try again.',
+                confirmButtonColor: '#2F6BFF'
+            });
+        } finally {
+            if (printBtn) {
+                printBtn.innerHTML = origContent;
+            }
+        }
     });
 
     // Fullscreen chart
@@ -2201,20 +2455,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const card = document.querySelector('.col-xl-6 .table-card');
         card.classList.toggle('fullscreen-mode');
         this.innerHTML = card.classList.contains('fullscreen-mode') ? '<i class="fas fa-compress"></i>' : '<i class="fas fa-expand"></i>';
-        setTimeout(() => chart?.redraw(), 100);
+        setTimeout(centerOrgTree, 100);
     });
 
     // Initialize
     initOrganizationalChart();
-
-    // Observe and instantly strip any dynamically injected JSCharting watermark
-    const targetChartDiv = document.getElementById('chartDiv');
-    if (targetChartDiv) {
-        const watermarkObserver = new MutationObserver(() => {
-            removeChartWatermark();
-        });
-        watermarkObserver.observe(targetChartDiv, { childList: true, subtree: true });
-    }
 
     // Keep the employee hierarchy current when new employees are added or updated.
     window.addEventListener('focus', updateOrganizationalChart);

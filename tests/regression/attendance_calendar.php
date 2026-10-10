@@ -53,7 +53,7 @@ config(['database.connections.central' => ['driver' => 'sqlite', 'database' => '
 \Illuminate\Support\Facades\Schema::create('leaves', function ($table) { $table->id(); $table->unsignedBigInteger('user_id'); $table->date('date')->nullable(); $table->date('start_date')->nullable(); $table->date('end_date')->nullable(); $table->string('status'); $table->timestamp('archived_at')->nullable(); });
 \Illuminate\Support\Facades\Schema::create('app_settings', function ($table) { $table->id(); $table->string('key'); $table->text('value'); });
 \Illuminate\Support\Facades\DB::table('users')->insert([
-    ['id' => 1, 'company_id' => 1, 'name' => 'Local HR', 'email' => 'hr@local.test', 'role' => 'hr'],
+    ['id' => 1, 'company_id' => 1, 'name' => 'Local Admin', 'email' => 'admin@local.test', 'role' => 'admin'],
     ['id' => 2, 'company_id' => 2, 'name' => 'Foreign', 'email' => 'foreign@local.test', 'role' => 'employee'],
     ['id' => 3, 'company_id' => 1, 'name' => 'Local employee', 'email' => 'employee@local.test', 'role' => 'employee'],
 ]);
@@ -64,7 +64,7 @@ config(['database.connections.central' => ['driver' => 'sqlite', 'database' => '
 \Illuminate\Support\Facades\Auth::guard('web')->setUser(\App\Models\User::findOrFail(1));
 $controller = new \App\Http\Controllers\AttendanceController;
 $data = $controller->index(\Illuminate\Http\Request::create('/attendance', 'GET', ['month' => 10, 'year' => 2026, 'user_id' => 3]))->getData();
-checkCalendar($data['employees']->pluck('id')->sort()->values()->all() === [1, 3], 'Calendar employee dropdown leaked another company.');
+checkCalendar($data['employees']->pluck('id')->sort()->values()->all() === [3], 'Calendar employee dropdown leaked another company.');
 checkCalendar($data['selectedEmployee']->id === 3, 'Calendar employee selection failed.');
 $scopedDays = collect($data['calendar']['days'])->keyBy('key');
 checkCalendar($scopedDays['2026-10-06']['holiday'] !== null && $scopedDays['2026-10-07']['holiday'] === null, 'Calendar holiday company isolation failed.');
@@ -89,7 +89,7 @@ $employeeTeam = $controller->index($teamRequest())->getData();
 checkCalendar($employeeTeam['teamRows']->total() === 1 && $employeeTeam['teamRows'][0]['employee']->id === 3, 'Employee team view leaked other employees.');
 \Illuminate\Support\Facades\Auth::guard('web')->setUser(\App\Models\User::findOrFail(1));
 $team = $controller->index($teamRequest())->getData();
-checkCalendar($team['summary']['employees'] === 2 && $team['teamRows']->pluck('employee.id')->sort()->values()->all() === [1, 3], 'Team view leaked another company.');
+checkCalendar($team['summary']['employees'] === 1 && $team['teamRows']->pluck('employee.id')->sort()->values()->all() === [3], 'Team view leaked another company.');
 checkCalendar($team['summary']['seconds'] === 25200, 'Team hours lost sessions or included archived/foreign records.');
 $teamEmployee = collect($team['teamRows']->items())->first(fn ($row) => $row['employee']->id === 3);
 $individual = $controller->index(\Illuminate\Http\Request::create('/attendance', 'GET', ['month' => 10, 'year' => 2026, 'user_id' => 3]))->getData();
@@ -110,5 +110,5 @@ for ($id = 4; $id <= 29; $id++) {
     \Illuminate\Support\Facades\DB::table('users')->insert(['id' => $id, 'company_id' => 1, 'name' => 'Employee ' . $id, 'email' => 'employee' . $id . '@local.test', 'role' => 'employee']);
 }
 $secondPage = $controller->index($teamRequest(['page' => 2]))->getData();
-checkCalendar($secondPage['teamRows']->total() === 28 && $secondPage['teamRows']->count() === 3 && $secondPage['summary']['employees'] === 28, 'Team pagination or full filtered totals failed.');
+checkCalendar($secondPage['teamRows']->total() === 27 && $secondPage['teamRows']->count() === 2 && $secondPage['summary']['employees'] === 27, 'Team pagination or full filtered totals failed.');
 echo "Attendance calendar and template checks passed.\n";

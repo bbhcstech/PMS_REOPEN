@@ -13,6 +13,7 @@
 </style>
 <div class="company-role-dashboard">
     <div class="role-panel"><h2>{{ $role->name }} Dashboard</h2><p class="mb-0">{{ $company->name }} &middot; Welcome, {{ auth()->user()->name }}</p></div>
+    @include('admin.partials.staff-clock')
     <div class="role-panel role-metrics">
         <div class="role-metric"><span>My assigned tasks</span><strong>{{ $taskCount ?? '—' }}</strong></div>
         <div class="role-metric"><span>My projects</span><strong>{{ $projectCount ?? '—' }}</strong></div>

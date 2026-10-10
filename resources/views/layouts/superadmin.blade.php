@@ -2027,6 +2027,9 @@
       </a>
 
       <!-- TENANT MANAGEMENT -->
+      <a href="{{ route('super-admin.ai.index') }}" class="{{ request()->routeIs('super-admin.ai.*') ? 'active' : '' }}">
+        <i class="bx bx-bot icon"></i> Platform Assistant
+      </a>
       <div class="nav-label">Tenant Management</div>
       <a href="{{ Route::has('superadmin.companies.index') ? route('superadmin.companies.index') : (Route::has('super-admin.companies.index') ? route('super-admin.companies.index') : url('/superadmin/companies')) }}" 
          class="{{ request()->routeIs('*companies.index') || request()->routeIs('*companies.list') || ((request()->routeIs('*companies.*')) && !request()->routeIs('*companies.metrics', '*companies.suspended')) ? 'active' : '' }}">
@@ -2354,6 +2357,24 @@
         sidebarOverlay.classList.remove('open');
       });
     }
+
+    // Auto-close sidebar on mobile when navigating
+    document.querySelectorAll('#sidebar .nav-item').forEach(function(link) {
+      link.addEventListener('click', function() {
+        if (window.innerWidth <= 992) {
+          if (sidebar) sidebar.classList.remove('open');
+          if (sidebarOverlay) sidebarOverlay.classList.remove('open');
+        }
+      });
+    });
+
+    // Close on Escape key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        if (sidebar) sidebar.classList.remove('open');
+        if (sidebarOverlay) sidebarOverlay.classList.remove('open');
+      }
+    });
 
     // Notification Dropdown Toggle
     const notifWrapper = document.getElementById('notifWrapper');

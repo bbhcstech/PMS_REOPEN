@@ -9,7 +9,7 @@
             <span>{{ $designation->unique_code ?? 'No code' }}</span>
         </div>
         <span class="node-level level-{{ $designation->level ?? 0 }}">L{{ $designation->level ?? 0 }}</span>
-        <button type="button" class="toggle-children {{ $designation->children->count() ? '' : 'is-hidden' }}" title="Expand or collapse children">
+        <button type="button" class="toggle-children {{ $designation->children->count() ? '' : 'is-hidden' }}" title="Expand or collapse children" aria-expanded="true">
             <i class="fas fa-chevron-down"></i>
         </button>
     </div>

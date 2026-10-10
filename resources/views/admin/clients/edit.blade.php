@@ -680,7 +680,7 @@ $(document).ready(function () {
             url: lookupUrl,
             type: 'GET',
             data: { pincode: pincode, country: country },
-            timeout: 3500,
+            timeout: 15000, // the server may try a second location provider
             success: function(res) {
                 if (res && res.success) {
                     applyPincodeLocationData(res, country);

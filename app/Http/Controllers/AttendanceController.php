@@ -27,6 +27,16 @@ use Illuminate\Support\Str;
 
 class AttendanceController extends Controller
 {
+    private function notifyAttendanceActivity(string $title, string $message, ?string $url, array $data, ?int $companyId): void
+    {
+        $employee = User::where('company_id', $companyId)->find($data['employee_id'] ?? null);
+        $record = Attendance::find($data['record_id'] ?? null);
+        if ($employee && (\App\Services\WorkforceAccess::isAuthority($employee) || $record?->staff_category === 'authority')) {
+            SystemNotificationService::notifyAdmins($title, $message, $url, $data);
+        } else {
+            SystemNotificationService::notifyAllRoles($title, $message, $url, $data, $companyId);
+        }
+    }
     /**
      * Role Helper Methods (Case-insensitive & SuperAdmin aware)
      */
@@ -34,7 +44,7 @@ class AttendanceController extends Controller
     {
         if (!$user) return false;
         $role = strtolower((string) ($user->role ?? ''));
-        return in_array($role, ['admin', 'superadmin', 'administrator'], true);
+        return \App\Services\WorkforceAccess::isAdmin($user);
     }
 
     private function isManagerOrHrUser($user): bool
@@ -48,7 +58,7 @@ class AttendanceController extends Controller
     {
         if (!$user) return false;
         $role = strtolower((string) ($user->role ?? ''));
-        return in_array($role, ['admin', 'superadmin', 'administrator', 'hr'], true);
+        return \App\Services\WorkforceAccess::isAdmin($user);
     }
 
     private function isEmployeeUser($user): bool
@@ -326,8 +336,16 @@ class AttendanceController extends Controller
         return $this->calendar($request);
     }
 
+    public function authorityIndex(Request $request)
+    {
+        abort_unless($this->isAdminUser(Auth::user()), 403);
+        $request->merge(['staff_category' => 'authority']);
+        return $this->calendar($request);
+    }
+
     private function calendar(Request $request)
     {
+        \App\Services\CompanyStaffSchema::ensure();
         $actor = Auth::user();
         abort_unless($actor, 401);
         abort_unless($actor->company_id, 403, 'No company assigned to this account.');
@@ -343,15 +361,11 @@ class AttendanceController extends Controller
         $start = Carbon::create($year, $month, 1)->startOfDay();
         $end = $start->copy()->endOfMonth();
         $canManage = $this->isAdminUser($actor) || $this->canManageAttendance($actor);
-        $query = User::with('employeeDetail')->where('company_id', $actor->company_id)
+        $staffCategory = $canManage ? ($request->input('staff_category') === 'authority' ? 'authority' : 'employee') : null;
+        $query = User::with(['employeeDetail.designation', 'companyStaffRole'])->where('company_id', $actor->company_id)
             ->whereRaw('LOWER(COALESCE(role, ?)) <> ?', ['', 'client'])->whereNull('archived_at');
-        if (! $canManage) {
-            if ($this->isManagerOrHrUser($actor) && method_exists($actor, 'visibleEmployeeIds')) {
-                $query->whereIn('id', collect($actor->visibleEmployeeIds())->push($actor->id)->unique());
-            } else {
-                $query->whereKey($actor->id);
-            }
-        }
+        if ($canManage) \App\Services\WorkforceAccess::usersWithHistory($query, $staffCategory, 'attendances');
+        else $query->whereKey($actor->id);
         $employees = $query->orderBy('name')->get();
         $teamView = $request->query('view') === 'team';
         $visibleEmployees = $employees;
@@ -364,8 +378,10 @@ class AttendanceController extends Controller
             : ($employees->firstWhere('id', $actor->id) ?? $employees->first());
         abort_if($request->filled('user_id') && ! $selectedEmployee, 403, 'You cannot view this employee.');
         $recordEmployeeIds = $teamView ? $visibleEmployees->pluck('id') : collect($selectedEmployee ? [$selectedEmployee->id] : []);
-        $records = $recordEmployeeIds->isNotEmpty() ? Attendance::whereIn('user_id', $recordEmployeeIds)
-            ->whereNull('archived_at')->whereBetween('date', [$start->toDateString(), $end->toDateString()])->orderBy('id')->get() : collect();
+        $recordsQuery = Attendance::whereIn('user_id', $recordEmployeeIds)
+            ->whereNull('archived_at')->whereBetween('date', [$start->toDateString(), $end->toDateString()])->orderBy('id');
+        if ($canManage) \App\Services\WorkforceAccess::records($recordsQuery, $staffCategory);
+        $records = $recordEmployeeIds->isNotEmpty() ? $recordsQuery->get() : collect();
         $holidayQuery = Holiday::whereBetween('date', [$start->toDateString(), $end->toDateString()]);
         if (Schema::connection('tenant')->hasColumn('holidays', 'archived_at')) $holidayQuery->whereNull('archived_at');
         if (Schema::connection('tenant')->hasColumn('holidays', 'company_id')) {
@@ -376,6 +392,7 @@ class AttendanceController extends Controller
         $leaves = collect();
         if ($recordEmployeeIds->isNotEmpty()) {
             $leaveQuery = Leave::whereIn('user_id', $recordEmployeeIds)->where('status', 'approved');
+            if ($canManage) \App\Services\WorkforceAccess::records($leaveQuery, $staffCategory);
             if (Schema::connection('tenant')->hasColumn('leaves', 'archived_at')) $leaveQuery->whereNull('archived_at');
             $leaveQuery->where(function ($query) use ($start, $end) {
                 $query->whereBetween('date', [$start->toDateString(), $end->toDateString()]);
@@ -475,7 +492,7 @@ class AttendanceController extends Controller
         $user = Auth::user();
 
         // Only admin can access settings
-        if ($user->role !== 'admin') {
+        if (! $this->isAdminUser($user)) {
             return redirect()->route('attendance.index')
                 ->with('error', 'You do not have permission to access settings.');
         }
@@ -738,8 +755,11 @@ class AttendanceController extends Controller
         $year = is_numeric($yearRaw) ? (int)$yearRaw : (int) now()->year;
 
         // pick users list (employees, hr, managers)
-        $employeeOptions = User::whereIn('role', ['employee', 'hr', 'manager'])->orderBy('name')->get();
-        $users = User::whereIn('role', ['employee', 'hr', 'manager'])
+        $category = $request->input('staff_category') === 'authority' ? 'authority' : 'employee';
+        $userQuery = \App\Services\WorkforceAccess::usersWithHistory(User::where('company_id', $user->company_id)->whereNull('archived_at'), $category, 'attendances');
+        $employeeOptions = (clone $userQuery)->orderBy('name')->get();
+        abort_if($userId && ! $employeeOptions->contains('id', (int) $userId), 403);
+        $users = $userQuery
             ->when($userId, function ($query) use ($userId) {
                 return $query->where('id', (int) $userId);
             })
@@ -750,6 +770,7 @@ class AttendanceController extends Controller
         // - month/year of clock_in (preferred) OR
         // - month/year of date (fallback)
         $attendanceQuery = Attendance::query();
+        \App\Services\WorkforceAccess::records($attendanceQuery, $category);
 
         // if user filter provided
         if ($userId) {
@@ -826,6 +847,8 @@ class AttendanceController extends Controller
         $departments = Department::get();
         $users = \App\Models\User::where('company_id', $user->company_id)
             ->whereRaw('LOWER(COALESCE(role, ?)) <> ?', ['', 'client'])->whereNull('archived_at')->orderBy('name')->get();
+        $category = $request->input('staff_category') === 'authority' ? 'authority' : 'employee';
+        $users = $users->filter(fn ($employee) => \App\Services\WorkforceAccess::isAuthority($employee) === ($category === 'authority'));
         $request->validate(['date' => 'nullable|date_format:Y-m-d', 'user_id' => 'nullable|integer']);
         abort_if($request->filled('user_id') && ! $users->contains('id', $request->integer('user_id')), 403);
         $year = now()->format('Y');
@@ -950,7 +973,7 @@ class AttendanceController extends Controller
                             Log::error('ClockInNotification failed (bulk)', ['user' => $userId, 'error' => $e->getMessage()]);
                         }
 
-                        SystemNotificationService::notifyAllRoles(
+                        $this->notifyAttendanceActivity(
                             'Attendance Updated',
                             $user->name . ' attendance was updated for ' . Carbon::parse($record->date)->format('M d, Y') . '.',
                             route('attendance.index'),
@@ -1014,7 +1037,7 @@ class AttendanceController extends Controller
                         Log::error('ClockInNotification failed (single)', ['user' => $userId, 'error' => $e->getMessage()]);
                     }
 
-                    SystemNotificationService::notifyAllRoles(
+                    $this->notifyAttendanceActivity(
                         'Attendance Updated',
                         $user->name . ' attendance was updated for ' . Carbon::parse($record->date)->format('M d, Y') . '.',
                         route('attendance.index'),
@@ -1029,7 +1052,7 @@ class AttendanceController extends Controller
             return response()->json(['success' => true, 'message' => 'Attendance saved successfully.']);
         }
 
-        return redirect()->route('attendance.index')->with('success', 'Attendance saved successfully.');
+        return redirect()->route($request->input('staff_category') === 'authority' ? 'admin.authority-attendance' : 'attendance.index')->with('success', 'Attendance saved successfully.');
     }
 
     /**
@@ -1768,6 +1791,7 @@ class AttendanceController extends Controller
      */
     public function edit(Request $request)
     {
+        abort_unless($this->isAdminUser(Auth::user()), 403, 'Only your company admin may edit attendance.');
         $user = Auth::user();
 
         if (!$user) {
@@ -1859,6 +1883,8 @@ class AttendanceController extends Controller
      */
     public function update(Request $request, Attendance $attendance)
     {
+        abort_unless($this->isAdminUser(Auth::user()), 403, 'Only your company admin may edit attendance.');
+        \App\Services\TenantScope::authorizeCompany($attendance->user?->company_id);
         $user = Auth::user();
 
         if (!$user) {
@@ -1986,6 +2012,7 @@ class AttendanceController extends Controller
 
         $query = Attendance::with('user.employeeDetail.designation')
             ->whereNotNull('archived_at');
+        \App\Services\WorkforceAccess::records($query, $request->input('staff_category') === 'authority' ? 'authority' : 'employee');
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -2086,6 +2113,7 @@ class AttendanceController extends Controller
 
         try {
             $response = DB::transaction(function () use ($user, $request) {
+                User::whereKey($user->id)->lockForUpdate()->firstOrFail();
                 $timezone = $this->resolveEmployeeTimezone(
                     $request->input('clock_in_timezone') ?? $request->input('timezone'),
                     $request->filled('clock_in_latitude') ? (float)$request->clock_in_latitude : null,
@@ -2093,6 +2121,9 @@ class AttendanceController extends Controller
                 );
                 $now = Carbon::now($timezone);
                 $today = $now->toDateString();
+                if (Attendance::where('user_id', $user->id)->where('date', '<>', $today)->whereNotNull('clock_in')->whereNull('clock_out')->exists()) {
+                    throw \Illuminate\Validation\ValidationException::withMessages(['attendance' => 'Please clock out of your active shift first.']);
+                }
 
                 $isWfhAssigned = WorkScheduleService::isUserWfhOnDate($user->id, $today);
                 $workFromType = $isWfhAssigned ? 'wfh' : 'office';
@@ -2137,7 +2168,7 @@ class AttendanceController extends Controller
                     ]);
                 }
 
-                SystemNotificationService::notifyAllRoles(
+                $this->notifyAttendanceActivity(
                     'Clock In Recorded',
                     $user->name . ' clocked in.',
                     route('attendance.index'),

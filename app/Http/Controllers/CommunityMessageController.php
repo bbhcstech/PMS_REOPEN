@@ -104,7 +104,7 @@ class CommunityMessageController extends Controller
         $user = Auth::user();
 
         $afterId = $request->query('after_id');
-        $request->validate(['after_id' => 'nullable|integer|min:0', 'before_id' => 'nullable|integer|min:1', 'search' => 'nullable|string|max:255']);
+        $request->validate(['since' => 'nullable|date', 'after_id' => 'nullable|integer|min:0', 'before_id' => 'nullable|integer|min:1', 'search' => 'nullable|string|max:255']);
         $beforeId = $request->query('before_id');
         $search = trim($request->query('search', ''));
 
@@ -147,6 +147,23 @@ class CommunityMessageController extends Controller
             );
         }
 
+        // Messages already on screen that changed since the last sync (reactions, edits, deletions, pins),
+        // so every client shows them without a page refresh.
+        $syncedAt = now();
+        $updated = collect();
+        if ($request->has('after_id') && $request->filled('since') && empty($search)) {
+            $updated = CommunityMessage::forTenant($companyId)
+                ->withTrashed()
+                ->with(['user', 'parent.user', 'reactions.user'])
+                ->where('id', '<=', (int) $afterId)
+                ->where('updated_at', '>=', \Carbon\Carbon::parse($request->query('since'))->setTimezone(config('app.timezone'))->subSeconds(2))
+                ->orderBy('id')
+                ->limit(200)
+                ->get()
+                ->map(fn ($m) => $this->formatMessage($m, $user))
+                ->values();
+        }
+
         // Pinned messages list
         $pinnedMessages = CommunityMessage::forTenant($companyId)
             ->where('is_pinned', true)
@@ -162,6 +179,8 @@ class CommunityMessageController extends Controller
         return response()->json([
             'success' => true,
             'messages' => $formatted,
+            'updated' => $updated,
+            'server_time' => $syncedAt->toIso8601String(),
             'company_id' => $companyId,
             'pinned_messages' => $pinnedMessages,
             'can_manage' => $this->canManage(),
@@ -372,6 +391,8 @@ class CommunityMessageController extends Controller
             ]);
         }
 
+        // Mark the message as changed so other open Community screens pick up the reaction.
+        $msg->touch();
         $msg->load('reactions.user');
 
         return response()->json([

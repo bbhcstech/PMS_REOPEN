@@ -2,27 +2,28 @@
 @section('title', 'Employee Attendance')
 @section('content')
 @php
+    $attendanceRoute = request('staff_category') === 'authority' ? 'admin.authority-attendance' : 'attendance.index';
     $statuses = ['present' => ['P', 'Present'], 'late' => ['LT', 'Late'], 'half_day' => ['HD', 'Half day'], 'absent' => ['A', 'Absent'], 'holiday' => ['H', 'Holiday'], 'leave' => ['L', 'Leave'], 'unpaid_leave' => ['UL', 'Unpaid leave'], 'day_off' => ['OFF', 'Day off'], 'wfh' => ['WFH', 'Work from home'], 'not_marked' => ['—', 'Not marked'], 'not_joined' => ['NJ', 'Before joining']];
     $hours = fn ($seconds) => sprintf('%dh %02dm', intdiv((int) $seconds, 3600), intdiv((int) $seconds % 3600, 60));
-    $link = fn ($date) => route('attendance.index', ['view' => 'team', 'month' => $date->month, 'year' => $date->year, 'search' => request('search')]);
+    $link = fn ($date) => route($attendanceRoute, ['view' => 'team', 'month' => $date->month, 'year' => $date->year, 'search' => request('search')]);
     $totalColumns = ['present' => 'Present', 'late' => 'Late', 'absent' => 'Absent', 'half_day' => 'Half day', 'holiday' => 'Holiday', 'leave' => 'Leave', 'unpaid_leave' => 'Unpaid', 'day_off' => 'Day off', 'wfh' => 'WFH'];
 @endphp
 <div class="attendance-team-page">
     <header class="at-panel at-header">
-        <div><span class="at-eyebrow">PEOPLE / ATTENDANCE</span><h1>Employee attendance</h1><p>Every employee, every day — one monthly overview.</p></div>
+        <div><span class="at-eyebrow">PEOPLE / ATTENDANCE</span><h1>{{ request('staff_category') === 'authority' ? 'Higher-level attendance' : 'Employee attendance' }}</h1><p>Every employee, every day — one monthly overview.</p></div>
         <div class="at-actions">
-            <a class="at-button" href="{{ route('attendance.index', ['month' => $month, 'year' => $year]) }}">Employee calendar</a>
-            <a class="at-button" href="{{ route('attendance.index', ['view' => 'team', 'month' => $month, 'year' => $year, 'search' => request('search'), 'format' => 'csv']) }}">Export CSV</a>
-            @if($canManage)<a class="at-button at-primary" href="{{ route('attendance.create') }}">+ Mark attendance</a>@endif
+            <a class="at-button" href="{{ route($attendanceRoute, ['month' => $month, 'year' => $year]) }}">Employee calendar</a>
+            <a class="at-button" href="{{ route($attendanceRoute, ['view' => 'team', 'month' => $month, 'year' => $year, 'search' => request('search'), 'format' => 'csv']) }}">Export CSV</a>
+            @if($canManage)<a class="at-button at-primary" href="{{ route('attendance.create', ['staff_category' => request('staff_category')]) }}">+ Mark attendance</a>@endif
         </div>
     </header>
-    <form class="at-panel at-filters" method="GET" action="{{ route('attendance.index') }}">
+    <form class="at-panel at-filters" method="GET" action="{{ route($attendanceRoute) }}">
         <input type="hidden" name="view" value="team">
         <label class="at-search">Find employee<input type="search" name="search" value="{{ request('search') }}" maxlength="100" placeholder="Name, employee ID or email"></label>
         <label>Month<select name="month">@for($m = 1; $m <= 12; $m++)<option value="{{ $m }}" @selected($month === $m)>{{ \Carbon\Carbon::create(2026, $m, 1)->format('F') }}</option>@endfor</select></label>
         <label>Year<input type="number" name="year" min="2000" max="2100" value="{{ $year }}" required></label>
         <button class="at-button at-primary" type="submit">Apply filters</button>
-        <a class="at-button" href="{{ route('attendance.index', ['view' => 'team']) }}">Reset</a>
+        <a class="at-button" href="{{ route($attendanceRoute, ['view' => 'team']) }}">Reset</a>
         @foreach(['search', 'month', 'year'] as $field)
             @error($field)<span role="alert">{{ $message }}</span>@enderror
         @endforeach
@@ -51,7 +52,7 @@
                 <tbody>
                 @forelse($teamRows as $row)
                     @php $employee = $row['employee']; $totals = $row['calendar']['totals']; @endphp
-                    <tr><th scope="row" class="at-person"><a href="{{ route('attendance.index', ['user_id' => $employee->id, 'month' => $month, 'year' => $year]) }}">{{ $employee->name }}</a><small>{{ $employee->employeeDetail?->employee_id ?: 'ID not assigned' }}</small><small>{{ $employee->email }}</small></th>
+                    <tr><th scope="row" class="at-person"><a href="{{ route($attendanceRoute, ['user_id' => $employee->id, 'month' => $month, 'year' => $year]) }}">{{ $employee->name }}</a><small>{{ $employee->employeeDetail?->employee_id ?: 'ID not assigned' }}</small><small>{{ $employee->companyStaffRole?->name ?? ucfirst($employee->role) }} &middot; {{ $employee->employeeDetail?->designation?->name }} @if($employee->employeeDetail?->designation) &middot; Level {{ $employee->employeeDetail->designation->level }} @endif</small><small>{{ $employee->email }}</small></th>
                     @foreach($row['calendar']['days'] as $day)
                         @php [$code, $label] = $statuses[$day['status']] ?? ['?', ucfirst(str_replace('_', ' ', $day['status']))]; @endphp
                         <td class="{{ $day['date']->isToday() ? 'at-today' : '' }}">
@@ -61,7 +62,7 @@
                                     @if($day['holiday'])<p>Holiday: {{ $day['holiday']->occassion ?? $day['holiday']->title ?? 'Company holiday' }}</p>@endif
                                     @if($day['leave'])<p>Leave: {{ $day['leave']->reason ?: 'Approved leave' }}</p>@endif
                                     @foreach($day['daily'] as $session)<div class="at-session"><strong>Session {{ $loop->iteration }}</strong><p>In: {{ $session->clock_in ?: 'Not recorded' }}<br>Out: {{ $session->clock_out ?: 'Not recorded' }}<br>Hours: {{ $hours($session->total_seconds) }}</p><p>Work arrangement: {{ $session->work_from_type ?: ($session->working_from ?: 'Not recorded') }}</p><p>Clock-in location: {{ $session->clock_in_address ?: 'Not recorded' }}<br>Clock-out location: {{ $session->clock_out_address ?: 'Not recorded' }}</p></div>@endforeach
-                                    <a href="{{ route('attendance.index', ['user_id' => $employee->id, 'month' => $month, 'year' => $year]) }}">Open employee calendar</a>
+                                    <a href="{{ route($attendanceRoute, ['user_id' => $employee->id, 'month' => $month, 'year' => $year]) }}">Open employee calendar</a>
                                 </div>
                             </details>
                             @else<span class="at-status at-{{ $day['status'] }}" title="{{ $day['key'] }}: {{ $label }}" aria-label="{{ $label }}">{{ $code }}</span>@endif
@@ -87,5 +88,14 @@
 .attendance-team-page .at-status{display:inline-flex;align-items:center;justify-content:center;min-width:32px;height:29px;padding:0 5px;border-radius:8px;font-size:10px;font-weight:750;background:#e8edf5;color:#50627e!important;-webkit-text-fill-color:#50627e!important}.attendance-team-page :is(.at-present,.at-wfh){background:#d8f5e8;color:#116247!important;-webkit-text-fill-color:#116247!important}.attendance-team-page .at-late{background:#fff0cc;color:#825000!important;-webkit-text-fill-color:#825000!important}.attendance-team-page .at-absent{background:#ffe1e6;color:#a5263e!important;-webkit-text-fill-color:#a5263e!important}.attendance-team-page :is(.at-half_day,.at-leave){background:#ece3ff;color:#6534a4!important;-webkit-text-fill-color:#6534a4!important}.attendance-team-page .at-holiday{background:#dce9ff;color:#2358a7!important;-webkit-text-fill-color:#2358a7!important}.attendance-team-page .at-unpaid_leave{background:#ffe5f1;color:#972b61!important;-webkit-text-fill-color:#972b61!important}
 .attendance-team-page .at-day summary{cursor:pointer;list-style:none}.attendance-team-page .at-day summary::-webkit-details-marker{display:none}.attendance-team-page .at-day[open]{min-width:260px;text-align:left}.attendance-team-page .at-detail{max-width:310px;min-width:250px;padding:12px;border:1px solid var(--at-border);border-radius:10px;margin-top:10px;overflow-wrap:anywhere}.attendance-team-page .at-detail p{margin:8px 0}.attendance-team-page .at-session{border-top:1px solid var(--at-border);padding-top:10px;margin-top:10px}.attendance-team-page .at-footer{margin-top:18px}.attendance-team-page .at-note{margin-top:14px;font-size:11px}.attendance-team-page .at-empty{padding:40px!important}
 @media(max-width:900px){.attendance-team-page{padding:12px}.attendance-team-page .at-panel{padding:18px}.attendance-team-page .at-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.attendance-team-page .at-table .at-person{min-width:180px;max-width:200px}.attendance-team-page .at-filters .at-search{flex-basis:100%}}
+
+/* Status badges keep their own colours everywhere (global dark-mode table rules turned the codes white in the grid). */
+html body .attendance-team-page .at-status{background:#e8edf5!important;color:#50627e!important;-webkit-text-fill-color:#50627e!important;opacity:1!important;filter:none!important}
+html body .attendance-team-page :is(.at-status.at-present,.at-status.at-wfh){background:#d8f5e8!important;color:#116247!important;-webkit-text-fill-color:#116247!important}
+html body .attendance-team-page .at-status.at-late{background:#fff0cc!important;color:#825000!important;-webkit-text-fill-color:#825000!important}
+html body .attendance-team-page .at-status.at-absent{background:#ffe1e6!important;color:#a5263e!important;-webkit-text-fill-color:#a5263e!important}
+html body .attendance-team-page :is(.at-status.at-half_day,.at-status.at-leave){background:#ece3ff!important;color:#6534a4!important;-webkit-text-fill-color:#6534a4!important}
+html body .attendance-team-page .at-status.at-holiday{background:#dce9ff!important;color:#2358a7!important;-webkit-text-fill-color:#2358a7!important}
+html body .attendance-team-page .at-status.at-unpaid_leave{background:#ffe5f1!important;color:#972b61!important;-webkit-text-fill-color:#972b61!important}
 </style>
 @endsection

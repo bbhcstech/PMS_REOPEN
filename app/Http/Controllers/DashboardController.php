@@ -61,6 +61,12 @@ class DashboardController extends Controller
         if ($decoded === false) {
             return null;
         }
+        if (\App\Services\WorkforceAccess::isAuthority(auth()->user())) {
+            abort_if(strlen($decoded) > 5 * 1024 * 1024 || ! @getimagesizefromstring($decoded), 422, 'Invalid clock-in photo.');
+            $path = 'authority-attendance/' . auth()->user()->company_id . '/' . \Illuminate\Support\Str::uuid() . '.jpg';
+            abort_unless(\Illuminate\Support\Facades\Storage::disk('local')->put($path, $decoded), 500, 'Could not save your clock-in photo.');
+            return $path;
+        }
 
         $directory = public_path('admin/uploads/attendance-selfies');
         if (! is_dir($directory)) {
@@ -827,6 +833,8 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
 
    public function clockIn(Request $request)
 {
+    $actor = \App\Services\WorkforceAccess::authorizeActor();
+    \App\Services\WorkforceRecordSchema::ensure();
     $validated = $request->validate([
         'clock_in_latitude' => ['nullable', 'numeric', 'between:-90,90'],
         'clock_in_longitude' => ['nullable', 'numeric', 'between:-180,180'],
@@ -862,65 +870,71 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
         $lng
     );
 
-    $existing = Attendance::where('user_id', $userId)
-        ->where('date', $today)
-        ->first();
+    return DB::connection('tenant')->transaction(function () use ($request, $validated, $now, $today, $userId, $lat, $lng, $distance) {
+        User::whereKey($userId)->lockForUpdate()->firstOrFail();
+        $existing = Attendance::where('user_id', $userId)
+            ->where('date', $today)
+            ->first();
 
-    if ($existing) {
-        return back()->with('error', 'You have already clocked in today.');
-    }
+        if ($existing) {
+            return back()->with('error', 'You have already clocked in today.');
+        }
+        if (Attendance::where('user_id', $userId)->whereNotNull('clock_in')->whereNull('clock_out')->exists()) {
+            return back()->with('error', 'Please clock out of your active shift first.');
+        }
 
-    $photoPath = !empty($validated['clock_in_selfie'])
-        ? $this->storeClockInPhoto($validated['clock_in_selfie'], $userId, $today)
-        : null;
+        $photoPath = !empty($validated['clock_in_selfie'])
+            ? $this->storeClockInPhoto($validated['clock_in_selfie'], $userId, $today)
+            : null;
 
-    $clockInTime = $now->format('H:i:s');
-    $currentLocationLabel = trim((string) ($validated['clock_in_address'] ?? ''));
+        $clockInTime = $now->format('H:i:s');
+        $currentLocationLabel = trim((string) ($validated['clock_in_address'] ?? ''));
 
-    if ($currentLocationLabel === '') {
-        $currentLocationLabel = 'Current location: '
-            . $lat
-            . ', '
-            . $lng
-            . ' (' . round($distance, 1) . 'm from office)';
-    }
+        if ($currentLocationLabel === '') {
+            $currentLocationLabel = 'Current location: '
+                . $lat
+                . ', '
+                . $lng
+                . ' (' . round($distance, 1) . 'm from office)';
+        }
 
-    $currentLocationLabel = mb_substr($currentLocationLabel, 0, 255);
+        $currentLocationLabel = mb_substr($currentLocationLabel, 0, 255);
 
-    $isWfhAssigned = WorkScheduleService::isUserWfhOnDate($userId, $today);
-    $workFromType = $isWfhAssigned ? 'wfh' : ($distance <= self::OFFICE_RADIUS_METERS ? 'office' : 'field');
-    $initialStatus = $isWfhAssigned ? 'wfh' : 'present';
+        $isWfhAssigned = WorkScheduleService::isUserWfhOnDate($userId, $today);
+        $workFromType = $isWfhAssigned ? 'wfh' : ($distance <= self::OFFICE_RADIUS_METERS ? 'office' : 'field');
+        $initialStatus = $isWfhAssigned ? 'wfh' : 'present';
 
-    $attendanceData = [
-        'user_id'            => $userId,
-        'date'               => $today,
-        'clock_in'           => $clockInTime,
-        'status'             => $initialStatus,
-        'clock_in_latitude'  => $lat,
-        'clock_in_longitude' => $lng,
-        'clock_in_address'   => $currentLocationLabel,
-        'clock_in_photo'     => $photoPath,
-        'work_from_type'     => $workFromType,
-    ];
+        $attendanceData = [
+            'user_id'            => $userId,
+            'date'               => $today,
+            'clock_in'           => $clockInTime,
+            'status'             => $initialStatus,
+            'clock_in_latitude'  => $lat,
+            'clock_in_longitude' => $lng,
+            'clock_in_address'   => $currentLocationLabel,
+            'clock_in_photo'     => $photoPath,
+            'work_from_type'     => $workFromType,
+        ];
 
-    if (Schema::hasColumn('attendances', 'location')) {
-        $attendanceData['location'] = $currentLocationLabel;
-    }
-    if (Schema::hasColumn('attendances', 'latitude')) {
-        $attendanceData['latitude'] = $lat;
-    }
-    if (Schema::hasColumn('attendances', 'longitude')) {
-        $attendanceData['longitude'] = $lng;
-    }
-    if (Schema::hasColumn('attendances', 'company_id')) {
-        $attendanceData['company_id'] = auth()->user()?->company_id;
-    }
+        if (Schema::hasColumn('attendances', 'location')) {
+            $attendanceData['location'] = $currentLocationLabel;
+        }
+        if (Schema::hasColumn('attendances', 'latitude')) {
+            $attendanceData['latitude'] = $lat;
+        }
+        if (Schema::hasColumn('attendances', 'longitude')) {
+            $attendanceData['longitude'] = $lng;
+        }
+        if (Schema::hasColumn('attendances', 'company_id')) {
+            $attendanceData['company_id'] = auth()->user()?->company_id;
+        }
 
-    $attendance = Attendance::create($attendanceData);
-    $this->applyOrganizationAttendanceRules($attendance);
+        $attendance = Attendance::create($attendanceData);
+        $this->applyOrganizationAttendanceRules($attendance);
 
-    $wfhMsg = $isWfhAssigned ? ' (Assigned Work From Home)' : '';
-    return back()->with('success', 'Clocked in at ' . $now->format('h:i A') . $wfhMsg . '. Current location saved.');
+        $wfhMsg = $isWfhAssigned ? ' (Assigned Work From Home)' : '';
+        return back()->with('success', 'Clocked in at ' . $now->format('h:i A') . $wfhMsg . '. Current location saved.');
+    }, 5);
 }
 
    public function markEmployeeWelcomeSeen(Request $request)
@@ -941,38 +955,43 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
 
    public function clockOut(Request $request)
 {
+    \App\Services\WorkforceAccess::authorizeActor();
+    \App\Services\WorkforceRecordSchema::ensure();
     $timezone = $this->resolveEmployeeTimezone($request->input('clock_out_timezone') ?? $request->input('timezone') ?? session('attendance_timezone.' . auth()->id()));
     $now = Carbon::now($timezone);
     $today = $now->toDateString();
     $userId = auth()->id();
 
-    $attendance = Attendance::where('user_id', $userId)
-        ->where('date', $today)
-        ->first();
-
-    // If not found for today's local date (e.g. crossing midnight), look for latest open clock-in
-    if (!$attendance) {
+    return DB::connection('tenant')->transaction(function () use ($now, $today, $userId) {
+        User::whereKey($userId)->lockForUpdate()->firstOrFail();
         $attendance = Attendance::where('user_id', $userId)
-            ->whereNotNull('clock_in')
-            ->whereNull('clock_out')
-            ->latest('date')
+            ->where('date', $today)
             ->first();
-    }
 
-    if (!$attendance) {
-        return back()->with('error', 'You need to clock in first.');
-    }
+        // If not found for today's local date (e.g. crossing midnight), look for latest open clock-in
+        if (!$attendance) {
+            $attendance = Attendance::where('user_id', $userId)
+                ->whereNotNull('clock_in')
+                ->whereNull('clock_out')
+                ->latest('date')
+                ->first();
+        }
 
-    if ($attendance->clock_out) {
-        return back()->with('error', 'You have already clocked out today.');
-    }
+        if (!$attendance) {
+            return back()->with('error', 'You need to clock in first.');
+        }
 
-    $attendance->update([
-        'clock_out' => $now->format('H:i:s')
-    ]);
-    $this->applyOrganizationAttendanceRules($attendance->fresh());
+        if ($attendance->clock_out) {
+            return back()->with('error', 'You have already clocked out today.');
+        }
 
-    return back()->with('success', 'Clocked out at ' . $now->format('h:i A'));
+        $attendance->update([
+            'clock_out' => $now->format('H:i:s')
+        ]);
+        $this->applyOrganizationAttendanceRules($attendance->fresh());
+
+        return back()->with('success', 'Clocked out at ' . $now->format('h:i A'));
+    }, 5);
 }
 
 

@@ -1539,7 +1539,7 @@
                     <p><i class="fas fa-info-circle me-1"></i>Review daily worked hours for each employee</p>
                 </div>
                 <div class="tabs-wrapper">
-                    <a href="{{ route('attendance.index') }}" class="nav-tab-btn">
+                    <a href="{{ route(request('staff_category') === 'authority' ? 'admin.authority-attendance' : 'attendance.index') }}" class="nav-tab-btn">
                         <i class="fas fa-list-ul"></i> Summary
                     </a>
                     <a href="{{ route('attendance.byMember') }}" class="nav-tab-btn">
@@ -1559,6 +1559,7 @@
                     <h6><i class="fas fa-filter"></i>Filter Attendance</h6>
                 </div>
                 <form id="attendanceFilter" method="GET" action="{{ route('attendance.byHour') }}" class="filter-grid">
+<input type="hidden" name="staff_category" value="{{ request('staff_category', 'employee') }}">
                     <div class="filter-group">
                         <label for="hour_user_id"><i class="fas fa-user"></i> Employee</label>
                         <select id="hour_user_id" name="user_id" class="form-control">
@@ -1632,7 +1633,7 @@
                         <button type="button" class="btn-clear-selection" id="hourClearSelection">
                             <i class="fas fa-times"></i>Clear
                         </button>
-                        <a href="{{ route('attendance.archive') }}" class="btn-archive-link">
+                        <a href="{{ route('attendance.archive', ['staff_category' => request('staff_category')]) }}" class="btn-archive-link">
                             <i class="fas fa-archive"></i> Archived
                             <span class="archive-count-badge">{{ $archivedCount ?? 0 }}</span>
                         </a>

@@ -32,7 +32,7 @@
     ];
 @endphp
 
-<main class="projects-page">
+<main id="projects-list-page" class="projects-page">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <!-- Breadcrumb -->
@@ -200,8 +200,8 @@
     </div>
 
     <!-- Table -->
-    <div class="table-card">
-        <div class="table-header">
+    <div id="projects-list-card" class="table-card">
+        <div id="projects-list-header" class="table-header">
             <div class="table-title">
                 <div class="table-title-icon">
                     <i class="fas fa-list"></i>
@@ -213,8 +213,9 @@
             </div>
         </div>
 
-        <div class="table-wrapper">
-            <table id="projectTable" class="project-table">
+        <div id="projects-table-tools" data-live-preserve></div>
+        <div id="projects-table-wrapper" class="table-wrapper">
+            <table id="projectTable" class="project-table" data-pms-toolbar-host="projects-table-tools">
                 <thead>
                     <tr>
                         @if($isAdmin)
@@ -349,8 +350,8 @@
                                 </div>
                             </td>
                             <td class="action-cell">
-                                <div class="dropdown project-action-dropdown">
-                                    <button class="action-btn" type="button" data-project-action-toggle aria-haspopup="menu" aria-expanded="false">
+                                <div class="dropdown project-action-dropdown" data-live-preserve>
+                                    <button class="action-btn" type="button" data-project-action-toggle aria-label="Project actions" aria-haspopup="menu" aria-expanded="false">
                                         <i class="fas fa-ellipsis-v"></i>
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end">
@@ -408,7 +409,7 @@
         </div>
 
         <!-- Table Footer -->
-        <div class="table-footer">
+        <div id="projects-list-footer" class="table-footer">
             <div class="footer-info">
                 <i class="fas fa-info-circle"></i>
                 Showing {{ $projects->count() }} project(s)
@@ -759,29 +760,29 @@
     @endif
 
     <!-- Status Bar -->
-    <div class="status-bar">
-        <div class="status-item">
+    <div id="projects-summary" class="status-bar">
+        <div class="status-item" data-live-key="total">
             <i class="fas fa-project-diagram text-primary"></i>
             <span>{{ $projects->count() }}</span> Total Projects
         </div>
-        <div class="status-item">
+        <div class="status-item" data-live-key="completed">
             <i class="fas fa-check-circle text-success"></i>
             <span>{{ $projects->where('status', 'completed')->count() }}</span> Completed
         </div>
-        <div class="status-item">
+        <div class="status-item" data-live-key="in-progress">
             <i class="fas fa-spinner text-primary"></i>
             <span>{{ $projects->where('status', 'in progress')->count() }}</span> In Progress
         </div>
-        <div class="status-item">
+        <div class="status-item" data-live-key="pending">
             <i class="fas fa-clock text-warning"></i>
             <span>{{ $projects->whereIn('status', ['pending', 'not started'])->count() }}</span> Pending
         </div>
-        <div class="status-item">
+        <div class="status-item" data-live-key="delayed">
             <i class="fas fa-triangle-exclamation text-danger"></i>
             <span>{{ $projects->filter(fn($p) => $p->status === 'delayed' || ($p->deadline && \Carbon\Carbon::parse($p->deadline)->isPast() && $p->status !== 'completed'))->count() }}</span> Delayed
         </div>
         @if($isAdmin)
-            <div class="status-item">
+            <div class="status-item" data-live-key="assigned">
                 <i class="fas fa-user-check text-primary"></i>
                 <span>{{ $projects->flatMap(fn($project) => $project->users->pluck('id'))->unique()->count() }}</span> Employees Assigned
             </div>
@@ -790,6 +791,23 @@
 </main>
 
 <style>
+    #projects-summary {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    #projects-summary > .status-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        white-space: nowrap;
+    }
+
+    #projects-table-tools:empty { display: none; }
+
     /* ===== PREMIUM PROJECTS PAGE - ENLARGED TEXT ===== */
     .projects-page {
         padding: 30px 0;
@@ -2041,7 +2059,8 @@
         z-index: 99999 !important;
     }
 
-    .projects-page .project-action-dropdown .dropdown-menu.show {
+    .projects-page .project-action-dropdown .dropdown-menu.show,
+    body > .project-floating-action-menu.show {
         display: block !important;
     }
 
@@ -2768,11 +2787,10 @@ document.addEventListener('DOMContentLoaded', function () {
         const top = upwards ? rect.top - menu.offsetHeight - 6 : rect.bottom + 6;
         menu.style.setProperty('top', Math.max(gap, Math.min(top, window.innerHeight - menu.offsetHeight - gap)) + 'px', 'important');
     }
-    document.querySelectorAll('[data-project-action-toggle]').forEach(button => {
+    function openMenu(button) {
+        if (active && active.button === button) { closeMenu(); return; }
         const menu = button.parentElement.querySelector('.dropdown-menu');
         if (!menu) return;
-        function openMenu() {
-            if (active && active.button === button) { closeMenu(); return; }
             closeMenu();
             const marker = document.createComment('project action menu');
             menu.replaceWith(marker);
@@ -2781,17 +2799,22 @@ document.addEventListener('DOMContentLoaded', function () {
             menu.classList.add('project-floating-action-menu', 'show');
             button.setAttribute('aria-expanded', 'true');
             positionMenu();
+    }
+    // Delegate to include rows inserted by the live record refresh.
+    document.addEventListener('click', function (event) {
+        const button = event.target.closest('[data-project-action-toggle]');
+        if (button) {
+            event.preventDefault();
+            openMenu(button);
         }
-        button.addEventListener('click', function (event) {
+    });
+    document.addEventListener('keydown', function (event) {
+        const button = event.target.closest('[data-project-action-toggle]');
+        if (button && event.key === 'ArrowDown') {
             event.preventDefault();
-            openMenu();
-        });
-        button.addEventListener('keydown', function (event) {
-            if (event.key !== 'ArrowDown') return;
-            event.preventDefault();
-            if (!active || active.button !== button) openMenu();
-            menu.querySelector('.dropdown-item')?.focus();
-        });
+            if (!active || active.button !== button) openMenu(button);
+            active?.menu.querySelector('.dropdown-item')?.focus();
+        }
     });
     document.addEventListener('click', function (event) {
         if (!active || active.button.contains(event.target)) return;

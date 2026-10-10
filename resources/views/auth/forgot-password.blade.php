@@ -16,7 +16,7 @@
     <meta name="description" content="" />
 
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="admin/assets/img/favicon/favicon.ico" />
+    <link rel="icon" type="image/x-icon" href="{{ asset('admin/assets/img/favicon/favicon.ico') }}" />
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -25,31 +25,35 @@
       href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
       rel="stylesheet" />
 
-    <link rel="stylesheet" href="admin/assets/vendor/fonts/iconify-icons.css" />
+    <link rel="stylesheet" href="{{ asset('admin/assets/vendor/fonts/iconify-icons.css') }}" />
 
     <!-- Core CSS -->
-    <!-- build:css assets/vendor/css/theme.css  -->
-
-    <link rel="stylesheet" href="admin/assets/vendor/css/core.css" />
-    <link rel="stylesheet" href="admin/assets/css/demo.css" />
+    <link rel="stylesheet" href="{{ asset('admin/assets/vendor/css/core.css') }}" />
+    <link rel="stylesheet" href="{{ asset('admin/assets/css/demo.css') }}" />
 
     <!-- Vendors CSS -->
-
-    <link rel="stylesheet" href="admin/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
-
-    <!-- endbuild -->
+    <link rel="stylesheet" href="{{ asset('admin/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css') }}" />
 
     <!-- Page CSS -->
-    <!-- Page -->
-    <link rel="stylesheet" href="admin/assets/vendor/css/pages/page-auth.css" />
+    <link rel="stylesheet" href="{{ asset('admin/assets/vendor/css/pages/page-auth.css') }}" />
 
     <!-- Helpers -->
-    <script src="admin/assets/vendor/js/helpers.js"></script>
-    <!--! Template customizer & Theme config files MUST be included after core stylesheets and helpers.js in the <head> section -->
-
-    <!--? Config:  Mandatory theme config file contain global vars & default theme options, Set your preferred theme option in this file.  -->
-
-    <script src="admin/assets/js/config.js"></script>
+    <script src="{{ asset('admin/assets/vendor/js/helpers.js') }}"></script>
+    <script src="{{ asset('admin/assets/js/config.js') }}"></script>
+    <style>
+      @media (max-width: 576px) {
+        .authentication-wrapper.authentication-basic .authentication-inner {
+          max-width: 100% !important;
+          padding: 0 12px !important;
+        }
+        .authentication-wrapper .card {
+          border-radius: 16px !important;
+        }
+        .authentication-wrapper .card .card-body {
+          padding: 24px 18px !important;
+        }
+      }
+    </style>
   </head>
 
   <body>
@@ -126,16 +130,17 @@
 
             <form id="formAuthentication" class="mb-6" method="POST" action="{{ route('password.email') }}">
                @csrf
-                <div class="mb-6">
-                  <label for="email" class="form-label">Email</label>
-                  <x-input-label for="email" :value="__('Email')" />
-                    <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus />
-                   <x-input-error :messages="$errors->get('email')" class="mt-2" />
+                <div class="mb-4">
+                  <label for="email" class="form-label">Email Address</label>
+                  <input id="email" class="form-control" type="email" name="email" value="{{ old('email') }}" required autofocus placeholder="Enter your registered email" />
+                  @if($errors->has('email'))
+                    <div class="text-danger small mt-1">{{ $errors->first('email') }}</div>
+                  @endif
                 </div>
-                <button class="btn btn-primary d-grid w-100">Send Reset Link</button>
+                <button class="btn btn-primary d-grid w-100" type="submit">Send Reset Link</button>
               </form>
               <div class="text-center">
-                <a href="{{ route('login') }}" class="d-flex justify-content-center">
+                <a href="{{ route('login') }}" class="d-flex justify-content-center align-items-center">
                   <i class="icon-base bx bx-chevron-left me-1"></i>
                   Back to login
                 </a>
@@ -149,30 +154,14 @@
 
     <!-- / Content -->
 
-  
-
     <!-- Core JS -->
-
-    <script src="admin/assets/vendor/libs/jquery/jquery.js"></script>
-
-    <script src="admin/assets/vendor/libs/popper/popper.js"></script>
-    <script src="admin/assets/vendor/js/bootstrap.js"></script>
-
-    <script src="admin/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
-
-    <script src="admin/assets/vendor/js/menu.js"></script>
-
-    <!-- endbuild -->
-
-    <!-- Vendors JS -->
+    <script src="{{ asset('admin/assets/vendor/libs/jquery/jquery.js') }}"></script>
+    <script src="{{ asset('admin/assets/vendor/libs/popper/popper.js') }}"></script>
+    <script src="{{ asset('admin/assets/vendor/js/bootstrap.js') }}"></script>
+    <script src="{{ asset('admin/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js') }}"></script>
+    <script src="{{ asset('admin/assets/vendor/js/menu.js') }}"></script>
 
     <!-- Main JS -->
-
-    <script src="admin/assets/js/main.js"></script>
-
-    <!-- Page JS -->
-
-    <!-- Place this tag before closing body tag for github widget button. -->
-    <script async defer src="https://buttons.github.io/buttons.js"></script>
+    <script src="{{ asset('admin/assets/js/main.js') }}"></script>
   </body>
 </html>

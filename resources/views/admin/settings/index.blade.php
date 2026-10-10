@@ -122,6 +122,13 @@
         @endforeach
     </div>
 
+    <div id="finance-settings-placeholder" class="card border-0 shadow-sm d-none" role="status" data-live-preserve>
+        <div class="card-body text-center p-4">
+            <h5 class="fw-semibold mb-2">In Development</h5>
+            <p class="text-muted mb-0">Finance settings are currently in development.</p>
+        </div>
+    </div>
+
     <!-- Quick Stats Footer -->
     <div class="row mt-5">
         <div class="col-12">
@@ -285,6 +292,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function filterCards() {
         const query = searchInput.value.toLowerCase().trim();
+        document.getElementById('finance-settings-placeholder').classList.toggle('d-none', currentFilter !== 'Finance');
 
         cards.forEach(card => {
             const category = card.getAttribute('data-category');

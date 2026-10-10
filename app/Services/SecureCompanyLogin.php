@@ -22,14 +22,7 @@ class SecureCompanyLogin
         $login = strtolower(trim((string) $request->input('email')));
         $password = (string) $request->input('password');
         $primary = config('database.connections.session_db.database') ?: config('database.connections.mysql.database');
-        // Discard stale identities before changing a connection with overlapping IDs.
-        foreach (['web', 'super_admin'] as $guard) {
-            $request->session()->forget(Auth::guard($guard)->getName());
-            \Illuminate\Support\Facades\Cookie::queue(\Illuminate\Support\Facades\Cookie::forget(Auth::guard($guard)->getRecallerName()));
-            Auth::guard($guard)->forgetUser();
-        }
-        $request->session()->forget(['current_company_id', 'current_company_db', 'current_company_name']);
-        app(CompanyContext::class)->reset();
+        app(AuthenticationSession::class)->clear($request);
         $this->useDatabase($primary);
 
         $explicitCompany = $request->filled('company_id') || $request->filled('company_code');

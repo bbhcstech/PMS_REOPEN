@@ -729,13 +729,118 @@
         }
 
         /* RESPONSIVE DESIGN */
+        .dev-sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(7, 11, 26, 0.68);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 9990;
+            cursor: pointer;
+            transition: opacity 0.25s ease;
+        }
+        .dev-sidebar-overlay.show {
+            display: block;
+        }
+        body.dev-sidebar-open {
+            overflow: hidden !important;
+            touch-action: none;
+        }
+        .dev-sidebar-close-btn {
+            display: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            color: #ffffff;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 20px;
+            margin-left: auto;
+            flex-shrink: 0;
+            transition: background 0.2s ease;
+        }
+        .dev-sidebar-close-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.4);
+            color: #f87171;
+        }
+        .dev-profile-main-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 24px;
+        }
+        .dev-dashboard-main-grid {
+            display: grid;
+            grid-template-columns: 2.2fr 1fr;
+            gap: 24px;
+        }
+        .dev-split-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
         @media (max-width: 992px) {
-            .dev-sidebar { transform: translateX(-100%); }
+            .dev-sidebar {
+                transform: translateX(-105%);
+                z-index: 10000;
+                width: min(280px, 86vw);
+                box-shadow: 18px 0 46px rgba(0,0,0,0.4);
+                transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            }
             .dev-sidebar.open { transform: translateX(0); }
-            .dev-main-wrapper { margin-left: 0; }
-            .toggle-sidebar-btn { display: block; }
+            .dev-sidebar-close-btn { display: flex; }
+            .dev-main-wrapper { margin-left: 0; width: 100%; }
+            .toggle-sidebar-btn {
+                display: inline-flex !important;
+                align-items: center;
+                justify-content: center;
+                width: 38px;
+                height: 38px;
+                border-radius: 10px;
+                background: var(--bg-surface-subtle);
+                border: 1px solid var(--border-color);
+                color: var(--slate-heading);
+                cursor: pointer;
+                font-size: 20px;
+            }
             .dev-topbar { padding: 0 16px; }
-            .dev-body-content { padding: 20px 16px; }
+            .dev-body-content { padding: 18px 14px; }
+            .dev-profile-main-grid,
+            .dev-dashboard-main-grid,
+            .dev-split-grid {
+                grid-template-columns: 1fr !important;
+                gap: 16px !important;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .page-header-title {
+                font-size: 15px;
+                max-width: 170px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .user-meta {
+                display: none;
+            }
+            .user-profile-btn {
+                padding: 4px;
+            }
+            .dev-topbar-right {
+                gap: 8px;
+            }
+            .dev-card {
+                padding: 16px !important;
+            }
+            .dev-body-content {
+                padding: 14px 10px;
+            }
         }
 
         /* Bootstrap 5 Pagination Compatibility */
@@ -797,19 +902,23 @@
         }
     </style>
     @yield('styles')
+    @stack('styles')
 </head>
 <body>
 
     <!-- SIDEBAR NAVIGATION -->
     <aside class="dev-sidebar" id="devSidebar">
-        <div class="dev-sidebar-brand">
-            <div class="dev-brand-icon" style="background: transparent; box-shadow: none; width: 40px; height: 40px; border-radius: 50%; overflow: hidden;">
+        <div class="dev-sidebar-brand" style="display: flex; align-items: center;">
+            <div class="dev-brand-icon" style="background: transparent; box-shadow: none; width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
                 <img src="{{ asset('logos/bitroxia_logo.png') }}" alt="Bitroxia" style="width: 100%; height: 100%; object-fit: cover;">
             </div>
-            <div>
-                <div class="dev-brand-title" style="font-size: 16px; font-weight: 800; color: #ffffff;">Bitroxia Developer Hub</div>
+            <div style="flex-grow: 1; min-width: 0;">
+                <div class="dev-brand-title" style="font-size: 16px; font-weight: 800; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Bitroxia Developer Hub</div>
                 <span class="dev-brand-sub">DEVELOPER WORKSPACE</span>
             </div>
+            <button type="button" class="dev-sidebar-close-btn" onclick="closeDevSidebar()" aria-label="Close sidebar">
+                <i class="bx bx-x"></i>
+            </button>
         </div>
 
         <nav class="dev-nav-menu">
@@ -864,6 +973,9 @@
         </div>
     </aside>
 
+    <!-- MOBILE SIDEBAR OVERLAY -->
+    <div class="dev-sidebar-overlay" id="devSidebarOverlay" onclick="closeDevSidebar()"></div>
+
     <!-- MAIN WRAPPER -->
     <div class="dev-main-wrapper">
         @if(session('superadmin_preview_active'))
@@ -885,7 +997,7 @@
         <!-- TOPBAR -->
         <header class="dev-topbar">
             <div class="dev-topbar-left">
-                <button class="toggle-sidebar-btn" onclick="document.getElementById('devSidebar').classList.toggle('open')">
+                <button class="toggle-sidebar-btn" onclick="toggleDevSidebar()" aria-label="Toggle navigation menu">
                     <i class="bx bx-menu"></i>
                 </button>
                 <div class="page-header-title">@yield('page_title', 'Developer Workspace')</div>
@@ -957,6 +1069,48 @@
     </div>
 
     <script>
+        function toggleDevSidebar() {
+            const sidebar = document.getElementById('devSidebar');
+            const overlay = document.getElementById('devSidebarOverlay');
+            if (sidebar) {
+                const isOpen = sidebar.classList.toggle('open');
+                if (overlay) overlay.classList.toggle('show', isOpen);
+                document.body.classList.toggle('dev-sidebar-open', isOpen);
+            }
+        }
+
+        function closeDevSidebar() {
+            const sidebar = document.getElementById('devSidebar');
+            const overlay = document.getElementById('devSidebarOverlay');
+            if (sidebar) sidebar.classList.remove('open');
+            if (overlay) overlay.classList.remove('show');
+            document.body.classList.remove('dev-sidebar-open');
+        }
+
+        // Close sidebar when clicking links on mobile
+        document.querySelectorAll('#devSidebar .dev-nav-item').forEach(function(link) {
+            link.addEventListener('click', function() {
+                if (window.innerWidth <= 992) {
+                    closeDevSidebar();
+                }
+            });
+        });
+
+        // Close on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeDevSidebar();
+                const menu = document.getElementById('userDropdownMenu');
+                if (menu) menu.classList.remove('show');
+            }
+        });
+
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 992) {
+                closeDevSidebar();
+            }
+        });
+
         function toggleUserDropdown(e) {
             e.stopPropagation();
             const menu = document.getElementById('userDropdownMenu');
@@ -999,6 +1153,7 @@
     </script>
     @include('admin.layout.toasts')
     @yield('scripts')
+    @stack('js')
     @include('partials.phone-fields')
 <script src="{{ asset('admin/assets/js/pms-live-records.js') }}?v={{ @filemtime(public_path('admin/assets/js/pms-live-records.js')) }}" data-session-url="{{ route('company.session-status') }}" data-login-url="{{ route('login') }}" defer></script>
 </body>

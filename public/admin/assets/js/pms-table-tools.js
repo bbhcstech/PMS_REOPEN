@@ -192,7 +192,10 @@
     var dataTableWrapper = controller.table.closest('.dataTables_wrapper');
     var anchor = dataTableWrapper || controller.scrollHost || controller.table.closest('.table-responsive, .gantt-matrix-wrapper, .table-wrapper') || controller.table;
     var parent = anchor.parentNode;
-    if (parent) parent.insertBefore(toolbar, anchor);
+    var toolbarHostId = controller.table.getAttribute('data-pms-toolbar-host');
+    var toolbarHost = toolbarHostId ? document.getElementById(toolbarHostId) : null;
+    if (toolbarHost) toolbarHost.appendChild(toolbar);
+    else if (parent) parent.insertBefore(toolbar, anchor);
     controller.toolbar = toolbar;
   }
 

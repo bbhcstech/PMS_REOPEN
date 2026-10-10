@@ -798,6 +798,7 @@
             <div class="form-body">
                 <form method="POST" action="{{ route('attendance.store') }}">
                     @csrf
+                    <input type="hidden" name="staff_category" value="{{ request('staff_category', 'employee') }}">
 
                     <!-- ===== FORM GRID ===== -->
                     <div class="form-grid">

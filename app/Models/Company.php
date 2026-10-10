@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Company extends Model
 {
     protected $connection = 'central';
-    use SoftDeletes;
+    use SoftDeletes, \App\Models\Concerns\HasCompanyAiAgent;
 
     protected $fillable = [
         'company_code',

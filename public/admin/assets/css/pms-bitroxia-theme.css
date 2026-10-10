@@ -7196,3 +7196,502 @@ html body i.bx,
   mask-image: none !important;
   vertical-align: middle;
 }
+
+/* =========================================================================
+   SweetAlert2 in dark mode (e.g. "Added to employee form" after saving a
+   department / sub department / designation from the Add Employee "+" popups).
+   SweetAlert ships a white popup and draws its animated success check with
+   white pieces; on the dark theme that showed a white box, unreadable text
+   and white blobs over the icon. Match the dark surface instead.
+   ========================================================================= */
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) .swal2-container.swal2-backdrop-show {
+  background: rgba(3, 6, 18, 0.72) !important;
+}
+
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) .swal2-popup {
+  background: #0F1530 !important;
+  color: #EEF1FB !important;
+  border: 1px solid rgba(238, 241, 251, 0.12) !important;
+  box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.6) !important;
+}
+
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) .swal2-popup .swal2-title {
+  color: #EEF1FB !important;
+  -webkit-text-fill-color: #EEF1FB !important;
+}
+
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) .swal2-popup :is(.swal2-html-container, .swal2-footer, .swal2-validation-message) {
+  color: #9AA3C7 !important;
+  -webkit-text-fill-color: #9AA3C7 !important;
+  background: transparent !important;
+}
+
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) .swal2-popup .swal2-footer {
+  border-top-color: rgba(238, 241, 251, 0.09) !important;
+}
+
+/* Success icon: the circular "wipe" pieces and the fix bar must take the popup colour. */
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) .swal2-icon.swal2-success [class^="swal2-success-circular-line"],
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) .swal2-icon.swal2-success .swal2-success-fix {
+  background-color: #0F1530 !important;
+}
+
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) .swal2-icon {
+  background: transparent !important;
+}
+
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) .swal2-popup :is(.swal2-input, .swal2-textarea, .swal2-select, .swal2-file) {
+  background: #141B3D !important;
+  color: #EEF1FB !important;
+  border-color: rgba(238, 241, 251, 0.16) !important;
+}
+
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) .swal2-popup .swal2-close {
+  color: #9AA3C7 !important;
+}
+
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) .swal2-popup .swal2-styled.swal2-cancel {
+  background: #1A2247 !important;
+  color: #EEF1FB !important;
+}
+
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) .swal2-popup .swal2-timer-progress-bar {
+  background: rgba(47, 107, 255, 0.55) !important;
+}
+
+/* ==========================================================================
+   BITROXIA ADMIN & ROLE WORKSPACE MASTER MOBILE RESPONSIVE ENGINE
+   Covers Admin, HR, Manager, Employee, and Client Views Across All Screen Sizes
+   Breakpoints: 1199.98px / 991.98px / 767.98px / 575.98px / 375px
+   ========================================================================== */
+
+/* 1. Global Viewport & Container Safety */
+html, body {
+  max-width: 100vw;
+  overflow-x: clip !important;
+}
+
+/* 2. Breakpoint: <= 1199.98px (Tablet Landscape & Below - Sidebar Becomes Sliding Drawer) */
+@media (max-width: 1199.98px) {
+  /* Sidebar Drawer */
+  #layout-menu,
+  .layout-menu.bg-menu-theme {
+    position: fixed !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    width: min(300px, 86vw) !important;
+    max-width: 86vw !important;
+    transform: translateX(-105%) !important;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    z-index: 10999 !important;
+    box-shadow: 18px 0 46px rgba(15, 23, 42, 0.28) !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  html.layout-menu-expanded #layout-menu,
+  body.layout-menu-expanded #layout-menu,
+  .layout-menu-expanded #layout-menu,
+  html.layout-menu-expanded .layout-menu.bg-menu-theme,
+  body.layout-menu-expanded .layout-menu.bg-menu-theme,
+  .layout-menu-expanded .layout-menu.bg-menu-theme {
+    transform: translateX(0) !important;
+  }
+
+  /* Close toggle in sidebar */
+  #layout-menu .layout-menu-toggle {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: var(--bx-surface-soft, #f8fafc);
+    border: 1px solid var(--bx-border-subtle, #e2e8f0);
+    color: var(--bx-text-heading, #0f172a) !important;
+    cursor: pointer;
+  }
+
+  /* Backdrop Overlay */
+  .layout-overlay {
+    display: none;
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 10990 !important;
+    background: rgba(15, 23, 42, 0.6) !important;
+    backdrop-filter: blur(4px) !important;
+    -webkit-backdrop-filter: blur(4px) !important;
+    cursor: pointer;
+    transition: opacity 0.25s ease;
+  }
+
+  html.layout-menu-expanded .layout-overlay,
+  body.layout-menu-expanded .layout-overlay,
+  .layout-menu-expanded .layout-overlay {
+    display: block !important;
+  }
+
+  /* Body Scroll Lock */
+  html.layout-menu-expanded,
+  body.layout-menu-expanded {
+    overflow: hidden !important;
+    touch-action: none;
+  }
+
+  /* Layout Page Full Width */
+  .layout-page {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin-left: 0 !important;
+  }
+
+  /* Top Navbar */
+  #layout-navbar,
+  .layout-navbar {
+    left: 0.75rem !important;
+    right: 0.75rem !important;
+    width: calc(100% - 1.5rem) !important;
+    max-width: calc(100% - 1.5rem) !important;
+    top: 0.75rem !important;
+    padding: 0.5rem 0.85rem !important;
+  }
+
+  /* Hamburger Toggle in Navbar */
+  #layout-navbar .layout-menu-toggle {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  #layout-navbar .layout-menu-toggle a {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: var(--bx-surface-soft, #f8fafc);
+    border: 1px solid var(--bx-border-subtle, #e2e8f0);
+    color: var(--bx-text-heading, #0f172a) !important;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  #layout-navbar .layout-menu-toggle a:hover {
+    background: var(--bx-blue-soft, rgba(47, 107, 255, 0.08));
+    color: var(--bx-blue-primary, #2F6BFF) !important;
+    border-color: rgba(47, 107, 255, 0.3);
+  }
+}
+
+/* 3. Breakpoint: <= 991.98px (Tablet Portrait & Large Mobile) */
+@media (max-width: 991.98px) {
+  /* Search input hides text, shows icon */
+  #layout-navbar .navbar-search-wrapper input[type="text"] {
+    display: none !important;
+  }
+
+  /* Grid Layouts Stack */
+  .grid-4, .kpi-grid, .stats-grid, .metrics-grid,
+  .role-stat-grid, .role-pie-grid, .role-feature-grid,
+  .industry-overview-grid, .industry-chart-grid,
+  .saas-revenue-strip, .saas-module-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  /* User Name Hides, Avatar Remains */
+  .dropdown-user .d-md-block,
+  .dropdown-user h6,
+  .dropdown-user small {
+    display: none !important;
+  }
+  .dropdown-user .avatar {
+    margin-right: 0 !important;
+  }
+}
+
+/* 4. Breakpoint: <= 767.98px (Standard Smartphone View) */
+@media (max-width: 767.98px) {
+  /* Navbar Tightening */
+  #layout-navbar,
+  .layout-navbar {
+    left: 0.5rem !important;
+    right: 0.5rem !important;
+    width: calc(100% - 1rem) !important;
+    max-width: calc(100% - 1rem) !important;
+    top: 0.5rem !important;
+    padding: 0.4rem 0.65rem !important;
+    min-height: 56px !important;
+  }
+
+  .layout-page {
+    padding-top: calc(56px + 1.25rem) !important;
+  }
+
+  .content-wrapper,
+  main > .container-xxl,
+  main > .container-fluid,
+  main > .container {
+    padding-inline: 0.75rem !important;
+    padding-top: 0.75rem !important;
+    padding-bottom: 2rem !important;
+  }
+
+  /* Action Icon Alignment */
+  .header-icon-box {
+    min-width: 34px !important;
+    height: 34px !important;
+    border-radius: 8px !important;
+  }
+
+  .header-icon-box i {
+    font-size: 1.05rem !important;
+  }
+
+  .theme-toggle-btn {
+    width: 34px !important;
+    height: 34px !important;
+    border-radius: 8px !important;
+  }
+
+  /* Action Item Spacing */
+  #layout-navbar .nav-item.me-3,
+  #layout-navbar .nav-item.me-sm-3 {
+    margin-right: 0.35rem !important;
+  }
+
+  #layout-navbar .navbar-nav-right {
+    gap: 4px !important;
+  }
+
+  /* Dropdown Menus Contained in Viewport */
+  .dropdown-menu {
+    max-width: calc(100vw - 16px) !important;
+  }
+
+  .notification-dropdown,
+  ul[aria-labelledby="assignedWorkDropdown"],
+  .dropdown-menu-end {
+    right: 0 !important;
+    left: auto !important;
+  }
+
+  /* Grids Collapse to 1 Column */
+  .grid-4, .kpi-grid, .stats-grid, .metrics-grid,
+  .role-stat-grid, .role-pie-grid, .role-feature-grid,
+  .industry-overview-grid, .industry-chart-grid,
+  .industry-feature-grid, .saas-revenue-strip, .saas-module-grid,
+  .saas-prediction-grid, .employee-quick-actions, .employee-status-grid,
+  .content-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  /* Universal Responsive Tables */
+  .table-responsive,
+  .dataTables_wrapper,
+  .card-table-wrap,
+  .table-wrapper {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    border-radius: 12px;
+  }
+
+  table.table:not(.no-responsive) {
+    min-width: 600px;
+  }
+
+  /* DataTables Mobile Layout */
+  .dataTables_wrapper .row {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.75rem !important;
+  }
+
+  .dataTables_wrapper .dataTables_length,
+  .dataTables_wrapper .dataTables_filter,
+  .dataTables_wrapper .dataTables_info,
+  .dataTables_wrapper .dataTables_paginate {
+    text-align: center !important;
+    width: 100% !important;
+  }
+
+  .dataTables_wrapper .dataTables_filter input {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+  }
+
+  .dataTables_wrapper .dataTables_paginate ul.pagination {
+    justify-content: center !important;
+    flex-wrap: wrap !important;
+    gap: 4px !important;
+  }
+
+  /* Card Headers & Toolbars */
+  .card-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.75rem !important;
+    padding: 1rem !important;
+  }
+
+  .card-header .d-flex:not(.avatar):not(.align-items-center.gap-2) {
+    flex-wrap: wrap !important;
+    width: 100% !important;
+    gap: 0.5rem !important;
+  }
+
+  .card-header .btn,
+  .card-header .btn-sm {
+    white-space: normal !important;
+  }
+
+  .card-body {
+    padding: 1rem !important;
+  }
+
+  /* Responsive Modals */
+  .modal-dialog {
+    margin: 0.5rem !important;
+    max-width: calc(100vw - 1rem) !important;
+  }
+
+  .modal-content {
+    border-radius: 14px !important;
+  }
+
+  .modal-header, .modal-footer {
+    padding: 0.75rem 1rem !important;
+  }
+
+  .modal-body {
+    padding: 1rem !important;
+    max-height: calc(85vh - 120px);
+    overflow-y: auto;
+  }
+
+  .modal-footer {
+    flex-direction: column-reverse;
+    gap: 0.5rem;
+  }
+
+  .modal-footer > * {
+    width: 100% !important;
+    margin: 0 !important;
+  }
+
+  /* Form Elements Responsive */
+  .form-control, .form-select, .form-check {
+    font-size: 16px !important; /* Prevents auto-zoom on iOS Safari */
+  }
+
+  /* Page Heading / Back Navigation */
+  .page-back-wrapper,
+  .page-heading {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.5rem !important;
+  }
+
+  /* Button Wrappers */
+  .d-flex.gap-2,
+  .d-flex.gap-3,
+  .btn-group {
+    flex-wrap: wrap !important;
+  }
+}
+
+/* 5. Breakpoint: <= 480px (Compact Mobile Devices) */
+@media (max-width: 480px) {
+  /* Mobile Brand Logo Size */
+  .mobile-navbar-logo img {
+    height: 28px !important;
+    width: auto !important;
+  }
+
+  /* Hide Sticky Note icon from navbar to prevent overflow on narrow screens */
+  .sticky-note-trigger {
+    display: none !important;
+  }
+
+  #layout-navbar .layout-menu-toggle {
+    margin-right: 0.25rem !important;
+  }
+
+  #layout-navbar .layout-menu-toggle a {
+    width: 36px !important;
+    height: 36px !important;
+  }
+
+  .header-icon-box {
+    min-width: 32px !important;
+    height: 32px !important;
+  }
+
+  .theme-toggle-btn {
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  /* User Avatar */
+  .avatar {
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  .avatar img {
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  /* Filter Actions & Button Rows */
+  .filter-actions,
+  .table-actions {
+    flex-direction: column !important;
+    width: 100% !important;
+  }
+
+  .filter-actions .btn,
+  .table-actions .btn {
+    width: 100% !important;
+  }
+
+  /* Cards Padding */
+  .card {
+    border-radius: 12px !important;
+  }
+}
+
+/* 6. Breakpoint: <= 360px (Extra Compact Screens / Foldables) */
+@media (max-width: 360px) {
+  #layout-navbar,
+  .layout-navbar {
+    padding: 0.35rem 0.45rem !important;
+    left: 0.25rem !important;
+    right: 0.25rem !important;
+    width: calc(100% - 0.5rem) !important;
+    max-width: calc(100% - 0.5rem) !important;
+  }
+
+  #layout-navbar .nav-item.me-3 {
+    margin-right: 0.2rem !important;
+  }
+
+  .content-wrapper,
+  main > .container-xxl,
+  main > .container-fluid {
+    padding-inline: 0.45rem !important;
+  }
+}
+

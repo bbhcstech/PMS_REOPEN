@@ -1560,6 +1560,14 @@
         font-size: 1.15rem;
     }
 
+    /* Header icons sit on coloured tiles in both dashboard themes. */
+    html body #main .dashboard-notification-feed .content-card .card-title > i,
+    html body #main .dashboard-notification-feed .content-card .card-title > i::before {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        opacity: 1 !important;
+    }
+
     .card-action {
         color: var(--bx-blue);
         font-size: 0.8rem;
@@ -2568,7 +2576,7 @@
         </div>
 
         <!-- Content Section -->
-        <div class="content-section">
+        <div class="content-section dashboard-notification-feed">
             <div class="content-grid">
                 <!-- Open Tickets -->
                 <div class="content-card">

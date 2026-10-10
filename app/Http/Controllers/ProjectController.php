@@ -317,7 +317,8 @@ public function store(Request $request)
             'currency_id' => $request->currency_id,
             'project_budget' => $request->project_budget,
             'hours_allocated' => $request->hours_allocated,
-            'completion_percent' => (int) $request->input('completion_percent', 0),
+            // A new project always starts at 0%; progress is updated after creation.
+            'completion_percent' => 0,
             'enable_miroboard' => $request->has('enable_miroboard') ? 1 : 0,
             'allow_client_notification' => $request->has('allow_client_notification') ? 1 : 0,
             'manual_timelog' => $request->has('manual_timelog') ? 1 : 0,

@@ -98,9 +98,7 @@ class UserPasswordChangeController extends Controller
             $user->save();
         }
 
-        Auth::logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        app(\App\Services\AuthenticationSession::class)->clear($request, true);
 
         return redirect()->route('login')->with('info', 'You have been logged out because your password was changed. Please log in with your new password.');
     }

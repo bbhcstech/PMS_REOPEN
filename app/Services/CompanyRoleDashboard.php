@@ -69,6 +69,9 @@ class CompanyRoleDashboard
                 $hr['pending_leaves'] = $query('leaves')->where('company_id', $companyId)->where('status', 'pending')->count();
             }
         }
-        return compact('role', 'company', 'tasks', 'projects', 'taskCount', 'projectCount', 'attendanceDays', 'leaveCount', 'hr', 'manager');
+        WorkforceRecordSchema::ensure();
+        $attendance = WorkforceAccess::currentAttendance($user);
+        $attendancePolicy = \App\Models\AttendanceSetting::first();
+        return compact('role', 'company', 'tasks', 'projects', 'taskCount', 'projectCount', 'attendanceDays', 'leaveCount', 'hr', 'manager', 'attendance', 'attendancePolicy');
     }
 }

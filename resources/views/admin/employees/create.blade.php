@@ -556,6 +556,27 @@
             transform: none;
         }
 
+        #employee-create-page .employee-mobile-group {
+            display: flex;
+            flex-wrap: nowrap;
+            width: 100%;
+            min-width: 0;
+        }
+        #employee-create-page .employee-mobile-group > .select2-container {
+            flex: 0 0 125px;
+            max-width: 125px;
+        }
+        #employee-create-page .employee-mobile-group > .mobile-input {
+            flex: 1 1 0;
+            min-width: 0;
+            width: 0;
+        }
+        #employee-create-page #mobile-error {
+            width: 100%;
+            white-space: normal;
+            overflow-wrap: anywhere;
+        }
+
         .invalid-feedback {
             font-size: 0.75rem;
             font-weight: 500;
@@ -875,6 +896,24 @@
             color: #EEF1FB !important;
         }
 
+        /* Country / Language dropdown options: the page-wide span colour rule made the names unreadable in dark mode. */
+        :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .select2-container--bootstrap-5 .select2-results__option,
+        :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .select2-container--bootstrap-5 .select2-results__option span {
+            color: #EEF1FB !important;
+            -webkit-text-fill-color: #EEF1FB !important;
+        }
+
+        :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .select2-container--bootstrap-5 .select2-results__option--highlighted,
+        :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .select2-container--bootstrap-5 .select2-results__option--highlighted span {
+            color: #FFFFFF !important;
+            -webkit-text-fill-color: #FFFFFF !important;
+        }
+
+        :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered > span {
+            color: #EEF1FB !important;
+            -webkit-text-fill-color: #EEF1FB !important;
+        }
+
         html[data-pms-theme="dark"] .form-check-label,
         html[data-bs-theme="dark"] .form-check-label,
         html[data-theme="dark"] .form-check-label {
@@ -1154,7 +1193,7 @@
         $returnUrl = request('return_url') ?: old('return_url', route('employees.index'));
     @endphp
 
-    <div class="container-fluid">
+    <div class="container-fluid" id="employee-create-page" data-live-preserve>
         <div class="page-header-enterprise fade-up-stagger">
             <div class="header-title">
                 <h1 style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; font-weight: 800 !important;"><i class="fas fa-user-plus" style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important;"></i> Add New Employee</h1>
@@ -1169,13 +1208,13 @@
         </div>
 
         @if(session('success'))
-            <div class="alert-custom-success fade-up-stagger" style="animation-delay: 0.05s;">
+            <div class="alert-custom-success fade-up-stagger" role="status" style="animation-delay: 0.05s;">
                 <i class="fas fa-check-circle me-2"></i> {{ session('success') }}
             </div>
         @endif
 
         @if ($errors->any())
-            <div class="alert-custom-err fade-up-stagger" style="animation-delay: 0.05s;">
+            <div class="alert-custom-err fade-up-stagger" role="alert" style="animation-delay: 0.05s;">
                 <div class="fw-bold mb-2"><i class="fas fa-exclamation-circle me-2"></i>Please fix the following errors:</div>
                 <ul class="mb-0 ps-4">
                     @foreach ($errors->all() as $error)
@@ -1417,7 +1456,7 @@
                                 <span><i class="fas fa-mobile-alt"></i> Mobile</span>
                                 <span class="mandatory-badge">Required</span>
                             </label>
-                            <div class="input-group-premium">
+                            <div class="input-group-premium employee-mobile-group">
                                 @php
                                     $selectedMobileCode = old('mobile_country_code') ?? '+91';
                                     $mobileValue = old('mobile') ?? (($ed?->mobile ?? null) ? preg_replace('/^\+91/', '', $ed->mobile) : preg_replace('/^\+91/', '', ($employee?->mobile ?? '')));
@@ -1434,10 +1473,10 @@
                                         </option>
                                     @endforeach
                                 </select>
-                                <input id="mobile_only_digits" type="text" name="mobile" class="form-control-premium mobile-input" required maxlength="10" placeholder="9876543210"
+                                <input id="mobile_only_digits" type="text" name="mobile" class="form-control-premium mobile-input" required maxlength="10" placeholder="9876543210" aria-describedby="mobile_help_text mobile-error"
                                        value="{{ $mobileValue }}" style="border: none;">
-                                <div id="mobile-error" class="invalid-feedback mobile-error d-none"></div>
                             </div>
+                            <div id="mobile-error" class="invalid-feedback mobile-error d-none" role="alert"></div>
                             <small id="mobile_help_text" class="text-muted d-block mt-1" style="font-size: 0.7rem;">Select the country code and enter a 10-digit phone number.</small>
                             <input type="hidden" name="mobile_with_code" id="mobile_with_code" value="{{ old('mobile_with_code') ?? ($ed->mobile ?? $employee?->mobile ?? '') }}">
                             @error('mobile_country_code')
@@ -1859,6 +1898,81 @@
         font-size: 0.82rem;
         margin-bottom: 1rem;
     }
+    .employee-department-feedback.swal2-popup {
+        background: var(--department-feedback-bg) !important;
+        color: var(--department-feedback-text) !important;
+        border: 1px solid var(--department-feedback-border);
+    }
+    .employee-department-feedback :is(.swal2-title, .swal2-html-container, .swal2-close) {
+        color: var(--department-feedback-text) !important;
+        -webkit-text-fill-color: var(--department-feedback-text) !important;
+    }
+    .employee-department-feedback .swal2-html-container {
+        line-height: 1.5;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"]) #employee-create-page .alert-custom-err {
+        background: #321c2b;
+        color: #fecaca;
+        border-left-color: #f87171;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"]) #employee-create-page .alert-custom-success {
+        background: #142d30;
+        color: #a7f3d0;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"]) .employee-pending-success {
+        background: #151b38;
+        border: 1px solid rgba(148, 163, 184, 0.25);
+        color: #e2e8f0;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"]) .employee-pending-success :is(.swal2-title, .swal2-html-container) {
+        color: #e2e8f0;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"]) :is(#prtModal, #dptModal, #designationModal) .pending-option-note {
+        background: #1e294b;
+        border-color: rgba(96, 165, 250, 0.35);
+        color: #bfdbfe;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"]) :is(#prtModal, #dptModal, #designationModal) .modal-helper-text {
+        color: #cbd5e1;
+    }
+    /* Pending note: theme-wide span/icon colour rules must not wash out its text on its own background. */
+    html body :is(#prtModal, #dptModal, #designationModal) .pending-option-note {
+        background: #EEF2FF !important;
+        border: 1px solid rgba(47, 107, 255, 0.28) !important;
+    }
+    html body :is(#prtModal, #dptModal, #designationModal) .pending-option-note span {
+        color: #1E3A8A !important;
+        -webkit-text-fill-color: #1E3A8A !important;
+    }
+    html body :is(#prtModal, #dptModal, #designationModal) .pending-option-note i {
+        color: #2F6BFF !important;
+        -webkit-text-fill-color: #2F6BFF !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"]) body :is(#prtModal, #dptModal, #designationModal) .pending-option-note,
+    html body.dark-mode :is(#prtModal, #dptModal, #designationModal) .pending-option-note {
+        background: #1E294B !important;
+        border-color: rgba(96, 165, 250, 0.35) !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"]) body :is(#prtModal, #dptModal, #designationModal) .pending-option-note :is(span, i),
+    html body.dark-mode :is(#prtModal, #dptModal, #designationModal) .pending-option-note :is(span, i) {
+        color: #BFDBFE !important;
+        -webkit-text-fill-color: #BFDBFE !important;
+    }
+    /* Keep this note readable when light mode overrides stale modal theme styles. */
+    :is(html[data-pms-theme="light"], html[data-bs-theme="light"], html[data-theme="light"]) body #dptModal .modal-body .pending-option-note {
+        background: #EEF2FF !important;
+        border-color: rgba(47, 107, 255, 0.28) !important;
+        color: #1E3A8A !important;
+        -webkit-text-fill-color: #1E3A8A !important;
+    }
+    :is(html[data-pms-theme="light"], html[data-bs-theme="light"], html[data-theme="light"]) body #dptModal .modal-body .pending-option-note span {
+        color: #1E3A8A !important;
+        -webkit-text-fill-color: #1E3A8A !important;
+    }
+    :is(html[data-pms-theme="light"], html[data-bs-theme="light"], html[data-theme="light"]) body #dptModal .modal-body .pending-option-note i {
+        color: #2F6BFF !important;
+        -webkit-text-fill-color: #2F6BFF !important;
+    }
     @media (max-width: 576px) {
         .page-header-enterprise {
             border-radius: 18px;
@@ -1892,7 +2006,6 @@
 @endpush
 
 @push('js')
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
@@ -2032,13 +2145,13 @@ document.addEventListener('DOMContentLoaded', function () {
         $('#addDesignationForm')[0].reset();
         $('#saveDesignationBtn').text('Add Designation');
         $('#designation-error').addClass('d-none').text('');
-        const modal = new bootstrap.Modal($el('designationModal'));
+        const modal = bootstrap.Modal.getOrCreateInstance($el('designationModal'));
         modal.show();
     });
 
     const prtBtn = $el('openPrtModalBtn');
     if (prtBtn) prtBtn.addEventListener('click', function () {
-        const modal = new bootstrap.Modal($el('prtModal'));
+        const modal = bootstrap.Modal.getOrCreateInstance($el('prtModal'));
         modal.show();
     });
 
@@ -2056,7 +2169,7 @@ document.addEventListener('DOMContentLoaded', function () {
             $('#dpt_parent_select').val(currentParent);
         }
         $('#dpt-group-error').addClass('d-none').text('');
-        const modal = new bootstrap.Modal($el('dptModal'));
+        const modal = bootstrap.Modal.getOrCreateInstance($el('dptModal'));
         modal.show();
     });
 
@@ -2193,6 +2306,48 @@ $(document).ready(function() {
             selected: true
         }));
         $select.trigger('change');
+    }
+
+    function closePendingModal(modalId, text) {
+        const modalElement = document.getElementById(modalId);
+        // Release Bootstrap's backdrop and focus trap before showing feedback.
+        modalElement.addEventListener('hidden.bs.modal', function () {
+            if (modalId === 'prtModal') {
+                const root = document.documentElement;
+                const theme = root.getAttribute('data-pms-theme') || root.getAttribute('data-bs-theme') || root.getAttribute('data-theme');
+                const dark = theme ? theme === 'dark' : document.body.classList.contains('dark-mode');
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'info',
+                    iconColor: dark ? '#60a5fa' : '#2563eb',
+                    title: 'Department added to form',
+                    text: 'Save the employee to create this department. It has not been saved yet.',
+                    showConfirmButton: false,
+                    showCloseButton: true,
+                    timer: 6000,
+                    timerProgressBar: true,
+                    customClass: { popup: 'employee-department-feedback' },
+                    didOpen: popup => {
+                        popup.style.setProperty('--department-feedback-bg', dark ? '#151b38' : '#ffffff');
+                        popup.style.setProperty('--department-feedback-text', dark ? '#e2e8f0' : '#1e293b');
+                        popup.style.setProperty('--department-feedback-border', dark ? '#334155' : '#cbd5e1');
+                        popup.addEventListener('mouseenter', Swal.stopTimer);
+                        popup.addEventListener('mouseleave', Swal.resumeTimer);
+                    }
+                });
+                return;
+            }
+            Swal.fire({
+                icon: 'success',
+                title: 'Added to employee form',
+                text: text,
+                timer: 1700,
+                showConfirmButton: false,
+                customClass: { popup: 'employee-pending-success' }
+            });
+        }, { once: true });
+        bootstrap.Modal.getOrCreateInstance(modalElement).hide();
     }
 
     function pendingNote(text) {
@@ -2332,8 +2487,7 @@ $(document).ready(function() {
         $('#prtModal .modal-body').append(pendingNote('This department will be created only after the employee is saved successfully.'));
 
         $form[0].reset();
-        $('#prtModal').modal('hide');
-        Swal.fire({ icon: 'success', title: 'Added to employee form', text: 'Department is pending until employee creation succeeds.', timer: 1700, showConfirmButton: false });
+        closePendingModal('prtModal', 'Department is pending until employee creation succeeds.');
     });
 
     // Handle department form submission
@@ -2366,8 +2520,7 @@ $(document).ready(function() {
         $('#dptModal .modal-body').append(pendingNote('This sub department will be created only after the employee is saved successfully.'));
 
         $form[0].reset();
-        $('#dptModal').modal('hide');
-        Swal.fire({ icon: 'success', title: 'Added to employee form', text: 'Sub department is pending until employee creation succeeds.', timer: 1700, showConfirmButton: false });
+        closePendingModal('dptModal', 'Sub department is pending until employee creation succeeds.');
     });
 
     // Handle designation form submission
@@ -2402,8 +2555,7 @@ $(document).ready(function() {
         $('#designationModal .modal-body').append(pendingNote('This designation will be created only after the employee is saved successfully.'));
 
         $('#addDesignationForm')[0].reset();
-        $('#designationModal').modal('hide');
-        Swal.fire({ icon: 'success', title: 'Added to employee form', text: 'Designation is pending until employee creation succeeds.', timer: 1700, showConfirmButton: false });
+        closePendingModal('designationModal', 'Designation is pending until employee creation succeeds.');
     });
 
     // Initialize Select2 for country and language

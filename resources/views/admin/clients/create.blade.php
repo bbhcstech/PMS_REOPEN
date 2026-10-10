@@ -394,7 +394,8 @@
                                         </option>
                                     @endforeach
                                 </select>
-                                <input name="office_phone" id="office_phone" type="text" class="form-control form-control-custom" placeholder="e.g. +919876543210" value="{{ old('office_phone') }}">
+                                @php $oldOfficePhone = (string) old('office_phone', ''); if ($selOffCode !== '' && str_starts_with($oldOfficePhone, $selOffCode)) { $oldOfficePhone = substr($oldOfficePhone, strlen($selOffCode)); } @endphp
+                                <input name="office_phone" id="office_phone" type="text" inputmode="numeric" class="form-control form-control-custom" placeholder="e.g. 9876543210" value="{{ $oldOfficePhone }}">
                             </div>
                             <div class="invalid-feedback" id="office_phone_feedback"></div>
                             <small class="text-muted d-block" id="office_phone_format_hint">Format: +91XXXXXXXXXX (10 digits)</small>
@@ -1461,10 +1462,9 @@ function updateOfficePhoneFormatHint(rules) {
         $('#office_phone_format_hint').text(helpMsg);
     }
 
-    const totalMaxLen = dialCode.length + maxDigits;
     $('#office_phone').attr({
-        'placeholder': 'e.g. ' + dialCode + '9876543210',
-        'maxlength': totalMaxLen
+        'placeholder': 'e.g. 9876543210',
+        'maxlength': maxDigits
     });
 }
 
@@ -1584,7 +1584,7 @@ function performPincodeLookup(pincode) {
         url: lookupUrl,
         type: 'GET',
         data: { pincode: pincode, country: country },
-        timeout: 3500,
+        timeout: 15000, // the server may try a second location provider
         success: function(res) {
             if (res && res.success) {
                 applyPincodeLocationData(res, country);
@@ -1715,7 +1715,8 @@ function sanitizePhoneNumber(inputElement) {
         cleanDigits = cleanDigits.substring(0, maxDigits);
     }
 
-    const newVal = dialCode + cleanDigits;
+    // Office phone has its own country-code dropdown, so its box holds only the local digits.
+    const newVal = (isOffice ? '' : dialCode) + cleanDigits;
     if ($input.val() !== newVal) {
         $input.val(newVal);
     }
@@ -1740,7 +1741,7 @@ function handlePhoneKeyDown(e, inputElement) {
         if (e.keyCode === 8) {
             const start = inputElement.selectionStart;
             const end = inputElement.selectionEnd;
-            if (start <= dialCode.length && end <= dialCode.length) {
+            if (!isOffice && start <= dialCode.length && end <= dialCode.length) {
                 e.preventDefault();
             }
         }
@@ -1804,7 +1805,7 @@ function validateMobileInput(inputId = 'client_mobile', isRequired = true) {
     const digitCount = cleanDigits.length;
     let errorMsg = '';
 
-    if (!val.startsWith(dialCode)) {
+    if (!isOffice && !val.startsWith(dialCode)) {
         errorMsg = `${fieldLabel} must start with country code ${dialCode}.`;
     } else if (minDigits === maxDigits) {
         if (digitCount !== minDigits) {
@@ -2213,7 +2214,7 @@ $(document).ready(function () {
         $input.on('focus', function() {
             const isOffice = $(this).attr('id') === 'office_phone';
             const { dialCode } = isOffice ? getCompanyCountryPhoneRules() : getSelectedCountryPhoneRules();
-            if (!$(this).val() || $(this).val().trim() === '') {
+            if (!isOffice && (!$(this).val() || $(this).val().trim() === '')) {
                 $(this).val(dialCode);
             }
         });
@@ -2344,7 +2345,7 @@ $(document).ready(function () {
             }
             officeDigits = officeDigits.substring(0, rules.maxDigits);
             if (officeDigits) {
-                $office.val(rules.dialCode + officeDigits);
+                $office.val(officeDigits);
                 validateMobileInput('office_phone', false);
             } else {
                 $office.val('');
@@ -2368,7 +2369,7 @@ $(document).ready(function () {
         let currentVal = $office.val().trim();
         if (currentVal && currentVal !== '+') {
             let nationalDigits = currentVal.replace(/^\+\d*/, '').replace(/\D/g, '').substring(0, rules.maxDigits);
-            $office.val(rules.dialCode + nationalDigits);
+            $office.val(nationalDigits);
             validateMobileInput('office_phone', false);
         }
     });

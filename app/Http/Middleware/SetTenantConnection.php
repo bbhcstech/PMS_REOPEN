@@ -141,6 +141,8 @@ class SetTenantConnection
                         'current_company_id'   => $company->id,
                         'current_company_name' => $company->name,
                     ]);
+                    // Real "Last Activity" shown to the Super Admin (throttled to one write a minute).
+                    \App\Services\CompanyActivity::touch((int) $company->id);
                 } else {
                     abort(403, 'No valid company workspace is assigned to this account.');
                 }

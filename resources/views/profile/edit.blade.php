@@ -8,7 +8,7 @@
   $logoVersion = file_exists(public_path('logo.png')) ? filemtime(public_path('logo.png')) : time();
 @endphp
 
-  <main id="main" class="main">
+  <main id="main" class="main" data-live-preserve>
     <div class="container mt-4">
 
       <div class="pagetitle">
@@ -52,16 +52,16 @@
               </div>
               <div class="card-body pt-3">
                 <!-- Bordered Tabs -->
-                <ul class="nav nav-tabs nav-tabs-bordered">
+                <ul id="profile-tabs" class="nav nav-tabs nav-tabs-bordered" role="tablist">
 
               
 
                 <li class="nav-item">
-                    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#profile-overview">Edit Profile</button>
+                    <button id="profile-edit-tab" type="button" class="nav-link active" role="tab" aria-controls="profile-overview" aria-selected="true" data-bs-toggle="tab" data-bs-target="#profile-overview">Edit Profile</button>
                   </li>
 
                   <li class="nav-item">
-                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#profile-settings">Settings</button>
+                    <button id="profile-settings-tab" type="button" class="nav-link" role="tab" aria-controls="profile-settings" aria-selected="false" data-bs-toggle="tab" data-bs-target="#profile-settings">Settings</button>
                   </li>
 
                 
@@ -70,7 +70,7 @@
                 <div class="tab-content pt-2">
 
               
-                <div class="tab-pane fade show active profile-overview" id="profile-overview">
+                <div class="tab-pane fade show active profile-overview" id="profile-overview" role="tabpanel" aria-labelledby="profile-edit-tab">
 
                     <!-- Profile Edit Form -->
                     <div class="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg">
@@ -82,7 +82,7 @@
 
                   </div>
 
-                  <div class="tab-pane fade pt-3" id="profile-settings">
+                  <div class="tab-pane fade pt-3" id="profile-settings" role="tabpanel" aria-labelledby="profile-settings-tab">
 
                     <!-- Settings Form -->
 

@@ -5,45 +5,55 @@
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
-  <title>Reset Password - Doctor A2Z</title>
-  <meta content="" name="description">
-  <meta content="" name="keywords">
+  <title>Reset Password - Bitroxia PMS</title>
+  <meta content="Bitroxia PMS Password Reset" name="description">
 
   <!-- Favicons -->
-  <link href="{{ asset('admin/assets/img/favicon.png') }}" rel="icon">
-  <link href="{{ asset('admin/assets/img/apple-touch-icon.png') }}" rel="apple-touch-icon">
+  <link href="{{ asset('admin/assets/img/favicon/favicon.ico') }}" rel="icon">
 
   <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css?family=Open+Sans|Nunito|Poppins" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <!-- Vendor CSS Files -->
-  <link href="{{ asset('admin/assets/vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
-  <link href="{{ asset('admin/assets/vendor/bootstrap-icons/bootstrap-icons.css') }}" rel="stylesheet">
-  <link href="{{ asset('admin/assets/css/style.css') }}" rel="stylesheet">
+  <link href="{{ asset('admin/assets/vendor/css/core.css') }}" rel="stylesheet">
+  <link href="{{ asset('admin/assets/css/demo.css') }}" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, #eef5ff 0%, #c9d8ee 48%, #aeb8cc 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .reset-card {
+      border: none;
+      border-radius: 24px;
+      box-shadow: 0 20px 45px rgba(8, 16, 35, 0.12);
+      width: 100%;
+      max-width: 440px;
+    }
+    @media (max-width: 576px) {
+      .reset-card {
+        border-radius: 18px;
+        box-shadow: 0 10px 25px rgba(8, 16, 35, 0.08);
+      }
+      .reset-card .card-body {
+        padding: 24px 18px !important;
+      }
+    }
+  </style>
 </head>
 
 <body>
 
-<main>
-  <div class="container">
-    <section class="section register min-vh-100 d-flex flex-column align-items-center justify-content-center py-4">
-      <div class="container">
-        <div class="row justify-content-center">
-          <div class="col-lg-4 col-md-6 d-flex flex-column align-items-center justify-content-center">
-
-            <div class="d-flex justify-content-center py-4">
-              <a href="{{ route('login') }}" class="logo d-flex align-items-center w-auto">
-                <img src="{{ asset('admin/assets/img/doctor-logo.png') }}" alt="" width="50">
-                <span class="d-none d-lg-block">Doctor A2Z Admin</span>
-              </a>
-            </div>
-
-            <div class="card mb-3">
-              <div class="card-body">
-                <div class="pt-4 pb-2">
-                  <h5 class="card-title text-center pb-0 fs-4">Reset Your Password</h5>
-                  <p class="text-center small">Enter your new password below</p>
-                </div>
+<main class="w-100 py-4 px-3 d-flex align-items-center justify-content-center">
+  <div class="reset-card card bg-white">
+    <div class="card-body p-4 p-sm-5">
+      <div class="text-center mb-4">
+        <h4 class="fw-bold mb-1">Reset Password 🔒</h4>
+        <p class="text-muted small mb-0">Enter your new password below</p>
+      </div>
 
                 <!-- Show Validation Errors -->
                 @if ($errors->any())
@@ -86,20 +96,17 @@
                   </div>
                 </form>
 
+                <div class="text-center mt-3">
+                  <a href="{{ route('login') }}" class="text-muted small text-decoration-none">
+                    &larr; Back to login
+                  </a>
+                </div>
               </div>
             </div>
-
-          </div>
-        </div>
-      </div>
-    </section>
-  </div>
 </main>
 
 <!-- Scripts -->
-<script src="{{ asset('admin/assets/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-<script src="{{ asset('admin/assets/js/main.js') }}"></script>
-
+<script src="{{ asset('admin/assets/vendor/js/bootstrap.js') }}"></script>
 </body>
 </html>
 

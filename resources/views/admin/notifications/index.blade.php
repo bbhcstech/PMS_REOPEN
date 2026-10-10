@@ -10,6 +10,38 @@
 @endphp
 
 <style>
+  #company-notification-center .notification-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+  #company-notification-center .notification-kpi-grid > div {
+    width: auto;
+    min-width: 0;
+  }
+  #company-notification-center .kpi-stat-card { height: 100%; }
+  #company-notification-center .notification-filter-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+    gap: 12px;
+    align-items: center;
+  }
+  #company-notification-center .notification-filter-grid > div {
+    width: auto;
+    min-width: 0;
+  }
+  #company-notification-center .notif-filter-btn {
+    min-width: 96px;
+    min-height: 38px;
+    white-space: nowrap;
+    word-break: normal;
+  }
+  @media (max-width: 767px) {
+    #company-notification-center .notification-kpi-grid,
+    #company-notification-center .notification-filter-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
   .notif-card-item {
     border-radius: 16px;
     background: #ffffff;
@@ -399,7 +431,7 @@
   }
 </style>
 
-<div class="container-fluid px-4 py-4" style="max-width: 1140px;">
+<div id="company-notification-center" class="container-fluid px-4 py-4" style="max-width: 1140px;">
 
   <!-- Hero Header Banner -->
   <div class="card border-0 shadow-sm mb-4" style="background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #1e293b 100%); border-radius: 20px; color: #fff; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.15);">
@@ -440,21 +472,21 @@
   </div>
 
   @if(session('success'))
-    <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-4" style="border-radius: 12px; background: #f0fdf4; color: #166534; border-left: 4px solid #16a34a !important;">
+    <div id="notification-success-message" data-live-preserve class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-4" style="border-radius: 12px; background: #f0fdf4; color: #166534; border-left: 4px solid #16a34a !important;">
       <i class="bx bx-check-circle me-1.5 align-middle fs-5"></i> {{ session('success') }}
       <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
   @endif
 
   @if(session('info'))
-    <div class="alert alert-info alert-dismissible fade show border-0 shadow-sm mb-4" style="border-radius: 12px; background: #eff6ff; color: #1e40af; border-left: 4px solid #3b82f6 !important;">
+    <div id="notification-info-message" data-live-preserve class="alert alert-info alert-dismissible fade show border-0 shadow-sm mb-4" style="border-radius: 12px; background: #eff6ff; color: #1e40af; border-left: 4px solid #3b82f6 !important;">
       <i class="bx bx-info-circle me-1.5 align-middle fs-5"></i> {{ session('info') }}
       <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
   @endif
 
   <!-- Executive KPI Grid -->
-  <div class="row g-3 mb-4">
+  <div id="notification-summary" class="notification-kpi-grid mb-4">
     <div class="col-md-4">
       <div class="kpi-stat-card p-3 d-flex align-items-center gap-3">
         <div class="kpi-icon-box kpi-icon-total p-3 rounded-4 fs-3">
@@ -493,9 +525,9 @@
   </div>
 
   <!-- Filter Toolbar -->
-  <div class="card notif-filter-card border-0 shadow-sm mb-4">
+  <div id="notification-filters" class="card notif-filter-card border-0 shadow-sm mb-4">
     <div class="card-body p-3">
-      <form method="GET" action="{{ Route::has('notifications.all') ? route('notifications.all') : route('admin.company-notifications.index') }}" class="row g-2 align-items-center">
+      <form method="GET" action="{{ Route::has('notifications.all') ? route('notifications.all') : route('admin.company-notifications.index') }}" class="notification-filter-grid">
         <div class="col-md-5">
           <select name="severity" class="form-select notif-select border-0" onchange="this.form.submit()">
             <option value="">All Severities</option>

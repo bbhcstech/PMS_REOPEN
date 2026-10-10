@@ -526,6 +526,17 @@
         transform: scale(1.05);
     }
 
+    /* Theme-wide icon colour rules must not repaint these icons (a blue "+" vanished on the blue header tile). */
+    .designation-form-page .header-card .header-icon i {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        opacity: 1 !important;
+        filter: none !important;
+        background: none !important;
+    }
+    /* Field icons take their tile's colour (set per field, with its own dark-mode colours). */
+    .designation-form-page .form-field .field-icon i { color: inherit !important; -webkit-text-fill-color: currentColor !important; opacity: 1 !important; filter: none !important; background: none !important; }
+
     .field-content {
         flex: 1;
         min-width: 0;

@@ -3,7 +3,7 @@
 @section('title', 'Create Project')
 
 @section('content')
-<div class="create-project-page">
+<div id="project-create-page" class="create-project-page" data-live-preserve>
     <div class="container-fluid px-4">
 
         <!-- Breadcrumb -->
@@ -69,7 +69,7 @@
                 </div>
             </div>
 
-            <form action="{{ route('projects.store') }}" method="POST" enctype="multipart/form-data" id="projectForm">
+            <form action="{{ route('projects.store') }}" method="POST" enctype="multipart/form-data" id="projectForm" novalidate>
                 @csrf
 
                 <div class="form-body">
@@ -150,14 +150,6 @@
                             </select>
                         </div>
 
-                        <!-- Progress -->
-                        <div class="form-group">
-                            <label class="form-label">
-                                <i class="fas fa-chart-simple"></i> Progress Percentage
-                            </label>
-                            <input type="number" name="completion_percent" class="form-control" min="0" max="100" value="{{ old('completion_percent', 0) }}" placeholder="0">
-                        </div>
-
                         <!-- Project Category -->
                         <div class="form-group">
                             <label class="form-label">
@@ -184,14 +176,36 @@
                             @php
                                 $selectedDepartmentIds = collect(old('department_ids', []))->map(fn($id) => (string) $id)->all();
                             @endphp
+                            <div class="project-department-split">
+                            <div class="project-department-part">
+                                <span class="project-department-sublabel">Parent Department</span>
+                                <div class="project-parent-row">
+                                    <select id="project_parent_department" class="form-control" aria-label="Parent department">
+                                        <option value="">Select parent department</option>
+                                        @foreach($prtdepartments as $prt)
+                                            <option value="{{ $prt->id }}">{{ $prt->dpt_name }}</option>
+                                        @endforeach
+                                    </select>
+                                    <button type="button" class="btn btn-outline-primary project-parent-add-toggle" id="toggleAddParentDepartment">
+                                        <i class="fas fa-plus"></i> Add
+                                    </button>
+                                </div>
+                                <div class="project-parent-quick-add d-none" id="parentDepartmentQuickAdd">
+                                    <input type="text" id="quick_parent_department_name" class="form-control" placeholder="New parent department name" maxlength="191">
+                                    <button type="button" class="btn btn-primary" id="quickAddParentDepartment"><i class="fas fa-check"></i> Save</button>
+                                </div>
+                                <div id="quickParentDepartmentError" class="quick-add-error d-none"></div>
+                            </div>
+                            <div class="project-department-part">
+                                <span class="project-department-sublabel">Sub Department</span>
                             <div class="department-picker" id="projectDepartmentPicker">
                                 <button type="button" class="department-picker-toggle" id="departmentPickerToggle" aria-expanded="false">
-                                    <span id="departmentPickerText">Select project departments</span>
+                                    <span id="departmentPickerText">Select a parent department first</span>
                                     <i class="fas fa-chevron-down"></i>
                                 </button>
 
                                 <div class="department-picker-menu d-none" id="departmentPickerMenu">
-                                    <input type="text" class="department-search" id="departmentSearch" placeholder="Search departments...">
+                                    <input type="text" class="department-search" id="departmentSearch" placeholder="Search sub departments...">
 
                                     <div class="department-picker-actions">
                                         <button type="button" id="selectAllDepartments">Select All</button>
@@ -203,7 +217,7 @@
                                             @php
                                                 $departmentLabel = trim(($department->dpt_code ? $department->dpt_code . ' - ' : '') . $department->dpt_name);
                                             @endphp
-                                            <label class="department-option" data-label="{{ strtolower($departmentLabel . ' ' . optional($department->parent)->dpt_name) }}">
+                                            <label class="department-option" data-parent-id="{{ $department->parent_dpt_id }}" data-label="{{ strtolower($departmentLabel . ' ' . optional($department->parent)->dpt_name) }}">
                                                 <input
                                                     type="checkbox"
                                                     class="department-checkbox"
@@ -220,7 +234,7 @@
                                     </div>
 
                                     <div class="department-quick-add">
-                                        <strong>Add Department</strong>
+                                        <strong>Add Sub Department</strong>
                                         <div class="department-quick-grid">
                                             <select id="quick_parent_dpt_id" class="form-control">
                                                 <option value="">Parent Department</option>
@@ -237,6 +251,8 @@
                                     </div>
                                 </div>
                             </div>
+                            </div>
+                            </div>
 
                             <select name="department_ids[]" id="project_department_ids" class="department-native-select" multiple>
                                 @foreach($departments as $department)
@@ -248,7 +264,7 @@
                                     </option>
                                 @endforeach
                             </select>
-                            <small class="form-hint">Select one or more departments. New departments are saved to the department database.</small>
+                            <small class="form-hint">Select a parent department, then one or more of its sub departments. New departments are saved to the department database.</small>
                         </div>
 
                         <!-- Project Type (Client vs Home) -->
@@ -410,9 +426,9 @@
                             <small class="form-hint">Hold Ctrl/Cmd to select multiple members</small>
                         </div>
                         <div class="add-member-btn">
-                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#employeeModal">
+                            <a href="{{ route('employees.create', ['return_url' => route('projects.create')]) }}" class="btn btn-primary">
                                 <i class="fas fa-user-plus"></i> Add Employee
-                            </button>
+                            </a>
                         </div>
                     </div>
 
@@ -491,6 +507,7 @@
                     </div>
 
                     <!-- Form Actions -->
+                    <div id="project-form-feedback" class="alert alert-danger d-none" role="alert" tabindex="-1"></div>
                     <div class="form-actions">
                         <button type="submit" class="btn btn-primary">
                             <i class="fas fa-save"></i> Create Project
@@ -946,6 +963,62 @@
         font-weight: 600;
     }
 
+    .project-department-split {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+    }
+
+    .project-department-part {
+        min-width: 0;
+    }
+
+    .project-department-sublabel {
+        display: block;
+        font-size: 0.82rem;
+        font-weight: 700;
+        margin-bottom: 6px;
+        opacity: 0.85;
+    }
+
+    .project-parent-row,
+    .project-parent-quick-add {
+        display: flex;
+        gap: 8px;
+        align-items: stretch;
+    }
+
+    .project-parent-row .form-control,
+    .project-parent-quick-add .form-control {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    .project-parent-row .btn,
+    .project-parent-quick-add .btn {
+        flex: 0 0 auto;
+        white-space: nowrap;
+    }
+
+    .project-parent-quick-add {
+        margin-top: 8px;
+    }
+
+    .department-option.is-other-parent {
+        display: none !important;
+    }
+
+    .department-picker-toggle.is-disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    @media (max-width: 768px) {
+        .project-department-split {
+            grid-template-columns: 1fr;
+        }
+    }
+
     .department-native-select {
         position: absolute;
         width: 1px;
@@ -1261,6 +1334,7 @@
 @include('admin.projects.partials.member-select-styles')
 
 @push('js')
+<script src="{{ asset('admin/assets/js/pms-project-create-validation.js') }}?v={{ filemtime(public_path('admin/assets/js/pms-project-create-validation.js')) }}" defer></script>
 <script>
     // Shortcode toggle + hidden fallback sync
     (function () {
@@ -1371,10 +1445,50 @@
         const quickName = document.getElementById('quick_department_name');
         const quickParent = document.getElementById('quick_parent_dpt_id');
         const quickError = document.getElementById('quickDepartmentError');
+        const parentSelect = document.getElementById('project_parent_department');
+        const parentAddToggle = document.getElementById('toggleAddParentDepartment');
+        const parentAddRow = document.getElementById('parentDepartmentQuickAdd');
+        const parentAddName = document.getElementById('quick_parent_department_name');
+        const parentAddSave = document.getElementById('quickAddParentDepartment');
+        const parentAddError = document.getElementById('quickParentDepartmentError');
 
         if (!picker || !toggle || !menu || !nativeSelect) return;
 
         const getCheckboxes = () => Array.from(picker.querySelectorAll('.department-checkbox'));
+        // Sub departments of the selected parent that are not hidden by the search box.
+        const getVisibleCheckboxes = () => getCheckboxes().filter(checkbox => {
+            const option = checkbox.closest('.department-option');
+            return option && !option.classList.contains('is-other-parent') && !option.classList.contains('d-none');
+        });
+
+        function showParentError(message) {
+            if (!parentAddError) return;
+            parentAddError.textContent = message || '';
+            parentAddError.classList.toggle('d-none', !message);
+        }
+
+        // Show only the selected parent's sub departments; selections under another parent are cleared.
+        function applyParentFilter() {
+            const parentId = parentSelect ? parentSelect.value : '';
+            picker.querySelectorAll('.department-option').forEach(option => {
+                const belongs = !!parentId && String(option.dataset.parentId || '') === String(parentId);
+                option.classList.toggle('is-other-parent', !belongs);
+                if (!belongs) {
+                    const checkbox = option.querySelector('.department-checkbox');
+                    if (checkbox) checkbox.checked = false;
+                }
+            });
+            if (quickParent) {
+                quickParent.value = parentId;
+                quickParent.disabled = true;
+            }
+            toggle.classList.toggle('is-disabled', !parentId);
+            if (!parentId) {
+                menu.classList.add('d-none');
+                toggle.setAttribute('aria-expanded', 'false');
+            }
+            syncNativeSelect();
+        }
 
         function syncNativeSelect() {
             const checkedValues = getCheckboxes()
@@ -1390,7 +1504,7 @@
                 .map(checkbox => checkbox.dataset.label);
 
             if (!checkedLabels.length) {
-                text.textContent = 'Select project departments';
+                text.textContent = parentSelect && !parentSelect.value ? 'Select a parent department first' : 'Select sub departments';
             } else if (checkedLabels.length <= 2) {
                 text.textContent = checkedLabels.join(', ');
             } else {
@@ -1402,6 +1516,7 @@
             const label = `${department.dpt_code ? department.dpt_code + ' - ' : ''}${department.dpt_name}`;
             const optionWrapper = document.createElement('label');
             optionWrapper.className = 'department-option';
+            optionWrapper.dataset.parentId = department.parent_dpt_id ?? '';
             optionWrapper.dataset.label = `${label} ${parentLabel}`.toLowerCase();
 
             const checkbox = document.createElement('input');
@@ -1431,6 +1546,11 @@
         }
 
         toggle.addEventListener('click', function () {
+            if (parentSelect && !parentSelect.value) {
+                showParentError('Select a parent department first.');
+                parentSelect.focus();
+                return;
+            }
             const willOpen = menu.classList.contains('d-none');
             menu.classList.toggle('d-none');
             toggle.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
@@ -1457,7 +1577,7 @@
         });
 
         selectAll.addEventListener('click', function () {
-            getCheckboxes().forEach(checkbox => checkbox.checked = true);
+            getVisibleCheckboxes().forEach(checkbox => checkbox.checked = true);
             syncNativeSelect();
         });
 
@@ -1471,7 +1591,7 @@
             quickError.textContent = '';
 
             if (!quickParent.value || !quickName.value.trim()) {
-                quickError.textContent = 'Choose a parent department and enter a department name.';
+                quickError.textContent = 'Select a parent department and enter a sub department name.';
                 quickError.classList.remove('d-none');
                 return;
             }
@@ -1505,21 +1625,82 @@
             });
         });
 
+        if (parentSelect) {
+            parentSelect.addEventListener('change', function () {
+                showParentError('');
+                applyParentFilter();
+            });
+        }
+
+        if (parentAddToggle && parentAddRow) {
+            parentAddToggle.addEventListener('click', function () {
+                parentAddRow.classList.toggle('d-none');
+                showParentError('');
+                if (!parentAddRow.classList.contains('d-none')) parentAddName.focus();
+            });
+        }
+
+        if (parentAddSave) {
+            parentAddSave.addEventListener('click', function () {
+                const name = parentAddName.value.trim();
+                if (!name) {
+                    showParentError('Enter a parent department name.');
+                    return;
+                }
+                parentAddSave.disabled = true;
+                $.ajax({
+                    url: '{{ route('parent-departments.quick-create') }}',
+                    method: 'POST',
+                    data: { _token: '{{ csrf_token() }}', dpt_name: name, status: 'Active' },
+                    success: function (res) {
+                        if (res.status === 'success' && res.department) {
+                            [parentSelect, quickParent].forEach(select => {
+                                if (select) select.add(new Option(res.department.dpt_name, res.department.id));
+                            });
+                            parentSelect.value = String(res.department.id);
+                            parentAddName.value = '';
+                            parentAddRow.classList.add('d-none');
+                            showParentError('');
+                            applyParentFilter();
+                        }
+                    },
+                    error: function (xhr) {
+                        const errors = xhr.responseJSON?.errors || {};
+                        showParentError(errors.dpt_name?.[0] || xhr.responseJSON?.message || 'Could not add parent department.');
+                    },
+                    complete: function () {
+                        parentAddSave.disabled = false;
+                    }
+                });
+            });
+        }
+
         const form = document.getElementById('projectForm');
         if (form) {
             form.addEventListener('submit', function (event) {
                 syncNativeSelect();
+                if (parentSelect && !parentSelect.value) {
+                    event.preventDefault();
+                    showParentError('Select a parent department.');
+                    parentSelect.focus();
+                    return;
+                }
                 if (!Array.from(nativeSelect.selectedOptions).length) {
                     event.preventDefault();
                     menu.classList.remove('d-none');
                     toggle.setAttribute('aria-expanded', 'true');
-                    quickError.textContent = 'Select at least one project department.';
+                    quickError.textContent = 'Select at least one sub department.';
                     quickError.classList.remove('d-none');
                 }
             });
         }
 
-        syncNativeSelect();
+        // Restore the parent of previously selected sub departments (e.g. after a validation error).
+        const firstChecked = getCheckboxes().find(checkbox => checkbox.checked);
+        if (parentSelect && firstChecked) {
+            parentSelect.value = String(firstChecked.closest('.department-option')?.dataset.parentId || '');
+        }
+        applyParentFilter();
     }
 
     // Add Project Category via AJAX

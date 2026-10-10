@@ -107,6 +107,8 @@ Route::get('/company/session-status', function () {
 })->middleware('auth:web,super_admin')->name('company.session-status');
 
 Route::middleware(['auth'])->group(function () {
+    Route::get('/company/assistant', [\App\Http\Controllers\CompanyAiController::class, 'index'])->name('company.ai.index');
+    Route::post('/company/assistant', [\App\Http\Controllers\CompanyAiController::class, 'ask'])->middleware('throttle:company-ai')->name('company.ai.ask');
     // Community Message Module Routes
     Route::middleware(['feature:community'])->group(function () {
         Route::get('/community', [CommunityMessageController::class, 'index'])->name('community.index');
@@ -838,6 +840,11 @@ Route::middleware(['auth', 'module.access'])->group(function () {
 
     Route::get('/attendance', [AttendanceController::class, 'index'])->name('attendance.index');
     Route::post('/attendance/mark', [AttendanceController::class, 'markAttendance'])->name('attendance.mark');
+
+    Route::get('/admin/authority-attendance', [AttendanceController::class, 'authorityIndex'])->name('admin.authority-attendance');
+    Route::get('/admin/authority-leaves', [LeaveController::class, 'authorityIndex'])->name('admin.authority-leaves');
+    Route::get('/attendance/{attendance}/photo', [\App\Http\Controllers\WorkforceFileController::class, 'photo'])->name('attendance.photo');
+    Route::get('/leaves/{leave}/attachment', [\App\Http\Controllers\WorkforceFileController::class, 'attachment'])->name('leaves.attachment');
 
     // Filter (remove duplicate below)
     Route::get('/attendance/filter', [AttendanceController::class, 'filter'])->name('attendance.filter');

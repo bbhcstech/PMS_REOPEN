@@ -1,6 +1,10 @@
 (() => {
     if (window.PmsLiveRecords) return;
     const script = document.currentScript;
+    // History restoration must re-authorize the page for the current account.
+    window.addEventListener('pageshow', event => {
+        if (event.persisted) location.reload();
+    });
     let sessionEnded = false, checkingSession = false;
     window.PmsCompanySessionEnded = () => {
         if (sessionEnded) return;
@@ -20,6 +24,10 @@
         try {
             const response = await fetch(script.dataset.sessionUrl, { headers: { Accept: 'application/json' }, cache: 'no-store', signal: AbortSignal.timeout(10000) });
             if (response.headers.get('X-Company-Deleted') === '1') window.PmsCompanySessionEnded();
+            else if (response.status === 401 || response.status === 419) {
+                sessionEnded = true;
+                location.replace(script?.dataset.loginUrl || '/login');
+            }
             if (response.status === 402) {
                 const restriction = await response.json();
                 if (restriction.manually_suspended && restriction.restriction_url) {

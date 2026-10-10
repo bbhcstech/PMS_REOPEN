@@ -29,6 +29,8 @@ Route::prefix('super-admin')->name('super-admin.')->group(function () {
     // Platform Super Admin only: company users (admin, HR, manager, employee) are tenant users
     // and must never reach the cross-company management portal.
     Route::middleware(['auth:super_admin,web', 'platform.superadmin'])->group(function () {
+        Route::get('/assistant', [\App\Http\Controllers\PlatformAiController::class, 'index'])->name('ai.index');
+        Route::post('/assistant', [\App\Http\Controllers\PlatformAiController::class, 'ask'])->middleware('throttle:platform-ai')->name('ai.ask');
 
         // Super Admin Profile Management
         Route::get('/profile', [\App\Http\Controllers\SuperAdminController::class, 'profile'])->name('profile');

@@ -1746,7 +1746,8 @@
                         </span>
                     </td>
                     <td style="color: var(--slate-muted); font-size: 12px; font-weight: 500;">
-                        {{ rand(2, 45) }} mins ago
+                        @php $companyLastActivity = ($lastActivity ?? [])[$company->id] ?? null; @endphp
+                        <span title="{{ $companyLastActivity ? 'Last request by a signed-in company user' : 'No signed-in activity recorded yet' }}">{{ \App\Services\CompanyActivity::format($companyLastActivity) }}</span>
                     </td>
                     <td style="text-align: right;">
                         <div class="actions-cell-wrap">

@@ -129,29 +129,6 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
-        Auth::guard('web')->logout();
-        if (Auth::guard('super_admin')->check()) {
-            Auth::guard('super_admin')->logout();
-        }
-        Auth::logout();
-
-        $request->session()->forget(['current_company_id', 'current_company_db', 'current_company_name']);
-        $request->session()->flush();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        $defaultDb = config('database.connections.mysql.database') ?: env('DB_DATABASE', 'pms_last');
-        config([
-            'database.connections.tenant.database' => $defaultDb,
-            'database.connections.mysql.database'  => $defaultDb,
-        ]);
-        \Illuminate\Support\Facades\DB::purge('tenant');
-        \Illuminate\Support\Facades\DB::purge('mysql');
-
-        if (app()->bound(\App\Services\CompanyContext::class)) {
-            app(\App\Services\CompanyContext::class)->reset();
-        }
-
-        return redirect()->route('login');
+        return app(\App\Services\AuthenticationSession::class)->logout($request);
     }
 }

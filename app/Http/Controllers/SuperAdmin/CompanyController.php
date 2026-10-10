@@ -73,7 +73,9 @@ class CompanyController extends Controller
 
         $plans = \App\Models\Central\Plan::standard()->where('is_active', true)->orderBy('sort_order')->orderBy('id')->get();
 
-        return view('superadmin.companies.index', compact('companies', 'plans', 'currentCompanyDb'));
+        $lastActivity = \App\Services\CompanyActivity::forCompanies($companies);
+
+        return view('superadmin.companies.index', compact('companies', 'plans', 'currentCompanyDb', 'lastActivity'));
     }
 
     /**

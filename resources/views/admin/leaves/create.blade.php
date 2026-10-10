@@ -2,7 +2,7 @@
 
 @php
     $isEdit = isset($leave);
-    $isAdmin = auth()->user()->role === 'admin';
+    $isAdmin = \App\Services\WorkforceAccess::isAdmin(auth()->user());
     $oldStartDate = old('start_date', $isEdit ? optional($leave->start_date)->format('Y-m-d') : '');
     $oldEndDate = old('end_date', $isEdit ? optional($leave->end_date)->format('Y-m-d') : '');
 @endphp
@@ -10,7 +10,7 @@
 @section('title', $isEdit ? 'Edit Leave Request' : 'Apply Leave')
 
 @section('content')
-<div class="leave-form-page">
+<div class="leave-form-page" id="leave-form-page" data-live-preserve>
     <div class="leave-breadcrumb"><i class="fas fa-calendar-plus"></i> Dashboard / Leaves / {{ $isEdit ? 'Edit' : 'Apply' }}</div>
 
     <section class="leave-form-hero">
@@ -18,7 +18,7 @@
             <h1>{{ $isEdit ? 'Edit Leave Request' : 'Apply for Leave' }}</h1>
             <p>Submit leave requests with policy-aware validation for SL, CL, Maternity, and unpaid leave.</p>
         </div>
-        <a href="{{ route('leaves.index') }}" class="btn btn-light"><i class="fas fa-arrow-left"></i> Back to Leaves</a>
+        <a href="{{ route(request('staff_category') === 'authority' ? 'admin.authority-leaves' : 'leaves.index') }}" class="btn btn-light"><i class="fas fa-arrow-left"></i> Back to Leaves</a>
     </section>
 
     @if($errors->any())
@@ -54,6 +54,7 @@
     <section class="form-card">
         <form method="POST" action="{{ $isEdit ? route('leaves.update', $leave->id) : route('leaves.store') }}" enctype="multipart/form-data" id="leaveForm">
             @csrf
+            <input type="hidden" name="staff_category" value="{{ request('staff_category', 'employee') }}">
             @if($isEdit)
                 @method('PUT')
             @endif
@@ -162,7 +163,7 @@
             @endif
 
             <div class="form-actions">
-                <a href="{{ route('leaves.index') }}" class="btn btn-secondary"><i class="fas fa-times"></i> Cancel</a>
+                <a href="{{ route(request('staff_category') === 'authority' ? 'admin.authority-leaves' : 'leaves.index') }}" class="btn btn-secondary"><i class="fas fa-times"></i> Cancel</a>
                 <button type="submit" id="leaveSubmitBtn" class="btn btn-primary"><i class="fas fa-paper-plane"></i> {{ $isEdit ? 'Update Leave' : 'Submit Request' }}</button>
             </div>
         </form>

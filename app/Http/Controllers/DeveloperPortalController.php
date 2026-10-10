@@ -38,6 +38,8 @@ class DeveloperPortalController extends Controller
         if (! $dev) {
             return [];
         }
+        // Bring Super Admin (platform) assignments into the workspace this developer signed in to.
+        \App\Services\DeveloperTaskSync::pull($dev);
 
         $emails = array_filter([
             strtolower(trim((string) ($dev->email ?? ''))),
@@ -575,6 +577,7 @@ class DeveloperPortalController extends Controller
 
         // Update default database tasks record
         DB::table('tasks')->where('id', $id)->update($updateData);
+        \App\Services\DeveloperTaskSync::push($task, $updateData);
 
         // Also sync update to tenant database if company has a dedicated db_name
         if (!empty($task->company_id)) {

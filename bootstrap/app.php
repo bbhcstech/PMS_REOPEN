@@ -47,6 +47,7 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\EnsureCompanySubscriptionActive::class,
             \App\Http\Middleware\NormalizePhoneCountryCodes::class,
             \App\Http\Middleware\BlockTicketsInAdminWorkspace::class,
+            \App\Http\Middleware\ProtectWorkforceRecords::class,
         ]);
         $middleware->alias([
             'admin' => RoleMiddleware::class,
@@ -63,14 +64,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\HttpException $e, \Illuminate\Http\Request $request) {
             if ($e->getStatusCode() === 419) {
                 if ($request->is('logout') || $request->is('*/logout') || $request->routeIs('logout*')) {
-                    \Illuminate\Support\Facades\Auth::guard('web')->logout();
-                    if (\Illuminate\Support\Facades\Auth::guard('super_admin')->check()) {
-                        \Illuminate\Support\Facades\Auth::guard('super_admin')->logout();
-                    }
-                    \Illuminate\Support\Facades\Auth::logout();
-                    $request->session()->invalidate();
-                    $request->session()->regenerateToken();
-                    return redirect('/login');
+                    return app(\App\Services\AuthenticationSession::class)->logout($request);
                 }
                 return redirect('/login')->with('error', 'Your session expired. Please log in again.');
             }

@@ -10,6 +10,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Leave extends TenantModel
 {
     use HasFactory;
+    use \App\Models\Concerns\HasWorkforceRecords;
+    public function getAttachmentAttribute($value)
+    {
+        return $value && str_starts_with($value, 'authority-leave/') ? route('leaves.attachment', $this->id) : $value;
+    }
 
     protected $fillable = [
         'user_id',

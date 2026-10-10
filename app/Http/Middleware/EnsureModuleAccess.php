@@ -82,6 +82,8 @@ class EnsureModuleAccess
         }
 
         $aliases = [
+            'admin.authority-attendance' => 'attendance',
+            'admin.authority-leaves' => 'leaves',
             'users.tasks' => 'tasks',
             'projects.tasks' => 'tasks',
             'projects.timelogs' => 'timelogs',

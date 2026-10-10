@@ -34,13 +34,8 @@ class EventController extends Controller
 
     protected function organizerQuery(int $companyId)
     {
-        return User::query()->where('company_id', $companyId)->where(function ($query) {
-            $query->whereRaw('LOWER(TRIM(role)) = ?', ['hr'])
-                ->orWhere(function ($admin) {
-                    $admin->where('id', Auth::id())
-                        ->whereRaw('LOWER(TRIM(role)) IN (?, ?)', ['admin', 'superadmin']);
-                });
-        });
+        return User::query()->where('company_id', $companyId)
+            ->whereRaw('LOWER(TRIM(role)) IN (?, ?, ?)', ['hr', 'admin', 'administrator']);
     }
 
     protected function resolveOrganizerId(int $companyId, ?int $existingId = null): ?int
@@ -70,16 +65,7 @@ class EventController extends Controller
         $user ??= Auth::user();
         if (! $user) return false;
 
-        $role = $user->normalizedRole();
-        if (in_array($role, ['admin', 'superadmin'], true)) {
-            return true;
-        }
-
-        if (in_array($role, ['hr', 'manager'], true)) {
-            return true;
-        }
-
-        return $user->hasModulePermission('events', 'create');
+        return in_array(strtolower(trim((string) $user->role)), ['admin', 'administrator', 'hr'], true);
     }
 
     /**
@@ -101,13 +87,7 @@ class EventController extends Controller
             'meeting_url' => 'nullable|url|max:500',
             'organizer_id' => ['nullable', 'integer', Rule::exists(User::class, 'id')
                 ->where(fn ($query) => $query->where('company_id', $companyId)
-                    ->where(function ($roles) {
-                        $roles->whereRaw('LOWER(TRIM(role)) = ?', ['hr'])
-                            ->orWhere(function ($admin) {
-                                $admin->where('id', Auth::id())
-                                    ->whereRaw('LOWER(TRIM(role)) IN (?, ?)', ['admin', 'superadmin']);
-                            });
-                    }))],
+                    ->whereRaw('LOWER(TRIM(role)) IN (?, ?, ?)', ['hr', 'admin', 'administrator']))],
             'max_participants' => 'nullable|integer|min:1',
             'reminder' => 'nullable|string',
             'status' => 'required|in:draft,published,cancelled,completed',
@@ -222,12 +202,8 @@ class EventController extends Controller
             ->paginate(12)
             ->withQueryString();
 
-        // The current admin is implicit; only this company's HR users are selectable.
-        $users = User::query()
-            ->where('company_id', $companyId)
-            ->whereRaw('LOWER(TRIM(role)) = ?', ['hr'])
-            ->orderBy('name')
-            ->get();
+        // Organizer choices remain scoped to this company.
+        $users = $this->organizerQuery($companyId)->orderBy('name')->get();
 
         // Preset Event Types
         $eventTypes = [

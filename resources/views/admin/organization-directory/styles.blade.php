@@ -68,16 +68,21 @@
         gap: 20px;
         margin-bottom: 24px;
         position: relative;
-        overflow: hidden;
+        /* Visible so the Quick Actions / Export menus are not clipped; above the cards that follow. */
+        overflow: visible;
+        z-index: 20;
     }
 
     .org-header-card::before {
         content: "";
         position: absolute;
-        top: 0;
-        left: 0;
-        width: 6px;
-        height: 100%;
+        inset: 0;
+        /* Full-card layer shaped like the card and masked to a 6px stripe, so the stripe still follows
+           the rounded left corners now that the card no longer clips its content. */
+        border-radius: inherit;
+        pointer-events: none;
+        -webkit-mask-image: linear-gradient(90deg, #000 6px, transparent 6px);
+        mask-image: linear-gradient(90deg, #000 6px, transparent 6px);
         background: linear-gradient(180deg, var(--org-emerald-main), var(--org-emerald-strong));
     }
 
@@ -1425,9 +1430,23 @@
     }
 
     @media (max-width: 576px) {
-        .org-stats-grid { grid-template-columns: 1fr; }
-        .org-table { display: block; overflow-x: auto; }
-        .org-profile-user-group { flex-direction: column; align-items: flex-start; }
+        .org-page { padding: 12px !important; }
+        .org-stats-grid { grid-template-columns: 1fr !important; }
+        .org-table { display: block !important; overflow-x: auto !important; -webkit-overflow-scrolling: touch !important; width: 100% !important; }
+        .org-profile-banner { padding: 18px 14px !important; border-radius: 16px !important; }
+        .org-profile-user-group { flex-direction: column !important; align-items: flex-start !important; gap: 14px !important; width: 100% !important; }
+        .org-banner-avatar { width: 70px !important; height: 70px !important; font-size: 1.6rem !important; }
+        .org-banner-info h1,
+        .org-profile-banner h1,
+        .org-profile-banner .org-banner-info h1 { font-size: 1.35rem !important; line-height: 1.3 !important; word-break: break-word !important; }
+        .org-banner-chips { gap: 6px !important; width: 100% !important; }
+        .org-banner-chip { white-space: normal !important; word-break: break-word !important; font-size: 0.78rem !important; padding: 5px 10px !important; }
+        .org-header-card { padding: 16px !important; border-radius: 16px !important; }
+        .org-side-card, .org-main-card { padding: 16px !important; border-radius: 16px !important; }
+        .org-social-pill { width: 100% !important; justify-content: flex-start !important; }
+        .org-banner-content { gap: 16px !important; }
+        .org-banner-content .d-flex.align-items-center.gap-2.flex-wrap { width: 100% !important; flex-direction: column !important; align-items: stretch !important; }
+        .org-banner-content .org-btn { width: 100% !important; justify-content: center !important; }
     }
 
     /* ==========================================================================

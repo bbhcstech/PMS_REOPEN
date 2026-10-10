@@ -1779,6 +1779,14 @@
             </li>
             @endif
 
+            @if(auth()->user()?->company_id && !\App\Services\TenantScope::isPlatformAdmin())
+            <li class="menu-item {{ request()->routeIs('company.ai.*') ? 'active' : '' }}">
+              <a href="{{ route('company.ai.index') }}" class="menu-link">
+                  <i class="menu-icon tf-icons bx bx-bot"></i>
+                  <div class="text-truncate">Company Assistant</div>
+              </a>
+            </li>
+            @endif
             @if($canSeeModule('notifications'))
             <li class="menu-item {{ request()->routeIs('notifications.*') ? 'active' : '' }}">
               <a href="{{ route('notifications.all') }}" class="menu-link" data-sidebar-key="notifications">
@@ -2020,6 +2028,14 @@
                       @endif
 
 
+                        @if(\App\Services\WorkforceAccess::isAdmin(auth()->user()))
+                        @if($canSeeModule('attendance'))
+                        <li class="menu-item {{ request()->routeIs('admin.authority-attendance') ? 'active' : '' }}"><a href="{{ route('admin.authority-attendance', ['view' => 'team']) }}" class="menu-link"><div class="text-truncate">Higher-level attendance</div></a></li>
+                        @endif
+                        @if($canSeeModule('leaves'))
+                        <li class="menu-item {{ request()->routeIs('admin.authority-leaves') ? 'active' : '' }}"><a href="{{ route('admin.authority-leaves') }}" class="menu-link"><div class="text-truncate">Higher-level leaves</div></a></li>
+                        @endif
+                        @endif
                          @if($canSeeModule('attendance'))
                         <li class="menu-item {{ (request()->routeIs('attendance.*') && !request()->routeIs('attendance.report')) ? 'active' : '' }}">
                               <a href="{{ route('attendance.index') }}" class="menu-link" data-sidebar-key="attendance">
@@ -2638,6 +2654,12 @@
                 });
             });
 
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') {
+                    closeMobileMenu();
+                }
+            });
+
             window.addEventListener('resize', function () {
                 if (window.innerWidth >= 1200) {
                     closeMobileMenu();
@@ -2653,8 +2675,8 @@
           <nav
             class="layout-navbar container-xxl navbar-detached navbar navbar-expand-xl align-items-center bg-navbar-theme"
             id="layout-navbar">
-            <div class="layout-menu-toggle navbar-nav align-items-xl-center me-4 me-xl-0 d-xl-none">
-              <a class="nav-item nav-link px-0 me-xl-6" href="javascript:void(0)">
+            <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-sm-4 me-xl-0 d-xl-none">
+              <a class="nav-item nav-link px-0 me-xl-6" href="javascript:void(0)" aria-label="Toggle navigation menu">
                 <i class="icon-base bx bx-menu icon-md"></i>
               </a>
             </div>
@@ -2667,8 +2689,8 @@
 
             <div class="navbar-nav-right d-flex align-items-center justify-content-end" id="navbar-collapse">
 
-              <!-- LEFT: Breadcrumbs -->
-              <div class="navbar-nav align-items-center">
+              <!-- LEFT: Breadcrumbs (desktop only to prevent mobile topbar crowding) -->
+              <div class="navbar-nav align-items-center d-none d-lg-flex">
                 <div class="nav-item">
                   <span class="fw-bold">Dashboard</span> • Home
                 </div>
@@ -2758,7 +2780,7 @@
                             @endif
                         </a>
 
-                        <ul class="dropdown-menu dropdown-menu-end p-0" aria-labelledby="assignedWorkDropdown" style="width: 380px; max-height: 520px; overflow-y: auto;">
+                        <ul class="dropdown-menu dropdown-menu-end p-0" aria-labelledby="assignedWorkDropdown" style="width: min(380px, calc(100vw - 24px)); max-height: 520px; overflow-y: auto;">
                             <li class="px-3 py-2 border-bottom">
                                 <p class="mb-0 fw-bold">Assigned Work</p>
                                 <small class="text-muted">Projects, tasks, and tickets assigned to you</small>

@@ -19,6 +19,14 @@ use Illuminate\Support\Facades\Schema;
 
 class LeaveService
 {
+    private function authorizeAuthorityReview(Leave $leave, ?User $actor): void
+    {
+        $owner = $leave->user;
+        if ($owner && (WorkforceAccess::isAuthority($owner) || $leave->staff_category === 'authority')) {
+            abort_unless(WorkforceAccess::isAdmin($actor), 403, 'Only the company admin may review higher-level staff leave.');
+            abort_unless((int) $actor->company_id === (int) $owner->company_id, 403);
+        }
+    }
     public function policy(): LeavePolicy
     {
         $year = $this->leaveYearDates();
@@ -81,6 +89,7 @@ class LeaveService
         if (! $employee) {
             return null;
         }
+        if (auth()->check()) TenantScope::authorizeCompany($employee->company_id);
 
         $policy = $this->policy();
         $year = $this->leaveYearDates($date);
@@ -260,7 +269,10 @@ class LeaveService
             $balance = $this->ensureBalance($employee, $start);
             $status = $data['status'] ?? 'pending';
 
-            if ($status === 'pending' && $this->shouldAutoApprove($type, $start, $data, $policy)) {
+            if (WorkforceAccess::isAuthority($employee) && ! WorkforceAccess::isAdmin($actor)) {
+                $status = 'pending';
+            }
+            if ($status === 'pending' && ! WorkforceAccess::isAuthority($employee) && $this->shouldAutoApprove($type, $start, $data, $policy)) {
                 $status = 'approved';
             }
 
@@ -310,6 +322,7 @@ class LeaveService
 
     public function approve(Leave $leave, ?User $actor = null, ?string $note = null, bool $forceUnpaid = false): Leave
     {
+        $this->authorizeAuthorityReview($leave, $actor);
         $connection = $leave->getConnection();
         return $connection->transaction(function () use ($leave, $actor, $note, $forceUnpaid) {
             if ($forceUnpaid) {
@@ -352,6 +365,7 @@ class LeaveService
 
     public function reject(Leave $leave, ?User $actor = null, string $reason = ''): Leave
     {
+        $this->authorizeAuthorityReview($leave, $actor);
         $connection = $leave->getConnection();
         return $connection->transaction(function () use ($leave, $actor, $reason) {
             $leave->forceFill([
@@ -390,6 +404,7 @@ class LeaveService
 
     public function markPending(Leave $leave, ?User $actor = null, ?string $note = null): Leave
     {
+        $this->authorizeAuthorityReview($leave, $actor);
         $connection = $leave->getConnection();
         return $connection->transaction(function () use ($leave, $actor, $note) {
             $leave->forceFill([
@@ -425,6 +440,7 @@ class LeaveService
 
     public function applyApproval(Leave $leave, ?User $actor = null, ?string $note = null): void
     {
+        $this->authorizeAuthorityReview($leave, $actor);
         $employee = $leave->user;
         if (! $employee) {
             return;
@@ -550,7 +566,9 @@ class LeaveService
 
             $this->syncLeaveTypesWithPolicy($policy);
 
-            User::where('role', 'employee')->chunkById(100, function ($employees) use ($policy) {
+            User::whereIn('role', ['employee', 'hr', 'manager', 'developer', 'dev'])
+                ->when($actor?->company_id, fn ($q) => $q->where('company_id', $actor->company_id))
+                ->chunkById(100, function ($employees) use ($policy) {
                 foreach ($employees as $employee) {
                     $this->syncEmployeePolicyBalances($employee, $policy);
                 }

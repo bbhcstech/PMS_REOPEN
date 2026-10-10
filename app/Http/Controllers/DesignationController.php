@@ -836,6 +836,7 @@ class DesignationController extends Controller
                 'parent' => in_array($reportingTo, $employeeIds, true) ? 'employee-' . $reportingTo : null,
                 'name' => $employee->name,
                 'level' => $designation,
+                'level_number' => is_numeric($employee->employeeDetail?->designation?->level) ? (int) $employee->employeeDetail->designation->level : null,
             ];
         })->values();
     }

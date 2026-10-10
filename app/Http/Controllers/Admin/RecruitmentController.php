@@ -94,7 +94,14 @@ class RecruitmentController extends Controller
             'location' => 'nullable|string|max:150',
             'description' => 'nullable|string',
             'requirements_summary' => 'nullable|string',
+            'pdf_header_image' => 'required|image|mimes:jpg,jpeg,png|max:2048',
+            'pdf_footer_image' => 'required|image|mimes:jpg,jpeg,png|max:2048',
+        ], [
+            'pdf_header_image.required' => 'Please upload the company header image for the requirement PDF.',
+            'pdf_footer_image.required' => 'Please upload the company footer image for the requirement PDF.',
         ]);
+
+        $this->ensurePdfBrandingColumns();
 
         $departmentName = null;
         if ($request->filled('department_id')) {
@@ -110,6 +117,9 @@ class RecruitmentController extends Controller
 
         $user = auth()->user();
 
+        $pdfHeaderImage = $this->storePdfBrandingImage($request->file('pdf_header_image'), 'header');
+        $pdfFooterImage = $this->storePdfBrandingImage($request->file('pdf_footer_image'), 'footer');
+
         $requirement = RecruitmentRequirement::create([
             'company_id' => $user?->company_id,
             'title' => $request->title,
@@ -124,6 +134,8 @@ class RecruitmentController extends Controller
             'requirements_summary' => $request->requirements_summary,
             'status' => 'open',
             'created_by' => $user?->id,
+            'pdf_header_image' => $pdfHeaderImage,
+            'pdf_footer_image' => $pdfFooterImage,
         ]);
 
         // SHARE NOTIFICATION WITH ALL EMPLOYEES, MANAGERS, AND HR STAFF
@@ -204,6 +216,29 @@ class RecruitmentController extends Controller
 
         return redirect()->route('recruitment.index')
             ->with('success', "Requirement removed successfully.");
+    }
+
+    /** Tenants that have not run the latest migration still get the header/footer columns. */
+    private function ensurePdfBrandingColumns(): void
+    {
+        if (! \Illuminate\Support\Facades\Schema::hasColumn('recruitment_requirements', 'pdf_header_image')
+            || ! \Illuminate\Support\Facades\Schema::hasColumn('recruitment_requirements', 'pdf_footer_image')) {
+            (require database_path('migrations/tenant/2026_10_10_120000_add_pdf_header_footer_to_recruitment_requirements.php'))->up();
+        }
+    }
+
+    /** Saves an uploaded header/footer image under public/uploads/recruitment and returns its relative path. */
+    private function storePdfBrandingImage(\Illuminate\Http\UploadedFile $file, string $kind): string
+    {
+        $directory = public_path('uploads/recruitment');
+        if (! \Illuminate\Support\Facades\File::exists($directory)) {
+            \Illuminate\Support\Facades\File::makeDirectory($directory, 0755, true, true);
+        }
+        $companyId = (int) (auth()->user()?->company_id ?? 0);
+        $extension = strtolower((string) ($file->guessExtension() ?: $file->getClientOriginalExtension())) === 'png' ? 'png' : 'jpg';
+        $fileName = 'recruitment_' . $kind . '_' . $companyId . '_' . now()->format('YmdHis') . '_' . \Illuminate\Support\Str::random(8) . '.' . $extension;
+        $file->move($directory, $fileName);
+        return 'uploads/recruitment/' . $fileName;
     }
 
     /**

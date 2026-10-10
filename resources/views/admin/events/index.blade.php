@@ -3,7 +3,6 @@
 @section('title', 'Events - Company Events & Activities')
 
 @push('styles')
-<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet" />
 <style>
     /* =========================================================================
      | EVENT CARD MODERN DESIGN SYSTEM
@@ -225,10 +224,83 @@
 
     #eventCalendar {
         background: #ffffff;
-        padding: 20px;
+        padding: 24px;
         border-radius: 16px;
         border: 1px solid rgba(47, 107, 255, 0.12);
         box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+        min-height: 720px;
+        box-sizing: border-box;
+    }
+
+    /* FullCalendar Toolbar Header & Gap Spacing */
+    #eventCalendar .fc-header-toolbar {
+        margin-bottom: 1.5rem !important;
+        display: flex !important;
+        flex-wrap: wrap !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 12px !important;
+    }
+
+    #eventCalendar .fc-header-toolbar .fc-toolbar-chunk {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+    }
+
+    #eventCalendar .fc-toolbar-title {
+        font-size: 1.35rem !important;
+        font-weight: 700 !important;
+        color: #1e293b;
+        letter-spacing: -0.02em;
+    }
+
+    /* Distinct Gap between Month, Week, and List buttons, and rounded pill design */
+    #eventCalendar .fc-header-toolbar .fc-button-group {
+        display: inline-flex !important;
+        gap: 8px !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    #eventCalendar .fc-header-toolbar .fc-button {
+        border-radius: 8px !important;
+        margin: 0 !important;
+        padding: 0.45rem 1.1rem !important;
+        font-weight: 600 !important;
+        font-size: 0.85rem !important;
+        line-height: 1.35 !important;
+        text-transform: capitalize !important;
+        border: 1.5px solid #2F6BFF !important;
+        background-color: #2F6BFF !important;
+        color: #ffffff !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+        transition: all 0.2s ease !important;
+        cursor: pointer !important;
+    }
+
+    #eventCalendar .fc-header-toolbar .fc-button:hover {
+        background-color: #1e52db !important;
+        border-color: #1e52db !important;
+        transform: translateY(-1px);
+        box-shadow: 0 3px 8px rgba(47, 107, 255, 0.25) !important;
+    }
+
+    #eventCalendar .fc-header-toolbar .fc-button:not(:disabled):is(:active, .fc-button-active) {
+        background-color: #143ca3 !important;
+        border-color: #143ca3 !important;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+    }
+
+    #eventCalendar .fc-header-toolbar .fc-button:disabled {
+        opacity: 0.55 !important;
+        cursor: not-allowed !important;
+    }
+
+    #eventCalendar .fc-header-toolbar .fc-prev-button,
+    #eventCalendar .fc-header-toolbar .fc-next-button {
+        padding: 0.45rem 0.75rem !important;
     }
 
     /* Banner previews are confined to events in the month calendar. */
@@ -1179,7 +1251,7 @@
         @else
             {{-- EMPTY STATE --}}
             <div class="card border-0 shadow-sm p-5 text-center my-4">
-                <div class="avatar avatar-xl bg-label-success rounded-circle mx-auto mb-3" style="width: 70px; height: 70px; display: flex; align-items: center; justify-content: center;">
+                <div class="avatar avatar-xl bg-label-success rounded-circle mx-auto mb-3 event-empty-icon" style="width: 70px; height: 70px; display: flex; align-items: center; justify-content: center;">
                     <i class="bx bx-calendar-event fs-1 text-success"></i>
                 </div>
                 <h5 class="fw-bold text-dark mb-1">No upcoming events</h5>
@@ -1334,11 +1406,13 @@
                         <div class="col-md-6">
                             <label class="form-label premium-label">Organizer</label>
                             <select name="organizer_id" id="eventOrganizerInput" class="form-select premium-select">
-                                <option value="">Default organizer</option>
-                                @foreach($users as $usr)
-                                    <option value="{{ $usr->id }}">
-                                        {{ $usr->name }} ({{ ucfirst($usr->role) }})
-                                    </option>
+                                <option value="">Current HR / Admin</option>
+                                @foreach(['hr' => 'HR', 'admin' => 'ADMIN'] as $organizerRole => $organizerLabel)
+                                    <optgroup label="{{ $organizerLabel }}">
+                                        @foreach($users->filter(fn ($usr) => in_array(strtolower(trim((string) $usr->role)), $organizerRole === 'admin' ? ['admin', 'administrator'] : ['hr'], true)) as $usr)
+                                            <option value="{{ $usr->id }}">{{ $usr->name }} ({{ $organizerLabel }})</option>
+                                        @endforeach
+                                    </optgroup>
                                 @endforeach
                             </select>
                         </div>
@@ -1573,9 +1647,15 @@
 @endsection
 
 @section('js')
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+<script src="{{ asset('admin/assets/vendor/libs/fullcalendar/index.global.min.js') }}"></script>
+<script>
+    if (typeof FullCalendar === 'undefined') {
+        document.write('<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"><\/script>');
+    }
+</script>
 <script>
     let calendarInstance = null;
+    let calendarRendered = false;
     let activeCalendarView = 'dayGridMonth';
     const eventViewStorageKey = 'events-view:{{ $companyId }}:{{ auth()->id() }}';
     let selectedUploadFiles = [];
@@ -1597,8 +1677,24 @@
         setupDragAndDrop();
         try {
             const savedView = sessionStorage.getItem(eventViewStorageKey);
-            if (['list', 'calendar', 'gallery'].includes(savedView)) switchView(savedView);
-        } catch (error) {}
+            if (['list', 'calendar', 'gallery'].includes(savedView)) {
+                switchView(savedView);
+            } else {
+                switchView('list');
+            }
+        } catch (error) {
+            switchView('list');
+        }
+
+        // Window resize ensures FullCalendar grid never collapses
+        window.addEventListener('resize', function() {
+            if (calendarInstance) {
+                const calDiv = document.getElementById('eventsCalendarView');
+                if (calDiv && !calDiv.classList.contains('d-none')) {
+                    calendarInstance.updateSize();
+                }
+            }
+        });
 
         // Keyboard navigation for Lightbox
         document.addEventListener('keydown', function(e) {
@@ -1620,27 +1716,42 @@
         const btnCal = document.getElementById('btnCalendarView');
         const btnGal = document.getElementById('btnGalleryView');
 
-        listDiv.classList.add('d-none');
-        calDiv.classList.add('d-none');
-        galDiv.classList.add('d-none');
+        if (listDiv) listDiv.classList.add('d-none');
+        if (calDiv) calDiv.classList.add('d-none');
+        if (galDiv) galDiv.classList.add('d-none');
 
-        btnList.classList.remove('active');
-        btnCal.classList.remove('active');
-        btnGal.classList.remove('active');
+        if (btnList) btnList.classList.remove('active');
+        if (btnCal) btnCal.classList.remove('active');
+        if (btnGal) btnGal.classList.remove('active');
 
         if (view === 'calendar') {
-            calDiv.classList.remove('d-none');
-            btnCal.classList.add('active');
-            if (calendarInstance) {
-                calendarInstance.render();
+            if (calDiv) calDiv.classList.remove('d-none');
+            if (btnCal) btnCal.classList.add('active');
+
+            if (!calendarInstance) {
+                initCalendar();
+            } else {
+                if (!calendarRendered) {
+                    calendarInstance.render();
+                    calendarRendered = true;
+                }
+                calendarInstance.updateSize();
                 calendarInstance.refetchEvents();
             }
+
+            // Guarantee size recalculation after browser layout cycle
+            setTimeout(function() {
+                if (calendarInstance) calendarInstance.updateSize();
+            }, 50);
+            setTimeout(function() {
+                if (calendarInstance) calendarInstance.updateSize();
+            }, 200);
         } else if (view === 'gallery') {
-            galDiv.classList.remove('d-none');
-            btnGal.classList.add('active');
+            if (galDiv) galDiv.classList.remove('d-none');
+            if (btnGal) btnGal.classList.add('active');
         } else {
-            listDiv.classList.remove('d-none');
-            btnList.classList.add('active');
+            if (listDiv) listDiv.classList.remove('d-none');
+            if (btnList) btnList.classList.add('active');
         }
     }
 
@@ -1672,48 +1783,79 @@
         const calendarEl = document.getElementById('eventCalendar');
         if (!calendarEl) return;
 
-        let initialDate;
-        try { initialDate = sessionStorage.getItem(eventViewStorageKey + ':date') || undefined; } catch (error) {}
+        if (typeof FullCalendar === 'undefined') {
+            setTimeout(initCalendar, 100);
+            return;
+        }
 
-        calendarInstance = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'dayGridMonth',
-            initialDate: initialDate,
-            height: 700,
-            headerToolbar: {
-                left: 'prev,next today',
-                center: 'title',
-                right: 'dayGridMonth,timeGridWeek,listMonth'
-            },
-            events: {
-                url: '{{ route("events.calendar-data") }}',
-                extraParams: function() { return { view: activeCalendarView }; }
-            },
-            datesSet: function(info) {
-                const changedView = activeCalendarView !== info.view.type;
-                activeCalendarView = info.view.type;
-                if (calendarInstance) {
-                    const date = calendarInstance.getDate();
-                    const localDate = date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
-                    try { sessionStorage.setItem(eventViewStorageKey + ':date', localDate); } catch (error) {}
-                    if (changedView) calendarInstance.refetchEvents();
-                }
-            },
-            eventContent: renderCalendarEventContent,
-            eventClassNames: function(info) {
-                return info.view.type === 'dayGridMonth' && info.event.extendedProps.banner_url
-                    ? ['event-calendar-has-banner'] : [];
-            },
-            eventClick: function(info) {
-                info.jsEvent.preventDefault();
-                showEventDetails(info.event.id);
+        if (typeof calendarInstance !== 'undefined' && calendarInstance) {
+            calendarInstance.updateSize();
+            return;
+        }
+
+        let initialDate = undefined;
+        try {
+            const storedDate = sessionStorage.getItem(eventViewStorageKey + ':date');
+            if (storedDate && !isNaN(Date.parse(storedDate))) {
+                initialDate = storedDate;
             }
-        });
+        } catch (error) {}
+
+        try {
+            calendarInstance = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                initialDate: initialDate,
+                height: 700,
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,listMonth'
+                },
+                events: {
+                    url: '{{ route("events.calendar-data") }}',
+                    extraParams: function() { return { view: activeCalendarView }; }
+                },
+                datesSet: function(info) {
+                    const changedView = activeCalendarView !== info.view.type;
+                    activeCalendarView = info.view.type;
+                    if (calendarInstance) {
+                        const date = calendarInstance.getDate();
+                        const localDate = date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
+                        try { sessionStorage.setItem(eventViewStorageKey + ':date', localDate); } catch (error) {}
+                        if (changedView) calendarInstance.refetchEvents();
+                    }
+                },
+                eventContent: renderCalendarEventContent,
+                eventClassNames: function(info) {
+                    return info.view.type === 'dayGridMonth' && info.event.extendedProps.banner_url
+                        ? ['event-calendar-has-banner'] : [];
+                },
+                eventClick: function(info) {
+                    info.jsEvent.preventDefault();
+                    showEventDetails(info.event.id);
+                }
+            });
+
+            const calDiv = document.getElementById('eventsCalendarView');
+            if (calDiv && !calDiv.classList.contains('d-none')) {
+                calendarInstance.render();
+                calendarRendered = true;
+                setTimeout(function() {
+                    if (calendarInstance) calendarInstance.updateSize();
+                }, 50);
+            }
+        } catch (err) {
+            console.error('Error initializing FullCalendar:', err);
+        }
     }
 
     function submitEventForm() {
         if (!validateEventDateTime()) return false;
         if (!document.getElementById('eventsCalendarView').classList.contains('d-none')) {
-            try { sessionStorage.setItem(eventViewStorageKey + ':date', document.getElementById('eventStartDateInput').value); } catch (error) {}
+            const startDateVal = document.getElementById('eventStartDateInput')?.value;
+            if (startDateVal && !isNaN(Date.parse(startDateVal))) {
+                try { sessionStorage.setItem(eventViewStorageKey + ':date', startDateVal); } catch (error) {}
+            }
         }
         return true;
     }

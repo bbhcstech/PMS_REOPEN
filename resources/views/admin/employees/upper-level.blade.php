@@ -1,7 +1,20 @@
 @extends('admin.layout.app')
 @section('title', 'Add Upper Level Employee')
+@push('styles')
+<style>
+    /* The employee-page theme boxes every <form>; these forms already sit inside cards, so render them flat. */
+    html body:has(form[action*="employees"]) .upper-level-page .card-body > form {
+        border: 0 !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        overflow: visible !important;
+    }
+</style>
+@endpush
 @section('content')
-<div class="container-fluid py-4">
+<div class="container-fluid py-4 upper-level-page">
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
         <div><h3 class="mb-1">Add Upper Level Employee</h3><p class="text-muted mb-0">Manage company roles and employee accounts for {{ $company->name }}.</p></div>
         <a class="btn btn-outline-primary" href="{{ route('employees.index') }}">View employees</a>

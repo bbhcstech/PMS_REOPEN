@@ -33,17 +33,17 @@
         <div class="view-toggle-content">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb-nav mb-0">
-                    <li class="breadcrumb-item"><a href="{{ route('leaves.index') }}">Leaves</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route(request('staff_category') === 'authority' ? 'admin.authority-leaves' : 'leaves.index') }}">Leaves</a></li>
                     <li class="breadcrumb-item active">Calendar View</li>
                 </ol>
             </nav>
             <div class="btn-group btn-group-sm" role="group">
-                <a href="{{ route('leaves.index') }}"
+                <a href="{{ route(request('staff_category') === 'authority' ? 'admin.authority-leaves' : 'leaves.index') }}"
                    class="btn btn-outline-primary toggle-btn {{ request()->routeIs('leaves.index') ? 'active' : '' }}"
                    data-bs-toggle="tooltip" title="Table View">
                     <i class="fas fa-list-ul"></i> Table
                 </a>
-                <a href="{{ route('leaves.calendar') }}"
+                <a href="{{ route('leaves.calendar', ['staff_category' => request('staff_category')]) }}"
                    class="btn btn-outline-primary toggle-btn {{ request()->routeIs('leaves.calendar') ? 'active' : '' }}"
                    data-bs-toggle="tooltip" title="Calendar View">
                     <i class="fas fa-calendar"></i> Calendar
@@ -60,6 +60,7 @@
         </div>
         <div class="filter-body">
             <form id="filterForm" class="filter-grid">
+<input type="hidden" name="staff_category" value="{{ request('staff_category', 'employee') }}">
                 <!-- Employee Filter -->
                 <div class="filter-group">
                     <label for="employee" class="form-label">
@@ -1389,7 +1390,7 @@ document.addEventListener('DOMContentLoaded', function () {
         editable: false,
         dayMaxEvents: true,
         events: {
-            url: "{{ route('leaves.calendar.data') }}",
+            url: "{{ route('leaves.calendar.data', ['staff_category' => request('staff_category')]) }}",
             method: 'GET',
             extraParams: function () {
                 return {
@@ -1522,7 +1523,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function fetchEventsForStatistics(start, end) {
         $.ajax({
-            url: "{{ route('leaves.calendar.data') }}",
+            url: "{{ route('leaves.calendar.data', ['staff_category' => request('staff_category')]) }}",
             method: 'GET',
             data: {
                 employee: $('#employee').val(),

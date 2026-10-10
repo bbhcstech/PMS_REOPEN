@@ -230,7 +230,10 @@ class ClientController extends Controller
                 if ($rawOffice === $officeDialCode || $rawOffice === '' || $digitsOnly === '' || $digitsOnly === $cleanDialDigits) {
                     $request->merge(['office_phone' => null]);
                 } else {
-                    if (str_starts_with($digitsOnly, $cleanDialDigits)) {
+                    // The form sends local digits (the code has its own dropdown); strip a code prefix only when
+                    // one was actually included, so a local number starting with the same digits stays intact.
+                    $hasDialPrefix = str_starts_with($rawOffice, '+') || strlen($digitsOnly) > $officeMaxDigits;
+                    if ($hasDialPrefix && str_starts_with($digitsOnly, $cleanDialDigits)) {
                         $nationalDigits = substr($digitsOnly, strlen($cleanDialDigits));
                     } else {
                         $nationalDigits = $digitsOnly;
@@ -893,14 +896,19 @@ class ClientController extends Controller
                 return response()->json($notFoundRes, 200);
             }
 
+            // A provider that answers "no such pincode" is definitive; timeouts and outages are not and must not be cached.
+            $definitelyNotFound = false;
             try {
                 $response = Http::withHeaders([
                     'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36',
                     'Accept'     => 'application/json',
-                ])->withoutVerifying()->timeout(2.5)->get("https://api.postalpincode.in/pincode/{$cleanPin}");
+                ])->withoutVerifying()->connectTimeout(3)->timeout(4)->retry(2, 200, throw: false)->get("https://api.postalpincode.in/pincode/{$cleanPin}");
 
                 if ($response->successful()) {
                     $json = $response->json();
+                    if (is_array($json) && !empty($json[0]) && ($json[0]['Status'] ?? '') === 'Error') {
+                        $definitelyNotFound = true;
+                    }
                     if (is_array($json) && !empty($json[0]) && ($json[0]['Status'] ?? '') === 'Success' && !empty($json[0]['PostOffice'])) {
                         $postOffices = $json[0]['PostOffice'];
                         $first = $postOffices[0];
@@ -935,12 +943,46 @@ class ClientController extends Controller
                 Log::warning("Pincode lookup error for {$cleanPin}: " . $e->getMessage());
             }
 
+            // Fallback provider (India Post's API is often slow or blocks non-Indian/datacenter servers).
+            try {
+                $fallback = Http::withHeaders(['Accept' => 'application/json'])
+                    ->withoutVerifying()->connectTimeout(3)->timeout(4)
+                    ->get("https://api.zippopotam.us/in/{$cleanPin}");
+                if ($fallback->successful() && !empty($fallback->json('places'))) {
+                    $places = $fallback->json('places');
+                    $state = (string) ($places[0]['state'] ?? '');
+                    $areas = array_values(array_unique(array_filter(array_map(
+                        fn ($place) => trim((string) ($place['place name'] ?? '')), $places
+                    ))));
+                    $successData = [
+                        'success'      => true,
+                        'pincode'      => $cleanPin,
+                        'country'      => 'India',
+                        'state'        => $state,
+                        'city'         => '',
+                        'district'     => '',
+                        'areas'        => $areas,
+                        'primary_area' => $areas[0] ?? '',
+                        'message'      => "Detected: {$state}",
+                    ];
+                    Cache::put($cacheKey, $successData, 86400 * 30);
+                    return response()->json($successData, 200);
+                }
+                if ($fallback->status() === 404) {
+                    $definitelyNotFound = true;
+                }
+            } catch (\Throwable $e) {
+                Log::warning("Pincode fallback lookup error for {$cleanPin}: " . $e->getMessage());
+            }
+
             $notFoundRes = [
                 'success'   => false,
                 'not_found' => true,
                 'message'   => 'No data found',
             ];
-            Cache::put($cacheKey, $notFoundRes, 3600);
+            if ($definitelyNotFound) {
+                Cache::put($cacheKey, $notFoundRes, 600);
+            }
             return response()->json($notFoundRes, 200);
         }
 

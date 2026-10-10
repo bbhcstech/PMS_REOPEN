@@ -10,8 +10,16 @@ class ProvisioningPlan
 {
     public function resolve(Request $request): Plan
     {
-        $selected = $request->input('subscription_plan') ?? $request->input('plan_slug')
-            ?? $request->input('plan_id') ?? $request->input('plan') ?? 'free';
+        $selected = 'free';
+        foreach (['subscription_plan', 'plan_slug', 'plan_id', 'plan'] as $field) {
+            $value = $request->input($field);
+            // An omitted or blank selection uses Free; explicit choices still validate.
+            if ($value === null || (is_string($value) && trim($value) === '')) {
+                continue;
+            }
+            $selected = $value;
+            break;
+        }
         if (! is_string($selected) && ! is_int($selected)) {
             throw ValidationException::withMessages(['subscription_plan' => 'Select a valid subscription plan.']);
         }

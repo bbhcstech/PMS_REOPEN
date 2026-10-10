@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Company extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, \App\Models\Concerns\HasCompanyAiAgent;
 
     protected $connection = 'central';
     protected $table = 'companies';

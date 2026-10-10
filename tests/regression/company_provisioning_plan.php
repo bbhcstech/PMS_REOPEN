@@ -45,6 +45,7 @@ Schema::connection('central')->create('plans', function ($t) {
     $t->integer('max_users')->default(0); $t->integer('max_storage_mb')->default(0); $t->timestamps();
 });
 Schema::connection('central')->create('companies', function ($t) {
+    $t->text('settings')->nullable();
     $t->id(); foreach (['company_code', 'name', 'email', 'password', 'phone', 'address', 'logo', 'db_name', 'status', 'highest_plan_slug'] as $field) $t->string($field)->nullable();
     foreach (['max_users', 'max_projects', 'max_clients', 'max_storage_mb', 'highest_plan_level'] as $field) $t->integer($field)->default(0);
     $t->timestamp('trial_ends_at')->nullable(); $t->timestamp('suspended_at')->nullable(); $t->softDeletes(); $t->timestamps();
@@ -61,23 +62,31 @@ foreach (['free', 'gold', 'platinum', 'diamond'] as $slug) {
 }
 $gold = Plan::where('slug', 'gold')->firstOrFail();
 checkPlan($resolver->resolve(Request::create('/', 'POST', ['plan_id' => $gold->id]))->id === $gold->id, 'Plan ID alias resolved incorrectly.');
-foreach (['unknown', '', ['gold']] as $bad) {
+foreach ([[], ['subscription_plan' => null], ['subscription_plan' => ''], ['subscription_plan' => '   ']] as $input) {
+    checkPlan($resolver->resolve(Request::create('/', 'POST', $input))->slug === 'free', 'An omitted or blank selection did not default to Free.');
+}
+checkPlan($resolver->resolve(Request::create('/', 'POST', ['subscription_plan' => '', 'plan_id' => $gold->id]))->id === $gold->id, 'Blank selection overrode an explicit plan ID.');
+foreach (['unknown', ['gold']] as $bad) {
     try { $resolver->resolve(Request::create('/', 'POST', ['subscription_plan' => $bad])); throw new RuntimeException('Invalid selection became Free.'); }
     catch (ValidationException $e) {}
 }
 $controller = new CompanyController;
-foreach (['gold', 'platinum', 'diamond', 'free'] as $slug) {
+foreach (['gold', 'platinum', 'diamond', 'free', 'omitted', 'blank', 'whitespace'] as $slug) {
     $request = Request::create('/super-admin/companies', 'POST', ['name' => 'Company ' . $slug, 'slug' => 'plan_test_' . $slug,
         'email' => $slug . '@company.test', 'admin_name' => 'Admin ' . $slug, 'admin_email' => $slug . '@company.test',
         'admin_password' => 'Test-password-123', 'subscription_plan' => $slug]);
+    if ($slug === 'omitted') $request->request->remove('subscription_plan');
+    if ($slug === 'blank') $request->merge(['subscription_plan' => '']);
+    if ($slug === 'whitespace') $request->merge(['subscription_plan' => '   ']);
+    $expectedSlug = in_array($slug, ['omitted', 'blank', 'whitespace'], true) ? 'free' : $slug;
     $request->setLaravelSession(app('session')->driver());
     app()->instance('request', $request);
     $response = $controller->store($request);
     checkPlan($response->getStatusCode() === 302, 'Provisioning did not finish.');
     $company = Company::where('email', $slug . '@company.test')->firstOrFail();
     $subscriptions = Subscription::where('company_id', $company->id)->get();
-    checkPlan($subscriptions->count() === 1 && $subscriptions->first()->plan->slug === $slug, "$slug provisioned with wrong/duplicate subscription.");
-    checkPlan($company->highest_plan_slug === $slug, 'Company retained the Free lifecycle tier.');
+    checkPlan($subscriptions->count() === 1 && $subscriptions->first()->plan->slug === $expectedSlug, "$slug provisioned with wrong/duplicate subscription.");
+    checkPlan($company->highest_plan_slug === $expectedSlug, 'Company lifecycle tier does not match the resolved plan.');
     $plan = $subscriptions->first()->plan;
     checkPlan($company->max_users === ($plan->max_users > 0 ? $plan->max_users : 999999) && $company->max_storage_mb === $plan->max_storage_mb, 'Plan limits were not applied.');
     checkPlan($subscriptions->first()->price == $plan->monthly_price, 'Provisioned subscription price is incorrect.');

@@ -4,6 +4,16 @@
 
 @section('content')
 <style>
+    html body .recruitment-row-action .recruitment-action-symbol {
+        background: transparent !important;
+        fill: none !important;
+        stroke: #334155 !important;
+        opacity: 1 !important;
+        flex-shrink: 0;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .recruitment-row-action .recruitment-action-symbol {
+        stroke: #e2e8f0 !important;
+    }
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
 
     .recruitment-shell {
@@ -1861,14 +1871,14 @@
                                     <i class="bx bx-download"></i> Download
                                 </a>
 
-                                <button class="btn btn-sm btn-icon btn-light" type="button" data-bs-toggle="modal" data-bs-target="#viewReqModal-{{ $req->id }}" title="View Full Details">
-                                    <i class="bx bx-show text-info"></i>
+                                <button class="btn btn-sm btn-icon btn-light recruitment-row-action" type="button" data-bs-toggle="modal" data-bs-target="#viewReqModal-{{ $req->id }}" title="View Full Details" aria-label="View requirement details">
+                                    <svg class="recruitment-action-symbol" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
                                 </button>
 
                                 @if(auth()->user()?->role === 'admin')
                                 <div class="dropdown d-inline-block">
-                                    <button class="btn btn-sm btn-icon btn-light" type="button" data-bs-toggle="dropdown">
-                                        <i class="bx bx-dots-vertical-rounded"></i>
+                                    <button class="btn btn-sm btn-icon btn-light recruitment-row-action" type="button" data-bs-toggle="dropdown" title="Requirement actions" aria-label="Requirement actions">
+                                        <svg class="recruitment-action-symbol" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end">
                                         <li class="dropdown-header">Admin Management</li>
@@ -2015,7 +2025,7 @@
 <div class="modal fade" id="createRequirementModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
-            <form method="POST" action="{{ route('recruitment.store') }}">
+            <form method="POST" action="{{ route('recruitment.store') }}" enctype="multipart/form-data">
                 @csrf
                 <div class="modal-header" style="background: linear-gradient(135deg, #1E4FCC 0%, #2F6BFF 100%); color: #ffffff;">
                     <h5 class="modal-title fw-bold" style="color: #ffffff !important;"><i class="bx bx-plus-circle me-2" style="color: #ffffff !important;"></i> Create New Recruitment Requirement</h5>
@@ -2152,6 +2162,18 @@
                         <div class="col-12">
                             <label class="form-label fw-bold">Candidate Qualifications & Requirements</label>
                             <textarea name="requirements_summary" class="form-control" rows="3" placeholder="Key skills, degrees, technologies, or certifications needed..."></textarea>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold" for="recPdfHeaderImage">Company Header (PDF) <span class="text-danger">*</span></label>
+                            <input type="file" name="pdf_header_image" id="recPdfHeaderImage" class="form-control" accept="image/png,image/jpeg" required>
+                            <small class="text-muted d-block mt-1">Shown at the top of every page of the requirement PDF. JPG or PNG, max 2 MB (wide banner recommended).</small>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold" for="recPdfFooterImage">Company Footer (PDF) <span class="text-danger">*</span></label>
+                            <input type="file" name="pdf_footer_image" id="recPdfFooterImage" class="form-control" accept="image/png,image/jpeg" required>
+                            <small class="text-muted d-block mt-1">Shown at the bottom of every page of the requirement PDF. JPG or PNG, max 2 MB (wide banner recommended).</small>
                         </div>
                     </div>
                 </div>

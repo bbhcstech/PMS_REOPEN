@@ -1,13 +1,14 @@
 @extends('admin.layout.app')
 
-@section('title', $isAdmin ? 'Leave Management' : 'My Leaves')
+@section('title', $isAdmin ? (request('staff_category') === 'authority' ? 'Higher-level leaves' : 'Leave Management') : 'My Leaves')
 
 @section('content')
+@php $leaveRoute = request('staff_category') === 'authority' ? 'admin.authority-leaves' : 'leaves.index'; @endphp
 
 <div class="leave-page">
     <!-- Breadcrumb -->
     <div class="leave-breadcrumb">
-        <i class="fas fa-calendar-check"></i> Dashboard / {{ $isAdmin ? 'Leave Management' : 'My Leaves' }}
+        <i class="fas fa-calendar-check"></i> Dashboard / {{ $isAdmin ? (request('staff_category') === 'authority' ? 'Higher-level leaves' : 'Leave Management') : 'My Leaves' }}
     </div>
 
     <!-- Header Card -->
@@ -20,22 +21,22 @@
             </div>
         </div>
         <div class="leave-hero-actions">
-            <a href="{{ route('leaves.create') }}" class="btn btn-primary"><i class="fas fa-plus-circle"></i> Apply Leave</a>
+            <a href="{{ route('leaves.create', ['staff_category' => request('staff_category')]) }}" class="btn btn-primary"><i class="fas fa-plus-circle"></i> Apply Leave</a>
             @if(! $isAdmin)
                 <a href="{{ route('leaves.apology-letters.create') }}" class="btn btn-light"><i class="fas fa-envelope-open-text"></i> Write Apology Letter</a>
             @endif
-            <a href="{{ route('leaves.calendar') }}" class="btn btn-light"><i class="fas fa-calendar-alt"></i> Calendar</a>
+            <a href="{{ route('leaves.calendar', ['staff_category' => request('staff_category')]) }}" class="btn btn-light"><i class="fas fa-calendar-alt"></i> Calendar</a>
             @if($isAdmin)
                 <a href="{{ route('leaves.apology-letters.index') }}" class="btn btn-light"><i class="fas fa-envelope-open-text"></i> Apology Letters</a>
                 <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#policyModal"><i class="fas fa-sliders-h"></i> Policy</button>
                 <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#exportModal"><i class="fas fa-download"></i> Export</button>
-                <a href="{{ route('leaves.archive') }}" class="btn btn-light">
+                <a href="{{ route('leaves.archive', ['staff_category' => request('staff_category')]) }}" class="btn btn-light">
                     <i class="fas fa-box-archive"></i> Archived
                     @if(($archivedCount ?? 0) > 0)
                         <span class="archive-count-badge">{{ $archivedCount }}</span>
                     @endif
                 </a>
-                <form method="POST" action="{{ route('leaves.archive-all') }}" class="d-inline" onsubmit="return confirm('Archive all active leave requests? They can be restored later.');">
+                <form method="POST" action="{{ route('leaves.archive-all', ['staff_category' => request('staff_category')]) }}" class="d-inline" onsubmit="return confirm('Archive all active leave requests? They can be restored later.');">
                     @csrf
                     <button class="btn btn-light"><i class="fas fa-boxes-packing"></i> Archive All</button>
                 </form>
@@ -152,7 +153,8 @@
 
     <!-- Filter Panel -->
     <section class="filter-panel">
-        <form method="GET" action="{{ route('leaves.index') }}" class="filter-grid">
+        <form method="GET" action="{{ route($leaveRoute) }}" class="filter-grid">
+<input type="hidden" name="staff_category" value="{{ request('staff_category', 'employee') }}">
             <input type="hidden" name="per_page" value="{{ $perPage ?? request('per_page', 20) }}">
             @if($isAdmin)
                 <div>
@@ -193,7 +195,7 @@
             </div>
             <div class="filter-actions">
                 <button class="btn btn-primary"><i class="fas fa-filter"></i> Filter</button>
-                <a href="{{ route('leaves.index') }}" class="btn btn-secondary"><i class="fas fa-redo"></i> Reset</a>
+                <a href="{{ route($leaveRoute) }}" class="btn btn-secondary"><i class="fas fa-redo"></i> Reset</a>
             </div>
         </form>
     </section>
@@ -207,7 +209,8 @@
             </div>
             @if($isAdmin)
                 <div class="table-tools">
-                    <form method="GET" action="{{ route('leaves.index') }}" class="entry-tools">
+                    <form method="GET" action="{{ route($leaveRoute) }}" class="entry-tools">
+<input type="hidden" name="staff_category" value="{{ request('staff_category', 'employee') }}">
                         @foreach(request()->except(['page', 'per_page']) as $key => $value)
                             @if(is_array($value))
                                 @foreach($value as $item)
@@ -270,6 +273,9 @@
                             @if($isAdmin)<td><input type="checkbox" class="form-check-input leave-checkbox" value="{{ $leave->id }}"></td>@endif
                             <td>
                                 <strong>{{ $leave->user?->name ?? 'N/A' }}</strong>
+                                @if($leave->staff_category === 'authority')
+                                    <small>{{ $leave->staff_role_name }} · {{ $leave->staff_designation }} @if($leave->staff_designation_level !== null) · Level {{ $leave->staff_designation_level }} @endif</small>
+                                @endif
                                 <small>{{ $leave->user?->employeeDetail?->department?->dpt_name ?? $leave->user?->designation ?? 'Employee' }}</small>
                             </td>
                             <td><span class="type-badge">{{ $leave->type_label }}</span></td>
@@ -446,6 +452,7 @@
 <div class="modal fade" id="exportModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <form class="modal-content export-modal" id="leaveExportForm" method="GET" action="{{ route('leaves.export') }}">
+<input type="hidden" name="staff_category" value="{{ request('staff_category', 'employee') }}">
             <div class="modal-header">
                 <div>
                     <h5 class="modal-title"><i class="fas fa-download me-2"></i>Export Leave Report</h5>

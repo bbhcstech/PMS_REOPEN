@@ -1169,6 +1169,10 @@
     let pollingInterval = null;
     let isPollingMessages = false;
     let isUserNearBottom = true;
+    let lastSyncTime = null;
+    const messageCache = {};
+    const messageSignatures = {};
+    const localChangeAt = {};
 
     document.addEventListener('DOMContentLoaded', function() {
         fetchInitialMessages();
@@ -1200,6 +1204,7 @@
             if (data.success) {
                 if (Number(data.company_id) !== CURRENT_COMPANY_ID) { clearInterval(pollingInterval); return; }
                 renderMessagesTimeline(data.messages, true);
+                if (data.server_time) lastSyncTime = data.server_time;
                 if (data.messages.length > 0) {
                     lastLoadedMessageId = Math.max(...data.messages.map(m => m.id));
                 }
@@ -1219,7 +1224,9 @@
         if (document.hidden || isPollingMessages) return;
         isPollingMessages = true;
 
-        fetch(`{{ route('community.messages') }}?after_id=${lastLoadedMessageId}`, {
+        const pollStartedAt = Date.now();
+        const sinceParam = lastSyncTime ? `&since=${encodeURIComponent(lastSyncTime)}` : '';
+        fetch(`{{ route('community.messages') }}?after_id=${lastLoadedMessageId}${sinceParam}`, {
             headers: {
                 'Accept': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest'
@@ -1236,6 +1243,10 @@
                         scrollToBottom();
                     }
                 }
+                if (data.updated && data.updated.length > 0) {
+                    applyUpdatedMessages(data.updated, pollStartedAt);
+                }
+                if (data.server_time) lastSyncTime = data.server_time;
                 if (data.pinned_messages) {
                     updatePinnedUI(data.pinned_messages);
                 }
@@ -1325,6 +1336,21 @@
     }
 
     /**
+     * Re-render messages already on screen that changed (reactions, edits, deletions, pins)
+     */
+    function applyUpdatedMessages(updatedMessages, pollStartedAt) {
+        updatedMessages.forEach(m => {
+            const card = document.getElementById(`msgCard_${m.id}`);
+            if (!card || messageSignatures[m.id] === JSON.stringify(m)) return;
+            // A poll sent before this user's own change may carry the older state; the action response is newer.
+            if (localChangeAt[m.id] && localChangeAt[m.id] >= pollStartedAt) return;
+            // Do not close an action menu the user has open; the change is applied on the next sync.
+            if (card.querySelector('.dropdown-menu.show')) return;
+            card.replaceWith(createMessageCardElement(m));
+        });
+    }
+
+    /**
      * Create Date Separator DOM Element
      */
     function createDateSeparator(dateText) {
@@ -1352,6 +1378,8 @@
         const div = document.createElement('div');
         div.className = `message-wrapper ${m.is_self ? 'message-self' : 'message-other'}`;
         div.id = `msgCard_${m.id}`;
+        messageCache[m.id] = m;
+        messageSignatures[m.id] = JSON.stringify(m);
 
         const avatarMarkup = renderAvatarHtml(m);
 
@@ -1542,6 +1570,13 @@
         .then(res => res.json())
         .then(data => {
             if (data.success) {
+                // Show the reaction immediately, then sync with everyone else's changes.
+                localChangeAt[messageId] = Date.now();
+                const card = document.getElementById(`msgCard_${messageId}`);
+                const cached = messageCache[messageId];
+                if (card && cached && Array.isArray(data.reactions)) {
+                    card.replaceWith(createMessageCardElement(Object.assign({}, cached, { reactions: data.reactions })));
+                }
                 pollNewMessages();
             }
         });
@@ -1568,6 +1603,7 @@
         .then(res => res.json())
         .then(data => {
             if (data.success) {
+                localChangeAt[id] = Date.now();
                 const card = document.getElementById(`msgCard_${id}`);
                 if (card) {
                     const newElem = createMessageCardElement(data.message);
@@ -1597,6 +1633,7 @@
         .then(res => res.json())
         .then(data => {
             if (data.success) {
+                localChangeAt[id] = Date.now();
                 const card = document.getElementById(`msgCard_${id}`);
                 if (card) {
                     card.innerHTML = `
@@ -1627,6 +1664,12 @@
         .then(res => res.json())
         .then(data => {
             if (data.success) {
+                localChangeAt[id] = Date.now();
+                const card = document.getElementById(`msgCard_${id}`);
+                const cached = messageCache[id];
+                if (card && cached) {
+                    card.replaceWith(createMessageCardElement(Object.assign({}, cached, { is_pinned: !!data.is_pinned })));
+                }
                 pollNewMessages();
             } else {
                 alert(data.error || 'Failed to toggle pin.');
