@@ -1410,8 +1410,8 @@
                                     foreach ($roles as $option) {
                                         if (strtolower($option) === 'admin') continue;
                                         $label = $roleLabels[$option] ?? ucfirst($option);
+                                        $labelKey = mb_strtolower(preg_replace('/\s+/u', ' ', trim($label)));
                                         if (str_starts_with($option, 'staff:')) $label .= ' · Custom role';
-                                        $labelKey = $option;
                                         if (!isset($roleOptions[$labelKey]) || $role === $option) {
                                             $roleOptions[$labelKey] = ['value' => $option, 'label' => $label];
                                         }

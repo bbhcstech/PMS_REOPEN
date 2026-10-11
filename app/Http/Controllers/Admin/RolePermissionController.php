@@ -16,10 +16,17 @@ class RolePermissionController extends Controller
     private array $roles = ['manager', 'hr', 'employee'];
     private array $permissions = ['view', 'create', 'edit', 'delete', 'approve', 'export', 'assign'];
 
+    private function companyId(): int
+    {
+        $companyId = \App\Services\TenantScope::companyId();
+        abort_unless($companyId, 403, 'Select a valid company workspace before managing permissions.');
+        return $companyId;
+    }
+
     private function companyRoles(): array
     {
         $roles = array_combine($this->roles, array_map('ucfirst', $this->roles));
-        $companyId = auth()->user()?->company_id;
+        $companyId = $this->companyId();
         if ($companyId && \Illuminate\Support\Facades\Schema::connection('tenant')->hasTable('company_staff_roles')) {
             foreach (\App\Models\CompanyStaffRole::where('company_id', $companyId)->orderBy('name')->get() as $staffRole) {
                 $roles[$staffRole->permissionKey()] = $staffRole->name;
@@ -31,8 +38,11 @@ class RolePermissionController extends Controller
     private function accessRole(string $role): string
     {
         if (in_array($role, $this->roles, true)) return $role;
-        return \App\Models\CompanyStaffRole::where('company_id', auth()->user()->company_id)
-            ->findOrFail((int) substr($role, strrpos($role, ':') + 1))->access_role;
+        $companyId = $this->companyId();
+        abort_unless(preg_match('/^staff:([1-9][0-9]*):([1-9][0-9]*)$/', $role, $matches)
+            && (int) $matches[1] === $companyId, 403, 'Role does not belong to this company.');
+        return \App\Models\CompanyStaffRole::where('company_id', $companyId)
+            ->findOrFail((int) $matches[2])->access_role;
     }
 
     public function index(Request $request): View
@@ -43,6 +53,9 @@ class RolePermissionController extends Controller
 
         $roleLabels = $this->companyRoles();
         $role = strtolower($request->query('role', 'hr'));
+        if (str_starts_with($role, 'staff:')) {
+            abort_unless(array_key_exists($role, $roleLabels), 403, 'Role does not belong to this company.');
+        }
         if (! array_key_exists($role, $roleLabels)) {
             $role = 'hr';
         }
@@ -103,7 +116,7 @@ class RolePermissionController extends Controller
         }
 
         $staffUsers = \App\Models\User::whereIn('role', ['admin', 'manager', 'hr', 'employee', 'user'])
-            ->where('company_id', auth()->user()->company_id)
+            ->where('company_id', $this->companyId())
             ->orderBy('name')
             ->get(['id', 'name', 'email', 'role']);
 
@@ -227,5 +240,6 @@ class RolePermissionController extends Controller
         $user = auth()->user();
         $isAdmin = \Illuminate\Support\Facades\Auth::guard('super_admin')->check() || ($user && in_array($user->normalizedRole(), ['admin', 'superadmin'], true));
         abort_unless($isAdmin, 403);
+        $this->companyId();
     }
 }

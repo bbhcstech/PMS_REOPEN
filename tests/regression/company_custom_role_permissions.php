@@ -36,4 +36,36 @@ if ($foreign->permissionRole() !== 'manager') throw new RuntimeException('Foreig
 Auth::guard('web')->setUser(new User(['company_id' => 2, 'role' => 'admin']));
 $roles = $method->invoke($controller);
 if (isset($roles[$first->permissionKey()]) || !isset($roles[$second->permissionKey()])) throw new RuntimeException('Company switch retained foreign roles.');
-echo "PASS: company role discovery, default access, saved custom permissions, and cross-company isolation.\n";
+Auth::guard('web')->setUser($actor);
+$accessRole = new ReflectionMethod($controller, 'accessRole');
+foreach ([$second->permissionKey(), 'staff:1:'.$second->id] as $foreignKey) {
+    try {
+        $accessRole->invoke($controller, $foreignKey);
+        throw new RuntimeException('Foreign or forged custom role key accepted.');
+    } catch (Symfony\Component\HttpKernel\Exception\HttpException $e) {
+        if ($e->getStatusCode() !== 403) throw $e;
+    } catch (Illuminate\Database\Eloquent\ModelNotFoundException $e) {}
+}
+session(['current_company_id' => 2]);
+try {
+    $method->invoke($controller);
+    throw new RuntimeException('Mismatched company session listed roles.');
+} catch (Symfony\Component\HttpKernel\Exception\HttpException $e) {
+    if ($e->getStatusCode() !== 403) throw $e;
+}
+try {
+    $controller->update(Illuminate\Http\Request::create('/settings/role-permissions', 'POST', ['role' => 'hr']));
+    throw new RuntimeException('Mismatched company session attempted a permission save.');
+} catch (Symfony\Component\HttpKernel\Exception\HttpException $e) {
+    if ($e->getStatusCode() !== 403) throw $e;
+}
+session()->forget('current_company_id');
+Auth::guard('web')->setUser(new User(['role' => 'admin']));
+try {
+    $method->invoke($controller);
+    throw new RuntimeException('Missing company workspace listed roles.');
+} catch (Symfony\Component\HttpKernel\Exception\HttpException $e) {
+    if ($e->getStatusCode() !== 403) throw $e;
+}
+Auth::guard('web')->setUser($actor);
+echo "PASS: company-scoped roles, saved custom permissions, foreign/forged keys rejected, mismatched sessions blocked before saves, missing workspace rejected.\n";
