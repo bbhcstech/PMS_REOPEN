@@ -487,9 +487,7 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
 
             $showEmployeeWelcome = ! $user->employee_welcome_seen_at;
 
-            $attendance = \App\Models\Attendance::where('user_id', $user->id)
-                ->where('date', $today)
-                ->first();
+            $attendance = \App\Services\WorkforceAccess::currentAttendance($user);
             $attendancePolicy = $this->attendancePolicy();
 
 
@@ -878,13 +876,6 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
 
     return DB::connection('tenant')->transaction(function () use ($request, $validated, $now, $today, $userId, $lat, $lng, $distance, $timezone) {
         User::whereKey($userId)->lockForUpdate()->firstOrFail();
-        $existing = Attendance::where('user_id', $userId)
-            ->where('date', $today)
-            ->first();
-
-        if ($existing) {
-            return back()->with('error', 'You have already clocked in today.');
-        }
         if (Attendance::where('user_id', $userId)->whereNotNull('clock_in')->whereNull('clock_out')->exists()) {
             return back()->with('error', 'Please clock out of your active shift first.');
         }
@@ -975,26 +966,24 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
     return DB::connection('tenant')->transaction(function () use ($request, $now, $today, $userId) {
         User::whereKey($userId)->lockForUpdate()->firstOrFail();
         $attendance = Attendance::where('user_id', $userId)
-            ->where('date', $today)
+            ->whereNotNull('clock_in')
+            ->whereNull('clock_out')
+            ->latest('date')
+            ->latest('id')
             ->lockForUpdate()
             ->first();
 
-        // If not found for today's local date (e.g. crossing midnight), look for latest open clock-in
         if (!$attendance) {
-            $attendance = Attendance::where('user_id', $userId)
-                ->whereNotNull('clock_in')
-                ->whereNull('clock_out')
-                ->latest('date')
-                ->lockForUpdate()
-                ->first();
-        }
+            $hasClosedToday = Attendance::where('user_id', $userId)
+                ->where('date', $today)
+                ->whereNotNull('clock_out')
+                ->exists();
 
-        if (!$attendance) {
+            if ($hasClosedToday) {
+                return back()->with('error', 'You have already clocked out of your shift.');
+            }
+
             return back()->with('error', 'You need to clock in first.');
-        }
-
-        if ($attendance->clock_out) {
-            return back()->with('error', 'You have already clocked out today.');
         }
 
         $sessionNow = Carbon::now($attendance->sessionTimezone());
@@ -1260,9 +1249,7 @@ public function hrindex(Request $request)
         $tasks = Task::all();
 
         $todayStr = now()->toDateString();
-        $attendance = Attendance::where('user_id', Auth::id())
-            ->where('date', $todayStr)
-            ->first();
+        $attendance = \App\Services\WorkforceAccess::currentAttendance(Auth::user());
         $attendancePolicy = $this->attendancePolicy();
         $officeLatitude = self::OFFICE_LATITUDE;
         $officeLongitude = self::OFFICE_LONGITUDE;

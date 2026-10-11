@@ -3,7 +3,7 @@
 @section('title', 'Payroll History — Admin Workspace')
 
 @section('content')
-<div class="content-wrapper">
+<div class="payroll-container" id="payrollHistoryPage">
     <div class="container-xxl flex-grow-1 container-p-y">
         @include('admin.payroll.partials.styles')
 
@@ -34,9 +34,10 @@
             </div>
 
             <!-- Filters -->
-            <form method="GET" action="{{ route('payroll.history') }}" class="filters p-3 border-bottom bg-light">
-                <div class="search">
-                    <input type="text" name="search" class="input form-control form-control-sm" placeholder="Search employee..." value="{{ request('search') }}">
+            <form method="GET" action="{{ route('payroll.history') }}" class="pr-filters">
+                <div class="field search-field">
+                    <label for="historyEmployeeSearch">Employee</label>
+                    <input id="historyEmployeeSearch" type="search" name="search" class="form-control form-control-sm" placeholder="Search employee..." value="{{ request('search') }}">
                 </div>
                 <div class="field">
                     <label class="form-label small mb-1">Month</label>
@@ -84,9 +85,10 @@
             </form>
 
             <div class="table-wrap">
-                <table class="table table-hover mb-0">
+                <table class="table pr-table table-hover mb-0" id="payrollHistoryTable">
                     <thead>
                         <tr>
+                            <th data-pms-selection-column><input type="checkbox" class="form-check-input" aria-label="Select all payroll history rows" @disabled($histories->isEmpty())></th>
                             <th>Month</th>
                             <th>Employee</th>
                             <th>Designation</th>
@@ -110,6 +112,7 @@
                                 $yearVal = $h->year ?? ($h->payroll->year ?? date('Y'));
                             @endphp
                             <tr>
+                                <td data-pms-selection-column><input type="checkbox" class="form-check-input" aria-label="Select payroll history for {{ $u->name ?? 'employee' }}" value="{{ $h->id }}"></td>
                                 <td><span class="badge bg-label-primary">{{ $monthName }} {{ $yearVal }}</span></td>
                                 <td>
                                     <div class="cell-employee d-flex align-items-center gap-2">
@@ -160,7 +163,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="10" class="text-center py-4 text-muted">
+                                <td colspan="11" class="text-center py-4 text-muted">
                                     <i class="bx bx-calendar-x fs-1 d-block mb-1"></i>
                                     No historical payroll records found for the selected criteria.
                                 </td>

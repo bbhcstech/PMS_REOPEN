@@ -1461,7 +1461,10 @@
                                         <i class="bx bx-log-out-circle"></i> Clock Out
                                     </button>
                                 </form>
-                            @elseif(!$attendance || !$attendance->clock_in)
+                            @else
+                                @if ($attendance && $attendance->clock_out)
+                                    <span class="employee-complete mb-2"><i class="bx bx-check-circle"></i> Shift Completed</span>
+                                @endif
                                 <form method="POST" action="{{ route('dashboard.clockin') }}" id="employeeClockInForm">
                                     @csrf
                                     <input type="hidden" name="clock_in_latitude" id="clockInLatitude">
@@ -1478,8 +1481,6 @@
                                     <div class="clock-status-line"><i class="bx bx-map-pin"></i><span>Share current location to save your clock-in place.</span></div>
                                     <div class="clock-status-line"><i class="bx bx-camera"></i><span>Capture photo to complete clock in.</span></div>
                                 </div>
-                            @else
-                                <span class="employee-complete"><i class="bx bx-check-circle"></i> Shift Completed</span>
                             @endif
 
                             @if($attendance && $attendance->clock_in)

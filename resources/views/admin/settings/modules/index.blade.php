@@ -702,7 +702,7 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
                 </ol>
             </nav>
             <h3 class="fw-bold mb-1 text-dark" style="letter-spacing: -0.02em;">Module Management</h3>
-            <p class="text-muted mb-0 small">Configure application modules, navigation routes, hierarchy, and access control.</p>
+            <p class="text-muted mb-0 small">Configure your company's modules, navigation and hierarchy. Manage role access from Roles & Permissions.</p>
         </div>
 
         <button type="button" class="btn btn-mm-primary d-inline-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#createModuleModal">
@@ -743,6 +743,7 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
     @endif
 
     <!-- Summary Statistic Cards -->
+    @include('admin.settings.partials.access-navigation')
     <div class="row g-3 mb-4">
         <!-- Total Modules -->
         <div class="col-sm-6 col-lg-3 mm-animate-fade mm-stagger-1">
@@ -857,8 +858,13 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
                     </tr>
                 </thead>
                 <tbody>
+                    @php($previousCategory = null)
                     @forelse($modules as $module)
-                        <tr class="module-row">
+                        @if($previousCategory !== $module->category)
+                            <tr class="module-category" data-category="{{ $module->category }}"><td colspan="6"><strong>{{ $module->category }}</strong><span class="ms-2">{{ $modules->where('category', $module->category)->count() }} features</span></td></tr>
+                            @php($previousCategory = $module->category)
+                        @endif
+                        <tr class="module-row" data-category="{{ $module->category }}">
                             <!-- MODULE DETAILS -->
                             <td>
                                 <div class="d-flex align-items-center gap-3">
@@ -1204,13 +1210,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (searchInput && table) {
         // Filter functionality
-        searchInput.addEventListener('keyup', function () {
+        searchInput.addEventListener('input', function () {
             const query = searchInput.value.toLowerCase();
             const rows = table.querySelectorAll('tbody tr.module-row');
 
             rows.forEach(row => {
-                const text = row.innerText.toLowerCase();
+                const text = (row.innerText + ' ' + row.dataset.category).toLowerCase();
                 row.style.display = text.includes(query) ? '' : 'none';
+            });
+            table.querySelectorAll('.module-category').forEach(header => {
+                header.hidden = !Array.from(rows).some(row => row.dataset.category === header.dataset.category && row.style.display !== 'none');
             });
         });
 

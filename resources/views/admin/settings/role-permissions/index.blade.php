@@ -1337,7 +1337,7 @@
                     </div>
                     <div class="header-title">
                         <h1>Role & Permission Management</h1>
-                        <p>Configure access control levels, granular action permissions, and module capabilities for system roles.</p>
+                        <p>Manage module access and actions for your company's roles. Saved changes take effect immediately.</p>
                     </div>
                 </div>
 
@@ -1347,6 +1347,7 @@
             </div>
 
             <!-- Alert Notifications -->
+            @include('admin.settings.partials.access-navigation')
             @if(session('success'))
                 <div class="alert alert-success alert-dismissible fade show d-flex align-items-center mb-4 shadow-sm rounded-4 border-0" style="background: rgba(220, 252, 231, 0.95); color: #065f46; border-left: 5px solid #10b981 !important;" role="alert">
                     <i class="fas fa-check-circle fs-4 me-2"></i>
@@ -1409,7 +1410,7 @@
                                     foreach ($roles as $option) {
                                         if (strtolower($option) === 'admin') continue;
                                         $label = $roleLabels[$option] ?? ucfirst($option);
-                                        $labelKey = mb_strtolower(trim($label));
+                                        $labelKey = $option;
                                         if (!isset($roleOptions[$labelKey]) || $role === $option) {
                                             $roleOptions[$labelKey] = ['value' => $option, 'label' => $label];
                                         }
@@ -1461,6 +1462,11 @@
                         </div>
                     </div>
 
+                    <div class="px-4 pb-3">
+                        <label for="permissionModuleSearch" class="form-label small fw-semibold">Find a module</label>
+                        <input id="permissionModuleSearch" type="search" class="form-control" placeholder="Search modules or categories" autocomplete="off">
+                        <small id="permissionSearchStatus" class="text-muted" aria-live="polite"></small>
+                    </div>
                     <div class="table-responsive matrix-scroll" tabindex="0" role="region" aria-label="Module permission matrix">
                         <table class="matrix-table" data-pms-export="off">
                             <thead>
@@ -1482,8 +1488,10 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($modules as $module)
-                                    <tr data-module-id="{{ $module->id }}">
+                                @foreach($modules->groupBy('category') as $category => $categoryModules)
+                                    <tr class="permission-category"><td colspan="{{ count($permissions) + 2 }}"><span>{{ $category }}</span><small class="ms-2">{{ $categoryModules->count() }} modules</small></td></tr>
+                                @foreach($categoryModules as $module)
+                                    <tr data-module-id="{{ $module->id }}" data-search="{{ strtolower($module->name . ' ' . $module->slug . ' ' . ($module->parent?->name ?? '')) }}">
                                         <td class="text-center">
                                             <input type="checkbox" class="row-checkbox perm-checkbox" data-module-id="{{ $module->id }}" title="Toggle all actions for {{ $module->name }}">
                                         </td>
@@ -1502,6 +1510,7 @@
                                             </td>
                                         @endforeach
                                     </tr>
+                                @endforeach
                                 @endforeach
                             </tbody>
                         </table>
@@ -1669,11 +1678,26 @@ document.addEventListener('DOMContentLoaded', function () {
     const btnResetDefaults = document.getElementById('btnResetDefaults');
     if (btnResetDefaults) {
         btnResetDefaults.addEventListener('click', function () {
-            window.location.reload();
+            const defaults = @json($defaultPermissions);
+            actionCheckboxes.forEach(cb => {
+                cb.checked = (defaults[cb.dataset.moduleId] || []).includes(cb.dataset.perm);
+            });
+            syncStates();
         });
     }
 
     // Initial sync on page load
+    const search = document.getElementById('permissionModuleSearch');
+    const rows = Array.from(table.querySelectorAll('tbody tr[data-search]'));
+    search.addEventListener('input', () => {
+        const query = search.value.trim().toLowerCase();
+        let visible = 0;
+        rows.forEach(row => {
+            row.hidden = !row.dataset.search.includes(query);
+            if (!row.hidden) visible++;
+        });
+        document.getElementById('permissionSearchStatus').textContent = `${visible} of ${rows.length} modules shown. Bulk actions apply to all modules.`;
+    });
     syncStates();
 });
 </script>

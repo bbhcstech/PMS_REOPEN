@@ -753,7 +753,7 @@ class PayrollController extends Controller
 
     public function approve(Payroll $payroll, PayrollCalculationService $payrollService)
     {
-        $this->authorizePayroll('payroll', 'edit');
+        $this->authorizePayroll('payroll', 'approve');
 
         try {
             $payrollService->approvePayroll($payroll, auth()->id());
@@ -765,7 +765,7 @@ class PayrollController extends Controller
 
     public function finalize(Payroll $payroll, PayrollCalculationService $payrollService)
     {
-        $this->authorizePayroll('payroll', 'create');
+        $this->authorizePayroll('payroll', 'approve');
 
         try {
             $payrollService->finalizePayroll($payroll, auth()->id());
@@ -858,6 +858,21 @@ class PayrollController extends Controller
         $this->authorizePayroll('payslips');
         $companyId = $this->selectedCompanyId($request);
 
+        // Approved/finalized runs whose payslips were never generated (or failed earlier) get them now.
+        $this->dashboardSection('generate missing payslips', function () use ($companyId) {
+            $service = app(PayrollCalculationService::class);
+            $this->companyQuery(Payroll::query(), $companyId)
+                ->whereIn('status', ['approved', 'finalized'])
+                ->get()
+                ->each(function (Payroll $payroll) use ($service) {
+                    $lines = PayrollHistory::where('payroll_id', $payroll->id)->count();
+                    $slips = Payslip::where('payroll_id', $payroll->id)->count();
+                    if ($lines > $slips) {
+                        $service->generatePayslips($payroll, auth()->id());
+                    }
+                });
+        }, null);
+
         $query = Payslip::with([
                 'user.employeeDetail.designation',
                 'user.employeeDetail.department',
@@ -865,7 +880,9 @@ class PayrollController extends Controller
             ])
             ->when($companyId, function ($q) use ($companyId) {
                 if (Schema::hasColumn('payslips', 'company_id')) {
-                    $q->where('company_id', $companyId);
+                    // Older payslips may have no company recorded: match them through the employee.
+                    $q->where(fn ($w) => $w->where('company_id', $companyId)
+                        ->orWhere(fn ($n) => $n->whereNull('company_id')->whereHas('user', fn ($u) => $u->where('company_id', $companyId))));
                 } else {
                     $q->whereHas('user', fn ($u) => $u->where('company_id', $companyId));
                 }
@@ -1166,7 +1183,7 @@ class PayrollController extends Controller
 
     public function printPayslip($payslip)
     {
-        $this->authorizePayroll('payslips');
+        $this->authorizePayroll('payslips', 'export');
         $payslip = $this->resolvePayslipModel($payslip);
         $payslip->load(['user.employeeDetail.designation', 'user.employeeDetail.department', 'payroll', 'payrollHistory']);
 
@@ -1179,7 +1196,7 @@ class PayrollController extends Controller
 
     public function downloadPdf($payslip)
     {
-        $this->authorizePayroll('payslips');
+        $this->authorizePayroll('payslips', 'export');
         $payslip = $this->resolvePayslipModel($payslip);
         $payslip->load(['user.employeeDetail.designation', 'user.employeeDetail.department', 'payroll', 'payrollHistory']);
 
@@ -1204,7 +1221,7 @@ class PayrollController extends Controller
 
     public function export(Request $request, Payroll $payroll)
     {
-        $this->authorizePayroll('payroll');
+        $this->authorizePayroll('payroll', 'export');
 
         $items = PayrollHistory::where('payroll_id', $payroll->id)->get();
         $fileName = 'Payroll_' . date('Y_m', strtotime($payroll->period_start)) . '_Export.csv';

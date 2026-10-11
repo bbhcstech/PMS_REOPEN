@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Module;
+use App\Models\WorkspaceModule as Module;
 use App\Models\RolePermission;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -84,8 +84,8 @@ class RolePermissionController extends Controller
             foreach ($this->permissions as $perm) {
                 if ($role === 'admin') {
                     $effectivePermissions[$module->id][$perm] = true;
-                } elseif ($hasCustomSaved && $saved) {
-                    $effectivePermissions[$module->id][$perm] = (bool) $saved->{'can_' . $perm};
+                } elseif ($hasCustomSaved) {
+                    $effectivePermissions[$module->id][$perm] = $saved ? (bool) $saved->{'can_' . $perm} : false;
                 } else {
                     $effectivePermissions[$module->id][$perm] = in_array($perm, $defaultPerms, true);
                 }
@@ -93,6 +93,7 @@ class RolePermissionController extends Controller
         }
 
         $staffUsers = \App\Models\User::whereIn('role', ['admin', 'manager', 'hr', 'employee', 'user'])
+            ->where('company_id', auth()->user()->company_id)
             ->orderBy('name')
             ->get(['id', 'name', 'email', 'role']);
 
@@ -105,6 +106,7 @@ class RolePermissionController extends Controller
             'savedPermissions' => $savedPermissions,
             'effectivePermissions' => $effectivePermissions,
             'staffUsers' => $staffUsers,
+            'defaultPermissions' => $modules->mapWithKeys(fn ($module) => [$module->id => $this->getDefaultPermissionsForRole($accessRole, $module->slug)])->all(),
         ]);
     }
 
@@ -180,120 +182,36 @@ class RolePermissionController extends Controller
 
     public function getDefaultPermissionsForRole(string $role, string $slug): array
     {
-        if ($role === 'admin') {
-            return $this->permissions;
-        }
-
-        $hrFullModules = [
-            'dashboard', 'notifications', 'my-documents', 'organization', 'employees',
-            'hr-employees', 'departments', 'designations', 'attendance', 'leaves',
-            'leave-management', 'holidays', 'recognition', 'awards', 'recruitment',
-            'appraisal', 'work', 'projects', 'tasks', 'timesheets', 'timelogs',
-            'payroll', 'payroll-architectures', 'payslips', 'salary-structures',
-            'payroll-cycles', 'payroll-policies', 'formula-builder', 'deduction-rules',
-            'bonus-rules', 'tax-rules', 'overtime-rules', 'payroll-reports', 'expenses',
-            'billing', 'reports', 'analytics', 'advanced-reports', 'events', 'community',
-            'collaborating-companies', 'clients', 'leads-contacts', 'tickets',
-            'products', 'orders',
-        ];
-
-        $managerFullModules = [
-            'dashboard', 'notifications', 'my-documents', 'organization', 'teams',
-            'work', 'projects', 'tasks', 'timesheets', 'timelogs', 'attendance',
-            'leaves', 'leave-management', 'reports', 'analytics', 'recruitment',
-            'appraisal', 'recognition', 'awards', 'events', 'community',
-            'collaborating-companies', 'clients', 'leads-contacts', 'tickets',
-            'products', 'orders',
-        ];
-
-        $employeeModules = [
-            'dashboard', 'notifications', 'my-documents', 'attendance', 'leaves',
-            'leave-management', 'holidays', 'recognition', 'awards', 'work',
-            'projects', 'tasks', 'timesheets', 'timelogs', 'payslips', 'events',
-            'community', 'products', 'orders',
-        ];
-
-        if ($role === 'hr') {
-            if (in_array($slug, $hrFullModules, true)) {
-                return ['view', 'create', 'edit', 'delete', 'approve', 'export', 'assign'];
-            }
-            return ['view'];
-        }
-
-        if ($role === 'manager') {
-            if (in_array($slug, $managerFullModules, true)) {
-                return ['view', 'create', 'edit', 'delete', 'approve', 'export', 'assign'];
-            }
-            if (in_array($slug, ['employees', 'hr-employees'], true)) {
-                return ['view', 'export'];
-            }
-            return ['view'];
-        }
-
-        if ($role === 'employee') {
-            if (in_array($slug, ['my-documents', 'timesheets', 'timelogs', 'leaves', 'leave-management', 'attendance', 'tasks', 'community'], true)) {
-                return ['view', 'create', 'edit'];
-            }
-            if (in_array($slug, $employeeModules, true)) {
-                return ['view'];
-            }
-            return [];
-        }
-
-        return [];
+        return app(\App\Services\RolePermissionDefaults::class)->getDefaultPermissionsForRole($role, $slug);
     }
-
-    /**
-     * Ensure all central modules are present in the tenant modules table
-     * with matching IDs to prevent foreign key constraint violations on role_permissions.
-     */
+    /** Import new platform modules without changing company configuration or IDs. */
     private function ensureTenantModulesSynced(): void
     {
-        try {
-            if (! \Illuminate\Support\Facades\Schema::connection('tenant')->hasTable('modules')) {
-                return;
-            }
-
-            $centralModules = \Illuminate\Support\Facades\DB::connection('central')->table('modules')->get();
-            $tenantModules = \Illuminate\Support\Facades\DB::connection('tenant')->table('modules')->get();
-            $tenantModuleIds = $tenantModules->pluck('id')->all();
-            $tenantModuleSlugs = $tenantModules->pluck('id', 'slug')->all();
-
-            $missingModules = $centralModules->whereNotIn('id', $tenantModuleIds);
-
-            if ($missingModules->isNotEmpty()) {
-                \Illuminate\Support\Facades\DB::connection('tenant')->statement('SET FOREIGN_KEY_CHECKS = 0;');
-                foreach ($missingModules as $cMod) {
-                    if (isset($tenantModuleSlugs[$cMod->slug])) {
-                        $oldId = $tenantModuleSlugs[$cMod->slug];
-                        \Illuminate\Support\Facades\DB::connection('tenant')->table('modules')->where('id', $oldId)->update(['id' => $cMod->id]);
-                        \Illuminate\Support\Facades\DB::connection('tenant')->table('role_permissions')->where('module_id', $oldId)->update(['module_id' => $cMod->id]);
-                        \Illuminate\Support\Facades\DB::connection('tenant')->table('modules')->where('parent_id', $oldId)->update(['parent_id' => $cMod->id]);
-                    } else {
-                        \Illuminate\Support\Facades\DB::connection('tenant')->table('modules')->insert([
-                            'id'           => $cMod->id,
-                            'name'         => $cMod->name,
-                            'slug'         => $cMod->slug,
-                            'icon'         => $cMod->icon,
-                            'description'  => $cMod->description,
-                            'route_prefix' => $cMod->route_prefix,
-                            'route_name'   => $cMod->route_name,
-                            'parent_id'    => $cMod->parent_id,
-                            'is_core'      => $cMod->is_core,
-                            'is_active'    => $cMod->is_active,
-                            'sort_order'   => $cMod->sort_order,
-                            'created_at'   => $cMod->created_at ?: now(),
-                            'updated_at'   => $cMod->updated_at ?: now(),
-                        ]);
-                    }
-                }
-                \Illuminate\Support\Facades\DB::connection('tenant')->statement('SET FOREIGN_KEY_CHECKS = 1;');
-            }
-        } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::warning('Module sync warning in RolePermissionController: ' . $e->getMessage());
+        $tenant = DB::connection('tenant');
+        if (! \Illuminate\Support\Facades\Schema::connection('tenant')->hasTable('modules')) {
+            abort(503, 'Company module configuration is unavailable.');
         }
+        $centralModules = DB::connection('central')->table('modules')->get();
+        $tenant->transaction(function () use ($tenant, $centralModules) {
+            $inserted = [];
+            foreach ($centralModules as $module) {
+                if ($tenant->table('modules')->where('slug', $module->slug)->exists()) continue;
+                $data = (array) $module;
+                unset($data['id']);
+                $data['parent_id'] = null;
+                $tenant->table('modules')->insert($data);
+                $inserted[] = $module->slug;
+            }
+            $ids = $tenant->table('modules')->pluck('id', 'slug');
+            $centralById = $centralModules->keyBy('id');
+            foreach ($centralModules as $module) {
+                if (!in_array($module->slug, $inserted, true) || !$module->parent_id) continue;
+                $parent = $centralById->get($module->parent_id);
+                $tenant->table('modules')->where('slug', $module->slug)
+                    ->update(['parent_id' => $parent ? $ids->get($parent->slug) : null]);
+            }
+        });
     }
-
     private function authorizeAdmin(): void
     {
         $user = auth()->user();

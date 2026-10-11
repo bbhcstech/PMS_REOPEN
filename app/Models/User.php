@@ -244,7 +244,8 @@ class User extends Authenticatable
 
     public function normalizedRole(): string
     {
-        return strtolower((string) $this->role);
+        $role = strtolower(trim((string) $this->role));
+        return $role === 'administrator' ? 'admin' : $role;
     }
 
     public function permissionRole(): string
@@ -289,7 +290,13 @@ class User extends Authenticatable
                     return false;
                 }
             }
-        } catch (\Throwable $e) {}
+        } catch (\Throwable $e) {
+            if ($this->company_id) return false;
+        }
+
+        if (WorkspaceModule::where('slug', $moduleSlug)->where('is_active', false)->exists()) {
+            return false;
+        }
 
         if (in_array($this->normalizedRole(), ['admin', 'superadmin'], true)) {
             return true;
@@ -301,7 +308,10 @@ class User extends Authenticatable
         }
 
         $slugsToTest = [$moduleSlug];
-        if (str_starts_with($moduleSlug, 'payroll-')) {
+        if (str_starts_with($moduleSlug, 'payroll-') || in_array($moduleSlug, [
+            'payslips', 'salary-structures', 'employee-salary', 'formula-builder',
+            'deduction-rules', 'bonus-rules', 'tax-rules', 'overtime-rules',
+        ], true)) {
             $slugsToTest[] = 'payroll';
         }
         if (str_contains($moduleSlug, 'reports')) {
@@ -313,6 +323,19 @@ class User extends Authenticatable
         }
 
         $permissionRole = $this->permissionRole();
+        // An explicit module decision takes precedence over legacy parent aliases.
+        $exact = RolePermission::where('role', $permissionRole)
+            ->whereIn('module_id', WorkspaceModule::where('slug', $moduleSlug)->pluck('id'))->first();
+        if ($exact) {
+            return WorkspaceModule::where('slug', $moduleSlug)->where('is_active', true)->exists()
+                && (bool) $exact->{$column};
+        }
+        // A legacy Payroll grant includes its pages, but a disabled parent never
+        // grants access to a child which has no explicit permission of its own.
+        if (in_array('payroll', $slugsToTest, true)
+            && WorkspaceModule::where('slug', 'payroll')->where('is_active', false)->exists()) {
+            return false;
+        }
         $hasPermission = RolePermission::query()
             ->where('role', $permissionRole)
             ->where($column, true)
@@ -327,17 +350,8 @@ class User extends Authenticatable
 
         // Fallback: If no role_permissions exist in database for this role, allow default modules
         if (! RolePermission::where('role', $permissionRole)->exists()) {
-            $defaultMap = [
-                'manager'  => ['dashboard', 'notifications', 'organization', 'teams', 'hr-management', 'employees', 'work', 'projects', 'tasks', 'timelogs', 'attendance', 'leaves', 'reports', 'recruitment', 'appraisal', 'events', 'community', 'products', 'orders'],
-                'hr'       => ['dashboard', 'notifications', 'employees', 'attendance', 'leaves', 'work', 'projects', 'tasks', 'timelogs', 'payroll', 'reports', 'recruitment', 'appraisal', 'events', 'community', 'products', 'orders'],
-                'employee' => ['dashboard', 'notifications', 'projects', 'tasks', 'attendance', 'timelogs', 'leaves', 'recruitment', 'appraisal', 'events', 'community', 'products', 'orders'],
-            ];
-            $allowed = $defaultMap[$this->normalizedRole()] ?? [];
-            foreach ($slugsToTest as $slug) {
-                if (in_array($slug, $allowed, true)) {
-                    return true;
-                }
-            }
+            return in_array($permission, app(\App\Services\RolePermissionDefaults::class)
+                ->getDefaultPermissionsForRole($this->normalizedRole(), $moduleSlug), true);
         }
 
         return false;

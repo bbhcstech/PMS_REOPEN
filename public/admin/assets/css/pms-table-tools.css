@@ -1078,3 +1078,20 @@ body.dark .pms-table-export__option:hover {
     --pms-tbl-text: #eef1fb;
   }
 }
+
+@media all {
+  /* Reserve checkbox space at every viewport width, including mobile and zoomed layouts. */
+  html body .pms-exportable-table.pms-exportable-table.pms-exportable-table.pms-exportable-table > :is(thead, tbody) > tr > .pms-table-selection-cell:not([data-pms-selection-column]) {
+    padding-left: 58px !important;
+  }
+}
+
+/* Select-all with no rows: clearly inactive (faded, "not allowed" cursor, tooltip set by the script). */
+.pms-table-select__input:disabled,
+.pms-exportable-table input[data-pms-select]:disabled {
+  opacity: 0.4 !important;
+  cursor: not-allowed !important;
+}
+.pms-table-select:has(.pms-table-select__input:disabled) {
+  cursor: not-allowed;
+}

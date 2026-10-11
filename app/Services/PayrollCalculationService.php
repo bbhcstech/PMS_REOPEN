@@ -1023,6 +1023,9 @@ class PayrollCalculationService
             'payroll_status' => 'approved',
         ]);
 
+        // Payslips are available from approval onwards (finalizing regenerates them with the final figures).
+        $this->generatePayslips($payroll, $validUser?->id);
+
         return $payroll;
     }
 
@@ -1147,6 +1150,7 @@ class PayrollCalculationService
     {
         $histories = PayrollHistory::where('payroll_id', $payroll->id)->get();
         $count = 0;
+        $hasPayslipCompany = \Illuminate\Support\Facades\Schema::connection((new Payslip)->getConnectionName())->hasColumn('payslips', 'company_id');
         $validUser = User::find($userId ?: auth()->id());
         $actorId = $validUser?->id;
 
@@ -1211,8 +1215,7 @@ class PayrollCalculationService
                     'payroll_id' => $payroll->id,
                     'user_id' => $history->user_id,
                 ],
-                [
-                    'company_id' => $payroll->company_id,
+                array_merge($hasPayslipCompany ? ['company_id' => $payroll->company_id ?: $empUser->company_id] : [], [
                     'payroll_history_id' => $history->id,
                     'payslip_number' => $payslipNo,
                     'employee_snapshot' => $snap,
@@ -1227,7 +1230,7 @@ class PayrollCalculationService
                     'net_salary' => round($netSalary, 2),
                     'status' => 'generated',
                     'generated_by' => $actorId,
-                ]
+                ])
             );
 
             $count++;

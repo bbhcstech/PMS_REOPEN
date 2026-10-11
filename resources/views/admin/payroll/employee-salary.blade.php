@@ -4,6 +4,12 @@
 
 @section('content')
 @include('admin.payroll.partials.styles')
+<style>
+    #employeeSalaryTable [data-pms-selection-column] { width:48px; min-width:48px; padding:12px!important; text-align:center; vertical-align:middle; }
+    #employeeSalaryTable [data-pms-selection-column] input { position:static!important; display:inline-block; width:18px; height:18px; margin:0!important; cursor:pointer; accent-color:var(--pr-primary); }
+    #employeeSalaryTable [data-pms-selection-column] input:disabled { cursor:not-allowed; opacity:.4; }
+    #employeeSalaryTable [data-pms-selection-column] input:focus-visible { outline:2px solid var(--pr-primary); outline-offset:3px; }
+</style>
 
 <div class="payroll-container">
     @include('admin.payroll.partials.tabs')
@@ -73,9 +79,10 @@
         </form>
 
         <div class="table-wrap">
-            <table class="pr-table">
+            <table class="pr-table" id="employeeSalaryTable">
                 <thead>
                     <tr>
+                        <th data-pms-selection-column><input type="checkbox" class="form-check-input" aria-label="Select all salary assignments" @disabled($assignments->isEmpty())></th>
                         <th>Emp ID</th>
                         <th>Employee</th>
                         <th>Designation</th>
@@ -98,6 +105,7 @@
                         $deptName = $empDetail?->department?->dpt_name ?? ($empDetail?->department?->name ?? 'General');
                     @endphp
                     <tr>
+                        <td data-pms-selection-column><input type="checkbox" class="form-check-input" aria-label="Select salary assignment for {{ $user?->name ?? 'employee' }}" value="{{ $assignment->id }}"></td>
                         <td><b>{{ $empId }}</b></td>
                         <td>
                             <div class="cell-employee">
@@ -229,7 +237,7 @@
                     </div>
                     @empty
                     <tr>
-                        <td colspan="10" class="text-center py-4 text-muted">
+                        <td colspan="11" class="text-center py-4 text-muted">
                             No custom salary assignments recorded. Default designation salary structures apply. Click "+ Assign Salary" to override.
                         </td>
                     </tr>

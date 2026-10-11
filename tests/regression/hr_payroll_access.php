@@ -30,4 +30,24 @@ try { $authorize->invoke($controller, 'payroll', 'approve'); throw new RuntimeEx
 catch (Symfony\Component\HttpKernel\Exception\HttpException $e) {}
 if (end($actor->checked) !== ['payroll', 'approve']) throw new RuntimeException('Action permission not checked.');
 if (PayrollSchemaTestDouble::$calls !== 2) throw new RuntimeException('Denied actors reached payroll schema.');
+
+$service = new App\Services\PayrollCalculationService;
+$payroll = new App\Models\Payroll;
+$request = Illuminate\Http\Request::create('/payroll');
+foreach ([
+    ['approve', [$payroll, $service], ['payroll', 'approve']],
+    ['finalize', [$payroll, $service], ['payroll', 'approve']],
+    ['export', [$request, $payroll], ['payroll', 'export']],
+    ['printPayslip', [1], ['payslips', 'export']],
+    ['downloadPdf', [1], ['payslips', 'export']],
+] as [$method, $arguments, $expected]) {
+    try {
+        $controller->{$method}(...$arguments);
+        throw new RuntimeException($method . ' bypassed denied action permission.');
+    } catch (Symfony\Component\HttpKernel\Exception\HttpException $e) {
+        if ($e->getStatusCode() !== 403) throw $e;
+    }
+    if (end($actor->checked) !== $expected) throw new RuntimeException($method . ' checked the wrong action.');
+}
+if (PayrollSchemaTestDouble::$calls !== 2) throw new RuntimeException('Denied actions reached payroll schema.');
 echo "PASS: permitted HR/Admin payroll access, revoked HR access, action permission checks and employee/manager restrictions.\n";

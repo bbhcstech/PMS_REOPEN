@@ -936,13 +936,16 @@
                     @if ($attendance && $attendance->clock_in && !$attendance->clock_out)
                         <form method="POST" action="{{ route('dashboard.clockout') }}" id="employeeClockOutForm">
                             @csrf
-<input type="hidden" name="clock_out_timezone" id="clockOutTimezone">
-<input type="hidden" name="clock_out_selfie" id="clockOutSelfie">
+                            <input type="hidden" name="clock_out_timezone" id="clockOutTimezone">
+                            <input type="hidden" name="clock_out_selfie" id="clockOutSelfie">
                             <button class="employee-action-btn is-out w-100 justify-content-center" type="submit">
                                 <i class="bx bx-log-out-circle"></i> Clock Out
                             </button>
                         </form>
-                    @elseif(!$attendance || !$attendance->clock_in)
+                    @else
+                        @if ($attendance && $attendance->clock_out)
+                            <span class="employee-complete justify-content-center mb-2"><i class="bx bx-check-circle"></i> Shift Completed</span>
+                        @endif
                         <form method="POST" action="{{ route('dashboard.clockin') }}" id="employeeClockInForm">
                             @csrf
                             <input type="hidden" name="clock_in_latitude" id="clockInLatitude">
@@ -950,6 +953,7 @@
                             <input type="hidden" name="clock_in_accuracy" id="clockInAccuracy">
                             <input type="hidden" name="clock_in_address" id="clockInAddress">
                             <input type="hidden" name="clock_in_selfie" id="clockInSelfie">
+                            <input type="hidden" name="clock_in_timezone" id="clockInTimezone">
                             <button class="employee-action-btn is-in w-100 justify-content-center" type="submit" id="employeeClockInButton">
                                 <i class="bx bx-log-in-circle"></i> Clock In
                             </button>
@@ -958,8 +962,6 @@
                             <div class="clock-status-line"><i class="bx bx-map-pin"></i><span>Share current location to save your clock-in place.</span></div>
                             <div class="clock-status-line"><i class="bx bx-camera"></i><span>Capture photo to complete clock in.</span></div>
                         </div>
-                    @else
-                        <span class="employee-complete justify-content-center"><i class="bx bx-check-circle"></i> Shift Completed</span>
                     @endif
 
                     @if($attendance && $attendance->clock_in)

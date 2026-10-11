@@ -10,6 +10,13 @@
 .company-role-dashboard table { width:100%; border-collapse:collapse; }
 .company-role-dashboard th, .company-role-dashboard td { text-align:left; padding:12px; border-bottom:1px solid var(--border-color,#d8deeb); }
 .company-role-dashboard .role-table-scroll { overflow-x:auto; }
+.company-role-dashboard .role-tables > .role-panel { min-width:0; }
+.company-role-dashboard :is(#assignedTasksTable, #assignedProjectsTable) { --pms-table-content-min-width:0px!important; }
+.company-role-dashboard [data-pms-selection-column] { width:48px; min-width:48px; text-align:center; }
+.company-role-dashboard [data-pms-selection-column] input { position:static!important; width:18px; height:18px; margin:0!important; cursor:pointer; }
+.company-role-dashboard [data-pms-selection-column] input:disabled { cursor:not-allowed; opacity:.4; }
+.company-role-dashboard tbody td:not([data-pms-selection-column]) { overflow-wrap:anywhere; }
+@media (max-width:575px) { .company-role-dashboard .role-tables { grid-template-columns:minmax(0,1fr); } .company-role-dashboard { padding:12px; } }
 </style>
 <div class="company-role-dashboard">
     <div class="role-panel"><h2>{{ $role->name }} Dashboard</h2><p class="mb-0">{{ $company->name }} &middot; Welcome, {{ auth()->user()->name }}</p></div>
@@ -28,13 +35,13 @@
         @endif
     </div>
     <div class="role-tables">
-        <div class="role-panel"><h4>My assigned tasks</h4><div class="role-table-scroll"><table><thead><tr><th>Task</th><th>Status</th><th>Due date</th></tr></thead><tbody>
-            @forelse($tasks as $task)<tr data-task-id="{{ $task->id }}"><td>{{ $task->title ?? 'Untitled task' }}</td><td>{{ $task->status ?? '—' }}</td><td>{{ $task->due_date ?? 'No due date' }}</td></tr>
-            @empty<tr><td colspan="3">No assigned tasks to display.</td></tr>@endforelse
+        <div class="role-panel"><h4>My assigned tasks</h4><div class="role-table-scroll"><table id="assignedTasksTable"><thead><tr><th data-pms-selection-column><input type="checkbox" class="form-check-input" aria-label="Select all assigned tasks" @disabled($tasks->isEmpty())></th><th>Task</th><th>Status</th><th>Due date</th></tr></thead><tbody>
+            @forelse($tasks as $task)<tr data-task-id="{{ $task->id }}"><td data-pms-selection-column><input type="checkbox" class="form-check-input" aria-label="Select task {{ $task->title ?? 'Untitled task' }}" value="{{ $task->id }}"></td><td>{{ $task->title ?? 'Untitled task' }}</td><td>{{ $task->status ?? '—' }}</td><td>{{ $task->due_date ?? 'No due date' }}</td></tr>
+            @empty<tr><td colspan="4">No assigned tasks to display.</td></tr>@endforelse
         </tbody></table></div></div>
-        <div class="role-panel"><h4>My projects</h4><div class="role-table-scroll"><table><thead><tr><th>Project</th><th>Status</th><th>Deadline</th></tr></thead><tbody>
-            @forelse($projects as $project)<tr data-record-id="{{ $project->id }}"><td>{{ $project->name ?? $project->project_name ?? 'Untitled project' }}</td><td>{{ $project->status ?? '—' }}</td><td>{{ $project->deadline ?? 'No deadline' }}</td></tr>
-            @empty<tr><td colspan="3">No assigned projects to display.</td></tr>@endforelse
+        <div class="role-panel"><h4>My projects</h4><div class="role-table-scroll"><table id="assignedProjectsTable"><thead><tr><th data-pms-selection-column><input type="checkbox" class="form-check-input" aria-label="Select all assigned projects" @disabled($projects->isEmpty())></th><th>Project</th><th>Status</th><th>Deadline</th></tr></thead><tbody>
+            @forelse($projects as $project)<tr data-record-id="{{ $project->id }}"><td data-pms-selection-column><input type="checkbox" class="form-check-input" aria-label="Select project {{ $project->name ?? $project->project_name ?? 'Untitled project' }}" value="{{ $project->id }}"></td><td>{{ $project->name ?? $project->project_name ?? 'Untitled project' }}</td><td>{{ $project->status ?? '—' }}</td><td>{{ $project->deadline ?? 'No deadline' }}</td></tr>
+            @empty<tr><td colspan="4">No assigned projects to display.</td></tr>@endforelse
         </tbody></table></div></div>
     </div>
 </div>

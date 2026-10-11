@@ -9,6 +9,16 @@ use Illuminate\Support\Str;
 
 class AdminWorkspaceModules
 {
+    public function categoryFor(string $slug): string
+    {
+        return match (true) {
+            (bool) preg_match('/payroll|salary|payslip|expense|billing|formula|deduction|bonus|tax-rule|overtime/', $slug) => 'FINANCE & PAYROLL',
+            (bool) preg_match('/setting|role|permission|activity|system-log/', $slug) => 'ADMINISTRATION & SETTINGS',
+            (bool) preg_match('/employee|hr|department|designation|attendance|leave|holiday|award|recognition|recruitment|appraisal/', $slug) => 'HR & PEOPLE',
+            (bool) preg_match('/project|task|timelog|timesheet|work|client|contract|product|order/', $slug) => 'WORK MANAGEMENT',
+            default => 'CORE PLATFORM',
+        };
+    }
     /** Read-only list of registry entries backed by the implemented Admin menu. */
     public function permissionMatrixModules(): Collection
     {
@@ -23,11 +33,15 @@ class AdminWorkspaceModules
         preg_match_all('/route\([\'\"]([^\'\"]+)[\'\"]/', $sidebar, $routeMatches);
         $routes = collect($routeMatches[1])->filter(fn ($name) => Route::has($name))->unique();
 
-        return Module::with('parent')->where('is_active', true)->orderBy('sort_order')->orderBy('name')->get()
+        return \App\Models\WorkspaceModule::with('parent')->where('is_active', true)->orderBy('sort_order')->orderBy('name')->get()
             ->filter(function (Module $module) use ($slugs, $routes) {
                 if (in_array(strtolower(trim($module->slug)), ['bye', 'kjm'], true)
                     || in_array(strtolower(trim($module->name)), ['bye', 'kjm'], true)) return false;
                 if ($slugs->contains($module->slug)) return true;
+                // Payroll navigation opens a workspace whose tabs have their own permissions.
+                if ($module->slug === 'payslips' && Route::has('payroll.payslips.index')) return true;
+                if ($module->route_name && str_starts_with($module->route_name, 'payroll.')
+                    && Route::has($module->route_name)) return true;
                 if ($module->route_name && $routes->contains($module->route_name)) return true;
                 if (!$module->route_prefix) return false;
                 $prefix = trim($module->route_prefix, '/');
@@ -36,6 +50,9 @@ class AdminWorkspaceModules
                     return $name === $prefix || str_starts_with($name, $prefix . '.')
                         || $route->uri() === $prefix || str_starts_with($route->uri(), $prefix . '/');
                 });
+            })->map(function ($module) {
+                $module->category = $this->categoryFor($module->slug);
+                return $module;
             })->values();
     }
 

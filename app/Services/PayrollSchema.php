@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\{Cache, DB, Log, Schema};
  */
 class PayrollSchema
 {
-    private const VERSION = '2026-10-10';
+    private const VERSION = '2026-10-11b';
 
     /** Migration file => table whose absence means the migration has not run (null = safe to re-run). */
     private const MIGRATIONS = [
@@ -19,6 +19,8 @@ class PayrollSchema
         '2026_08_18_000001_create_payroll_policies_tables.php' => 'payroll_policies',
         '2026_09_14_000001_create_payroll_formulas_table.php' => 'payroll_formulas',
         '2026_10_10_000001_enhance_payroll_and_salary_structure_tables.php' => null,
+        '2026_10_11_000001_add_effective_dates_to_payroll_formulas.php' => null,
+        '2026_10_11_000002_add_company_id_to_payslips_table.php' => null,
     ];
 
     private static array $checked = [];

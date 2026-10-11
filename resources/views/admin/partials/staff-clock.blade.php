@@ -14,7 +14,10 @@
             <input type="hidden" name="clock_out_selfie" id="clockOutSelfie">
             <button class="employee-action-btn is-out" type="submit"><i class="bx bx-log-out-circle"></i> Clock Out</button>
         </form>
-    @elseif(! $attendance?->clock_in)
+    @else
+        @if($attendance?->clock_out)
+            <span class="employee-complete"><i class="bx bx-check-circle"></i> Shift completed</span>
+        @endif
         <form method="POST" action="{{ route('dashboard.clockin') }}" id="employeeClockInForm">
             @csrf
             <input type="hidden" name="clock_in_latitude" id="clockInLatitude">
@@ -25,8 +28,6 @@
             <input type="hidden" name="clock_in_timezone" id="clockInTimezone">
             <button class="employee-action-btn is-in" type="submit" id="employeeClockInButton"><i class="bx bx-log-in-circle"></i> Clock In</button>
         </form>
-    @else
-        <span class="employee-complete"><i class="bx bx-check-circle"></i> Shift completed</span>
     @endif
         <a class="btn btn-outline-primary" href="{{ route('attendance.index') }}">My attendance</a>
         <a class="btn btn-outline-primary" href="{{ route('leaves.index') }}">My leaves</a>

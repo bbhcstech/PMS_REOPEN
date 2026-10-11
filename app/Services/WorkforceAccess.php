@@ -83,10 +83,21 @@ class WorkforceAccess
 
     public static function currentAttendance(User $user): ?\App\Models\Attendance
     {
-        $timezone = session('attendance_timezone.' . $user->id, config('app.timezone'));
-        if (! in_array($timezone, timezone_identifiers_list(), true)) $timezone = config('app.timezone');
+        $timezone = session('attendance_timezone.' . $user->id);
+        if (! $timezone || ! in_array($timezone, timezone_identifiers_list(), true)) {
+            $lastTz = \App\Models\Attendance::where('user_id', $user->id)
+                ->whereNotNull('clock_in_timezone')
+                ->latest('id')
+                ->value('clock_in_timezone');
+            $timezone = ($lastTz && in_array($lastTz, timezone_identifiers_list(), true))
+                ? $lastTz
+                : config('app.timezone', 'Asia/Kolkata');
+        }
+        if (! in_array($timezone, timezone_identifiers_list(), true)) {
+            $timezone = 'Asia/Kolkata';
+        }
         $query = \App\Models\Attendance::where('user_id', $user->id);
-        $open = (clone $query)->whereNotNull('clock_in')->whereNull('clock_out')->latest('date')->first();
-        return $open ?? $query->whereDate('date', now($timezone)->toDateString())->first();
+        $open = (clone $query)->whereNotNull('clock_in')->whereNull('clock_out')->latest('date')->latest('id')->first();
+        return $open ?? $query->whereDate('date', now($timezone)->toDateString())->latest('id')->first();
     }
 }

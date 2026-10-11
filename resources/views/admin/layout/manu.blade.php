@@ -2308,16 +2308,16 @@
             @php
                 $canUsePayrollWorkspace = in_array(strtolower((string)(auth()->user()->role ?? '')), ['admin', 'superadmin', 'administrator', 'hr'], true);
             @endphp
-            @if($canUsePayrollWorkspace && $canSeeModule('payroll'))
+            @if($canUsePayrollWorkspace && ($canSeeModule('payroll') || $canSeeModule('payslips')))
             <li class="menu-item {{ request()->routeIs('payroll.*') ? 'active' : '' }}">
-                <a href="{{ route('payroll.index') }}" class="menu-link">
+                <a href="{{ route($canSeeModule('payroll') ? 'payroll.index' : 'payroll.payslips.index') }}" class="menu-link">
                     <i class="menu-icon tf-icons bx bx-money"></i>
                     <div class="text-truncate" data-i18n="Payroll">Payroll</div>
                 </a>
             </li>
             @endif
 
-            @if($canSeeModule('settings'))
+            @if($canSeeModule('settings') || in_array(auth()->user()?->normalizedRole(), ['admin', 'superadmin'], true))
                 <li class="menu-item {{ request()->routeIs('settings.*') || request()->routeIs('admin.settings.*') || request()->routeIs('admin.modules.*') || request()->routeIs('admin.role-permissions.*') || request()->routeIs('admin.role-accounts.*') ? 'active open' : '' }}">
                     <a href="javascript:void(0);" class="menu-link menu-toggle">
                         <i class="menu-icon tf-icons bx bx-cog"></i>
@@ -2392,7 +2392,7 @@
                         @if($canSeeModule('change-password-settings'))
                         <li class="menu-item {{ request()->routeIs('admin.settings.change-password*') ? 'active' : '' }}"><a href="{{ route('admin.settings.change-password') }}" class="menu-link"><div>Change Password</div></a></li>
                         @endif
-                        @if($canSeeModule('role-permissions-settings') || $canSeeModule('role-management'))
+                        @if($canSeeModule('role-permissions-settings') || $canSeeModule('role-management') || in_array(auth()->user()?->normalizedRole(), ['admin', 'superadmin'], true))
                         <li class="menu-item {{ request()->routeIs('admin.role-permissions.*') ? 'active' : '' }}"><a href="{{ route('admin.role-permissions.index') }}" class="menu-link"><div>Role & Permission</div></a></li>
                         @endif
                         @if($canSeeModule('localization-settings'))
@@ -2401,7 +2401,7 @@
                         @if($canSeeModule('terms-policy-settings'))
                         <li class="menu-item {{ request()->routeIs('admin.settings.terms-policy*') ? 'active' : '' }}"><a href="{{ route('admin.settings.terms-policy') }}" class="menu-link"><div>Terms &amp; Policy</div></a></li>
                         @endif
-                        @if($canSeeModule('module-management'))
+                        @if($canSeeModule('module-management') || in_array(auth()->user()?->normalizedRole(), ['admin', 'superadmin'], true))
                         <li class="menu-item {{ request()->routeIs('admin.modules.*') ? 'active' : '' }}"><a href="{{ route('admin.modules.index') }}" class="menu-link"><div>Module Management</div></a></li>
                         @endif
                     </ul>

@@ -287,6 +287,13 @@
 
     if (controller.selectAll) {
       controller.selectAll.disabled = rows.length === 0;
+      // Explain the disabled state instead of looking like a broken checkbox.
+      var selectAllLabel = rows.length === 0 ? 'No rows to select yet' : 'Select all rows';
+      controller.selectAll.title = selectAllLabel;
+      controller.selectAll.setAttribute('aria-label', selectAllLabel);
+      if (controller.selectAll.parentElement && controller.selectAll.parentElement.classList.contains('pms-table-select')) {
+        controller.selectAll.parentElement.title = selectAllLabel;
+      }
       controller.selectAll.checked = rows.length > 0 && selected.length === rows.length;
       controller.selectAll.indeterminate = selected.length > 0 && selected.length < rows.length;
     }
