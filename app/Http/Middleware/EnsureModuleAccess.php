@@ -45,6 +45,10 @@ class EnsureModuleAccess
             if ($module->exists && ! $module->is_active) {
                 abort(403, 'This module is disabled for your company.');
             }
+            $inheritedFeature = config('workspace_modules.'.$moduleSlug.'.inherits');
+            if ($inheritedFeature && Module::where('slug', $inheritedFeature)->where('is_active', false)->exists()) {
+                abort(403, 'The parent module is disabled for your company.');
+            }
             $company = app(\App\Services\CompanyContext::class)->current();
             if (! $company && $user->company_id) {
                 try {
@@ -106,6 +110,15 @@ class EnsureModuleAccess
     {
         if ($routeName === '') {
             return null;
+        }
+
+        // Exact sidebar subdivisions take precedence over broad legacy aliases
+        // such as attendance.report -> attendance and admin.leave.* -> leaves.
+        foreach (config('workspace_modules', []) as $slug => $item) {
+            if ($item['inherits'] && $item['route'] === $routeName) {
+                $submodule = Module::where('slug', $slug)->first();
+                if ($submodule) return $submodule;
+            }
         }
 
         $aliases = [

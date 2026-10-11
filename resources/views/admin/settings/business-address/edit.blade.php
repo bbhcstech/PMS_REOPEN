@@ -725,7 +725,7 @@
 @endpush
 
 @section('content')
-<div class="create-branch-page">
+<div class="pms-settings-page create-branch-page">
     <div class="create-branch-shell">
         <div class="ambient-orb orb-1"></div>
         <div class="ambient-orb orb-2"></div>

@@ -886,7 +886,7 @@
 @endpush
 
 @section('content')
-<div class="localization-settings-page">
+<div class="pms-settings-page localization-settings-page">
     <div class="localization-settings-shell">
         <div class="ambient-orb orb-1"></div>
         <div class="ambient-orb orb-2"></div>

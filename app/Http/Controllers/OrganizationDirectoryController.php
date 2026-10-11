@@ -28,20 +28,7 @@ class OrganizationDirectoryController extends Controller
             ->whereNull('archived_at');
 
         $employees = (clone $allEmployeesQuery)
-            ->when($request->filled('search'), function ($query) use ($request) {
-                $search = trim((string) $request->search);
-
-                $query->where(function ($q) use ($search) {
-                    $q->where('name', 'like', '%' . $search . '%')
-                        ->orWhere('email', 'like', '%' . $search . '%')
-                        ->orWhereHas('employeeDetail', function ($detail) use ($search) {
-                            $detail->where('employee_id', 'like', '%' . $search . '%')
-                                ->orWhere('skills', 'like', '%' . $search . '%')
-                                ->orWhereHas('department', fn ($department) => $department->where('dpt_name', 'like', '%' . $search . '%'))
-                                ->orWhereHas('designation', fn ($designation) => $designation->where('name', 'like', '%' . $search . '%'));
-                        });
-                });
-            })
+            ->when($request->filled('search'), fn ($query) => $this->applyDirectorySearch($query, (string) $request->search))
             ->when($request->filled('company_id'), function ($query) use ($request) {
                 $query->where(function ($q) use ($request) {
                     $q->where('company_id', $request->company_id)
@@ -121,23 +108,12 @@ class OrganizationDirectoryController extends Controller
         $managerUserIds = \App\Models\EmployeeDetail::whereNotNull('reporting_to')->pluck('reporting_to')->unique();
         $managers = User::whereIn('id', $managerUserIds)->orderBy('name')->get();
 
-        $employeeDetailFilter = function ($detailQuery) use ($request) {
-            $detailQuery->whereHas('user', function ($uQuery) use ($request) {
+        $employeeDetailFilter = function ($detailQuery) use ($request, $scopeCompanyId) {
+            $detailQuery->whereHas('user', function ($uQuery) use ($request, $scopeCompanyId) {
                 $uQuery->where('role', 'employee')
                     ->whereNull('archived_at')
-                    ->when($request->filled('search'), function ($query) use ($request) {
-                        $search = trim((string) $request->search);
-                        $query->where(function ($q) use ($search) {
-                            $q->where('name', 'like', '%' . $search . '%')
-                                ->orWhere('email', 'like', '%' . $search . '%')
-                                ->orWhereHas('employeeDetail', function ($detail) use ($search) {
-                                    $detail->where('employee_id', 'like', '%' . $search . '%')
-                                        ->orWhere('skills', 'like', '%' . $search . '%')
-                                        ->orWhereHas('department', fn ($department) => $department->where('dpt_name', 'like', '%' . $search . '%'))
-                                        ->orWhereHas('designation', fn ($designation) => $designation->where('name', 'like', '%' . $search . '%'));
-                                });
-                        });
-                    })
+                    ->when($scopeCompanyId, fn ($q) => $q->where('users.company_id', $scopeCompanyId))
+                    ->when($request->filled('search'), fn ($query) => $this->applyDirectorySearch($query, (string) $request->search))
                     ->when($request->filled('company_id'), function ($query) use ($request) {
                         $query->where(function ($q) use ($request) {
                             $q->where('company_id', $request->company_id)
@@ -193,6 +169,24 @@ class OrganizationDirectoryController extends Controller
             'managers',
             'departmentGroups'
         ));
+    }
+
+    private function applyDirectorySearch(\Illuminate\Database\Eloquent\Builder $query, string $search): void
+    {
+        // Normalize explicitly for databases with case-sensitive collations as well.
+        // Group alternatives so existing company and role filters still apply.
+        $pattern = '%' . mb_strtolower(trim($search), 'UTF-8') . '%';
+
+        $query->where(function ($q) use ($pattern) {
+            $q->whereRaw('LOWER(users.name) LIKE ?', [$pattern])
+                ->orWhereRaw('LOWER(users.email) LIKE ?', [$pattern])
+                ->orWhereHas('employeeDetail', function ($detail) use ($pattern) {
+                    $detail->whereRaw('LOWER(employee_details.employee_id) LIKE ?', [$pattern])
+                        ->orWhereRaw('LOWER(employee_details.skills) LIKE ?', [$pattern])
+                        ->orWhereHas('department', fn ($department) => $department->whereRaw('LOWER(departments.dpt_name) LIKE ?', [$pattern]))
+                        ->orWhereHas('designation', fn ($designation) => $designation->whereRaw('LOWER(designations.name) LIKE ?', [$pattern]));
+                });
+        });
     }
 
     public function show(User $employee)

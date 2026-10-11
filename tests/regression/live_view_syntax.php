@@ -18,6 +18,14 @@ $views = [
     'admin/companies/form', 'admin/collaborating-companies/form', 'admin/employees/edit',
     'admin/company-role-dashboard',
 ];
+// Settings page styles are loaded after the shared workspace theme.
+foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator(resource_path('views/admin/settings'))) as $file) {
+    if (! $file->isFile() || ! str_ends_with($file->getFilename(), '.blade.php')) continue;
+    if (! str_contains(file_get_contents($file->getPathname()), 'pms-settings-page')) continue;
+    $relative = substr($file->getPathname(), strlen(resource_path('views')) + 1, -strlen('.blade.php'));
+    $views[] = str_replace('\\', '/', $relative);
+}
+$views = array_unique($views);
 foreach ($views as $view) {
     $compiled = app('blade.compiler')->compileString(file_get_contents(resource_path("views/$view.blade.php")));
     $path = tempnam(sys_get_temp_dir(), 'pms-blade-');
@@ -28,4 +36,4 @@ foreach ($views as $view) {
     } finally { unlink($path); }
     $output = [];
 }
-echo "PASS: live-update layouts and conversation views compile with valid PHP.\n";
+echo 'PASS: '.count($views)." layouts, conversation and settings views compile with valid PHP.\n";

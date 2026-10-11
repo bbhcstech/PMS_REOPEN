@@ -114,7 +114,7 @@ class PayrollController extends Controller
         } else {
             // Live real-time projection across eligible employees for the selected month/year
             $payrollService = app(PayrollCalculationService::class);
-            $employees = $this->dashboardSection('eligible employees', fn () => $payrollService->getEligibleEmployees($companyId), collect());
+            $employees = $this->dashboardSection('eligible employees', fn () => $payrollService->getEligibleEmployees($companyId, null, null, null, $selectedYear, $selectedMonth), collect());
             $workingDays = 22;
             $srNo = 1;
             foreach ($employees as $employee) {
@@ -567,20 +567,30 @@ class PayrollController extends Controller
         $payrollRun = null;
         $payrollItems = collect();
         $calculationFailures = [];
+        $staleEmployees = [];
 
         if ($existingPayroll) {
             $payrollRun = $existingPayroll;
             // Saved rows must obey the same employee filters as an unsaved preview.
             $eligibleEmployeeIds = $this->dashboardSection('processing eligible employees', fn () => $payrollService
-                ->getEligibleEmployees($companyId, $office, $employeeType, $departmentId)
+                ->getEligibleEmployees($companyId, $office, $employeeType, $departmentId, $year, $month)
                 ->pluck('id'), collect());
             $payrollItems = PayrollHistory::where('payroll_id', $existingPayroll->id)
                 ->whereIn('user_id', $eligibleEmployeeIds)
                 ->orderBy('id', 'asc')->get();
+            // Lines saved for employees who no longer have a salary assignment: the run must be recalculated.
+            if (in_array($existingPayroll->status, ['draft', 'calculated', 'reviewed'], true) && ($office ?: 'all') === 'all' && ! $departmentId) {
+                $staleIds = PayrollHistory::where('payroll_id', $existingPayroll->id)
+                    ->whereNotIn('user_id', $eligibleEmployeeIds)
+                    ->pluck('user_id');
+                $staleEmployees = $staleIds->isEmpty() ? [] : User::whereIn('id', $staleIds)
+                    ->when($companyId, fn ($q) => $q->where('company_id', $companyId))
+                    ->pluck('name')->all();
+            }
         } else {
             // Auto calculate preview lines in memory
             $employees = $this->dashboardSection('processing eligible employees',
-                fn () => $payrollService->getEligibleEmployees($companyId, $office, $employeeType, $departmentId), collect());
+                fn () => $payrollService->getEligibleEmployees($companyId, $office, $employeeType, $departmentId, $year, $month), collect());
             $srNo = 1;
             foreach ($employees as $employee) {
                 // An employee whose salary/attendance data cannot be calculated is listed in a warning
@@ -656,7 +666,8 @@ class PayrollController extends Controller
             'payrollRun',
             'payrollItems',
             'summary',
-            'calculationFailures'
+            'calculationFailures',
+            'staleEmployees'
         ));
     }
 
@@ -1168,13 +1179,23 @@ class PayrollController extends Controller
         abort(404, 'Payslip not found.');
     }
 
+    /**
+     * Company whose name, logo and address brand the payslip.
+     */
+    protected function payslipCompany(Payslip $payslip)
+    {
+        $companyId = $payslip->company_id ?: ($payslip->payroll?->company_id ?: ($payslip->user?->company_id ?: auth()->user()?->company_id));
+
+        return ($companyId ? Company::find($companyId) : null) ?: \App\Models\CompanySetting::first();
+    }
+
     public function viewPayslip($payslip)
     {
         $this->authorizePayroll('payslips');
         $payslip = $this->resolvePayslipModel($payslip);
         $payslip->load(['user.employeeDetail.designation', 'user.employeeDetail.department', 'payroll', 'payrollHistory']);
 
-        $company = Company::find($payslip->company_id ?: auth()->user()?->company_id) ?: \App\Models\CompanySetting::first();
+        $company = $this->payslipCompany($payslip);
         $snap = $payslip->employee_snapshot;
         $history = $payslip->payrollHistory ?: PayrollHistory::where('payroll_id', $payslip->payroll_id)->where('user_id', $payslip->user_id)->first();
 
@@ -1183,11 +1204,12 @@ class PayrollController extends Controller
 
     public function printPayslip($payslip)
     {
-        $this->authorizePayroll('payslips', 'export');
+        // ?noprint=1 is the read-only document embedded in the payslip view page.
+        request()->boolean('noprint') ? $this->authorizePayroll('payslips') : $this->authorizePayroll('payslips', 'export');
         $payslip = $this->resolvePayslipModel($payslip);
         $payslip->load(['user.employeeDetail.designation', 'user.employeeDetail.department', 'payroll', 'payrollHistory']);
 
-        $company = Company::find($payslip->company_id ?: auth()->user()?->company_id) ?: \App\Models\CompanySetting::first();
+        $company = $this->payslipCompany($payslip);
         $snap = $payslip->employee_snapshot;
         $history = $payslip->payrollHistory ?: PayrollHistory::where('payroll_id', $payslip->payroll_id)->where('user_id', $payslip->user_id)->first();
 
@@ -1200,12 +1222,16 @@ class PayrollController extends Controller
         $payslip = $this->resolvePayslipModel($payslip);
         $payslip->load(['user.employeeDetail.designation', 'user.employeeDetail.department', 'payroll', 'payrollHistory']);
 
-        $company = Company::find($payslip->company_id ?: auth()->user()?->company_id) ?: \App\Models\CompanySetting::first();
+        $company = $this->payslipCompany($payslip);
         $snap = $payslip->employee_snapshot;
         $history = $payslip->payrollHistory ?: PayrollHistory::where('payroll_id', $payslip->payroll_id)->where('user_id', $payslip->user_id)->first();
 
-        $pdf = Pdf::loadView('admin.payroll.payslip-pdf', compact('payslip', 'company', 'snap', 'history'));
-        return $pdf->download('Payslip_' . $payslip->payslip_number . '.pdf');
+        $mode = 'pdf';
+        $pdf = Pdf::loadView('admin.payroll.payslip-pdf', compact('payslip', 'company', 'snap', 'history', 'mode'))
+            ->setPaper('a4')
+            ->setOption('isFontSubsettingEnabled', true);
+        $name = preg_replace('/[^A-Za-z0-9_-]+/', '_', 'Payslip_' . ($payslip->user?->name ?? 'Employee') . '_' . $payslip->payslip_number);
+        return $pdf->download($name . '.pdf');
     }
 
     public function sendPayslipSingle(Request $request, Payslip $payslip, PayrollCalculationService $payrollService)

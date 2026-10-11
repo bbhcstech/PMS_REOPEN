@@ -41,13 +41,15 @@ foreach ([
     ['printPayslip', [1], ['payslips', 'export']],
     ['downloadPdf', [1], ['payslips', 'export']],
 ] as [$method, $arguments, $expected]) {
+    $actor->checked = [];
     try {
         $controller->{$method}(...$arguments);
         throw new RuntimeException($method . ' bypassed denied action permission.');
     } catch (Symfony\Component\HttpKernel\Exception\HttpException $e) {
         if ($e->getStatusCode() !== 403) throw $e;
     }
-    if (end($actor->checked) !== $expected) throw new RuntimeException($method . ' checked the wrong action.');
+    // Payslip actions may also fall back to the same action on Payroll; the requested action must be checked.
+    if (! in_array($expected, $actor->checked, true) || count(array_unique(array_column($actor->checked, 1))) !== 1) throw new RuntimeException($method . ' checked the wrong action.');
 }
 if (PayrollSchemaTestDouble::$calls !== 2) throw new RuntimeException('Denied actions reached payroll schema.');
 echo "PASS: permitted HR/Admin payroll access, revoked HR access, action permission checks and employee/manager restrictions.\n";

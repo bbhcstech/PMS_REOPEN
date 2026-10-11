@@ -1313,7 +1313,7 @@
 @endpush
 
 @section('content')
-<div class="role-permission-page">
+<div class="pms-settings-page role-permission-page">
     <div class="role-permission-shell">
         <div class="ambient-orb orb-1"></div>
         <div class="ambient-orb orb-2"></div>

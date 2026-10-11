@@ -589,7 +589,7 @@
 @endpush
 
 @section('content')
-<div class="change-pwd-page">
+<div class="pms-settings-page change-pwd-page">
     <div class="change-pwd-shell">
         <div class="ambient-orb ambient-orb-1"></div>
         <div class="ambient-orb ambient-orb-2"></div>

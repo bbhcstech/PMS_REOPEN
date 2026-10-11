@@ -96,6 +96,11 @@ class RolePermissionController extends Controller
             // Display legacy parent grants as checked; otherwise saving the editor
             // silently turns inherited access into an explicit child denial.
             $inherited = null;
+            $inheritedSlug = config('workspace_modules.'.$module->slug.'.inherits');
+            if (!$saved && $inheritedSlug) {
+                $parentModule = Module::where('slug', $inheritedSlug)->where('is_active', true)->first();
+                $inherited = $parentModule ? $savedPermissions->get($parentModule->id) : null;
+            }
             if (!$saved && $payrollModule && (str_starts_with($module->slug, 'payroll-')
                 || in_array($module->slug, ['payslips', 'salary-structures', 'employee-salary', 'formula-builder',
                     'deduction-rules', 'bonus-rules', 'tax-rules', 'overtime-rules'], true))) {

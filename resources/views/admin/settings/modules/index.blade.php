@@ -801,7 +801,7 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
                 <div class="card-body p-3 d-flex align-items-center justify-content-between">
                     <div>
                         <span class="text-muted fw-semibold d-block fs-tiny text-uppercase tracking-wider">Parent Modules</span>
-                        <h3 class="fw-extrabold text-warning mb-0 mt-1">{{ $parentModules->count() }}</h3>
+                        <h3 class="fw-extrabold text-warning mb-0 mt-1">{{ $parentModuleCount }}</h3>
                         <small class="text-muted d-inline-flex align-items-center gap-1 mt-1 fs-tiny">
                             Nav categories
                         </small>
@@ -824,7 +824,7 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
                 </div>
                 <div>
                     <h5 class="mb-0 fw-bold text-dark">Application Modules</h5>
-                    <small class="text-muted">Manage all system feature modules and routes</small>
+                    <small class="text-muted">Sidebar modules and submodules provided for your company</small>
                 </div>
             </div>
 
@@ -854,22 +854,23 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
                     </tr>
                 </thead>
                 <tbody>
-                    @php($previousCategory = null)
                     @forelse($modules as $module)
-                        @if($previousCategory !== $module->category)
-                            <tr class="module-category" data-category="{{ $module->category }}"><td colspan="6"><strong>{{ $module->category }}</strong><span class="ms-2">{{ $modules->where('category', $module->category)->count() }} features</span></td></tr>
-                            @php($previousCategory = $module->category)
-                        @endif
                         <tr class="module-row" data-category="{{ $module->category }}">
                             <!-- MODULE DETAILS -->
                             <td>
-                                <div class="d-flex align-items-center gap-3">
+                                <div class="d-flex align-items-center gap-3" style="padding-left: {{ min(4, $module->sidebar_depth) * 20 }}px;">
                                     <div class="mm-module-icon-box rounded-3 d-flex align-items-center justify-content-center">
                                         <i class="{{ resolveModuleIcon($module->icon, $module->slug) }} fs-4"></i>
                                     </div>
                                     <div>
                                         <div class="fw-bold text-dark fs-6 d-flex align-items-center gap-2">
-                                            <span>{{ $module->name }}</span>
+                                            @if($module->sidebar_depth)
+                                                <i class="bx bx-subdirectory-right text-muted" aria-hidden="true"></i>
+                                            @endif
+                                            <span>{{ $module->sidebar_name }}</span>
+                                            @if($module->parent)
+                                                <span class="badge bg-label-primary fs-tiny">Submodule</span>
+                                            @endif
                                         </div>
                                         <div class="d-flex align-items-center gap-1.5 mt-1">
                                             <span class="badge bg-light text-secondary border font-monospace fs-tiny text-lowercase px-2 py-0.5">{{ $module->slug }}</span>
@@ -909,7 +910,7 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
                             <td>
                                 @if($module->parent)
                                     <span class="badge bg-label-warning fw-semibold d-inline-flex align-items-center gap-1">
-                                        <i class="bx bx-git-repo-forked"></i> {{ $module->parent->name }}
+                                        <i class="bx bx-git-repo-forked"></i> {{ $module->parent->sidebar_name ?? $module->parent->name }}
                                     </span>
                                 @else
                                     <span class="text-muted small d-inline-flex align-items-center gap-1">

@@ -443,6 +443,129 @@
         display: flex;
     }
 
+    /* Own both foreground and background colors so shared text utilities cannot
+       leave a light notice/card with white text when the theme changes. */
+    .company-profile-page {
+        --cp-background: #f8fafc;
+        --cp-surface: #ffffff;
+        --cp-field: #f1f5f9;
+        --cp-text: #0f172a;
+        --cp-muted: #475569;
+        --cp-border: #cbd5e1;
+        --cp-accent-bg: #e8f0ff;
+        --cp-accent-text: #1e3a8a;
+        --cp-success-bg: #ecfdf5;
+        --cp-success-text: #065f46;
+        --cp-danger-bg: #fef2f2;
+        --cp-danger-text: #991b1b;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) .company-profile-page {
+        --cp-background: #070b1a;
+        --cp-surface: #0f1530;
+        --cp-field: #141b3d;
+        --cp-text: #eef1fb;
+        --cp-muted: #bbc5dd;
+        --cp-border: #3a4765;
+        --cp-accent-bg: #172b50;
+        --cp-accent-text: #bfdbfe;
+        --cp-success-bg: #12382e;
+        --cp-success-text: #a7f3d0;
+        --cp-danger-bg: #421f2b;
+        --cp-danger-text: #fecaca;
+    }
+
+    html body .company-profile-page {
+        background: var(--cp-background) !important;
+        color: var(--cp-text) !important;
+    }
+    html body .company-profile-page :is(.company-hero-banner, .address-card-elevated, .company-logo-wrapper, .modal-content) {
+        background: var(--cp-surface) !important;
+        border-color: var(--cp-border) !important;
+    }
+    html body .company-profile-page :is(h3, h5, h6, .form-label-custom, .modal-body .text-dark) {
+        color: var(--cp-text) !important;
+        -webkit-text-fill-color: currentColor !important;
+    }
+    html body .company-profile-page :is(.text-muted, .breadcrumb-custom, #liveCompanyEmail, #liveCompanyPhone, #liveCompanyLocation) {
+        color: var(--cp-muted) !important;
+        -webkit-text-fill-color: currentColor !important;
+    }
+    html body .company-profile-page :is(.pms-readonly-notice, .section-badge, .card-header-avatar, .upload-icon-box, #liveCompanyWebsiteBtn, #currentLogoBadge, #fileSelectedBadge) {
+        background: var(--cp-accent-bg) !important;
+        color: var(--cp-accent-text) !important;
+        -webkit-text-fill-color: currentColor !important;
+    }
+    html body .company-profile-page .pms-readonly-notice :is(strong, span, i) {
+        color: var(--cp-accent-text) !important;
+        -webkit-text-fill-color: currentColor !important;
+    }
+    html body .company-profile-page :is(.section-badge, .card-header-avatar, .upload-icon-box, #liveCompanyWebsiteBtn, #currentLogoBadge, #fileSelectedBadge) :is(span, i) {
+        color: inherit !important;
+        -webkit-text-fill-color: currentColor !important;
+    }
+    html body .company-profile-page :is(.input-group-custom, .input-group-custom .form-control, .phone-combo-group .country-code-select, .pms-readonly-status, .modal-footer, .modal-footer [data-bs-dismiss="modal"]) {
+        background: var(--cp-field) !important;
+        color: var(--cp-text) !important;
+        border-color: var(--cp-border) !important;
+        -webkit-text-fill-color: currentColor !important;
+        opacity: 1;
+    }
+    html body .company-profile-page .form-control::placeholder {
+        color: var(--cp-muted) !important;
+        -webkit-text-fill-color: currentColor !important;
+        opacity: 1;
+    }
+    html body .company-profile-page :is(.breadcrumb-custom a, .input-group-text, .req-asterisk, .text-primary) {
+        color: var(--cp-accent-text) !important;
+        -webkit-text-fill-color: currentColor !important;
+    }
+    html body .company-profile-page :is(.text-danger, .validation-feedback-pill) {
+        color: var(--cp-danger-text) !important;
+        -webkit-text-fill-color: currentColor !important;
+    }
+    html body .company-profile-page .text-success {
+        color: var(--cp-success-text) !important;
+        -webkit-text-fill-color: currentColor !important;
+    }
+    html body .company-profile-page :is(.alert-danger, .modal-header, #btnOpenResetModal) {
+        background: var(--cp-danger-bg) !important;
+        color: var(--cp-danger-text) !important;
+    }
+    html body .company-profile-page .alert-success {
+        background: var(--cp-success-bg) !important;
+        color: var(--cp-success-text) !important;
+    }
+    html body .company-profile-page :is(.alert-success, .alert-danger) :is(div, i) {
+        color: inherit !important;
+        -webkit-text-fill-color: currentColor !important;
+    }
+    html body .company-profile-page #phoneDigitCounter.badge {
+        background: var(--cp-accent-bg) !important;
+        color: var(--cp-accent-text) !important;
+        -webkit-text-fill-color: currentColor !important;
+    }
+    html body .company-profile-page #phoneDigitCounter.badge:has(.text-success) {
+        background: var(--cp-success-bg) !important;
+        color: var(--cp-success-text) !important;
+    }
+    html body .company-profile-page #phoneDigitCounter.badge:has(.text-danger) {
+        background: var(--cp-danger-bg) !important;
+        color: var(--cp-danger-text) !important;
+    }
+    html body .company-profile-page #phoneDigitCounter :is(span, i) {
+        color: inherit !important;
+        -webkit-text-fill-color: currentColor !important;
+    }
+    html body .company-profile-page #btnConfirmReset {
+        background: #b91c1c !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: currentColor !important;
+    }
+    html body .company-profile-page #fileSelectedBadge.d-none {
+        display: none !important;
+    }
+
     @media (max-width: 768px) {
         .company-profile-page {
             padding: 1.25rem 1rem;
@@ -452,7 +575,7 @@
 @endpush
 
 @section('content')
-<div class="company-profile-page">
+<div class="pms-settings-page company-profile-page">
     <div class="company-profile-shell">
         <div class="ambient-orb orb-1"></div>
         <div class="ambient-orb orb-2"></div>
@@ -548,11 +671,11 @@
                         @endif
 
                         @if($isSettingsReadOnly)
-                            <div class="alert d-flex align-items-center mb-4 rounded-3 border-0 shadow-sm" style="background: linear-gradient(135deg, #eff6ff, #dbeafe); color: #1e40af; border-left: 4px solid #3b82f6 !important; padding: 14px 18px;">
+                            <div class="alert pms-readonly-notice d-flex align-items-center mb-4 rounded-3 border-0 shadow-sm" style="border-left: 4px solid #3b82f6 !important; padding: 14px 18px;">
                                 <i class="fas fa-eye me-3 fs-3 text-primary"></i>
                                 <div>
                                     <strong class="d-block text-primary fw-bold" style="font-size: 14px;">View-Only Mode</strong>
-                                    <span style="font-size: 13px; color: #1e3a8a;">You are viewing company profile settings in read-only mode. Only Administrators have permission to modify or update company settings.</span>
+                                    <span style="font-size: 13px;">You are viewing company profile settings in read-only mode. Only Administrators have permission to modify or update company settings.</span>
                                 </div>
                             </div>
                         @endif
@@ -563,7 +686,7 @@
                         </div>
 
                         <div class="mb-5">
-                            <label for="company_logo_input" class="logo-upload-dropzone d-block w-100 mb-0" id="logoDropzone" @if($isSettingsReadOnly) style="pointer-events: none; opacity: 0.85; cursor: default;" @endif>
+                            <label for="company_logo_input" class="logo-upload-dropzone d-block w-100 mb-0" id="logoDropzone" @if($isSettingsReadOnly) style="pointer-events: none; cursor: default;" @endif>
                                 <input type="file" name="company_logo" id="company_logo_input" class="d-none" accept="image/png, image/jpeg, image/gif, image/svg+xml, image/webp" onchange="previewLogo(this)" @if($isSettingsReadOnly) disabled @endif>
                                 
                                 <div class="d-flex flex-column align-items-center gap-2">
@@ -709,7 +832,7 @@
                         <div class="mt-5 pt-4 border-top d-flex align-items-center justify-content-between flex-wrap gap-2">
                             @if($isSettingsReadOnly)
                                 <div class="d-flex align-items-center gap-2">
-                                    <span class="badge rounded-pill px-3.5 py-2 fw-bold" style="background: #f1f5f9; color: #64748b; font-size: 13px; border: 1px solid #cbd5e1;">
+                                    <span class="badge pms-readonly-status rounded-pill px-3.5 py-2 fw-bold" style="background: #f1f5f9; color: #64748b; font-size: 13px; border: 1px solid #cbd5e1;">
                                         <i class="fas fa-lock me-1.5 text-muted"></i> Read-Only (Admin Managed)
                                     </span>
                                 </div>

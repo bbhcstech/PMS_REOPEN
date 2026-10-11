@@ -1893,16 +1893,20 @@
                             <div class="text-truncate">Department</div>
                         </a>
                         <ul class="menu-sub">
+                            @if($canSeeModule('department-parent'))
                             <li class="menu-item {{ request()->routeIs('parent-departments.*') ? 'active' : '' }}">
                                 <a href="{{ route('parent-departments.index') }}" class="menu-link">
                                     <div class="text-truncate">Parent Department</div>
                                 </a>
                             </li>
+                            @endif
+                            @if($canSeeModule('department-sub'))
                             <li class="menu-item {{ request()->routeIs('departments.*') ? 'active' : '' }}">
                                 <a href="{{ route('departments.index') }}" class="menu-link">
                                     <div class="text-truncate">Sub Department</div>
                                 </a>
                             </li>
+                            @endif
                         </ul>
                     </li>
                 @endif
@@ -1923,12 +1927,14 @@
                             <div class="text-truncate" data-i18n="Without navbar">My Leaves</div>
                         </a>
                     </li>
+                    @if($canSeeModule('leaves-apply'))
                     <li class="menu-item {{ request()->routeIs('leaves.create') ? 'active' : '' }}">
                         <a href="{{ route('leaves.create') }}" class="menu-link" data-sidebar-key="leaves-apply">
                             <i class="menu-icon tf-icons bx bx-calendar-plus"></i>
                             <div class="text-truncate">Apply Leave</div>
                         </a>
                     </li>
+                    @endif
                 @endif
 
                 @if($canSeeModule('holidays'))
@@ -2013,16 +2019,20 @@
                           <div class="text-truncate">Department</div>
                         </a>
                         <ul class="menu-sub">
+                          @if($canSeeModule('department-parent'))
                           <li class="menu-item {{ request()->routeIs('parent-departments.*') ? 'active' : '' }}">
                             <a href="{{ route('parent-departments.index') }}" class="menu-link">
                               <div class="text-truncate">Parent Department</div>
                             </a>
                           </li>
+                          @endif
+                          @if($canSeeModule('department-sub'))
                           <li class="menu-item {{ request()->routeIs('departments.*') ? 'active' : '' }}">
                             <a href="{{ route('departments.index') }}" class="menu-link">
                               <div class="text-truncate">Sub Department</div>
                             </a>
                           </li>
+                          @endif
                         </ul>
                       </li>
                       @endif
@@ -2030,10 +2040,14 @@
 
                         @if(\App\Services\WorkforceAccess::isAdmin(auth()->user()))
                         @if($canSeeModule('attendance'))
+                        @if($canSeeModule('higher-level-attendance'))
                         <li class="menu-item {{ request()->routeIs('admin.authority-attendance') ? 'active' : '' }}"><a href="{{ route('admin.authority-attendance', ['view' => 'team']) }}" class="menu-link"><div class="text-truncate">Higher-level attendance</div></a></li>
                         @endif
+                        @endif
                         @if($canSeeModule('leaves'))
+                        @if($canSeeModule('higher-level-leaves'))
                         <li class="menu-item {{ request()->routeIs('admin.authority-leaves') ? 'active' : '' }}"><a href="{{ route('admin.authority-leaves') }}" class="menu-link"><div class="text-truncate">Higher-level leaves</div></a></li>
+                        @endif
                         @endif
                         @endif
                          @if($canSeeModule('attendance'))
@@ -2053,11 +2067,13 @@
                         <div class="text-truncate" data-i18n="Without navbar">My Leaves</div>
                     </a>
                     </li>
+                    @if($canSeeModule('leaves-apply'))
                     <li class="menu-item {{ request()->routeIs('leaves.create') ? 'active' : '' }}">
                     <a href="{{ route('leaves.create') }}" class="menu-link" data-sidebar-key="leaves-apply">
                         <div class="text-truncate">Apply Leave</div>
                     </a>
                     </li>
+                    @endif
                     @endif
 
 
@@ -2113,62 +2129,80 @@
               </a>
 
               <ul class="menu-sub">
+                  @if($canSeeModule('reports-task'))
                   <li class="menu-item {{ request()->routeIs('reports.task') ? 'active' : '' }}">
                     <a href="{{ route('reports.task') }}" class="menu-link">
                       <div class="text-truncate">Task Report</div>
                     </a>
                   </li>
+                  @endif
 
+                  @if($canSeeModule('reports-timelog'))
                   <li class="menu-item {{ request()->routeIs('reports.timelog') ? 'active' : '' }}">
                     <a href="{{ route('reports.timelog') }}" class="menu-link">
                       <div class="text-truncate">Time Log Report</div>
                     </a>
                   </li>
+                  @endif
 
+                  @if($canSeeModule('reports-finance'))
                   <li class="menu-item {{ request()->routeIs('reports.finance') ? 'active' : '' }}">
                     <a href="{{ route('reports.finance') }}" class="menu-link">
                       <div class="text-truncate">Finance Report</div>
                       <span class="badge rounded-pill ms-auto" style="background: rgba(245, 158, 11, 0.18); color: #B45309; font-size: 0.62rem; font-weight: 800;">Soon</span>
                     </a>
                   </li>
+                  @endif
 
+                  @if($canSeeModule('reports-income-vs-expense'))
                   <li class="menu-item {{ request()->routeIs('reports.income-vs-expense') ? 'active' : '' }}">
                     <a href="{{ route('reports.income-vs-expense') }}" class="menu-link">
                       <div class="text-truncate">Income Vs Expense</div>
                       <span class="badge rounded-pill ms-auto" style="background: rgba(245, 158, 11, 0.18); color: #B45309; font-size: 0.62rem; font-weight: 800;">Soon</span>
                     </a>
                   </li>
+                  @endif
 
+                  @if($canSeeModule('reports-leave'))
                   <li class="menu-item {{ request()->routeIs('admin.leave.report') ? 'active' : '' }}">
                     <a href="{{ route('admin.leave.report') }}" class="menu-link">
                       <div class="text-truncate">Leave Report</div>
                     </a>
                   </li>
+                  @endif
 
+                  @if($canSeeModule('reports-attendance'))
                   <li class="menu-item {{ request()->routeIs('attendance.report') ? 'active' : '' }}">
                     <a href="{{ route('attendance.report') }}" class="menu-link">
                       <div class="text-truncate">Attendance Report</div>
                     </a>
                   </li>
+                  @endif
 
+                  @if($canSeeModule('reports-expense'))
                   <li class="menu-item {{ request()->routeIs('reports.expense') ? 'active' : '' }}">
                     <a href="{{ route('reports.expense') }}" class="menu-link">
                       <div class="text-truncate">Expense Report</div>
                       <span class="badge rounded-pill ms-auto" style="background: rgba(245, 158, 11, 0.18); color: #B45309; font-size: 0.62rem; font-weight: 800;">Soon</span>
                     </a>
                   </li>
+                  @endif
 
+                  @if($canSeeModule('reports-deal'))
                   <li class="menu-item {{ request()->routeIs('reports.deal') ? 'active' : '' }}">
                     <a href="{{ route('reports.deal') }}" class="menu-link">
                       <div class="text-truncate">Deal Report</div>
                     </a>
                   </li>
+                  @endif
 
+                  @if($canSeeModule('reports-sales'))
                   <li class="menu-item {{ request()->routeIs('reports.sales') ? 'active' : '' }}">
                     <a href="{{ route('reports.sales') }}" class="menu-link">
                       <div class="text-truncate">Sales Report</div>
                     </a>
                   </li>
+                  @endif
               </ul>
             </li>
             @endif
@@ -2342,16 +2376,20 @@
                                 <div>Department</div>
                             </a>
                             <ul class="menu-sub">
+                                @if($canSeeModule('department-parent'))
                                 <li class="menu-item {{ request()->routeIs('parent-departments.*') ? 'active' : '' }}">
                                     <a href="{{ route('parent-departments.index') }}" class="menu-link">
                                         <div>Parent Department</div>
                                     </a>
                                 </li>
+                                @endif
+                                @if($canSeeModule('department-sub'))
                                 <li class="menu-item {{ request()->routeIs('departments.*') ? 'active' : '' }}">
                                     <a href="{{ route('departments.index') }}" class="menu-link">
                                         <div>Sub Department</div>
                                     </a>
                                 </li>
+                                @endif
                             </ul>
                         </li>
                         @endif
@@ -2984,6 +3022,12 @@
                   $user = auth()->user();
                   $employeeDesignation = $user?->employeeDetail?->designation?->name ?? $user?->designation ?? null;
                   $employeeDepartment = $user?->employeeDetail?->department?->dpt_name ?? null;
+                  $companyStaffRole = $user?->companyStaffRole;
+                  $profileRoleLabel = $companyStaffRole
+                    && (int) $companyStaffRole->company_id === (int) $user?->company_id
+                    && filled($companyStaffRole->name)
+                      ? trim($companyStaffRole->name)
+                      : ucfirst((string) $user?->role);
                 @endphp
 
                 <!-- User -->
@@ -3029,9 +3073,9 @@
                           <div class="flex-grow-1">
                               <h6 class="mb-0">{{ $user->name }}</h6>
                               @if($employeeDesignation && strtolower($employeeDesignation) !== 'employee')
-                                <small class="text-body-secondary d-block">{{ $employeeDesignation }} ({{ ucfirst($user->role) }})</small>
+                                <small class="text-body-secondary d-block">{{ $employeeDesignation }} ({{ $profileRoleLabel }})</small>
                               @else
-                                <small class="text-body-secondary d-block">{{ ucfirst($user->role) }}</small>
+                                <small class="text-body-secondary d-block">{{ $profileRoleLabel }}</small>
                               @endif
                               @if($user?->role === 'employee' && $employeeDepartment)
                                 <small class="text-body-secondary d-block">Department: {{ $employeeDepartment }}</small>

@@ -14,6 +14,13 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
+    @if(!empty($staleEmployees))
+        <div class="alert alert-warning" role="status">
+            <strong>This saved run still contains {{ count($staleEmployees) }} employee(s) without an active Employee Salary assignment:</strong>
+            {{ implode(', ', array_slice($staleEmployees, 0, 10)) }}{{ count($staleEmployees) > 10 ? ' …' : '' }}.
+            Click <strong>Recalculate Run</strong> to remove them before approving, so no payslip is issued to them.
+        </div>
+    @endif
     @if(!empty($calculationFailures))
         <div class="alert alert-warning" role="status">
             <strong>{{ count($calculationFailures) }} employee(s) could not be calculated and are not listed:</strong>
@@ -214,6 +221,11 @@
                                 @if(!empty($s['working_hours']))
                                     <div class="small text-muted">{{ $s['working_hours'] }} hrs</div>
                                 @endif
+                                @if(($s['attendance_source'] ?? null) === 'assumed')
+                                    <div class="small text-warning" title="No attendance or timesheet entries this month, so full attendance is assumed.">No attendance records</div>
+                                @elseif((float) ($s['unrecorded_days'] ?? 0) > 0)
+                                    <div class="small text-muted" title="Working days with no attendance entry are counted as absent.">{{ $s['unrecorded_days'] }}d not marked</div>
+                                @endif
                             </td>
                             <td class="num">₹{{ number_format($s['basic'] ?? 0, 2) }}</td>
                             <td class="num">₹{{ number_format($s['current_basic'] ?? $s['ac_basic'] ?? 0, 2) }}</td>
@@ -315,6 +327,7 @@
                         <tr>
                             <td colspan="11" class="text-center py-4 text-muted">
                                 No eligible employees found for the selected parameters.
+                                <div class="small mt-1">Only employees with an active assignment under <strong>Employee Salary</strong> for this month are processed.</div>
                             </td>
                         </tr>
                         @endforelse

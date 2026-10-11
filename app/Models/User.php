@@ -297,6 +297,10 @@ class User extends Authenticatable
         if (WorkspaceModule::where('slug', $moduleSlug)->where('is_active', false)->exists()) {
             return false;
         }
+        $inheritedFeature = config('workspace_modules.'.$moduleSlug.'.inherits');
+        if ($inheritedFeature && WorkspaceModule::where('slug', $inheritedFeature)->where('is_active', false)->exists()) {
+            return false;
+        }
 
         if (in_array($this->normalizedRole(), ['admin', 'superadmin'], true)) {
             return true;
@@ -308,6 +312,7 @@ class User extends Authenticatable
         }
 
         $slugsToTest = [$moduleSlug];
+        if ($inheritedFeature) $slugsToTest[] = $inheritedFeature;
         if (str_starts_with($moduleSlug, 'payroll-') || in_array($moduleSlug, [
             'payslips', 'salary-structures', 'employee-salary', 'formula-builder',
             'deduction-rules', 'bonus-rules', 'tax-rules', 'overtime-rules',
@@ -351,7 +356,7 @@ class User extends Authenticatable
         // Fallback: If no role_permissions exist in database for this role, allow default modules
         if (! RolePermission::where('role', $permissionRole)->exists()) {
             return in_array($permission, app(\App\Services\RolePermissionDefaults::class)
-                ->getDefaultPermissionsForRole($this->normalizedRole(), $moduleSlug), true);
+                ->getDefaultPermissionsForRole($this->normalizedRole(), $inheritedFeature ?: $moduleSlug), true);
         }
 
         return false;

@@ -296,7 +296,8 @@ class Company extends Model
         $centralCompanyId = $this->getCentralCompanyId();
 
         try {
-            $slugs = match ($featureSlug) {
+            $inheritedFeature = config('workspace_modules.'.$featureSlug.'.inherits');
+            $slugs = match ($inheritedFeature ?: $featureSlug) {
                 'crm', 'deals', 'crm-deals' => ['crm-deals', 'crm', 'deals', 'leads-contacts'],
                 'leads', 'leads-contacts' => ['leads-contacts', 'leads', 'crm'],
                 'leaves', 'leave-management', 'leave-settings' => ['leave-management', 'leaves', 'leave-settings'],
@@ -341,6 +342,10 @@ class Company extends Model
                 'terms-policy-settings' => ['terms-policy-settings', 'settings'],
                 default => [$featureSlug],
             };
+            // New sidebar subdivisions retain their original company entitlement.
+            // Both child and parent overrides are checked, so a child cannot
+            // re-enable a report/category revoked by the platform administrator.
+            if ($inheritedFeature) array_unshift($slugs, $featureSlug);
 
             // 1. Explicit Company Module Overrides set by Super Admin (takes top priority)
             if ($centralCompanyId) {

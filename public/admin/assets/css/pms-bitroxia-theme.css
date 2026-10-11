@@ -7749,6 +7749,77 @@ html, body {
   }
 }
 
+/* Settings are also visible to read-only company roles. Keep their notices
+   and controls readable without changing disabled/readonly behavior. */
+html body .pms-settings-page .pms-readonly-notice {
+  background: #e8f0ff !important;
+  color: #1e3a8a !important;
+  border-left: 4px solid #3b82f6 !important;
+}
+
+html body .pms-settings-page .pms-readonly-notice :is(strong, span, i) {
+  color: #1e3a8a !important;
+  -webkit-text-fill-color: currentColor !important;
+}
+
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) .pms-settings-page .pms-readonly-notice {
+  background: #172b50 !important;
+  color: #bfdbfe !important;
+}
+
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) .pms-settings-page .pms-readonly-notice :is(strong, span, i) {
+  color: #bfdbfe !important;
+  -webkit-text-fill-color: currentColor !important;
+}
+
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) .pms-settings-page :is(input:disabled, input[readonly], select:disabled, textarea:disabled, textarea[readonly]) {
+  background-color: #141b3d !important;
+  color: #eef1fb !important;
+  -webkit-text-fill-color: currentColor !important;
+  opacity: 1;
+}
+
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) .pms-settings-page .validation-feedback-pill {
+  color: #fca5a5 !important;
+  -webkit-text-fill-color: currentColor !important;
+}
+
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) .pms-settings-page :is(#currentLogoBadge, #fileSelectedBadge, #phoneDigitCounter.badge, .pms-readonly-status) {
+  background: #172b50 !important;
+  color: #bfdbfe !important;
+  -webkit-text-fill-color: currentColor !important;
+}
+
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) .pms-settings-page .phone-combo-group .select2-selection__rendered {
+  color: #eef1fb !important;
+  -webkit-text-fill-color: currentColor !important;
+}
+
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) .pms-settings-page #phoneDigitCounter.badge:has(.text-success) {
+  background: #12382e !important;
+  color: #a7f3d0 !important;
+}
+
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) .pms-settings-page #phoneDigitCounter.badge:has(.text-danger) {
+  background: #421f2b !important;
+  color: #fecaca !important;
+}
+
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) .pms-settings-page :is(#currentLogoBadge, #fileSelectedBadge, #phoneDigitCounter.badge, .pms-readonly-status, .validation-feedback-pill) :is(span, i) {
+  color: inherit !important;
+  -webkit-text-fill-color: currentColor !important;
+}
+
+/* Select2 menus are attached to body, outside the settings page. */
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) .select2-dropdown .select2-results__option {
+  -webkit-text-fill-color: currentColor !important;
+}
+
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) .select2-dropdown .select2-results__option--highlighted[aria-selected] {
+  background-color: #254b91 !important;
+  color: #ffffff !important;
+}
+
 /* 6. Breakpoint: <= 360px (Extra Compact Screens / Foldables) */
 @media (max-width: 360px) {
   #layout-navbar,

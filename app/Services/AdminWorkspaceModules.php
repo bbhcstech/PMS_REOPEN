@@ -9,6 +9,48 @@ use Illuminate\Support\Str;
 
 class AdminWorkspaceModules
 {
+    /** Called by deployment/platform catalog setup, never by a company read. */
+    public function syncSidebarRegistry(): void
+    {
+        foreach (config('workspace_modules', []) as $slug => $item) {
+            Module::firstOrCreate(['slug' => $slug], [
+                'name' => $item['name'], 'route_name' => $item['route'],
+                'route_prefix' => $slug === 'reports' ? 'reports' : null,
+                'parent_id' => $item['parent'] ? Module::where('slug', $item['parent'])->value('id') : null,
+                'is_active' => true, 'is_core' => true, 'sort_order' => $item['order'],
+            ]);
+        }
+    }
+
+    /** Keep sidebar labels separate from persisted platform identity. */
+    private function sidebarDetails(Module $module): Module
+    {
+        $item = config('workspace_modules.'.$module->slug);
+        $module->sidebar_name = $item['name'] ?? $module->name;
+        $module->sidebar_parent_slug = $item ? $item['parent'] : $module->parent?->slug;
+        $module->sidebar_order = $item['order'] ?? 1000 + (int) $module->sort_order;
+        return $module;
+    }
+
+    /** Depth-first order keeps each sidebar's children immediately below it. */
+    public function sidebarOrder(Collection $modules): Collection
+    {
+        $result = collect();
+        $visited = [];
+        $visit = function ($module, $depth = 0) use (&$visit, &$visited, $modules, $result) {
+            if (isset($visited[$module->slug])) return;
+            $visited[$module->slug] = true;
+            $module->sidebar_depth = $depth;
+            $result->push($module);
+            foreach ($modules->where('sidebar_parent_slug', $module->slug)->sortBy('sidebar_order') as $child) $visit($child, $depth + 1);
+        };
+        foreach ($modules->sortBy('sidebar_order') as $module) {
+            if (! $module->sidebar_parent_slug || ! $modules->contains('slug', $module->sidebar_parent_slug)) $visit($module);
+        }
+        // Malformed historical hierarchies cannot make modules disappear.
+        foreach ($modules->sortBy('sidebar_order') as $module) $visit($module);
+        return $result->values();
+    }
     public function categoryFor(string $slug): string
     {
         return match (true) {
@@ -59,34 +101,49 @@ class AdminWorkspaceModules
     /** Company list uses the platform workspace catalog and its effective entitlements. */
     public function companyModules($company): Collection
     {
-        $provided = $this->all(false)->filter(fn ($module) => $module->is_active && $company->hasFeature($module->slug));
+        $catalog = $this->all(false)->keyBy('slug');
+        $provided = $catalog->filter(function ($module) use ($catalog, $company) {
+            $inherited = config('workspace_modules.'.$module->slug.'.inherits');
+            return $module->is_active && (!$inherited || ! $catalog->has($inherited) || $catalog->get($inherited)->is_active)
+                && $company->hasFeature($module->slug);
+        });
         $tenant = \Illuminate\Support\Facades\DB::connection('tenant');
         return $tenant->transaction(function () use ($provided, $tenant) {
+            $inserted = [];
             foreach ($provided as $platformModule) {
                 if ($tenant->table('modules')->where('slug', $platformModule->slug)->exists()) continue;
                 $attributes = $platformModule->getAttributes();
-                unset($attributes['id'], $attributes['category']);
+                unset($attributes['id'], $attributes['category'], $attributes['sidebar_name'], $attributes['sidebar_parent_slug'], $attributes['sidebar_order']);
                 $attributes['parent_id'] = null;
                 $tenant->table('modules')->insert($attributes);
+                $inserted[] = $platformModule->slug;
             }
             $local = \App\Models\WorkspaceModule::with('parent')->whereIn('slug', $provided->pluck('slug'))->get()->keyBy('slug');
-            return $provided->map(function ($platformModule) use ($local) {
+            $modules = $provided->map(function ($platformModule) use ($local, $inserted, $tenant) {
                 $module = $local->get($platformModule->slug);
                 // The platform defines module identity; the company keeps its local enabled state.
                 foreach (['name', 'icon', 'description', 'route_name', 'route_prefix', 'is_core', 'sort_order'] as $attribute) {
                     $module->setAttribute($attribute, $platformModule->{$attribute});
                 }
                 $module->category = $this->categoryFor($module->slug);
-                $parent = $platformModule->parent ? $local->get($platformModule->parent->slug) : null;
+                foreach (['sidebar_name', 'sidebar_parent_slug', 'sidebar_order'] as $attribute) {
+                    $module->setAttribute($attribute, $platformModule->{$attribute});
+                }
+                $parent = $local->get($platformModule->sidebar_parent_slug);
+                if (in_array($module->slug, $inserted, true) && $parent) {
+                    $tenant->table('modules')->where('id', $module->id)->update(['parent_id' => $parent->id]);
+                }
                 $module->parent_id = $parent?->id;
                 $module->setRelation('parent', $parent);
                 return $module;
-            })->sortBy('category')->values();
+            });
+            return $this->sidebarOrder($modules);
         });
     }
 
     public function all(bool $ensureRegistry = true): Collection
     {
+        if ($ensureRegistry) $this->syncSidebarRegistry();
         $sidebar = file_get_contents(resource_path('views/admin/layout/manu.blade.php'));
         preg_match_all('/\$canSeeModule\([\'"]([^\'"]+)[\'"]\)|data-sidebar-key=[\'"]([^\'"]+)[\'"]/', $sidebar, $matches);
         $slugs = collect(array_merge($matches[1], $matches[2]))->filter()->unique()->values();
@@ -104,9 +161,9 @@ class AdminWorkspaceModules
             ]);
         }
 
-        return Module::orderBy('sort_order')->orderBy('name')->get()
+        return Module::with('parent')->orderBy('sort_order')->orderBy('name')->get()
             ->filter(function (Module $module) use ($slugs, $routes) {
-                if ($slugs->contains($module->slug)) return true;
+                if ($slugs->contains($module->slug) || config('workspace_modules.'.$module->slug)) return true;
                 // Custom modules must point to an implemented workspace page.
                 if ($module->route_name && $routes->contains($module->route_name)) return true;
                 if (! $module->route_prefix) return false;
@@ -125,7 +182,7 @@ class AdminWorkspaceModules
                     (bool) preg_match('/setting|role|permission|activity|log/', $module->slug) => 'ADMINISTRATION & SETTINGS',
                     default => 'CORE PLATFORM',
                 };
-                return $module;
+                return $this->sidebarDetails($module);
             })->values();
     }
 }

@@ -63,6 +63,9 @@ try {
     $attendance = $payroll->getAttendanceData($user, 2026, 5, 25);
     leaveCheck($attendance['payable_days'] === 24.0, '2 unpaid days at 2% must deduct 4% of monthly salary.');
     DB::table('attendances')->insert(['user_id' => 1, 'date' => '2026-05-01', 'status' => 'absent', 'half_day' => 'no']);
+    // Working days without any attendance entry count as absent, like the attendance register shows them.
+    leaveCheck($payroll->getAttendanceData($user, 2026, 5, 25)['unrecorded_days'] === 22.0, 'Unmarked working days were paid.');
+    for ($day = 3; $day <= 25; $day++) DB::table('attendances')->insert(['user_id' => 1, 'date' => sprintf('2026-05-%02d', $day), 'status' => 'present', 'half_day' => 'no']);
     leaveCheck($payroll->getAttendanceData($user, 2026, 5, 25)['payable_days'] === 24.0, 'Unpaid leave was deducted twice.');
     useLeaveDatabase($files[1]);
     LeavePolicy::first()->update(['annual_leaves' => 24]);

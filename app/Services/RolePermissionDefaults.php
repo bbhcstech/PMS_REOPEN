@@ -8,6 +8,7 @@ class RolePermissionDefaults
     private array $permissions = ['view', 'create', 'edit', 'delete', 'approve', 'export', 'assign'];
     public function getDefaultPermissionsForRole(string $role, string $slug): array
     {
+        $slug = config('workspace_modules.'.$slug.'.inherits') ?: $slug;
         if ($role === 'admin') {
             return $this->permissions;
         }

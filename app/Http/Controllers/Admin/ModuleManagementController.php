@@ -22,6 +22,7 @@ class ModuleManagementController extends Controller
         return view('admin.settings.modules.index', [
             'modules' => $modules,
             'parentModules' => $modules->sortBy('name')->values(),
+            'parentModuleCount' => $modules->filter(fn ($module) => $modules->contains('sidebar_parent_slug', $module->slug))->count(),
         ]);
     }
 

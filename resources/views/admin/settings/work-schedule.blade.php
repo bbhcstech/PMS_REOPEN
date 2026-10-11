@@ -1102,7 +1102,7 @@
 @endpush
 
 @section('content')
-<div class="work-schedule-page">
+<div class="pms-settings-page work-schedule-page">
     <div class="work-schedule-shell">
         <div class="ambient-orb orb-1"></div>
         <div class="ambient-orb orb-2"></div>
