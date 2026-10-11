@@ -705,10 +705,6 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
             <p class="text-muted mb-0 small">Configure your company's modules, navigation and hierarchy. Manage role access from Roles & Permissions.</p>
         </div>
 
-        <button type="button" class="btn btn-mm-primary d-inline-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#createModuleModal">
-            <i class="bx bx-plus fs-5"></i>
-            <span>Add New Module</span>
-        </button>
     </div>
 
     <!-- Toast Success Notification -->
@@ -753,7 +749,7 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
                         <span class="text-muted fw-semibold d-block fs-tiny text-uppercase tracking-wider">Total Modules</span>
                         <h3 class="fw-extrabold text-dark mb-0 mt-1">{{ $modules->count() }}</h3>
                         <small class="text-success d-inline-flex align-items-center gap-1 mt-1 fs-tiny">
-                            <i class="bx bx-check-circle"></i> System registered
+                            <i class="bx bx-check-circle"></i> Provided by super admin
                         </small>
                     </div>
                     <div class="mm-icon-wrapper rounded-3 p-3 d-flex align-items-center justify-content-center" style="background: rgba(47, 107, 255, 0.1); color: var(--mm-emerald);">
@@ -882,7 +878,7 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
                                                     <i class="bx bx-shield-alt-2"></i> Core
                                                 </span>
                                             @else
-                                                <span class="badge bg-label-secondary fs-tiny">Custom</span>
+                                                <span class="badge bg-label-secondary fs-tiny">Provided</span>
                                             @endif
                                         </div>
                                     </div>

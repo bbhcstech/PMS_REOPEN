@@ -1410,6 +1410,7 @@
                                     foreach ($roles as $option) {
                                         if (strtolower($option) === 'admin') continue;
                                         $label = $roleLabels[$option] ?? ucfirst($option);
+                                        if (str_starts_with($option, 'staff:')) $label .= ' · Custom role';
                                         $labelKey = $option;
                                         if (!isset($roleOptions[$labelKey]) || $role === $option) {
                                             $roleOptions[$labelKey] = ['value' => $option, 'label' => $label];
@@ -1424,7 +1425,7 @@
                             </div>
                         </div>
                         <div class="col-md-7 col-lg-8">
-                            <small class="text-muted d-block mt-md-4"><i class="fas fa-info-circle me-1" style="color: #2F6BFF;"></i>Changing the selected role will dynamically reload module access control capabilities below.</small>
+                            <small class="text-muted d-block mt-md-4"><i class="fas fa-info-circle me-1" style="color: #2F6BFF;"></i>Select the user's assigned role. Saved custom-role permissions take precedence over standard HR or Manager permissions.</small>
                         </div>
                     </div>
                 </form>
@@ -1491,13 +1492,14 @@
                                 @foreach($modules->groupBy('category') as $category => $categoryModules)
                                     <tr class="permission-category"><td colspan="{{ count($permissions) + 2 }}"><span>{{ $category }}</span><small class="ms-2">{{ $categoryModules->count() }} modules</small></td></tr>
                                 @foreach($categoryModules as $module)
-                                    <tr data-module-id="{{ $module->id }}" data-search="{{ strtolower($module->name . ' ' . $module->slug . ' ' . ($module->parent?->name ?? '')) }}">
+                                    <tr data-module-id="{{ $module->id }}" data-module-slug="{{ $module->slug }}" data-payroll-child="{{ ($module->slug !== 'payroll' && (str_starts_with($module->slug, 'payroll-') || in_array($module->slug, ['payslips', 'salary-structures', 'employee-salary', 'formula-builder', 'deduction-rules', 'bonus-rules', 'tax-rules', 'overtime-rules']))) ? 'true' : 'false' }}" data-search="{{ strtolower($module->name . ' ' . $module->slug . ' ' . ($module->parent?->name ?? '')) }}">
                                         <td class="text-center">
                                             <input type="checkbox" class="row-checkbox perm-checkbox" data-module-id="{{ $module->id }}" title="Toggle all actions for {{ $module->name }}">
                                         </td>
                                         <td>
                                             <div class="module-title-box">
                                                 <strong>{{ $module->name }}</strong>
+                                                @if($module->slug === 'payroll')<small>Changing Payroll actions also updates its pages. Adjust individual pages before saving if needed.</small>@endif
                                                 @if($module->parent)<small><i class="fas fa-angle-right me-1" style="color: #2F6BFF;"></i>{{ $module->parent->name }}</small>@endif
                                             </div>
                                         </td>
@@ -1620,12 +1622,19 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Row Toggle Event
+    function syncPayrollChildren(source) {
+        if (source.closest('tr')?.dataset.moduleSlug !== 'payroll') return;
+        table.querySelectorAll(`tr[data-payroll-child="true"] .action-checkbox[data-perm="${source.dataset.perm}"]`).forEach(child => {
+            child.checked = source.checked;
+        });
+    }
     rowCheckboxes.forEach(rowCb => {
         rowCb.addEventListener('change', function () {
             const modId = this.getAttribute('data-module-id');
             const isChecked = this.checked;
             table.querySelectorAll(`.action-checkbox[data-module-id="${modId}"]`).forEach(cb => {
                 cb.checked = isChecked;
+                syncPayrollChildren(cb);
             });
             syncStates();
         });
@@ -1645,7 +1654,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Individual Action Checkbox Event
     actionCheckboxes.forEach(cb => {
-        cb.addEventListener('change', syncStates);
+        cb.addEventListener('change', function () {
+            syncPayrollChildren(this);
+            syncStates();
+        });
     });
 
     // Toolbar Buttons

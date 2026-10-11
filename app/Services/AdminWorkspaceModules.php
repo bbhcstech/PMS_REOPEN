@@ -56,7 +56,36 @@ class AdminWorkspaceModules
             })->values();
     }
 
-    public function all(): Collection
+    /** Company list uses the platform workspace catalog and its effective entitlements. */
+    public function companyModules($company): Collection
+    {
+        $provided = $this->all(false)->filter(fn ($module) => $module->is_active && $company->hasFeature($module->slug));
+        $tenant = \Illuminate\Support\Facades\DB::connection('tenant');
+        return $tenant->transaction(function () use ($provided, $tenant) {
+            foreach ($provided as $platformModule) {
+                if ($tenant->table('modules')->where('slug', $platformModule->slug)->exists()) continue;
+                $attributes = $platformModule->getAttributes();
+                unset($attributes['id'], $attributes['category']);
+                $attributes['parent_id'] = null;
+                $tenant->table('modules')->insert($attributes);
+            }
+            $local = \App\Models\WorkspaceModule::with('parent')->whereIn('slug', $provided->pluck('slug'))->get()->keyBy('slug');
+            return $provided->map(function ($platformModule) use ($local) {
+                $module = $local->get($platformModule->slug);
+                // The platform defines module identity; the company keeps its local enabled state.
+                foreach (['name', 'icon', 'description', 'route_name', 'route_prefix', 'is_core', 'sort_order'] as $attribute) {
+                    $module->setAttribute($attribute, $platformModule->{$attribute});
+                }
+                $module->category = $this->categoryFor($module->slug);
+                $parent = $platformModule->parent ? $local->get($platformModule->parent->slug) : null;
+                $module->parent_id = $parent?->id;
+                $module->setRelation('parent', $parent);
+                return $module;
+            })->sortBy('category')->values();
+        });
+    }
+
+    public function all(bool $ensureRegistry = true): Collection
     {
         $sidebar = file_get_contents(resource_path('views/admin/layout/manu.blade.php'));
         preg_match_all('/\$canSeeModule\([\'"]([^\'"]+)[\'"]\)|data-sidebar-key=[\'"]([^\'"]+)[\'"]/', $sidebar, $matches);
@@ -65,7 +94,7 @@ class AdminWorkspaceModules
         preg_match_all('/route\([\'"]([^\'"]+)[\'"]/', $sidebar, $routeMatches);
         $routes = collect($routeMatches[1])->filter(fn ($name) => Route::has($name))->unique();
 
-        foreach ($slugs as $order => $slug) {
+        foreach ($ensureRegistry ? $slugs : [] as $order => $slug) {
             Module::firstOrCreate(['slug' => $slug], [
                 'name' => Str::headline($slug),
                 'icon' => 'bx-cube',

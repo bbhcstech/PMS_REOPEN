@@ -779,7 +779,7 @@
                                     <option value="">-- Select HR, Manager, or Employee --</option>
                                     @foreach($staffUsers as $sUser)
                                         <option value="{{ $sUser->id }}" {{ old('user_id') == $sUser->id ? 'selected' : '' }}>
-                                            {{ $sUser->name }} ({{ ucfirst($sUser->role) }} - {{ $sUser->email }})
+                                            {{ $sUser->name }} ({{ ($sUser->company_staff_role_id ?? null) && $sUser->companyStaffRole?->name ? $sUser->companyStaffRole->name : ucfirst($sUser->role) }} - {{ $sUser->email }})
                                         </option>
                                     @endforeach
                                 </select>
@@ -854,14 +854,15 @@
                                     </td>
                                     <td class="py-3 px-4 text-muted">{{ $sUser->email }}</td>
                                     <td class="py-3 px-4">
+                                        @php $staffRoleName = ($sUser->company_staff_role_id ?? null) ? $sUser->companyStaffRole?->name : null; @endphp
                                         @if(strtolower($sUser->role) === 'admin')
-                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-3 py-1">Admin</span>
+                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-3 py-1">{{ $staffRoleName ?: 'Admin' }}</span>
                                         @elseif(strtolower($sUser->role) === 'hr')
-                                            <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-3 py-1">HR</span>
+                                            <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-3 py-1">{{ $staffRoleName ?: 'HR' }}</span>
                                         @elseif(strtolower($sUser->role) === 'manager')
-                                            <span class="badge bg-purple-subtle text-purple border border-purple-subtle rounded-pill px-3 py-1" style="background: #f3e8ff; color: #7e22ce;">Manager</span>
+                                            <span class="badge bg-purple-subtle text-purple border border-purple-subtle rounded-pill px-3 py-1" style="background: #f3e8ff; color: #7e22ce;">{{ $staffRoleName ?: 'Manager' }}</span>
                                         @else
-                                            <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-1">Employee</span>
+                                            <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-1">{{ $staffRoleName ?: 'Employee' }}</span>
                                         @endif
                                     </td>
                                     <td class="py-3 px-4 text-muted small">

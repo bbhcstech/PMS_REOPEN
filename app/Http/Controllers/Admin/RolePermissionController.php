@@ -74,18 +74,28 @@ class RolePermissionController extends Controller
 
         $savedPermissions = RolePermission::where('role', $role)->get()->keyBy('module_id');
         $hasCustomSaved = $savedPermissions->isNotEmpty();
+        $payrollModule = Module::where('slug', 'payroll')->where('is_active', true)->first();
 
         // Compute effective permissions for the view so previously granted or default permissions are pre-checked
         $effectivePermissions = [];
         foreach ($modules as $module) {
             $saved = $savedPermissions->get($module->id);
+            // Display legacy parent grants as checked; otherwise saving the editor
+            // silently turns inherited access into an explicit child denial.
+            $inherited = null;
+            if (!$saved && $payrollModule && (str_starts_with($module->slug, 'payroll-')
+                || in_array($module->slug, ['payslips', 'salary-structures', 'employee-salary', 'formula-builder',
+                    'deduction-rules', 'bonus-rules', 'tax-rules', 'overtime-rules'], true))) {
+                $inherited = $savedPermissions->get($payrollModule->id);
+            }
             $defaultPerms = $this->getDefaultPermissionsForRole($accessRole, $module->slug);
 
             foreach ($this->permissions as $perm) {
                 if ($role === 'admin') {
                     $effectivePermissions[$module->id][$perm] = true;
                 } elseif ($hasCustomSaved) {
-                    $effectivePermissions[$module->id][$perm] = $saved ? (bool) $saved->{'can_' . $perm} : false;
+                    $effectivePermissions[$module->id][$perm] = $saved ? (bool) $saved->{'can_' . $perm}
+                        : ($inherited ? (bool) $inherited->{'can_' . $perm} : false);
                 } else {
                     $effectivePermissions[$module->id][$perm] = in_array($perm, $defaultPerms, true);
                 }

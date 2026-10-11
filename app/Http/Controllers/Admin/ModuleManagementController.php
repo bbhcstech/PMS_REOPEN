@@ -15,11 +15,13 @@ class ModuleManagementController extends Controller
     {
         $this->authorizeAdmin();
 
+        $company = app(\App\Services\CompanyContext::class)->current();
+        abort_unless($company, 503, 'Company module configuration is unavailable.');
+        $modules = app(\App\Services\AdminWorkspaceModules::class)->companyModules($company);
+
         return view('admin.settings.modules.index', [
-            'modules' => Module::with('parent')->orderBy('sort_order')->orderBy('name')->get()
-                ->each(fn ($module) => $module->category = app(\App\Services\AdminWorkspaceModules::class)->categoryFor($module->slug))
-                ->sortBy('category')->values(),
-            'parentModules' => Module::orderBy('name')->get(),
+            'modules' => $modules,
+            'parentModules' => $modules->sortBy('name')->values(),
         ]);
     }
 
