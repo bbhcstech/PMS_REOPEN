@@ -91,14 +91,22 @@ class DeveloperPortalController extends Controller
     {
         $query = DB::table('tasks')->select('tasks.*');
         foreach (['companies' => 'company', 'projects' => 'project'] as $table => $prefix) {
-            if (Schema::hasColumn('tasks', $prefix.'_id') && Schema::hasColumn($table, 'name')) {
+            $nameColumn = $this->taskMetadataNameColumn($table);
+            if (Schema::hasColumn('tasks', $prefix.'_id') && $nameColumn) {
                 $query->leftJoin($table, 'tasks.'.$prefix.'_id', '=', $table.'.id')
-                    ->addSelect($table.'.name as '.$prefix.'_name');
+                    ->addSelect($table.'.'.$nameColumn.' as '.$prefix.'_name');
             } else {
                 $query->selectRaw('NULL as '.$prefix.'_name');
             }
         }
         return $query;
+    }
+
+    private function taskMetadataNameColumn(string $table): ?string
+    {
+        if (Schema::hasColumn($table, 'name')) return 'name';
+        if ($table === 'companies' && Schema::hasColumn($table, 'company_name')) return 'company_name';
+        return null;
     }
 
     /** Log developer activity in the central audit database. */
@@ -139,13 +147,7 @@ class DeveloperPortalController extends Controller
         // Real Tasks Query for Logged-In Developer
         $allDevTasks = collect();
         if (Schema::hasTable('tasks')) {
-            $tasksQuery = DB::table('tasks')->select('tasks.*');
-            foreach (['companies' => 'company', 'projects' => 'project'] as $table => $prefix) {
-                if (Schema::hasColumn('tasks', $prefix.'_id') && Schema::hasColumn($table, 'name')) {
-                    $tasksQuery->leftJoin($table, 'tasks.'.$prefix.'_id', '=', $table.'.id')
-                        ->addSelect($table.'.name as '.$prefix.'_name');
-                }
-            }
+            $tasksQuery = $this->developerTasksQuery();
             $this->applyDeveloperTaskScope($tasksQuery, $devUserIds);
             $allDevTasks = $tasksQuery->latest('tasks.id')->get();
         }
@@ -206,16 +208,9 @@ class DeveloperPortalController extends Controller
         $priorityFilter = $request->input('priority', 'all');
         $search = trim((string) $request->input('search', ''));
 
-        $query = DB::table('tasks')
-            ->leftJoin('companies', 'tasks.company_id', '=', 'companies.id')
-            ->leftJoin('projects', 'tasks.project_id', '=', 'projects.id')
+        $query = $this->developerTasksQuery()
             ->leftJoin('users as assigner', 'tasks.created_by', '=', 'assigner.id')
-            ->select(
-                'tasks.*',
-                'companies.name as company_name',
-                'projects.name as project_name',
-                'assigner.name as assigner_name'
-            );
+            ->addSelect('assigner.name as assigner_name');
         $this->applyDeveloperTaskScope($query, $devUserIds);
 
         if ($statusFilter !== 'all') {
@@ -229,9 +224,13 @@ class DeveloperPortalController extends Controller
         if ($search !== '') {
             $query->where(function ($q) use ($search) {
                 $q->where('tasks.title', 'like', "%{$search}%")
-                    ->orWhere('tasks.description', 'like', "%{$search}%")
-                    ->orWhere('companies.name', 'like', "%{$search}%")
-                    ->orWhere('projects.name', 'like', "%{$search}%");
+                    ->orWhere('tasks.description', 'like', "%{$search}%");
+                foreach (['companies' => 'company', 'projects' => 'project'] as $table => $prefix) {
+                    $column = $this->taskMetadataNameColumn($table);
+                    if ($column && Schema::hasColumn('tasks', $prefix.'_id')) {
+                        $q->orWhere($table.'.'.$column, 'like', "%{$search}%");
+                    }
+                }
             });
         }
 
@@ -691,16 +690,9 @@ class DeveloperPortalController extends Controller
         $dev = $this->getDevUser();
         $devUserIds = $this->getDevUserIds();
 
-        $taskQuery = DB::table('tasks')
-            ->leftJoin('companies', 'tasks.company_id', '=', 'companies.id')
-            ->leftJoin('projects', 'tasks.project_id', '=', 'projects.id')
+        $taskQuery = $this->developerTasksQuery()
             ->leftJoin('users as assigner', 'tasks.created_by', '=', 'assigner.id')
-            ->select(
-                'tasks.*',
-                'companies.name as company_name',
-                'projects.name as project_name',
-                'assigner.name as assigner_name'
-            )
+            ->addSelect('assigner.name as assigner_name')
             ->where('tasks.id', $id);
         $this->applyDeveloperTaskScope($taskQuery, $devUserIds);
         $task = $taskQuery->first();

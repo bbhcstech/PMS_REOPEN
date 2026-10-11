@@ -157,7 +157,6 @@ class Country extends TenantModel
      */
     public static function getAllWithPhoneCodes()
     {
-        static::ensureAllCountriesSeeded();
-        return static::orderBy('name')->get();
+        return static::forForms();
     }
 }

@@ -8,7 +8,11 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('payroll_architectures', function (Blueprint $table) {
+        $create = static function (string $name, callable $definition): void {
+            if (! Schema::hasTable($name)) Schema::create($name, $definition);
+        };
+
+        $create('payroll_architectures', function (Blueprint $table) {
             $table->id();
             $table->string('name');
             $table->string('code')->unique();
@@ -23,7 +27,7 @@ return new class extends Migration
             $table->softDeletes();
         });
 
-        Schema::create('payroll_architecture_versions', function (Blueprint $table) {
+        $create('payroll_architecture_versions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('payroll_architecture_id')->constrained('payroll_architectures')->cascadeOnDelete();
             $table->unsignedInteger('version');
@@ -34,7 +38,7 @@ return new class extends Migration
             $table->unique(['payroll_architecture_id', 'version'], 'payroll_architecture_version_unique');
         });
 
-        Schema::create('salary_structures', function (Blueprint $table) {
+        $create('salary_structures', function (Blueprint $table) {
             $table->id();
             $table->string('name');
             $table->string('code')->unique();
@@ -47,7 +51,7 @@ return new class extends Migration
             $table->softDeletes();
         });
 
-        Schema::create('salary_structure_versions', function (Blueprint $table) {
+        $create('salary_structure_versions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('salary_structure_id')->constrained('salary_structures')->cascadeOnDelete();
             $table->unsignedInteger('version');
@@ -58,7 +62,7 @@ return new class extends Migration
             $table->unique(['salary_structure_id', 'version']);
         });
 
-        Schema::create('salary_components', function (Blueprint $table) {
+        $create('salary_components', function (Blueprint $table) {
             $table->id();
             $table->foreignId('salary_structure_id')->nullable()->constrained('salary_structures')->nullOnDelete();
             $table->string('name');
@@ -78,7 +82,7 @@ return new class extends Migration
             $table->softDeletes();
         });
 
-        Schema::create('deduction_components', function (Blueprint $table) {
+        $create('deduction_components', function (Blueprint $table) {
             $table->id();
             $table->string('name');
             $table->string('code')->unique();
@@ -94,7 +98,7 @@ return new class extends Migration
             $table->softDeletes();
         });
 
-        Schema::create('bonus_rules', function (Blueprint $table) {
+        $create('bonus_rules', function (Blueprint $table) {
             $table->id();
             $table->string('name');
             $table->string('code')->unique();
@@ -113,7 +117,7 @@ return new class extends Migration
             $table->softDeletes();
         });
 
-        Schema::create('tax_rules', function (Blueprint $table) {
+        $create('tax_rules', function (Blueprint $table) {
             $table->id();
             $table->string('name');
             $table->string('code')->unique();
@@ -128,7 +132,7 @@ return new class extends Migration
             $table->softDeletes();
         });
 
-        Schema::create('overtime_rules', function (Blueprint $table) {
+        $create('overtime_rules', function (Blueprint $table) {
             $table->id();
             $table->string('name');
             $table->string('code')->unique();
@@ -142,7 +146,7 @@ return new class extends Migration
             $table->softDeletes();
         });
 
-        Schema::create('payroll_cycles', function (Blueprint $table) {
+        $create('payroll_cycles', function (Blueprint $table) {
             $table->id();
             $table->string('name');
             $table->string('cycle_type')->default('monthly');
@@ -157,7 +161,7 @@ return new class extends Migration
             $table->softDeletes();
         });
 
-        Schema::create('payrolls', function (Blueprint $table) {
+        $create('payrolls', function (Blueprint $table) {
             $table->id();
             $table->foreignId('payroll_cycle_id')->nullable()->constrained('payroll_cycles')->nullOnDelete();
             $table->foreignId('payroll_architecture_version_id')->nullable()->constrained('payroll_architecture_versions')->nullOnDelete();
@@ -182,7 +186,7 @@ return new class extends Migration
             $table->softDeletes();
         });
 
-        Schema::create('payroll_histories', function (Blueprint $table) {
+        $create('payroll_histories', function (Blueprint $table) {
             $table->id();
             $table->foreignId('payroll_id')->nullable()->constrained('payrolls')->nullOnDelete();
             $table->unsignedBigInteger('user_id')->index();
@@ -199,7 +203,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::create('payroll_approvals', function (Blueprint $table) {
+        $create('payroll_approvals', function (Blueprint $table) {
             $table->id();
             $table->foreignId('payroll_id')->constrained('payrolls')->cascadeOnDelete();
             $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
@@ -214,7 +218,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::create('payslip_templates', function (Blueprint $table) {
+        $create('payslip_templates', function (Blueprint $table) {
             $table->id();
             $table->string('name');
             $table->string('template_type')->default('classic');
@@ -227,7 +231,7 @@ return new class extends Migration
             $table->softDeletes();
         });
 
-        Schema::create('payslips', function (Blueprint $table) {
+        $create('payslips', function (Blueprint $table) {
             $table->id();
             $table->foreignId('payroll_id')->nullable()->constrained('payrolls')->nullOnDelete();
             $table->foreignId('payroll_history_id')->nullable()->constrained('payroll_histories')->nullOnDelete();
@@ -254,7 +258,7 @@ return new class extends Migration
             $table->softDeletes();
         });
 
-        Schema::create('payroll_reports', function (Blueprint $table) {
+        $create('payroll_reports', function (Blueprint $table) {
             $table->id();
             $table->string('name');
             $table->string('report_type');
@@ -266,7 +270,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::create('payroll_archives', function (Blueprint $table) {
+        $create('payroll_archives', function (Blueprint $table) {
             $table->id();
             $table->string('archivable_type');
             $table->unsignedBigInteger('archivable_id');
@@ -278,7 +282,7 @@ return new class extends Migration
             $table->index(['archivable_type', 'archivable_id']);
         });
 
-        Schema::create('payroll_import_logs', function (Blueprint $table) {
+        $create('payroll_import_logs', function (Blueprint $table) {
             $table->id();
             $table->string('file_name')->nullable();
             $table->string('file_type')->nullable();
@@ -290,7 +294,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::create('payroll_export_logs', function (Blueprint $table) {
+        $create('payroll_export_logs', function (Blueprint $table) {
             $table->id();
             $table->string('file_name')->nullable();
             $table->string('file_type')->nullable();
@@ -302,7 +306,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::create('payroll_audit_logs', function (Blueprint $table) {
+        $create('payroll_audit_logs', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->string('role')->nullable();

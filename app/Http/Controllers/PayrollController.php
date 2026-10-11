@@ -1300,7 +1300,14 @@ class PayrollController extends Controller
             abort(403, 'Unauthorized. Payroll management is restricted to Admin and permitted HR accounts.');
         }
 
-        if (! auth()->user()?->hasModulePermission($moduleSlug, $permission)) {
+        $user = auth()->user();
+        $allowed = $user?->hasModulePermission($moduleSlug, $permission);
+        // Payslips is a tab of the Payroll workspace: whoever may use Payroll (which already shows every salary
+        // line in Processing/History) may use it, even if a separate Payslips module entry is switched off.
+        if (! $allowed && $moduleSlug === 'payslips') {
+            $allowed = $user?->hasModulePermission('payroll', $permission);
+        }
+        if (! $allowed) {
             abort(403, 'You do not have permission to access this payroll module.');
         }
 

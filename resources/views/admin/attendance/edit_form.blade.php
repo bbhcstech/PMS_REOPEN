@@ -44,7 +44,7 @@
                     <option value="">Custom location / select a saved location</option>
                     @foreach ($location as $loc)
                         <option value="{{ $loc->id }}"
-                            @selected(old('location_id', $attendance->location_id) == $loc->id)>
+                            @selected(old('location_id', $attendance?->location_id) == $loc->id)>
                             {{ $loc->location }}
                         </option>
                     @endforeach
@@ -52,7 +52,7 @@
                 <i class="fas fa-chevron-down field-icon"></i>
             </div>
             <label for="attendance_location" class="form-label mt-2">Custom location / address</label>
-            <input type="text" name="clock_in_address" id="attendance_location" class="form-control" maxlength="1000" value="{{ old('clock_in_address', $attendance->clock_in_address) }}" placeholder="Enter the employee's attendance location">
+            <input type="text" name="clock_in_address" id="attendance_location" class="form-control" maxlength="1000" value="{{ old('clock_in_address', $attendance?->clock_in_address) }}" placeholder="Enter the employee's attendance location">
             @error('clock_in_address')<span class="text-danger">{{ $message }}</span>@enderror
         </div>
 

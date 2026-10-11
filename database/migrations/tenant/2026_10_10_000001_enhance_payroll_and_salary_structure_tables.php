@@ -11,6 +11,9 @@ return new class extends Migration
         // 1. Update salary_structures table
         if (Schema::hasTable('salary_structures')) {
             Schema::table('salary_structures', function (Blueprint $table) {
+                if (!Schema::hasColumn('salary_structures', 'company_id')) {
+                    $table->unsignedBigInteger('company_id')->nullable()->index();
+                }
                 if (!Schema::hasColumn('salary_structures', 'designation_id')) {
                     $table->unsignedBigInteger('designation_id')->nullable()->after('company_id')->index();
                 }
