@@ -162,8 +162,8 @@
     var table = controller.table;
     var hostId = table.getAttribute('data-pms-toolbar-host');
     var host = hostId ? document.getElementById(hostId) : null;
-    if (host) {
-      host.appendChild(toolbar);
+    if (host && (host.compareDocumentPosition(table) & 4)) {
+      if (!host.contains(toolbar)) host.appendChild(toolbar);
       return;
     }
 
@@ -175,12 +175,19 @@
       var header = container.querySelector('.table-header, .card-header, [data-pms-table-header]');
       if (header && !header.closest('table') &&
           (header.compareDocumentPosition(table) & 4)) {
-        var headerHost = document.createElement('div');
-        headerHost.className = 'pms-table-header-tools';
-        headerHost.setAttribute('data-live-preserve', '');
+        var headerHost = host || header.querySelector('.pms-table-header-tools');
+        if (!headerHost) {
+          headerHost = document.createElement('div');
+          headerHost.className = 'pms-table-header-tools';
+          headerHost.setAttribute('data-live-preserve', '');
+          header.appendChild(headerHost);
+        }
+        if (headerHost.parentNode !== header) {
+          headerHost.classList.add('pms-table-header-tools');
+          header.appendChild(headerHost);
+        }
         header.classList.add('pms-table-header-with-tools');
-        header.appendChild(headerHost);
-        headerHost.appendChild(toolbar);
+        if (!headerHost.contains(toolbar)) headerHost.appendChild(toolbar);
         return;
       }
       if (container.matches('.content-wrapper, main, body')) break;
@@ -190,7 +197,14 @@
     // Tables without a title header get a toolbar immediately above their scroll area.
     var anchor = table.closest('.dataTables_wrapper') || controller.scrollHost || table;
     if (anchor.querySelectorAll('table').length > 1) anchor = table;
-    if (anchor.parentNode) anchor.parentNode.insertBefore(toolbar, anchor);
+    if (host && anchor.parentNode) {
+      if (host.parentNode !== anchor.parentNode || host.nextElementSibling !== anchor) anchor.parentNode.insertBefore(host, anchor);
+      if (!host.contains(toolbar)) host.appendChild(toolbar);
+      return;
+    }
+    if (anchor.parentNode && (toolbar.parentNode !== anchor.parentNode || toolbar.nextElementSibling !== anchor)) {
+      anchor.parentNode.insertBefore(toolbar, anchor);
+    }
   }
 
   function createToolbar(controller) {
@@ -591,7 +605,12 @@
   }
 
   function enhance(table) {
-    if (!isEligible(table) || controllers.has(table)) return;
+    if (!isEligible(table)) return;
+    if (controllers.has(table)) {
+      var existing = controllers.get(table);
+      placeToolbar(existing, existing.toolbar);
+      return;
+    }
     controllerNumber += 1;
     var controller = {
       id: 'pms-table-' + controllerNumber,
@@ -680,6 +699,12 @@
         scanQueued = false;
         pendingScanRoots.forEach(function (root) { scan(root); });
         pendingScanRoots.clear();
+        // Live DOM reconciliation and DataTables can move preserved toolbars.
+        // Repair existing controls too, retaining their selection state and handlers.
+        controllerList.forEach(function (controller) {
+          if (controller.table.isConnected) placeToolbar(controller, controller.toolbar);
+          else if (controller.toolbar && controller.toolbar.isConnected) controller.toolbar.remove();
+        });
       });
     }
 

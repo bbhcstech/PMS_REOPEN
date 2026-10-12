@@ -49,7 +49,7 @@ class WorkScheduleService
 
         // 1. Company Holidays table
         $dbHolidaysQuery = Holiday::whereBetween('date', [$startDate->toDateString(), $endDate->toDateString()]);
-        if ($companyId) {
+        if ($companyId && $dbHolidaysQuery->getModel()->getConnection()->getSchemaBuilder()->hasColumn('holidays', 'company_id')) {
             $dbHolidaysQuery->where(function ($q) use ($companyId) {
                 $q->where('company_id', $companyId)->orWhereNull('company_id');
             });

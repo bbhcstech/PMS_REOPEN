@@ -116,6 +116,10 @@ $line = $service->calculateEmployeePayrollLine(User::find(3), 2026, 10, 22);
 check($line['pending_leave_requests'] === 1 && (float) $line['pending_leave_days'] === 3.0, 'Pending leave missing.');
 check((float) $line['unpaid_leave'] === 1.0 && (float) $line['paid_leave'] === 1.0, 'Paid/unpaid leave wrong.');
 check((float) $line['timesheet_hours'] === 6.5 && (float) $line['task_timer_hours'] === 2.25 && (float) $line['work_hours'] === 8.75, 'Work logged wrong.');
+// A Friday–Monday leave is 2 working days: the weekend in between is neither leave nor unpaid.
+DB::table('leaves')->insert(['user_id' => 4, 'date' => '2026-10-09', 'start_date' => '2026-10-09', 'end_date' => '2026-10-12', 'total_days' => 2, 'paid_days' => 2, 'status' => 'approved']);
+$weekendLeave = $service->getLeaveData(User::find(4), 2026, 10);
+check((float) $weekendLeave['paid_leave'] === 2.0 && (float) $weekendLeave['unpaid_leave'] === 0.0, 'Weekend inside a leave was counted as unpaid leave: ' . json_encode($weekendLeave));
 check($line['employment_type'] === 'Full Time' && $line['joining_date'] === '10 Jan 2025', 'Employee details missing.');
 check(collect($line['deduction_reasons'])->contains(fn ($r) => str_contains($r, 'unpaid leave')) && $line['loss_of_pay_amount'] > 0, 'Deduction reasons / loss of pay missing.');
 

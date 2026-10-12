@@ -87,7 +87,7 @@ class PayrollCalculationService
         $start = Carbon::createFromDate($year, $month, 1)->startOfMonth();
         $end = $start->copy()->endOfMonth();
         try {
-            $leaves = Leave::where('user_id', $user->id)
+            $leaves = Leave::withoutGlobalScope('workforce_company')->where('user_id', $user->id)
                 ->whereIn('status', ['pending', 'Pending'])
                 ->where(fn ($q) => $q->whereBetween('date', [$start->toDateString(), $end->toDateString()])
                     ->orWhere(fn ($r) => $r->whereDate('start_date', '<=', $end)->whereDate('end_date', '>=', $start)))
@@ -101,9 +101,29 @@ class PayrollCalculationService
             $to = Carbon::parse($leave->end_date ?: $leave->date ?: $leave->start_date)->startOfDay()->min($end);
             if ($to->lt($from)) continue;
             $isHalf = $leave->half_day_flag || strtolower((string) $leave->duration) === 'half_day';
-            $days += $isHalf ? 0.5 : $from->diffInDays($to) + 1;
+            $days += $isHalf ? 0.5 : $this->leaveWorkingDays($from, $to, $user);
         }
         return ['requests' => $leaves->count(), 'days' => round($days, 2)];
+    }
+
+    /**
+     * Working days between two dates (inclusive), skipping weekly offs and holidays.
+     */
+    private function leaveWorkingDays(Carbon $from, Carbon $to, User $user): float
+    {
+        if ($to->lt($from)) {
+            return 0.0;
+        }
+        try {
+            $offDays = WorkScheduleService::getHolidaysAndOffDays($from->copy()->startOfDay(), $to->copy()->endOfDay(), $user->company_id ? (int) $user->company_id : null);
+        } catch (\Throwable $e) {
+            $offDays = [];
+        }
+        $days = 0;
+        for ($day = $from->copy()->startOfDay(); $day->lte($to); $day->addDay()) {
+            if (! isset($offDays[$day->toDateString()])) $days++;
+        }
+        return (float) $days;
     }
 
     /**
@@ -147,7 +167,7 @@ class PayrollCalculationService
         }
 
         // 2. Fetch Leaves in period
-        $leaves = Leave::where('user_id', $user->id)
+        $leaves = Leave::withoutGlobalScope('workforce_company')->where('user_id', $user->id)
             ->where(function ($q) use ($startDate, $endDate) {
                 $q->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
                   ->orWhereBetween('start_date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
@@ -171,7 +191,8 @@ class PayrollCalculationService
             $overlapStart = $leaveStart->copy()->max($startDate);
             $overlapEnd = $leaveEnd->copy()->min($endDate);
             if ($overlapEnd->lt($overlapStart)) continue;
-            $days = $isHalf ? 0.5 : (float) ($overlapStart->diffInDays($overlapEnd->copy()->startOfDay()) + 1);
+            // Weekly offs and holidays inside a leave are not leave days (a Fri–Mon leave is 2 days, not 4).
+            $days = $isHalf ? 0.5 : $this->leaveWorkingDays($overlapStart, $overlapEnd, $user);
 
             if ($isHalf) {
                 $halfLeaveCount += 1.0;
@@ -181,7 +202,7 @@ class PayrollCalculationService
 
             // Paid days occupy the beginning of the request; only count this month's portion.
             $paidTotal = $leave->paid_days !== null ? (float) $leave->paid_days : ($leave->is_unpaid ? 0 : (float) ($leave->total_days ?: $days));
-            $offset = (float) $leaveStart->diffInDays($overlapStart);
+            $offset = $overlapStart->gt($leaveStart) ? $this->leaveWorkingDays($leaveStart, $overlapStart->copy()->subDay(), $user) : 0.0;
             $paidInMonth = min($days, max(0, $paidTotal - $offset));
             $paidLeaveDays += $paidInMonth;
             $unpaidLeaveDays += max(0, $days - $paidInMonth);
@@ -209,12 +230,12 @@ class PayrollCalculationService
         $startDate = Carbon::createFromDate($year, $month, 1)->startOfMonth();
         $endDate = $startDate->copy()->endOfMonth();
 
-        $attendances = Attendance::where('user_id', $user->id)
+        $attendances = Attendance::withoutGlobalScope('workforce_company')->where('user_id', $user->id)
             ->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
             ->get();
 
         $leaveData = $this->getLeaveData($user, $year, $month);
-        $approvedLeaveDates = Leave::where('user_id', $user->id)->where('status', 'approved')
+        $approvedLeaveDates = Leave::withoutGlobalScope('workforce_company')->where('user_id', $user->id)->where('status', 'approved')
             ->where(fn ($q) => $q->whereBetween('date', [$startDate->toDateString(), $endDate->toDateString()])
                 ->orWhere(fn ($range) => $range->whereDate('start_date', '<=', $endDate)->whereDate('end_date', '>=', $startDate)))
             ->get(['date', 'start_date', 'end_date']);
@@ -287,7 +308,7 @@ class PayrollCalculationService
             $expectedDays = (float) $workingDays;
             if ($endDate->isFuture()) {
                 $monthWeekdays = max(1, $startDate->diffInWeekdays($endDate->copy()->addDay()));
-                $elapsedWeekdays = $startDate->isFuture() ? 0 : $startDate->diffInWeekdays(now()->startOfDay()->addDay());
+                $elapsedWeekdays = $startDate->isFuture() ? 0 : $startDate->diffInWeekdays(now()->startOfDay()); // today is not over yet
                 $expectedDays = $workingDays * min(1, $elapsedWeekdays / $monthWeekdays);
             }
             $unrecordedDays = max(0.0, floor($expectedDays - $recordedDays - $leaveData['total_leave'] - $holidayDays));

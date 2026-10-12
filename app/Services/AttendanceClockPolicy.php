@@ -235,7 +235,7 @@ class AttendanceClockPolicy
             ->get(['user_id', 'date'])
             ->map(fn ($row) => $row->user_id . '|' . Carbon::parse($row->date)->toDateString())
             ->flip();
-        $leaves = Leave::whereIn('user_id', $userIds)
+        $leaves = Leave::withoutGlobalScope('workforce_company')->whereIn('user_id', $userIds)
             ->whereIn('status', ['approved', 'Approved', 'active'])
             ->where(fn ($q) => $q->whereBetween('date', [$first->toDateString(), $last->toDateString()])
                 ->orWhere(fn ($r) => $r->whereDate('start_date', '<=', $last)->whereDate('end_date', '>=', $first)))
