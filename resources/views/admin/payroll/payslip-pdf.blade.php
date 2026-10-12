@@ -178,7 +178,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Payslip — {{ $empName }} — {{ $monthName }} {{ $yearNum }}</title>
     <style>
-        @page { size: A4 portrait; margin: 14mm 12mm; }
+        /* The PDF page has no printer margin: the sheet itself carries even padding on all sides. */
+        @page { margin: 0; }
         * { box-sizing: border-box; }
         html, body { margin: 0; padding: 0; }
         body {
@@ -200,7 +201,7 @@
         .logo-img { max-height: 54px; max-width: 150px; }
         .logo-badge {
             width: 52px; height: 52px; border-radius: 12px; background: #4338ca; color: #ffffff;
-            font-size: 19px; font-weight: bold; text-align: center; line-height: 52px; letter-spacing: 0.5px;
+            font-size: 19px; font-weight: bold; text-align: center; line-height: 24px; padding: 14px 0; letter-spacing: 0.5px;
         }
         .co-name { font-size: 19px; font-weight: bold; color: #111827; margin: 0 0 2px; letter-spacing: -0.2px; }
         .co-line { color: #6b7280; font-size: 9.5px; margin: 0; }
@@ -229,6 +230,8 @@
         .kv td.k { color: #6b7280; width: 42%; }
         .kv td.v { color: #111827; font-weight: bold; }
         .details td.gap { width: 24px; }
+        .details td.col:first-child { padding-right: 14px; }
+        .details td.col:last-child { padding-left: 14px; }
 
         /* Attendance tiles */
         .tiles td { width: 10%; padding: 0 2px; }
@@ -259,10 +262,41 @@
 
         .employer td { padding: 5px 0; color: #4b5563; font-size: 9.5px; border-bottom: 1px dashed #eceff4; }
         .employer td.r { text-align: right; color: #111827; }
-        .employer tr.ctc td { font-weight: bold; color: #111827; border-bottom: 0; font-size: 10.5px; }
+        .employer tr.ctc td { font-weight: bold; color: #111827; font-size: 10.5px; }
+        .employer .note { font-weight: normal; color: #6b7280; font-size: 8.5px; margin-top: 1px; }
 
         .foot { margin-top: 22px; padding-top: 10px; border-top: 1px solid #e5e7eb; color: #9ca3af; font-size: 8.5px; }
         .foot td.r { text-align: right; }
+
+        /* Section blocks never split across pages. */
+        .details, .tiles, .money, .summary, .employer, .hero, .brand, .keep { page-break-inside: avoid; }
+
+        /* PDF (A4, 794 x 1123 px): even 34 px margins and a tighter rhythm so the payslip fits one page. */
+        body.pdf { font-size: 9.3px; line-height: 1.35; }
+        body.pdf .sheet { max-width: none; padding: 30px 36px 22px; }
+        body.pdf .accent { margin-bottom: 14px; height: 4px; }
+        body.pdf .rule { margin: 11px 0; }
+        body.pdf .logo-badge { width: 48px; height: auto; padding: 12px 0; font-size: 18px; }
+        body.pdf .co-name { font-size: 18px; }
+        body.pdf .doc-title .month { font-size: 16px; }
+        body.pdf .hero td { padding: 10px 16px; }
+        body.pdf .hero .net { font-size: 21px; margin: 1px 0; }
+        body.pdf .section { margin: 11px 0 5px; font-size: 8.2px; }
+        body.pdf .kv td { padding: 2.2px 0; }
+        body.pdf .details td.gap { width: 28px; }
+        body.pdf .tiles td { padding: 0 2px; }
+        body.pdf .tile { padding: 4px 2px; border-radius: 7px; }
+        body.pdf .tile .t-v { font-size: 11.5px; }
+        body.pdf .tile .t-k { font-size: 6.6px; letter-spacing: 0; }
+        body.pdf .leave-line { margin-top: 4px; font-size: 8.5px; }
+        body.pdf .money th { padding: 5px 9px; font-size: 8px; }
+        body.pdf .money td { padding: 3.6px 9px; }
+        body.pdf .summary { margin-top: 8px !important; }
+        body.pdf .summary td { padding: 7px 12px; }
+        body.pdf .summary .s-v { font-size: 13.5px; }
+        body.pdf .employer td { padding: 2.6px 0; font-size: 8.8px; }
+        body.pdf .employer tr.ctc td { font-size: 9.8px; }
+        body.pdf .foot { margin-top: 12px; padding-top: 7px; font-size: 7.8px; }
 
         @media print {
             body.screen { background: #ffffff; padding: 0; }
@@ -423,28 +457,38 @@
         </tr>
     </table>
 
-    {{-- Why pay was reduced / deducted --}}
-    @if($deductionReasons || $lossOfPay > 0)
-        <div class="section">Deduction Details</div>
-        <table class="employer">
-            @if($lossOfPay > 0)
-                <tr class="ctc"><td>Loss of pay ({{ $qty(max(0, $workingDays - $payableDays)) }} of {{ $qty($workingDays) }} working days not payable)</td><td class="r">{{ $money($lossOfPay) }}</td></tr>
-            @endif
-            @foreach($deductionReasons as $reason)
-                <tr><td colspan="2">• {{ $reason }}</td></tr>
-            @endforeach
-        </table>
-    @endif
-
-    {{-- Employer contributions --}}
-    @if($employer || $n('ctc') > 0)
-        <div class="section">Employer Contributions (not part of take-home)</div>
-        <table class="employer">
-            @foreach($employer as [$label, $amount])
-                <tr><td>{{ $label }}</td><td class="r">{{ $money($amount) }}</td></tr>
-            @endforeach
-            <tr class="ctc"><td>Cost to Company (this month)</td><td class="r">{{ $money($n('ctc')) }}</td></tr>
-        </table>
+    {{-- Why pay was reduced (left) and what the company pays on top (right) --}}
+    @php($hasEmployer = $employer || $n('ctc') > 0)
+    @if($deductionReasons || $lossOfPay > 0 || $hasEmployer)
+    <table class="details keep">
+        <tr>
+            <td class="col">
+                <div class="section">Deduction Details</div>
+                <table class="employer">
+                    @if($lossOfPay > 0)
+                        <tr class="ctc"><td>Loss of pay<div class="note">{{ $qty(max(0, $workingDays - $payableDays)) }} of {{ $qty($workingDays) }} working days not payable</div></td><td class="r">{{ $money($lossOfPay) }}</td></tr>
+                    @endif
+                    @forelse($deductionReasons as $reason)
+                        <tr><td colspan="2">• {{ $reason }}</td></tr>
+                    @empty
+                        @if($lossOfPay <= 0)<tr><td colspan="2">No deductions beyond the statutory ones.</td></tr>@endif
+                    @endforelse
+                </table>
+            </td>
+            <td class="gap"></td>
+            <td class="col">
+                @if($hasEmployer)
+                    <div class="section">Employer Contributions</div>
+                    <table class="employer">
+                        @foreach($employer as [$label, $amount])
+                            <tr><td>{{ $label }}</td><td class="r">{{ $money($amount) }}</td></tr>
+                        @endforeach
+                        <tr class="ctc"><td>Cost to Company<div class="note">this month · not part of take-home</div></td><td class="r">{{ $money($n('ctc')) }}</td></tr>
+                    </table>
+                @endif
+            </td>
+        </tr>
+    </table>
     @endif
 
     <table class="foot">
