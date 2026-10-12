@@ -65,6 +65,14 @@
                 </select>
             </div>
             <div class="field">
+                <label>Salary</label>
+                <select name="salary" onchange="this.form.submit()">
+                    <option value="all">All Employees</option>
+                    <option value="assigned" {{ request('salary') === 'assigned' ? 'selected' : '' }}>Salary Assigned</option>
+                    <option value="unassigned" {{ request('salary') === 'unassigned' ? 'selected' : '' }}>Not Assigned Yet</option>
+                </select>
+            </div>
+            <div class="field">
                 <label>Status</label>
                 <select name="status" onchange="this.form.submit()">
                     <option value="all">All Status</option>
@@ -78,6 +86,85 @@
             </div>
         </form>
 
+        {{-- Every employee from the Employee section, with their details and salary status --}}
+        <div class="pr-roster-head d-flex flex-wrap align-items-center gap-2 px-3 pt-3">
+            <h3 class="m-0 me-auto" style="font-size:15px;font-weight:800;color:var(--pr-text);">👥 Employees &amp; Salary Status</h3>
+            <span class="pr-pill calculated">{{ $rosterSummary['total'] }} staff</span>
+            <span class="pr-pill active">{{ $rosterSummary['assigned'] }} salary assigned</span>
+            <span class="pr-pill inactive">{{ $rosterSummary['unassigned'] }} not assigned</span>
+        </div>
+        <div class="table-wrap">
+            <table class="pr-table" id="employeeRosterTable">
+                <thead>
+                    <tr>
+                        <th>Emp ID</th>
+                        <th>Employee</th>
+                        <th>Role</th>
+                        <th>Department</th>
+                        <th>Designation</th>
+                        <th>Employment</th>
+                        <th>Joined</th>
+                        <th>Branch</th>
+                        <th class="text-end">Monthly Gross</th>
+                        <th>Salary</th>
+                        <th class="text-center">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($roster as $member)
+                    @php
+                        $detail = $member->employeeDetail;
+                        $current = $currentAssignments->get($member->id);
+                        $memberEmpId = $detail?->employee_id ?: ('EMP' . str_pad($member->id, 3, '0', STR_PAD_LEFT));
+                        $isLocked = $lockedUserId && (int) $member->id === (int) $lockedUserId;
+                    @endphp
+                    <tr>
+                        <td class="text-nowrap"><b>{{ $memberEmpId }}</b></td>
+                        <td>
+                            <div class="cell-employee">
+                                <div class="avatar-badge">{{ strtoupper(substr($member->name ?? 'U', 0, 2)) }}</div>
+                                <div>
+                                    <div class="name">{{ $member->name }}</div>
+                                    <div class="meta">{{ $member->email }}@if($detail?->mobile) · {{ $detail->mobile }}@endif</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ $member->companyStaffRole?->name ?? (strtolower((string) $member->role) === 'hr' ? 'HR' : ucfirst((string) $member->role)) }}</td>
+                        <td>{{ $detail?->department?->dpt_name ?? ($detail?->department?->name ?? '—') }}</td>
+                        <td>
+                            {{ $detail?->designation?->name ?? '—' }}
+                            @if($detail?->designation?->level !== null)<span class="badge bg-label-secondary small">L{{ $detail->designation->level }}</span>@endif
+                        </td>
+                        <td>{{ $detail?->employment_type ? ucwords(str_replace('_', ' ', $detail->employment_type)) : '—' }}</td>
+                        <td>{{ $detail?->joining_date ? \Carbon\Carbon::parse($detail->joining_date)->format('d M Y') : '—' }}</td>
+                        <td>{{ $detail?->business_address ?: '—' }}</td>
+                        <td class="num">{{ $current ? '₹' . number_format($current->computed_gross, 2) : '—' }}</td>
+                        <td>
+                            @if($current)
+                                <span class="pr-pill active">Assigned</span>
+                                <div class="small text-muted">Basic ₹{{ number_format($current->actual_basic_salary, 2) }} · from {{ \Carbon\Carbon::parse($current->effective_from)->format('d M Y') }}</div>
+                            @else
+                                <span class="pr-pill inactive">Not assigned</span>
+                            @endif
+                        </td>
+                        <td class="text-center">
+                            @if($isLocked)
+                                <span class="small text-muted" title="Your own salary is set by the company Admin">🔒 Set by Admin</span>
+                            @elseif($current)
+                                <button type="button" class="pr-btn pr-btn-sm" data-bs-toggle="modal" data-bs-target="#editModal{{ $current->id }}">✏️ Edit</button>
+                            @else
+                                <button type="button" class="pr-btn pr-btn-sm pr-btn-primary" onclick="openAssignFor({{ $member->id }})">+ Assign</button>
+                            @endif
+                        </td>
+                    </tr>
+                    @empty
+                    <tr><td colspan="11" class="text-center py-4 text-muted">No employees match these filters. Add employees in the HR › Employee section.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        <h3 class="px-3 pt-4 m-0" style="font-size:15px;font-weight:800;color:var(--pr-text);">🧾 Salary Assignment Records</h3>
         <div class="table-wrap">
             <table class="pr-table" id="employeeSalaryTable">
                 <thead>
@@ -136,6 +223,9 @@
                             </span>
                         </td>
                         <td class="text-center">
+                            @if($lockedUserId && (int) $assignment->user_id === (int) $lockedUserId)
+                                <span class="small text-muted" title="Your own salary is set by the company Admin">🔒 Set by Admin</span>
+                            @else
                             <button class="pr-btn pr-btn-sm" data-bs-toggle="modal" data-bs-target="#editModal{{ $assignment->id }}">
                                 ✏️ Edit
                             </button>
@@ -146,95 +236,14 @@
                                     🗑️
                                 </button>
                             </form>
+                            @endif
                         </td>
                     </tr>
 
                     <!-- Edit Assignment Modal -->
-                    <div class="modal fade" id="editModal{{ $assignment->id }}" tabindex="-1" aria-hidden="true">
-                        <div class="modal-dialog modal-dialog-centered">
-                            <div class="modal-content" style="background: var(--pr-surface); border: 1px solid var(--pr-border);">
-                                <form action="{{ route('payroll.employee-salary.update', $assignment->id) }}" method="POST">
-                                    @csrf
-                                    @method('PUT')
-                                    <div class="modal-header">
-                                        <h5 class="modal-title fw-bold" style="color: var(--pr-text);">✏️ Edit Salary Assignment</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <div class="mb-3">
-                                            <label class="form-label small fw-bold">Employee</label>
-                                            <input type="text" class="form-control form-control-sm" value="{{ $user?->name }} ({{ $empId }})" readonly disabled />
-                                            <input type="hidden" name="user_id" value="{{ $assignment->user_id }}" />
-                                        </div>
-
-                                        <div class="row g-2 mb-3">
-                                            <div class="col-md-6">
-                                                <label class="form-label small fw-bold">Designation</label>
-                                                <select name="designation_id" class="form-select form-select-sm">
-                                                    @foreach($designations as $des)
-                                                        <option value="{{ $des->id }}" {{ $assignment->designation_id == $des->id ? 'selected' : '' }}>
-                                                            {{ $des->name }}
-                                                        </option>
-                                                    @endforeach
-                                                </select>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <label class="form-label small fw-bold">Grade</label>
-                                                <input type="text" name="grade" class="form-control form-control-sm" value="{{ $assignment->grade }}" />
-                                            </div>
-                                        </div>
-
-                                        <div class="mb-3">
-                                            <label class="form-label small fw-bold">Actual Basic Salary (₹) *</label>
-                                            <input type="number" step="0.01" name="actual_basic_salary" class="form-control form-control-sm" value="{{ $assignment->actual_basic_salary }}" required />
-                                        </div>
-
-                                        <div class="row g-2 mb-3">
-                                            <div class="col-md-6">
-                                                <label class="form-label small fw-bold">HRA *</label>
-                                                <div class="d-flex gap-2 mb-1">
-                                                    <label class="small"><input type="radio" name="hra_type" value="percentage" {{ $assignment->hra_type === 'percentage' ? 'checked' : '' }}> % of Basic</label>
-                                                    <label class="small"><input type="radio" name="hra_type" value="fixed" {{ $assignment->hra_type === 'fixed' ? 'checked' : '' }}> Fixed</label>
-                                                </div>
-                                                <input type="number" step="0.01" name="hra_value" class="form-control form-control-sm" value="{{ $assignment->hra_value }}" required />
-                                            </div>
-                                            <div class="col-md-6">
-                                                <label class="form-label small fw-bold">Special Allowance *</label>
-                                                <div class="d-flex gap-2 mb-1">
-                                                    <label class="small"><input type="radio" name="special_allowance_type" value="percentage" {{ $assignment->special_allowance_type === 'percentage' ? 'checked' : '' }}> % of Basic</label>
-                                                    <label class="small"><input type="radio" name="special_allowance_type" value="fixed" {{ $assignment->special_allowance_type === 'fixed' ? 'checked' : '' }}> Fixed</label>
-                                                </div>
-                                                <input type="number" step="0.01" name="special_allowance_value" class="form-control form-control-sm" value="{{ $assignment->special_allowance_value }}" required />
-                                            </div>
-                                        </div>
-
-                                        <div class="row g-2 mb-3">
-                                            <div class="col-md-6">
-                                                <label class="form-label small fw-bold">Effective From *</label>
-                                                <input type="date" name="effective_from" class="form-control form-control-sm" value="{{ $assignment->effective_from }}" required />
-                                            </div>
-                                            <div class="col-md-6">
-                                                <label class="form-label small fw-bold">Effective To</label>
-                                                <input type="date" name="effective_to" class="form-control form-control-sm" value="{{ $assignment->effective_to }}" />
-                                            </div>
-                                        </div>
-
-                                        <div class="mb-2">
-                                            <label class="form-label small fw-bold">Status *</label>
-                                            <select name="status" class="form-select form-select-sm" required>
-                                                <option value="active" {{ $assignment->status === 'active' ? 'selected' : '' }}>Active</option>
-                                                <option value="inactive" {{ $assignment->status === 'inactive' ? 'selected' : '' }}>Inactive</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="pr-btn" data-bs-dismiss="modal">Cancel</button>
-                                        <button type="submit" class="pr-btn pr-btn-primary">💾 Save Changes</button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
+                    @if(! ($lockedUserId && (int) $assignment->user_id === (int) $lockedUserId))
+                    @include('admin.payroll.partials.salary-edit-modal')
+                    @endif
                     @empty
                     <tr>
                         <td colspan="11" class="text-center py-4 text-muted">
@@ -252,6 +261,15 @@
         </div>
     </div>
 </div>
+
+@php($pageAssignmentIds = $assignments->pluck('id')->all())
+@foreach($currentAssignments as $current)
+    @continue(in_array($current->id, $pageAssignmentIds) || ($lockedUserId && (int) $current->user_id === (int) $lockedUserId))
+    @php($assignment = $current)
+    @php($user = $roster->firstWhere('id', $current->user_id) ?? $employees->firstWhere('id', $current->user_id))
+    @php($empId = $user?->employeeDetail?->employee_id ?: ('EMP' . str_pad($user?->id ?? 0, 3, '0', STR_PAD_LEFT)))
+    @include('admin.payroll.partials.salary-edit-modal')
+@endforeach
 
 <!-- Create Assignment Modal with Autofill -->
 <div class="modal fade" id="createAssignmentModal" tabindex="-1" aria-hidden="true">
@@ -364,6 +382,13 @@
 </div>
 
 <script>
+function openAssignFor(userId) {
+    const sel = document.getElementById('assign_user_id');
+    sel.value = String(userId);
+    handleEmployeeSelect(sel);
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('createAssignmentModal')).show();
+}
+
 function handleEmployeeSelect(sel) {
     const opt = sel.options[sel.selectedIndex];
     const desId = opt.getAttribute('data-designation-id');

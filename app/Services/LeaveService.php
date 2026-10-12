@@ -19,6 +19,11 @@ use Illuminate\Support\Facades\Schema;
 
 class LeaveService
 {
+    private function authorizeReviewer(Leave $leave, ?User $actor): void
+    {
+        abort_unless($leave->user && WorkforceAccess::canManageLeaves($actor)
+            && WorkforceAccess::canAccessRecord($actor, $leave->user, $leave->staff_category), 403, 'You cannot review this leave request.');
+    }
     private function authorizeAuthorityReview(Leave $leave, ?User $actor): void
     {
         $owner = $leave->user;
@@ -322,6 +327,7 @@ class LeaveService
 
     public function approve(Leave $leave, ?User $actor = null, ?string $note = null, bool $forceUnpaid = false): Leave
     {
+        $this->authorizeReviewer($leave, $actor);
         $this->authorizeAuthorityReview($leave, $actor);
         $connection = $leave->getConnection();
         return $connection->transaction(function () use ($leave, $actor, $note, $forceUnpaid) {
@@ -365,6 +371,7 @@ class LeaveService
 
     public function reject(Leave $leave, ?User $actor = null, string $reason = ''): Leave
     {
+        $this->authorizeReviewer($leave, $actor);
         $this->authorizeAuthorityReview($leave, $actor);
         $connection = $leave->getConnection();
         return $connection->transaction(function () use ($leave, $actor, $reason) {
@@ -404,6 +411,7 @@ class LeaveService
 
     public function markPending(Leave $leave, ?User $actor = null, ?string $note = null): Leave
     {
+        $this->authorizeReviewer($leave, $actor);
         $this->authorizeAuthorityReview($leave, $actor);
         $connection = $leave->getConnection();
         return $connection->transaction(function () use ($leave, $actor, $note) {

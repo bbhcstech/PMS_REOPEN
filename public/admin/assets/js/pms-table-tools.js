@@ -158,6 +158,41 @@
     label.addEventListener('click', function (event) { event.stopPropagation(); });
   }
 
+  function placeToolbar(controller, toolbar) {
+    var table = controller.table;
+    var hostId = table.getAttribute('data-pms-toolbar-host');
+    var host = hostId ? document.getElementById(hostId) : null;
+    if (host) {
+      host.appendChild(toolbar);
+      return;
+    }
+
+    // Use the nearest header belonging to this table, never a page header or another table's header.
+    var container = table.parentElement;
+    while (container && container !== document.body) {
+      var tables = container.querySelectorAll('table');
+      if (tables.length > 1) break;
+      var header = container.querySelector('.table-header, .card-header, [data-pms-table-header]');
+      if (header && !header.closest('table') &&
+          (header.compareDocumentPosition(table) & 4)) {
+        var headerHost = document.createElement('div');
+        headerHost.className = 'pms-table-header-tools';
+        headerHost.setAttribute('data-live-preserve', '');
+        header.classList.add('pms-table-header-with-tools');
+        header.appendChild(headerHost);
+        headerHost.appendChild(toolbar);
+        return;
+      }
+      if (container.matches('.content-wrapper, main, body')) break;
+      container = container.parentElement;
+    }
+
+    // Tables without a title header get a toolbar immediately above their scroll area.
+    var anchor = table.closest('.dataTables_wrapper') || controller.scrollHost || table;
+    if (anchor.querySelectorAll('table').length > 1) anchor = table;
+    if (anchor.parentNode) anchor.parentNode.insertBefore(toolbar, anchor);
+  }
+
   function createToolbar(controller) {
     var toolbar = document.createElement('div');
     toolbar.className = 'pms-table-tools';
@@ -189,27 +224,7 @@
     }
 
     ensureTableScrolling(controller);
-    var dataTableWrapper = controller.table.closest('.dataTables_wrapper');
-    var anchor = dataTableWrapper || controller.scrollHost || controller.table.closest('.table-responsive, .gantt-matrix-wrapper, .table-wrapper') || controller.table;
-    var parent = anchor.parentNode;
-    var toolbarHostId = controller.table.getAttribute('data-pms-toolbar-host');
-    var toolbarHost = toolbarHostId ? document.getElementById(toolbarHostId) : null;
-    if (toolbarHost) toolbarHost.appendChild(toolbar);
-    else if (parent) parent.insertBefore(toolbar, anchor);
-    // Place the controls outside clipping cards rather than inside their overflow area.
-    if (!toolbarHost) {
-      var clippingCard = null;
-      var ancestor = toolbar.parentElement;
-      while (ancestor && ancestor !== document.body && !ancestor.matches('.content-wrapper, .container, .container-fluid, .container-xxl, .employee-dashboard')) {
-        var overflow = window.getComputedStyle(ancestor);
-        if (/(hidden|clip|auto|scroll)/.test(overflow.overflow + ' ' + overflow.overflowY)) clippingCard = ancestor;
-        ancestor = ancestor.parentElement;
-      }
-      if (clippingCard && clippingCard.parentNode) {
-        clippingCard.parentNode.insertBefore(toolbar, clippingCard);
-        toolbar.classList.add('pms-table-tools--outside');
-      }
-    }
+    placeToolbar(controller, toolbar);
     controller.toolbar = toolbar;
   }
 

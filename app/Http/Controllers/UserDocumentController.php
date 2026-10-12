@@ -85,10 +85,30 @@ class UserDocumentController extends Controller
         };
     }
 
+    /**
+     * Company Admin and platform Super Admin see every role's documents; every other role
+     * (HR, Manager, Associate Manager, Employee, custom roles) only sees its own uploads.
+     */
+    public static function canViewAllDocuments(?User $user): bool
+    {
+        if (Auth::guard('super_admin')->check()) {
+            return true;
+        }
+
+        return $user && in_array(strtolower(trim((string) $user->role)), ['admin', 'administrator', 'company_admin', 'superadmin', 'super_admin', 'super-admin'], true);
+    }
+
+    private static function isPlatformSuperAdmin(?User $user): bool
+    {
+        return Auth::guard('super_admin')->check()
+            || ($user && in_array(strtolower(trim((string) $user->role)), ['superadmin', 'super_admin', 'super-admin'], true));
+    }
+
     public function index()
     {
         $user = Auth::user();
         $userRole = strtolower($user->role ?? 'employee');
+        $canViewAllDocuments = static::canViewAllDocuments($user);
 
         $docTypes = static::getStructuredDocumentTypes();
         $maxSizeMb = (int) AppSetting::valueFor('doc_max_file_size', '10');
@@ -101,17 +121,13 @@ class UserDocumentController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        // For HR, Manager, and Admin: Load Role Storage Repository documents for Tab 2
+        // Role Storage Repository (every role's documents): company Admin and Super Admin only.
         $repositoryDocs = collect();
-        if (in_array($userRole, ['admin', 'superadmin', 'super_admin', 'super-admin', 'hr', 'manager'])) {
+        if ($canViewAllDocuments) {
             $empDocs = EmployeeDocument::with(['user', 'views.viewer'])->get()->each(fn($d) => $d->table_type = 'employee');
             $hrDocs = HrDocument::with(['user', 'views.viewer'])->get()->each(fn($d) => $d->table_type = 'hr');
             $mgrDocs = ManagerDocument::with(['user', 'views.viewer'])->get()->each(fn($d) => $d->table_type = 'manager');
-            $admDocs = collect();
-
-            if (in_array($userRole, ['admin', 'superadmin', 'super_admin', 'super-admin'])) {
-                $admDocs = AdminDocument::with(['user', 'views.viewer'])->get()->each(fn($d) => $d->table_type = 'admin');
-            }
+            $admDocs = AdminDocument::with(['user', 'views.viewer'])->get()->each(fn($d) => $d->table_type = 'admin');
 
             $allDocs = collect()
                 ->concat($empDocs)
@@ -119,6 +135,12 @@ class UserDocumentController extends Controller
                 ->concat($mgrDocs)
                 ->concat($admDocs)
                 ->sortByDesc('created_at');
+
+            // A company Admin only sees documents of people in their own company.
+            if (! static::isPlatformSuperAdmin($user)) {
+                $companyId = app(\App\Services\CompanyContext::class)->id() ?? $user->company_id;
+                $allDocs = $allDocs->filter(fn($d) => $d->user && (! $companyId || (int) $d->user->company_id === (int) $companyId));
+            }
 
             // Apply search & role filters if present
             if (request()->filled('role_type')) {
@@ -149,6 +171,7 @@ class UserDocumentController extends Controller
             'myDocs',
             'repositoryDocs',
             'userRole',
+            'canViewAllDocuments',
             'maxSizeMb',
             'allowedExtensions'
         ));
@@ -227,57 +250,11 @@ class UserDocumentController extends Controller
                 ['document_type' => $docType]
             );
 
-            // If an Employee uploaded, notify HR and Managers
-            if ($userRole === 'employee') {
-                $hrAndManagers = User::whereIn('role', ['hr', 'manager'])
-                    ->where('id', '!=', $user->id)
-                    ->where(function ($q) {
-                        $q->where('is_active', true)->orWhereNull('is_active');
-                    })
-                    ->get();
-
-                if ($hrAndManagers->count() > 0) {
-                    SystemNotificationService::notifyUser(
-                        $hrAndManagers,
-                        "Employee Document Uploaded: {$user->name}",
-                        "{$user->name} has uploaded a document: {$docType}.",
-                        route('my-documents.index', ['tab' => 'employee']),
-                        [
-                            'user_id' => $user->id,
-                            'document_type' => $docType,
-                            'file_path' => $relativePath
-                        ]
-                    );
-                }
-            }
-
-            // If HR uploaded, notify Managers
-            if ($userRole === 'hr') {
-                $managers = User::where('role', 'manager')
-                    ->where('id', '!=', $user->id)
-                    ->where(function ($q) {
-                        $q->where('is_active', true)->orWhereNull('is_active');
-                    })
-                    ->get();
-
-                if ($managers->count() > 0) {
-                    SystemNotificationService::notifyUser(
-                        $managers,
-                        "HR Document Uploaded: {$user->name}",
-                        "{$user->name} (HR) has uploaded a document: {$docType}.",
-                        route('my-documents.index', ['tab' => 'employee', 'role_type' => 'hr']),
-                        [
-                            'user_id' => $user->id,
-                            'document_type' => $docType,
-                            'file_path' => $relativePath
-                        ]
-                    );
-                }
-            }
-
+            // Only the company Admin may open other people's documents, so only Admins are notified.
             // Notify Admins
-            $admins = User::whereIn('role', ['admin', 'superadmin', 'super_admin'])
+            $admins = User::whereIn('role', ['admin', 'administrator', 'superadmin', 'super_admin'])
                 ->where('id', '!=', $user->id)
+                ->when($user->company_id, fn ($q) => $q->where('company_id', $user->company_id))
                 ->where(function ($q) {
                     $q->where('is_active', true)->orWhereNull('is_active');
                 })
@@ -364,18 +341,8 @@ class UserDocumentController extends Controller
         if ((int) $doc->user_id === (int) $user->id) {
             $isAuthorized = true;
         }
-        // 2. Admins and Superadmins can download any document
-        elseif (in_array($userRole, ['admin', 'superadmin', 'super_admin', 'super-admin', 'administrator', 'company_admin'])) {
-            $isAuthorized = true;
-        }
-        // 3. HR and Managers can download employee, hr, and manager documents
-        elseif (in_array($userRole, ['hr', 'manager'])) {
-            if (in_array($tableName, ['employee_documents', 'hr_documents', 'manager_documents'])) {
-                $isAuthorized = true;
-            }
-        }
-        // 4. Default fallback: allow logged-in authenticated users access to employee documents
-        elseif ($tableName === 'employee_documents') {
+        // 2. Company Admin and Super Admin can open any document; every other role only their own.
+        elseif (static::canViewAllDocuments($user)) {
             $isAuthorized = true;
         }
 
@@ -386,7 +353,7 @@ class UserDocumentController extends Controller
         // Cross-company isolation check: ensure the document owner belongs to the same tenant company
         $targetUser = User::find($doc->user_id);
         $myCompanyId = app(\App\Services\CompanyContext::class)->id() ?? $user->company_id;
-        if ($targetUser && $myCompanyId && $targetUser->company_id && $targetUser->company_id != $myCompanyId) {
+        if (! static::isPlatformSuperAdmin($user) && $targetUser && $myCompanyId && $targetUser->company_id && $targetUser->company_id != $myCompanyId) {
             abort(403, 'Cross-company document access forbidden.');
         }
 

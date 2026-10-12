@@ -30,8 +30,8 @@
         </form>
         @include('admin.partials.clock-window-note')
     @endif
-        @if(auth()->user()->moduleToggleAllows('attendance'))<a class="btn btn-outline-primary" href="{{ route('attendance.index') }}">My attendance</a>@endif
-        @if(auth()->user()->moduleToggleAllows('leaves'))<a class="btn btn-outline-primary" href="{{ route('leaves.index') }}">My leaves</a>@endif
+        @if(\App\Services\WorkforceAccess::canManageLeaves(auth()->user()) && auth()->user()->moduleToggleAllows('attendance'))<a class="btn btn-outline-primary" href="{{ route('attendance.index') }}">Employee attendance</a>@endif
+        @if(\App\Services\WorkforceAccess::canManageLeaves(auth()->user()) && auth()->user()->moduleToggleAllows('leaves'))<a class="btn btn-outline-primary" href="{{ route('leaves.index') }}">Employee leaves</a>@endif
         @if(auth()->user()->moduleToggleAllows('leaves-apply') && auth()->user()->moduleToggleAllows('leaves'))<a class="btn btn-primary" href="{{ route('leaves.create') }}">Apply leave</a>@endif
     </div>
     <div id="clockRequirementStatus" role="status"></div>

@@ -56,6 +56,7 @@ class CompanyRoleDashboard
             $projects = $owned->select(array_intersect(['id', 'name', 'project_name', 'status', 'deadline'], $schema->getColumnListing('projects')))->orderByDesc('id')->limit(10)->get();
         }
         foreach (['attendances' => 'attendanceDays', 'leaves' => 'leaveCount'] as $table => $metric) {
+            if (WorkforceAccess::isAuthority($user)) continue;
             if (!$schema->hasTable($table) || !$schema->hasColumn($table, 'user_id')) continue;
             $owned = $query($table)->where('user_id', $user->id);
             if ($schema->hasColumn($table, 'company_id')) $owned->where('company_id', $companyId);
@@ -66,7 +67,8 @@ class CompanyRoleDashboard
         if ($role->access_role === 'hr') {
             $hr = ['staff' => User::where('company_id', $companyId)->count(), 'pending_leaves' => null];
             if ($schema->hasTable('leaves') && $schema->hasColumn('leaves', 'company_id') && $schema->hasColumn('leaves', 'status')) {
-                $hr['pending_leaves'] = $query('leaves')->where('company_id', $companyId)->where('status', 'pending')->count();
+                $hr['pending_leaves'] = WorkforceAccess::records(\App\Models\Leave::where('status', 'pending'), 'employee')
+                    ->whereHas('user', fn ($users) => WorkforceAccess::users($users, 'employee'))->count();
             }
         }
         WorkforceRecordSchema::ensure();

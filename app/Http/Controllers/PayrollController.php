@@ -371,13 +371,37 @@ class PayrollController extends Controller
 
         $assignments = $query->orderBy('id', 'desc')->paginate(15);
 
-        $employees = User::where(function ($q) {
-                $q->where('role', '!=', 'superadmin')->orWhereNull('role');
-            })
-            ->when($companyId, fn ($q) => $q->where('company_id', $companyId))
+        // Every staff member from the Employee section (employees, HR, managers, company roles) with their salary status.
+        $staff = $this->payrollStaffQuery($companyId)
             ->with(['employeeDetail.designation', 'employeeDetail.department'])
             ->orderBy('name')
             ->get();
+        $currentAssignments = EmployeeSalaryAssignment::whereIn('user_id', $staff->pluck('id'))
+            ->where('status', 'active')
+            ->orderByDesc('effective_from')->orderByDesc('id')
+            ->get()->unique('user_id')->keyBy('user_id');
+        $roster = $staff->filter(function (User $member) use ($request, $currentAssignments) {
+            $detail = $member->employeeDetail;
+            if ($request->filled('search')) {
+                $needle = mb_strtolower($request->input('search'));
+                $haystack = mb_strtolower($member->name . ' ' . $member->email . ' ' . ($detail?->employee_id ?? ''));
+                if (! str_contains($haystack, $needle)) return false;
+            }
+            if ($request->filled('department_id') && $request->input('department_id') !== 'all' && (string) $detail?->department_id !== (string) $request->input('department_id')) return false;
+            if ($request->filled('designation_id') && $request->input('designation_id') !== 'all' && (string) $detail?->designation_id !== (string) $request->input('designation_id')) return false;
+            $salary = $request->input('salary', 'all');
+            if ($salary === 'assigned' && ! $currentAssignments->has($member->id)) return false;
+            if ($salary === 'unassigned' && $currentAssignments->has($member->id)) return false;
+            return true;
+        })->values();
+        $rosterSummary = [
+            'total' => $staff->count(),
+            'assigned' => $staff->filter(fn ($m) => $currentAssignments->has($m->id))->count(),
+        ];
+        $rosterSummary['unassigned'] = $rosterSummary['total'] - $rosterSummary['assigned'];
+        // HR manages everyone's salary except their own, which only the company Admin sets.
+        $lockedUserId = $this->ownSalaryLocked(auth()->id()) ? (int) auth()->id() : null;
+        $employees = $staff->reject(fn ($member) => $lockedUserId && (int) $member->id === $lockedUserId)->values();
 
         $designations = Designation::orderBy('name')->get();
         $departments = $this->getDepartments();
@@ -386,6 +410,10 @@ class PayrollController extends Controller
         return view('admin.payroll.employee-salary', compact(
             'assignments',
             'employees',
+            'roster',
+            'rosterSummary',
+            'currentAssignments',
+            'lockedUserId',
             'designations',
             'departments',
             'structures'
@@ -412,9 +440,13 @@ class PayrollController extends Controller
             'remarks' => ['nullable', 'string', 'max:255'],
         ]);
 
+        if ($this->ownSalaryLocked((int) $data['user_id'])) {
+            return back()->with('error', 'Your own salary is set by the company Admin. You can manage salaries of every other employee.');
+        }
+
         $user = User::with('employeeDetail')->find($data['user_id']);
-        $designationId = $data['designation_id'] ?: ($user?->employeeDetail?->designation_id);
-        $grade = $data['grade'] ?: ($user?->employeeDetail?->designation?->level ?: 'Standard');
+        $designationId = ($data['designation_id'] ?? null) ?: ($user?->employeeDetail?->designation_id);
+        $grade = ($data['grade'] ?? null) ?:($user?->employeeDetail?->designation?->level ?: 'Standard');
 
         $payload = array_merge($data, [
             'company_id' => $user?->company_id ?: auth()->user()?->company_id,
@@ -456,6 +488,11 @@ class PayrollController extends Controller
             'remarks' => ['nullable', 'string', 'max:255'],
         ]);
 
+        $this->authorizeAssignmentCompany($request, $assignment);
+        if ($this->ownSalaryLocked((int) $assignment->user_id) || $this->ownSalaryLocked((int) $data['user_id'])) {
+            return back()->with('error', 'Your own salary is set by the company Admin. You can manage salaries of every other employee.');
+        }
+
         $old = $assignment->toArray();
         $assignment->update($data);
 
@@ -467,6 +504,10 @@ class PayrollController extends Controller
     public function destroyEmployeeSalary(Request $request, EmployeeSalaryAssignment $assignment)
     {
         $this->authorizePayroll('payroll', 'delete');
+        $this->authorizeAssignmentCompany($request, $assignment);
+        if ($this->ownSalaryLocked((int) $assignment->user_id)) {
+            return back()->with('error', 'Your own salary is set by the company Admin. You can manage salaries of every other employee.');
+        }
 
         $old = $assignment->toArray();
         $assignment->delete();
@@ -749,6 +790,10 @@ class PayrollController extends Controller
             'remarks' => ['nullable', 'string', 'max:255'],
         ]);
 
+        if ($this->ownSalaryLocked((int) $history->user_id)) {
+            return back()->with('error', 'Your own payroll line is managed by the company Admin.');
+        }
+
         try {
             $payrollService->updatePayrollHistoryLine($history, $inputs);
             return back()->with('success', 'Employee payroll line updated and recalculated successfully.');
@@ -927,6 +972,11 @@ class PayrollController extends Controller
 
         if ($request->filled('department_id') && $request->input('department_id') !== 'all') {
             $query->whereHas('user.employeeDetail', fn ($ed) => $ed->where('department_id', $request->input('department_id')));
+        }
+
+        // HR sees their own payslip under My Payslips, not in the payroll workspace.
+        if ($this->ownSalaryLocked(auth()->id())) {
+            $query->where('user_id', '!=', auth()->id());
         }
 
         $payslips = $query->latest()->paginate(20);
@@ -1200,6 +1250,9 @@ class PayrollController extends Controller
     {
         $this->authorizePayroll('payslips');
         $payslip = $this->resolvePayslipModel($payslip);
+        if ($this->ownSalaryLocked((int) $payslip->user_id)) {
+            return redirect()->route('my-payslips.show', $payslip->id);
+        }
         $payslip->load(['user.employeeDetail.designation', 'user.employeeDetail.department', 'payroll', 'payrollHistory']);
 
         $company = $this->payslipCompany($payslip);
@@ -1326,6 +1379,36 @@ class PayrollController extends Controller
     /**
      * Strict Authorization: Admin Workspace ONLY
      */
+    /**
+     * Staff whose salary is managed in Payroll: every active member of the Employee section
+     * (employees, HR, managers and company roles), never the company Admin or platform accounts.
+     */
+    private function payrollStaffQuery(?int $companyId)
+    {
+        $schema = Schema::connection((new User)->getConnectionName() ?: config('database.default'));
+        $query = User::query()
+            ->where(fn ($q) => $q->whereNull('role')->orWhereNotIn('role', ['admin', 'administrator', 'superadmin', 'super_admin', 'client']))
+            ->when($companyId, fn ($q) => $q->where('company_id', $companyId));
+        if ($schema->hasColumn('users', 'archived_at')) {
+            $query->whereNull('archived_at');
+        }
+        return $query;
+    }
+
+    /** HR (and any other non-admin payroll user) may not set or change their own salary. */
+    private function ownSalaryLocked(?int $userId): bool
+    {
+        $actor = auth()->user();
+        return $actor && $userId && (int) $actor->id === (int) $userId
+            && ! in_array($actor->normalizedRole(), ['admin', 'superadmin'], true);
+    }
+
+    private function authorizeAssignmentCompany(Request $request, EmployeeSalaryAssignment $assignment): void
+    {
+        $companyId = $this->selectedCompanyId($request);
+        abort_if($companyId && $assignment->company_id && (int) $assignment->company_id !== (int) $companyId, 403, 'This salary assignment belongs to another company.');
+    }
+
     private function authorizePayroll(string $moduleSlug = 'payroll', string $permission = 'view'): void
     {
         $role = strtolower((string)(auth()->user()?->role ?? ''));

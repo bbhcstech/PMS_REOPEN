@@ -25,8 +25,8 @@
     <div class="role-panel role-metrics">
         @if($allows('tasks'))<div class="role-metric"><span>My assigned tasks</span><strong>{{ $taskCount ?? '—' }}</strong></div>@endif
         @if($allows('projects'))<div class="role-metric"><span>My projects</span><strong>{{ $projectCount ?? '—' }}</strong></div>@endif
-        @if($allows('attendance'))<div class="role-metric"><span>My attendance records this month</span><strong>{{ $attendanceDays ?? '—' }}</strong></div>@endif
-        @if($allows('leaves'))<div class="role-metric"><span>My leave records</span><strong>{{ $leaveCount ?? '—' }}</strong></div>@endif
+        @if(!\App\Services\WorkforceAccess::isAuthority(auth()->user()) && $allows('attendance'))<div class="role-metric"><span>My attendance records this month</span><strong>{{ $attendanceDays ?? '—' }}</strong></div>@endif
+        @if(!\App\Services\WorkforceAccess::isAuthority(auth()->user()) && $allows('leaves'))<div class="role-metric"><span>My leave records</span><strong>{{ $leaveCount ?? '—' }}</strong></div>@endif
         @if($hr)
         @if($allows('employees'))<div class="role-metric"><span>Company staff</span><strong>{{ $hr['staff'] }}</strong></div>@endif
         @if($allows('leaves'))<div class="role-metric"><span>Company pending leaves</span><strong>{{ $hr['pending_leaves'] ?? '—' }}</strong></div>@endif

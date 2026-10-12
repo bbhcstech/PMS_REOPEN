@@ -543,10 +543,12 @@
 
         @php
             $activeTab = request('tab', 'my-docs');
+            // Old notification links open the repository tab; other roles only have their own documents.
+            if (! $canViewAllDocuments) $activeTab = 'my-docs';
         @endphp
 
-        <!-- Navigation Tabs (For HR, Manager, Admin) -->
-        @if(in_array($userRole, ['admin', 'hr', 'manager']))
+        <!-- Navigation Tabs (company Admin / Super Admin: every role's documents) -->
+        @if($canViewAllDocuments)
             <ul class="nav doc-nav-pills" id="userDocTabs" role="tablist">
                 <li class="nav-item" role="presentation">
                     <button class="nav-link doc-tab-btn {{ $activeTab !== 'employee' ? 'active' : '' }}" id="my-docs-tab" data-bs-toggle="tab" data-bs-target="#my-docs-pane" type="button" role="tab">
@@ -626,8 +628,8 @@
                 </div>
             </div>
 
-            <!-- TAB 2: Role Storage Databases Repository (For HR, Manager, Admin) -->
-            @if(in_array($userRole, ['admin', 'hr', 'manager']))
+            <!-- TAB 2: Role Storage Databases Repository (company Admin / Super Admin only) -->
+            @if($canViewAllDocuments)
                 <div class="tab-pane fade {{ $activeTab === 'employee' ? 'show active' : '' }}" id="emp-docs-pane" role="tabpanel">
                     <div class="card doc-panel-card rounded-4 border-0 shadow-sm p-4">
                         
@@ -652,11 +654,12 @@
                                     <select name="role_type" class="form-select rounded-4 py-2" onchange="this.form.submit()">
                                         <option value="">All Accessible Databases</option>
                                         <option value="employee" {{ request('role_type') === 'employee' ? 'selected' : '' }}>Employee Database</option>
-                                        @if(in_array($userRole, ['admin', 'hr', 'manager']))
+                                        @if($canViewAllDocuments)
                                              <option value="hr" {{ request('role_type') === 'hr' ? 'selected' : '' }}>HR Database</option>
                                         @endif
-                                        @if(in_array($userRole, ['admin', 'hr', 'manager']))
+                                        @if($canViewAllDocuments)
                                              <option value="manager" {{ request('role_type') === 'manager' ? 'selected' : '' }}>Manager Database</option>
+                                             <option value="admin" {{ request('role_type') === 'admin' ? 'selected' : '' }}>Admin Database</option>
                                         @endif
                                     </select>
                                 </div>

@@ -207,8 +207,8 @@ class LetterheadController extends Controller
             'cin_number' => 'nullable|string|max:100',
             'other_info' => 'nullable|string|max:500',
             'logo' => 'nullable|file|mimes:jpeg,png,jpg,svg,webp,pdf|max:10240',
-            'header_image' => 'nullable|file|mimes:jpeg,png,jpg,svg,webp,pdf|max:10240',
-            'footer_image' => 'nullable|file|mimes:jpeg,png,jpg,svg,webp,pdf|max:10240',
+            'header_image' => \App\Services\LetterheadImage::uploadRules(\App\Services\LetterheadImage::HEADER),
+            'footer_image' => \App\Services\LetterheadImage::uploadRules(\App\Services\LetterheadImage::FOOTER),
             'background_page_image' => 'nullable|file|mimes:jpeg,png,jpg,svg,webp,pdf|max:15360',
             'layout_mode' => 'nullable|string|in:standard,custom_header_footer,full_a4_page',
             'content_padding_top' => 'nullable|integer|min:0|max:400',
@@ -389,8 +389,8 @@ class LetterheadController extends Controller
             'cin_number' => 'nullable|string|max:100',
             'other_info' => 'nullable|string|max:500',
             'logo' => 'nullable|file|mimes:jpeg,png,jpg,svg,webp,pdf|max:10240',
-            'header_image' => 'nullable|file|mimes:jpeg,png,jpg,svg,webp,pdf|max:10240',
-            'footer_image' => 'nullable|file|mimes:jpeg,png,jpg,svg,webp,pdf|max:10240',
+            'header_image' => \App\Services\LetterheadImage::uploadRules(\App\Services\LetterheadImage::HEADER),
+            'footer_image' => \App\Services\LetterheadImage::uploadRules(\App\Services\LetterheadImage::FOOTER),
             'background_page_image' => 'nullable|file|mimes:jpeg,png,jpg,svg,webp,pdf|max:15360',
             'layout_mode' => 'nullable|string|in:standard,custom_header_footer,full_a4_page',
             'content_padding_top' => 'nullable|integer|min:0|max:400',
@@ -664,8 +664,8 @@ class LetterheadController extends Controller
             'subject' => 'required|string|max:300',
             'body' => 'required|string',
             'letterhead_id' => 'nullable|integer',
-            'header_image' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,webp,pdf|max:10240',
-            'footer_image' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,webp,pdf|max:10240',
+            'header_image' => \App\Services\LetterheadImage::uploadRules(\App\Services\LetterheadImage::HEADER),
+            'footer_image' => \App\Services\LetterheadImage::uploadRules(\App\Services\LetterheadImage::FOOTER),
             'background_page_image' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,webp,pdf|max:10240',
         ]);
 
@@ -756,6 +756,10 @@ class LetterheadController extends Controller
      */
     public function exportWord(Request $request): BinaryFileResponse|Response
     {
+        $request->validate([
+            'header_image' => \App\Services\LetterheadImage::uploadRules(\App\Services\LetterheadImage::HEADER),
+            'footer_image' => \App\Services\LetterheadImage::uploadRules(\App\Services\LetterheadImage::FOOTER),
+        ]);
         $request->validate([
             'subject' => 'required|string|max:300',
             'body' => 'required|string',

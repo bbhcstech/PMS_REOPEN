@@ -8,9 +8,10 @@
     $period = \Carbon\Carbon::parse($payslip->payroll?->period_start ?? now());
 @endphp
 
-<div class="content-wrapper">
-    <div class="container-xxl flex-grow-1 container-p-y">
+<div class="payroll-container">
+    <div class="payroll-page-body">
         @include('admin.payroll.partials.styles')
+        @include('admin.payroll.partials.tabs')
 
         <div class="topbar-crumb mb-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
             <div>

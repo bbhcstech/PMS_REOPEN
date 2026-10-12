@@ -21,7 +21,7 @@
             </div>
         </div>
         <div class="leave-hero-actions">
-            @if($isAdmin && auth()->user()->canViewModule('higher-level-leaves'))
+            @if(\App\Services\WorkforceAccess::isAdmin(auth()->user()) && auth()->user()->canViewModule('higher-level-leaves'))
                 <a href="{{ route(request('staff_category') === 'authority' ? 'leaves.index' : 'admin.authority-leaves') }}" class="btn btn-light">
                     <i class="fas fa-users"></i> {{ request('staff_category') === 'authority' ? 'Employee Leaves' : 'Higher-level Leaves' }}
                     @if(request('staff_category') !== 'authority' && $authorityPendingCount)<span class="badge bg-primary">{{ $authorityPendingCount }} pending</span>@endif
@@ -34,7 +34,9 @@
             <a href="{{ route('leaves.calendar', ['staff_category' => request('staff_category')]) }}" class="btn btn-light"><i class="fas fa-calendar-alt"></i> Calendar</a>
             @if($isAdmin)
                 <a href="{{ route('leaves.apology-letters.index') }}" class="btn btn-light"><i class="fas fa-envelope-open-text"></i> Apology Letters</a>
+                @if(\App\Services\WorkforceAccess::isAdmin(auth()->user()))
                 <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#policyModal"><i class="fas fa-sliders-h"></i> Policy</button>
+                @endif
                 <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#exportModal"><i class="fas fa-download"></i> Export</button>
                 <a href="{{ route('leaves.archive', ['staff_category' => request('staff_category')]) }}" class="btn btn-light">
                     <i class="fas fa-box-archive"></i> Archived
@@ -137,7 +139,7 @@
                     <span>Casual used: {{ $balance->casual_used }}</span>
                     <span>Unpaid {{ $balance->unpaid_used }}</span>
                 </div>
-                @if($isAdmin)
+                @if(\App\Services\WorkforceAccess::isAdmin(auth()->user()))
                     <form method="POST" action="{{ route('leaves.reset-employee-leaves', $balance->user_id) }}" onsubmit="return confirm('Reset leave balance for {{ $balance->user?->name }}?');">
                         @csrf
                         <button class="btn btn-sm btn-outline-secondary"><i class="fas fa-rotate"></i> Reset Balance</button>

@@ -80,6 +80,52 @@ class PayrollCalculationService
     }
 
     /**
+     * Leave requests of this month that are still waiting for approval.
+     */
+    public function getPendingLeaveData(User $user, int $year, int $month): array
+    {
+        $start = Carbon::createFromDate($year, $month, 1)->startOfMonth();
+        $end = $start->copy()->endOfMonth();
+        try {
+            $leaves = Leave::where('user_id', $user->id)
+                ->whereIn('status', ['pending', 'Pending'])
+                ->where(fn ($q) => $q->whereBetween('date', [$start->toDateString(), $end->toDateString()])
+                    ->orWhere(fn ($r) => $r->whereDate('start_date', '<=', $end)->whereDate('end_date', '>=', $start)))
+                ->get();
+        } catch (\Throwable $e) {
+            return ['requests' => 0, 'days' => 0.0];
+        }
+        $days = 0.0;
+        foreach ($leaves as $leave) {
+            $from = Carbon::parse($leave->start_date ?: $leave->date)->startOfDay()->max($start);
+            $to = Carbon::parse($leave->end_date ?: $leave->date ?: $leave->start_date)->startOfDay()->min($end);
+            if ($to->lt($from)) continue;
+            $isHalf = $leave->half_day_flag || strtolower((string) $leave->duration) === 'half_day';
+            $days += $isHalf ? 0.5 : $from->diffInDays($to) + 1;
+        }
+        return ['requests' => $leaves->count(), 'days' => round($days, 2)];
+    }
+
+    /**
+     * Hours of work logged this month in timesheets (time logs) and task timers.
+     */
+    public function getWorkData(User $user, int $year, int $month): array
+    {
+        $start = Carbon::createFromDate($year, $month, 1)->startOfMonth()->toDateString();
+        $end = Carbon::createFromDate($year, $month, 1)->endOfMonth()->toDateString();
+        $sum = function (string $model) use ($user, $start, $end) {
+            try {
+                return (float) $model::where('user_id', $user->id)->whereBetween('start_date', [$start, $end])->sum('total_hours');
+            } catch (\Throwable $e) {
+                return 0.0;
+            }
+        };
+        $timesheet = round($sum(\App\Models\TimeLog::class), 2);
+        $timer = round($sum(TaskTimer::class), 2);
+        return ['timesheet_hours' => $timesheet, 'task_timer_hours' => $timer, 'work_hours' => round($timesheet + $timer, 2)];
+    }
+
+    /**
      * Calculate Leave statistics for an employee in a given month.
      */
     public function getLeaveData(User $user, int $year, int $month): array
@@ -261,7 +307,8 @@ class PayrollCalculationService
                 $workingHours = (float) ($workingDays * 8);
             }
 
-            $presentDays = (float) $workingDays;
+            // Assumed full attendance, minus the days the employee was on approved leave.
+            $presentDays = max(0.0, (float) $workingDays - (float) $leaveData['paid_leave'] - (float) $leaveData['unpaid_leave']);
         }
 
         // Add leaves to absent consideration
@@ -728,6 +775,40 @@ class PayrollCalculationService
             }
         }
 
+        // Leave requests still awaiting approval and work logged this month (shown on Processing and the payslip).
+        $pendingLeave = $this->getPendingLeaveData($user, $year, $month);
+        $workData = $this->getWorkData($user, $year, $month);
+
+        // Loss of pay: what the employee did not earn this month because of absence / unpaid leave.
+        $fullMonthGross = (float) ($salaryData['gross'] ?? 0);
+        $lossOfPayDays = round(max(0.0, $workingDays - $payableDays), 2);
+        $lossOfPayAmount = round(max(0.0, $fullMonthGross - ($acBasic + $acHra + $acSpecial)), 2);
+        $deductionReasons = [];
+        if ((float) $attData['full_absent'] > 0) {
+            $unmarked = (float) ($attData['unrecorded_days'] ?? 0);
+            $deductionReasons[] = $attData['full_absent'] . ' day(s) absent' . ($unmarked > 0 ? " ({$unmarked} without any attendance entry)" : '') . ' – not paid';
+        }
+        if ((float) $attData['half_absent'] > 0) {
+            $deductionReasons[] = $attData['half_absent'] . ' half day(s) – half pay for each';
+        }
+        if ((float) $attData['unpaid_leave'] > 0) {
+            $deductionReasons[] = $attData['unpaid_leave'] . ' unpaid leave day(s) – ' . $attData['unpaid_deduction_percentage'] . '% of monthly salary per day';
+        }
+        if ($pfAmt > 0) {
+            $deductionReasons[] = 'Provident Fund: ' . rtrim(rtrim(number_format($pfRate, 2), '0'), '.') . '% of earned basic';
+        }
+        if ($esiAmt > 0) {
+            $deductionReasons[] = 'ESI: ' . rtrim(rtrim(number_format($esiRate, 2), '0'), '.') . '% of earned gross';
+        }
+        if ($ptAmt > 0) {
+            $deductionReasons[] = 'Professional Tax as per state slab';
+        }
+        if ($tdsAmt > 0) {
+            $deductionReasons[] = 'Income tax deducted at source (TDS)';
+        }
+        if (($negativeAdjustment ?? 0) > 0) {
+            $deductionReasons[] = 'Salary recovery / negative adjustment of ₹' . number_format($negativeAdjustment, 2) . (! empty($lineInputs['remarks']) ? ' – ' . $lineInputs['remarks'] : '');
+        }
         $empDetail = $user->employeeDetail;
         $empId = $empDetail?->employee_id ?: ('EMP' . str_pad($user->id, 3, '0', STR_PAD_LEFT));
         $branch = $empDetail?->business_address ?: ($user->business_address ?? '-');
@@ -774,6 +855,21 @@ class PayrollCalculationService
             'initial_leave_balance' => $leaveData['initial_balance'],
             'current_leave_balance' => $leaveData['current_balance'],
             'total_leave' => $leaveData['total_leave'],
+            'paid_leave_taken' => $leaveData['paid_leave'] ?? $attData['paid_leave'],
+            'pending_leave_requests' => $pendingLeave['requests'],
+            'pending_leave_days' => $pendingLeave['days'],
+
+            // Work logged (timesheets + task timers)
+            'timesheet_hours' => $workData['timesheet_hours'],
+            'task_timer_hours' => $workData['task_timer_hours'],
+            'work_hours' => $workData['work_hours'],
+            'employment_type' => $empDetail?->employment_type ? ucwords(str_replace('_', ' ', (string) $empDetail->employment_type)) : '-',
+
+            // Loss of pay & reasons for every deduction (payslip)
+            'full_month_gross' => round($fullMonthGross, 2),
+            'loss_of_pay_days' => $lossOfPayDays,
+            'loss_of_pay_amount' => $lossOfPayAmount,
+            'deduction_reasons' => $deductionReasons,
 
             // Base Salary Structure
             'basic' => $basic,

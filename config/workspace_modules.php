@@ -7,6 +7,7 @@ $items = [
     ['company-assistant', 'Company Assistant', null, 'company.ai.index'],
     ['notifications', 'Notifications', null, 'notifications.all'],
     ['my-documents', 'My Documents', null, 'my-documents.index'],
+    ['my-payslips', 'My Payslips', null, 'my-payslips.index'],
     ['organization', 'Organization', null, 'organization.index'],
     ['events', 'Events', null, 'events.index'],
     ['community', 'Community', null, 'community.index'],
@@ -94,12 +95,14 @@ $modules['payroll-processing']['route_names'] = [
     'payroll.review', 'payroll.approve', 'payroll.finalize', 'payroll.recalculate', 'payroll.export',
 ];
 $modules['payroll-history']['route_names'] = ['payroll.history'];
+$modules['leaves-apply']['route_names'] = ['leaves.store'];
 $modules['payslips']['route_prefixes'] = ['payroll.payslips', 'payroll.payslip'];
 $modules['payslips']['route_names'] = ['payroll.generate-payslips'];
 $modules['formula-builder']['route_prefixes'] = ['payroll.formulas'];
 // Every route of these features (not only the sidebar page) follows the module's role permission.
 $modules['company-assistant']['route_prefixes'] = ['company.ai'];
 $modules['my-documents']['route_prefixes'] = ['my-documents'];
+$modules['my-payslips']['route_prefixes'] = ['my-payslips'];
 $modules['events']['route_prefixes'] = ['events'];
 $modules['community']['route_prefixes'] = ['community'];
 $modules['recruitment']['route_prefixes'] = ['recruitment'];

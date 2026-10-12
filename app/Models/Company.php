@@ -314,7 +314,7 @@ class Company extends Model
                 'tasks' => ['tasks'],
                 'timelogs', 'timesheets' => ['timesheets', 'timelogs'],
                 'work' => ['work'],
-                'payroll', 'payslips', 'salary-structures', 'employee-salary' => ['payroll'],
+                'payroll', 'payslips', 'salary-structures', 'employee-salary', 'my-payslips' => ['payroll'],
                 'expenses' => ['expenses'],
                 'billing' => ['billing', 'expenses'],
                 'clients', 'client' => ['clients', 'client', 'leads-contacts'],

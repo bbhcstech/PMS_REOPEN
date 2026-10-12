@@ -453,6 +453,16 @@
     html[data-bs-theme="dark"] .modal-body.bg-light {
         background-color: #0B0F19 !important;
     }
+    #headerFooterSlots .upload-slot-label { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+    #headerFooterSlots .upload-slot-label .badge { white-space: nowrap; line-height: 1.5; }
+    #headerFooterSlots .upload-slot-card { height: 100%; min-width: 0; padding: 18px; }
+    #headerFooterSlots input[type="file"] { width: 100%; min-width: 0; font-size: 14px; border-radius: 10px; }
+    #headerFooterSlots input::file-selector-button { padding: 10px 12px; margin-right: 10px; cursor: pointer; }
+    #headerFooterSlots .upload-size-error { color: #c62828; font-size: 14px; margin-top: 8px; overflow-wrap: anywhere; }
+    #headerFooterSlots .upload-size-error:empty { display: none; }
+    #headerFooterSlots input[aria-invalid="true"] { border-color: #c62828; }
+    html[data-pms-theme="dark"] #headerFooterSlots .upload-size-error,
+    html[data-bs-theme="dark"] #headerFooterSlots .upload-size-error { color: #ffb4b4; }
 </style>
 
 <div class="leave-form-page">
@@ -657,13 +667,14 @@
                             <!-- Header Image Slot -->
                             <div class="col-md-6">
                                 <div class="upload-slot-card">
-                                    <label class="d-flex justify-content-between align-items-center text-success mb-1">
+                                    <label for="header_image" class="upload-slot-label text-success mb-1">
                                         <span><i class="fas fa-arrow-up me-1"></i> Header Image / PDF</span>
                                         <small class="badge bg-success text-white rounded-pill px-2" style="font-size: 0.68rem;">Fixed: 1240 × 160 px</small>
                                     </label>
                                     <input type="file" name="header_image" id="header_image" class="form-control form-control-sm" accept="image/*,.pdf" onchange="previewHeaderImage(this)">
+                                    <div id="header_image_error" class="upload-size-error" role="alert">@error('header_image'){{ $message }}@enderror</div>
                                     <small class="text-muted d-block mt-1" style="font-size: 0.72rem;">
-                                        Default: Bengal IT Hub Header Ribbon • Uploaded photo auto-fits fixed 1240×160 header
+                                        Default: Bengal IT Hub Header Ribbon. Images must be exactly 1240 × 160 px. Maximum file size: 10 MB.
                                     </small>
                                 </div>
                             </div>
@@ -671,13 +682,14 @@
                             <!-- Footer Image Slot -->
                             <div class="col-md-6">
                                 <div class="upload-slot-card">
-                                    <label class="d-flex justify-content-between align-items-center text-success mb-1">
+                                    <label for="footer_image" class="upload-slot-label text-success mb-1">
                                         <span><i class="fas fa-arrow-down me-1"></i> Footer Image / PDF</span>
                                         <small class="badge bg-success text-white rounded-pill px-2" style="font-size: 0.68rem;">Fixed: 1240 × 140 px</small>
                                     </label>
                                     <input type="file" name="footer_image" id="footer_image" class="form-control form-control-sm" accept="image/*,.pdf" onchange="previewFooterImage(this)">
+                                    <div id="footer_image_error" class="upload-size-error" role="alert">@error('footer_image'){{ $message }}@enderror</div>
                                     <small class="text-muted d-block mt-1" style="font-size: 0.72rem;">
-                                        Default: Bengal IT Hub Footer Address & Ribbons • Uploaded photo auto-fits fixed 1240×140 footer
+                                        Default: Bengal IT Hub Footer Address & Ribbons. Images must be exactly 1240 × 140 px. Maximum file size: 10 MB.
                                     </small>
                                 </div>
                             </div>
@@ -914,33 +926,60 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    function validatePlacement(input, height, applyPreview) {
+        const file = input.files && input.files[0];
+        const error = document.getElementById(input.id + '_error');
+        input.setAttribute('aria-describedby', error.id);
+        const report = message => {
+            input.setCustomValidity(message);
+            input.setAttribute('aria-invalid', message ? 'true' : 'false');
+            error.textContent = message;
+        };
+        report('');
+        if (!file) return;
+        if (file.size > 10 * 1024 * 1024) { report('File must be 10 MB or smaller.'); return; }
+        if (file.type === 'application/pdf') return;
+        report('Checking image dimensions. Please wait.');
+        const reader = new FileReader();
+        reader.onerror = () => report('Unable to read this image. Please choose another file.');
+        reader.onload = e => {
+            if (input.files[0] !== file) return;
+            const image = new Image();
+            image.onload = () => {
+                if (input.files[0] !== file) return;
+                if (image.naturalWidth !== 1240 || image.naturalHeight !== height) {
+                    report(`Image must be exactly 1240 × ${height} px. Uploaded image is ${image.naturalWidth} × ${image.naturalHeight} px. Resize it and upload again.`);
+                    return;
+                }
+                report('');
+                applyPreview(e.target.result);
+            };
+            image.onerror = () => report('Unable to read image dimensions. Upload a valid image or PDF.');
+            image.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+
     // Live Header Preview Handler
     window.previewHeaderImage = function (input) {
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                currentHeaderImgData = e.target.result;
+        validatePlacement(input, 160, data => {
+                currentHeaderImgData = data;
                 document.getElementById('prevHeaderImgElement').src = currentHeaderImgData;
-            };
-            reader.readAsDataURL(input.files[0]);
-        }
+        });
     };
 
     // Live Footer Preview Handler
     window.previewFooterImage = function (input) {
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                currentFooterImgData = e.target.result;
+        validatePlacement(input, 140, data => {
+                currentFooterImgData = data;
                 document.getElementById('prevFooterImgElement').src = currentFooterImgData;
-            };
-            reader.readAsDataURL(input.files[0]);
-        }
+        });
     };
 
     // Export Submit Handler (PDF or Word)
     window.submitExport = function (format) {
         const form = document.getElementById('letterMainForm');
+        if (!form.reportValidity()) return;
         const originalAction = form.action;
         const originalTarget = form.target;
 
@@ -962,6 +1001,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Live Print Preview Modal
     window.openPrintPreview = function () {
+        if (!document.getElementById('letterMainForm').reportValidity()) return;
         document.getElementById('prevSubject').textContent = 'Subject: ' + document.getElementById('subject').value;
         document.getElementById('prevBody').textContent = document.getElementById('body').value;
         document.getElementById('prevSignatory').textContent = document.getElementById('signatory_name').value;

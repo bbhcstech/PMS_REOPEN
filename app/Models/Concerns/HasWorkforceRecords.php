@@ -15,7 +15,19 @@ trait HasWorkforceRecords
             $companyId = TenantScope::companyId();
             $table = $query->getModel()->getTable();
             $query->whereHas('user', fn ($user) => $user->where('company_id', $companyId ?: 0));
-            if (! WorkforceAccess::isAdmin(auth()->user())) $query->where($table . '.user_id', auth()->id());
+            if (! WorkforceAccess::isAdmin(auth()->user())) {
+                if (WorkforceAccess::isHr(auth()->user())) {
+                    $query->where(function ($visible) use ($table) {
+                        $visible->where($table . '.user_id', auth()->id())
+                            ->orWhere(function ($employees) use ($table) {
+                                $employees->whereHas('user', fn ($users) => WorkforceAccess::users($users, 'employee'));
+                                if ($employees->getModel()->getConnection()->getSchemaBuilder()->hasColumn($table, 'staff_category')) {
+                                    $employees->where(fn ($category) => $category->where($table . '.staff_category', 'employee')->orWhereNull($table . '.staff_category'));
+                                }
+                            });
+                    });
+                } else $query->where($table . '.user_id', auth()->id());
+            }
             if ($query->getModel()->getConnection()->getSchemaBuilder()->hasColumn($table, 'company_id')) {
                 $query->where(fn ($q) => $q->where($table . '.company_id', $companyId ?: 0)->orWhereNull($table . '.company_id'));
             }

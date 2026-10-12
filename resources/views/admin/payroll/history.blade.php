@@ -4,13 +4,8 @@
 
 @section('content')
 <div class="payroll-container" id="payrollHistoryPage">
-    <div class="container-xxl flex-grow-1 container-p-y">
+    <div class="payroll-page-body">
         @include('admin.payroll.partials.styles')
-
-        <div class="topbar-crumb mb-3">
-            <h4 class="fw-bold py-1 mb-1"><span class="text-muted fw-light">Admin Workspace / Payroll /</span> History</h4>
-            <div class="crumb text-muted small">View historical payroll records and audits</div>
-        </div>
 
         @include('admin.payroll.partials.tabs')
 

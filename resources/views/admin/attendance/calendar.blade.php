@@ -16,7 +16,7 @@
         <div class="ac-title"><span class="ac-title-icon" aria-hidden="true">📅</span><div><span class="ac-eyebrow">PEOPLE · ATTENDANCE</span><h1>{{ request('staff_category') === 'authority' ? 'Higher-level attendance' : 'Attendance calendar' }}</h1><p>A clear picture of every working day.</p></div></div>
         <div class="ac-actions">
             <a class="ac-button ac-primary" href="{{ route($attendanceRoute, ['view' => 'team', 'month' => $month, 'year' => $year]) }}">Employee attendance table</a>
-            @if($canManage)
+            @if(\App\Services\WorkforceAccess::isAdmin(auth()->user()))
                 @if(auth()->user()->canViewModule('higher-level-attendance'))
                     <a class="ac-button" href="{{ route(request('staff_category') === 'authority' ? 'attendance.index' : 'admin.authority-attendance', ['view' => 'team', 'month' => $month, 'year' => $year]) }}">{{ request('staff_category') === 'authority' ? 'Employee attendance' : 'Higher-level attendance' }}</a>
                 @endif
@@ -56,7 +56,7 @@
         </div>
     </section>
     <section class="ac-panel ac-month-panel" aria-label="{{ $start->format('F Y') }} attendance">
-        <div class="ac-month-heading"><div><span class="ac-eyebrow">MONTH AT A GLANCE</span><h2>{{ $start->format('F Y') }}</h2></div><div class="ac-actions"><button type="button" class="ac-button" id="ac-export">Export month CSV</button>@if($canManage)<a class="ac-button" href="{{ route('attendance.byHour', ['staff_category' => request('staff_category'), 'user_id' => $selectedEmployee->id, 'month' => $month, 'year' => $year]) }}">Hours report</a>@endif</div></div>
+        <div class="ac-month-heading"><div><span class="ac-eyebrow">MONTH AT A GLANCE</span><h2>{{ $start->format('F Y') }}</h2></div><div class="ac-actions"><button type="button" class="ac-button" id="ac-export">Export month CSV</button>@if(\App\Services\WorkforceAccess::isAdmin(auth()->user()))<a class="ac-button" href="{{ route('attendance.byHour', ['staff_category' => request('staff_category'), 'user_id' => $selectedEmployee->id, 'month' => $month, 'year' => $year]) }}">Hours report</a>@endif</div></div>
         <p class="ac-help">Select any date for clock times, locations, leave and holiday details. Hours include all recorded sessions.</p>
         <div class="ac-calendar-scroll"><div class="ac-calendar">
             @foreach(['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as $weekday)<div class="ac-weekday">{{ $weekday }}</div>@endforeach
@@ -85,7 +85,7 @@
             @if($day['leave'])<p>🌴 {{ ucfirst($day['leave']->type ?? 'Leave') }} · {{ $day['leave']->duration ?? 'Full day' }}</p><p>{{ $day['leave']->reason }}</p>@endif
             @forelse($day['daily'] as $record)
                 <article class="ac-session"><h3>Attendance session {{ $loop->iteration }}</h3>@if($record->staff_category === 'authority')<p>{{ $record->staff_role_name }} &middot; {{ $record->staff_designation }} @if($record->staff_designation_level !== null) &middot; Level {{ $record->staff_designation_level }} @endif</p>@endif<dl><dt>Clock in</dt><dd>{{ $record->clock_in ?: '—' }}</dd><dt>Clock out</dt><dd>{{ $record->clock_out ?: 'Active / not recorded' }}</dd><dt>Work arrangement</dt><dd>{{ $record->work_from_type ?: ($record->working_from ?: 'Not recorded') }}</dd><dt>Clock-in location</dt><dd>{{ $record->clock_in_address ?: 'Not recorded' }}</dd><dt>Clock-out location</dt><dd>{{ $record->clock_out_address ?: 'Not recorded' }}</dd></dl>
-                @if($canManage)
+                @if(\App\Services\WorkforceAccess::isAdmin(auth()->user()))
                 <details><summary>Edit attendance</summary><form class="ac-edit" action="{{ route('attendance.update', $record->id) }}" method="POST">@csrf @method('PUT')
                     <label>Status<select name="status">@foreach(['present', 'late', 'half_day', 'absent', 'holiday', 'leave', 'unpaid_leave', 'day_off'] as $status)<option value="{{ $status }}" @selected($record->status === $status)>{{ ucfirst(str_replace('_', ' ', $status)) }}</option>@endforeach</select></label>
                     <label>Clock in<input name="clock_in" type="time" value="{{ $record->clock_in ? \Carbon\Carbon::parse($record->clock_in)->format('H:i') : '' }}"></label>
@@ -96,7 +96,7 @@
                 </form></details>
                 @endif</article>
             @empty<p>No clock-in session recorded for this date.</p>@endforelse
-            @if($canManage)<a class="ac-button ac-primary" href="{{ route('attendance.create', ['staff_category' => request('staff_category'), 'user_id' => $selectedEmployee->id, 'date' => $day['key']]) }}">＋ Mark attendance for this date</a>@endif
+            @if(\App\Services\WorkforceAccess::isAdmin(auth()->user()))<a class="ac-button ac-primary" href="{{ route('attendance.create', ['staff_category' => request('staff_category'), 'user_id' => $selectedEmployee->id, 'date' => $day['key']]) }}">＋ Mark attendance for this date</a>@endif
         </dialog>
     @endforeach
     @else<section class="ac-panel"><h2>No employees available</h2><p>No employees are available within your attendance permissions.</p></section>@endif

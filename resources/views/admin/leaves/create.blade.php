@@ -2,7 +2,7 @@
 
 @php
     $isEdit = isset($leave);
-    $isAdmin = \App\Services\WorkforceAccess::isAdmin(auth()->user());
+    $isAdmin = \App\Services\WorkforceAccess::canManageLeaves(auth()->user()) && (!isset($selectedUser) || (int) $selectedUser->id !== (int) auth()->id());
     $oldStartDate = old('start_date', $isEdit ? optional($leave->start_date)->format('Y-m-d') : '');
     $oldEndDate = old('end_date', $isEdit ? optional($leave->end_date)->format('Y-m-d') : '');
 @endphp

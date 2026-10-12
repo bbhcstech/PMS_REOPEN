@@ -12,6 +12,33 @@ class LetterheadImage
     public const HEADER = [1240, 160];
     public const FOOTER = [1240, 140];
 
+    public static function uploadRules(array $size): array
+    {
+        return ['nullable', 'file', 'mimes:jpeg,png,jpg,gif,svg,webp,pdf', 'max:10240',
+            function ($attribute, $file, $fail) use ($size) {
+                if ($file->getMimeType() === 'application/pdf') return;
+                $dimensions = @getimagesize($file->getRealPath());
+                if (! $dimensions && $file->getMimeType() === 'image/svg+xml') {
+                    $previous = libxml_use_internal_errors(true);
+                    $svg = simplexml_load_file($file->getRealPath(), \SimpleXMLElement::class, LIBXML_NONET);
+                    if ($svg) {
+                        $width = (string) $svg['width'];
+                        $height = (string) $svg['height'];
+                        if (preg_match('/^([0-9.]+)(?:px)?$/', $width, $w) && preg_match('/^([0-9.]+)(?:px)?$/', $height, $h)) {
+                            $dimensions = [(float) $w[1], (float) $h[1]];
+                        }
+                    }
+                    libxml_clear_errors();
+                    libxml_use_internal_errors($previous);
+                }
+                if (! $dimensions || $dimensions[0] != $size[0] || $dimensions[1] != $size[1]) {
+                    $label = $attribute === 'header_image' ? 'Header' : 'Footer';
+                    $actual = $dimensions ? " Uploaded image is {$dimensions[0]} × {$dimensions[1]} px." : '';
+                    $fail("{$label} image must be exactly {$size[0]} × {$size[1]} px.{$actual} Resize the image and upload it again.");
+                }
+            }];
+    }
+
     /** Fitted copy of a stored image (cached per file version); SVG/PDF and unknown types are returned as-is. */
     public static function fitStored(?string $path, array $size): ?string
     {

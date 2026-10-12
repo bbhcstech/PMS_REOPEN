@@ -7,6 +7,23 @@ use Illuminate\Database\Eloquent\Builder;
 
 class WorkforceAccess
 {
+    public static function isHr(?User $user): bool
+    {
+        return $user && strtolower((string) $user->role) === 'hr';
+    }
+
+    public static function canManageLeaves(?User $user): bool
+    {
+        return static::isAdmin($user) || static::isHr($user);
+    }
+
+    public static function canAccessRecord(?User $actor, User $owner, ?string $category = null): bool
+    {
+        if (! $actor || (int) $actor->company_id !== (int) $owner->company_id) return false;
+        if (static::isAdmin($actor)) return true;
+        if ($category === 'authority' || static::isAuthority($owner)) return false;
+        return static::isHr($actor) || (int) $actor->id === (int) $owner->id;
+    }
     public static function isAdmin(?User $user): bool
     {
         return $user && ! $user->company_staff_role_id
@@ -41,7 +58,9 @@ class WorkforceAccess
         abort_unless($companyId && (int) $user->company_id === $companyId, 403);
         $company = \App\Models\Company::findOrFail($companyId);
         abort_unless($company->db_name === \Illuminate\Support\Facades\DB::connection('tenant')->getDatabaseName(), 403, 'Company workspace does not match this account.');
-        abort_if($user->archived_at || ! $user->is_active || ! $user->login_allowed, 403);
+        // Older employee accounts may predate these flags. Only an explicit
+        // disablement should revoke access for an already authenticated user.
+        abort_if($user->archived_at || $user->is_active === false || $user->login_allowed === false, 403, 'This account is inactive or login access has been disabled.');
         if ($user->company_staff_role_id) {
             $role = \App\Models\CompanyStaffRole::where('company_id', $companyId)->findOrFail($user->company_staff_role_id);
             abort_unless($role->access_role === $user->role, 403);

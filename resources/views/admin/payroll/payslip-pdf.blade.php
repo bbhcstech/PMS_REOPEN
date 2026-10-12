@@ -68,6 +68,28 @@
         ['Overtime', $qty($n('overtime_hours')) . ' h'],
     ];
     $hasLeaveBalance = array_key_exists('initial_leave_balance', $b) || array_key_exists('current_leave_balance', $b);
+    $employmentType = ($b['employment_type'] ?? '-') !== '-' ? $b['employment_type'] : ($emp?->employment_type ? ucwords(str_replace('_', ' ', $emp->employment_type)) : '—');
+    $leaveSummary = [
+        ['Opening balance', $qty($n('initial_leave_balance')) . ' d'],
+        ['Paid leave taken', $qty($n('paid_leave')) . ' d'],
+        ['Unpaid leave', $qty($n('unpaid_leave')) . ' d'],
+        ['Pending approval', $qty($n('pending_leave_days')) . ' d' . ($n('pending_leave_requests') > 0 ? ' (' . (int) $n('pending_leave_requests') . ' request' . ($n('pending_leave_requests') > 1 ? 's' : '') . ')' : '')],
+        ['Closing balance', $qty($n('current_leave_balance')) . ' d'],
+    ];
+    $workSummary = [
+        ['Hours worked', $qty($n('working_hours')) . ' h'],
+        ['Work logged', array_key_exists('work_hours', $b) ? $qty($n('work_hours')) . ' h' : '—'],
+        ['Overtime', $qty($n('overtime_hours')) . ' h'],
+        ['Unmarked working days', $qty($n('unrecorded_days')) . ' d'],
+    ];
+    // Why money was not paid / deducted (computed with the payroll; rebuilt for older payslips).
+    $deductionReasons = array_values(array_filter((array) ($b['deduction_reasons'] ?? [])));
+    if (! array_key_exists('deduction_reasons', $b)) {
+        if ($n('full_absent', $b['total_absent'] ?? 0) > 0) $deductionReasons[] = $qty($n('full_absent', $b['total_absent'] ?? 0)) . ' day(s) absent – not paid';
+        if ($n('half_day') > 0) $deductionReasons[] = $qty($n('half_day')) . ' half day(s) – half pay for each';
+        if ($n('unpaid_leave') > 0) $deductionReasons[] = $qty($n('unpaid_leave')) . ' unpaid leave day(s)';
+    }
+    $lossOfPay = $n('loss_of_pay_amount', max(0, $n('gross') - $n('gross_salary')));
 
     // Earnings: full-month rate vs amount earned for the payable days.
     $earnings = [
@@ -127,6 +149,9 @@
         $deductions[] = ['Salary Adjustment (Recovery)', $negativeAdjustment];
     }
     $totalDeductions = round($statutoryDeductions + $negativeAdjustment, 2);
+    if (! array_key_exists('deduction_reasons', $b)) {
+        foreach ($deductions as [$label, $amount]) $deductionReasons[] = $label . ': ' . $money($amount);
+    }
 
     $netPay = $n('total_in_hand', $b['net_pay'] ?? ($payslip?->net_salary ?? 0));
     $netInWords = \App\Support\AmountInWords::rupees($netPay);
@@ -302,6 +327,7 @@
                     <tr><td class="k">Designation</td><td class="v">{{ $designation }}</td></tr>
                     <tr><td class="k">Department</td><td class="v">{{ $department }}</td></tr>
                     <tr><td class="k">Designation Level</td><td class="v">{{ $grade }}</td></tr>
+                    <tr><td class="k">Employment Type</td><td class="v">{{ $employmentType }}</td></tr>
                 </table>
             </td>
             <td class="gap"></td>
@@ -327,15 +353,29 @@
             @endforeach
         </tr>
     </table>
-    @if($hasLeaveBalance)
-        <div class="leave-line">
-            Leave balance — opening <b>{{ $qty($n('initial_leave_balance')) }}</b>,
-            taken this month <b>{{ $qty($n('total_leave')) }}</b>,
-            closing <b>{{ $qty($n('current_leave_balance')) }}</b> days.
-            @if($n('unpaid_leave') > 0)
-                Unpaid leave reduces pay by {{ $qty($n('unpaid_salary_deduction_percent')) }}% (already reflected in earnings).
-            @endif
-        </div>
+    <table class="details" style="margin-top:10px;">
+        <tr>
+            <td class="col">
+                <div class="section" style="margin-top:6px;">Leave Summary</div>
+                <table class="kv">
+                    @foreach($leaveSummary as [$label, $value])
+                        <tr><td class="k">{{ $label }}</td><td class="v">{{ $hasLeaveBalance || ! str_contains($label, 'balance') ? $value : '—' }}</td></tr>
+                    @endforeach
+                </table>
+            </td>
+            <td class="gap"></td>
+            <td class="col">
+                <div class="section" style="margin-top:6px;">Work Summary</div>
+                <table class="kv">
+                    @foreach($workSummary as [$label, $value])
+                        <tr><td class="k">{{ $label }}</td><td class="v">{{ $value }}</td></tr>
+                    @endforeach
+                </table>
+            </td>
+        </tr>
+    </table>
+    @if($n('unpaid_leave') > 0)
+        <div class="leave-line">Unpaid leave reduces pay by {{ $qty($n('unpaid_salary_deduction_percent')) }}% of the monthly salary (already reflected in earnings).</div>
     @endif
 
     {{-- Earnings & deductions --}}
@@ -382,6 +422,19 @@
             <td class="net"><div class="s-k">Net Pay</div><div class="s-v">{{ $money($netPay) }}</div></td>
         </tr>
     </table>
+
+    {{-- Why pay was reduced / deducted --}}
+    @if($deductionReasons || $lossOfPay > 0)
+        <div class="section">Deduction Details</div>
+        <table class="employer">
+            @if($lossOfPay > 0)
+                <tr class="ctc"><td>Loss of pay ({{ $qty(max(0, $workingDays - $payableDays)) }} of {{ $qty($workingDays) }} working days not payable)</td><td class="r">{{ $money($lossOfPay) }}</td></tr>
+            @endif
+            @foreach($deductionReasons as $reason)
+                <tr><td colspan="2">• {{ $reason }}</td></tr>
+            @endforeach
+        </table>
+    @endif
 
     {{-- Employer contributions --}}
     @if($employer || $n('ctc') > 0)

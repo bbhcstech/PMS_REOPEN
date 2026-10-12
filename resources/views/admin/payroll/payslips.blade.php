@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="payroll-container" id="payslipsPage">
-    <div class="container-xxl flex-grow-1 container-p-y">
+    <div class="payroll-page-body">
         @include('admin.payroll.partials.styles')
         <style>
             #payslipsTable .payslip-selection { width:48px; min-width:48px; padding:12px!important; text-align:center; vertical-align:middle; }
@@ -16,11 +16,6 @@
             #payslipsPage .pr-filters .form-control, #payslipsPage .pr-filters .form-select { min-height:38px; }
             @media (max-width:575px) { #payslipsPage .pr-filters .field { flex-basis:100%; min-width:0; } }
         </style>
-
-        <div class="topbar-crumb mb-3">
-            <h4 class="fw-bold py-1 mb-1"><span class="text-muted fw-light">Admin Workspace / Payroll /</span> Payslips</h4>
-            <div class="crumb text-muted small">Generate, view, print and download employee payslips</div>
-        </div>
 
         @include('admin.payroll.partials.tabs')
 

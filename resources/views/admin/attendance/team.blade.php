@@ -12,12 +12,12 @@
     <header class="at-panel at-header">
         <div><span class="at-eyebrow">PEOPLE / ATTENDANCE</span><h1>{{ request('staff_category') === 'authority' ? 'Higher-level attendance' : 'Employee attendance' }}</h1><p>Every employee, every day — one monthly overview.</p></div>
         <div class="at-actions">
-            @if($canManage && auth()->user()->canViewModule('higher-level-attendance'))
+            @if(\App\Services\WorkforceAccess::isAdmin(auth()->user()) && auth()->user()->canViewModule('higher-level-attendance'))
                 <a class="at-button" href="{{ route(request('staff_category') === 'authority' ? 'attendance.index' : 'admin.authority-attendance', ['view' => 'team', 'month' => $month, 'year' => $year]) }}">{{ request('staff_category') === 'authority' ? 'Employee attendance' : 'Higher-level attendance' }}</a>
             @endif
             <a class="at-button" href="{{ route($attendanceRoute, ['month' => $month, 'year' => $year]) }}">Employee calendar</a>
             <a class="at-button" href="{{ route($attendanceRoute, ['view' => 'team', 'month' => $month, 'year' => $year, 'search' => request('search'), 'format' => 'csv']) }}">Export CSV</a>
-            @if($canManage)<a class="at-button at-primary" href="{{ route('attendance.create', ['staff_category' => request('staff_category')]) }}">+ Mark attendance</a>@endif
+            @if(\App\Services\WorkforceAccess::isAdmin(auth()->user()))<a class="at-button at-primary" href="{{ route('attendance.create', ['staff_category' => request('staff_category')]) }}">+ Mark attendance</a>@endif
         </div>
     </header>
     <form class="at-panel at-filters" method="GET" action="{{ route($attendanceRoute) }}">
