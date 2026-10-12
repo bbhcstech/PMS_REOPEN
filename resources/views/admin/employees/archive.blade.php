@@ -5,7 +5,7 @@
 @endsection
 
 @section('content')
-<div class="employee-dashboard archived-employee-page !min-h-screen !overflow-x-hidden !px-3 !py-4 sm:!px-5 sm:!py-5 lg:!px-8 lg:!py-7">
+<div id="archivedEmployeesPage" class="employee-dashboard archived-employee-page !min-h-screen !overflow-x-hidden !px-3 !py-4 sm:!px-5 sm:!py-5 lg:!px-8 lg:!py-7">
 
     {{-- Ambient Animated Background --}}
     <div class="ambient-bg-archive">
@@ -998,6 +998,30 @@
         color: #60A5FA !important;
         -webkit-text-fill-color: #60A5FA !important;
     }
+    /* Readable text in both themes. pms-refresh.css (loaded again after this page) forces slate text on
+       nearly every .employee-dashboard span with a very specific !important rule; the page id outranks it. */
+    #archivedEmployeesPage #archive-selected-count { background: #eff4ff !important; color: #1d4ed8 !important; -webkit-text-fill-color: #1d4ed8 !important; border-color: rgba(47, 107, 255, 0.28) !important; }
+    #archivedEmployeesPage .archive-btn:disabled,
+    #archivedEmployeesPage .archive-btn[disabled] { opacity: 1 !important; background: #e2e8f0 !important; color: #475569 !important; -webkit-text-fill-color: #475569 !important; }
+    #archivedEmployeesPage .archive-employee-cell span { color: #475569 !important; -webkit-text-fill-color: #475569 !important; }
+    #archivedEmployeesPage .employee-id-badge { color: #1d4ed8 !important; -webkit-text-fill-color: #1d4ed8 !important; }
+    #archivedEmployeesPage .archive-status.status-active { color: #166534 !important; -webkit-text-fill-color: #166534 !important; }
+    html:not([data-pms-theme="dark"]) #archivedEmployeesPage .breadcrumb-item a,
+    html:not([data-pms-theme="dark"]) #archivedEmployeesPage .archive-btn-light { color: #1d4ed8 !important; -webkit-text-fill-color: #1d4ed8 !important; }
+    #archivedEmployeesPage .archive-status.status-inactive { color: #b91c1c !important; -webkit-text-fill-color: #b91c1c !important; }
+    #archivedEmployeesPage .deleted-badge { color: #334155 !important; -webkit-text-fill-color: #334155 !important; }
+    #archivedEmployeesPage .archive-page-current { color: #070B1A !important; -webkit-text-fill-color: #070B1A !important; }
+
+    :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) #archivedEmployeesPage .archive-show-entries span,
+    :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) #archivedEmployeesPage .archive-employee-cell span { color: #CBD5E1 !important; -webkit-text-fill-color: #CBD5E1 !important; }
+    :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) #archivedEmployeesPage .employee-id-badge { background: rgba(96, 165, 250, 0.16) !important; border-color: rgba(96, 165, 250, 0.35) !important; color: #DBEAFE !important; -webkit-text-fill-color: #DBEAFE !important; }
+    :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) #archivedEmployeesPage .archive-status.status-active { background: rgba(16, 185, 129, 0.18) !important; border-color: rgba(16, 185, 129, 0.4) !important; color: #6EE7B7 !important; -webkit-text-fill-color: #6EE7B7 !important; }
+    :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) #archivedEmployeesPage .archive-status.status-inactive { background: rgba(248, 113, 113, 0.16) !important; border-color: rgba(248, 113, 113, 0.4) !important; color: #FECACA !important; -webkit-text-fill-color: #FECACA !important; }
+    :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) #archivedEmployeesPage .deleted-badge { color: #DFFFEE !important; -webkit-text-fill-color: #DFFFEE !important; }
+    :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) #archivedEmployeesPage .archive-page-current { background: rgba(255, 255, 255, 0.06) !important; border-radius: 12px; padding: 0.35rem 0.75rem; color: #E2E8F0 !important; -webkit-text-fill-color: #E2E8F0 !important; }
+    :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) #archivedEmployeesPage #archive-selected-count { background: #14281e !important; border-color: rgba(122, 240, 181, 0.45) !important; color: #FFFFFF !important; -webkit-text-fill-color: #FFFFFF !important; }
+    :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) #archivedEmployeesPage .archive-btn:disabled,
+    :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) #archivedEmployeesPage .archive-btn[disabled] { background: rgba(148, 163, 184, 0.18) !important; color: #CBD5E1 !important; -webkit-text-fill-color: #CBD5E1 !important; }
 </style>
 
 @push('js')

@@ -51,6 +51,12 @@ $items = [
     ['tickets', 'Ticket', null, 'tickets.index'],
     ['company-complaints', 'Platform Support & Complaints', null, 'admin.company-complaints.index'],
     ['payroll', 'Payroll', null, 'payroll.index'],
+    ['salary-structures', 'Salary Structure', 'payroll', 'payroll.salary-structures.index', true],
+    ['employee-salary', 'Employee Salary', 'payroll', 'payroll.employee-salary.index', true],
+    ['payroll-processing', 'Processing', 'payroll', 'payroll.processing', true],
+    ['payroll-history', 'History', 'payroll', 'payroll.history', true],
+    ['payslips', 'Payslips', 'payroll', 'payroll.payslips.index', true],
+    ['formula-builder', 'Formulas & Rules', 'payroll', 'payroll.formulas.index', true],
     ['settings', 'Settings', null, null],
     ['settings-dashboard', 'Settings Dashboard', 'settings', 'admin.settings.index'],
     ['company-profile-settings', 'Company Profile', 'settings', 'settings.company'],
@@ -81,4 +87,23 @@ foreach ($items as $position => $item) {
         'order' => $position, 'inherits' => ($item[4] ?? false) ? ($item[5] ?? $parent) : null,
     ];
 }
+$modules['salary-structures']['route_prefixes'] = ['payroll.salary-structures'];
+$modules['employee-salary']['route_prefixes'] = ['payroll.employee-salary'];
+$modules['payroll-processing']['route_names'] = [
+    'payroll.processing', 'payroll.calculate', 'payroll.preview', 'payroll.line-input.update',
+    'payroll.review', 'payroll.approve', 'payroll.finalize', 'payroll.recalculate', 'payroll.export',
+];
+$modules['payroll-history']['route_names'] = ['payroll.history'];
+$modules['payslips']['route_prefixes'] = ['payroll.payslips', 'payroll.payslip'];
+$modules['payslips']['route_names'] = ['payroll.generate-payslips'];
+$modules['formula-builder']['route_prefixes'] = ['payroll.formulas'];
+// Every route of these features (not only the sidebar page) follows the module's role permission.
+$modules['company-assistant']['route_prefixes'] = ['company.ai'];
+$modules['my-documents']['route_prefixes'] = ['my-documents'];
+$modules['events']['route_prefixes'] = ['events'];
+$modules['community']['route_prefixes'] = ['community'];
+$modules['recruitment']['route_prefixes'] = ['recruitment'];
+$modules['appraisal']['route_prefixes'] = ['appraisal'];
+$modules['leads-contacts']['route_prefixes'] = ['leads.contacts'];
+$modules['company-complaints']['route_prefixes'] = ['admin.company-complaints'];
 return $modules;

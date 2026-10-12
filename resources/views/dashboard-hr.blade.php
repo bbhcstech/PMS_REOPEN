@@ -958,6 +958,7 @@
                                 <i class="bx bx-log-in-circle"></i> Clock In
                             </button>
                         </form>
+                        @include('admin.partials.clock-window-note')
                         <div class="clock-requirements" id="clockRequirementStatus">
                             <div class="clock-status-line"><i class="bx bx-map-pin"></i><span>Share current location to save your clock-in place.</span></div>
                             <div class="clock-status-line"><i class="bx bx-camera"></i><span>Capture photo to complete clock in.</span></div>

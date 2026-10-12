@@ -1579,6 +1579,30 @@
         color: #e2e8f0 !important;
         background: rgba(255, 255, 255, 0.08) !important;
     }
+
+   /* An active Department parent must not give inactive children white text. */
+   html:not([data-pms-theme="dark"]):not([data-theme="dark"]):not([data-bs-theme="dark"]):not(.dark) #layout-menu .department-sidebar-menu > .menu-sub > .menu-item:not(.active) > .menu-link {
+       background: transparent !important;
+       color: #334155 !important;
+       -webkit-text-fill-color: #334155 !important;
+       box-shadow: none !important;
+   }
+   html:not([data-pms-theme="dark"]):not([data-theme="dark"]):not([data-bs-theme="dark"]):not(.dark) #layout-menu .department-sidebar-menu > .menu-sub > .menu-item:not(.active) > .menu-link > div {
+       color: #334155 !important;
+       -webkit-text-fill-color: #334155 !important;
+   }
+   html:not([data-pms-theme="dark"]):not([data-theme="dark"]):not([data-bs-theme="dark"]):not(.dark) #layout-menu .department-sidebar-menu > .menu-sub > .menu-item:not(.active) > .menu-link:hover {
+       background: #eff6ff !important;
+   }
+   html:not([data-pms-theme="dark"]):not([data-theme="dark"]):not([data-bs-theme="dark"]):not(.dark) #layout-menu .department-sidebar-menu > .menu-sub > .menu-item.active > .menu-link {
+       background: #2f6bff !important;
+       color: #fff !important;
+       -webkit-text-fill-color: #fff !important;
+   }
+   html:not([data-pms-theme="dark"]):not([data-theme="dark"]):not([data-bs-theme="dark"]):not(.dark) #layout-menu .department-sidebar-menu > .menu-sub > .menu-item.active > .menu-link > div {
+       color: #fff !important;
+       -webkit-text-fill-color: #fff !important;
+   }
 </style>
 @php
     $adminRefreshVersion = file_exists(public_path('admin/assets/css/pms-refresh.css')) ? filemtime(public_path('admin/assets/css/pms-refresh.css')) : time();
@@ -1779,7 +1803,7 @@
             </li>
             @endif
 
-            @if(auth()->user()?->company_id && !\App\Services\TenantScope::isPlatformAdmin())
+            @if(auth()->user()?->company_id && !\App\Services\TenantScope::isPlatformAdmin() && auth()->user()->moduleToggleAllows('company-assistant'))
             <li class="menu-item {{ request()->routeIs('company.ai.*') ? 'active' : '' }}">
               <a href="{{ route('company.ai.index') }}" class="menu-link">
                   <i class="menu-icon tf-icons bx bx-bot"></i>
@@ -1887,7 +1911,7 @@
                 @endif
 
                 @if($canSeeModule('departments'))
-                    <li class="menu-item {{ request()->routeIs('parent-departments.*') || request()->routeIs('departments.*') ? 'active open' : '' }}">
+                    <li class="menu-item department-sidebar-menu {{ request()->routeIs('parent-departments.*') || request()->routeIs('departments.*') ? 'active open' : '' }}">
                         <a href="javascript:void(0);" class="menu-link menu-toggle" data-sidebar-key="departments">
                             <i class="menu-icon tf-icons bx bx-buildings"></i>
                             <div class="text-truncate">Department</div>
@@ -1953,12 +1977,14 @@
                             <div class="text-truncate" data-i18n="Container">Recognition</div>
                         </a>
                     </li>
+                    @if(auth()->user()->moduleToggleAllows('letterhead'))
                     <li class="menu-item {{ request()->routeIs('letterhead.*') || request()->routeIs('admin.letterhead.*') ? 'active' : '' }}">
                         <a href="{{ route('letterhead.index') }}" class="menu-link" data-sidebar-key="letterhead">
                             <i class="menu-icon tf-icons bx bx-file-blank"></i>
                             <div class="text-truncate" data-i18n="Letter Head">Letter Head</div>
                         </a>
                     </li>
+                    @endif
                 @endif
             @else
                 <!-- Layouts (Collapsible HR Menu for Admin, Manager, etc.) -->
@@ -2014,7 +2040,7 @@
 
      <!-- Department with Submenu -->
                       @if($canSeeModule('departments'))
-                      <li class="menu-item {{ request()->routeIs('parent-departments.*') || request()->routeIs('departments.*') ? 'active open' : '' }}">
+                      <li class="menu-item department-sidebar-menu {{ request()->routeIs('parent-departments.*') || request()->routeIs('departments.*') ? 'active open' : '' }}">
                         <a href="javascript:void(0);" class="menu-link menu-toggle">
                           <div class="text-truncate">Department</div>
                         </a>
@@ -2087,30 +2113,20 @@
                     @endif
 
 
-                        @if($canSeeModule('awards') && auth()->user()->role === 'admin')
-                        <!-- Admin sees Appreciation menu -->
-                        <li class="menu-item {{ request()->routeIs('awards.*') ? 'active' : '' }}">
+                        @if($canSeeModule('awards'))
+                        {{-- Recognition follows the role permission for every role (employees see their own awards). --}}
+                        <li class="menu-item {{ request()->routeIs('awards.*') || request()->routeIs('employee.awards') ? 'active' : '' }}">
                             <a href="{{ route('awards.index') }}" class="menu-link">
-                                <div class="text-truncate" data-i18n="Container">Recognition</div>
+                                <div class="text-truncate" data-i18n="Container">{{ auth()->user()->role === 'employee' ? 'My Awards' : 'Recognition' }}</div>
                             </a>
                         </li>
+                        @if(auth()->user()->moduleToggleAllows('letterhead'))
                         <li class="menu-item {{ request()->routeIs('letterhead.*') || request()->routeIs('admin.letterhead.*') ? 'active' : '' }}">
                             <a href="{{ route('letterhead.index') }}" class="menu-link">
                                 <div class="text-truncate" data-i18n="Letter Head">Letter Head</div>
                             </a>
                         </li>
-                        @elseif($canSeeModule('awards') && auth()->user()->role === 'employee')
-                        <!-- Employee also sees Recognition menu but goes to filtered view -->
-                        <li class="menu-item {{ request()->routeIs('awards.*') || request()->routeIs('employee.awards') ? 'active' : '' }}">
-                            <a href="{{ route('awards.index') }}" class="menu-link">
-                                <div class="text-truncate" data-i18n="Container">My Awards</div>
-                            </a>
-                        </li>
-                        <li class="menu-item {{ request()->routeIs('letterhead.*') || request()->routeIs('admin.letterhead.*') ? 'active' : '' }}">
-                            <a href="{{ route('letterhead.index') }}" class="menu-link">
-                            <div class="text-truncate" data-i18n="Letter Head">Letter Head</div>
-                            </a>
-                        </li>
+                        @endif
                     @endif
 
                   </ul>
@@ -2279,18 +2295,22 @@
 
                         <ul class="menu-sub">
                             {{-- Lead Contact --}}
+                            @if(auth()->user()->moduleToggleAllows('leads-contacts'))
                             <li class="menu-item {{ request()->routeIs('leads.contacts.*') ? 'active' : '' }}">
                                 <a href="{{ route('leads.contacts.index') }}" class="menu-link">
                                     <div class="text-truncate" data-i18n="Landing">Lead Contact</div>
                                 </a>
                             </li>
+                            @endif
 
                             {{-- Deals --}}
+                            @if(auth()->user()->moduleToggleAllows('crm-deals'))
                             <li class="menu-item {{ request()->routeIs('admin.deals.*') ? 'active' : '' }}">
                                 <a href="{{ route('admin.deals.index') }}" class="menu-link">
                                     <div class="text-truncate">Deals</div>
                                 </a>
                             </li>
+                            @endif
                         </ul>
                     </li>
                 @endif
@@ -2329,7 +2349,7 @@
             @endif
 
             <!-- Platform Support & Complaints -->
-            @if(strtolower(trim((string) (auth()->user()->role ?? ''))) !== 'hr')
+            @if(strtolower(trim((string) (auth()->user()->role ?? ''))) !== 'hr' && auth()->user()->moduleToggleAllows('company-complaints'))
             <li class="menu-item {{ request()->routeIs('admin.company-complaints.*') ? 'active' : '' }}">
                 <a href="{{ route('admin.company-complaints.index') }}" class="menu-link">
                     <i class="menu-icon tf-icons bx bx-support"></i>
@@ -2371,7 +2391,7 @@
                         <li class="menu-item {{ request()->routeIs('admin.settings.business-address*') ? 'active' : '' }}"><a href="{{ route('admin.settings.business-address.index') }}" class="menu-link"><div>Branches / Locations</div></a></li>
                         @endif
                         @if($canSeeModule('departments'))
-                        <li class="menu-item {{ request()->routeIs('parent-departments.*') || request()->routeIs('departments.*') ? 'active open' : '' }}">
+                        <li class="menu-item department-sidebar-menu {{ request()->routeIs('parent-departments.*') || request()->routeIs('departments.*') ? 'active open' : '' }}">
                             <a href="javascript:void(0);" class="menu-link menu-toggle">
                                 <div>Department</div>
                             </a>

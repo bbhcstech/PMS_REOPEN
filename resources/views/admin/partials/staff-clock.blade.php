@@ -28,10 +28,11 @@
             <input type="hidden" name="clock_in_timezone" id="clockInTimezone">
             <button class="employee-action-btn is-in" type="submit" id="employeeClockInButton"><i class="bx bx-log-in-circle"></i> Clock In</button>
         </form>
+        @include('admin.partials.clock-window-note')
     @endif
-        <a class="btn btn-outline-primary" href="{{ route('attendance.index') }}">My attendance</a>
-        <a class="btn btn-outline-primary" href="{{ route('leaves.index') }}">My leaves</a>
-        <a class="btn btn-primary" href="{{ route('leaves.create') }}">Apply leave</a>
+        @if(auth()->user()->moduleToggleAllows('attendance'))<a class="btn btn-outline-primary" href="{{ route('attendance.index') }}">My attendance</a>@endif
+        @if(auth()->user()->moduleToggleAllows('leaves'))<a class="btn btn-outline-primary" href="{{ route('leaves.index') }}">My leaves</a>@endif
+        @if(auth()->user()->moduleToggleAllows('leaves-apply') && auth()->user()->moduleToggleAllows('leaves'))<a class="btn btn-primary" href="{{ route('leaves.create') }}">Apply leave</a>@endif
     </div>
     <div id="clockRequirementStatus" role="status"></div>
     <p class="staff-clock-note">Your company admin manages attendance corrections and reviews your leave requests.</p>

@@ -227,7 +227,12 @@ class PayrollController extends Controller
         }
 
         if ($request->filled('grade') && $request->input('grade') !== 'all') {
-            $query->where('grade', $request->input('grade'));
+            $level = (string) $request->input('grade');
+            if (preg_match('/^L([0-9]+)$/', $level, $matches)) {
+                $query->whereHas('designation', fn ($designation) => $designation->where('level', (int) $matches[1]));
+            } else {
+                $query->whereRaw('1 = 0');
+            }
         }
 
         if ($request->filled('status') && $request->input('status') !== 'all') {
@@ -235,8 +240,8 @@ class PayrollController extends Controller
         }
 
         $structures = $query->orderBy('id', 'desc')->paginate(15);
-        $designations = Designation::orderBy('name')->get();
-        $grades = ['D1', 'D2', 'S1', 'S2', 'M1', 'M2', 'E1', 'Standard'];
+        $designations = app(\App\Services\PayrollDesignations::class)->available();
+        $grades = $designations->pluck('level')->unique()->sort()->map(fn ($level) => 'L'.$level)->values();
 
         return view('admin.payroll.salary-structures', compact('structures', 'designations', 'grades'));
     }
@@ -259,8 +264,9 @@ class PayrollController extends Controller
             'description' => ['nullable', 'string', 'max:255'],
         ]);
 
-        $designation = Designation::find($data['designation_id']);
-        $name = ($designation?->name ?: 'Designation') . ' - ' . $data['grade'];
+        $designation = app(\App\Services\PayrollDesignations::class)->resolve((int) $data['designation_id'], $data['grade']);
+        $data['grade'] = 'L'.$designation->level;
+        $name = $designation->name . ' - ' . $data['grade'];
 
         $payload = array_merge($data, [
             'name' => $name,
@@ -299,8 +305,9 @@ class PayrollController extends Controller
             'description' => ['nullable', 'string', 'max:255'],
         ]);
 
-        $designation = Designation::find($data['designation_id']);
-        $name = ($designation?->name ?: 'Designation') . ' - ' . $data['grade'];
+        $designation = app(\App\Services\PayrollDesignations::class)->resolve((int) $data['designation_id'], $data['grade']);
+        $data['grade'] = 'L'.$designation->level;
+        $name = $designation->name . ' - ' . $data['grade'];
 
         $old = $structure->toArray();
         $structure->update(array_merge($data, [
@@ -1327,12 +1334,9 @@ class PayrollController extends Controller
         }
 
         $user = auth()->user();
+        $moduleSlug = app(\App\Services\AdminWorkspaceModules::class)
+            ->subdivisionForRoute((string) request()->route()?->getName()) ?? $moduleSlug;
         $allowed = $user?->hasModulePermission($moduleSlug, $permission);
-        // Payslips is a tab of the Payroll workspace: whoever may use Payroll (which already shows every salary
-        // line in Processing/History) may use it, even if a separate Payslips module entry is switched off.
-        if (! $allowed && $moduleSlug === 'payslips') {
-            $allowed = $user?->hasModulePermission('payroll', $permission);
-        }
         if (! $allowed) {
             abort(403, 'You do not have permission to access this payroll module.');
         }

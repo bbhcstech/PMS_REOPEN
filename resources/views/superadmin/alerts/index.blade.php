@@ -497,6 +497,32 @@
         background: #141B3D !important;
         border-bottom-color: rgba(238, 241, 251, 0.09) !important;
     }
+    .alert-drawer-footer {
+        padding: 16px 24px;
+        background: #f8fafc;
+        border-top: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        flex-shrink: 0;
+    }
+    :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"]) .alert-drawer-footer {
+        background: #141B3D;
+        color: #EEF1FB;
+        border-top-color: #334155;
+    }
+    :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"]) .alert-drawer-footer .btn-action-primary {
+        background: #2F6BFF;
+        color: #fff;
+        border-color: #2F6BFF;
+    }
+    :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"]) .alert-drawer-footer .btn-action-primary:hover {
+        background: #1E4FCC;
+        border-color: #1E4FCC;
+    }
+    .alert-drawer-footer button:focus-visible { outline: 3px solid #93c5fd; outline-offset: 3px; }
 </style>
 @endpush
 
@@ -915,7 +941,7 @@
         </div>
 
         <!-- Drawer Footer Actions -->
-        <div style="padding: 16px 24px; background: #f8fafc; border-top: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between;">
+        <div class="alert-drawer-footer">
             <button class="btn-action-secondary" id="drawerMarkReadBtn">
                 <i class="fas fa-check"></i> Mark as Read
             </button>

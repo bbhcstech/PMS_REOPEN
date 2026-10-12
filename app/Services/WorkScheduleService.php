@@ -344,6 +344,9 @@ class WorkScheduleService
             }
         }
 
+        // Clock-in/clock-out boundary from Attendance Settings (no-op while it is switched off).
+        AttendanceClockPolicy::applyToAttendance($attendance, $setting);
+
         $attendance->save();
 
         return $attendance;

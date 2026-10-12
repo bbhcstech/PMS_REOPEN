@@ -49,7 +49,6 @@ class RolePermissionController extends Controller
     {
         $this->authorizeAdmin();
 
-        $this->ensureTenantModulesSynced();
 
         $roleLabels = $this->companyRoles();
         $role = strtolower($request->query('role', 'hr'));
@@ -60,30 +59,8 @@ class RolePermissionController extends Controller
             $role = 'hr';
         }
 
-        // Exclude role-specific management modules per role ("for a particular role that role do not come up under the role")
-        $excludedSlugsByRole = [
-            'hr' => [
-                'hr-management', 'manager-management', 'role-management',
-                'permission-management', 'role-permissions-settings', 'module-management',
-            ],
-            'manager' => [
-                'manager-management', 'hr-management', 'role-management',
-                'permission-management', 'role-permissions-settings', 'module-management',
-            ],
-            'employee' => [
-                'hr-management', 'manager-management', 'role-management',
-                'permission-management', 'user-management', 'role-permissions-settings',
-                'module-management', 'settings-dashboard', 'settings',
-                'payroll-settings', 'security-settings', 'localization-settings',
-                'terms-policy-settings', 'activity-logs', 'system-logs',
-            ],
-            'admin' => [],
-        ];
-
         $accessRole = $this->accessRole($role);
-        $excludedSlugs = $excludedSlugsByRole[$accessRole] ?? [];
-        $modules = app(\App\Services\AdminWorkspaceModules::class)->permissionMatrixModules()
-            ->reject(fn ($module) => in_array($module->slug, $excludedSlugs, true))->values();
+        $modules = $this->companyModules();
 
         $savedPermissions = RolePermission::where('role', $role)->get()->keyBy('module_id');
         $hasCustomSaved = $savedPermissions->isNotEmpty();
@@ -142,7 +119,6 @@ class RolePermissionController extends Controller
     {
         $this->authorizeAdmin();
 
-        $this->ensureTenantModulesSynced();
 
         $role = strtolower($request->input('role', ''));
         abort_unless(array_key_exists($role, $this->companyRoles()), 422);
@@ -154,41 +130,12 @@ class RolePermissionController extends Controller
         ]);
         $submitted = $validated['permissions'] ?? [];
 
-        // Excluded modules for this role should not have permissions granted
-        $excludedSlugsByRole = [
-            'hr' => [
-                'hr-management', 'manager-management', 'role-management',
-                'permission-management', 'role-permissions-settings', 'module-management',
-            ],
-            'manager' => [
-                'manager-management', 'hr-management', 'role-management',
-                'permission-management', 'role-permissions-settings', 'module-management',
-            ],
-            'employee' => [
-                'hr-management', 'manager-management', 'role-management',
-                'permission-management', 'user-management', 'role-permissions-settings',
-                'module-management', 'settings-dashboard', 'settings',
-                'payroll-settings', 'security-settings', 'localization-settings',
-                'terms-policy-settings', 'activity-logs', 'system-logs',
-            ],
-            'admin' => [],
-        ];
-        $excludedSlugs = $excludedSlugsByRole[$this->accessRole($role)] ?? [];
-        $excludedModuleIds = Module::whereIn('slug', $excludedSlugs)->pluck('id')->all();
+        // Save only the same company-provided modules shown in Module Management.
+        $visibleModuleIds = $this->companyModules()->pluck('id')->all();
 
-        // Query the valid module IDs currently present in the tenant modules table
-        $tenantModuleIds = \Illuminate\Support\Facades\DB::connection('tenant')->table('modules')->pluck('id')->all();
-        $visibleModuleIds = app(\App\Services\AdminWorkspaceModules::class)->permissionMatrixModules()->pluck('id')->all();
-
-        DB::connection('tenant')->transaction(function () use ($tenantModuleIds, $excludedModuleIds, $visibleModuleIds, $submitted, $role) {
-            foreach ($tenantModuleIds as $moduleId) {
-                // A hidden registry row must not be revoked just because it is absent from the form.
-                if (!in_array($moduleId, $visibleModuleIds, true) && !in_array($moduleId, $excludedModuleIds, true)) continue;
-                if (in_array($moduleId, $excludedModuleIds, true)) {
-                    $modulePermissions = [];
-                } else {
-                    $modulePermissions = $submitted[$moduleId] ?? [];
-                }
+        DB::connection('tenant')->transaction(function () use ($visibleModuleIds, $submitted, $role) {
+            foreach ($visibleModuleIds as $moduleId) {
+                $modulePermissions = $submitted[$moduleId] ?? [];
 
                 RolePermission::updateOrCreate(
                     ['role' => $role, 'module_id' => $moduleId],
@@ -212,34 +159,13 @@ class RolePermissionController extends Controller
     {
         return app(\App\Services\RolePermissionDefaults::class)->getDefaultPermissionsForRole($role, $slug);
     }
-    /** Import new platform modules without changing company configuration or IDs. */
-    private function ensureTenantModulesSynced(): void
+    private function companyModules(): \Illuminate\Support\Collection
     {
-        $tenant = DB::connection('tenant');
-        if (! \Illuminate\Support\Facades\Schema::connection('tenant')->hasTable('modules')) {
-            abort(503, 'Company module configuration is unavailable.');
-        }
-        $centralModules = DB::connection('central')->table('modules')->get();
-        $tenant->transaction(function () use ($tenant, $centralModules) {
-            $inserted = [];
-            foreach ($centralModules as $module) {
-                if ($tenant->table('modules')->where('slug', $module->slug)->exists()) continue;
-                $data = (array) $module;
-                unset($data['id']);
-                $data['parent_id'] = null;
-                $tenant->table('modules')->insert($data);
-                $inserted[] = $module->slug;
-            }
-            $ids = $tenant->table('modules')->pluck('id', 'slug');
-            $centralById = $centralModules->keyBy('id');
-            foreach ($centralModules as $module) {
-                if (!in_array($module->slug, $inserted, true) || !$module->parent_id) continue;
-                $parent = $centralById->get($module->parent_id);
-                $tenant->table('modules')->where('slug', $module->slug)
-                    ->update(['parent_id' => $parent ? $ids->get($parent->slug) : null]);
-            }
-        });
+        $company = app(\App\Services\CompanyContext::class)->current();
+        abort_unless($company, 503, 'Company module configuration is unavailable.');
+        return app(\App\Services\AdminWorkspaceModules::class)->companyModules($company);
     }
+
     private function authorizeAdmin(): void
     {
         $user = auth()->user();

@@ -29,8 +29,10 @@ class AutoClockOutAttendance extends Command
                     $timezone = $schema->hasTable('app_settings')
                         ? DB::connection('tenant')->table('app_settings')->where('key', 'loc_timezone')->value('value') : null;
                     config(['app.timezone' => in_array($timezone, \DateTimeZone::listIdentifiers(), true) ? $timezone : 'Asia/Kolkata']);
+                    \App\Services\AttendanceClockPolicy::forget();
                     $count = $service->closeDue((int) $company->id);
-                    $this->line("Company {$company->id}: {$count} session(s) closed.");
+                    $absent = \App\Services\AttendanceClockPolicy::markMissedClockIns((int) $company->id, null, false);
+                    $this->line("Company {$company->id}: {$count} session(s) closed, {$absent} missed clock-in(s) marked absent.");
                 } catch (\Throwable $e) {
                     $failures++;
                     report($e);
@@ -38,6 +40,7 @@ class AutoClockOutAttendance extends Command
                 }
             }
         } finally {
+            \App\Services\AttendanceClockPolicy::forget();
             config(['database.connections.tenant' => $originalConnection, 'app.timezone' => $originalTimezone]);
             DB::purge('tenant');
         }

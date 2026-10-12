@@ -4,6 +4,17 @@
 
 @section('content')
 <style>
+    #ordersTable .order-history-actions {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        padding: 0;
+        color: #334155;
+    }
+    #ordersTable .order-history-actions svg { display: block; flex-shrink: 0; background: transparent; }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) #ordersTable .order-history-actions { color: #eef1fb; }
     #ordersTable .payment-dropdown-btn {
         display: inline-flex !important;
         align-items: center;
@@ -395,8 +406,12 @@
                             </td>
                             <td class="text-end pe-4">
                                 <div class="dropdown">
-                                    <button class="btn btn-sm btn-icon btn-light rounded-circle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <i class="bx bx-dots-vertical-rounded"></i>
+                                    <button class="btn btn-sm btn-icon btn-light rounded-circle order-history-actions" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Order actions">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false">
+                                            <circle cx="12" cy="5" r="2"></circle>
+                                            <circle cx="12" cy="12" r="2"></circle>
+                                            <circle cx="12" cy="19" r="2"></circle>
+                                        </svg>
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3">
                                         <li>

@@ -48,7 +48,8 @@ class Attendance extends TenantModel
         'half_day_type',
         'work_from_type',
         'overwrite_attendance',
-        'archived_at'
+        'archived_at',
+        'system_status_reason',
     ];
 
     protected $casts = [
@@ -176,6 +177,10 @@ class Attendance extends TenantModel
         $in = $this->clock_in_datetime;
         if (!$in) return null;
         $cutoff = $in->copy()->setTime(23, 58, 0);
+        // Attendance Settings can close forgotten sessions earlier (clock-in/out boundary).
+        if ($policyCutoff = \App\Services\AttendanceClockPolicy::clockOutCutoff($in)) {
+            $cutoff = $policyCutoff->min($cutoff);
+        }
         // Legacy entries made after cutoff must never become a 24-hour session.
         return $cutoff->lt($in) ? $in->copy() : $cutoff;
     }

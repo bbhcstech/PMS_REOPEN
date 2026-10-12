@@ -21,6 +21,12 @@
             </div>
         </div>
         <div class="leave-hero-actions">
+            @if($isAdmin && auth()->user()->canViewModule('higher-level-leaves'))
+                <a href="{{ route(request('staff_category') === 'authority' ? 'leaves.index' : 'admin.authority-leaves') }}" class="btn btn-light">
+                    <i class="fas fa-users"></i> {{ request('staff_category') === 'authority' ? 'Employee Leaves' : 'Higher-level Leaves' }}
+                    @if(request('staff_category') !== 'authority' && $authorityPendingCount)<span class="badge bg-primary">{{ $authorityPendingCount }} pending</span>@endif
+                </a>
+            @endif
             <a href="{{ route('leaves.create', ['staff_category' => request('staff_category')]) }}" class="btn btn-primary"><i class="fas fa-plus-circle"></i> Apply Leave</a>
             @if(! $isAdmin)
                 <a href="{{ route('leaves.apology-letters.create') }}" class="btn btn-light"><i class="fas fa-envelope-open-text"></i> Write Apology Letter</a>

@@ -24,10 +24,10 @@ class WorkforceAccess
         $hasRoles = $query->getModel()->getConnection()->getSchemaBuilder()->hasColumn('users', 'company_staff_role_id');
         return $query->where(function ($q) use ($category, $hasRoles) {
             if ($category === 'authority') {
-                $q->whereIn('role', ['hr', 'manager', 'developer', 'dev']);
+                $q->whereIn(\Illuminate\Support\Facades\DB::raw('LOWER(role)'), ['hr', 'manager', 'developer', 'dev']);
                 if ($hasRoles) $q->orWhereNotNull('company_staff_role_id');
             } else {
-                $q->where('role', 'employee');
+                $q->whereRaw('LOWER(role) = ?', ['employee']);
                 if ($hasRoles) $q->whereNull('company_staff_role_id');
             }
         });

@@ -229,6 +229,8 @@
     }
 
     .employee-clock {
+        min-width: 0;
+        overflow-wrap: anywhere;
         display: grid;
         gap: 12px;
         justify-items: end;
@@ -1426,17 +1428,17 @@
 @endif
 
 <main id="main" class="main">
-    <div class="employee-dashboard">
+    <div class="employee-dashboard" data-live-key="employee-dashboard">
         <div class="container-fluid">
             @if(session('success'))
-                <div class="alert alert-success border-0 shadow-sm">{{ session('success') }}</div>
+                <div class="alert alert-success border-0 shadow-sm" data-live-key="employee-success">{{ session('success') }}</div>
             @endif
 
             @if(session('error'))
-                <div class="alert alert-danger border-0 shadow-sm">{{ session('error') }}</div>
+                <div class="alert alert-danger border-0 shadow-sm" data-live-key="employee-error">{{ session('error') }}</div>
             @endif
 
-            <section class="employee-hero mb-4">
+            <section class="employee-hero mb-4" data-live-key="employee-hero">
                 <div class="row align-items-center">
                     <div class="col-lg-8 text-white" style="color: white !important;">
                         <span class="employee-eyebrow" style="color: white !important;"><i class="bx bx-home-smile" style="color: white !important;"></i> Employee Dashboard</span>
@@ -1447,7 +1449,7 @@
                     </div>
                     <div class="col-lg-4">
                         <div class="employee-clock">
-                            <div class="text-lg-end">
+                            <div class="text-lg-end" data-live-key="employee-clock-display">
                                 <div class="employee-time" id="employeeLiveTime" data-live-preserve>{{ now($employeeTimezone)->format('h:i A') }}</div>
                                 <div id="employeeLiveDate" data-live-preserve>{{ now($employeeTimezone)->format('l, d M Y') }}</div>
                             </div>
@@ -1477,6 +1479,7 @@
                                         <i class="bx bx-log-in-circle"></i> Clock In
                                     </button>
                                 </form>
+                                @include('admin.partials.clock-window-note')
                                 <div class="clock-requirements" id="clockRequirementStatus">
                                     <div class="clock-status-line"><i class="bx bx-map-pin"></i><span>Share current location to save your clock-in place.</span></div>
                                     <div class="clock-status-line"><i class="bx bx-camera"></i><span>Capture photo to complete clock in.</span></div>
@@ -1484,7 +1487,7 @@
                             @endif
 
                             @if($attendance && $attendance->clock_in)
-                                <div class="clock-attendance-card">
+                                <div class="clock-attendance-card" data-live-key="employee-clock-attendance">
                                     @if($attendance->clock_in_photo && !$attendance->clock_out)
                                         <img src="{{ asset($attendance->clock_in_photo) }}" alt="Clock in photo">
                                     @endif
@@ -1503,18 +1506,18 @@
                                         $clockOutIsoString = $attendance->clock_out ? \Carbon\Carbon::parse($attendanceDateStr . ' ' . $attendance->clock_out, $defaultTz)->toIso8601String() : '';
                                     @endphp
                                     @if($clockInLocationText)
-                                        <div class="clock-location-note">
+                                        <div class="clock-location-note" data-live-key="employee-clock-location">
                                             <span>Clock-in location</span>
                                             {{ $clockInLocationText }}
                                         </div>
                                     @endif
                                     @if($clockedInOutsideOffice)
-                                        <p class="clock-policy-warning-text">
+                                        <p class="clock-policy-warning-text" data-live-key="employee-clock-warning">
                                             <i class="bx bx-error-circle me-1"></i>
                                             You did not clock in from the organization area. This may affect your appraisal later. Please maintain the office policy properly.
                                         </p>
                                     @endif
-                                    <div class="clock-live-grid">
+                                    <div class="clock-live-grid" data-live-key="employee-clock-timers">
                                         <div class="clock-live-box">
                                             <span id="employeeClockZoneLabel" data-live-preserve>Current Time</span>
                                             <strong id="employeeIstClock" data-live-preserve>{{ now($defaultTz)->format('h:i:s A') }}</strong>
@@ -1561,7 +1564,7 @@
                 </div>
             </div>
 
-            <div class="row g-4 mb-4">
+            <div class="row g-4 mb-4" data-live-key="employee-metrics">
                 <div class="col-xl-4 col-lg-6">
                     <div class="employee-card employee-animate-1 h-100">
                         <div class="employee-profile">
@@ -1660,7 +1663,7 @@
                 </div>
             </div>
 
-            <div class="employee-panel mb-4">
+            <div class="employee-panel mb-4" data-live-key="employee-quick-actions">
                 <div class="employee-card-header">
                     <div>
                         <h3 class="employee-card-title">Quick Actions</h3>
@@ -1676,7 +1679,7 @@
                 </div>
             </div>
 
-            <div class="row g-4 mb-4">
+            <div class="row g-4 mb-4" data-live-key="employee-attendance-charts">
                 <div class="col-xl-8">
                     <div class="employee-panel h-100">
                         <div class="employee-card-header">
@@ -1703,7 +1706,7 @@
                 </div>
             </div>
 
-            <div class="employee-panel mb-4">
+            <div class="employee-panel mb-4" data-live-key="employee-attendance-summary">
                 <div class="employee-card-header">
                     <div>
                         <h3 class="employee-card-title">Summary Attendance</h3>
@@ -1719,7 +1722,7 @@
                 </div>
             </div>
 
-            <div class="row g-4 mb-4">
+            <div class="row g-4 mb-4" data-live-key="employee-work-charts">
                 <div class="col-xl-4 col-lg-6">
                     <div class="employee-panel h-100">
                         <div class="employee-card-header">
@@ -1749,7 +1752,7 @@
                 </div>
             </div>
 
-            <div class="employee-panel mb-4">
+            <div class="employee-panel mb-4" data-live-key="employee-attendance-rules">
                 <div class="employee-card-header">
                     <div>
                         <h3 class="employee-card-title">Attendance Rules & Regulations</h3>
@@ -1786,7 +1789,7 @@
             </div>
 
             <!-- ============ MY PROJECTS SECTION ============ -->
-            <div class="employee-panel mb-4">
+            <div class="employee-panel mb-4" data-live-key="employee-projects">
                 <div class="employee-card-header d-flex justify-content-between align-items-center mb-3">
                     <div>
                         <h3 class="employee-card-title mb-1"><i class="bx bx-folder-open text-primary me-2"></i>My Projects</h3>
@@ -1897,7 +1900,7 @@
             </div>
             <!-- ============ END MY PROJECTS SECTION ============ -->
 
-            <div class="row g-4 mb-4">
+            <div class="row g-4 mb-4" data-live-key="employee-work-tables">
                 <div class="col-xl-6">
                     <div class="employee-table-card h-100">
                         <div class="employee-table-head">
@@ -1998,7 +2001,7 @@
                 </div>
             </div>
 
-            <div class="row g-4 mb-4">
+            <div class="row g-4 mb-4" data-live-key="employee-attendance-calendar">
                 <div class="col-xl-5">
                     <div class="employee-panel h-100">
                         <div class="employee-card-header">
@@ -2056,7 +2059,7 @@
                 </div>
             </div>
 
-            <div class="row g-4">
+            <div class="row g-4" data-live-key="employee-people">
                 <div class="col-xl-3 col-md-6">
                     <div class="employee-panel h-100">
                         <div class="employee-card-header">

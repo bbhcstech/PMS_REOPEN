@@ -2,7 +2,7 @@
 @section('title', $assistantName)
 @section('page_title', $assistantName)
 @section('content')
-<main id="company-ai-page" data-live-preserve class="container-fluid py-4">
+<main id="company-ai-page" data-live-preserve class="container-fluid py-4 {{ ($assistantLayout ?? '') === 'layouts.superadmin' ? 'company-ai-platform' : '' }}">
     <div class="card p-4 company-ai-card mx-auto" style="max-width: 900px;">
         <h3 id="assistant-display-name">{{ $assistantName }}</h3>
         <p class="text-muted">{{ $assistantDescription ?? 'Ask about your company events, departments, assigned work, attendance or leave. Answers use current records you are allowed to access.' }}</p>
@@ -16,7 +16,7 @@
             @csrf
             <label for="company-ai-question" class="form-label">Your question</label>
             <textarea id="company-ai-question" class="form-control mb-3" rows="3" maxlength="1000" required placeholder="What company events are coming up?" @disabled(!$configured)></textarea>
-            <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
+            <div class="company-ai-form-footer d-flex justify-content-between align-items-center gap-3 flex-wrap">
                 <small class="text-muted">Questions and relevant company records are processed by the AI service. Answers do not change records.</small>
                 <button id="company-ai-send" class="btn btn-primary" @disabled(!$configured)>Ask assistant</button>
             </div>
@@ -24,6 +24,82 @@
     </div>
 </main>
 <style>
+    /* The Super Admin shell has no Bootstrap; keep these equivalents local to its assistant. */
+    #company-ai-page.company-ai-platform {
+        --assistant-surface: #fff;
+        --assistant-ink: #10142c;
+        --assistant-muted: #545d82;
+        --assistant-border: #dce1ec;
+        width: 100%;
+        min-width: 0;
+        padding: 24px 12px;
+        box-sizing: border-box;
+    }
+    #company-ai-page.company-ai-platform * { box-sizing: border-box; }
+    #company-ai-page.company-ai-platform .company-ai-card {
+        width: 100%;
+        margin: 0 auto;
+        padding: 24px;
+        border: 1px solid var(--assistant-border);
+        border-radius: 16px;
+        background: var(--assistant-surface);
+        color: var(--assistant-ink);
+        box-shadow: 0 8px 28px rgba(16, 24, 60, .08);
+        overflow-wrap: anywhere;
+    }
+    #company-ai-page.company-ai-platform h3 { margin: 0 0 12px; font-size: 1.4rem; line-height: 1.35; color: var(--assistant-ink); }
+    #company-ai-page.company-ai-platform p { margin: 0 0 20px; line-height: 1.65; }
+    #company-ai-page.company-ai-platform .text-muted { color: var(--assistant-muted); }
+    #company-ai-page.company-ai-platform #company-ai-conversation { margin-bottom: 20px; }
+    #company-ai-page.company-ai-platform .form-label { display: block; margin-bottom: 8px; font-weight: 600; }
+    #company-ai-page.company-ai-platform #company-ai-question {
+        display: block;
+        width: 100%;
+        min-height: 112px;
+        margin: 0 0 16px;
+        padding: 12px 14px;
+        border: 1px solid var(--assistant-border);
+        border-radius: 10px;
+        background: var(--assistant-surface);
+        color: var(--assistant-ink);
+        font: inherit;
+        line-height: 1.5;
+        resize: vertical;
+    }
+    #company-ai-page.company-ai-platform #company-ai-question::placeholder { color: var(--assistant-muted); opacity: 1; }
+    #company-ai-page.company-ai-platform #company-ai-question:focus { outline: 0; border-color: #2f6bff; box-shadow: 0 0 0 3px rgba(47, 107, 255, .2); }
+    #company-ai-page.company-ai-platform .company-ai-form-footer { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+    #company-ai-page.company-ai-platform .company-ai-form-footer small { flex: 1 1 300px; font-size: .82rem; line-height: 1.6; }
+    #company-ai-page.company-ai-platform #company-ai-send {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
+        min-height: 44px;
+        padding: 11px 20px;
+        border: 1px solid #2f6bff;
+        border-radius: 10px;
+        background: #2f6bff;
+        color: #fff;
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+    }
+    #company-ai-page.company-ai-platform #company-ai-send:hover:not(:disabled) { background: #1e4fcc; border-color: #1e4fcc; }
+    #company-ai-page.company-ai-platform #company-ai-send:focus-visible { outline: 3px solid #93c5fd; outline-offset: 3px; }
+    #company-ai-page.company-ai-platform :is(#company-ai-send, #company-ai-question):disabled { opacity: .6; cursor: not-allowed; }
+    #company-ai-page.company-ai-platform .alert-info { margin-bottom: 20px; padding: 14px 16px; border: 1px solid var(--assistant-border); border-radius: 10px; background: rgba(47, 107, 255, .1); color: var(--assistant-ink); line-height: 1.6; }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) #company-ai-page.company-ai-platform {
+        --assistant-surface: #0f1530;
+        --assistant-ink: #eef1fb;
+        --assistant-muted: #9aa3c7;
+        --assistant-border: #334155;
+    }
+    @media (max-width: 575px) {
+        #company-ai-page.company-ai-platform { padding: 16px 0; }
+        #company-ai-page.company-ai-platform .company-ai-card { padding: 18px; }
+        #company-ai-page.company-ai-platform #company-ai-send { width: 100%; }
+    }
     #company-ai-page .company-ai-message { padding: 16px; margin-bottom: 12px; border: 1px solid #cbd5e1; border-radius: 12px; background: #f8fafc; color: #1e293b; white-space: pre-wrap; overflow-wrap: anywhere; }
     #company-ai-page .company-ai-message strong { display: block; margin-bottom: 8px; }
     #company-ai-page .company-ai-sources { font-size: 13px; margin-top: 12px; }

@@ -367,6 +367,42 @@ class User extends Authenticatable
         return $this->hasModulePermission($moduleSlug, 'view');
     }
 
+    /** Per-request memo for hasSavedModuleDecision(). */
+    protected array $savedModuleDecisions = [];
+
+    /**
+     * Whether Admin > Roles & Permissions has saved an explicit decision for this user's role
+     * (company staff role such as "Associate Manager", or hr/manager/employee) on the module.
+     */
+    public function hasSavedModuleDecision(string $moduleSlug): bool
+    {
+        if (in_array($this->normalizedRole(), ['admin', 'superadmin'], true)) {
+            return false;
+        }
+        $role = $this->permissionRole();
+        $key = $role . '|' . $moduleSlug;
+        $decisions = &$this->savedModuleDecisions;
+        if (! array_key_exists($key, $decisions)) {
+            try {
+                $decisions[$key] = RolePermission::where('role', $role)
+                    ->whereIn('module_id', WorkspaceModule::where('slug', $moduleSlug)->pluck('id'))
+                    ->exists();
+            } catch (\Throwable $e) {
+                $decisions[$key] = false;
+            }
+        }
+        return $decisions[$key];
+    }
+
+    /**
+     * Enforces the Roles & Permissions toggle for links/routes that are otherwise always available:
+     * denied only when the admin saved the module as OFF for this role; unchanged when never configured.
+     */
+    public function moduleToggleAllows(string $moduleSlug, string $permission = 'view'): bool
+    {
+        return ! $this->hasSavedModuleDecision($moduleSlug) || $this->hasModulePermission($moduleSlug, $permission);
+    }
+
     public function visibleEmployeeIds()
     {
         $role = $this->normalizedRole();

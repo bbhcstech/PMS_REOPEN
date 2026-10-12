@@ -4679,6 +4679,34 @@
             -webkit-text-fill-color: #2F6BFF !important;
         }
     }
+
+    /* Employee ID and status contrast must override shared table text colors. */
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body.dark, body.dark-mode) .employee-dashboard #employeeTable .employee-id-badge {
+        background: #141b3d !important;
+        border-color: #415686 !important;
+        color: #e2edff !important;
+        -webkit-text-fill-color: #e2edff !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body.dark, body.dark-mode) .employee-dashboard #employeeTable .status-badge {
+        color: #eef1fb !important;
+        -webkit-text-fill-color: #eef1fb !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body.dark, body.dark-mode) .employee-dashboard #employeeTable .status-badge .status-text {
+        color: #eef1fb !important;
+        -webkit-text-fill-color: #eef1fb !important;
+        background: transparent !important;
+        border: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body.dark, body.dark-mode) .employee-dashboard #employeeTable .status-active .status-text {
+        color: #a7f3d0 !important;
+        -webkit-text-fill-color: #a7f3d0 !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body.dark, body.dark-mode) .employee-dashboard #employeeTable .status-inactive .status-text {
+        color: #fecdd3 !important;
+        -webkit-text-fill-color: #fecdd3 !important;
+    }
 </style>
 
 {{-- JavaScript - COMPLETELY UNCHANGED FUNCTIONALITY --}}

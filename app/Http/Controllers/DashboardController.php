@@ -320,6 +320,14 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
     public function index()
     {
         $user = auth()->user();
+        if ($user?->company_id) {
+            // Clock-in boundary: today's missed clock-ins count as absent on every dashboard.
+            try {
+                \App\Services\AttendanceClockPolicy::markMissedClockIns((int) $user->company_id);
+            } catch (\Throwable $e) {
+                report($e);
+            }
+        }
         if ($user?->company_staff_role_id) {
             return view('admin.company-role-dashboard', app(\App\Services\CompanyRoleDashboard::class)->data($user));
         }
@@ -856,6 +864,9 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
     if ($now->gte($now->copy()->setTime(23, 58, 0))) {
         return back()->with('error', 'Clock-in closes at 11:58 PM. Please clock in after midnight for the next day.');
     }
+    if ($blocked = \App\Services\AttendanceClockPolicy::clockInBlockedReason($actor, $now)) {
+        return back()->with('error', $blocked);
+    }
     $today = $now->toDateString();
     $userId = auth()->id();
 
@@ -928,9 +939,20 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
             $attendanceData['company_id'] = auth()->user()?->company_id;
         }
 
-        $attendance = Attendance::create($attendanceData);
+        // A day the system marked absent (clock-in window had closed) becomes this clock-in, e.g. after the admin widened the window.
+        $markedAbsent = Schema::hasColumn('attendances', 'system_status_reason')
+            ? Attendance::where('user_id', $userId)->whereDate('date', $today)->whereNull('clock_in')
+                ->where('system_status_reason', \App\Services\AttendanceClockPolicy::MISSED_CLOCK_IN)->first()
+            : null;
+        if ($markedAbsent) {
+            $markedAbsent->fill($attendanceData + ['system_status_reason' => null])->save();
+            $attendance = $markedAbsent;
+        } else {
+            $attendance = Attendance::create($attendanceData);
+        }
         $this->applyOrganizationAttendanceRules($attendance);
 
+        $this->notifyAuthorityAttendance($attendance, 'Clocked In');
         $wfhMsg = $isWfhAssigned ? ' (Assigned Work From Home)' : '';
         return back()->with('success', 'Clocked in at ' . $now->format('h:i A') . $wfhMsg . '. Current location saved.');
     }, 5);
@@ -1000,10 +1022,26 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
         $attendance->save();
         $this->applyOrganizationAttendanceRules($attendance->fresh());
 
+        $this->notifyAuthorityAttendance($attendance, 'Clocked Out');
         return back()->with('success', 'Clocked out at ' . $out->format('h:i A'));
     }, 5);
 }
 
+
+private function notifyAuthorityAttendance(Attendance $attendance, string $action): void
+{
+    $user = auth()->user();
+    if (! $user || ! \App\Services\WorkforceAccess::isAuthority($user)) return;
+    DB::connection('tenant')->afterCommit(function () use ($attendance, $user, $action) {
+        SystemNotificationService::notifyAdmins(
+            $action,
+            $user->name . ' ' . strtolower($action) . ' for ' . $attendance->date->format('d M Y') . '.',
+            route('admin.authority-attendance', ['view' => 'team', 'user_id' => $user->id]),
+            ['employee_id' => $user->id, 'entity_type' => Attendance::class, 'entity_id' => $attendance->id,
+                'type' => $action === 'Clocked In' ? 'attendance_clock_in' : 'attendance_clock_out', 'icon' => 'fa-user-clock']
+        );
+    });
+}
 
 public function project(Request $request)
 {

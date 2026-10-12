@@ -96,9 +96,9 @@
                             <ul class="dropdown-menu dropdown-menu-end">
                                 <li><a class="dropdown-item" href="#" data-level="all">Show All Levels</a></li>
                                 <li><hr class="dropdown-divider"></li>
-                                @for($i = 0; $i <= \App\Services\DesignationLevels::maximum(); $i++)
-                                    <li><a class="dropdown-item" href="#" data-level="{{ $i }}">Level {{ $i }} Only</a></li>
-                                @endfor
+                                @foreach(\App\Services\DesignationLevels::legend() as $level => $names)
+                                    <span class="legend-badge l{{ min((int) $level, 6) }}">L{{ $level }} ({{ $names }})</span>
+                                @endforeach
                             </ul>
                         </div>
                     </div>
@@ -119,7 +119,7 @@
                             <div class="level-legend">
                                 <span><i class="fas fa-chart-line"></i> Level Legend:</span>
                                 @for($i = 0; $i <= \App\Services\DesignationLevels::maximum(); $i++)
-                                    <span class="legend-badge l{{ $i }}">L{{ $i }}</span>
+                                    <span class="legend-badge l{{ min($i, 6) }}">L{{ $i }}</span>
                                 @endfor
                                 <button type="button" class="expand-all-btn" id="expandAll">
                                     <i class="fas fa-expand-alt"></i> Expand All
@@ -204,10 +204,9 @@
                         <div class="chart-legend">
                             <div class="legend-header">Level Legend</div>
                             <div class="legend-items">
-                                <div><span class="legend-color l0"></span> L0: Executive</div>
-                                <div><span class="legend-color l1"></span> L1-2: Management</div>
-                                <div><span class="legend-color l3"></span> L3-4: Senior</div>
-                                <div><span class="legend-color l5"></span> L5-6: Entry Level</div>
+                                @foreach(\App\Services\DesignationLevels::legend() as $level => $names)
+                                    <div><span class="legend-color l{{ min((int) $level, 6) }}"></span> L{{ $level }} ({{ $names }})</div>
+                                @endforeach
                             </div>
                         </div>
 
@@ -1420,6 +1419,39 @@
         border: 1px solid rgba(148, 163, 184, 0.45) !important;
     }
 
+    /* Organization Hierarchy icons in dark mode: drag handle, designation avatar and expand/collapse button.
+       Scoped by the page id so the global dark theme (button/icon colours) cannot wash them out. */
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) #designation-hierarchy-page .drag-handle {
+        background: rgba(148, 163, 184, 0.14) !important;
+        border: 1px solid rgba(148, 163, 184, 0.32) !important;
+        color: #CBD5E1 !important;
+        box-shadow: none !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) #designation-hierarchy-page .drag-handle:is(:hover, :focus-visible) {
+        background: rgba(96, 165, 250, 0.2) !important;
+        border-color: rgba(96, 165, 250, 0.5) !important;
+        color: #DBEAFE !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) #designation-hierarchy-page :is(.designation-node-icon, .designation-icon-small) {
+        background: rgba(96, 165, 250, 0.16) !important;
+        border: 1px solid rgba(96, 165, 250, 0.32) !important;
+        color: #93C5FD !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) #designation-hierarchy-page .toggle-children {
+        background: transparent !important;
+        border: 1px solid transparent !important;
+        color: #CBD5E1 !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) #designation-hierarchy-page .toggle-children:is(:hover, :focus-visible) {
+        background: rgba(96, 165, 250, 0.2) !important;
+        border-color: rgba(96, 165, 250, 0.45) !important;
+        color: #DBEAFE !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) #designation-hierarchy-page :is(.drag-handle, .designation-node-icon, .designation-icon-small, .toggle-children) i {
+        color: inherit !important;
+        -webkit-text-fill-color: currentColor !important;
+        background: transparent !important;
+    }
     html[data-pms-theme="dark"] .designation-hierarchy-page .expand-all-btn,
     html[data-bs-theme="dark"] .designation-hierarchy-page .expand-all-btn,
     html[data-theme="dark"] .designation-hierarchy-page .expand-all-btn,

@@ -77,20 +77,7 @@ class EnsureModuleAccess
                 return $next($request);
             }
 
-            if ($permission === 'view' && ! $request->isMethodSafe()) {
-                $action = strtolower((string) strrchr($routeName, '.'));
-                $permission = match (true) {
-                    $request->isMethod('DELETE'), str_contains($action, 'destroy'), str_contains($action, 'delete') => 'delete',
-                    str_contains($action, 'approve'), str_contains($action, 'reject') => 'approve',
-                    str_contains($action, 'export'), str_contains($action, 'download') => 'export',
-                    str_contains($action, 'assign') => 'assign',
-                    $request->isMethod('PUT'), $request->isMethod('PATCH'), str_contains($action, 'update'), str_contains($action, 'toggle') => 'edit',
-                    default => 'create',
-                };
-            }
-            if ($permission === 'view' && preg_match('/\.(create|edit|export|download)(?:-|\.|$)/', $routeName, $match)) {
-                $permission = $match[1] === 'download' ? 'export' : $match[1];
-            }
+            $permission = self::permissionForRequest($request, $routeName, $permission);
 
             // Apply saved permissions to HR, managers, employees and custom roles.
             if ($module && ! $user->hasModulePermission($module->slug, $permission)) {
@@ -106,10 +93,36 @@ class EnsureModuleAccess
         return $next($request);
     }
 
-    private function moduleForRoute(string $routeName): ?Module
+    /** The action a request performs on its module (view/create/edit/delete/approve/export/assign). */
+    public static function permissionForRequest(Request $request, string $routeName, string $permission = 'view'): string
+    {
+        if ($permission === 'view' && ! $request->isMethodSafe()) {
+            $action = strtolower((string) strrchr($routeName, '.'));
+            $permission = match (true) {
+                $request->isMethod('DELETE'), str_contains($action, 'destroy'), str_contains($action, 'delete') => 'delete',
+                str_contains($action, 'approve'), str_contains($action, 'reject') => 'approve',
+                str_contains($action, 'export'), str_contains($action, 'download') => 'export',
+                str_contains($action, 'assign') => 'assign',
+                $request->isMethod('PUT'), $request->isMethod('PATCH'), str_contains($action, 'update'), str_contains($action, 'toggle') => 'edit',
+                default => 'create',
+            };
+        }
+        if ($permission === 'view' && preg_match('/\.(create|edit|export|download)(?:-|\.|$)/', $routeName, $match)) {
+            $permission = $match[1] === 'download' ? 'export' : $match[1];
+        }
+        return $permission;
+    }
+
+    public function moduleForRoute(string $routeName): ?Module
     {
         if ($routeName === '') {
             return null;
+        }
+
+        $subdivision = app(\App\Services\AdminWorkspaceModules::class)->subdivisionForRoute($routeName);
+        if ($subdivision) {
+            return Module::where('slug', $subdivision)->first()
+                ?? new Module(['slug' => $subdivision, 'name' => config('workspace_modules.'.$subdivision.'.name')]);
         }
 
         // Exact sidebar subdivisions take precedence over broad legacy aliases

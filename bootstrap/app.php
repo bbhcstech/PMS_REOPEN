@@ -49,6 +49,7 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\BlockTicketsInAdminWorkspace::class,
             \App\Http\Middleware\FinanceComingSoon::class,
             \App\Http\Middleware\ProtectWorkforceRecords::class,
+            \App\Http\Middleware\EnforceRolePermissionToggles::class,
         ]);
         $middleware->alias([
             'admin' => RoleMiddleware::class,

@@ -36,7 +36,7 @@ DB::connection('central')->table('companies')->insert([
 ]);
 DB::table('users')->insert([['id' => 1, 'company_id' => 1], ['id' => 2, 'company_id' => 2]]);
 DB::table('designations')->insert([
-    ['id' => 1, 'name' => 'Alpha legacy', 'company_id' => null, 'added_by' => 1, 'level' => 8],
+    ['id' => 1, 'name' => 'Alpha legacy', 'company_id' => null, 'added_by' => 1, 'level' => 7],
     ['id' => 2, 'name' => 'Beta legacy', 'company_id' => null, 'added_by' => 2, 'level' => 1],
     ['id' => 3, 'name' => 'Beta owned', 'company_id' => 2, 'added_by' => 2, 'level' => 2],
 ]);
@@ -46,7 +46,7 @@ Auth::guard('web')->setUser($actor);
 function checkLevels($ok, $message) { if (! $ok) throw new RuntimeException($message); }
 checkLevels(DesignationLevels::maximum() === 6, 'Default limit is not L6.');
 checkLevels(Designation::pluck('id')->all() === [1], 'Designation company scope leaked rows.');
-checkLevels(! Designation::withinLevelLimit()->whereKey(1)->exists(), 'Legacy L8 was offered under the L6 limit.');
+checkLevels(! Designation::withinLevelLimit()->whereKey(1)->exists(), 'Legacy L7 was offered under the L6 limit.');
 try {
     Designation::create(['name' => 'Rejected L7', 'level' => 7]);
     throw new RuntimeException('L7 accepted under default L6 limit.');
@@ -69,20 +69,24 @@ try {
 }
 $actor->role = 'admin';
 (new DesignationController)->updateLevelSettings(Request::create('/', 'PUT', ['maximum_level' => 8]));
-checkLevels(DesignationLevels::maximum() === 8, 'Admin setting was not applied.');
-checkLevels(Designation::withinLevelLimit()->whereKey(1)->exists(), 'L8 did not become available after admin raised the limit.');
+checkLevels(DesignationLevels::count() === 8 && DesignationLevels::maximum() === 7, 'Eight levels must end at L7.');
+checkLevels(Designation::withinLevelLimit()->whereKey(1)->exists(), 'L7 did not become available after admin raised the limit.');
 $actor->role = 'hr';
-Designation::create(['name' => 'Allowed L8', 'level' => 8]);
+try {
+    Designation::create(['name' => 'Rejected L8', 'level' => 8]);
+    throw new RuntimeException('L8 accepted with a count of eight levels.');
+} catch (ValidationException $e) {}
+Designation::create(['name' => 'Allowed L7', 'level' => 7]);
 $actor->company_id = 2;
-checkLevels(DesignationLevels::maximum() === 10, 'Other company setting changed.');
-checkLevels(! Designation::where('name', 'Allowed L8')->exists(), 'Other company can see Alpha designation.');
+checkLevels(DesignationLevels::maximum() === 9, 'Other company setting changed.');
+checkLevels(! Designation::where('name', 'Allowed L7')->exists(), 'Other company can see Alpha designation.');
 $actor->company_id = 1;
 $actor->role = 'admin';
 try {
-    (new DesignationController)->updateLevelSettings(Request::create('/', 'PUT', ['maximum_level' => 6]));
+    (new DesignationController)->updateLevelSettings(Request::create('/', 'PUT', ['maximum_level' => 7]));
     throw new RuntimeException('Limit lowered below existing levels.');
 } catch (ValidationException $e) {}
-(new DesignationController)->updateLevelSettings(Request::create('/', 'PUT', ['maximum_level' => 101]));
+(new DesignationController)->updateLevelSettings(Request::create('/', 'PUT', ['maximum_level' => 102]));
 checkLevels(DesignationLevels::maximum() === 101, 'Admin maximum was still capped at 100.');
 try {
     Designation::create(['name' => 'Rejected L102 before expansion', 'level' => 102]);
@@ -103,7 +107,7 @@ try {
     throw new RuntimeException('L103 accepted above configured L102 limit.');
 } catch (ValidationException $e) {}
 $actor->company_id = 2;
-checkLevels(DesignationLevels::maximum() === 10, 'Automatic expansion changed another company.');
+checkLevels(DesignationLevels::maximum() === 9, 'Automatic expansion changed another company.');
 DB::connection('central')->table('companies')->insert(['id' => 3, 'name' => 'New company', 'settings' => '{}']);
 $actor->company_id = 3;
 $actor->role = 'admin';

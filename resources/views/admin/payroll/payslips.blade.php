@@ -123,7 +123,9 @@
                                 </td>
                                 <td><span class="badge bg-light text-dark">{{ $empDetail->employee_id ?? 'EMP'.$u->id }}</span></td>
                                 <td>
-                                    <div class="small fw-semibold">{{ $empDetail->designation->name ?? '—' }}</div>
+                                    @php $designationDetails = \App\Services\PayslipDesignation::details($ps->employee_snapshot ?? [], $empDetail?->designation); @endphp
+                                    <div class="small fw-semibold">{{ $designationDetails['name'] }}</div>
+                                    <div class="meta text-muted small">{{ $designationDetails['level'] }}</div>
                                     <div class="meta text-muted small">{{ $empDetail->department->name ?? '—' }}</div>
                                 </td>
                                 @php

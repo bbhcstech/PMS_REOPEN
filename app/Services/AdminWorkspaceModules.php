@@ -9,6 +9,18 @@ use Illuminate\Support\Str;
 
 class AdminWorkspaceModules
 {
+    /** Resolve workspace tabs and their actions using the same permission identity. */
+    public function subdivisionForRoute(string $routeName): ?string
+    {
+        foreach (config('workspace_modules', []) as $slug => $item) {
+            if (in_array($routeName, $item['route_names'] ?? [], true)) return $slug;
+            foreach ($item['route_prefixes'] ?? [] as $prefix) {
+                if ($routeName === $prefix || str_starts_with($routeName, $prefix.'.')) return $slug;
+            }
+        }
+        return null;
+    }
+
     /** Called by deployment/platform catalog setup, never by a company read. */
     public function syncSidebarRegistry(): void
     {
@@ -79,7 +91,7 @@ class AdminWorkspaceModules
             ->filter(function (Module $module) use ($slugs, $routes) {
                 if (in_array(strtolower(trim($module->slug)), ['bye', 'kjm'], true)
                     || in_array(strtolower(trim($module->name)), ['bye', 'kjm'], true)) return false;
-                if ($slugs->contains($module->slug)) return true;
+                if ($slugs->contains($module->slug) || config('workspace_modules.'.$module->slug)) return true;
                 // Payroll navigation opens a workspace whose tabs have their own permissions.
                 if ($module->slug === 'payslips' && Route::has('payroll.payslips.index')) return true;
                 if ($module->route_name && str_starts_with($module->route_name, 'payroll.')
@@ -176,6 +188,7 @@ class AdminWorkspaceModules
             })->map(function (Module $module) {
                 // Category is display metadata; the modules table does not store it.
                 $module->category = match (true) {
+                    config('workspace_modules.'.$module->slug.'.parent') === 'payroll' => 'FINANCE & PAYROLL',
                     (bool) preg_match('/employee|hr|department|designation|attendance|leave|holiday|award|recognition|recruitment|appraisal|letterhead/', $module->slug) => 'HR & PEOPLE',
                     (bool) preg_match('/project|task|timelog|timesheet|work$|client|contract|product|order|collaborating/', $module->slug) => 'WORK MANAGEMENT',
                     (bool) preg_match('/payroll|salary|payslip|expense|billing/', $module->slug) => 'FINANCE & PAYROLL',

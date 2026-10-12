@@ -65,7 +65,8 @@
                 @method('PUT')
                 <div>
                     <label for="maximum_level" class="form-label">Maximum designation level</label>
-                    <input id="maximum_level" name="maximum_level" type="number" class="form-control" min="6" step="1" required value="{{ old('maximum_level', \App\Services\DesignationLevels::maximum()) }}">
+                    <input id="maximum_level" name="maximum_level" type="number" class="form-control" min="7" step="1" required value="{{ old('maximum_level', \App\Services\DesignationLevels::count()) }}">
+                    <div class="form-text">Total number of levels, starting at L0. For example, 8 allows L0–L7.</div>
                     @error('maximum_level')<div class="text-danger">{{ $message }}</div>@enderror
                 </div>
                 <button type="submit" class="btn btn-primary">Save level limit</button>
@@ -153,6 +154,7 @@
                 <i class="fas fa-search"></i>
                 <input type="text" id="designationSearch" placeholder="Search designations..." />
             </div>
+            <div id="designation-export-tools" class="designation-export-tools" data-live-preserve></div>
         </div>
 
         <!-- Level Filters Bar -->
@@ -178,7 +180,7 @@
         </div>
 
         <div class="table-wrapper">
-            <table id="designationTable" class="designation-list-table">
+            <table id="designationTable" class="designation-list-table" data-pms-toolbar-host="designation-export-tools">
                 <thead>
                     <tr>
                         <th width="50">
@@ -392,16 +394,11 @@
     <div class="legend-card" data-live-key="designation-legend">
         <div class="legend-content">
             <span class="legend-title"><i class="fas fa-palette"></i> Level Legend:</span>
-            <span class="level l0"><i class="fas fa-seedling"></i> L0 (Intern)</span>
-            <span class="level l1"><i class="fas fa-user"></i> L1 (Associate)</span>
-            <span class="level l2"><i class="fas fa-user-graduate"></i> L2 (Sr. Associate)</span>
-            <span class="level l3"><i class="fas fa-chalkboard-user"></i> L3 (Manager)</span>
-            <span class="level l4"><i class="fas fa-trophy"></i> L4 (Sr. Manager)</span>
-            <span class="level l5"><i class="fas fa-medal"></i> L5 (Associate Director)</span>
-            <span class="level l6"><i class="fas fa-star-of-life"></i> L6 (Director)</span>
-            @for($i = 7, $maximumLevel = \App\Services\DesignationLevels::maximum(); $i <= $maximumLevel; $i++)
-                <span class="level l{{ $i }}"><i class="fas fa-layer-group"></i> L{{ $i }}</span>
-            @endfor
+            @forelse(\App\Services\DesignationLevels::legend() as $level => $names)
+                <span class="level l{{ min((int) $level, 6) }}" data-live-key="designation-level-{{ $level }}"><i class="fas fa-layer-group"></i> L{{ $level }} ({{ $names }})</span>
+            @empty
+                <span class="text-muted">No designation levels configured.</span>
+            @endforelse
         </div>
     </div>
 </div>
@@ -863,6 +860,58 @@
         gap: 20px;
         flex-wrap: wrap;
         border-bottom: 1px solid rgba(47, 107, 255, 0.1);
+    }
+
+    .designation-page .designation-export-tools {
+        flex: 1 1 100%;
+        min-width: 0;
+    }
+
+    .designation-page .designation-export-tools .pms-table-tools {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+    }
+
+    .designation-page .designation-export-tools .pms-table-export__toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        min-height: 44px;
+        padding: 10px 18px;
+        border: 1px solid #2f6bff;
+        border-radius: 12px;
+        background: #2f6bff;
+        color: #fff !important;
+        -webkit-text-fill-color: #fff !important;
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .designation-page .designation-export-tools .pms-table-export__toggle span {
+        background: transparent !important;
+        color: inherit !important;
+        -webkit-text-fill-color: inherit !important;
+    }
+
+    .designation-page .designation-export-tools .pms-table-export__toggle:hover {
+        background: #2455d8;
+        border-color: #2455d8;
+    }
+
+    .designation-page .designation-export-tools .pms-table-export__toggle:focus-visible {
+        outline: 3px solid #7da5ff;
+        outline-offset: 3px;
     }
 
     .table-title {

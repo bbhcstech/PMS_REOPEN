@@ -32,6 +32,7 @@ class AttendanceController extends Controller
         $employee = User::where('company_id', $companyId)->find($data['employee_id'] ?? null);
         $record = Attendance::find($data['record_id'] ?? null);
         if ($employee && (\App\Services\WorkforceAccess::isAuthority($employee) || $record?->staff_category === 'authority')) {
+            $url = route('admin.authority-attendance', ['view' => 'team', 'user_id' => $employee->id]);
             SystemNotificationService::notifyAdmins($title, $message, $url, $data);
         } else {
             SystemNotificationService::notifyAllRoles($title, $message, $url, $data, $companyId);
@@ -352,6 +353,12 @@ class AttendanceController extends Controller
         $actor = Auth::user();
         abort_unless($actor, 401);
         abort_unless($actor->company_id, 403, 'No company assigned to this account.');
+        // Clock-in boundary: whoever missed the clock-in window on a working day shows as absent.
+        try {
+            \App\Services\AttendanceClockPolicy::markMissedClockIns((int) $actor->company_id);
+        } catch (\Throwable $e) {
+            report($e);
+        }
         $request->validate([
             'month' => 'nullable|integer|min:1|max:12',
             'year' => 'nullable|integer|min:2000|max:2100',
@@ -500,6 +507,7 @@ class AttendanceController extends Controller
                 ->with('error', 'You do not have permission to access settings.');
         }
 
+        \App\Services\AttendanceClockPolicy::ensureSchema();
         $setting = $this->attendancePolicy();
         return view('attendance.settings', compact('setting'));
     }
@@ -521,7 +529,44 @@ class AttendanceController extends Controller
             'late_time' => 'required|date_format:H:i',
             'half_day_threshold_minutes' => 'nullable|integer|min:1|max:1440',
             'day_off_threshold_minutes' => 'nullable|integer|min:1|max:1440',
+            'clock_window_enabled' => 'nullable|boolean',
+            'clock_in_opens_at' => 'nullable|required_if:clock_window_enabled,1|date_format:H:i',
+            'clock_in_closes_at' => 'nullable|required_if:clock_window_enabled,1|date_format:H:i',
+            'half_day_after_time' => 'nullable|date_format:H:i',
+            'office_end_time' => 'nullable|date_format:H:i',
+            'clock_out_closes_at' => 'nullable|date_format:H:i',
+            'missed_clock_out_status' => 'nullable|in:half_day,absent,keep',
         ]);
+
+        // Clock-in / clock-out boundary: the times must follow each other through the day.
+        $enabled = $request->boolean('clock_window_enabled');
+        if ($enabled) {
+            $order = array_filter([
+                'clock_in_opens_at' => $data['clock_in_opens_at'] ?? null,
+                'late_time' => $data['late_time'],
+                'half_day_after_time' => $data['half_day_after_time'] ?? null,
+                'clock_in_closes_at' => $data['clock_in_closes_at'] ?? null,
+            ]);
+            $labels = ['clock_in_opens_at' => 'Clock-in opens', 'late_time' => 'Late cutoff', 'half_day_after_time' => 'Half day after', 'clock_in_closes_at' => 'Clock-in closes'];
+            $previous = null;
+            foreach ($order as $field => $time) {
+                if ($previous && $time < $order[$previous]) {
+                    return back()->withErrors([$field => $labels[$field] . ' must not be earlier than ' . $labels[$previous] . '.'])->withInput();
+                }
+                $previous = $field;
+            }
+            if (! empty($data['clock_out_closes_at']) && ! empty($data['office_end_time']) && $data['clock_out_closes_at'] < $data['office_end_time']) {
+                return back()->withErrors(['clock_out_closes_at' => 'Auto clock-out must not be earlier than the office end time.'])->withInput();
+            }
+        }
+        \App\Services\AttendanceClockPolicy::ensureSchema();
+        $current = $this->attendancePolicy();
+        $data['clock_window_enabled'] = $enabled;
+        // Missed clock-ins are only marked absent from the day the boundary was switched on.
+        $data['clock_window_enabled_at'] = $enabled
+            ? ($current->clock_window_enabled && $current->clock_window_enabled_at ? $current->clock_window_enabled_at : now()->toDateString())
+            : null;
+        $data['missed_clock_out_status'] = $data['missed_clock_out_status'] ?? 'half_day';
 
         $data['half_day_threshold_minutes'] = $data['half_day_threshold_minutes'] ?? 510;
         $data['day_off_threshold_minutes'] = $data['day_off_threshold_minutes'] ?? 270;
@@ -533,6 +578,7 @@ class AttendanceController extends Controller
         }
 
         AttendanceSetting::updateOrCreate([], $data);
+        \App\Services\AttendanceClockPolicy::forget();
         $updated = $this->syncAttendancePolicyRules();
 
         return back()->with('success', 'Settings updated and ' . $updated . ' attendance record(s) recalculated.');
@@ -547,6 +593,12 @@ class AttendanceController extends Controller
 
         if (!$user) {
             abort(401, 'Unauthenticated');
+        }
+        // Clock-in boundary: whoever missed the clock-in window on a working day shows as absent.
+        try {
+            \App\Services\AttendanceClockPolicy::markMissedClockIns((int) $user->company_id);
+        } catch (\Throwable $e) {
+            report($e);
         }
 
         $month = (int) ($request->filled('month') ? $request->input('month') : now()->month);
@@ -2132,102 +2184,24 @@ class AttendanceController extends Controller
             return redirect()->route('login');
         }
 
-        try {
-            $response = DB::transaction(function () use ($user, $request) {
-                User::whereKey($user->id)->lockForUpdate()->firstOrFail();
-                $timezone = $this->resolveEmployeeTimezone(
-                    $request->input('clock_in_timezone') ?? $request->input('timezone'),
-                    $request->filled('clock_in_latitude') ? (float)$request->clock_in_latitude : null,
-                    $request->filled('clock_in_longitude') ? (float)$request->clock_in_longitude : null
-                );
-                $now = Carbon::now($timezone);
-                $today = $now->toDateString();
-                if (Attendance::where('user_id', $user->id)->where('date', '<>', $today)->whereNotNull('clock_in')->whereNull('clock_out')->exists()) {
-                    throw \Illuminate\Validation\ValidationException::withMessages(['attendance' => 'Please clock out of your active shift first.']);
-                }
-
-                $isWfhAssigned = WorkScheduleService::isUserWfhOnDate($user->id, $today);
-                $workFromType = $isWfhAssigned ? 'wfh' : 'office';
-                $initialStatus = $isWfhAssigned ? 'wfh' : 'present';
-
-                // find or create today's attendance row
-                $attendance = Attendance::firstOrCreate(
-                    ['user_id' => $user->id, 'date' => $today],
-                    array_filter([
-                        'company_id' => Schema::hasColumn('attendances', 'company_id') ? $user->company_id : null,
-                        'status' => $initialStatus,
-                        'working_from' => $isWfhAssigned ? 'home' : 'office',
-                        'work_from_type' => $workFromType
-                    ], fn ($value) => ! is_null($value))
-                );
-
-                // set clock_in if not already set
-                if (empty($attendance->clock_in)) {
-                    $attendance->clock_in = $now->format('H:i:s');
-                    $attendance->save();
-                    $attendance = $this->applyOrganizationAttendanceRules($attendance);
-                } else {
-                    // leave existing clock_in intact; you can uncomment to overwrite
-                    // $attendance->clock_in = now()->format('H:i:s'); $attendance->save();
-                }
-
-                // prepare a Carbon instance used by your notification formatting logic
-                $attendance->clocked_at = $this->buildDateTimeFromDateAndTime($attendance->date, $attendance->clock_in) ?? Carbon::now();
-
-                // debug log so we can trace whether notify() was attempted
-                Log::info('ClockIn notification called for user '.$user->id.' attendance_id:'.($attendance->id ?? 'n/a'));
-
-                // notify the user (this inserts into notifications table via toDatabase())
-                try {
-                    $user->notify(new ClockInNotification($attendance));
-                } catch (\Throwable $e) {
-                    // log error, but don't break the transaction for a notification failure
-                    Log::error('ClockInNotification failed (api clockIn)', [
-                        'user' => $user->id,
-                        'attendance_id' => $attendance->id ?? null,
-                        'error' => $e->getMessage()
-                    ]);
-                }
-
-                $this->notifyAttendanceActivity(
-                    'Clock In Recorded',
-                    $user->name . ' clocked in.',
-                    route('attendance.index'),
-                    ['type' => 'clock_in', 'record_id' => $attendance->id, 'employee_id' => $user->id, 'icon' => 'fa-clock', 'color' => 'success'],
-                    $user->company_id
-                );
-
-                // fetch the latest notification just created for immediate frontend use
-                $latestNotification = $user->notifications()->latest('created_at')->first();
-
-                return [
-                    'attendance' => $attendance,
-                    'notification' => $latestNotification ? $latestNotification->toArray() : null
-                ];
-            });
-
-            // if frontend expects JSON (AJAX or API)
-            if ($request->expectsJson()) {
-                return response()->json([
-                    'status' => true,
-                    'message' => 'Clock-in recorded',
-                    'attendance' => $response['attendance'],
-                    'notification' => $response['notification']
-                ]);
-            }
-
-            // for normal web form usage, redirect back with a success message
-            return redirect()->route('attendance.index')->with('success', 'Clock-in recorded successfully.');
-
-        } catch (\Throwable $e) {
-            Log::error('Error in clockIn()', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
-
-            if ($request->expectsJson()) {
-                return response()->json(['status' => false, 'message' => 'Failed to record clock-in', 'error' => $e->getMessage()], 500);
-            }
-
-            return redirect()->back()->with('error', 'Failed to record clock-in: ' . $e->getMessage());
+        // Clock-in needs a live photo and must respect the clock-in window, exactly like the dashboard clock-in.
+        if (! $request->filled('clock_in_selfie')) {
+            $message = 'Capture your photo to clock in.';
+            return $request->expectsJson()
+                ? response()->json(['status' => false, 'message' => $message], 422)
+                : redirect()->back()->with('error', $message);
         }
+        if (! $request->expectsJson()) {
+            return app(DashboardController::class)->clockIn($request);
+        }
+        $blocked = \App\Services\AttendanceClockPolicy::clockInBlockedReason($user, Carbon::now($this->resolveEmployeeTimezone($request->input('clock_in_timezone') ?? $request->input('timezone'))));
+        if ($blocked) {
+            return response()->json(['status' => false, 'message' => $blocked], 422);
+        }
+        $response = app(DashboardController::class)->clockIn($request);
+        $error = session()->pull('error');
+        $latest = Attendance::where('user_id', $user->id)->latest('date')->latest('id')->first();
+        return response()->json(['status' => ! $error, 'message' => $error ?: (session()->pull('success') ?: 'Clock-in recorded'), 'attendance' => $latest], $error ? 422 : 200);
     }
 
     /**

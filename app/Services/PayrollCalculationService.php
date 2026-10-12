@@ -314,7 +314,8 @@ class PayrollCalculationService
         $hraValue = 50.0;
         $specialType = 'percentage';
         $specialValue = 50.0;
-        $grade = 'Standard';
+        $designationLevel = $empDetail?->designation?->level;
+        $grade = $designationLevel !== null ? 'L'.$designationLevel : null;
         $source = 'default';
         $structureId = null;
 
@@ -340,7 +341,6 @@ class PayrollCalculationService
             $hraValue = (float) ($assignment->hra_value !== null && $assignment->hra_value > 0 ? $assignment->hra_value : ($struct?->hra_value ?? 50.0));
             $specialType = $assignment->special_allowance_type ?: ($struct?->special_allowance_type ?: 'percentage');
             $specialValue = (float) ($assignment->special_allowance_value !== null && $assignment->special_allowance_value > 0 ? $assignment->special_allowance_value : ($struct?->special_allowance_value ?? 50.0));
-            $grade = $assignment->grade ?: ($struct?->grade ?: ($empDetail?->designation?->level ?: 'Standard'));
             $structureId = $assignment->salary_structure_id;
             $source = 'assignment';
         }
@@ -365,7 +365,6 @@ class PayrollCalculationService
                 $hraValue = (float) ($structure->hra_value ?? 50.0);
                 $specialType = $structure->special_allowance_type ?: 'percentage';
                 $specialValue = (float) ($structure->special_allowance_value ?? 50.0);
-                $grade = $structure->grade ?: ($empDetail?->designation?->level ?: 'Standard');
                 $structureId = $structure->id;
                 $source = 'designation_structure';
             }
@@ -378,7 +377,6 @@ class PayrollCalculationService
             $hraValue = (float) ($empDetail->hra_amount ?? 0);
             $specialType = 'fixed';
             $specialValue = (float) ($empDetail->special_allowance ?? 0);
-            $grade = $empDetail->designation?->level ?: 'Standard';
             $source = 'employee_detail';
         }
 
@@ -389,7 +387,6 @@ class PayrollCalculationService
             $hraValue = 0.0;
             $specialType = 'percentage';
             $specialValue = 0.0;
-            $grade = $empDetail?->designation?->level ?: '-';
             $source = 'unassigned';
         }
 
@@ -748,6 +745,8 @@ class PayrollCalculationService
             'office' => $branch,
             'department' => $departmentName,
             'designation' => $designationName,
+            'designation_id' => $empDetail?->designation_id,
+            'designation_level' => $empDetail?->designation?->level,
             'grade' => $salaryData['grade'],
             'joining_date' => $joiningDate,
 

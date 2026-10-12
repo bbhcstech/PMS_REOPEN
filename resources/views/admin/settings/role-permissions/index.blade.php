@@ -1492,15 +1492,15 @@
                                 @foreach($modules->groupBy('category') as $category => $categoryModules)
                                     <tr class="permission-category"><td colspan="{{ count($permissions) + 2 }}"><span>{{ $category }}</span><small class="ms-2">{{ $categoryModules->count() }} modules</small></td></tr>
                                 @foreach($categoryModules as $module)
-                                    <tr data-module-id="{{ $module->id }}" data-module-slug="{{ $module->slug }}" data-payroll-child="{{ ($module->slug !== 'payroll' && (str_starts_with($module->slug, 'payroll-') || in_array($module->slug, ['payslips', 'salary-structures', 'employee-salary', 'formula-builder', 'deduction-rules', 'bonus-rules', 'tax-rules', 'overtime-rules']))) ? 'true' : 'false' }}" data-search="{{ strtolower($module->name . ' ' . $module->slug . ' ' . ($module->parent?->name ?? '')) }}">
+                                    <tr data-module-id="{{ $module->id }}" data-module-slug="{{ $module->slug }}" data-payroll-child="{{ ($module->slug !== 'payroll' && (str_starts_with($module->slug, 'payroll-') || in_array($module->slug, ['payslips', 'salary-structures', 'employee-salary', 'formula-builder', 'deduction-rules', 'bonus-rules', 'tax-rules', 'overtime-rules']))) ? 'true' : 'false' }}" data-search="{{ strtolower(($module->sidebar_name ?? $module->name) . ' ' . $module->slug . ' ' . (($module->parent?->sidebar_name ?? $module->parent?->name) ?? '')) }}">
                                         <td class="text-center">
-                                            <input type="checkbox" class="row-checkbox perm-checkbox" data-module-id="{{ $module->id }}" title="Toggle all actions for {{ $module->name }}">
+                                            <input type="checkbox" class="row-checkbox perm-checkbox" data-module-id="{{ $module->id }}" title="Toggle all actions for {{ ($module->sidebar_name ?? $module->name) }}">
                                         </td>
                                         <td>
                                             <div class="module-title-box">
-                                                <strong>{{ $module->name }}</strong>
+                                                <strong>{{ ($module->sidebar_name ?? $module->name) }}</strong>
                                                 @if($module->slug === 'payroll')<small>Changing Payroll actions also updates its pages. Adjust individual pages before saving if needed.</small>@endif
-                                                @if($module->parent)<small><i class="fas fa-angle-right me-1" style="color: #2F6BFF;"></i>{{ $module->parent->name }}</small>@endif
+                                                @if($module->parent)<small><i class="fas fa-angle-right me-1" style="color: #2F6BFF;"></i>{{ $module->parent->sidebar_name ?? $module->parent->name }}</small>@endif
                                             </div>
                                         </td>
                                         @foreach($permissions as $permission)
@@ -1508,7 +1508,7 @@
                                                 $isChecked = !empty($effectivePermissions[$module->id][$permission]);
                                             @endphp
                                             <td class="text-center">
-                                                <input type="checkbox" class="perm-checkbox action-checkbox" aria-label="{{ ucfirst($permission) }} for {{ $module->name }}" data-module-id="{{ $module->id }}" data-perm="{{ $permission }}" name="permissions[{{ $module->id }}][]" value="{{ $permission }}" @checked($isChecked)>
+                                                <input type="checkbox" class="perm-checkbox action-checkbox" aria-label="{{ ucfirst($permission) }} for {{ ($module->sidebar_name ?? $module->name) }}" data-module-id="{{ $module->id }}" data-perm="{{ $permission }}" name="permissions[{{ $module->id }}][]" value="{{ $permission }}" @checked($isChecked)>
                                             </td>
                                         @endforeach
                                     </tr>

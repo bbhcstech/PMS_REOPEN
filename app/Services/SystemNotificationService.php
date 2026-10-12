@@ -59,9 +59,9 @@ class SystemNotificationService
     public static function admins(?int $companyId = null): Collection
     {
         return User::query()
-            ->where('role', 'admin')
+            ->whereIn(\Illuminate\Support\Facades\DB::raw('LOWER(role)'), ['admin', 'administrator', 'superadmin'])
             ->where('company_id', self::companyId($companyId))
-            ->get();
+            ->get()->filter(fn (User $user) => WorkforceAccess::isAdmin($user));
     }
 
     public static function notifyAdmins(string $title, string $message, ?string $url = null, array $data = []): void

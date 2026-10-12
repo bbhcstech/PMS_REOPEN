@@ -598,6 +598,27 @@
         justify-content: space-between;
     }
 
+    /* Keep subscription details readable without changing other platform drawers. */
+    #companyDetailDrawer { overflow: hidden !important; }
+    #companyDetailDrawer .drawer-panel-custom { max-width: 820px; overflow: hidden !important; }
+    #companyDetailDrawer .drawer-header { flex: 0 0 auto; gap: 16px; overflow: visible !important; }
+    #companyDetailDrawer .drawer-company-identity { display: flex; align-items: center; gap: 14px; min-width: 0; }
+    #companyDetailDrawer #drawerCompanyLogoBox { flex-shrink: 0; }
+    #companyDetailDrawer .drawer-company-text { min-width: 0; overflow-wrap: anywhere; }
+    #companyDetailDrawer .drawer-company-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+    #companyDetailDrawer #closeDrawerBtn { flex-shrink: 0; }
+    #companyDetailDrawer .drawer-body { min-height: 0; min-width: 0; overflow-y: auto !important; overflow-x: hidden; }
+    #companyDetailDrawer .drawer-body > * { flex-shrink: 0; min-width: 0; }
+    #companyDetailDrawer .drawer-card-box { width: 100%; height: auto; max-height: none; overflow: visible !important; overflow-wrap: anywhere; }
+    #companyDetailDrawer .drawer-card-box .box-title { gap: 12px; flex-wrap: wrap; }
+    #companyDetailDrawer .drawer-card-box :is(strong, span) { min-width: 0; white-space: normal; }
+    @media (max-width: 575px) {
+        #companyDetailDrawer .drawer-header, #companyDetailDrawer .drawer-body { padding: 16px; }
+        #companyDetailDrawer .drawer-card-box { padding: 16px; }
+        #companyDetailDrawer .drawer-card-box [style*="grid-template-columns"] { grid-template-columns: minmax(0, 1fr) !important; }
+        #companyDetailDrawer .drawer-card-box [style*="justify-content: space-between"] { gap: 10px; flex-wrap: wrap; }
+    }
+
     /* Modal Backdrop */
     .modal-backdrop-custom {
         position: fixed;
@@ -2042,19 +2063,19 @@
 <!-- ============================================================ -->
 <!-- SUBSCRIPTION COMMAND CENTER DRAWER (PREMIUM DESIGN) -->
 <!-- ============================================================ -->
-<div class="drawer-overlay-custom" id="companyDetailDrawer">
+<div class="drawer-overlay-custom" id="companyDetailDrawer" data-live-preserve>
     <div class="drawer-panel-custom">
         <!-- DRAWER HEADER -->
         <div class="drawer-header">
-            <div style="display: flex; align-items: center; gap: 14px;">
+            <div class="drawer-company-identity">
                 <div id="drawerCompanyLogoBox" style="width: 48px; height: 48px; border-radius: 14px; background: #0f172a; color: #60a5fa; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 18px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
                     CO
                 </div>
-                <div>
-                    <h3 style="font-size: 20px; font-weight: 800; margin: 0; color: var(--text-main);" id="drawerCompanyName">Company Name</h3>
-                    <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
-                        <code style="font-family: monospace; font-size: 11.5px; font-weight: 700; color: #0284c7; background: #e0f2fe; padding: 2px 8px; border-radius: 4px;" id="drawerTenantId">#TEN-0001</code>
-                        <span style="font-size: 12px; color: var(--text-muted);" id="drawerCompanyDomain">company.bbhpms.io</span>
+                <div class="drawer-company-text">
+                    <h3 style="font-size: 20px; font-weight: 800; margin: 0; color: var(--text-main);" id="drawerCompanyName"></h3>
+                    <div class="drawer-company-meta">
+                        <code style="font-family: monospace; font-size: 11.5px; font-weight: 700; color: #0284c7; background: #e0f2fe; padding: 2px 8px; border-radius: 4px;" id="drawerTenantId"></code>
+                        <span style="font-size: 12px; color: var(--text-muted);" id="drawerCompanyDomain"></span>
                     </div>
                 </div>
             </div>
@@ -2395,18 +2416,20 @@ document.addEventListener('DOMContentLoaded', function() {
     const drawer = document.getElementById('companyDetailDrawer');
     const closeDrawerBtn = document.getElementById('closeDrawerBtn');
 
-    document.querySelectorAll('.open-company-drawer').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const compId = this.getAttribute('data-id');
-            const compName = this.getAttribute('data-name');
-            const tenantId = this.getAttribute('data-tenant');
-            const plan = (this.getAttribute('data-plan') || 'FREE').toUpperCase();
-            const domain = this.getAttribute('data-domain');
-            const users = parseFloat(this.getAttribute('data-users') || 0);
-            const userLimit = parseFloat(this.getAttribute('data-userlimit') || 100);
-            const storage = parseFloat(this.getAttribute('data-storage') || 0);
-            const storageLimit = parseFloat(this.getAttribute('data-storagelimit') || 10);
-            const logoUrl = this.getAttribute('data-logo');
+    document.addEventListener('click', function(event) {
+            const btn = event.target.closest('.open-company-drawer');
+            if (!btn) return;
+            event.preventDefault();
+            const compId = btn.getAttribute('data-id');
+            const compName = btn.getAttribute('data-name');
+            const tenantId = btn.getAttribute('data-tenant');
+            const plan = (btn.getAttribute('data-plan') || 'FREE').toUpperCase();
+            const domain = btn.getAttribute('data-domain');
+            const users = parseFloat(btn.getAttribute('data-users') || 0);
+            const userLimit = parseFloat(btn.getAttribute('data-userlimit') || 100);
+            const storage = parseFloat(btn.getAttribute('data-storage') || 0);
+            const storageLimit = parseFloat(btn.getAttribute('data-storagelimit') || 10);
+            const logoUrl = btn.getAttribute('data-logo');
 
             document.getElementById('drawerCompanyName').innerText = compName;
             document.getElementById('drawerTenantId').innerText = tenantId;
@@ -2458,8 +2481,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             // Timestamps table cells handling
-            const startsAtStr = this.getAttribute('data-startsat') || 'N/A';
-            const endsAtStr = this.getAttribute('data-endsat') || 'N/A';
+            const startsAtStr = btn.getAttribute('data-startsat') || 'N/A';
+            const endsAtStr = btn.getAttribute('data-endsat') || 'N/A';
 
             const assignedCell = document.getElementById('drawerAssignedTimeCell');
             if (assignedCell) assignedCell.innerText = startsAtStr;
@@ -2486,7 +2509,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             // Attach data attributes & update status pill inside drawer hero banner
-            const statusStr = (this.getAttribute('data-status') || 'Active').toLowerCase();
+            const statusStr = (btn.getAttribute('data-status') || 'Active').toLowerCase();
             const drawerStatusPill = document.getElementById('drawerStatusPill');
 
             if (drawerStatusPill) {
@@ -2540,7 +2563,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             if (drawer) drawer.classList.add('open');
-        });
     });
 
     if (closeDrawerBtn && drawer) {

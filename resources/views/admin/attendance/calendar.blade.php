@@ -17,6 +17,9 @@
         <div class="ac-actions">
             <a class="ac-button ac-primary" href="{{ route($attendanceRoute, ['view' => 'team', 'month' => $month, 'year' => $year]) }}">Employee attendance table</a>
             @if($canManage)
+                @if(auth()->user()->canViewModule('higher-level-attendance'))
+                    <a class="ac-button" href="{{ route(request('staff_category') === 'authority' ? 'attendance.index' : 'admin.authority-attendance', ['view' => 'team', 'month' => $month, 'year' => $year]) }}">{{ request('staff_category') === 'authority' ? 'Employee attendance' : 'Higher-level attendance' }}</a>
+                @endif
                 <a class="ac-button" href="{{ route('attendance.archive', ['staff_category' => request('staff_category')]) }}">Archived</a>
                 <a class="ac-button" href="{{ route('attendance.settings') }}">Settings</a>
                 <a class="ac-button ac-primary" href="{{ route('attendance.create', ['staff_category' => request('staff_category'), 'user_id' => $selectedEmployee?->id]) }}">＋ Mark attendance</a>

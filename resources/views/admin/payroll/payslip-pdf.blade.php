@@ -43,10 +43,11 @@
     // Employee details: snapshot values are what was paid, live record fills the gaps.
     $empName = $u?->name ?? ($b['employee_name'] ?? 'Employee');
     $empCode = $b['employee_id'] ?? ($emp?->employee_id ?? ('EMP' . ($u?->id ?? '')));
-    $designation = ($b['designation'] ?? '-') !== '-' ? $b['designation'] : ($emp?->designation?->name ?? '—');
+    $designationDetails = \App\Services\PayslipDesignation::details($b, $emp?->designation);
+    $designation = $designationDetails['name'];
     $department = ($b['department'] ?? '-') !== '-' ? $b['department'] : ($emp?->department?->dpt_name ?? $emp?->department?->name ?? '—');
     $branchName = ($b['branch'] ?? '-') !== '-' ? $b['branch'] : ($emp?->business_address ?? '—');
-    $grade = $b['grade'] ?? '—';
+    $grade = $designationDetails['level'];
     $joining = ($b['joining_date'] ?? '-') !== '-' ? $b['joining_date'] : ($emp?->joining_date ? \Carbon\Carbon::parse($emp->joining_date)->format('d M Y') : '—');
     $payslipNumber = $payslip?->payslip_number ?? ('PS-' . $period->format('Ym') . '-' . str_pad((string) ($historyObj?->id ?? 1), 4, '0', STR_PAD_LEFT));
     $payDate = $payroll?->pay_date ? \Carbon\Carbon::parse($payroll->pay_date) : $period->copy()->endOfMonth();
@@ -300,7 +301,7 @@
                     <tr><td class="k">Employee ID</td><td class="v">{{ $empCode }}</td></tr>
                     <tr><td class="k">Designation</td><td class="v">{{ $designation }}</td></tr>
                     <tr><td class="k">Department</td><td class="v">{{ $department }}</td></tr>
-                    <tr><td class="k">Grade</td><td class="v">{{ $grade }}</td></tr>
+                    <tr><td class="k">Designation Level</td><td class="v">{{ $grade }}</td></tr>
                 </table>
             </td>
             <td class="gap"></td>

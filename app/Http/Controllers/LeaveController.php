@@ -97,6 +97,9 @@ class LeaveController extends Controller
 
         $archivedCount = $isAdmin ? $this->scopeRecordCategory(Leave::whereNotNull('archived_at'))->count() : 0;
         $policyNotice = $this->leaveService->policyNotice($policy);
+        $authorityPendingCount = $isAdmin
+            ? \App\Services\WorkforceAccess::records(Leave::whereNull('archived_at')->where('status', 'pending'), 'authority')->count()
+            : 0;
 
         return view('admin.leaves.index', compact(
             'policy',
@@ -108,7 +111,8 @@ class LeaveController extends Controller
             'stats',
             'archivedCount',
             'perPage',
-            'policyNotice'
+            'policyNotice',
+            'authorityPendingCount'
         ));
     }
 
@@ -197,7 +201,7 @@ class LeaveController extends Controller
             SystemNotificationService::notifyAdmins(
                 'New Leave Request',
                 $employee->name . ' requested ' . $type->name . ' from ' . $data['start_date'] . ' to ' . $data['end_date'],
-                route('leaves.show', $leave->id),
+                route('leaves.show', ['leave' => $leave->id, 'staff_category' => \App\Services\WorkforceAccess::isAuthority($employee) ? 'authority' : 'employee']),
                 ['employee_id' => $employee->id, 'entity_type' => Leave::class, 'entity_id' => $leave->id, 'type' => 'leave_requested', 'icon' => 'fa-calendar-days']
             );
         } else {
