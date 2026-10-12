@@ -5,6 +5,7 @@
 <!doctype html>
 <html>
 <head>
+    @include('documents.pdf-styles')
     <meta charset="utf-8"/>
     <title>Job Requirement - {{ $requirement->title }}</title>
     <style>
@@ -14,7 +15,7 @@
             box-sizing: border-box;
         }
         body {
-            font-family: 'Helvetica Neue', 'Helvetica', 'DejaVu Sans', Arial, sans-serif;
+            font-family: 'DejaVu Sans', sans-serif;
             font-size: 11px;
             color: #1f2937;
             background: #ffffff;

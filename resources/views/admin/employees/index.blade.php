@@ -4901,17 +4901,14 @@ $(document).ready(function () {
             return;
         }
         const data = getDataForExport(false);
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF('landscape');
-        doc.text('Employee List', 14, 15);
-        doc.autoTable({
-            head: [data[0]],
-            body: data.slice(1),
-            startY: 30,
-            theme: 'grid',
-            headStyles: { fillColor: [124, 58, 237] }
-        });
-        doc.save(`employees_${new Date().toISOString().split('T')[0]}.pdf`);
+        const pdfDocument = {
+            pageSize: 'A4', pageOrientation: 'landscape',
+            content: [{ text: 'Employee List', style: 'title' }, {
+                table: { headerRows: 1, body: [data[0].map(text => ({ text, style: 'tableHeader' })), ...data.slice(1)] }
+            }]
+        };
+        window.PmsPdfExports.styleDocument(pdfDocument);
+        window.pdfMake.createPdf(pdfDocument).download(`employees_${new Date().toISOString().split('T')[0]}.pdf`);
     });
 
     // Print
@@ -5087,8 +5084,6 @@ function openResetPasswordModal(id, name) {
 </script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 @endpush
 
 @endsection

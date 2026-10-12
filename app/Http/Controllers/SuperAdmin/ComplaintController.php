@@ -249,7 +249,7 @@ class ComplaintController extends Controller
 
         if ($format === 'pdf') {
             if (class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
-                $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('superadmin.complaints.exports.pdf', compact('tickets', 'activeFilters'));
+                $pdf = \App\Services\PdfDocument::loadView('superadmin.complaints.exports.pdf', compact('tickets', 'activeFilters'));
                 return $pdf->download("complaints_report_{$dateStr}.pdf");
             }
             return view('superadmin.complaints.exports.pdf', compact('tickets', 'activeFilters'));

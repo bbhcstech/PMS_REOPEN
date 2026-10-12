@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    @include('documents.pdf-styles')
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     @php
         $doc = $letter ?? ($sampleLetter ?? []);
@@ -28,8 +29,11 @@
         $footerFile = $fullPageFile ? null : \App\Services\LetterheadImage::absolute($footerImage);
 
         // Fixed slot sizes on A4 (210mm wide): header 1240x160 px, footer 1240x140 px.
-        $headerHeight = round(210 * \App\Services\LetterheadImage::HEADER[1] / \App\Services\LetterheadImage::HEADER[0], 2); // 27.1mm
-        $footerHeight = round(210 * \App\Services\LetterheadImage::FOOTER[1] / \App\Services\LetterheadImage::FOOTER[0], 2); // 23.71mm
+        $pageWidth = $pageWidth ?? 210;
+        $pageHeight = $pageHeight ?? 297;
+        $headerHeight = round($pageWidth * \App\Services\LetterheadImage::HEADER[1] / \App\Services\LetterheadImage::HEADER[0], 2);
+        $footerHeight = round($pageWidth * \App\Services\LetterheadImage::FOOTER[1] / \App\Services\LetterheadImage::FOOTER[0], 2);
+        $importedArtwork = $doc['imported_artwork'] ?? [];
 
         // Page margins reserve the header/footer on EVERY page, so text never runs under them and
         // only as many pages as the content needs are produced.
@@ -39,22 +43,20 @@
         // Raster images are embedded (works for temporary fitted copies outside the PDF engine's file root).
         $imageSrc = function (?string $file) {
             if (! $file) return null;
-            $info = @getimagesize($file);
-            if (is_array($info) && ! empty($info['mime'])) return 'data:' . $info['mime'] . ';base64,' . base64_encode((string) file_get_contents($file));
-            return $file;
+            return \App\Services\PdfDocument::imageSource($file);
         };
         $accent = $letterhead?->primary_color ?: '#2F6BFF';
-        $companyName = $letterhead?->company_name ?: 'Bengal IT Hub Private Limited';
+        $companyName = $doc['company_name'] ?? ($letterhead?->company_name ?: 'Bengal IT Hub Private Limited');
     @endphp
     <title>{{ $doc['subject'] ?? ($letterhead?->name ?? 'Official Document') }}</title>
     <style>
         @page {
-            size: A4 portrait;
+            size: {{ $pageWidth }}mm {{ $pageHeight }}mm;
             margin: {{ $marginTop }}mm 0 {{ $marginBottom }}mm 0;
         }
 
         body {
-            font-family: 'DejaVu Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-family: 'DejaVu Sans', 'DejaVu Sans', sans-serif;
             color: #1e293b;
             font-size: 9.5pt;
             line-height: 1.6;
@@ -69,7 +71,6 @@
             left: 0;
             right: 0;
             height: {{ $headerHeight }}mm;
-            overflow: hidden;
         }
         .lh-footer {
             position: fixed;
@@ -77,11 +78,10 @@
             left: 0;
             right: 0;
             height: {{ $footerHeight }}mm;
-            overflow: hidden;
         }
         .lh-header img, .lh-footer img {
             display: block;
-            width: 210mm;
+            width: {{ $pageWidth }}mm;
         }
         .lh-header img { height: {{ $headerHeight }}mm; }
         .lh-footer img { height: {{ $footerHeight }}mm; }
@@ -90,8 +90,8 @@
             position: fixed;
             top: -{{ $marginTop }}mm;
             left: 0;
-            width: 210mm;
-            height: 297mm;
+            width: {{ $pageWidth }}mm;
+            height: {{ $pageHeight }}mm;
             z-index: -1000;
         }
 
@@ -206,15 +206,15 @@
 </head>
 <body>
 
-    @if($fullPageFile)
+    @if($fullPageFile && !in_array('background_page_image', $importedArtwork))
         <img src="{{ $imageSrc($fullPageFile) }}" class="bg-full-page" alt="">
     @endif
 
-    @if($headerFile)
+    @if($headerFile && !in_array('header_image', $importedArtwork))
         <div class="lh-header"><img src="{{ $imageSrc($headerFile) }}" alt=""></div>
     @endif
 
-    @if($footerFile)
+    @if($footerFile && !in_array('footer_image', $importedArtwork))
         <div class="lh-footer"><img src="{{ $imageSrc($footerFile) }}" alt=""></div>
     @endif
 

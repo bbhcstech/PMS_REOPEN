@@ -1915,7 +1915,7 @@
 @endsection
 
 @push('scripts')
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+@include('partials.pdf-export-scripts')
 <script>
 function confirmSuspendCompany(id, name) {
     window.location.href = "{{ url('/superadmin/companies') }}/" + id + "/suspension";
@@ -2491,15 +2491,9 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
 
             // 4. Trigger auto-download PDF
-            if (typeof html2pdf !== 'undefined') {
-                const opt = {
-                    margin:       [10, 10, 10, 10],
-                    filename:     'tenant_companies_report.pdf',
-                    image:        { type: 'jpeg', quality: 0.98 },
-                    html2canvas:  { scale: 2, useCORS: true, logging: false },
-                    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
-                };
-                html2pdf().set(opt).from(element).save();
+            if (window.pdfMake && window.PmsPdfExports) {
+                const pdfDocument = window.PmsPdfExports.fromTable(tableClone, 'Tenant Companies Directory Report', 'Platform Super Admin Infrastructure & Subscription Export', 'Export Date: ' + now + ' | Total Records: ' + tableClone.querySelectorAll('tbody tr').length, 'landscape');
+                window.pdfMake.createPdf(pdfDocument).download('tenant_companies_report.pdf');
             } else {
                 const printWin = window.open('', '_blank');
                 printWin.document.write(`<!DOCTYPE html><html><head><title>Tenant Companies Report</title></head><body>${element.innerHTML}<script>window.onload=function(){window.print();};<\\/script></body></html>`);

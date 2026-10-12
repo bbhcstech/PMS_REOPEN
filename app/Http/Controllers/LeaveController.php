@@ -10,7 +10,7 @@ use App\Models\LeaveType;
 use App\Models\User;
 use App\Services\LeaveService;
 use App\Services\SystemNotificationService;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Services\PdfDocument as Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -916,6 +916,7 @@ class LeaveController extends Controller
 
         if ($type === 'pdf') {
             return Pdf::loadView('admin.leaves.exports.pdf', compact('leaves'))
+                ->setPaper('a4', 'landscape')
                 ->download('leave-report-' . $filenameDate . '.pdf');
         }
 

@@ -1972,15 +1972,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 </table>
             `;
 
-            if (typeof html2pdf !== 'undefined') {
-                const opt = {
-                    margin:       [10, 10, 10, 10],
-                    filename:     'plans_catalog_report.pdf',
-                    image:        { type: 'jpeg', quality: 0.98 },
-                    html2canvas:  { scale: 2, useCORS: true, logging: false },
-                    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-                };
-                html2pdf().set(opt).from(reportEl).save();
+            if (window.pdfMake && window.PmsPdfExports) {
+                const pdfDocument = window.PmsPdfExports.fromTable(reportEl.querySelector('table'), 'Subscription Plans Catalog Report', 'Super Admin Executive SaaS Tier Breakdown', 'Export Date: ' + formattedDate, 'portrait');
+                window.pdfMake.createPdf(pdfDocument).download('plans_catalog_report.pdf');
             } else {
                 const printWin = window.open('', '_blank');
                 printWin.document.write(`<!DOCTYPE html><html><head><title>Plans Catalog Report</title></head><body>${reportEl.innerHTML}<script>window.onload=function(){window.print();};<\\/script></body></html>`);
@@ -1989,5 +1983,5 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+@include('partials.pdf-export-scripts')
 @endpush

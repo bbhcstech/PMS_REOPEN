@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Schema;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Maatwebsite\Excel\Facades\Excel;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Services\PdfDocument as Pdf;
 use App\Notifications\ClockInNotification;
 use App\Services\SystemNotificationService;
 use App\Services\WorkScheduleService;

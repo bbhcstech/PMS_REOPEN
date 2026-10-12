@@ -173,7 +173,7 @@ class RecruitmentController extends Controller
         $policyCard = $this->generatePolicyCard();
 
         try {
-            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.recruitment.pdf', compact('requirement', 'policyCard'))
+            $pdf = \App\Services\PdfDocument::loadView('admin.recruitment.pdf', compact('requirement', 'policyCard'))
                 ->setPaper('a4', 'portrait')
                 ->setWarnings(false);
 

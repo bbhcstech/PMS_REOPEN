@@ -27,7 +27,7 @@ use App\Models\SalaryStructureVersion;
 use App\Models\TaxRule;
 use App\Models\User;
 use App\Services\PayrollCalculationService;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Services\PdfDocument as Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;

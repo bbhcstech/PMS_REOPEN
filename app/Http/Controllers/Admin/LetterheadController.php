@@ -12,7 +12,6 @@ use App\Models\Project;
 use App\Services\DocxGeneratorService;
 use App\Services\LetterTemplateService;
 use App\Services\PdfLetterheadService;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -789,6 +788,8 @@ class LetterheadController extends Controller
             'body' => $request->input('body'),
             'signatory_name' => $request->input('signatory_name') ?: (auth()->user()?->name ?: 'Arthur Pendelton'),
             'signatory_title' => $request->input('signatory_title') ?: 'Authorized Signatory',
+            'header_image' => $request->file('header_image') ?? $letterhead?->header_image,
+            'footer_image' => $request->file('footer_image') ?? $letterhead?->footer_image,
         ];
 
         $fileName = 'Letter_' . Str::slug(substr($letterData['subject'], 0, 30)) . '_' . date('Ymd') . '.docx';

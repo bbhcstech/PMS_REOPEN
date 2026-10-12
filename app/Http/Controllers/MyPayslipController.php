@@ -7,7 +7,7 @@ use App\Models\Payroll;
 use App\Models\PayrollHistory;
 use App\Models\Payslip;
 use App\Services\PayrollCalculationService;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Services\PdfDocument as Pdf;
 use Illuminate\Http\Request;
 
 /**

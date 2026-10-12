@@ -49,8 +49,7 @@ class RecruitmentRequirement extends TenantModel
         if (! $path) return null;
         $file = public_path($path);
         if (! is_file($file)) return null;
-        $mime = @mime_content_type($file) ?: 'image/png';
-        return 'data:' . $mime . ';base64,' . base64_encode((string) file_get_contents($file));
+        return \App\Services\PdfDocument::imageSource($file);
     }
 
     public function getStatusBadgeAttribute(): string

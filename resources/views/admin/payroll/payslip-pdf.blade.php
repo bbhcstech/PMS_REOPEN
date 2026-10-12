@@ -34,8 +34,8 @@
     if ($logoPath) {
         $file = collect([public_path($logoPath), public_path('storage/' . ltrim($logoPath, '/')), storage_path('app/public/' . ltrim($logoPath, '/'))])
             ->first(fn ($p) => is_file($p));
-        if ($file && ($mime = @mime_content_type($file)) && str_starts_with($mime, 'image/') && $mime !== 'image/svg+xml') {
-            $logoSrc = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($file));
+        if ($file && ($mime = @mime_content_type($file)) && str_starts_with($mime, 'image/')) {
+            $logoSrc = \App\Services\PdfDocument::imageSource($file);
         }
     }
     $initials = collect(preg_split('/\s+/', trim($companyName)))->filter()->take(2)->map(fn ($w) => mb_strtoupper(mb_substr($w, 0, 1)))->implode('');
@@ -174,6 +174,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    @include('documents.pdf-styles')
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Payslip — {{ $empName }} — {{ $monthName }} {{ $yearNum }}</title>
