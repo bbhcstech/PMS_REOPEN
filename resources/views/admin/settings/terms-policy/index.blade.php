@@ -223,6 +223,34 @@
         color: #0F172A;
     }
 
+    /* Light theme: the first summary card (Document Title) matches the other three white cards and is
+       never painted with the theme's blue "featured first card" gradient. */
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark) .terms-policy-page .stats-grid > .stat-card:first-child {
+        background: #ffffff !important;
+        border: 1px solid rgba(47, 107, 255, 0.14) !important;
+        box-shadow: 0 10px 30px -10px rgba(47, 107, 255, 0.08) !important;
+        color: #0F172A !important;
+    }
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark) .terms-policy-page .stats-grid > .stat-card:first-child h3 {
+        color: #0F172A !important;
+        -webkit-text-fill-color: #0F172A !important;
+    }
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark) .terms-policy-page .stats-grid > .stat-card:first-child :is(h6, span) {
+        color: #64748b !important;
+        -webkit-text-fill-color: #64748b !important;
+    }
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark) .terms-policy-page .stats-grid > .stat-card:first-child .stat-icon.doc {
+        background: linear-gradient(145deg, #EEF2FF, #E0E7FF) !important;
+        border: 0 !important;
+        box-shadow: none !important;
+    }
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark) .terms-policy-page .stats-grid > .stat-card:first-child .stat-icon.doc :is(i, svg) {
+        color: #2F6BFF !important;
+        -webkit-text-fill-color: #2F6BFF !important;
+        fill: #2F6BFF !important;
+        background: transparent !important;
+    }
+
     .terms-policy-page .stat-card * {
         -webkit-text-fill-color: initial;
     }

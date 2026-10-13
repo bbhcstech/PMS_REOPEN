@@ -6,7 +6,7 @@ let cachedWrites = 0;
 const context = vm.createContext({
     URL, Promise, console,
     self: { location: { origin: 'https://pms.test' }, addEventListener: (name, fn) => { listeners[name] = fn; } },
-    caches: { match: async () => null, open: async () => ({ put: () => { cachedWrites++; } }) },
+    caches: { match: async () => null, open: async () => ({ put: () => { cachedWrites++; }, delete: async () => true, match: async () => null }) },
     fetch: async () => ({ status: 200, headers: { get: () => 'private, no-store' }, clone: () => ({}) }),
 });
 vm.runInContext(fs.readFileSync('public/sw.js', 'utf8'), context);
@@ -17,7 +17,7 @@ for (const pathname of ['/uploads/community/1/private.png', '/uploads/community/
 }
 (async () => {
     assert.equal(vm.runInContext("isStaticAsset('/admin/assets/css/pms-refresh.css')", context), true);
-    await vm.runInContext("cacheFirstAsset({url: 'https://pms.test/admin/assets/image.png'})", context);
+    await vm.runInContext("networkFirstAsset({url: 'https://pms.test/admin/assets/image.png'})", context);
     assert.equal(cachedWrites, 0, 'A private/no-store response was cached.');
     console.log('PASS: shared assets still work; uploads, downloads, records and private responses never enter the shared PWA cache.');
 })().catch(error => { console.error(error); process.exitCode = 1; });

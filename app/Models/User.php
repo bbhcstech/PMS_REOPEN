@@ -272,7 +272,11 @@ class User extends Authenticatable
             || str_contains($designation, 'qa');
     }
 
-    public function hasModulePermission(string $moduleSlug, string $permission = 'view'): bool
+    /**
+     * Company-level availability of a feature: Super Admin "Manage Features" entitlement for this
+     * company plus the company's own Module Management active state. Role permissions are separate.
+     */
+    public function featureEnabled(string $moduleSlug): bool
     {
         // Platform Super Admin (central guard) bypasses company feature checks
         if (\Illuminate\Support\Facades\Auth::guard('super_admin')->check()) {
@@ -301,6 +305,19 @@ class User extends Authenticatable
         if ($inheritedFeature && WorkspaceModule::where('slug', $inheritedFeature)->where('is_active', false)->exists()) {
             return false;
         }
+
+        return true;
+    }
+
+    public function hasModulePermission(string $moduleSlug, string $permission = 'view'): bool
+    {
+        if (\Illuminate\Support\Facades\Auth::guard('super_admin')->check()) {
+            return true;
+        }
+        if (! $this->featureEnabled($moduleSlug)) {
+            return false;
+        }
+        $inheritedFeature = config('workspace_modules.'.$moduleSlug.'.inherits');
 
         if (in_array($this->normalizedRole(), ['admin', 'superadmin'], true)) {
             return true;
@@ -400,6 +417,11 @@ class User extends Authenticatable
      */
     public function moduleToggleAllows(string $moduleSlug, string $permission = 'view'): bool
     {
+        // The company must have the feature (Super Admin Manage Features + Module Management) for every role,
+        // admins included; the saved role decision is applied on top of that.
+        if (! $this->featureEnabled($moduleSlug)) {
+            return false;
+        }
         return ! $this->hasSavedModuleDecision($moduleSlug) || $this->hasModulePermission($moduleSlug, $permission);
     }
 

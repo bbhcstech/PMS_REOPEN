@@ -531,6 +531,7 @@
         border: 1px solid var(--bx-border);
         border-radius: 12px;
         min-height: 125px;
+        min-width: 0;
         padding: 1rem;
         position: relative;
         transition: all 0.2s ease;
@@ -563,6 +564,9 @@
         letter-spacing: -0.02em;
         line-height: 1.15;
         margin: 0.35rem 0 0.25rem;
+        max-width: 100%;
+        overflow-wrap: anywhere;
+        white-space: normal;
     }
 
     .saas-money-card em {
@@ -1937,11 +1941,21 @@
             $budgetUtilization = $projectBudgetTotal > 0 ? round(($expenseInvestmentValue / $projectBudgetTotal) * 100) : 0;
             $currency = '₹';
             $formatMoney = fn ($value) => $currency . number_format((float) $value, 0);
+            $formatCompactMoney = function ($value) use ($currency) {
+                $amount = (float) $value;
+                foreach ([1e12 => 'T', 1e9 => 'B', 1e6 => 'M', 1e3 => 'K'] as $scale => $suffix) {
+                    if (round(abs($amount) / $scale, 2) >= 1) {
+                        $short = rtrim(rtrim(number_format($amount / $scale, 2, '.', ','), '0'), '.');
+                        return $currency . $short . $suffix;
+                    }
+                }
+                return $currency . number_format($amount, 0);
+            };
             $financeCards = [
-                ['label' => 'Total Revenue Outlook', 'value' => $formatMoney($grossRevenue), 'meta' => 'Deals, contracts, invoices, payments'],
-                ['label' => 'Investment / Expenses', 'value' => $formatMoney($expenseInvestmentValue), 'meta' => $budgetUtilization . '% of project budget'],
-                ['label' => 'Project Budget', 'value' => $formatMoney($projectBudgetTotal), 'meta' => 'Allocated delivery budget'],
-                ['label' => 'Net Business Outlook', 'value' => $formatMoney($netOutlook), 'meta' => $netOutlook >= 0 ? 'Positive operating signal' : 'Needs revenue recovery'],
+                ['label' => 'Total Revenue Outlook', 'value' => $grossRevenue, 'meta' => 'Deals, contracts, invoices, payments'],
+                ['label' => 'Investment / Expenses', 'value' => $expenseInvestmentValue, 'meta' => $budgetUtilization . '% of project budget'],
+                ['label' => 'Project Budget', 'value' => $projectBudgetTotal, 'meta' => 'Allocated delivery budget'],
+                ['label' => 'Net Business Outlook', 'value' => $netOutlook, 'meta' => $netOutlook >= 0 ? 'Positive operating signal' : 'Needs revenue recovery'],
             ];
             $deliveryRisk = $dashboardTotalProject > 0 ? round(($dashboardUnresolvedTicket + $dashboardPendingTask) / max($dashboardTotalProject, 1)) : 0;
             $peopleRisk = $dashboardTotalEmployees > 0 ? round((($dashboardAbsentCount + $dashboardLateCount) / $dashboardTotalEmployees) * 100) : 0;
@@ -2184,7 +2198,7 @@
                         @foreach($financeCards as $card)
                             <div class="saas-money-card">
                                 <span>{{ $card['label'] }}</span>
-                                <strong>{{ $card['value'] }}</strong>
+                                <strong title="{{ $formatMoney($card['value']) }}" aria-label="{{ $card['label'] . ': ' . $formatMoney($card['value']) }}">{{ $formatCompactMoney($card['value']) }}</strong>
                                 <em>{{ $card['meta'] }}</em>
                             </div>
                         @endforeach

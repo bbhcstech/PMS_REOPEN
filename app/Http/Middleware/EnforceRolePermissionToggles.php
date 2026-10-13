@@ -24,15 +24,26 @@ class EnforceRolePermissionToggles
         $user = $request->user();
         $route = $request->route();
         if (! $user || ! $route || ! method_exists($user, 'moduleToggleAllows')
-            || in_array($user->normalizedRole(), ['admin', 'superadmin'], true)
             || \Illuminate\Support\Facades\Auth::guard('super_admin')->check()) {
             return $next($request);
         }
 
         $routeName = (string) $route->getName();
+        if ($routeName === '' || in_array($routeName, self::ALWAYS_ALLOWED, true)) {
+            return $next($request);
+        }
+
+        $isAdmin = in_array($user->normalizedRole(), ['admin', 'superadmin'], true);
+
+        // 1. Super Admin "Manage Features" applies to every company user, admins included, on every
+        //    route of the feature (not only its sidebar page).
+        if (! $this->featureAvailable($user, $routeName, $isAdmin)) {
+            return $this->deny($request, 'This feature is not available for your company.');
+        }
+
+        // 2. Role permission toggles (company admins manage them, so they are not restricted here).
         // Routes guarded by module.access already apply the full permission check.
-        if ($routeName === '' || in_array($routeName, self::ALWAYS_ALLOWED, true)
-            || in_array('module.access', $route->gatherMiddleware(), true)) {
+        if ($isAdmin || in_array('module.access', $route->gatherMiddleware(), true)) {
             return $next($request);
         }
 
@@ -52,7 +63,39 @@ class EnforceRolePermissionToggles
             return $next($request);
         }
 
-        $message = 'You do not have permission to access this module.';
+        return $this->deny($request, 'You do not have permission to access this module.');
+    }
+
+    /** False only when every registry feature the route belongs to is switched off for the company. */
+    private function featureAvailable($user, string $routeName, bool $isAdmin): bool
+    {
+        // Administrators must always be able to repair their company's access settings.
+        if ($isAdmin && (str_starts_with($routeName, 'admin.modules.') || str_starts_with($routeName, 'admin.role-permissions.'))) {
+            return true;
+        }
+        try {
+            $features = array_filter(
+                app(\App\Services\AdminWorkspaceModules::class)->featuresForRoute($routeName),
+                // Landing pages (e.g. dashboard) stay reachable so a denied request always has somewhere to go.
+                fn ($slug) => ! in_array(config('workspace_modules.'.$slug.'.route'), self::ALWAYS_ALLOWED, true)
+            );
+            if (! $features) {
+                return true;
+            }
+            foreach ($features as $slug) {
+                if ($user->featureEnabled($slug)) {
+                    return true;
+                }
+            }
+            return false;
+        } catch (\Throwable $e) {
+            report($e);
+            return true;
+        }
+    }
+
+    private function deny(Request $request, string $message): Response
+    {
         // Page navigations go back to the dashboard; background/API calls get a plain 403 (no flash message).
         $isNavigation = $request->header('Sec-Fetch-Mode') === 'navigate'
             || (! $request->hasHeader('Sec-Fetch-Mode') && $request->isMethod('GET') && ! $request->ajax() && ! $request->expectsJson());

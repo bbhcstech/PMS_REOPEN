@@ -83,13 +83,27 @@
     </section>
 
     <style>
-        /* Light-theme contrast only for the blue header tile and total card. */
+        /* Keep the header glyph white; summary cards use the light palette. */
         html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .leave-page .leave-hero .leave-hero-icon > i,
-        html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .leave-page .leave-hero .leave-hero-icon > i::before,
-        html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .leave-page .leave-stats > .stat-card:first-child :is(span, strong, i),
-        html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .leave-page .leave-stats > .stat-card:first-child i::before {
+        html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .leave-page .leave-hero .leave-hero-icon > i::before {
             color: #ffffff !important;
             -webkit-text-fill-color: #ffffff !important;
+        }
+
+        html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .leave-page .leave-stats > .stat-card:first-child {
+            background: #ffffff !important;
+            border-color: rgba(47, 107, 255, 0.1) !important;
+        }
+
+        html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .leave-page .leave-stats > .stat-card:first-child :is(span, strong) {
+            color: #0F172A !important;
+            -webkit-text-fill-color: #0F172A !important;
+        }
+
+        html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .leave-page .leave-stats > .stat-card:first-child i,
+        html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .leave-page .leave-stats > .stat-card:first-child i::before {
+            color: #2F6BFF !important;
+            -webkit-text-fill-color: #2F6BFF !important;
         }
     </style>
 

@@ -15,7 +15,7 @@
     }
     * { box-sizing: border-box; }
     body {
-      min-height: 100vh;
+      min-height: 100dvh;
       margin: 0;
       display: grid;
       place-items: center;
@@ -67,10 +67,14 @@
 </head>
 <body>
   <main>
-    <img src="/logo.png" alt="">
+    <img id="app-icon" alt="">
     <h1>You are offline</h1>
     <p>Bitroxia PMS is installed, but this page needs an internet connection. Check your network and try again.</p>
     <button type="button" onclick="window.location.reload()">Try again</button>
   </main>
+  <script>
+    document.getElementById('app-icon').src = new URL('pwa/icons/icon-192x192.png', navigator.serviceWorker?.controller?.scriptURL || location.href).href;
+    window.addEventListener('online', function () { window.location.reload(); });
+  </script>
 </body>
 </html>

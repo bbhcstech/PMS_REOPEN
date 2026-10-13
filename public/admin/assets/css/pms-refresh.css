@@ -2393,12 +2393,14 @@ html[data-pms-theme="dark"] .welcome-illustration img[src*="dashboard-ui-preview
   filter: contrast(1.25) saturate(1.15);
 }
 
-.content-wrapper i[class^="bx"]:not(.btn *):not(.badge *):not(.industry-btn *):not(.menu-link *):not(.nav-link.active *),
-.content-wrapper i[class*=" bx"]:not(.btn *):not(.badge *):not(.industry-btn *):not(.menu-link *):not(.nav-link.active *),
-.content-wrapper .fa:not(.btn *):not(.badge *):not(.industry-btn *),
-.content-wrapper .fas:not(.btn *):not(.badge *):not(.industry-btn *),
-.content-wrapper .far:not(.btn *):not(.badge *):not(.industry-btn *),
-.content-wrapper .bi:not(.btn *):not(.badge *):not(.industry-btn *) {
+/* Same exemptions as the first copy of this rule (top of file); without them this later copy re-coloured
+   white icons on coloured tiles (e.g. .header-icon-badge on settings pages) primary blue on blue. */
+.content-wrapper i[class^="bx"]:not(.btn *):not(.badge *):not(.industry-btn *):not(.menu-link *):not(.nav-link.active *):not(.avatar *):not(.avatar-initial *):not(.avatar-badge *):not(.header-icon-badge *):not([class*="bg-label-"] *):not([class*="setting-icon-"] *),
+.content-wrapper i[class*=" bx"]:not(.btn *):not(.badge *):not(.industry-btn *):not(.menu-link *):not(.nav-link.active *):not(.avatar *):not(.avatar-initial *):not(.avatar-badge *):not(.header-icon-badge *):not([class*="bg-label-"] *):not([class*="setting-icon-"] *),
+.content-wrapper .fa:not(.btn *):not(.badge *):not(.industry-btn *):not(.avatar *):not(.avatar-initial *):not(.avatar-badge *):not(.header-icon-badge *):not([class*="bg-label-"] *):not([class*="setting-icon-"] *),
+.content-wrapper .fas:not(.btn *):not(.badge *):not(.industry-btn *):not(.avatar *):not(.avatar-initial *):not(.avatar-badge *):not(.header-icon-badge *):not([class*="bg-label-"] *):not([class*="setting-icon-"] *),
+.content-wrapper .far:not(.btn *):not(.badge *):not(.industry-btn *):not(.avatar *):not(.avatar-initial *):not(.avatar-badge *):not(.header-icon-badge *):not([class*="bg-label-"] *):not([class*="setting-icon-"] *),
+.content-wrapper .bi:not(.btn *):not(.badge *):not(.industry-btn *):not(.avatar *):not(.avatar-initial *):not(.avatar-badge *):not(.header-icon-badge *):not([class*="bg-label-"] *):not([class*="setting-icon-"] *) {
   color: var(--pms-primary) !important;
 }
 

@@ -1875,7 +1875,7 @@
                 $isHrSidebarUser = strtolower((string)(auth()->user()?->role ?? '')) === 'hr';
             @endphp
 
-            @if(in_array(strtolower((string) auth()->user()?->role), ['admin', 'administrator'], true))
+            @if(in_array(strtolower((string) auth()->user()?->role), ['admin', 'administrator'], true) && $canSeeModule('upper-level-employees'))
                 <li class="menu-item {{ request()->routeIs('admin.upper-level-employees.*') ? 'active' : '' }}">
                     <a href="{{ route('admin.upper-level-employees.index') }}" class="menu-link">
                         <i class="menu-icon tf-icons bx bx-user-plus"></i><div>Add Upper Level Employee</div>
@@ -3040,10 +3040,12 @@
                                 </li>
 
 
+                                @if($canSeeModule('notifications'))
                                 <li class="notification-dropdown-foot d-flex gap-2 p-2.5">
                                     <a href="{{ route('notifications.all') }}" class="btn btn-sm btn-primary rounded-pill flex-grow-1">View All</a>
                                     <a href="{{ route('notifications.all', ['filter' => 'unread']) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">Unread ({{ $navbarUnreadCount }})</a>
                                 </li>
+                                @endif
                             </ul>
                         </li>
 

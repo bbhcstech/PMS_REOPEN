@@ -20,7 +20,8 @@ function visit(directory) {
     const styles = [...source.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map(match => match[1]).join('\n');
     const currencyIcon = source.match(/<div class="stat-icon loc-stat-icon curr">[\s\S]*?<\/div>/);
     const organizationIcon = page[1].includes('org-details-page') && source.match(/<div class="header-icon-badge">[\s\S]*?<\/div>/);
-    fixtures.push({ name: path.relative(root, filename), page: page[1], styles, notice: notice ? notice[0] : '', currencyIcon: currencyIcon?.[0], organizationIcon: organizationIcon?.[0] });
+    const performanceIcon = page[1].includes('performance-settings-page') && source.match(/<div class="header-icon-badge">[\s\S]*?<\/div>/);
+    fixtures.push({ name: path.relative(root, filename), page: page[1], styles, notice: notice ? notice[0] : '', currencyIcon: currencyIcon?.[0], organizationIcon: organizationIcon?.[0], performanceIcon: performanceIcon?.[0] });
   }
 }
 visit(path.join(root, 'resources/views/admin/settings'));
@@ -63,8 +64,14 @@ for (const fixture of fixtures) {
   document.querySelector('.pms-settings-page').insertAdjacentHTML('beforeend', '<span class="pms-readonly-status" style="background:#f1f5f9;color:#64748b"><i class="text-muted">Lock</i> Read-Only</span><span id="phoneDigitCounter" class="badge" style="background:#fef2f2;color:#dc2626"><i class="text-danger">Error</i><span>3/10 digits</span></span>');
   document.getElementById('fixture').insertAdjacentHTML('beforeend', '<div class="select2-dropdown"><div class="select2-results__option select2-results__option--highlighted" aria-selected="true">Selected country</div></div>');
   }
+  if (fixture.page?.includes('branches-page')) {
+    document.querySelector('.pms-settings-page').insertAdjacentHTML('beforeend', '<div class="stats-grid"><div class="stat-card total-branches-card"><div class="stat-info"><h6>Total Branches</h6><h3>0</h3></div></div></div>');
+  }
+  if (fixture.performanceIcon) {
+    document.querySelector('.pms-settings-page').insertAdjacentHTML('beforeend', '<div class="branches-header"><div class="header-left-box">' + fixture.performanceIcon + '</div></div>');
+  }
   if (fixture.organizationIcon) {
-    document.querySelector('.pms-settings-page').insertAdjacentHTML('beforeend', '<div class="branches-header"><div class="header-left-box">' + fixture.organizationIcon + '</div></div>');
+    document.querySelector('.pms-settings-page').insertAdjacentHTML('beforeend', '<div class="branches-header"><div class="header-left-box">' + fixture.organizationIcon + '</div></div><div class="stats-grid"><div class="stat-card org-industry-card"><div class="stat-info"><h6>Industry Sector</h6><h3>Information Technology</h3></div></div></div>');
   }
   if (fixture.currencyIcon) {
     document.querySelector('.pms-settings-page').insertAdjacentHTML('beforeend', '<div class="stats-grid loc-stats-grid"><div class="stat-card loc-stat-card">' + fixture.currencyIcon + '</div></div>');
@@ -74,12 +81,32 @@ for (const fixture of fixtures) {
     document.body.classList.toggle('dark-mode', mode === 'body');
     if (mode !== 'light' && mode !== 'body') document.documentElement.setAttribute(mode, 'dark');
     else if (mode === 'light') document.documentElement.setAttribute('data-pms-theme', 'light');
+    if (fixture.page?.includes('branches-page')) {
+      const card = document.querySelector('.total-branches-card');
+      const background = getComputedStyle(card).backgroundColor;
+      const text = getComputedStyle(card.querySelector('h3')).webkitTextFillColor;
+      checks++;
+      if (mode !== 'light' && (background !== 'rgb(15, 21, 48)' || text !== 'rgb(238, 241, 251)')) failures.push(fixture.name + '/' + mode + '/total branches card not themed');
+      if (mode === 'light' && background !== 'rgb(255, 255, 255)') failures.push('Total Branches light background changed');
+    }
+    if (fixture.performanceIcon) {
+      const path = document.querySelector('.header-icon-badge svg path');
+      const style = path && getComputedStyle(path);
+      checks++;
+      if (!path || style.stroke !== 'rgb(255, 255, 255)' || style.fill !== 'none' || style.opacity !== '1') failures.push(fixture.name + '/' + mode + '/performance header icon not visible');
+    }
     if (fixture.organizationIcon) {
       const svg = document.querySelector('.header-icon-badge svg');
       const style = svg && getComputedStyle(svg);
       checks++;
       if (!svg || !svg.getBoundingClientRect().width || style.stroke !== 'rgb(255, 255, 255)' || style.fill !== 'none'
           || style.visibility === 'hidden') failures.push(fixture.name + '/' + mode + '/organization icon hidden or overridden');
+      const industry = document.querySelector('.org-industry-card');
+      const industryStyle = getComputedStyle(industry);
+      const valueStyle = getComputedStyle(industry.querySelector('h3'));
+      checks++;
+      if (mode !== 'light' && (industryStyle.backgroundColor !== 'rgb(15, 21, 48)' || valueStyle.webkitTextFillColor !== 'rgb(238, 241, 251)')) failures.push(fixture.name + '/' + mode + '/industry card not themed');
+      if (mode === 'light' && industryStyle.backgroundColor !== 'rgb(255, 255, 255)') failures.push('Industry light background changed');
     }
     if (fixture.currencyIcon) {
       const icon = document.querySelector('.loc-stat-icon.curr');

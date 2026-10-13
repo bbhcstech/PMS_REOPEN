@@ -21,6 +21,46 @@ class AdminWorkspaceModules
         return null;
     }
 
+    /**
+     * Registry features a route belongs to, for Super Admin feature entitlement (not role permissions).
+     * Exact route names win, then the most specific route prefix, then the route "family" of a
+     * feature's sidebar page (e.g. admin.deals.index -> every admin.deals.* route). When several
+     * features share the most specific family, all of them are returned.
+     */
+    public function featuresForRoute(string $routeName): array
+    {
+        if ($routeName === '') return [];
+        $registry = config('workspace_modules', []);
+        $exact = [];
+        $prefixed = [];
+        foreach ($registry as $slug => $item) {
+            if ($item['route'] === $routeName || in_array($routeName, $item['route_names'] ?? [], true)) {
+                $exact[] = $slug;
+                continue;
+            }
+            $bases = [];
+            foreach ($item['route_prefixes'] ?? [] as $prefix) $bases[$prefix] = $slug;
+            if ($item['route']) {
+                $family = str_ends_with($item['route'], '.index') ? substr($item['route'], 0, -6) : $item['route'];
+                // A hub page whose prefix holds 3+ independent registry pages (e.g. admin.settings.index)
+                // does not own that prefix; the routes under it belong to the hub's parent category.
+                $independent = collect($registry)->filter(fn ($other, $otherSlug) => $otherSlug !== $slug
+                    && $other['route'] && str_starts_with($other['route'], $family.'.') && $other['inherits'] !== $slug)->count();
+                if ($independent < 3) $bases[$family] = $slug;
+                elseif ($item['parent']) $bases[$family] = $item['parent'];
+            }
+            foreach ($bases as $base => $owner) {
+                if ($routeName === $base || str_starts_with($routeName, $base.'.')) {
+                    $prefixed[$owner] = max($prefixed[$owner] ?? 0, strlen($base));
+                }
+            }
+        }
+        if ($exact) return $exact;
+        if (! $prefixed) return [];
+        $longest = max($prefixed);
+        return array_keys(array_filter($prefixed, fn ($length) => $length === $longest));
+    }
+
     /** Called by deployment/platform catalog setup, never by a company read. */
     public function syncSidebarRegistry(): void
     {

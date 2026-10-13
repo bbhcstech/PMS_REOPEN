@@ -352,6 +352,21 @@
         color: #EEF1FB !important;
     }
 
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark,
+        body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode)
+        .pms-settings-page.org-details-page .stats-grid .stat-card.org-industry-card {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
+        color: #EEF1FB !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark,
+        body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode)
+        .pms-settings-page.org-details-page .stats-grid .stat-card.org-industry-card h3 {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+    }
+
     :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body[data-pms-theme="dark"], body.dark-mode) .org-details-page .stat-card h3 {
         color: #EEF1FB !important;
         -webkit-text-fill-color: #EEF1FB !important;
@@ -575,7 +590,7 @@
 
             <!-- Executive Summary Stats Grid -->
             <div class="stats-grid">
-                <div class="stat-card">
+                <div class="stat-card org-industry-card">
                     <div class="stat-icon industry">
                         <i class="fas fa-briefcase"></i>
                     </div>

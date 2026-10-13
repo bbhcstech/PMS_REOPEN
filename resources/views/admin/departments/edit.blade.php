@@ -206,6 +206,15 @@
         color: white;
     }
 
+    /* Header tile icon stays white as designed; the theme rule ".content-wrapper .fas:not(.btn *)" turned it blue. */
+    .sub-department-form-page .header-card .header-icon > i.fas {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        background: transparent !important;
+        filter: none !important;
+        opacity: 1 !important;
+    }
+
     .header-card:hover .header-icon {
         transform: scale(1.02);
     }

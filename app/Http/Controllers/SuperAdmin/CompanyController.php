@@ -1469,6 +1469,18 @@ class CompanyController extends Controller
                 ['is_enabled' => $enabled, 'updated_at' => now()]
             );
 
+            // Legacy alias rows of the same feature (e.g. "deals" for Deals) must not keep an older
+            // decision alive, otherwise the feature stays on/off whatever the Super Admin selects here.
+            $entitlements = app(\App\Services\FeatureEntitlements::class);
+            $moduleSlug = DB::connection('central')->table('modules')->where('id', $moduleId)->value('slug');
+            if ($moduleSlug && ! $entitlements->isLegacyAlias($moduleSlug) && $aliases = $entitlements->aliasesOf($moduleSlug)) {
+                DB::connection('central')->table('company_modules')
+                    ->where('company_id', $companyId)
+                    ->whereIn('module_id', DB::connection('central')->table('modules')->whereIn('slug', $aliases)->pluck('id'))
+                    ->delete();
+            }
+            $entitlements->forget((int) $companyId);
+
             // Log Audit Action
             try {
                 \App\Models\AuditLog::create([
@@ -1490,10 +1502,45 @@ class CompanyController extends Controller
         }
 
         if ($request->wantsJson()) {
-            return response()->json(['success' => true, 'message' => 'Company feature override updated successfully.']);
+            $company = Company::on('central')->find($companyId);
+            return response()->json([
+                'success' => true,
+                'message' => 'Company feature override updated successfully.',
+                'states' => $company ? $this->featureStatesFor($company) : [],
+            ]);
         }
 
         return back()->with('success', 'Company feature override updated successfully.');
+    }
+
+    /**
+     * Effective feature access for one company exactly as its workspace resolves it (sidebar and routes),
+     * so Manage Features never shows a guessed state.
+     */
+    public function companyFeatureStates($companyId): \Illuminate\Http\JsonResponse
+    {
+        $company = Company::on('central')->findOrFail($companyId);
+        return response()->json(['success' => true, 'states' => $this->featureStatesFor($company)]);
+    }
+
+    /** @return array<int, array{effective: int, override: ?int, blocked_by: ?string}> keyed by central module id */
+    private function featureStatesFor($company): array
+    {
+        $entitlements = app(\App\Services\FeatureEntitlements::class);
+        $entitlements->forget((int) $company->id);
+        $overrides = DB::connection('central')->table('company_modules')
+            ->where('company_id', $company->id)->pluck('is_enabled', 'module_id');
+        $states = [];
+        foreach (app(\App\Services\AdminWorkspaceModules::class)->all(false) as $module) {
+            if ($entitlements->isLegacyAlias($module->slug)) continue;
+            $blockedBy = $entitlements->disabledAncestor((int) $company->id, $module->slug);
+            $states[$module->id] = [
+                'effective' => $company->hasFeature($module->slug) ? 1 : 0,
+                'override' => $overrides->has($module->id) ? (int) $overrides[$module->id] : null,
+                'blocked_by' => $blockedBy ? (config('workspace_modules.'.$blockedBy.'.name') ?? \Illuminate\Support\Str::headline($blockedBy)) : null,
+            ];
+        }
+        return $states;
     }
 
     /**

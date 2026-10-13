@@ -301,7 +301,7 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
         height: 1.15rem !important;
         font-size: 1.15rem !important;
         line-height: 1 !important;
-        background-color: currentColor !important;
+        background-color: transparent !important; /* glyph font icon (theme disables the iconify mask) */
         vertical-align: middle !important;
         flex-shrink: 0 !important;
     }
@@ -333,7 +333,7 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
         color: #4f46e5 !important;
         fill: #4f46e5 !important;
         -webkit-text-fill-color: #4f46e5 !important;
-        background-color: currentColor !important;
+        background-color: transparent !important; /* glyph font icon (theme disables the iconify mask) */
     }
     .btn-icon-action.btn-label-primary:hover {
         background-color: #4f46e5 !important;
@@ -345,7 +345,7 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
         color: #ffffff !important;
         fill: #ffffff !important;
         -webkit-text-fill-color: #ffffff !important;
-        background-color: currentColor !important;
+        background-color: transparent !important; /* glyph font icon (theme disables the iconify mask) */
     }
 
     /* Danger Delete Action Button */
@@ -360,7 +360,7 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
         color: #dc2626 !important;
         fill: #dc2626 !important;
         -webkit-text-fill-color: #dc2626 !important;
-        background-color: currentColor !important;
+        background-color: transparent !important; /* glyph font icon (theme disables the iconify mask) */
     }
     .btn-icon-action.btn-label-danger:hover {
         background-color: #dc2626 !important;
@@ -372,7 +372,7 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
         color: #ffffff !important;
         fill: #ffffff !important;
         -webkit-text-fill-color: #ffffff !important;
-        background-color: currentColor !important;
+        background-color: transparent !important; /* glyph font icon (theme disables the iconify mask) */
     }
 
     /* Secondary Disabled/Lock Action Button */
@@ -388,7 +388,7 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
         color: #64748b !important;
         fill: #64748b !important;
         -webkit-text-fill-color: #64748b !important;
-        background-color: currentColor !important;
+        background-color: transparent !important; /* glyph font icon (theme disables the iconify mask) */
     }
 
     /* Primary Header Button Icon */
@@ -399,13 +399,13 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
         color: #ffffff !important;
         fill: #ffffff !important;
         -webkit-text-fill-color: #ffffff !important;
-        background-color: currentColor !important;
+        background-color: transparent !important; /* glyph font icon (theme disables the iconify mask) */
     }
 
     /* Stat Cards Icon Wrappers & Sub-Icons */
     .mm-stat-card .mm-icon-wrapper i,
     .mm-stat-card .mm-icon-wrapper [class*="bx"] {
-        background-color: currentColor !important;
+        background-color: transparent !important; /* glyph font icon (theme disables the iconify mask) */
         -webkit-text-fill-color: initial !important;
     }
 
@@ -417,7 +417,7 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
         color: #2F6BFF !important;
         fill: #2F6BFF !important;
         -webkit-text-fill-color: #2F6BFF !important;
-        background-color: currentColor !important;
+        background-color: transparent !important; /* glyph font icon (theme disables the iconify mask) */
     }
 
     .col-sm-6:nth-child(2) .mm-stat-card .mm-icon-wrapper {
@@ -428,7 +428,7 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
         color: #10b981 !important;
         fill: #10b981 !important;
         -webkit-text-fill-color: #10b981 !important;
-        background-color: currentColor !important;
+        background-color: transparent !important; /* glyph font icon (theme disables the iconify mask) */
     }
 
     .col-sm-6:nth-child(3) .mm-stat-card .mm-icon-wrapper {
@@ -439,7 +439,7 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
         color: #03c3ec !important;
         fill: #03c3ec !important;
         -webkit-text-fill-color: #03c3ec !important;
-        background-color: currentColor !important;
+        background-color: transparent !important; /* glyph font icon (theme disables the iconify mask) */
     }
 
     .col-sm-6:nth-child(4) .mm-stat-card .mm-icon-wrapper {
@@ -450,7 +450,7 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
         color: #d97706 !important;
         fill: #d97706 !important;
         -webkit-text-fill-color: #d97706 !important;
-        background-color: currentColor !important;
+        background-color: transparent !important; /* glyph font icon (theme disables the iconify mask) */
     }
 
     /* Module Details Table Icons */
@@ -489,7 +489,7 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
 
     .mm-table td i.bx,
     .mm-table td [class*="bx"] {
-        background-color: currentColor !important;
+        background-color: transparent !important; /* glyph font icon (theme disables the iconify mask) */
         display: inline-block !important;
     }
 
@@ -499,7 +499,7 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
         color: #4f46e5 !important;
         fill: #4f46e5 !important;
         -webkit-text-fill-color: #4f46e5 !important;
-        background-color: currentColor !important;
+        background-color: transparent !important; /* glyph font icon (theme disables the iconify mask) */
     }
 
     .mm-table td .btn-icon-action.btn-label-danger i,
@@ -508,7 +508,7 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
         color: #dc2626 !important;
         fill: #dc2626 !important;
         -webkit-text-fill-color: #dc2626 !important;
-        background-color: currentColor !important;
+        background-color: transparent !important; /* glyph font icon (theme disables the iconify mask) */
     }
 
     .mm-table td .btn-icon-action.btn-label-secondary i,
@@ -517,7 +517,7 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
         color: #64748b !important;
         fill: #64748b !important;
         -webkit-text-fill-color: #64748b !important;
-        background-color: currentColor !important;
+        background-color: transparent !important; /* glyph font icon (theme disables the iconify mask) */
     }
 
     /* Keep action glyphs independent of icon fonts and shared pill styles. */
@@ -534,11 +534,38 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
         height: 19px !important;
         background: transparent !important;
         fill: none !important;
-        stroke: currentColor;
+        color: inherit !important;
+        -webkit-text-fill-color: inherit !important;
+        stroke: currentColor !important;
         stroke-width: 1.8;
         stroke-linecap: round;
         stroke-linejoin: round;
         flex-shrink: 0;
+    }
+
+    #moduleManagementPage .mm-table .btn-icon-action svg * {
+        color: inherit !important;
+        background: transparent !important;
+        fill: none !important;
+        stroke: inherit !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body.dark, body.dark-mode)
+        #moduleManagementPage .mm-table .btn-icon-action.btn-label-primary {
+        background: #252d55 !important;
+        color: #c7d2fe !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body.dark, body.dark-mode)
+        #moduleManagementPage .mm-table .btn-icon-action.btn-label-danger {
+        background: #452336 !important;
+        color: #fca5a5 !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body.dark, body.dark-mode)
+        #moduleManagementPage .mm-table .btn-icon-action.btn-label-secondary {
+        background: #252d42 !important;
+        color: #cbd5e1 !important;
     }
 
     #moduleManagementPage .mm-table .btn-icon-action:focus-visible {
@@ -652,7 +679,7 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
         color: #818cf8 !important;
         fill: #818cf8 !important;
         -webkit-text-fill-color: #818cf8 !important;
-        background-color: currentColor !important;
+        background-color: transparent !important; /* glyph font icon (theme disables the iconify mask) */
     }
     [data-theme="dark"] .btn-icon-action.btn-label-primary:hover,
     body.dark-mode .btn-icon-action.btn-label-primary:hover {
@@ -666,7 +693,7 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
         color: #ffffff !important;
         fill: #ffffff !important;
         -webkit-text-fill-color: #ffffff !important;
-        background-color: currentColor !important;
+        background-color: transparent !important; /* glyph font icon (theme disables the iconify mask) */
     }
 
     [data-theme="dark"] .btn-icon-action.btn-label-danger,
@@ -684,7 +711,7 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
         color: #f87171 !important;
         fill: #f87171 !important;
         -webkit-text-fill-color: #f87171 !important;
-        background-color: currentColor !important;
+        background-color: transparent !important; /* glyph font icon (theme disables the iconify mask) */
     }
     [data-theme="dark"] .btn-icon-action.btn-label-danger:hover,
     body.dark-mode .btn-icon-action.btn-label-danger:hover {
@@ -698,7 +725,7 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
         color: #ffffff !important;
         fill: #ffffff !important;
         -webkit-text-fill-color: #ffffff !important;
-        background-color: currentColor !important;
+        background-color: transparent !important; /* glyph font icon (theme disables the iconify mask) */
     }
 
     [data-theme="dark"] .btn-icon-action.btn-label-secondary,
@@ -716,7 +743,7 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
         color: #94a3b8 !important;
         fill: #94a3b8 !important;
         -webkit-text-fill-color: #94a3b8 !important;
-        background-color: currentColor !important;
+        background-color: transparent !important; /* glyph font icon (theme disables the iconify mask) */
     }
 </style>
 

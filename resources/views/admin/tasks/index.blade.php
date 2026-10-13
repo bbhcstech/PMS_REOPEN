@@ -312,8 +312,8 @@
                                                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                                     </div>
                                                     <div class="modal-body">
-                                                        <p><strong>Start:</strong> {{ \Carbon\Carbon::parse($activeTimer->start_time)->format('h:i A') }}</p>
-                                                        <p><strong>End:</strong> <span class="end-time"></span></p>
+                                                        <p><strong>Start:</strong> <time datetime="{{ \Carbon\Carbon::parse($activeTimer->start_time)->toIso8601String() }}">{{ \Carbon\Carbon::parse($activeTimer->start_time)->format('h:i:s A') }}</time></p>
+                                                        <p><strong>End:</strong> <time class="end-time" data-live-timer-end data-server-now="{{ now()->getTimestampMs() }}" data-time-zone="{{ config('app.timezone') }}">{{ now()->format('h:i:s A') }}</time></p>
                                                         <div class="mb-3">
                                                             <label class="form-label">Memo <span class="text-danger">*</span></label>
                                                             <textarea name="memo" class="form-control" rows="3" maxlength="500" required></textarea>
@@ -651,6 +651,7 @@
 </style>
 
 @push('js')
+<script src="{{ asset('admin/assets/js/pms-task-timer-clock.js') }}?v={{ filemtime(public_path('admin/assets/js/pms-task-timer-clock.js')) }}" defer></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}';
@@ -792,16 +793,7 @@ document.addEventListener('DOMContentLoaded', function () {
         URL.revokeObjectURL(link.href);
     });
 
-    document.querySelectorAll('[id^="stopTimerModal-"]').forEach(modal => {
-        let intervalId;
-        modal.addEventListener('show.bs.modal', function () {
-            const endTimeSpan = modal.querySelector('.end-time');
-            intervalId = setInterval(() => {
-                if (endTimeSpan) endTimeSpan.textContent = new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit', hour12: true});
-            }, 1000);
-        });
-        modal.addEventListener('hide.bs.modal', () => clearInterval(intervalId));
-    });
+    // Stop-timer modal End time is driven by pms-task-timer-clock.js (server-synced, live, with seconds).
 });
 </script>
 @endpush

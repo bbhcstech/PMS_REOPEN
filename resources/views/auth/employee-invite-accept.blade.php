@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
+    @include('partials.pwa')
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Accept Invitation{{ !empty($company?->name) ? ' - ' . $company->name : '' }}</title>
@@ -59,5 +60,6 @@
         </form>
     @endif
 </main>
+@include('partials.responsive-workspace', ['responsiveShell' => 'auth'])
 </body>
 </html>

@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+    @include('partials.pwa')
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
@@ -870,6 +871,7 @@
   </script>
 
 @include('partials.phone-fields', ['forcePhoneFields' => true])
+@include('partials.responsive-workspace', ['responsiveShell' => 'auth'])
 </body>
 
 </html>

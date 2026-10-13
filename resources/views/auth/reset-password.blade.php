@@ -2,6 +2,7 @@
 <html lang="en"> 
 
 <head>
+    @include('partials.pwa')
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
@@ -107,6 +108,7 @@
 
 <!-- Scripts -->
 <script src="{{ asset('admin/assets/vendor/js/bootstrap.js') }}"></script>
+@include('partials.responsive-workspace', ['responsiveShell' => 'auth'])
 </body>
 </html>
 

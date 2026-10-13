@@ -138,5 +138,6 @@
     @include('partials.phone-fields')
 @stack('scripts')
     @auth <script src="{{ asset('admin/assets/js/pms-live-records.js') }}?v={{ @filemtime(public_path('admin/assets/js/pms-live-records.js')) }}" data-session-url="{{ route('company.session-status') }}" data-login-url="{{ route('login') }}" defer></script> @endauth
+@include('partials.responsive-workspace', ['responsiveShell' => 'public'])
 </body>
 </html>

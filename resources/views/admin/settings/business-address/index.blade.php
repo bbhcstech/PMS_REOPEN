@@ -105,6 +105,17 @@
         gap: 1.25rem;
     }
 
+    /* White icons on the blue header tile and blue "Add New Address" buttons. The theme's
+       ".content-wrapper .fas:not(.btn *)" rule only exempts .btn and painted them blue on blue. */
+    .branches-page .header-icon-badge > i.fas,
+    .branches-page .btn-add-address > i.fas {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        background: transparent !important;
+        filter: none !important;
+        opacity: 1 !important;
+    }
+
     .header-icon-badge {
         width: 58px;
         height: 58px;
@@ -292,6 +303,21 @@
         border-color: rgba(238, 241, 251, 0.12) !important;
         box-shadow: none !important;
         color: #EEF1FB !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark,
+        body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode)
+        .pms-settings-page.branches-page .stats-grid .stat-card.total-branches-card {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
+        color: #EEF1FB !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark,
+        body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode)
+        .pms-settings-page.branches-page .stats-grid .stat-card.total-branches-card h3 {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
     }
 
     :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body[data-pms-theme="dark"], body.dark-mode) .branches-page .stat-card h3 {
@@ -593,7 +619,7 @@
             @endphp
 
             <div class="stats-grid">
-                <div class="stat-card">
+                <div class="stat-card total-branches-card">
                     <div class="stat-icon total">
                         <i class="fas fa-building"></i>
                     </div>

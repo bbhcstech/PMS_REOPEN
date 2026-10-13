@@ -252,6 +252,16 @@
         box-shadow: 0 12px 24px -8px rgba(245, 158, 11, 0.3);
     }
 
+    /* Header tile icon stays white as designed (Add and Edit modes); the theme rule
+       ".content-wrapper .fas:not(.btn *)" turned it blue on the coloured tile. */
+    .department-form-page .header-card .header-icon > i.fas {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        background: transparent !important;
+        filter: none !important;
+        opacity: 1 !important;
+    }
+
     .header-card:hover .header-icon {
         transform: scale(1.02);
     }

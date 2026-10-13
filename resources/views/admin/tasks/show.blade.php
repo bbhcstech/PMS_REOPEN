@@ -332,8 +332,8 @@
     /* Icons inside these custom buttons follow the button text colour. The theme's
        ".content-wrapper i[class*=bx]:not(.btn *)" rule (specificity 0,4,1) only exempts .btn, so it painted
        these icons primary blue on the blue buttons; the repeated class outranks it. */
-    .content-wrapper .btn-tsk-primary.btn-tsk-primary.btn-tsk-primary > i[class*="bx"],
-    .content-wrapper .btn-tsk-outline.btn-tsk-outline.btn-tsk-outline > i[class*="bx"] {
+    html body .content-wrapper .btn-tsk-primary.btn-tsk-primary.btn-tsk-primary > i[class*="bx"],
+    html body .content-wrapper .btn-tsk-outline.btn-tsk-outline.btn-tsk-outline > i[class*="bx"] {
         color: inherit !important;
         -webkit-text-fill-color: currentColor !important;
         background: transparent !important;

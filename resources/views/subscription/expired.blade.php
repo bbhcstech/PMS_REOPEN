@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    @include('partials.pwa')
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Subscription Expired</title>
@@ -21,5 +22,6 @@
     <form method="POST" action="{{ route('logout') }}">@csrf<button type="submit">Log out</button></form>
 </main>
 <script src="{{ asset('admin/assets/js/pms-restriction-status.js') }}?v={{ @filemtime(public_path('admin/assets/js/pms-restriction-status.js')) }}" defer></script>
+@include('partials.responsive-workspace', ['responsiveShell' => 'auth'])
 </body>
 </html>

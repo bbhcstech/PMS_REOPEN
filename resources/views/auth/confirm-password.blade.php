@@ -6,6 +6,7 @@
   data-assets-path="admin/assets/"
   data-template="vertical-menu-template-free">
   <head>
+    @include('partials.pwa')
     <meta charset="utf-8" />
     <meta
       name="viewport"
@@ -178,5 +179,6 @@
 
     <!-- Place this tag before closing body tag for github widget button. -->
     <script async defer src="https://buttons.github.io/buttons.js"></script>
-  </body>
+  @include('partials.responsive-workspace', ['responsiveShell' => 'auth'])
+</body>
 </html>

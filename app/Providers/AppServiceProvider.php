@@ -17,6 +17,9 @@ class AppServiceProvider extends ServiceProvider
     {
         require_once app_path('Support/helpers.php');
 
+        // One Super Admin feature-override lookup per company per request (sidebar + routes share it).
+        $this->app->scoped(\App\Services\FeatureEntitlements::class);
+
         if (!class_exists('CountryPhone', false)) {
             class_alias(\App\Support\CountryPhone::class, 'CountryPhone');
         }

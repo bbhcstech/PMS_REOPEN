@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    @include('partials.pwa')
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Account Restricted · {{ $company->name ?? 'Organization' }}</title>
@@ -569,5 +570,6 @@ function switchTab(tab) {
 }
 </script>
 <script src="{{ asset('admin/assets/js/pms-restriction-status.js') }}?v={{ @filemtime(public_path('admin/assets/js/pms-restriction-status.js')) }}" defer></script>
+@include('partials.responsive-workspace', ['responsiveShell' => 'auth'])
 </body>
 </html>

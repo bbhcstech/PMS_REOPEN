@@ -125,6 +125,12 @@
         stroke-linejoin: round;
     }
 
+    .pms-settings-page.performance-settings-page .branches-header .header-left-box .header-icon-badge svg path {
+        fill: none !important;
+        stroke: #fff !important;
+        opacity: 1 !important;
+    }
+
     .header-icon-badge {
         width: 58px;
         height: 58px;
@@ -1133,7 +1139,7 @@
             <div class="branches-header">
                 <div class="header-left-box">
                     <div class="header-icon-badge">
-                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18M7 14l5-5 4 3 5-7"/></svg>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" aria-hidden="true"><path d="M3 3v18h18M7 14l5-5 4 3 5-7"/></svg>
                     </div>
                     <div class="header-title">
                         <h1>Performance & Appraisal Settings</h1>

@@ -6,6 +6,7 @@
   data-assets-path="admin/assets/"
   data-template="vertical-menu-template-free">
   <head>
+    @include('partials.pwa')
     <meta charset="utf-8" />
     <meta
       name="viewport"
@@ -163,5 +164,6 @@
 
     <!-- Main JS -->
     <script src="{{ asset('admin/assets/js/main.js') }}"></script>
-  </body>
+  @include('partials.responsive-workspace', ['responsiveShell' => 'auth'])
+</body>
 </html>

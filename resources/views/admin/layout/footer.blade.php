@@ -149,5 +149,6 @@
         @endphp
         <link rel="stylesheet" href="{{ asset('admin/assets/css/pms-bitroxia-theme.css') }}?v={{ $adminThemeVersion }}" />
         @include('partials.ai-assistant-launcher')
+        @include('partials.responsive-workspace', ['responsiveShell' => 'admin'])
       </body>
     </html>

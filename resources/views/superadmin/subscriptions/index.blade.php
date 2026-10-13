@@ -1992,7 +1992,9 @@
                 </thead>
                 <tbody id="companyOverrideTableBody">
                     @php
-                        $groupedModules = $modules->groupBy(fn($m) => $m->category ?? 'CORE PLATFORM');
+                        // One row per workspace feature; legacy alias rows (e.g. "deals" for Deals) are folded into it.
+                        $featureEntitlements = app(\App\Services\FeatureEntitlements::class);
+                        $groupedModules = $modules->reject(fn($m) => $featureEntitlements->isLegacyAlias($m->slug))->groupBy(fn($m) => $m->category ?? 'CORE PLATFORM');
                     @endphp
                     @foreach($groupedModules as $categoryName => $catModules)
                     <tr class="category-header-row" style="background: #f8fafc; font-weight: 700;">
@@ -2009,7 +2011,7 @@
                                     <i class="{{ str_starts_with($mod->icon ?? '', 'bx-') ? 'bx ' . $mod->icon : 'fas fa-cube' }}"></i>
                                 </div>
                                 <div>
-                                    <strong style="color: var(--text-main); font-size: 13.5px;">{{ $mod->name }}</strong>
+                                    <strong style="color: var(--text-main); font-size: 13.5px;">{{ $mod->sidebar_name ?? $mod->name }}</strong>
                                     <span class="badge-status {{ $mod->is_active ? 'badge-status-active' : 'badge-status-suspended' }}">{{ $mod->is_active ? 'Active' : 'Inactive' }}</span>
                                     <div style="font-size: 11.5px; color: var(--text-subtle);">{{ $mod->description ?? 'Module functionality' }}</div>
                                 </div>
@@ -3210,9 +3212,47 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         });
+
+        // The values above are an instant preview; the server then reports what the company's
+        // workspace actually resolves (overrides, parent categories, plan), so the switches never lie.
+        if (typeof applyCompanyFeatureStates === 'function' && compData.states) applyCompanyFeatureStates(companyId, compData.states);
+        if (typeof loadCompanyFeatureStates === 'function') loadCompanyFeatureStates(companyId);
     }
 
     const overrideCompanySelect = document.getElementById('overrideCompanySelect');
+
+    const featureStatesUrl = @json(route('super-admin.subscriptions.feature-states', ['company' => '__COMPANY__']));
+    const escapeFeatureText = value => String(value ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+
+    function loadCompanyFeatureStates(companyId) {
+        fetch(featureStatesUrl.replace('__COMPANY__', encodeURIComponent(companyId)), { headers: { Accept: 'application/json' }, cache: 'no-store' })
+            .then(res => res.ok ? res.json() : Promise.reject(new Error('Feature states unavailable')))
+            .then(data => {
+                if (!data || !data.states) return;
+                if (window.companyOverridesMap && window.companyOverridesMap[companyId]) window.companyOverridesMap[companyId].states = data.states;
+                applyCompanyFeatureStates(companyId, data.states);
+            })
+            .catch(() => {});
+    }
+
+    function applyCompanyFeatureStates(companyId, states) {
+        const selector = document.getElementById('overrideCompanySelect');
+        if (selector && selector.value && String(selector.value) !== String(companyId)) return;
+        document.querySelectorAll('.override-module-row').forEach(row => {
+            const state = states[row.getAttribute('data-moduleid')];
+            if (!state) return;
+            const on = Number(state.effective) === 1;
+            const checkbox = row.querySelector('.company-override-input');
+            if (checkbox) checkbox.checked = on;
+            const statusCell = row.querySelector('.override-status-cell');
+            if (!statusCell) return;
+            const source = state.blocked_by
+                ? `Off via ${escapeFeatureText(state.blocked_by)}`
+                : (state.override === null ? 'Plan Default' : (Number(state.override) === 1 ? 'Super Admin Granted' : 'Super Admin Revoked'));
+            statusCell.innerHTML = `<span style="font-size: 11px; font-weight: 700; color: ${on ? '#16a34a' : '#dc2626'}; background: ${on ? '#f0fdf4' : '#fef2f2'}; border: 1px solid ${on ? '#bbf7d0' : '#fecaca'}; padding: 3px 8px; border-radius: 4px;"><i class="fas ${on ? 'fa-circle-check' : 'fa-ban'}"></i> ${on ? 'Active' : 'Inactive'} · ${source}</span>`;
+        });
+    }
+
     if (overrideCompanySelect) {
         overrideCompanySelect.addEventListener('change', function() {
             renderCompanyFeatureOverrides(this.value);
@@ -3277,6 +3317,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         window.companyOverridesMap[compId].overrides = {};
                     }
                     window.companyOverridesMap[compId].overrides[modId] = enabled;
+                    if (data.states) window.companyOverridesMap[compId].states = data.states;
                 }
                 renderCompanyFeatureOverrides(compId);
                 showToast(data.message || 'Company feature override updated successfully.');

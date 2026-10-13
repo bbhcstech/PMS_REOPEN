@@ -54,6 +54,7 @@ Route::prefix('super-admin')->name('super-admin.')->group(function () {
         Route::post('/subscriptions/{id}/extend', [CompanyController::class, 'extendSubscription'])->name('subscriptions.extend');
         Route::post('/subscriptions/{id}/reduce', [CompanyController::class, 'reduceSubscription'])->name('subscriptions.reduce');
         Route::post('/subscriptions/toggle-override', [CompanyController::class, 'toggleCompanyOverride'])->name('subscriptions.toggle-override');
+        Route::get('/subscriptions/{company}/feature-states', [CompanyController::class, 'companyFeatureStates'])->whereNumber('company')->name('subscriptions.feature-states');
         Route::get('/companies/create', [CompanyController::class, 'create'])->name('companies.create');
         Route::get('/companies/{company}', [CompanyController::class, 'show'])->where('company', '[0-9]+')->name('companies.show');
         Route::get('/companies/{company}/edit', [CompanyController::class, 'edit'])->where('company', '[0-9]+')->name('companies.edit');
