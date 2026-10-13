@@ -3,6 +3,7 @@
 @section('title', 'View Parent Department')
 
 @section('content')
+@include('admin.settings.partials.workforce-navigation')
 <div class="department-view-page">
     <div class="breadcrumb">
         <i class="fas fa-building"></i> Dashboard / Parent Departments / View
@@ -19,10 +20,10 @@
             </div>
         </div>
         <div class="btn-group">
-            <a href="{{ route('parent-departments.index') }}" class="btn btn-light">
+            <a href="{{ \App\Support\WorkforceSettings::route('parent-departments.index') }}" class="btn btn-light">
                 <i class="fas fa-arrow-left"></i> Back to List
             </a>
-            <a href="{{ route('parent-departments.edit', $parentDepartment->id) }}" class="btn btn-primary">
+            <a href="{{ \App\Support\WorkforceSettings::route('parent-departments.edit', $parentDepartment->id) }}" class="btn btn-primary">
                 <i class="fas fa-pen"></i> Edit Department
             </a>
         </div>
@@ -126,10 +127,10 @@
                 <span>Updated: {{ $parentDepartment->updated_at?->format('d M Y') ?? 'N/A' }}</span>
             </div>
             <div class="footer-actions">
-                <a href="{{ route('parent-departments.index') }}" class="btn btn-secondary">
+                <a href="{{ \App\Support\WorkforceSettings::route('parent-departments.index') }}" class="btn btn-secondary">
                     <i class="fas fa-arrow-left"></i> Back
                 </a>
-                <a href="{{ route('parent-departments.edit', $parentDepartment->id) }}" class="btn btn-primary">
+                <a href="{{ \App\Support\WorkforceSettings::route('parent-departments.edit', $parentDepartment->id) }}" class="btn btn-primary">
                     <i class="fas fa-edit"></i> Edit Department
                 </a>
             </div>

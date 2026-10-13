@@ -1464,18 +1464,32 @@ class EmployeeController extends Controller
      */
     public function sendInvite(Request $request): JsonResponse
     {
+        return $this->createInvitation($request, true);
+    }
+
+    public function generateInviteLink(Request $request): JsonResponse
+    {
+        return $this->createInvitation($request, false);
+    }
+
+    private function createInvitation(Request $request, bool $sendEmail): JsonResponse
+    {
         $this->ensureAdmin();
 
         // Sanitize email
         $rawEmail = (string) $request->input('email', '');
         $sanitized = trim($rawEmail);
         $sanitized = preg_replace('/^(www\.|mailto:)/i', '', $sanitized);
-        $request->merge(['email' => strtolower($sanitized)]);
+        $request->merge(['email' => strtolower(trim($sanitized))]);
 
         $request->validate([
             'email' => 'required|email:rfc',
             'message' => 'nullable|string|max:1000'
         ]);
+
+        if ($sendEmail) {
+            app(\App\Services\CompanyMailSettings::class)->requireDelivery();
+        }
 
         $companyId = (int) (\App\Services\TenantScope::companyId() ?: auth()->user()?->company_id);
         $company = $companyId ? \App\Models\Central\Company::on('central')->find($companyId) : null;
@@ -1487,6 +1501,9 @@ class EmployeeController extends Controller
         $existing = User::query()->withoutGlobalScopes()->where('email', $email)->first();
         if ($existing && (int) $existing->company_id !== $companyId) {
             return response()->json(['message' => 'This email address is already used by another account.'], 422);
+        }
+        if ($existing && (! $sendEmail || $existing->role !== 'employee' || $existing->archived_at)) {
+            return response()->json(['message' => 'This account already exists. Use a new employee email address for an invitation link.'], 422);
         }
 
         DB::connection('tenant')->beginTransaction();
@@ -1514,19 +1531,27 @@ class EmployeeController extends Controller
 
             $inviteUrl = \App\Http\Controllers\EmployeeInviteController::inviteUrl($user, $companyId);
 
-            // The invite is only kept when the email actually goes out.
-            Mail::to($user->email)->send(new \App\Mail\EmployeeInvite($user, $request->message, $inviteUrl, $company->name));
+            // Email failures roll back the account; manual links do not need SMTP.
+            if ($sendEmail) {
+                Mail::to($user->email)->send(new \App\Mail\EmployeeInvite($user, $request->message, $inviteUrl, $company->name));
+            }
 
             DB::connection('tenant')->commit();
-            Log::info('Employee invite sent', ['to' => $user->email, 'company_id' => $companyId]);
+            Log::info('Employee invitation created', ['company_id' => $companyId, 'delivery' => $sendEmail ? 'email' : 'link']);
+
+            if (! $sendEmail) {
+                return response()->json(['message' => 'Invitation link created. Share it with '.$user->email.'.', 'url' => $inviteUrl]);
+            }
 
             return response()->json(['message' => 'Invitation sent to ' . $user->email . '. The link is valid for ' . \App\Http\Controllers\EmployeeInviteController::VALID_DAYS . ' days.']);
         } catch (\Throwable $e) {
             DB::connection('tenant')->rollBack();
-            Log::error('Employee invite failed', ['email' => $email, 'error' => $e->getMessage()]);
+            Log::error('Employee invite failed', ['company_id' => $companyId, 'exception' => get_class($e)]);
 
             return response()->json([
-                'message' => 'The invitation email could not be sent, so no invite was created. Please check the mail settings and try again.',
+                'message' => $sendEmail
+                    ? 'The invitation email could not be sent, so no invite was created. Check Settings > Email and try again.'
+                    : 'The invitation link could not be created. No invite was saved. Please try again.',
             ], 500);
         }
     }

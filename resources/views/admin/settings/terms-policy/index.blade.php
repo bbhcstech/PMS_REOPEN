@@ -273,9 +273,11 @@
 
     .stat-icon.doc,
     .terms-policy-page .stat-card .stat-icon.doc {
-        background: linear-gradient(145deg, #EEF2FF, #E0E7FF);
-        color: #2F6BFF;
-        -webkit-text-fill-color: #2F6BFF;
+        background: linear-gradient(145deg, #EEF2FF, #E0E7FF) !important;
+        color: #2F6BFF !important;
+        -webkit-text-fill-color: #2F6BFF !important;
+        border: 0 !important;
+        box-shadow: none !important;
     }
 
     .stat-icon.doc i, .stat-icon.doc svg, .stat-icon.doc [class*="fa"],

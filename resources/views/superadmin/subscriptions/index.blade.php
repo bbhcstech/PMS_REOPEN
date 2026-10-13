@@ -430,6 +430,12 @@
         border-right: none;
     }
     table.matrix-table thead th:first-child { text-align: left; }
+
+    #tab-comparison table.matrix-table th,
+    #tab-comparison table.matrix-table td {
+        padding: 14px 20px;
+        vertical-align: middle;
+    }
     
     .category-header-row td {
         background: #f1f5f9;

@@ -18,7 +18,9 @@ function visit(directory) {
     if (!page) continue;
     const notice = source.match(/<div class="alert pms-readonly-notice[\s\S]*?<\/span>[\s\S]*?<\/div>\s*<\/div>/);
     const styles = [...source.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map(match => match[1]).join('\n');
-    fixtures.push({ name: path.relative(root, filename), page: page[1], styles, notice: notice ? notice[0] : '' });
+    const currencyIcon = source.match(/<div class="stat-icon loc-stat-icon curr">[\s\S]*?<\/div>/);
+    const organizationIcon = page[1].includes('org-details-page') && source.match(/<div class="header-icon-badge">[\s\S]*?<\/div>/);
+    fixtures.push({ name: path.relative(root, filename), page: page[1], styles, notice: notice ? notice[0] : '', currencyIcon: currencyIcon?.[0], organizationIcon: organizationIcon?.[0] });
   }
 }
 visit(path.join(root, 'resources/views/admin/settings'));
@@ -61,11 +63,34 @@ for (const fixture of fixtures) {
   document.querySelector('.pms-settings-page').insertAdjacentHTML('beforeend', '<span class="pms-readonly-status" style="background:#f1f5f9;color:#64748b"><i class="text-muted">Lock</i> Read-Only</span><span id="phoneDigitCounter" class="badge" style="background:#fef2f2;color:#dc2626"><i class="text-danger">Error</i><span>3/10 digits</span></span>');
   document.getElementById('fixture').insertAdjacentHTML('beforeend', '<div class="select2-dropdown"><div class="select2-results__option select2-results__option--highlighted" aria-selected="true">Selected country</div></div>');
   }
+  if (fixture.organizationIcon) {
+    document.querySelector('.pms-settings-page').insertAdjacentHTML('beforeend', '<div class="branches-header"><div class="header-left-box">' + fixture.organizationIcon + '</div></div>');
+  }
+  if (fixture.currencyIcon) {
+    document.querySelector('.pms-settings-page').insertAdjacentHTML('beforeend', '<div class="stats-grid loc-stats-grid"><div class="stat-card loc-stat-card">' + fixture.currencyIcon + '</div></div>');
+  }
   for (const mode of ['light', 'data-pms-theme', 'data-theme', 'data-bs-theme', 'body', 'light']) {
     for (const attribute of ['data-pms-theme','data-theme','data-bs-theme']) document.documentElement.removeAttribute(attribute);
     document.body.classList.toggle('dark-mode', mode === 'body');
     if (mode !== 'light' && mode !== 'body') document.documentElement.setAttribute(mode, 'dark');
     else if (mode === 'light') document.documentElement.setAttribute('data-pms-theme', 'light');
+    if (fixture.organizationIcon) {
+      const svg = document.querySelector('.header-icon-badge svg');
+      const style = svg && getComputedStyle(svg);
+      checks++;
+      if (!svg || !svg.getBoundingClientRect().width || style.stroke !== 'rgb(255, 255, 255)' || style.fill !== 'none'
+          || style.visibility === 'hidden') failures.push(fixture.name + '/' + mode + '/organization icon hidden or overridden');
+    }
+    if (fixture.currencyIcon) {
+      const icon = document.querySelector('.loc-stat-icon.curr');
+      const svg = icon.querySelector('svg');
+      const iconStyle = getComputedStyle(icon);
+      const svgStyle = svg && getComputedStyle(svg);
+      checks++;
+      if (!svg || !svg.getBoundingClientRect().width || svgStyle.visibility === 'hidden' || svgStyle.fill !== 'none'
+          || svgStyle.stroke !== iconStyle.color || (iconStyle.backgroundImage === 'none' && iconStyle.backgroundColor === 'rgba(0, 0, 0, 0)')
+          || (mode === 'light' && iconStyle.color !== 'rgb(47, 107, 255)')) failures.push(fixture.name + '/' + mode + '/currency icon hidden or overridden');
+    }
     if (fixture.html) {
       for (const element of document.querySelectorAll('#fixture *')) {
         if (!element.getClientRects().length || getComputedStyle(element).visibility === 'hidden') continue;

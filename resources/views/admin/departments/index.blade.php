@@ -3,6 +3,7 @@
 @section('title', 'Sub Departments')
 
 @section('content')
+@include('admin.settings.partials.workforce-navigation')
 
 <div class="sub-department-page">
     <!-- Breadcrumb -->
@@ -22,13 +23,13 @@
             </div>
         </div>
         <div class="btn-group">
-            <a href="{{ route('departments.archive') }}" class="btn btn-light">
+            <a href="{{ \App\Support\WorkforceSettings::route('departments.archive') }}" class="btn btn-light">
                 <i class="fas fa-box-archive"></i> Archived
                 @if(($archivedCount ?? 0) > 0)
                     <span class="archive-count-badge">{{ $archivedCount }}</span>
                 @endif
             </a>
-            <a href="{{ route('departments.create') }}" class="btn btn-primary">
+            <a href="{{ \App\Support\WorkforceSettings::route('departments.create') }}" class="btn btn-primary">
                 <i class="fas fa-plus-circle"></i> Add Sub Department
             </a>
         </div>
@@ -228,18 +229,18 @@
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end">
                                     <li>
-                                        <a class="dropdown-item" href="{{ route('departments.show', $dept) }}">
+                                        <a class="dropdown-item" href="{{ \App\Support\WorkforceSettings::route('departments.show', $dept) }}">
                                             <i class="fas fa-eye"></i> View Sub Department
                                         </a>
                                     </li>
                                     <li>
-                                        <a class="dropdown-item" href="{{ route('departments.edit', $dept) }}">
+                                        <a class="dropdown-item" href="{{ \App\Support\WorkforceSettings::route('departments.edit', $dept) }}">
                                             <i class="fas fa-pen"></i> Edit Sub Department
                                         </a>
                                     </li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li>
-                                        <form method="POST" action="{{ route('departments.destroy', $dept) }}" style="display:inline-block; width:100%;">
+                                        <form method="POST" action="{{ \App\Support\WorkforceSettings::route('departments.destroy', $dept) }}" style="display:inline-block; width:100%;">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="dropdown-item text-warning" onclick="return confirm('Archive this sub department? It can be restored later.')">
@@ -258,7 +259,7 @@
                                 <i class="fas fa-sitemap fa-4x"></i>
                                 <h5>No Sub Departments Found</h5>
                                 <p>Get started by creating your first sub department</p>
-                                <a href="{{ route('departments.create') }}" class="btn btn-primary">
+                                <a href="{{ \App\Support\WorkforceSettings::route('departments.create') }}" class="btn btn-primary">
                                     <i class="fas fa-plus-circle"></i> Create Sub Department
                                 </a>
                             </div>
@@ -2446,7 +2447,7 @@ $(document).ready(function() {
         deleteBtn.prop('disabled', true);
 
         $.ajax({
-            url: "{{ route('departments.bulk-delete') }}",
+            url: "{{ \App\Support\WorkforceSettings::route('departments.bulk-delete') }}",
             method: 'POST',
             contentType: 'application/json; charset=utf-8',
             dataType: 'json',

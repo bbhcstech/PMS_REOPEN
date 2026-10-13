@@ -464,10 +464,17 @@
         position: relative;
     }
 
+    /* Visually hidden: the pill label is the control. Kept !important so theme-wide disabled/readonly
+       input rules (read-only settings mode) can never reveal the native checkbox. */
     .day-pill-input {
-        position: absolute;
-        opacity: 0;
-        pointer-events: none;
+        position: absolute !important;
+        width: 1px !important;
+        height: 1px !important;
+        margin: 0 !important;
+        opacity: 0 !important;
+        overflow: hidden !important;
+        clip: rect(0 0 0 0) !important;
+        pointer-events: none !important;
     }
 
     .day-pill-label {

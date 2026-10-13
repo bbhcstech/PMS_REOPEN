@@ -2,6 +2,16 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 const assert = require('node:assert/strict');
 const source = fs.readFileSync(require('node:path').join(__dirname, '../../public/admin/assets/js/pms-table-tools.js'), 'utf8');
+const eligible = vm.runInNewContext(source.slice(source.indexOf('  function isEligible('), source.indexOf('  function dataRows(')) + '\nisEligible');
+const recordTable = {
+  tagName: 'TABLE', matches: () => false, closest: () => null,
+  tHead: {querySelector: () => ({})}, tBodies: [{}],
+};
+assert.equal(eligible(recordTable), true, 'Record tables must retain export controls');
+assert.equal(eligible({...recordTable, closest: selector => selector === '.fc' ? {} : null}), false,
+  'Calendar layout tables must not receive selection columns, export controls or scroll hosts');
+assert.equal(eligible({...recordTable, closest: selector => selector === '[data-pms-export="off"]' ? {} : null}), false,
+  'Explicitly excluded containers must remain untouched');
 const code = source.slice(source.indexOf('  function placeToolbar('), source.indexOf('  function createToolbar('));
 function node() {
   return {children: [], classList: {add() {}}, setAttribute() {}, compareDocumentPosition() { return 4; },

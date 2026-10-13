@@ -2263,6 +2263,46 @@ html[data-pms-theme="dark"] .badge.bg-label-danger {
   border: 1px solid rgba(239, 68, 68, 0.3) !important;
 }
 
+/* Avatar Initial Badges in Dark Mode */
+html[data-pms-theme="dark"] .avatar-initial.bg-label-primary,
+html[data-bs-theme="dark"] .avatar-initial.bg-label-primary,
+html[data-theme="dark"] .avatar-initial.bg-label-primary {
+  background: rgba(47, 107, 255, 0.22) !important;
+  color: #60A5FA !important;
+  -webkit-text-fill-color: #60A5FA !important;
+  border: 1px solid rgba(79, 131, 255, 0.45) !important;
+}
+
+html[data-pms-theme="dark"] .avatar-initial.bg-label-success,
+html[data-bs-theme="dark"] .avatar-initial.bg-label-success,
+html[data-theme="dark"] .avatar-initial.bg-label-success {
+  background: rgba(16, 185, 129, 0.22) !important;
+  background-color: rgba(16, 185, 129, 0.22) !important;
+  color: #34D399 !important;
+  -webkit-text-fill-color: #34D399 !important;
+  border: 1px solid rgba(52, 211, 153, 0.45) !important;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.25) !important;
+}
+
+html[data-pms-theme="dark"] .avatar-initial.bg-label-warning,
+html[data-bs-theme="dark"] .avatar-initial.bg-label-warning,
+html[data-theme="dark"] .avatar-initial.bg-label-warning {
+  background: rgba(245, 158, 11, 0.22) !important;
+  color: #FCD34D !important;
+  -webkit-text-fill-color: #FCD34D !important;
+  border: 1px solid rgba(245, 158, 11, 0.45) !important;
+}
+
+html[data-pms-theme="dark"] .avatar-initial.bg-label-danger,
+html[data-bs-theme="dark"] .avatar-initial.bg-label-danger,
+html[data-theme="dark"] .avatar-initial.bg-label-danger {
+  background: rgba(239, 68, 68, 0.22) !important;
+  color: #FCA5A5 !important;
+  -webkit-text-fill-color: #FCA5A5 !important;
+  border: 1px solid rgba(239, 68, 68, 0.45) !important;
+}
+
+
 /* Buttons Light & Secondary */
 html[data-pms-theme="dark"] .btn-light {
   background: #141B3D !important;
@@ -7772,7 +7812,9 @@ html body .pms-settings-page .pms-readonly-notice :is(strong, span, i) {
   -webkit-text-fill-color: currentColor !important;
 }
 
-:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) .pms-settings-page :is(input:disabled, input[readonly], select:disabled, textarea:disabled, textarea[readonly]) {
+/* Text-like fields only: checkboxes/radios keep their own styling (custom pills hide them with opacity: 0). */
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) .pms-settings-page :is(input:disabled, input[readonly]):not([type="checkbox"]):not([type="radio"]),
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) .pms-settings-page :is(select:disabled, textarea:disabled, textarea[readonly]) {
   background-color: #141b3d !important;
   color: #eef1fb !important;
   -webkit-text-fill-color: currentColor !important;

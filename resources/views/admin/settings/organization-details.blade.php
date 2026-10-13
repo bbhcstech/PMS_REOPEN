@@ -119,6 +119,18 @@
         flex-shrink: 0;
     }
 
+    .pms-settings-page.org-details-page .branches-header .header-left-box .header-icon-badge svg {
+        width: 28px;
+        height: 28px;
+        color: #fff !important;
+        background: transparent !important;
+        fill: none !important;
+        stroke: #fff !important;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
     .header-title h1 {
         font-size: 1.95rem;
         font-weight: 800;
@@ -215,8 +227,7 @@
     }
 
     .stat-card,
-    .org-details-page .stat-card,
-    .org-details-page .stat-card:first-of-type {
+    .org-details-page .stat-card {
         background: #ffffff !important;
         backdrop-filter: blur(20px);
         border-radius: 24px;
@@ -232,21 +243,17 @@
         color: #0F172A !important;
     }
 
-    .org-details-page .stat-card:first-of-type *,
     .org-details-page .stat-card * {
         -webkit-text-fill-color: initial;
     }
 
-    .org-details-page .stat-card h3,
-    .org-details-page .stat-card:first-of-type h3 {
+    .org-details-page .stat-card h3 {
         color: #0F172A !important;
         -webkit-text-fill-color: #0F172A !important;
     }
 
     .org-details-page .stat-card h6,
-    .org-details-page .stat-card span,
-    .org-details-page .stat-card:first-of-type span,
-    .org-details-page .stat-card:first-of-type h6 {
+    .org-details-page .stat-card span {
         color: #64748b !important;
         -webkit-text-fill-color: #64748b !important;
     }
@@ -292,14 +299,12 @@
     }
 
     .stat-icon.industry,
-    .org-details-page .stat-card .stat-icon.industry,
-    .org-details-page .stat-card:first-of-type .stat-icon.industry {
+    .org-details-page .stat-card .stat-icon.industry {
         background: linear-gradient(145deg, #EEF2FF, #E0E7FF) !important;
     }
 
     .stat-icon.industry i,
-    .org-details-page .stat-card .stat-icon.industry i,
-    .org-details-page .stat-card:first-of-type .stat-icon.industry i {
+    .org-details-page .stat-card .stat-icon.industry i {
         color: #2F6BFF !important;
         -webkit-text-fill-color: #2F6BFF !important;
     }
@@ -337,78 +342,35 @@
         -webkit-text-fill-color: #4f46e5 !important;
     }
 
-    /* Dark Mode Support for Executive Summary Stats Cards */
-    html[data-pms-theme="dark"] .stat-card,
-    html[data-bs-theme="dark"] .stat-card,
-    body[data-pms-theme="dark"] .stat-card,
-    [data-pms-theme="dark"] .stat-card {
+    /* Dark Mode Support for Executive Summary Stats Cards.
+       Scoped to the page so it outranks the page-scoped light rules above (it previously lost to them,
+       leaving the first card white and every icon tile pastel in dark mode). */
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body[data-pms-theme="dark"], body.dark-mode) .org-details-page .stat-card {
         background: #0F1530 !important;
         border-color: rgba(238, 241, 251, 0.12) !important;
+        box-shadow: none !important;
+        color: #EEF1FB !important;
     }
 
-    html[data-pms-theme="dark"] .stat-card h3,
-    html[data-bs-theme="dark"] .stat-card h3,
-    body[data-pms-theme="dark"] .stat-card h3,
-    [data-pms-theme="dark"] .stat-card h3 {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body[data-pms-theme="dark"], body.dark-mode) .org-details-page .stat-card h3 {
         color: #EEF1FB !important;
         -webkit-text-fill-color: #EEF1FB !important;
     }
 
-    html[data-pms-theme="dark"] .stat-card h6,
-    html[data-bs-theme="dark"] .stat-card h6,
-    body[data-pms-theme="dark"] .stat-card h6,
-    [data-pms-theme="dark"] .stat-card h6 {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body[data-pms-theme="dark"], body.dark-mode) .org-details-page .stat-card :is(h6, span) {
         color: #94a3b8 !important;
         -webkit-text-fill-color: #94a3b8 !important;
     }
 
-    html[data-pms-theme="dark"] .stat-icon.industry,
-    html[data-bs-theme="dark"] .stat-icon.industry,
-    [data-pms-theme="dark"] .stat-icon.industry {
-        background: rgba(47, 107, 255, 0.2) !important;
-    }
-    html[data-pms-theme="dark"] .stat-icon.industry i,
-    html[data-bs-theme="dark"] .stat-icon.industry i,
-    [data-pms-theme="dark"] .stat-icon.industry i {
-        color: #60A5FA !important;
-        -webkit-text-fill-color: #60A5FA !important;
-    }
-
-    html[data-pms-theme="dark"] .stat-icon.size,
-    html[data-bs-theme="dark"] .stat-icon.size,
-    [data-pms-theme="dark"] .stat-icon.size {
-        background: rgba(14, 165, 233, 0.2) !important;
-    }
-    html[data-pms-theme="dark"] .stat-icon.size i,
-    html[data-bs-theme="dark"] .stat-icon.size i,
-    [data-pms-theme="dark"] .stat-icon.size i {
-        color: #38bdf8 !important;
-        -webkit-text-fill-color: #38bdf8 !important;
-    }
-
-    html[data-pms-theme="dark"] .stat-icon.tax,
-    html[data-bs-theme="dark"] .stat-icon.tax,
-    [data-pms-theme="dark"] .stat-icon.tax {
-        background: rgba(245, 158, 11, 0.2) !important;
-    }
-    html[data-pms-theme="dark"] .stat-icon.tax i,
-    html[data-bs-theme="dark"] .stat-icon.tax i,
-    [data-pms-theme="dark"] .stat-icon.tax i {
-        color: #fbbf24 !important;
-        -webkit-text-fill-color: #fbbf24 !important;
-    }
-
-    html[data-pms-theme="dark"] .stat-icon.year,
-    html[data-bs-theme="dark"] .stat-icon.year,
-    [data-pms-theme="dark"] .stat-icon.year {
-        background: rgba(99, 102, 241, 0.2) !important;
-    }
-    html[data-pms-theme="dark"] .stat-icon.year i,
-    html[data-bs-theme="dark"] .stat-icon.year i,
-    [data-pms-theme="dark"] .stat-icon.year i {
-        color: #818cf8 !important;
-        -webkit-text-fill-color: #818cf8 !important;
-    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body[data-pms-theme="dark"], body.dark-mode) .org-details-page .stat-card .stat-icon.industry { background: rgba(47, 107, 255, 0.2) !important; }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body[data-pms-theme="dark"], body.dark-mode) .org-details-page .stat-card .stat-icon.industry i { color: #60A5FA !important; -webkit-text-fill-color: #60A5FA !important; }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body[data-pms-theme="dark"], body.dark-mode) .org-details-page .stat-card .stat-icon.size { background: rgba(14, 165, 233, 0.2) !important; }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body[data-pms-theme="dark"], body.dark-mode) .org-details-page .stat-card .stat-icon.size i { color: #38bdf8 !important; -webkit-text-fill-color: #38bdf8 !important; }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body[data-pms-theme="dark"], body.dark-mode) .org-details-page .stat-card .stat-icon.tax { background: rgba(245, 158, 11, 0.2) !important; }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body[data-pms-theme="dark"], body.dark-mode) .org-details-page .stat-card .stat-icon.tax i { color: #fbbf24 !important; -webkit-text-fill-color: #fbbf24 !important; }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body[data-pms-theme="dark"], body.dark-mode) .org-details-page .stat-card .stat-icon.year { background: rgba(99, 102, 241, 0.2) !important; }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body[data-pms-theme="dark"], body.dark-mode) .org-details-page .stat-card .stat-icon.year i { color: #818cf8 !important; -webkit-text-fill-color: #818cf8 !important; }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body[data-pms-theme="dark"], body.dark-mode) .org-details-page .stat-card .stat-icon { box-shadow: none !important; border: 1px solid rgba(238, 241, 251, 0.08) !important; }
 
     .stat-info h6 {
         font-size: 0.72rem;
@@ -589,7 +551,7 @@
             <div class="branches-header">
                 <div class="header-left-box">
                     <div class="header-icon-badge">
-                        <i class="fas fa-sitemap"></i>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="2" width="6" height="5" rx="1"/><rect x="2" y="17" width="5" height="5" rx="1"/><rect x="9.5" y="17" width="5" height="5" rx="1"/><rect x="17" y="17" width="5" height="5" rx="1"/><path d="M12 7v10M4.5 17v-5h15v5"/></svg>
                     </div>
                     <div class="header-title">
                         <h1>Organization Details</h1>

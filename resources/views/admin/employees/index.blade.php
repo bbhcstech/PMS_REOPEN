@@ -244,23 +244,12 @@
                         <div class="tab-pane fade" id="invite-link" role="tabpanel">
                             <div class="alert alert-light border">
                                 <i class="fas fa-link text-primary me-2"></i>
-                                Create an invitation link that can be shared with multiple people.
+                                Create a signed link for one employee. It expires in 7 days and can be used once. Email delivery is not required.
                             </div>
 
                             <div class="mb-4">
-                                <label class="form-label fw-bold mb-3">Link Restrictions:</label>
-                                <div class="list-group">
-                                    <label class="list-group-item border-0 bg-light">
-                                        <input class="form-check-input me-2" type="radio" name="linkOption" id="anyEmail" checked>
-                                        <span class="fw-medium">Allow any email address</span>
-                                        <small class="text-muted d-block mt-1">Anyone with the link can join</small>
-                                    </label>
-                                    <label class="list-group-item border-0 bg-light mt-2">
-                                        <input class="form-check-input me-2" type="radio" name="linkOption" id="domainEmail">
-                                        <span class="fw-medium">Restrict to company domain</span>
-                                        <small class="text-muted d-block mt-1">Only your company email domain is allowed</small>
-                                    </label>
-                                </div>
+                                <label class="form-label fw-bold" for="inviteLinkEmail">Employee Email Address *</label>
+                                <input type="email" class="form-control" id="inviteLinkEmail" placeholder="name@example.com" autocomplete="email" required>
                             </div>
 
                             <div class="d-flex justify-content-end">
@@ -279,7 +268,7 @@
                                 <div class="input-group">
                                     <input type="text" class="form-control border-end-0" id="inviteLink" readonly>
                                     <button class="btn btn-outline-primary" type="button" id="copyLinkBtn">
-                                        <i class="fas fa-copy"></i>
+                                        <i class="fas fa-copy" aria-hidden="true"></i><span class="visually-hidden">Copy invitation link</span>
                                     </button>
                                     <button class="btn btn-outline-success" type="button" id="shareLinkBtn" title="Share via Email">
                                         <i class="fas fa-share-alt"></i>
@@ -580,7 +569,7 @@
                                             {{ strtoupper(substr($employee->company?->short_name ?: $employee->company?->company_code ?: $employee->company?->name ?: 'NA', 0, 2)) }}
                                         @endif
                                     </span>
-                                    <span>{{ $employee->company?->name ?? 'Unassigned' }}</span>
+                                    <span class="employee-company-name">{{ $employee->company?->name ?? 'Unassigned' }}</span>
                                 </span>
                             </td>
                             <td>
@@ -1429,6 +1418,11 @@
         flex-wrap: nowrap !important;
         align-items: stretch !important;
     }
+    #inviteModal .btn-primary,
+    #inviteModal .btn-primary * {
+        color: #fff !important;
+        -webkit-text-fill-color: #fff !important;
+    }
     #inviteModal .input-group > .input-group-text {
         flex: 0 0 auto !important;
         width: auto !important;
@@ -1763,6 +1757,13 @@
         font-size: .76rem;
         font-weight: 700;
         margin-top: 4px;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark,
+        body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode)
+        #employeeTable .employee-company-chip > .employee-company-name {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
     }
 
     .employee-company-chip {
@@ -4971,43 +4972,91 @@ $(document).ready(function () {
         });
     });
 
+    // Keep Bootstrap's modal above its backdrop, outside transformed page cards.
+    document.body.appendChild(document.getElementById('inviteModal'));
+    function inviteNotice(message, success = false) {
+        $('#inviteEmailAlert').attr('class', 'alert mx-3 mb-3 ' + (success ? 'alert-success' : 'alert-danger'))
+            .attr('role', 'status').text(message).show();
+    }
+    $('#invite-link-tab, #invite-email-tab').on('shown.bs.tab', function() {
+        $('#sendInviteBtn').toggle(this.id === 'invite-email-tab');
+        $('#inviteEmailAlert').hide();
+    });
+
     // Invite by email
     $('#inviteEmailForm').on('submit', function(e) {
         e.preventDefault();
         const email = $('#inviteEmail').val().trim();
         const message = $('#inviteMessage').val().trim();
+        if (!this.reportValidity() || $('#sendInviteBtn').prop('disabled')) return;
+        $('#inviteEmailAlert').hide();
+        $('#sendInviteBtn').prop('disabled', true);
+        $('#sendInviteSpinner').removeClass('d-none');
 
         $.ajax({
             url: '{{ route("employees.sendInvite") }}',
             type: 'POST',
+            timeout: 30000,
             data: {
                 _token: '{{ csrf_token() }}',
                 email: email,
                 message: message
             },
             success: function(res) {
-                alert('Invitation sent successfully!');
-                $('#inviteModal').modal('hide');
+                inviteNotice(res.message, true);
                 $('#inviteEmailForm')[0].reset();
             },
             error: function(xhr) {
-                alert(xhr?.responseJSON?.message || 'Failed to send invite.');
+                const errors = xhr.responseJSON?.errors;
+                inviteNotice(errors ? Object.values(errors).flat().join(' ') : (xhr.responseJSON?.message || 'Could not send the invitation. Check your connection and try again.'));
+            },
+            complete: function() {
+                $('#sendInviteBtn').prop('disabled', false);
+                $('#sendInviteSpinner').addClass('d-none');
             }
         });
     });
 
     // Generate invite link
     $('#createLinkBtn').on('click', function() {
+        const input = document.getElementById('inviteLinkEmail');
+        if (!input.reportValidity() || $(this).prop('disabled')) return;
         $('#linkContainer').hide();
         $('#inviteLink').val('');
-        alert('Public registration is disabled. Please create employee accounts from the employee management form.');
+        $('#inviteEmailAlert').hide();
+        $(this).prop('disabled', true);
+        $.ajax({
+            url: '{{ route("employees.inviteLink") }}',
+            type: 'POST',
+            timeout: 30000,
+            data: { _token: '{{ csrf_token() }}', email: input.value.trim() },
+            success: function(res) {
+                $('#inviteLink').val(res.url);
+                $('#linkContainer').show();
+                inviteNotice(res.message, true);
+            },
+            error: function(xhr) {
+                const errors = xhr.responseJSON?.errors;
+                inviteNotice(errors ? Object.values(errors).flat().join(' ') : (xhr.responseJSON?.message || 'Could not create the invitation link. Please try again.'));
+            },
+            complete: function() { $('#createLinkBtn').prop('disabled', false); }
+        });
     });
 
     // Copy link
-    $('#copyLinkBtn').on('click', function() {
-        $('#inviteLink').select();
-        document.execCommand('copy');
-        alert('Link copied to clipboard!');
+    $('#copyLinkBtn').on('click', async function() {
+        const link = $('#inviteLink').val();
+        if (!link) return;
+        try {
+            if (navigator.clipboard && window.isSecureContext) await navigator.clipboard.writeText(link);
+            else {
+                $('#inviteLink').select();
+                if (!document.execCommand('copy')) throw new Error('Copy failed');
+            }
+            inviteNotice('Invitation link copied.', true);
+        } catch (error) {
+            inviteNotice('Select and copy the invitation link manually.');
+        }
     });
 
     // Share link

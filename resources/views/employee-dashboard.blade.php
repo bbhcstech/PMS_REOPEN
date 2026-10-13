@@ -12,46 +12,12 @@
     $todayStatus = $attendance && $attendance->status ? str_replace('_', ' ', ucfirst($attendance->status)) : 'No Entry';
     $workedDurationLabel = $attendance && $attendance->clock_in && $attendance->clock_out ? $attendance->total_duration : '00:00:00';
 
-    $weekDays = collect(CarbonPeriod::create(now()->startOfWeek(), now()->endOfWeek()));
-    $weeklyLabels = [];
-    $weeklyHours = [];
-    $attendanceSummary = [
-        'Present' => 0,
-        'Absent' => 0,
-        'On Leave' => 0,
-        'Work From Home' => 0,
-        'Half Day' => 0,
-    ];
-
-    foreach ($weekDays as $day) {
-        $entry = $weeklyLogs[$day->toDateString()] ?? null;
-        $weeklyLabels[] = $day->format('D');
-        $hours = 0;
-
-        if ($entry && $entry->clock_in && $entry->clock_out) {
-            $hours = round(((int) ($entry->total_seconds ?? 0)) / 3600, 1);
-        }
-
-        $weeklyHours[] = $hours;
-
-        if (!$entry) {
-            $attendanceSummary['Absent']++;
-            continue;
-        }
-
-        $rawStatus = strtolower((string) ($entry->status ?? 'present'));
-        if (str_contains($rawStatus, 'leave')) {
-            $attendanceSummary['On Leave']++;
-        } elseif (str_contains($rawStatus, 'home') || str_contains($rawStatus, 'wfh')) {
-            $attendanceSummary['Work From Home']++;
-        } elseif (str_contains($rawStatus, 'half')) {
-            $attendanceSummary['Half Day']++;
-        } elseif (str_contains($rawStatus, 'absent') || str_contains($rawStatus, 'day_off')) {
-            $attendanceSummary['Absent']++;
-        } else {
-            $attendanceSummary['Present']++;
-        }
-    }
+    // Built by DashboardController from the My Attendance calendar (same records, leaves, holidays and working days).
+    $weekDays = $weekDays ?? collect();
+    $weekAttendance = $weekAttendance ?? ['labels' => [], 'hours' => [], 'summary' => [], 'totalHours' => 0, 'percent' => 0];
+    $weeklyLabels = $weekAttendance['labels'];
+    $weeklyHours = $weekAttendance['hours'];
+    $attendanceSummary = array_merge(['Present' => 0, 'Absent' => 0, 'On Leave' => 0, 'Work From Home' => 0, 'Half Day' => 0], $weekAttendance['summary']);
 
     $taskChart = [
         max(0, (int) $pendingTasksCount),
@@ -65,9 +31,8 @@
     ];
     $resolvedTickets = $myTickets->filter(fn ($ticket) => strtolower((string) $ticket->status) === 'resolved')->count();
     $ticketChart = [max(0, (int) $openTicketsCount), max(0, (int) $resolvedTickets)];
-    $attendanceChart = array_values($attendanceSummary);
-    $weeklyTotalHours = array_sum($weeklyHours);
-    $attendancePercent = count($weekDays) > 0 ? round(($attendanceSummary['Present'] / count($weekDays)) * 100) : 0;
+    $weeklyTotalHours = $weekAttendance['totalHours'];
+    $attendancePercent = $weekAttendance['percent'];
     $officeLatitude = 22.49682;
     $officeLongitude = 88.39462;
     $officeRadiusMeters = 10;
@@ -902,6 +867,29 @@
     .employee-chart.small {
         min-height: 220px;
     }
+
+    /* Wrapped donut legends were clipped into a scroll box (stray scrollbar beside the legend). */
+    #employeeAttendanceChart .apexcharts-legend {
+        overflow: visible !important;
+        max-height: none !important;
+        justify-content: center !important;
+    }
+    #employeeAttendanceChart .apexcharts-datalabel,
+    #employeeAttendanceChart .apexcharts-pie-label {
+        fill: #ffffff !important;
+    }
+    #employeeWeeklyHoursChart,
+    #employeeAttendanceChart {
+        min-height: 300px;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) #employeeAttendanceChart .apexcharts-legend-text {
+        color: #cbd5e1 !important;
+        -webkit-text-fill-color: #cbd5e1 !important;
+        opacity: 1 !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) #employeeAttendanceChart .apexcharts-datalabel-value {
+        fill: #eef1fb !important;
+    }
     .dashboard-status-chart { --chart-center: #fff; --chart-label: #64748b; padding: 12px 0; }
     .dashboard-status-ring { width: 190px; height: 190px; border-radius: 50%; margin: 0 auto 24px; display: grid; place-items: center; }
     .dashboard-status-center { width: 132px; height: 132px; border-radius: 50%; background: var(--chart-center); display: flex; flex-direction: column; align-items: center; justify-content: center; }
@@ -1689,7 +1677,9 @@
                             </div>
                             <span class="employee-icon info"><i class="bx bx-line-chart"></i></span>
                         </div>
-                        <div id="employeeWeeklyHoursChart" class="employee-chart"></div>
+                        <div id="employeeWeeklyHoursChart" class="employee-chart"
+                            data-chart-labels="{{ json_encode($weeklyLabels) }}"
+                            data-chart-series="{{ json_encode($weeklyHours) }}"></div>
                     </div>
                 </div>
                 <div class="col-xl-4">
@@ -1697,11 +1687,13 @@
                         <div class="employee-card-header">
                             <div>
                                 <h3 class="employee-card-title">Attendance Pie Chart</h3>
-                                <p class="employee-muted mb-0">Present, absent, leave, and work from home.</p>
+                                <p class="employee-muted mb-0">This week's days from My Attendance.</p>
                             </div>
                             <span class="employee-icon success"><i class="bx bx-pie-chart-alt-2"></i></span>
                         </div>
-                        <div id="employeeAttendanceChart" class="employee-chart"></div>
+                        <div id="employeeAttendanceChart" class="employee-chart"
+                            data-chart-labels="{{ json_encode(array_keys($attendanceSummary)) }}"
+                            data-chart-series="{{ json_encode(array_values($attendanceSummary)) }}"></div>
                     </div>
                 </div>
             </div>
@@ -2033,23 +2025,26 @@
                         <div class="employee-card-header">
                             <div>
                                 <h3 class="employee-card-title">My Calendar</h3>
-                                <p class="employee-muted mb-0">{{ now()->startOfWeek()->format('M d') }} - {{ now()->endOfWeek()->format('M d, Y') }}</p>
+                                <p class="employee-muted mb-0">{{ ($weekDays->first()['date'] ?? now()->startOfWeek())->format('M d') }} - {{ ($weekDays->last()['date'] ?? now()->endOfWeek())->format('M d, Y') }}</p>
                             </div>
                             <span class="employee-icon primary"><i class="bx bx-calendar"></i></span>
                         </div>
                         <div class="employee-calendar-list">
+                            @php
+                                $calendarBadges = ['present' => 'bg-success', 'late' => 'bg-warning', 'half_day' => 'bg-primary', 'absent' => 'bg-danger', 'holiday' => 'bg-info', 'leave' => 'bg-warning', 'unpaid_leave' => 'bg-warning', 'day_off' => 'bg-secondary'];
+                            @endphp
                             @foreach($weekDays as $day)
                                 @php
-                                    $entry = $weeklyLogs[$day->toDateString()] ?? null;
+                                    $entry = $day['daily']->last();
+                                    $calendarStatus = $day['status'] === 'not_marked' ? 'No Entry' : ($day['status'] === 'not_joined' ? 'Before joining' : ucfirst(str_replace('_', ' ', $day['status'])));
                                 @endphp
-                                <div class="employee-calendar-row">
-                                    <span class="fw-bold">{{ $day->format('l, F d, Y') }}</span>
+                                <div class="employee-calendar-row" data-live-key="employee-calendar-{{ $day['key'] }}">
+                                    <span class="fw-bold">{{ $day['date']->format('l, F d, Y') }}</span>
                                     <span>
+                                        <span class="badge {{ $calendarBadges[$day['status']] ?? 'bg-secondary' }}">{{ $calendarStatus }}</span>
+                                        @if($day['wfh'])<span class="badge bg-info ms-1">WFH</span>@endif
                                         @if ($entry)
-                                            <span class="badge bg-success">{{ ucfirst(str_replace('_', ' ', $entry->status ?? 'present')) }}</span>
                                             <small class="text-muted ms-2">In: {{ $entry->clock_in ?? 'NA' }} | Out: {{ $entry->clock_out ?? 'NA' }}</small>
-                                        @else
-                                            <span class="badge bg-secondary">No Entry</span>
                                         @endif
                                     </span>
                                 </div>
@@ -3059,42 +3054,144 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
             new ApexCharts(element, options).render();
         };
 
-        renderChart('#employeeWeeklyHoursChart', {
+        // Weekly attendance charts read their data from data-chart-* attributes, which the live
+        // refresher keeps in sync with My Attendance; charts update in place when the data changes.
+        const attendanceCharts = {};
+        const readChartData = element => {
+            try {
+                return {
+                    labels: JSON.parse(element.dataset.chartLabels || '[]'),
+                    series: JSON.parse(element.dataset.chartSeries || '[]').map(Number),
+                };
+            } catch (_) {
+                return { labels: [], series: [] };
+            }
+        };
+        const isDarkTheme = () => {
+            const root = document.documentElement;
+            return [root, document.body].some(node => ['data-pms-theme', 'data-bs-theme', 'data-theme'].some(attr => node.getAttribute(attr) === 'dark'))
+                || document.body.classList.contains('dark-mode') || root.classList.contains('dark');
+        };
+        const attendanceThemeColors = () => isDarkTheme()
+            ? { text: '#a5b4ce', strong: '#eef1fb', grid: 'rgba(238, 241, 251, 0.12)', marker: '#10152f', tooltip: 'dark' }
+            : { text: '#667085', strong: '#172033', grid: 'rgba(23, 32, 51, 0.08)', marker: '#ffffff', tooltip: 'light' };
+        const formatHours = value => {
+            const minutes = Math.round((Number(value) || 0) * 60);
+            const h = Math.floor(minutes / 60), m = minutes % 60;
+            return m ? `${h}h ${m}m` : `${h}h`;
+        };
+        const attendanceSliceColors = ['#12a66a', '#e5484d', '#f59e0b', '#168aad', '#5b5ce2'];
+
+        const weeklyHoursOptions = (data, theme) => ({
             chart: {
                 type: 'area',
                 height: 300,
                 animations: { enabled: true, easing: 'easeinout', speed: 850 },
-                toolbar: { show: false }
+                toolbar: { show: false },
+                zoom: { enabled: false },
+                foreColor: theme.text
             },
-            series: [{
-                name: 'Hours',
-                data: @json($weeklyHours)
-            }],
+            series: [{ name: 'Hours', data: data.series }],
             xaxis: {
-                categories: @json($weeklyLabels),
-                labels: { style: { colors: chartTextColor, fontWeight: 700 } }
+                categories: data.labels,
+                labels: { style: { colors: theme.text, fontWeight: 700 } },
+                axisBorder: { color: theme.grid },
+                axisTicks: { color: theme.grid },
+                tooltip: { enabled: false }
             },
             yaxis: {
                 min: 0,
-                labels: { style: { colors: chartTextColor }, formatter: value => `${value}h` }
+                max: Math.max(2, Math.ceil(Math.max(0, ...data.series))),
+                tickAmount: 4,
+                labels: { style: { colors: theme.text }, formatter: value => formatHours(value) }
             },
             colors: ['#168aad'],
+            dataLabels: { enabled: false },
             fill: {
                 type: 'gradient',
                 gradient: { shadeIntensity: 0.8, opacityFrom: 0.38, opacityTo: 0.04, stops: [0, 90, 100] }
             },
-            stroke: { curve: 'smooth', width: 4 },
-            grid: { borderColor: chartGridColor, strokeDashArray: 4 },
-            markers: { size: 5, colors: ['#fff'], strokeColors: '#168aad', strokeWidth: 3 },
-            tooltip: { y: { formatter: value => `${value} hours` } }
+            stroke: { curve: 'smooth', width: 3 },
+            grid: { borderColor: theme.grid, strokeDashArray: 4, padding: { left: 8, right: 12 } },
+            markers: { size: 5, colors: [theme.marker], strokeColors: '#168aad', strokeWidth: 3, hover: { size: 7 } },
+            tooltip: { theme: theme.tooltip, y: { formatter: value => formatHours(value) } }
         });
 
-        renderChart('#employeeAttendanceChart', {
-            ...commonDonut,
-            series: @json($attendanceChart),
-            labels: @json(array_keys($attendanceSummary)),
-            colors: ['#12a66a', '#e5484d', '#f59e0b', '#168aad', '#5b5ce2']
-        });
+        const attendancePieOptions = (data, theme) => {
+            const total = data.series.reduce((sum, value) => sum + value, 0);
+            return {
+                ...commonDonut,
+                chart: { ...commonDonut.chart, height: 300, foreColor: theme.text },
+                // An all-zero donut renders as a blank ring; an empty series shows the noData message instead.
+                series: total > 0 ? data.series : [],
+                labels: data.labels,
+                colors: attendanceSliceColors,
+                noData: { text: 'No attendance recorded this week yet', style: { color: theme.text, fontSize: '13px' } },
+                legend: {
+                    position: 'bottom',
+                    horizontalAlign: 'center',
+                    fontWeight: 600,
+                    labels: { colors: theme.text },
+                    itemMargin: { horizontal: 8, vertical: 3 },
+                    markers: { offsetX: -3 }
+                },
+                dataLabels: {
+                    enabled: true,
+                    formatter: (value, { seriesIndex, w }) => w.config.series[seriesIndex],
+                    style: { fontSize: '12px', fontWeight: 800 },
+                    dropShadow: { enabled: false }
+                },
+                tooltip: { theme: theme.tooltip, y: { formatter: value => `${value} day${value === 1 ? '' : 's'}` } },
+                plotOptions: {
+                    pie: {
+                        donut: {
+                            size: '64%',
+                            labels: {
+                                show: true,
+                                name: { color: theme.text },
+                                value: { color: theme.strong, fontSize: '22px', fontWeight: 800 },
+                                total: {
+                                    show: true,
+                                    label: 'Days',
+                                    color: theme.text,
+                                    formatter: () => String(total)
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+        };
+
+        const attendanceChartBuilders = {
+            employeeWeeklyHoursChart: weeklyHoursOptions,
+            employeeAttendanceChart: attendancePieOptions,
+        };
+        const renderAttendanceCharts = () => {
+            const theme = attendanceThemeColors();
+            Object.entries(attendanceChartBuilders).forEach(([id, build]) => {
+                const element = document.getElementById(id);
+                if (!element) return;
+                const signature = (element.dataset.chartLabels || '') + '|' + (element.dataset.chartSeries || '') + '|' + theme.tooltip;
+                const existing = attendanceCharts[id];
+                if (existing && existing.element === element && existing.element.querySelector('.apexcharts-canvas')) {
+                    if (existing.signature !== signature) {
+                        existing.chart.updateOptions(build(readChartData(element), theme), true, true);
+                        existing.signature = signature;
+                    }
+                    return;
+                }
+                existing?.chart?.destroy?.();
+                element.innerHTML = '';
+                const chart = new ApexCharts(element, build(readChartData(element), theme));
+                chart.render();
+                attendanceCharts[id] = { chart, element, signature };
+            });
+        };
+        renderAttendanceCharts();
+        document.addEventListener('pms:records-updated', renderAttendanceCharts);
+        new MutationObserver(renderAttendanceCharts).observe(document.documentElement, { attributes: true, attributeFilter: ['data-pms-theme', 'data-bs-theme', 'data-theme', 'class'] });
+        new MutationObserver(renderAttendanceCharts).observe(document.body, { attributes: true, attributeFilter: ['data-pms-theme', 'data-bs-theme', 'data-theme', 'class'] });
 
         renderChart('#employeeTaskChart', {
             ...commonDonut,

@@ -1222,12 +1222,14 @@
        RESPONSIVE & ALL-DEVICE SCREEN COMPATIBILITY
        ============================================================ */
     html, body {
-      overflow-x: hidden !important;
+      overflow-x: clip !important;
       max-width: 100vw !important;
     }
 
     .main {
-      overflow-x: hidden;
+      /* Clip horizontal overflow without making a separate scroll container.
+         The header must stick to the document's scrolling viewport. */
+      overflow-x: clip;
     }
 
     /* Auto-responsive table containers */

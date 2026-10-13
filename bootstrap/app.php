@@ -44,6 +44,7 @@ return Application::configure(basePath: dirname(__DIR__))
         );
         $middleware->web(append: [
             SetTenantConnection::class,
+            \App\Http\Middleware\ConfigureCompanyMail::class,
             \App\Http\Middleware\EnsureCompanySubscriptionActive::class,
             \App\Http\Middleware\NormalizePhoneCountryCodes::class,
             \App\Http\Middleware\BlockTicketsInAdminWorkspace::class,

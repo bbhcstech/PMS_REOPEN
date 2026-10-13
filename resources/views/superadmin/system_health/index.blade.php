@@ -1276,9 +1276,9 @@
                 <span style="font-size: 12px; color: var(--text-subtle); margin-top: 2px; display: block;">Central Database (`pms_central`) + {{ count($tenantHealthData) }} Multi-Tenant Databases</span>
             </div>
             <div style="display: flex; gap: 16px; font-size: 12px; align-items: center;">
-                <span style="color: var(--text-muted);">Active Connections: <strong style="color: var(--text-main);">42 / 100</strong></span>
-                <span style="color: var(--text-muted);">Pool Load: <strong style="color: var(--text-main);">42%</strong></span>
-                <span style="color: var(--text-muted);">Ping Latency: <strong style="color: var(--success);">{{ $dbLatencyMs ?? 12.4 }} ms</strong></span>
+                <span style="color: var(--text-muted);">Active Connections: <strong style="color: var(--text-main);" id="dbPoolActive">{{ $dbPool['active'] !== null ? $dbPool['active'] . ' / ' . $dbPool['max'] : '—' }}</strong></span>
+                <span style="color: var(--text-muted);">Pool Load: <strong style="color: var(--text-main);" id="dbPoolLoad">{{ $dbPool['load_pct'] !== null ? $dbPool['load_pct'] . '%' : '—' }}</strong></span>
+                <span style="color: var(--text-muted);">Ping Latency: <strong style="color: var(--success);" id="dbPoolPing">{{ $dbPool['ping_ms'] !== null ? $dbPool['ping_ms'] . ' ms' : '—' }}</strong></span>
             </div>
         </div>
 
@@ -1340,7 +1340,7 @@
                 </thead>
                 <tbody>
                     @foreach($tenantHealthData as $th)
-                    <tr class="tenant-health-row" data-status="{{ $th['status'] }}" data-company="{{ strtolower($th['name']) }}" data-code="{{ strtolower($th['code']) }}" data-db="{{ strtolower($th['db_name']) }}">
+                    <tr class="tenant-health-row" data-tenant-id="{{ $th['company_id'] }}" data-status="{{ $th['status'] }}" data-company="{{ strtolower($th['name']) }}" data-code="{{ strtolower($th['code']) }}" data-db="{{ strtolower($th['db_name']) }}">
                         <!-- Checkbox -->
                         <td style="text-align: center;">
                             <input type="checkbox" class="tenant-db-checkbox" value="{{ $th['company_id'] }}" style="cursor: pointer;" />
@@ -1378,31 +1378,33 @@
 
                         <!-- Connection -->
                         <td style="text-align: center;">
-                            <span style="color: var(--success); font-weight: 700; font-size: 12px;"><i class="fas fa-link"></i> {{ $th['connection'] }}</span>
+                            <span data-health-cell="connection" title="{{ $th['error'] ?? '' }}" style="color: {{ $th['connected'] ? 'var(--success)' : '#dc2626' }}; font-weight: 700; font-size: 12px;"><i class="fas {{ $th['connected'] ? 'fa-link' : 'fa-link-slash' }}"></i> {{ $th['connection'] }}</span>
                         </td>
 
                         <!-- Latency -->
-                        <td style="text-align: center; font-family: monospace; font-weight: 700; color: var(--text-main);">
+                        <td data-health-cell="latency" style="text-align: center; font-family: monospace; font-weight: 700; color: var(--text-main);">
                             {{ $th['latency_ms'] }}
                         </td>
 
                         <!-- Storage Usage -->
-                        <td style="text-align: center; font-family: monospace; font-weight: 700; color: {{ $th['status'] === 'warning' ? '#d97706' : 'var(--text-main)' }};">
+                        <td data-health-cell="storage" title="{{ $th['storage_detail'] ?? '' }}" style="text-align: center; font-family: monospace; font-weight: 700; color: {{ $th['status'] === 'warning' ? '#d97706' : 'var(--text-main)' }};">
                             {{ $th['storage_pct'] }}
                         </td>
 
                         <!-- Health Status -->
-                        <td style="text-align: center;">
+                        <td data-health-cell="status" style="text-align: center;">
                             @if($th['status'] === 'healthy')
                                 <span class="service-status-pill status-operational"><i class="fas fa-check-circle"></i> Healthy</span>
-                            @else
+                            @elseif($th['status'] === 'warning')
                                 <span class="service-status-pill status-degraded"><i class="fas fa-exclamation-triangle"></i> Warning</span>
+                            @else
+                                <span class="service-status-pill status-down"><i class="fas fa-circle-xmark"></i> Down</span>
                             @endif
                         </td>
 
                         <!-- Last Check -->
-                        <td style="font-size: 11.5px; color: var(--text-subtle);">
-                            {{ $th['last_check'] }}
+                        <td style="font-size: 11.5px; color: var(--text-subtle); white-space: nowrap;">
+                            <span data-health-cell="last-check" data-relative-time="{{ $th['last_check_iso'] }}" title="{{ $th['last_check_at'] }}">{{ $th['last_check'] }}</span>
                         </td>
 
                         <!-- Actions -->
@@ -1414,6 +1416,10 @@
                                     data-db="{{ $th['db_name'] }}"
                                     data-latency="{{ $th['latency_ms'] }}"
                                     data-storage="{{ $th['storage_pct'] }}"
+                                    data-storage-detail="{{ $th['storage_detail'] ?? '' }}"
+                                    data-tables="{{ $th['tables'] ?? '' }}"
+                                    data-error="{{ $th['error'] ?? '' }}"
+                                    data-checked="{{ $th['last_check_at'] }}"
                                     data-status="{{ $th['status'] }}"
                                     data-logo="{{ $th['logo_url'] ?? '' }}"
                                     style="padding: 5px 10px; font-size: 12px;">
@@ -1681,6 +1687,86 @@
 
 @push('scripts')
 <script>
+// "x sec ago" that keeps ticking between checks; the exact check time stays in the tooltip.
+function healthRelativeTime(iso) {
+    const seconds = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 1000));
+    if (!Number.isFinite(seconds)) return '';
+    if (seconds < 5) return 'Just now';
+    if (seconds < 60) return `${seconds} sec ago`;
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes} min${minutes > 1 ? 's' : ''} ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    const days = Math.floor(hours / 24);
+    return `${days} day${days > 1 ? 's' : ''} ago`;
+}
+
+function refreshHealthTimes() {
+    document.querySelectorAll('[data-relative-time]').forEach(el => {
+        const text = healthRelativeTime(el.dataset.relativeTime);
+        if (text) el.textContent = text;
+    });
+}
+
+const healthStatusPills = {
+    healthy: '<span class="service-status-pill status-operational"><i class="fas fa-check-circle"></i> Healthy</span>',
+    warning: '<span class="service-status-pill status-degraded"><i class="fas fa-exclamation-triangle"></i> Warning</span>',
+    down: '<span class="service-status-pill status-down"><i class="fas fa-circle-xmark"></i> Down</span>',
+};
+
+// Apply a live check result (POST system-health/check) to the pool header and tenant rows.
+function applyTenantHealth(data) {
+    if (data.pool) {
+        const pool = data.pool;
+        const set = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
+        set('dbPoolActive', pool.active !== null ? `${pool.active} / ${pool.max}` : '—');
+        set('dbPoolLoad', pool.load_pct !== null ? `${pool.load_pct}%` : '—');
+        set('dbPoolPing', pool.ping_ms !== null ? `${pool.ping_ms} ms` : '—');
+    }
+    (data.tenants || []).forEach(t => {
+        const row = document.querySelector(`.tenant-health-row[data-tenant-id="${t.company_id}"]`);
+        if (!row) return;
+        row.dataset.status = t.status;
+        const cell = name => row.querySelector(`[data-health-cell="${name}"]`);
+        const connection = cell('connection');
+        if (connection) {
+            connection.style.color = t.connected ? 'var(--success)' : '#dc2626';
+            connection.title = t.error || '';
+            connection.innerHTML = `<i class="fas ${t.connected ? 'fa-link' : 'fa-link-slash'}"></i> ${t.connection}`;
+        }
+        if (cell('latency')) cell('latency').textContent = t.latency_ms;
+        const storage = cell('storage');
+        if (storage) {
+            storage.textContent = t.storage_pct;
+            storage.title = t.storage_detail || '';
+            storage.style.color = t.status === 'warning' ? '#d97706' : 'var(--text-main)';
+        }
+        if (cell('status')) cell('status').innerHTML = healthStatusPills[t.status] || healthStatusPills.down;
+        const lastCheck = cell('last-check');
+        if (lastCheck) {
+            lastCheck.dataset.relativeTime = t.last_check_iso;
+            lastCheck.title = t.last_check_at;
+            lastCheck.textContent = healthRelativeTime(t.last_check_iso);
+        }
+        const diag = row.querySelector('.run-db-diagnostics-btn');
+        if (diag) {
+            diag.dataset.latency = t.latency_ms;
+            diag.dataset.storage = t.storage_pct;
+            diag.dataset.storageDetail = t.storage_detail || '';
+            diag.dataset.tables = t.tables ?? '';
+            diag.dataset.error = t.error || '';
+            diag.dataset.checked = t.last_check_at;
+            diag.dataset.status = t.status;
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    refreshHealthTimes();
+    setInterval(refreshHealthTimes, 5000);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshHealthTimes(); });
+});
+
 document.addEventListener('DOMContentLoaded', function() {
     // 1. Auto Refresh Engine
     const autoRefreshSelect = document.getElementById('autoRefreshSelect');
@@ -1707,6 +1793,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.timestamp) {
                 lastCheckedText.textContent = 'Last checked: ' + data.timestamp;
             }
+            applyTenantHealth(data);
         })
         .catch(err => {
             manualRefreshBtn.disabled = false;
@@ -1928,48 +2015,55 @@ document.addEventListener('DOMContentLoaded', function() {
     const retestDiagBtn = document.getElementById('retestDiagBtn');
     const diagBtns = document.querySelectorAll('.run-db-diagnostics-btn');
 
+    let currentDiagBtn = null;
+    const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+
+    // Real results of the last live check for this tenant (no simulated steps).
+    function renderDiagnostics(btn) {
+        const d = btn.dataset;
+        const statusVal = document.getElementById('diagStatusVal');
+        const statusMap = { healthy: ['var(--success)', '● Healthy'], warning: ['#d97706', '● Warning'], down: ['#dc2626', '● Down'] };
+        const [color, label] = statusMap[d.status] || statusMap.down;
+        statusVal.style.color = color;
+        statusVal.textContent = label;
+        document.getElementById('diagLatencyVal').textContent = d.latency;
+        document.getElementById('diagStorageVal').textContent = d.storage;
+
+        const pass = text => `<strong style="color: #4ade80;">[ ${escapeHtml(text)} ]</strong>`;
+        const fail = text => `<strong style="color: #f87171;">[ ${escapeHtml(text)} ]</strong>`;
+        const warn = text => `<strong style="color: #fbbf24;">[ ${escapeHtml(text)} ]</strong>`;
+        const line = (tag, text, result) => `<div><span style="color: #38bdf8;">${tag}</span> ${escapeHtml(text)} ${result}</div>`;
+        const connected = d.status !== 'down';
+        let html = `<div><span style="color: #64748b;">Checked at ${escapeHtml(d.checked)}</span></div>`;
+        html += line('PING', `Connecting to tenant database (${d.db})...`, connected ? pass(`PASSED - ${d.latency}`) : fail('FAILED'));
+        if (connected) {
+            html += line('SCHEMA', 'Counting tenant tables...', pass(`${d.tables} tables`));
+            html += line('STORAGE', 'Measuring database size...', d.status === 'warning' && d.storage.endsWith('%') && parseInt(d.storage, 10) >= 80
+                ? warn(`HIGH - ${d.storageDetail || d.storage}`) : pass(d.storageDetail || d.storage));
+        } else if (d.error) {
+            html += `<div style="color: #f87171;">${escapeHtml(d.error)}</div>`;
+        }
+        document.getElementById('diagConsoleLog').innerHTML = html;
+    }
+
     diagBtns.forEach(btn => {
         btn.addEventListener('click', function() {
             const name = this.getAttribute('data-name');
-            const code = this.getAttribute('data-code');
-            const db = this.getAttribute('data-db');
-            const latency = this.getAttribute('data-latency');
-            const storage = this.getAttribute('data-storage');
-            const status = this.getAttribute('data-status');
             const logo = this.getAttribute('data-logo');
+            currentDiagBtn = this;
 
             document.getElementById('diagCompanyName').textContent = name;
-            document.getElementById('diagTenantCode').textContent = code;
-            document.getElementById('diagDbName').textContent = db;
-            document.getElementById('diagLatencyVal').textContent = latency;
-            document.getElementById('diagStorageVal').textContent = storage;
+            document.getElementById('diagTenantCode').textContent = this.getAttribute('data-code');
+            document.getElementById('diagDbName').textContent = this.getAttribute('data-db');
 
             const logoBox = document.getElementById('diagLogoBox');
             if (logo && logo.trim() !== '') {
-                logoBox.innerHTML = `<img src="${logo}" alt="${name}" style="width: 100%; height: 100%; object-fit: cover;" />`;
+                logoBox.innerHTML = `<img src="${escapeHtml(logo)}" alt="${escapeHtml(name)}" style="width: 100%; height: 100%; object-fit: cover;" />`;
             } else {
-                logoBox.innerHTML = name.substring(0, 2).toUpperCase();
+                logoBox.textContent = name.substring(0, 2).toUpperCase();
             }
 
-            const statusVal = document.getElementById('diagStatusVal');
-            if (status === 'healthy') {
-                statusVal.style.color = 'var(--success)';
-                statusVal.textContent = '● Healthy';
-            } else {
-                statusVal.style.color = '#d97706';
-                statusVal.textContent = '● Warning';
-            }
-
-            // Simulate diagnostic execution console output
-            const consoleLog = document.getElementById('diagConsoleLog');
-            consoleLog.innerHTML = `
-                <div><span style="color: #64748b;">[00:00.01]</span> <span style="color: #38bdf8;">PING</span> Connecting to tenant host (${db})... <strong style="color: #4ade80;">[ PASSED - ${latency} ]</strong></div>
-                <div><span style="color: #64748b;">[00:00.04]</span> <span style="color: #38bdf8;">POOL</span> Checking PDO connection pool... <strong style="color: #4ade80;">[ PASSED - Pool OK ]</strong></div>
-                <div><span style="color: #64748b;">[00:00.08]</span> <span style="color: #38bdf8;">SCHEMA</span> Validating tenant table schemas... <strong style="color: #4ade80;">[ PASSED - 48 Tables Validated ]</strong></div>
-                <div><span style="color: #64748b;">[00:00.12]</span> <span style="color: #38bdf8;">INDEX</span> Checking index & query performance... <strong style="color: #4ade80;">[ PASSED - 0 Deadlocks ]</strong></div>
-                <div><span style="color: #64748b;">[00:00.15]</span> <span style="color: #38bdf8;">STORAGE</span> Verifying storage quota (${storage})... <strong style="color: #4ade80;">[ PASSED - Normal ]</strong></div>
-            `;
-
+            renderDiagnostics(this);
             tenantDiagModal.classList.add('open');
         });
     });
@@ -1997,16 +2091,21 @@ document.addEventListener('DOMContentLoaded', function() {
     if (retestDiagBtn) {
         retestDiagBtn.addEventListener('click', function() {
             const consoleLog = document.getElementById('diagConsoleLog');
-            consoleLog.innerHTML = `<div><span style="color: #eab308;"><i class="fas fa-spinner fa-spin"></i> Running diagnostic test suite...</span></div>`;
-            setTimeout(() => {
-                consoleLog.innerHTML = `
-                    <div><span style="color: #64748b;">[00:00.01]</span> <span style="color: #38bdf8;">PING</span> Re-pinging tenant database host... <strong style="color: #4ade80;">[ PASSED ]</strong></div>
-                    <div><span style="color: #64748b;">[00:00.04]</span> <span style="color: #38bdf8;">POOL</span> Re-checking connection pool load... <strong style="color: #4ade80;">[ PASSED - Pool OK ]</strong></div>
-                    <div><span style="color: #64748b;">[00:00.08]</span> <span style="color: #38bdf8;">SCHEMA</span> Re-checking table schemas... <strong style="color: #4ade80;">[ PASSED - 48 Tables Validated ]</strong></div>
-                    <div><span style="color: #64748b;">[00:00.12]</span> <span style="color: #38bdf8;">INDEX</span> Re-verifying indexes & query plan... <strong style="color: #4ade80;">[ PASSED - 0 Deadlocks ]</strong></div>
-                    <div><span style="color: #64748b;">[00:00.15]</span> <span style="color: #38bdf8;">STORAGE</span> Re-verifying storage logs... <strong style="color: #4ade80;">[ PASSED - Capacity OK ]</strong></div>
-                `;
-            }, 600);
+            consoleLog.innerHTML = `<div><span style="color: #eab308;"><i class="fas fa-spinner fa-spin"></i> Running live database check...</span></div>`;
+            retestDiagBtn.disabled = true;
+            fetch("{{ route('super-admin.system-health.check') }}", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' }
+            })
+            .then(res => res.json())
+            .then(data => {
+                applyTenantHealth(data);
+                if (currentDiagBtn) renderDiagnostics(currentDiagBtn);
+            })
+            .catch(err => {
+                consoleLog.innerHTML = `<div style="color: #f87171;">Check failed: ${escapeHtml(err.message)}</div>`;
+            })
+            .finally(() => { retestDiagBtn.disabled = false; });
         });
     }
 });

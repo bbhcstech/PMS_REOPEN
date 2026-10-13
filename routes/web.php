@@ -157,18 +157,8 @@ Route::middleware(['auth'])->group(function () {
 
 
 
-Route::get('/smtp-test', function () {
-    try {
-        Mail::raw('SMTP Test Successful', function ($msg) {
-            $msg->to('pallabk825@gmail.com')
-                ->subject('SMTP Working - PMS');
-        });
-
-        return 'Email sent. Check your Gmail inbox or spam.';
-    } catch (\Exception $e) {
-        return 'Error: ' . $e->getMessage();
-    }
-});
+Route::get('/smtp-test', fn () => redirect()->route('admin.settings.email'))
+    ->middleware(['auth', 'role:admin']);
 
 
 Route::get('designations/next-code', [DesignationController::class, 'nextCode'])
@@ -267,25 +257,8 @@ Route::delete('timelogs/bulk-delete', [TimeLogController::class, 'bulkDelete'])
     ->name('timelogs.bulk-delete');
 
 
-Route::get('/test-email', function () {
-    $fakeUser = new User([
-        'id'    => 999,
-        'name'  => 'Test User',
-        'email' => 'pallabk825@gmail.com',
-    ]);
-
-    $inviteUrl = url('/dummy-invite-link');
-
-    try {
-        Mail::to($fakeUser->email)->send(
-            new EmployeeInvite($fakeUser, "This is a test email", $inviteUrl)
-        );
-
-        return "Email sent successfully!";
-    } catch (\Exception $e) {
-        return "Failed: " . $e->getMessage();
-    }
-});
+Route::get('/test-email', fn () => redirect()->route('admin.settings.email'))
+    ->middleware(['auth', 'role:admin']);
 
 Route::get('/debug-whos-logged', function () {
     $u = auth()->user();
@@ -804,6 +777,8 @@ Route::middleware(['auth', 'module.access'])->group(function () {
     // Employee invite acceptance is public (the invitee is not signed in): see the signed routes below.
     Route::post('employees/send-invite', [EmployeeController::class, 'sendInvite'])
         ->name('employees.sendInvite');
+    Route::post('employees/invite-link', [EmployeeController::class, 'generateInviteLink'])
+        ->name('employees.inviteLink');
     // add this
     Route::post('employees/store-department', [\App\Http\Controllers\EmployeeController::class, 'storeDepartment'])
     ->name('employees.storeDepartment');
@@ -1482,6 +1457,8 @@ Route::middleware(['auth'])->group(function () {
 
     // Admin Settings Dashboard & 20 Modules
     Route::get('/admin/settings', [SettingController::class, 'index'])->name('admin.settings.index');
+
+    require __DIR__.'/workforce-settings.php';
 
     Route::get('/admin/settings/organization-details', [OrganizationDetailsController::class, 'index'])->name('admin.settings.organization-details');
     Route::post('/admin/settings/organization-details', [OrganizationDetailsController::class, 'update'])->name('admin.settings.organization-details.update');

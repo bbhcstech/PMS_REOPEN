@@ -3,6 +3,7 @@
 @section('title', 'Designation Hierarchy')
 
 @section('content')
+@include('admin.settings.partials.workforce-navigation')
 <main id="designation-hierarchy-page" class="designation-hierarchy-page" data-live-preserve>
     <div class="container-fluid px-4">
 
@@ -18,7 +19,7 @@
                 </div>
             </div>
             <div class="btn-group">
-                <a href="{{ route('designations.index') }}" class="btn btn-light">
+                <a href="{{ \App\Support\WorkforceSettings::route('designations.index') }}" class="btn btn-light">
                     <i class="fas fa-arrow-left"></i> Back
                 </a>
                 <div class="dropdown">
@@ -29,10 +30,10 @@
                         <li><a class="dropdown-item" href="#" id="exportChartBtn"><i class="fas fa-download"></i> Export Chart</a></li>
                         <li><a class="dropdown-item" href="#" id="printChartBtn"><i class="fas fa-print"></i> Print Chart</a></li>
                         <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="{{ route('designations.index') }}"><i class="fas fa-table"></i> Switch to Table View</a></li>
+                        <li><a class="dropdown-item" href="{{ \App\Support\WorkforceSettings::route('designations.index') }}"><i class="fas fa-table"></i> Switch to Table View</a></li>
                     </ul>
                 </div>
-                <a href="{{ route('designations.create') }}" class="btn btn-primary">
+                <a href="{{ \App\Support\WorkforceSettings::route('designations.create') }}" class="btn btn-primary">
                     <i class="fas fa-plus-circle"></i> Add Designation
                 </a>
             </div>
@@ -132,7 +133,7 @@
                                         <i class="fas fa-diagram-project fa-4x"></i>
                                         <h5>No Designations Found</h5>
                                         <p>Start building your organizational structure</p>
-                                        <a href="{{ route('designations.create') }}" class="btn btn-primary">
+                                        <a href="{{ \App\Support\WorkforceSettings::route('designations.create') }}" class="btn btn-primary">
                                             <i class="fas fa-plus-circle"></i> Create First Designation
                                         </a>
                                     </div>
@@ -1988,7 +1989,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        fetch('{{ route("designations.save-hierarchy") }}', {
+        fetch('{{ \App\Support\WorkforceSettings::route("designations.save-hierarchy") }}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -2162,7 +2163,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function updateOrganizationalChart() {
-        return fetch('{{ route("designations.chart-data") }}', {
+        return fetch('{{ \App\Support\WorkforceSettings::route("designations.chart-data") }}', {
             headers: { 'Accept': 'application/json' },
             cache: 'no-store'
         })

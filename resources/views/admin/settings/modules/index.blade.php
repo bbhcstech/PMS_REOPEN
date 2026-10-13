@@ -520,6 +520,37 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
         background-color: currentColor !important;
     }
 
+    /* Keep action glyphs independent of icon fonts and shared pill styles. */
+    #moduleManagementPage .mm-table .btn-icon-action {
+        width: 38px !important;
+        min-width: 38px !important;
+        height: 38px !important;
+        border-radius: 10px !important;
+        flex-shrink: 0;
+    }
+
+    #moduleManagementPage .mm-table .btn-icon-action svg {
+        width: 19px !important;
+        height: 19px !important;
+        background: transparent !important;
+        fill: none !important;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        flex-shrink: 0;
+    }
+
+    #moduleManagementPage .mm-table .btn-icon-action:focus-visible {
+        outline: 2px solid currentColor;
+        outline-offset: 3px;
+    }
+
+    #moduleManagementPage .mm-table .btn-icon-action:disabled {
+        cursor: not-allowed !important;
+        transform: none !important;
+    }
+
     /* Toast Notification Animation */
     #moduleManagementPage .mm-toast-alert {
         --mm-notice-bg: #f0fdf4;
@@ -957,15 +988,15 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
                                     <!-- Edit Button -->
                                     <button type="button" class="btn btn-icon-action btn-label-primary" 
                                         data-bs-toggle="modal" data-bs-target="#editModuleModal{{ $module->id }}" 
-                                        title="Edit module">
-                                        <i class="bx bx-edit-alt"></i>
+                                        title="Edit module" aria-label="Edit {{ $module->name }} module">
+                                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20H4v-8M16 4l4 4M10 18l-4 1 1-4L17 5a2.12 2.12 0 0 1 3 3Z"/></svg>
                                     </button>
 
                                     <!-- Lock Action / Delete Button -->
                                     @if($module->is_core)
                                         <button type="button" class="btn btn-icon-action btn-label-secondary disabled" 
-                                            data-bs-toggle="tooltip" data-bs-placement="top" title="Lock module (System Core)" disabled>
-                                            <i class="bx bx-lock-alt"></i>
+                                            data-bs-toggle="tooltip" data-bs-placement="top" title="Lock module (System Core)" aria-label="System core module cannot be deleted" disabled>
+                                            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/></svg>
                                         </button>
                                     @else
                                         <form method="POST" action="{{ route('admin.modules.destroy', $module) }}" class="d-inline" 
@@ -973,8 +1004,8 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-icon-action btn-label-danger" 
-                                                data-bs-toggle="tooltip" data-bs-placement="top" title="Delete module">
-                                                <i class="bx bx-trash"></i>
+                                                data-bs-toggle="tooltip" data-bs-placement="top" title="Delete module" aria-label="Delete {{ $module->name }} module">
+                                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M9 6V3h6v3M5 6l1 14h12l1-14M10 10v6M14 10v6"/></svg>
                                             </button>
                                         </form>
                                     @endif

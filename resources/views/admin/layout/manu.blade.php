@@ -2404,22 +2404,22 @@
                         @if($canSeeModule('business-address-settings') && in_array(strtolower((string) auth()->user()?->role), ['admin', 'administrator', 'superadmin', 'hr', 'manager'], true))
                         <li class="menu-item {{ request()->routeIs('admin.settings.business-address*') ? 'active' : '' }}"><a href="{{ route('admin.settings.business-address.index') }}" class="menu-link"><div>Branches / Locations</div></a></li>
                         @endif
-                        @if($canSeeModule('departments'))
-                        <li class="menu-item department-sidebar-menu {{ request()->routeIs('parent-departments.*') || request()->routeIs('departments.*') ? 'active open' : '' }}">
+                        @if(\App\Services\WorkforceAccess::isAdmin(auth()->user()) && $canSeeModule('departments'))
+                        <li class="menu-item department-sidebar-menu {{ request()->routeIs('admin.settings.parent-departments.*') || request()->routeIs('admin.settings.departments.*') ? 'active open' : '' }}">
                             <a href="javascript:void(0);" class="menu-link menu-toggle">
                                 <div>Department</div>
                             </a>
                             <ul class="menu-sub">
                                 @if($canSeeModule('department-parent'))
-                                <li class="menu-item {{ request()->routeIs('parent-departments.*') ? 'active' : '' }}">
-                                    <a href="{{ route('parent-departments.index') }}" class="menu-link">
+                                <li class="menu-item {{ request()->routeIs('admin.settings.parent-departments.*') ? 'active' : '' }}">
+                                    <a href="{{ route('admin.settings.parent-departments.index') }}" class="menu-link">
                                         <div>Parent Department</div>
                                     </a>
                                 </li>
                                 @endif
                                 @if($canSeeModule('department-sub'))
-                                <li class="menu-item {{ request()->routeIs('departments.*') ? 'active' : '' }}">
-                                    <a href="{{ route('departments.index') }}" class="menu-link">
+                                <li class="menu-item {{ request()->routeIs('admin.settings.departments.*') ? 'active' : '' }}">
+                                    <a href="{{ route('admin.settings.departments.index') }}" class="menu-link">
                                         <div>Sub Department</div>
                                     </a>
                                 </li>
@@ -2427,8 +2427,8 @@
                             </ul>
                         </li>
                         @endif
-                        @if($canSeeModule('designations'))
-                        <li class="menu-item {{ request()->routeIs('designations.*') ? 'active' : '' }}"><a href="{{ route('designations.index') }}" class="menu-link"><div>Designations</div></a></li>
+                        @if(\App\Services\WorkforceAccess::isAdmin(auth()->user()) && $canSeeModule('designations'))
+                        <li class="menu-item {{ request()->routeIs('admin.settings.designations.*') ? 'active' : '' }}"><a href="{{ route('admin.settings.designations.index') }}" class="menu-link"><div>Designations</div></a></li>
                         @endif
                         @if($canSeeModule('work-schedule-settings'))
                         <li class="menu-item {{ request()->routeIs('admin.settings.work-schedule*') ? 'active' : '' }}"><a href="{{ route('admin.settings.work-schedule') }}" class="menu-link"><div>Work Schedule</div></a></li>

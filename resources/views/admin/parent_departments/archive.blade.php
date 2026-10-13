@@ -3,6 +3,7 @@
 @section('title', 'Archived Parent Departments')
 
 @section('content')
+@include('admin.settings.partials.workforce-navigation')
 <style>
     :root {
         --primary-blue: #2F6BFF;
@@ -1282,7 +1283,7 @@
                 </h1>
                 <p><i class="fas fa-info-circle me-1"></i>Restore archived parent department records whenever they need to return to the active list.</p>
             </div>
-            <a href="{{ route('parent-departments.index') }}" class="back-button">
+            <a href="{{ \App\Support\WorkforceSettings::route('parent-departments.index') }}" class="back-button">
                 <i class="fas fa-arrow-left"></i>Back to Active Parent Departments
             </a>
         </div>
@@ -1351,7 +1352,7 @@
             </div>
 
             <!-- Search Bar -->
-            <form method="GET" action="{{ route('parent-departments.archive') }}" class="archive-search-bar">
+            <form method="GET" action="{{ \App\Support\WorkforceSettings::route('parent-departments.archive') }}" class="archive-search-bar">
                 <div class="search-input">
                     <i class="fas fa-search"></i>
                     <input type="text" name="search" value="{{ request('search') }}" placeholder="Search archived parent departments...">
@@ -1365,7 +1366,7 @@
                     <i class="fas fa-search"></i>Search
                 </button>
                 @if(request()->hasAny(['search', 'per_page']))
-                    <a href="{{ route('parent-departments.archive') }}" class="reset-button">
+                    <a href="{{ \App\Support\WorkforceSettings::route('parent-departments.archive') }}" class="reset-button">
                         <i class="fas fa-rotate-left"></i>Reset
                     </a>
                 @endif
@@ -1378,7 +1379,7 @@
                         <div class="empty-icon"><i class="fas fa-archive"></i></div>
                         <h5>No Archived Parent Departments Found</h5>
                         <p>There are no parent departments in the archive at the moment.</p>
-                        <a href="{{ route('parent-departments.index') }}" class="back-button inline-back">
+                        <a href="{{ \App\Support\WorkforceSettings::route('parent-departments.index') }}" class="back-button inline-back">
                             <i class="fas fa-arrow-left"></i>Back to Active Parent Departments
                         </a>
                     </div>
@@ -1431,7 +1432,7 @@
                                     </td>
                                     <td>
                                         <div class="action-group">
-                                            <form action="{{ route('parent-departments.restore', $department->id) }}" method="POST" onsubmit="return confirm('Restore this parent department to the active list?');">
+                                            <form action="{{ \App\Support\WorkforceSettings::route('parent-departments.restore', $department->id) }}" method="POST" onsubmit="return confirm('Restore this parent department to the active list?');">
                                                 @csrf
                                                 <button type="submit" class="action-btn btn-restore" title="Restore">
                                                     <i class="fas fa-trash-restore"></i>

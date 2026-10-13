@@ -356,6 +356,66 @@
         border-radius: 6px;
     }
 
+    /* Updater Cell & Avatar Elements */
+    .lh-updater-cell {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+    }
+    .lh-updater-avatar-wrap {
+        width: 28px;
+        height: 28px;
+        position: relative;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .lh-updater-badge {
+        width: 28px !important;
+        height: 28px !important;
+        min-width: 28px !important;
+        border-radius: 50% !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 0.75rem !important;
+        font-weight: 800 !important;
+        line-height: 1 !important;
+        background: #dcfce7 !important;
+        background-color: #dcfce7 !important;
+        color: #15803d !important;
+        -webkit-text-fill-color: #15803d !important;
+        border: 1px solid rgba(21, 128, 61, 0.25) !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        text-transform: uppercase;
+        flex-shrink: 0;
+    }
+    .lh-updater-img {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 1px solid var(--lh-slate-200);
+        flex-shrink: 0;
+    }
+    .lh-updater-name {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--lh-slate-900);
+        line-height: 1.25;
+    }
+    .lh-updater-version {
+        font-size: 0.75rem;
+        color: var(--lh-slate-500);
+        font-weight: 600;
+    }
+    .lh-date-primary {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--lh-slate-700);
+    }
+
     /* Badges */
     .lh-type-badge {
         display: inline-flex;
@@ -710,6 +770,60 @@
         color: #9AA3C7 !important;
     }
 
+    /* Updater Cell & Badges in Dark Mode */
+    html[data-pms-theme="dark"] .lh-updater-badge,
+    html[data-bs-theme="dark"] .lh-updater-badge,
+    html[data-theme="dark"] .lh-updater-badge,
+    html.dark .lh-updater-badge,
+    body[data-pms-theme="dark"] .lh-updater-badge,
+    [data-pms-theme="dark"] .lh-updater-badge,
+    html[data-pms-theme="dark"] .lh-table .avatar-initial,
+    html[data-bs-theme="dark"] .lh-table .avatar-initial,
+    html[data-theme="dark"] .lh-table .avatar-initial,
+    html[data-pms-theme="dark"] .lh-table .avatar-initial.bg-label-success,
+    html[data-bs-theme="dark"] .lh-table .avatar-initial.bg-label-success,
+    html[data-theme="dark"] .lh-table .avatar-initial.bg-label-success,
+    html.dark .lh-table .avatar-initial.bg-label-success,
+    body[data-pms-theme="dark"] .lh-table .avatar-initial.bg-label-success,
+    [data-pms-theme="dark"] .lh-table .avatar-initial.bg-label-success {
+        background: rgba(16, 185, 129, 0.22) !important;
+        background-color: rgba(16, 185, 129, 0.22) !important;
+        color: #34D399 !important;
+        -webkit-text-fill-color: #34D399 !important;
+        border: 1px solid rgba(52, 211, 153, 0.45) !important;
+        box-shadow: 0 0 10px rgba(16, 185, 129, 0.25) !important;
+        font-weight: 800 !important;
+    }
+    html[data-pms-theme="dark"] .lh-updater-img,
+    html[data-bs-theme="dark"] .lh-updater-img,
+    html[data-theme="dark"] .lh-updater-img,
+    html.dark .lh-updater-img,
+    body[data-pms-theme="dark"] .lh-updater-img {
+        border-color: rgba(52, 211, 153, 0.45) !important;
+        box-shadow: 0 0 8px rgba(16, 185, 129, 0.25) !important;
+    }
+    html[data-pms-theme="dark"] .lh-updater-name,
+    html[data-bs-theme="dark"] .lh-updater-name,
+    html[data-theme="dark"] .lh-updater-name,
+    html.dark .lh-updater-name,
+    body[data-pms-theme="dark"] .lh-updater-name {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .lh-updater-version,
+    html[data-bs-theme="dark"] .lh-updater-version,
+    html[data-theme="dark"] .lh-updater-version,
+    html.dark .lh-updater-version,
+    body[data-pms-theme="dark"] .lh-updater-version {
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] .lh-date-primary,
+    html[data-bs-theme="dark"] .lh-date-primary,
+    html[data-theme="dark"] .lh-date-primary,
+    html.dark .lh-date-primary,
+    body[data-pms-theme="dark"] .lh-date-primary {
+        color: #CBD5E1 !important;
+    }
+
     /* Type Badges in Dark Mode */
     html[data-pms-theme="dark"] .lh-type-badge.company,
     html[data-bs-theme="dark"] .lh-type-badge.company {
@@ -1060,20 +1174,30 @@
                                 @endif
                             </td>
                             <td>
-                                <div class="d-flex align-items-center gap-2">
-                                    <div class="avatar avatar-xs">
-                                        <span class="avatar-initial rounded-circle bg-label-success fw-bold" style="font-size: 0.7rem;">
-                                            {{ strtoupper(substr($item->updater?->name ?: ($item->creator?->name ?: 'Admin'), 0, 1)) }}
-                                        </span>
+                                @php
+                                    $updaterUser = $item->updater ?: $item->creator;
+                                    $updaterName = $updaterUser?->name ?: 'Admin';
+                                    $updaterInitial = strtoupper(substr($updaterName, 0, 1));
+                                    $updaterPhoto = $updaterUser?->profile_image;
+                                @endphp
+                                <div class="lh-updater-cell">
+                                    <div class="lh-updater-avatar-wrap">
+                                        @if($updaterPhoto && file_exists(public_path($updaterPhoto)))
+                                            <img src="{{ asset($updaterPhoto) }}" alt="{{ $updaterName }}" class="lh-updater-img" title="{{ $updaterName }}">
+                                        @else
+                                            <span class="lh-updater-badge avatar-initial rounded-circle bg-label-success" title="{{ $updaterName }}">
+                                                {{ $updaterInitial }}
+                                            </span>
+                                        @endif
                                     </div>
                                     <div>
-                                        <div class="fw-bold text-dark" style="font-size: 0.85rem;">{{ $item->updater?->name ?: ($item->creator?->name ?: 'Admin') }}</div>
-                                        <small class="text-muted" style="font-size: 0.75rem;">v{{ $item->version ?: 1 }}</small>
+                                        <div class="lh-updater-name text-truncate" style="max-width: 140px;">{{ $updaterName }}</div>
+                                        <div class="lh-updater-version">v{{ $item->version ?: 1 }}</div>
                                     </div>
                                 </div>
                             </td>
                             <td>
-                <div style="font-size: 0.85rem; font-weight: 600; color: #334155;">{{ $item->updated_at->format('M d, Y') }}</div>
+                                <div class="lh-date-primary">{{ $item->updated_at->format('M d, Y') }}</div>
                                 <small class="text-muted" style="font-size: 0.75rem;">{{ $item->updated_at->format('h:i A') }}</small>
                             </td>
                             <td class="text-end">

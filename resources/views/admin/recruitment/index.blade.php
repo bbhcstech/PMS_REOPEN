@@ -1876,11 +1876,11 @@
                                 </button>
 
                                 @if(auth()->user()?->role === 'admin')
-                                <div class="dropdown d-inline-block">
+                                <div class="dropdown d-inline-block recruitment-actions-dropdown">
                                     <button class="btn btn-sm btn-icon btn-light recruitment-row-action" type="button" data-bs-toggle="dropdown" title="Requirement actions" aria-label="Requirement actions">
                                         <svg class="recruitment-action-symbol" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
                                     </button>
-                                    <ul class="dropdown-menu dropdown-menu-end">
+                                    <ul class="dropdown-menu dropdown-menu-end recruitment-actions-menu">
                                         <li class="dropdown-header">Admin Management</li>
                                         <li>
                                             <form method="POST" action="{{ route('recruitment.status', $req->id) }}">
@@ -2199,6 +2199,7 @@
     </div>
 </div>
 
+<script src="{{ asset('admin/assets/js/pms-recruitment-actions.js') }}"></script>
 <script>
 function updateSalaryRangeValue() {
     const currencySelect = document.getElementById('recruitment_salary_currency');

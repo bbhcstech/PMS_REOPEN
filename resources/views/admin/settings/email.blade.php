@@ -983,7 +983,7 @@
                                             <span class="input-group-text"><i class="fas fa-key"></i></span>
                                             <input type="password" name="mail_password" class="form-control" placeholder="••••••••••••" {{ $isSettingsReadOnly ? 'disabled' : '' }}>
                                         </div>
-                                        <small class="text-muted mt-1 d-block">{{ $isSettingsReadOnly ? 'Encrypted and stored securely.' : 'Leave empty to keep existing password unchanged.' }}</small>
+                                        <small class="text-muted mt-1 d-block">{{ $settings['has_mail_password'] ? 'A password is saved. Leave empty to keep it unchanged.' : 'Add the SMTP password or app password supplied by your email provider.' }}</small>
                                     </div>
 
                                     <!-- From Address -->

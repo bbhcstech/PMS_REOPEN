@@ -315,6 +315,11 @@
         box-shadow: 0 20px 40px rgba(47, 107, 255, .12);
     }
 
+    /* Shared stat styles painted a solid white square behind these glyphs. */
+    .calendar-page .stats-grid .stat-card:not(:first-child) .stat-icon > i {
+        background: transparent !important;
+    }
+
     .stat-icon {
         width: 55px;
         height: 55px;

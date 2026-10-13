@@ -103,6 +103,26 @@
         display: flex;
         align-items: center;
         gap: 1.25rem;
+        flex: 1 1 480px;
+        min-width: 0;
+    }
+
+    .performance-settings-page .header-title {
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+
+    /* Keep the chart clearly visible against its blue tile in both themes. */
+    .pms-settings-page.performance-settings-page .branches-header .header-left-box .header-icon-badge svg {
+        width: 28px;
+        height: 28px;
+        color: #fff !important;
+        background: transparent !important;
+        fill: none !important;
+        stroke: #fff !important;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
     }
 
     .header-icon-badge {
@@ -1113,7 +1133,7 @@
             <div class="branches-header">
                 <div class="header-left-box">
                     <div class="header-icon-badge">
-                        <i class="fas fa-chart-line"></i>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18M7 14l5-5 4 3 5-7"/></svg>
                     </div>
                     <div class="header-title">
                         <h1>Performance & Appraisal Settings</h1>

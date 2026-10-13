@@ -333,7 +333,7 @@ class DesignationController extends Controller
             throw $e;
         }
 
-        return redirect()->route('designations.index', ['t' => time()])
+        return redirect()->route(\App\Support\WorkforceSettings::name('designations.index'), ['t' => time()])
             ->with('success', 'Designation added successfully.');
     }
 
@@ -464,7 +464,7 @@ class DesignationController extends Controller
             throw $e;
         }
 
-        return redirect()->route('designations.index', ['t' => time()])
+        return redirect()->route(\App\Support\WorkforceSettings::name('designations.index'), ['t' => time()])
             ->with('success', 'Designation updated successfully.')
             ->with('updated_id', $designation->id);
     }
@@ -560,7 +560,7 @@ class DesignationController extends Controller
         $hasParentId = Schema::hasColumn('designations', 'parent_id');
 
         if ($hasArchivedAt && $designation->archived_at) {
-            return redirect()->route('designations.index')
+            return redirect()->route(\App\Support\WorkforceSettings::name('designations.index'))
                 ->with('error', 'Designation is already archived.');
         }
 
@@ -579,7 +579,7 @@ class DesignationController extends Controller
             $designation->forceFill($updateData)->save();
         });
 
-        return redirect()->route('designations.index')
+        return redirect()->route(\App\Support\WorkforceSettings::name('designations.index'))
             ->with('success', 'Designation archived successfully.');
     }
 
@@ -637,7 +637,7 @@ class DesignationController extends Controller
                     return back()->with('error', 'This designation cannot be deleted while employees or subordinate designations are linked to it.');
                 }
                 $designation->delete();
-                return redirect()->route('designations.archive')->with('success', 'Archived designation permanently deleted.');
+                return redirect()->route(\App\Support\WorkforceSettings::name('designations.archive'))->with('success', 'Archived designation permanently deleted.');
             });
         } catch (QueryException $e) {
             if (($e->errorInfo[0] ?? null) !== '23000') {
@@ -656,7 +656,7 @@ class DesignationController extends Controller
             'last_updated_by' => Auth::id(),
         ])->save();
 
-        return redirect()->route('designations.archive')
+        return redirect()->route(\App\Support\WorkforceSettings::name('designations.archive'))
             ->with('success', 'Designation restored successfully.');
     }
 
@@ -771,7 +771,7 @@ class DesignationController extends Controller
             }
         });
 
-        return redirect()->route('designations.index')
+        return redirect()->route(\App\Support\WorkforceSettings::name('designations.index'))
             ->with('success', $designations->count() . ' designation(s) archived successfully.');
     }
 

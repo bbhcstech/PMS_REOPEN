@@ -291,12 +291,13 @@
                                 <small>{{ optional($leave->end_date)->format('d M Y') }}</small>
                             </td>
                             <td>{{ number_format((float) $leave->total_days, 1) }}</td>
-                            <td>
+                            <td class="pay-cell">
+                                <div class="pay-stack">
                                 @if($leave->status === 'rejected')
                                     <span class="pay-badge rejected">N/A</span>
                                     <small class="text-muted">Rejected</small>
                                 @elseif($leave->status === 'pending')
-                                    <span class="pay-badge pending text-muted">Pending</span>
+                                    <span class="pay-badge pending">Pending</span>
                                 @else
                                     @php
                                         $paidDays = (float) ($leave->paid_days ?? 0);
@@ -310,9 +311,10 @@
                                         @endif
                                     </span>
                                     @if($paidDays > 0 || $unpaidDays > 0)
-                                        <small>{{ number_format($paidDays, 1) }} paid / {{ number_format($unpaidDays, 1) }} unpaid</small>
+                                        <small class="pay-split"><span>{{ number_format($paidDays, 1) }} paid</span><span>{{ number_format($unpaidDays, 1) }} unpaid</span></small>
                                     @endif
                                 @endif
+                                </div>
                             </td>
                             <td>
                                 @if($isAdmin)
@@ -1322,6 +1324,34 @@
         border: 1px solid transparent;
     }
 
+    /* Badge and day split stack with a gap, so the badge never sits on top of the wrapped text. */
+    .leave-table td.pay-cell {
+        min-width: 170px;
+    }
+    .leave-table td .pay-stack {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    .leave-table td .pay-stack .pay-badge {
+        line-height: 1.2;
+        white-space: nowrap;
+    }
+    .leave-table td .pay-split {
+        display: inline-flex;
+        align-items: center;
+        flex-wrap: nowrap;
+        gap: 6px;
+        white-space: nowrap;
+        line-height: 1.3;
+    }
+    .leave-table td .pay-split span + span::before {
+        content: "·";
+        margin-right: 6px;
+        opacity: 0.7;
+    }
+
     .leave-table td .pay-badge.paid {
         background: #E0E7FF;
         color: #2F6BFF;
@@ -2289,9 +2319,17 @@
     }
 
     html[data-pms-theme="dark"] .leave-table td .pay-badge.unpaid {
-        background: #1a1a0d;
-        color: #fbbf24;
+        background: rgba(249, 115, 22, 0.16);
+        color: #fdba74;
+        border-color: rgba(249, 115, 22, 0.35);
     }
+
+    /* Theme-wide dark text-fill rules turned every pay badge white; keep each variant's own colour. */
+    html[data-pms-theme="dark"] .leave-table td .pay-badge.paid { color: #60A5FA !important; -webkit-text-fill-color: #60A5FA !important; }
+    html[data-pms-theme="dark"] .leave-table td .pay-badge.unpaid { color: #fdba74 !important; -webkit-text-fill-color: #fdba74 !important; }
+    html[data-pms-theme="dark"] .leave-table td .pay-badge.rejected { color: #f87171 !important; -webkit-text-fill-color: #f87171 !important; }
+    html[data-pms-theme="dark"] .leave-table td .pay-badge.pending { color: #94a3b8 !important; -webkit-text-fill-color: #94a3b8 !important; }
+    html[data-pms-theme="dark"] .leave-table td .pay-split { color: #a5b4ce; -webkit-text-fill-color: #a5b4ce !important; }
 
     html[data-pms-theme="dark"] .leave-table td .pay-badge.rejected {
         background: rgba(239, 68, 68, 0.16);

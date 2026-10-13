@@ -4,6 +4,7 @@
 @section('title', 'Designations')
 
 @section('content')
+@include('admin.settings.partials.workforce-navigation')
 <div class="designation-page">
     <!-- Breadcrumb -->
     <div class="breadcrumb" data-live-key="designation-breadcrumb">
@@ -22,10 +23,10 @@
             </div>
         </div>
         <div class="btn-group">
-            <a href="{{ route('designations.hierarchy') }}" class="btn btn-light">
+            <a href="{{ \App\Support\WorkforceSettings::route('designations.hierarchy') }}" class="btn btn-light">
                 <i class="fas fa-project-diagram"></i> Hierarchy
             </a>
-            <a href="{{ route('designations.archive') }}" class="btn btn-light">
+            <a href="{{ \App\Support\WorkforceSettings::route('designations.archive') }}" class="btn btn-light">
                 <i class="fas fa-box-archive"></i> Archived
                 @if(($archivedCount ?? 0) > 0)
                     <span class="archive-count-badge">{{ $archivedCount }}</span>
@@ -44,7 +45,7 @@
                     <li><button type="button" class="dropdown-item" onclick="printTable()"><i class="fas fa-print text-info"></i> Print</button></li>
                 </ul>
             </div>
-            <a href="{{ route('designations.create') }}" class="btn btn-primary">
+            <a href="{{ \App\Support\WorkforceSettings::route('designations.create') }}" class="btn btn-primary">
                 <i class="fas fa-plus-circle"></i> Add New
             </a>
         </div>
@@ -60,7 +61,7 @@
         <section class="card p-3 mb-4" aria-labelledby="designation-level-settings" data-live-key="designation-level-settings">
             <h3 id="designation-level-settings">Designation level settings</h3>
             <p>Companies start with levels L0–L6. When an admin adds a designation at the maximum level, the next level becomes available automatically for this company. You can also change the limit here.</p>
-            <form method="POST" action="{{ route('designations.level-settings') }}" class="d-flex align-items-end gap-3 flex-wrap">
+            <form method="POST" action="{{ \App\Support\WorkforceSettings::route('designations.level-settings') }}" class="d-flex align-items-end gap-3 flex-wrap">
                 @csrf
                 @method('PUT')
                 <div>
@@ -265,18 +266,18 @@
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end">
                                     <li>
-                                        <a class="dropdown-item" href="{{ route('designations.show', $designation->id) }}">
+                                        <a class="dropdown-item" href="{{ \App\Support\WorkforceSettings::route('designations.show', $designation->id) }}">
                                             <i class="fas fa-eye"></i> View Details
                                         </a>
                                     </li>
                                     <li>
-                                        <a class="dropdown-item" href="{{ route('designations.edit', $designation->id) }}">
+                                        <a class="dropdown-item" href="{{ \App\Support\WorkforceSettings::route('designations.edit', $designation->id) }}">
                                             <i class="fas fa-pen"></i> Edit Designation
                                         </a>
                                     </li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li>
-                                        <form action="{{ route('designations.archive.action', $designation->id) }}" method="POST" class="d-inline delete-form" onsubmit="return confirm('Archive this designation? It will move to Archived Designations and can be restored later.')">
+                                        <form action="{{ \App\Support\WorkforceSettings::route('designations.archive.action', $designation->id) }}" method="POST" class="d-inline delete-form" onsubmit="return confirm('Archive this designation? It will move to Archived Designations and can be restored later.')">
                                             @csrf
                                             <button type="submit" class="dropdown-item text-warning">
                                                 <i class="fas fa-box-archive"></i> Archive Designation
@@ -294,7 +295,7 @@
                                 <i class="fas fa-briefcase fa-4x"></i>
                                 <h5>No Designations Found</h5>
                                 <p>Get started by creating your first designation</p>
-                                <a href="{{ route('designations.create') }}" class="btn btn-primary">
+                                <a href="{{ \App\Support\WorkforceSettings::route('designations.create') }}" class="btn btn-primary">
                                     <i class="fas fa-plus-circle"></i> Create Designation
                                 </a>
                             </div>
@@ -902,6 +903,14 @@
         background: transparent !important;
         color: inherit !important;
         -webkit-text-fill-color: inherit !important;
+    }
+
+    /* Override shared light-theme green text on this page's blue export button,
+       including hover/open states and the SVG icons that use currentColor. */
+    html .designation-page .table-card .designation-export-tools .pms-table-export button.pms-table-export__toggle,
+    html .designation-page .table-card .designation-export-tools .pms-table-export button.pms-table-export__toggle * {
+        color: #fff !important;
+        -webkit-text-fill-color: #fff !important;
     }
 
     .designation-page .designation-export-tools .pms-table-export__toggle:hover {
@@ -2658,7 +2667,7 @@ $(document).ready(function() {
         if (confirm(`Archive ${ids.length} designation(s)?\n\nThey will move to Archived Designations and can be restored later.`)) {
             var form = document.createElement('form');
             form.method = 'POST';
-            form.action = '{{ route("designations.bulk-archive") }}';
+            form.action = '{{ \App\Support\WorkforceSettings::route("designations.bulk-archive") }}';
             form.style.display = 'none';
 
             var csrfToken = document.createElement('input');
@@ -2716,7 +2725,7 @@ $(document).ready(function() {
         if (!$(e.target).closest('input, a, button, .dropdown, .form-check, .action-btn, .dropdown-menu, .btn, .level').length) {
             var designationId = $(this).find('.select-item').val();
             if (designationId) {
-                window.location.href = "{{ route('designations.show', '') }}/" + designationId;
+                window.location.href = "{{ \App\Support\WorkforceSettings::route('designations.show', '') }}/" + designationId;
             }
         }
     });
@@ -2733,14 +2742,6 @@ $(document).ready(function() {
         };
     }
 });
-
-@if(session('success'))
-    $(document).ready(function() {
-        if (typeof toastr !== 'undefined') {
-            toastr.success('{{ session('success') }}');
-        }
-    });
-@endif
 
 @if(session('error'))
     $(document).ready(function() {

@@ -7,6 +7,48 @@ use Illuminate\Support\Collection;
 
 class AttendanceCalendar
 {
+    /**
+     * Calendar days for one employee between two dates, using the same records, holidays,
+     * approved leaves and working days as the My Attendance calendar.
+     */
+    public function daysForUser(\App\Models\User $user, Carbon $from, Carbon $to): Collection
+    {
+        $from = $from->copy()->startOfDay();
+        $to = $to->copy()->startOfDay();
+        $first = $from->copy()->startOfMonth();
+        $last = $to->copy()->endOfMonth();
+        $tenant = \Illuminate\Support\Facades\Schema::connection('tenant');
+
+        $records = \App\Models\Attendance::where('user_id', $user->id)->whereNull('archived_at')
+            ->whereBetween('date', [$first->toDateString(), $last->toDateString()])->orderBy('id')->get();
+
+        $holidayQuery = \App\Models\Holiday::whereBetween('date', [$first->toDateString(), $last->toDateString()]);
+        if ($tenant->hasColumn('holidays', 'archived_at')) $holidayQuery->whereNull('archived_at');
+        if ($tenant->hasColumn('holidays', 'company_id')) {
+            $holidayQuery->where(fn ($query) => $query->where('company_id', $user->company_id)->orWhereNull('company_id'));
+        }
+        $holidays = $holidayQuery->get();
+
+        $leaveQuery = \App\Models\Leave::where('user_id', $user->id)->where('status', 'approved');
+        if ($tenant->hasColumn('leaves', 'archived_at')) $leaveQuery->whereNull('archived_at');
+        $leaveQuery->where(function ($query) use ($first, $last, $tenant) {
+            $query->whereBetween('date', [$first->toDateString(), $last->toDateString()]);
+            if ($tenant->hasColumn('leaves', 'start_date')) {
+                $query->orWhere(fn ($range) => $range->whereDate('start_date', '<=', $last)->whereDate('end_date', '>=', $first));
+            }
+        });
+        $leaves = $leaveQuery->get();
+
+        $workingDays = \App\Models\AppSetting::getCompanyWorkingDays();
+        $days = collect();
+        for ($month = $first->copy(); $month->lte($to); $month->addMonthNoOverflow()->startOfMonth()) {
+            $calendar = $this->build($month->copy(), $records, $holidays, $leaves, $user->employeeDetail, $workingDays);
+            $days = $days->merge(array_filter($calendar['days'], fn ($day) => $day['date']->betweenIncluded($from, $to)));
+        }
+
+        return $days->values();
+    }
+
     public function build(Carbon $month, Collection $records, Collection $holidays, Collection $leaves, $employeeDetail, array $workingDays): array
     {
         $sessions = $records->groupBy(fn ($record) => Carbon::parse($record->date)->toDateString());

@@ -1760,20 +1760,12 @@
                 <div class="form-section-subtitle">
                     <i class="bx bx-receipt"></i> Statutory Registration &amp; Prefixes
                 </div>
-                <div class="form-grid-3" style="margin-bottom: 18px;">
+                <div class="form-grid-layout" style="margin-bottom: 18px;">
                     <div class="form-field-group">
                         <label class="form-field-label" for="company_gst_edit">GST Number</label>
                         <div class="input-with-icon-wrapper">
                             <i class="bx bx-file input-icon"></i>
                             <input type="text" name="gst_number" id="company_gst_edit" class="form-control-custom" value="{{ old('gst_number', $company->gst_number) }}" placeholder="e.g. 29ABCDE1234F1Z5" />
-                        </div>
-                    </div>
-
-                    <div class="form-field-group">
-                        <label class="form-field-label" for="company_pan_edit">PAN Number</label>
-                        <div class="input-with-icon-wrapper">
-                            <i class="bx bx-id-card input-icon"></i>
-                            <input type="text" name="pan_number" id="company_pan_edit" class="form-control-custom" value="{{ old('pan_number', $company->pan_number) }}" placeholder="e.g. ABCDE1234F" />
                         </div>
                     </div>
 

@@ -503,10 +503,14 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
             $startOfWeek = Carbon::now($employeeTimezone)->startOfWeek(); // Monday
             $endOfWeek = Carbon::now($employeeTimezone)->endOfWeek();     // Sunday
 
-            $weeklyLogs = Attendance::where('user_id', $user->id)
-                ->whereBetween('date', [$startOfWeek->toDateString(), $endOfWeek->toDateString()])
-                ->get()
-                ->keyBy('date');
+            // Same source and rules as My Attendance, so dashboard charts never disagree with it.
+            try {
+                \App\Services\AttendanceClockPolicy::markMissedClockIns((int) $user->company_id);
+            } catch (\Throwable $e) {
+                report($e);
+            }
+            $weekDays = app(\App\Services\AttendanceCalendar::class)->daysForUser($user, $startOfWeek, $endOfWeek);
+            $weekAttendance = $this->summarizeEmployeeWeek($weekDays);
 
             $openTasksCount = Task::where('status', '!=', 'completed')->count();
             $projectsCount = Project::count();
@@ -654,7 +658,8 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
             'myProjects',
             'attendance',
             'attendancePolicy',
-            'weeklyLogs',
+            'weekDays',
+            'weekAttendance',
             'openTasksCount',
             'projectsCount',
             'openTicketsCount',
@@ -807,6 +812,43 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
 }
 
 
+
+    /**
+     * Weekly chart data for the employee dashboard from My Attendance calendar days.
+     * Each day lands in exactly one pie slice; holidays, days off and upcoming days are not counted.
+     */
+    private function summarizeEmployeeWeek($weekDays): array
+    {
+        $summary = ['Present' => 0, 'Absent' => 0, 'On Leave' => 0, 'Work From Home' => 0, 'Half Day' => 0];
+        $labels = [];
+        $hours = [];
+        $scheduled = 0;
+        $attended = 0.0;
+        foreach ($weekDays as $day) {
+            $labels[] = $day['date']->format('D');
+            $hours[] = round($day['seconds'] / 3600, 2);
+            $slice = match ($day['status']) {
+                'present', 'late' => $day['wfh'] ? 'Work From Home' : 'Present',
+                'half_day' => 'Half Day',
+                'leave', 'unpaid_leave' => 'On Leave',
+                'absent' => 'Absent',
+                default => null,
+            };
+            if ($slice) $summary[$slice]++;
+            if (! $day['date']->isFuture() && ! in_array($day['status'], ['holiday', 'day_off', 'not_joined'], true)) {
+                $scheduled++;
+                $attended += in_array($day['status'], ['present', 'late'], true) ? 1 : ($day['status'] === 'half_day' ? 0.5 : 0);
+            }
+        }
+
+        return [
+            'labels' => $labels,
+            'hours' => $hours,
+            'summary' => $summary,
+            'totalHours' => round(array_sum($hours), 1),
+            'percent' => $scheduled > 0 ? (int) round(100 * $attended / $scheduled) : 0,
+        ];
+    }
 
     /**
      * Resolve employee's timezone with respect to location/browser, defaulting to India (Asia/Kolkata).

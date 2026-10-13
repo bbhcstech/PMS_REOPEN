@@ -3,6 +3,7 @@
 @section('title', 'View Designation')
 
 @section('content')
+@include('admin.settings.partials.workforce-navigation')
 
 <div class="designation-view-page">
     <!-- Breadcrumb -->
@@ -22,10 +23,10 @@
             </div>
         </div>
         <div class="btn-group">
-            <a href="{{ route('designations.index') }}" class="btn btn-light">
+            <a href="{{ \App\Support\WorkforceSettings::route('designations.index') }}" class="btn btn-light">
                 <i class="fas fa-arrow-left"></i> Back to List
             </a>
-            <a href="{{ route('designations.edit', $designation->id) }}" class="btn btn-primary">
+            <a href="{{ \App\Support\WorkforceSettings::route('designations.edit', $designation->id) }}" class="btn btn-primary">
                 <i class="fas fa-pen"></i> Edit Designation
             </a>
         </div>
@@ -80,7 +81,7 @@
                     <label>Parent Designation</label>
                     <div class="field-value">
                         @if($designation->parent)
-                            <a href="{{ route('designations.show', $designation->parent->id) }}" class="parent-link">
+                            <a href="{{ \App\Support\WorkforceSettings::route('designations.show', $designation->parent->id) }}" class="parent-link">
                                 <i class="fas fa-link"></i>
                                 {{ $designation->parent->name }}
                             </a>
@@ -179,10 +180,10 @@
                 <span>Updated: {{ $designation->updated_at->format('d M Y') }}</span>
             </div>
             <div class="footer-actions">
-                <a href="{{ route('designations.index') }}" class="btn btn-secondary">
+                <a href="{{ \App\Support\WorkforceSettings::route('designations.index') }}" class="btn btn-secondary">
                     <i class="fas fa-arrow-left"></i> Back
                 </a>
-                <a href="{{ route('designations.edit', $designation->id) }}" class="btn btn-primary">
+                <a href="{{ \App\Support\WorkforceSettings::route('designations.edit', $designation->id) }}" class="btn btn-primary">
                     <i class="fas fa-edit"></i> Edit Designation
                 </a>
             </div>
@@ -212,7 +213,7 @@
                 <span class="related-label">Parent:</span>
                 <span class="related-value">
                     @if($designation->parent)
-                        <a href="{{ route('designations.show', $designation->parent->id) }}" class="parent-link">
+                        <a href="{{ \App\Support\WorkforceSettings::route('designations.show', $designation->parent->id) }}" class="parent-link">
                             <i class="fas fa-link"></i> {{ $designation->parent->name }}
                         </a>
                     @elseif($designation->level !== null && $designation->level <= 1)

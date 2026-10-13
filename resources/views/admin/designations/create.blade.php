@@ -3,6 +3,7 @@
 @section('title', isset($designation) ? 'Edit Designation' : 'Add Designation')
 
 @section('content')
+@include('admin.settings.partials.workforce-navigation')
 
 <div class="designation-form-page {{ isset($designation) ? 'designation-edit-mode' : 'designation-add-mode' }}">
     <!-- Breadcrumb -->
@@ -23,7 +24,7 @@
             </div>
         </div>
         <div class="btn-group">
-            <a href="{{ route('designations.index') }}" class="btn btn-light">
+            <a href="{{ \App\Support\WorkforceSettings::route('designations.index') }}" class="btn btn-light">
                 <i class="fas fa-arrow-left"></i> Back to List
             </a>
         </div>
@@ -70,7 +71,7 @@
         @endif
 
         <form method="POST" class="form-content"
-              action="{{ isset($designation) ? route('designations.update', $designation) : route('designations.store') }}">
+              action="{{ isset($designation) ? \App\Support\WorkforceSettings::route('designations.update', $designation) : \App\Support\WorkforceSettings::route('designations.store') }}">
             @csrf
             @if(isset($designation))
                 @method('PUT')
@@ -240,7 +241,7 @@
 
             <!-- Form Actions -->
             <div class="form-actions">
-                <a href="{{ route('designations.index') }}" class="btn btn-secondary">
+                <a href="{{ \App\Support\WorkforceSettings::route('designations.index') }}" class="btn btn-secondary">
                     <i class="fas fa-times"></i> Cancel
                 </a>
                 <button type="submit" class="btn btn-primary">

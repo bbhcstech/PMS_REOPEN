@@ -3,6 +3,7 @@
 @section('title', 'Archived Sub Departments')
 
 @section('content')
+@include('admin.settings.partials.workforce-navigation')
 <style>
     html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark) .sub-archive-page {
         min-height: calc(100vh - 100px);
@@ -786,7 +787,7 @@
                 </h1>
                 <p><i class="fas fa-info-circle me-1"></i>Restore archived sub department records whenever they need to return to the active list.</p>
             </div>
-            <a href="{{ route('departments.index') }}" class="back-button">
+            <a href="{{ \App\Support\WorkforceSettings::route('departments.index') }}" class="back-button">
                 <i class="fas fa-arrow-left"></i>Back to Active Sub Departments
             </a>
         </div>
@@ -837,7 +838,7 @@
         </div>
 
         <div class="search-card">
-            <form method="GET" action="{{ route('departments.archive') }}" class="archive-search-bar">
+            <form method="GET" action="{{ \App\Support\WorkforceSettings::route('departments.archive') }}" class="archive-search-bar">
                 <div class="search-field">
                     <i class="fas fa-search"></i>
                     <input type="text" name="search" value="{{ request('search') }}" placeholder="Search archived sub departments...">
@@ -846,7 +847,7 @@
                     <i class="fas fa-filter"></i>Search
                 </button>
                 @if(request('search'))
-                    <a href="{{ route('departments.archive') }}" class="reset-button">
+                    <a href="{{ \App\Support\WorkforceSettings::route('departments.archive') }}" class="reset-button">
                         <i class="fas fa-times"></i>Reset
                     </a>
                 @endif
@@ -865,7 +866,7 @@
                         <div class="empty-icon"><i class="fas fa-archive"></i></div>
                         <h5 class="fw-bold">No Archived Sub Departments Found</h5>
                         <p class="text-muted">There are no sub departments in the archive at the moment.</p>
-                        <a href="{{ route('departments.index') }}" class="back-button mt-3">
+                        <a href="{{ \App\Support\WorkforceSettings::route('departments.index') }}" class="back-button mt-3">
                             <i class="fas fa-arrow-left"></i>Back to Active Sub Departments
                         </a>
                     </div>
@@ -907,10 +908,10 @@
                                     </td>
                                     <td>
                                         <div class="action-group">
-                                            <a href="{{ route('departments.show', $department->id) }}" class="action-btn btn-view" title="View">
+                                            <a href="{{ \App\Support\WorkforceSettings::route('departments.show', $department->id) }}" class="action-btn btn-view" title="View">
                                                 <i class="fas fa-eye"></i>
                                             </a>
-                                            <form action="{{ route('departments.restore', $department->id) }}" method="POST" onsubmit="return confirm('Restore this sub department to the active list?');">
+                                            <form action="{{ \App\Support\WorkforceSettings::route('departments.restore', $department->id) }}" method="POST" onsubmit="return confirm('Restore this sub department to the active list?');">
                                                 @csrf
                                                 <button type="submit" class="action-btn btn-restore" title="Restore">
                                                     <i class="fas fa-trash-restore"></i>

@@ -895,9 +895,10 @@
             <span class="card-label">Last Migration Run</span>
             <div class="icon-pill icon-pill-lastrun" style="background: #f5f3ff; color: #7c3aed;"><i class="fas fa-calendar-check"></i></div>
         </div>
-        <div class="metric-val" style="font-size: 20px; margin-top: 16px;">{{ $kpi['last_run'] }}</div>
+        <div class="metric-val" style="font-size: 20px; margin-top: 16px;"
+             @if(!empty($kpi['last_run_iso'])) data-relative-time="{{ $kpi['last_run_iso'] }}" title="{{ $kpi['last_run_at'] }}" @endif>{{ $kpi['last_run'] }}</div>
         <div class="metric-foot muted">
-            Global schema batch
+            {{ !empty($kpi['last_run_at']) ? $kpi['last_run_at'] : 'No migration run recorded yet' }}
         </div>
     </div>
 </div>
@@ -1036,7 +1037,7 @@
 
                     <!-- LAST MIGRATION -->
                     <td style="padding: 12px 14px; font-size: 12px; color: var(--text-muted); white-space: nowrap;">
-                        <i class="far fa-clock" style="margin-right: 4px; color: var(--text-subtle);"></i> {{ $item['last_migration'] }}
+                        <i class="far fa-clock" style="margin-right: 4px; color: var(--text-subtle);"></i> <span @if(!empty($item['last_migration_iso'])) data-relative-title="{{ $item['last_migration_iso'] }}" @endif>{{ $item['last_migration'] }}</span>
                     </td>
 
                     <!-- EXECUTION TIME -->
@@ -1272,11 +1273,7 @@
         </div>
 
         <div class="terminal-window" id="terminalLogsContent">
-            <div>10:32:01 <span class="log-success">✓ Database connection established</span></div>
-            <div>10:32:02 <span class="log-success">✓ Backup verification completed</span></div>
-            <div>10:32:03 <span class="log-info">✓ Migration process started</span></div>
-            <div>10:32:04 <span class="log-success">✓ Schema tables verified up to date</span></div>
-            <div>10:32:05 <span class="log-success">✓ Verification completed successfully</span></div>
+            <div><span class="log-info">Loading logs…</span></div>
         </div>
 
         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 18px;">
@@ -1377,6 +1374,40 @@
 @push('scripts')
 <script src="{{ asset('admin/assets/js/pms-migration-table.js') }}?v={{ filemtime(public_path('admin/assets/js/pms-migration-table.js')) }}" defer></script>
 <script>
+// Real wall-clock time for the live migration console.
+function migrationClock() {
+    return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+}
+
+// "x min ago" text that keeps ticking without a reload; exact time stays in the tooltip.
+function migrationRelativeTime(iso) {
+    const seconds = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 1000));
+    if (!Number.isFinite(seconds)) return '';
+    if (seconds < 45) return 'Just now';
+    const units = [['year', 31536000], ['month', 2592000], ['week', 604800], ['day', 86400], ['hour', 3600], ['minute', 60]];
+    for (const [unit, size] of units) {
+        const value = Math.floor(seconds / size);
+        if (value >= 1) return `${value} ${unit === 'minute' ? 'min' : unit}${value > 1 && unit !== 'minute' ? 's' : ''} ago`;
+    }
+    return 'Just now';
+}
+
+function refreshMigrationTimes() {
+    document.querySelectorAll('[data-relative-time]').forEach(el => {
+        const text = migrationRelativeTime(el.dataset.relativeTime);
+        if (text) el.textContent = text;
+    });
+    document.querySelectorAll('[data-relative-title]').forEach(el => {
+        el.title = migrationRelativeTime(el.dataset.relativeTitle);
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    refreshMigrationTimes();
+    setInterval(refreshMigrationTimes, 30000);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshMigrationTimes(); });
+});
+
 document.addEventListener('DOMContentLoaded', function() {
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
@@ -1534,9 +1565,9 @@ document.addEventListener('DOMContentLoaded', function() {
             confirmSingleMigrateBtn.style.display = 'none';
 
             progressConsole.innerHTML = `
-                <div>[10:32:01] <span class="log-info">Connecting to tenant database...</span></div>
-                <div>[10:32:02] <span class="log-info">Verifying database structure &amp; backup checkpoint...</span></div>
-                <div>[10:32:03] <span class="log-warn">Executing Artisan migrate command...</span></div>
+                <div>[${migrationClock()}] <span class="log-info">Connecting to tenant database...</span></div>
+                <div>[${migrationClock()}] <span class="log-info">Verifying database structure &amp; backup checkpoint...</span></div>
+                <div>[${migrationClock()}] <span class="log-warn">Executing Artisan migrate command...</span></div>
             `;
 
             fetch('{{ route("super-admin.migrations.run") }}', {
@@ -1552,8 +1583,8 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 if (data.success) {
                     progressConsole.innerHTML += `
-                        <div>[10:32:04] <span class="log-success">✔ ${data.message}</span></div>
-                        <div>[10:32:05] <span class="log-success">✔ Schema tables updated to ${data.current_version} in ${data.execution_time}</span></div>
+                        <div>[${migrationClock()}] <span class="log-success">✔ ${data.message}</span></div>
+                        <div>[${migrationClock()}] <span class="log-success">✔ Schema tables updated to ${data.current_version} in ${data.execution_time}</span></div>
                     `;
                     setTimeout(() => {
                         singleMigrateModal.classList.remove('open');
@@ -1561,14 +1592,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     }, 1200);
                 } else {
                     progressConsole.innerHTML += `
-                        <div>[10:32:04] <span class="log-error">✖ ${data.message}</span></div>
+                        <div>[${migrationClock()}] <span class="log-error">✖ ${data.message}</span></div>
                         <div class="log-error">${data.output || ''}</div>
                     `;
                 }
             })
             .catch(err => {
                 progressConsole.innerHTML += `
-                    <div>[10:32:04] <span class="log-error">✖ Request failed: ${err.message}</span></div>
+                    <div>[${migrationClock()}] <span class="log-error">✖ Request failed: ${err.message}</span></div>
                 `;
             });
         });
@@ -1675,7 +1706,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         terminal.appendChild(line);
                     });
                 } else {
-                    terminal.innerHTML = '<div>10:32:01 <span class="log-info">No execution errors recorded. All schema tables compliant.</span></div>';
+                    terminal.innerHTML = '<div><span class="log-info">No migration runs recorded for this tenant yet.</span></div>';
                 }
 
                 migrationLogsModal.classList.add('open');

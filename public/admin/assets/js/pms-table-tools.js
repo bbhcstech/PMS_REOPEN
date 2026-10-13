@@ -32,6 +32,8 @@
 
   function isEligible(table) {
     if (!table || table.tagName !== 'TABLE') return false;
+    // FullCalendar tables are layout grids, not selectable/exportable records.
+    if (table.closest('.fc')) return false;
     if (table.matches('[data-pms-export="off"], [role="presentation"]')) return false;
     if (table.closest('[data-pms-export="off"]')) return false;
     if (!table.tHead || !table.tBodies.length) return false;

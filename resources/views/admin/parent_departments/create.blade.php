@@ -3,6 +3,7 @@
 @section('title', isset($parentDepartment) ? 'Edit Department' : 'Add Department')
 
 @section('content')
+@include('admin.settings.partials.workforce-navigation')
 
 <div class="department-form-page {{ isset($parentDepartment) ? 'department-edit-mode' : 'department-add-mode' }}">
     <!-- Breadcrumb -->
@@ -23,7 +24,7 @@
             </div>
         </div>
         <div class="btn-group">
-            <a href="{{ route('parent-departments.index') }}" class="btn btn-light">
+            <a href="{{ \App\Support\WorkforceSettings::route('parent-departments.index') }}" class="btn btn-light">
                 <i class="fas fa-arrow-left"></i> Back to List
             </a>
         </div>
@@ -49,8 +50,8 @@
 
         <form class="form-content" method="POST"
               action="{{ isset($parentDepartment)
-                        ? route('parent-departments.update', $parentDepartment->id)
-                        : route('parent-departments.store') }}">
+                        ? \App\Support\WorkforceSettings::route('parent-departments.update', $parentDepartment->id)
+                        : \App\Support\WorkforceSettings::route('parent-departments.store') }}">
             @csrf
             @if(isset($parentDepartment)) @method('PUT') @endif
 
@@ -144,7 +145,7 @@
 
             <!-- Form Actions -->
             <div class="form-actions">
-                <a href="{{ route('parent-departments.index') }}" class="btn btn-secondary">
+                <a href="{{ \App\Support\WorkforceSettings::route('parent-departments.index') }}" class="btn btn-secondary">
                     <i class="fas fa-times"></i> Cancel
                 </a>
                 <button type="submit" class="btn btn-primary">

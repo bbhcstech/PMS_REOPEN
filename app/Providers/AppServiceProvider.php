@@ -25,6 +25,7 @@ class AppServiceProvider extends ServiceProvider
         }
 
         $this->app->scoped(CompanyContext::class, fn () => new CompanyContext());
+        $this->app->singleton(\App\Services\CompanyMailSettings::class, fn () => new \App\Services\CompanyMailSettings(config('mail')));
         $this->app->afterResolving(\Illuminate\Cache\RateLimiter::class, function ($limiter) {
             $limiter->for('platform-ai', function (\Illuminate\Http\Request $request) {
                 $central = \Illuminate\Support\Facades\Auth::guard('super_admin')->user();

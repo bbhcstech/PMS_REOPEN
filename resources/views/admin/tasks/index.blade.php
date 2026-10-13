@@ -22,17 +22,19 @@
 
     @if($project)
         {{-- Standardized Project Header & 13-Tab Navigation --}}
+        <div data-live-key="tasks-project-header">
         @include('admin.projects.partials.header', [
             'project' => $project,
             'activeTab' => 'tasks'
         ])
+        </div>
     @else
-        <div class="breadcrumb">
+        <div class="breadcrumb" data-live-key="tasks-breadcrumb">
             <i class="fas fa-tasks"></i>
             <span>Dashboard / <strong>Tasks</strong></span>
         </div>
 
-        <div class="header-card">
+        <div class="header-card" data-live-key="tasks-header">
             <div class="header-left">
                 <div class="header-icon" id="tasksHeaderIcon">
                     <i class="fas fa-list-check"></i>
@@ -60,14 +62,14 @@
     @endif
 
     @if(session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
+        <div class="alert alert-success" data-live-key="tasks-success">{{ session('success') }}</div>
     @endif
 
     @if($errors->any())
-        <div class="alert alert-danger">Please fix the task details and try again.</div>
+        <div class="alert alert-danger" data-live-key="tasks-error">Please fix the task details and try again.</div>
     @endif
 
-    <div class="filter-panel">
+    <div class="filter-panel" data-live-key="tasks-filters">
         <form method="GET" action="{{ $indexRoute }}" class="filter-grid">
             <div class="filter-group">
                 <label><i class="fas fa-calendar-plus"></i> Start Date</label>
@@ -132,7 +134,7 @@
         </form>
     </div>
 
-    <div class="toolbar">
+    <div class="toolbar" data-live-key="tasks-toolbar">
         <div class="toolbar-left">
             @if($canManageTasks)
                 <a href="{{ route('tasks.create', array_merge($project ? ['project_id' => $project->id] : [], ['embedded' => 1])) }}" class="btn btn-primary" data-task-form-open>
@@ -162,8 +164,8 @@
         </div>
     </div>
 
-    <div class="table-card">
-        <div class="table-header">
+    <div class="table-card" data-live-key="tasks-list">
+        <div class="table-header" data-live-key="tasks-list-header">
             <div class="table-title">
                 <div class="table-title-icon">
                     <i class="fas fa-list"></i>
@@ -175,7 +177,7 @@
             </div>
         </div>
 
-        <div class="table-wrapper">
+        <div class="table-wrapper" data-live-key="tasks-table-wrapper">
             <table id="taskTable" class="task-table">
                 <thead>
                     <tr>
@@ -344,7 +346,7 @@
         </div>
     </div>
 
-    <div class="status-bar">
+    <div class="status-bar" data-live-key="tasks-summary">
         <div class="status-item"><i class="fas fa-list-check text-primary"></i><span>{{ $tasks->count() }}</span> Total Tasks</div>
         <div class="status-item"><i class="fas fa-circle text-secondary"></i><span>{{ $tasks->where('status', 'To Do')->count() }}</span> To Do</div>
         <div class="status-item"><i class="fas fa-spinner text-info"></i><span>{{ $tasks->where('status', 'Doing')->count() }}</span> Doing</div>

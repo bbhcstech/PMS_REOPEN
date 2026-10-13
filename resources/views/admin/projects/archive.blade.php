@@ -271,6 +271,17 @@
         flex-shrink: 0;
     }
 
+    /* pms-refresh.css gives every ".stat-icon svg" a white colour AND white background, which turned
+       these outline icons into solid white squares. Keep the SVG transparent and drawn in the tile's
+       own icon colour (blue tile -> white icon in light mode, #60A5FA on dark tiles in dark mode). */
+    .archived-projects-page .stats-grid .stat-icon svg.archive-summary-icon {
+        background: transparent !important;
+        background-color: transparent !important;
+        color: inherit !important;
+        fill: none !important;
+        opacity: 1 !important;
+    }
+
     .archived-projects-page .header-icon .archive-summary-icon {
         width: 32px;
         height: 32px;

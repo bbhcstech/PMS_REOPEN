@@ -792,7 +792,8 @@ class CompanyController extends Controller
             'max_clients'         => isset($data['max_clients']) ? (int) $data['max_clients'] : ($company->max_clients ?? 50),
             'max_storage_mb'      => isset($data['max_storage_mb']) ? (int) $data['max_storage_mb'] : ($company->max_storage_mb ?? 1024),
             'gst_number'          => $data['gst_number'] ?? null,
-            'pan_number'          => $data['pan_number'] ?? null,
+            // PAN is no longer edited on this form; keep the stored value unless a value is explicitly submitted.
+            'pan_number'          => array_key_exists('pan_number', $data) ? $data['pan_number'] : $company->pan_number,
             'registration_number' => $data['registration_number'] ?? null,
             'employee_id_prefix'  => $data['employee_id_prefix'] ?? null,
             'leave_prefix'        => $data['leave_prefix'] ?? null,
@@ -1498,6 +1499,48 @@ class CompanyController extends Controller
     /**
      * Display Tenant Migration Control Center.
      */
+    /**
+     * Persist one tenant migration run; the Migrations page reads its times from these rows.
+     */
+    private function recordMigrationRun($company, bool $success, string $duration, int $appliedCount, string $output = ''): void
+    {
+        try {
+            \App\Models\Central\SuperAdminActivityLog::record(
+                'tenant.migration_executed',
+                (int) $company->id,
+                ($success ? 'Migration executed for ' : 'Migration failed for ') . $company->name,
+                [
+                    'company_name'   => $company->name,
+                    'db_name'        => $company->db_name,
+                    'version'        => 'v' . $appliedCount,
+                    'execution_time' => $duration,
+                    'status'         => $success ? 'success' : 'failed',
+                    'output'         => Str::limit($output, 4000),
+                ],
+                auth('super_admin')->id()
+            );
+        } catch (\Throwable $e) {
+            report($e);
+        }
+    }
+
+    /**
+     * Latest recorded migration run per company id (newest first).
+     */
+    private function latestMigrationRuns(): \Illuminate\Support\Collection
+    {
+        try {
+            return \App\Models\Central\SuperAdminActivityLog::where('action', 'tenant.migration_executed')
+                ->whereNotNull('company_id')
+                ->latest('created_at')->latest('id')
+                ->get(['id', 'company_id', 'meta', 'created_at'])
+                ->unique('company_id')
+                ->keyBy('company_id');
+        } catch (\Throwable $e) {
+            return collect();
+        }
+    }
+
     public function migrations(Request $request): View
     {
         try {
@@ -1537,15 +1580,15 @@ class CompanyController extends Controller
         $upToDateCount = 0;
         $pendingCount = 0;
         $failedCount = 0;
-        $lastRunTime = null;
+        $latestRuns = $this->latestMigrationRuns();
+        $lastRunAt = $latestRuns->max('created_at');
 
         foreach ($companies as $comp) {
             $status = 'unknown';
             $appliedList = [];
             $appliedCount = 0;
             $pendingList = $allMigrationFiles;
-            $executionTime = '0.00s';
-            $lastRun = null;
+            $run = $latestRuns->get($comp->id);
             $dbConnected = false;
 
             try {
@@ -1559,13 +1602,6 @@ class CompanyController extends Controller
                     $appliedList = $appliedRecords->pluck('migration')->toArray();
                     $appliedCount = count($appliedList);
 
-                    $lastRecord = $appliedRecords->last();
-                    if ($lastRecord && isset($lastRecord->batch)) {
-                        $lastRun = now()->subMinutes(rand(5, 120))->format('d M Y, h:i A');
-                        if (!$lastRunTime) {
-                            $lastRunTime = '12 min ago';
-                        }
-                    }
 
                     $pendingList = array_values(array_filter($allMigrationFiles, function ($mig) use ($appliedList) {
                         return !in_array($mig['raw_name'], $appliedList, true);
@@ -1606,8 +1642,10 @@ class CompanyController extends Controller
                 'pending_count'          => count($pendingList),
                 'pending_list'           => $pendingList,
                 'status'                 => $status,
-                'last_migration'         => $lastRun ?? ($comp->created_at ? $comp->created_at->format('d M Y, h:i A') : 'N/A'),
-                'execution_time'         => (rand(120, 485) / 100) . 's',
+                // Real recorded run (created_at in app timezone); tenants never migrated from this panel show provisioning time.
+                'last_migration'         => $run ? $run->created_at->format('d M Y, h:i A') : ($comp->created_at ? 'Provisioned ' . $comp->created_at->format('d M Y, h:i A') : 'Never'),
+                'last_migration_iso'     => $run?->created_at?->toIso8601String(),
+                'execution_time'         => $run && isset($run->meta['execution_time']) ? $run->meta['execution_time'] . 's' : '—',
             ];
         }
 
@@ -1616,25 +1654,28 @@ class CompanyController extends Controller
             'up_to_date'         => $upToDateCount,
             'pending_migrations' => $pendingCount,
             'failed_migrations'  => $failedCount,
-            'last_run'           => $lastRunTime ?? 'Just now',
+            'last_run'           => $lastRunAt ? $lastRunAt->diffForHumans() : 'Never',
+            'last_run_iso'       => $lastRunAt?->toIso8601String(),
+            'last_run_at'        => $lastRunAt?->format('d M Y, h:i A'),
         ];
 
         // 3. Fetch migration activity logs
         $migrationHistory = [];
         try {
-            $logs = \App\Models\Central\SuperAdminActivityLog::where('action', 'like', '%migration%')
+            $logs = \App\Models\Central\SuperAdminActivityLog::with(['superAdmin', 'company'])
+                ->where('action', 'like', '%migration%')
                 ->latest()
                 ->take(15)
                 ->get();
             foreach ($logs as $log) {
                 $migrationHistory[] = [
-                    'company_name'   => $log->details['company_name'] ?? 'Tenant',
-                    'migration'      => $log->details['migration'] ?? 'tenant:migrate',
-                    'version'        => $log->details['version'] ?? 'v' . $totalAvailableMigrations,
-                    'status'         => $log->status ?? 'success',
-                    'execution_time' => ($log->details['execution_time'] ?? '3.50') . 's',
+                    'company_name'   => $log->meta['company_name'] ?? $log->company?->name ?? 'Tenant',
+                    'migration'      => $log->meta['migration'] ?? 'tenant:migrate',
+                    'version'        => $log->meta['version'] ?? '—',
+                    'status'         => $log->meta['status'] ?? 'success',
+                    'execution_time' => isset($log->meta['execution_time']) ? $log->meta['execution_time'] . 's' : '—',
                     'executed_at'    => $log->created_at->format('d M Y, h:i A'),
-                    'executed_by'    => 'Super Admin',
+                    'executed_by'    => $log->superAdmin?->name ?? 'Super Admin',
                 ];
             }
         } catch (\Throwable $e) {}
@@ -1700,23 +1741,7 @@ class CompanyController extends Controller
                 $totalAvailable = count(File::files($tenantMigrationPath));
             }
 
-            // Log activity
-            try {
-                \App\Models\Central\SuperAdminActivityLog::create([
-                    'super_admin_id' => auth('super_admin')->id() ?? auth()->id(),
-                    'action'         => 'tenant.migration_executed',
-                    'details'        => [
-                        'company_id'     => $company->id,
-                        'company_name'   => $company->name,
-                        'db_name'        => $company->db_name,
-                        'version'        => 'v' . $appliedCount,
-                        'execution_time' => $duration,
-                        'output'         => $output,
-                    ],
-                    'status'         => $exitCode === 0 ? 'success' : 'failed',
-                    'ip_address'     => request()->ip(),
-                ]);
-            } catch (\Throwable $e) {}
+            $this->recordMigrationRun($company, $exitCode === 0, $duration, $appliedCount, $output);
 
             if ($exitCode === 0) {
                 return response()->json([
@@ -1786,6 +1811,11 @@ class CompanyController extends Controller
 
                 $output = trim(Artisan::output());
                 $duration = number_format(microtime(true) - $startTime, 2);
+                $appliedCount = 0;
+                try {
+                    $appliedCount = DB::connection('tenant')->table('migrations')->count();
+                } catch (\Throwable $e) {}
+                $this->recordMigrationRun($comp, $exitCode === 0, $duration, $appliedCount, $output);
 
                 if ($exitCode === 0) {
                     $successCount++;
@@ -1847,11 +1877,23 @@ class CompanyController extends Controller
                 DB::purge('tenant');
 
                 if (DB::connection('tenant')->getSchemaBuilder()->hasTable('migrations')) {
+                    // Recorded panel runs carry real times; the tenant migrations table itself has no timestamps.
+                    $runs = \App\Models\Central\SuperAdminActivityLog::where('action', 'tenant.migration_executed')
+                        ->where('company_id', $company->id)->latest('created_at')->latest('id')->take(20)->get();
+                    foreach ($runs as $run) {
+                        $failed = ($run->meta['status'] ?? 'success') !== 'success';
+                        $logs[] = [
+                            'timestamp' => $run->created_at->format('d M Y, h:i:s A'),
+                            'message'   => ($failed ? 'Migration run failed' : 'Migration run completed')
+                                . ' (' . ($run->meta['version'] ?? '—') . ', ' . ($run->meta['execution_time'] ?? '—') . 's)',
+                            'status'    => $failed ? 'ERROR' : 'SUCCESS',
+                        ];
+                    }
                     $records = DB::connection('tenant')->table('migrations')->orderBy('id', 'desc')->get();
                     foreach ($records as $rec) {
                         $logs[] = [
-                            'timestamp' => now()->subMinutes(rand(10, 500))->format('H:i:s'),
-                            'message'   => "Applied migration batch #{$rec->batch}: {$rec->migration}",
+                            'timestamp' => 'Batch #' . $rec->batch,
+                            'message'   => "Applied migration: {$rec->migration}",
                             'status'    => 'SUCCESS',
                         ];
                     }
@@ -2843,10 +2885,12 @@ class CompanyController extends Controller
         $healthyCount = 0;
         $warningCount = 0;
 
+        $tenantHealth = app(\App\Services\TenantDatabaseHealth::class);
+        $dbPool = $tenantHealth->poolStats();
         foreach ($companies as $idx => $comp) {
-            $isWarning = ($idx === 2);
-            $status = $isWarning ? 'warning' : 'healthy';
-            if ($status === 'healthy') $healthyCount++;
+            // Live probe of the tenant database (connection, ping, size); checked_at is the real check time.
+            $probe = $tenantHealth->row($comp);
+            if ($probe['status'] === 'healthy') $healthyCount++;
             else $warningCount++;
 
             $logoUrl = null;
@@ -2864,15 +2908,9 @@ class CompanyController extends Controller
                 'code'         => $comp->company_code ?? ('TEN-' . str_pad($comp->id, 3, '0', STR_PAD_LEFT)),
                 'db_name'      => $comp->db_name ?? ('pms_tenant_' . $comp->id),
                 'logo_url'     => $logoUrl,
-                'status'       => $status,
-                'connection'   => 'Connected',
-                'latency_ms'   => rand(18, 48) . ' ms',
                 'api_uptime'   => '99.9%',
-                'storage_pct'  => ($isWarning ? 84 : rand(35, 68)) . '%',
                 'backup'       => 'Verified',
-                'last_activity'=> now()->subMinutes(rand(1, 15))->diffForHumans(),
-                'last_check'   => rand(5, 30) . ' sec ago',
-            ];
+            ] + $probe;
         }
 
         // 7. Core KPI Counters
@@ -2964,7 +3002,8 @@ class CompanyController extends Controller
             'usedGb',
             'freeGb',
             'dbLatencyMs',
-            'dbConnected'
+            'dbConnected',
+            'dbPool'
         ));
     }
 
@@ -3056,11 +3095,19 @@ class CompanyController extends Controller
         } catch (\Throwable $e) {}
         $latency = round((microtime(true) - $dbStart) * 1000, 1);
 
+        $tenantHealth = app(\App\Services\TenantDatabaseHealth::class);
+        $companies = Company::on('central')->latest()->get();
+        if ($companies->isEmpty()) {
+            $companies = \App\Models\Company::latest()->get();
+        }
+
         return response()->json([
             'success'      => true,
             'timestamp'    => now()->format('h:i:s A'),
-            'db_latency'   => ($latency < 1 ? 12.4 : $latency) . ' ms',
+            'db_latency'   => $latency . ' ms',
             'status_text'  => 'ALL SYSTEMS OPERATIONAL',
+            'pool'         => $tenantHealth->poolStats(),
+            'tenants'      => $companies->map(fn ($company) => $tenantHealth->row($company))->values(),
         ]);
     }
 

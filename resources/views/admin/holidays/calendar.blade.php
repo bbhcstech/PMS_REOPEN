@@ -116,7 +116,7 @@
 
             <!-- FullCalendar Container Card -->
             <div class="address-card-elevated p-4 p-md-4">
-                <div id="calendar"></div>
+                <div id="calendar" data-pms-export="off"></div>
             </div>
 
             <!-- Holiday Details Interactive Drawer/Panel -->
@@ -129,7 +129,6 @@
 @endsection
 
 @section('css')
-<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet" />
 <style>
     .holiday-calendar-page {
         min-height: calc(100vh - 100px);
@@ -457,6 +456,49 @@
     }
 
     /* ===== FULLCALENDAR STYLING ===== */
+    /* Calendar grids must retain native table layout, independent of record-table styling. */
+    .holiday-calendar-page #calendar {
+        width: 100%;
+        min-width: 0;
+    }
+
+    #calendar .fc-dayGridMonth-view table {
+        display: table !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        border-collapse: collapse !important;
+        border-spacing: 0 !important;
+        table-layout: fixed;
+    }
+
+    #calendar .fc-dayGridMonth-view th,
+    #calendar .fc-dayGridMonth-view td {
+        border-radius: 0 !important;
+        box-shadow: none !important;
+    }
+
+    #calendar .fc-dayGridMonth-view .fc-scroller {
+        height: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
+    }
+
+    #calendar .fc-header-toolbar {
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    @media (max-width: 767px) {
+        #calendar .fc-header-toolbar .fc-toolbar-chunk {
+            display: flex;
+            justify-content: center;
+            flex: 1 1 100%;
+        }
+        #calendar .fc-daygrid-day-number {
+            padding: 6px 4px !important;
+        }
+    }
+
     .address-card-elevated {
         background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(20px);
@@ -1044,7 +1086,7 @@
 @endsection
 
 @section('js')
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+<script src="{{ asset('admin/assets/vendor/libs/fullcalendar/index.global.min.js') }}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const calendarEl = document.getElementById('calendar');
@@ -1054,7 +1096,7 @@
         const calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
             initialDate: '{{ $selectedYear }}-01-01',
-            height: 750,
+            height: 'auto',
             headerToolbar: {
                 left: 'prev,next today',
                 center: 'title',

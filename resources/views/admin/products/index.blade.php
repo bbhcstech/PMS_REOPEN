@@ -234,7 +234,19 @@
                 <div class="card-body p-3 d-flex align-items-center justify-content-between">
                     <div>
                         <span class="text-muted fw-semibold small d-block mb-1">💰 Total Pipeline &amp; Deal Value</span>
-                        <h4 class="fw-bold text-dark mb-0">${{ number_format($stats['total_deal_cost'], 2) }}</h4>
+                        @php
+                            // 10 lakh (1,000,000) and above reads as M / B / T; the exact amount stays in the tooltip.
+                            $pipelineValue = (float) ($stats['total_deal_cost'] ?? 0);
+                            $pipelineAbs = abs($pipelineValue);
+                            $pipelineLabel = number_format($pipelineValue, 2);
+                            foreach ([1e12 => 'T', 1e9 => 'B', 1e6 => 'M'] as $pipelineUnit => $pipelineSuffix) {
+                                if ($pipelineAbs >= $pipelineUnit) {
+                                    $pipelineLabel = rtrim(rtrim(number_format($pipelineValue / $pipelineUnit, 2), '0'), '.') . $pipelineSuffix;
+                                    break;
+                                }
+                            }
+                        @endphp
+                        <h4 class="fw-bold text-dark mb-0" title="${{ number_format($pipelineValue, 2) }}">${{ $pipelineLabel }}</h4>
                         <small class="text-success"><i class="bx bx-trending-up me-1"></i>Combined Project Valuation</small>
                     </div>
                     <div class="p-3 rounded-4 bg-warning-subtle text-warning">

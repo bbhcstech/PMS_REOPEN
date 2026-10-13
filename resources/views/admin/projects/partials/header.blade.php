@@ -314,6 +314,12 @@
         color: #ffffff !important;
     }
 
+    #pmsProjectNavBar .pms-nav-tab.active[data-tab="overview"] > .tab-icon {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        background: transparent !important;
+    }
+
     .tab-badge {
         background: rgba(0, 0, 0, 0.08);
         color: inherit;

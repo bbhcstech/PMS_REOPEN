@@ -3,6 +3,7 @@
 @section('title', 'Archived Designations')
 
 @section('content')
+@include('admin.settings.partials.workforce-navigation')
 <style>
     :root {
         --primary-blue: #2F6BFF;
@@ -164,6 +165,24 @@
     html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark) .badge-premium *,
     body:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark) .badge-premium,
     body:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark) .badge-premium * {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    /* Back button icon: plain white glyph on the blue pill in every theme (no icon tile behind it). */
+    .archive-container .back-button i {
+        width: auto !important;
+        height: auto !important;
+        background: transparent !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        font-size: 0.95rem !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body.dark-mode) .archive-container .back-button,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body.dark-mode) .archive-container .back-button i {
         color: #ffffff !important;
         -webkit-text-fill-color: #ffffff !important;
     }
@@ -1493,6 +1512,78 @@
         color: #0f172a !important;
         -webkit-text-fill-color: #0f172a !important;
     }
+
+    /* ===== Dark mode: archived records table icons & badges =====
+       The light badge styles use !important, so the old dark rules (without it) lost and left light
+       backgrounds with white text/icons; the avatar had no dark rule at all. Each element now gets a
+       dark tinted surface with a bright, matching icon colour. */
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body.dark-mode) .archive-container .designation-avatar {
+        background: rgba(79, 131, 255, 0.18) !important;
+        border: 1px solid rgba(96, 165, 250, 0.35) !important;
+        box-shadow: none !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body.dark-mode) .archive-container .designation-avatar i {
+        color: #93c5fd !important;
+        -webkit-text-fill-color: #93c5fd !important;
+        background: transparent !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body.dark-mode) .archive-container .level-badge { --lvl: #cbd5e1; --lvl-bg: rgba(148, 163, 184, 0.16); --lvl-border: rgba(148, 163, 184, 0.35); }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body.dark-mode) .archive-container .level-badge.l1 { --lvl: #93c5fd; --lvl-bg: rgba(59, 130, 246, 0.18); --lvl-border: rgba(96, 165, 250, 0.4); }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body.dark-mode) .archive-container .level-badge.l2 { --lvl: #6ee7b7; --lvl-bg: rgba(16, 185, 129, 0.16); --lvl-border: rgba(52, 211, 153, 0.4); }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body.dark-mode) .archive-container .level-badge.l3 { --lvl: #a5b4fc; --lvl-bg: rgba(99, 102, 241, 0.18); --lvl-border: rgba(129, 140, 248, 0.4); }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body.dark-mode) .archive-container .level-badge.l4 { --lvl: #fcd34d; --lvl-bg: rgba(245, 158, 11, 0.16); --lvl-border: rgba(251, 191, 36, 0.4); }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body.dark-mode) .archive-container .level-badge.l5 { --lvl: #fdba74; --lvl-bg: rgba(249, 115, 22, 0.16); --lvl-border: rgba(251, 146, 60, 0.4); }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body.dark-mode) .archive-container .level-badge.l6 { --lvl: #fca5a5; --lvl-bg: rgba(239, 68, 68, 0.16); --lvl-border: rgba(248, 113, 113, 0.4); }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body.dark-mode) .archive-container .level-badge,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body.dark-mode) .archive-container .level-badge[class*=" l"] {
+        background: var(--lvl-bg) !important;
+        border: 1px solid var(--lvl-border) !important;
+        color: var(--lvl) !important;
+        -webkit-text-fill-color: var(--lvl) !important;
+        box-shadow: none !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body.dark-mode) .archive-container .level-badge i,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body.dark-mode) .archive-container .level-badge[class*=" l"] i {
+        color: var(--lvl) !important;
+        -webkit-text-fill-color: var(--lvl) !important;
+        background: transparent !important;
+    }
+
+    /* Code / parent / archived-on badges: icon follows the badge text colour. */
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body.dark-mode) .archive-container :is(.code-badge, .deleted-badge, .parent-badge) {
+        background: rgba(47, 107, 255, 0.14) !important;
+        border: 1px solid rgba(96, 165, 250, 0.35) !important;
+        color: #bfdbfe !important;
+        -webkit-text-fill-color: #bfdbfe !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body.dark-mode) .archive-container .parent-badge.top-level {
+        background: rgba(245, 158, 11, 0.16) !important;
+        border-color: rgba(251, 191, 36, 0.4) !important;
+        color: #fcd34d !important;
+        -webkit-text-fill-color: #fcd34d !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body.dark-mode) .archive-container :is(.code-badge, .deleted-badge, .parent-badge) i {
+        color: inherit !important;
+        -webkit-text-fill-color: currentColor !important;
+        background: transparent !important;
+    }
+
+    /* Table header icons and restore button. */
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body.dark-mode) .archive-container .archive-table th i {
+        color: #93c5fd !important;
+        -webkit-text-fill-color: #93c5fd !important;
+        background: transparent !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body.dark-mode) .archive-container .action-group .btn-restore {
+        background: linear-gradient(145deg, #4F83FF, #2F6BFF) !important;
+        border: 0 !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body.dark-mode) .archive-container .action-group .btn-restore i {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        background: transparent !important;
+    }
 </style>
 
 <div class="archive-container">
@@ -1510,7 +1601,7 @@
                 </h1>
                 <p><i class="fas fa-info-circle me-1" style="color: var(--primary-teal);"></i>Restore archived designation records whenever they need to return to the active list.</p>
             </div>
-            <a href="{{ route('designations.index') }}" class="back-button">
+            <a href="{{ \App\Support\WorkforceSettings::route('designations.index') }}" class="back-button">
                 <i class="fas fa-arrow-left"></i>Back to Active Designations
             </a>
         </div>
@@ -1579,7 +1670,7 @@
             </div>
 
             <!-- Search Bar -->
-            <form method="GET" action="{{ route('designations.archive') }}" class="archive-search-bar">
+            <form method="GET" action="{{ \App\Support\WorkforceSettings::route('designations.archive') }}" class="archive-search-bar">
                 <div class="search-input">
                     <i class="fas fa-search"></i>
                     <input type="text" name="search" value="{{ request('search') }}" placeholder="Search archived designations...">
@@ -1593,7 +1684,7 @@
                     <i class="fas fa-search"></i>Search
                 </button>
                 @if(request()->hasAny(['search', 'per_page']))
-                    <a href="{{ route('designations.archive') }}" class="reset-button">
+                    <a href="{{ \App\Support\WorkforceSettings::route('designations.archive') }}" class="reset-button">
                         <i class="fas fa-rotate-left"></i>Reset
                     </a>
                 @endif
@@ -1606,7 +1697,7 @@
                         <div class="empty-icon"><i class="fas fa-archive"></i></div>
                         <h5>No Archived Designations Found</h5>
                         <p>There are no designations in the archive at the moment.</p>
-                        <a href="{{ route('designations.index') }}" class="back-button" style="display: inline-flex;">
+                        <a href="{{ \App\Support\WorkforceSettings::route('designations.index') }}" class="back-button" style="display: inline-flex;">
                             <i class="fas fa-arrow-left"></i>Back to Active Designations
                         </a>
                     </div>
@@ -1669,14 +1760,14 @@
                                     </td>
                                     <td>
                                         <div class="action-group">
-                                            <form action="{{ route('designations.restore', $designation->id) }}" method="POST" onsubmit="return confirm('Restore this designation to the active list?');">
+                                            <form action="{{ \App\Support\WorkforceSettings::route('designations.restore', $designation->id) }}" method="POST" onsubmit="return confirm('Restore this designation to the active list?');">
                                                 @csrf
                                                 <button type="submit" class="action-btn btn-restore" title="Restore">
                                                     <i class="fas fa-rotate-left"></i>
                                                 </button>
                                             </form>
                                             @if(auth()->user()->hasModulePermission('designations', 'delete'))
-                                                <form action="{{ route('designations.delete-archived', $designation->id) }}" method="POST" onsubmit="return confirm('Permanently delete this archived designation? This cannot be undone.');">
+                                                <form action="{{ \App\Support\WorkforceSettings::route('designations.delete-archived', $designation->id) }}" method="POST" onsubmit="return confirm('Permanently delete this archived designation? This cannot be undone.');">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit" class="action-btn btn-delete-archived" title="Delete permanently" aria-label="Delete archived designation permanently">

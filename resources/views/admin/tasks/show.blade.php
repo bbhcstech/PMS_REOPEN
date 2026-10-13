@@ -329,6 +329,18 @@
         color: #ffffff !important;
     }
 
+    /* Icons inside these custom buttons follow the button text colour. The theme's
+       ".content-wrapper i[class*=bx]:not(.btn *)" rule (specificity 0,4,1) only exempts .btn, so it painted
+       these icons primary blue on the blue buttons; the repeated class outranks it. */
+    .content-wrapper .btn-tsk-primary.btn-tsk-primary.btn-tsk-primary > i[class*="bx"],
+    .content-wrapper .btn-tsk-outline.btn-tsk-outline.btn-tsk-outline > i[class*="bx"] {
+        color: inherit !important;
+        -webkit-text-fill-color: currentColor !important;
+        background: transparent !important;
+        filter: none !important;
+        opacity: 1 !important;
+    }
+
     /* Status Pills */
     .status-pill {
         display: inline-flex;
@@ -1160,8 +1172,6 @@
             @csrf
             <input type="hidden" name="timer_id" value="{{ $activeTimer->id }}">
             <input type="hidden" name="project_id" value="{{ $task->project_id }}">
-            <input type="hidden" name="start_date" value="{{ \Carbon\Carbon::parse($activeTimer->start_time)->format('Y-m-d') }}">
-            <input type="hidden" name="end_date" value="{{ now()->format('Y-m-d') }}">
         
             <div class="modal-content rounded-4 border-0 shadow-lg">
                 <div class="modal-header border-0 pb-0 px-4 pt-4">
@@ -1175,11 +1185,11 @@
                         <div class="row g-2 small">
                             <div class="col-6">
                                 <span class="text-muted d-block">Start Time:</span>
-                                <strong>{{ \Carbon\Carbon::parse($activeTimer->start_time)->format('h:i A') }}</strong>
+                                <strong><time datetime="{{ $activeTimer->start_time->toIso8601String() }}">{{ $activeTimer->start_time->format('h:i:s A') }}</time></strong>
                             </div>
                             <div class="col-6">
                                 <span class="text-muted d-block">End Time:</span>
-                                <strong>{{ now()->format('h:i A') }}</strong>
+                                <strong><time data-live-timer-end data-server-now="{{ now()->getTimestampMs() }}" data-time-zone="{{ config('app.timezone') }}">{{ now()->format('h:i:s A') }}</time></strong>
                             </div>
                         </div>
                     </div>
@@ -1200,6 +1210,7 @@
 @endsection
 
 @push('js')
+<script src="{{ asset('admin/assets/js/pms-task-timer-clock.js') }}"></script>
 <script>
 $(document).ready(function () {
     // Toggle Sub-Tasks

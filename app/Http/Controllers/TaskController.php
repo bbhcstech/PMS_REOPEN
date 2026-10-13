@@ -426,6 +426,8 @@ public function update(Request $request, Task $task)
     \App\Services\TaskFormSchema::ensure();
     \App\Services\TaskPrioritySchema::ensure();
     \App\Services\TaskLabelsSchema::ensure();
+    // Only employees change status here (see $newStatus below); for others it is ignored, so not validated.
+    $statusEditable = strtolower((string) auth()->user()?->role) === 'employee';
 
     $request->validate([
         'task_short_code'  => 'required|string|max:255',
@@ -455,7 +457,7 @@ public function update(Request $request, Task $task)
         'remarks'           => 'nullable|string|max:2000',
         'category_id'       => 'nullable|integer',
         'parent_id'         => 'nullable|integer',
-        'status'            => 'nullable|in:Waiting for Approval,To Do,Doing,Incomplete,Completed',
+        'status'            => $statusEditable ? 'nullable|in:Waiting for Approval,To Do,Doing,Incomplete,Completed' : 'nullable',
         'image_url' => [
             'nullable',
             'file',

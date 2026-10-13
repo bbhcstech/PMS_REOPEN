@@ -75,6 +75,9 @@
                    ])
                </form>
 
+               {{-- Employee / department modals from the form partial (kept outside #taskForm). --}}
+               @stack('task-form-modals')
+
             </div>
         </div>
     </div>

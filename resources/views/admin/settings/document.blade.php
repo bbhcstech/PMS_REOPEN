@@ -241,6 +241,43 @@
         border: 1px solid rgba(47, 107, 255, 0.2);
     }
 
+    .extension-pill-list {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px 12px;
+        margin-top: 14px;
+    }
+    .extension-pill-list .extension-pill-label {
+        margin-right: 4px;
+        font-weight: 700;
+    }
+    .extension-pill-list .extension-pill {
+        gap: 7px;
+        padding: 0.45rem 0.95rem;
+        line-height: 1.2;
+    }
+
+    .policy-item-card {
+        padding: 14px 16px;
+        border-radius: 14px;
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        background: #f8fafc;
+        line-height: 1.55;
+    }
+    .policy-item-card + .policy-item-card {
+        margin-top: 14px;
+    }
+    .policy-item-card .policy-item-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 6px !important;
+    }
+    .policy-item-card .policy-icon-emerald { color: #059669; }
+    .policy-item-card .policy-icon-indigo { color: #4f46e5; }
+    .document-settings-page .pms-readonly-badge i { margin-right: 6px; }
+
     .card-header-avatar i,
     .card-header-avatar svg,
     .card-header-avatar [class*="fa"] {
@@ -474,7 +511,7 @@
                                         <input type="number" name="max_file_size_mb" class="form-control" value="{{ $settings['max_file_size_mb'] ?? '10' }}" min="1" max="100" {{ $isSettingsReadOnly ? 'readonly' : 'required' }}>
                                         <span class="input-group-text bg-white text-muted fw-bold border-0 pe-3">MB</span>
                                     </div>
-                                    <small class="text-muted mt-1.5 d-block"><i class="fas fa-info-circle text-emerald-600 me-1"></i> Recommended setting: 10 MB per uploaded document.</small>
+                                    <small class="text-muted mt-2 d-block"><i class="fas fa-info-circle me-1" style="color: #059669;"></i> Recommended setting: 10 MB per uploaded document.</small>
                                 </div>
 
                                 <div class="mb-4">
@@ -485,18 +522,18 @@
                                     </div>
                                     
                                     <!-- Extension Preview Badges -->
-                                    <div class="mt-2.5 d-flex flex-wrap gap-1.5 align-items-center">
-                                        <small class="text-muted fw-semibold me-1">Permitted formats:</small>
-                                        @foreach(array_map('trim', explode(',', strtolower($settings['allowed_extensions'] ?? 'pdf,png,jpg,jpeg,doc,docx'))) as $ext)
-                                            <span class="extension-pill"><i class="fas fa-file me-1"></i> .{{ $ext }}</span>
+                                    <div class="extension-pill-list">
+                                        <small class="text-muted extension-pill-label">Permitted formats:</small>
+                                        @foreach(array_filter(array_map('trim', explode(',', strtolower($settings['allowed_extensions'] ?? 'pdf,png,jpg,jpeg,doc,docx')))) as $ext)
+                                            <span class="extension-pill"><i class="fas fa-file"></i>.{{ $ext }}</span>
                                         @endforeach
                                     </div>
                                 </div>
 
                                 <div class="pt-4 border-top d-flex justify-content-end">
                                     @if($isSettingsReadOnly)
-                                        <span class="badge rounded-pill px-3.5 py-2 fw-bold" style="background: #f1f5f9; color: #64748b; font-size: 13px; border: 1px solid #cbd5e1;">
-                                            <i class="fas fa-lock me-1.5 text-muted"></i> Read-Only (Admin Managed)
+                                        <span class="badge rounded-pill px-3 py-2 fw-bold pms-readonly-badge" style="background: #f1f5f9; color: #64748b; font-size: 13px; border: 1px solid #cbd5e1;">
+                                            <i class="fas fa-lock text-muted"></i> Read-Only (Admin Managed)
                                         </span>
                                     @else
                                         <button type="submit" class="btn-save-rules">
@@ -524,17 +561,17 @@
 
                         <div class="p-4">
                             <div class="policy-item-card">
-                                <div class="fw-bold text-dark small mb-1"><i class="fas fa-database text-emerald-600 me-1.5"></i> Separate Role Databases</div>
+                                <div class="fw-bold text-dark small policy-item-title"><i class="fas fa-database policy-icon-emerald"></i>Separate Role Databases</div>
                                 <small class="text-muted d-block">Documents are stored in role-isolated tables: <strong>employee_documents</strong>, <strong>hr_documents</strong>, <strong>manager_documents</strong>, & <strong>admin_documents</strong>.</small>
                             </div>
 
                             <div class="policy-item-card">
-                                <div class="fw-bold text-dark small mb-1"><i class="fas fa-eye text-info me-1.5"></i> Repository Access Rules</div>
+                                <div class="fw-bold text-dark small policy-item-title"><i class="fas fa-eye text-info"></i>Repository Access Rules</div>
                                 <small class="text-muted d-block"><strong>Admin</strong> has full access. <strong>HR & Managers</strong> access Employee & own role DBs. <strong>Employees</strong> access own DB only.</small>
                             </div>
 
                             <div class="policy-item-card">
-                                <div class="fw-bold text-dark small mb-1"><i class="fas fa-history text-indigo-600 me-1.5"></i> Access History Tracking</div>
+                                <div class="fw-bold text-dark small policy-item-title"><i class="fas fa-history policy-icon-indigo"></i>Access History Tracking</div>
                                 <small class="text-muted d-block">Every view/download logs timestamp and viewer identity into <strong>document_views</strong> table ("Seen By Who").</small>
                             </div>
                         </div>

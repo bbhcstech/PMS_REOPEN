@@ -135,6 +135,9 @@ class EnsureModuleAccess
         }
 
         $aliases = [
+            'admin.settings.parent-departments' => 'department-parent',
+            'admin.settings.departments' => 'department-sub',
+            'admin.settings.designations' => 'designations',
             'admin.authority-attendance' => 'attendance',
             'admin.authority-leaves' => 'leaves',
             'users.tasks' => 'tasks',

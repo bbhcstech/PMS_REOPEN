@@ -30,11 +30,11 @@
             results.querySelector('.table-pagination-bar').replaceChildren(...pagination.childNodes);
             results.querySelector('#adminTable').removeAttribute('data-sort-dir');
             history.replaceState(history.state, '', url);
-            // Keep export links aligned with the search shown in the table.
+            // Keep export links aligned with every filter shown in the table (search, company, role, status, activity).
             document.querySelectorAll('a[href]').forEach(link => {
                 const exportUrl = new URL(link.href, location.href);
                 if (exportUrl.origin !== url.origin || !exportUrl.pathname.endsWith('/export')) return;
-                exportUrl.searchParams.set('admin_search', input.value);
+                url.searchParams.forEach((value, key) => exportUrl.searchParams.set(key, value));
                 link.href = exportUrl.href;
             });
             document.dispatchEvent(new CustomEvent('pms:records-updated'));

@@ -223,7 +223,10 @@
           @empty
             <tr>
               <td colspan="9" class="text-center py-5 text-muted">
-                <i class="bx bx-archive-in fs-1 d-block mb-2 opacity-50"></i>
+                {{-- Flex wrapper keeps the icon centred above the message whatever display the theme gives <i>. --}}
+                <div class="complaints-empty-icon" aria-hidden="true">
+                  <i class="bx bx-archive-in"></i>
+                </div>
                 <div class="fw-bold fs-6 text-dark">No support complaints found</div>
                 <p class="fs-7 mb-0">Have an issue or need assistance? Click "Raise a Complaint" above to submit a ticket to Super Admin.</p>
               </td>
@@ -244,6 +247,41 @@
   </div>
 
 </div>
+
+<style>
+  /* Empty state icon: centred tile above "No support complaints found" in both themes. */
+  .complaints-empty-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 14px;
+    border-radius: 18px;
+    background: rgba(47, 107, 255, 0.08);
+    border: 1px solid rgba(47, 107, 255, 0.18);
+  }
+  .complaints-empty-icon i {
+    display: inline-block !important;
+    width: auto !important;
+    height: auto !important;
+    margin: 0 !important;
+    background: transparent !important;
+    font-size: 2rem !important;
+    line-height: 1 !important;
+    color: #2F6BFF !important;
+    -webkit-text-fill-color: #2F6BFF !important;
+    filter: none !important;
+  }
+  :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .complaints-empty-icon {
+    background: rgba(79, 131, 255, 0.16);
+    border-color: rgba(96, 165, 250, 0.35);
+  }
+  :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .complaints-empty-icon i {
+    color: #93c5fd !important;
+    -webkit-text-fill-color: #93c5fd !important;
+  }
+</style>
 
 <script>
 function toggleSelectAllCompany(master) {

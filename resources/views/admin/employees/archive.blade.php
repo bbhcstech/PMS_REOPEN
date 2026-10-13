@@ -155,10 +155,10 @@
                         <th width="50">
                             <input type="checkbox" class="form-check-input" id="archiveSelectAll">
                         </th>
-                        <th>Employee</th>
+                        <th class="col-employee">Employee</th>
                         <th>Employee ID</th>
-                        <th>Designation</th>
-                        <th>Department</th>
+                        <th class="col-designation">Designation</th>
+                        <th class="col-department">Department</th>
                         <th>Status</th>
                         <th>Archived At</th>
                         <th class="text-end">Actions</th>
@@ -179,15 +179,15 @@
                                             <i class="fas fa-user"></i>
                                         </div>
                                     @endif
-                                    <div>
-                                        <strong>{{ $employee->name }}</strong>
-                                        <span>{{ $employee->email ?? '-' }}</span>
+                                    <div class="archive-employee-meta">
+                                        <strong title="{{ $employee->name }}">{{ $employee->name }}</strong>
+                                        <span title="{{ $employee->email ?? '' }}">{{ $employee->email ?? '-' }}</span>
                                     </div>
                                 </div>
                             </td>
                             <td><span class="employee-id-badge">{{ $employee->employeeDetail?->employee_id ?? '-' }}</span></td>
-                            <td>{{ $employee->employeeDetail?->designation?->name ?? '-' }}</td>
-                            <td>{{ $employee->employeeDetail?->department?->dpt_name ?? ($employee->employeeDetail?->parent_dpt?->dpt_name ?? '-') }}</td>
+                            <td class="col-designation">{{ $employee->employeeDetail?->designation?->name ?? '-' }}</td>
+                            <td class="col-department">{{ $employee->employeeDetail?->department?->dpt_name ?? ($employee->employeeDetail?->parent_dpt?->dpt_name ?? '-') }}</td>
                             <td>
                                 <span class="archive-status {{ strtolower($employee->employeeDetail?->status ?? '') === 'active' ? 'status-active' : 'status-inactive' }}">
                                     {{ $employee->employeeDetail?->status ?? 'N/A' }}
@@ -195,8 +195,8 @@
                             </td>
                             <td>
                                 <span class="deleted-badge">
-                                    <i class="far fa-calendar-alt me-1"></i>
-                                    {{ $employee->archived_at?->format('d M Y, h:i A') ?? '-' }}
+                                    <i class="far fa-calendar-alt"></i>
+                                    <span>{{ $employee->archived_at?->format('d M Y, h:i A') ?? '-' }}</span>
                                 </span>
                             </td>
                             <td class="text-end">
@@ -1011,6 +1011,29 @@
     #archivedEmployeesPage .archive-status.status-inactive { color: #b91c1c !important; -webkit-text-fill-color: #b91c1c !important; }
     #archivedEmployeesPage .deleted-badge { color: #334155 !important; -webkit-text-fill-color: #334155 !important; }
     #archivedEmployeesPage .archive-page-current { color: #070B1A !important; -webkit-text-fill-color: #070B1A !important; }
+
+    /* Archived records layout: pms-refresh.css gives every .table cell overflow-wrap:anywhere, which split
+       words mid-way ("DEPARTMEN T", "Inactiv e", wrapped ID badge). Keep words whole; the wrapper scrolls. */
+    #archivedEmployeesPage .archive-table :is(th, td) { overflow-wrap: normal !important; word-break: normal !important; }
+    #archivedEmployeesPage .archive-table th { white-space: nowrap; letter-spacing: 0.04em; }
+    #archivedEmployeesPage .archive-table td { line-height: 1.35; }
+    #archivedEmployeesPage .archive-table .col-employee { min-width: 240px; }
+    #archivedEmployeesPage .archive-table .col-designation,
+    #archivedEmployeesPage .archive-table .col-department { min-width: 140px; }
+    #archivedEmployeesPage .archive-employee-cell { min-width: 0; }
+    #archivedEmployeesPage .archive-employee-cell .archive-avatar { flex-shrink: 0; }
+    #archivedEmployeesPage .archive-employee-meta { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    #archivedEmployeesPage .archive-employee-meta strong,
+    #archivedEmployeesPage .archive-employee-meta span { display: block; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    #archivedEmployeesPage .employee-id-badge,
+    #archivedEmployeesPage .archive-status,
+    #archivedEmployeesPage .deleted-badge { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; line-height: 1.3; }
+    #archivedEmployeesPage .employee-id-badge { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: 0.02em; }
+    #archivedEmployeesPage .archive-status { text-transform: capitalize; }
+    #archivedEmployeesPage .deleted-badge i { margin-right: 0 !important; }
+    #archivedEmployeesPage .deleted-badge span { color: inherit !important; -webkit-text-fill-color: inherit !important; }
+    #archivedEmployeesPage .archive-row-actions { align-items: center; flex-wrap: nowrap; }
+    #archivedEmployeesPage .archive-row-actions form { margin: 0; display: inline-flex; }
 
     :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) #archivedEmployeesPage .archive-show-entries span,
     :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) #archivedEmployeesPage .archive-employee-cell span { color: #CBD5E1 !important; -webkit-text-fill-color: #CBD5E1 !important; }

@@ -20,7 +20,8 @@
             <div class="card-header py-3 px-4 border-bottom">
                 <h5 class="mb-0 fw-bold text-dark">Account Details</h5>
             </div>
-            <div class="card-body row g-3">
+            <div class="card-body p-4">
+                <div class="row g-3">
 
                 <div class="col-md-3">
                     <label>Salutation</label>
@@ -172,6 +173,7 @@
                     <input type="radio" name="email_notifications" value="0" {{ !$client->email_notifications ? 'checked' : '' }}> No
                 </div>
 
+                </div>
             </div>
         </div>
 
@@ -180,7 +182,8 @@
             <div class="card-header py-3 px-4 border-bottom">
                 <h5 class="mb-0 fw-bold text-dark">Company Details</h5>
             </div>
-            <div class="card-body row g-3">
+            <div class="card-body p-4">
+                <div class="row g-3">
                 <div class="col-md-6">
                     <label>Company Name</label>
                     <input name="company_name" id="company_name" type="text" class="form-control" value="{{ old('company_name', $client->company_name) }}">
@@ -337,6 +340,7 @@
                             <option value="{{ $user->id }}" {{ old('added_by', $client->added_by) == $user->id ? 'selected' : '' }}>{{ $user->name }}</option>
                         @endforeach
                     </select>
+                </div>
                 </div>
             </div>
         </div>

@@ -121,7 +121,20 @@ class SuperAdminController extends Controller
 
         $adminSearch = trim((string) $request->input('admin_search', ''));
         $adminStatus = $request->input('admin_status', 'active');
+        if (! in_array($adminStatus, ['active', 'archived', 'pending', 'all'], true)) {
+            $adminStatus = 'active';
+        }
         $selectedCompanyId = $request->input('company_id');
+        $adminRole = (string) $request->input('admin_role', '');
+        if (! in_array($adminRole, ['', 'admin', 'manager', 'hr'], true)) {
+            $adminRole = '';
+        }
+        $adminActivity = (string) $request->input('admin_activity', '');
+        if (! in_array($adminActivity, ['', 'today', 'week', 'inactive'], true)) {
+            $adminActivity = '';
+        }
+        // "All Roles" keeps the page's company-admin list; a specific role lists that role's accounts.
+        $listedRole = $adminRole === '' ? 'admin' : $adminRole;
 
         // Ensure every tenant company in the platform has a primary admin assigned
         $assignedCompanyIds = User::where('role', 'admin')->whereNotNull('company_id')->pluck('company_id')->unique()->toArray();
@@ -145,10 +158,15 @@ class SuperAdminController extends Controller
             }
         }
 
-        $companyAdminsQuery = User::where('role', 'admin')
+        $companyAdminsQuery = User::where('role', $listedRole)
             ->whereNotNull('company_id')
             ->with('company')
             ->when($selectedCompanyId, fn ($query) => $query->where('company_id', $selectedCompanyId))
+            // Activity matches the "Last Active" column, which is based on updated_at.
+            ->when($adminActivity === 'today', fn ($query) => $query->whereDate('updated_at', now()->toDateString()))
+            ->when($adminActivity === 'week', fn ($query) => $query->where('updated_at', '>=', now()->subWeek()))
+            ->when($adminActivity === 'inactive', fn ($query) => $query->where(fn ($q) => $q->whereNull('updated_at')->orWhere('updated_at', '<', now()->subDays(30))))
+            ->when($adminStatus === 'pending', fn ($query) => $query->whereNull('email_verified_at')->whereNull('archived_at'))
             ->when($adminSearch !== '', function ($query) use ($adminSearch) {
                 $query->where(function ($subQuery) use ($adminSearch) {
                     $subQuery->where('name', 'like', "%{$adminSearch}%")
@@ -162,9 +180,9 @@ class SuperAdminController extends Controller
             ->when($adminStatus === 'archived', fn ($query) => $query->whereNotNull('archived_at'))
             ->when($adminStatus === 'active', fn ($query) => $query->whereNull('archived_at'));
 
-        // Filter unique by company_id so each company appears exactly ONCE in the list
+        // Company admins: each company appears exactly ONCE. Other roles list every matching account.
         $companyAdminsRaw = $companyAdminsQuery->latest()->get();
-        $uniqueCompanyAdmins = $companyAdminsRaw->unique('company_id');
+        $uniqueCompanyAdmins = $listedRole === 'admin' ? $companyAdminsRaw->unique('company_id') : $companyAdminsRaw;
 
         $page = Paginator::resolveCurrentPage('page');
         $companyAdmins = new LengthAwarePaginator(
@@ -211,6 +229,8 @@ class SuperAdminController extends Controller
             'adminPerPage',
             'adminSearch',
             'adminStatus',
+            'adminRole',
+            'adminActivity',
             'adminStats'
         ));
     }
@@ -515,9 +535,18 @@ class SuperAdminController extends Controller
 
         $adminSearch = trim((string) $request->input('admin_search', ''));
         $adminStatus = $request->input('admin_status', 'active');
+        $adminRole = in_array($request->input('admin_role'), ['admin', 'manager', 'hr'], true) ? $request->input('admin_role') : 'admin';
+        $adminActivity = (string) $request->input('admin_activity', '');
+        $selectedCompanyId = $request->input('company_id');
 
-        $admins = User::where('role', 'admin')
+        // Same filters as the Company Admins table, so the export matches what is on screen.
+        $admins = User::where('role', $adminRole)
             ->with('company')
+            ->when($selectedCompanyId, fn ($query) => $query->where('company_id', $selectedCompanyId))
+            ->when($adminActivity === 'today', fn ($query) => $query->whereDate('updated_at', now()->toDateString()))
+            ->when($adminActivity === 'week', fn ($query) => $query->where('updated_at', '>=', now()->subWeek()))
+            ->when($adminActivity === 'inactive', fn ($query) => $query->where(fn ($q) => $q->whereNull('updated_at')->orWhere('updated_at', '<', now()->subDays(30))))
+            ->when($adminStatus === 'pending', fn ($query) => $query->whereNull('email_verified_at')->whereNull('archived_at'))
             ->when($adminSearch !== '', function ($query) use ($adminSearch) {
                 $query->where(function ($subQuery) use ($adminSearch) {
                     $subQuery->where('name', 'like', "%{$adminSearch}%")
