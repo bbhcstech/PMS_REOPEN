@@ -4,6 +4,7 @@
 @section('page_title', 'Dashboard Overview')
 
 @section('content')
+@include('partials.company-employee-total')
 <div style="display: flex; flex-direction: column; gap: 24px;">
     @if(auth()->user()?->company_id && \Illuminate\Support\Facades\Schema::connection('tenant')->hasTable('attendances'))
         @include('admin.partials.staff-clock', ['attendance' => \App\Services\WorkforceAccess::currentAttendance(auth()->user())])

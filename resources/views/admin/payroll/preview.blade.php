@@ -51,7 +51,7 @@
                 <!-- Attendance Box -->
                 <div class="info-box">
                     <h4>📅 Attendance — {{ Carbon\Carbon::parse($history->period_start)->format('F Y') }}</h4>
-                    <div class="info-row"><span class="k">Working Days</span><span class="v">{{ $snap['working_days'] ?? 22 }}</span></div>
+                    <div class="info-row"><span class="k">Working Days</span><span class="v">{{ $snap['working_days'] ?? ($history->payroll?->metadata['working_days'] ?? '-') }}</span></div>
                     <div class="info-row"><span class="k">Present</span><span class="v">{{ $snap['present'] ?? 22 }}</span></div>
                     <div class="info-row"><span class="k">Paid Leave</span><span class="v">{{ $snap['paid_leave'] ?? 0 }}</span></div>
                     <div class="info-row"><span class="k">Unpaid Leave</span><span class="v text-danger">{{ $snap['unpaid_leave'] ?? 0 }}</span></div>

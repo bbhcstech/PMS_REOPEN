@@ -1297,6 +1297,8 @@ Route::middleware(['auth'])->prefix('payroll')->name('payroll.')->group(function
     Route::get('/formulas', [PayrollController::class, 'formulas'])->name('formulas.index');
     Route::post('/formulas', [PayrollController::class, 'storeFormula'])->name('formulas.store');
     Route::put('/formulas/{formula}', [PayrollController::class, 'updateFormula'])->name('formulas.update');
+    Route::delete('/formulas/{formula}', [PayrollController::class, 'destroyFormula'])->name('formulas.destroy');
+    Route::post('/formulas/{formula}/restore', [PayrollController::class, 'restoreFormula'])->withTrashed()->name('formulas.restore');
     Route::post('/formulas/{formula}/toggle', [PayrollController::class, 'toggleFormulaActive'])->name('formulas.toggle');
     Route::post('/formulas/test', [PayrollController::class, 'testFormulaLive'])->name('formulas.test');
 

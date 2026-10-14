@@ -27,6 +27,47 @@ class PayrollCalculationService
     /**
      * Get eligible employees for payroll calculation based on filters.
      */
+    /**
+     * Best Employee Bonus amount per rank for a payroll month, exactly as calculateEmployeePayrollLine()
+     * pays it: Rank 1 -> 400, Rank 2 -> 200 unless an active BEST_EMPLOYEE_BONUS formula overrides it.
+     *
+     * @return array<int, float> [rank => amount] for ranks 1 and 2
+     */
+    public function bestEmployeeBonusRates(int $year, int $month): array
+    {
+        $start = Carbon::createFromDate($year, $month, 1)->startOfMonth()->format('Y-m-d');
+        $formula = PayrollFormula::where('is_active', true)->where('code', 'BEST_EMPLOYEE_BONUS')
+            ->where(fn ($q) => $q->whereNull('effective_from')->orWhere('effective_from', '<=', $start))
+            ->where(fn ($q) => $q->whereNull('effective_to')->orWhere('effective_to', '>=', $start))
+            ->first();
+        $rates = [];
+        foreach ([1 => 400.0, 2 => 200.0] as $rank => $default) {
+            $amount = $default;
+            if ($formula) {
+                $eval = PayrollFormula::evaluate($formula->formula, ['BE_RANK' => $rank]);
+                if ($eval !== false && $eval >= 0) $amount = round((float) $eval, 2);
+            }
+            $rates[$rank] = $amount;
+        }
+        return $rates;
+    }
+
+    /**
+     * Working days of a payroll month from the company's Work Schedule: calendar days minus weekly
+     * offs, company holidays and special holidays.
+     */
+    public function workingDaysInMonth(int $year, int $month, ?int $companyId = null): int
+    {
+        $start = Carbon::createFromDate($year, $month, 1)->startOfMonth();
+        $end = $start->copy()->endOfMonth();
+        try {
+            return max(1, $start->daysInMonth - count(\App\Services\WorkScheduleService::getHolidaysAndOffDays($start, $end, $companyId)));
+        } catch (\Throwable $e) {
+            report($e);
+            return max(1, $start->daysInMonth - (int) floor($start->daysInMonth / 7) * 2);
+        }
+    }
+
     public function getEligibleEmployees(?int $companyId = null, ?string $office = null, ?string $employeeType = null, ?int $departmentId = null, ?int $year = null, ?int $month = null)
     {
         $query = User::query()
@@ -257,7 +298,9 @@ class PayrollCalculationService
 
                 // Calculate daily hours
                 $hours = 0.0;
-                if ($att->clock_in) {
+                if ($status === 'absent') {
+                    $hours = 0.0;
+                } elseif ($att->clock_in) {
                     $hours = round((int) $att->total_seconds / 3600, 2);
                 } elseif ($att->total_hours !== null && is_numeric($att->total_hours)) {
                     $hours = (float) $att->total_hours;
@@ -406,9 +449,9 @@ class PayrollCalculationService
             $basic = (float) $assignment->actual_basic_salary;
             $struct = $assignment->salaryStructure;
             $hraType = $assignment->hra_type ?: ($struct?->hra_type ?: 'percentage');
-            $hraValue = (float) ($assignment->hra_value !== null && $assignment->hra_value > 0 ? $assignment->hra_value : ($struct?->hra_value ?? 50.0));
+            $hraValue = (float) ($assignment->hra_value !== null ? $assignment->hra_value : ($struct?->hra_value ?? 50.0));
             $specialType = $assignment->special_allowance_type ?: ($struct?->special_allowance_type ?: 'percentage');
-            $specialValue = (float) ($assignment->special_allowance_value !== null && $assignment->special_allowance_value > 0 ? $assignment->special_allowance_value : ($struct?->special_allowance_value ?? 50.0));
+            $specialValue = (float) ($assignment->special_allowance_value !== null ? $assignment->special_allowance_value : ($struct?->special_allowance_value ?? 50.0));
             $structureId = $assignment->salary_structure_id;
             $source = 'assignment';
         }
@@ -486,24 +529,15 @@ class PayrollCalculationService
     {
         $startDate = Carbon::createFromDate($year, $month, 1)->startOfMonth();
         $policyService = app(PayrollPolicyService::class);
-        $policy = $policyService->getActivePolicy($user->company_id);
+        $policy = $policyService->getActivePolicy($user->company_id, $startDate->toDateString());
 
-        // Fetch active formulas effective for this payroll period
-        $activeFormulas = PayrollFormula::where('is_active', true)
-            ->where(function ($q) use ($startDate) {
-                $q->whereNull('effective_from')
-                  ->orWhere('effective_from', '<=', $startDate->format('Y-m-d'));
-            })
-            ->where(function ($q) use ($startDate) {
-                $q->whereNull('effective_to')
-                  ->orWhere('effective_to', '>=', $startDate->format('Y-m-d'));
-            })
-            ->get()
-            ->keyBy('code');
+        $formulaRules = app(\App\Services\PayrollFormulaRules::class);
+        $activeFormulas = $formulaRules->effective((int) $user->company_id, $startDate);
 
         $leaveData = $this->getLeaveData($user, $year, $month);
         $attData = $this->getAttendanceData($user, $year, $month, $workingDays);
         $salaryData = $this->getSalaryStructure($user, $startDate);
+        $appraisalVariables = $formulaRules->appraisalVariables($user, $startDate);
 
         $payableDays = $attData['payable_days'];
         $ratio = $workingDays > 0 ? ($payableDays / $workingDays) : 1.0;
@@ -513,11 +547,11 @@ class PayrollCalculationService
         $basic = $salaryData['basic'];
         $acBasic = round($basic * $ratio, 2);
         if ($activeFormulas->has('CURRENT_BASIC')) {
-            $eval = PayrollFormula::evaluate($activeFormulas['CURRENT_BASIC']->formula, [
+            $eval = $formulaRules->evaluate($activeFormulas['CURRENT_BASIC'], array_merge($appraisalVariables, [
                 'BASIC' => $basic,
                 'PAYABLE_DAYS' => $payableDays,
                 'WORKING_DAYS' => $workingDays,
-            ]);
+            ]));
             if ($eval !== false && $eval >= 0) {
                 $acBasic = round((float) $eval, 2);
             }
@@ -539,10 +573,16 @@ class PayrollCalculationService
             ? round($acBasic * ($specialValue / 100), 2)
             : round($specialValue * $ratio, 2);
 
+        $formulaContext = array_merge($appraisalVariables, [
+            'BASIC' => $basic, 'CURRENT_BASIC' => $acBasic, 'HRA' => $acHra, 'SPECIAL_ALLOWANCE' => $acSpecial,
+            'PAYABLE_DAYS' => $payableDays, 'WORKING_DAYS' => $workingDays, 'WORKING_HOURS' => $attData['working_hours'],
+        ]);
+        $customEarnings = $formulaRules->custom($activeFormulas, ['earnings'], $formulaContext);
         $otherAllowances = (float) ($lineInputs['other_allowances'] ?? 0.0);
+        $otherAllowances += array_sum($customEarnings);
         $acGross = round($acBasic + $acHra + $acSpecial + $otherAllowances, 2);
         if ($activeFormulas->has('GROSS_SALARY')) {
-            $eval = PayrollFormula::evaluate($activeFormulas['GROSS_SALARY']->formula, [
+            $eval = $formulaRules->evaluate($activeFormulas['GROSS_SALARY'], [
                 'CURRENT_BASIC' => $acBasic,
                 'HRA' => $acHra,
                 'SPECIAL_ALLOWANCE' => $acSpecial,
@@ -562,7 +602,7 @@ class PayrollCalculationService
         $pfRate = (float) ($dedRules['pf_percentage'] ?? 12.0);
         $pfAmt = $pfEnabled ? round($acBasic * ($pfRate / 100), 2) : 0.0;
         if ($pfEnabled && $activeFormulas->has('PF_EMPLOYEE')) {
-            $eval = PayrollFormula::evaluate($activeFormulas['PF_EMPLOYEE']->formula, [
+            $eval = $formulaRules->evaluate($activeFormulas['PF_EMPLOYEE'], [
                 'CURRENT_BASIC' => $acBasic,
                 'GROSS_SALARY' => $acGross,
             ]);
@@ -577,7 +617,7 @@ class PayrollCalculationService
             ? round($acGross * ($esiRate / 100), 2)
             : 0.0;
         if ($esiEnabled && ($acGross <= 21000 || !empty($dedRules['esi_all'])) && $activeFormulas->has('ESI_EMPLOYEE')) {
-            $eval = PayrollFormula::evaluate($activeFormulas['ESI_EMPLOYEE']->formula, [
+            $eval = $formulaRules->evaluate($activeFormulas['ESI_EMPLOYEE'], [
                 'GROSS_SALARY' => $acGross,
                 'CURRENT_BASIC' => $acBasic,
             ]);
@@ -586,11 +626,11 @@ class PayrollCalculationService
             }
         }
 
-        $ptAmt = ($acGross > 0 && !empty($dedRules['pt_enabled']))
-            ? (float) ($dedRules['pt_fixed_amount'] ?? 200)
-            : ($acGross > 15000 ? 200.0 : 0.0);
-        if ($activeFormulas->has('PROFESSIONAL_TAX')) {
-            $eval = PayrollFormula::evaluate($activeFormulas['PROFESSIONAL_TAX']->formula, [
+        $ptEnabled = array_key_exists('pt_enabled', $dedRules) ? (bool) $dedRules['pt_enabled'] : true;
+        $ptAmt = $ptEnabled && $acGross > 0 ? (array_key_exists('pt_fixed_amount', $dedRules)
+            ? (float) $dedRules['pt_fixed_amount'] : ($acGross > 15000 ? 200.0 : 0.0)) : 0.0;
+        if ($ptEnabled && $activeFormulas->has('PROFESSIONAL_TAX')) {
+            $eval = $formulaRules->evaluate($activeFormulas['PROFESSIONAL_TAX'], [
                 'GROSS_SALARY' => $acGross,
                 'CURRENT_BASIC' => $acBasic,
             ]);
@@ -600,11 +640,13 @@ class PayrollCalculationService
         }
 
         $tdsAmt = (float) ($lineInputs['tds'] ?? ($acGross > 0 ? ($dedRules['tds_amount'] ?? 0.0) : 0.0));
-        $otherDeductions = (float) ($lineInputs['other_deductions'] ?? 0.0);
+        $formulaContext['GROSS_SALARY'] = $acGross;
+        $customDeductions = $formulaRules->custom($activeFormulas, ['deduction', 'tax'], $formulaContext);
+        $otherDeductions = (float) ($lineInputs['other_deductions'] ?? 0.0) + array_sum($customDeductions);
 
         $totalEmployeeDeductions = round($pfAmt + $esiAmt + $ptAmt + $tdsAmt + $otherDeductions, 2);
         if ($activeFormulas->has('TOTAL_DEDUCTIONS')) {
-            $eval = PayrollFormula::evaluate($activeFormulas['TOTAL_DEDUCTIONS']->formula, [
+            $eval = $formulaRules->evaluate($activeFormulas['TOTAL_DEDUCTIONS'], [
                 'PF' => $pfAmt,
                 'ESI' => $esiAmt,
                 'PT' => $ptAmt,
@@ -619,7 +661,7 @@ class PayrollCalculationService
         // ── Net Pay (Gross - Total Employee Deductions) ─────────────────────
         $netPay = max(0.0, round($acGross - $totalEmployeeDeductions, 2));
         if ($activeFormulas->has('NET_PAY')) {
-            $eval = PayrollFormula::evaluate($activeFormulas['NET_PAY']->formula, [
+            $eval = $formulaRules->evaluate($activeFormulas['NET_PAY'], [
                 'GROSS_SALARY' => $acGross,
                 'TOTAL_DEDUCTIONS' => $totalEmployeeDeductions,
             ]);
@@ -641,7 +683,7 @@ class PayrollCalculationService
             }
         }
         if ($activeFormulas->has('ATTENDANCE_BONUS')) {
-            $eval = PayrollFormula::evaluate($activeFormulas['ATTENDANCE_BONUS']->formula, [
+            $eval = $formulaRules->evaluate($activeFormulas['ATTENDANCE_BONUS'], [
                 'WORKING_HOURS' => $workingHours,
             ]);
             if ($eval !== false && $eval >= 0) {
@@ -664,7 +706,7 @@ class PayrollCalculationService
             }
         }
         if ($activeFormulas->has('BEST_EMPLOYEE_BONUS')) {
-            $eval = PayrollFormula::evaluate($activeFormulas['BEST_EMPLOYEE_BONUS']->formula, [
+            $eval = $formulaRules->evaluate($activeFormulas['BEST_EMPLOYEE_BONUS'], [
                 'BE_RANK' => $beRank,
             ]);
             if ($eval !== false && $eval >= 0) {
@@ -695,33 +737,39 @@ class PayrollCalculationService
         $negativeAdjustment = (float) ($lineInputs['negative_adjustment'] ?? ($rawAdj < 0 ? abs($rawAdj) : 0.0));
         $netAdjustment = round($positiveAdjustment - $negativeAdjustment, 2);
 
+        $formulaContext = array_merge($formulaContext, ['NET_PAY' => $netPay, 'BE_RANK' => $beRank,
+            'OVERTIME_HOURS' => $overtimeHours, 'OVERTIME_RATE' => $overtimeRate]);
+        $customBonuses = $formulaRules->custom($activeFormulas, ['bonus'], $formulaContext);
         $totalAdditionalEarnings = round(
             $attendanceBonus
             + $bestEmpBonus
             + $travelAllowance
             + $overtimePay
             + $commissionAmt
-            + $netAdjustment,
+            + $netAdjustment
+            + array_sum($customBonuses),
             2
         );
         if ($activeFormulas->has('TOTAL_ADDITIONAL_EARNINGS')) {
-            $eval = PayrollFormula::evaluate($activeFormulas['TOTAL_ADDITIONAL_EARNINGS']->formula, [
+            $eval = $formulaRules->evaluate($activeFormulas['TOTAL_ADDITIONAL_EARNINGS'], [
                 'ATTENDANCE_BONUS' => $attendanceBonus,
                 'BEST_EMPLOYEE_BONUS' => $bestEmpBonus,
                 'TA' => $travelAllowance,
                 'OVERTIME' => $overtimePay,
                 'COMMISSION' => $commissionAmt,
                 'ADJUSTMENTS' => $netAdjustment,
+                'CUSTOM_BONUSES' => array_sum($customBonuses),
             ]);
             if ($eval !== false && $eval >= 0) {
-                $totalAdditionalEarnings = round((float) $eval, 2);
+                $includesCustom = in_array('CUSTOM_BONUSES', app(\App\Services\PayrollExpression::class)->variables($activeFormulas['TOTAL_ADDITIONAL_EARNINGS']->formula), true);
+                $totalAdditionalEarnings = round((float) $eval + ($includesCustom ? 0 : array_sum($customBonuses)), 2);
             }
         }
 
         // ── Total In Hand (Net Pay + Additional Earnings) ───────────────────
         $totalInHand = max(0.0, round($netPay + $totalAdditionalEarnings, 2));
         if ($activeFormulas->has('TOTAL_IN_HAND')) {
-            $eval = PayrollFormula::evaluate($activeFormulas['TOTAL_IN_HAND']->formula, [
+            $eval = $formulaRules->evaluate($activeFormulas['TOTAL_IN_HAND'], [
                 'NET_PAY' => $netPay,
                 'TOTAL_ADDITIONAL_EARNINGS' => $totalAdditionalEarnings,
             ]);
@@ -734,7 +782,7 @@ class PayrollCalculationService
         // Employer PF: 12% of Current Basic
         $cpfAmt = $pfEnabled ? round($acBasic * 0.12, 2) : 0.0;
         if ($pfEnabled && $activeFormulas->has('PF_EMPLOYER')) {
-            $eval = PayrollFormula::evaluate($activeFormulas['PF_EMPLOYER']->formula, [
+            $eval = $formulaRules->evaluate($activeFormulas['PF_EMPLOYER'], [
                 'CURRENT_BASIC' => $acBasic,
                 'GROSS_SALARY' => $acGross,
             ]);
@@ -748,7 +796,7 @@ class PayrollCalculationService
             ? round($acGross * 0.0325, 2)
             : 0.0;
         if ($esiEnabled && ($acGross <= 21000 || !empty($dedRules['esi_all'])) && $activeFormulas->has('ESI_EMPLOYER')) {
-            $eval = PayrollFormula::evaluate($activeFormulas['ESI_EMPLOYER']->formula, [
+            $eval = $formulaRules->evaluate($activeFormulas['ESI_EMPLOYER'], [
                 'GROSS_SALARY' => $acGross,
                 'CURRENT_BASIC' => $acBasic,
             ]);
@@ -760,7 +808,7 @@ class PayrollCalculationService
         // EDLI: 0.5% of Current Basic
         $edliAmt = $pfEnabled ? round($acBasic * 0.005, 2) : 0.0;
         if ($pfEnabled && $activeFormulas->has('EDLI_EMPLOYER')) {
-            $eval = PayrollFormula::evaluate($activeFormulas['EDLI_EMPLOYER']->formula, [
+            $eval = $formulaRules->evaluate($activeFormulas['EDLI_EMPLOYER'], [
                 'CURRENT_BASIC' => $acBasic,
             ]);
             if ($eval !== false && $eval >= 0) {
@@ -768,11 +816,12 @@ class PayrollCalculationService
             }
         }
 
-        $otherEmployerContribution = (float) ($lineInputs['other_employer_contribution'] ?? 0.0);
+        $customEmployer = $formulaRules->custom($activeFormulas, ['custom', 'statutory'], $formulaContext);
+        $otherEmployerContribution = (float) ($lineInputs['other_employer_contribution'] ?? 0.0) + array_sum($customEmployer);
 
         $totalEmployerContribution = round($cpfAmt + $cesiAmt + $edliAmt + $otherEmployerContribution, 2);
         if ($activeFormulas->has('TOTAL_EMPLOYER_CONTRIBUTIONS')) {
-            $eval = PayrollFormula::evaluate($activeFormulas['TOTAL_EMPLOYER_CONTRIBUTIONS']->formula, [
+            $eval = $formulaRules->evaluate($activeFormulas['TOTAL_EMPLOYER_CONTRIBUTIONS'], [
                 'EMPLOYER_PF' => $cpfAmt,
                 'EMPLOYER_ESI' => $cesiAmt,
                 'EDLI' => $edliAmt,
@@ -786,10 +835,11 @@ class PayrollCalculationService
         // ── Total CTC (Gross + Additional Earnings + Employer Contributions) ──
         $ctc = round($acGross + $totalAdditionalEarnings + $totalEmployerContribution, 2);
         if ($activeFormulas->has('CTC')) {
-            $eval = PayrollFormula::evaluate($activeFormulas['CTC']->formula, [
+            $eval = $formulaRules->evaluate($activeFormulas['CTC'], [
                 'GROSS_SALARY' => $acGross,
                 'TOTAL_ADDITIONAL_EARNINGS' => $totalAdditionalEarnings,
                 'TOTAL_EMPLOYER_CONTRIBUTION' => $totalEmployerContribution,
+                'TOTAL_EMPLOYER_CONTRIBUTIONS' => $totalEmployerContribution,
             ]);
             if ($eval !== false && $eval >= 0) {
                 $ctc = round((float) $eval, 2);
@@ -831,6 +881,9 @@ class PayrollCalculationService
             $deductionReasons[] = 'Salary recovery / negative adjustment of ₹' . number_format($negativeAdjustment, 2) . (! empty($lineInputs['remarks']) ? ' – ' . $lineInputs['remarks'] : '');
         }
         $empDetail = $user->employeeDetail;
+        foreach ($customDeductions as $code => $amount) {
+            if ($amount > 0) $deductionReasons[] = $activeFormulas[$code]->name.' ('.$code.'): ₹'.number_format($amount, 2);
+        }
         $empId = $empDetail?->employee_id ?: ('EMP' . str_pad($user->id, 3, '0', STR_PAD_LEFT));
         $branch = $empDetail?->business_address ?: ($user->business_address ?? '-');
         $departmentName = $empDetail?->department?->dpt_name ?? ($empDetail?->department?->name ?? ($user->department ?? '-'));
@@ -916,6 +969,7 @@ class PayrollCalculationService
             'ac_gross' => $acGross,
             'gross_salary' => $acGross,
 
+            'custom_formula_amounts' => array_merge($customEarnings, $customDeductions, $customBonuses, $customEmployer),
             // Employee Deductions
             'pf' => $pfAmt,
             'esi' => $esiAmt,
@@ -1255,7 +1309,7 @@ class PayrollCalculationService
         $meta = $history->payroll?->metadata ?? [];
         $year = (int) ($meta['year'] ?? date('Y', strtotime($history->period_start)));
         $month = (int) ($meta['month'] ?? date('n', strtotime($history->period_start)));
-        $workingDays = (int) ($meta['working_days'] ?? 22);
+        $workingDays = (int) ($meta['working_days'] ?? $snap['working_days'] ?? $this->workingDaysInMonth($year, $month, $user->company_id));
 
         $mergedInputs = array_merge($snap, $inputs);
         $recalculatedLine = $this->calculateEmployeePayrollLine($user, $year, $month, $workingDays, $snap['sr_no'] ?? 1, $mergedInputs);

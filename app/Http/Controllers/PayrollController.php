@@ -36,6 +36,7 @@ use Illuminate\Support\Str;
 
 class PayrollController extends Controller
 {
+    use \App\Http\Controllers\Concerns\ManagesPayrollFormulas;
     /**
      * 1. Payroll Dashboard
      */
@@ -44,94 +45,56 @@ class PayrollController extends Controller
         $this->authorizePayroll('payroll');
         $companyId = $this->selectedCompanyId($request);
 
-        $selectedMonth = (int) $request->input('month', date('n'));
-        $selectedYear = (int) $request->input('year', date('Y'));
+        $request->validate([
+            'month' => ['nullable', 'integer', 'between:1,12'],
+            'year' => ['nullable', 'integer', 'between:2000,2100'],
+        ]);
+        $selectedMonth = (int) $request->input('month', now()->month);
+        $selectedYear = (int) $request->input('year', now()->year);
 
-        // Eligible employees count
-        $totalEmployees = User::where(function ($q) {
-                $q->where('role', '!=', 'superadmin')->orWhereNull('role');
-            })
-            ->when($companyId, fn ($q) => $q->where('company_id', $companyId))
-            ->count();
+        $payrollService = app(PayrollCalculationService::class);
+        $eligibleEmployees = $payrollService->getEligibleEmployees($companyId, null, null, null, $selectedYear, $selectedMonth);
+        $totalEmployees = $eligibleEmployees->count();
+        $startDate = Carbon::create($selectedYear, $selectedMonth, 1)->startOfMonth()->toDateString();
+        $endDate = Carbon::create($selectedYear, $selectedMonth, 1)->endOfMonth()->toDateString();
 
-        // Get payroll run for the selected period
-        $startDate = Carbon::createFromDate($selectedYear, $selectedMonth, 1)->startOfMonth()->format('Y-m-d');
-        $endDate = Carbon::createFromDate($selectedYear, $selectedMonth, 1)->endOfMonth()->format('Y-m-d');
-
-        $currentPayroll = $this->dashboardSection('current payroll run', fn () => Payroll::query()
-            ->where(function ($q) use ($startDate, $endDate) {
-                $q->whereBetween('period_start', [$startDate, $endDate])
-                  ->orWhereBetween('period_end', [$startDate, $endDate])
-                  ->orWhere(function ($sub) use ($startDate, $endDate) {
-                      $sub->where('period_start', '<=', $startDate)
-                          ->where('period_end', '>=', $endDate);
-                  });
-            })
-            ->when($companyId, fn ($q) => $q->where('company_id', $companyId))
-            ->latest()
-            ->first(), null);
-
-        $processedCount = 0;
-        $grossTotal = 0.0;
-        $deductionTotal = 0.0;
-        $netTotal = 0.0;
-        $inHandTotal = 0.0;
-        $employerTotal = 0.0;
-        $ctcTotal = 0.0;
-
-        $finalizedCount = 0;
-        $approvedCount = 0;
-        $reviewedCount = 0;
-        $calculatedCount = 0;
-        $draftCount = 0;
-
-        if ($currentPayroll) {
-            $this->dashboardSection('payroll run totals', function () use ($currentPayroll, &$processedCount, &$grossTotal, &$deductionTotal, &$netTotal, &$inHandTotal, &$employerTotal, &$ctcTotal, &$finalizedCount, &$approvedCount, &$reviewedCount, &$calculatedCount, &$draftCount) {
-            $processedCount = PayrollHistory::where('payroll_id', $currentPayroll->id)->count();
-            $grossTotal = (float) $currentPayroll->gross_total;
-            $deductionTotal = (float) $currentPayroll->deduction_total;
-            $netTotal = (float) $currentPayroll->net_total;
-            $inHandTotal = (float) ($currentPayroll->total_in_hand ?? $currentPayroll->net_total);
-            $employerTotal = (float) ($currentPayroll->total_employer_contribution ?? 0);
-            $ctcTotal = (float) ($currentPayroll->total_ctc ?? ($currentPayroll->gross_total + $employerTotal));
-
-            $finalizedCount = PayrollHistory::where('payroll_id', $currentPayroll->id)
-                ->where('payroll_status', 'finalized')
-                ->count();
-            $approvedCount = PayrollHistory::where('payroll_id', $currentPayroll->id)
-                ->where('payroll_status', 'approved')
-                ->count();
-            $reviewedCount = PayrollHistory::where('payroll_id', $currentPayroll->id)
-                ->where('payroll_status', 'reviewed')
-                ->count();
-            $calculatedCount = PayrollHistory::where('payroll_id', $currentPayroll->id)
-                ->where('payroll_status', 'calculated')
-                ->count();
-            $draftCount = ($currentPayroll->status === 'draft')
-                ? $processedCount
-                : max(0, $processedCount - ($finalizedCount + $approvedCount + $reviewedCount + $calculatedCount));
-            }, null);
-        } else {
-            // Live real-time projection across eligible employees for the selected month/year
-            $payrollService = app(PayrollCalculationService::class);
-            $employees = $this->dashboardSection('eligible employees', fn () => $payrollService->getEligibleEmployees($companyId, null, null, null, $selectedYear, $selectedMonth), collect());
-            $workingDays = 22;
-            $srNo = 1;
-            foreach ($employees as $employee) {
-                // One employee's incomplete salary/attendance data must not take the whole dashboard down.
-                $line = $this->dashboardSection('payroll projection for user #' . $employee->id,
-                    fn () => $payrollService->calculateEmployeePayrollLine($employee, $selectedYear, $selectedMonth, $workingDays, $srNo), []);
-                $srNo++;
-                $grossTotal += (float) ($line['gross_salary'] ?? 0);
-                $deductionTotal += (float) ($line['total_deductions'] ?? 0);
-                $netTotal += (float) ($line['net_pay'] ?? 0);
-                $inHandTotal += (float) ($line['total_in_hand'] ?? 0);
-                $employerTotal += (float) ($line['total_employer_contribution'] ?? 0);
-                $ctcTotal += (float) ($line['ctc'] ?? 0);
-            }
-        }
-
+        // Use saved employee lines, never cached run totals or unsaved projections.
+        // Include department/office runs for the month; a rerun replaces an employee's older line.
+        $periodRuns = $this->companyQuery(Payroll::query(), $companyId)
+            ->whereDate('period_start', '>=', $startDate)
+            ->whereDate('period_end', '<=', $endDate)
+            ->orderByDesc('created_at')->orderByDesc('id')->get();
+        $currentPayroll = $periodRuns->first();
+        $runOrder = $periodRuns->pluck('id')->flip();
+        $savedLines = PayrollHistory::whereIn('payroll_id', $periodRuns->pluck('id'))
+            ->whereIn('user_id', $eligibleEmployees->pluck('id'))
+            ->get()->sort(function ($a, $b) use ($runOrder) {
+                return ($runOrder[$a->payroll_id] <=> $runOrder[$b->payroll_id]) ?: ($b->id <=> $a->id);
+            })->unique('user_id')->values();
+        $processedCount = $savedLines->count();
         $pendingCount = max(0, $totalEmployees - $processedCount);
+        $grossTotal = $deductionTotal = $netTotal = $inHandTotal = $employerTotal = $ctcTotal = 0.0;
+        $counts = ['finalized' => 0, 'approved' => 0, 'reviewed' => 0, 'calculated' => 0, 'draft' => 0];
+        foreach ($savedLines as $line) {
+            $snapshot = $line->snapshot ?? [];
+            $gross = (float) ($snapshot['gross_salary'] ?? $line->gross_salary ?? 0);
+            $deductions = (float) ($snapshot['total_deductions'] ?? $line->total_deductions ?? 0);
+            $net = (float) ($snapshot['net_pay'] ?? $line->net_salary ?? 0);
+            $employer = (float) ($snapshot['total_employer_contribution'] ?? 0);
+            $grossTotal += $gross;
+            $deductionTotal += $deductions;
+            $netTotal += $net;
+            $inHandTotal += (float) ($snapshot['total_in_hand'] ?? $line->total_in_hand ?? $net);
+            $employerTotal += $employer;
+            $ctcTotal += (float) ($snapshot['ctc'] ?? $line->ctc ?? ($gross + $employer + ($snapshot['total_additional_earnings'] ?? 0)));
+            $status = strtolower((string) $line->payroll_status);
+            $counts[array_key_exists($status, $counts) ? $status : 'draft']++;
+        }
+        $finalizedCount = $counts['finalized'];
+        $approvedCount = $counts['approved'];
+        $reviewedCount = $counts['reviewed'];
+        $calculatedCount = $counts['calculated'];
+        $draftCount = $counts['draft'];
 
         $kpis = [
             'total_employees' => $totalEmployees,
@@ -178,6 +141,15 @@ class PayrollController extends Controller
             'totalPayrollRuns',
             'latestPayroll'
         ));
+    }
+
+    /**
+     * Working days of a payroll month from the company's Work Schedule: calendar days minus weekly
+     * offs, company holidays and special holidays (WorkScheduleService::getHolidaysAndOffDays).
+     */
+    private function monthWorkingDays(int $year, int $month, ?int $companyId): int
+    {
+        return app(PayrollCalculationService::class)->workingDaysInMonth($year, $month, $companyId);
     }
 
     /**
@@ -580,7 +552,8 @@ class PayrollController extends Controller
 
         $year = (int) $request->input('year', date('Y'));
         $month = (int) $request->input('month', date('n'));
-        $workingDays = (int) $request->input('working_days', 22);
+        // Default to the company's real working days for the month; the page still lets HR/admin override it.
+        $workingDays = (int) ($request->input('working_days') ?: $this->monthWorkingDays($year, $month, $companyId));
         $office = $request->input('office', 'all');
         $departmentId = $request->input('department_id') ? (int) $request->input('department_id') : null;
         $employeeType = $request->input('employee_type', 'all');
@@ -702,10 +675,14 @@ class PayrollController extends Controller
             'status' => $payrollRun ? $payrollRun->status : 'Draft',
         ];
 
+        // Rank labels show the amounts payroll actually pays (Formulas & Rules may override 400 / 200).
+        $bestEmployeeBonusRates = $this->dashboardSection('best employee bonus rates', fn () => $payrollService->bestEmployeeBonusRates($year, $month), [1 => 400.0, 2 => 200.0]);
+
         return view('admin.payroll.processing', compact(
             'year',
             'month',
             'workingDays',
+            'bestEmployeeBonusRates',
             'office',
             'departmentId',
             'departments',
@@ -845,7 +822,7 @@ class PayrollController extends Controller
         $meta = $payroll->metadata ?? [];
         $year = (int) ($meta['year'] ?? date('Y', strtotime($payroll->period_start)));
         $month = (int) ($meta['month'] ?? date('n', strtotime($payroll->period_start)));
-        $workingDays = (int) ($meta['working_days'] ?? $request->integer('working_days', 22));
+        $workingDays = (int) ($meta['working_days'] ?? ($request->integer('working_days') ?: $this->monthWorkingDays($year, $month, $payroll->company_id)));
         $office = $meta['office'] ?? 'all';
         $employeeType = $meta['employee_type'] ?? 'all';
 
@@ -988,223 +965,6 @@ class PayrollController extends Controller
     /**
      * 7. Formulas & Calculation Rules
      */
-    public function formulas(Request $request)
-    {
-        $this->authorizePayroll('payroll');
-        $companyId = $this->selectedCompanyId($request);
-
-        $query = PayrollFormula::query();
-
-        if ($request->filled('category') && $request->input('category') !== 'all') {
-            $query->where('category', $request->input('category'));
-        }
-
-        if ($request->filled('status') && $request->input('status') !== 'all') {
-            $isActive = $request->input('status') === 'active';
-            $query->where('is_active', $isActive);
-        }
-
-        if ($request->filled('search')) {
-            $search = $request->input('search');
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'LIKE', "%{$search}%")
-                  ->orWhere('code', 'LIKE', "%{$search}%")
-                  ->orWhere('description', 'LIKE', "%{$search}%")
-                  ->orWhere('formula', 'LIKE', "%{$search}%");
-            });
-        }
-
-        $formulas = $query->orderBy('category')->orderBy('id', 'asc')->get();
-
-        $summary = [
-            'total' => PayrollFormula::count(),
-            'active' => PayrollFormula::where('is_active', true)->count(),
-            'earnings' => PayrollFormula::where('category', 'earnings')->count(),
-            'deductions' => PayrollFormula::where('category', 'deduction')->count(),
-            'bonuses' => PayrollFormula::where('category', 'bonus')->count(),
-            'statutory' => PayrollFormula::whereIn('category', ['custom', 'statutory'])->count(),
-        ];
-
-        $categories = [
-            'earnings' => 'Earnings & Base',
-            'deduction' => 'Deductions',
-            'bonus' => 'Bonuses & Incentives',
-            'custom' => 'Employer Contributions & CTC',
-        ];
-
-        $commonVariables = [
-            'BASIC' => 'Monthly Base Salary (from structure or assignment)',
-            'PAYABLE_DAYS' => 'Total days present + paid leaves + WFH',
-            'WORKING_DAYS' => 'Total scheduled working days in month (e.g. 22)',
-            'CURRENT_BASIC' => 'Prorated basic salary based on attendance',
-            'HRA' => 'House Rent Allowance amount',
-            'SPECIAL_ALLOWANCE' => 'Special Allowance amount',
-            'OTHER_ALLOWANCES' => 'Sum of other earnings',
-            'GROSS_SALARY' => 'Gross monthly earnings',
-            'PF' => 'Employee Provident Fund deduction',
-            'ESI' => 'Employee State Insurance deduction',
-            'PT' => 'Professional Tax deduction',
-            'TDS' => 'Tax Deducted at Source',
-            'TOTAL_DEDUCTIONS' => 'Sum of all employee deductions',
-            'NET_PAY' => 'Net salary before bonuses and incentives',
-            'WORKING_HOURS' => 'Total logged working hours in month',
-            'BE_RANK' => 'Best Employee performance rank (1 or 2)',
-            'OVERTIME_HOURS' => 'Total approved overtime hours',
-            'OVERTIME_RATE' => 'Hourly overtime rate multiplier',
-            'TA' => 'Approved Travel Allowance',
-            'COMMISSION' => 'Approved Commission amount',
-            'ADJUSTMENTS' => 'Net positive/negative payroll adjustment',
-            'TOTAL_ADDITIONAL_EARNINGS' => 'Sum of bonus, TA, OT, commission & adj',
-            'EMPLOYER_PF' => 'Employer PF matching contribution (12%)',
-            'EMPLOYER_ESI' => 'Employer ESI statutory contribution (3.25%)',
-            'EDLI' => 'Employer EDLI statutory contribution (0.5%)',
-            'TOTAL_EMPLOYER_CONTRIBUTION' => 'Sum of all employer statutory costs',
-        ];
-
-        return view('admin.payroll.formulas', compact('formulas', 'summary', 'categories', 'commonVariables'));
-    }
-
-    public function storeFormula(Request $request)
-    {
-        $this->authorizePayroll('payroll', 'create');
-
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'code' => ['required', 'string', 'max:60', 'unique:payroll_formulas,code'],
-            'category' => ['required', 'string', 'in:earnings,deduction,bonus,custom,statutory'],
-            'formula' => ['required', 'string'],
-            'description' => ['nullable', 'string', 'max:500'],
-            'effective_from' => ['nullable', 'date'],
-            'effective_to' => ['nullable', 'date', 'after_or_equal:effective_from'],
-            'is_active' => ['nullable'],
-        ]);
-
-        $cleanFormula = rtrim(trim($data['formula']), ";, \t\n\r\0\x0B");
-        preg_match_all('/\b[A-Z_]{2,}\b/', $cleanFormula, $varMatches);
-        $variablesUsed = array_values(array_unique($varMatches[0] ?? []));
-
-        $testInputs = $request->input('test_inputs', []);
-        if (is_string($testInputs)) {
-            $testInputs = json_decode($testInputs, true) ?: [];
-        }
-
-        $testResult = PayrollFormula::evaluate($cleanFormula, $testInputs);
-        $isValid = ($testResult !== false);
-
-        $formula = PayrollFormula::create([
-            'name' => $data['name'],
-            'code' => Str::upper(Str::slug($data['code'], '_')),
-            'category' => $data['category'],
-            'formula' => $cleanFormula,
-            'variables_used' => $variablesUsed,
-            'description' => $data['description'] ?? null,
-            'effective_from' => $data['effective_from'] ?: date('Y-m-d'),
-            'effective_to' => $data['effective_to'] ?: null,
-            'version' => 1,
-            'is_valid' => $isValid,
-            'is_active' => $request->boolean('is_active', true),
-            'test_inputs' => $testInputs,
-            'test_result' => $isValid ? (float)$testResult : null,
-            'last_validated_at' => now(),
-            'company_id' => auth()->user()?->company_id,
-            'created_by' => auth()->id(),
-        ]);
-
-        $this->audit('created_payroll_formula', $formula, null, $formula->toArray(), $request);
-
-        return back()->with('success', "Payroll formula '{$formula->name}' created and made effective successfully.");
-    }
-
-    public function updateFormula(Request $request, PayrollFormula $formula)
-    {
-        $this->authorizePayroll('payroll', 'edit');
-
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'category' => ['required', 'string', 'in:earnings,deduction,bonus,custom,statutory'],
-            'formula' => ['required', 'string'],
-            'description' => ['nullable', 'string', 'max:500'],
-            'effective_from' => ['nullable', 'date'],
-            'effective_to' => ['nullable', 'date', 'after_or_equal:effective_from'],
-            'is_active' => ['nullable'],
-        ]);
-
-        $old = $formula->toArray();
-        $cleanFormula = rtrim(trim($data['formula']), ";, \t\n\r\0\x0B");
-        preg_match_all('/\b[A-Z_]{2,}\b/', $cleanFormula, $varMatches);
-        $variablesUsed = array_values(array_unique($varMatches[0] ?? []));
-
-        $testInputs = $request->input('test_inputs', $formula->test_inputs ?: []);
-        if (is_string($testInputs)) {
-            $testInputs = json_decode($testInputs, true) ?: [];
-        }
-
-        $testResult = PayrollFormula::evaluate($cleanFormula, $testInputs);
-        $isValid = ($testResult !== false);
-
-        $formula->update([
-            'name' => $data['name'],
-            'category' => $data['category'],
-            'formula' => $cleanFormula,
-            'variables_used' => $variablesUsed,
-            'description' => $data['description'] ?? null,
-            'effective_from' => $data['effective_from'] ?: date('Y-m-d'),
-            'effective_to' => $data['effective_to'] ?: null,
-            'version' => ($formula->version ?? 1) + 1,
-            'is_valid' => $isValid,
-            'is_active' => $request->boolean('is_active', true),
-            'test_inputs' => $testInputs,
-            'test_result' => $isValid ? (float)$testResult : null,
-            'last_validated_at' => now(),
-            'updated_by' => auth()->id(),
-        ]);
-
-        $this->audit('updated_payroll_formula', $formula, $old, $formula->fresh()->toArray(), $request);
-
-        return back()->with('success', "Payroll formula '{$formula->name}' (v{$formula->version}) updated and made effective.");
-    }
-
-    public function toggleFormulaActive(Request $request, PayrollFormula $formula)
-    {
-        $this->authorizePayroll('payroll', 'edit');
-
-        $formula->is_active = !$formula->is_active;
-        if ($formula->is_active && empty($formula->effective_from)) {
-            $formula->effective_from = date('Y-m-d');
-        }
-        $formula->save();
-
-        $statusStr = $formula->is_active ? 'activated & made effective' : 'deactivated';
-        return back()->with('success', "Payroll formula '{$formula->name}' has been {$statusStr}.");
-    }
-
-    public function testFormulaLive(Request $request)
-    {
-        $this->authorizePayroll('payroll');
-
-        $formula = (string) $request->input('formula', '');
-        $inputs = (array) $request->input('variables', []);
-
-        if (trim($formula) === '') {
-            return response()->json(['success' => false, 'error' => 'Formula expression cannot be empty.']);
-        }
-
-        $result = PayrollFormula::evaluate($formula, $inputs);
-
-        if ($result === false) {
-            return response()->json([
-                'success' => false,
-                'error' => 'Formula evaluation failed. Please check syntax and ensure only valid mathematical expressions are used.',
-            ]);
-        }
-
-        return response()->json([
-            'success' => true,
-            'result' => round($result, 2),
-            'formatted' => '₹' . number_format($result, 2),
-        ]);
-    }
-
     protected function resolvePayslipModel($payslip): Payslip
     {
         if ($payslip instanceof Payslip) {
@@ -1320,7 +1080,9 @@ class PayrollController extends Controller
             'Expires' => '0',
         ];
 
-        $callback = function () use ($items) {
+        // Lines saved without their own value use the run's working days, never an assumed number.
+        $runWorkingDays = $payroll->metadata['working_days'] ?? '-';
+        $callback = function () use ($items, $runWorkingDays) {
             $file = fopen('php://output', 'w');
             fputcsv($file, [
                 'Sr No', 'Emp ID', 'Employee Name', 'Designation', 'Grade',
@@ -1339,7 +1101,7 @@ class PayrollController extends Controller
                     $s['employee_name'] ?? '-',
                     $s['designation'] ?? '-',
                     $s['grade'] ?? '-',
-                    $s['working_days'] ?? 22,
+                    $s['working_days'] ?? $runWorkingDays,
                     $s['present'] ?? 0,
                     $s['paid_leave'] ?? 0,
                     $s['unpaid_leave'] ?? 0,

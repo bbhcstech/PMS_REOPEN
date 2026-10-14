@@ -331,7 +331,10 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
         if ($user?->company_staff_role_id) {
             return view('admin.company-role-dashboard', app(\App\Services\CompanyRoleDashboard::class)->data($user));
         }
-        if ($user && (
+        // An employee's first workspace visit shows the welcome on the employee dashboard (recorded below).
+        $employeeFirstVisit = $user && strtolower((string) $user->role) === 'employee' && ! $user->employee_welcome_seen_at
+            && ! request()->hasHeader('X-PMS-Live-Records');
+        if ($user && ! $employeeFirstVisit && (
             (method_exists($user, 'isDeveloper') && $user->isDeveloper()) ||
             in_array(strtolower((string) ($user->role ?? '')), ['developer', 'dev'], true) ||
             str_contains(strtolower((string) ($user->role ?? '')), 'developer') ||
@@ -348,9 +351,7 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
             $companyId = app(\App\Services\CompanyContext::class)->id() ?? auth()->user()?->company_id;
 
             try {
-                $totalEmployees = \App\Models\User::where('role', 'employee')
-                    ->when($companyId && \Illuminate\Support\Facades\Schema::hasColumn('users', 'company_id'), fn ($q) => $q->where(fn($sub) => $sub->where('company_id', $companyId)->orWhereNull('company_id')))
-                    ->count();
+                $totalEmployees = app(\App\Services\CompanyEmployeeDirectory::class)->count((int) $companyId);
             } catch (\Throwable $e) { $totalEmployees = 0; }
             $today = now()->toDateString();
 
@@ -497,7 +498,18 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
             $employeeTimezone = $this->resolveEmployeeTimezone(session('attendance_timezone.' . $user->id));
             $today = Carbon::now($employeeTimezone)->toDateString();
 
-            $showEmployeeWelcome = ! $user->employee_welcome_seen_at;
+            // The welcome appears on the employee's first workspace visit only. It is recorded here, the
+            // moment it is shown, so a reload, a quick navigation or a lost browser request never shows it
+            // again. Background live-refresh requests (X-PMS-Live-Records) never trigger or consume it.
+            $isLiveRefresh = request()->hasHeader('X-PMS-Live-Records');
+            $showEmployeeWelcome = ! $user->employee_welcome_seen_at && ! $isLiveRefresh;
+            if ($showEmployeeWelcome) {
+                try {
+                    $user->forceFill(['employee_welcome_seen_at' => now()])->save();
+                } catch (\Throwable $e) {
+                    report($e);
+                }
+            }
 
             $attendance = \App\Services\WorkforceAccess::currentAttendance($user);
             $attendancePolicy = $this->attendancePolicy();
@@ -911,6 +923,13 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
 
     return DB::connection('tenant')->transaction(function () use ($request, $validated, $now, $today, $userId, $lat, $lng, $distance, $timezone) {
         User::whereKey($userId)->lockForUpdate()->firstOrFail();
+        // Serialize against concurrent clock-ins using the user's row lock above.
+        // A completed employee session still consumes that business day's clock-in.
+        if (strtolower((string) auth()->user()->role) === 'employee'
+            && Attendance::where('user_id', $userId)->whereDate('date', $today)
+                ->whereNotNull('clock_in')->exists()) {
+            return back()->with('error', 'You have already clocked in today. You can clock in again on the next day.');
+        }
         if (Attendance::where('user_id', $userId)->whereNotNull('clock_in')->whereNull('clock_out')->exists()) {
             return back()->with('error', 'Please clock out of your active shift first.');
         }
@@ -1200,7 +1219,7 @@ public function hrindex(Request $request)
        $endDate = $request->filled('end_date') ? Carbon::parse($request->end_date)->endOfDay() : now()->endOfMonth();
 
 
-        $totalEmployees = EmployeeDetail::count();
+        $totalEmployees = app(\App\Services\CompanyEmployeeDirectory::class)->count();
         $activeEmployees = EmployeeDetail::where('status', 'Active')->count();
         $departmentsCount = Department::count();
         $designationsCount = Designation::count();

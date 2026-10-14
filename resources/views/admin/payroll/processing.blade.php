@@ -314,8 +314,8 @@
                                                     <label class="form-label small fw-bold">Best Employee Rank</label>
                                                     <select name="be_rank" class="form-select form-select-sm">
                                                         <option value="0" {{ ($s['be_rank'] ?? 0) == 0 ? 'selected' : '' }}>None (₹0)</option>
-                                                        <option value="1" {{ ($s['be_rank'] ?? 0) == 1 ? 'selected' : '' }}>Rank 1 (₹400)</option>
-                                                        <option value="2" {{ ($s['be_rank'] ?? 0) == 2 ? 'selected' : '' }}>Rank 2 (₹200)</option>
+                                                        <option value="1" {{ ($s['be_rank'] ?? 0) == 1 ? 'selected' : '' }}>Rank 1 (₹{{ number_format($bestEmployeeBonusRates[1] ?? 400, 0) }})</option>
+                                                        <option value="2" {{ ($s['be_rank'] ?? 0) == 2 ? 'selected' : '' }}>Rank 2 (₹{{ number_format($bestEmployeeBonusRates[2] ?? 200, 0) }})</option>
                                                     </select>
                                                 </div>
                                                 <div class="col-md-6">

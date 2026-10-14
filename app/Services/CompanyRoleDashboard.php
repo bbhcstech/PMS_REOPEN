@@ -65,7 +65,7 @@ class CompanyRoleDashboard
         }
         $hr = null;
         if ($role->access_role === 'hr') {
-            $hr = ['staff' => User::where('company_id', $companyId)->count(), 'pending_leaves' => null];
+            $hr = ['staff' => app(CompanyEmployeeDirectory::class)->count($companyId), 'pending_leaves' => null];
             if ($schema->hasTable('leaves') && $schema->hasColumn('leaves', 'company_id') && $schema->hasColumn('leaves', 'status')) {
                 $hr['pending_leaves'] = WorkforceAccess::records(\App\Models\Leave::where('status', 'pending'), 'employee')
                     ->whereHas('user', fn ($users) => WorkforceAccess::users($users, 'employee'))->count();

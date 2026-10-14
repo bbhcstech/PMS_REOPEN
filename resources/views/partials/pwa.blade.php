@@ -1,4 +1,5 @@
 <link rel="manifest" href="{{ asset('manifest.json') }}">
+@include('partials.operation-loading')
 <meta name="theme-color" content="#1268ff">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">

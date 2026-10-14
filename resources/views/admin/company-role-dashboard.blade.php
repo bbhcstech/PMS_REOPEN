@@ -23,12 +23,12 @@
     <div class="role-panel"><h2>{{ $role->name }} Dashboard</h2><p class="mb-0">{{ $company->name }} &middot; Welcome, {{ auth()->user()->name }}</p></div>
     @include('admin.partials.staff-clock')
     <div class="role-panel role-metrics">
+        <div class="role-metric"><span>Total Employees</span><strong>{{ app(\App\Services\CompanyEmployeeDirectory::class)->count() }}</strong></div>
         @if($allows('tasks'))<div class="role-metric"><span>My assigned tasks</span><strong>{{ $taskCount ?? '—' }}</strong></div>@endif
         @if($allows('projects'))<div class="role-metric"><span>My projects</span><strong>{{ $projectCount ?? '—' }}</strong></div>@endif
         @if(!\App\Services\WorkforceAccess::isAuthority(auth()->user()) && $allows('attendance'))<div class="role-metric"><span>My attendance records this month</span><strong>{{ $attendanceDays ?? '—' }}</strong></div>@endif
         @if(!\App\Services\WorkforceAccess::isAuthority(auth()->user()) && $allows('leaves'))<div class="role-metric"><span>My leave records</span><strong>{{ $leaveCount ?? '—' }}</strong></div>@endif
         @if($hr)
-        @if($allows('employees'))<div class="role-metric"><span>Company staff</span><strong>{{ $hr['staff'] }}</strong></div>@endif
         @if($allows('leaves'))<div class="role-metric"><span>Company pending leaves</span><strong>{{ $hr['pending_leaves'] ?? '—' }}</strong></div>@endif
         @endif
         @if($manager && $allows('tasks') && $allows('projects'))

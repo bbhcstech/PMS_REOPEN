@@ -3,6 +3,7 @@
 @section('title', 'Employee Dashboard')
 
 @section('content')
+@include('partials.company-employee-total')
 @php
     use Carbon\Carbon;
     use Carbon\CarbonPeriod;
@@ -1364,7 +1365,7 @@
         $welcomeCompanyName = $currentCompany?->display_name ?? ($currentCompany?->name ?? 'our company');
         $welcomeCompanyLogo = $currentCompany?->logoUrl() ?? ($currentCompany?->logo ? asset($currentCompany->logo) : asset('logo.png'));
     @endphp
-    <div class="employee-welcome-overlay" id="employeeWelcomeOverlay" data-seen-url="{{ route('dashboard.employeeWelcomeSeen') }}">
+    <div class="employee-welcome-overlay" id="employeeWelcomeOverlay" data-live-preserve data-seen-url="{{ route('dashboard.employeeWelcomeSeen') }}">
         <div class="welcome-balloon"></div>
         <div class="welcome-balloon"></div>
         <div class="welcome-balloon"></div>
@@ -1451,10 +1452,9 @@
                                         <i class="bx bx-log-out-circle"></i> Clock Out
                                     </button>
                                 </form>
+                            @elseif ($attendance && $attendance->clock_out)
+                                <span class="employee-complete mb-2" role="status"><i class="bx bx-check-circle"></i> Shift Completed</span>
                             @else
-                                @if ($attendance && $attendance->clock_out)
-                                    <span class="employee-complete mb-2"><i class="bx bx-check-circle"></i> Shift Completed</span>
-                                @endif
                                 <form method="POST" action="{{ route('dashboard.clockin') }}" id="employeeClockInForm">
                                     @csrf
                                     <input type="hidden" name="clock_in_latitude" id="clockInLatitude">

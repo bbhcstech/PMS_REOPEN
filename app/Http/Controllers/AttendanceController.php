@@ -370,13 +370,14 @@ class AttendanceController extends Controller
         $year = $request->integer('year') ?: now()->year;
         $start = Carbon::create($year, $month, 1)->startOfDay();
         $end = $start->copy()->endOfMonth();
-        $canManage = $this->isAdminUser($actor) || $this->canManageAttendance($actor) || \App\Services\WorkforceAccess::isHr($actor);
+        $personalView = \App\Services\WorkforceAccess::isHr($actor) && $request->query('view') === 'personal';
+        $canManage = !$personalView && ($this->isAdminUser($actor) || $this->canManageAttendance($actor) || \App\Services\WorkforceAccess::isHr($actor));
         $staffCategory = $canManage ? ($request->input('staff_category') === 'authority' ? 'authority' : 'employee') : null;
         $query = User::with(['employeeDetail.designation', 'companyStaffRole'])->where('company_id', $actor->company_id)
             ->whereRaw('LOWER(COALESCE(role, ?)) <> ?', ['', 'client'])->whereNull('archived_at');
         if ($canManage) \App\Services\WorkforceAccess::usersWithHistory($query, $staffCategory, 'attendances');
         else $query->whereKey($actor->id);
-        if (\App\Services\WorkforceAccess::isHr($actor)) \App\Services\WorkforceAccess::users($query, 'employee');
+        if (!$personalView && \App\Services\WorkforceAccess::isHr($actor)) \App\Services\WorkforceAccess::users($query, 'employee');
         $employees = $query->orderBy('name')->get();
         $teamView = $request->query('view') === 'team';
         $visibleEmployees = $employees;
@@ -931,6 +932,10 @@ class AttendanceController extends Controller
         // Normalize user_id to array (accept both single id and array)
         $userIds = $request->input('user_id', []);
         if (!is_array($userIds)) $userIds = [$userIds];
+
+        abort_if(\App\Services\WorkforceAccess::isHr($user)
+            && collect($userIds)->contains(fn ($id) => (int) $id === (int) $user->id),
+            403, 'Only your company admin may add or overwrite your attendance. Use dashboard clock-in and clock-out for your daily attendance.');
 
         $canManageAll = $this->canManageAttendance($user) || $this->isAdminUser($user);
         $isSelf = count($userIds) === 1 && (int) reset($userIds) === (int) $user->id;

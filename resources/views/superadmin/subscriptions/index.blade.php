@@ -612,7 +612,9 @@
     #companyDetailDrawer #drawerCompanyLogoBox { flex-shrink: 0; }
     #companyDetailDrawer .drawer-company-text { min-width: 0; overflow-wrap: anywhere; }
     #companyDetailDrawer .drawer-company-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
-    #companyDetailDrawer #closeDrawerBtn { flex-shrink: 0; }
+    #companyDetailDrawer #closeDrawerBtn { flex: 0 0 auto; width: auto !important; min-width: 40px; }
+    #companyDetailDrawer .drawer-company-identity { flex: 1 1 auto; }
+    #companyDetailDrawer .drawer-panel-custom { height: 100dvh; max-height: 100dvh; }
     #companyDetailDrawer .drawer-body { min-height: 0; min-width: 0; overflow-y: auto !important; overflow-x: hidden; }
     #companyDetailDrawer .drawer-body > * { flex-shrink: 0; min-width: 0; }
     #companyDetailDrawer .drawer-card-box { width: 100%; height: auto; max-height: none; overflow: visible !important; overflow-wrap: anywhere; }

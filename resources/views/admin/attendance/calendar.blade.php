@@ -7,7 +7,8 @@
     $labels = ['present' => ['✅', 'Present'], 'late' => ['⏰', 'Late'], 'half_day' => ['🌓', 'Half day'], 'absent' => ['❌', 'Absent'], 'holiday' => ['🎉', 'Holiday'], 'leave' => ['🌴', 'Leave'], 'unpaid_leave' => ['📋', 'Unpaid leave'], 'day_off' => ['☕', 'Day off'], 'not_marked' => ['○', 'Not marked'], 'not_joined' => ['—', 'Before joining']];
     $previous = $start->copy()->subMonth();
     $next = $start->copy()->addMonth();
-    $navigation = fn ($date) => route($attendanceRoute, array_merge($canManage ? ['user_id' => $selectedEmployee?->id] : [], ['month' => $date->month, 'year' => $date->year]));
+    $personalView = \App\Services\WorkforceAccess::isHr(auth()->user()) && request('view') === 'personal';
+    $navigation = fn ($date) => route($attendanceRoute, array_merge($canManage ? ['user_id' => $selectedEmployee?->id] : [], $personalView ? ['view' => 'personal'] : [], ['month' => $date->month, 'year' => $date->year]));
     $hours = fn ($seconds) => sprintf('%dh %02dm', intdiv((int) $seconds, 3600), intdiv((int) $seconds % 3600, 60));
     $exportRows = collect($calendar['days'])->map(fn ($day) => [$day['key'], $day['status'], $day['seconds'], $day['wfh'] ? 'Yes' : 'No'])->values();
 @endphp
@@ -27,8 +28,10 @@
         </div>
     </header>
     @if(session('success'))<div role="status" class="ac-panel">{{ session('success') }}</div>@endif
+    @if($personalView)<div role="status" class="ac-panel"><strong>My attendance · Read only</strong><p class="mb-0">Only your company admin can correct or overwrite your attendance. Record your daily clock-in and clock-out from your dashboard.</p></div>@endif
     <form class="ac-panel ac-toolbar" method="GET" action="{{ route($attendanceRoute) }}">
 <input type="hidden" name="staff_category" value="{{ request('staff_category', 'employee') }}">
+        @if($personalView ?? false)<input type="hidden" name="view" value="personal">@endif
         @if($canManage)
         <div class="ac-employee-picker"><label for="ac-employee">Employee</label><select name="user_id" id="ac-employee" required>
             @foreach($employees as $employee)<option value="{{ $employee->id }}" @selected($selectedEmployee?->id === $employee->id)>{{ $employee->name }}{{ $employee->employeeDetail?->employee_id ? ' · ' . $employee->employeeDetail->employee_id : '' }}</option>@endforeach

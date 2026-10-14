@@ -25,7 +25,7 @@
 
     @php
         // Calculate employee counts for statistics - FUNCTIONALITY UNCHANGED
-        $totalEmployees = $employees->count();
+        $totalEmployees = $companyEmployeeTotal ?? $employees->count();
         $activeEmployees = $employees->where('employeeDetail.status', 'Active')->count();
         $inactiveEmployees = $employees->where('employeeDetail.status', 'Inactive')->count();
         $noticeEmployees = $employees->filter(function($emp) {

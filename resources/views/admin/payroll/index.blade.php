@@ -33,12 +33,25 @@
         </form>
     </div>
 
-    <!-- 8 KPI Cards Matching ui.html -->
+    <div class="pr-card mb-3" role="status">
+        <div class="pr-card-body">
+            <strong>{{ $kpis['month_name'] }} {{ $kpis['selected_year'] }} · Saved payroll records</strong>
+            <p class="small mb-0 mt-1" style="color: var(--pr-muted);">
+                @if($kpis['payroll_processed'] === 0)
+                    No saved payroll lines for eligible employees in this month. Amounts remain zero until payroll is calculated and saved.
+                @else
+                    Amounts cover {{ $kpis['payroll_processed'] }} of {{ $kpis['total_employees'] }} eligible employees. The latest saved line per employee is included; unsaved estimates are excluded.
+                @endif
+            </p>
+        </div>
+    </div>
+
+    <!-- Selected-month totals from saved employee payroll lines -->
     <div class="kpi-grid">
         <div class="kpi">
             <div class="label">👥 Total Employees</div>
             <div class="value">{{ number_format($kpis['total_employees']) }}</div>
-            <div class="sub">Active in payroll</div>
+            <div class="sub">Salary assignment effective this month</div>
         </div>
         <div class="kpi green">
             <div class="label">✅ Payroll Processed</div>
@@ -58,7 +71,7 @@
         <div class="kpi red">
             <div class="label">📉 Total Deductions</div>
             <div class="value">₹{{ number_format($kpis['total_deductions'], 2) }}</div>
-            <div class="sub">PF + ESI + PT + Tax</div>
+            <div class="sub">All saved employee deductions</div>
         </div>
         <div class="kpi green">
             <div class="label">💰 Total Net Pay</div>
@@ -68,7 +81,7 @@
         <div class="kpi purple">
             <div class="label">🏦 Employer Contribution</div>
             <div class="value">₹{{ number_format($kpis['total_employer_contribution'], 2) }}</div>
-            <div class="sub">Employer PF + ESI + EDLI</div>
+            <div class="sub">All saved employer contributions</div>
         </div>
         <div class="kpi">
             <div class="label">📊 Total CTC</div>
@@ -145,7 +158,7 @@
                 </div>
                 <div class="pr-card-body">
                     <div class="d-flex flex-wrap gap-2 mb-4">
-                        <a href="{{ route('payroll.processing') }}" class="pr-btn pr-btn-primary">
+                        <a href="{{ route('payroll.processing', ['year' => $kpis['selected_year'], 'month' => $kpis['selected_month']]) }}" class="pr-btn pr-btn-primary">
                             <span>⚙️</span> Process Payroll
                         </a>
                         <a href="{{ route('payroll.salary-structures.index') }}" class="pr-btn">

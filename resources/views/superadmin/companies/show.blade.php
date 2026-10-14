@@ -568,6 +568,36 @@
         justify-content: center;
         transition: all 0.2s ease;
     }
+    /* Password: one line at every width. The pill shrinks (ellipsis) instead of wrapping its dots, and the
+       eye / copy buttons stay fixed squares instead of stretching under the mobile button rules. */
+    .info-item .val.password-row {
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+        word-break: normal;
+    }
+    .info-item .val.password-row .password-box-pill {
+        flex: 1 1 auto;
+        min-width: 0;
+        max-width: 100%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        word-break: normal;
+        line-height: 1.6;
+    }
+    .info-item .val.password-row .password-btn-icon {
+        flex: 0 0 34px;
+        width: 34px !important;
+        min-width: 34px !important;
+        max-width: 34px;
+        height: 34px !important;
+        min-height: 34px !important;
+        padding: 0 !important;
+    }
+
     .password-btn-icon:hover {
         color: var(--primary);
         border-color: var(--primary);
@@ -1227,7 +1257,7 @@
                     </div>
                     <div class="info-item">
                         <div class="label">PASSWORD</div>
-                        <div class="val" style="display: flex; align-items: center; gap: 8px;">
+                        <div class="val password-row">
                             <span id="companyPasswordDisplay" data-raw-password="{{ $companyPassword }}" class="password-box-pill">
                                 {{ $companyPassword ? str_repeat('•', min(strlen($companyPassword), 10)) : 'N/A' }}
                             </span>

@@ -209,6 +209,7 @@ class EmployeeController extends Controller
 
         return view('admin.employees.index', [
             'employees' => $employees,
+            'companyEmployeeTotal' => $selectedCompanyId ? app(\App\Services\CompanyEmployeeDirectory::class)->count($selectedCompanyId) : $employees->count(),
             'companies' => $companies,
             'companyStats' => $companyStats,
             'selectedCompanyId' => $selectedCompanyId,

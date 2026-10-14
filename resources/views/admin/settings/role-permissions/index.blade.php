@@ -1154,6 +1154,12 @@
         --matrix-border: #e5ebf4;
         --matrix-text: #24324b;
         --matrix-muted: #64748b;
+        --matrix-enabled-text: #166534;
+        --matrix-enabled-bg: #dcfce7;
+        --matrix-enabled-border: #86efac;
+        --matrix-disabled-text: #475569;
+        --matrix-disabled-bg: #f1f5f9;
+        --matrix-disabled-border: #cbd5e1;
         letter-spacing: 0;
         line-height: 1.55;
     }
@@ -1168,6 +1174,12 @@
         --matrix-border: #28334c;
         --matrix-text: #e8eef9;
         --matrix-muted: #a5b4ce;
+        --matrix-enabled-text: #86efac;
+        --matrix-enabled-bg: #12392d;
+        --matrix-enabled-border: #26634b;
+        --matrix-disabled-text: #cbd5e1;
+        --matrix-disabled-bg: #243047;
+        --matrix-disabled-border: #475569;
     }
     .role-permission-page .ambient-orb { display: none; }
     .role-permission-page .branches-header,
@@ -1237,6 +1249,22 @@
     }
     .role-permission-page .matrix-table tr:hover td { background: var(--matrix-hover) !important; }
     .role-permission-page .matrix-table :is(th, td):nth-child(2) { width: 250px; padding-left: 18px; }
+    .role-permission-page .matrix-table thead th:first-child,
+    .role-permission-page .matrix-table tr[data-module-id] td:first-child {
+        position: sticky;
+        left: 0;
+        width: 48px;
+        min-width: 48px;
+        max-width: 48px;
+        z-index: 1;
+    }
+    .role-permission-page .matrix-table :is(th, td):nth-child(2) {
+        position: sticky;
+        left: 48px;
+        z-index: 1;
+        box-shadow: 4px 0 8px rgba(15, 23, 42, 0.06);
+    }
+    .role-permission-page .matrix-table thead th:nth-child(-n+2) { z-index: 3; }
     .role-permission-page .module-title-box { gap: 4px; }
     .role-permission-page .module-title-box strong {
         color: var(--matrix-text) !important;
@@ -1299,7 +1327,7 @@
         .role-permission-page .matrix-table { min-width: 980px; }
         .role-permission-page .matrix-table :is(th, td):nth-child(2) {
             position: sticky;
-            left: 0;
+            left: 48px;
             z-index: 1;
             width: 180px;
             min-width: 180px !important;
@@ -1313,10 +1341,40 @@
 <style>
     .role-permission-page .permission-category td { background: var(--matrix-hover, #f1f5f9); font-size: .75rem; font-weight: 700; letter-spacing: .04em; padding: 12px 18px; }
     .role-permission-page .permission-filters { display: grid; grid-template-columns: minmax(0, 2fr) minmax(180px, 1fr); gap: 16px; }
-    .role-permission-page .permission-state { font-size: .72rem; border-radius: 6px; padding: 3px 7px; width: fit-content; }
+    .role-permission-page .permission-state {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        width: fit-content;
+        max-width: 100%;
+        padding: 4px 8px;
+        border: 1px solid var(--matrix-disabled-border) !important;
+        border-radius: 6px;
+        background: var(--matrix-disabled-bg) !important;
+        color: var(--matrix-disabled-text) !important;
+        -webkit-text-fill-color: var(--matrix-disabled-text) !important;
+        font-size: .72rem;
+        font-weight: 600;
+        line-height: 1.4;
+        white-space: normal;
+        text-shadow: none;
+    }
+    .role-permission-page .permission-state::before {
+        content: '';
+        width: 6px;
+        height: 6px;
+        flex: 0 0 6px;
+        border-radius: 50%;
+        background: currentColor;
+    }
+    .role-permission-page .permission-state--enabled {
+        border-color: var(--matrix-enabled-border) !important;
+        background: var(--matrix-enabled-bg) !important;
+        color: var(--matrix-enabled-text) !important;
+        -webkit-text-fill-color: var(--matrix-enabled-text) !important;
+    }
     .role-permission-page .matrix-footer { position: sticky; bottom: 0; background: var(--matrix-surface, var(--bs-body-bg, #fff)) !important; z-index: 4; }
     .role-permission-page .module-title-box { padding-left: var(--module-indent, 0); }
-    .role-permission-page .permission-disabled td { opacity: .75; }
     @media (max-width: 767px) { .role-permission-page .permission-filters { grid-template-columns: 1fr; } }
 </style>
 @endpush
@@ -1521,7 +1579,7 @@
                                         <td>
                                             <div class="module-title-box" style="--module-indent: {{ min(4, $module->sidebar_depth ?? 0) * 12 }}px;">
                                                 <strong>{{ ($module->sidebar_name ?? $module->name) }}</strong>
-                                                <span class="permission-state {{ $module->is_active ? 'bg-label-success' : 'bg-label-secondary' }}">{{ $module->is_active ? 'Enabled' : 'Disabled in Module Management' }}</span>
+                                                <span class="permission-state {{ $module->is_active ? 'permission-state--enabled' : 'permission-state--disabled' }}">{{ $module->is_active ? 'Enabled' : 'Disabled in Module Management' }}</span>
                                                 @if($module->slug === 'payroll')<small>Changing Payroll actions also updates its pages. Adjust individual pages before saving if needed.</small>@endif
                                                 @if($module->parent)<small><i class="fas fa-angle-right me-1" style="color: #2F6BFF;"></i>{{ $module->parent->sidebar_name ?? $module->parent->name }}</small>@endif
                                             </div>

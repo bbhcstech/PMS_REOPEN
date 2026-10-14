@@ -1386,7 +1386,9 @@
       .header-actions button,
       .filter-actions .btn,
       .action-bar .btn,
-      [class*="btn-"]:not(.hamburger):not(.theme-toggle-btn):not(.btn-notif):not(.profile) {
+      /* Compact, close and icon buttons keep their own size: stretching e.g. a drawer's × button to the full
+         row squeezed the drawer title into a one-character column and pushed the drawer content off-screen. */
+      [class*="btn-"]:not(.hamburger):not(.theme-toggle-btn):not(.btn-notif):not(.profile):not([class*="btn-xs"]):not(.btn-close):not(.btn-icon) {
         width: 100%;
         justify-content: center;
       }
@@ -1587,6 +1589,12 @@
 
     /* ---- MOBILE BOTTOM NAVIGATION BAR ---- */
     /* Shows quick-access links at bottom on mobile instead of requiring sidebar */
+    /* .main is its own stacking layer (z-index: 1), so an open drawer/overlay inside a page sat under the
+       fixed mobile bottom navigation. Lift the page layer above it only while such a layer is open. */
+    .main:has(:is(.drawer-overlay-custom, .drawer-overlay, .modal-overlay).open) {
+      z-index: 1000;
+    }
+
     .mobile-bottom-nav {
       display: none;
       position: fixed;

@@ -933,6 +933,8 @@
                 </div>
 
                 <div class="employee-clock hr-clock">
+                    <a class="btn btn-outline-primary w-100 mb-2" href="{{ route('attendance.index', ['view' => 'personal']) }}"><i class="bx bx-calendar-check me-1"></i> My Attendance</a>
+                    <p class="small text-muted mb-3">View your attendance history. Corrections are managed by your company admin.</p>
                     @if ($attendance && $attendance->clock_in && !$attendance->clock_out)
                         <form method="POST" action="{{ route('dashboard.clockout') }}" id="employeeClockOutForm">
                             @csrf

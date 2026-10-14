@@ -96,6 +96,9 @@ class AuthenticatedSessionController extends Controller
         $role = strtolower((string) ($user?->role ?? ''));
         $designation = strtolower((string) ($user?->designation ?? ''));
         if ($user?->company_staff_role_id) return redirect()->route('dashboard');
+        // A newly added employee's first login opens the employee dashboard once for the welcome; every
+        // later login goes straight to their usual workspace (e.g. the developer portal for engineers).
+        if ($role === 'employee' && $user && ! $user->employee_welcome_seen_at) return redirect()->route('dashboard');
 
         // 1. Developer redirection (unconditional for any developer account)
         if (
