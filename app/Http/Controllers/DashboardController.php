@@ -483,7 +483,11 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
             return view('client-dashboard');
         }
 
-        if (in_array($userRole, ['hr', 'manager'], true)) {
+        if ($userRole === 'manager') {
+            return $this->project(request());
+        }
+
+        if ($userRole === 'hr') {
             return $this->hrindex(request());
         }
 
@@ -1087,8 +1091,6 @@ private function notifyAuthorityAttendance(Attendance $attendance, string $actio
 
 public function project(Request $request)
 {
-    return redirect()->route('dashboard');
-
     // Default to today if no filter
     $startDate = $request->filled('start_date') ? Carbon::parse($request->start_date)->startOfDay() : now()->startOfDay();
     $endDate = $request->filled('end_date') ? Carbon::parse($request->end_date)->endOfDay() : now()->endOfDay();
