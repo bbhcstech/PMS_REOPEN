@@ -31,6 +31,8 @@ class AppraisalController extends Controller
         $canManage = $policy->canManage($actor);
         $selectedPeriod = (string) $request->get('period', $policy->currentPeriod());
         $policy->periodDates($selectedPeriod);
+        $periods = $policy->periods();
+        if (!in_array($selectedPeriod, $periods, true)) $selectedPeriod = $policy->currentPeriod();
         $search = $request->get('search');
         $employeesQuery = User::whereIn(DB::raw('LOWER(role)'), ['employee', 'user', 'manager', 'hr'])
             ->where('company_id', $actor->company_id)
@@ -53,7 +55,6 @@ class AppraisalController extends Controller
         $editableEmployeeIds = $employees->filter(fn ($employee) => $policy->canEvaluate($actor, $employee))->pluck('id')->all();
         $editableAppraisalIds = $appraisals->filter(fn ($record) => $record->employee && $policy->canEvaluate($actor, $record->employee))->pluck('id')->all();
         $settings = $policy->settings();
-        $periods = array_values(array_unique(array_merge([$selectedPeriod], $policy->periods())));
         $canCreate = $canManage && $actor->hasModulePermission('appraisal', 'create');
         $canEdit = $canManage && $actor->hasModulePermission('appraisal', 'edit');
         $canDelete = $canManage && $actor->hasModulePermission('appraisal', 'delete');
@@ -67,6 +68,45 @@ class AppraisalController extends Controller
         $record = Appraisal::where('company_id', $actor->company_id)->findOrFail($id);
         $request->merge(['employee_id' => $record->employee_id, 'appraisal_period' => $record->appraisal_period]);
         return $this->store($request);
+    }
+
+    public function saveBehaviour(Request $request)
+    {
+        $actor = $this->actor();
+        abort_unless(WorkforceAccess::isAdmin($actor), 403, 'Only a company administrator may enter these ratings.');
+        $data = $request->validate([
+            'employee_id' => ['required', 'integer'], 'appraisal_period' => ['required', 'string', 'max:30'],
+            'teamwork_score' => ['required', 'numeric', 'between:1,10'],
+            'communication_score' => ['required', 'numeric', 'between:1,10'],
+            'punctuality_score' => ['required', 'numeric', 'between:1,10'],
+            'behaviour_remarks' => ['required', 'string', 'max:5000'],
+        ]);
+        $policy = app(AppraisalPolicy::class);
+        $policy->periodDates($data['appraisal_period']);
+        $employee = User::where('company_id', $actor->company_id)->findOrFail($data['employee_id']);
+        $behaviour = round(($data['teamwork_score'] + $data['communication_score'] + $data['punctuality_score']) / 3 * 10, 2);
+        DB::connection('tenant')->transaction(function () use ($actor, $employee, $data, $policy, $behaviour) {
+            User::where('company_id', $actor->company_id)->whereKey($employee->id)->lockForUpdate()->firstOrFail();
+            $record = Appraisal::withTrashed()->where('company_id', $actor->company_id)
+                ->where('employee_id', $employee->id)->where('appraisal_period', $data['appraisal_period'])->first();
+            $this->authorizeEmployee($actor, $employee, $record ? 'edit' : 'create');
+            abort_if($record?->trashed(), 422, 'This appraisal was deleted. Restore it through the full appraisal evaluation before editing ratings.');
+            // Existing work/attendance evidence is preserved. New rows use recorded metrics.
+            $record ??= new Appraisal(array_merge(app(AppraisalMetrics::class)->calculate($employee, $data['appraisal_period']), [
+                'company_id' => $actor->company_id, 'employee_id' => $employee->id,
+                'appraisal_period' => $data['appraisal_period'],
+            ]));
+            $settings = $policy->settings();
+            $record->fill(collect($data)->only(['teamwork_score', 'communication_score', 'punctuality_score', 'behaviour_remarks'])->all());
+            $record->fill([
+                'behaviour_score' => $behaviour,
+                'overall_score' => $policy->score((float) $record->project_score, (float) $record->attendance_score, $behaviour, $settings),
+                'overall_grade' => 'Pending', 'status' => 'draft', 'evaluated_by' => $actor->id,
+                'recommended_increment_percent' => null, 'policy_snapshot' => $settings,
+                'recommendation' => 'Complete the appraisal review before approval.',
+            ])->save();
+        });
+        return back()->with('appraisal_tab', 'behaviour')->with('success', 'Behaviour ratings saved. Complete and approve the appraisal review to finalize the overall grade and salary recommendation.');
     }
 
     public function store(Request $request)
@@ -133,11 +173,16 @@ class AppraisalController extends Controller
                 if ($record && ($record->trashed() || in_array($record->status, ['submitted', 'approved'], true))) continue;
                 $this->authorizeEmployee($actor, $employee, $record ? 'edit' : 'create');
                 $metrics = app(AppraisalMetrics::class)->calculate($employee, $period);
-                Appraisal::updateOrCreate(['company_id' => $actor->company_id, 'employee_id' => $employee->id, 'appraisal_period' => $period], array_merge($metrics, [
+                $behaviourData = $record && $record->teamwork_score >= 1 && $record->communication_score >= 1 && $record->punctuality_score >= 1
+                    ? $record->only(['teamwork_score', 'communication_score', 'punctuality_score', 'behaviour_score', 'behaviour_remarks', 'evaluated_by'])
+                    : [
                     'teamwork_score' => 0, 'communication_score' => 0, 'punctuality_score' => 0, 'behaviour_score' => 0,
                     'behaviour_remarks' => 'Awaiting reviewer feedback on teamwork, communication and professional conduct.',
+                    'evaluated_by' => null,
+                ];
+                Appraisal::updateOrCreate(['company_id' => $actor->company_id, 'employee_id' => $employee->id, 'appraisal_period' => $period], array_merge($metrics, $behaviourData, [
                     'overall_score' => 0, 'overall_grade' => 'Pending', 'recommendation' => 'Reviewer evaluation required',
-                    'status' => 'draft', 'evaluated_by' => null, 'recommended_increment_percent' => null, 'policy_snapshot' => $settings,
+                    'status' => 'draft', 'recommended_increment_percent' => null, 'policy_snapshot' => $settings,
                 ]));
                 $count++;
             }

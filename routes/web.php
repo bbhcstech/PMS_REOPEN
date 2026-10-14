@@ -1533,6 +1533,7 @@ Route::middleware(['auth'])->group(function () {
     // Appraisal Module Routes (Under HR)
     Route::get('/admin/hr/appraisal', [\App\Http\Controllers\Admin\AppraisalController::class, 'index'])->name('appraisal.index');
     Route::post('/admin/hr/appraisal', [\App\Http\Controllers\Admin\AppraisalController::class, 'store'])->name('appraisal.store');
+    Route::post('/admin/hr/appraisal/behaviour', [\App\Http\Controllers\Admin\AppraisalController::class, 'saveBehaviour'])->name('appraisal.behaviour.save');
     Route::put('/admin/hr/appraisal/{id}', [\App\Http\Controllers\Admin\AppraisalController::class, 'update'])->name('appraisal.update');
     Route::post('/admin/hr/appraisal/auto-calculate', [\App\Http\Controllers\Admin\AppraisalController::class, 'autoCalculate'])->name('appraisal.autoCalculate');
     Route::delete('/admin/hr/appraisal/{id}', [\App\Http\Controllers\Admin\AppraisalController::class, 'destroy'])->name('appraisal.destroy');

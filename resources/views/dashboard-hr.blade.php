@@ -1673,10 +1673,11 @@
         let stream = null;
         for (const constraints of constraintsList) {
             try {
-                stream = await navigator.mediaDevices.getUserMedia(constraints);
+                stream = await window.PMSClockCapture.camera(constraints, () => modal?.classList.contains('is-open'));
                 if (stream) break;
             } catch (e) {
-                // Try next fallback constraint
+                if (['NotAllowedError', 'SecurityError', 'NotReadableError', 'TimeoutError', 'Error'].includes(e.name)) throw e;
+                    // Retry only a different camera constraint.
             }
         }
 
@@ -1688,7 +1689,7 @@
         if (video) {
             video.srcObject = cameraStream;
             try {
-                await video.play();
+                await window.PMSClockCapture.play(video);
             } catch (e) {}
         }
     };
@@ -1720,20 +1721,9 @@
         }
     };
 
-    const requestLocation = () => new Promise((resolve, reject) => {
-        if (!navigator.geolocation) {
-            reject(new Error('Location is not supported in this browser.'));
-            return;
-        }
+    const requestLocation = () => window.PMSClockCapture.location();
 
-        navigator.geolocation.getCurrentPosition(resolve, reject, {
-            enableHighAccuracy: true,
-            timeout: 15000,
-            maximumAge: 0
-        });
-    });
-
-    const compactAddress = address => {
+        const compactAddress = address => {
         if (!address || typeof address !== 'object') {
             return '';
         }
@@ -1760,17 +1750,11 @@
         url.searchParams.set('zoom', '18');
         url.searchParams.set('addressdetails', '1');
 
-        const response = await fetch(url.toString(), {
+        const data = await window.PMSClockCapture.json(url.toString(), {
             headers: {
                 'Accept': 'application/json'
             }
         });
-
-        if (!response.ok) {
-            throw new Error('Location name lookup failed.');
-        }
-
-        const data = await response.json();
         return compactAddress(data.address) || (data.display_name || '').slice(0, 180);
     };
 
@@ -1784,6 +1768,9 @@
 
             try {
                 clockInButton.disabled = true;
+                    if (useCamera) useCamera.disabled = true;
+                    const cameraReady = openCamera();
+                    cameraReady.catch(error => { closeCameraModal(); setClockStatus(window.PMSClockCapture.cameraError(error), 'error'); });
                 setClockStatus('Requesting current location permission...', 'info');
                 const position = await requestLocation();
                 const currentLat = position.coords.latitude;
@@ -1807,9 +1794,10 @@
                     setClockStatus(`Location captured. Opening camera...`, 'success');
                 }
 
-                await openCamera();
+                await cameraReady; if (useCamera) useCamera.disabled = false;
             } catch (error) {
-                setClockStatus(error.message || 'Please allow current location and camera permission to clock in.', 'error');
+                closeCameraModal();
+                setClockStatus(window.PMSClockCapture.cameraError(error), 'error');
             } finally {
                 clockInButton.disabled = false;
             }

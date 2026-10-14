@@ -979,7 +979,7 @@
                                     <span class="fw-bold text-success">{{ number_format($appr->attendance_score, 1) }} / 100</span>
                                 </td>
                                 <td>
-                                    <span class="fw-bold text-warning">{{ $appr->status === 'draft' ? 'Awaiting feedback' : number_format($appr->behaviour_score, 1).' / 100' }}</span>
+                                    <span class="fw-bold text-warning">{{ $appr->teamwork_score < 1 || $appr->communication_score < 1 || $appr->punctuality_score < 1 ? 'Awaiting feedback' : number_format($appr->behaviour_score, 1).' / 100' }}</span>
                                 </td>
                                 <td>
                                     <div class="d-flex align-items-center gap-2">
@@ -1150,51 +1150,14 @@
                     <h5 class="text-white fw-bold mb-0"><i class="bx bx-smile me-1"></i> Table 3: Behaviour, Soft Skills & Conduct Appraisal</h5>
                     <span class="badge bg-white text-dark fw-bold px-3 py-1.5" style="color: #b45309 !important;">Current policy weight: {{ $settings['behaviour_weight'] }}%</span>
                 </div>
-                <div class="table-responsive">
-                    <table class="table app-table align-middle mb-0">
-                        <thead>
-                            <tr>
-                                <th style="min-width: 200px;">Employee</th>
-                                <th style="min-width: 150px;">Teamwork (1-10)</th>
-                                <th style="min-width: 170px;">Communication (1-10)</th>
-                                <th style="min-width: 170px;">Professional conduct (1-10)</th>
-                                <th style="min-width: 180px;">Behaviour Score (0-100)</th>
-                                <th style="min-width: 250px;">Conduct Remarks</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($appraisals as $appr)
-                            <tr>
-                                <td>
-                                    <div class="d-flex align-items-center gap-2">
-                                        <div class="avatar avatar-sm flex-shrink-0">
-                                            @if(!empty($appr->employee?->profile_image))
-                                                <img src="{{ asset($appr->employee->profile_image) }}" alt="{{ $appr->employee->name }}" class="rounded-circle" style="width: 34px; height: 34px; object-fit: cover;">
-                                            @else
-                                                <span class="avatar-initial rounded-circle bg-label-purple fw-bold">{{ strtoupper(substr($appr->employee?->name ?? 'E', 0, 1)) }}</span>
-                                            @endif
-                                        </div>
-                                        <span class="fw-bold text-dark">{{ $appr->employee?->name }}</span>
-                                    </div>
-                                </td>
-                                <td><span class="fw-bold text-dark">{{ number_format($appr->teamwork_score, 1) }}</span></td>
-                                <td><span class="fw-bold text-dark">{{ number_format($appr->communication_score, 1) }}</span></td>
-                                <td><span class="fw-bold text-dark">{{ number_format($appr->punctuality_score, 1) }}</span></td>
-                                <td><span class="fw-extrabold text-warning fs-6">{{ number_format($appr->behaviour_score, 1) }} / 100</span></td>
-                                <td><small class="text-muted">{{ $appr->behaviour_remarks ?? 'Positive professional attitude.' }}</small></td>
-                            </tr>
-                            @empty
-                            <tr><td colspan="6" class="text-center py-4">No behaviour metrics recorded.</td></tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
+                @include('admin.appraisal.behaviour-table')
             </div>
         </div>
 
     </div>
 </div>
 
+@stack('appraisal-behaviour-modals')
 @foreach($appraisals as $appr)
     @include('admin.appraisal.modals')
 @endforeach
@@ -1223,7 +1186,11 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Appraisal Period <sup class="text-danger">*</sup></label>
-                            <input type="text" name="appraisal_period" class="form-control" value="{{ $selectedPeriod }}" required>
+                            <select name="appraisal_period" class="form-select" required>
+                                @foreach($periods as $period)
+                                    <option value="{{ $period }}" @selected($selectedPeriod === $period)>{{ $period }}</option>
+                                @endforeach
+                            </select>
                         </div>
 
                         <div class="col-md-6">

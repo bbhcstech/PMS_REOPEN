@@ -1214,12 +1214,12 @@
         @endif
 
         @if ($errors->any())
-            <div class="alert-custom-err fade-up-stagger" role="alert" style="animation-delay: 0.05s;">
+            <div class="alert-custom-err fade-up-stagger" data-validation-summary role="alert" style="animation-delay: 0.05s;">
                 <div class="fw-bold mb-2"><i class="fas fa-exclamation-circle me-2"></i>Please fix the following errors:</div>
                 <ul class="mb-0 ps-4">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
+                    @foreach ($errors->getMessages() as $field => $messages) @foreach ($messages as $error)
+                        <li data-validation-field="{{ $field }}">{{ $error }}</li>
+                    @endforeach @endforeach
                 </ul>
             </div>
         @endif
@@ -1480,10 +1480,10 @@
                             <small id="mobile_help_text" class="text-muted d-block mt-1" style="font-size: 0.7rem;">Select the country code and enter a 10-digit phone number.</small>
                             <input type="hidden" name="mobile_with_code" id="mobile_with_code" value="{{ old('mobile_with_code') ?? ($ed->mobile ?? $employee?->mobile ?? '') }}">
                             @error('mobile_country_code')
-                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                                <div data-validation-field="mobile_country_code" class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
                             @error('mobile')
-                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                                <div data-validation-field="mobile" class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
                         </div>
 
@@ -2006,6 +2006,7 @@
 @endpush
 
 @push('js')
+<script src="{{ asset('admin/assets/js/pms-employee-mobile-check.js') }}?v={{ @filemtime(public_path('admin/assets/js/pms-employee-mobile-check.js')) ?: 1 }}"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
@@ -2176,7 +2177,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const mobileOnly = $el('mobile_only_digits');
     if (mobileOnly) {
         mobileOnly.addEventListener('input', function () {
-            let v = this.value.replace(/\D/g, '').slice(0, 10);
+            let v = this.value.replace(/\D/g, '').slice(0, Number(document.getElementById('mobile_only_digits').maxLength) || 15);
             if (v.length > 0 && v[0] === '0') v = v.replace(/^0+/, '');
             this.value = v;
             if (typeof syncMobileHidden === 'function') syncMobileHidden();
@@ -2422,36 +2423,11 @@ $(document).ready(function() {
         return true;
     }
 
-    let mobileCheckAjax = null;
-    $('#mobile_only_digits').on('blur', function() {
-        if (!validateMobileInput()) return;
-
-        const value = $(this).val().trim();
-        if (!value) return;
-
-        const selectedCountryCode = $('#mobile_country_code').val() || '+91';
-        $('#mobile_with_code').val(selectedCountryCode + value);
-
-        if (mobileCheckAjax) mobileCheckAjax.abort();
-
-        mobileCheckAjax = $.ajax({
-            url: '{{ route("employees.check-mobile") }}',
-            method: 'POST',
-            data: {
-                mobile: value,
-                mobile_country_code: selectedCountryCode,
-                _token: '{{ csrf_token() }}'
-            },
-            success: function(response) {
-                if (response.exists) {
-                    $('#mobile_only_digits').addClass('is-invalid');
-                    $('#mobile-error').text('This mobile number is already registered').removeClass('d-none').addClass('d-block');
-                }
-            },
-            error: function(xhr, status) {
-                if (status !== 'abort') console.error('Mobile check failed');
-            }
-        });
+    window.validateMobileInput = validateMobileInput;
+    window.PMSEmployeeMobileCheck.init({
+        url: '{{ route("employees.check-mobile") }}',
+        csrf: '{{ csrf_token() }}',
+        validate: validateMobileInput
     });
 
     $('.email-input').on('blur', function() {

@@ -1,5 +1,6 @@
 <link rel="manifest" href="{{ asset('manifest.json') }}">
 @include('partials.operation-loading')
+<script src="{{ asset('admin/assets/js/pms-clock-capture.js') }}?v={{ @filemtime(public_path('admin/assets/js/pms-clock-capture.js')) ?: 1 }}"></script>
 <meta name="theme-color" content="#1268ff">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">

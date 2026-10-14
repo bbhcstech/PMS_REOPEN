@@ -54,6 +54,8 @@ $policy = app(AppraisalPolicy::class);
 $metrics = app(AppraisalMetrics::class);
 $hr = User::findOrFail(2); Auth::guard('web')->setUser($hr);
 $check($policy->currentPeriod() === '2026 Q4', 'Current quarter is hard-coded');
+// The following fixtures exercise monthly reviews, so select that cycle explicitly.
+AppSetting::updateOrCreate(['key' => 'perf_appraisal_cycle'], ['value' => 'Monthly']);
 $check($metrics->calculate(User::findOrFail(3), '2026-10')['project_score'] === 0, 'Missing work invented a score');
 DB::table('attendances')->insert([
     ['company_id' => 1, 'user_id' => 3, 'date' => '2026-10-01', 'status' => 'present'],

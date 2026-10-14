@@ -2552,10 +2552,11 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
             let stream = null;
             for (const constraints of constraintsList) {
                 try {
-                    stream = await navigator.mediaDevices.getUserMedia(constraints);
+                    stream = await window.PMSClockCapture.camera(constraints, () => modal?.classList.contains('is-open'));
                     if (stream) break;
                 } catch (e) {
-                    // Try next fallback constraint
+                    if (['NotAllowedError', 'SecurityError', 'NotReadableError', 'TimeoutError', 'Error'].includes(e.name)) throw e;
+                    // Retry only a different camera constraint.
                 }
             }
 
@@ -2567,7 +2568,7 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
             if (video) {
                 video.srcObject = cameraStream;
                 try {
-                    await video.play();
+                    await window.PMSClockCapture.play(video);
                 } catch (e) {}
             }
         };
@@ -2599,18 +2600,7 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
             }
         };
 
-        const requestLocation = () => new Promise((resolve, reject) => {
-            if (!navigator.geolocation) {
-                reject(new Error('Location is not supported in this browser.'));
-                return;
-            }
-
-            navigator.geolocation.getCurrentPosition(resolve, reject, {
-                enableHighAccuracy: true,
-                timeout: 15000,
-                maximumAge: 0
-            });
-        });
+        const requestLocation = () => window.PMSClockCapture.location();
 
         const compactAddress = address => {
             if (!address || typeof address !== 'object') {
@@ -2639,17 +2629,11 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
             url.searchParams.set('zoom', '18');
             url.searchParams.set('addressdetails', '1');
 
-            const response = await fetch(url.toString(), {
+            const data = await window.PMSClockCapture.json(url.toString(), {
                 headers: {
                     'Accept': 'application/json'
                 }
             });
-
-            if (!response.ok) {
-                throw new Error('Location name lookup failed.');
-            }
-
-            const data = await response.json();
             return compactAddress(data.address) || (data.display_name || '').slice(0, 180);
         };
 
@@ -2665,6 +2649,9 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
 
                 try {
                     clockInButton.disabled = true;
+                    if (useCamera) useCamera.disabled = true;
+                    const cameraReady = openCamera();
+                    cameraReady.catch(error => { closeCameraModal(); setClockStatus(window.PMSClockCapture.cameraError(error), 'error'); });
                     setClockStatus('Detecting location...', 'info');
 
                     let currentLat = officeLocation.lat || 0;
@@ -2700,10 +2687,11 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
                     // 2. Open the camera; permission errors must not clock in
                     try {
                         setClockStatus('Opening camera for selfie photo...', 'info');
-                        await openCamera();
+                        await cameraReady; if (useCamera) useCamera.disabled = false;
                     } catch (camErr) {
                         console.warn('Camera permission error or unavailable:', camErr);
-                        setClockStatus('Camera access is required. Allow camera permission and capture your photo to clock in.', 'error');
+                        closeCameraModal();
+                        setClockStatus(window.PMSClockCapture.cameraError(camErr), 'error');
                         selfieInput.value = '';
                         canSubmitClockIn = false;
                     }

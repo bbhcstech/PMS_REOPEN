@@ -61,22 +61,31 @@ class AppraisalPolicy
     {
         $now = now();
         return match ($this->settings()['appraisal_cycle']) {
-            'Monthly' => $now->format('Y-m'),
             'Bi-Annually' => $now->year.' H'.($now->month <= 6 ? 1 : 2),
             'Annually', 'Annual' => 'Annual '.$now->year,
-            default => $now->year.' Q'.$now->quarter,
+            'Quarterly' => $now->year.' Q'.$now->quarter,
+            default => $now->format('Y-m'),
         };
     }
 
     public function periods(): array
     {
         $periods = [$this->currentPeriod()];
+        $cycle = $this->settings()['appraisal_cycle'];
         for ($year = now()->year; $year >= now()->year - 2; $year--) {
-            $periods[] = 'Annual '.$year;
-            foreach (range(4, 1) as $quarter) $periods[] = $year.' Q'.$quarter;
-            foreach ([2, 1] as $half) $periods[] = $year.' H'.$half;
-            if ($this->settings()['appraisal_cycle'] === 'Monthly') {
-                foreach (range(12, 1) as $month) $periods[] = sprintf('%d-%02d', $year, $month);
+            switch ($cycle) {
+                case 'Annually':
+                case 'Annual':
+                    $periods[] = 'Annual '.$year;
+                    break;
+                case 'Bi-Annually':
+                    foreach ([2, 1] as $half) $periods[] = $year.' H'.$half;
+                    break;
+                case 'Quarterly':
+                    foreach (range(4, 1) as $quarter) $periods[] = $year.' Q'.$quarter;
+                    break;
+                default:
+                    foreach (range(12, 1) as $month) $periods[] = sprintf('%d-%02d', $year, $month);
             }
         }
         return array_values(array_unique($periods));
