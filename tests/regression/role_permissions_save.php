@@ -23,6 +23,13 @@ Schema::table('role_permissions', function ($t) {
     $t->timestamps();
 });
 DB::table('role_permissions')->delete();
+$app->instance(App\Services\CompanyContext::class, new class extends App\Services\CompanyContext {
+    public function current() {
+        return new class {
+            public function hasFeature($slug) { return $slug !== 'role-management'; }
+        };
+    }
+});
 Auth::guard('web')->setUser(new User(['company_id' => 1, 'role' => 'admin']));
 $controller = new RolePermissionController;
 $actions = ['view', 'create', 'edit', 'delete', 'approve', 'export', 'assign'];

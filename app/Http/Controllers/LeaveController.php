@@ -22,12 +22,21 @@ class LeaveController extends Controller
     {
     }
 
-    public function index(Request $request)
+    /**
+     * The signed-in user's own leave requests (e.g. HR's requests to the admin). HR's "My Leaves"
+     * page is the employee leave queue HR manages, which never lists HR's own requests.
+     */
+    public function myLeaves(Request $request)
+    {
+        return $this->index($request, true);
+    }
+
+    public function index(Request $request, bool $ownLeaves = false)
     {
         $this->leaveService->ensureDefaultTypes();
         $policy = $this->leaveService->policy();
         $leaveTypes = $this->leaveService->leaveTypes();
-        $isAdmin = $this->isAdmin();
+        $isAdmin = $this->isAdmin() && ! $ownLeaves;
         $companyId = $this->selectedCompanyId($request);
         $employees = $isAdmin ? $this->employeeQuery()->get() : User::where('id', Auth::id())->get();
         $perPage = (int) $request->input('per_page', 20);
@@ -41,7 +50,8 @@ class LeaveController extends Controller
 
         $query = Leave::with(['user.employeeDetail.department', 'leaveType', 'approver', 'rejector'])
             ->whereNull('archived_at');
-        if (! $isAdmin) $this->scopeRecordCategory($query);
+        if ($ownLeaves) $query->where('user_id', Auth::id());
+        elseif (! $isAdmin) $this->scopeRecordCategory($query);
 
         if ($isAdmin) {
             $this->scopeRecordCategory($query);
@@ -96,6 +106,7 @@ class LeaveController extends Controller
         ];
 
         $archivedCount = $isAdmin ? $this->scopeRecordCategory(Leave::whereNotNull('archived_at'))->count() : 0;
+        $ownLeavesView = $ownLeaves;
         $policyNotice = $this->leaveService->policyNotice($policy);
         $authorityPendingCount = \App\Services\WorkforceAccess::isAdmin(Auth::user())
             ? \App\Services\WorkforceAccess::records(Leave::whereNull('archived_at')->where('status', 'pending'), 'authority')->count()
@@ -112,6 +123,7 @@ class LeaveController extends Controller
             'archivedCount',
             'perPage',
             'policyNotice',
+            'ownLeavesView',
             'authorityPendingCount'
         ));
     }
@@ -221,9 +233,15 @@ class LeaveController extends Controller
 
     public function show(Leave $leave)
     {
-        $this->authorizeLeaveAccess($leave);
+        if ((int) $leave->user_id === (int) Auth::id()) {
+            // Everyone may read their own request (HR's leave is a higher-level record reviewed by the admin).
+            \App\Services\TenantScope::authorizeCompany($leave->user?->company_id);
+        } else {
+            $this->authorizeLeaveAccess($leave);
+        }
         $leave->load(['user.employeeDetail.department', 'leaveType', 'approvals.user', 'approver', 'rejector', 'apologyLetters.user']);
-        $isAdmin = $this->isAdmin();
+        // Review actions only for someone allowed to review this request (never HR on their own leave).
+        $isAdmin = $this->isAdmin() && $this->leaveService->canReview($leave, Auth::user());
 
         return view('admin.leaves.show', compact('leave', 'isAdmin'));
     }

@@ -138,15 +138,13 @@
 <script>
 document.addEventListener('DOMContentLoaded', () => {
 
-    const now = new Date();
-    const pad = n => n.toString().padStart(2, '0');
-    const isoDate = now.toISOString().split('T')[0];
+    const isoDate = window.PMSTime.dateKey();
 
     // default date/time
     document.getElementById('start_date').value = isoDate;
     document.getElementById('end_date').value = isoDate;
-    document.getElementById('start_time').value = pad(now.getHours()) + ':' + pad(now.getMinutes());
-    document.getElementById('end_time').value = pad(now.getHours()) + ':' + pad(now.getMinutes());
+    document.getElementById('start_time').value = window.PMSTime.inputTime();
+    document.getElementById('end_time').value = window.PMSTime.inputTime();
 
     // Generate Auto Code
     function generateCode() {

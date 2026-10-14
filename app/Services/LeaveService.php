@@ -27,10 +27,30 @@ class LeaveService
     private function authorizeAuthorityReview(Leave $leave, ?User $actor): void
     {
         $owner = $leave->user;
-        if ($owner && (WorkforceAccess::isAuthority($owner) || $leave->staff_category === 'authority')) {
+        if ($owner && $this->adminOnlyReview($leave)) {
             abort_unless(WorkforceAccess::isAdmin($actor), 403, 'Only the company admin may review higher-level staff leave.');
             abort_unless((int) $actor->company_id === (int) $owner->company_id, 403);
         }
+    }
+
+    /** Leave only the company admin reviews: higher-level staff (HR, managers, custom roles). */
+    private function adminOnlyReview(Leave $leave): bool
+    {
+        $owner = $leave->user;
+        return $owner && (WorkforceAccess::isAuthority($owner) || $leave->staff_category === 'authority');
+    }
+
+    /** Whether the actor may approve / reject / change this leave (same rules as the review actions). */
+    public function canReview(Leave $leave, ?User $actor): bool
+    {
+        if (! $leave->user || ! WorkforceAccess::canManageLeaves($actor)
+            || ! WorkforceAccess::canAccessRecord($actor, $leave->user, $leave->staff_category)) {
+            return false;
+        }
+        if ($this->adminOnlyReview($leave)) {
+            return WorkforceAccess::isAdmin($actor) && (int) $actor->company_id === (int) $leave->user->company_id;
+        }
+        return true;
     }
     public function policy(): LeavePolicy
     {

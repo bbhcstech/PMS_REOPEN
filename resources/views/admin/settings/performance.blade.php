@@ -1143,7 +1143,7 @@
                     </div>
                     <div class="header-title">
                         <h1>Performance & Appraisal Settings</h1>
-                        <p>Configure review cycles, rating scales, self-assessments, 360-degree feedback, and evaluation metrics.</p>
+                        <p>Configure attendance, work and cultural behaviour scoring, administrator approval, and salary increase recommendations.</p>
                     </div>
                 </div>
 
@@ -1205,7 +1205,7 @@
                     </div>
                     <div class="stat-info">
                         <h6>Evaluation Workflow</h6>
-                        <h3>{{ $selfAssess ? 'Self' : '' }}{{ $peerReview ? ' + Peer' : '' }}{{ $managerApproval ? ' + Manager' : '' }}</h3>
+                        <h3>Admin + HR</h3>
                     </div>
                 </div>
             </div>
@@ -1233,115 +1233,7 @@
                         </div>
                     @endif
 
-                    <form method="POST" action="{{ route('admin.settings.performance.update') }}">
-                        @csrf
-
-                        <!-- Section 1: Review Cycle & Scale -->
-                        <div class="section-badge">
-                            <i class="fas fa-sliders"></i> Review Cycles & Rating Scale
-                        </div>
-
-                        <div class="row g-4 mb-5">
-                            <!-- Appraisal Cycle -->
-                            <div class="col-md-6">
-                                <label class="form-label-custom">Appraisal Review Frequency <span class="req-asterisk">*</span></label>
-                                <div class="input-group input-group-custom">
-                                    <span class="input-group-text"><i class="fas fa-sync-alt"></i></span>
-                                    <select name="appraisal_cycle" class="form-select" {{ $isSettingsReadOnly ? 'disabled' : 'required' }}>
-                                        <option value="Monthly" {{ $cycleVal == 'Monthly' ? 'selected' : '' }}>Monthly Reviews</option>
-                                        <option value="Quarterly" {{ $cycleVal == 'Quarterly' ? 'selected' : '' }}>Quarterly Reviews</option>
-                                        <option value="Bi-Annually" {{ $cycleVal == 'Bi-Annually' ? 'selected' : '' }}>Bi-Annual Reviews</option>
-                                        <option value="Annually" {{ $cycleVal == 'Annually' ? 'selected' : '' }}>Annual Reviews</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <!-- Rating Scale -->
-                            <div class="col-md-6">
-                                <label class="form-label-custom">Performance Rating Scale <span class="req-asterisk">*</span></label>
-                                <div class="input-group input-group-custom">
-                                    <span class="input-group-text"><i class="fas fa-star"></i></span>
-                                    <select name="rating_scale" class="form-select" {{ $isSettingsReadOnly ? 'disabled' : 'required' }}>
-                                        <option value="1-5 Star Scale" {{ $scaleVal == '1-5 Star Scale' ? 'selected' : '' }}>1 to 5 Star Scale</option>
-                                        <option value="1-10 Numerical Scale" {{ $scaleVal == '1-10 Numerical Scale' ? 'selected' : '' }}>1 to 10 Point Scale</option>
-                                        <option value="Grade (A, B, C, D, F)" {{ $scaleVal == 'Grade (A, B, C, D, F)' ? 'selected' : '' }}>Grade (A, B, C, D, F)</option>
-                                        <option value="Percentage (0-100%)" {{ $scaleVal == 'Percentage (0-100%)' ? 'selected' : '' }}>Percentage (0-100%)</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <!-- Key Evaluation Metrics -->
-                            <div class="col-12">
-                                <label class="form-label-custom">Key Evaluation Metrics (Comma Separated) <span class="req-asterisk">*</span></label>
-                                <textarea name="key_metrics" class="textarea-custom" rows="3" {{ $isSettingsReadOnly ? 'readonly' : 'required' }} placeholder="e.g. Task Completion Rate, Code Quality, Teamwork, Punctuality">{{ old('key_metrics', $settings['key_metrics'] ?? '') }}</textarea>
-                                <small class="text-muted mt-1.5 d-block"><i class="fas fa-info-circle me-1" style="color: #2F6BFF;"></i>Comma-separated list of KPI indicators evaluated during appraisals (e.g. Task Completion Rate, Code Quality, Teamwork, Punctuality).</small>
-                            </div>
-                        </div>
-
-                        <!-- Section 2: Review Participants & Approvals -->
-                        <div class="section-badge">
-                            <i class="fas fa-user-shield"></i> Review Participants & Approval Workflow
-                        </div>
-
-                        <div class="row g-4">
-                            <!-- Self Assessment Switch Box -->
-                            <div class="col-md-4">
-                                <div class="policy-switch-box">
-                                    <div class="form-check form-switch m-0 d-flex align-items-center gap-3 w-100">
-                                        <input class="form-check-input flex-shrink-0" type="checkbox" name="self_assessment" value="1" id="selfAssessmentSwitch"
-                                            style="width: 2.8em; height: 1.4em; cursor: {{ $isSettingsReadOnly ? 'default' : 'pointer' }};"
-                                            {{ $selfAssess ? 'checked' : '' }}
-                                            {{ $isSettingsReadOnly ? 'disabled' : '' }}>
-                                        <label class="form-check-label fw-bold text-dark mb-0" for="selfAssessmentSwitch" style="cursor: {{ $isSettingsReadOnly ? 'default' : 'pointer' }}; font-size: 0.88rem;">
-                                            Enable Employee Self-Assessment
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Peer Review Switch Box -->
-                            <div class="col-md-4">
-                                <div class="policy-switch-box">
-                                    <div class="form-check form-switch m-0 d-flex align-items-center gap-3 w-100">
-                                        <input class="form-check-input flex-shrink-0" type="checkbox" name="peer_review" value="1" id="peerReviewSwitch"
-                                            style="width: 2.8em; height: 1.4em; cursor: {{ $isSettingsReadOnly ? 'default' : 'pointer' }};"
-                                            {{ $peerReview ? 'checked' : '' }}
-                                            {{ $isSettingsReadOnly ? 'disabled' : '' }}>
-                                        <label class="form-check-label fw-bold text-dark mb-0" for="peerReviewSwitch" style="cursor: {{ $isSettingsReadOnly ? 'default' : 'pointer' }}; font-size: 0.88rem;">
-                                            Enable 360-Degree Peer Feedback
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Manager Review Switch Box -->
-                            <div class="col-md-4">
-                                <div class="policy-switch-box">
-                                    <div class="form-check form-switch m-0 d-flex align-items-center gap-3 w-100">
-                                        <input class="form-check-input flex-shrink-0" type="checkbox" name="manager_review_required" value="1" id="managerReviewSwitch"
-                                            style="width: 2.8em; height: 1.4em; cursor: {{ $isSettingsReadOnly ? 'default' : 'pointer' }};"
-                                            {{ $managerApproval ? 'checked' : '' }}
-                                            {{ $isSettingsReadOnly ? 'disabled' : '' }}>
-                                        <label class="form-check-label fw-bold text-dark mb-0" for="managerReviewSwitch" style="cursor: {{ $isSettingsReadOnly ? 'default' : 'pointer' }}; font-size: 0.88rem;">
-                                            Require Manager Final Approval
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Form Action Buttons -->
-                        <div class="mt-5 pt-4 border-top d-flex justify-content-end">
-                            @if($isSettingsReadOnly)
-                                <span class="badge rounded-pill px-3.5 py-2 fw-bold" style="background: #f1f5f9; color: #64748b; font-size: 13px; border: 1px solid #cbd5e1;">
-                                    <i class="fas fa-lock me-1.5 text-muted"></i> Read-Only (Admin Managed)
-                                </span>
-                            @else
-                                <button type="submit" class="btn-save-address">
-                                    <i class="fas fa-save me-1.5"></i> Save Performance Settings
-                                </button>
-                            @endif
-                    </form>
+                    @include('admin.settings.partials.appraisal-policy-form')
                 </div>
             </div>
         </div>

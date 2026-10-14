@@ -968,7 +968,7 @@ $(document).ready(function () {
         }
 
         var updateOpenShifts = function() {
-            var now = new Date();
+            var now = window.PMSTime.now();
             $('#attendanceDetailsModal .live-month-work-timer').each(function() {
                 var el = $(this);
                 var rawDate = el.attr('data-date');
@@ -977,7 +977,7 @@ $(document).ready(function () {
                 var parts = rawTime.split(':').map(Number);
                 var dp = rawDate.split('-').map(Number);
                 if (parts.length >= 2 && dp.length === 3) {
-                    var start = new Date(dp[0], dp[1] - 1, dp[2], parts[0], parts[1], parts[2] || 0);
+                    var start = window.PMSTime.parse(rawDate + "T" + rawTime);
                     var diffSec = Math.max(0, Math.floor((now - start) / 1000));
                     var h = Math.floor(diffSec / 3600);
                     var m = Math.floor((diffSec % 3600) / 60);

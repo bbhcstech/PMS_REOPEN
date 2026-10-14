@@ -34,9 +34,13 @@ class Appraisal extends TenantModel
         'recommendation',
         'status',
         'evaluated_by',
+        'policy_snapshot',
+        'recommended_increment_percent',
     ];
 
     protected $casts = [
+        'policy_snapshot' => 'array',
+        'recommended_increment_percent' => 'float',
         'projects_count' => 'integer',
         'completed_tasks' => 'integer',
         'present_days' => 'integer',
@@ -71,20 +75,18 @@ class Appraisal extends TenantModel
             'B' => 'badge-grade-good',
             'C' => 'badge-grade-satisfactory',
             'D' => 'badge-grade-danger',
+            'Pending' => 'badge bg-label-secondary',
             default => 'badge-grade-good',
         };
     }
 
     /**
-     * Compute weighted overall score: 40% Project + 30% Attendance + 30% Behaviour
+     * Use the evaluation's saved policy; legacy evaluations retain their original 40/30/30 weights.
      */
     public function computeOverallScore(): float
     {
-        $projPart = ($this->project_score ?? 0) * 0.40;
-        $attPart = ($this->attendance_score ?? 0) * 0.30;
-        $behPart = ($this->behaviour_score ?? 0) * 0.30;
-
-        return round($projPart + $attPart + $behPart, 2);
+        return app(\App\Services\AppraisalPolicy::class)->score($this->project_score ?? 0, $this->attendance_score ?? 0,
+            $this->behaviour_score ?? 0, $this->policy_snapshot ?: ['work_weight' => 40, 'attendance_weight' => 30, 'behaviour_weight' => 30]);
     }
 
     /**

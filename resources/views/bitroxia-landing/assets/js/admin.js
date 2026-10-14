@@ -75,8 +75,8 @@
 
     function formatDate(iso) {
       var d = new Date(iso);
-      return d.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }) +
-        " · " + d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+      return d.toLocaleDateString(undefined, { timeZone: 'Asia/Kolkata',  day: "numeric", month: "short", year: "numeric" }) +
+        " · " + d.toLocaleTimeString(undefined, { timeZone: 'Asia/Kolkata',  hour: "2-digit", minute: "2-digit" });
     }
 
     function render() {

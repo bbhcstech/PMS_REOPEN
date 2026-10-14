@@ -1890,7 +1890,7 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('Please allow popups in your browser to view and print/save the PDF report.');
             return;
         }
-        const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+        const dateStr = new Date().toLocaleDateString('en-US', { timeZone: 'Asia/Kolkata',  year: 'numeric', month: 'short', day: 'numeric' });
         const tableHeaderHtml = headers.map(h => `<th>${escapeHtml(h)}</th>`).join('');
         const tableRowsHtml = rows.map(r => `<tr>${r.map(c => `<td>${escapeHtml(c)}</td>`).join('')}</tr>`).join('');
 

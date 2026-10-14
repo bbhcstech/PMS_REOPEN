@@ -851,34 +851,12 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
     }
 
     /**
-     * Resolve employee's timezone with respect to location/browser, defaulting to India (Asia/Kolkata).
+     * Use the deployment timezone for all new attendance sessions.
      */
     protected function resolveEmployeeTimezone(?string $clientTz = null, ?float $lat = null, ?float $lng = null): string
     {
-        // 1. If valid IANA timezone string is provided (e.g. from employee's device/browser)
-        if (!empty($clientTz) && in_array($clientTz, \DateTimeZone::listIdentifiers(), true)) {
-            return $clientTz;
-        }
-
-        // 2. Fallback based on geolocation coordinates if available
-        if ($lat !== null && $lng !== null) {
-            // India bounding box (approx lat 6°N - 37.5°N, lng 68°E - 97.5°E)
-            if ($lat >= 6.0 && $lat <= 37.5 && $lng >= 68.0 && $lng <= 97.5) {
-                return 'Asia/Kolkata';
-            }
-            // UAE / Gulf (approx lat 22°N - 27°N, lng 51°E - 57°E)
-            if ($lat >= 22.0 && $lat <= 27.0 && $lng >= 51.0 && $lng <= 57.0) {
-                return 'Asia/Dubai';
-            }
-            // UK (approx lat 49°N - 61°N, lng -8°W - 2°E)
-            if ($lat >= 49.0 && $lat <= 61.0 && $lng >= -8.0 && $lng <= 2.0) {
-                return 'Europe/London';
-            }
-        }
-
-        // 3. Fallback to app configuration or default to India (Asia/Kolkata)
-        $configuredTimezone = config('app.timezone');
-        return $configuredTimezone && $configuredTimezone !== 'UTC' ? $configuredTimezone : 'Asia/Kolkata';
+        // One business timezone; device location must not change attendance dates.
+        return config('app.timezone', 'Asia/Kolkata');
     }
 
    public function clockIn(Request $request)

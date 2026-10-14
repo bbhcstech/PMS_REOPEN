@@ -41,7 +41,9 @@ class ProtectWorkforceRecords
                     }
                     if (! str_contains(strtolower($action), 'apology')) {
                         foreach (\App\Models\Leave::with('user')->whereIn('id', $ids)->get() as $record) {
-                            abort_unless($record->user && WorkforceAccess::canAccessRecord($actor, $record->user, $record->staff_category), 403, 'Only the company admin may access higher-level staff leave.');
+                            // HR may open (read only) the leave they requested themselves; the admin reviews it.
+                            $ownRequestView = $action === 'show' && (int) $record->user_id === (int) $actor->id;
+                            abort_unless($record->user && ($ownRequestView || WorkforceAccess::canAccessRecord($actor, $record->user, $record->staff_category)), 403, 'Only the company admin may access higher-level staff leave.');
                         }
                     }
                 }

@@ -887,7 +887,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function renderPlaceholders(text) {
         const recipient = document.getElementById('recipient_name')?.value || 'Alexander Wright';
         const now = new Date();
-        const dateStr = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+        const dateStr = now.toLocaleDateString('en-US', { timeZone: 'Asia/Kolkata',  month: 'long', day: 'numeric', year: 'numeric' });
 
         return text
             .replace(/\[Date\]/g, dateStr)

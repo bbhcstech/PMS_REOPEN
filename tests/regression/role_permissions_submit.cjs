@@ -10,12 +10,13 @@ let calls = 0;
 let fail = false;
 const button = { innerHTML: 'Save Permissions', disabled: false };
 const toasts = [];
+const status = { textContent: '', classList: { toggle() {}, remove() {} } };
 const boxes = Array.from({length: 170}, (_, i) => Array.from({length: 7}, (_, j) => ({ dataset: {moduleId: String(i + 1)}, value: ['view','create','edit','delete','approve','export','assign'][j], checked: true }))).flat();
 boxes[0].checked = false;
 const form = {action: '/settings/role-permissions', addEventListener: (_, fn) => handler = fn, querySelector: selector => selector.includes('button') ? button : {value: selector.includes('_token') ? 'csrf-token' : 'hr'}};
 vm.runInNewContext(source.slice(start, end), {
-    document: {getElementById: () => form}, actionCheckboxes: boxes,
-    window: {showToast: (message,type) => toasts.push({message,type})},
+    document: {getElementById: id => id === 'permissionSaveStatus' ? status : form, querySelector: () => null}, actionCheckboxes: boxes,
+    window: {addEventListener() {}, showToast: (message,type) => toasts.push({message,type})},
     fetch: async (url, options) => {
         calls++;
         assert.equal(url, form.action);

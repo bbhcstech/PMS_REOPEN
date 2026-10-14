@@ -96,6 +96,14 @@ $modules['payroll-processing']['route_names'] = [
 ];
 $modules['payroll-history']['route_names'] = ['payroll.history'];
 $modules['leaves-apply']['route_names'] = ['leaves.store'];
+$modules['leaves']['route_names'] = ['leaves.mine'];
+$modules['department-parent']['route_prefixes'] = ['parent-departments', 'admin.settings.parent-departments'];
+$modules['department-sub']['route_prefixes'] = ['departments', 'admin.settings.departments'];
+$modules['designations']['route_prefixes'] = ['designations', 'admin.settings.designations'];
+// Settings shortcuts manage the same features as their HR workspace pages.
+$modules['department-parent']['route_names'] = ['admin.settings.parent-departments.index'];
+$modules['department-sub']['route_names'] = ['admin.settings.departments.index'];
+$modules['designations']['route_names'] = ['admin.settings.designations.index'];
 $modules['payslips']['route_prefixes'] = ['payroll.payslips', 'payroll.payslip'];
 $modules['payslips']['route_names'] = ['payroll.generate-payslips'];
 $modules['formula-builder']['route_prefixes'] = ['payroll.formulas'];

@@ -1097,7 +1097,7 @@ function showLoading(show) {
 function formatDate(dateString) {
     try {
         const date = new Date(dateString);
-        return date.toLocaleDateString('en-US', {
+        return date.toLocaleDateString('en-US', { timeZone: 'Asia/Kolkata',
             weekday: 'short',
             year: 'numeric',
             month: 'short',

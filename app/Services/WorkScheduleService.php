@@ -302,9 +302,14 @@ class WorkScheduleService
             } catch (\Throwable $_) {}
         }
 
+        // Policy times are wall-clock times of the attendance day, exactly like clock_in is stored
+        // (the employee's local time) and like AttendanceClockPolicy compares them. Comparing the
+        // timezone-aware clock-in against a late cutoff parsed in the server timezone shifted the
+        // cutoff whenever the device timezone differed, so late arrivals were saved as "present".
         $lateTimeStr = $setting->late_time ?: '09:30:00';
         $lateTime = Carbon::parse($dateStr . ' ' . $lateTimeStr);
-        $isLate = $clockIn && $clockIn->gt($lateTime);
+        $clockInWallTime = ($clockIn && ! empty($attendance->clock_in)) ? Carbon::parse($dateStr . ' ' . $attendance->clock_in) : null;
+        $isLate = $clockInWallTime && $clockInWallTime->gt($lateTime);
         $hasCompletedShift = !empty($attendance->clock_in) && !empty($attendance->clock_out);
 
         $dayOffSeconds = (int) ($setting->day_off_threshold_minutes ?? 270) * 60;

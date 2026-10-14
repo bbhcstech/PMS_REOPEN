@@ -858,6 +858,8 @@ Route::middleware(['auth', 'module.access'])->group(function () {
     Route::post('/leaves/archive/{id}/restore', [LeaveController::class, 'restore'])->name('leaves.restore');
 
     Route::get('/leaves', [LeaveController::class, 'index'])->name('leaves.index');
+    // The signed-in user's own leave requests (HR's requests to the admin; "My Leaves" is HR's employee queue).
+    Route::get('/leaves/my-requests', [LeaveController::class, 'myLeaves'])->name('leaves.mine');
     Route::get('/leaves/apology-letters', [LeaveController::class, 'apologyLetters'])->name('leaves.apology-letters.index');
     Route::get('/leaves/apology-letters/create', [LeaveController::class, 'createApologyLetter'])->name('leaves.apology-letters.create');
     Route::post('/leaves/apology-letters', [LeaveController::class, 'storeApologyLetter'])->name('leaves.apology-letters.store');
@@ -1529,6 +1531,7 @@ Route::middleware(['auth'])->group(function () {
     // Appraisal Module Routes (Under HR)
     Route::get('/admin/hr/appraisal', [\App\Http\Controllers\Admin\AppraisalController::class, 'index'])->name('appraisal.index');
     Route::post('/admin/hr/appraisal', [\App\Http\Controllers\Admin\AppraisalController::class, 'store'])->name('appraisal.store');
+    Route::put('/admin/hr/appraisal/{id}', [\App\Http\Controllers\Admin\AppraisalController::class, 'update'])->name('appraisal.update');
     Route::post('/admin/hr/appraisal/auto-calculate', [\App\Http\Controllers\Admin\AppraisalController::class, 'autoCalculate'])->name('appraisal.autoCalculate');
     Route::delete('/admin/hr/appraisal/{id}', [\App\Http\Controllers\Admin\AppraisalController::class, 'destroy'])->name('appraisal.destroy');
 

@@ -64,7 +64,8 @@ class RolePermissionController extends Controller
 
         $savedPermissions = RolePermission::where('role', $role)->get()->keyBy('module_id');
         $hasCustomSaved = $savedPermissions->isNotEmpty();
-        $payrollModule = Module::where('slug', 'payroll')->where('is_active', true)->first();
+        $activeModules = Module::where('is_active', true)->get()->keyBy('slug');
+        $defaults = app(\App\Services\RolePermissionDefaults::class);
 
         // Compute effective permissions for the view so previously granted or default permissions are pre-checked
         $effectivePermissions = [];
@@ -72,17 +73,12 @@ class RolePermissionController extends Controller
             $saved = $savedPermissions->get($module->id);
             // Display legacy parent grants as checked; otherwise saving the editor
             // silently turns inherited access into an explicit child denial.
-            $inherited = null;
-            $inheritedSlug = config('workspace_modules.'.$module->slug.'.inherits');
-            if (!$saved && $inheritedSlug) {
-                $parentModule = Module::where('slug', $inheritedSlug)->where('is_active', true)->first();
-                $inherited = $parentModule ? $savedPermissions->get($parentModule->id) : null;
-            }
-            if (!$saved && $payrollModule && (str_starts_with($module->slug, 'payroll-')
-                || in_array($module->slug, ['payslips', 'salary-structures', 'employee-salary', 'formula-builder',
-                    'deduction-rules', 'bonus-rules', 'tax-rules', 'overtime-rules'], true))) {
-                $inherited = $savedPermissions->get($payrollModule->id);
-            }
+            $inherited = collect($defaults->fallbackModuleSlugs($module->slug))
+                ->reject(fn ($slug) => $slug === $module->slug)
+                ->map(fn ($slug) => $activeModules->get($slug))
+                ->filter()
+                ->map(fn ($parent) => $savedPermissions->get($parent->id))
+                ->filter();
             $defaultPerms = $this->getDefaultPermissionsForRole($accessRole, $module->slug);
 
             foreach ($this->permissions as $perm) {
@@ -90,7 +86,7 @@ class RolePermissionController extends Controller
                     $effectivePermissions[$module->id][$perm] = true;
                 } elseif ($hasCustomSaved) {
                     $effectivePermissions[$module->id][$perm] = $saved ? (bool) $saved->{'can_' . $perm}
-                        : ($inherited ? (bool) $inherited->{'can_' . $perm} : false);
+                        : $inherited->contains(fn ($grant) => (bool) $grant->{'can_' . $perm});
                 } else {
                     $effectivePermissions[$module->id][$perm] = in_array($perm, $defaultPerms, true);
                 }

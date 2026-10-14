@@ -185,12 +185,18 @@ class EnsureModuleAccess
 
         // Match literal prefixes, choosing the most specific route. This also avoids
         // treating wildcard characters in a configured prefix as SQL patterns.
-        return Module::query()->get()
+        $matched = Module::query()->get()
             ->filter(fn ($module) => $module->route_name === $routeName
                 || ($module->route_prefix && ($routeName === $module->route_prefix
                     || str_starts_with($routeName, $module->route_prefix . '.'))))
             ->sortByDesc(fn ($module) => $module->route_name === $routeName
                 ? PHP_INT_MAX : strlen($module->route_prefix))
             ->first();
+        if ($matched) return $matched;
+
+        // Registry routes must remain protected even when an older module row has no prefix.
+        $feature = app(\App\Services\AdminWorkspaceModules::class)->featuresForRoute($routeName)[0] ?? null;
+        return $feature ? (Module::where('slug', $feature)->first()
+            ?? new Module(['slug' => $feature, 'name' => config('workspace_modules.'.$feature.'.name')])) : null;
     }
 }

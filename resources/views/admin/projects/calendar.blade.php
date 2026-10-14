@@ -1018,8 +1018,8 @@ document.addEventListener('DOMContentLoaded', function() {
             // Show event details
             const event = info.event;
             const title = event.title;
-            const start = event.start ? event.start.toLocaleDateString() : 'N/A';
-            const end = event.end ? event.end.toLocaleDateString() : 'N/A';
+            const start = event.start ? event.start.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' }) : 'N/A';
+            const end = event.end ? event.end.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' }) : 'N/A';
             const type = event.extendedProps.type || 'General';
             const status = event.extendedProps.status || 'N/A';
 

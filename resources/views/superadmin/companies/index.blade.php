@@ -2437,7 +2437,7 @@ document.addEventListener('DOMContentLoaded', function() {
             element.style.fontFamily = "'Inter', Arial, sans-serif";
             element.style.color = '#1e293b';
 
-            const now = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+            const now = new Date().toLocaleDateString('en-US', { timeZone: 'Asia/Kolkata',  year: 'numeric', month: 'long', day: 'numeric' });
 
             // 2. Clone table & filter out hidden rows & action/checkbox columns
             const originalTable = document.getElementById('companiesCommandTable');

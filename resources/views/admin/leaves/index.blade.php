@@ -1,14 +1,14 @@
 @extends('admin.layout.app')
 
-@section('title', $isAdmin ? (request('staff_category') === 'authority' ? 'Higher-level leaves' : 'Leave Management') : 'My Leaves')
+@section('title', ! empty($ownLeavesView) ? 'My Leave Requests' : ($isAdmin ? (request('staff_category') === 'authority' ? 'Higher-level leaves' : 'Leave Management') : 'My Leaves'))
 
 @section('content')
-@php $leaveRoute = request('staff_category') === 'authority' ? 'admin.authority-leaves' : 'leaves.index'; @endphp
+@php $leaveRoute = ! empty($ownLeavesView) ? 'leaves.mine' : (request('staff_category') === 'authority' ? 'admin.authority-leaves' : 'leaves.index'); @endphp
 
 <div class="leave-page">
     <!-- Breadcrumb -->
     <div class="leave-breadcrumb">
-        <i class="fas fa-calendar-check"></i> Dashboard / {{ $isAdmin ? (request('staff_category') === 'authority' ? 'Higher-level leaves' : 'Leave Management') : 'My Leaves' }}
+        <i class="fas fa-calendar-check"></i> Dashboard / {{ ! empty($ownLeavesView) ? 'My Leave Requests' : ($isAdmin ? (request('staff_category') === 'authority' ? 'Higher-level leaves' : 'Leave Management') : 'My Leaves') }}
     </div>
 
     <!-- Header Card -->
@@ -16,8 +16,8 @@
         <div class="leave-hero-main">
             <div class="leave-hero-icon"><i class="fas fa-user-clock"></i></div>
             <div>
-                <h1>{{ $isAdmin ? 'Leave Management' : 'My Leave Dashboard' }}</h1>
-                <p>{{ $isAdmin ? 'Manage policy, balances, approvals, unpaid leaves, and employee leave history.' : 'Apply for leave, track approvals, and monitor your April-March balance.' }}</p>
+                <h1>{{ ! empty($ownLeavesView) ? 'My Leave Requests' : ($isAdmin ? 'Leave Management' : 'My Leave Dashboard') }}</h1>
+                <p>{{ ! empty($ownLeavesView) ? 'Your own leave requests to the company admin: status, approver and remaining balance.' : ($isAdmin ? 'Manage policy, balances, approvals, unpaid leaves, and employee leave history.' : 'Apply for leave, track approvals, and monitor your April-March balance.') }}</p>
             </div>
         </div>
         <div class="leave-hero-actions">
@@ -356,7 +356,8 @@
                                     @if(! $isAdmin)
                                         <a href="{{ route('leaves.apology-letters.create', ['leave_id' => $leave->id]) }}" class="btn btn-sm btn-light" title="Write Apology Letter"><i class="fas fa-envelope-open-text"></i></a>
                                     @endif
-                                    @if($leave->status === 'pending' || $isAdmin)
+                                    {{-- HR's own requests are changed by the company admin, so My Leave Requests is read only. --}}
+                                    @if(($leave->status === 'pending' || $isAdmin) && empty($ownLeavesView))
                                         <a href="{{ route('leaves.edit', $leave->id) }}" class="btn btn-sm btn-light" title="Edit"><i class="fas fa-pen"></i></a>
                                     @endif
                                     @if($isAdmin)

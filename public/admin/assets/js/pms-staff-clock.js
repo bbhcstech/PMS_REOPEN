@@ -350,7 +350,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     return;
                 }
                 document.getElementById('clockOutSelfie').value = capturedSelfie;
-                document.getElementById('clockOutTimezone').value = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata';
+                document.getElementById('clockOutTimezone').value = window.PMSTime.timeZone;
                 closeCameraModal();
                 clockOutForm.querySelector('button[type="submit"]').disabled = true;
                 clockOutForm.submit();
@@ -364,7 +364,7 @@ document.addEventListener('DOMContentLoaded', function () {
             selfieInput.value = capturedSelfie;
 
             if (timezoneInput) {
-                timezoneInput.value = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata';
+                timezoneInput.value = window.PMSTime.timeZone;
             }
             canSubmitClockIn = true;
             setClockStatus('Photo ready. Completing clock in...', 'success');

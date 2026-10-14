@@ -2811,7 +2811,7 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
                     return;
                 }
                 document.getElementById('clockOutSelfie').value = capturedSelfie;
-                document.getElementById('clockOutTimezone').value = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata';
+                document.getElementById('clockOutTimezone').value = window.PMSTime.timeZone;
                 closeCameraModal();
                 clockOutForm.querySelector('button[type="submit"]').disabled = true;
                 clockOutForm.submit();
@@ -2825,7 +2825,7 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
             selfieInput.value = capturedSelfie;
 
             if (timezoneInput) {
-                timezoneInput.value = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata';
+                timezoneInput.value = window.PMSTime.timeZone;
             }
             canSubmitClockIn = true;
             setClockStatus('Photo ready. Completing clock in...', 'success');
@@ -2842,7 +2842,7 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
         const heroTime = document.getElementById('employeeHeroTime');
         const heroDate = document.getElementById('employeeHeroDate');
         const clockZoneLabel = document.getElementById('employeeClockZoneLabel');
-        const employeeTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata';
+        const employeeTimeZone = window.PMSTime.timeZone;
 
         if (clockZoneLabel) {
             clockZoneLabel.textContent = employeeTimeZone === 'Asia/Kolkata' ? 'IST Time' : `${employeeTimeZone.split('/').pop().replace('_', ' ')} Time`;
@@ -2872,6 +2872,7 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
         const formatLocalDate = (date) => {
             try {
                 const parts = new Intl.DateTimeFormat('en-US', {
+                    timeZone: window.PMSTime.timeZone,
                     weekday: 'long',
                     day: '2-digit',
                     month: 'short',
@@ -2887,12 +2888,12 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
                 }
                 return `${weekday}, ${day} ${month} ${year}`;
             } catch (e) {
-                return date.toLocaleDateString();
+                return window.PMSTime.format(date, {year: 'numeric', month: 'short', day: '2-digit'});
             }
         };
 
         const updateClockWidgets = () => {
-            const now = new Date();
+            const now = window.PMSTime.now();
             // A live dashboard refresh may insert new clock nodes after clock-in.
             // Always update the visible nodes rather than detached originals.
             const istClock = document.getElementById('employeeIstClock');
@@ -2938,19 +2939,11 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
 
                 const parseTime = (isoStr, rawTime, rawDate) => {
                     let d = isoStr ? new Date(isoStr) : null;
-                    const nowMs = Date.now();
+                    const nowMs = window.PMSTime.now().getTime();
                     if (!d || isNaN(d.getTime()) || (d.getTime() - nowMs > 30000 && rawTime)) {
                         const parts = (rawTime || '').split(':').map(Number);
                         if (parts.length >= 2) {
-                            const localDate = new Date();
-                            if (rawDate) {
-                                const dp = rawDate.split('-').map(Number);
-                                if (dp.length === 3) {
-                                    localDate.setFullYear(dp[0], dp[1] - 1, dp[2]);
-                                }
-                            }
-                            localDate.setHours(parts[0], parts[1], parts[2] || 0, 0);
-                            d = localDate;
+                            d = window.PMSTime.parse(`${rawDate || window.PMSTime.dateKey()}T${rawTime}`);
                         }
                     }
                     return d;
@@ -2978,10 +2971,8 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
         setInterval(updateClockWidgets, 1000);
 
         const scheduleMidnightRefresh = () => {
-            const now = new Date();
-            const midnight = new Date(now);
-            midnight.setHours(24, 0, 3, 0);
-            setTimeout(() => window.location.reload(), Math.max(1000, midnight - now));
+            const now = window.PMSTime.now();
+            setTimeout(() => window.location.reload(), Math.max(1000, window.PMSTime.untilMidnight()));
         };
 
         scheduleMidnightRefresh();
@@ -2991,7 +2982,7 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
             year: 'numeric',
             month: '2-digit',
             day: '2-digit'
-        }).format(new Date());
+        }).format(window.PMSTime.now());
 
         setInterval(() => {
             const currentDateKey = new Intl.DateTimeFormat('en-CA', {
@@ -2999,7 +2990,7 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
                 year: 'numeric',
                 month: '2-digit',
                 day: '2-digit'
-            }).format(new Date());
+            }).format(window.PMSTime.now());
 
             if (currentDateKey !== loadedDateKey) {
                 window.location.reload();

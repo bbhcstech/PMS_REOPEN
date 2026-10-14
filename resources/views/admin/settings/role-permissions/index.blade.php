@@ -1310,6 +1310,15 @@
         .role-permission-page .matrix-footer .btn-save-address { width: 100%; }
     }
 </style>
+<style>
+    .role-permission-page .permission-category td { background: var(--matrix-hover, #f1f5f9); font-size: .75rem; font-weight: 700; letter-spacing: .04em; padding: 12px 18px; }
+    .role-permission-page .permission-filters { display: grid; grid-template-columns: minmax(0, 2fr) minmax(180px, 1fr); gap: 16px; }
+    .role-permission-page .permission-state { font-size: .72rem; border-radius: 6px; padding: 3px 7px; width: fit-content; }
+    .role-permission-page .matrix-footer { position: sticky; bottom: 0; background: var(--matrix-surface, var(--bs-body-bg, #fff)) !important; z-index: 4; }
+    .role-permission-page .module-title-box { padding-left: var(--module-indent, 0); }
+    .role-permission-page .permission-disabled td { opacity: .75; }
+    @media (max-width: 767px) { .role-permission-page .permission-filters { grid-template-columns: 1fr; } }
+</style>
 @endpush
 
 @section('content')
@@ -1417,11 +1426,12 @@
                                         }
                                     }
                                 @endphp
-                                <select name="role" class="form-select" onchange="this.form.submit()">
+                                <select name="role" class="form-select" aria-label="Role to configure">
                                     @foreach($roleOptions as $option)
                                         <option value="{{ $option['value'] }}" @selected($role === $option['value'])>{{ $option['label'] }}</option>
                                     @endforeach
                                 </select>
+                                <noscript><button type="submit" class="btn btn-primary mt-2">Load role permissions</button></noscript>
                             </div>
                         </div>
                         <div class="col-md-7 col-lg-8">
@@ -1444,7 +1454,7 @@
                             </div>
                             <div>
                                 <h5 class="mb-0 fw-bold fs-5" style="color: #0F172A;">Module Access Control Matrix</h5>
-                                <small class="text-muted">Grant or revoke granular action privileges for <strong style="color: #2F6BFF;">{{ ($roleLabels[$role] ?? ucfirst($role)) }}</strong></small>
+                                <small class="text-muted">Configure the same modules and submodules as Module Management for <strong style="color: #2F6BFF;">{{ ($roleLabels[$role] ?? ucfirst($role)) }}</strong>. View means read access; Create, Edit and Delete control changes. Existing role and record-access rules still apply.</small>
                             </div>
                         </div>
                         <div class="matrix-toolbar d-flex align-items-center gap-2 flex-wrap">
@@ -1463,18 +1473,30 @@
                         </div>
                     </div>
 
-                    <div class="px-4 pb-3">
+                    <div class="px-4 pb-3 permission-filters">
+                        <div>
                         <label for="permissionModuleSearch" class="form-label small fw-semibold">Find a module</label>
                         <input id="permissionModuleSearch" type="search" class="form-control" placeholder="Search modules or categories" autocomplete="off">
                         <small id="permissionSearchStatus" class="text-muted" aria-live="polite"></small>
+                        </div>
+                        <div>
+                            <label for="permissionCategoryFilter" class="form-label small fw-semibold">Module category</label>
+                            <select id="permissionCategoryFilter" class="form-select">
+                                <option value="">All categories</option>
+                                @foreach($modules->pluck('category')->unique() as $category)
+                                    <option value="{{ $category }}">{{ $category }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                     </div>
+                    <p class="px-4 small text-muted">Selections on disabled modules are saved for when the module is enabled. Bulk controls apply to all listed modules, including filtered rows.</p>
                     <div class="table-responsive matrix-scroll" tabindex="0" role="region" aria-label="Module permission matrix">
                         <table class="matrix-table" data-pms-export="off">
                             <thead>
                                 <tr>
                                     <th style="width: 48px;" class="text-center">
                                         <div class="d-flex align-items-center justify-content-center">
-                                            <input type="checkbox" id="masterToggleAll" class="perm-checkbox" title="Toggle all permissions">
+                                            <input type="checkbox" id="masterToggleAll" class="perm-checkbox" title="Toggle all permissions" aria-label="Toggle all permissions">
                                         </div>
                                     </th>
                                     <th style="min-width: 240px;" scope="col">Module Name</th>
@@ -1490,15 +1512,16 @@
                             </thead>
                             <tbody>
                                 @foreach($modules->groupBy('category') as $category => $categoryModules)
-                                    <tr class="permission-category"><td colspan="{{ count($permissions) + 2 }}"><span>{{ $category }}</span><small class="ms-2">{{ $categoryModules->count() }} modules</small></td></tr>
+                                    <tr class="permission-category" data-category="{{ $category }}"><td colspan="{{ count($permissions) + 2 }}"><span>{{ $category }}</span><small class="ms-2">{{ $categoryModules->count() }} modules</small></td></tr>
                                 @foreach($categoryModules as $module)
-                                    <tr data-module-id="{{ $module->id }}" data-module-slug="{{ $module->slug }}" data-payroll-child="{{ ($module->slug !== 'payroll' && (str_starts_with($module->slug, 'payroll-') || in_array($module->slug, ['payslips', 'salary-structures', 'employee-salary', 'formula-builder', 'deduction-rules', 'bonus-rules', 'tax-rules', 'overtime-rules']))) ? 'true' : 'false' }}" data-search="{{ strtolower(($module->sidebar_name ?? $module->name) . ' ' . $module->slug . ' ' . (($module->parent?->sidebar_name ?? $module->parent?->name) ?? '')) }}">
+                                    <tr class="{{ !$module->is_active ? 'permission-disabled' : '' }}" data-category="{{ $category }}" data-module-id="{{ $module->id }}" data-module-slug="{{ $module->slug }}" data-payroll-child="{{ ($module->slug !== 'payroll' && (str_starts_with($module->slug, 'payroll-') || in_array($module->slug, ['payslips', 'salary-structures', 'employee-salary', 'formula-builder', 'deduction-rules', 'bonus-rules', 'tax-rules', 'overtime-rules']))) ? 'true' : 'false' }}" data-search="{{ strtolower($category . ' ' . ($module->sidebar_name ?? $module->name) . ' ' . $module->slug . ' ' . (($module->parent?->sidebar_name ?? $module->parent?->name) ?? '')) }}">
                                         <td class="text-center">
                                             <input type="checkbox" class="row-checkbox perm-checkbox" data-module-id="{{ $module->id }}" title="Toggle all actions for {{ ($module->sidebar_name ?? $module->name) }}">
                                         </td>
                                         <td>
-                                            <div class="module-title-box">
+                                            <div class="module-title-box" style="--module-indent: {{ min(4, $module->sidebar_depth ?? 0) * 12 }}px;">
                                                 <strong>{{ ($module->sidebar_name ?? $module->name) }}</strong>
+                                                <span class="permission-state {{ $module->is_active ? 'bg-label-success' : 'bg-label-secondary' }}">{{ $module->is_active ? 'Enabled' : 'Disabled in Module Management' }}</span>
                                                 @if($module->slug === 'payroll')<small>Changing Payroll actions also updates its pages. Adjust individual pages before saving if needed.</small>@endif
                                                 @if($module->parent)<small><i class="fas fa-angle-right me-1" style="color: #2F6BFF;"></i>{{ $module->parent->sidebar_name ?? $module->parent->name }}</small>@endif
                                             </div>
@@ -1514,12 +1537,19 @@
                                     </tr>
                                 @endforeach
                                 @endforeach
+                                <tr id="permissionSearchEmpty" hidden><td colspan="{{ count($permissions) + 2 }}" class="text-center py-5 text-muted">No modules match your filters.</td></tr>
+                                @if($modules->isEmpty())
+                                    <tr><td colspan="{{ count($permissions) + 2 }}" class="text-center py-5 text-muted">No modules have been provided for this company.</td></tr>
+                                @endif
                             </tbody>
                         </table>
                     </div>
 
                     <div class="matrix-footer p-4 border-top d-flex justify-content-between align-items-center flex-wrap gap-3" style="background: rgba(248, 250, 252, 0.6);">
-                        <small class="text-muted"><i class="fas fa-shield-halved me-1" style="color: #2F6BFF;"></i>Changes will immediately affect users assigned to the <strong>{{ ($roleLabels[$role] ?? ucfirst($role)) }}</strong> role.</small>
+                        <div>
+                            <small class="text-muted"><i class="fas fa-shield-halved me-1" style="color: #2F6BFF;"></i>Saved changes apply to users assigned to <strong>{{ ($roleLabels[$role] ?? ucfirst($role)) }}</strong>.</small>
+                            <div id="permissionSaveStatus" class="small mt-1" role="status" aria-live="polite"></div>
+                        </div>
                         <button type="submit" class="btn-save-address">
                             <i class="fas fa-save me-1.5"></i> Save Permissions
                         </button>
@@ -1541,7 +1571,33 @@ document.addEventListener('DOMContentLoaded', function () {
     const rowCheckboxes = table.querySelectorAll('.row-checkbox');
     const actionCheckboxes = table.querySelectorAll('.action-checkbox');
     const form = document.getElementById('rolePermissionsForm');
+    const saveStatus = document.getElementById('permissionSaveStatus');
+    const snapshot = () => Array.from(actionCheckboxes, checkbox => checkbox.checked ? '1' : '0').join('');
+    let savedSnapshot = snapshot();
     let saving = false;
+    function updateSaveStatus() {
+        if (saving) return;
+        saveStatus.textContent = snapshot() === savedSnapshot ? 'All changes saved.' : 'Unsaved changes. Save to apply permissions.';
+    }
+    function notifySave(message, type) {
+        saveStatus.textContent = message;
+        saveStatus.classList.toggle('text-danger', type === 'error');
+        if (typeof window.showToast === 'function') window.showToast(message, type);
+    }
+    window.addEventListener('beforeunload', event => {
+        if (saving || snapshot() !== savedSnapshot) {
+            event.preventDefault();
+            event.returnValue = '';
+        }
+    });
+    document.querySelector('select[name="role"]')?.addEventListener('change', event => {
+        if (saving || (snapshot() !== savedSnapshot && !window.confirm('Discard unsaved permission changes and switch roles?'))) {
+            event.target.value = form.querySelector('[name="role"]').value;
+            return;
+        }
+        savedSnapshot = snapshot();
+        event.target.form.submit();
+    });
     form.addEventListener('submit', async event => {
         event.preventDefault();
         if (saving) return;
@@ -1550,6 +1606,9 @@ document.addEventListener('DOMContentLoaded', function () {
         const original = button.innerHTML;
         button.disabled = true;
         button.textContent = 'Saving...';
+        saveStatus.textContent = 'Saving permissions...';
+        saveStatus.classList.remove('text-danger');
+        const submittedSnapshot = snapshot();
         const permissions = {};
         actionCheckboxes.forEach(checkbox => {
             const moduleId = checkbox.dataset.moduleId;
@@ -1568,11 +1627,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 },
                 body: JSON.stringify({ role: form.querySelector('[name="role"]').value, permissions }),
             });
-            const data = await response.json();
+            const data = await response.json().catch(() => { throw new Error('Could not save permissions. Refresh your session and try again.'); });
             if (!response.ok || data.success !== true) throw new Error(data.message || 'Could not save permissions. Please try again.');
-            window.showToast(data.message, 'success');
+            savedSnapshot = submittedSnapshot;
+            notifySave(data.message, 'success');
+            if (snapshot() !== savedSnapshot) saveStatus.textContent += ' You have additional unsaved changes.';
         } catch (error) {
-            window.showToast(error.message || 'Could not save permissions. Please try again.', 'error');
+            notifySave(error.message || 'Could not save permissions. Please try again.', 'error');
         } finally {
             saving = false;
             button.disabled = false;
@@ -1609,6 +1670,7 @@ document.addEventListener('DOMContentLoaded', function () {
             masterToggle.checked = (total > 0 && checkedTotal === total);
             masterToggle.indeterminate = (checkedTotal > 0 && checkedTotal < total);
         }
+        updateSaveStatus();
     }
 
     // Master Toggle Event
@@ -1618,6 +1680,7 @@ document.addEventListener('DOMContentLoaded', function () {
             actionCheckboxes.forEach(cb => cb.checked = isChecked);
             rowCheckboxes.forEach(cb => { cb.checked = isChecked; cb.indeterminate = false; });
             colCheckboxes.forEach(cb => { cb.checked = isChecked; cb.indeterminate = false; });
+            syncStates();
         });
     }
 
@@ -1700,16 +1763,24 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Initial sync on page load
     const search = document.getElementById('permissionModuleSearch');
+    const categoryFilter = document.getElementById('permissionCategoryFilter');
     const rows = Array.from(table.querySelectorAll('tbody tr[data-search]'));
-    search.addEventListener('input', () => {
+    function filterModules() {
         const query = search.value.trim().toLowerCase();
         let visible = 0;
         rows.forEach(row => {
-            row.hidden = !row.dataset.search.includes(query);
+            row.hidden = !row.dataset.search.includes(query) || (categoryFilter.value !== '' && row.dataset.category !== categoryFilter.value);
             if (!row.hidden) visible++;
         });
         document.getElementById('permissionSearchStatus').textContent = `${visible} of ${rows.length} modules shown. Bulk actions apply to all modules.`;
-    });
+        table.querySelectorAll('.permission-category').forEach(header => {
+            header.hidden = !rows.some(row => row.dataset.category === header.dataset.category && !row.hidden);
+        });
+        document.getElementById('permissionSearchEmpty').hidden = visible > 0 || rows.length === 0;
+    }
+    search.addEventListener('input', filterModules);
+    categoryFilter.addEventListener('change', filterModules);
+    filterModules();
     syncStates();
 });
 </script>

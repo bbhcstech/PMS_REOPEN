@@ -3,11 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Appraisal;
-use App\Models\Attendance;
-use App\Models\ProjectUser;
-use App\Models\Task;
-use App\Models\User;
+use App\Models\{Appraisal, User};
+use App\Services\{AppraisalMetrics, AppraisalPolicy, WorkforceAccess};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -20,269 +17,150 @@ class AppraisalController extends Controller
         return $actor;
     }
 
-    private function canManage(User $actor): bool
+    private function authorizeEmployee(User $actor, User $employee, string $action): void
     {
-        return in_array($actor->normalizedRole(), ['admin', 'administrator', 'superadmin', 'hr', 'manager'], true);
+        abort_unless(app(AppraisalPolicy::class)->canEvaluate($actor, $employee), 403,
+            'HR cannot change their own appraisal. A company administrator must evaluate it.');
+        abort_unless($actor->hasModulePermission('appraisal', $action), 403, 'You do not have permission to perform this appraisal action.');
     }
 
     public function index(Request $request)
     {
         $actor = $this->actor();
-        $canManage = $this->canManage($actor);
-        $selectedPeriod = $request->get('period', '2026 Q3');
+        $policy = app(AppraisalPolicy::class);
+        $canManage = $policy->canManage($actor);
+        $selectedPeriod = (string) $request->get('period', $policy->currentPeriod());
+        $policy->periodDates($selectedPeriod);
         $search = $request->get('search');
-
-        // Fetch active employees
-        $employeesQuery = User::whereIn('role', ['employee', 'manager', 'hr'])
+        $employeesQuery = User::whereIn(DB::raw('LOWER(role)'), ['employee', 'user', 'manager', 'hr'])
             ->where('company_id', $actor->company_id)
-            ->where(function ($q) {
-                $q->where('is_active', true)->orWhereNull('is_active');
-            });
-
-        if (! $canManage) $employeesQuery->whereKey($actor->id);
-
-        if ($search) {
-            $employeesQuery->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%")
-                    ->orWhere('designation', 'like', "%{$search}%");
-            });
-        }
-
+            ->where(fn ($query) => $query->where('is_active', true)->orWhereNull('is_active'));
+        if (!$canManage) $employeesQuery->whereKey($actor->id);
+        if ($search) $employeesQuery->where(fn ($query) => $query->where('name', 'like', '%'.$search.'%')->orWhere('email', 'like', '%'.$search.'%')->orWhere('designation', 'like', '%'.$search.'%'));
         $employees = $employeesQuery->orderBy('name')->get();
+        $query = Appraisal::with(['employee', 'evaluator'])->where('company_id', $actor->company_id)
+            ->whereHas('employee', fn ($query) => $query->where('company_id', $actor->company_id))->where('appraisal_period', $selectedPeriod);
+        if (!$canManage) $query->where('employee_id', $actor->id);
+        if ($search) $query->whereHas('employee', fn ($query) => $query->where('name', 'like', '%'.$search.'%')->orWhere('email', 'like', '%'.$search.'%')->orWhere('designation', 'like', '%'.$search.'%'));
+        // GET is read-only: it never creates, restores or changes appraisals.
+        $appraisals = $query->get();
+        $evaluated = $appraisals->whereIn('status', ['submitted', 'approved']);
+        if ($appraisals->isNotEmpty() && !$appraisals->first()->getRawOriginal('status')) $evaluated = $appraisals;
+        $avgScore = $evaluated->avg('overall_score') ?? 0;
+        $topPerformersCount = $evaluated->where('overall_score', '>=', 80)->count();
+        $totalEvaluated = $evaluated->count();
+        $needsImpCount = $evaluated->where('overall_score', '<', 70)->count();
+        $editableEmployeeIds = $employees->filter(fn ($employee) => $policy->canEvaluate($actor, $employee))->pluck('id')->all();
+        $editableAppraisalIds = $appraisals->filter(fn ($record) => $record->employee && $policy->canEvaluate($actor, $record->employee))->pluck('id')->all();
+        $settings = $policy->settings();
+        $periods = array_values(array_unique(array_merge([$selectedPeriod], $policy->periods())));
+        $canCreate = $canManage && $actor->hasModulePermission('appraisal', 'create');
+        $canEdit = $canManage && $actor->hasModulePermission('appraisal', 'edit');
+        $canDelete = $canManage && $actor->hasModulePermission('appraisal', 'delete');
+        return view('admin.appraisal.index', compact('appraisals', 'employees', 'selectedPeriod', 'avgScore', 'topPerformersCount', 'totalEvaluated', 'needsImpCount',
+            'canManage', 'canCreate', 'canEdit', 'canDelete', 'editableEmployeeIds', 'editableAppraisalIds', 'settings', 'periods'));
+    }
 
-        // Ensure auto-generated appraisal baselines exist for employees for the selected period
-        foreach ($canManage ? $employees : [] as $emp) {
-            $this->ensureEmployeeAppraisal($emp, $selectedPeriod);
-        }
-
-        // Fetch all appraisals for period
-        $appraisalsQuery = Appraisal::with(['employee', 'evaluator'])
-            ->where('company_id', $actor->company_id)
-            ->whereHas('employee', fn ($query) => $query->where('company_id', $actor->company_id))
-            ->where('appraisal_period', $selectedPeriod);
-        if (! $canManage) $appraisalsQuery->where('employee_id', $actor->id);
-
-        if ($search) {
-            $appraisalsQuery->whereHas('employee', function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('designation', 'like', "%{$search}%");
-            });
-        }
-
-        $appraisals = $appraisalsQuery->get();
-
-        // Summary metrics
-        $avgScore = $appraisals->avg('overall_score') ?? 0;
-        $topPerformersCount = $appraisals->where('overall_score', '>=', 85)->count();
-        $totalEvaluated = $appraisals->count();
-        $needsImpCount = $appraisals->where('overall_score', '<', 70)->count();
-
-        return view('admin.appraisal.index', compact(
-            'appraisals',
-            'employees',
-            'selectedPeriod',
-            'avgScore',
-            'topPerformersCount',
-            'totalEvaluated',
-            'needsImpCount',
-            'canManage'
-        ));
+    public function update(Request $request, int $id)
+    {
+        $actor = $this->actor();
+        $record = Appraisal::where('company_id', $actor->company_id)->findOrFail($id);
+        $request->merge(['employee_id' => $record->employee_id, 'appraisal_period' => $record->appraisal_period]);
+        return $this->store($request);
     }
 
     public function store(Request $request)
     {
         $actor = $this->actor();
-        abort_unless($this->canManage($actor), 403);
-        User::where('company_id', $actor->company_id)->findOrFail($request->input('employee_id'));
-        $request->validate([
-            'employee_id' => 'required|integer',
-            'appraisal_period' => 'required|string',
-            'project_score' => 'required|numeric|min:0|max:100',
-            'attendance_score' => 'required|numeric|min:0|max:100',
-            'teamwork_score' => 'required|numeric|min:1|max:10',
-            'communication_score' => 'required|numeric|min:1|max:10',
-            'punctuality_score' => 'required|numeric|min:1|max:10',
-            'project_remarks' => 'nullable|string',
-            'attendance_remarks' => 'nullable|string',
-            'behaviour_remarks' => 'nullable|string',
-            'recommendation' => 'nullable|string',
+        abort_unless(app(AppraisalPolicy::class)->canManage($actor), 403);
+        $request->validate(['employee_id' => ['required', 'integer'], 'appraisal_period' => ['required', 'string', 'max:30']]);
+        $employee = User::where('company_id', $actor->company_id)->findOrFail($request->integer('employee_id'));
+        $existing = Appraisal::withTrashed()->where('company_id', $actor->company_id)->where('employee_id', $employee->id)->where('appraisal_period', $request->appraisal_period)->first();
+        $this->authorizeEmployee($actor, $employee, $existing ? 'edit' : 'create');
+        $data = $request->validate([
+            'project_score' => ['required', 'numeric', 'between:0,100'], 'attendance_score' => ['required', 'numeric', 'between:0,100'],
+            'teamwork_score' => ['required', 'numeric', 'between:1,10'], 'communication_score' => ['required', 'numeric', 'between:1,10'],
+            'punctuality_score' => ['required', 'numeric', 'between:1,10'],
+            'project_remarks' => ['nullable', 'string', 'max:5000'], 'attendance_remarks' => ['nullable', 'string', 'max:5000'],
+            'behaviour_remarks' => ['required', 'string', 'max:5000'], 'recommendation' => ['nullable', 'string', 'max:255'],
         ]);
-
-        $behaviourScore = round((($request->teamwork_score + $request->communication_score + $request->punctuality_score) / 3) * 10, 2);
-        $overallScore = round(($request->project_score * 0.40) + ($request->attendance_score * 0.30) + ($behaviourScore * 0.30), 2);
-        $grade = Appraisal::computeGrade($overallScore);
-
-        $evaluator = auth()->user();
-
-        // If an appraisal was previously deleted, restore it when re-evaluating
-        $existingRecord = Appraisal::withTrashed()
-            ->where('employee_id', $request->employee_id)
-            ->where('appraisal_period', $request->appraisal_period)
-            ->first();
-
-        if ($existingRecord && $existingRecord->trashed()) {
-            $existingRecord->restore();
+        $policy = app(AppraisalPolicy::class);
+        $metrics = app(AppraisalMetrics::class)->calculate($employee, $request->appraisal_period);
+        foreach (['project' => 'project_score', 'attendance' => 'attendance_score'] as $criterion => $field) {
+            if (abs((float) $data[$field] - (float) $metrics[$field]) > 0.01 && empty(trim($data[$criterion.'_remarks'] ?? ''))) {
+                throw \Illuminate\Validation\ValidationException::withMessages([$criterion.'_remarks' => 'Explain why the '.$criterion.' score differs from recorded metrics.']);
+            }
         }
-
-        Appraisal::updateOrCreate(
-            [
-                'employee_id' => $request->employee_id,
-                'appraisal_period' => $request->appraisal_period,
-            ],
-            [
-                'company_id' => $evaluator?->company_id,
-                'projects_count' => $request->projects_count ?? 1,
-                'completed_tasks' => $request->completed_tasks ?? 5,
-                'project_score' => $request->project_score,
-                'project_remarks' => $request->project_remarks,
-                'present_days' => $request->present_days ?? 20,
-                'total_working_days' => $request->total_working_days ?? 22,
-                'attendance_percentage' => $request->attendance_percentage ?? $request->attendance_score,
-                'attendance_score' => $request->attendance_score,
-                'attendance_remarks' => $request->attendance_remarks,
-                'teamwork_score' => $request->teamwork_score,
-                'communication_score' => $request->communication_score,
-                'punctuality_score' => $request->punctuality_score,
-                'behaviour_score' => $behaviourScore,
-                'behaviour_remarks' => $request->behaviour_remarks,
-                'overall_score' => $overallScore,
-                'overall_grade' => $grade,
-                'recommendation' => $request->recommendation ?? $this->defaultRecommendation($overallScore),
-                'status' => 'approved',
-                'evaluated_by' => $evaluator?->id,
-            ]
-        );
-
-        return back()->with('success', 'Employee appraisal saved successfully!');
+        $settings = $policy->settings();
+        $behaviour = round(($data['teamwork_score'] + $data['communication_score'] + $data['punctuality_score']) / 3 * 10, 2);
+        $overall = $policy->score((float) $data['project_score'], (float) $data['attendance_score'], $behaviour, $settings);
+        $grade = Appraisal::computeGrade($overall);
+        $status = $settings['admin_approval_required'] === '1' && !WorkforceAccess::isAdmin($actor) ? 'submitted' : 'approved';
+        if ($status === 'approved') abort_unless($actor->hasModulePermission('appraisal', 'approve'), 403, 'Approval permission is required to finalize an appraisal.');
+        DB::connection('tenant')->transaction(function () use ($existing, $metrics, $data, $employee, $actor, $request, $behaviour, $overall, $grade, $settings, $policy, $status) {
+            User::where('company_id', $actor->company_id)->whereKey($employee->id)->lockForUpdate()->firstOrFail();
+            $current = Appraisal::withTrashed()->where('company_id', $actor->company_id)->where('employee_id', $employee->id)
+                ->where('appraisal_period', $request->appraisal_period)->first();
+            $this->authorizeEmployee($actor, $employee, $current ? 'edit' : 'create');
+            if ($current?->trashed()) $current->restore();
+            Appraisal::updateOrCreate(['company_id' => $actor->company_id, 'employee_id' => $employee->id, 'appraisal_period' => $request->appraisal_period],
+                array_merge($metrics, $data, [
+                    'behaviour_score' => $behaviour, 'overall_score' => $overall, 'overall_grade' => $grade,
+                    'recommendation' => ($data['recommendation'] ?? null) ?: $this->recommendation($overall),
+                    'recommended_increment_percent' => $policy->increment($grade, $settings), 'policy_snapshot' => $settings,
+                    'status' => $status, 'evaluated_by' => $actor->id,
+                ]));
+        });
+        return back()->with('success', $status === 'submitted' ? 'Appraisal submitted for administrator approval.' : 'Appraisal approved. Salary increase recommendation recorded.');
     }
 
     public function autoCalculate(Request $request)
     {
         $actor = $this->actor();
-        abort_unless($this->canManage($actor), 403);
-        $selectedPeriod = $request->get('period', '2026 Q3');
-        $employees = User::where('company_id', $actor->company_id)->whereIn('role', ['employee', 'manager', 'hr'])->get();
-
-        foreach ($employees as $emp) {
-            $this->ensureEmployeeAppraisal($emp, $selectedPeriod, true);
-        }
-
-        return back()->with('success', 'Real-time appraisal metrics auto-calculated for all personnel.');
+        $policy = app(AppraisalPolicy::class);
+        abort_unless($policy->canManage($actor), 403);
+        $period = (string) $request->get('period', $policy->currentPeriod());
+        $policy->periodDates($period);
+        $settings = $policy->settings();
+        $employees = User::where('company_id', $actor->company_id)->whereIn(DB::raw('LOWER(role)'), ['employee', 'user', 'manager', 'hr'])
+            ->where(fn ($query) => $query->where('is_active', true)->orWhereNull('is_active'))->get();
+        $count = 0;
+        DB::connection('tenant')->transaction(function () use ($employees, $actor, $policy, $period, $settings, &$count) {
+            foreach ($employees as $employee) {
+                if (!$policy->canEvaluate($actor, $employee)) continue;
+                User::where('company_id', $actor->company_id)->whereKey($employee->id)->lockForUpdate()->firstOrFail();
+                $record = Appraisal::withTrashed()->where('company_id', $actor->company_id)->where('employee_id', $employee->id)->where('appraisal_period', $period)->first();
+                if ($record && ($record->trashed() || in_array($record->status, ['submitted', 'approved'], true))) continue;
+                $this->authorizeEmployee($actor, $employee, $record ? 'edit' : 'create');
+                $metrics = app(AppraisalMetrics::class)->calculate($employee, $period);
+                Appraisal::updateOrCreate(['company_id' => $actor->company_id, 'employee_id' => $employee->id, 'appraisal_period' => $period], array_merge($metrics, [
+                    'teamwork_score' => 0, 'communication_score' => 0, 'punctuality_score' => 0, 'behaviour_score' => 0,
+                    'behaviour_remarks' => 'Awaiting reviewer feedback on teamwork, communication and professional conduct.',
+                    'overall_score' => 0, 'overall_grade' => 'Pending', 'recommendation' => 'Reviewer evaluation required',
+                    'status' => 'draft', 'evaluated_by' => null, 'recommended_increment_percent' => null, 'policy_snapshot' => $settings,
+                ]));
+                $count++;
+            }
+        });
+        return back()->with('success', $count.' drafts calculated from recorded work and attendance. Behaviour needs reviewer feedback. Your own HR appraisal, deleted reviews and submitted/approved evaluations were left unchanged.');
     }
 
-    public function destroy($id)
+    public function destroy(int $id)
     {
         $actor = $this->actor();
-        abort_unless($this->canManage($actor), 403);
-        $appraisal = Appraisal::where('company_id', $actor->company_id)->findOrFail($id);
-        $appraisal->delete();
-
+        $record = Appraisal::where('company_id', $actor->company_id)->findOrFail($id);
+        $employee = User::where('company_id', $actor->company_id)->findOrFail($record->employee_id);
+        $this->authorizeEmployee($actor, $employee, 'delete');
+        $record->delete();
         return back()->with('success', 'Appraisal entry deleted successfully.');
     }
 
-    /**
-     * Ensures an employee has calculated appraisal metrics based on real database records.
-     */
-    private function ensureEmployeeAppraisal(User $employee, string $period, bool $forceRecalculate = false): Appraisal
+    private function recommendation(float $score): string
     {
-        $existing = Appraisal::withTrashed()
-            ->where('employee_id', $employee->id)
-            ->where('appraisal_period', $period)
-            ->first();
-
-        // If record exists (even if soft-deleted by user), do not auto-recreate it unless forced
-        if ($existing && !$forceRecalculate) {
-            return $existing;
-        }
-
-        // If explicitly forced to recalculate, restore soft-deleted record if needed
-        if ($existing && $existing->trashed() && $forceRecalculate) {
-            $existing->restore();
-        }
-
-        // Calculate Project Metrics
-        $projectsCount = ProjectUser::where('user_id', $employee->id)->count();
-        if ($projectsCount === 0) {
-            $projectsCount = 1;
-        }
-
-        // Tasks stats
-        $completedTasks = Task::where(function ($query) use ($employee) {
-                $query->where('assigned_to', $employee->id)
-                    ->orWhereRaw('FIND_IN_SET(?, assigned_to)', [$employee->id])
-                    ->orWhereHas('assignees', function ($q) use ($employee) {
-                        $q->where('users.id', $employee->id);
-                    });
-            })
-            ->where(function ($query) {
-                $query->where('is_completed', 1)
-                    ->orWhereIn('status', ['completed', 'Finished', 'done']);
-            })
-            ->count();
-        if ($completedTasks === 0) {
-            $completedTasks = rand(4, 12);
-        }
-
-        $projectScore = min(100, max(60, round(70 + ($projectsCount * 5) + ($completedTasks * 2), 2)));
-
-        // Calculate Attendance Metrics
-        $totalWorkingDays = 22;
-        $presentDays = Attendance::where('user_id', $employee->id)->count();
-        if ($presentDays === 0) {
-            $presentDays = rand(18, 22);
-        }
-        $presentDays = min($presentDays, $totalWorkingDays);
-
-        $attendancePct = round(($presentDays / $totalWorkingDays) * 100, 2);
-        $attendanceScore = $attendancePct;
-
-        // Calculate Behaviour Metrics
-        $teamwork = rand(75, 95) / 10;
-        $communication = rand(75, 95) / 10;
-        $punctuality = rand(75, 95) / 10;
-        $behaviourScore = round((($teamwork + $communication + $punctuality) / 3) * 10, 2);
-
-        // Calculate Weighted Overall
-        $overallScore = round(($projectScore * 0.40) + ($attendanceScore * 0.30) + ($behaviourScore * 0.30), 2);
-        $grade = Appraisal::computeGrade($overallScore);
-
-        return Appraisal::updateOrCreate(
-            [
-                'employee_id' => $employee->id,
-                'appraisal_period' => $period,
-            ],
-            [
-                'company_id' => $employee->company_id,
-                'projects_count' => $projectsCount,
-                'completed_tasks' => $completedTasks,
-                'project_score' => $projectScore,
-                'project_remarks' => 'Consistently delivers milestones on target.',
-                'present_days' => $presentDays,
-                'total_working_days' => $totalWorkingDays,
-                'attendance_percentage' => $attendancePct,
-                'attendance_score' => $attendanceScore,
-                'attendance_remarks' => 'Good attendance record and office punctuality.',
-                'teamwork_score' => $teamwork,
-                'communication_score' => $communication,
-                'punctuality_score' => $punctuality,
-                'behaviour_score' => $behaviourScore,
-                'behaviour_remarks' => 'Positive attitude, strong teamwork, and proactive communication.',
-                'overall_score' => $overallScore,
-                'overall_grade' => $grade,
-                'recommendation' => $this->defaultRecommendation($overallScore),
-                'status' => 'approved',
-                'evaluated_by' => auth()->id(),
-            ]
-        );
-    }
-
-    private function defaultRecommendation(float $score): string
-    {
-        if ($score >= 90) return 'Promote & Merit Increment';
-        if ($score >= 80) return 'Salary Increment & Role Growth';
-        if ($score >= 70) return 'Standard Bonus & Continuation';
-        if ($score >= 60) return 'Role Maintenance & Skill Mentoring';
-        return 'Performance Improvement Plan (PIP)';
+        return match (true) {
+            $score >= 90 => 'Promote & Merit Increment', $score >= 80 => 'Salary Increment & Role Growth',
+            $score >= 70 => 'Standard Bonus & Continuation', $score >= 60 => 'Role Maintenance & Skill Mentoring',
+            default => 'Performance Improvement Plan (PIP)',
+        };
     }
 }

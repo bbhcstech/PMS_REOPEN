@@ -29,7 +29,16 @@ $sidebar = substr($sidebar, strpos($sidebar, '@if($canSeeModule(\'dashboard\'))'
 $sidebar = substr($sidebar, 0, strpos($sidebar, '<!-- ================== SETTINGS SECTION'));
 preg_match_all('/href="\{\{ route\(\'([^\']+)\'/', $sidebar, $links);
 $configuredRoutes = array_column(config('workspace_modules'), 'route');
+foreach (config('workspace_modules') as $item) {
+    $configuredRoutes = array_merge($configuredRoutes, $item['route_names'] ?? []);
+}
 foreach (array_unique($links[1]) as $route) $assert(in_array($route, $configuredRoutes, true), 'Current sidebar entry missing from module catalog: '.$route);
+foreach (['admin.settings.parent-departments.index' => 'department-parent', 'admin.settings.departments.index' => 'department-sub', 'admin.settings.designations.index' => 'designations'] as $route => $slug) {
+    $assert($service->featuresForRoute($route) === [$slug], 'Settings shortcut has a different module identity: '.$route);
+    $assert($service->subdivisionForRoute($route) === $slug, 'Settings shortcut has a different permission identity: '.$route);
+}
+$assert($service->categoryFor('reports-attendance') === 'REPORTS & ANALYTICS', 'Report was categorized as HR');
+$assert($service->categoryFor('attendance-settings') === 'ADMINISTRATION & SETTINGS', 'Settings page was categorized as HR');
 DB::connection('central')->table('plan_modules')->insert(['plan_id' => 99, 'module_id' => $reports->id]);
 $company = new Company;
 $company->setConnection('central');
@@ -54,8 +63,10 @@ foreach ($reportSlugs as $slug) {
 $assert(! $service->companyModules($secondCompany)->contains(fn ($module) => str_starts_with($module->slug, 'reports-')), 'Revoked reports remained in company list');
 $finance = $modules->firstWhere('slug', 'reports-finance');
 DB::connection('central')->table('company_modules')->insert(['company_id' => 1, 'module_id' => Module::where('slug', 'reports-finance')->value('id'), 'is_enabled' => false]);
+app(App\Services\FeatureEntitlements::class)->forget(1);
 $assert(! $company->hasFeature('reports-finance') && $company->hasFeature('reports-sales'), 'Individual platform revocation affected sibling reports');
 DB::connection('central')->table('company_modules')->where('company_id', 1)->delete();
+app(App\Services\FeatureEntitlements::class)->forget(1);
 
 $app->instance(CompanyContext::class, new class($company) extends CompanyContext {
     public function __construct(private $company) {}

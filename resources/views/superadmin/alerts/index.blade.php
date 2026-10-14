@@ -1028,7 +1028,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (range === 'all') return true;
         const raw = card.getAttribute('data-timestamp');
         if (!raw) return true;
-        const created = new Date(raw.replace(' ', 'T'));
+        const created = window.PMSTime.parse(raw);
         if (isNaN(created.getTime())) return true;
         const now = new Date();
         if (range === 'today') return created.toDateString() === now.toDateString();
@@ -1251,7 +1251,7 @@ document.addEventListener('DOMContentLoaded', function() {
             setTimeout(() => {
                 this.disabled = false;
                 this.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh Alerts';
-                document.getElementById('lastUpdatedTimestamp').textContent = new Date().toTimeString().slice(0,8);
+                document.getElementById('lastUpdatedTimestamp').textContent = window.PMSTime.format(window.PMSTime.now(), {hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23'});
             }, 500);
         });
     }

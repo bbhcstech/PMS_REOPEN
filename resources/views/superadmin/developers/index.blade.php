@@ -2356,7 +2356,7 @@
             return;
         }
 
-        const nowStr = new Date().toLocaleString();
+        const nowStr = window.PMSTime.format(window.PMSTime.now(), { year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
         printWin.document.write(`
             <!DOCTYPE html>
             <html>
@@ -2772,7 +2772,7 @@
                     body.innerHTML = `
                         <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 16px; margin-bottom: 16px;">
                             <strong style="font-size: 13.5px; color: var(--slate-dark); display: block; margin-bottom: 4px;">Task Initialized: ${data.task.title}</strong>
-                            <span style="font-size: 12px; color: var(--slate-muted);">Created on ${new Date(data.task.created_at).toLocaleString()} · Initial Status: ${data.task.status.toUpperCase()}</span>
+                            <span style="font-size: 12px; color: var(--slate-muted);">Created on ${window.PMSTime.format(data.task.created_at, { year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' })} · Initial Status: ${data.task.status.toUpperCase()}</span>
                         </div>
                         <div style="text-align:center; padding: 20px; color: var(--slate-muted); font-size: 13px;">No further activity logs recorded yet.</div>
                     `;
@@ -2781,7 +2781,7 @@
 
                 let html = '<div style="display: flex; flex-direction: column; gap: 14px;">';
                 data.history.forEach((h, idx) => {
-                    const dateStr = new Date(h.created_at).toLocaleString();
+                    const dateStr = window.PMSTime.format(h.created_at, { year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
                     html += `
                         <div style="display: flex; gap: 14px; position: relative;">
                             <div style="width: 34px; height: 34px; border-radius: 50%; background: #EEF2FF; color: #2F6BFF; display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; border: 1px solid #C7D2FE;">

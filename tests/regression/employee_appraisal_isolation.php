@@ -20,7 +20,7 @@ foreach ([[1, 1, 'employee'], [2, 1, 'employee'], [3, 1, 'manager'], [4, 2, 'emp
 Auth::guard('web')->setUser(User::findOrFail(1));
 $controller = new AppraisalController;
 foreach ([[], ['employee_id' => 2], ['search' => 'Person 3']] as $params) {
-    $data = $controller->index(\Illuminate\Http\Request::create('/admin/hr/appraisal', 'GET', $params))->getData();
+    $data = $controller->index(\Illuminate\Http\Request::create('/admin/hr/appraisal', 'GET', $params + ['period' => '2026 Q3']))->getData();
     foreach ($data['appraisals'] as $record) {
         if ($record->employee_id !== 1) throw new RuntimeException('Another person appraisal leaked.');
     }

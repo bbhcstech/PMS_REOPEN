@@ -1905,7 +1905,7 @@
                     return;
                 }
                 document.getElementById('clockOutSelfie').value = capturedSelfie;
-                document.getElementById('clockOutTimezone').value = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata';
+                document.getElementById('clockOutTimezone').value = window.PMSTime.timeZone;
                 closeCameraModal();
                 clockOutForm.querySelector('button[type="submit"]').disabled = true;
                 clockOutForm.submit();
@@ -1932,6 +1932,7 @@
     const formatLocalTime = (date, includeSeconds = true) => {
         try {
             const options = {
+                timeZone: window.PMSTime.timeZone,
                 hour: '2-digit',
                 minute: '2-digit',
                 second: includeSeconds ? '2-digit' : undefined
@@ -1952,6 +1953,7 @@
     const formatLocalDate = (date) => {
         try {
             const parts = new Intl.DateTimeFormat('en-US', {
+                    timeZone: window.PMSTime.timeZone,
                 weekday: 'long',
                 day: '2-digit',
                 month: 'short',
@@ -1967,12 +1969,12 @@
             }
             return `${weekday}, ${day} ${month} ${year}`;
         } catch (e) {
-            return date.toLocaleDateString();
+            return window.PMSTime.format(date, {year: 'numeric', month: 'short', day: '2-digit'});
         }
     };
 
     const updateClockWidgets = () => {
-        const now = new Date();
+        const now = window.PMSTime.now();
 
         if (hrClockTime) {
             hrClockTime.textContent = formatLocalTime(now, true);
@@ -2002,19 +2004,11 @@
 
             const parseTime = (isoStr, rawTime, rawDate) => {
                 let d = isoStr ? new Date(isoStr) : null;
-                const nowMs = Date.now();
+                const nowMs = window.PMSTime.now().getTime();
                 if (!d || isNaN(d.getTime()) || (d.getTime() - nowMs > 30000 && rawTime)) {
                     const parts = (rawTime || '').split(':').map(Number);
                     if (parts.length >= 2) {
-                        const localDate = new Date();
-                        if (rawDate) {
-                            const dp = rawDate.split('-').map(Number);
-                            if (dp.length === 3) {
-                                localDate.setFullYear(dp[0], dp[1] - 1, dp[2]);
-                            }
-                        }
-                        localDate.setHours(parts[0], parts[1], parts[2] || 0, 0);
-                        d = localDate;
+                        d = window.PMSTime.parse(`${rawDate || window.PMSTime.dateKey()}T${rawTime}`);
                     }
                 }
                 return d;
@@ -2042,17 +2036,19 @@
     setInterval(updateClockWidgets, 1000);
 
     const loadedDateKey = new Intl.DateTimeFormat('en-CA', {
+        timeZone: window.PMSTime.timeZone,
         year: 'numeric',
         month: '2-digit',
         day: '2-digit'
-    }).format(new Date());
+    }).format(window.PMSTime.now());
 
     setInterval(() => {
         const currentDateKey = new Intl.DateTimeFormat('en-CA', {
+            timeZone: window.PMSTime.timeZone,
             year: 'numeric',
             month: '2-digit',
             day: '2-digit'
-        }).format(new Date());
+        }).format(window.PMSTime.now());
 
         if (currentDateKey !== loadedDateKey) {
             window.location.reload();

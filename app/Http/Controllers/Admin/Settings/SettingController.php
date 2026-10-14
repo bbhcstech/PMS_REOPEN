@@ -106,7 +106,7 @@ class SettingController extends Controller
             ],
             'performance-settings' => [
                 'name' => 'Performance Settings',
-                'description' => 'Appraisal cycles, rating scales, performance criteria',
+                'description' => 'Appraisal criteria, review cycles, approval workflow and salary increase recommendations',
                 'icon' => 'bx bx-trending-up',
                 'color' => 'success',
                 'route' => 'admin.settings.performance',

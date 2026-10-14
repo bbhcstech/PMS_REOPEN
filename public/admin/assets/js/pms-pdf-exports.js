@@ -22,7 +22,7 @@
         paddingTop: function () { return 5; }, paddingBottom: function () { return 5; }
       };
     });
-    var generated = new Date().toLocaleDateString();
+    var generated = new Date().toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' });
     doc.footer = function (page, pages) {
       return { margin: [32, 12, 32, 0], fontSize: 8, color: '#64748b', columns: [
         { text: 'Generated ' + generated }, { text: 'Page ' + page + ' of ' + pages, alignment: 'right' }

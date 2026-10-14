@@ -44,6 +44,7 @@ return [
 
         'mysql' => [
             'driver' => 'mysql',
+            'timezone' => env('DB_TIMEZONE', '+05:30'),
             'url' => env('DB_URL'),
             'host' => env('DB_HOST', '127.0.0.1'),
             'port' => env('DB_PORT', '3306'),
@@ -68,6 +69,7 @@ return [
         // ---------------------------------------------------------------
         'session_db' => [
             'driver' => 'mysql',
+            'timezone' => env('DB_TIMEZONE', '+05:30'),
             'url' => env('DB_URL'),
             'host' => env('DB_HOST', '127.0.0.1'),
             'port' => env('DB_PORT', '3306'),
@@ -94,6 +96,7 @@ return [
         // ---------------------------------------------------------------
         'central' => [
             'driver'    => 'mysql',
+            'timezone'  => env('DB_TIMEZONE', '+05:30'),
             'host'      => env('CENTRAL_DB_HOST', env('DB_HOST', '127.0.0.1')),
             'port'      => env('CENTRAL_DB_PORT', env('DB_PORT', '3306')),
             'database'  => env('CENTRAL_DB_DATABASE', 'pms_central'),
@@ -119,6 +122,7 @@ return [
         // ---------------------------------------------------------------
         'tenant' => [
             'driver'    => 'mysql',
+            'timezone'  => env('DB_TIMEZONE', '+05:30'),
             'host'      => env('TENANT_DB_HOST', env('DB_HOST', '127.0.0.1')),
             'port'      => env('TENANT_DB_PORT', env('DB_PORT', '3306')),
             'database'  => env('TENANT_DB_DATABASE', env('DB_DATABASE', 'pms_last')),
@@ -138,6 +142,7 @@ return [
 
         'mariadb' => [
             'driver' => 'mariadb',
+            'timezone' => env('DB_TIMEZONE', '+05:30'),
             'url' => env('DB_URL'),
             'host' => env('DB_HOST', '127.0.0.1'),
             'port' => env('DB_PORT', '3306'),

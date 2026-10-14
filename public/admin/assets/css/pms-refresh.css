@@ -1250,19 +1250,13 @@ html[data-pms-theme="dark"] .page-link {
   color: #ffffff !important;
 }
 
+/* The dashboard places this arrow inline in each KPI card footer (sized by dashboard.blade.php).
+   It used to be pinned absolutely to the card's top-right corner, landing on top of the KPI icon. */
 .industry-arrow {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
   display: inline-flex;
-  width: 34px;
-  height: 34px;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
-  background: rgba(47, 107, 255, 0.08);
-  color: var(--pms-primary);
-  transform: rotate(-45deg);
+  flex-shrink: 0;
 }
 
 .industry-main-grid {

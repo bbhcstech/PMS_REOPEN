@@ -25,10 +25,6 @@ class AutoClockOutAttendance extends Command
                     $connection['database'] = $company->db_name;
                     config(['database.connections.tenant' => $connection]);
                     DB::purge('tenant');
-                    $schema = DB::connection('tenant')->getSchemaBuilder();
-                    $timezone = $schema->hasTable('app_settings')
-                        ? DB::connection('tenant')->table('app_settings')->where('key', 'loc_timezone')->value('value') : null;
-                    config(['app.timezone' => in_array($timezone, \DateTimeZone::listIdentifiers(), true) ? $timezone : 'Asia/Kolkata']);
                     \App\Services\AttendanceClockPolicy::forget();
                     $count = $service->closeDue((int) $company->id);
                     $absent = \App\Services\AttendanceClockPolicy::markMissedClockIns((int) $company->id, null, false);

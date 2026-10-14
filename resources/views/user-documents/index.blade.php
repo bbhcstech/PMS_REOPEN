@@ -814,7 +814,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 var name = (v.viewer && v.viewer.name) ? v.viewer.name : 'System User';
                 var email = (v.viewer && v.viewer.email) ? v.viewer.email : '';
                 var role = (v.viewer && v.viewer.role) ? v.viewer.role : 'User';
-                var time = v.viewed_at ? new Date(v.viewed_at).toLocaleString() : '';
+                var time = v.viewed_at ? window.PMSTime.format(v.viewed_at, { year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '';
 
                 html += '<div class="list-group-item d-flex justify-content-between align-items-center py-2.5">';
                 html += '<div><div class="fw-semibold text-dark small">' + escapeHtml(name) + '</div>';

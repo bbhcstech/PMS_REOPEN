@@ -229,7 +229,7 @@
                                 <div class="dev-subtle-box" style="padding: 12px 14px; border-radius: 10px; font-size: 13px;">
                                     <div style="display: flex; justify-content: space-between; color: var(--slate-muted); font-size: 11.5px; margin-bottom: 4px;">
                                         <strong>Update</strong>
-                                        <span>${new Date(n.created_at).toLocaleString()}</span>
+                                        <span>${window.PMSTime.format(n.created_at, { year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
                                     </div>
                                     <p style="color: var(--slate-heading); font-weight: 600;">${n.note}</p>
                                 </div>

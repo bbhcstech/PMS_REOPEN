@@ -1093,13 +1093,10 @@
                                 <div class="input-group input-group-custom loc-input-group">
                                     <span class="input-group-text"><i class="fas fa-globe-americas"></i></span>
                                     <select name="timezone" class="form-select" {{ $isSettingsReadOnly ? 'disabled' : 'required' }}>
-                                        <option value="UTC" {{ ($settings['timezone'] ?? '') == 'UTC' ? 'selected' : '' }}>UTC (Coordinated Universal Time)</option>
-                                        <option value="Asia/Dhaka" {{ ($settings['timezone'] ?? '') == 'Asia/Dhaka' ? 'selected' : '' }}>Asia/Dhaka (GMT+6)</option>
-                                        <option value="Asia/Kolkata" {{ ($settings['timezone'] ?? '') == 'Asia/Kolkata' ? 'selected' : '' }}>Asia/Kolkata (GMT+5:30)</option>
-                                        <option value="America/New_York" {{ ($settings['timezone'] ?? '') == 'America/New_York' ? 'selected' : '' }}>America/New_York (EST)</option>
-                                        <option value="Europe/London" {{ ($settings['timezone'] ?? '') == 'Europe/London' ? 'selected' : '' }}>Europe/London (GMT)</option>
+                                        <option value="{{ $settings['timezone'] }}" selected>{{ $settings['timezone'] }} (IST, GMT+5:30)</option>
                                     </select>
                                 </div>
+                                <small class="text-muted">India time is shared across the website and managed by the deployment configuration.</small>
                             </div>
 
                             <!-- Default Language -->

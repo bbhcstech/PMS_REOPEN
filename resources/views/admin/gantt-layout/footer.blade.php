@@ -84,7 +84,8 @@
 
     <!-- Main JS -->
 
-    <script src="{{ asset('admin/assets/js/main.js')}}"></script>
+    <script src="{{ asset('admin/assets/js/main.js')}}?v={{ filemtime(public_path('admin/assets/js/main.js')) }}"></script>
+    <script src="{{ asset('admin/assets/js/pms-sidebar-state.js')}}?v={{ filemtime(public_path('admin/assets/js/pms-sidebar-state.js')) }}"></script>
 
     <!-- Page JS -->
     <script src="{{ asset('admin/assets/js/dashboards-analytics.js')}}"></script>

@@ -105,11 +105,15 @@ class AdminWorkspaceModules
     }
     public function categoryFor(string $slug): string
     {
+        $parent = config('workspace_modules.'.$slug.'.parent');
+        if ($parent && $parent !== $slug) return $this->categoryFor($parent);
         return match (true) {
+            $slug === 'reports' => 'REPORTS & ANALYTICS',
+            in_array($slug, ['leads', 'crm-deals'], true) => 'SALES & CRM',
             (bool) preg_match('/payroll|salary|payslip|expense|billing|formula|deduction|bonus|tax-rule|overtime/', $slug) => 'FINANCE & PAYROLL',
             (bool) preg_match('/setting|role|permission|activity|system-log/', $slug) => 'ADMINISTRATION & SETTINGS',
-            (bool) preg_match('/employee|hr|department|designation|attendance|leave|holiday|award|recognition|recruitment|appraisal/', $slug) => 'HR & PEOPLE',
-            (bool) preg_match('/project|task|timelog|timesheet|work|client|contract|product|order/', $slug) => 'WORK MANAGEMENT',
+            (bool) preg_match('/employee|hr|department|designation|attendance|leave|holiday|award|recognition|recruitment|appraisal|letterhead/', $slug) => 'HR & PEOPLE',
+            (bool) preg_match('/project|task|timelog|timesheet|work|client|contract|product|order|collaborating/', $slug) => 'WORK MANAGEMENT',
             default => 'CORE PLATFORM',
         };
     }
@@ -215,6 +219,8 @@ class AdminWorkspaceModules
 
         return Module::with('parent')->orderBy('sort_order')->orderBy('name')->get()
             ->filter(function (Module $module) use ($slugs, $routes) {
+                if (in_array(strtolower(trim($module->slug)), ['bye', 'kjm'], true)
+                    || in_array(strtolower(trim($module->name)), ['bye', 'kjm'], true)) return false;
                 if ($slugs->contains($module->slug) || config('workspace_modules.'.$module->slug)) return true;
                 // Custom modules must point to an implemented workspace page.
                 if ($module->route_name && $routes->contains($module->route_name)) return true;
@@ -227,14 +233,7 @@ class AdminWorkspaceModules
                 });
             })->map(function (Module $module) {
                 // Category is display metadata; the modules table does not store it.
-                $module->category = match (true) {
-                    config('workspace_modules.'.$module->slug.'.parent') === 'payroll' => 'FINANCE & PAYROLL',
-                    (bool) preg_match('/employee|hr|department|designation|attendance|leave|holiday|award|recognition|recruitment|appraisal|letterhead/', $module->slug) => 'HR & PEOPLE',
-                    (bool) preg_match('/project|task|timelog|timesheet|work$|client|contract|product|order|collaborating/', $module->slug) => 'WORK MANAGEMENT',
-                    (bool) preg_match('/payroll|salary|payslip|expense|billing/', $module->slug) => 'FINANCE & PAYROLL',
-                    (bool) preg_match('/setting|role|permission|activity|log/', $module->slug) => 'ADMINISTRATION & SETTINGS',
-                    default => 'CORE PLATFORM',
-                };
+                $module->category = $this->categoryFor($module->slug);
                 return $this->sidebarDetails($module);
             })->values();
     }

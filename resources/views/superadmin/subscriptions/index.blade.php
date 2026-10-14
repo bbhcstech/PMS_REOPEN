@@ -1379,6 +1379,24 @@
         background: #0F1530 !important;
         border-color: rgba(238, 241, 251, 0.09) !important;
     }
+    #companyDetailDrawer .subscription-override-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 10.5px;
+        font-weight: 800;
+        padding: 2px 6px;
+        border-radius: 4px;
+        white-space: nowrap;
+        color: #92400e !important;
+        background: #fffbeb !important;
+        border: 1px solid #fde68a;
+    }
+    :is([data-pms-theme="dark"], [data-theme="dark"], [data-bs-theme="dark"], .dark, .dark-mode) #companyDetailDrawer .subscription-override-badge {
+        color: #fcd34d !important;
+        background: #332719 !important;
+        border-color: #7c5b19;
+    }
 </style>
 
 
@@ -2210,7 +2228,7 @@
                     </div>
                     <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border-subtle);">
                         <span><i class="fas fa-bolt" style="color: #d97706; margin-right: 8px;"></i> Payroll Rules &amp; Payslips</span>
-                        <span style="font-size: 10.5px; font-weight: 800; color: #d97706; background: #fffbeb; padding: 2px 6px; border-radius: 4px;">⚡ Custom Override</span>
+                        <span class="subscription-override-badge">⚡ Custom Override</span>
                     </div>
                     <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 0;">
                         <span style="color: var(--text-subtle);"><i class="fas fa-lock" style="margin-right: 8px;"></i> Advanced Intelligence Analytics</span>

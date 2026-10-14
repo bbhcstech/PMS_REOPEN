@@ -1471,11 +1471,11 @@ document.addEventListener('DOMContentLoaded', function () {
                             <div class="row">
                                 <div class="col-md-6">
                                     <label class="form-label">Start Date:</label>
-                                    <p class="fw-semibold">${event.start.toLocaleDateString()}</p>
+                                    <p class="fw-semibold">${event.start.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })}</p>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">End Date:</label>
-                                    <p class="fw-semibold">${event.end ? event.end.toLocaleDateString() : event.start.toLocaleDateString()}</p>
+                                    <p class="fw-semibold">${event.end ? event.end.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' }) : event.start.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })}</p>
                                 </div>
                             </div>
                         </div>

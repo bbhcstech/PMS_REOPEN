@@ -1963,6 +1963,15 @@
                         </a>
                     </li>
 @endif
+                    @if(\App\Services\WorkforceAccess::isHr(auth()->user()))
+                    {{-- HR's own requests to the admin ("My Leaves" above is the employee queue HR manages). --}}
+                    <li class="menu-item {{ request()->routeIs('leaves.mine') ? 'active' : '' }}">
+                        <a href="{{ route('leaves.mine') }}" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-user-check"></i>
+                            <div class="text-truncate">My Leave Requests</div>
+                        </a>
+                    </li>
+                    @endif
                     @if($canSeeModule('leaves-apply'))
                     <li class="menu-item {{ request()->routeIs('leaves.create') ? 'active' : '' }}">
                         <a href="{{ route('leaves.create') }}" class="menu-link" data-sidebar-key="leaves-apply">
@@ -2386,23 +2395,29 @@
             @endif
 
             @if($canSeeModule('settings') || in_array(auth()->user()?->normalizedRole(), ['admin', 'superadmin'], true))
-                <li class="menu-item {{ request()->routeIs('settings.*') || request()->routeIs('admin.settings.*') || request()->routeIs('admin.modules.*') || request()->routeIs('admin.role-permissions.*') || request()->routeIs('admin.role-accounts.*') ? 'active open' : '' }}">
+                @php
+                    // Holiday Settings shares the holidays.* routes with the HR "Holiday List" page (holidays.calendar).
+                    $holidaySettingsActive = request()->routeIs('holidays.*') && ! request()->routeIs('holidays.calendar');
+                    // Keep Settings expanded on every one of its own pages (Holiday and Attendance Settings included).
+                    $settingsMenuOpen = request()->routeIs('settings.*', 'admin.settings.*', 'admin.modules.*', 'admin.role-permissions.*', 'admin.role-accounts.*', 'attendance.settings*') || $holidaySettingsActive;
+                @endphp
+                <li class="menu-item {{ $settingsMenuOpen ? 'active open' : '' }}" data-sidebar-menu="settings">
                     <a href="javascript:void(0);" class="menu-link menu-toggle">
                         <i class="menu-icon tf-icons bx bx-cog"></i>
                         <div class="text-truncate" data-i18n="Settings">Settings</div>
                     </a>
                     <ul class="menu-sub">
-                        @if($canSeeModule('settings-dashboard'))
-                        <li class="menu-item {{ request()->routeIs('admin.settings.index') ? 'active' : '' }}"><a href="{{ route('admin.settings.index') }}" class="menu-link"><div>Settings Dashboard</div></a></li>
-                        @endif
-                        @if($canSeeModule('company-profile-settings'))
-                        <li class="menu-item {{ request()->routeIs('settings.company') ? 'active' : '' }}"><a href="{{ route('settings.company') }}" class="menu-link"><div>Company Profile</div></a></li>
-                        @endif
-                        @if($canSeeModule('organization-details-settings'))
-                        <li class="menu-item {{ request()->routeIs('admin.settings.organization-details*') ? 'active' : '' }}"><a href="{{ route('admin.settings.organization-details') }}" class="menu-link"><div>Organization Details</div></a></li>
+                        @if($canSeeModule('attendance-settings'))
+                        <li class="menu-item {{ request()->routeIs('attendance.settings*') ? 'active' : '' }}"><a href="{{ route('attendance.settings') }}" class="menu-link"><div>Attendance Settings</div></a></li>
                         @endif
                         @if($canSeeModule('business-address-settings') && in_array(strtolower((string) auth()->user()?->role), ['admin', 'administrator', 'superadmin', 'hr', 'manager'], true))
                         <li class="menu-item {{ request()->routeIs('admin.settings.business-address*') ? 'active' : '' }}"><a href="{{ route('admin.settings.business-address.index') }}" class="menu-link"><div>Branches / Locations</div></a></li>
+                        @endif
+                        @if($canSeeModule('change-password-settings'))
+                        <li class="menu-item {{ request()->routeIs('admin.settings.change-password*') ? 'active' : '' }}"><a href="{{ route('admin.settings.change-password') }}" class="menu-link"><div>Change Password</div></a></li>
+                        @endif
+                        @if($canSeeModule('company-profile-settings'))
+                        <li class="menu-item {{ request()->routeIs('settings.company') ? 'active' : '' }}"><a href="{{ route('settings.company') }}" class="menu-link"><div>Company Profile</div></a></li>
                         @endif
                         @if(\App\Services\WorkforceAccess::isAdmin(auth()->user()) && $canSeeModule('departments'))
                         <li class="menu-item department-sidebar-menu {{ request()->routeIs('admin.settings.parent-departments.*') || request()->routeIs('admin.settings.departments.*') ? 'active open' : '' }}">
@@ -2430,51 +2445,50 @@
                         @if(\App\Services\WorkforceAccess::isAdmin(auth()->user()) && $canSeeModule('designations'))
                         <li class="menu-item {{ request()->routeIs('admin.settings.designations.*') ? 'active' : '' }}"><a href="{{ route('admin.settings.designations.index') }}" class="menu-link"><div>Designations</div></a></li>
                         @endif
-                        @if($canSeeModule('work-schedule-settings'))
-                        <li class="menu-item {{ request()->routeIs('admin.settings.work-schedule*') ? 'active' : '' }}"><a href="{{ route('admin.settings.work-schedule') }}" class="menu-link"><div>Work Schedule</div></a></li>
-                        @endif
-                        @if($canSeeModule('leave-settings'))
-                        <li class="menu-item {{ request()->routeIs('admin.settings.leave*') ? 'active' : '' }}"><a href="{{ route('admin.settings.leave') }}" class="menu-link"><div>Leave Settings</div></a></li>
-                        @endif
-                        @if($canSeeModule('holiday-settings'))
-                        <li class="menu-item {{ request()->routeIs('holidays.*') ? 'active' : '' }}"><a href="{{ route('holidays.index') }}" class="menu-link"><div>Holiday Settings</div></a></li>
-                        @endif
-                        @if($canSeeModule('attendance-settings'))
-                        <li class="menu-item {{ request()->routeIs('attendance.settings*') ? 'active' : '' }}"><a href="{{ route('attendance.settings') }}" class="menu-link"><div>Attendance Settings</div></a></li>
-                        @endif
-
-                        @if($canSeeModule('recruitment-settings'))
-                        <li class="menu-item {{ request()->routeIs('admin.settings.recruitment*') ? 'active' : '' }}"><a href="{{ route('admin.settings.recruitment') }}" class="menu-link"><div>Recruitment Settings</div></a></li>
-                        @endif
-                        @if($canSeeModule('performance-settings'))
-                        <li class="menu-item {{ request()->routeIs('admin.settings.performance*') ? 'active' : '' }}"><a href="{{ route('admin.settings.performance') }}" class="menu-link"><div>Performance Settings</div></a></li>
-                        @endif
-                        @if($canSeeModule('notification-settings'))
-                        <li class="menu-item {{ request()->routeIs('admin.settings.notification*') ? 'active' : '' }}"><a href="{{ route('admin.settings.notification') }}" class="menu-link"><div>Notification Settings</div></a></li>
+                        @if($canSeeModule('document-settings'))
+                        <li class="menu-item {{ request()->routeIs('admin.settings.document*') ? 'active' : '' }}"><a href="{{ route('admin.settings.document') }}" class="menu-link"><div>Document Settings</div></a></li>
                         @endif
                         @if($canSeeModule('email-settings'))
                         <li class="menu-item {{ request()->routeIs('admin.settings.email*') ? 'active' : '' }}"><a href="{{ route('admin.settings.email') }}" class="menu-link"><div>Email Settings</div></a></li>
                         @endif
-                        @if($canSeeModule('document-settings'))
-                        <li class="menu-item {{ request()->routeIs('admin.settings.document*') ? 'active' : '' }}"><a href="{{ route('admin.settings.document') }}" class="menu-link"><div>Document Settings</div></a></li>
+                        @if($canSeeModule('holiday-settings'))
+                        <li class="menu-item {{ $holidaySettingsActive ? 'active' : '' }}"><a href="{{ route('holidays.index') }}" class="menu-link"><div>Holiday Settings</div></a></li>
                         @endif
-                        @if($canSeeModule('security-settings'))
-                        <li class="menu-item {{ request()->routeIs('admin.settings.security*') ? 'active' : '' }}"><a href="{{ route('admin.settings.security') }}" class="menu-link"><div>Security Settings</div></a></li>
-                        @endif
-                        @if($canSeeModule('change-password-settings'))
-                        <li class="menu-item {{ request()->routeIs('admin.settings.change-password*') ? 'active' : '' }}"><a href="{{ route('admin.settings.change-password') }}" class="menu-link"><div>Change Password</div></a></li>
-                        @endif
-                        @if($canSeeModule('role-permissions-settings') || $canSeeModule('role-management') || in_array(auth()->user()?->normalizedRole(), ['admin', 'superadmin'], true))
-                        <li class="menu-item {{ request()->routeIs('admin.role-permissions.*') ? 'active' : '' }}"><a href="{{ route('admin.role-permissions.index') }}" class="menu-link"><div>Role & Permission</div></a></li>
+                        @if($canSeeModule('leave-settings'))
+                        <li class="menu-item {{ request()->routeIs('admin.settings.leave*') ? 'active' : '' }}"><a href="{{ route('admin.settings.leave') }}" class="menu-link"><div>Leave Settings</div></a></li>
                         @endif
                         @if($canSeeModule('localization-settings'))
                         <li class="menu-item {{ request()->routeIs('admin.settings.localization*') ? 'active' : '' }}"><a href="{{ route('admin.settings.localization') }}" class="menu-link"><div>Localization</div></a></li>
                         @endif
+                        @if($canSeeModule('module-management') || in_array(auth()->user()?->normalizedRole(), ['admin', 'superadmin'], true))
+                        <li class="menu-item {{ request()->routeIs('admin.modules.*') ? 'active' : '' }}"><a href="{{ route('admin.modules.index') }}" class="menu-link"><div>Module Management</div></a></li>
+                        @endif
+                        @if($canSeeModule('notification-settings'))
+                        <li class="menu-item {{ request()->routeIs('admin.settings.notification*') ? 'active' : '' }}"><a href="{{ route('admin.settings.notification') }}" class="menu-link"><div>Notification Settings</div></a></li>
+                        @endif
+                        @if($canSeeModule('organization-details-settings'))
+                        <li class="menu-item {{ request()->routeIs('admin.settings.organization-details*') ? 'active' : '' }}"><a href="{{ route('admin.settings.organization-details') }}" class="menu-link"><div>Organization Details</div></a></li>
+                        @endif
+                        @if($canSeeModule('performance-settings'))
+                        <li class="menu-item {{ request()->routeIs('admin.settings.performance*') ? 'active' : '' }}"><a href="{{ route('admin.settings.performance') }}" class="menu-link"><div>Performance Settings</div></a></li>
+                        @endif
+                        @if($canSeeModule('recruitment-settings'))
+                        <li class="menu-item {{ request()->routeIs('admin.settings.recruitment*') ? 'active' : '' }}"><a href="{{ route('admin.settings.recruitment') }}" class="menu-link"><div>Recruitment Settings</div></a></li>
+                        @endif
+                        @if($canSeeModule('role-permissions-settings') || $canSeeModule('role-management') || in_array(auth()->user()?->normalizedRole(), ['admin', 'superadmin'], true))
+                        <li class="menu-item {{ request()->routeIs('admin.role-permissions.*') ? 'active' : '' }}"><a href="{{ route('admin.role-permissions.index') }}" class="menu-link"><div>Role & Permission</div></a></li>
+                        @endif
+                        @if($canSeeModule('security-settings'))
+                        <li class="menu-item {{ request()->routeIs('admin.settings.security*') ? 'active' : '' }}"><a href="{{ route('admin.settings.security') }}" class="menu-link"><div>Security Settings</div></a></li>
+                        @endif
+                        @if($canSeeModule('settings-dashboard'))
+                        <li class="menu-item {{ request()->routeIs('admin.settings.index') ? 'active' : '' }}"><a href="{{ route('admin.settings.index') }}" class="menu-link"><div>Settings Dashboard</div></a></li>
+                        @endif
                         @if($canSeeModule('terms-policy-settings'))
                         <li class="menu-item {{ request()->routeIs('admin.settings.terms-policy*') ? 'active' : '' }}"><a href="{{ route('admin.settings.terms-policy') }}" class="menu-link"><div>Terms &amp; Policy</div></a></li>
                         @endif
-                        @if($canSeeModule('module-management') || in_array(auth()->user()?->normalizedRole(), ['admin', 'superadmin'], true))
-                        <li class="menu-item {{ request()->routeIs('admin.modules.*') ? 'active' : '' }}"><a href="{{ route('admin.modules.index') }}" class="menu-link"><div>Module Management</div></a></li>
+                        @if($canSeeModule('work-schedule-settings'))
+                        <li class="menu-item {{ request()->routeIs('admin.settings.work-schedule*') ? 'active' : '' }}"><a href="{{ route('admin.settings.work-schedule') }}" class="menu-link"><div>Work Schedule</div></a></li>
                         @endif
                     </ul>
                 </li>

@@ -51,13 +51,10 @@ class AppServiceProvider extends ServiceProvider
     {
         Paginator::useBootstrapFive();
 
-        try {
-            $tz = AppSetting::valueFor('loc_timezone', config('app.timezone', 'Asia/Kolkata'));
-            if ($tz) {
-                config(['app.timezone' => $tz]);
-                date_default_timezone_set($tz);
-            }
-        } catch (\Throwable $e) {}
+        // Deployment configuration is the shared clock for web, jobs and all companies.
+        // Reading a tenant setting here happens before tenant selection and can leak
+        // another company's timezone into timestamps written by this request.
+        date_default_timezone_set(config('app.timezone', 'Asia/Kolkata'));
 
         view()->composer('*', function ($view) {
             try {

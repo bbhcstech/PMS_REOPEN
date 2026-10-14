@@ -444,6 +444,13 @@
         color: #FFFFFF !important;
         transform: translateX(2px);
     }
+    /* Theme icon rules (loaded later, !important) recolour every dashboard icon blue; keep the
+       hovered footer arrow white on its blue button in both themes. */
+    html body .industry-overview-grid .industry-metric-card:hover .industry-arrow {
+        color: #FFFFFF !important;
+        -webkit-text-fill-color: #FFFFFF !important;
+        -webkit-text-stroke-color: #FFFFFF !important;
+    }
 
     /* ======================================================
        EXECUTIVE PANELS & BUSINESS MODEL

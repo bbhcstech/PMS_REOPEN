@@ -6,6 +6,23 @@ namespace App\Services;
 class RolePermissionDefaults
 {
     private array $permissions = ['view', 'create', 'edit', 'delete', 'approve', 'export', 'assign'];
+
+    /** Legacy grants considered only when the feature has no explicit saved decision. */
+    public function fallbackModuleSlugs(string $slug): array
+    {
+        $slugs = [$slug];
+        if ($inherited = config('workspace_modules.'.$slug.'.inherits')) $slugs[] = $inherited;
+        if (str_starts_with($slug, 'payroll-') || in_array($slug, [
+            'payslips', 'salary-structures', 'employee-salary', 'formula-builder',
+            'deduction-rules', 'bonus-rules', 'tax-rules', 'overtime-rules',
+        ], true)) $slugs[] = 'payroll';
+        if (str_contains($slug, 'reports')) $slugs[] = 'reports';
+        if (in_array($slug, ['products', 'orders'], true)) {
+            $slugs[] = 'projects';
+            $slugs[] = 'work';
+        }
+        return array_values(array_unique($slugs));
+    }
     public function getDefaultPermissionsForRole(string $role, string $slug): array
     {
         $slug = config('workspace_modules.'.$slug.'.inherits') ?: $slug;

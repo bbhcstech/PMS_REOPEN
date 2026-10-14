@@ -2013,7 +2013,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 toast: true,
                 position: 'top-end'
             });
-            document.getElementById('lastSaved').textContent = new Date().toLocaleString();
+            document.getElementById('lastSaved').textContent = window.PMSTime.format(window.PMSTime.now(), { year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
             updateOrganizationalChart();
         })
         .catch(error => {
@@ -2329,7 +2329,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             const companyName = document.title.split('-')[0].trim() || 'Bitroxia PMS';
-            const timestamp = new Date().toLocaleString();
+            const timestamp = window.PMSTime.format(window.PMSTime.now(), { year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
             let dataUrl = null;
             try {

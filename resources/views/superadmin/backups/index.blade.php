@@ -1982,7 +1982,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!text) return;
             const title = (document.getElementById('logsModalSubtitle')?.innerText || 'tenant').trim();
             const status = (document.getElementById('logsStatusBanner')?.innerText || '').trim();
-            const header = `${(document.getElementById('logsModalTitle')?.innerText || 'Backup Execution Log').trim()}\n${title}\n${status}\nExported: ${new Date().toLocaleString()}\n\n`;
+            const header = `${(document.getElementById('logsModalTitle')?.innerText || 'Backup Execution Log').trim()}\n${title}\n${status}\nExported: ${window.PMSTime.format(window.PMSTime.now(), { year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' })}\n\n`;
             const safeName = title.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '') || 'tenant';
             const blob = new Blob([header + text + '\n'], { type: 'text/plain;charset=utf-8' });
             const url = URL.createObjectURL(blob);

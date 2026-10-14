@@ -2407,7 +2407,7 @@
         }
 
         document.getElementById('lightboxUploader').innerHTML = `<i class="bx bx-user me-1"></i> Uploaded by ${escapeHtml(photo.uploader ? photo.uploader.name : 'Admin')}`;
-        document.getElementById('lightboxDate').innerHTML = `<div class="d-flex align-items-center gap-2"><span><i class="bx bx-calendar text-success me-1"></i> ${new Date(photo.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</span>${deleteBtnHtml}</div>`;
+        document.getElementById('lightboxDate').innerHTML = `<div class="d-flex align-items-center gap-2"><span><i class="bx bx-calendar text-success me-1"></i> ${new Date(photo.created_at).toLocaleDateString('en-GB', { timeZone: 'Asia/Kolkata',  day: '2-digit', month: 'short', year: 'numeric' })}</span>${deleteBtnHtml}</div>`;
     }
 
     function deletePhotoFromLightbox(photoId) {

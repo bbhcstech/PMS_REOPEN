@@ -1905,7 +1905,7 @@ document.addEventListener('DOMContentLoaded', function() {
             reportEl.style.fontFamily = "'Inter', Arial, sans-serif";
             reportEl.style.color = '#0f172a';
 
-            const formattedDate = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+            const formattedDate = new Date().toLocaleDateString('en-US', { timeZone: 'Asia/Kolkata',  year: 'numeric', month: 'long', day: 'numeric' });
 
             reportEl.innerHTML = `
                 <style>

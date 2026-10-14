@@ -328,21 +328,7 @@ class User extends Authenticatable
             return false;
         }
 
-        $slugsToTest = [$moduleSlug];
-        if ($inheritedFeature) $slugsToTest[] = $inheritedFeature;
-        if (str_starts_with($moduleSlug, 'payroll-') || in_array($moduleSlug, [
-            'payslips', 'salary-structures', 'employee-salary', 'formula-builder',
-            'deduction-rules', 'bonus-rules', 'tax-rules', 'overtime-rules',
-        ], true)) {
-            $slugsToTest[] = 'payroll';
-        }
-        if (str_contains($moduleSlug, 'reports')) {
-            $slugsToTest[] = 'reports';
-        }
-        if (in_array($moduleSlug, ['products', 'orders'], true)) {
-            $slugsToTest[] = 'projects';
-            $slugsToTest[] = 'work';
-        }
+        $slugsToTest = app(\App\Services\RolePermissionDefaults::class)->fallbackModuleSlugs($moduleSlug);
 
         $permissionRole = $this->permissionRole();
         // An explicit module decision takes precedence over legacy parent aliases.

@@ -890,7 +890,7 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
             <div class="position-relative" style="min-width: 280px; max-width: 340px;">
                 <div class="input-group input-group-merge">
                     <span class="input-group-text bg-light border-end-0 pe-2"><i class="bx bx-search text-muted fs-5"></i></span>
-                    <input type="text" id="moduleSearchInput" class="form-control bg-light border-start-0 mm-search-input py-2" placeholder="Search module name or route...">
+                    <input type="search" id="moduleSearchInput" class="form-control bg-light border-start-0 mm-search-input py-2" aria-label="Search modules" placeholder="Search modules or categories...">
                 </div>
                 <div class="position-absolute end-0 top-50 translate-middle-y me-2 d-none d-sm-block pe-none">
                     <kbd class="bg-white border text-muted px-2 py-0.5 rounded font-monospace fs-tiny shadow-2xs">⌘ K</kbd>
@@ -899,6 +899,7 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
         </div>
 
         <!-- Table Container -->
+        <div class="px-3 py-2 border-bottom small text-muted" id="moduleResultCount" role="status" aria-live="polite">Showing {{ $modules->count() }} modules</div>
         <div class="table-responsive mm-table-container">
             <table class="table mm-table align-middle mb-0" id="modulesTable">
                 <thead>
@@ -931,6 +932,7 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
                                             @endif
                                         </div>
                                         <div class="d-flex align-items-center gap-1.5 mt-1">
+                                            <span class="badge bg-label-primary fs-tiny">{{ $module->category }}</span>
                                             <span class="badge bg-light text-secondary border font-monospace fs-tiny text-lowercase px-2 py-0.5">{{ $module->slug }}</span>
                                             @if($module->is_core)
                                                 <span class="badge bg-label-info fs-tiny d-inline-flex align-items-center gap-1" title="System Core Module">
@@ -1044,11 +1046,14 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
                             <td colspan="6" class="text-center py-5">
                                 <div class="text-muted">
                                     <i class="bx bx-grid-alt fs-1 mb-2"></i>
-                                    <p class="mb-0 fs-6">No modules found matching search.</p>
+                                    <p class="mb-0 fs-6">No modules have been provided for your company.</p>
                                 </div>
                             </td>
                         </tr>
                     @endforelse
+                    <tr id="moduleSearchEmpty" hidden>
+                        <td colspan="6" class="text-center py-5 text-muted">No modules match your search. Try another name or category.</td>
+                    </tr>
                 </tbody>
             </table>
         </div>
@@ -1266,13 +1271,17 @@ document.addEventListener('DOMContentLoaded', function () {
     if (searchInput && table) {
         // Filter functionality
         searchInput.addEventListener('input', function () {
-            const query = searchInput.value.toLowerCase();
+            const query = searchInput.value.trim().toLowerCase();
             const rows = table.querySelectorAll('tbody tr.module-row');
+            let visibleCount = 0;
 
             rows.forEach(row => {
                 const text = (row.innerText + ' ' + row.dataset.category).toLowerCase();
                 row.style.display = text.includes(query) ? '' : 'none';
+                if (row.style.display !== 'none') visibleCount++;
             });
+            document.getElementById('moduleSearchEmpty').hidden = rows.length === 0 || visibleCount > 0;
+            document.getElementById('moduleResultCount').textContent = `Showing ${visibleCount} of ${rows.length} modules`;
             table.querySelectorAll('.module-category').forEach(header => {
                 header.hidden = !Array.from(rows).some(row => row.dataset.category === header.dataset.category && row.style.display !== 'none');
             });
