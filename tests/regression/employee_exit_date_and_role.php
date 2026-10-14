@@ -70,6 +70,11 @@ Schema::create('employee_details', function (Blueprint $table) {
 });
 
 // Seed sample company and admin
+Schema::create('designations', function (Blueprint $table) {
+    $table->id(); $table->unsignedBigInteger('company_id'); $table->unsignedBigInteger('added_by')->nullable();
+    $table->string('name'); $table->integer('level')->default(0); $table->timestamp('archived_at')->nullable();
+});
+DB::table('designations')->insert(['id' => 1, 'company_id' => 1, 'name' => 'Engineer', 'level' => 0]);
 DB::connection('central')->table('companies')->insert(['id' => 1, 'name' => 'Demo Corp', 'status' => 'active']);
 DB::table('companies')->insert(['id' => 1, 'name' => 'Demo Corp', 'status' => 'active']);
 
@@ -147,6 +152,7 @@ $request = Request::create("/employees/{$targetUser->id}", 'POST', [
     'login_allowed' => '1',
 ]);
 
+$request->merge(['designation_id' => 1]);
 $response = $controller->update($request, $targetUser->id);
 
 $targetUser->refresh();
@@ -183,6 +189,7 @@ $requestAdmin = Request::create("/employees/{$targetUser->id}", 'POST', [
     'login_allowed' => '1',
 ]);
 
+$requestAdmin->merge(['designation_id' => 1]);
 $controller->update($requestAdmin, $targetUser->id);
 $targetUser->refresh();
 $targetDetail->refresh();
@@ -211,6 +218,7 @@ $requestActive = Request::create("/employees/{$targetUser->id}", 'POST', [
     'login_allowed' => '1',
 ]);
 
+$requestActive->merge(['designation_id' => 1]);
 $controller->update($requestActive, $targetUser->id);
 $targetDetail->refresh();
 

@@ -83,7 +83,9 @@ class DeveloperTaskSync
                 $attributes['project_id'] = null;
                 if (! empty($source['project_id']) && Schema::hasTable('projects') && $platformSchema->hasTable('projects')) {
                     $projectName = $platform->table('projects')->where('id', $source['project_id'])->value('name');
-                    $attributes['project_id'] = $projectName ? DB::table('projects')->where('name', $projectName)->value('id') : null;
+                    $attributes['project_id'] = $projectName ? DB::table('projects')->where('name', $projectName)
+                        ->when(Schema::hasColumn('projects', 'company_id'), fn ($query) => $query->where('company_id', $companyId))
+                        ->value('id') : null;
                 }
                 if (! $attributes['project_id'] && Schema::hasTable('projects')) {
                     // tasks.project_id is required on most installs: use the workspace's platform project.
@@ -109,19 +111,27 @@ class DeveloperTaskSync
         }
     }
 
-    private static function workspaceProjectId($companyId): ?int
+    public static function workspaceProjectId($companyId, ?string $connection = null): ?int
     {
-        $id = DB::table('projects')->where('name', 'Internal Platform Project')->value('id');
+        $database = DB::connection($connection);
+        $schema = $database->getSchemaBuilder();
+        $projects = fn () => $database->table('projects')
+            ->when($schema->hasColumn('projects', 'company_id'), fn ($query) => $query->where('company_id', $companyId));
+        $id = $projects()->where('name', 'Internal Platform Project')->value('id');
         if ($id) return (int) $id;
         try {
-            $columns = array_flip(Schema::getColumnListing('projects'));
-            return (int) DB::table('projects')->insertGetId(array_intersect_key([
+            $columns = array_flip($schema->getColumnListing('projects'));
+            return (int) $database->table('projects')->insertGetId(array_intersect_key([
                 'company_id' => $companyId, 'name' => 'Internal Platform Project',
+                'project_code' => 'PLATFORM-'.\Illuminate\Support\Str::upper(\Illuminate\Support\Str::random(10)),
                 'created_at' => now(), 'updated_at' => now(),
             ], $columns)) ?: null;
         } catch (\Throwable $e) {
-            $id = DB::table('projects')->value('id');
-            return $id ? (int) $id : null;
+            $id = $projects()->value('id');
+            if ($id) return (int) $id;
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'project_id' => 'Create a project in the selected company workspace before assigning this task.',
+            ]);
         }
     }
 

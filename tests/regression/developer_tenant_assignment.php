@@ -2,16 +2,22 @@
 require __DIR__.'/developer_task_assignment.php';
 $sourceSchemas = DB::select("SELECT name, sql FROM sqlite_master WHERE type = 'table' AND name IN ('users','companies','projects','tasks','assigned_task_user')");
 config(['database.connections.workspace' => ['driver'=>'sqlite','database'=>'company_workspace','prefix'=>'']]);
-foreach ($sourceSchemas as $schema) DB::connection('workspace')->statement($schema->sql);
+foreach ($sourceSchemas as $schema) {
+    $sql = $schema->name === 'tasks' ? str_replace('"project_id" integer', '"project_id" integer not null', $schema->sql) : $schema->sql;
+    DB::connection('workspace')->statement($sql);
+}
 $workspace = DB::connection('workspace');
 $workspace->table('companies')->insert(['id'=>1]);
 $workspace->table('users')->insert(['id'=>1,'name'=>'Other user','email'=>'other@example.test','role'=>'admin']);
 $workspace->table('users')->insert(['id'=>42,'name'=>'Developer','email'=>'dev@example.test','role'=>'developer','password'=>'preserved']);
-$workspace->table('tasks')->insert(['id'=>3,'title'=>'Existing unrelated task','assigned_to'=>1]);
+$workspace->table('projects')->insert(['id'=>9,'company_id'=>1,'name'=>'Workspace project']);
+$workspace->table('projects')->insert(['id'=>1,'company_id'=>99,'name'=>'Test Project']);
+$workspace->table('tasks')->insert(['id'=>3,'project_id'=>9,'title'=>'Existing unrelated task','assigned_to'=>1]);
 DB::connection('central')->table('companies')->update(['db_name'=>'company_workspace']);
 (new App\Http\Controllers\SuperAdminController)->assignWork($request);
 $copy = $workspace->table('tasks')->where('platform_task_id',3)->first();
 if (!$copy || $copy->assigned_to!=42 || $copy->id==3 || $copy->title!=='pms') throw new RuntimeException('Tenant task was not mapped to the correct developer.');
+if (!$copy->project_id || $workspace->table('projects')->where('id',$copy->project_id)->value('company_id') !== 1) throw new RuntimeException('Required tenant project was missing or mapped to another company.');
 if ($workspace->table('tasks')->where('id',3)->value('title')!=='Existing unrelated task') throw new RuntimeException('Existing tenant task was overwritten.');
 if (!$workspace->table('assigned_task_user')->where('task_id',$copy->id)->where('user_id',42)->exists()) throw new RuntimeException('Tenant assignment pivot missing.');
 if ($workspace->table('users')->where('id',42)->value('password')!=='preserved') throw new RuntimeException('Tenant password changed.');

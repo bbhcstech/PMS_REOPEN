@@ -24,6 +24,7 @@ foreach (['central' => 'registry', 'tenant' => 'primary', 'mysql' => 'primary', 
 config(['database.default' => 'tenant', 'session.driver' => 'array', 'cache.default' => 'array']);
 Schema::connection('central')->create('companies', function ($t) {
     $t->id(); foreach (['name', 'db_name', 'email', 'password', 'company_code', 'domain', 'subdomain'] as $c) $t->string($c)->nullable();
+    $t->text('settings')->nullable();
     $t->softDeletes(); $t->timestamps();
 });
 Schema::connection('central')->create('company_subscriptions', function ($t) {

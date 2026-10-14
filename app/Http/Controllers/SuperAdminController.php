@@ -1158,7 +1158,12 @@ class SuperAdminController extends Controller
                             $attributes['company_id'] = $tenant->table('companies')->where('id', $comp->id)->value('id');
                             $attributes['created_by'] = $tenantDeveloperId;
                             $attributes['project_id'] = $sourceProject && Schema::connection('tenant')->hasTable('projects')
-                                ? $tenant->table('projects')->where('name', $sourceProject->name)->value('id') : null;
+                                ? $tenant->table('projects')->where('name', $sourceProject->name)
+                                    ->when(Schema::connection('tenant')->hasColumn('projects', 'company_id'), fn ($query) => $query->where('company_id', $comp->id))
+                                    ->value('id') : null;
+                            if (!$attributes['project_id'] && Schema::connection('tenant')->hasTable('projects')) {
+                                $attributes['project_id'] = \App\Services\DeveloperTaskSync::workspaceProjectId($comp->id, 'tenant');
+                            }
                             $attributes = array_intersect_key($attributes, array_flip(Schema::connection('tenant')->getColumnListing('tasks')));
                             $tenantTaskId = $tenant->table('tasks')->insertGetId($attributes);
                             if (Schema::connection('tenant')->hasTable('assigned_task_user')) {

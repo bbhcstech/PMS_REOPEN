@@ -693,7 +693,9 @@ class EmployeeController extends Controller
                     $created = true;
                 } catch (\Illuminate\Database\QueryException $qe) {
                     $tries++;
-                    if ($request->input('employee_id_option') === 'custom' || $tries > 5) {
+                    $duplicateId = in_array((int) ($qe->errorInfo[1] ?? 0), [1062, 19], true)
+                        && str_contains(strtolower($qe->getMessage()), 'employee_id');
+                    if (!$duplicateId || $request->input('employee_id_option') === 'custom' || $tries > 5) {
                         throw $qe;
                     }
                     Log::warning('employee_id collision on create, retrying', [
@@ -721,6 +723,10 @@ class EmployeeController extends Controller
                 ]);
             }
 
+            // Release employee-ID locks before SMTP; a slow mail server must not
+            // block other employee creations or email credentials for a rolled-back user.
+            DB::connection($conn)->commit();
+
             // Send email to employee immediately (synchronous) so mail goes to employee account now
             try {
                 // send immediately, bypassing queue (useful if you want immediate delivery)
@@ -737,8 +743,6 @@ class EmployeeController extends Controller
                 ]);
                 // proceed without failing the whole operation; client will still see success
             }
-
-            DB::connection($conn)->commit();
 
             try {
                 SystemNotificationService::notifyAdmins(
@@ -762,7 +766,7 @@ class EmployeeController extends Controller
             return redirect()->route('employees.index')
                 ->with('success', 'Employee added successfully and notified.');
         } catch (\Exception $e) {
-            DB::connection($conn)->rollBack();
+            if (DB::connection($conn)->transactionLevel() > 0) DB::connection($conn)->rollBack();
             Log::error('Store employee error', ['error' => $e->getMessage()]);
             return back()->withErrors(['error' => 'Error: ' . $e->getMessage()])->withInput();
         }

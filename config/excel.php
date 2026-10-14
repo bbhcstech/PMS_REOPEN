@@ -1,7 +1,6 @@
 <?php
 
 use Maatwebsite\Excel\Excel;
-use PhpOffice\PhpSpreadsheet\Reader\Csv;
 
 return [
     'exports' => [
@@ -128,7 +127,8 @@ return [
             'enclosure'        => '"',
             'escape_character' => '\\',
             'contiguous'       => false,
-            'input_encoding'   => Csv::GUESS_ENCODING,
+            // Configuration must bootstrap even when a deployment's vendor install is incomplete.
+            'input_encoding'   => 'guess',
         ],
 
         /*

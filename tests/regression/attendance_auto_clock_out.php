@@ -26,8 +26,18 @@ $foreign = $makeSession(5, '2026-10-11', '09:00:00');
 $manual = $makeSession(2, '2026-10-10', '09:00:00', 'Asia/Kolkata', '18:00:00');
 $archived = $makeSession(3, '2026-10-10', '09:00:00', 'Asia/Kolkata', null, '2026-10-11');
 $service = new AttendanceAutoClockOut;
+// Reproduce a first request after deployment: policy columns are not initialized yet.
+\App\Services\AttendanceClockPolicy::forget();
+$schemaChanges = 0;
+DB::listen(function ($query) use (&$schemaChanges) {
+    if (preg_match('/^\s*(alter|create|drop)\s/i', $query->sql)) {
+        $schemaChanges++;
+        checkSave($query->connection->transactionLevel() === 0, 'Schema initialization ran inside an attendance transaction (MySQL implicitly commits DDL).');
+    }
+});
 Carbon::setTestNow(Carbon::parse('2026-10-11 23:57:59', 'Asia/Kolkata'));
 checkSave($service->closeDue(1) === 0, 'Session closed before 23:58.');
+checkSave($schemaChanges > 0, 'First-use policy schema upgrade was not exercised.');
 Carbon::setTestNow(Carbon::parse('2026-10-11 23:58:00', 'Asia/Kolkata'));
 checkSave($service->closeDue(1, 2) === 1, 'Employee catch-up did not close own session.');
 checkSave($hr->fresh()->clock_out === null, 'Employee catch-up changed another user.');

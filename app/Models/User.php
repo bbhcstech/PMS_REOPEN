@@ -65,11 +65,12 @@ class User extends Authenticatable
         });
     }
 
-    public static function syncCompanyToConnection(string $connectionName, $centralCompany): void
+    public static function syncCompanyToConnection(string $connectionName, $centralCompany, bool $strict = false): void
     {
         try {
             $schema = \Illuminate\Support\Facades\Schema::connection($connectionName);
             if (! $schema->hasTable('companies')) {
+                if ($strict) throw new \RuntimeException('Tenant companies table is missing.');
                 return;
             }
 
@@ -140,6 +141,7 @@ class User extends Authenticatable
                     ->updateOrInsert(['id' => $centralCompany->id], $data);
             }
         } catch (\Throwable $e) {
+            if ($strict) throw $e;
             \Illuminate\Support\Facades\Log::warning("syncCompanyToConnection error on connection {$connectionName}: " . $e->getMessage());
         }
     }

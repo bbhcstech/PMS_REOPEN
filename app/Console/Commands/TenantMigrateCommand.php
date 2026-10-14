@@ -54,6 +54,8 @@ class TenantMigrateCommand extends Command
 
         $successCount = 0;
         $failureCount = 0;
+        $originalTenant = config('database.connections.tenant');
+        $originalDefault = DB::getDefaultConnection();
 
         foreach ($companies as $company) {
             $this->info("--------------------------------------------------");
@@ -61,29 +63,13 @@ class TenantMigrateCommand extends Command
             $this->info("--------------------------------------------------");
 
             try {
-                $targetDb = $company->db_name;
-                $defaultTenantDb = env('DB_DATABASE') ?: config('database.connections.tenant.database');
-
-                // Test target DB connection; fall back to environment tenant database if access is denied
-                try {
-                    config(['database.connections.tenant.database' => $targetDb]);
-                    DB::purge('tenant');
-                    DB::connection('tenant')->getPdo();
-                } catch (\Throwable $connEx) {
-                    if (! empty($defaultTenantDb) && $targetDb !== $defaultTenantDb) {
-                        try {
-                            config(['database.connections.tenant.database' => $defaultTenantDb]);
-                            DB::purge('tenant');
-                            DB::connection('tenant')->getPdo();
-                            $this->warn("  Note: Database '{$targetDb}' was inaccessible; safely migrating active database '{$defaultTenantDb}'.");
-                            $targetDb = $defaultTenantDb;
-                        } catch (\Throwable $connEx2) {
-                            throw $connEx;
-                        }
-                    } else {
-                        throw $connEx;
-                    }
-                }
+                $targetDb = trim((string) $company->db_name);
+                if ($targetDb === '') throw new \RuntimeException('This company has no registered database.');
+                // A denied company connection must fail, never migrate another company's fallback DB.
+                config(['database.connections.tenant' => array_replace($originalTenant, ['database' => $targetDb, 'url' => null])]);
+                DB::purge('tenant');
+                DB::setDefaultConnection('tenant');
+                DB::connection('tenant')->getPdo();
 
                 $params = [
                     '--path'     => 'database/migrations/tenant',
@@ -98,14 +84,18 @@ class TenantMigrateCommand extends Command
 
                     // Ensure Company record is synced into tenant DB companies table
                     try {
-                        \App\Models\User::syncCompanyToConnection('tenant', $company);
-                    } catch (\Throwable $syncEx) {}
+                        \App\Models\User::syncCompanyToConnection('tenant', $company, strict: true);
+                    } catch (\Throwable $syncEx) {
+                        throw new \RuntimeException('Migrations completed but company registry synchronization failed.', 0, $syncEx);
+                    }
 
                     $this->line(trim(Artisan::output()));
 
                     if ($this->option('seed')) {
                         $this->info("Running tenant seeders...");
-                        Artisan::call('db:seed', ['--database' => 'tenant', '--force' => true]);
+                        if (Artisan::call('db:seed', ['--database' => 'tenant', '--force' => true]) !== 0) {
+                            throw new \RuntimeException('Tenant seeding failed: '.Artisan::output());
+                        }
                     }
 
                     $successCount++;
@@ -117,6 +107,10 @@ class TenantMigrateCommand extends Command
             } catch (\Throwable $e) {
                 $this->error("✖ Error connecting or migrating database '{$company->db_name}': " . $e->getMessage());
                 $failureCount++;
+            } finally {
+                DB::purge('tenant');
+                config(['database.connections.tenant' => $originalTenant]);
+                DB::setDefaultConnection($originalDefault);
             }
 
             $this->newLine();
