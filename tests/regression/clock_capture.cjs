@@ -45,6 +45,7 @@ async function flowChecks(file, denyCamera = false) {
         camera: async () => { mediaRequests++; if (denyCamera) throw new Error('Camera permission denied'); return { getTracks: () => [{ stop() {} }] }; },
         json: async () => { throw new Error('Location lookup timed out'); },
         play: async () => {}, cameraError: error => error.message,
+        submit: async form => { form.submit(); return true; },
     } };
     vm.runInNewContext(source, { window, URL, console: { warn() {}, error() {} }, alert() {},
         document: { getElementById: get, createElement: element, addEventListener: (_, callback) => { domReady = callback; } } });

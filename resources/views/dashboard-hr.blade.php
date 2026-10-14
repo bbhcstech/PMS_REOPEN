@@ -1897,8 +1897,7 @@
                 document.getElementById('clockOutSelfie').value = capturedSelfie;
                 document.getElementById('clockOutTimezone').value = window.PMSTime.timeZone;
                 closeCameraModal();
-                clockOutForm.querySelector('button[type="submit"]').disabled = true;
-                clockOutForm.submit();
+                window.PMSClockCapture.submit(clockOutForm);
                 return;
             }
 
@@ -1911,7 +1910,7 @@
         canSubmitClockIn = true;
         setClockStatus('Photo captured. Completing clock in...', 'success');
         closeCameraModal();
-        clockInForm.submit();
+        window.PMSClockCapture.submit(clockInForm).then(saved => { if (!saved) canSubmitClockIn = false; });
     });
 
     const istClock = document.getElementById('employeeIstClock');

@@ -4,9 +4,10 @@ const { spawn } = require('node:child_process'), assert = require('node:assert/s
 const root = path.resolve(__dirname, '../..');
 const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'pms-loading-test-'));
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
-let server, browser, socket, origin, posts = 0, submitted = '', checks = 0;
+let server, browser, socket, origin, posts = 0, submitted = '', checks = 0, clockPosts = 0, clockBody = '';
 const fixture = `<!doctype html><html><head><meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="/admin/assets/css/pms-operation-loading.css"><script src="/admin/assets/js/pms-operation-loading.js"></script>
+<script src="/admin/assets/js/pms-clock-capture.js"></script>
 <style>button,a{display:inline-block;padding:12px 24px;background:#2463eb;color:white;border:0;border-radius:8px;font:14px Arial;margin:6px}body{margin:10px}</style></head><body>
 <button id="fetch">Save employee</button><button id="fail">Failed request</button><button id="http">HTTP error</button>
 <button id="xhr">Save company</button><button id="parallel">Load dashboard</button><button id="instant">Toggle</button>
@@ -18,6 +19,7 @@ const fixture = `<!doctype html><html><head><meta name="viewport" content="width
 <form id="invalid"><input required name="required"><button id="invalidButton">Required</button></form>
 <form id="native" method="post" action="/saved"><button id="nativeButton" name="action" value="approve">Approve</button></form>
 <form id="program" method="post" action="/saved"><button id="programButton">Confirm and submit</button></form>
+<form id="clock" method="post" action="/clock-save"><input name="clock_in_selfie" value="data:image/png;base64,captured"><input name="_token" value="fixture-token"><button type="submit" id="clockSave">Clock In</button></form>
 <a id="navigate" href="/destination">Another dashboard</a><a id="hash" href="#section">Section</a>
 <a id="download" href="/file" download>Download</a><div id="section"></div>
 <script>
@@ -37,6 +39,8 @@ document.getElementById('existing').onclick=()=>fetch('/api').then(r=>r.json());
 document.getElementById('ajax').onsubmit=e=>{e.preventDefault();calls++;fetch('/api',{method:'POST',body:new FormData(e.target)}).then(r=>r.json());};
 document.getElementById('cancel').onsubmit=e=>e.preventDefault();
 document.getElementById('program').onsubmit=e=>{e.preventDefault();HTMLFormElement.prototype.submit.call(e.target);};
+document.getElementById('clock').onsubmit=e=>{e.preventDefault();PMSClockCapture.submit(e.target);};
+const originalTimeout=window.setTimeout;window.setTimeout=(fn,ms,...args)=>originalTimeout(fn,window.clockFastTimeout&&ms===45000?100:ms,...args);
 </script></body></html>`;
 async function run() {
     server = http.createServer((req, res) => {
@@ -44,6 +48,21 @@ async function run() {
         if (url.pathname.startsWith('/admin/assets/')) {
             const file = path.join(root, 'public', url.pathname);
             res.setHeader('Content-Type', file.endsWith('.js') ? 'application/javascript' : 'text/css'); res.end(fs.readFileSync(file)); return;
+        }
+        if (url.pathname === '/clock-save') {
+            clockPosts++; let body = '';
+            req.on('data', chunk => body += chunk);
+            req.on('end', () => {
+                clockBody = body;
+                setTimeout(() => {
+                    const mode = url.searchParams.get('mode');
+                    res.setHeader('Content-Type', mode === 'html' ? 'text/html' : 'application/json');
+                    res.statusCode = mode === 'validation' ? 422 : mode === 'expired' ? 419 : mode === 'html' ? 500 : 200;
+                    res.end(mode === 'html' ? '<h1>Internal server error</h1>' : JSON.stringify(mode === 'validation'
+                        ? { success: false, errors: { clock_in_selfie: ['Photo could not be saved.'] } }
+                        : { success: true, redirect_url: '/destination' }));
+                }, 300);
+            }); return;
         }
         if (url.pathname === '/api') {
             if (req.method === 'POST') posts++;
@@ -131,6 +150,21 @@ async function run() {
         await load(); await click('fetch'); await evaluate(`window.dispatchEvent(new PageTransitionEvent('pageshow',{persisted:true}))`);
         check(!await busy('fetch'), width + ': bfcache restores controls'); await delay(350);
         console.log('PASS: ' + width + 'px ' + (mobile ? 'touch' : 'desktop') + ' viewport');
+        await load();
+        const clockStart = clockPosts;
+        await click('clockSave');
+        await evaluate(`PMSClockCapture.submit(document.getElementById('clock'))`);
+        check(await busy('clockSave'), width + ': attendance save spinner');
+        await waitFor(`!!document.getElementById('destination')`);
+        check(clockPosts === clockStart + 1 && clockBody.includes('fixture-token') && clockBody.includes('data:image/png;base64,captured'), width + ': photo and CSRF posted once before dashboard navigation');
+        for (const mode of ['validation', 'expired', 'html', 'slow']) {
+            await load();
+            await evaluate(`document.getElementById('clock').action='/clock-save?mode=${mode}';window.clockFastTimeout=${mode === 'slow'};`);
+            await click('clockSave');
+            await waitFor(`!!document.querySelector('[data-clock-submit-error]')`);
+            check(!await busy('clockSave') && await evaluate(`!document.getElementById('clockSave').disabled`), width + ': ' + mode + ' releases attendance spinner and button');
+            check(await evaluate(`!!document.querySelector('[data-clock-submit-error]').textContent && !document.getElementById('destination')`), width + ': ' + mode + ' reports failure without pretending attendance saved');
+        }
     }
     console.log('PASS: ' + checks + ' loading checks across mobile, tablet and desktop.');
 }

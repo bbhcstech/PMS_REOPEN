@@ -898,10 +898,10 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
     $now = Carbon::now($timezone);
     app(\App\Services\AttendanceAutoClockOut::class)->closeDue((int) $actor->company_id, (int) $actor->id, $now);
     if ($now->gte($now->copy()->setTime(23, 58, 0))) {
-        return back()->with('error', 'Clock-in closes at 11:58 PM. Please clock in after midnight for the next day.');
+        return $this->clockActionResponse($request, 'Clock-in closes at 11:58 PM. Please clock in after midnight for the next day.', false);
     }
     if ($blocked = \App\Services\AttendanceClockPolicy::clockInBlockedReason($actor, $now)) {
-        return back()->with('error', $blocked);
+        return $this->clockActionResponse($request, $blocked, false);
     }
     $today = $now->toDateString();
     $userId = auth()->id();
@@ -928,10 +928,10 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
         if (strtolower((string) auth()->user()->role) === 'employee'
             && Attendance::where('user_id', $userId)->whereDate('date', $today)
                 ->whereNotNull('clock_in')->exists()) {
-            return back()->with('error', 'You have already clocked in today. You can clock in again on the next day.');
+            return $this->clockActionResponse($request, 'You have already clocked in today. You can clock in again on the next day.', false);
         }
         if (Attendance::where('user_id', $userId)->whereNotNull('clock_in')->whereNull('clock_out')->exists()) {
-            return back()->with('error', 'Please clock out of your active shift first.');
+            return $this->clockActionResponse($request, 'Please clock out of your active shift first.', false);
         }
 
         $photoPath = !empty($validated['clock_in_selfie'])
@@ -997,7 +997,7 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
 
         $this->notifyAuthorityAttendance($attendance, 'Clocked In');
         $wfhMsg = $isWfhAssigned ? ' (Assigned Work From Home)' : '';
-        return back()->with('success', 'Clocked in at ' . $now->format('h:i A') . $wfhMsg . '. Current location saved.');
+        return $this->clockActionResponse($request, 'Clocked in at ' . $now->format('h:i A') . $wfhMsg . '. Current location saved.');
     }, 5);
 }
 
@@ -1045,10 +1045,10 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
                 ->exists();
 
             if ($hasClosedToday) {
-                return back()->with('error', 'You have already clocked out of your shift.');
+                return $this->clockActionResponse($request, 'You have already clocked out of your shift.', false);
             }
 
-            return back()->with('error', 'You need to clock in first.');
+            return $this->clockActionResponse($request, 'You need to clock in first.', false);
         }
 
         $sessionNow = Carbon::now($attendance->sessionTimezone());
@@ -1066,10 +1066,21 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
         $this->applyOrganizationAttendanceRules($attendance->fresh());
 
         $this->notifyAuthorityAttendance($attendance, 'Clocked Out');
-        return back()->with('success', 'Clocked out at ' . $out->format('h:i A'));
+        return $this->clockActionResponse($request, 'Clocked out at ' . $out->format('h:i A'));
     }, 5);
 }
 
+
+private function clockActionResponse(Request $request, string $message, bool $success = true)
+{
+    if (!$request->expectsJson()) return back()->with($success ? 'success' : 'error', $message);
+    if ($success) $request->session()->flash('success', $message);
+    return response()->json([
+        'success' => $success,
+        'message' => $message,
+        'redirect_url' => route('dashboard', [], false),
+    ], $success ? 200 : 422);
+}
 
 private function notifyAuthorityAttendance(Attendance $attendance, string $action): void
 {
