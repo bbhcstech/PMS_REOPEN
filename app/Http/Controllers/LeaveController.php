@@ -10,7 +10,7 @@ use App\Models\LeaveType;
 use App\Models\User;
 use App\Services\LeaveService;
 use App\Services\SystemNotificationService;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Services\PdfDocument as Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -41,6 +41,11 @@ class LeaveController extends Controller
 
         $query = Leave::with(['user.employeeDetail.department', 'leaveType', 'approver', 'rejector'])
             ->whereNull('archived_at');
+        if (! $isAdmin) $this->scopeRecordCategory($query);
+
+        if ($isAdmin) {
+            $this->scopeRecordCategory($query);
+        }
 
         if (! $isAdmin) {
             $query->where('user_id', Auth::id());
@@ -74,7 +79,7 @@ class LeaveController extends Controller
         $leaves = $query->latest()->paginate($perPage)->withQueryString();
         $allLeaves = (clone $query)->get();
 
-        $balanceUserIds = $isAdmin ? $employees->pluck('id')->push(Auth::id())->unique() : [Auth::id()];
+        $balanceUserIds = $isAdmin ? $employees->pluck('id')->unique() : [Auth::id()];
         $balances = LeaveBalance::with('user')
             ->whereIn('user_id', $balanceUserIds)
             ->latest('year_start')
@@ -90,8 +95,11 @@ class LeaveController extends Controller
             'unpaid' => $allLeaves->where('status', 'approved')->where('is_unpaid', true)->count(),
         ];
 
-        $archivedCount = $isAdmin ? Leave::whereNotNull('archived_at')->count() : 0;
+        $archivedCount = $isAdmin ? $this->scopeRecordCategory(Leave::whereNotNull('archived_at'))->count() : 0;
         $policyNotice = $this->leaveService->policyNotice($policy);
+        $authorityPendingCount = \App\Services\WorkforceAccess::isAdmin(Auth::user())
+            ? \App\Services\WorkforceAccess::records(Leave::whereNull('archived_at')->where('status', 'pending'), 'authority')->count()
+            : 0;
 
         return view('admin.leaves.index', compact(
             'policy',
@@ -103,8 +111,16 @@ class LeaveController extends Controller
             'stats',
             'archivedCount',
             'perPage',
-            'policyNotice'
+            'policyNotice',
+            'authorityPendingCount'
         ));
+    }
+
+    public function authorityIndex(Request $request)
+    {
+        abort_unless(\App\Services\WorkforceAccess::isAdmin(Auth::user()), 403);
+        $request->merge(['staff_category' => 'authority']);
+        return $this->index($request);
     }
 
     public function create()
@@ -113,7 +129,7 @@ class LeaveController extends Controller
         $policy = $this->leaveService->policy();
         $leaveTypes = $this->leaveService->leaveTypes();
         $users = $this->employeeQuery()->get();
-        $isPureAdmin = strtolower((string) Auth::user()?->role) === 'admin';
+        $isPureAdmin = \App\Services\WorkforceAccess::isAdmin(Auth::user());
         $selectedUser = $isPureAdmin ? null : Auth::user();
         $balance = $selectedUser ? $this->leaveService->ensureBalance($selectedUser) : null;
         $policyNotice = $this->leaveService->policyNotice($policy);
@@ -125,12 +141,13 @@ class LeaveController extends Controller
     {
         $this->leaveService->ensureDefaultTypes();
         $actor = Auth::user();
-        $isPureAdmin = strtolower((string) $actor?->role) === 'admin';
+        $isPureAdmin = \App\Services\WorkforceAccess::isAdmin($actor);
         $employee = $isPureAdmin && $request->filled('user_id')
             ? User::findOrFail($request->user_id)
             : $actor;
+        \App\Services\TenantScope::authorizeCompany($employee->company_id);
 
-        $type = LeaveType::findOrFail($request->leave_type_id);
+        $type = LeaveType::where('is_active', true)->findOrFail($request->leave_type_id);
         $data = $request->validated();
         if (Schema::hasColumn('leaves', 'company_id')) {
             $data['company_id'] = $employee->company_id;
@@ -157,18 +174,22 @@ class LeaveController extends Controller
         }
 
         if ($hasAttachment) {
-            $file = $request->file('attachment');
-            $uploadDir = public_path('admin/uploads/leave-file');
-            if (! file_exists($uploadDir)) {
-                @mkdir($uploadDir, 0755, true);
-            }
-            $name = time() . '-' . preg_replace('/[^A-Za-z0-9_.-]/', '-', $file->getClientOriginalName());
-            $destination = $uploadDir . DIRECTORY_SEPARATOR . $name;
-            if (@copy($file->getRealPath(), $destination)) {
-                $data['attachment'] = 'admin/uploads/leave-file/' . $name;
+            if (\App\Services\WorkforceAccess::isAuthority($employee)) {
+                $data['attachment'] = $this->storePrivateLeaveAttachment($request, $employee);
             } else {
-                $file->move($uploadDir, $name);
-                $data['attachment'] = 'admin/uploads/leave-file/' . $name;
+                $file = $request->file('attachment');
+                $uploadDir = public_path('admin/uploads/leave-file');
+                if (! file_exists($uploadDir)) {
+                    @mkdir($uploadDir, 0755, true);
+                }
+                $name = time() . '-' . preg_replace('/[^A-Za-z0-9_.-]/', '-', $file->getClientOriginalName());
+                $destination = $uploadDir . DIRECTORY_SEPARATOR . $name;
+                if (@copy($file->getRealPath(), $destination)) {
+                    $data['attachment'] = 'admin/uploads/leave-file/' . $name;
+                } else {
+                    $file->move($uploadDir, $name);
+                    $data['attachment'] = 'admin/uploads/leave-file/' . $name;
+                }
             }
         } else {
             unset($data['attachment']);
@@ -177,10 +198,11 @@ class LeaveController extends Controller
         $leave = $this->leaveService->createLeave($employee, $type, $data, $actor);
 
         if (! $isPureAdmin || $employee->id === $actor->id) {
-            SystemNotificationService::notifyAdmins(
+            SystemNotificationService::notifyLeaveReviewers(
+                $employee,
                 'New Leave Request',
                 $employee->name . ' requested ' . $type->name . ' from ' . $data['start_date'] . ' to ' . $data['end_date'],
-                route('leaves.show', $leave->id),
+                route('leaves.show', ['leave' => $leave->id, 'staff_category' => \App\Services\WorkforceAccess::isAuthority($employee) ? 'authority' : 'employee']),
                 ['employee_id' => $employee->id, 'entity_type' => Leave::class, 'entity_id' => $leave->id, 'type' => 'leave_requested', 'icon' => 'fa-calendar-days']
             );
         } else {
@@ -193,7 +215,8 @@ class LeaveController extends Controller
             );
         }
 
-        return redirect()->route('leaves.index')->with('success', 'Leave request submitted successfully.');
+        $destination = \App\Services\WorkforceAccess::isAuthority($actor) && ! $this->isAdmin() ? 'dashboard' : (request()->input('staff_category') === 'authority' ? 'admin.authority-leaves' : 'leaves.index');
+        return redirect()->route($destination)->with('success', 'Leave request submitted successfully.');
     }
 
     public function show(Leave $leave)
@@ -299,6 +322,7 @@ class LeaveController extends Controller
     public function reviewApologyLetter(Request $request, LeaveApologyLetter $letter)
     {
         $this->ensureAdmin();
+        $this->authorizeApologyLetterAccess($letter);
         $data = $request->validate([
             'status' => ['required', 'in:reviewed,archived'],
             'admin_note' => ['nullable', 'string', 'max:2000'],
@@ -436,7 +460,7 @@ class LeaveController extends Controller
         $this->authorizeLeaveAccess($leave);
 
         if (! $this->isAdmin() && $leave->status !== 'pending') {
-            return redirect()->route('leaves.index')->with('error', 'Only pending leave requests can be edited.');
+            return redirect()->route(request()->input('staff_category') === 'authority' ? 'admin.authority-leaves' : 'leaves.index')->with('error', 'Only pending leave requests can be edited.');
         }
 
         $policy = $this->leaveService->policy();
@@ -459,28 +483,34 @@ class LeaveController extends Controller
         $this->authorizeLeaveAccess($leave);
 
         if (! $this->isAdmin() && $leave->status !== 'pending') {
-            return redirect()->route('leaves.index')->with('error', 'Only pending leave requests can be updated.');
+            return redirect()->route(request()->input('staff_category') === 'authority' ? 'admin.authority-leaves' : 'leaves.index')->with('error', 'Only pending leave requests can be updated.');
         }
 
         $employee = $this->isAdmin() && $request->filled('user_id') ? User::findOrFail($request->user_id) : $leave->user;
+        \App\Services\TenantScope::authorizeCompany($employee->company_id);
+        abort_unless(\App\Services\WorkforceAccess::canAccessRecord(Auth::user(), $employee), 403);
         $type = LeaveType::findOrFail($request->leave_type_id);
         $data = $request->validated();
         $data['emergency_flag'] = $request->boolean('emergency_flag');
         $data['half_day_flag'] = $request->boolean('half_day_flag');
 
         if ($request->hasFile('attachment')) {
-            $file = $request->file('attachment');
-            $uploadDir = public_path('admin/uploads/leave-file');
-            if (! file_exists($uploadDir)) {
-                @mkdir($uploadDir, 0755, true);
-            }
-            $name = time() . '-' . preg_replace('/[^A-Za-z0-9_.-]/', '-', $file->getClientOriginalName());
-            $destination = $uploadDir . DIRECTORY_SEPARATOR . $name;
-            if (@copy($file->getRealPath(), $destination)) {
-                $data['attachment'] = 'admin/uploads/leave-file/' . $name;
+            if (\App\Services\WorkforceAccess::isAuthority($employee) || $leave->staff_category === 'authority') {
+                $data['attachment'] = $this->storePrivateLeaveAttachment($request, $employee);
             } else {
-                $file->move($uploadDir, $name);
-                $data['attachment'] = 'admin/uploads/leave-file/' . $name;
+                $file = $request->file('attachment');
+                $uploadDir = public_path('admin/uploads/leave-file');
+                if (! file_exists($uploadDir)) {
+                    @mkdir($uploadDir, 0755, true);
+                }
+                $name = time() . '-' . preg_replace('/[^A-Za-z0-9_.-]/', '-', $file->getClientOriginalName());
+                $destination = $uploadDir . DIRECTORY_SEPARATOR . $name;
+                if (@copy($file->getRealPath(), $destination)) {
+                    $data['attachment'] = 'admin/uploads/leave-file/' . $name;
+                } else {
+                    $file->move($uploadDir, $name);
+                    $data['attachment'] = 'admin/uploads/leave-file/' . $name;
+                }
             }
         }
 
@@ -502,12 +532,15 @@ class LeaveController extends Controller
             'date' => $start->toDateString(),
             'total_days' => $this->leaveService->calculateDays($start, $end, $data['half_day_flag']),
             'reason' => $data['reason'],
-            'attachment' => $data['attachment'] ?? $leave->attachment,
+            'attachment' => $data['attachment'] ?? $leave->getRawOriginal('attachment'),
             'apology_note' => $data['apology_note'] ?? null,
             'emergency_flag' => $data['emergency_flag'],
             'half_day_flag' => $data['half_day_flag'],
             'contact_during_leave' => $data['contact_during_leave'] ?? null,
         ];
+        if ((int) $employee->id !== (int) $leave->user_id) {
+            $leaveUpdates = array_merge($leaveUpdates, \App\Services\WorkforceAccess::snapshot($employee));
+        }
 
         if (Schema::hasColumn('leaves', 'company_id')) {
             $leaveUpdates['company_id'] = $employee->company_id;
@@ -527,12 +560,13 @@ class LeaveController extends Controller
 
         $this->leaveService->syncBalanceCounters($employee);
 
-        return redirect()->route('leaves.index')->with('success', 'Leave request updated successfully.');
+        return redirect()->route(request()->input('staff_category') === 'authority' ? 'admin.authority-leaves' : 'leaves.index')->with('success', 'Leave request updated successfully.');
     }
 
     public function updateStatus(Request $request, Leave $leave)
     {
         $this->ensureAdmin();
+        $this->authorizeLeaveAccess($leave);
         $request->validate([
             'status' => ['required', 'in:approved,rejected,pending,unpaid'],
             'note' => ['nullable', 'string', 'max:2000'],
@@ -580,12 +614,14 @@ class LeaveController extends Controller
 
     public function updatePolicy(Request $request)
     {
+        abort_unless(\App\Services\WorkforceAccess::isAdmin(Auth::user()), 403);
         $this->ensureAdmin();
         $data = $request->validate([
             'annual_leaves' => ['required', 'numeric', 'min:0'],
             'sick_leave_limit' => ['required', 'numeric', 'min:0'],
             'casual_leave_limit' => ['required', 'numeric', 'min:0'],
-            'maternity_leave_limit' => ['required', 'numeric', 'min:0'],
+            'maternity_leave_limit' => ['nullable', 'numeric', 'min:0'],
+            'unpaid_deduction_percentage' => ['required', 'numeric', 'min:0', 'max:100'],
             'casual_advance_days' => ['required', 'integer', 'min:0', 'max:60'],
             'casual_manual_review_days' => ['required', 'integer', 'min:0', 'max:30'],
             'auto_approve_casual_leave' => ['nullable'],
@@ -620,10 +656,25 @@ class LeaveController extends Controller
         return back()->with('success', 'Leave policy updated and employee balances recalculated successfully.');
     }
 
+    public function storeLeaveType(Request $request)
+    {
+        abort_unless(\App\Services\WorkforceAccess::isAdmin(Auth::user()), 403);
+        $this->ensureAdmin();
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:100', 'unique:tenant.leave_types,name'],
+            'code' => ['required', 'regex:/^[A-Z][A-Z0-9_]{1,19}$/', 'unique:tenant.leave_types,code'],
+            'requires_document' => ['nullable', 'boolean'],
+        ]);
+        LeaveType::create($data + ['annual_limit' => 0, 'is_paid' => true, 'is_active' => true, 'sort_order' => 10]);
+        return back()->with('success', 'Leave type added for this company. It uses the shared annual paid allowance.');
+    }
+
     public function resetEmployeeLeaves($id)
     {
+        abort_unless(\App\Services\WorkforceAccess::isAdmin(Auth::user()), 403);
         $this->ensureAdmin();
         $employee = User::findOrFail($id);
+        \App\Services\TenantScope::authorizeCompany($employee->company_id);
         $balance = $this->leaveService->ensureBalance($employee);
         $policy = $this->leaveService->policy();
         $balance->forceFill([
@@ -646,6 +697,7 @@ class LeaveController extends Controller
         $this->ensureAdmin();
         $request->validate(['leave_id' => 'required|exists:leaves,id', 'paid' => 'required|boolean']);
         $leave = Leave::findOrFail($request->leave_id);
+        $this->authorizeLeaveAccess($leave);
         $totalDays = (float) ($leave->total_days ?: 1);
         $leave->update([
             'is_paid' => $request->boolean('paid'),
@@ -691,6 +743,7 @@ class LeaveController extends Controller
 
         $query = Leave::with(['user.employeeDetail.department', 'leaveType'])
             ->whereNotNull('archived_at');
+        $this->scopeRecordCategory($query);
 
         if ($companyId = $this->selectedCompanyId($request)) {
             $query->whereHas('user', fn ($userQuery) => $userQuery->where('company_id', $companyId));
@@ -714,6 +767,7 @@ class LeaveController extends Controller
     public function archiveLeave(Leave $leave)
     {
         $this->ensureAdmin();
+        $this->authorizeLeaveAccess($leave);
 
         if ($leave->archived_at) {
             return back()->with('success', 'Leave request is already archived.');
@@ -733,6 +787,7 @@ class LeaveController extends Controller
             'ids.*' => ['integer', 'exists:leaves,id'],
         ]);
 
+        foreach (Leave::whereIn('id', $request->ids)->get() as $leave) $this->authorizeLeaveAccess($leave);
         $count = Leave::whereIn('id', $request->ids)
             ->whereNull('archived_at')
             ->update(['archived_at' => now()]);
@@ -744,7 +799,7 @@ class LeaveController extends Controller
     {
         $this->ensureAdmin();
 
-        $count = Leave::whereNull('archived_at')->update(['archived_at' => now()]);
+        $count = $this->scopeRecordCategory(Leave::whereNull('archived_at'))->update(['archived_at' => now()]);
 
         return back()->with('success', $count . ' leave request(s) archived successfully.');
     }
@@ -754,6 +809,7 @@ class LeaveController extends Controller
         $this->ensureAdmin();
 
         $leave = Leave::whereNotNull('archived_at')->findOrFail($id);
+        $this->authorizeLeaveAccess($leave);
         $leave->forceFill(['archived_at' => null])->save();
 
         return back()->with('success', 'Leave request restored successfully.');
@@ -770,6 +826,7 @@ class LeaveController extends Controller
         ]);
 
         $leaves = Leave::whereIn('id', $request->ids)->get();
+        foreach ($leaves as $leave) $this->authorizeLeaveAccess($leave);
 
         foreach ($leaves as $leave) {
             if ($request->action === 'archive') {
@@ -832,6 +889,7 @@ class LeaveController extends Controller
         ]);
 
         $query = Leave::with(['user', 'leaveType'])->whereNull('archived_at');
+        $this->scopeRecordCategory($query);
         if ($companyId = $this->selectedCompanyId($request)) {
             $query->whereHas('user', fn ($userQuery) => $userQuery->where('company_id', $companyId));
         }
@@ -858,6 +916,7 @@ class LeaveController extends Controller
 
         if ($type === 'pdf') {
             return Pdf::loadView('admin.leaves.exports.pdf', compact('leaves'))
+                ->setPaper('a4', 'landscape')
                 ->download('leave-report-' . $filenameDate . '.pdf');
         }
 
@@ -909,8 +968,9 @@ class LeaveController extends Controller
 
     public function leaveReport(Request $request)
     {
-        $users = User::where('role', 'employee')->orderBy('name')->get();
+        $users = $this->isAdmin() ? $this->employeeQuery()->get() : User::whereKey(Auth::id())->get();
         $query = Leave::with(['user', 'leaveType'])->whereNull('archived_at');
+        $this->scopeRecordCategory($query);
 
         if ($request->filled('user_id')) {
             $query->where('user_id', $request->user_id);
@@ -918,7 +978,7 @@ class LeaveController extends Controller
         if ($request->filled('type')) {
             $query->where(function ($q) use ($request) {
                 $q->where('type', $request->type)
-                  ->orWhereHas('leaveType', fn ($lt) => $lt->where('type_name', 'like', '%' . $request->type . '%'));
+                  ->orWhereHas('leaveType', fn ($lt) => $lt->where('name', 'like', '%' . $request->type . '%')->orWhere('code', 'like', '%' . $request->type . '%'));
             });
         }
         if ($request->filled('from')) {
@@ -953,6 +1013,7 @@ class LeaveController extends Controller
     public function calendarData(Request $request)
     {
         $query = Leave::with(['user', 'leaveType'])->whereNull('archived_at');
+        $this->scopeRecordCategory($query);
         if (! $this->isAdmin()) {
             $query->where('user_id', Auth::id());
         } elseif ($companyId = $this->selectedCompanyId($request)) {
@@ -1005,38 +1066,68 @@ class LeaveController extends Controller
         }));
     }
 
+    private function storePrivateLeaveAttachment(Request $request, User $employee): string
+    {
+        $file = $request->file('attachment');
+        $path = $file->storeAs('authority-leave/' . $employee->company_id,
+            \Illuminate\Support\Str::uuid() . '.' . $file->extension(), 'local');
+        abort_unless($path, 500, 'Could not save your leave attachment.');
+        return $path;
+    }
+
+    private function scopeRecordCategory($query)
+    {
+        if ($this->isAdmin()) \App\Services\WorkforceAccess::records($query, request()->input('staff_category') === 'authority' ? 'authority' : 'employee');
+        else {
+            $query->where('user_id', Auth::id());
+            \App\Services\WorkforceAccess::records($query, 'employee');
+        }
+        if (\App\Services\WorkforceAccess::isHr(Auth::user())) {
+            $query->whereHas('user', fn ($users) => \App\Services\WorkforceAccess::users($users, 'employee'));
+        }
+        return $query;
+    }
+
     private function isAdmin(): bool
     {
-        return in_array(strtolower((string) Auth::user()?->role), ['admin', 'hr', 'manager', 'administrator', 'superadmin'], true);
+        return \App\Services\WorkforceAccess::canManageLeaves(Auth::user());
     }
 
     private function ensureAdmin(): void
     {
         abort_if(! $this->isAdmin(), 403);
+        abort_if(! \App\Services\WorkforceAccess::isAdmin(Auth::user()) && request()->input('staff_category') === 'authority', 403);
     }
 
     private function employeeQuery()
     {
         $companyId = $this->selectedCompanyId(request());
 
-        return User::with('employeeDetail.department')
-            ->where('role', 'employee')
+        $query = \App\Services\WorkforceAccess::usersWithHistory(User::with(['employeeDetail.department', 'employeeDetail.designation', 'companyStaffRole']),
+                request()->input('staff_category') === 'authority' ? 'authority' : 'employee', 'leaves')
             ->when($companyId, fn ($query) => $query->where('company_id', $companyId))
             ->orderBy('name');
+        if (\App\Services\WorkforceAccess::isHr(Auth::user())) \App\Services\WorkforceAccess::users($query, 'employee');
+        return $query;
     }
 
     private function selectedCompanyId(Request $request): ?int
     {
-        if (! $this->isAdmin()) {
-            return Auth::user()?->company_id;
-        }
-
-        return $request->integer('company_id') ?: null;
+        // Tenant isolation: only the platform Super Admin may pick another company (or all companies).
+        return \App\Services\TenantScope::companyFilter($request->integer('company_id') ?: null);
     }
 
     private function authorizeLeaveAccess(Leave $leave): void
     {
+        \App\Services\TenantScope::authorizeCompany($leave->user?->company_id);
+        abort_unless($leave->user && \App\Services\WorkforceAccess::canAccessRecord(Auth::user(), $leave->user, $leave->staff_category), 403, 'Only the company admin may access higher-level staff records.');
         if ($this->isAdmin()) {
+            // Admins manage both queues; HR manages employee records within the company.
+            $leaveCompanyId = $leave->company_id ?? $leave->user?->company_id;
+            if ($leaveCompanyId) {
+                \App\Services\TenantScope::authorizeCompany($leaveCompanyId);
+            }
+
             return;
         }
 
@@ -1104,9 +1195,16 @@ TEXT;
     private function apologyLetterAccessQuery()
     {
         $query = LeaveApologyLetter::query();
+        if ($companyId = $this->selectedCompanyId(request())) {
+            $query->whereHas('user', fn ($user) => $user->where('company_id', $companyId));
+        }
 
         if (! $this->isAdmin()) {
             $query->where('user_id', Auth::id());
+        }
+        if (\App\Services\WorkforceAccess::isHr(Auth::user())) {
+            $query->whereHas('user', fn ($users) => \App\Services\WorkforceAccess::users($users, 'employee'));
+            $query->where(fn ($letters) => $letters->whereNull('leave_id')->orWhereHas('leave', fn ($leaves) => \App\Services\WorkforceAccess::records($leaves, 'employee')));
         }
 
         return $query;
@@ -1114,6 +1212,8 @@ TEXT;
 
     private function authorizeApologyLetterAccess(LeaveApologyLetter $letter): void
     {
+        \App\Services\TenantScope::authorizeCompany($letter->user?->company_id);
+        abort_unless($letter->user && \App\Services\WorkforceAccess::canAccessRecord(Auth::user(), $letter->user, $letter->leave?->staff_category), 403);
         if ($this->isAdmin()) {
             return;
         }

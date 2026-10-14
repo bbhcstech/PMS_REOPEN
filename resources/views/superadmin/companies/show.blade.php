@@ -964,7 +964,10 @@
 
 @php
     $planNames = ['FREE', 'GOLD', 'PLATINUM', 'DIAMOND'];
-    $rawPlan = strtoupper($company->activeSubscription?->plan?->name ?? 'FREE');
+    $workspaceSubscription = $company->activeSubscription
+        ?? $company->subscriptions()->with('plan')->latest('id')->first();
+    $workspacePlan = $workspaceSubscription?->plan;
+    $rawPlan = strtoupper(trim((string) ($workspacePlan?->slug ?: $workspacePlan?->name ?: 'FREE')));
     if (!in_array($rawPlan, $planNames)) { $rawPlan = 'FREE'; }
     $planClass = strtolower($rawPlan);
     $companyStatus = strtolower($company->status ?? 'active');
@@ -1013,9 +1016,9 @@
     $minAllowedTierLevel = max($currentTierLevel, $highestTierLevel);
 @endphp
 
-<div class="animate-card">
+<div class="animate-card" data-live-key="company-workspace-{{ $company->id }}">
     <!-- TOP NAVIGATION BAR -->
-    <div class="top-nav-bar">
+    <div class="top-nav-bar" data-live-key="company-workspace-navigation">
         <a href="{{ route('super-admin.companies.index') }}" class="back-btn-link">
             <i class="bx bx-arrow-back"></i> Back to Companies Directory
         </a>
@@ -1026,18 +1029,18 @@
 
     <!-- FLASH ALERTS -->
     @if(session('success'))
-        <div class="flash-alert-success">
+        <div class="flash-alert-success" data-live-key="company-workspace-success">
             <i class="bx bx-check-circle" style="font-size: 22px; color: var(--success);"></i> {{ session('success') }}
         </div>
     @endif
     @if(session('error') || $errors->has('error'))
-        <div class="flash-alert-error" style="background: var(--danger-bg); border: 1.5px solid var(--danger-border); color: var(--danger); padding: 14px 20px; border-radius: 12px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; font-weight: 600; font-size: 14px;">
+        <div class="flash-alert-error" data-live-key="company-workspace-error" style="background: var(--danger-bg); border: 1.5px solid var(--danger-border); color: var(--danger); padding: 14px 20px; border-radius: 12px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; font-weight: 600; font-size: 14px;">
             <i class="bx bx-error-circle" style="font-size: 22px; color: var(--danger);"></i> {{ session('error') ?? $errors->first('error') }}
         </div>
     @endif
 
     <!-- COMPANY HEADER CARD -->
-    <div class="company-header-card">
+    <div class="company-header-card" data-live-key="company-workspace-header">
         <div class="company-header-left">
             <div class="company-avatar-box">
                 @if($company->logo && file_exists(public_path($company->logo)))
@@ -1087,7 +1090,7 @@
     </div>
 
     <!-- SUMMARY METRICS ROW (5 CARDS) -->
-    <div class="metrics-summary-grid">
+    <div class="metrics-summary-grid" data-live-key="company-workspace-metrics">
         <div class="metric-summary-card">
             <div class="header-row">
                 <div class="label">USERS</div>
@@ -1109,7 +1112,7 @@
         <div class="metric-summary-card">
             <div class="header-row">
                 <div class="label">STORAGE</div>
-                <div class="icon-box icon-box-purple"><i class="bx bx-hard-drive"></i></div>
+                <div class="icon-box icon-box-purple"><i class="bx bx-hdd"></i></div>
             </div>
             <div class="value">0%</div>
             <div class="subtext">0 MB / {{ $company->max_storage_mb ?? 10000 }} MB</div>
@@ -1139,16 +1142,13 @@
                 <span class="plan-badge plan-{{ $planClass }}">{{ $rawPlan }}</span>
             </div>
             <div class="subtext">
-                @if($rawPlan === 'DIAMOND') ₹19,999 / mo
-                @elseif($rawPlan === 'PLATINUM') ₹9,999 / mo
-                @elseif($rawPlan === 'GOLD') ₹4,999 / mo
-                @else ₹0 / mo @endif
+                ?{{ number_format((float) ($workspaceSubscription?->price ?? $workspacePlan?->monthly_price ?? 0)) }} / {{ $workspaceSubscription?->billing_cycle === 'yearly' ? 'yr' : 'mo' }}
             </div>
         </div>
     </div>
 
     <!-- QUICK ACTIONS TOOLBAR BAR -->
-    <div class="quick-actions-bar">
+    <div class="quick-actions-bar" data-live-key="company-workspace-actions">
         <span style="font-size: 11px; font-weight: 800; color: var(--text-subtle); text-transform: uppercase; margin-right: 4px; letter-spacing: 0.5px;">Quick Actions:</span>
         <button class="btn-custom btn-outline-custom btn-xs-custom tab-jump-trigger" data-jump-tab="tab-settings"><i class="bx bx-edit"></i> Edit Company</button>
         <button class="btn-custom btn-outline-custom btn-xs-custom trigger-plan-modal"><i class="bx bx-layer"></i> Manage Subscription</button>
@@ -1160,7 +1160,7 @@
     </div>
 
     <!-- NAVIGATION TABS -->
-    <div class="nav-tabs-wrapper">
+    <div class="nav-tabs-wrapper" data-live-key="company-workspace-tabs">
         <div class="nav-tabs-scroll">
             <button class="tab-btn active" data-tab="tab-overview"><i class="bx bx-grid-alt"></i> Overview</button>
             <button class="tab-btn" data-tab="tab-users"><i class="bx bx-group"></i> Users ({{ $tenantUsers->count() }})</button>
@@ -1651,7 +1651,7 @@
                     </div>
 
                     <div class="form-field-group">
-                        <label class="form-field-label" for="company_phone_edit">Phone Number</label>
+                        <label class="form-field-label" for="company_phone_edit_display">Phone Number</label>
                         @php
                             $compPhone = old('phone', $company->phone);
                             $compPhoneCode = '+91';
@@ -1663,14 +1663,16 @@
                         <div style="display: flex;">
                             <select id="company_edit_country_code" class="country-code-select" style="width: 110px; flex-shrink: 0; padding: 9px 8px; border: 1px solid var(--border-subtle, #cbd5e1); border-right: 0; border-top-left-radius: 8px; border-bottom-left-radius: 8px; font-size: 13px; outline: none;">
                                 @foreach(\App\Models\Country::getAllWithPhoneCodes() as $c)
-                                    <option value="{{ $c->phone_code }}" {{ $compPhoneCode == $c->phone_code ? 'selected' : '' }}>
+                                    <option value="{{ $c->phone_code }}" data-min-digits="{{ $c->min_digits }}" data-max-digits="{{ $c->max_digits }}" {{ $compPhoneCode == $c->phone_code ? 'selected' : '' }}>
                                         {{ $c->iso_code ? $c->iso_code . ' ' : '' }}({{ $c->phone_code }})
                                     </option>
                                 @endforeach
                             </select>
-                            <input type="text" id="company_phone_edit_display" class="form-control-custom" value="{{ $compPhone }}" placeholder="9876543210" style="border-top-left-radius: 0; border-bottom-left-radius: 0; width: 100%;" />
+                            <input type="tel" inputmode="numeric" autocomplete="tel-national" id="company_phone_edit_display" class="form-control-custom" value="{{ $compPhone }}" placeholder="9876543210" aria-describedby="company_phone_edit_hint" style="border-top-left-radius: 0; border-bottom-left-radius: 0; width: 100%;" />
                             <input type="hidden" name="phone" id="company_phone_edit" value="{{ old('phone', $company->phone) }}" />
                         </div>
+                        <small id="company_phone_edit_hint" class="text-muted"></small>
+                        @error('phone')<div class="text-danger">{{ $message }}</div>@enderror
                     </div>
 
                     <div class="form-field-group full-width">
@@ -1730,7 +1732,7 @@
                     <div class="form-field-group">
                         <label class="form-field-label" for="company_max_storage_edit">Max Storage (MB)</label>
                         <div class="input-with-icon-wrapper">
-                            <i class="bx bx-hard-drive input-icon"></i>
+                            <i class="bx bx-hdd input-icon"></i>
                             <input type="number" min="50" name="max_storage_mb" id="company_max_storage_edit" class="form-control-custom" value="{{ old('max_storage_mb', $company->max_storage_mb ?? 1024) }}" />
                         </div>
                     </div>
@@ -1758,20 +1760,12 @@
                 <div class="form-section-subtitle">
                     <i class="bx bx-receipt"></i> Statutory Registration &amp; Prefixes
                 </div>
-                <div class="form-grid-3" style="margin-bottom: 18px;">
+                <div class="form-grid-layout" style="margin-bottom: 18px;">
                     <div class="form-field-group">
                         <label class="form-field-label" for="company_gst_edit">GST Number</label>
                         <div class="input-with-icon-wrapper">
                             <i class="bx bx-file input-icon"></i>
                             <input type="text" name="gst_number" id="company_gst_edit" class="form-control-custom" value="{{ old('gst_number', $company->gst_number) }}" placeholder="e.g. 29ABCDE1234F1Z5" />
-                        </div>
-                    </div>
-
-                    <div class="form-field-group">
-                        <label class="form-field-label" for="company_pan_edit">PAN Number</label>
-                        <div class="input-with-icon-wrapper">
-                            <i class="bx bx-id-card input-icon"></i>
-                            <input type="text" name="pan_number" id="company_pan_edit" class="form-control-custom" value="{{ old('pan_number', $company->pan_number) }}" placeholder="e.g. ABCDE1234F" />
                         </div>
                     </div>
 
@@ -1895,12 +1889,7 @@
                                 </button>
                             </form>
                         @else
-                            <form method="POST" action="{{ route('super-admin.companies.suspend', $company->id) }}" onsubmit="return confirm('Are you sure you want to SUSPEND {{ addslashes($company->name) }}? Tenant users will be temporarily locked out.');">
-                                @csrf
-                                <button type="submit" class="btn-custom btn-warning-custom btn-sm-custom" style="width: 100%; padding: 10px 16px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                                    <i class="bx bx-pause-circle"></i> Suspend Company
-                                </button>
-                            </form>
+                            <a href="{{ route('superadmin.companies.suspension', $company->id) }}" class="btn-custom btn-warning-custom btn-sm-custom"><i class="bx bx-pause-circle"></i> Suspend Company</a>
                         @endif
                     </div>
                 </div>
@@ -1969,6 +1958,7 @@
 </div>
 
 @push('scripts')
+<script src="{{ asset('admin/assets/js/pms-company-edit-phone.js') }}?v={{ filemtime(public_path('admin/assets/js/pms-company-edit-phone.js')) }}" defer></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Tab switching logic
@@ -2177,24 +2167,8 @@ document.addEventListener('DOMContentLoaded', function() {
         pwdEditInput.addEventListener('blur', validateEditPassword);
     }
 
-    const phoneDisp = document.getElementById('company_phone_edit_display');
-    const phoneCode = document.getElementById('company_edit_country_code');
-    const phoneHidden = document.getElementById('company_phone_edit');
-    if (phoneDisp && phoneCode && phoneHidden) {
-        function updateEditPhone() {
-            const val = phoneDisp.value.trim();
-            phoneHidden.value = val ? (phoneCode.value + ' ' + val) : '';
-        }
-        phoneDisp.addEventListener('input', updateEditPhone);
-        phoneCode.addEventListener('change', updateEditPhone);
-    }
-
     if (editForm) {
         editForm.addEventListener('submit', function(e) {
-            if (phoneDisp && phoneCode && phoneHidden) {
-                const val = phoneDisp.value.trim();
-                phoneHidden.value = val ? (phoneCode.value + ' ' + val) : '';
-            }
             if (!validateEditPassword()) {
                 e.preventDefault();
                 pwdEditInput.focus();

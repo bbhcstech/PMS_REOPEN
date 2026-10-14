@@ -46,13 +46,13 @@ class SettingController extends Controller
                         'name' => 'Parent Department',
                         'description' => 'Manage main organization units',
                         'icon' => 'bx bx-building-house',
-                        'route' => 'parent-departments.index'
+                        'route' => 'admin.settings.parent-departments.index'
                     ],
                     [
                         'name' => 'Sub Department',
                         'description' => 'Manage sub-teams & branches',
                         'icon' => 'bx bx-git-repo-forked',
-                        'route' => 'departments.index'
+                        'route' => 'admin.settings.departments.index'
                     ]
                 ]
             ],
@@ -61,7 +61,7 @@ class SettingController extends Controller
                 'description' => 'Software Engineer, HR Manager, Team Lead, etc.',
                 'icon' => 'bx bx-id-card',
                 'color' => 'danger',
-                'route' => 'designations.index',
+                'route' => 'admin.settings.designations.index',
                 'category' => 'Organization'
             ],
             'work-schedule' => [
@@ -168,15 +168,16 @@ class SettingController extends Controller
                 'route' => 'admin.settings.localization',
                 'category' => 'System'
             ],
-            'country-codes' => [
-                'name' => 'Country Codes',
-                'description' => 'Country phone calling codes, dial prefixes, and mobile digit rules',
-                'icon' => 'bx bx-phone-call',
-                'color' => 'primary',
-                'route' => 'admin.settings.country-codes.index',
-                'category' => 'System'
-            ],
         ];
+
+        if (! \Illuminate\Support\Facades\Auth::guard('super_admin')->check()
+            && ! in_array(strtolower((string) auth()->user()?->role), ['admin', 'administrator', 'superadmin', 'hr', 'manager'], true)) {
+            unset($settingsGroups['branches-locations']);
+        }
+
+        if (! \App\Services\WorkforceAccess::isAdmin(auth()->user())) {
+            unset($settingsGroups['departments'], $settingsGroups['designations']);
+        }
 
         return view('admin.settings.index', compact('settingsGroups'));
     }

@@ -125,7 +125,7 @@ class ParentDepartmentController extends Controller
                 return response()->json(['status' => 'success', 'dpt' => $dpt]);
             }
 
-            return redirect()->route('parent-departments.index')->with('success', 'Parent department created successfully.');
+            return redirect()->route(\App\Support\WorkforceSettings::name('parent-departments.index'))->with('success', 'Parent department created successfully.');
         } catch (\Throwable $e) {
             DB::rollBack();
             logger()->error('ParentDepartment store error: ' . $e->getMessage(), ['exception' => $e]);
@@ -178,7 +178,7 @@ class ParentDepartmentController extends Controller
                 return response()->json(['status' => 'success', 'dpt' => $parentDepartment->fresh()]);
             }
 
-            return redirect()->route('parent-departments.index')->with('success', 'Updated successfully.');
+            return redirect()->route(\App\Support\WorkforceSettings::name('parent-departments.index'))->with('success', 'Updated successfully.');
         } catch (\Throwable $e) {
             logger()->error('ParentDepartment update error: ' . $e->getMessage(), ['exception' => $e]);
 
@@ -225,7 +225,7 @@ class ParentDepartmentController extends Controller
     //             return response()->json(['status' => 'success', 'message' => 'Department deleted successfully.']);
     //         }
 
-    //         return redirect()->route('parent-departments.index')->with('success', 'Department deleted successfully.');
+    //         return redirect()->route(\App\Support\WorkforceSettings::name('parent-departments.index'))->with('success', 'Department deleted successfully.');
     //     } catch (\Throwable $e) {
     //         logger()->error('ParentDepartment delete error: ' . $e->getMessage(), ['exception' => $e]);
 
@@ -256,7 +256,7 @@ class ParentDepartmentController extends Controller
             ]);
         }
 
-        return redirect()->route('parent-departments.index')
+        return redirect()->route(\App\Support\WorkforceSettings::name('parent-departments.index'))
             ->with('success', 'Department archived successfully.');
     } catch (\Throwable $e) {
         logger()->error('ParentDepartment archive error: ' . $e->getMessage());
@@ -302,7 +302,7 @@ class ParentDepartmentController extends Controller
             'last_updated_by' => Auth::id(),
         ])->save();
 
-        return redirect()->route('parent-departments.archive')
+        return redirect()->route(\App\Support\WorkforceSettings::name('parent-departments.archive'))
             ->with('success', 'Parent department restored successfully.');
     }
 
@@ -404,7 +404,7 @@ class ParentDepartmentController extends Controller
                     'deleted_ids' => $deletableIds,
                     'message' => $finalMessage,
                 ])
-                : redirect()->route('parent-departments.index')->with($status, $finalMessage);
+                : redirect()->route(\App\Support\WorkforceSettings::name('parent-departments.index'))->with($status, $finalMessage);
         } catch (\Throwable $e) {
             DB::rollBack();
             logger()->error('ParentDepartment bulk archive error: ' . $e->getMessage(), ['exception' => $e]);

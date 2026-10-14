@@ -30,6 +30,15 @@ class ProjectController extends Controller
 {
    public function index(Request $request)
 {
+    $request->validate([
+        'start_date' => 'nullable|date',
+        'end_date' => $request->filled('start_date')
+            ? 'nullable|date|after_or_equal:start_date'
+            : 'nullable|date',
+    ], [
+        'end_date.after_or_equal' => 'The end date must be equal to or later than the start date.',
+    ]);
+
     $viewer = auth()->user();
     $isEmployee = $viewer?->role === 'employee';
 
@@ -150,9 +159,9 @@ public function create(Request $request)
     $categories     = ProjectCategory::all();
     $departments    = Department::with('parent')->latest()->get();
     $designations   = Designation::all();
-    $countries      = Country::all();
+    $countries      = Country::forForms();
     $employee       = null;
-    $currency       = Currency::all();
+    $currency       = Currency::orderBy('currency_name')->get();
     $prtdepartments = ParentDepartment::latest()->get();
 
     // preview next project code like TASK_005
@@ -222,7 +231,7 @@ public function store(Request $request)
         'employee_ids.*' => 'integer|exists:users,id',
         'department_ids'   => 'required|array|min:1',
         'department_ids.*' => 'integer|exists:departments,id',
-        'currency_id' => 'nullable|integer',
+        'currency_id' => 'nullable|integer|exists:tenant.currencies,id',
         'project_budget' => 'nullable|numeric',
         'hours_allocated' => 'nullable|numeric',
         'priority' => 'nullable|in:low,medium,high,critical',
@@ -280,7 +289,10 @@ public function store(Request $request)
         }
     }
 
+    $connection = (new Project())->getConnection();
+    $transactionLevel = $connection->transactionLevel();
     try {
+        $connection->beginTransaction();
         $authUserId = auth()->id() ?: (User::first()?->id ?? null);
         $project = Project::create([
             'project_type' => $projectType,
@@ -305,16 +317,12 @@ public function store(Request $request)
             'currency_id' => $request->currency_id,
             'project_budget' => $request->project_budget,
             'hours_allocated' => $request->hours_allocated,
-            'completion_percent' => (int) $request->input('completion_percent', 0),
+            // A new project always starts at 0%; progress is updated after creation.
+            'completion_percent' => 0,
             'enable_miroboard' => $request->has('enable_miroboard') ? 1 : 0,
             'allow_client_notification' => $request->has('allow_client_notification') ? 1 : 0,
             'manual_timelog' => $request->has('manual_timelog') ? 1 : 0,
         ]);
-
-        // commit shortcode transaction if used
-        if ($request->input('shortcode_option') !== 'manual' && DB::transactionLevel() > 0) {
-            DB::commit();
-        }
 
         // file upload
         if ($request->hasFile('project_file')) {
@@ -347,12 +355,14 @@ public function store(Request $request)
         $this->recordProjectUpdate($project, $project->status, (int) ($project->completion_percent ?? 0), $project->remarks, auth()->id());
         Log::info('Project created with users:', ['project' => $project->toArray(), 'users' => $project->users->pluck('id','name')->toArray()]);
 
+        $connection->commit();
+
         return redirect()->route('projects.index')->with('success', 'Project created successfully.');
-    } catch (\Exception $e) {
-        if (DB::transactionLevel() > 0) {
-            DB::rollBack();
+    } catch (\Throwable $e) {
+        if ($connection->transactionLevel() > $transactionLevel) {
+            $connection->rollBack($transactionLevel);
         }
-        Log::error('Project create failed: ' . $e->getMessage());
+        Log::error('Project create failed: ' . $e->getMessage(), ['exception' => $e]);
         return back()->withInput()->withErrors(['general' => 'Failed to create project.']);
     }
 }
@@ -376,9 +386,9 @@ public function edit($id)
     $categories     = ProjectCategory::all();
     $departments    = Department::with('parent')->latest()->get();
     $designations   = Designation::all();
-    $countries      = Country::all();
+    $countries      = Country::forForms();
     $employee       = null;
-    $currency       = Currency::all();
+    $currency       = Currency::orderBy('currency_name')->get();
     $prtdepartments = ParentDepartment::latest()->get();
 
     return view('admin.projects.edit', compact(
@@ -418,7 +428,7 @@ public function edit($id)
         'employee_ids.*'  => 'integer|exists:users,id',
         'department_ids'   => 'sometimes|array|min:1',
         'department_ids.*' => 'integer|exists:departments,id',
-        'currency_id'     => 'nullable|integer',
+        'currency_id'     => 'nullable|integer|exists:tenant.currencies,id',
         'project_budget'  => 'nullable|numeric',
         'hours_allocated' => 'nullable|numeric',
         'priority'        => 'nullable|in:low,medium,high,critical',
@@ -848,6 +858,26 @@ public function clientstore(Request $request)
         return view('admin.projects.archive', compact('projects'));
     }
 
+    public function bulkArchive(Request $request)
+    {
+        abort_unless($this->canManageProjects(), 403);
+        $validated = $request->validate([
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'required|integer|distinct',
+        ]);
+
+        $count = (new Project())->getConnection()->transaction(function () use ($validated) {
+            $projects = Project::whereIn('id', $validated['ids'])->lockForUpdate()->get();
+            abort_unless($projects->count() === count($validated['ids']), 422, 'Some selected projects are unavailable. Refresh the list and try again.');
+            foreach ($projects as $project) {
+                $project->delete();
+            }
+            return $projects->count();
+        });
+
+        return response()->json(['success' => true, 'archived' => $count]);
+    }
+
     // Archive a project (soft delete)
     public function archiveProject(Project $project)
     {
@@ -1270,4 +1300,3 @@ public function import(Request $request)
     }
 }
 }
-

@@ -4,6 +4,16 @@
 
 @section('content')
 <style>
+    html body .recruitment-row-action .recruitment-action-symbol {
+        background: transparent !important;
+        fill: none !important;
+        stroke: #334155 !important;
+        opacity: 1 !important;
+        flex-shrink: 0;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .recruitment-row-action .recruitment-action-symbol {
+        stroke: #e2e8f0 !important;
+    }
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
 
     .recruitment-shell {
@@ -207,10 +217,11 @@
         color: var(--rec-green-700) !important;
         font-size: 1.15rem;
     }
-    .badge-rec-readonly {
-        background: #f1f5f9;
-        color: #475569;
-        border: 1px solid #cbd5e1;
+    .recruitment-shell .badge-rec-readonly {
+        background: #f1f5f9 !important;
+        color: #475569 !important;
+        -webkit-text-fill-color: #475569 !important;
+        border: 1px solid #cbd5e1 !important;
         padding: 0.6rem 1rem;
         border-radius: 12px;
         font-weight: 600;
@@ -218,6 +229,23 @@
         display: inline-flex;
         align-items: center;
         gap: 6px;
+        max-width: 100%;
+        white-space: normal;
+    }
+
+    .recruitment-shell .badge-rec-readonly i,
+    .recruitment-shell .badge-rec-readonly i::before {
+        color: inherit !important;
+        -webkit-text-fill-color: inherit !important;
+        background: transparent !important;
+        flex-shrink: 0;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"]) .recruitment-shell .badge-rec-readonly {
+        background: #1e293b !important;
+        color: #e2e8f0 !important;
+        -webkit-text-fill-color: #e2e8f0 !important;
+        border-color: #475569 !important;
     }
 
     /* ===== POLICY CARD (HERO ELEMENT) ===== */
@@ -552,11 +580,18 @@
         font-size: 1.5rem;
         flex-shrink: 0;
     }
-    .rec-metric-icon.emerald { background: #EEF2FF; color: #2F6BFF; }
-    .rec-metric-icon.blue { background: #eff6ff; color: #2563eb; }
-    .rec-metric-icon.amber { background: #fffbeb; color: #d97706; }
-    .rec-metric-icon.green { background: #f0fdf4; color: #16a34a; }
+    .rec-metric-icon.emerald { background: #EEF2FF; color: #2F6BFF; --rec-metric-glyph: #2F6BFF; }
+    .rec-metric-icon.blue { background: #eff6ff; color: #2563eb; --rec-metric-glyph: #2563eb; }
+    .rec-metric-icon.amber { background: #fffbeb; color: #d97706; --rec-metric-glyph: #b45309; }
+    .rec-metric-icon.green { background: #f0fdf4; color: #16a34a; --rec-metric-glyph: #15803d; }
     .rec-metric-icon i { color: inherit !important; }
+
+    /* Override the global white dark-theme glyphs on these pale icon tiles. */
+    :is([data-pms-theme="dark"], [data-bs-theme="dark"], [data-theme="dark"], .dark, .dark-mode) .recruitment-shell .rec-metric-card .rec-metric-icon > i,
+    :is([data-pms-theme="dark"], [data-bs-theme="dark"], [data-theme="dark"], .dark, .dark-mode) .recruitment-shell .rec-metric-card .rec-metric-icon > i::before {
+        color: var(--rec-metric-glyph) !important;
+        -webkit-text-fill-color: var(--rec-metric-glyph) !important;
+    }
     .rec-metric-info h4 {
         margin: 0 0 0.15rem 0;
         font-weight: 800;
@@ -1836,16 +1871,16 @@
                                     <i class="bx bx-download"></i> Download
                                 </a>
 
-                                <button class="btn btn-sm btn-icon btn-light" type="button" data-bs-toggle="modal" data-bs-target="#viewReqModal-{{ $req->id }}" title="View Full Details">
-                                    <i class="bx bx-show text-info"></i>
+                                <button class="btn btn-sm btn-icon btn-light recruitment-row-action" type="button" data-bs-toggle="modal" data-bs-target="#viewReqModal-{{ $req->id }}" title="View Full Details" aria-label="View requirement details">
+                                    <svg class="recruitment-action-symbol" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
                                 </button>
 
                                 @if(auth()->user()?->role === 'admin')
-                                <div class="dropdown d-inline-block">
-                                    <button class="btn btn-sm btn-icon btn-light" type="button" data-bs-toggle="dropdown">
-                                        <i class="bx bx-dots-vertical-rounded"></i>
+                                <div class="dropdown d-inline-block recruitment-actions-dropdown">
+                                    <button class="btn btn-sm btn-icon btn-light recruitment-row-action" type="button" data-bs-toggle="dropdown" title="Requirement actions" aria-label="Requirement actions">
+                                        <svg class="recruitment-action-symbol" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
                                     </button>
-                                    <ul class="dropdown-menu dropdown-menu-end">
+                                    <ul class="dropdown-menu dropdown-menu-end recruitment-actions-menu">
                                         <li class="dropdown-header">Admin Management</li>
                                         <li>
                                             <form method="POST" action="{{ route('recruitment.status', $req->id) }}">
@@ -1990,7 +2025,7 @@
 <div class="modal fade" id="createRequirementModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
-            <form method="POST" action="{{ route('recruitment.store') }}">
+            <form method="POST" action="{{ route('recruitment.store') }}" enctype="multipart/form-data">
                 @csrf
                 <div class="modal-header" style="background: linear-gradient(135deg, #1E4FCC 0%, #2F6BFF 100%); color: #ffffff;">
                     <h5 class="modal-title fw-bold" style="color: #ffffff !important;"><i class="bx bx-plus-circle me-2" style="color: #ffffff !important;"></i> Create New Recruitment Requirement</h5>
@@ -2128,6 +2163,18 @@
                             <label class="form-label fw-bold">Candidate Qualifications & Requirements</label>
                             <textarea name="requirements_summary" class="form-control" rows="3" placeholder="Key skills, degrees, technologies, or certifications needed..."></textarea>
                         </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold" for="recPdfHeaderImage">Company Header (PDF) <span class="text-danger">*</span></label>
+                            <input type="file" name="pdf_header_image" id="recPdfHeaderImage" class="form-control" accept="image/png,image/jpeg" required>
+                            <small class="text-muted d-block mt-1">Shown at the top of every page of the requirement PDF. JPG or PNG, max 2 MB (wide banner recommended).</small>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold" for="recPdfFooterImage">Company Footer (PDF) <span class="text-danger">*</span></label>
+                            <input type="file" name="pdf_footer_image" id="recPdfFooterImage" class="form-control" accept="image/png,image/jpeg" required>
+                            <small class="text-muted d-block mt-1">Shown at the bottom of every page of the requirement PDF. JPG or PNG, max 2 MB (wide banner recommended).</small>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -2152,6 +2199,7 @@
     </div>
 </div>
 
+<script src="{{ asset('admin/assets/js/pms-recruitment-actions.js') }}"></script>
 <script>
 function updateSalaryRangeValue() {
     const currencySelect = document.getElementById('recruitment_salary_currency');

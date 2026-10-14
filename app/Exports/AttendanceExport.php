@@ -14,7 +14,7 @@ use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Facades\Excel;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Services\PdfDocument as Pdf;
 use Illuminate\Support\Str;
 
 class AttendanceExport
@@ -68,7 +68,7 @@ class AttendanceExport
         ];
 
         $pdf = Pdf::loadView('exports.attendance_matrix', $data)
-                 ->setPaper('a4', 'landscape');
+                 ->setPaper(count($matrix['headings']) > 32 ? 'a3' : 'a4', 'landscape');
 
         $filename = sprintf('attendance-%04d-%02d-%s.pdf',
             $filters['year'],

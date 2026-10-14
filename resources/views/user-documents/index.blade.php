@@ -118,6 +118,24 @@
         flex-direction: column;
     }
 
+    .user-docs-page .doc-file-actions {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        min-width: 0;
+    }
+
+    .user-docs-page .doc-file-actions > a {
+        flex: 1 1 0;
+        width: auto;
+        min-width: 0;
+    }
+
+    .user-docs-page .doc-file-actions > form {
+        flex: 0 0 auto;
+        margin: 0;
+    }
+
     .doc-slot-card:hover {
         transform: translateY(-4px);
         box-shadow: 0 14px 35px -5px rgba(47, 107, 255, 0.12);
@@ -525,10 +543,12 @@
 
         @php
             $activeTab = request('tab', 'my-docs');
+            // Old notification links open the repository tab; other roles only have their own documents.
+            if (! $canViewAllDocuments) $activeTab = 'my-docs';
         @endphp
 
-        <!-- Navigation Tabs (For HR, Manager, Admin) -->
-        @if(in_array($userRole, ['admin', 'hr', 'manager']))
+        <!-- Navigation Tabs (company Admin / Super Admin: every role's documents) -->
+        @if($canViewAllDocuments)
             <ul class="nav doc-nav-pills" id="userDocTabs" role="tablist">
                 <li class="nav-item" role="presentation">
                     <button class="nav-link doc-tab-btn {{ $activeTab !== 'employee' ? 'active' : '' }}" id="my-docs-tab" data-bs-toggle="tab" data-bs-target="#my-docs-pane" type="button" role="tab">
@@ -566,7 +586,7 @@
                                                     data-title="{{ $doc->document_type }}"
                                                     data-file="{{ $doc->file_name }}"
                                                     data-uploader="{{ $doc->user->name ?? 'Me' }}"
-                                                    data-views='@json($doc->views)'
+                                                    data-history-url="{{ route('my-documents.history', ['type' => $doc->table_type ?? $userRole, 'id' => $doc->id]) }}"
                                                     title="Seen By Who">
                                                     <i class="fas fa-info"></i>
                                                 </button>
@@ -583,8 +603,8 @@
                                             </div>
                                         </div>
 
-                                        <div class="d-flex gap-2 align-items-center">
-                                            <a href="{{ route('my-documents.download', ['type' => $doc->table_type ?? $userRole, 'id' => $doc->id]) }}" class="btn btn-sm btn-outline-success w-100 rounded-pill py-2 font-weight-bold">
+                                        <div class="doc-file-actions">
+                                            <a href="{{ route('my-documents.download', ['type' => $doc->table_type ?? $userRole, 'id' => $doc->id]) }}" class="btn btn-sm btn-outline-success rounded-pill py-2 font-weight-bold">
                                                 <i class="fas fa-download me-1"></i> Download
                                             </a>
                                             <form method="POST" action="{{ route('my-documents.destroy', ['type' => $doc->table_type ?? $userRole, 'id' => $doc->id]) }}" onsubmit="return confirm('Delete this uploaded document?');">
@@ -608,8 +628,8 @@
                 </div>
             </div>
 
-            <!-- TAB 2: Role Storage Databases Repository (For HR, Manager, Admin) -->
-            @if(in_array($userRole, ['admin', 'hr', 'manager']))
+            <!-- TAB 2: Role Storage Databases Repository (company Admin / Super Admin only) -->
+            @if($canViewAllDocuments)
                 <div class="tab-pane fade {{ $activeTab === 'employee' ? 'show active' : '' }}" id="emp-docs-pane" role="tabpanel">
                     <div class="card doc-panel-card rounded-4 border-0 shadow-sm p-4">
                         
@@ -634,13 +654,11 @@
                                     <select name="role_type" class="form-select rounded-4 py-2" onchange="this.form.submit()">
                                         <option value="">All Accessible Databases</option>
                                         <option value="employee" {{ request('role_type') === 'employee' ? 'selected' : '' }}>Employee Database</option>
-                                        @if(in_array($userRole, ['admin', 'hr', 'manager']))
+                                        @if($canViewAllDocuments)
                                              <option value="hr" {{ request('role_type') === 'hr' ? 'selected' : '' }}>HR Database</option>
                                         @endif
-                                        @if(in_array($userRole, ['admin', 'hr', 'manager']))
+                                        @if($canViewAllDocuments)
                                              <option value="manager" {{ request('role_type') === 'manager' ? 'selected' : '' }}>Manager Database</option>
-                                        @endif
-                                        @if($userRole === 'admin')
                                              <option value="admin" {{ request('role_type') === 'admin' ? 'selected' : '' }}>Admin Database</option>
                                         @endif
                                     </select>
@@ -704,7 +722,7 @@
                                                         data-title="{{ $doc->document_type }}"
                                                         data-file="{{ $doc->file_name }}"
                                                         data-uploader="{{ $doc->user->name ?? 'Staff' }}"
-                                                        data-views='@json($doc->views)'
+                                                        data-history-url="{{ route('my-documents.history', ['type' => $doc->table_type, 'id' => $doc->id]) }}"
                                                         title="Seen By Who">
                                                         <i class="fas fa-info"></i>
                                                     </button>
@@ -753,7 +771,8 @@ document.addEventListener('DOMContentLoaded', function() {
         return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
 
-    document.addEventListener('click', function(e) {
+    var historyRequest = 0;
+    document.addEventListener('click', async function(e) {
         var btn = e.target.closest('.btn-show-doc-info');
         if (!btn) return;
 
@@ -761,11 +780,27 @@ document.addEventListener('DOMContentLoaded', function() {
         var filename = btn.getAttribute('data-file') || '';
         var uploader = btn.getAttribute('data-uploader') || '';
         var views = [];
+        var requestId = ++historyRequest;
+        var body = document.getElementById('globalDocInfoBody');
+        var modalEl = document.getElementById('globalDocInfoModal');
+        var modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+        body.innerHTML = '<p class="text-muted mb-0">Loading document access history...</p>';
+        modal.show();
         try {
-            views = JSON.parse(btn.getAttribute('data-views') || '[]');
+            var response = await fetch(btn.getAttribute('data-history-url'), {
+                headers: { 'Accept': 'application/json' },
+                cache: 'no-store'
+            });
+            if (!response.ok) throw new Error('History request failed');
+            views = await response.json();
+            if (!Array.isArray(views)) throw new Error('Invalid history response');
         } catch(err) {
-            views = [];
+            if (requestId === historyRequest) {
+                body.innerHTML = '<p class="text-danger mb-0">Unable to load document access history. Please try again.</p>';
+            }
+            return;
         }
+        if (requestId !== historyRequest) return;
 
         var html = '<div class="mb-3 p-3 bg-light rounded-3">';
         html += '<div class="fw-bold text-dark fs-6">' + escapeHtml(title) + '</div>';
@@ -796,9 +831,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         document.getElementById('globalDocInfoBody').innerHTML = html;
-        var modalEl = document.getElementById('globalDocInfoModal');
-        var modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
-        modal.show();
     });
 
     // Auto-switch tab if specified in URL query string or hash

@@ -48,9 +48,9 @@ function checkEventIsolation(bool $condition, string $message): void
     if (!$condition) throw new RuntimeException($message);
 }
 $indexRequest = Request::create('/events', 'GET');
-checkEventIsolation($controller->index($indexRequest)->getData()['users']->pluck('id')->all() === [2], 'Organizer dropdown leaked users or included admins/employees');
+checkEventIsolation($controller->index($indexRequest)->getData()['users']->pluck('id')->all() === [1, 5, 2], 'Organizer dropdown must contain only company HR/admin users');
 DB::table('users')->where('id', 2)->update(['role' => 'employee']);
-checkEventIsolation($controller->index($indexRequest)->getData()['users']->isEmpty(), 'No-HR company received unrelated organizer choices');
+checkEventIsolation($controller->index($indexRequest)->getData()['users']->pluck('id')->all() === [1, 5], 'No-HR company must retain admin organizer choices');
 DB::table('users')->where('id', 2)->update(['role' => 'hr']);
 
 $payload = ['title' => 'Annual day', 'event_type' => 'Meeting', 'description' => 'Test event',
@@ -65,7 +65,7 @@ foreach (['start_date' => ['invalid-date'], 'start_time' => '25:99', 'end_time' 
     }
     checkEventIsolation($rejected, "Invalid {$field} caused a server error or was accepted");
 }
-foreach ([3, 4, 5, 6, 7, 999] as $organizerId) {
+foreach ([3, 4, 6, 7, 999] as $organizerId) {
     $rejected = false;
     try {
         $controller->store(Request::create('/events', 'POST', $payload + ['organizer_id' => $organizerId]));
@@ -78,6 +78,18 @@ foreach ([3, 4, 5, 6, 7, 999] as $organizerId) {
 $create = Request::create('/events', 'POST', $payload + ['organizer_id' => 2]);
 $create->headers->set('Accept', 'application/json');
 $created = $controller->store($create)->getData(true)['event'];
+foreach ([4, 6] as $viewerId) {
+    Auth::guard('web')->setUser(User::findOrFail($viewerId));
+    checkEventIsolation(!$controller->index($indexRequest)->getData()['canManage'], 'Viewer received event management controls');
+    $unauthorized = Request::create('/events', 'POST', $payload);
+    $unauthorized->headers->set('Accept', 'application/json');
+    checkEventIsolation($controller->store($unauthorized)->getStatusCode() === 403, 'Viewer could create an event');
+    checkEventIsolation($controller->update($unauthorized, $created['id'])->getStatusCode() === 403, 'Viewer could edit an event');
+    checkEventIsolation($controller->destroy($unauthorized, $created['id'])->getStatusCode() === 403, 'Viewer could delete an event');
+}
+Auth::guard('web')->setUser(User::findOrFail(2));
+checkEventIsolation($controller->index($indexRequest)->getData()['canManage'], 'HR cannot manage events');
+Auth::guard('web')->setUser($actor);
 $eventId = $created['id'];
 checkEventIsolation($created['organizer_id'] == 2 && $created['company_id'] == 1, 'Local HR organizer was not accepted');
 

@@ -27,7 +27,7 @@ use App\Models\SalaryStructureVersion;
 use App\Models\TaxRule;
 use App\Models\User;
 use App\Services\PayrollCalculationService;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Services\PdfDocument as Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -58,7 +58,7 @@ class PayrollController extends Controller
         $startDate = Carbon::createFromDate($selectedYear, $selectedMonth, 1)->startOfMonth()->format('Y-m-d');
         $endDate = Carbon::createFromDate($selectedYear, $selectedMonth, 1)->endOfMonth()->format('Y-m-d');
 
-        $currentPayroll = Payroll::query()
+        $currentPayroll = $this->dashboardSection('current payroll run', fn () => Payroll::query()
             ->where(function ($q) use ($startDate, $endDate) {
                 $q->whereBetween('period_start', [$startDate, $endDate])
                   ->orWhereBetween('period_end', [$startDate, $endDate])
@@ -69,7 +69,7 @@ class PayrollController extends Controller
             })
             ->when($companyId, fn ($q) => $q->where('company_id', $companyId))
             ->latest()
-            ->first();
+            ->first(), null);
 
         $processedCount = 0;
         $grossTotal = 0.0;
@@ -86,6 +86,7 @@ class PayrollController extends Controller
         $draftCount = 0;
 
         if ($currentPayroll) {
+            $this->dashboardSection('payroll run totals', function () use ($currentPayroll, &$processedCount, &$grossTotal, &$deductionTotal, &$netTotal, &$inHandTotal, &$employerTotal, &$ctcTotal, &$finalizedCount, &$approvedCount, &$reviewedCount, &$calculatedCount, &$draftCount) {
             $processedCount = PayrollHistory::where('payroll_id', $currentPayroll->id)->count();
             $grossTotal = (float) $currentPayroll->gross_total;
             $deductionTotal = (float) $currentPayroll->deduction_total;
@@ -109,14 +110,18 @@ class PayrollController extends Controller
             $draftCount = ($currentPayroll->status === 'draft')
                 ? $processedCount
                 : max(0, $processedCount - ($finalizedCount + $approvedCount + $reviewedCount + $calculatedCount));
+            }, null);
         } else {
             // Live real-time projection across eligible employees for the selected month/year
             $payrollService = app(PayrollCalculationService::class);
-            $employees = $payrollService->getEligibleEmployees($companyId);
+            $employees = $this->dashboardSection('eligible employees', fn () => $payrollService->getEligibleEmployees($companyId, null, null, null, $selectedYear, $selectedMonth), collect());
             $workingDays = 22;
             $srNo = 1;
             foreach ($employees as $employee) {
-                $line = $payrollService->calculateEmployeePayrollLine($employee, $selectedYear, $selectedMonth, $workingDays, $srNo++);
+                // One employee's incomplete salary/attendance data must not take the whole dashboard down.
+                $line = $this->dashboardSection('payroll projection for user #' . $employee->id,
+                    fn () => $payrollService->calculateEmployeePayrollLine($employee, $selectedYear, $selectedMonth, $workingDays, $srNo), []);
+                $srNo++;
                 $grossTotal += (float) ($line['gross_salary'] ?? 0);
                 $deductionTotal += (float) ($line['total_deductions'] ?? 0);
                 $netTotal += (float) ($line['net_pay'] ?? 0);
@@ -152,15 +157,15 @@ class PayrollController extends Controller
             'total' => max(1, $processedCount ?: $totalEmployees),
         ];
 
-        $recentPayrolls = $this->companyQuery(Payroll::query(), $companyId)->latest()->take(6)->get();
-        $totalPayrollRuns = $this->companyQuery(Payroll::query(), $companyId)->count();
-        $structuresCount = SalaryStructure::where('status', 'active')
+        $recentPayrolls = $this->dashboardSection('recent payroll runs', fn () => $this->companyQuery(Payroll::query(), $companyId)->latest()->take(6)->get(), collect());
+        $totalPayrollRuns = $this->dashboardSection('payroll run count', fn () => $this->companyQuery(Payroll::query(), $companyId)->count(), 0);
+        $structuresCount = $this->dashboardSection('salary structure count', fn () => SalaryStructure::where('status', 'active')
             ->when($companyId && Schema::hasColumn('salary_structures', 'company_id'), fn ($q) => $q->where('company_id', $companyId))
-            ->count();
-        $assignmentsCount = EmployeeSalaryAssignment::where('status', 'active')
-            ->when($companyId, fn ($q) => $q->where('company_id', $companyId))
-            ->count();
-        $payslipCount = $this->payslipQuery($companyId)->count();
+            ->count(), 0);
+        $assignmentsCount = $this->dashboardSection('salary assignment count', fn () => EmployeeSalaryAssignment::where('status', 'active')
+            ->when($companyId && Schema::hasColumn('employee_salary_assignments', 'company_id'), fn ($q) => $q->where('company_id', $companyId))
+            ->count(), 0);
+        $payslipCount = $this->dashboardSection('payslip count', fn () => $this->payslipQuery($companyId)->count(), 0);
         $latestPayroll = $currentPayroll;
 
         return view('admin.payroll.index', compact(
@@ -173,6 +178,24 @@ class PayrollController extends Controller
             'totalPayrollRuns',
             'latestPayroll'
         ));
+    }
+
+    /**
+     * Runs one dashboard data section; a failure is logged with its cause and the section falls back
+     * to an empty value instead of turning the whole Payroll page into a 500 error.
+     */
+    private function dashboardSection(string $section, callable $callback, $default)
+    {
+        try {
+            return $callback();
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Payroll dashboard section failed: ' . $section, [
+                'company_id' => auth()->user()?->company_id,
+                'error' => $e->getMessage(),
+                'file' => $e->getFile() . ':' . $e->getLine(),
+            ]);
+            return $default;
+        }
     }
 
     /**
@@ -204,7 +227,12 @@ class PayrollController extends Controller
         }
 
         if ($request->filled('grade') && $request->input('grade') !== 'all') {
-            $query->where('grade', $request->input('grade'));
+            $level = (string) $request->input('grade');
+            if (preg_match('/^L([0-9]+)$/', $level, $matches)) {
+                $query->whereHas('designation', fn ($designation) => $designation->where('level', (int) $matches[1]));
+            } else {
+                $query->whereRaw('1 = 0');
+            }
         }
 
         if ($request->filled('status') && $request->input('status') !== 'all') {
@@ -212,8 +240,8 @@ class PayrollController extends Controller
         }
 
         $structures = $query->orderBy('id', 'desc')->paginate(15);
-        $designations = Designation::orderBy('name')->get();
-        $grades = ['D1', 'D2', 'S1', 'S2', 'M1', 'M2', 'E1', 'Standard'];
+        $designations = app(\App\Services\PayrollDesignations::class)->available();
+        $grades = $designations->pluck('level')->unique()->sort()->map(fn ($level) => 'L'.$level)->values();
 
         return view('admin.payroll.salary-structures', compact('structures', 'designations', 'grades'));
     }
@@ -236,8 +264,9 @@ class PayrollController extends Controller
             'description' => ['nullable', 'string', 'max:255'],
         ]);
 
-        $designation = Designation::find($data['designation_id']);
-        $name = ($designation?->name ?: 'Designation') . ' - ' . $data['grade'];
+        $designation = app(\App\Services\PayrollDesignations::class)->resolve((int) $data['designation_id'], $data['grade']);
+        $data['grade'] = 'L'.$designation->level;
+        $name = $designation->name . ' - ' . $data['grade'];
 
         $payload = array_merge($data, [
             'name' => $name,
@@ -276,8 +305,9 @@ class PayrollController extends Controller
             'description' => ['nullable', 'string', 'max:255'],
         ]);
 
-        $designation = Designation::find($data['designation_id']);
-        $name = ($designation?->name ?: 'Designation') . ' - ' . $data['grade'];
+        $designation = app(\App\Services\PayrollDesignations::class)->resolve((int) $data['designation_id'], $data['grade']);
+        $data['grade'] = 'L'.$designation->level;
+        $name = $designation->name . ' - ' . $data['grade'];
 
         $old = $structure->toArray();
         $structure->update(array_merge($data, [
@@ -341,13 +371,37 @@ class PayrollController extends Controller
 
         $assignments = $query->orderBy('id', 'desc')->paginate(15);
 
-        $employees = User::where(function ($q) {
-                $q->where('role', '!=', 'superadmin')->orWhereNull('role');
-            })
-            ->when($companyId, fn ($q) => $q->where('company_id', $companyId))
+        // Every staff member from the Employee section (employees, HR, managers, company roles) with their salary status.
+        $staff = $this->payrollStaffQuery($companyId)
             ->with(['employeeDetail.designation', 'employeeDetail.department'])
             ->orderBy('name')
             ->get();
+        $currentAssignments = EmployeeSalaryAssignment::whereIn('user_id', $staff->pluck('id'))
+            ->where('status', 'active')
+            ->orderByDesc('effective_from')->orderByDesc('id')
+            ->get()->unique('user_id')->keyBy('user_id');
+        $roster = $staff->filter(function (User $member) use ($request, $currentAssignments) {
+            $detail = $member->employeeDetail;
+            if ($request->filled('search')) {
+                $needle = mb_strtolower($request->input('search'));
+                $haystack = mb_strtolower($member->name . ' ' . $member->email . ' ' . ($detail?->employee_id ?? ''));
+                if (! str_contains($haystack, $needle)) return false;
+            }
+            if ($request->filled('department_id') && $request->input('department_id') !== 'all' && (string) $detail?->department_id !== (string) $request->input('department_id')) return false;
+            if ($request->filled('designation_id') && $request->input('designation_id') !== 'all' && (string) $detail?->designation_id !== (string) $request->input('designation_id')) return false;
+            $salary = $request->input('salary', 'all');
+            if ($salary === 'assigned' && ! $currentAssignments->has($member->id)) return false;
+            if ($salary === 'unassigned' && $currentAssignments->has($member->id)) return false;
+            return true;
+        })->values();
+        $rosterSummary = [
+            'total' => $staff->count(),
+            'assigned' => $staff->filter(fn ($m) => $currentAssignments->has($m->id))->count(),
+        ];
+        $rosterSummary['unassigned'] = $rosterSummary['total'] - $rosterSummary['assigned'];
+        // HR manages everyone's salary except their own, which only the company Admin sets.
+        $lockedUserId = $this->ownSalaryLocked(auth()->id()) ? (int) auth()->id() : null;
+        $employees = $staff->reject(fn ($member) => $lockedUserId && (int) $member->id === $lockedUserId)->values();
 
         $designations = Designation::orderBy('name')->get();
         $departments = $this->getDepartments();
@@ -356,6 +410,10 @@ class PayrollController extends Controller
         return view('admin.payroll.employee-salary', compact(
             'assignments',
             'employees',
+            'roster',
+            'rosterSummary',
+            'currentAssignments',
+            'lockedUserId',
             'designations',
             'departments',
             'structures'
@@ -382,9 +440,13 @@ class PayrollController extends Controller
             'remarks' => ['nullable', 'string', 'max:255'],
         ]);
 
+        if ($this->ownSalaryLocked((int) $data['user_id'])) {
+            return back()->with('error', 'Your own salary is set by the company Admin. You can manage salaries of every other employee.');
+        }
+
         $user = User::with('employeeDetail')->find($data['user_id']);
-        $designationId = $data['designation_id'] ?: ($user?->employeeDetail?->designation_id);
-        $grade = $data['grade'] ?: ($user?->employeeDetail?->designation?->level ?: 'Standard');
+        $designationId = ($data['designation_id'] ?? null) ?: ($user?->employeeDetail?->designation_id);
+        $grade = ($data['grade'] ?? null) ?:($user?->employeeDetail?->designation?->level ?: 'Standard');
 
         $payload = array_merge($data, [
             'company_id' => $user?->company_id ?: auth()->user()?->company_id,
@@ -426,6 +488,11 @@ class PayrollController extends Controller
             'remarks' => ['nullable', 'string', 'max:255'],
         ]);
 
+        $this->authorizeAssignmentCompany($request, $assignment);
+        if ($this->ownSalaryLocked((int) $assignment->user_id) || $this->ownSalaryLocked((int) $data['user_id'])) {
+            return back()->with('error', 'Your own salary is set by the company Admin. You can manage salaries of every other employee.');
+        }
+
         $old = $assignment->toArray();
         $assignment->update($data);
 
@@ -437,6 +504,10 @@ class PayrollController extends Controller
     public function destroyEmployeeSalary(Request $request, EmployeeSalaryAssignment $assignment)
     {
         $this->authorizePayroll('payroll', 'delete');
+        $this->authorizeAssignmentCompany($request, $assignment);
+        if ($this->ownSalaryLocked((int) $assignment->user_id)) {
+            return back()->with('error', 'Your own salary is set by the company Admin. You can manage salaries of every other employee.');
+        }
 
         $old = $assignment->toArray();
         $assignment->delete();
@@ -519,45 +590,66 @@ class PayrollController extends Controller
         if ($companyId && Schema::connection($addrConn)->hasColumn('business_addresses', 'company_id')) {
             $addressQuery->where('company_id', $companyId);
         }
-        $offices = $addressQuery->pluck('branch_name')
+        $offices = $this->dashboardSection('processing office list', fn () => $addressQuery->pluck('branch_name')
             ->filter()
             ->unique()
-            ->toArray();
+            ->toArray(), []);
 
         $empDetailQuery = EmployeeDetail::query();
         $empConn = $empDetailQuery->getModel()->getConnectionName() ?: config('database.default');
         if ($companyId && Schema::connection($empConn)->hasColumn('employee_details', 'company_id')) {
             $empDetailQuery->where('company_id', $companyId);
         }
-        $dbEmpAddresses = $empDetailQuery->pluck('business_address')
+        $dbEmpAddresses = $this->dashboardSection('processing employee offices', fn () => $empDetailQuery->pluck('business_address')
             ->filter()
             ->unique()
-            ->toArray();
+            ->toArray(), []);
 
         $officesList = array_values(array_filter(array_unique(array_merge($offices, $dbEmpAddresses))));
-        $departments = $this->getDepartments();
+        $departments = $this->dashboardSection('processing departments', fn () => $this->getDepartments(), collect());
 
         // Check if existing payroll exists for period
-        $existingPayroll = $payrollService->checkExistingPayroll($companyId, $year, $month, $office, $employeeType);
+        $existingPayroll = $this->dashboardSection('processing existing payroll',
+            fn () => $payrollService->checkExistingPayroll($companyId, $year, $month, $office, $employeeType), null);
 
         $payrollRun = null;
         $payrollItems = collect();
+        $calculationFailures = [];
+        $staleEmployees = [];
 
         if ($existingPayroll) {
             $payrollRun = $existingPayroll;
             // Saved rows must obey the same employee filters as an unsaved preview.
-            $eligibleEmployeeIds = $payrollService
-                ->getEligibleEmployees($companyId, $office, $employeeType, $departmentId)
-                ->pluck('id');
+            $eligibleEmployeeIds = $this->dashboardSection('processing eligible employees', fn () => $payrollService
+                ->getEligibleEmployees($companyId, $office, $employeeType, $departmentId, $year, $month)
+                ->pluck('id'), collect());
             $payrollItems = PayrollHistory::where('payroll_id', $existingPayroll->id)
                 ->whereIn('user_id', $eligibleEmployeeIds)
                 ->orderBy('id', 'asc')->get();
+            // Lines saved for employees who no longer have a salary assignment: the run must be recalculated.
+            if (in_array($existingPayroll->status, ['draft', 'calculated', 'reviewed'], true) && ($office ?: 'all') === 'all' && ! $departmentId) {
+                $staleIds = PayrollHistory::where('payroll_id', $existingPayroll->id)
+                    ->whereNotIn('user_id', $eligibleEmployeeIds)
+                    ->pluck('user_id');
+                $staleEmployees = $staleIds->isEmpty() ? [] : User::whereIn('id', $staleIds)
+                    ->when($companyId, fn ($q) => $q->where('company_id', $companyId))
+                    ->pluck('name')->all();
+            }
         } else {
             // Auto calculate preview lines in memory
-            $employees = $payrollService->getEligibleEmployees($companyId, $office, $employeeType, $departmentId);
+            $employees = $this->dashboardSection('processing eligible employees',
+                fn () => $payrollService->getEligibleEmployees($companyId, $office, $employeeType, $departmentId, $year, $month), collect());
             $srNo = 1;
             foreach ($employees as $employee) {
-                $line = $payrollService->calculateEmployeePayrollLine($employee, $year, $month, $workingDays, $srNo++);
+                // An employee whose salary/attendance data cannot be calculated is listed in a warning
+                // (and logged) instead of turning the whole Processing page into a 500 error.
+                $line = $this->dashboardSection('payroll processing for user #' . $employee->id,
+                    fn () => $payrollService->calculateEmployeePayrollLine($employee, $year, $month, $workingDays, $srNo), null);
+                if (! is_array($line)) {
+                    $calculationFailures[] = $employee->name ?: ('Employee #' . $employee->id);
+                    continue;
+                }
+                $srNo++;
                 $payrollItems->push((object)[
                     'id' => null,
                     'user_id' => $employee->id,
@@ -621,7 +713,9 @@ class PayrollController extends Controller
             'existingPayroll',
             'payrollRun',
             'payrollItems',
-            'summary'
+            'summary',
+            'calculationFailures',
+            'staleEmployees'
         ));
     }
 
@@ -696,6 +790,10 @@ class PayrollController extends Controller
             'remarks' => ['nullable', 'string', 'max:255'],
         ]);
 
+        if ($this->ownSalaryLocked((int) $history->user_id)) {
+            return back()->with('error', 'Your own payroll line is managed by the company Admin.');
+        }
+
         try {
             $payrollService->updatePayrollHistoryLine($history, $inputs);
             return back()->with('success', 'Employee payroll line updated and recalculated successfully.');
@@ -718,7 +816,7 @@ class PayrollController extends Controller
 
     public function approve(Payroll $payroll, PayrollCalculationService $payrollService)
     {
-        $this->authorizePayroll('payroll', 'edit');
+        $this->authorizePayroll('payroll', 'approve');
 
         try {
             $payrollService->approvePayroll($payroll, auth()->id());
@@ -730,7 +828,7 @@ class PayrollController extends Controller
 
     public function finalize(Payroll $payroll, PayrollCalculationService $payrollService)
     {
-        $this->authorizePayroll('payroll', 'create');
+        $this->authorizePayroll('payroll', 'approve');
 
         try {
             $payrollService->finalizePayroll($payroll, auth()->id());
@@ -823,6 +921,21 @@ class PayrollController extends Controller
         $this->authorizePayroll('payslips');
         $companyId = $this->selectedCompanyId($request);
 
+        // Approved/finalized runs whose payslips were never generated (or failed earlier) get them now.
+        $this->dashboardSection('generate missing payslips', function () use ($companyId) {
+            $service = app(PayrollCalculationService::class);
+            $this->companyQuery(Payroll::query(), $companyId)
+                ->whereIn('status', ['approved', 'finalized'])
+                ->get()
+                ->each(function (Payroll $payroll) use ($service) {
+                    $lines = PayrollHistory::where('payroll_id', $payroll->id)->count();
+                    $slips = Payslip::where('payroll_id', $payroll->id)->count();
+                    if ($lines > $slips) {
+                        $service->generatePayslips($payroll, auth()->id());
+                    }
+                });
+        }, null);
+
         $query = Payslip::with([
                 'user.employeeDetail.designation',
                 'user.employeeDetail.department',
@@ -830,7 +943,9 @@ class PayrollController extends Controller
             ])
             ->when($companyId, function ($q) use ($companyId) {
                 if (Schema::hasColumn('payslips', 'company_id')) {
-                    $q->where('company_id', $companyId);
+                    // Older payslips may have no company recorded: match them through the employee.
+                    $q->where(fn ($w) => $w->where('company_id', $companyId)
+                        ->orWhere(fn ($n) => $n->whereNull('company_id')->whereHas('user', fn ($u) => $u->where('company_id', $companyId))));
                 } else {
                     $q->whereHas('user', fn ($u) => $u->where('company_id', $companyId));
                 }
@@ -857,6 +972,11 @@ class PayrollController extends Controller
 
         if ($request->filled('department_id') && $request->input('department_id') !== 'all') {
             $query->whereHas('user.employeeDetail', fn ($ed) => $ed->where('department_id', $request->input('department_id')));
+        }
+
+        // HR sees their own payslip under My Payslips, not in the payroll workspace.
+        if ($this->ownSalaryLocked(auth()->id())) {
+            $query->where('user_id', '!=', auth()->id());
         }
 
         $payslips = $query->latest()->paginate(20);
@@ -1116,13 +1236,26 @@ class PayrollController extends Controller
         abort(404, 'Payslip not found.');
     }
 
+    /**
+     * Company whose name, logo and address brand the payslip.
+     */
+    protected function payslipCompany(Payslip $payslip)
+    {
+        $companyId = $payslip->company_id ?: ($payslip->payroll?->company_id ?: ($payslip->user?->company_id ?: auth()->user()?->company_id));
+
+        return ($companyId ? Company::find($companyId) : null) ?: \App\Models\CompanySetting::first();
+    }
+
     public function viewPayslip($payslip)
     {
         $this->authorizePayroll('payslips');
         $payslip = $this->resolvePayslipModel($payslip);
+        if ($this->ownSalaryLocked((int) $payslip->user_id)) {
+            return redirect()->route('my-payslips.show', $payslip->id);
+        }
         $payslip->load(['user.employeeDetail.designation', 'user.employeeDetail.department', 'payroll', 'payrollHistory']);
 
-        $company = Company::find($payslip->company_id ?: auth()->user()?->company_id) ?: \App\Models\CompanySetting::first();
+        $company = $this->payslipCompany($payslip);
         $snap = $payslip->employee_snapshot;
         $history = $payslip->payrollHistory ?: PayrollHistory::where('payroll_id', $payslip->payroll_id)->where('user_id', $payslip->user_id)->first();
 
@@ -1131,11 +1264,12 @@ class PayrollController extends Controller
 
     public function printPayslip($payslip)
     {
-        $this->authorizePayroll('payslips');
+        // ?noprint=1 is the read-only document embedded in the payslip view page.
+        request()->boolean('noprint') ? $this->authorizePayroll('payslips') : $this->authorizePayroll('payslips', 'export');
         $payslip = $this->resolvePayslipModel($payslip);
         $payslip->load(['user.employeeDetail.designation', 'user.employeeDetail.department', 'payroll', 'payrollHistory']);
 
-        $company = Company::find($payslip->company_id ?: auth()->user()?->company_id) ?: \App\Models\CompanySetting::first();
+        $company = $this->payslipCompany($payslip);
         $snap = $payslip->employee_snapshot;
         $history = $payslip->payrollHistory ?: PayrollHistory::where('payroll_id', $payslip->payroll_id)->where('user_id', $payslip->user_id)->first();
 
@@ -1144,16 +1278,20 @@ class PayrollController extends Controller
 
     public function downloadPdf($payslip)
     {
-        $this->authorizePayroll('payslips');
+        $this->authorizePayroll('payslips', 'export');
         $payslip = $this->resolvePayslipModel($payslip);
         $payslip->load(['user.employeeDetail.designation', 'user.employeeDetail.department', 'payroll', 'payrollHistory']);
 
-        $company = Company::find($payslip->company_id ?: auth()->user()?->company_id) ?: \App\Models\CompanySetting::first();
+        $company = $this->payslipCompany($payslip);
         $snap = $payslip->employee_snapshot;
         $history = $payslip->payrollHistory ?: PayrollHistory::where('payroll_id', $payslip->payroll_id)->where('user_id', $payslip->user_id)->first();
 
-        $pdf = Pdf::loadView('admin.payroll.payslip-pdf', compact('payslip', 'company', 'snap', 'history'));
-        return $pdf->download('Payslip_' . $payslip->payslip_number . '.pdf');
+        $mode = 'pdf';
+        $pdf = Pdf::loadView('admin.payroll.payslip-pdf', compact('payslip', 'company', 'snap', 'history', 'mode'))
+            ->setPaper('a4')
+            ->setOption('isFontSubsettingEnabled', true);
+        $name = preg_replace('/[^A-Za-z0-9_-]+/', '_', 'Payslip_' . ($payslip->user?->name ?? 'Employee') . '_' . $payslip->payslip_number);
+        return $pdf->download($name . '.pdf');
     }
 
     public function sendPayslipSingle(Request $request, Payslip $payslip, PayrollCalculationService $payrollService)
@@ -1169,7 +1307,7 @@ class PayrollController extends Controller
 
     public function export(Request $request, Payroll $payroll)
     {
-        $this->authorizePayroll('payroll');
+        $this->authorizePayroll('payroll', 'export');
 
         $items = PayrollHistory::where('payroll_id', $payroll->id)->get();
         $fileName = 'Payroll_' . date('Y_m', strtotime($payroll->period_start)) . '_Export.csv';
@@ -1241,16 +1379,53 @@ class PayrollController extends Controller
     /**
      * Strict Authorization: Admin Workspace ONLY
      */
+    /**
+     * Staff whose salary is managed in Payroll: every active member of the Employee section
+     * (employees, HR, managers and company roles), never the company Admin or platform accounts.
+     */
+    private function payrollStaffQuery(?int $companyId)
+    {
+        $schema = Schema::connection((new User)->getConnectionName() ?: config('database.default'));
+        $query = User::query()
+            ->where(fn ($q) => $q->whereNull('role')->orWhereNotIn('role', ['admin', 'administrator', 'superadmin', 'super_admin', 'client']))
+            ->when($companyId, fn ($q) => $q->where('company_id', $companyId));
+        if ($schema->hasColumn('users', 'archived_at')) {
+            $query->whereNull('archived_at');
+        }
+        return $query;
+    }
+
+    /** HR (and any other non-admin payroll user) may not set or change their own salary. */
+    private function ownSalaryLocked(?int $userId): bool
+    {
+        $actor = auth()->user();
+        return $actor && $userId && (int) $actor->id === (int) $userId
+            && ! in_array($actor->normalizedRole(), ['admin', 'superadmin'], true);
+    }
+
+    private function authorizeAssignmentCompany(Request $request, EmployeeSalaryAssignment $assignment): void
+    {
+        $companyId = $this->selectedCompanyId($request);
+        abort_if($companyId && $assignment->company_id && (int) $assignment->company_id !== (int) $companyId, 403, 'This salary assignment belongs to another company.');
+    }
+
     private function authorizePayroll(string $moduleSlug = 'payroll', string $permission = 'view'): void
     {
         $role = strtolower((string)(auth()->user()?->role ?? ''));
-        if (!in_array($role, ['admin', 'superadmin', 'administrator'], true)) {
-            abort(403, 'Unauthorized. Payroll access is restricted strictly to Admin workspace.');
+        if (!in_array($role, ['admin', 'superadmin', 'administrator', 'hr'], true)) {
+            abort(403, 'Unauthorized. Payroll management is restricted to Admin and permitted HR accounts.');
         }
 
-        if (! auth()->user()?->hasModulePermission($moduleSlug, $permission)) {
+        $user = auth()->user();
+        $moduleSlug = app(\App\Services\AdminWorkspaceModules::class)
+            ->subdivisionForRoute((string) request()->route()?->getName()) ?? $moduleSlug;
+        $allowed = $user?->hasModulePermission($moduleSlug, $permission);
+        if (! $allowed) {
             abort(403, 'You do not have permission to access this payroll module.');
         }
+
+        // Company databases not migrated after a deploy are missing payroll tables/columns (500 on every page).
+        \App\Services\PayrollSchema::ensure();
     }
 
     private function payslipQuery(?int $companyId = null)

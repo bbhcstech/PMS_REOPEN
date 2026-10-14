@@ -323,7 +323,7 @@
                                         @else
                                             <i class="fas fa-building-flag text-slate-400"></i>
                                         @endif
-                                        <span>{{ $companyName }}</span>
+                                        <span title="{{ $companyName }}">{{ $companyName }}</span>
                                     </div>
                                 </td>
                                 <td>

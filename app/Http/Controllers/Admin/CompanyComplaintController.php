@@ -98,7 +98,10 @@ class CompanyComplaintController extends Controller
             'Payroll', 'HR', 'Security', 'Performance', 'Feature Request', 'Bug Report', 'Other'
         ];
 
-        return view('admin.complaints.create', compact('company', 'categories'));
+        $currentLevel = \App\Services\PlanEligibilityService::getCurrentLevel($company);
+        $plans = \App\Models\Central\Plan::standard()->where('is_active', true)->orderBy('sort_order')->get()
+            ->filter(fn ($plan) => \App\Services\PlanEligibilityService::getPlanLevel($plan) < $currentLevel);
+        return view('admin.complaints.create', compact('company', 'categories', 'plans'));
     }
 
     /**
@@ -114,12 +117,15 @@ class CompanyComplaintController extends Controller
             'attachment'        => 'nullable|file|max:5120',
             'related_module'    => 'nullable|string|max:100',
             'related_record_id' => 'nullable|string|max:100',
+            'requested_plan_id' => ['nullable', 'integer', \Illuminate\Validation\Rule::exists('central.plans', 'id')->where(fn ($q) => $q->whereIn('slug', \App\Support\SupportedPlans::SLUGS)->where('is_active', true))],
         ]);
 
         $company = $this->getActiveCompany();
         $user = auth()->user();
 
-        $complaint = $this->complaintService->createComplaint($request->all(), $company, $user);
+        $complaint = $request->filled('requested_plan_id')
+            ? app(\App\Services\SubscriptionDowngradeRequests::class)->create($request->all(), $company, $user)
+            : $this->complaintService->createComplaint($request->all(), $company, $user);
 
         return redirect()->route('admin.company-complaints.show', $complaint->id)
             ->with('success', "Ticket created successfully! Your Ticket ID is: {$complaint->ticket_id}");
@@ -150,8 +156,18 @@ class CompanyComplaintController extends Controller
     /**
      * Send Reply to Super Admin.
      */
-    public function reply(Request $request, $id): RedirectResponse
+    public function messages(Request $request, $id): JsonResponse
     {
+        $company = $this->getActiveCompany();
+        abort_unless(auth()->user() && (int) auth()->user()->company_id === (int) $company->id, 403);
+        $ticket = CompanyComplaint::on('central')->where('company_id', $company->id)->findOrFail($id);
+        return app(\App\Services\ComplaintConversationFeed::class)->response($request, $ticket);
+    }
+
+    public function reply(Request $request, $id): RedirectResponse|JsonResponse
+    {
+        $company = $this->getActiveCompany();
+        abort_unless(auth()->user() && (int) auth()->user()->company_id === (int) $company->id, 403);
         $request->validate([
             'message'       => 'required|string|min:2',
             'attachments.*' => 'nullable|file|max:5120',
@@ -176,6 +192,8 @@ class CompanyComplaintController extends Controller
         }
 
         $this->complaintService->addResponse($ticket, $request->message, $user, 'company_admin', $files);
+
+        if ($request->expectsJson()) return response()->json(['success' => true]);
 
         return redirect()->back()->with('success', 'Response sent successfully to Super Admin.');
     }

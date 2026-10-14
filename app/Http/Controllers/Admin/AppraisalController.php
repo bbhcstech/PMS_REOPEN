@@ -13,16 +13,33 @@ use Illuminate\Support\Facades\DB;
 
 class AppraisalController extends Controller
 {
+    private function actor(): User
+    {
+        $actor = auth()->user();
+        abort_unless($actor && $actor->company_id, 403);
+        return $actor;
+    }
+
+    private function canManage(User $actor): bool
+    {
+        return in_array($actor->normalizedRole(), ['admin', 'administrator', 'superadmin', 'hr', 'manager'], true);
+    }
+
     public function index(Request $request)
     {
+        $actor = $this->actor();
+        $canManage = $this->canManage($actor);
         $selectedPeriod = $request->get('period', '2026 Q3');
         $search = $request->get('search');
 
         // Fetch active employees
         $employeesQuery = User::whereIn('role', ['employee', 'manager', 'hr'])
+            ->where('company_id', $actor->company_id)
             ->where(function ($q) {
                 $q->where('is_active', true)->orWhereNull('is_active');
             });
+
+        if (! $canManage) $employeesQuery->whereKey($actor->id);
 
         if ($search) {
             $employeesQuery->where(function ($q) use ($search) {
@@ -35,13 +52,16 @@ class AppraisalController extends Controller
         $employees = $employeesQuery->orderBy('name')->get();
 
         // Ensure auto-generated appraisal baselines exist for employees for the selected period
-        foreach ($employees as $emp) {
+        foreach ($canManage ? $employees : [] as $emp) {
             $this->ensureEmployeeAppraisal($emp, $selectedPeriod);
         }
 
         // Fetch all appraisals for period
         $appraisalsQuery = Appraisal::with(['employee', 'evaluator'])
+            ->where('company_id', $actor->company_id)
+            ->whereHas('employee', fn ($query) => $query->where('company_id', $actor->company_id))
             ->where('appraisal_period', $selectedPeriod);
+        if (! $canManage) $appraisalsQuery->where('employee_id', $actor->id);
 
         if ($search) {
             $appraisalsQuery->whereHas('employee', function ($q) use ($search) {
@@ -65,12 +85,16 @@ class AppraisalController extends Controller
             'avgScore',
             'topPerformersCount',
             'totalEvaluated',
-            'needsImpCount'
+            'needsImpCount',
+            'canManage'
         ));
     }
 
     public function store(Request $request)
     {
+        $actor = $this->actor();
+        abort_unless($this->canManage($actor), 403);
+        User::where('company_id', $actor->company_id)->findOrFail($request->input('employee_id'));
         $request->validate([
             'employee_id' => 'required|integer',
             'appraisal_period' => 'required|string',
@@ -90,6 +114,16 @@ class AppraisalController extends Controller
         $grade = Appraisal::computeGrade($overallScore);
 
         $evaluator = auth()->user();
+
+        // If an appraisal was previously deleted, restore it when re-evaluating
+        $existingRecord = Appraisal::withTrashed()
+            ->where('employee_id', $request->employee_id)
+            ->where('appraisal_period', $request->appraisal_period)
+            ->first();
+
+        if ($existingRecord && $existingRecord->trashed()) {
+            $existingRecord->restore();
+        }
 
         Appraisal::updateOrCreate(
             [
@@ -125,8 +159,10 @@ class AppraisalController extends Controller
 
     public function autoCalculate(Request $request)
     {
+        $actor = $this->actor();
+        abort_unless($this->canManage($actor), 403);
         $selectedPeriod = $request->get('period', '2026 Q3');
-        $employees = User::whereIn('role', ['employee', 'manager', 'hr'])->get();
+        $employees = User::where('company_id', $actor->company_id)->whereIn('role', ['employee', 'manager', 'hr'])->get();
 
         foreach ($employees as $emp) {
             $this->ensureEmployeeAppraisal($emp, $selectedPeriod, true);
@@ -137,7 +173,9 @@ class AppraisalController extends Controller
 
     public function destroy($id)
     {
-        $appraisal = Appraisal::findOrFail($id);
+        $actor = $this->actor();
+        abort_unless($this->canManage($actor), 403);
+        $appraisal = Appraisal::where('company_id', $actor->company_id)->findOrFail($id);
         $appraisal->delete();
 
         return back()->with('success', 'Appraisal entry deleted successfully.');
@@ -148,12 +186,19 @@ class AppraisalController extends Controller
      */
     private function ensureEmployeeAppraisal(User $employee, string $period, bool $forceRecalculate = false): Appraisal
     {
-        $existing = Appraisal::where('employee_id', $employee->id)
+        $existing = Appraisal::withTrashed()
+            ->where('employee_id', $employee->id)
             ->where('appraisal_period', $period)
             ->first();
 
+        // If record exists (even if soft-deleted by user), do not auto-recreate it unless forced
         if ($existing && !$forceRecalculate) {
             return $existing;
+        }
+
+        // If explicitly forced to recalculate, restore soft-deleted record if needed
+        if ($existing && $existing->trashed() && $forceRecalculate) {
+            $existing->restore();
         }
 
         // Calculate Project Metrics
@@ -163,8 +208,17 @@ class AppraisalController extends Controller
         }
 
         // Tasks stats
-        $completedTasks = Task::where('task_short_code', 'like', "%{$employee->id}%")
-            ->orWhere('description', 'like', "%{$employee->name}%")
+        $completedTasks = Task::where(function ($query) use ($employee) {
+                $query->where('assigned_to', $employee->id)
+                    ->orWhereRaw('FIND_IN_SET(?, assigned_to)', [$employee->id])
+                    ->orWhereHas('assignees', function ($q) use ($employee) {
+                        $q->where('users.id', $employee->id);
+                    });
+            })
+            ->where(function ($query) {
+                $query->where('is_completed', 1)
+                    ->orWhereIn('status', ['completed', 'Finished', 'done']);
+            })
             ->count();
         if ($completedTasks === 0) {
             $completedTasks = rand(4, 12);

@@ -246,7 +246,7 @@
         });
 
         if (installButton) {
-            installButton.addEventListener('click', function () {
+            installButton.addEventListener('click', async function () {
                 if (!installPromptEvent) {
                     if (installText) {
                         installText.textContent = 'Use your browser menu and choose Install app or Add to home screen.';
@@ -254,15 +254,23 @@
                     return;
                 }
 
-                installPromptEvent.prompt();
-                installPromptEvent.userChoice.then(function (choice) {
+                installButton.disabled = true;
+                try {
+                    var prompt = installPromptEvent;
+                    await prompt.prompt();
+                    var choice = await prompt.userChoice;
                     installPromptEvent = null;
                     if (choice.outcome === 'accepted') {
                         hideInstallOption();
                     } else {
                         showInstallOption();
                     }
-                });
+                } catch (error) {
+                    installPromptEvent = null;
+                    if (installText) installText.textContent = 'Use your browser menu to install PMS or add it to your home screen.';
+                } finally {
+                    installButton.disabled = false;
+                }
             });
         }
 

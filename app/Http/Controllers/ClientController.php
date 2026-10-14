@@ -28,9 +28,18 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Cache;
 use Carbon\Carbon;
+use Illuminate\Validation\Rule;
 
 class ClientController extends Controller
 {
+    private function duplicateEmailMessage(Request $request): string
+    {
+        $email = $request->input('email');
+        return is_string($email)
+            ? 'The email address "' . $email . '" has already been taken. Please use a different email address.'
+            : 'This email address has already been taken. Please use a different email address.';
+    }
+
     public function index(Request $request)
     {
         // base query
@@ -102,7 +111,7 @@ class ClientController extends Controller
 
         $clients    = $query->latest()->paginate(25);
         $categories = ClientCategory::all();
-        $countries  = Country::all();
+        $countries  = Country::forForms();
 
         return view('admin.clients.index', compact('clients', 'categories', 'countries'));
     }   
@@ -111,7 +120,7 @@ class ClientController extends Controller
         $categories    = ClientCategory::all();
         $subcategories = ClientSubCategory::with('category')->get();
         $users         = User::all();
-        $countries     = Country::all();
+        $countries     = Country::forForms();
 
         // preview next client code (same logic as in Client model boot method)
         $nextId = (Client::max('id') ?? 0) + 1;
@@ -152,7 +161,9 @@ class ClientController extends Controller
         $dealCategories = DealCategory::all();
         $dealAgents     = User::all();
 
+        $languages = \App\Models\Language::dropdownOptions();
         return view('admin.clients.create', compact(
+            'languages',
             'categories',
             'subcategories',
             'users',
@@ -219,7 +230,10 @@ class ClientController extends Controller
                 if ($rawOffice === $officeDialCode || $rawOffice === '' || $digitsOnly === '' || $digitsOnly === $cleanDialDigits) {
                     $request->merge(['office_phone' => null]);
                 } else {
-                    if (str_starts_with($digitsOnly, $cleanDialDigits)) {
+                    // The form sends local digits (the code has its own dropdown); strip a code prefix only when
+                    // one was actually included, so a local number starting with the same digits stays intact.
+                    $hasDialPrefix = str_starts_with($rawOffice, '+') || strlen($digitsOnly) > $officeMaxDigits;
+                    if ($hasDialPrefix && str_starts_with($digitsOnly, $cleanDialDigits)) {
                         $nationalDigits = substr($digitsOnly, strlen($cleanDialDigits));
                     } else {
                         $nationalDigits = $digitsOnly;
@@ -263,7 +277,7 @@ class ClientController extends Controller
             // Account Details
             'salutation'             => 'nullable|string|max:10',
             'name'                   => 'required|string|max:255',
-            'email'                  => 'required|email|unique:clients,email',
+            'email'                  => ['bail', 'required', 'email', Rule::unique('tenant.clients', 'email'), Rule::unique('tenant.users', 'email')],
             'password'               => ['required', 'string', 'min:8', 'regex:/[A-Z]/', 'regex:/[a-z]/', 'regex:/[0-9]/', 'regex:/[^A-Za-z0-9]/'],
             'country'                => 'nullable',
             'mobile'                 => ['required', 'regex:' . $phoneConfig['mobileRegex']],
@@ -292,7 +306,8 @@ class ClientController extends Controller
             'company_logo'           => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
 
             // Project Details (Optional)
-            'project_name'           => 'nullable|string|max:255',
+            'project_submit_mode'    => 'nullable|in:final,later',
+            'project_name'           => 'required_if:project_submit_mode,final|nullable|string|max:255',
             'project_start_date'     => 'nullable|date',
             'project_deadline'       => [
                 'nullable',
@@ -313,8 +328,9 @@ class ClientController extends Controller
             'project_department_ids' => 'nullable|array',
             'project_employee_ids'   => 'nullable|array',
 
-            // Deal Details (Optional)
-            'deal_name'              => 'nullable|string|max:255',
+            // Deal Details: "final" submit requires a deal name, "later" skips the deal entirely
+            'deal_submit_mode'       => 'nullable|in:final,later',
+            'deal_name'              => 'required|string|max:255',
             'deal_currency'          => 'nullable|string|max:10',
             'deal_value'             => 'nullable|numeric|min:0',
             'deal_close_date'        => 'nullable|date',
@@ -335,16 +351,38 @@ class ClientController extends Controller
         ];
 
         $validationMessages = array_merge($phoneConfig['messages'], [
+            'email.unique' => $this->duplicateEmailMessage($request),
             'password.required'         => 'Password is required.',
             'password.min'              => 'Password must be at least 8 characters long.',
             'password.regex'            => 'Password must contain at least 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character.',
             'project_deadline.after'    => 'The project deadline must be a date later than the start date.',
             'deal_next_follow_up.after' => 'The next follow-up date must be a date later than the close date.',
+            'deal_name.required'        => 'Deal Name is required for Final Submit. Use "Add Later and Submit" to create the client without a deal.',
+            'project_name.required_if' => 'Project Name is required for Save and Continue. Use "Add Later and Continue" to skip the project.',
         ]);
+
+        $addProjectLater = $request->input('project_submit_mode') === 'later';
+        if ($addProjectLater) {
+            foreach (array_keys($rules) as $field) {
+                if ((str_starts_with($field, 'project_') && $field !== 'project_submit_mode') || $field === 'completion_percent') {
+                    unset($rules[$field]);
+                }
+            }
+        }
+        $addDealLater = $request->input('deal_submit_mode') === 'later';
+        if ($addDealLater) {
+            foreach (array_keys($rules) as $field) {
+                if (str_starts_with($field, 'deal_') && $field !== 'deal_submit_mode') {
+                    unset($rules[$field]);
+                }
+            }
+        }
 
         $request->validate($rules, $validationMessages);
 
-        DB::beginTransaction();
+        $connection = (new Client())->getConnection();
+        $transactionLevel = $connection->transactionLevel();
+        $connection->beginTransaction();
         try {
             $data = $request->only([
                 'salutation', 'name', 'email', 'country', 'mobile', 'gender', 'language',
@@ -421,9 +459,10 @@ class ClientController extends Controller
 
             // create client (client_uid is auto-generated in Client model boot())
             $client = Client::create($data);
+            $authUserId = auth()->id() ?: (User::first()?->id ?? null);
 
             // Step 3: Create Project if project name is filled
-            if ($request->filled('project_name')) {
+            if (! $addProjectLater && $request->filled('project_name')) {
                 $projectCode = null;
                 if ($request->input('project_shortcode_option') === 'manual' && $request->filled('project_shortcode_manual')) {
                     $projectCode = $request->input('project_shortcode_manual');
@@ -453,8 +492,6 @@ class ClientController extends Controller
                 $currencyId = $request->filled('project_currency_id') 
                     ? $request->project_currency_id 
                     : (Currency::where('currency_code', 'INR')->value('id') ?? Currency::first()?->id ?? 4);
-
-                $authUserId = auth()->id() ?: (User::first()?->id ?? null);
 
                 $project = Project::create([
                     'client_id'                 => $client->id,
@@ -532,8 +569,8 @@ class ClientController extends Controller
                 ]);
             }
 
-            // Step 4: Create Deal if deal name is filled
-            if ($request->filled('deal_name')) {
+            // Step 4: Create Deal unless the user chose "Add Later and Submit"
+            if (! $addDealLater && $request->filled('deal_name')) {
                 Deal::create([
                     'deal_name'        => $request->deal_name,
                     'lead_name'        => $request->input('deal_lead_name') ?: $client->name,
@@ -552,13 +589,18 @@ class ClientController extends Controller
                 ]);
             }
 
-            DB::commit();
+            $connection->commit();
 
             return redirect()->route('clients.index')->with('success', 'Client added successfully.');
         } catch (\Exception $e) {
-            DB::rollBack();
+            $connection->rollBack($transactionLevel);
             Log::error('Client multi-step store failed: ' . $e->getMessage());
-            return back()->withInput()->withErrors(['error' => 'Failed to create client: ' . $e->getMessage()]);
+            if ($e instanceof \Illuminate\Database\QueryException
+                && in_array((int) ($e->errorInfo[1] ?? 0), [1062, 19], true)
+                && str_contains(strtolower($e->getMessage()), 'email')) {
+                return back()->withInput($request->except('password'))->withErrors(['email' => $this->duplicateEmailMessage($request)]);
+            }
+            return back()->withInput($request->except('password'))->withErrors(['error' => 'Failed to create client. Please try again.']);
         }
     }
 
@@ -567,19 +609,21 @@ class ClientController extends Controller
         $categories    = ClientCategory::all();
         $subcategories = ClientSubCategory::with('category')->get();
         $users         = User::all();
-        $countries     = Country::all();
+        $countries     = Country::forForms();
 
-        return view('admin.clients.edit', compact('client', 'categories', 'subcategories', 'users', 'countries'));
+        $languages = \App\Models\Language::dropdownOptions();
+        return view('admin.clients.edit', compact('client', 'categories', 'subcategories', 'users', 'countries', 'languages'));
     }
 
     public function update(Request $request, $id)
     {
         $client = Client::findOrFail($id);
-        $user   = User::where('email', $client->email)->first();
+        $user   = User::where('email', $client->email)->where('role', 'client')->first();
 
         $phoneConfig = $this->getPhoneRulesAndNormalize($request);
 
         $validationMessages = array_merge($phoneConfig['messages'], [
+            'email.unique' => $this->duplicateEmailMessage($request),
             'password.min'   => 'Password must be at least 8 characters long.',
             'password.regex' => 'Password must contain at least 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character.',
         ]);
@@ -587,7 +631,7 @@ class ClientController extends Controller
         $request->validate([
             'salutation'             => 'nullable|string|max:10',
             'name'                   => 'required|string|max:255',
-            'email'                  => 'required|email|unique:clients,email,' . $id,
+            'email'                  => ['bail', 'required', 'email', Rule::unique('tenant.clients', 'email')->ignore($client->id), Rule::unique('tenant.users', 'email')->ignore($user?->id)],
             'password'               => ['nullable', 'string', 'min:8', 'regex:/[A-Z]/', 'regex:/[a-z]/', 'regex:/[0-9]/', 'regex:/[^A-Za-z0-9]/'],
             'country'                => 'nullable',
             'mobile'                 => ['required', 'regex:' . $phoneConfig['mobileRegex']],
@@ -775,7 +819,7 @@ class ClientController extends Controller
 
         $clients    = $query->get();
         $categories = ClientCategory::all();
-        $countries  = Country::all();
+        $countries  = Country::forForms();
 
         return view('admin.clients.verification-pending', compact('clients', 'categories', 'countries'));
     }
@@ -852,14 +896,19 @@ class ClientController extends Controller
                 return response()->json($notFoundRes, 200);
             }
 
+            // A provider that answers "no such pincode" is definitive; timeouts and outages are not and must not be cached.
+            $definitelyNotFound = false;
             try {
                 $response = Http::withHeaders([
                     'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36',
                     'Accept'     => 'application/json',
-                ])->withoutVerifying()->timeout(2.5)->get("https://api.postalpincode.in/pincode/{$cleanPin}");
+                ])->withoutVerifying()->connectTimeout(3)->timeout(4)->retry(2, 200, throw: false)->get("https://api.postalpincode.in/pincode/{$cleanPin}");
 
                 if ($response->successful()) {
                     $json = $response->json();
+                    if (is_array($json) && !empty($json[0]) && ($json[0]['Status'] ?? '') === 'Error') {
+                        $definitelyNotFound = true;
+                    }
                     if (is_array($json) && !empty($json[0]) && ($json[0]['Status'] ?? '') === 'Success' && !empty($json[0]['PostOffice'])) {
                         $postOffices = $json[0]['PostOffice'];
                         $first = $postOffices[0];
@@ -894,12 +943,46 @@ class ClientController extends Controller
                 Log::warning("Pincode lookup error for {$cleanPin}: " . $e->getMessage());
             }
 
+            // Fallback provider (India Post's API is often slow or blocks non-Indian/datacenter servers).
+            try {
+                $fallback = Http::withHeaders(['Accept' => 'application/json'])
+                    ->withoutVerifying()->connectTimeout(3)->timeout(4)
+                    ->get("https://api.zippopotam.us/in/{$cleanPin}");
+                if ($fallback->successful() && !empty($fallback->json('places'))) {
+                    $places = $fallback->json('places');
+                    $state = (string) ($places[0]['state'] ?? '');
+                    $areas = array_values(array_unique(array_filter(array_map(
+                        fn ($place) => trim((string) ($place['place name'] ?? '')), $places
+                    ))));
+                    $successData = [
+                        'success'      => true,
+                        'pincode'      => $cleanPin,
+                        'country'      => 'India',
+                        'state'        => $state,
+                        'city'         => '',
+                        'district'     => '',
+                        'areas'        => $areas,
+                        'primary_area' => $areas[0] ?? '',
+                        'message'      => "Detected: {$state}",
+                    ];
+                    Cache::put($cacheKey, $successData, 86400 * 30);
+                    return response()->json($successData, 200);
+                }
+                if ($fallback->status() === 404) {
+                    $definitelyNotFound = true;
+                }
+            } catch (\Throwable $e) {
+                Log::warning("Pincode fallback lookup error for {$cleanPin}: " . $e->getMessage());
+            }
+
             $notFoundRes = [
                 'success'   => false,
                 'not_found' => true,
                 'message'   => 'No data found',
             ];
-            Cache::put($cacheKey, $notFoundRes, 3600);
+            if ($definitelyNotFound) {
+                Cache::put($cacheKey, $notFoundRes, 600);
+            }
             return response()->json($notFoundRes, 200);
         }
 

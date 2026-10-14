@@ -17,6 +17,9 @@ class AppServiceProvider extends ServiceProvider
     {
         require_once app_path('Support/helpers.php');
 
+        // One Super Admin feature-override lookup per company per request (sidebar + routes share it).
+        $this->app->scoped(\App\Services\FeatureEntitlements::class);
+
         if (!class_exists('CountryPhone', false)) {
             class_alias(\App\Support\CountryPhone::class, 'CountryPhone');
         }
@@ -25,6 +28,20 @@ class AppServiceProvider extends ServiceProvider
         }
 
         $this->app->scoped(CompanyContext::class, fn () => new CompanyContext());
+        $this->app->singleton(\App\Services\CompanyMailSettings::class, fn () => new \App\Services\CompanyMailSettings(config('mail')));
+        $this->app->afterResolving(\Illuminate\Cache\RateLimiter::class, function ($limiter) {
+            $limiter->for('platform-ai', function (\Illuminate\Http\Request $request) {
+                $central = \Illuminate\Support\Facades\Auth::guard('super_admin')->user();
+                return \Illuminate\Cache\RateLimiting\Limit::perMinute(15)->by(
+                    'platform-ai:' . ($central ? 'central:' . $central->id : 'web:' . $request->user()?->id)
+                );
+            });
+            $limiter->for('company-ai', function (\Illuminate\Http\Request $request) {
+                return \Illuminate\Cache\RateLimiting\Limit::perMinute(15)->by(
+                    'company-ai:' . (int) $request->user()?->company_id . ':' . (int) $request->user()?->id
+                );
+            });
+        });
     }
 
     /**

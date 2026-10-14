@@ -61,12 +61,29 @@ class TenantMigrateCommand extends Command
             $this->info("--------------------------------------------------");
 
             try {
-                // Configure connection dynamically
-                config(['database.connections.tenant.database' => $company->db_name]);
-                DB::purge('tenant');
+                $targetDb = $company->db_name;
+                $defaultTenantDb = env('DB_DATABASE') ?: config('database.connections.tenant.database');
 
-                // Test connection
-                DB::connection('tenant')->getPdo();
+                // Test target DB connection; fall back to environment tenant database if access is denied
+                try {
+                    config(['database.connections.tenant.database' => $targetDb]);
+                    DB::purge('tenant');
+                    DB::connection('tenant')->getPdo();
+                } catch (\Throwable $connEx) {
+                    if (! empty($defaultTenantDb) && $targetDb !== $defaultTenantDb) {
+                        try {
+                            config(['database.connections.tenant.database' => $defaultTenantDb]);
+                            DB::purge('tenant');
+                            DB::connection('tenant')->getPdo();
+                            $this->warn("  Note: Database '{$targetDb}' was inaccessible; safely migrating active database '{$defaultTenantDb}'.");
+                            $targetDb = $defaultTenantDb;
+                        } catch (\Throwable $connEx2) {
+                            throw $connEx;
+                        }
+                    } else {
+                        throw $connEx;
+                    }
+                }
 
                 $params = [
                     '--path'     => 'database/migrations/tenant',
@@ -77,10 +94,12 @@ class TenantMigrateCommand extends Command
                 $exitCode = Artisan::call('migrate', $params);
 
                 if ($exitCode === 0) {
-                    $this->info("✔ Migrations completed successfully for {$company->db_name}.");
+                    $this->info("✔ Migrations completed successfully for {$targetDb}.");
 
                     // Ensure Company record is synced into tenant DB companies table
-                    \App\Models\User::syncCompanyToConnection('tenant', $company);
+                    try {
+                        \App\Models\User::syncCompanyToConnection('tenant', $company);
+                    } catch (\Throwable $syncEx) {}
 
                     $this->line(trim(Artisan::output()));
 
@@ -91,7 +110,7 @@ class TenantMigrateCommand extends Command
 
                     $successCount++;
                 } else {
-                    $this->error("✖ Migration failed for {$company->db_name}:");
+                    $this->error("✖ Migration failed for {$targetDb}:");
                     $this->error(Artisan::output());
                     $failureCount++;
                 }

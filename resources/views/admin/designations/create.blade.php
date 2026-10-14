@@ -3,6 +3,7 @@
 @section('title', isset($designation) ? 'Edit Designation' : 'Add Designation')
 
 @section('content')
+@include('admin.settings.partials.workforce-navigation')
 
 <div class="designation-form-page {{ isset($designation) ? 'designation-edit-mode' : 'designation-add-mode' }}">
     <!-- Breadcrumb -->
@@ -23,7 +24,7 @@
             </div>
         </div>
         <div class="btn-group">
-            <a href="{{ route('designations.index') }}" class="btn btn-light">
+            <a href="{{ \App\Support\WorkforceSettings::route('designations.index') }}" class="btn btn-light">
                 <i class="fas fa-arrow-left"></i> Back to List
             </a>
         </div>
@@ -70,7 +71,7 @@
         @endif
 
         <form method="POST" class="form-content"
-              action="{{ isset($designation) ? route('designations.update', $designation) : route('designations.store') }}">
+              action="{{ isset($designation) ? \App\Support\WorkforceSettings::route('designations.update', $designation) : \App\Support\WorkforceSettings::route('designations.store') }}">
             @csrf
             @if(isset($designation))
                 @method('PUT')
@@ -183,7 +184,7 @@
                         @foreach($designations as $parentDesig)
                             @php
                                 $pLevel = (int) ($parentDesig->level ?? 0);
-                                $isL6 = $pLevel >= 6;
+                                $isL6 = $pLevel >= \App\Services\DesignationLevels::maximum();
                             @endphp
                             <option value="{{ $parentDesig->id }}"
                                 data-level="{{ $pLevel }}"
@@ -195,7 +196,7 @@
                                 @endif
                                 - Level {{ $pLevel }}
                                 @if($isL6)
-                                    [Max Level 6 - cannot have subordinates]
+                                    [Max Level {{ \App\Services\DesignationLevels::maximum() }} - cannot have subordinates]
                                 @endif
                             </option>
                         @endforeach
@@ -203,7 +204,7 @@
                     @error('parent_id')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
-                    <span class="field-hint" id="parent-field-hint">Select parent designation (Level 0-5 only; Level 6 is the max organizational limit)</span>
+                    <span class="field-hint" id="parent-field-hint">Select parent designation (Level 0-{{ \App\Services\DesignationLevels::maximum() - 1 }} only; Level {{ \App\Services\DesignationLevels::maximum() }} is the max organizational limit)</span>
                 </div>
             </div>
 
@@ -222,8 +223,8 @@
                         class="form-control @error('level') is-invalid @enderror"
                         required
                     >
-                        <option value="">Select Level (0 - 6)</option>
-                        @for($i = 0; $i <= 6; $i++)
+                        <option value="">Select Level (0 - {{ \App\Services\DesignationLevels::maximum() }})</option>
+                        @for($i = 0; $i <= \App\Services\DesignationLevels::maximum(); $i++)
                             <option value="{{ $i }}"
                                 data-level="{{ $i }}"
                                 {{ (string) old('level', $designation->level ?? '') === (string) $i ? 'selected' : '' }}>
@@ -234,13 +235,13 @@
                     @error('level')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
-                    <span class="field-hint" id="level-field-hint">Organizational hierarchy level (strictly Level 0 to Level 6)</span>
+                    <span class="field-hint" id="level-field-hint">Organizational hierarchy level (strictly Level 0 to Level {{ \App\Services\DesignationLevels::maximum() }})</span>
                 </div>
             </div>
 
             <!-- Form Actions -->
             <div class="form-actions">
-                <a href="{{ route('designations.index') }}" class="btn btn-secondary">
+                <a href="{{ \App\Support\WorkforceSettings::route('designations.index') }}" class="btn btn-secondary">
                     <i class="fas fa-times"></i> Cancel
                 </a>
                 <button type="submit" class="btn btn-primary">
@@ -525,6 +526,17 @@
     .form-field:hover .field-icon {
         transform: scale(1.05);
     }
+
+    /* Theme-wide icon colour rules must not repaint these icons (a blue "+" vanished on the blue header tile). */
+    .designation-form-page .header-card .header-icon i {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        opacity: 1 !important;
+        filter: none !important;
+        background: none !important;
+    }
+    /* Field icons take their tile's colour (set per field, with its own dark-mode colours). */
+    .designation-form-page .form-field .field-icon i { color: inherit !important; -webkit-text-fill-color: currentColor !important; opacity: 1 !important; filter: none !important; background: none !important; }
 
     .field-content {
         flex: 1;
@@ -1351,7 +1363,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const val = parseInt(opt.value, 10);
                 if (opt.value === '') return;
 
-                if (val < minChildLevel || val > 6) {
+                if (val < minChildLevel || val > {{ \App\Services\DesignationLevels::maximum() }}) {
                     opt.disabled = true;
                     opt.classList.add('text-muted');
                 } else {
@@ -1361,14 +1373,14 @@ document.addEventListener('DOMContentLoaded', function () {
             });
 
             const currentLevel = parseInt(levelSelect.value, 10);
-            if (isNaN(currentLevel) || currentLevel < minChildLevel || currentLevel > 6) {
-                if (minChildLevel <= 6) {
+            if (isNaN(currentLevel) || currentLevel < minChildLevel || currentLevel > {{ \App\Services\DesignationLevels::maximum() }}) {
+                if (minChildLevel <= {{ \App\Services\DesignationLevels::maximum() }}) {
                     levelSelect.value = String(minChildLevel);
                 }
             }
 
             if (levelHint) {
-                levelHint.innerHTML = `<span style="color: #2F6BFF; font-weight: 600;"><i class="fas fa-info-circle"></i> Reports to Level ${parentLevel}: Subordinate level must be between Level ${minChildLevel} and Level 6.</span>`;
+                levelHint.innerHTML = `<span style="color: #2F6BFF; font-weight: 600;"><i class="fas fa-info-circle"></i> Reports to Level ${parentLevel}: Subordinate level must be between Level ${minChildLevel} and Level {{ \App\Services\DesignationLevels::maximum() }}.</span>`;
             }
         } else {
             // Top-Level (no parent selected)
@@ -1378,7 +1390,7 @@ document.addEventListener('DOMContentLoaded', function () {
             });
 
             if (levelHint) {
-                levelHint.textContent = 'Top-level designation: Organizational hierarchy level (strictly Level 0 to Level 6).';
+                levelHint.textContent = 'Top-level designation: Organizational hierarchy level (strictly Level 0 to Level {{ \App\Services\DesignationLevels::maximum() }}).';
             }
         }
     }
@@ -1392,18 +1404,18 @@ document.addEventListener('DOMContentLoaded', function () {
     if (form) {
         form.addEventListener('submit', function (e) {
             const lvl = parseInt(levelSelect?.value, 10);
-            if (isNaN(lvl) || lvl < 0 || lvl > 6) {
+            if (isNaN(lvl) || lvl < 0 || lvl > {{ \App\Services\DesignationLevels::maximum() }}) {
                 e.preventDefault();
-                alert('Designation level must be strictly between 0 and 6.');
+                alert('Designation level must be strictly between 0 and {{ \App\Services\DesignationLevels::maximum() }}.');
                 return false;
             }
 
             const selectedOption = parentSelect?.options[parentSelect.selectedIndex];
             const pLevel = selectedOption ? parseInt(selectedOption.getAttribute('data-level'), 10) : -1;
 
-            if (pLevel >= 6) {
+            if (pLevel >= {{ \App\Services\DesignationLevels::maximum() }}) {
                 e.preventDefault();
-                alert('A Level 6 designation cannot have subordinate designations as Level 6 is the maximum organizational level allowed.');
+                alert('A Level {{ \App\Services\DesignationLevels::maximum() }} designation cannot have subordinate designations as Level {{ \App\Services\DesignationLevels::maximum() }} is the maximum organizational level allowed.');
                 return false;
             }
 

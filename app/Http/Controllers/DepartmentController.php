@@ -148,7 +148,7 @@ class DepartmentController extends Controller
                 ]);
             }
 
-            if ($request->filled('return_url')) {
+            if ($request->filled('return_url') && ! \App\Support\WorkforceSettings::active()) {
                 return redirect($request->return_url)->with('success', 'Department created successfully.');
             }
 
@@ -158,7 +158,7 @@ class DepartmentController extends Controller
             }
 
             return redirect()
-                ->route('departments.index')
+                ->route(\App\Support\WorkforceSettings::name('departments.index'))
                 ->with('success', 'Department created successfully.');
 
         } catch (\Throwable $e) {
@@ -215,7 +215,7 @@ class DepartmentController extends Controller
         ]);
 
         return redirect()
-            ->route('departments.index')
+            ->route(\App\Support\WorkforceSettings::name('departments.index'))
             ->with('success', 'Department updated.');
     }
 
@@ -252,7 +252,7 @@ class DepartmentController extends Controller
             }
 
             return redirect()
-                ->route('departments.index')
+                ->route(\App\Support\WorkforceSettings::name('departments.index'))
                 ->with('success', 'Sub Department archived successfully');
 
         } catch (\Throwable $e) {
@@ -310,7 +310,7 @@ class DepartmentController extends Controller
             'last_updated_by' => Auth::id(),
         ])->save();
 
-        return redirect()->route('departments.archive')
+        return redirect()->route(\App\Support\WorkforceSettings::name('departments.archive'))
             ->with('success', 'Sub Department restored successfully.');
     }
 
@@ -402,7 +402,7 @@ class DepartmentController extends Controller
                     'deleted_ids'   => $deletableIds,
                     'message'       => $finalMessage,
                 ])
-                : redirect()->route('departments.index')->with('success', $finalMessage);
+                : redirect()->route(\App\Support\WorkforceSettings::name('departments.index'))->with('success', $finalMessage);
 
         } catch (\Throwable $e) {
 

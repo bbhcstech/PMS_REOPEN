@@ -104,6 +104,7 @@ class AwardController extends Controller
 
     public function create()
     {
+        abort_unless(Auth::user()?->hasModulePermission('awards', 'create'), 403);
         $employees = \App\Models\User::where('role', 'employee')->get();
         $appreciations = Appreciations::where('status', 'active')->get();
         return view('admin.awards.create', compact('employees', 'appreciations'));
@@ -111,11 +112,13 @@ class AwardController extends Controller
 
     public function appreciationCreate()
     {
+        abort_unless(Auth::user()?->hasModulePermission('awards', 'create'), 403);
         return view('admin.awards.appreciation-create');
     }
 
     public function store(Request $request)
     {
+        abort_unless(Auth::user()?->hasModulePermission('awards', 'create'), 403);
         $request->validate([
             'user_id' => 'required|exists:users,id',
             'appreciation_id' => 'required|exists:appreciations,id',
@@ -134,6 +137,7 @@ class AwardController extends Controller
         Award::create([
             'user_id' => $request->user_id,
             'appreciation_id' => $request->appreciation_id,
+            'title' => Appreciations::findOrFail($request->appreciation_id)->title,
             'award_date' => $request->award_date,
             'photo' => $photoPath,
         ]);
@@ -143,6 +147,7 @@ class AwardController extends Controller
 
     public function appreciationStore(Request $request)
     {
+        abort_unless(Auth::user()?->hasModulePermission('awards', 'create'), 403);
         $request->validate([
             'title' => 'required|string|max:255',
             'color_code' => 'required|string|max:7',
@@ -161,9 +166,9 @@ class AwardController extends Controller
     public function edit($id)
     {
         $award = Award::findOrFail($id);
-        $users = \App\Models\User::where('role', 'employee')->get();
+        $employees = \App\Models\User::where('role', 'employee')->get();
         $appreciations = Appreciations::where('status', 'active')->get();
-        return view('admin.awards.edit', compact('award', 'users', 'appreciations'));
+        return view('admin.awards.edit', compact('award', 'employees', 'appreciations'));
     }
 
     public function appreciationEdit($id)
@@ -198,6 +203,7 @@ class AwardController extends Controller
         $award->update([
             'user_id' => $request->user_id,
             'appreciation_id' => $request->appreciation_id,
+            'title' => Appreciations::findOrFail($request->appreciation_id)->title,
             'award_date' => $request->award_date,
             'photo' => $photoPath,
         ]);

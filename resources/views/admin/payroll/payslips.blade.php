@@ -3,14 +3,19 @@
 @section('title', 'Payslips — Admin Workspace')
 
 @section('content')
-<div class="content-wrapper">
-    <div class="container-xxl flex-grow-1 container-p-y">
+<div class="payroll-container" id="payslipsPage">
+    <div class="payroll-page-body">
         @include('admin.payroll.partials.styles')
-
-        <div class="topbar-crumb mb-3">
-            <h4 class="fw-bold py-1 mb-1"><span class="text-muted fw-light">Admin Workspace / Payroll /</span> Payslips</h4>
-            <div class="crumb text-muted small">Generate, view, print and download employee payslips</div>
-        </div>
+        <style>
+            #payslipsTable .payslip-selection { width:48px; min-width:48px; padding:12px!important; text-align:center; vertical-align:middle; }
+            #payslipsTable .payslip-selection input { position:static!important; width:18px; height:18px; margin:0!important; cursor:pointer; accent-color:var(--pr-primary); }
+            #payslipsTable .payslip-selection input:disabled { cursor:not-allowed; opacity:.4; }
+            #payslipsTable .payslip-selection input:focus-visible { outline:2px solid var(--pr-primary); outline-offset:3px; }
+            #payslipsTable td[colspan] { white-space:normal; }
+            #payslipsTable td[colspan] i { text-align:center; }
+            #payslipsPage .pr-filters .form-control, #payslipsPage .pr-filters .form-select { min-height:38px; }
+            @media (max-width:575px) { #payslipsPage .pr-filters .field { flex-basis:100%; min-width:0; } }
+        </style>
 
         @include('admin.payroll.partials.tabs')
 
@@ -34,9 +39,10 @@
             </div>
 
             <!-- Filters -->
-            <form method="GET" action="{{ route('payroll.payslips.index') }}" class="filters p-3 border-bottom bg-light">
-                <div class="search">
-                    <input type="text" name="search" class="input form-control form-control-sm" placeholder="Search employee..." value="{{ request('search') }}">
+            <form method="GET" action="{{ route('payroll.payslips.index') }}" class="pr-filters">
+                <div class="field search-field">
+                    <label for="payslipSearch">Employee</label>
+                    <input id="payslipSearch" type="search" name="search" class="form-control form-control-sm" placeholder="Search employee..." value="{{ request('search') }}">
                 </div>
                 <div class="field">
                     <label class="form-label small mb-1">Month</label>
@@ -73,9 +79,10 @@
             </form>
 
             <div class="table-wrap">
-                <table class="table table-hover mb-0">
+                <table class="table pr-table table-hover mb-0" id="payslipsTable">
                     <thead>
                         <tr>
+                            <th data-pms-selection-column class="payslip-selection"><input type="checkbox" class="form-check-input" aria-label="Select all payslips on this page" @disabled($payslips->isEmpty())></th>
                             <th>Month</th>
                             <th>Employee</th>
                             <th>Emp ID</th>
@@ -96,6 +103,7 @@
                                 $pStatus = strtolower($ps->payroll->status ?? 'approved');
                             @endphp
                             <tr>
+                                <td data-pms-selection-column class="payslip-selection"><input type="checkbox" class="form-check-input" aria-label="Select payslip for {{ $u->name ?? 'employee' }}" value="{{ $ps->id }}"></td>
                                 <td><span class="badge bg-label-primary">{{ $monthName }} {{ $yearVal }}</span></td>
                                 <td>
                                     <div class="cell-employee d-flex align-items-center gap-2">
@@ -110,7 +118,9 @@
                                 </td>
                                 <td><span class="badge bg-light text-dark">{{ $empDetail->employee_id ?? 'EMP'.$u->id }}</span></td>
                                 <td>
-                                    <div class="small fw-semibold">{{ $empDetail->designation->name ?? '—' }}</div>
+                                    @php $designationDetails = \App\Services\PayslipDesignation::details($ps->employee_snapshot ?? [], $empDetail?->designation); @endphp
+                                    <div class="small fw-semibold">{{ $designationDetails['name'] }}</div>
+                                    <div class="meta text-muted small">{{ $designationDetails['level'] }}</div>
                                     <div class="meta text-muted small">{{ $empDetail->department->name ?? '—' }}</div>
                                 </td>
                                 @php
@@ -145,7 +155,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="text-center py-4 text-muted">
+                                <td colspan="9" class="text-center py-4 text-muted">
                                     <i class="bx bx-receipt fs-1 d-block mb-1"></i>
                                     No payslips available for the selected criteria.
                                     <br><small>Payslips are generated once payroll is approved or finalized.</small>

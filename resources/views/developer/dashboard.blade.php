@@ -5,6 +5,9 @@
 
 @section('content')
 <div style="display: flex; flex-direction: column; gap: 24px;">
+    @if(auth()->user()?->company_id && \Illuminate\Support\Facades\Schema::connection('tenant')->hasTable('attendances'))
+        @include('admin.partials.staff-clock', ['attendance' => \App\Services\WorkforceAccess::currentAttendance(auth()->user())])
+    @endif
 
     <!-- GREETING & HERO BANNER -->
     <div style="background: linear-gradient(135deg, #2F6BFF 0%, #047857 50%, #065f46 100%); color: #ffffff; padding: 30px 38px; border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px; box-shadow: var(--shadow-md); position: relative; overflow: hidden;">
@@ -128,7 +131,7 @@
     </div>
 
     <!-- MAIN CONTENT GRID -->
-    <div style="display: grid; grid-template-columns: 2.2fr 1fr; gap: 24px;">
+    <div class="dev-dashboard-main-grid">
 
         <!-- LEFT COLUMN: RECENT ASSIGNED WORK -->
         <div class="dev-card" style="margin-bottom: 0; padding: 26px;">

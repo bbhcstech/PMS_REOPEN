@@ -147,8 +147,8 @@
         </div>
     </div>
 
-    @if(auth()->user()?->normalizedRole() === 'admin')
-    {{-- Company Selector - SaaS company workspace filter --}}
+    @if(\App\Services\TenantScope::isPlatformAdmin())
+    {{-- Company Selector - SaaS company workspace filter (platform Super Admin only; company users see only their own company) --}}
     <div class="company-switcher-grid !grid !grid-cols-1 !gap-3 sm:!grid-cols-2 lg:!grid-cols-3 2xl:!grid-cols-6 !mb-5" style="position: relative !important; z-index: 1 !important;">
         <a href="{{ route('employees.index', request()->except(['company_id', 'page'])) }}"
            class="company-switch-card {{ empty($selectedCompanyId) ? 'active' : '' }}">
@@ -197,7 +197,7 @@
                 <div class="modal-header">
                     <h5 class="modal-title">
                         <i class="fas fa-paper-plane me-2"></i>
-                        Invite to Xinksoft Technologies
+                        Invite to {{ session('current_company_name') ?: (auth()->user()?->company?->name ?? config('app.name')) }}
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -230,7 +230,7 @@
                                     <label class="form-label fw-bold">Email Address <span class="text-danger">*</span></label>
                                     <div class="input-group">
                                         <span class="input-group-text"><i class="fas fa-at"></i></span>
-                                        <input type="email" name="email" id="inviteEmail" class="form-control" placeholder="e.g. johndoe@xinksoft.com" required>
+                                        <input type="email" name="email" id="inviteEmail" class="form-control" placeholder="e.g. name@example.com" autocomplete="email" required>
                                     </div>
                                 </div>
                                 <div class="mb-4">
@@ -244,23 +244,12 @@
                         <div class="tab-pane fade" id="invite-link" role="tabpanel">
                             <div class="alert alert-light border">
                                 <i class="fas fa-link text-primary me-2"></i>
-                                Create an invitation link that can be shared with multiple people.
+                                Create a signed link for one employee. It expires in 7 days and can be used once. Email delivery is not required.
                             </div>
 
                             <div class="mb-4">
-                                <label class="form-label fw-bold mb-3">Link Restrictions:</label>
-                                <div class="list-group">
-                                    <label class="list-group-item border-0 bg-light">
-                                        <input class="form-check-input me-2" type="radio" name="linkOption" id="anyEmail" checked>
-                                        <span class="fw-medium">Allow any email address</span>
-                                        <small class="text-muted d-block mt-1">Anyone with the link can join</small>
-                                    </label>
-                                    <label class="list-group-item border-0 bg-light mt-2">
-                                        <input class="form-check-input me-2" type="radio" name="linkOption" id="domainEmail">
-                                        <span class="fw-medium">Restrict to company domain</span>
-                                        <small class="text-muted d-block mt-1">Only @xinksoft.com emails allowed</small>
-                                    </label>
-                                </div>
+                                <label class="form-label fw-bold" for="inviteLinkEmail">Employee Email Address *</label>
+                                <input type="email" class="form-control" id="inviteLinkEmail" placeholder="name@example.com" autocomplete="email" required>
                             </div>
 
                             <div class="d-flex justify-content-end">
@@ -279,7 +268,7 @@
                                 <div class="input-group">
                                     <input type="text" class="form-control border-end-0" id="inviteLink" readonly>
                                     <button class="btn btn-outline-primary" type="button" id="copyLinkBtn">
-                                        <i class="fas fa-copy"></i>
+                                        <i class="fas fa-copy" aria-hidden="true"></i><span class="visually-hidden">Copy invitation link</span>
                                     </button>
                                     <button class="btn btn-outline-success" type="button" id="shareLinkBtn" title="Share via Email">
                                         <i class="fas fa-share-alt"></i>
@@ -468,7 +457,7 @@
                 </div>
             </div>
             <div class="table-actions !flex !w-full !flex-wrap !items-center !gap-2 sm:!w-auto sm:!justify-end">
-                <button id="btn-bulk-delete" class="btn btn-bulk-delete !justify-center" disabled>
+                <button id="btn-bulk-delete" class="btn btn-bulk-delete is-awaiting-selection !justify-center" aria-disabled="true" title="Select inactive employees to archive">
                     <i class="fas fa-box-archive me-2"></i>Archive Inactive
                 </button>
             </div>
@@ -580,7 +569,7 @@
                                             {{ strtoupper(substr($employee->company?->short_name ?: $employee->company?->company_code ?: $employee->company?->name ?: 'NA', 0, 2)) }}
                                         @endif
                                     </span>
-                                    <span>{{ $employee->company?->name ?? 'Unassigned' }}</span>
+                                    <span class="employee-company-name">{{ $employee->company?->name ?? 'Unassigned' }}</span>
                                 </span>
                             </td>
                             <td>
@@ -595,7 +584,7 @@
                                 <div class="role-info">
                                     <span class="role-name" style="color: var(--emp-role-color, #1f2937) !important; -webkit-text-fill-color: var(--emp-role-color, #1f2937) !important;">{{ $employee->employeeDetail?->designation?->name ?? '-' }}</span>
                                     <span class="reports-to" style="color: var(--emp-reports-color, #64748b) !important; -webkit-text-fill-color: var(--emp-reports-color, #64748b) !important;">
-                                        <i class="fas fa-users" style="color: #22D3EE !important; -webkit-text-fill-color: #22D3EE !important;"></i>
+                                        <i class="fa-solid fa-users fas" style="color: #22D3EE !important; -webkit-text-fill-color: #22D3EE !important; font-family: 'Font Awesome 6 Free', 'Font Awesome 5 Free' !important; font-weight: 900 !important; font-style: normal !important; display: inline-block !important;"></i>
                                         {{ $employee->employeeDetail?->reportingTo?->name ?? 'N/A' }}
                                     </span>
                                 </div>
@@ -627,7 +616,7 @@
                                             </a>
                                         </li>
                                         <li>
-                                            <a class="dropdown-item" href="{{ route('employees.edit', $employee->id) }}">
+                                            <a class="dropdown-item" href="{{ $employee->company_staff_role_id ? route('admin.upper-level-employees.index', ['edit' => $employee->id]) : route('employees.edit', $employee->id) }}">
                                                 <i class="fas fa-edit text-info me-2"></i> Edit Profile
                                             </a>
                                         </li>
@@ -1415,6 +1404,88 @@
         cursor: not-allowed;
     }
 
+    /* Invite modal: solid panel (the page showed through) and an email field that stays on one row. */
+    #inviteModal .modal-content {
+        background: #ffffff !important;
+        opacity: 1 !important;
+        backdrop-filter: none !important;
+        border: 1px solid rgba(47, 107, 255, 0.14) !important;
+        border-radius: 18px !important;
+        box-shadow: 0 24px 60px rgba(15, 23, 42, 0.25) !important;
+    }
+    #inviteModal .input-group {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        align-items: stretch !important;
+    }
+    #inviteModal .btn-primary,
+    #inviteModal .btn-primary * {
+        color: #fff !important;
+        -webkit-text-fill-color: #fff !important;
+    }
+    #inviteModal .input-group > .input-group-text {
+        flex: 0 0 auto !important;
+        width: auto !important;
+    }
+    #inviteModal .input-group > .form-control {
+        flex: 1 1 auto !important;
+        width: 1% !important;
+        min-width: 0 !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"]) #inviteModal .modal-content,
+    html body.dark-mode #inviteModal .modal-content {
+        background: #0F1530 !important;
+        border-color: rgba(96, 165, 250, 0.22) !important;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55) !important;
+    }
+
+    /* Archive Inactive with nothing selected: looks inactive but still explains itself when tapped. */
+    .employee-dashboard .btn-bulk-delete.is-awaiting-selection { opacity: 0.6; }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"]) .employee-dashboard .btn-bulk-delete.is-awaiting-selection {
+        opacity: 0.65 !important;
+        background: rgba(239, 68, 68, 0.18) !important;
+        border-color: rgba(248, 113, 113, 0.3) !important;
+    }
+
+    /* Mobile cards: the row checkbox must be clearly visible and large enough to tap. */
+    @media (max-width: 768px) {
+        .employee-dashboard #employeeTable tbody tr > td[data-pms-selection-column] {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: flex-start !important;
+            width: auto !important;
+            max-width: none !important;
+            min-width: 0 !important;
+            min-height: 36px;
+            padding: 4px 0 !important;
+            background: transparent !important;
+            border: 0 !important;
+            box-shadow: none !important;
+        }
+        .employee-dashboard #employeeTable tbody tr > td[data-pms-selection-column] .form-check {
+            margin: 0 !important;
+            padding: 0 !important;
+            min-height: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+        }
+        html body .employee-dashboard #employeeTable tbody tr > td[data-pms-selection-column] input.employee-checkbox {
+            float: none !important;
+            width: 24px !important;
+            height: 24px !important;
+            min-width: 24px !important;
+            margin: 0 !important;
+            border: 2px solid #64748B !important;
+            border-radius: 6px !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+        :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"]) body .employee-dashboard #employeeTable tbody tr > td[data-pms-selection-column] input.employee-checkbox:not(:checked) {
+            background-color: #0F1530 !important;
+            border-color: #93C5FD !important;
+        }
+    }
+
     /* Table Styles */
     .table-responsive {
         overflow-x: auto;
@@ -1688,6 +1759,13 @@
         margin-top: 4px;
     }
 
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark,
+        body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode)
+        #employeeTable .employee-company-chip > .employee-company-name {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+    }
+
     .employee-company-chip {
         align-items: center;
         display: inline-flex;
@@ -1823,6 +1901,13 @@
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+    }
+
+    .reports-to i {
+        font-family: "Font Awesome 6 Free", "Font Awesome 5 Free" !important;
+        font-weight: 900 !important;
+        font-style: normal !important;
+        display: inline-block !important;
     }
 
     /* Status Badge */
@@ -3370,9 +3455,10 @@
 
         .employee-dashboard .employee-list-table .employee-id-badge {
             max-width: 100% !important;
-            overflow: visible !important;
+            overflow: hidden !important;
             text-overflow: clip !important;
-            white-space: nowrap !important;
+            white-space: normal !important;
+            overflow-wrap: anywhere !important;
         }
 
         .employee-dashboard .employee-list-table thead th:nth-child(3),
@@ -3833,13 +3919,13 @@
     html[data-pms-theme="dark"] td .reports-to,
     html[data-bs-theme="dark"] td .reports-to,
     html[data-theme="dark"] td .reports-to,
-    html[data-pms-theme="dark"] .employee-dashboard .reports-to *,
-    html[data-bs-theme="dark"] .employee-dashboard .reports-to *,
-    html[data-theme="dark"] .employee-dashboard .reports-to *,
-    html.dark .employee-dashboard .reports-to *,
-    body[data-pms-theme="dark"] .employee-dashboard .reports-to *,
-    body[data-bs-theme="dark"] .employee-dashboard .reports-to *,
-    body.dark .employee-dashboard .reports-to * {
+    html[data-pms-theme="dark"] .employee-dashboard .reports-to *:not(i),
+    html[data-bs-theme="dark"] .employee-dashboard .reports-to *:not(i),
+    html[data-theme="dark"] .employee-dashboard .reports-to *:not(i),
+    html.dark .employee-dashboard .reports-to *:not(i),
+    body[data-pms-theme="dark"] .employee-dashboard .reports-to *:not(i),
+    body[data-bs-theme="dark"] .employee-dashboard .reports-to *:not(i),
+    body.dark .employee-dashboard .reports-to *:not(i) {
         color: #94A3B8 !important;
         -webkit-text-fill-color: #94A3B8 !important;
         font-weight: 500 !important;
@@ -3856,9 +3942,16 @@
     html[data-pms-theme="dark"] .reports-to i,
     html[data-bs-theme="dark"] .reports-to i,
     html[data-theme="dark"] .reports-to i,
-    html.dark .reports-to i {
+    html.dark .reports-to i,
+    html[data-pms-theme="dark"] td .reports-to i,
+    html[data-bs-theme="dark"] td .reports-to i,
+    html[data-theme="dark"] td .reports-to i {
         color: #22D3EE !important;
         -webkit-text-fill-color: #22D3EE !important;
+        font-family: "Font Awesome 6 Free", "Font Awesome 5 Free" !important;
+        font-weight: 900 !important;
+        font-style: normal !important;
+        display: inline-block !important;
     }
 
     /* 7. Status Column Badges */
@@ -4381,14 +4474,17 @@
     /* ===== EMP ID BADGE OVERFLOW FIX ===== */
     .employee-id-badge,
     .employee-dashboard .employee-list-table .employee-id-badge {
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        padding: 6px 14px !important;
+        display: inline-block !important;
+        padding: 6px 10px !important;
         width: auto !important;
-        max-width: none !important;
-        min-width: fit-content !important;
-        white-space: nowrap !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        white-space: normal !important;
+        overflow-wrap: anywhere !important;
+        word-break: normal !important;
+        overflow: hidden !important;
+        vertical-align: middle;
+        line-height: 1.45;
         box-sizing: border-box !important;
         border-radius: 8px !important;
         font-size: 0.82rem !important;
@@ -4433,6 +4529,184 @@
         -webkit-text-fill-color: #ffffff !important;
         display: inline-block !important;
         line-height: 1 !important;
+    }
+    /* Keep list controls sized consistently without changing selection behavior. */
+    .employee-dashboard .employee-list-table input.form-check-input[type="checkbox"] {
+        appearance: none !important;
+        -webkit-appearance: none !important;
+        display: inline-block !important;
+        width: 18px !important;
+        height: 18px !important;
+        min-width: 18px !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        vertical-align: middle !important;
+        border: 2px solid #94a3b8 !important;
+        border-radius: 4px !important;
+        background-color: #ffffff !important;
+        background-image: none !important;
+        cursor: pointer;
+    }
+    .employee-dashboard .employee-list-table input.form-check-input[type="checkbox"]:checked,
+    .employee-dashboard .employee-list-table input.form-check-input[type="checkbox"]:indeterminate {
+        background-color: #2563eb !important;
+        border-color: #2563eb !important;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='white' stroke-linecap='round' stroke-linejoin='round' stroke-width='2.5' d='m3 8 3 3 7-7'/%3E%3C/svg%3E") !important;
+        background-position: center !important;
+        background-size: 14px 14px !important;
+        background-repeat: no-repeat !important;
+    }
+    .employee-dashboard .employee-list-table input.form-check-input[type="checkbox"]:indeterminate {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath stroke='white' stroke-linecap='round' stroke-width='2.5' d='M4 8h8'/%3E%3C/svg%3E") !important;
+    }
+    .employee-dashboard .employee-list-table input.form-check-input[type="checkbox"]:focus-visible,
+    .employee-dashboard .employee-list-table .btn-action-dots:focus-visible {
+        outline: 2px solid #2563eb !important;
+        outline-offset: 3px !important;
+    }
+    .employee-dashboard .employee-list-table input.form-check-input[type="checkbox"]:disabled {
+        opacity: 0.5 !important;
+        cursor: not-allowed !important;
+    }
+    .employee-dashboard .employee-list-table .btn-action-dots > i,
+    .employee-dashboard .employee-list-table .btn-action-dots > i::before {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .employee-dashboard .stat-card.total .stat-icon > i,
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .employee-dashboard .stat-card.total .stat-icon > i::before {
+        color: #2563eb !important;
+        -webkit-text-fill-color: #2563eb !important;
+    }
+</style>
+
+<style>
+    :is([data-pms-theme="dark"], [data-bs-theme="dark"], [data-theme="dark"], .dark, .dark-mode) .employee-dashboard .stat-card .stat-icon > i,
+    :is([data-pms-theme="dark"], [data-bs-theme="dark"], [data-theme="dark"], .dark, .dark-mode) .employee-dashboard .stat-card .stat-icon > i::before {
+        background: transparent !important;
+        background-image: none !important;
+        color: #38bdf8 !important;
+        -webkit-text-fill-color: #38bdf8 !important;
+        box-shadow: none !important;
+    }
+</style>
+
+<style>
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(.dark-mode):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .employee-dashboard .employee-list-table .btn-action-dots {
+        background: #f1f5f9 !important;
+        border: 1px solid #cbd5e1 !important;
+        color: #334155 !important;
+        box-shadow: 0 2px 4px rgba(15, 23, 42, 0.06) !important;
+    }
+
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(.dark-mode):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .employee-dashboard .employee-list-table .btn-action-dots:hover {
+        background: #e2e8f0 !important;
+        border-color: #94a3b8 !important;
+    }
+
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(.dark-mode):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .employee-dashboard .employee-list-table .btn-action-dots > i,
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(.dark-mode):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .employee-dashboard .employee-list-table .btn-action-dots > i::before {
+        color: #334155 !important;
+        -webkit-text-fill-color: #334155 !important;
+    }
+    /* Mobile employee cards override desktop column sizing and utility widths. */
+    @media (max-width: 768px) {
+        .employee-dashboard { padding: 12px !important; }
+        .employee-dashboard .table-card > .table-responsive { padding: 12px; }
+        .employee-dashboard #employeeTable,
+        .employee-dashboard #employeeTable tbody {
+            display: block !important;
+            width: 100% !important;
+            min-width: 0 !important;
+            max-width: 100% !important;
+        }
+        .employee-dashboard #employeeTable thead { display: none !important; }
+        .employee-dashboard #employeeTable tbody tr {
+            display: grid !important;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 0 12px;
+            width: 100% !important;
+            height: auto !important;
+            margin: 0 0 12px !important;
+            padding: 12px !important;
+            border-radius: 14px;
+        }
+        .employee-dashboard #employeeTable tbody tr > td {
+            display: block !important;
+            grid-column: 1 / -1;
+            width: auto !important;
+            min-width: 0 !important;
+            max-width: 100% !important;
+            height: auto !important;
+            padding: 9px 0 !important;
+            text-align: left !important;
+            white-space: normal !important;
+            overflow-wrap: anywhere;
+            border: 0 !important;
+        }
+        .employee-dashboard #employeeTable tbody tr > td::before {
+            position: static !important;
+            display: block;
+            width: auto !important;
+            margin-bottom: 4px;
+            font-size: 0.7rem;
+            color: var(--emp-designation-color, #64748b) !important;
+            -webkit-text-fill-color: var(--emp-designation-color, #64748b) !important;
+        }
+        .employee-dashboard #employeeTable tbody tr > td:first-child:not([colspan]) {
+            grid-column: 1;
+            grid-row: 1;
+            padding: 0 !important;
+        }
+        .employee-dashboard #employeeTable tbody tr > td:last-child:not([colspan]) {
+            grid-column: 2;
+            grid-row: 1;
+            padding: 0 !important;
+            text-align: right !important;
+        }
+        .employee-dashboard #employeeTable td:first-child::before,
+        .employee-dashboard #employeeTable td:last-child::before { display: none; }
+        .employee-dashboard #employeeTable .employee-info { width: 100%; min-width: 0; }
+        .employee-dashboard #employeeTable .profile-image,
+        .employee-dashboard #employeeTable .profile-placeholder { flex-shrink: 0; }
+        .employee-dashboard #employeeTable .employee-name,
+        .employee-dashboard #employeeTable .employee-designation,
+        .employee-dashboard #employeeTable .email-link {
+            white-space: normal !important;
+            overflow-wrap: anywhere;
+        }
+        .employee-dashboard #employeeTable .profile-initials {
+            color: #2F6BFF !important;
+            -webkit-text-fill-color: #2F6BFF !important;
+        }
+    }
+
+    /* Employee ID and status contrast must override shared table text colors. */
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body.dark, body.dark-mode) .employee-dashboard #employeeTable .employee-id-badge {
+        background: #141b3d !important;
+        border-color: #415686 !important;
+        color: #e2edff !important;
+        -webkit-text-fill-color: #e2edff !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body.dark, body.dark-mode) .employee-dashboard #employeeTable .status-badge {
+        color: #eef1fb !important;
+        -webkit-text-fill-color: #eef1fb !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body.dark, body.dark-mode) .employee-dashboard #employeeTable .status-badge .status-text {
+        color: #eef1fb !important;
+        -webkit-text-fill-color: #eef1fb !important;
+        background: transparent !important;
+        border: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body.dark, body.dark-mode) .employee-dashboard #employeeTable .status-active .status-text {
+        color: #a7f3d0 !important;
+        -webkit-text-fill-color: #a7f3d0 !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body.dark, body.dark-mode) .employee-dashboard #employeeTable .status-inactive .status-text {
+        color: #fecdd3 !important;
+        -webkit-text-fill-color: #fecdd3 !important;
     }
 </style>
 
@@ -4530,7 +4804,8 @@ $(document).ready(function () {
             $(btn).prop('disabled', selectedCount === 0);
         });
 
-        $('#btn-bulk-delete').prop('disabled', selectedCount === 0);
+        // Stays tappable with no selection so the button explains what to do (a disabled button gave no feedback on mobile).
+        $('#btn-bulk-delete').toggleClass('is-awaiting-selection', selectedCount === 0).attr('aria-disabled', selectedCount === 0 ? 'true' : 'false');
         $('tbody tr').removeClass('selected');
         $('.employee-checkbox:checked:not(:disabled)').closest('tr').addClass('selected');
     }
@@ -4627,17 +4902,14 @@ $(document).ready(function () {
             return;
         }
         const data = getDataForExport(false);
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF('landscape');
-        doc.text('Employee List', 14, 15);
-        doc.autoTable({
-            head: [data[0]],
-            body: data.slice(1),
-            startY: 30,
-            theme: 'grid',
-            headStyles: { fillColor: [124, 58, 237] }
-        });
-        doc.save(`employees_${new Date().toISOString().split('T')[0]}.pdf`);
+        const pdfDocument = {
+            pageSize: 'A4', pageOrientation: 'landscape',
+            content: [{ text: 'Employee List', style: 'title' }, {
+                table: { headerRows: 1, body: [data[0].map(text => ({ text, style: 'tableHeader' })), ...data.slice(1)] }
+            }]
+        };
+        window.PmsPdfExports.styleDocument(pdfDocument);
+        window.pdfMake.createPdf(pdfDocument).download(`employees_${new Date().toISOString().split('T')[0]}.pdf`);
     });
 
     // Print
@@ -4671,7 +4943,7 @@ $(document).ready(function () {
         let skippedCount = selectedEmployees.length - selectedIds.length;
 
         if (!selectedEmployees.length) {
-            alert('Please select at least one employee.');
+            alert('Select the inactive employees to archive first: tick their checkboxes (or tap their rows), then press Archive Inactive.');
             return;
         }
 
@@ -4700,49 +4972,97 @@ $(document).ready(function () {
         });
     });
 
+    // Keep Bootstrap's modal above its backdrop, outside transformed page cards.
+    document.body.appendChild(document.getElementById('inviteModal'));
+    function inviteNotice(message, success = false) {
+        $('#inviteEmailAlert').attr('class', 'alert mx-3 mb-3 ' + (success ? 'alert-success' : 'alert-danger'))
+            .attr('role', 'status').text(message).show();
+    }
+    $('#invite-link-tab, #invite-email-tab').on('shown.bs.tab', function() {
+        $('#sendInviteBtn').toggle(this.id === 'invite-email-tab');
+        $('#inviteEmailAlert').hide();
+    });
+
     // Invite by email
     $('#inviteEmailForm').on('submit', function(e) {
         e.preventDefault();
         const email = $('#inviteEmail').val().trim();
         const message = $('#inviteMessage').val().trim();
+        if (!this.reportValidity() || $('#sendInviteBtn').prop('disabled')) return;
+        $('#inviteEmailAlert').hide();
+        $('#sendInviteBtn').prop('disabled', true);
+        $('#sendInviteSpinner').removeClass('d-none');
 
         $.ajax({
             url: '{{ route("employees.sendInvite") }}',
             type: 'POST',
+            timeout: 30000,
             data: {
                 _token: '{{ csrf_token() }}',
                 email: email,
                 message: message
             },
             success: function(res) {
-                alert('Invitation sent successfully!');
-                $('#inviteModal').modal('hide');
+                inviteNotice(res.message, true);
                 $('#inviteEmailForm')[0].reset();
             },
             error: function(xhr) {
-                alert(xhr?.responseJSON?.message || 'Failed to send invite.');
+                const errors = xhr.responseJSON?.errors;
+                inviteNotice(errors ? Object.values(errors).flat().join(' ') : (xhr.responseJSON?.message || 'Could not send the invitation. Check your connection and try again.'));
+            },
+            complete: function() {
+                $('#sendInviteBtn').prop('disabled', false);
+                $('#sendInviteSpinner').addClass('d-none');
             }
         });
     });
 
     // Generate invite link
     $('#createLinkBtn').on('click', function() {
+        const input = document.getElementById('inviteLinkEmail');
+        if (!input.reportValidity() || $(this).prop('disabled')) return;
         $('#linkContainer').hide();
         $('#inviteLink').val('');
-        alert('Public registration is disabled. Please create employee accounts from the employee management form.');
+        $('#inviteEmailAlert').hide();
+        $(this).prop('disabled', true);
+        $.ajax({
+            url: '{{ route("employees.inviteLink") }}',
+            type: 'POST',
+            timeout: 30000,
+            data: { _token: '{{ csrf_token() }}', email: input.value.trim() },
+            success: function(res) {
+                $('#inviteLink').val(res.url);
+                $('#linkContainer').show();
+                inviteNotice(res.message, true);
+            },
+            error: function(xhr) {
+                const errors = xhr.responseJSON?.errors;
+                inviteNotice(errors ? Object.values(errors).flat().join(' ') : (xhr.responseJSON?.message || 'Could not create the invitation link. Please try again.'));
+            },
+            complete: function() { $('#createLinkBtn').prop('disabled', false); }
+        });
     });
 
     // Copy link
-    $('#copyLinkBtn').on('click', function() {
-        $('#inviteLink').select();
-        document.execCommand('copy');
-        alert('Link copied to clipboard!');
+    $('#copyLinkBtn').on('click', async function() {
+        const link = $('#inviteLink').val();
+        if (!link) return;
+        try {
+            if (navigator.clipboard && window.isSecureContext) await navigator.clipboard.writeText(link);
+            else {
+                $('#inviteLink').select();
+                if (!document.execCommand('copy')) throw new Error('Copy failed');
+            }
+            inviteNotice('Invitation link copied.', true);
+        } catch (error) {
+            inviteNotice('Select and copy the invitation link manually.');
+        }
     });
 
     // Share link
     $('#shareLinkBtn').on('click', function() {
         const link = $('#inviteLink').val();
-        window.location.href = `mailto:?subject=Join Xinksoft Technologies&body=${encodeURIComponent(link)}`;
+        window.location.href = `mailto:?subject=${encodeURIComponent(@json('Join ' . (session('current_company_name') ?: config('app.name'))))}&body=${encodeURIComponent(link)}`;
     });
 
     // Blocked delete
@@ -4762,14 +5082,12 @@ $(document).ready(function () {
     updateSelectAllCheckbox();
 
     // Mobile labels
-    if ($(window).width() < 768) {
-        $('#employeeTable thead th').each(function(index) {
+    $('#employeeTable thead th').each(function(index) {
             const headerText = $(this).text().trim();
             $('#employeeTable tbody tr').each(function() {
-                $(this).find('td').eq(index).attr('data-label', headerText);
+                $(this).find('td:not([colspan])').eq(index).attr('data-label', headerText);
             });
-        });
-    }
+    });
 });
 </script>
 
@@ -4815,8 +5133,6 @@ function openResetPasswordModal(id, name) {
 </script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 @endpush
 
 @endsection

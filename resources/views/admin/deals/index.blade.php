@@ -236,6 +236,54 @@ body[data-pms-theme="dark"] .top-bar .form-select,
     box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
 
+#dealsKanbanBoard {
+    min-width: 0;
+    max-width: 100%;
+    align-items: stretch;
+}
+#dealsKanbanBoard .kanban-col {
+    min-width: 0;
+    background: var(--bx-surface-2, #f8fafc) !important;
+    border-color: var(--bx-border, #e2e8f0) !important;
+    color: var(--bx-ink, #0f172a) !important;
+    overflow: hidden;
+}
+#dealsKanbanBoard .kanban-col-header {
+    background: var(--bx-surface, #ffffff) !important;
+    gap: 12px;
+    flex-shrink: 0;
+    min-height: 72px;
+}
+#dealsKanbanBoard .kanban-col-header > div {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+#dealsKanbanBoard .kanban-col-header h6 {
+    color: var(--bx-ink, #0f172a) !important;
+    -webkit-text-fill-color: var(--bx-ink, #0f172a) !important;
+}
+#dealsKanbanBoard .kanban-col-header small,
+#dealsKanbanBoard .kanban-col-body > .text-muted {
+    color: var(--bx-ink-muted, #64748b) !important;
+    -webkit-text-fill-color: var(--bx-ink-muted, #64748b) !important;
+}
+#dealsKanbanBoard .kanban-col-header > .badge {
+    flex-shrink: 0;
+    background: var(--bx-surface-2, #f1f5f9) !important;
+    border-color: var(--bx-border, #e2e8f0) !important;
+    color: var(--bx-ink, #0f172a) !important;
+    -webkit-text-fill-color: var(--bx-ink, #0f172a) !important;
+}
+#dealsKanbanBoard .kanban-card {
+    background: var(--bx-surface, #ffffff) !important;
+    border-color: var(--bx-border, #cbd5e1) !important;
+    overflow-wrap: anywhere;
+}
+#dealsKanbanBoard .kanban-card h6 {
+    min-width: 0;
+    margin-right: 8px;
+}
+
 /* Premium Table UI/UX Styles */
 .premium-table-card {
     background: #ffffff;
@@ -597,7 +645,7 @@ html[data-pms-theme="dark"] .premium-table-footer {
     {{-- KANBAN OR TABLE VIEW --}}
     @if(request('view') === 'kanban')
         {{-- KANBAN BOARD VIEW --}}
-        <div class="kanban-container">
+        <div class="kanban-container" id="dealsKanbanBoard">
             @foreach($stages as $stg)
                 <div class="kanban-col">
                     <div class="kanban-col-header" style="border-bottom-color: {{ $stg->color ?? '#3b82f6' }};">

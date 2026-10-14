@@ -138,7 +138,7 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
         'package'        => 'bx bx-package',
         'layers'         => 'bx bx-layer',
         'toggle-right'   => 'bx bx-toggle-right',
-        'percent'        => 'bx bx-percent',
+        'percent'        => 'bx bx-calculator',
     ];
 
     if (isset($bareMap[$icon])) {
@@ -301,7 +301,7 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
         height: 1.15rem !important;
         font-size: 1.15rem !important;
         line-height: 1 !important;
-        background-color: currentColor !important;
+        background-color: transparent !important; /* glyph font icon (theme disables the iconify mask) */
         vertical-align: middle !important;
         flex-shrink: 0 !important;
     }
@@ -333,7 +333,7 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
         color: #4f46e5 !important;
         fill: #4f46e5 !important;
         -webkit-text-fill-color: #4f46e5 !important;
-        background-color: currentColor !important;
+        background-color: transparent !important; /* glyph font icon (theme disables the iconify mask) */
     }
     .btn-icon-action.btn-label-primary:hover {
         background-color: #4f46e5 !important;
@@ -345,7 +345,7 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
         color: #ffffff !important;
         fill: #ffffff !important;
         -webkit-text-fill-color: #ffffff !important;
-        background-color: currentColor !important;
+        background-color: transparent !important; /* glyph font icon (theme disables the iconify mask) */
     }
 
     /* Danger Delete Action Button */
@@ -360,7 +360,7 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
         color: #dc2626 !important;
         fill: #dc2626 !important;
         -webkit-text-fill-color: #dc2626 !important;
-        background-color: currentColor !important;
+        background-color: transparent !important; /* glyph font icon (theme disables the iconify mask) */
     }
     .btn-icon-action.btn-label-danger:hover {
         background-color: #dc2626 !important;
@@ -372,7 +372,7 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
         color: #ffffff !important;
         fill: #ffffff !important;
         -webkit-text-fill-color: #ffffff !important;
-        background-color: currentColor !important;
+        background-color: transparent !important; /* glyph font icon (theme disables the iconify mask) */
     }
 
     /* Secondary Disabled/Lock Action Button */
@@ -388,7 +388,7 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
         color: #64748b !important;
         fill: #64748b !important;
         -webkit-text-fill-color: #64748b !important;
-        background-color: currentColor !important;
+        background-color: transparent !important; /* glyph font icon (theme disables the iconify mask) */
     }
 
     /* Primary Header Button Icon */
@@ -399,13 +399,13 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
         color: #ffffff !important;
         fill: #ffffff !important;
         -webkit-text-fill-color: #ffffff !important;
-        background-color: currentColor !important;
+        background-color: transparent !important; /* glyph font icon (theme disables the iconify mask) */
     }
 
     /* Stat Cards Icon Wrappers & Sub-Icons */
     .mm-stat-card .mm-icon-wrapper i,
     .mm-stat-card .mm-icon-wrapper [class*="bx"] {
-        background-color: currentColor !important;
+        background-color: transparent !important; /* glyph font icon (theme disables the iconify mask) */
         -webkit-text-fill-color: initial !important;
     }
 
@@ -417,7 +417,7 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
         color: #2F6BFF !important;
         fill: #2F6BFF !important;
         -webkit-text-fill-color: #2F6BFF !important;
-        background-color: currentColor !important;
+        background-color: transparent !important; /* glyph font icon (theme disables the iconify mask) */
     }
 
     .col-sm-6:nth-child(2) .mm-stat-card .mm-icon-wrapper {
@@ -428,7 +428,7 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
         color: #10b981 !important;
         fill: #10b981 !important;
         -webkit-text-fill-color: #10b981 !important;
-        background-color: currentColor !important;
+        background-color: transparent !important; /* glyph font icon (theme disables the iconify mask) */
     }
 
     .col-sm-6:nth-child(3) .mm-stat-card .mm-icon-wrapper {
@@ -439,7 +439,7 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
         color: #03c3ec !important;
         fill: #03c3ec !important;
         -webkit-text-fill-color: #03c3ec !important;
-        background-color: currentColor !important;
+        background-color: transparent !important; /* glyph font icon (theme disables the iconify mask) */
     }
 
     .col-sm-6:nth-child(4) .mm-stat-card .mm-icon-wrapper {
@@ -450,7 +450,7 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
         color: #d97706 !important;
         fill: #d97706 !important;
         -webkit-text-fill-color: #d97706 !important;
-        background-color: currentColor !important;
+        background-color: transparent !important; /* glyph font icon (theme disables the iconify mask) */
     }
 
     /* Module Details Table Icons */
@@ -489,7 +489,7 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
 
     .mm-table td i.bx,
     .mm-table td [class*="bx"] {
-        background-color: currentColor !important;
+        background-color: transparent !important; /* glyph font icon (theme disables the iconify mask) */
         display: inline-block !important;
     }
 
@@ -499,7 +499,7 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
         color: #4f46e5 !important;
         fill: #4f46e5 !important;
         -webkit-text-fill-color: #4f46e5 !important;
-        background-color: currentColor !important;
+        background-color: transparent !important; /* glyph font icon (theme disables the iconify mask) */
     }
 
     .mm-table td .btn-icon-action.btn-label-danger i,
@@ -508,7 +508,7 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
         color: #dc2626 !important;
         fill: #dc2626 !important;
         -webkit-text-fill-color: #dc2626 !important;
-        background-color: currentColor !important;
+        background-color: transparent !important; /* glyph font icon (theme disables the iconify mask) */
     }
 
     .mm-table td .btn-icon-action.btn-label-secondary i,
@@ -517,10 +517,118 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
         color: #64748b !important;
         fill: #64748b !important;
         -webkit-text-fill-color: #64748b !important;
-        background-color: currentColor !important;
+        background-color: transparent !important; /* glyph font icon (theme disables the iconify mask) */
+    }
+
+    /* Keep action glyphs independent of icon fonts and shared pill styles. */
+    #moduleManagementPage .mm-table .btn-icon-action {
+        width: 38px !important;
+        min-width: 38px !important;
+        height: 38px !important;
+        border-radius: 10px !important;
+        flex-shrink: 0;
+    }
+
+    #moduleManagementPage .mm-table .btn-icon-action svg {
+        width: 19px !important;
+        height: 19px !important;
+        background: transparent !important;
+        fill: none !important;
+        color: inherit !important;
+        -webkit-text-fill-color: inherit !important;
+        stroke: currentColor !important;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        flex-shrink: 0;
+    }
+
+    #moduleManagementPage .mm-table .btn-icon-action svg * {
+        color: inherit !important;
+        background: transparent !important;
+        fill: none !important;
+        stroke: inherit !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body.dark, body.dark-mode)
+        #moduleManagementPage .mm-table .btn-icon-action.btn-label-primary {
+        background: #252d55 !important;
+        color: #c7d2fe !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body.dark, body.dark-mode)
+        #moduleManagementPage .mm-table .btn-icon-action.btn-label-danger {
+        background: #452336 !important;
+        color: #fca5a5 !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body.dark, body.dark-mode)
+        #moduleManagementPage .mm-table .btn-icon-action.btn-label-secondary {
+        background: #252d42 !important;
+        color: #cbd5e1 !important;
+    }
+
+    #moduleManagementPage .mm-table .btn-icon-action:focus-visible {
+        outline: 2px solid currentColor;
+        outline-offset: 3px;
+    }
+
+    #moduleManagementPage .mm-table .btn-icon-action:disabled {
+        cursor: not-allowed !important;
+        transform: none !important;
     }
 
     /* Toast Notification Animation */
+    #moduleManagementPage .mm-toast-alert {
+        --mm-notice-bg: #f0fdf4;
+        --mm-notice-text: #14532d;
+        --mm-notice-border: #15803d;
+        background: var(--mm-notice-bg) !important;
+        border-color: var(--mm-notice-border) !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"]) #moduleManagementPage .mm-toast-alert {
+        --mm-notice-bg: #052e23;
+        --mm-notice-text: #d1fae5;
+        --mm-notice-border: #34d399;
+    }
+
+    #moduleManagementPage .mm-toast-alert .text-success,
+    #moduleManagementPage .mm-toast-alert .text-dark {
+        color: var(--mm-notice-text) !important;
+        -webkit-text-fill-color: var(--mm-notice-text) !important;
+    }
+
+    #moduleManagementPage .mm-toast-alert .rounded-circle {
+        background: #15803d !important;
+        flex-shrink: 0;
+    }
+
+    #moduleManagementPage .mm-toast-alert .bx,
+    #moduleManagementPage .mm-toast-alert .bx::before {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        background: transparent !important;
+        font-family: boxicons !important;
+        font-weight: normal !important;
+    }
+
+    #moduleManagementPage .mm-toast-alert .btn-close {
+        background: none !important;
+        color: var(--mm-notice-text) !important;
+        -webkit-text-fill-color: var(--mm-notice-text) !important;
+        opacity: 1;
+        flex-shrink: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    #moduleManagementPage .mm-toast-alert .btn-close::before {
+        content: '\00d7';
+        font: 24px/1 Arial, sans-serif;
+    }
+
     .mm-toast-alert {
         border-left: 4px solid var(--mm-emerald);
         border-radius: 8px;
@@ -571,7 +679,7 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
         color: #818cf8 !important;
         fill: #818cf8 !important;
         -webkit-text-fill-color: #818cf8 !important;
-        background-color: currentColor !important;
+        background-color: transparent !important; /* glyph font icon (theme disables the iconify mask) */
     }
     [data-theme="dark"] .btn-icon-action.btn-label-primary:hover,
     body.dark-mode .btn-icon-action.btn-label-primary:hover {
@@ -585,7 +693,7 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
         color: #ffffff !important;
         fill: #ffffff !important;
         -webkit-text-fill-color: #ffffff !important;
-        background-color: currentColor !important;
+        background-color: transparent !important; /* glyph font icon (theme disables the iconify mask) */
     }
 
     [data-theme="dark"] .btn-icon-action.btn-label-danger,
@@ -603,7 +711,7 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
         color: #f87171 !important;
         fill: #f87171 !important;
         -webkit-text-fill-color: #f87171 !important;
-        background-color: currentColor !important;
+        background-color: transparent !important; /* glyph font icon (theme disables the iconify mask) */
     }
     [data-theme="dark"] .btn-icon-action.btn-label-danger:hover,
     body.dark-mode .btn-icon-action.btn-label-danger:hover {
@@ -617,7 +725,7 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
         color: #ffffff !important;
         fill: #ffffff !important;
         -webkit-text-fill-color: #ffffff !important;
-        background-color: currentColor !important;
+        background-color: transparent !important; /* glyph font icon (theme disables the iconify mask) */
     }
 
     [data-theme="dark"] .btn-icon-action.btn-label-secondary,
@@ -635,11 +743,11 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
         color: #94a3b8 !important;
         fill: #94a3b8 !important;
         -webkit-text-fill-color: #94a3b8 !important;
-        background-color: currentColor !important;
+        background-color: transparent !important; /* glyph font icon (theme disables the iconify mask) */
     }
 </style>
 
-<div class="container-xxl flex-grow-1 container-p-y">
+<div class="container-xxl flex-grow-1 container-p-y" id="moduleManagementPage">
 
     <!-- Page Header & Action -->
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3 mm-animate-fade">
@@ -652,13 +760,9 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
                 </ol>
             </nav>
             <h3 class="fw-bold mb-1 text-dark" style="letter-spacing: -0.02em;">Module Management</h3>
-            <p class="text-muted mb-0 small">Configure application modules, navigation routes, hierarchy, and access control.</p>
+            <p class="text-muted mb-0 small">Configure your company's modules, navigation and hierarchy. Manage role access from Roles & Permissions.</p>
         </div>
 
-        <button type="button" class="btn btn-mm-primary d-inline-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#createModuleModal">
-            <i class="bx bx-plus fs-5"></i>
-            <span>Add New Module</span>
-        </button>
     </div>
 
     <!-- Toast Success Notification -->
@@ -693,6 +797,7 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
     @endif
 
     <!-- Summary Statistic Cards -->
+    @include('admin.settings.partials.access-navigation')
     <div class="row g-3 mb-4">
         <!-- Total Modules -->
         <div class="col-sm-6 col-lg-3 mm-animate-fade mm-stagger-1">
@@ -702,7 +807,7 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
                         <span class="text-muted fw-semibold d-block fs-tiny text-uppercase tracking-wider">Total Modules</span>
                         <h3 class="fw-extrabold text-dark mb-0 mt-1">{{ $modules->count() }}</h3>
                         <small class="text-success d-inline-flex align-items-center gap-1 mt-1 fs-tiny">
-                            <i class="bx bx-check-circle"></i> System registered
+                            <i class="bx bx-check-circle"></i> Provided by super admin
                         </small>
                     </div>
                     <div class="mm-icon-wrapper rounded-3 p-3 d-flex align-items-center justify-content-center" style="background: rgba(47, 107, 255, 0.1); color: var(--mm-emerald);">
@@ -754,7 +859,7 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
                 <div class="card-body p-3 d-flex align-items-center justify-content-between">
                     <div>
                         <span class="text-muted fw-semibold d-block fs-tiny text-uppercase tracking-wider">Parent Modules</span>
-                        <h3 class="fw-extrabold text-warning mb-0 mt-1">{{ $parentModules->count() }}</h3>
+                        <h3 class="fw-extrabold text-warning mb-0 mt-1">{{ $parentModuleCount }}</h3>
                         <small class="text-muted d-inline-flex align-items-center gap-1 mt-1 fs-tiny">
                             Nav categories
                         </small>
@@ -777,7 +882,7 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
                 </div>
                 <div>
                     <h5 class="mb-0 fw-bold text-dark">Application Modules</h5>
-                    <small class="text-muted">Manage all system feature modules and routes</small>
+                    <small class="text-muted">Sidebar modules and submodules provided for your company</small>
                 </div>
             </div>
 
@@ -808,16 +913,22 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
                 </thead>
                 <tbody>
                     @forelse($modules as $module)
-                        <tr class="module-row">
+                        <tr class="module-row" data-category="{{ $module->category }}">
                             <!-- MODULE DETAILS -->
                             <td>
-                                <div class="d-flex align-items-center gap-3">
+                                <div class="d-flex align-items-center gap-3" style="padding-left: {{ min(4, $module->sidebar_depth) * 20 }}px;">
                                     <div class="mm-module-icon-box rounded-3 d-flex align-items-center justify-content-center">
                                         <i class="{{ resolveModuleIcon($module->icon, $module->slug) }} fs-4"></i>
                                     </div>
                                     <div>
                                         <div class="fw-bold text-dark fs-6 d-flex align-items-center gap-2">
-                                            <span>{{ $module->name }}</span>
+                                            @if($module->sidebar_depth)
+                                                <i class="bx bx-subdirectory-right text-muted" aria-hidden="true"></i>
+                                            @endif
+                                            <span>{{ $module->sidebar_name }}</span>
+                                            @if($module->parent)
+                                                <span class="badge bg-label-primary fs-tiny">Submodule</span>
+                                            @endif
                                         </div>
                                         <div class="d-flex align-items-center gap-1.5 mt-1">
                                             <span class="badge bg-light text-secondary border font-monospace fs-tiny text-lowercase px-2 py-0.5">{{ $module->slug }}</span>
@@ -826,7 +937,7 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
                                                     <i class="bx bx-shield-alt-2"></i> Core
                                                 </span>
                                             @else
-                                                <span class="badge bg-label-secondary fs-tiny">Custom</span>
+                                                <span class="badge bg-label-secondary fs-tiny">Provided</span>
                                             @endif
                                         </div>
                                     </div>
@@ -857,7 +968,7 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
                             <td>
                                 @if($module->parent)
                                     <span class="badge bg-label-warning fw-semibold d-inline-flex align-items-center gap-1">
-                                        <i class="bx bx-git-repo-forked"></i> {{ $module->parent->name }}
+                                        <i class="bx bx-git-repo-forked"></i> {{ $module->parent->sidebar_name ?? $module->parent->name }}
                                     </span>
                                 @else
                                     <span class="text-muted small d-inline-flex align-items-center gap-1">
@@ -904,15 +1015,15 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
                                     <!-- Edit Button -->
                                     <button type="button" class="btn btn-icon-action btn-label-primary" 
                                         data-bs-toggle="modal" data-bs-target="#editModuleModal{{ $module->id }}" 
-                                        title="Edit module">
-                                        <i class="bx bx-edit-alt"></i>
+                                        title="Edit module" aria-label="Edit {{ $module->name }} module">
+                                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20H4v-8M16 4l4 4M10 18l-4 1 1-4L17 5a2.12 2.12 0 0 1 3 3Z"/></svg>
                                     </button>
 
                                     <!-- Lock Action / Delete Button -->
                                     @if($module->is_core)
                                         <button type="button" class="btn btn-icon-action btn-label-secondary disabled" 
-                                            data-bs-toggle="tooltip" data-bs-placement="top" title="Lock module (System Core)" disabled>
-                                            <i class="bx bx-lock-alt"></i>
+                                            data-bs-toggle="tooltip" data-bs-placement="top" title="Lock module (System Core)" aria-label="System core module cannot be deleted" disabled>
+                                            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/></svg>
                                         </button>
                                     @else
                                         <form method="POST" action="{{ route('admin.modules.destroy', $module) }}" class="d-inline" 
@@ -920,8 +1031,8 @@ function resolveModuleIcon(?string $icon, ?string $slug = null): string {
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-icon-action btn-label-danger" 
-                                                data-bs-toggle="tooltip" data-bs-placement="top" title="Delete module">
-                                                <i class="bx bx-trash"></i>
+                                                data-bs-toggle="tooltip" data-bs-placement="top" title="Delete module" aria-label="Delete {{ $module->name }} module">
+                                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M9 6V3h6v3M5 6l1 14h12l1-14M10 10v6M14 10v6"/></svg>
                                             </button>
                                         </form>
                                     @endif
@@ -1154,13 +1265,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (searchInput && table) {
         // Filter functionality
-        searchInput.addEventListener('keyup', function () {
+        searchInput.addEventListener('input', function () {
             const query = searchInput.value.toLowerCase();
             const rows = table.querySelectorAll('tbody tr.module-row');
 
             rows.forEach(row => {
-                const text = row.innerText.toLowerCase();
+                const text = (row.innerText + ' ' + row.dataset.category).toLowerCase();
                 row.style.display = text.includes(query) ? '' : 'none';
+            });
+            table.querySelectorAll('.module-category').forEach(header => {
+                header.hidden = !Array.from(rows).some(row => row.dataset.category === header.dataset.category && row.style.display !== 'none');
             });
         });
 

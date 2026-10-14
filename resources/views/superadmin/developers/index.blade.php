@@ -1875,7 +1875,7 @@
 
                 <!-- RULE EXPLANATION BANNER -->
                 <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: var(--radius-md); padding: 12px 14px; margin-bottom: 16px; color: #166534; font-size: 12px; display: flex; align-items: center; gap: 10px;">
-                    <i class="bx bx-shield-check" style="font-size: 20px; color: #16a34a; flex-shrink: 0;"></i>
+                    <i class="bx bx-check-shield" style="font-size: 20px; color: #16a34a; flex-shrink: 0;"></i>
                     <span><strong>1 Developer = 1 Account Rule:</strong> If the selected developer already exists, the task will be assigned to their existing account. No new account, password, or login credentials email will be generated.</span>
                 </div>
 
@@ -1988,7 +1988,7 @@
                     </div>
                     <div>
                         <label style="display: block; font-size: 12px; font-weight: 700; color: var(--slate-dark); margin-bottom: 6px;">Deadline *</label>
-                        <input type="date" name="due_date" value="{{ date('Y-m-d', strtotime('+3 days')) }}" required style="width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 13px;">
+                        <input type="date" min="{{ date('Y-m-d') }}" name="due_date" value="{{ date('Y-m-d', strtotime('+3 days')) }}" required style="width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 13px;">
                     </div>
                 </div>
 
@@ -2112,7 +2112,7 @@
                                 <i class="bx bx-show"></i>
                             </button>
                         </div>
-                        <div style="font-size: 11px; color: var(--slate-muted); margin-top: 3px;">If provided, must be 8–128 characters.</div>
+                        <div style="font-size: 11px; color: var(--slate-muted); margin-top: 3px;">8–128 characters with at least one uppercase letter, lowercase letter, number, and special character.</div>
                         <div id="devResetPassword_error" style="display: none; color: #ef4444; font-size: 12px; margin-top: 3px; font-weight: 600;"></div>
                     </div>
                     <button type="submit" class="btn-action-primary" style="width: 100%; padding: 10px; justify-content: center; font-size: 13px;">
@@ -2138,6 +2138,7 @@
 </div>
 
 @push('scripts')
+<script src="{{ asset('admin/assets/js/pms-assignment-dates.js') }}?v={{ @filemtime(public_path('admin/assets/js/pms-assignment-dates.js')) }}" defer></script>
 <script>
     const devData = @json($paginatedDevs->items());
 
@@ -2851,9 +2852,21 @@
         const msgText = `PMS Developer Portal Credentials for ${name}:\nLogin Email: ${email}\nLogin Password: ${pwdText}\nLogin Portal: ${loginUrl}\nActive Tasks: ${activeTasks || 0}`;
         const encodedText = encodeURIComponent(msgText);
 
+        // mailto: needs a desktop mail app; without one the browser only opens a blank tab.
+        // Open a pre-filled web compose window instead (recipient, subject and credentials body).
         document.getElementById('credMailtoBtn').onclick = function() {
-            const subject = encodeURIComponent(`Developer Workspace Credentials - ${name}`);
-            window.location.href = `mailto:${personalEmail || email}?subject=${subject}&body=${encodedText}`;
+            const recipient = (personalEmail || email || '').trim();
+            const composeUrl = 'https://mail.google.com/mail/?view=cm&fs=1'
+                + '&to=' + encodeURIComponent(recipient)
+                + '&su=' + encodeURIComponent(`Developer Workspace Credentials - ${name}`)
+                + '&body=' + encodedText;
+            const composeWindow = window.open(composeUrl, '_blank');
+            if (composeWindow) {
+                composeWindow.opener = null;
+            } else {
+                // Popup blocked: fall back to the system mail app.
+                window.location.href = `mailto:${encodeURIComponent(recipient)}?subject=${encodeURIComponent(`Developer Workspace Credentials - ${name}`)}&body=${encodedText}`;
+            }
         };
 
         document.getElementById('credWhatsappBtn').onclick = function() {
@@ -2886,9 +2899,9 @@
             const errorDiv = document.getElementById('devResetPassword_error');
             if (pwdInput && pwdInput.value) {
                 const val = pwdInput.value;
-                if (val.length < 8) {
+                if (val.length < 8 || !/[A-Z]/.test(val) || !/[a-z]/.test(val) || !/[0-9]/.test(val) || !/[^A-Za-z0-9\s]/.test(val)) {
                     e.preventDefault();
-                    if (errorDiv) { errorDiv.textContent = 'Password must be at least 8 characters long.'; errorDiv.style.display = 'block'; }
+                    if (errorDiv) { errorDiv.textContent = 'Use at least 8 characters with uppercase, lowercase, a number, and a special character.'; errorDiv.style.display = 'block'; }
                     pwdInput.focus();
                     return false;
                 }

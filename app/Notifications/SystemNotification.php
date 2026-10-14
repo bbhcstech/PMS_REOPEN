@@ -22,6 +22,7 @@ class SystemNotification extends Notification
     public function toDatabase($notifiable): array
     {
         return [
+            'company_id' => $notifiable->company_id,
             'type' => $this->data['type'] ?? 'system',
             'title' => $this->data['title'] ?? 'Notification',
             'message' => $this->data['message'] ?? '',

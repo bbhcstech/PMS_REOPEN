@@ -71,7 +71,11 @@ class CompanyController extends Controller
 
         $currentCompanyDb = session('current_company_db');
 
-        return view('superadmin.companies.index', compact('companies', 'currentCompanyDb'));
+        $plans = \App\Models\Central\Plan::standard()->where('is_active', true)->orderBy('sort_order')->orderBy('id')->get();
+
+        $lastActivity = \App\Services\CompanyActivity::forCompanies($companies);
+
+        return view('superadmin.companies.index', compact('companies', 'plans', 'currentCompanyDb', 'lastActivity'));
     }
 
     /**
@@ -80,7 +84,7 @@ class CompanyController extends Controller
     public function metrics(Request $request): View
     {
         try {
-            $companies = Company::on('central')->with(['subscriptions.plan'])->latest()->get();
+            $companies = Company::on('central')->with(['subscriptions.plan', 'activeSubscription.plan'])->latest()->get();
         } catch (\Throwable $e) {
             $companies = collect();
         }
@@ -127,7 +131,16 @@ class CompanyController extends Controller
 
         $currentCompanyDb = session('current_company_db');
 
-        return view('superadmin.companies.metrics', compact('companies', 'totalUsers', 'totalRevenue', 'planCounts', 'currentCompanyDb'));
+        $companyGrowth = app(\App\Services\CompanyGrowth::class)->series($companies);
+        $distributionCounts = app(\App\Services\SubscriptionDistribution::class)->counts($companies);
+
+        try {
+            $revenueOverview = app(\App\Services\RevenueOverview::class)->series($companies);
+        } catch (\Throwable $e) {
+            $revenueOverview = [];
+        }
+
+        return view('superadmin.companies.metrics', compact('companies', 'totalUsers', 'totalRevenue', 'planCounts', 'currentCompanyDb', 'companyGrowth', 'distributionCounts', 'revenueOverview'));
     }
 
     /**
@@ -136,7 +149,7 @@ class CompanyController extends Controller
     public function plans(Request $request): View
     {
         try {
-            $plans = \App\Models\Central\Plan::on('central')->orderBy('monthly_price', 'asc')->orderBy('id')->get();
+            $plans = \App\Models\Central\Plan::on('central')->standard()->orderBy('monthly_price', 'asc')->orderBy('id')->get();
         } catch (\Throwable $e) {
             $plans = collect();
         }
@@ -160,21 +173,21 @@ class CompanyController extends Controller
             }
 
             try {
-                $plans = \App\Models\Central\Plan::on('central')->orderBy('monthly_price', 'asc')->orderBy('id')->get();
+                $plans = \App\Models\Central\Plan::on('central')->standard()->orderBy('monthly_price', 'asc')->orderBy('id')->get();
             } catch (\Throwable $e) {
                 $plans = collect();
             }
         }
 
         try {
-            $companies = Company::on('central')->latest()->get();
+            $companies = Company::on('central')->with('subscriptions.plan')->latest()->get();
         } catch (\Throwable $e) {
             $companies = collect();
         }
 
         if ($companies->isEmpty()) {
             try {
-                $companies = \App\Models\Company::latest()->get();
+                $companies = \App\Models\Company::with('subscriptions.plan')->latest()->get();
             } catch (\Throwable $e) {
                 $companies = collect();
             }
@@ -182,7 +195,9 @@ class CompanyController extends Controller
 
         $currentCompanyDb = session('current_company_db');
 
-        return view('superadmin.plans.index', compact('plans', 'companies', 'currentCompanyDb'));
+        $planMonthlyRevenue = app(\App\Services\PlanMonthlyRevenue::class)->totals($companies);
+        $catalogDistribution = app(\App\Services\SubscriptionDistribution::class)->currentCounts($companies);
+        return view('superadmin.plans.index', compact('plans', 'companies', 'currentCompanyDb', 'planMonthlyRevenue', 'catalogDistribution'));
     }
 
     /**
@@ -213,7 +228,7 @@ class CompanyController extends Controller
         } catch (\Throwable $e) {}
 
         try {
-            $plans = \App\Models\Central\Plan::on('central')->with('modules')->orderBy('sort_order')->orderBy('monthly_price', 'asc')->get();
+            $plans = \App\Models\Central\Plan::on('central')->standard()->with('modules')->orderBy('sort_order')->orderBy('monthly_price', 'asc')->get();
         } catch (\Throwable $e) {
             $plans = collect();
         }
@@ -238,160 +253,14 @@ class CompanyController extends Controller
             }
 
             try {
-                $plans = \App\Models\Central\Plan::on('central')->with('modules')->orderBy('sort_order')->orderBy('monthly_price', 'asc')->get();
+                $plans = \App\Models\Central\Plan::on('central')->standard()->with('modules')->orderBy('sort_order')->orderBy('monthly_price', 'asc')->get();
             } catch (\Throwable $e) {
                 $plans = collect();
             }
         }
 
-        // Comprehensive list of all Admin Panel features and modules
-        $allSystemModules = [
-            // Core Platform
-            ['name' => 'Dashboard', 'slug' => 'dashboard', 'category' => 'CORE PLATFORM', 'icon' => 'bx-grid-alt', 'description' => 'Overview analytics and key operational widgets.'],
-            ['name' => 'Notifications', 'slug' => 'notifications', 'category' => 'CORE PLATFORM', 'icon' => 'bx-bell', 'description' => 'System alerts and messaging feed.'],
-            ['name' => 'Organization Directory', 'slug' => 'organization', 'category' => 'CORE PLATFORM', 'icon' => 'bx-sitemap', 'description' => 'Company structure and hierarchy.'],
-            ['name' => 'My Documents', 'slug' => 'my-documents', 'category' => 'CORE PLATFORM', 'icon' => 'bx-file', 'description' => 'Personal and employee document repository.'],
-            ['name' => 'Community', 'slug' => 'community', 'category' => 'CORE PLATFORM', 'icon' => 'bx-chat', 'description' => 'Company-wide group messaging and announcements channel.'],
-            ['name' => 'Events', 'slug' => 'events', 'category' => 'CORE PLATFORM', 'icon' => 'bx-calendar-event', 'description' => 'Company events, celebrations, and calendar activities.'],
-
-            // HR & People
-            ['name' => 'HR Management', 'slug' => 'hr', 'category' => 'HR & PEOPLE', 'icon' => 'bx-user-check', 'description' => 'Core HR workflows and admin controls.'],
-            ['name' => 'Employees', 'slug' => 'employees', 'category' => 'HR & PEOPLE', 'icon' => 'bx-user', 'description' => 'Employee database, profiles, and records.'],
-            ['name' => 'Departments', 'slug' => 'departments', 'category' => 'HR & PEOPLE', 'icon' => 'bx-building', 'description' => 'Department division management.'],
-            ['name' => 'Designations', 'slug' => 'designations', 'category' => 'HR & PEOPLE', 'icon' => 'bx-badge-check', 'description' => 'Role titles and designation matrix.'],
-            ['name' => 'Attendance', 'slug' => 'attendance', 'category' => 'HR & PEOPLE', 'icon' => 'bx-time', 'description' => 'Clock in/out tracking, logs, and geolocation.'],
-            ['name' => 'Leave Management', 'slug' => 'leave-management', 'category' => 'HR & PEOPLE', 'icon' => 'bx-calendar-event', 'description' => 'Leave requests, approvals, and balances.'],
-            ['name' => 'Holidays', 'slug' => 'holidays', 'category' => 'HR & PEOPLE', 'icon' => 'bx-gift', 'description' => 'Company and national holiday calendars.'],
-            ['name' => 'Recognition & Awards', 'slug' => 'recognition', 'category' => 'HR & PEOPLE', 'icon' => 'bx-award', 'description' => 'Employee appreciations and rewards.'],
-            ['name' => 'Recruitment', 'slug' => 'recruitment', 'category' => 'HR & PEOPLE', 'icon' => 'bx-user-plus', 'description' => 'Job postings, candidates, and recruitment pipeline.'],
-            ['name' => 'Appraisal & Performance', 'slug' => 'appraisal', 'category' => 'HR & PEOPLE', 'icon' => 'bx-trending-up', 'description' => 'Employee performance appraisals and reviews.'],
-
-            // Work Management
-            ['name' => 'Work', 'slug' => 'work', 'category' => 'WORK MANAGEMENT', 'icon' => 'bx-briefcase', 'description' => 'Work suite parent container.'],
-            ['name' => 'Projects', 'slug' => 'projects', 'category' => 'WORK MANAGEMENT', 'icon' => 'bx-folder-open', 'description' => 'Project tracking, milestones, and files.'],
-            ['name' => 'Tasks', 'slug' => 'tasks', 'category' => 'WORK MANAGEMENT', 'icon' => 'bx-task', 'description' => 'Task assignments, Kanban, and subtasks.'],
-            ['name' => 'Timesheets', 'slug' => 'timesheets', 'category' => 'WORK MANAGEMENT', 'icon' => 'bx-time-five', 'description' => 'Daily and weekly work timelogs.'],
-            ['name' => 'Teams', 'slug' => 'teams', 'category' => 'WORK MANAGEMENT', 'icon' => 'bx-group', 'description' => 'Cross-functional team assignments.'],
-            ['name' => 'Collaborating Companies', 'slug' => 'collaborating-companies', 'category' => 'WORK MANAGEMENT', 'icon' => 'bx-buildings', 'description' => 'External vendor and partner company directory.'],
-            ['name' => 'Clients', 'slug' => 'clients', 'category' => 'WORK MANAGEMENT', 'icon' => 'bx-user-voice', 'description' => 'Client records and account directory.'],
-            ['name' => 'Contracts & Templates', 'slug' => 'contracts', 'category' => 'WORK MANAGEMENT', 'icon' => 'bx-file-blank', 'description' => 'Contract creation, templates, and digital signatures.'],
-
-            // CRM
-            ['name' => 'Leads & Contacts', 'slug' => 'leads-contacts', 'category' => 'CRM', 'icon' => 'bx-book-content', 'description' => 'Client leads and contact books.'],
-            ['name' => 'CRM Deals', 'slug' => 'crm-deals', 'category' => 'CRM', 'icon' => 'bx-dollar-circle', 'description' => 'Sales pipelines and deal stages.'],
-
-            // Finance
-            ['name' => 'Expenses', 'slug' => 'expenses', 'category' => 'FINANCE & PAYROLL', 'icon' => 'bx-receipt', 'description' => 'Expense claims and reimbursement tracking.'],
-            ['name' => 'Billing & Invoices', 'slug' => 'billing', 'category' => 'FINANCE & PAYROLL', 'icon' => 'bx-credit-card', 'description' => 'Invoices and payment receipts.'],
-
-            // Support & Complaints
-            ['name' => 'Tickets', 'slug' => 'tickets', 'category' => 'SUPPORT & COMPLAINTS', 'icon' => 'bx-support', 'description' => 'Helpdesk tickets and issue resolution.'],
-            ['name' => 'Platform Support & Complaints', 'slug' => 'company-complaints', 'category' => 'SUPPORT & COMPLAINTS', 'icon' => 'bx-message-square-error', 'description' => 'Tenant feedback, issues, and platform support ticket escalations.'],
-
-            // Reporting & Analytics
-            ['name' => 'Standard Reports', 'slug' => 'reports', 'category' => 'REPORTING & ANALYTICS', 'icon' => 'bx-bar-chart-alt-2', 'description' => 'Core attendance and leave reports.'],
-            ['name' => 'Analytics Dashboard', 'slug' => 'analytics', 'category' => 'REPORTING & ANALYTICS', 'icon' => 'bx-line-chart', 'description' => 'Real-time performance analytics.'],
-            ['name' => 'Advanced Reports', 'slug' => 'advanced-reports', 'category' => 'REPORTING & ANALYTICS', 'icon' => 'bx-pie-chart-alt-2', 'description' => 'Custom exports and intelligence summaries.'],
-
-            // Administration & Security
-            ['name' => 'User Management', 'slug' => 'user-management', 'category' => 'ADMINISTRATION & SECURITY', 'icon' => 'bx-user-voice', 'description' => 'User provisioning and account status.'],
-            ['name' => 'Role Management', 'slug' => 'role-management', 'category' => 'ADMINISTRATION & SECURITY', 'icon' => 'bx-shield-quarter', 'description' => 'RBAC definitions and access policies.'],
-            ['name' => 'Module Management', 'slug' => 'module-management', 'category' => 'ADMINISTRATION & SECURITY', 'icon' => 'bx-cube', 'description' => 'Module toggles and system settings.'],
-            ['name' => 'Activity Logs', 'slug' => 'activity-logs', 'category' => 'ADMINISTRATION & SECURITY', 'icon' => 'bx-history', 'description' => 'Platform security and audit trails.'],
-            ['name' => 'Settings', 'slug' => 'settings', 'category' => 'ADMINISTRATION & SECURITY', 'icon' => 'bx-cog', 'description' => 'System setup and global preferences.'],
-
-            // System & Settings Sub-Features
-            ['name' => 'Settings Dashboard', 'slug' => 'settings-dashboard', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-cog', 'description' => 'Global settings control dashboard.'],
-            ['name' => 'Company Profile Settings', 'slug' => 'company-profile-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-id-card', 'description' => 'Company identity, branding, and contact info.'],
-            ['name' => 'Organization Details Settings', 'slug' => 'organization-details-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-buildings', 'description' => 'Corporate details, fiscal year, and structure.'],
-            ['name' => 'Branches & Locations Settings', 'slug' => 'business-address-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-map-pin', 'description' => 'Branch offices, addresses, and geographic locations.'],
-            ['name' => 'Work Schedule Settings', 'slug' => 'work-schedule-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-time-five', 'description' => 'Work shifts, office hours, and weekly schedules.'],
-            ['name' => 'Leave Settings', 'slug' => 'leave-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-calendar-minus', 'description' => 'Leave types, accrual policies, and quota rules.'],
-            ['name' => 'Holiday Settings', 'slug' => 'holiday-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-gift', 'description' => 'Company and national holiday calendars.'],
-            ['name' => 'Attendance Settings', 'slug' => 'attendance-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-calendar-check', 'description' => 'Clock-in radius, IP restrictions, and late thresholds.'],
-            ['name' => 'Recruitment Settings', 'slug' => 'recruitment-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-user-plus', 'description' => 'Job posting stages and candidate fields.'],
-            ['name' => 'Performance Settings', 'slug' => 'performance-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-trending-up', 'description' => 'KPI metrics and appraisal cycles.'],
-            ['name' => 'Notification Settings', 'slug' => 'notification-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-bell', 'description' => 'System, email, and push alert triggers.'],
-            ['name' => 'Email Settings', 'slug' => 'email-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-envelope', 'description' => 'SMTP mail gateway and email templates.'],
-            ['name' => 'Document Settings', 'slug' => 'document-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-file', 'description' => 'Document categories and storage rules.'],
-            ['name' => 'Security Settings', 'slug' => 'security-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-shield', 'description' => '2FA, password policy, and session timeouts.'],
-            ['name' => 'Change Password', 'slug' => 'change-password-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-key', 'description' => 'User password security update.'],
-            ['name' => 'Role & Permissions Settings', 'slug' => 'role-permissions-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-shield-quarter', 'description' => 'RBAC definitions and permission matrix.'],
-            ['name' => 'Localization Settings', 'slug' => 'localization-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-globe', 'description' => 'Timezone, language, and date format setup.'],
-            ['name' => 'Terms & Policy Settings', 'slug' => 'terms-policy-settings', 'category' => 'SYSTEM & SETTINGS', 'icon' => 'bx-paperclip', 'description' => 'Terms of service and privacy policy pages.'],
-        ];
-
-        // Ensure all canonical modules exist in central database
-        foreach ($allSystemModules as $i => $sm) {
-            try {
-                \App\Models\Module::on('central')->firstOrCreate(
-                    ['slug' => $sm['slug']],
-                    [
-                        'name' => $sm['name'],
-                        'category' => $sm['category'],
-                        'icon' => $sm['icon'],
-                        'description' => $sm['description'],
-                        'is_active' => true,
-                        'sort_order' => $i + 1,
-                    ]
-                );
-            } catch (\Throwable $e) {}
-        }
-
-        // Auto-sync any custom modules from tenant modules table or new sidebar features into central database
-        try {
-            $tenantModules = \App\Models\Module::get();
-            foreach ($tenantModules as $tm) {
-                if ($tm->slug) {
-                    \App\Models\Module::on('central')->firstOrCreate(
-                        ['slug' => $tm->slug],
-                        [
-                            'name' => $tm->name,
-                            'category' => $tm->category ?? 'CUSTOM MODULES',
-                            'icon' => $tm->icon ?? 'bx-cube',
-                            'description' => $tm->description ?? 'Admin panel feature module.',
-                            'is_active' => true,
-                            'sort_order' => $tm->sort_order ?? 99,
-                        ]
-                    );
-                }
-            }
-        } catch (\Throwable $e) {}
-
-        // Dynamic Auto-Discovery: Scan sidebar layout file to ensure any newly added tenant feature appears automatically in Super Admin
-        try {
-            $manuFile = resource_path('views/admin/layout/manu.blade.php');
-            if (file_exists($manuFile)) {
-                $manuContent = file_get_contents($manuFile);
-                preg_match_all('/data-sidebar-key=["\']([^"\']+)["\']/', $manuContent, $matches);
-                if (! empty($matches[1])) {
-                    foreach (array_unique($matches[1]) as $sidebarKey) {
-                        $slug = strtolower(trim($sidebarKey));
-                        if ($slug && strlen($slug) > 1) {
-                            $name = ucwords(str_replace(['-', '_'], ' ', $slug));
-                            \App\Models\Module::on('central')->firstOrCreate(
-                                ['slug' => $slug],
-                                [
-                                    'name' => $name,
-                                    'category' => 'CORE PLATFORM',
-                                    'icon' => 'bx-cube',
-                                    'description' => "Company {$name} feature module.",
-                                    'is_active' => true,
-                                    'sort_order' => 80,
-                                ]
-                            );
-                        }
-                    }
-                }
-            }
-        } catch (\Throwable $e) {}
-
-        // Fetch all registered modules for Super Admin Subscriptions interface
-        try {
-            $modules = \App\Models\Module::on('central')->orderBy('sort_order')->orderBy('name')->get();
-        } catch (\Throwable $e) {
-            $modules = collect();
-        }
+        // Use implemented Admin workspace features, including inactive modules.
+        $modules = app(\App\Services\AdminWorkspaceModules::class)->all();
 
         // Fetch central audit logs for timeline
         try {
@@ -565,6 +434,8 @@ class CompanyController extends Controller
             'admin_password_confirmation.same' => 'Password confirmation does not match.',
         ]);
 
+        // Resolve before provisioning so an invalid paid selection cannot become Free.
+        $targetPlan = app(\App\Services\ProvisioningPlan::class)->resolve($request);
         $rawSlug = strtolower(trim($data['slug']));
         $slug = preg_replace('/[^a-z0-9_]/', '', $rawSlug);
         
@@ -679,77 +550,56 @@ class CompanyController extends Controller
 
         // Provision central subscription record for the new tenant based on selected plan
         try {
-            $rawPlanInput = $request->input('subscription_plan')
-                ?? $request->input('plan_slug')
-                ?? $request->input('plan_id')
-                ?? $request->input('plan')
-                ?? 'free';
+            DB::connection('central')->transaction(function () use ($company, $targetPlan) {
+                $startsAt = now();
+                $endsAt = now()->addDays(30);
 
-            $planSlug = strtolower(trim((string)$rawPlanInput));
+                /** @var \App\Services\SubscriptionService $subService */
+                $subService = app(\App\Services\SubscriptionService::class);
 
-            $targetPlan = \App\Models\Central\Plan::on('central')->where('slug', $planSlug)->first()
-                ?? \App\Models\Central\Plan::on('central')->find($rawPlanInput)
-                ?? \App\Models\Central\Plan::on('central')->where('name', 'LIKE', $planSlug)->first();
+                if ($targetPlan && strtolower($targetPlan->slug) !== 'free') {
+                    $sub = $subService->activateOrUpgradePlan(
+                        company: $company,
+                        plan: $targetPlan,
+                        billingCycle: 'monthly',
+                        performedBy: auth('super_admin')->user()?->name ?? auth()->user()?->name ?? 'Super Admin Provisioning'
+                    );
 
-            if (! $targetPlan) {
-                $defaultPlans = [
-                    'free'     => ['name' => 'FREE', 'slug' => 'free', 'description' => 'Essential features for small teams.', 'monthly_price' => 0, 'yearly_price' => 0, 'max_users' => 5, 'max_storage_mb' => 5120],
-                    'gold'     => ['name' => 'GOLD', 'slug' => 'gold', 'description' => 'Popular for growing businesses.', 'monthly_price' => 4999, 'yearly_price' => 49990, 'max_users' => 25, 'max_storage_mb' => 25600],
-                    'platinum' => ['name' => 'PLATINUM', 'slug' => 'platinum', 'description' => 'Advanced capabilities for scaling enterprise.', 'monthly_price' => 9999, 'yearly_price' => 99990, 'max_users' => 100, 'max_storage_mb' => 102400],
-                    'diamond'  => ['name' => 'DIAMOND', 'slug' => 'diamond', 'description' => 'Maximum limits and dedicated resources.', 'monthly_price' => 19999, 'yearly_price' => 199990, 'max_users' => 0, 'max_storage_mb' => 512000],
-                ];
+                    $sub->update([
+                        'starts_at' => $startsAt->toDateString(),
+                        'ends_at'   => $endsAt->toDateString(),
+                        'status'    => 'active',
+                    ]);
 
-                $dp = $defaultPlans[$planSlug] ?? $defaultPlans['free'];
-                try {
-                    $targetPlan = \App\Models\Central\Plan::on('central')->firstOrCreate(['slug' => $dp['slug']], $dp);
-                } catch (\Throwable $e) {}
-            }
-
-            $startsAt = now();
-            $endsAt = now()->addDays(30);
-
-            /** @var \App\Services\SubscriptionService $subService */
-            $subService = app(\App\Services\SubscriptionService::class);
-
-            if ($targetPlan && strtolower($targetPlan->slug) !== 'free') {
-                $sub = $subService->activateOrUpgradePlan(
-                    company: $company,
-                    plan: $targetPlan,
-                    billingCycle: 'monthly',
-                    performedBy: auth('super_admin')->user()?->name ?? auth()->user()?->name ?? 'Super Admin Provisioning'
-                );
-
-                $sub->update([
-                    'starts_at' => $startsAt->toDateString(),
-                    'ends_at'   => $endsAt->toDateString(),
-                    'status'    => 'active',
-                ]);
-
-                $company->update([
-                    'max_users'          => $targetPlan->max_users > 0 ? $targetPlan->max_users : 999999,
-                    'max_storage_mb'     => $targetPlan->max_storage_mb > 0 ? $targetPlan->max_storage_mb : 512000,
-                    'status'             => 'active',
-                    'trial_ends_at'      => $endsAt,
-                    'highest_plan_level' => \App\Services\PlanEligibilityService::getPlanLevel($targetPlan),
-                    'highest_plan_slug'  => strtolower($targetPlan->slug),
-                ]);
-            } else {
-                $sub = $subService->initializeTrial($company);
-                $sub->update([
-                    'starts_at'     => $startsAt->toDateString(),
-                    'ends_at'       => $endsAt->toDateString(),
-                    'trial_ends_at' => $endsAt->toDateString(),
-                    'status'        => 'trial',
-                ]);
-                $company->update([
-                    'status'        => 'trial',
-                    'trial_ends_at' => $endsAt,
-                ]);
-            }
+                    $company->update([
+                        'max_users'          => $targetPlan->max_users > 0 ? $targetPlan->max_users : 999999,
+                        'max_storage_mb'     => $targetPlan->max_storage_mb > 0 ? $targetPlan->max_storage_mb : 512000,
+                        'status'             => 'active',
+                        'trial_ends_at'      => $endsAt,
+                        'highest_plan_level' => \App\Services\PlanEligibilityService::getPlanLevel($targetPlan),
+                        'highest_plan_slug'  => strtolower($targetPlan->slug),
+                    ]);
+                } else {
+                    $sub = $subService->initializeTrial($company);
+                    $sub->update([
+                        'starts_at'     => $startsAt->toDateString(),
+                        'ends_at'       => $endsAt->toDateString(),
+                        'trial_ends_at' => $endsAt->toDateString(),
+                        'status'        => 'trial',
+                    ]);
+                    $company->update([
+                        'status'        => 'trial',
+                        'trial_ends_at' => $endsAt,
+                        'max_users'     => $targetPlan->max_users > 0 ? $targetPlan->max_users : 999999,
+                        'max_storage_mb' => $targetPlan->max_storage_mb > 0 ? $targetPlan->max_storage_mb : 512000,
+                    ]);
+                }
+            });
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::error("Central subscription creation info: " . $e->getMessage());
 
             if (isset($targetPlan) && $targetPlan) {
+                $company->refresh();
                 $targetLevel = \App\Services\PlanEligibilityService::getPlanLevel($targetPlan);
                 \App\Models\Central\Subscription::on('central')->create([
                     'company_id'         => $company->id,
@@ -758,19 +608,21 @@ class CompanyController extends Controller
                     'starts_at'          => now()->toDateString(),
                     'ends_at'            => now()->addDays(30)->toDateString(),
                     'price'              => $targetPlan->monthly_price ?? 0,
-                    'status'             => 'active',
+                    'status'             => strtolower($targetPlan->slug) === 'free' ? 'trial' : 'active',
                     'auto_renew'         => true,
                     'highest_plan_level' => $targetLevel,
                     'current_plan_level' => $targetLevel,
                     'activated_at'       => now(),
                 ]);
 
-                $company->update([
-                    'status'             => 'active',
+                $company->forceFill([
+                    'status'             => strtolower($targetPlan->slug) === 'free' ? 'trial' : 'active',
                     'trial_ends_at'      => now()->addDays(30),
                     'highest_plan_level' => $targetLevel,
                     'highest_plan_slug'  => strtolower($targetPlan->slug),
-                ]);
+                    'max_users'          => $targetPlan->max_users > 0 ? $targetPlan->max_users : 999999,
+                    'max_storage_mb'     => $targetPlan->max_storage_mb > 0 ? $targetPlan->max_storage_mb : 512000,
+                ])->save();
             }
         }
 
@@ -885,7 +737,7 @@ class CompanyController extends Controller
                 'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/',
                 \Illuminate\Validation\Rule::unique('central.companies', 'email')->ignore($company->id),
             ],
-            'phone'               => ['nullable', 'string', 'max:50'],
+            'phone'               => ['nullable', 'string', 'max:50', new \App\Rules\CompanyPhoneNumber],
             'website'             => ['nullable', 'string', 'max:255'],
             'domain'              => ['nullable', 'string', 'max:255'],
             'subdomain'           => ['nullable', 'string', 'max:100'],
@@ -940,7 +792,8 @@ class CompanyController extends Controller
             'max_clients'         => isset($data['max_clients']) ? (int) $data['max_clients'] : ($company->max_clients ?? 50),
             'max_storage_mb'      => isset($data['max_storage_mb']) ? (int) $data['max_storage_mb'] : ($company->max_storage_mb ?? 1024),
             'gst_number'          => $data['gst_number'] ?? null,
-            'pan_number'          => $data['pan_number'] ?? null,
+            // PAN is no longer edited on this form; keep the stored value unless a value is explicitly submitted.
+            'pan_number'          => array_key_exists('pan_number', $data) ? $data['pan_number'] : $company->pan_number,
             'registration_number' => $data['registration_number'] ?? null,
             'employee_id_prefix'  => $data['employee_id_prefix'] ?? null,
             'leave_prefix'        => $data['leave_prefix'] ?? null,
@@ -1083,42 +936,10 @@ class CompanyController extends Controller
 
     public function suspend($id): RedirectResponse|\Illuminate\Http\JsonResponse
     {
-        try {
-            $company = Company::on('central')->find($id) ?? \App\Models\Company::find($id);
-
-            if ($company) {
-                $company->status = 'suspended';
-                $company->manually_suspended = true;  // Mark as Super Admin manual suspension
-                $company->suspended_at = now();
-                $company->save();
-
-                // Also sync central subscriptions to suspended status
-                try {
-                    \App\Models\Central\Subscription::on('central')
-                        ->where('company_id', $company->id)
-                        ->update(['status' => 'suspended']);
-                } catch (\Throwable $e) {}
-
-                if (request()->wantsJson()) {
-                    return response()->json([
-                        'success' => true,
-                        'message' => "Tenant company '{$company->name}' subscription access has been suspended.",
-                        'status' => 'suspended',
-                        'company_id' => $company->id
-                    ]);
-                }
-            }
-        } catch (\Throwable $e) {}
-
-        if (request()->wantsJson()) {
-            return response()->json(['success' => true, 'message' => 'Subscription access suspended successfully.']);
-        }
-
-        return redirect()->back()
-            ->with('success', "Tenant company subscription access has been suspended.");
+        $company = app(\App\Services\CompanySuspension::class)->suspend((int) $id, request()->all());
+        if (request()->wantsJson()) return response()->json(['success' => true, 'message' => 'Company suspended with the recorded reason.', 'status' => $company->status, 'company_id' => $company->id]);
+        return redirect()->route('superadmin.companies.suspended')->with('success', 'Company suspended. You can now reactivate it, send the reason on WhatsApp, or permanently delete it.');
     }
-
-
     /**
      * Deactivate a tenant company.
      */
@@ -1142,56 +963,36 @@ class CompanyController extends Controller
      */
     public function activate($id): RedirectResponse|\Illuminate\Http\JsonResponse
     {
-        try {
-            $company = Company::on('central')->findOrFail($id);
-        } catch (\Throwable $e) {
-            $company = \App\Models\Company::findOrFail($id);
-        }
-
-        $company->manually_suspended = false;  // Super Admin explicitly lifts suspension
-        $company->suspended_at = null;
-
-        $status = app(\App\Services\SubscriptionService::class)->evaluateCompanyStatus($company);
-        $company->status = ($status === 'expired') ? 'expired' : 'active';
-        $company->save();
-
-        if ($company->status === 'active') {
-            try {
-                \App\Models\Central\Subscription::on('central')
-                    ->where('company_id', $company->id)
-                    ->where('status', 'suspended')
-                    ->update(['status' => 'active']);
-            } catch (\Throwable $e) {}
-        }
-
-        if (request()->wantsJson()) {
-            return response()->json([
-                'success' => true,
-                'message' => "Tenant company '{$company->name}' suspension has been lifted. Current status: " . ucfirst($company->status) . ".",
-                'status' => $company->status,
-                'company_id' => $company->id
-            ]);
-        }
-
-        return redirect()->back()
-            ->with('success', "Tenant company '{$company->name}' is now active.");
+        $company = app(\App\Services\CompanySuspension::class)->reactivate((int) $id);
+        $message = 'Company suspension lifted. Current status: ' . ucfirst($company->status) . '.';
+        if (request()->wantsJson()) return response()->json(['success' => true, 'message' => $message, 'status' => $company->status, 'company_id' => $company->id]);
+        return back()->with('success', $message);
     }
-
     /**
      * Store a newly created subscription plan.
      */
     public function storePlan(Request $request): RedirectResponse
     {
+        if (is_string($request->input('name'))) {
+            $request->merge(['name' => strtoupper(trim($request->input('name')))]);
+        }
         $data = $request->validate([
-            'name'           => 'required|string|max:255',
+            'name'           => ['required', 'string', \Illuminate\Validation\Rule::in(['FREE', 'GOLD', 'PLATINUM', 'DIAMOND'])],
             'description'    => 'nullable|string',
             'monthly_price'  => 'required|numeric|min:0',
             'max_users'      => 'required|integer|min:0',
             'max_storage_gb' => 'required|numeric|min:0',
             'is_active'      => 'required|boolean',
+        ], [
+            'name.in' => 'Only FREE, GOLD, PLATINUM, and DIAMOND plans are supported. Edit an existing tier to change its settings.',
         ]);
 
         $slug = Str::slug($data['name']);
+        if (\App\Models\Central\Plan::where('slug', $slug)->exists()) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'name' => "The {$data['name']} plan already exists. Edit the existing plan to change its settings.",
+            ]);
+        }
         $storageMb = (int) ($data['max_storage_gb'] * 1024);
 
         $planData = [
@@ -1210,8 +1011,10 @@ class CompanyController extends Controller
 
         try {
             \App\Models\Central\Plan::on('central')->create($planData);
-        } catch (\Throwable $e) {
-            \App\Models\SubscriptionPlan::create($planData);
+        } catch (\Illuminate\Database\UniqueConstraintViolationException $e) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'name' => "The {$data['name']} plan already exists. Edit the existing plan to change its settings.",
+            ]);
         }
 
         return redirect()->route('super-admin.plans.index')
@@ -1223,19 +1026,30 @@ class CompanyController extends Controller
      */
     public function updatePlan(Request $request, $id): RedirectResponse
     {
+        if (is_string($request->input('name'))) {
+            $request->merge(['name' => strtoupper(trim($request->input('name')))]);
+        }
         $data = $request->validate([
-            'name'           => 'required|string|max:255',
+            'name'           => ['required', 'string', \Illuminate\Validation\Rule::in(['FREE', 'GOLD', 'PLATINUM', 'DIAMOND'])],
             'description'    => 'nullable|string',
             'monthly_price'  => 'required|numeric|min:0',
             'max_users'      => 'required|integer|min:0',
             'max_storage_gb' => 'required|numeric|min:0',
             'is_active'      => 'required|boolean',
+        ], [
+            'name.in' => 'Only FREE, GOLD, PLATINUM, and DIAMOND plans are supported. Edit an existing tier to change its settings.',
         ]);
 
         try {
             $plan = \App\Models\Central\Plan::on('central')->findOrFail($id);
         } catch (\Throwable $e) {
             $plan = \App\Models\SubscriptionPlan::findOrFail($id);
+        }
+
+        if (Str::slug($data['name']) !== $plan->slug) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'name' => 'The plan tier cannot be changed. Edit the settings of the selected tier instead.',
+            ]);
         }
 
         $plan->name = strtoupper($data['name']);
@@ -1348,17 +1162,19 @@ class CompanyController extends Controller
      */
     public function assignPlan(Request $request): RedirectResponse|\Illuminate\Http\JsonResponse
     {
+        abort_unless(\App\Services\TenantScope::isPlatformAdmin(), 403);
         $request->validate([
-            'company_id' => 'required',
-            'plan_id' => 'required',
+            'company_id' => 'required|integer|exists:central.companies,id',
+            'plan_id' => ['required', \Illuminate\Validation\Rule::exists('central.plans', 'id')->where(fn ($q) => $q->whereIn('slug', \App\Support\SupportedPlans::SLUGS)->where('is_active', true))],
             'billing_cycle' => 'nullable|in:monthly,yearly',
         ]);
 
         $companyId = $request->input('company_id');
         $planId = $request->input('plan_id');
-        $cycle = $request->input('billing_cycle', 'monthly');
+        $cycle = $request->input('billing_cycle') ?: 'monthly';
 
         try {
+            \App\Services\SubscriptionChangeSchema::ensure();
             // Resolve Company
             $company = Company::on('central')->find($companyId) ?? \App\Models\Company::find($companyId);
             if (!$company) {
@@ -1368,31 +1184,7 @@ class CompanyController extends Controller
                 return back()->withErrors(['error' => 'Tenant company not found.']);
             }
             
-            // Resolve Plan
-            $plan = \App\Models\Central\Plan::on('central')->find($planId)
-                 ?? \App\Models\Central\Plan::on('central')->where('slug', strtolower($planId))->orWhere('name', 'LIKE', $planId)->first()
-                 ?? \App\Models\SubscriptionPlan::find($planId)
-                 ?? \App\Models\SubscriptionPlan::where('slug', strtolower($planId))->orWhere('name', 'LIKE', $planId)->first();
-
-            if (! $plan) {
-                $targetSlug = strtolower($planId);
-                $dpMap = [
-                    'free' => ['name' => 'FREE', 'slug' => 'free', 'monthly_price' => 0, 'yearly_price' => 0, 'max_users' => 5, 'max_storage_mb' => 5120],
-                    'gold' => ['name' => 'GOLD', 'slug' => 'gold', 'monthly_price' => 4999, 'yearly_price' => 49990, 'max_users' => 25, 'max_storage_mb' => 25600],
-                    'platinum' => ['name' => 'PLATINUM', 'slug' => 'platinum', 'monthly_price' => 9999, 'yearly_price' => 99990, 'max_users' => 100, 'max_storage_mb' => 102400],
-                    'diamond' => ['name' => 'DIAMOND', 'slug' => 'diamond', 'monthly_price' => 19999, 'yearly_price' => 199990, 'max_users' => 0, 'max_storage_mb' => 512000],
-                ];
-
-                $dpData = $dpMap[$targetSlug] ?? $dpMap['gold'];
-
-                try {
-                    $plan = \App\Models\Central\Plan::on('central')->firstOrCreate(['slug' => $dpData['slug']], $dpData);
-                } catch (\Throwable $e) {
-                    try {
-                        $plan = \App\Models\SubscriptionPlan::firstOrCreate(['slug' => $dpData['slug']], $dpData);
-                    } catch (\Throwable $ex) {}
-                }
-            }
+            $plan = \App\Models\Central\Plan::on('central')->standard()->where('is_active', true)->findOrFail($planId);
 
             if ($company && $plan) {
                 /** @var \App\Services\SubscriptionService $subService */
@@ -1400,21 +1192,25 @@ class CompanyController extends Controller
 
                 $isManual = (bool) ($company->manually_suspended ?? false);
 
-                $sub = $subService->activateOrUpgradePlan(
-                    company: $company,
-                    plan: $plan,
-                    billingCycle: $cycle,
-                    performedBy: auth('super_admin')->user()?->name ?? auth()->user()?->name ?? 'Super Admin Command Center'
-                );
+                $sub = DB::connection('central')->transaction(function () use (&$company, $plan, $cycle, $subService, &$isManual) {
+                    $company = Company::on('central')->whereKey($company->id)->lockForUpdate()->firstOrFail();
+                    $isManual = (bool) $company->manually_suspended;
+                    $sub = $subService->activateOrUpgradePlan(
+                        company: $company,
+                        plan: $plan,
+                        billingCycle: $cycle,
+                        performedBy: auth('super_admin')->user()?->name ?? auth()->user()?->name ?? 'Super Admin Command Center'
+                    );
 
-                // Update resource limits on company record, preserving manual suspension if set
-                $newCompanyStatus = $isManual ? 'suspended' : 'active';
-                $company->update([
-                    'max_users'      => $plan->max_users > 0 ? $plan->max_users : 999999,
-                    'max_storage_mb' => $plan->max_storage_mb > 0 ? $plan->max_storage_mb : 512000,
-                    'status'         => $newCompanyStatus,
-                    'trial_ends_at'  => $sub->ends_at,
-                ]);
+                    // Preserve manual suspension while applying the chosen limits.
+                    $company->update([
+                        'max_users'      => $plan->max_users > 0 ? $plan->max_users : 999999,
+                        'max_storage_mb' => $plan->max_storage_mb > 0 ? $plan->max_storage_mb : 512000,
+                        'status'         => $isManual ? 'suspended' : 'active',
+                        'trial_ends_at'  => $sub->ends_at,
+                    ]);
+                    return $sub;
+                });
 
                 $startFmt = $sub->starts_at->format('M d, Y, h:i A');
                 $endFmt = $sub->ends_at->format('M d, Y, h:i A');
@@ -1429,7 +1225,7 @@ class CompanyController extends Controller
                         'company_id'          => $company->id,
                         'starts_at_formatted' => $startFmt,
                         'ends_at_formatted'   => $endFmt,
-                        'status'              => 'active',
+                        'status'              => $isManual ? 'suspended' : 'active',
                     ]);
                 }
 
@@ -1459,6 +1255,7 @@ class CompanyController extends Controller
      */
     public function extendSubscription(Request $request, $id): RedirectResponse|\Illuminate\Http\JsonResponse
     {
+        abort_unless(\App\Services\TenantScope::isPlatformAdmin(), 403);
         $days = (int) $request->input('days', 30);
         if ($days <= 0) $days = 30;
 
@@ -1672,6 +1469,18 @@ class CompanyController extends Controller
                 ['is_enabled' => $enabled, 'updated_at' => now()]
             );
 
+            // Legacy alias rows of the same feature (e.g. "deals" for Deals) must not keep an older
+            // decision alive, otherwise the feature stays on/off whatever the Super Admin selects here.
+            $entitlements = app(\App\Services\FeatureEntitlements::class);
+            $moduleSlug = DB::connection('central')->table('modules')->where('id', $moduleId)->value('slug');
+            if ($moduleSlug && ! $entitlements->isLegacyAlias($moduleSlug) && $aliases = $entitlements->aliasesOf($moduleSlug)) {
+                DB::connection('central')->table('company_modules')
+                    ->where('company_id', $companyId)
+                    ->whereIn('module_id', DB::connection('central')->table('modules')->whereIn('slug', $aliases)->pluck('id'))
+                    ->delete();
+            }
+            $entitlements->forget((int) $companyId);
+
             // Log Audit Action
             try {
                 \App\Models\AuditLog::create([
@@ -1693,15 +1502,92 @@ class CompanyController extends Controller
         }
 
         if ($request->wantsJson()) {
-            return response()->json(['success' => true, 'message' => 'Company feature override updated successfully.']);
+            $company = Company::on('central')->find($companyId);
+            return response()->json([
+                'success' => true,
+                'message' => 'Company feature override updated successfully.',
+                'states' => $company ? $this->featureStatesFor($company) : [],
+            ]);
         }
 
         return back()->with('success', 'Company feature override updated successfully.');
     }
 
     /**
+     * Effective feature access for one company exactly as its workspace resolves it (sidebar and routes),
+     * so Manage Features never shows a guessed state.
+     */
+    public function companyFeatureStates($companyId): \Illuminate\Http\JsonResponse
+    {
+        $company = Company::on('central')->findOrFail($companyId);
+        return response()->json(['success' => true, 'states' => $this->featureStatesFor($company)]);
+    }
+
+    /** @return array<int, array{effective: int, override: ?int, blocked_by: ?string}> keyed by central module id */
+    private function featureStatesFor($company): array
+    {
+        $entitlements = app(\App\Services\FeatureEntitlements::class);
+        $entitlements->forget((int) $company->id);
+        $overrides = DB::connection('central')->table('company_modules')
+            ->where('company_id', $company->id)->pluck('is_enabled', 'module_id');
+        $states = [];
+        foreach (app(\App\Services\AdminWorkspaceModules::class)->all(false) as $module) {
+            if ($entitlements->isLegacyAlias($module->slug)) continue;
+            $blockedBy = $entitlements->disabledAncestor((int) $company->id, $module->slug);
+            $states[$module->id] = [
+                'effective' => $company->hasFeature($module->slug) ? 1 : 0,
+                'override' => $overrides->has($module->id) ? (int) $overrides[$module->id] : null,
+                'blocked_by' => $blockedBy ? (config('workspace_modules.'.$blockedBy.'.name') ?? \Illuminate\Support\Str::headline($blockedBy)) : null,
+            ];
+        }
+        return $states;
+    }
+
+    /**
      * Display Tenant Migration Control Center.
      */
+    /**
+     * Persist one tenant migration run; the Migrations page reads its times from these rows.
+     */
+    private function recordMigrationRun($company, bool $success, string $duration, int $appliedCount, string $output = ''): void
+    {
+        try {
+            \App\Models\Central\SuperAdminActivityLog::record(
+                'tenant.migration_executed',
+                (int) $company->id,
+                ($success ? 'Migration executed for ' : 'Migration failed for ') . $company->name,
+                [
+                    'company_name'   => $company->name,
+                    'db_name'        => $company->db_name,
+                    'version'        => 'v' . $appliedCount,
+                    'execution_time' => $duration,
+                    'status'         => $success ? 'success' : 'failed',
+                    'output'         => Str::limit($output, 4000),
+                ],
+                auth('super_admin')->id()
+            );
+        } catch (\Throwable $e) {
+            report($e);
+        }
+    }
+
+    /**
+     * Latest recorded migration run per company id (newest first).
+     */
+    private function latestMigrationRuns(): \Illuminate\Support\Collection
+    {
+        try {
+            return \App\Models\Central\SuperAdminActivityLog::where('action', 'tenant.migration_executed')
+                ->whereNotNull('company_id')
+                ->latest('created_at')->latest('id')
+                ->get(['id', 'company_id', 'meta', 'created_at'])
+                ->unique('company_id')
+                ->keyBy('company_id');
+        } catch (\Throwable $e) {
+            return collect();
+        }
+    }
+
     public function migrations(Request $request): View
     {
         try {
@@ -1741,15 +1627,15 @@ class CompanyController extends Controller
         $upToDateCount = 0;
         $pendingCount = 0;
         $failedCount = 0;
-        $lastRunTime = null;
+        $latestRuns = $this->latestMigrationRuns();
+        $lastRunAt = $latestRuns->max('created_at');
 
         foreach ($companies as $comp) {
             $status = 'unknown';
             $appliedList = [];
             $appliedCount = 0;
             $pendingList = $allMigrationFiles;
-            $executionTime = '0.00s';
-            $lastRun = null;
+            $run = $latestRuns->get($comp->id);
             $dbConnected = false;
 
             try {
@@ -1763,13 +1649,6 @@ class CompanyController extends Controller
                     $appliedList = $appliedRecords->pluck('migration')->toArray();
                     $appliedCount = count($appliedList);
 
-                    $lastRecord = $appliedRecords->last();
-                    if ($lastRecord && isset($lastRecord->batch)) {
-                        $lastRun = now()->subMinutes(rand(5, 120))->format('d M Y, h:i A');
-                        if (!$lastRunTime) {
-                            $lastRunTime = '12 min ago';
-                        }
-                    }
 
                     $pendingList = array_values(array_filter($allMigrationFiles, function ($mig) use ($appliedList) {
                         return !in_array($mig['raw_name'], $appliedList, true);
@@ -1810,8 +1689,10 @@ class CompanyController extends Controller
                 'pending_count'          => count($pendingList),
                 'pending_list'           => $pendingList,
                 'status'                 => $status,
-                'last_migration'         => $lastRun ?? ($comp->created_at ? $comp->created_at->format('d M Y, h:i A') : 'N/A'),
-                'execution_time'         => (rand(120, 485) / 100) . 's',
+                // Real recorded run (created_at in app timezone); tenants never migrated from this panel show provisioning time.
+                'last_migration'         => $run ? $run->created_at->format('d M Y, h:i A') : ($comp->created_at ? 'Provisioned ' . $comp->created_at->format('d M Y, h:i A') : 'Never'),
+                'last_migration_iso'     => $run?->created_at?->toIso8601String(),
+                'execution_time'         => $run && isset($run->meta['execution_time']) ? $run->meta['execution_time'] . 's' : '—',
             ];
         }
 
@@ -1820,25 +1701,28 @@ class CompanyController extends Controller
             'up_to_date'         => $upToDateCount,
             'pending_migrations' => $pendingCount,
             'failed_migrations'  => $failedCount,
-            'last_run'           => $lastRunTime ?? 'Just now',
+            'last_run'           => $lastRunAt ? $lastRunAt->diffForHumans() : 'Never',
+            'last_run_iso'       => $lastRunAt?->toIso8601String(),
+            'last_run_at'        => $lastRunAt?->format('d M Y, h:i A'),
         ];
 
         // 3. Fetch migration activity logs
         $migrationHistory = [];
         try {
-            $logs = \App\Models\Central\SuperAdminActivityLog::where('action', 'like', '%migration%')
+            $logs = \App\Models\Central\SuperAdminActivityLog::with(['superAdmin', 'company'])
+                ->where('action', 'like', '%migration%')
                 ->latest()
                 ->take(15)
                 ->get();
             foreach ($logs as $log) {
                 $migrationHistory[] = [
-                    'company_name'   => $log->details['company_name'] ?? 'Tenant',
-                    'migration'      => $log->details['migration'] ?? 'tenant:migrate',
-                    'version'        => $log->details['version'] ?? 'v' . $totalAvailableMigrations,
-                    'status'         => $log->status ?? 'success',
-                    'execution_time' => ($log->details['execution_time'] ?? '3.50') . 's',
+                    'company_name'   => $log->meta['company_name'] ?? $log->company?->name ?? 'Tenant',
+                    'migration'      => $log->meta['migration'] ?? 'tenant:migrate',
+                    'version'        => $log->meta['version'] ?? '—',
+                    'status'         => $log->meta['status'] ?? 'success',
+                    'execution_time' => isset($log->meta['execution_time']) ? $log->meta['execution_time'] . 's' : '—',
                     'executed_at'    => $log->created_at->format('d M Y, h:i A'),
-                    'executed_by'    => 'Super Admin',
+                    'executed_by'    => $log->superAdmin?->name ?? 'Super Admin',
                 ];
             }
         } catch (\Throwable $e) {}
@@ -1904,23 +1788,7 @@ class CompanyController extends Controller
                 $totalAvailable = count(File::files($tenantMigrationPath));
             }
 
-            // Log activity
-            try {
-                \App\Models\Central\SuperAdminActivityLog::create([
-                    'super_admin_id' => auth('super_admin')->id() ?? auth()->id(),
-                    'action'         => 'tenant.migration_executed',
-                    'details'        => [
-                        'company_id'     => $company->id,
-                        'company_name'   => $company->name,
-                        'db_name'        => $company->db_name,
-                        'version'        => 'v' . $appliedCount,
-                        'execution_time' => $duration,
-                        'output'         => $output,
-                    ],
-                    'status'         => $exitCode === 0 ? 'success' : 'failed',
-                    'ip_address'     => request()->ip(),
-                ]);
-            } catch (\Throwable $e) {}
+            $this->recordMigrationRun($company, $exitCode === 0, $duration, $appliedCount, $output);
 
             if ($exitCode === 0) {
                 return response()->json([
@@ -1990,6 +1858,11 @@ class CompanyController extends Controller
 
                 $output = trim(Artisan::output());
                 $duration = number_format(microtime(true) - $startTime, 2);
+                $appliedCount = 0;
+                try {
+                    $appliedCount = DB::connection('tenant')->table('migrations')->count();
+                } catch (\Throwable $e) {}
+                $this->recordMigrationRun($comp, $exitCode === 0, $duration, $appliedCount, $output);
 
                 if ($exitCode === 0) {
                     $successCount++;
@@ -2051,11 +1924,23 @@ class CompanyController extends Controller
                 DB::purge('tenant');
 
                 if (DB::connection('tenant')->getSchemaBuilder()->hasTable('migrations')) {
+                    // Recorded panel runs carry real times; the tenant migrations table itself has no timestamps.
+                    $runs = \App\Models\Central\SuperAdminActivityLog::where('action', 'tenant.migration_executed')
+                        ->where('company_id', $company->id)->latest('created_at')->latest('id')->take(20)->get();
+                    foreach ($runs as $run) {
+                        $failed = ($run->meta['status'] ?? 'success') !== 'success';
+                        $logs[] = [
+                            'timestamp' => $run->created_at->format('d M Y, h:i:s A'),
+                            'message'   => ($failed ? 'Migration run failed' : 'Migration run completed')
+                                . ' (' . ($run->meta['version'] ?? '—') . ', ' . ($run->meta['execution_time'] ?? '—') . 's)',
+                            'status'    => $failed ? 'ERROR' : 'SUCCESS',
+                        ];
+                    }
                     $records = DB::connection('tenant')->table('migrations')->orderBy('id', 'desc')->get();
                     foreach ($records as $rec) {
                         $logs[] = [
-                            'timestamp' => now()->subMinutes(rand(10, 500))->format('H:i:s'),
-                            'message'   => "Applied migration batch #{$rec->batch}: {$rec->migration}",
+                            'timestamp' => 'Batch #' . $rec->batch,
+                            'message'   => "Applied migration: {$rec->migration}",
                             'status'    => 'SUCCESS',
                         ];
                     }
@@ -2509,6 +2394,12 @@ class CompanyController extends Controller
      */
     public function tenantAudit(Request $request)
     {
+        $request->validate([
+            'search' => 'nullable|string|max:500', 'actor' => 'nullable|string',
+            'company' => 'nullable|integer', 'action' => 'nullable|string',
+            'module' => 'nullable|string', 'result' => 'nullable|in:success,failed,warning',
+            'date' => 'nullable|in:today,yesterday,7days,30days',
+        ]);
         $companies = Company::on('central')->latest()->get();
         if ($companies->isEmpty()) {
             $companies = \App\Models\Company::latest()->get();
@@ -2520,7 +2411,6 @@ class CompanyController extends Controller
                 $auditLogsRaw = \App\Models\AuditLog::on('central')
                     ->with(['company', 'user'])
                     ->latest()
-                    ->take(100)
                     ->get();
             } catch (\Throwable $ex) {}
         }
@@ -2531,7 +2421,6 @@ class CompanyController extends Controller
                 $saLogsRaw = \App\Models\Central\SuperAdminActivityLog::on('central')
                     ->with(['company', 'superAdmin'])
                     ->latest()
-                    ->take(100)
                     ->get();
             } catch (\Throwable $ex) {}
         }
@@ -2792,6 +2681,7 @@ class CompanyController extends Controller
         }
 
         $securityTimeline = $allEvents->whereIn('severity', ['critical', 'warning'])->take(6)->values();
+        $allEvents = \App\Services\ActivityLogFilters::apply($allEvents, $request);
 
         return view('superadmin.tenant_audit.index', compact(
             'companies',
@@ -2808,27 +2698,10 @@ class CompanyController extends Controller
      */
     public function tenantAuditEvent(Request $request, $id): \Illuminate\Http\JsonResponse
     {
-        return response()->json([
-            'success' => true,
-            'event'   => [
-                'id'           => $id,
-                'company_name' => 'Original Company',
-                'tenant_code'  => 'TEN-001',
-                'user'         => 'admin@company.com',
-                'role'         => 'Company Admin',
-                'timestamp'    => now()->format('d M Y, h:i:s A'),
-                'module'       => 'User Management',
-                'action'       => 'Update Permission',
-                'status'       => 'success',
-                'severity'     => 'info',
-                'description'  => 'Company administrator updated employee role permissions for department managers.',
-                'ip_address'   => '192.168.1.24',
-                'user_agent'   => 'Windows NT 10.0 / Chrome 120.0',
-                'request_id'   => 'REQ-' . strtoupper(substr(md5($id), 0, 8)),
-                'old_values'   => ['permission_level' => 'read_only', 'view_reports' => false],
-                'new_values'   => ['permission_level' => 'admin_access', 'view_reports' => true],
-            ]
-        ]);
+        abort_unless(\App\Services\TenantScope::isPlatformAdmin(), 403);
+        $event = $this->tenantAudit(Request::create('/super-admin/activity-logs'))->getData()['allEvents']->firstWhere('id', $id);
+        abort_unless($event, 404, 'Activity log not found.');
+        return response()->json(['success' => true, 'event' => $event]);
     }
 
     /**
@@ -2876,6 +2749,9 @@ class CompanyController extends Controller
      */
     public function systemHealth(Request $request)
     {
+        $latencyStarted = microtime(true);
+        $latencyRange = $request->query('latency_range', '24H');
+        $request->validate(['latency_range' => ['sometimes', \Illuminate\Validation\Rule::in(array_keys(\App\Services\PlatformLatency::RANGES))]]);
         // 1. Live Central DB Latency Ping
         $dbStart = microtime(true);
         $dbConnected = false;
@@ -3056,10 +2932,12 @@ class CompanyController extends Controller
         $healthyCount = 0;
         $warningCount = 0;
 
+        $tenantHealth = app(\App\Services\TenantDatabaseHealth::class);
+        $dbPool = $tenantHealth->poolStats();
         foreach ($companies as $idx => $comp) {
-            $isWarning = ($idx === 2);
-            $status = $isWarning ? 'warning' : 'healthy';
-            if ($status === 'healthy') $healthyCount++;
+            // Live probe of the tenant database (connection, ping, size); checked_at is the real check time.
+            $probe = $tenantHealth->row($comp);
+            if ($probe['status'] === 'healthy') $healthyCount++;
             else $warningCount++;
 
             $logoUrl = null;
@@ -3077,15 +2955,9 @@ class CompanyController extends Controller
                 'code'         => $comp->company_code ?? ('TEN-' . str_pad($comp->id, 3, '0', STR_PAD_LEFT)),
                 'db_name'      => $comp->db_name ?? ('pms_tenant_' . $comp->id),
                 'logo_url'     => $logoUrl,
-                'status'       => $status,
-                'connection'   => 'Connected',
-                'latency_ms'   => rand(18, 48) . ' ms',
                 'api_uptime'   => '99.9%',
-                'storage_pct'  => ($isWarning ? 84 : rand(35, 68)) . '%',
                 'backup'       => 'Verified',
-                'last_activity'=> now()->subMinutes(rand(1, 15))->diffForHumans(),
-                'last_check'   => rand(5, 30) . ' sec ago',
-            ];
+            ] + $probe;
         }
 
         // 7. Core KPI Counters
@@ -3135,6 +3007,13 @@ class CompanyController extends Controller
             ],
         ];
 
+        // Incidents the Super Admin has dismissed stay hidden
+        $dismissedIncidents = $this->dismissedIncidentIds();
+        $incidents = array_values(array_filter(
+            $incidents,
+            fn ($incident) => ! in_array($incident['id'], $dismissedIncidents, true)
+        ));
+
         // 10. Recent System Events Timeline
         $timelineEvents = [
             ['time' => now()->format('h:i A'), 'title' => 'Database health check completed', 'desc' => 'Latency 12.4ms • Ping OK', 'status' => 'success'],
@@ -3144,7 +3023,18 @@ class CompanyController extends Controller
             ['time' => now()->subHour()->format('h:i A'), 'title' => 'Storage threshold check', 'desc' => 'Disk usage 68% (15.5 GB free)', 'status' => 'info'],
         ];
 
+        (require database_path('migrations/central/2026_10_09_200000_create_platform_latency_samples.php'))->up();
+        $pingStarted = microtime(true);
+        DB::connection('central')->select('SELECT 1');
+        $chartDbMs = round((microtime(true) - $pingStarted) * 1000, 1);
+        DB::connection('central')->table('platform_latency_samples')->insert([
+            'api_ms' => round((microtime(true) - $latencyStarted) * 1000, 1),
+            'db_ms' => $chartDbMs, 'sampled_at' => now(),
+        ]);
+        DB::connection('central')->table('platform_latency_samples')->where('sampled_at', '<', now()->subDays(30))->delete();
+        $latencyChart = app(\App\Services\PlatformLatency::class)->chart($latencyRange);
         return view('superadmin.system_health.index', compact(
+            'latencyChart',
             'companies',
             'globalStatus',
             'globalStatusText',
@@ -3159,8 +3049,59 @@ class CompanyController extends Controller
             'usedGb',
             'freeGb',
             'dbLatencyMs',
-            'dbConnected'
+            'dbConnected',
+            'dbPool'
         ));
+    }
+
+    /**
+     * Dismiss an Active Incident on the System Health page.
+     * Stored in storage/app so it survives cache clears and deployments' optimize:clear.
+     */
+    public function dismissIncident(Request $request, string $incident): \Illuminate\Http\JsonResponse|RedirectResponse
+    {
+        $this->authorizeSuperAdmin();
+
+        $incidentId = strtoupper($incident);
+        abort_unless(preg_match('/^INC-\d+$/', $incidentId) === 1, 404);
+
+        $dismissed = $this->dismissedIncidentIds();
+        if (! in_array($incidentId, $dismissed, true)) {
+            $dismissed[] = $incidentId;
+            \Illuminate\Support\Facades\Storage::disk('local')->put(
+                self::DISMISSED_INCIDENTS_FILE,
+                json_encode(array_values($dismissed), JSON_PRETTY_PRINT)
+            );
+        }
+
+        $message = "Incident {$incidentId} dismissed.";
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json(['success' => true, 'message' => $message, 'incident' => $incidentId]);
+        }
+
+        return back()->with('success', $message);
+    }
+
+    private const DISMISSED_INCIDENTS_FILE = 'system-health/dismissed-incidents.json';
+
+    /**
+     * @return array<int, string>
+     */
+    private function dismissedIncidentIds(): array
+    {
+        try {
+            $disk = \Illuminate\Support\Facades\Storage::disk('local');
+            if (! $disk->exists(self::DISMISSED_INCIDENTS_FILE)) {
+                return [];
+            }
+
+            $ids = json_decode((string) $disk->get(self::DISMISSED_INCIDENTS_FILE), true);
+
+            return is_array($ids) ? array_values(array_filter($ids, 'is_string')) : [];
+        } catch (\Throwable $e) {
+            return [];
+        }
     }
 
     /**
@@ -3201,11 +3142,19 @@ class CompanyController extends Controller
         } catch (\Throwable $e) {}
         $latency = round((microtime(true) - $dbStart) * 1000, 1);
 
+        $tenantHealth = app(\App\Services\TenantDatabaseHealth::class);
+        $companies = Company::on('central')->latest()->get();
+        if ($companies->isEmpty()) {
+            $companies = \App\Models\Company::latest()->get();
+        }
+
         return response()->json([
             'success'      => true,
             'timestamp'    => now()->format('h:i:s A'),
-            'db_latency'   => ($latency < 1 ? 12.4 : $latency) . ' ms',
+            'db_latency'   => $latency . ' ms',
             'status_text'  => 'ALL SYSTEMS OPERATIONAL',
+            'pool'         => $tenantHealth->poolStats(),
+            'tenants'      => $companies->map(fn ($company) => $tenantHealth->row($company))->values(),
         ]);
     }
 
@@ -3248,6 +3197,7 @@ class CompanyController extends Controller
 
                     $rawAlerts[] = [
                         'id'               => $dNotif->id,
+                        'notification_record_id' => $dNotif->id,
                         'title'            => $dNotif->title,
                         'description'      => $dNotif->message,
                         'category'         => $dNotif->related_module ?: 'company',
@@ -3435,6 +3385,19 @@ class CompanyController extends Controller
         ];
 
         $allAlerts = array_merge($rawAlerts, $platformAlerts);
+        // Persist acknowledgement of generated alerts without changing severity or resolution.
+        $generatedAlerts = array_filter($allAlerts, fn ($alert) => !isset($alert['notification_record_id']));
+        $readGenerated = \App\Services\PlatformAlertReads::apply($generatedAlerts);
+        foreach ($readGenerated as $index => $alert) $allAlerts[$index] = $alert;
+
+        // Persisted "Resolve" actions, plus a stable key per alert for the Read / Resolve / Inspect buttons
+        // (generated alert ids are a per-render counter and can collide with notification ids).
+        try {
+            $allAlerts = \App\Services\PlatformAlertResolutions::apply($allAlerts);
+        } catch (\Throwable $e) {}
+        foreach ($allAlerts as $index => $alert) {
+            $allAlerts[$index]['alert_key'] = \App\Services\PlatformAlertResolutions::alertKey($alert);
+        }
 
         // Sort Alerts by Intelligent Priority:
         // 1. Critical + Action Required
@@ -3503,9 +3466,15 @@ class CompanyController extends Controller
      */
     public function markAlertRead(Request $request, $id): \Illuminate\Http\JsonResponse
     {
+        abort_unless(\App\Services\TenantScope::isPlatformAdmin(), 403);
+
+        $alert = $this->findAlertByKey($request, (string) $id);
+        $this->persistAlertRead($alert);
+
         return response()->json([
             'success' => true,
-            'message' => "Alert #{$id} marked as read.",
+            'message' => 'Alert marked as read.',
+            'status'  => 'read',
         ]);
     }
 
@@ -3514,10 +3483,49 @@ class CompanyController extends Controller
      */
     public function resolveAlert(Request $request, $id): \Illuminate\Http\JsonResponse
     {
+        abort_unless(\App\Services\TenantScope::isPlatformAdmin(), 403);
+
+        $alert = $this->findAlertByKey($request, (string) $id);
+        DB::connection('central')->transaction(function () use ($alert) {
+            $this->persistAlertRead($alert);
+            \App\Services\PlatformAlertResolutions::mark($alert);
+        });
+
         return response()->json([
             'success' => true,
-            'message' => "Alert #{$id} marked as resolved.",
+            'message' => 'Alert marked as resolved.',
+            'status'  => 'resolved',
         ]);
+    }
+
+    /**
+     * Locate an alert from the current feed by its stable alert key.
+     */
+    private function findAlertByKey(Request $request, string $alertKey): array
+    {
+        abort_unless(preg_match('/^(notif-\d+|[a-f0-9]{64})$/', $alertKey) === 1, 404, 'Unknown alert.');
+
+        $alerts = $this->alerts($request)->getData()['allAlerts'];
+        foreach ($alerts as $alert) {
+            if (($alert['alert_key'] ?? null) === $alertKey) {
+                return $alert;
+            }
+        }
+
+        abort(404, 'This alert no longer exists. Refresh the page.');
+    }
+
+    private function persistAlertRead(array $alert): void
+    {
+        if (isset($alert['notification_record_id'])) {
+            \App\Models\Central\CentralNotification::on('central')
+                ->whereKey($alert['notification_record_id'])
+                ->update(['is_read' => true, 'read_at' => now()]);
+
+            return;
+        }
+
+        \App\Services\PlatformAlertReads::mark([$alert]);
     }
 
     /**
@@ -3525,6 +3533,14 @@ class CompanyController extends Controller
      */
     public function markAllAlertsRead(Request $request): \Illuminate\Http\JsonResponse
     {
+        abort_unless(\App\Services\TenantScope::isPlatformAdmin(), 403);
+        $alerts = $this->alerts($request)->getData()['allAlerts'];
+        DB::connection('central')->transaction(function () use ($alerts) {
+            \App\Models\Central\CentralNotification::where(function ($query) {
+                $query->whereNull('target_audience')->orWhereIn('target_audience', ['super_admin', 'both', 'all']);
+            })->where('is_read', false)->update(['is_read' => true, 'read_at' => now()]);
+            \App\Services\PlatformAlertReads::mark(array_filter($alerts, fn ($alert) => !isset($alert['notification_record_id'])));
+        });
         return response()->json([
             'success' => true,
             'message' => "All active alerts marked as read.",
@@ -3597,4 +3613,3 @@ class CompanyController extends Controller
         ]);
     }
 }
-

@@ -51,7 +51,7 @@
     }
     .community-icon-avatar i {
         color: #ffffff !important;
-        background-color: #ffffff !important;
+        background-color: transparent !important;
         -webkit-text-fill-color: #ffffff !important;
         font-size: 1.85rem !important;
         line-height: 1 !important;
@@ -971,13 +971,13 @@
 <div class="container-fluid px-4 py-3">
 
     {{-- MAIN COMMUNITY CHAT CONTAINER --}}
-    <div class="community-container" id="communityContainer">
+    <div class="community-container" id="communityContainer" data-live-preserve>
 
         {{-- 1. HEADER BAR --}}
         <div class="community-header">
             <div class="community-title-box">
                 <div class="community-icon-avatar">
-                    <i class="bx bx-chat" style="color: #ffffff !important; background-color: #ffffff !important; -webkit-text-fill-color: #ffffff !important;"></i>
+                    <i class="bx bx-chat" aria-hidden="true"></i>
                 </div>
                 <div>
                     <h5 class="fw-extrabold text-dark mb-0 d-flex align-items-center gap-2">
@@ -1160,19 +1160,26 @@
      | COMMUNITY MESSAGING CORE JAVASCRIPT
      | ========================================================================= */
     const CURRENT_USER_ID = {{ auth()->id() }};
+    const CURRENT_COMPANY_ID = {{ auth()->user()->company_id }};
     const CAN_MANAGE = {{ $canManage ? 'true' : 'false' }};
 
     let lastLoadedMessageId = 0;
     let selectedFile = null;
     let currentReplyParentId = null;
     let pollingInterval = null;
+    let isPollingMessages = false;
     let isUserNearBottom = true;
+    let lastSyncTime = null;
+    const messageCache = {};
+    const messageSignatures = {};
+    const localChangeAt = {};
 
     document.addEventListener('DOMContentLoaded', function() {
         fetchInitialMessages();
 
-        // Start delta polling every 3.5 seconds
-        pollingInterval = setInterval(pollNewMessages, 3500);
+        // Start delta polling every 2 seconds
+        pollingInterval = setInterval(pollNewMessages, 2000);
+        document.addEventListener('visibilitychange', () => { if (!document.hidden) pollNewMessages(); });
 
         // Timeline Scroll Listener
         const timeline = document.getElementById('chatTimeline');
@@ -1195,7 +1202,9 @@
         .then(res => res.json())
         .then(data => {
             if (data.success) {
+                if (Number(data.company_id) !== CURRENT_COMPANY_ID) { clearInterval(pollingInterval); return; }
                 renderMessagesTimeline(data.messages, true);
+                if (data.server_time) lastSyncTime = data.server_time;
                 if (data.messages.length > 0) {
                     lastLoadedMessageId = Math.max(...data.messages.map(m => m.id));
                 }
@@ -1212,9 +1221,12 @@
      * Poll new messages (delta polling)
      */
     function pollNewMessages() {
-        if (!lastLoadedMessageId) return;
+        if (document.hidden || isPollingMessages) return;
+        isPollingMessages = true;
 
-        fetch(`{{ route('community.messages') }}?after_id=${lastLoadedMessageId}`, {
+        const pollStartedAt = Date.now();
+        const sinceParam = lastSyncTime ? `&since=${encodeURIComponent(lastSyncTime)}` : '';
+        fetch(`{{ route('community.messages') }}?after_id=${lastLoadedMessageId}${sinceParam}`, {
             headers: {
                 'Accept': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest'
@@ -1223,6 +1235,7 @@
         .then(res => res.json())
         .then(data => {
             if (data.success) {
+                if (Number(data.company_id) !== CURRENT_COMPANY_ID) { clearInterval(pollingInterval); return; }
                 if (data.messages && data.messages.length > 0) {
                     appendNewMessages(data.messages);
                     lastLoadedMessageId = Math.max(...data.messages.map(m => m.id));
@@ -1230,12 +1243,17 @@
                         scrollToBottom();
                     }
                 }
+                if (data.updated && data.updated.length > 0) {
+                    applyUpdatedMessages(data.updated, pollStartedAt);
+                }
+                if (data.server_time) lastSyncTime = data.server_time;
                 if (data.pinned_messages) {
                     updatePinnedUI(data.pinned_messages);
                 }
             }
         })
-        .catch(err => console.error('Polling error:', err));
+        .catch(err => console.error('Polling error:', err))
+        .finally(() => { isPollingMessages = false; });
     }
 
     /**
@@ -1318,6 +1336,21 @@
     }
 
     /**
+     * Re-render messages already on screen that changed (reactions, edits, deletions, pins)
+     */
+    function applyUpdatedMessages(updatedMessages, pollStartedAt) {
+        updatedMessages.forEach(m => {
+            const card = document.getElementById(`msgCard_${m.id}`);
+            if (!card || messageSignatures[m.id] === JSON.stringify(m)) return;
+            // A poll sent before this user's own change may carry the older state; the action response is newer.
+            if (localChangeAt[m.id] && localChangeAt[m.id] >= pollStartedAt) return;
+            // Do not close an action menu the user has open; the change is applied on the next sync.
+            if (card.querySelector('.dropdown-menu.show')) return;
+            card.replaceWith(createMessageCardElement(m));
+        });
+    }
+
+    /**
      * Create Date Separator DOM Element
      */
     function createDateSeparator(dateText) {
@@ -1345,6 +1378,8 @@
         const div = document.createElement('div');
         div.className = `message-wrapper ${m.is_self ? 'message-self' : 'message-other'}`;
         div.id = `msgCard_${m.id}`;
+        messageCache[m.id] = m;
+        messageSignatures[m.id] = JSON.stringify(m);
 
         const avatarMarkup = renderAvatarHtml(m);
 
@@ -1469,7 +1504,7 @@
                 clearSelectedAttachment();
                 handleMessageInput();
                 appendNewMessages([data.message]);
-                lastLoadedMessageId = Math.max(lastLoadedMessageId, data.message.id);
+                pollNewMessages();
                 scrollToBottom();
             } else {
                 alert(data.error || 'Failed to send message.');
@@ -1535,6 +1570,13 @@
         .then(res => res.json())
         .then(data => {
             if (data.success) {
+                // Show the reaction immediately, then sync with everyone else's changes.
+                localChangeAt[messageId] = Date.now();
+                const card = document.getElementById(`msgCard_${messageId}`);
+                const cached = messageCache[messageId];
+                if (card && cached && Array.isArray(data.reactions)) {
+                    card.replaceWith(createMessageCardElement(Object.assign({}, cached, { reactions: data.reactions })));
+                }
                 pollNewMessages();
             }
         });
@@ -1561,6 +1603,7 @@
         .then(res => res.json())
         .then(data => {
             if (data.success) {
+                localChangeAt[id] = Date.now();
                 const card = document.getElementById(`msgCard_${id}`);
                 if (card) {
                     const newElem = createMessageCardElement(data.message);
@@ -1590,6 +1633,7 @@
         .then(res => res.json())
         .then(data => {
             if (data.success) {
+                localChangeAt[id] = Date.now();
                 const card = document.getElementById(`msgCard_${id}`);
                 if (card) {
                     card.innerHTML = `
@@ -1620,6 +1664,12 @@
         .then(res => res.json())
         .then(data => {
             if (data.success) {
+                localChangeAt[id] = Date.now();
+                const card = document.getElementById(`msgCard_${id}`);
+                const cached = messageCache[id];
+                if (card && cached) {
+                    card.replaceWith(createMessageCardElement(Object.assign({}, cached, { is_pinned: !!data.is_pinned })));
+                }
                 pollNewMessages();
             } else {
                 alert(data.error || 'Failed to toggle pin.');
@@ -1695,6 +1745,7 @@
         .then(res => res.json())
         .then(data => {
             if (data.success) {
+                if (data.company_id !== undefined && Number(data.company_id) !== CURRENT_COMPANY_ID) { clearInterval(pollingInterval); return; }
                 renderMessagesTimeline(data.messages, true);
             }
         });

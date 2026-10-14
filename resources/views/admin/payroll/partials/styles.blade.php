@@ -237,6 +237,11 @@
         font-size: 13px;
         text-align: left;
     }
+    .pr-table [data-pms-selection-column] { width:48px; min-width:48px; text-align:center; vertical-align:middle; }
+    .pr-table [data-pms-selection-column] input[type="checkbox"] { position:static!important; display:inline-block; width:18px; height:18px; margin:0!important; cursor:pointer; accent-color:var(--pr-primary); }
+    .pr-table [data-pms-selection-column] input:disabled { cursor:not-allowed; opacity:.4; }
+    .pr-table td[colspan] { white-space:normal; }
+    .pr-table td[colspan] i { text-align:center; }
 
     .pr-table th {
         background: rgba(15, 23, 42, 0.03);

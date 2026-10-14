@@ -1,6 +1,7 @@
 @extends('admin.layout.app')
 
 @section('content')
+<script src="{{ asset('admin/assets/js/pms-lead-phone-length.js') }}?v={{ filemtime(public_path('admin/assets/js/pms-lead-phone-length.js')) }}" defer></script>
 
 <style>
 .form-card-modern {
@@ -266,12 +267,18 @@ html[data-pms-theme="dark"] .btn-cancel-modern:hover {
 
                     <div class="col-md-4">
                         <label class="form-label-modern">Alternate Phone</label>
-                        <input type="text" name="alternate_phone" class="form-control form-control-modern" value="{{ old('alternate_phone', $lead->alternate_phone) }}" placeholder="e.g. Office Ext 102">
+                        <div class="pms-phone-group">
+@include('partials.phone-country-select', ['phoneField' => 'alternate_phone', 'phoneValue' => $lead->alternate_phone])
+<input type="text" name="alternate_phone" class="form-control form-control-modern" value="{{ old('alternate_phone', $lead->alternate_phone) }}" placeholder="Alternate phone number">
+</div>
                     </div>
 
                     <div class="col-md-4">
                         <label class="form-label-modern">WhatsApp Number</label>
-                        <input type="text" name="whatsapp" class="form-control form-control-modern" value="{{ old('whatsapp', $lead->whatsapp) }}" placeholder="e.g. +1 234 567 890">
+                        <div class="pms-phone-group">
+@include('partials.phone-country-select', ['phoneField' => 'whatsapp', 'phoneValue' => $lead->whatsapp])
+<input type="text" name="whatsapp" class="form-control form-control-modern" value="{{ old('whatsapp', $lead->whatsapp) }}" placeholder="e.g. +1 234 567 890">
+</div>
                     </div>
 
                     <div class="col-md-4">

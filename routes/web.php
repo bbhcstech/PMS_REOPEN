@@ -39,16 +39,26 @@ use App\Http\Controllers\TaskCategoryController;
 use App\Http\Controllers\TaskCommentController;
 use App\Http\Controllers\TaskController;
 
-Route::get('/subscription/suspended', function () {
+Route::get('/subscription/suspended', function (\Illuminate\Http\Request $request) {
     $company = app(\App\Services\CompanyContext::class)->current();
     if (! $company && auth()->check() && auth()->user()?->company_id) {
         $company = \App\Models\Central\Company::on('central')->find(auth()->user()->company_id);
     }
-    if (! $company) {
-        $company = \App\Models\Central\Company::on('central')->first();
+    abort_unless($company, 404);
+    $company = \App\Models\Central\Company::on('central')->findOrFail($company->id);
+    $status = app(\App\Services\SubscriptionService::class)->syncCompanyStatus($company);
+    if ($request->expectsJson()) {
+        return response()->json(['status' => $status])->header('Cache-Control', 'private, no-store');
+    }
+    if (in_array($status, ['active', 'trial'], true)) {
+        return redirect()->route('dashboard')->with('success', 'Your company access has been restored. Welcome back.');
+    }
+    if ($status === 'expired') {
+        $subscription = $company->subscriptions()->with('plan')->latest('id')->first();
+        return view('subscription.expired', compact('company', 'subscription'));
     }
     return view('subscription.suspended', compact('company'));
-})->name('subscription.suspended');
+})->middleware('auth:web,super_admin')->name('subscription.suspended');
 use App\Http\Controllers\TaskLabelController;
 use App\Http\Controllers\TaskTimerController;
 use App\Http\Controllers\TicketController;
@@ -92,12 +102,18 @@ use App\Http\Controllers\Admin\RecruitmentController;
 
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\CommunityMessageController;
+Route::get('/company/session-status', function () {
+    return response()->json(['company_id' => \App\Services\TenantScope::companyId()]);
+})->middleware('auth:web,super_admin')->name('company.session-status');
 
 Route::middleware(['auth'])->group(function () {
+    Route::get('/company/assistant', [\App\Http\Controllers\CompanyAiController::class, 'index'])->name('company.ai.index');
+    Route::post('/company/assistant', [\App\Http\Controllers\CompanyAiController::class, 'ask'])->middleware('throttle:company-ai')->name('company.ai.ask');
     // Community Message Module Routes
     Route::middleware(['feature:community'])->group(function () {
         Route::get('/community', [CommunityMessageController::class, 'index'])->name('community.index');
         Route::get('/community/messages', [CommunityMessageController::class, 'fetchMessages'])->name('community.messages');
+        Route::get('/community/messages/{id}/attachment', [CommunityMessageController::class, 'attachment'])->name('community.attachment');
         Route::post('/community/messages', [CommunityMessageController::class, 'store'])->name('community.store');
         Route::put('/community/messages/{id}', [CommunityMessageController::class, 'update'])->name('community.update');
         Route::delete('/community/messages/{id}', [CommunityMessageController::class, 'destroy'])->name('community.destroy');
@@ -141,18 +157,8 @@ Route::middleware(['auth'])->group(function () {
 
 
 
-Route::get('/smtp-test', function () {
-    try {
-        Mail::raw('SMTP Test Successful', function ($msg) {
-            $msg->to('pallabk825@gmail.com')
-                ->subject('SMTP Working - PMS');
-        });
-
-        return 'Email sent. Check your Gmail inbox or spam.';
-    } catch (\Exception $e) {
-        return 'Error: ' . $e->getMessage();
-    }
-});
+Route::get('/smtp-test', fn () => redirect()->route('admin.settings.email'))
+    ->middleware(['auth', 'role:admin']);
 
 
 Route::get('designations/next-code', [DesignationController::class, 'nextCode'])
@@ -251,25 +257,8 @@ Route::delete('timelogs/bulk-delete', [TimeLogController::class, 'bulkDelete'])
     ->name('timelogs.bulk-delete');
 
 
-Route::get('/test-email', function () {
-    $fakeUser = new User([
-        'id'    => 999,
-        'name'  => 'Test User',
-        'email' => 'pallabk825@gmail.com',
-    ]);
-
-    $inviteUrl = url('/dummy-invite-link');
-
-    try {
-        Mail::to($fakeUser->email)->send(
-            new EmployeeInvite($fakeUser, "This is a test email", $inviteUrl)
-        );
-
-        return "Email sent successfully!";
-    } catch (\Exception $e) {
-        return "Failed: " . $e->getMessage();
-    }
-});
+Route::get('/test-email', fn () => redirect()->route('admin.settings.email'))
+    ->middleware(['auth', 'role:admin']);
 
 Route::get('/debug-whos-logged', function () {
     $u = auth()->user();
@@ -369,7 +358,7 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'module.access'])
     ->name('dashboard');
 
-Route::middleware(['auth:super_admin,web'])->prefix('superadmin')->name('superadmin.')->group(function () {
+Route::middleware(['auth:super_admin,web', 'platform.superadmin'])->prefix('superadmin')->name('superadmin.')->group(function () {
     Route::get('/', [SuperAdminController::class, 'dashboard'])->name('dashboard');
     Route::get('/profile', [SuperAdminController::class, 'profile'])->name('profile');
     Route::post('/profile', [SuperAdminController::class, 'updateProfile'])->name('profile.update');
@@ -381,6 +370,8 @@ Route::middleware(['auth:super_admin,web'])->prefix('superadmin')->name('superad
     Route::post('/subscriptions/toggle-override', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'toggleCompanyOverride'])->name('subscriptions.toggle-override');
     Route::get('/companies', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'index'])->name('companies.list');
     Route::get('/companies/directory', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'index'])->name('companies.index');
+    Route::get('/companies/suspended', [\App\Http\Controllers\SuperAdmin\CompanySuspensionController::class, 'index'])->name('companies.suspended');
+    Route::get('/companies/{company}/suspension', [\App\Http\Controllers\SuperAdmin\CompanySuspensionController::class, 'create'])->whereNumber('company')->name('companies.suspension');
     Route::get('/companies/create', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'create'])->name('companies.create');
     Route::get('/companies/metrics', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'metrics'])->name('companies.metrics');
     Route::get('/companies/{company}', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'show'])->where('company', '[0-9]+')->name('companies.show');
@@ -411,7 +402,9 @@ Route::middleware(['auth:super_admin,web'])->prefix('superadmin')->name('superad
     Route::get('/complaints/export', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'export'])->name('complaints.export');
     Route::get('/complaints/unread-count', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'unreadCount'])->name('complaints.unread-count');
     Route::get('/complaints/{id}', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'show'])->name('complaints.show');
+    Route::get('/complaints/{id}/messages', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'messages'])->name('complaints.messages');
     Route::post('/complaints/{id}/respond', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'respond'])->name('complaints.respond');
+    Route::post('/complaints/{id}/subscription-decision', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'subscriptionDecision'])->name('complaints.subscription-decision');
     Route::match(['GET', 'POST', 'PATCH'], '/complaints/{id}/status', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'updateStatus'])->name('complaints.status');
     Route::match(['GET', 'POST', 'PATCH'], '/complaints/{id}/assign', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'assign'])->name('complaints.assign');
     Route::get('/complaints/{id}/attachment/{attachmentId}', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'downloadAttachment'])->name('complaints.attachment');
@@ -441,7 +434,7 @@ Route::middleware(['auth:super_admin,web'])->prefix('superadmin')->name('superad
 });
 
 // Standalone route aliases for super-admin.* and admins.*
-Route::middleware(['auth:super_admin,web'])->group(function () {
+Route::middleware(['auth:super_admin,web', 'platform.superadmin'])->group(function () {
     Route::get('/company-admins/export', [\App\Http\Controllers\SuperAdminController::class, 'exportAdmins'])->name('admins.export');
     Route::get('/company-admins', [\App\Http\Controllers\SuperAdminController::class, 'companyAdmins'])->name('admins.index');
     Route::post('/company-admins', [\App\Http\Controllers\SuperAdminController::class, 'storeAdmin'])->name('admins.store');
@@ -588,6 +581,7 @@ Route::middleware(['auth', 'module.access'])->group(function () {
         Route::post('/letterhead/export-word', [LetterheadController::class, 'exportWord'])->name('letterhead.export-word');
         Route::get('/letterhead/demo-download', [LetterheadController::class, 'demoDownload'])->name('letterhead.demo-download');
         Route::post('/letterhead/send-letter', [LetterheadController::class, 'sendLetter'])->name('letterhead.send-letter');
+        Route::get('/letterhead/sent-letters/{id}/pdf', [LetterheadController::class, 'downloadSentLetter'])->name('letterhead.sent-letters.pdf');
         Route::get('/letterhead/{letterhead}', [LetterheadController::class, 'show'])->name('letterhead.show');
         Route::get('/letterhead/{letterhead}/edit', [LetterheadController::class, 'edit'])->name('letterhead.edit');
         Route::put('/letterhead/{letterhead}', [LetterheadController::class, 'update'])->name('letterhead.update');
@@ -626,6 +620,7 @@ Route::middleware(['auth', 'module.access'])->group(function () {
     Route::post('/letterhead/export-word', [LetterheadController::class, 'exportWord'])->name('letterhead.export-word');
     Route::get('/letterhead/demo-download', [LetterheadController::class, 'demoDownload'])->name('letterhead.demo-download');
     Route::post('/letterhead/send-letter', [LetterheadController::class, 'sendLetter'])->name('letterhead.send-letter');
+    Route::get('/letterhead/sent-letters/{id}/pdf', [LetterheadController::class, 'downloadSentLetter'])->name('letterhead.sent-letters.pdf');
     Route::get('/letterhead/{letterhead}', [LetterheadController::class, 'show'])->name('letterhead.show');
     Route::get('/letterhead/{letterhead}/edit', [LetterheadController::class, 'edit'])->name('letterhead.edit');
     Route::put('/letterhead/{letterhead}', [LetterheadController::class, 'update'])->name('letterhead.update');
@@ -697,6 +692,9 @@ Route::middleware(['auth', 'module.access'])->group(function () {
     |----------------------------------------------------------------------
     */
 
+    Route::put('designations/level-settings', [DesignationController::class, 'updateLevelSettings'])
+        ->name('designations.level-settings');
+
     // Designation hierarchy
     Route::get('designations/designation-hierarchy', [DesignationController::class, 'hierarchy'])
         ->name('designations.hierarchy');
@@ -712,6 +710,8 @@ Route::middleware(['auth', 'module.access'])->group(function () {
         ->name('designations.archive.action');
     Route::post('designations/{id}/restore', [DesignationController::class, 'restore'])
         ->name('designations.restore');
+    Route::delete('designations/{id}/permanent', [DesignationController::class, 'deleteArchived'])
+        ->name('designations.delete-archived');
 
     // Bulk delete designations
     Route::post('designations/bulk-delete', [DesignationController::class, 'bulkDelete'])
@@ -758,6 +758,10 @@ Route::middleware(['auth', 'module.access'])->group(function () {
         ->name('employees.restore');
 
     Route::resource('employees', EmployeeController::class);
+    Route::get('admin/upper-level-employees', [\App\Http\Controllers\Admin\UpperLevelEmployeeController::class, 'index'])->name('admin.upper-level-employees.index');
+    Route::post('admin/upper-level-employees/roles', [\App\Http\Controllers\Admin\UpperLevelEmployeeController::class, 'storeRole'])->name('admin.upper-level-employees.roles.store');
+    Route::post('admin/upper-level-employees', [\App\Http\Controllers\Admin\UpperLevelEmployeeController::class, 'store'])->name('admin.upper-level-employees.store');
+    Route::put('admin/upper-level-employees/{id}', [\App\Http\Controllers\Admin\UpperLevelEmployeeController::class, 'update'])->name('admin.upper-level-employees.update');
 
 
     // Add this route in your routes/web.php file
@@ -770,13 +774,11 @@ Route::middleware(['auth', 'module.access'])->group(function () {
 
 
     // Employee invites
-    Route::get('employees/invite/accept', [EmployeeController::class, 'acceptInvite'])
-        ->name('employees.invite.accept')
-        ->middleware('signed');
-    Route::post('employees/invite/accept', [EmployeeController::class, 'acceptInviteSubmit'])
-        ->name('employees.invite.complete');
+    // Employee invite acceptance is public (the invitee is not signed in): see the signed routes below.
     Route::post('employees/send-invite', [EmployeeController::class, 'sendInvite'])
         ->name('employees.sendInvite');
+    Route::post('employees/invite-link', [EmployeeController::class, 'generateInviteLink'])
+        ->name('employees.inviteLink');
     // add this
     Route::post('employees/store-department', [\App\Http\Controllers\EmployeeController::class, 'storeDepartment'])
     ->name('employees.storeDepartment');
@@ -811,6 +813,11 @@ Route::middleware(['auth', 'module.access'])->group(function () {
 
     Route::get('/attendance', [AttendanceController::class, 'index'])->name('attendance.index');
     Route::post('/attendance/mark', [AttendanceController::class, 'markAttendance'])->name('attendance.mark');
+
+    Route::get('/admin/authority-attendance', [AttendanceController::class, 'authorityIndex'])->name('admin.authority-attendance');
+    Route::get('/admin/authority-leaves', [LeaveController::class, 'authorityIndex'])->name('admin.authority-leaves');
+    Route::get('/attendance/{attendance}/photo', [\App\Http\Controllers\WorkforceFileController::class, 'photo'])->name('attendance.photo');
+    Route::get('/leaves/{leave}/attachment', [\App\Http\Controllers\WorkforceFileController::class, 'attachment'])->name('leaves.attachment');
 
     // Filter (remove duplicate below)
     Route::get('/attendance/filter', [AttendanceController::class, 'filter'])->name('attendance.filter');
@@ -877,6 +884,7 @@ Route::middleware(['auth', 'module.access'])->group(function () {
 
 
     Route::post('/leaves/policy', [LeaveController::class, 'updatePolicy'])->name('leaves.update-policy');
+    Route::post('/leaves/types', [LeaveController::class, 'storeLeaveType'])->name('leaves.store-type');
     Route::post('/leaves/reset/{id}', [LeaveController::class, 'resetEmployeeLeaves'])->name('leaves.reset-employee-leaves');
     Route::get('/leaves/export', [LeaveController::class, 'export'])->name('leaves.export');
    /*
@@ -988,6 +996,7 @@ Route::get('/my-awards', [AwardController::class, 'myAwards'])->name('awards.my-
 
     Route::post('/projects/bulk-delete', [ProjectController::class, 'bulkDelete'])->name('projects.bulk-delete');
     Route::post('/projects/bulk-status', [ProjectController::class, 'bulkStatus'])->name('projects.bulk-status');
+    Route::post('/projects/bulk-archive', [ProjectController::class, 'bulkArchive'])->name('projects.bulk-archive');
     Route::post('/projects/import', [ProjectController::class, 'import'])->name('projects.import');
     Route::patch('admin/projects/{project}/status', [ProjectController::class, 'toggleStatus'])->name('projects.toggleStatus');
     Route::post('projects/{project}/updates', [ProjectController::class, 'storeUpdate'])->name('projects.updates.store');
@@ -1222,6 +1231,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('leads/contacts/create', [LeadContactController::class, 'create'])->name('leads.contacts.create');
     Route::post('leads/contacts/store', [LeadContactController::class, 'store'])->name('leads.contacts.store');
     Route::post('leads/contacts/check-duplicate', [LeadContactController::class, 'checkDuplicate'])->name('leads.contacts.check-duplicate');
+    Route::get('leads/contacts/template', [LeadContactController::class, 'downloadTemplate'])->name('leads.contacts.template');
     Route::get('leads/contacts/{id}', [LeadContactController::class, 'show'])->name('leads.contacts.show');
     Route::get('leads/contacts/{id}/edit', [LeadContactController::class, 'edit'])->name('leads.contacts.edit');
     Route::put('leads/contacts/{id}', [LeadContactController::class, 'update'])->name('leads.contacts.update');
@@ -1236,7 +1246,6 @@ Route::middleware(['auth'])->group(function () {
 
     // Import/Export
     Route::get('/leads/contacts/export', [LeadContactController::class, 'export'])->name('leads.contacts.export');
-    Route::get('leads/contacts/template', [LeadContactController::class, 'downloadTemplate'])->name('leads.contacts.template');
     Route::post('leads/contacts/import', [LeadContactController::class, 'import'])->name('leads.contacts.import');
 });
 
@@ -1377,26 +1386,28 @@ Route::delete('/settings/company', [CompanySettingsController::class, 'destroy']
 
 
   // Business Address Routes
-Route::get('/admin/settings/business-address', [BusinessAddressController::class, 'index'])
-    ->name('admin.settings.business-address.index');
+Route::middleware(['auth', 'module.access'])->group(function () {
+    Route::get('/admin/settings/business-address', [BusinessAddressController::class, 'index'])
+        ->name('admin.settings.business-address.index');
 
-Route::get('/admin/settings/business-address/create', [BusinessAddressController::class, 'create'])
-    ->name('admin.settings.business-address.create');
+    Route::get('/admin/settings/business-address/create', [BusinessAddressController::class, 'create'])
+        ->name('admin.settings.business-address.create');
 
-Route::post('/admin/settings/business-address/store', [BusinessAddressController::class, 'store'])
-    ->name('admin.settings.business-address.store');
+    Route::post('/admin/settings/business-address/store', [BusinessAddressController::class, 'store'])
+        ->name('admin.settings.business-address.store');
 
-Route::get('/admin/settings/business-address/{businessAddress}/edit', [BusinessAddressController::class, 'edit'])
-    ->name('admin.settings.business-address.edit');
+    Route::get('/admin/settings/business-address/{businessAddress}/edit', [BusinessAddressController::class, 'edit'])
+        ->name('admin.settings.business-address.edit');
 
-Route::put('/admin/settings/business-address/{businessAddress}', [BusinessAddressController::class, 'update'])
-    ->name('admin.settings.business-address.update');
+    Route::put('/admin/settings/business-address/{businessAddress}', [BusinessAddressController::class, 'update'])
+        ->name('admin.settings.business-address.update');
 
-Route::delete('/admin/settings/business-address/{businessAddress}', [BusinessAddressController::class, 'destroy'])
-    ->name('admin.settings.business-address.destroy');
+    Route::delete('/admin/settings/business-address/{businessAddress}', [BusinessAddressController::class, 'destroy'])
+        ->name('admin.settings.business-address.destroy');
 
-Route::put('/admin/settings/business-address/{businessAddress}/make-default', [BusinessAddressController::class, 'makeDefault'])
-    ->name('admin.settings.business-address.make-default');
+    Route::put('/admin/settings/business-address/{businessAddress}/make-default', [BusinessAddressController::class, 'makeDefault'])
+        ->name('admin.settings.business-address.make-default');
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -1447,6 +1458,8 @@ Route::middleware(['auth'])->group(function () {
     // Admin Settings Dashboard & 20 Modules
     Route::get('/admin/settings', [SettingController::class, 'index'])->name('admin.settings.index');
 
+    require __DIR__.'/workforce-settings.php';
+
     Route::get('/admin/settings/organization-details', [OrganizationDetailsController::class, 'index'])->name('admin.settings.organization-details');
     Route::post('/admin/settings/organization-details', [OrganizationDetailsController::class, 'update'])->name('admin.settings.organization-details.update');
 
@@ -1488,6 +1501,13 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/my-documents/upload', [\App\Http\Controllers\UserDocumentController::class, 'upload'])->name('my-documents.upload');
     Route::delete('/my-documents/{type}/{id}', [\App\Http\Controllers\UserDocumentController::class, 'destroy'])->name('my-documents.destroy');
     Route::get('/my-documents/download/{type}/{id}', [\App\Http\Controllers\UserDocumentController::class, 'download'])->name('my-documents.download');
+    Route::get('/my-documents/history/{type}/{id}', [\App\Http\Controllers\UserDocumentController::class, 'history'])->name('my-documents.history');
+
+    // My Payslips (HR, Manager, Employee and company roles: own released payslips only)
+    Route::get('/my-payslips', [\App\Http\Controllers\MyPayslipController::class, 'index'])->name('my-payslips.index');
+    Route::get('/my-payslips/{payslip}', [\App\Http\Controllers\MyPayslipController::class, 'show'])->name('my-payslips.show');
+    Route::get('/my-payslips/{payslip}/document', [\App\Http\Controllers\MyPayslipController::class, 'document'])->name('my-payslips.document');
+    Route::get('/my-payslips/{payslip}/pdf', [\App\Http\Controllers\MyPayslipController::class, 'pdf'])->name('my-payslips.pdf');
 
     Route::get('/admin/settings/security', [SecuritySettingsController::class, 'index'])->name('admin.settings.security');
     Route::post('/admin/settings/security', [SecuritySettingsController::class, 'update'])->name('admin.settings.security.update');
@@ -1497,13 +1517,6 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/admin/settings/localization', [LocalizationController::class, 'index'])->name('admin.settings.localization');
     Route::post('/admin/settings/localization', [LocalizationController::class, 'update'])->name('admin.settings.localization.update');
-
-    // Country Codes Settings Routes
-    Route::get('/admin/settings/country-codes', [\App\Http\Controllers\Admin\Settings\CountryCodeController::class, 'index'])->name('admin.settings.country-codes.index');
-    Route::post('/admin/settings/country-codes', [\App\Http\Controllers\Admin\Settings\CountryCodeController::class, 'store'])->name('admin.settings.country-codes.store');
-    Route::put('/admin/settings/country-codes/{country_code}', [\App\Http\Controllers\Admin\Settings\CountryCodeController::class, 'update'])->name('admin.settings.country-codes.update');
-    Route::delete('/admin/settings/country-codes/{country_code}', [\App\Http\Controllers\Admin\Settings\CountryCodeController::class, 'destroy'])->name('admin.settings.country-codes.destroy');
-    Route::post('/admin/settings/country-codes/resync', [\App\Http\Controllers\Admin\Settings\CountryCodeController::class, 'resync'])->name('admin.settings.country-codes.resync');
 
     // Recruitment Module Routes (Under HR)
     Route::get('/admin/hr/recruitment', [RecruitmentController::class, 'index'])->name('recruitment.index');
@@ -1524,6 +1537,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/admin/company-complaints/create', [\App\Http\Controllers\Admin\CompanyComplaintController::class, 'create'])->name('admin.company-complaints.create');
     Route::post('/admin/company-complaints', [\App\Http\Controllers\Admin\CompanyComplaintController::class, 'store'])->name('admin.company-complaints.store');
     Route::get('/admin/company-complaints/{id}', [\App\Http\Controllers\Admin\CompanyComplaintController::class, 'show'])->name('admin.company-complaints.show');
+    Route::get('/admin/company-complaints/{id}/messages', [\App\Http\Controllers\Admin\CompanyComplaintController::class, 'messages'])->name('admin.company-complaints.messages');
     Route::post('/admin/company-complaints/{id}/reply', [\App\Http\Controllers\Admin\CompanyComplaintController::class, 'reply'])->name('admin.company-complaints.reply');
     Route::match(['POST', 'PATCH'], '/admin/company-complaints/{id}/reopen', [\App\Http\Controllers\Admin\CompanyComplaintController::class, 'reopen'])->name('admin.company-complaints.reopen');
     Route::get('/admin/company-complaints/{id}/attachment/{attachmentId}', [\App\Http\Controllers\Admin\CompanyComplaintController::class, 'downloadAttachment'])->name('admin.company-complaints.attachment');
@@ -1618,4 +1632,14 @@ Route::fallback(function (\Illuminate\Http\Request $request) {
     }
 
     abort(404);
+});
+
+// Employee invitations: signed, single-use links that open the invited company's workspace.
+Route::middleware('signed')->group(function () {
+    Route::get('invite/employee/{company}/{user}', [\App\Http\Controllers\EmployeeInviteController::class, 'show'])
+        ->whereNumber(['company', 'user'])
+        ->name('employee-invite.show');
+    Route::post('invite/employee/{company}/{user}', [\App\Http\Controllers\EmployeeInviteController::class, 'complete'])
+        ->whereNumber(['company', 'user'])
+        ->name('employee-invite.complete');
 });

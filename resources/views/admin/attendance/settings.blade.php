@@ -1169,6 +1169,71 @@
                             </div>
                         </div>
 
+                        <!-- Section 3: Clock-in / Clock-out Boundary -->
+                        @php
+                            $hm = fn ($value, $default) => ! empty($value) ? date('H:i', strtotime($value)) : $default;
+                            $windowOn = (bool) old('clock_window_enabled', $setting->clock_window_enabled ?? false);
+                            $missedOut = old('missed_clock_out_status', $setting->missed_clock_out_status ?? 'half_day');
+                        @endphp
+                        <div class="section-badge mt-5">
+                            <i class="fas fa-door-open"></i> Clock-in / Clock-out Boundary
+                        </div>
+                        <p class="text-muted small mb-3">
+                            Applies to Employees, HR, Managers and Associate Managers (everyone except Admin). Clock-in always requires a live photo.
+                            While switched off, staff can clock in at any time as before.
+                        </p>
+
+                        <div class="form-check form-switch mb-4">
+                            <input type="hidden" name="clock_window_enabled" value="0">
+                            <input class="form-check-input" type="checkbox" role="switch" id="clockWindowEnabled" name="clock_window_enabled" value="1" @checked($windowOn)>
+                            <label class="form-check-label fw-semibold" for="clockWindowEnabled">Enforce fixed clock-in / clock-out times</label>
+                        </div>
+
+                        <div class="row g-4" id="clockWindowFields">
+                            @foreach([
+                                ['clock_in_opens_at', 'Clock-in Opens At', 'fa-door-open', '08:30', 'Earliest time staff can clock in.', true],
+                                ['clock_in_closes_at', 'Clock-in Closes At', 'fa-door-closed', '11:00', 'No clock-in after this time; the working day is marked Absent.', true],
+                                ['half_day_after_time', 'Half Day If Clocked In After', 'fa-business-time', '10:30', 'Clock-in after this time counts as Half Day (between Late Cutoff and Clock-in Closes). Leave empty to only mark Late.', false],
+                                ['office_end_time', 'Office End Time (Clock-out From)', 'fa-moon', '18:30', 'Expected clock-out time. Leaving earlier is judged by the work-duration thresholds above.', false],
+                                ['clock_out_closes_at', 'Auto Clock-out At', 'fa-power-off', '23:58', 'A shift still open at this time is closed automatically and treated as a missed clock-out.', false],
+                            ] as [$field, $label, $icon, $default, $help, $required])
+                                <div class="col-md-6">
+                                    <label class="form-label-custom">{{ $label }} @if($required)<span class="req-asterisk">*</span>@endif</label>
+                                    <div class="input-group input-group-custom">
+                                        <span class="input-group-text"><i class="fas {{ $icon }}"></i></span>
+                                        <input type="time" name="{{ $field }}" class="form-control @error($field) is-invalid @enderror"
+                                            value="{{ old($field, $hm($setting->{$field} ?? null, $required ? $default : '')) }}">
+                                    </div>
+                                    <small class="text-muted mt-1 d-block">{{ $help }}</small>
+                                    @error($field)
+                                        <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle me-1"></i>{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            @endforeach
+
+                            <div class="col-md-6">
+                                <label class="form-label-custom">Missed Clock-out Counts As</label>
+                                <div class="input-group input-group-custom">
+                                    <span class="input-group-text"><i class="fas fa-user-times"></i></span>
+                                    <select name="missed_clock_out_status" class="form-select @error('missed_clock_out_status') is-invalid @enderror">
+                                        <option value="half_day" @selected($missedOut === 'half_day')>Half Day</option>
+                                        <option value="absent" @selected($missedOut === 'absent')>Absent</option>
+                                        <option value="keep" @selected($missedOut === 'keep')>Keep calculated status</option>
+                                    </select>
+                                </div>
+                                <small class="text-muted mt-1 d-block">Status for a day where the employee never clocked out.</small>
+                            </div>
+                        </div>
+                        <script>
+                            (function () {
+                                var toggle = document.getElementById('clockWindowEnabled');
+                                var fields = document.getElementById('clockWindowFields');
+                                function sync() { fields.style.opacity = toggle.checked ? '1' : '0.5'; }
+                                toggle.addEventListener('change', sync);
+                                sync();
+                            })();
+                        </script>
+
                         <!-- Form Action Buttons -->
                         <div class="mt-5 pt-4 border-top d-flex justify-content-end">
                             <button type="submit" class="btn-save-address">

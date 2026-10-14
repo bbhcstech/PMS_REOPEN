@@ -41,16 +41,16 @@
                 <select name="designation_id" onchange="this.form.submit()">
                     <option value="all">All Designations</option>
                     @foreach($designations as $des)
-                        <option value="{{ $des->id }}" {{ request('designation_id') == $des->id ? 'selected' : '' }}>
+                        <option data-designation-level="L{{ $des->level }}" value="{{ $des->id }}" {{ request('designation_id') == $des->id ? 'selected' : '' }}>
                             {{ $des->name }}
                         </option>
                     @endforeach
                 </select>
             </div>
             <div class="field">
-                <label>Grade</label>
+                <label>Designation Level</label>
                 <select name="grade" onchange="this.form.submit()">
-                    <option value="all">All Grades</option>
+                    <option value="all">All Levels</option>
                     @foreach($grades as $gr)
                         <option value="{{ $gr }}" {{ request('grade') === $gr ? 'selected' : '' }}>{{ $gr }}</option>
                     @endforeach
@@ -76,7 +76,7 @@
                     <tr>
                         <th>#</th>
                         <th>Designation</th>
-                        <th>Grade</th>
+                        <th>Designation Level</th>
                         <th class="text-end">Basic Salary</th>
                         <th class="text-center">HRA</th>
                         <th class="text-center">Special Allowance</th>
@@ -90,10 +90,10 @@
                     <tr>
                         <td>{{ $structures->firstItem() + $index }}</td>
                         <td>
-                            <b>{{ $structure->designation?->name ?: ($structure->name ?: 'Standard Role') }}</b>
+                            <b>{{ $structure->designation?->name ?? 'Designation unavailable' }}</b>
                         </td>
                         <td>
-                            <span class="pr-pill calculated">{{ $structure->grade ?: 'Standard' }}</span>
+                            <span class="pr-pill calculated">{{ $structure->designation && $structure->designation->level !== null ? 'L'.$structure->designation->level : 'Not configured' }}</span>
                         </td>
                         <td class="num">₹{{ number_format($structure->basic_salary, 2) }}</td>
                         <td class="text-center">
@@ -139,21 +139,20 @@
                                         <div class="row g-2 mb-3">
                                             <div class="col-md-6">
                                                 <label class="form-label small fw-bold">Designation *</label>
-                                                <select name="designation_id" class="form-select form-select-sm" required>
+                                                <select name="designation_id" class="form-select form-select-sm" data-salary-designation required>
+                                                    <option value="" @selected(!$designations->contains('id', $structure->designation_id))>Select Designation</option>
                                                     @foreach($designations as $des)
-                                                        <option value="{{ $des->id }}" {{ $structure->designation_id == $des->id ? 'selected' : '' }}>
+                                                        <option data-designation-level="L{{ $des->level }}" value="{{ $des->id }}" {{ $structure->designation_id == $des->id ? 'selected' : '' }}>
                                                             {{ $des->name }}
                                                         </option>
                                                     @endforeach
                                                 </select>
                                             </div>
                                             <div class="col-md-6">
-                                                <label class="form-label small fw-bold">Grade / Level *</label>
-                                                <select name="grade" class="form-select form-select-sm" required>
-                                                    @foreach($grades as $gr)
-                                                        <option value="{{ $gr }}" {{ $structure->grade === $gr ? 'selected' : '' }}>{{ $gr }}</option>
-                                                    @endforeach
-                                                </select>
+                                                <label class="form-label small fw-bold">Designation Level *</label>
+                                                <select name="grade" class="form-select form-select-sm" data-salary-level required>
+                                    <option value="">Select a designation first</option>
+                                </select>
                                             </div>
                                         </div>
 
@@ -240,20 +239,18 @@
                     <div class="row g-2 mb-3">
                         <div class="col-md-6">
                             <label class="form-label small fw-bold">Designation *</label>
-                            <select name="designation_id" class="form-select form-select-sm" required>
+                            <select name="designation_id" class="form-select form-select-sm" data-salary-designation required>
                                 <option value="">Select Designation</option>
                                 @foreach($designations as $des)
-                                    <option value="{{ $des->id }}">{{ $des->name }}</option>
+                                    <option data-designation-level="L{{ $des->level }}" value="{{ $des->id }}">{{ $des->name }}</option>
                                 @endforeach
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label small fw-bold">Grade / Level *</label>
-                            <select name="grade" class="form-select form-select-sm" required>
-                                @foreach($grades as $gr)
-                                    <option value="{{ $gr }}">{{ $gr }}</option>
-                                @endforeach
-                            </select>
+                            <label class="form-label small fw-bold">Designation Level *</label>
+                            <select name="grade" class="form-select form-select-sm" data-salary-level required>
+                                    <option value="">Select a designation first</option>
+                                </select>
                         </div>
                     </div>
 
@@ -308,4 +305,5 @@
         </div>
     </div>
 </div>
+<script src="{{ asset('admin/assets/js/pms-payroll-designations.js') }}"></script>
 @endsection

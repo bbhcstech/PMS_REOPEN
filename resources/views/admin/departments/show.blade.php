@@ -3,6 +3,7 @@
 @section('title', 'View Sub Department')
 
 @section('content')
+@include('admin.settings.partials.workforce-navigation')
 <div class="department-view-page">
     <div class="breadcrumb">
         <i class="fas fa-sitemap"></i> Dashboard / Sub Departments / View
@@ -19,10 +20,10 @@
             </div>
         </div>
         <div class="btn-group">
-            <a href="{{ route('departments.index') }}" class="btn btn-light">
+            <a href="{{ \App\Support\WorkforceSettings::route('departments.index') }}" class="btn btn-light">
                 <i class="fas fa-arrow-left"></i> Back to List
             </a>
-            <a href="{{ route('departments.edit', $department->id) }}" class="btn btn-primary">
+            <a href="{{ \App\Support\WorkforceSettings::route('departments.edit', $department->id) }}" class="btn btn-primary">
                 <i class="fas fa-pen"></i> Edit Sub Department
             </a>
         </div>
@@ -62,7 +63,7 @@
                     <label>Parent Department</label>
                     <div class="field-value">
                         @if($department->parent)
-                            <a href="{{ route('parent-departments.show', $department->parent->id) }}" class="parent-link">
+                            <a href="{{ \App\Support\WorkforceSettings::route('parent-departments.show', $department->parent->id) }}" class="parent-link">
                                 <i class="fas fa-link"></i> {{ $department->parent->dpt_name }}
                             </a>
                         @else
@@ -128,10 +129,10 @@
                 <span>Updated: {{ $department->updated_at?->format('d M Y') ?? 'N/A' }}</span>
             </div>
             <div class="footer-actions">
-                <a href="{{ route('departments.index') }}" class="btn btn-secondary">
+                <a href="{{ \App\Support\WorkforceSettings::route('departments.index') }}" class="btn btn-secondary">
                     <i class="fas fa-arrow-left"></i> Back
                 </a>
-                <a href="{{ route('departments.edit', $department->id) }}" class="btn btn-primary">
+                <a href="{{ \App\Support\WorkforceSettings::route('departments.edit', $department->id) }}" class="btn btn-primary">
                     <i class="fas fa-edit"></i> Edit Sub Department
                 </a>
             </div>

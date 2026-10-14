@@ -27,7 +27,7 @@ class PayrollCalculationService
     /**
      * Get eligible employees for payroll calculation based on filters.
      */
-    public function getEligibleEmployees(?int $companyId = null, ?string $office = null, ?string $employeeType = null, ?int $departmentId = null)
+    public function getEligibleEmployees(?int $companyId = null, ?string $office = null, ?string $employeeType = null, ?int $departmentId = null, ?int $year = null, ?int $month = null)
     {
         $query = User::query()
             ->with([
@@ -39,6 +39,19 @@ class PayrollCalculationService
                 $q->where('role', '!=', 'superadmin')
                   ->orWhereNull('role');
             });
+
+        // Only employees registered under Employee Salary are paid: an active assignment that is in
+        // force at some point of the payroll month (or currently, when no period is given).
+        $periodStart = $year && $month ? Carbon::createFromDate($year, $month, 1)->startOfMonth()->toDateString() : date('Y-m-d');
+        $periodEnd = $year && $month ? Carbon::createFromDate($year, $month, 1)->endOfMonth()->toDateString() : date('Y-m-d');
+        $query->whereIn('id', EmployeeSalaryAssignment::query()
+            ->select('user_id')
+            ->where('status', 'active')
+            ->where(fn ($q) => $q->whereNull('effective_from')->orWhere('effective_from', '<=', $periodEnd))
+            ->where(fn ($q) => $q->whereNull('effective_to')->orWhere('effective_to', '>=', $periodStart))
+            ->pluck('user_id')
+            ->unique()
+            ->all());
 
         if ($companyId) {
             $query->where('company_id', $companyId);
@@ -58,12 +71,78 @@ class PayrollCalculationService
 
         if (!empty($employeeType) && $employeeType !== 'all') {
             $query->whereHas('employeeDetail', function ($empQuery) use ($employeeType) {
-                $empQuery->where('employment_type', $employeeType)
-                         ->orWhere('employment_type', str_replace(' ', '_', strtolower($employeeType)));
+                $empQuery->where(fn ($t) => $t->where('employment_type', $employeeType)
+                         ->orWhere('employment_type', str_replace(' ', '_', strtolower($employeeType))));
             });
         }
 
         return $query->orderBy('name', 'asc')->get();
+    }
+
+    /**
+     * Leave requests of this month that are still waiting for approval.
+     */
+    public function getPendingLeaveData(User $user, int $year, int $month): array
+    {
+        $start = Carbon::createFromDate($year, $month, 1)->startOfMonth();
+        $end = $start->copy()->endOfMonth();
+        try {
+            $leaves = Leave::withoutGlobalScope('workforce_company')->where('user_id', $user->id)
+                ->whereIn('status', ['pending', 'Pending'])
+                ->where(fn ($q) => $q->whereBetween('date', [$start->toDateString(), $end->toDateString()])
+                    ->orWhere(fn ($r) => $r->whereDate('start_date', '<=', $end)->whereDate('end_date', '>=', $start)))
+                ->get();
+        } catch (\Throwable $e) {
+            return ['requests' => 0, 'days' => 0.0];
+        }
+        $days = 0.0;
+        foreach ($leaves as $leave) {
+            $from = Carbon::parse($leave->start_date ?: $leave->date)->startOfDay()->max($start);
+            $to = Carbon::parse($leave->end_date ?: $leave->date ?: $leave->start_date)->startOfDay()->min($end);
+            if ($to->lt($from)) continue;
+            $isHalf = $leave->half_day_flag || strtolower((string) $leave->duration) === 'half_day';
+            $days += $isHalf ? 0.5 : $this->leaveWorkingDays($from, $to, $user);
+        }
+        return ['requests' => $leaves->count(), 'days' => round($days, 2)];
+    }
+
+    /**
+     * Working days between two dates (inclusive), skipping weekly offs and holidays.
+     */
+    private function leaveWorkingDays(Carbon $from, Carbon $to, User $user): float
+    {
+        if ($to->lt($from)) {
+            return 0.0;
+        }
+        try {
+            $offDays = WorkScheduleService::getHolidaysAndOffDays($from->copy()->startOfDay(), $to->copy()->endOfDay(), $user->company_id ? (int) $user->company_id : null);
+        } catch (\Throwable $e) {
+            $offDays = [];
+        }
+        $days = 0;
+        for ($day = $from->copy()->startOfDay(); $day->lte($to); $day->addDay()) {
+            if (! isset($offDays[$day->toDateString()])) $days++;
+        }
+        return (float) $days;
+    }
+
+    /**
+     * Hours of work logged this month in timesheets (time logs) and task timers.
+     */
+    public function getWorkData(User $user, int $year, int $month): array
+    {
+        $start = Carbon::createFromDate($year, $month, 1)->startOfMonth()->toDateString();
+        $end = Carbon::createFromDate($year, $month, 1)->endOfMonth()->toDateString();
+        $sum = function (string $model) use ($user, $start, $end) {
+            try {
+                return (float) $model::where('user_id', $user->id)->whereBetween('start_date', [$start, $end])->sum('total_hours');
+            } catch (\Throwable $e) {
+                return 0.0;
+            }
+        };
+        $timesheet = round($sum(\App\Models\TimeLog::class), 2);
+        $timer = round($sum(TaskTimer::class), 2);
+        return ['timesheet_hours' => $timesheet, 'task_timer_hours' => $timer, 'work_hours' => round($timesheet + $timer, 2)];
     }
 
     /**
@@ -75,13 +154,12 @@ class PayrollCalculationService
         $endDate = $startDate->copy()->endOfMonth();
 
         // 1. Initial Leave Balance
+        $leaveYear = (new LeaveService)->leaveYearDates($startDate);
         $leaveBalanceRecord = LeaveBalance::where('user_id', $user->id)
-            ->where(function ($q) use ($year) {
-                $q->where('year', $year)->orWhere('leave_year', $year);
-            })
+            ->where('year', $leaveYear['year'])
             ->first();
 
-        $initialBalance = 18.0;
+        $initialBalance = (float) (\App\Models\LeavePolicy::first()?->annual_leaves ?? 18);
         if ($leaveBalanceRecord) {
             $initialBalance = (float) ($leaveBalanceRecord->allocated_leaves ?? $leaveBalanceRecord->remaining_leaves ?? 18.0);
         } elseif (isset($user->annual_leave_balance) && $user->annual_leave_balance > 0) {
@@ -89,7 +167,7 @@ class PayrollCalculationService
         }
 
         // 2. Fetch Leaves in period
-        $leaves = Leave::where('user_id', $user->id)
+        $leaves = Leave::withoutGlobalScope('workforce_company')->where('user_id', $user->id)
             ->where(function ($q) use ($startDate, $endDate) {
                 $q->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
                   ->orWhereBetween('start_date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
@@ -108,7 +186,13 @@ class PayrollCalculationService
 
         foreach ($leaves as $leave) {
             $isHalf = $leave->half_day_flag || strtolower((string)$leave->type) === 'half_day' || strtolower((string)$leave->duration) === 'half_day';
-            $days = $isHalf ? 0.5 : (float) ($leave->total_days ?: 1.0);
+            $leaveStart = Carbon::parse($leave->start_date ?: $leave->date)->startOfDay();
+            $leaveEnd = Carbon::parse($leave->end_date ?: $leave->date ?: $leave->start_date)->startOfDay();
+            $overlapStart = $leaveStart->copy()->max($startDate);
+            $overlapEnd = $leaveEnd->copy()->min($endDate);
+            if ($overlapEnd->lt($overlapStart)) continue;
+            // Weekly offs and holidays inside a leave are not leave days (a Fri–Mon leave is 2 days, not 4).
+            $days = $isHalf ? 0.5 : $this->leaveWorkingDays($overlapStart, $overlapEnd, $user);
 
             if ($isHalf) {
                 $halfLeaveCount += 1.0;
@@ -116,17 +200,16 @@ class PayrollCalculationService
                 $fullLeaveCount += $days;
             }
 
-            // Check if paid vs unpaid
-            $isUnpaid = $leave->is_unpaid || (isset($leave->paid_days) && (float)$leave->paid_days == 0 && (float)$leave->unpaid_days > 0);
-            if ($isUnpaid) {
-                $unpaidLeaveDays += $days;
-            } else {
-                $paidLeaveDays += $days;
-            }
+            // Paid days occupy the beginning of the request; only count this month's portion.
+            $paidTotal = $leave->paid_days !== null ? (float) $leave->paid_days : ($leave->is_unpaid ? 0 : (float) ($leave->total_days ?: $days));
+            $offset = $overlapStart->gt($leaveStart) ? $this->leaveWorkingDays($leaveStart, $overlapStart->copy()->subDay(), $user) : 0.0;
+            $paidInMonth = min($days, max(0, $paidTotal - $offset));
+            $paidLeaveDays += $paidInMonth;
+            $unpaidLeaveDays += max(0, $days - $paidInMonth);
         }
 
         $totalLeaveUsed = $fullLeaveCount + ($halfLeaveCount * 0.5);
-        $currentBalance = max(0.0, $initialBalance - $totalLeaveUsed);
+        $currentBalance = (float) ($leaveBalanceRecord?->remaining_leaves ?? max(0.0, $initialBalance - $paidLeaveDays));
 
         return [
             'initial_balance' => round($initialBalance, 2),
@@ -147,11 +230,15 @@ class PayrollCalculationService
         $startDate = Carbon::createFromDate($year, $month, 1)->startOfMonth();
         $endDate = $startDate->copy()->endOfMonth();
 
-        $attendances = Attendance::where('user_id', $user->id)
+        $attendances = Attendance::withoutGlobalScope('workforce_company')->where('user_id', $user->id)
             ->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
             ->get();
 
         $leaveData = $this->getLeaveData($user, $year, $month);
+        $approvedLeaveDates = Leave::withoutGlobalScope('workforce_company')->where('user_id', $user->id)->where('status', 'approved')
+            ->where(fn ($q) => $q->whereBetween('date', [$startDate->toDateString(), $endDate->toDateString()])
+                ->orWhere(fn ($range) => $range->whereDate('start_date', '<=', $endDate)->whereDate('end_date', '>=', $startDate)))
+            ->get(['date', 'start_date', 'end_date']);
 
         $fullAbsent = 0.0;
         $halfAbsent = 0.0;
@@ -159,25 +246,21 @@ class PayrollCalculationService
         $wfhDays = 0.0;
         $workingHours = 0.0;
         $overtimeHours = 0.0;
+        $unrecordedDays = 0.0;
+        $attendanceSource = 'records';
 
         if ($attendances->count() > 0) {
             foreach ($attendances as $att) {
                 $status = strtolower((string)$att->status);
-                $isHalfDay = $att->half_day || $status === 'half_day' || str_contains($status, 'half');
+                $isHalfDay = in_array(strtolower((string) $att->half_day), ['yes', '1', 'true'], true) || $status === 'half_day' || str_contains($status, 'half');
                 $isWfh = ($att->work_from_type === 'work_from_home' || in_array($status, ['work_from_home', 'wfh']));
 
                 // Calculate daily hours
                 $hours = 0.0;
-                if ($att->total_hours !== null && is_numeric($att->total_hours)) {
+                if ($att->clock_in) {
+                    $hours = round((int) $att->total_seconds / 3600, 2);
+                } elseif ($att->total_hours !== null && is_numeric($att->total_hours)) {
                     $hours = (float) $att->total_hours;
-                } elseif ($att->clock_in && $att->clock_out) {
-                    try {
-                        $cin = Carbon::parse($att->clock_in);
-                        $cout = Carbon::parse($att->clock_out);
-                        $hours = round($cout->diffInMinutes($cin) / 60, 2);
-                    } catch (\Throwable $e) {
-                        $hours = 8.0;
-                    }
                 } else {
                     $hours = $isHalfDay ? 4.0 : 8.0;
                 }
@@ -187,9 +270,16 @@ class PayrollCalculationService
                     $overtimeHours += ($hours - 8.0);
                 }
 
-                if ($status === 'absent') {
+                // Approved leave is accounted for separately, even when its attendance is marked absent.
+                $attendanceDate = Carbon::parse($att->date)->startOfDay();
+                $isApprovedLeave = $approvedLeaveDates->contains(function ($leave) use ($attendanceDate) {
+                    $start = Carbon::parse($leave->start_date ?: $leave->date)->startOfDay();
+                    $end = Carbon::parse($leave->end_date ?: $leave->date ?: $leave->start_date)->endOfDay();
+                    return $attendanceDate->betweenIncluded($start, $end);
+                });
+                if ($status === 'absent' && ! $isApprovedLeave) {
                     $fullAbsent += 1.0;
-                } elseif ($isHalfDay) {
+                } elseif ($isHalfDay && ! $isApprovedLeave) {
                     $halfAbsent += 1.0;
                     $presentDays += 0.5;
                 } elseif ($isWfh) {
@@ -199,6 +289,30 @@ class PayrollCalculationService
                     $presentDays += 1.0;
                 }
             }
+
+            // The attendance register shows a working day without any record as absent, so payroll does too.
+            // Approved leave and holidays are not absences, and days still to come this month are not counted.
+            $recordedDays = $attendances->pluck('date')->filter()->map(fn ($d) => Carbon::parse($d)->toDateString())->unique()->count();
+            $holidayDays = 0;
+            try {
+                $holidayDays = \App\Models\Holiday::whereBetween('date', [$startDate->toDateString(), $endDate->toDateString()])
+                    ->where(fn ($q) => $q->whereNull('type')->orWhere('type', '!=', 'weekend'))
+                    ->pluck('date')
+                    ->map(fn ($d) => Carbon::parse($d))
+                    ->reject(fn (Carbon $d) => $d->isWeekend())
+                    ->unique(fn (Carbon $d) => $d->toDateString())
+                    ->count();
+            } catch (\Throwable) {
+                // No holiday calendar for this company.
+            }
+            $expectedDays = (float) $workingDays;
+            if ($endDate->isFuture()) {
+                $monthWeekdays = max(1, $startDate->diffInWeekdays($endDate->copy()->addDay()));
+                $elapsedWeekdays = $startDate->isFuture() ? 0 : $startDate->diffInWeekdays(now()->startOfDay()); // today is not over yet
+                $expectedDays = $workingDays * min(1, $elapsedWeekdays / $monthWeekdays);
+            }
+            $unrecordedDays = max(0.0, floor($expectedDays - $recordedDays - $leaveData['total_leave'] - $holidayDays));
+            $fullAbsent += $unrecordedDays;
         } else {
             // Check TaskTimer for logged hours
             $timerHours = TaskTimer::where('user_id', $user->id)
@@ -207,12 +321,15 @@ class PayrollCalculationService
 
             if ($timerHours > 0) {
                 $workingHours = (float) $timerHours;
+                $attendanceSource = 'timesheet';
             } else {
+                $attendanceSource = 'assumed';
                 // Standard default: full attendance * 8 hours
                 $workingHours = (float) ($workingDays * 8);
             }
 
-            $presentDays = (float) $workingDays;
+            // Assumed full attendance, minus the days the employee was on approved leave.
+            $presentDays = max(0.0, (float) $workingDays - (float) $leaveData['paid_leave'] - (float) $leaveData['unpaid_leave']);
         }
 
         // Add leaves to absent consideration
@@ -224,7 +341,9 @@ class PayrollCalculationService
         // Current Basic pro-rata payable days formula:
         // Working Days - Absent - Unpaid Leaves - (Half Days / 2)
         // Note: Paid leave does NOT deduct salary!
-        $payableDays = max(0.0, min((float)$workingDays, $workingDays - $totalAbsent));
+        $unpaidPercentage = max(0, min(100, (float) \App\Models\AppSetting::valueFor('leave_unpaid_deduction_percentage', '3.33')));
+        $unpaidSalaryDays = $unpaidLeave * $workingDays * $unpaidPercentage / 100;
+        $payableDays = max(0.0, min((float)$workingDays, $workingDays - $fullAbsent - ($halfAbsent * 0.5) - $unpaidSalaryDays));
 
         return [
             'full_absent' => round($fullAbsent, 2),
@@ -237,6 +356,10 @@ class PayrollCalculationService
             'working_hours' => round($workingHours, 1),
             'overtime_hours' => round($overtimeHours, 1),
             'payable_days' => round($payableDays, 2),
+            'unrecorded_days' => round($unrecordedDays, 2),
+            'attendance_source' => $attendanceSource,
+            'unpaid_deduction_percentage' => $unpaidPercentage,
+            'unpaid_salary_deduction_percent' => min(100, round($unpaidLeave * $unpaidPercentage, 2)),
         ];
     }
 
@@ -259,16 +382,18 @@ class PayrollCalculationService
         $hraValue = 50.0;
         $specialType = 'percentage';
         $specialValue = 50.0;
-        $grade = 'Standard';
+        $designationLevel = $empDetail?->designation?->level;
+        $grade = $designationLevel !== null ? 'L'.$designationLevel : null;
         $source = 'default';
         $structureId = null;
 
         // 1. Check EmployeeSalaryAssignment
+        $periodEndDate = $periodDate ? $periodDate->copy()->endOfMonth()->format('Y-m-d') : $date;
         $assignment = EmployeeSalaryAssignment::where('user_id', $user->id)
             ->where('status', 'active')
-            ->where(function ($q) use ($date) {
+            ->where(function ($q) use ($periodEndDate) {
                 $q->whereNull('effective_from')
-                  ->orWhere('effective_from', '<=', $date);
+                  ->orWhere('effective_from', '<=', $periodEndDate);
             })
             ->where(function ($q) use ($date) {
                 $q->whereNull('effective_to')
@@ -284,7 +409,6 @@ class PayrollCalculationService
             $hraValue = (float) ($assignment->hra_value !== null && $assignment->hra_value > 0 ? $assignment->hra_value : ($struct?->hra_value ?? 50.0));
             $specialType = $assignment->special_allowance_type ?: ($struct?->special_allowance_type ?: 'percentage');
             $specialValue = (float) ($assignment->special_allowance_value !== null && $assignment->special_allowance_value > 0 ? $assignment->special_allowance_value : ($struct?->special_allowance_value ?? 50.0));
-            $grade = $assignment->grade ?: ($struct?->grade ?: ($empDetail?->designation?->level ?: 'Standard'));
             $structureId = $assignment->salary_structure_id;
             $source = 'assignment';
         }
@@ -309,7 +433,6 @@ class PayrollCalculationService
                 $hraValue = (float) ($structure->hra_value ?? 50.0);
                 $specialType = $structure->special_allowance_type ?: 'percentage';
                 $specialValue = (float) ($structure->special_allowance_value ?? 50.0);
-                $grade = $structure->grade ?: ($empDetail?->designation?->level ?: 'Standard');
                 $structureId = $structure->id;
                 $source = 'designation_structure';
             }
@@ -322,7 +445,6 @@ class PayrollCalculationService
             $hraValue = (float) ($empDetail->hra_amount ?? 0);
             $specialType = 'fixed';
             $specialValue = (float) ($empDetail->special_allowance ?? 0);
-            $grade = $empDetail->designation?->level ?: 'Standard';
             $source = 'employee_detail';
         }
 
@@ -333,7 +455,6 @@ class PayrollCalculationService
             $hraValue = 0.0;
             $specialType = 'percentage';
             $specialValue = 0.0;
-            $grade = $empDetail?->designation?->level ?: '-';
             $source = 'unassigned';
         }
 
@@ -675,6 +796,40 @@ class PayrollCalculationService
             }
         }
 
+        // Leave requests still awaiting approval and work logged this month (shown on Processing and the payslip).
+        $pendingLeave = $this->getPendingLeaveData($user, $year, $month);
+        $workData = $this->getWorkData($user, $year, $month);
+
+        // Loss of pay: what the employee did not earn this month because of absence / unpaid leave.
+        $fullMonthGross = (float) ($salaryData['gross'] ?? 0);
+        $lossOfPayDays = round(max(0.0, $workingDays - $payableDays), 2);
+        $lossOfPayAmount = round(max(0.0, $fullMonthGross - ($acBasic + $acHra + $acSpecial)), 2);
+        $deductionReasons = [];
+        if ((float) $attData['full_absent'] > 0) {
+            $unmarked = (float) ($attData['unrecorded_days'] ?? 0);
+            $deductionReasons[] = $attData['full_absent'] . ' day(s) absent' . ($unmarked > 0 ? " ({$unmarked} without any attendance entry)" : '') . ' – not paid';
+        }
+        if ((float) $attData['half_absent'] > 0) {
+            $deductionReasons[] = $attData['half_absent'] . ' half day(s) – half pay for each';
+        }
+        if ((float) $attData['unpaid_leave'] > 0) {
+            $deductionReasons[] = $attData['unpaid_leave'] . ' unpaid leave day(s) – ' . $attData['unpaid_deduction_percentage'] . '% of monthly salary per day';
+        }
+        if ($pfAmt > 0) {
+            $deductionReasons[] = 'Provident Fund: ' . rtrim(rtrim(number_format($pfRate, 2), '0'), '.') . '% of earned basic';
+        }
+        if ($esiAmt > 0) {
+            $deductionReasons[] = 'ESI: ' . rtrim(rtrim(number_format($esiRate, 2), '0'), '.') . '% of earned gross';
+        }
+        if ($ptAmt > 0) {
+            $deductionReasons[] = 'Professional Tax as per state slab';
+        }
+        if ($tdsAmt > 0) {
+            $deductionReasons[] = 'Income tax deducted at source (TDS)';
+        }
+        if (($negativeAdjustment ?? 0) > 0) {
+            $deductionReasons[] = 'Salary recovery / negative adjustment of ₹' . number_format($negativeAdjustment, 2) . (! empty($lineInputs['remarks']) ? ' – ' . $lineInputs['remarks'] : '');
+        }
         $empDetail = $user->employeeDetail;
         $empId = $empDetail?->employee_id ?: ('EMP' . str_pad($user->id, 3, '0', STR_PAD_LEFT));
         $branch = $empDetail?->business_address ?: ($user->business_address ?? '-');
@@ -692,6 +847,8 @@ class PayrollCalculationService
             'office' => $branch,
             'department' => $departmentName,
             'designation' => $designationName,
+            'designation_id' => $empDetail?->designation_id,
+            'designation_level' => $empDetail?->designation?->level,
             'grade' => $salaryData['grade'],
             'joining_date' => $joiningDate,
 
@@ -701,6 +858,8 @@ class PayrollCalculationService
             'presents' => $attData['presents'],
             'paid_leave' => $attData['paid_leave'],
             'unpaid_leave' => $attData['unpaid_leave'],
+            'unpaid_deduction_percentage' => $attData['unpaid_deduction_percentage'],
+            'unpaid_salary_deduction_percent' => $attData['unpaid_salary_deduction_percent'],
             'full_absent' => $attData['full_absent'],
             'half_absent' => $attData['half_absent'],
             'absent' => $attData['total_absent'],
@@ -710,11 +869,28 @@ class PayrollCalculationService
             'working_hours' => $attData['working_hours'],
             'overtime_hours' => $overtimeHours,
             'payable_days' => $payableDays,
+            'unrecorded_days' => $attData['unrecorded_days'] ?? 0,
+            'attendance_source' => $attData['attendance_source'] ?? 'records',
 
             // Leave Balances
             'initial_leave_balance' => $leaveData['initial_balance'],
             'current_leave_balance' => $leaveData['current_balance'],
             'total_leave' => $leaveData['total_leave'],
+            'paid_leave_taken' => $leaveData['paid_leave'] ?? $attData['paid_leave'],
+            'pending_leave_requests' => $pendingLeave['requests'],
+            'pending_leave_days' => $pendingLeave['days'],
+
+            // Work logged (timesheets + task timers)
+            'timesheet_hours' => $workData['timesheet_hours'],
+            'task_timer_hours' => $workData['task_timer_hours'],
+            'work_hours' => $workData['work_hours'],
+            'employment_type' => $empDetail?->employment_type ? ucwords(str_replace('_', ' ', (string) $empDetail->employment_type)) : '-',
+
+            // Loss of pay & reasons for every deduction (payslip)
+            'full_month_gross' => round($fullMonthGross, 2),
+            'loss_of_pay_days' => $lossOfPayDays,
+            'loss_of_pay_amount' => $lossOfPayAmount,
+            'deduction_reasons' => $deductionReasons,
 
             // Base Salary Structure
             'basic' => $basic,
@@ -841,7 +1017,10 @@ class PayrollCalculationService
             $endDate = $startDate->copy()->endOfMonth();
 
             // 1. Fetch eligible employees
-            $employees = $this->getEligibleEmployees($companyId, $office, $employeeType, $departmentId);
+            $employees = $this->getEligibleEmployees($companyId, $office, $employeeType, $departmentId, $year, $month);
+            if ($employees->isEmpty()) {
+                throw new \Exception('No employees have an active Employee Salary assignment for ' . $startDate->format('F Y') . '. Assign salaries under Payroll > Employee Salary first.');
+            }
 
             // 2. Check existing payroll run
             $payroll = $this->checkExistingPayroll($companyId, $year, $month, $office, $employeeType);
@@ -1009,6 +1188,9 @@ class PayrollCalculationService
             'payroll_status' => 'approved',
         ]);
 
+        // Payslips are available from approval onwards (finalizing regenerates them with the final figures).
+        $this->generatePayslips($payroll, $validUser?->id);
+
         return $payroll;
     }
 
@@ -1127,14 +1309,36 @@ class PayrollCalculationService
     }
 
     /**
+     * Payslip number prefix configured for the company (Company settings), "PS" by default.
+     */
+    private function payslipPrefix(?int $companyId, array &$cache): string
+    {
+        if (! $companyId) {
+            return 'PS';
+        }
+        if (! array_key_exists($companyId, $cache)) {
+            try {
+                $prefix = Company::find($companyId)?->payslip_prefix;
+            } catch (\Throwable) {
+                $prefix = null;
+            }
+            $cache[$companyId] = trim(preg_replace('/[^A-Za-z0-9_-]+/', '', (string) $prefix), '-') ?: 'PS';
+        }
+
+        return $cache[$companyId];
+    }
+
+    /**
      * Generate Payslips for a payroll run.
      */
     public function generatePayslips(Payroll $payroll, ?int $userId = null): int
     {
         $histories = PayrollHistory::where('payroll_id', $payroll->id)->get();
         $count = 0;
+        $hasPayslipCompany = \Illuminate\Support\Facades\Schema::connection((new Payslip)->getConnectionName())->hasColumn('payslips', 'company_id');
         $validUser = User::find($userId ?: auth()->id());
         $actorId = $validUser?->id;
+        $prefixes = [];
 
         foreach ($histories as $history) {
             $snap = $history->snapshot;
@@ -1142,7 +1346,7 @@ class PayrollCalculationService
             if (! $empUser) continue;
 
             $existingPayslip = Payslip::where('payroll_id', $payroll->id)->where('user_id', $history->user_id)->first();
-            $payslipNo = $existingPayslip?->payslip_number ?: ('PS-' . date('Ym', strtotime($payroll->period_start)) . '-' . str_pad($payroll->id, 3, '0', STR_PAD_LEFT) . '-' . str_pad($history->user_id, 4, '0', STR_PAD_LEFT));
+            $payslipNo = $existingPayslip?->payslip_number ?: ($this->payslipPrefix($payroll->company_id ?: $empUser->company_id, $prefixes) . '-' . date('Ym', strtotime($payroll->period_start)) . '-' . str_pad($payroll->id, 3, '0', STR_PAD_LEFT) . '-' . str_pad($history->user_id, 4, '0', STR_PAD_LEFT));
 
             $earnings = [
                 'Basic Salary' => (float) ($snap['current_basic'] ?? $snap['ac_basic'] ?? $snap['basic'] ?? 0),
@@ -1197,8 +1401,7 @@ class PayrollCalculationService
                     'payroll_id' => $payroll->id,
                     'user_id' => $history->user_id,
                 ],
-                [
-                    'company_id' => $payroll->company_id,
+                array_merge($hasPayslipCompany ? ['company_id' => $payroll->company_id ?: $empUser->company_id] : [], [
                     'payroll_history_id' => $history->id,
                     'payslip_number' => $payslipNo,
                     'employee_snapshot' => $snap,
@@ -1213,7 +1416,7 @@ class PayrollCalculationService
                     'net_salary' => round($netSalary, 2),
                     'status' => 'generated',
                     'generated_by' => $actorId,
-                ]
+                ])
             );
 
             $count++;

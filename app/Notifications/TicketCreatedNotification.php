@@ -55,7 +55,6 @@ class TicketCreatedNotification extends Notification
         $ticketUrl = route('tickets.show', $ticket->id);
 
         return (new MailMessage)
-            ->markdown('emails.default')
             ->subject('New Ticket Assigned: ' . $ticket->subject)
             ->greeting('Hello ' . ($notifiable->name ?? 'User') . ',')
             ->line('A new ticket has been assigned to you.')

@@ -2,7 +2,7 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\Module;
+use App\Models\WorkspaceModule as Module;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -27,6 +27,12 @@ class EnsureModuleAccess
 
         $routeName = (string) $request->route()?->getName();
 
+        // Administrators must always be able to repair their company's access settings.
+        if (in_array($user->normalizedRole(), ['admin', 'superadmin'], true)
+            && (str_starts_with($routeName, 'admin.modules.') || str_starts_with($routeName, 'admin.role-permissions.'))) {
+            return $next($request);
+        }
+
         // Core authentication & profile routes are always accessible to avoid redirect loops
         if (in_array($routeName, ['home', 'login', 'logout', 'profile.edit', 'profile.update', 'dashboard'], true)) {
             return $next($request);
@@ -36,6 +42,13 @@ class EnsureModuleAccess
         $moduleSlug = $module ? $module->slug : null;
 
         if ($moduleSlug) {
+            if ($module->exists && ! $module->is_active) {
+                abort(403, 'This module is disabled for your company.');
+            }
+            $inheritedFeature = config('workspace_modules.'.$moduleSlug.'.inherits');
+            if ($inheritedFeature && Module::where('slug', $inheritedFeature)->where('is_active', false)->exists()) {
+                abort(403, 'The parent module is disabled for your company.');
+            }
             $company = app(\App\Services\CompanyContext::class)->current();
             if (! $company && $user->company_id) {
                 try {
@@ -45,6 +58,9 @@ class EnsureModuleAccess
             }
 
             // 1. Company subscription / Super Admin feature check: MUST BE CHECKED FOR ALL USERS
+            if ($user->company_id && ! $company) {
+                abort(503, 'Company access configuration is temporarily unavailable.');
+            }
             if ($company && method_exists($company, 'hasFeature') && ! $company->hasFeature($moduleSlug)) {
                 if ($request->expectsJson()) {
                     return response()->json([
@@ -56,12 +72,14 @@ class EnsureModuleAccess
                     ->with('error', "Access Denied: The feature '{$moduleSlug}' is disabled for your organization.");
             }
 
-            // 2. Platform Admin / Tenant Admin / Manager / HR has unrestricted role-based permissions on all ENABLED features
-            if (in_array(strtolower((string) $user->role), ['admin', 'administrator', 'superadmin', 'manager', 'hr'], true)) {
+            // Only company administrators retain authority to manage access.
+            if (in_array(strtolower((string) $user->role), ['admin', 'administrator', 'superadmin'], true)) {
                 return $next($request);
             }
 
-            // 3. Granular Role-based permissions for other roles (Employee, Client, etc.)
+            $permission = self::permissionForRequest($request, $routeName, $permission);
+
+            // Apply saved permissions to HR, managers, employees and custom roles.
             if ($module && ! $user->hasModulePermission($module->slug, $permission)) {
                 if ($request->expectsJson()) {
                     return response()->json(['error' => 'You do not have permission to access this module.'], 403);
@@ -75,13 +93,53 @@ class EnsureModuleAccess
         return $next($request);
     }
 
-    private function moduleForRoute(string $routeName): ?Module
+    /** The action a request performs on its module (view/create/edit/delete/approve/export/assign). */
+    public static function permissionForRequest(Request $request, string $routeName, string $permission = 'view'): string
+    {
+        if ($permission === 'view' && ! $request->isMethodSafe()) {
+            $action = strtolower((string) strrchr($routeName, '.'));
+            $permission = match (true) {
+                $request->isMethod('DELETE'), str_contains($action, 'destroy'), str_contains($action, 'delete') => 'delete',
+                str_contains($action, 'approve'), str_contains($action, 'reject') => 'approve',
+                str_contains($action, 'export'), str_contains($action, 'download') => 'export',
+                str_contains($action, 'assign') => 'assign',
+                $request->isMethod('PUT'), $request->isMethod('PATCH'), str_contains($action, 'update'), str_contains($action, 'toggle') => 'edit',
+                default => 'create',
+            };
+        }
+        if ($permission === 'view' && preg_match('/\.(create|edit|export|download)(?:-|\.|$)/', $routeName, $match)) {
+            $permission = $match[1] === 'download' ? 'export' : $match[1];
+        }
+        return $permission;
+    }
+
+    public function moduleForRoute(string $routeName): ?Module
     {
         if ($routeName === '') {
             return null;
         }
 
+        $subdivision = app(\App\Services\AdminWorkspaceModules::class)->subdivisionForRoute($routeName);
+        if ($subdivision) {
+            return Module::where('slug', $subdivision)->first()
+                ?? new Module(['slug' => $subdivision, 'name' => config('workspace_modules.'.$subdivision.'.name')]);
+        }
+
+        // Exact sidebar subdivisions take precedence over broad legacy aliases
+        // such as attendance.report -> attendance and admin.leave.* -> leaves.
+        foreach (config('workspace_modules', []) as $slug => $item) {
+            if ($item['inherits'] && $item['route'] === $routeName) {
+                $submodule = Module::where('slug', $slug)->first();
+                if ($submodule) return $submodule;
+            }
+        }
+
         $aliases = [
+            'admin.settings.parent-departments' => 'department-parent',
+            'admin.settings.departments' => 'department-sub',
+            'admin.settings.designations' => 'designations',
+            'admin.authority-attendance' => 'attendance',
+            'admin.authority-leaves' => 'leaves',
             'users.tasks' => 'tasks',
             'projects.tasks' => 'tasks',
             'projects.timelogs' => 'timelogs',
@@ -117,7 +175,7 @@ class EnsureModuleAccess
 
         foreach ($aliases as $prefix => $slug) {
             if ($routeName === $prefix || str_starts_with($routeName, $prefix . '.')) {
-                $foundModule = Module::where('slug', $slug)->where('is_active', true)->first();
+                $foundModule = Module::where('slug', $slug)->first();
                 if ($foundModule) {
                     return $foundModule;
                 }
@@ -125,19 +183,14 @@ class EnsureModuleAccess
             }
         }
 
-        return Module::query()
-            ->where('is_active', true)
-            ->where(function ($query) use ($routeName) {
-                $query->where('route_name', $routeName)
-                    ->orWhere(function ($prefixQuery) use ($routeName) {
-                        $prefixQuery->whereNotNull('route_prefix')
-                            ->where(function ($nested) use ($routeName) {
-                                $nested->where('route_prefix', strtok($routeName, '.'))
-                                    ->orWhereRaw('? LIKE CONCAT(route_prefix, ".%")', [$routeName]);
-                            });
-                    });
-            })
-            ->orderByDesc('route_name')
+        // Match literal prefixes, choosing the most specific route. This also avoids
+        // treating wildcard characters in a configured prefix as SQL patterns.
+        return Module::query()->get()
+            ->filter(fn ($module) => $module->route_name === $routeName
+                || ($module->route_prefix && ($routeName === $module->route_prefix
+                    || str_starts_with($routeName, $module->route_prefix . '.'))))
+            ->sortByDesc(fn ($module) => $module->route_name === $routeName
+                ? PHP_INT_MAX : strlen($module->route_prefix))
             ->first();
     }
 }

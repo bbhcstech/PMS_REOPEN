@@ -1146,11 +1146,174 @@
     [data-pms-theme="dark"] .matrix-table tr:hover td {
         background-color: rgba(255, 255, 255, 0.03) !important;
     }
+    /* Scoped permission-page typography and matrix layout. */
+    .role-permission-page {
+        --matrix-surface: #ffffff;
+        --matrix-heading: #f3f6fc;
+        --matrix-hover: #f2f7ff;
+        --matrix-border: #e5ebf4;
+        --matrix-text: #24324b;
+        --matrix-muted: #64748b;
+        letter-spacing: 0;
+        line-height: 1.55;
+    }
+    :is(html, body)[data-pms-theme="dark"] .role-permission-page,
+    :is(html, body)[data-bs-theme="dark"] .role-permission-page,
+    :is(html, body)[data-theme="dark"] .role-permission-page,
+    :is(html, body).dark .role-permission-page,
+    :is(html, body).dark-mode .role-permission-page {
+        --matrix-surface: #11182e;
+        --matrix-heading: #18223b;
+        --matrix-hover: #1b2b49;
+        --matrix-border: #28334c;
+        --matrix-text: #e8eef9;
+        --matrix-muted: #a5b4ce;
+    }
+    .role-permission-page .ambient-orb { display: none; }
+    .role-permission-page .branches-header,
+    .role-permission-page .role-select-card,
+    .role-permission-page .address-card-elevated {
+        border-radius: 18px;
+        border: 1px solid var(--matrix-border);
+        box-shadow: 0 8px 28px rgba(15, 23, 42, 0.045);
+    }
+    .role-permission-page .header-title h1 {
+        font-size: clamp(1.4rem, 2.2vw, 1.9rem);
+        line-height: 1.25;
+        letter-spacing: -0.025em;
+        font-weight: 700;
+    }
+    .role-permission-page .header-title p { margin-top: 8px; line-height: 1.6; }
+    .role-permission-page .stats-grid { gap: 16px !important; margin-bottom: 24px !important; }
+    .role-permission-page .stat-card { border-radius: 16px; }
+    .role-permission-page .stat-info h6 { letter-spacing: 0.03em; font-weight: 600; }
+    .role-permission-page .role-select-card { padding: 22px 24px; }
+    .role-permission-page .role-select-card label { display: block; margin-bottom: 10px !important; }
+    .role-permission-page .card-header-custom { padding: 24px; gap: 20px; }
+    .role-permission-page .card-header-left { min-width: 0; gap: 14px; }
+    .role-permission-page .card-header-left h5 {
+        font-size: 1.1rem !important;
+        font-weight: 700 !important;
+        letter-spacing: -0.015em;
+        line-height: 1.4;
+        margin-bottom: 6px !important;
+    }
+    .role-permission-page .card-header-left small { display: block; font-size: 0.82rem; line-height: 1.6; }
+    .role-permission-page .matrix-toolbar { display: flex; flex-wrap: wrap; gap: 10px !important; }
+    .role-permission-page .matrix-toolbar .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 40px;
+        padding: 9px 14px !important;
+        border-radius: 10px !important;
+        font-size: 0.8rem;
+        font-weight: 600 !important;
+        line-height: 1.3;
+        letter-spacing: 0;
+        box-shadow: none;
+    }
+    .role-permission-page .matrix-toolbar i { margin: 0 !important; }
+    .role-permission-page .matrix-scroll { overflow: auto; max-height: 70vh; scrollbar-width: thin; }
+    .role-permission-page .matrix-table { min-width: 1040px; table-layout: fixed; }
+    .role-permission-page .matrix-table th {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        background: var(--matrix-heading) !important;
+        color: var(--matrix-muted) !important;
+        -webkit-text-fill-color: var(--matrix-muted) !important;
+        padding: 16px 10px;
+        font-size: 0.72rem;
+        letter-spacing: 0.045em;
+        font-weight: 600;
+        border-bottom: 1px solid var(--matrix-border);
+    }
+    .role-permission-page .matrix-table td {
+        background: var(--matrix-surface);
+        padding: 16px 10px;
+        border-bottom: 1px solid var(--matrix-border);
+    }
+    .role-permission-page .matrix-table tr:hover td { background: var(--matrix-hover) !important; }
+    .role-permission-page .matrix-table :is(th, td):nth-child(2) { width: 250px; padding-left: 18px; }
+    .role-permission-page .module-title-box { gap: 4px; }
+    .role-permission-page .module-title-box strong {
+        color: var(--matrix-text) !important;
+        -webkit-text-fill-color: var(--matrix-text) !important;
+        font-size: 0.88rem;
+        font-weight: 600;
+        line-height: 1.45;
+        overflow-wrap: anywhere;
+    }
+    .role-permission-page .module-title-box small {
+        color: var(--matrix-muted) !important;
+        -webkit-text-fill-color: var(--matrix-muted) !important;
+        font-size: 0.75rem;
+        line-height: 1.4;
+    }
+    .role-permission-page .col-header-label { gap: 9px !important; min-height: 28px; }
+    .role-permission-page .perm-checkbox {
+        appearance: none;
+        -webkit-appearance: none;
+        display: inline-block;
+        flex-shrink: 0;
+        width: 20px;
+        height: 20px;
+        margin: 0;
+        vertical-align: middle;
+        border: 1.5px solid #9aabc3;
+        border-radius: 5px;
+        background: var(--matrix-surface);
+        background-position: center;
+        background-repeat: no-repeat;
+        transform: none;
+    }
+    .role-permission-page .perm-checkbox:checked {
+        background-color: #2f6bff;
+        border-color: #2f6bff;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath d='m3 8 3 3 7-7' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    }
+    .role-permission-page .perm-checkbox:indeterminate {
+        background-color: #2f6bff;
+        border-color: #2f6bff;
+        background-image: linear-gradient(#fff, #fff);
+        background-size: 10px 2px;
+    }
+    .role-permission-page .perm-checkbox:focus-visible {
+        outline: 3px solid rgba(47, 107, 255, 0.3);
+        outline-offset: 3px;
+    }
+    .role-permission-page .matrix-footer {
+        padding: 20px 24px !important;
+        background: var(--matrix-heading) !important;
+        border-color: var(--matrix-border) !important;
+    }
+    .role-permission-page .btn-save-address { border-radius: 10px; height: 44px; font-size: 0.85rem; }
+    @media (max-width: 768px) {
+        .role-permission-page { padding: 16px 12px; }
+        .role-permission-page .branches-header,
+        .role-permission-page .role-select-card,
+        .role-permission-page .card-header-custom { padding: 18px; }
+        .role-permission-page .matrix-toolbar { width: 100%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .role-permission-page .matrix-table { min-width: 980px; }
+        .role-permission-page .matrix-table :is(th, td):nth-child(2) {
+            position: sticky;
+            left: 0;
+            z-index: 1;
+            width: 180px;
+            min-width: 180px !important;
+            box-shadow: 4px 0 8px rgba(15, 23, 42, 0.04);
+        }
+        .role-permission-page .matrix-table th:nth-child(2) { z-index: 3; }
+        .role-permission-page .matrix-footer { gap: 16px; }
+        .role-permission-page .matrix-footer .btn-save-address { width: 100%; }
+    }
 </style>
 @endpush
 
 @section('content')
-<div class="role-permission-page">
+<div class="pms-settings-page role-permission-page">
     <div class="role-permission-shell">
         <div class="ambient-orb orb-1"></div>
         <div class="ambient-orb orb-2"></div>
@@ -1174,7 +1337,7 @@
                     </div>
                     <div class="header-title">
                         <h1>Role & Permission Management</h1>
-                        <p>Configure access control levels, granular action permissions, and module capabilities for system roles.</p>
+                        <p>Manage module access and actions for your company's roles. Saved changes take effect immediately.</p>
                     </div>
                 </div>
 
@@ -1184,6 +1347,7 @@
             </div>
 
             <!-- Alert Notifications -->
+            @include('admin.settings.partials.access-navigation')
             @if(session('success'))
                 <div class="alert alert-success alert-dismissible fade show d-flex align-items-center mb-4 shadow-sm rounded-4 border-0" style="background: rgba(220, 252, 231, 0.95); color: #065f46; border-left: 5px solid #10b981 !important;" role="alert">
                     <i class="fas fa-check-circle fs-4 me-2"></i>
@@ -1200,7 +1364,7 @@
                     </div>
                     <div class="stat-info">
                         <h6>Active Role</h6>
-                        <h3>{{ ucfirst($role) }}</h3>
+                        <h3>{{ ($roleLabels[$role] ?? ucfirst($role)) }}</h3>
                     </div>
                 </div>
                 <div class="stat-card">
@@ -1240,23 +1404,35 @@
                             <label class="form-label fw-bold text-dark mb-1.5" style="font-size: 0.9rem;"><i class="fas fa-sliders me-1.5" style="color: #2F6BFF;"></i>Select Role to Modify Permissions</label>
                             <div class="input-group input-group-custom">
                                 <span class="input-group-text"><i class="fas fa-user-tag"></i></span>
+                                @php
+                                    // Keep labels unique without changing stored role/permission keys.
+                                    $roleOptions = [];
+                                    foreach ($roles as $option) {
+                                        if (strtolower($option) === 'admin') continue;
+                                        $label = $roleLabels[$option] ?? ucfirst($option);
+                                        $labelKey = mb_strtolower(preg_replace('/\s+/u', ' ', trim($label)));
+                                        if (str_starts_with($option, 'staff:')) $label .= ' · Custom role';
+                                        if (!isset($roleOptions[$labelKey]) || $role === $option) {
+                                            $roleOptions[$labelKey] = ['value' => $option, 'label' => $label];
+                                        }
+                                    }
+                                @endphp
                                 <select name="role" class="form-select" onchange="this.form.submit()">
-                                    @foreach($roles as $option)
-                                        @continue(strtolower($option) === 'admin')
-                                        <option value="{{ $option }}" @selected($role === $option)>{{ ucfirst($option) }}</option>
+                                    @foreach($roleOptions as $option)
+                                        <option value="{{ $option['value'] }}" @selected($role === $option['value'])>{{ $option['label'] }}</option>
                                     @endforeach
                                 </select>
                             </div>
                         </div>
                         <div class="col-md-7 col-lg-8">
-                            <small class="text-muted d-block mt-md-4"><i class="fas fa-info-circle me-1" style="color: #2F6BFF;"></i>Changing the selected role will dynamically reload module access control capabilities below.</small>
+                            <small class="text-muted d-block mt-md-4"><i class="fas fa-info-circle me-1" style="color: #2F6BFF;"></i>Select the user's assigned role. Saved custom-role permissions take precedence over standard HR or Manager permissions.</small>
                         </div>
                     </div>
                 </form>
             </div>
 
             <!-- Permissions Matrix Table Card -->
-            <form method="POST" action="{{ route('admin.role-permissions.update') }}">
+            <form method="POST" action="{{ route('admin.role-permissions.update') }}" id="rolePermissionsForm">
                 @csrf
                 <input type="hidden" name="role" value="{{ $role }}">
 
@@ -1268,10 +1444,10 @@
                             </div>
                             <div>
                                 <h5 class="mb-0 fw-bold fs-5" style="color: #0F172A;">Module Access Control Matrix</h5>
-                                <small class="text-muted">Grant or revoke granular action privileges for <strong style="color: #2F6BFF;">{{ ucfirst($role) }}</strong></small>
+                                <small class="text-muted">Grant or revoke granular action privileges for <strong style="color: #2F6BFF;">{{ ($roleLabels[$role] ?? ucfirst($role)) }}</strong></small>
                             </div>
                         </div>
-                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <div class="matrix-toolbar d-flex align-items-center gap-2 flex-wrap">
                             <button type="button" class="btn btn-sm btn-outline-primary fw-semibold px-3 py-1.5 rounded-pill shadow-xs" id="btnGrantAll" title="Grant all permissions across all modules">
                                 <i class="fas fa-check-double me-1"></i> Grant Full Access
                             </button>
@@ -1287,7 +1463,12 @@
                         </div>
                     </div>
 
-                    <div class="table-responsive">
+                    <div class="px-4 pb-3">
+                        <label for="permissionModuleSearch" class="form-label small fw-semibold">Find a module</label>
+                        <input id="permissionModuleSearch" type="search" class="form-control" placeholder="Search modules or categories" autocomplete="off">
+                        <small id="permissionSearchStatus" class="text-muted" aria-live="polite"></small>
+                    </div>
+                    <div class="table-responsive matrix-scroll" tabindex="0" role="region" aria-label="Module permission matrix">
                         <table class="matrix-table" data-pms-export="off">
                             <thead>
                                 <tr>
@@ -1296,9 +1477,9 @@
                                             <input type="checkbox" id="masterToggleAll" class="perm-checkbox" title="Toggle all permissions">
                                         </div>
                                     </th>
-                                    <th style="min-width: 240px;">Module Name</th>
+                                    <th style="min-width: 240px;" scope="col">Module Name</th>
                                     @foreach($permissions as $permission)
-                                        <th class="text-center" style="min-width: 100px;">
+                                        <th class="text-center" style="min-width: 100px;" scope="col">
                                             <label class="col-header-label mb-0 cursor-pointer d-flex align-items-center justify-content-center gap-1.5" title="Toggle all {{ ucfirst($permission) }}">
                                                 <input type="checkbox" class="col-checkbox perm-checkbox" data-perm="{{ $permission }}">
                                                 <span>{{ ucfirst($permission) }}</span>
@@ -1308,15 +1489,18 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($modules as $module)
-                                    <tr data-module-id="{{ $module->id }}">
+                                @foreach($modules->groupBy('category') as $category => $categoryModules)
+                                    <tr class="permission-category"><td colspan="{{ count($permissions) + 2 }}"><span>{{ $category }}</span><small class="ms-2">{{ $categoryModules->count() }} modules</small></td></tr>
+                                @foreach($categoryModules as $module)
+                                    <tr data-module-id="{{ $module->id }}" data-module-slug="{{ $module->slug }}" data-payroll-child="{{ ($module->slug !== 'payroll' && (str_starts_with($module->slug, 'payroll-') || in_array($module->slug, ['payslips', 'salary-structures', 'employee-salary', 'formula-builder', 'deduction-rules', 'bonus-rules', 'tax-rules', 'overtime-rules']))) ? 'true' : 'false' }}" data-search="{{ strtolower(($module->sidebar_name ?? $module->name) . ' ' . $module->slug . ' ' . (($module->parent?->sidebar_name ?? $module->parent?->name) ?? '')) }}">
                                         <td class="text-center">
-                                            <input type="checkbox" class="row-checkbox perm-checkbox" data-module-id="{{ $module->id }}" title="Toggle all actions for {{ $module->name }}">
+                                            <input type="checkbox" class="row-checkbox perm-checkbox" data-module-id="{{ $module->id }}" title="Toggle all actions for {{ ($module->sidebar_name ?? $module->name) }}">
                                         </td>
                                         <td>
                                             <div class="module-title-box">
-                                                <strong>{{ $module->name }}</strong>
-                                                @if($module->parent)<small><i class="fas fa-angle-right me-1" style="color: #2F6BFF;"></i>{{ $module->parent->name }}</small>@endif
+                                                <strong>{{ ($module->sidebar_name ?? $module->name) }}</strong>
+                                                @if($module->slug === 'payroll')<small>Changing Payroll actions also updates its pages. Adjust individual pages before saving if needed.</small>@endif
+                                                @if($module->parent)<small><i class="fas fa-angle-right me-1" style="color: #2F6BFF;"></i>{{ $module->parent->sidebar_name ?? $module->parent->name }}</small>@endif
                                             </div>
                                         </td>
                                         @foreach($permissions as $permission)
@@ -1324,17 +1508,18 @@
                                                 $isChecked = !empty($effectivePermissions[$module->id][$permission]);
                                             @endphp
                                             <td class="text-center">
-                                                <input type="checkbox" class="perm-checkbox action-checkbox" data-module-id="{{ $module->id }}" data-perm="{{ $permission }}" name="permissions[{{ $module->id }}][]" value="{{ $permission }}" @checked($isChecked)>
+                                                <input type="checkbox" class="perm-checkbox action-checkbox" aria-label="{{ ucfirst($permission) }} for {{ ($module->sidebar_name ?? $module->name) }}" data-module-id="{{ $module->id }}" data-perm="{{ $permission }}" name="permissions[{{ $module->id }}][]" value="{{ $permission }}" @checked($isChecked)>
                                             </td>
                                         @endforeach
                                     </tr>
+                                @endforeach
                                 @endforeach
                             </tbody>
                         </table>
                     </div>
 
-                    <div class="p-4 border-top d-flex justify-content-between align-items-center flex-wrap gap-3" style="background: rgba(248, 250, 252, 0.6);">
-                        <small class="text-muted"><i class="fas fa-shield-halved me-1" style="color: #2F6BFF;"></i>Changes will immediately affect users assigned to the <strong>{{ ucfirst($role) }}</strong> role.</small>
+                    <div class="matrix-footer p-4 border-top d-flex justify-content-between align-items-center flex-wrap gap-3" style="background: rgba(248, 250, 252, 0.6);">
+                        <small class="text-muted"><i class="fas fa-shield-halved me-1" style="color: #2F6BFF;"></i>Changes will immediately affect users assigned to the <strong>{{ ($roleLabels[$role] ?? ucfirst($role)) }}</strong> role.</small>
                         <button type="submit" class="btn-save-address">
                             <i class="fas fa-save me-1.5"></i> Save Permissions
                         </button>
@@ -1355,6 +1540,45 @@ document.addEventListener('DOMContentLoaded', function () {
     const colCheckboxes = table.querySelectorAll('.col-checkbox');
     const rowCheckboxes = table.querySelectorAll('.row-checkbox');
     const actionCheckboxes = table.querySelectorAll('.action-checkbox');
+    const form = document.getElementById('rolePermissionsForm');
+    let saving = false;
+    form.addEventListener('submit', async event => {
+        event.preventDefault();
+        if (saving) return;
+        saving = true;
+        const button = form.querySelector('button[type="submit"]');
+        const original = button.innerHTML;
+        button.disabled = true;
+        button.textContent = 'Saving...';
+        const permissions = {};
+        actionCheckboxes.forEach(checkbox => {
+            const moduleId = checkbox.dataset.moduleId;
+            permissions[moduleId] ??= [];
+            if (checkbox.checked) permissions[moduleId].push(checkbox.value);
+        });
+        try {
+            const response = await fetch(form.action, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': form.querySelector('[name="_token"]').value,
+                },
+                body: JSON.stringify({ role: form.querySelector('[name="role"]').value, permissions }),
+            });
+            const data = await response.json();
+            if (!response.ok || data.success !== true) throw new Error(data.message || 'Could not save permissions. Please try again.');
+            window.showToast(data.message, 'success');
+        } catch (error) {
+            window.showToast(error.message || 'Could not save permissions. Please try again.', 'error');
+        } finally {
+            saving = false;
+            button.disabled = false;
+            button.innerHTML = original;
+        }
+    });
 
     // Sync state of row, column, and master checkboxes based on individual action checkboxes
     function syncStates() {
@@ -1398,12 +1622,19 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Row Toggle Event
+    function syncPayrollChildren(source) {
+        if (source.closest('tr')?.dataset.moduleSlug !== 'payroll') return;
+        table.querySelectorAll(`tr[data-payroll-child="true"] .action-checkbox[data-perm="${source.dataset.perm}"]`).forEach(child => {
+            child.checked = source.checked;
+        });
+    }
     rowCheckboxes.forEach(rowCb => {
         rowCb.addEventListener('change', function () {
             const modId = this.getAttribute('data-module-id');
             const isChecked = this.checked;
             table.querySelectorAll(`.action-checkbox[data-module-id="${modId}"]`).forEach(cb => {
                 cb.checked = isChecked;
+                syncPayrollChildren(cb);
             });
             syncStates();
         });
@@ -1423,7 +1654,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Individual Action Checkbox Event
     actionCheckboxes.forEach(cb => {
-        cb.addEventListener('change', syncStates);
+        cb.addEventListener('change', function () {
+            syncPayrollChildren(this);
+            syncStates();
+        });
     });
 
     // Toolbar Buttons
@@ -1456,11 +1690,26 @@ document.addEventListener('DOMContentLoaded', function () {
     const btnResetDefaults = document.getElementById('btnResetDefaults');
     if (btnResetDefaults) {
         btnResetDefaults.addEventListener('click', function () {
-            window.location.reload();
+            const defaults = @json($defaultPermissions);
+            actionCheckboxes.forEach(cb => {
+                cb.checked = (defaults[cb.dataset.moduleId] || []).includes(cb.dataset.perm);
+            });
+            syncStates();
         });
     }
 
     // Initial sync on page load
+    const search = document.getElementById('permissionModuleSearch');
+    const rows = Array.from(table.querySelectorAll('tbody tr[data-search]'));
+    search.addEventListener('input', () => {
+        const query = search.value.trim().toLowerCase();
+        let visible = 0;
+        rows.forEach(row => {
+            row.hidden = !row.dataset.search.includes(query);
+            if (!row.hidden) visible++;
+        });
+        document.getElementById('permissionSearchStatus').textContent = `${visible} of ${rows.length} modules shown. Bulk actions apply to all modules.`;
+    });
     syncStates();
 });
 </script>

@@ -5,6 +5,9 @@
 @section('page_subtitle', 'Manage subscription plans, pricing, limits, features, and availability across the platform.')
 
 @section('content')
+@php
+    $missingPlanSlugs = array_diff(\App\Support\SupportedPlans::SLUGS, $plans->pluck('slug')->all());
+@endphp
 <style>
     /* ============================================================
        PLANS CATALOG DESIGN SYSTEM TOKENS
@@ -1145,9 +1148,13 @@
                 </a>
             </div>
         </div>
+        @if (count($missingPlanSlugs))
         <button class="btn-custom btn-primary-custom" id="openCreatePlanModalBtn">
             <i class="fas fa-plus"></i> Create Plan
         </button>
+        @else
+        <span class="text-muted">All four tiers exist. Edit a plan below to change its settings.</span>
+        @endif
     </div>
 </div>
 
@@ -1316,7 +1323,7 @@
 <!-- 2-COLUMN ANALYTICS SECTION -->
 <div class="analytics-2col-grid">
     <!-- Subscription Distribution Donut -->
-    <div class="chart-card-wrapper">
+    <div class="chart-card-wrapper" id="catalogDistributionCard" data-live-key="catalog-distribution" data-distribution="{{ json_encode($catalogDistribution) }}">
         <div class="chart-card-head">
             <div class="chart-card-title"><i class="fas fa-chart-pie" style="color: var(--primary);"></i> Subscription Distribution</div>
             <span style="font-size: 12px; color: var(--text-subtle);">Active company count</span>
@@ -1327,7 +1334,7 @@
     </div>
 
     <!-- Plan Performance Bar Chart -->
-    <div class="chart-card-wrapper">
+    <div class="chart-card-wrapper" id="planRevenueCard" data-live-key="plan-revenue" data-plan-revenue="{{ json_encode($planMonthlyRevenue) }}">
         <div class="chart-card-head">
             <div class="chart-card-title"><i class="fas fa-chart-bar" style="color: var(--success);"></i> Plan Revenue Performance</div>
             <span style="font-size: 12px; color: var(--text-subtle);">Monthly MRR generated</span>
@@ -1436,15 +1443,34 @@
         <form method="POST" action="{{ route('super-admin.plans.store') }}" id="planModalForm">
             @csrf
             <input type="hidden" name="_method" id="planModalMethod" value="POST">
+            <input type="hidden" name="plan_form" value="1">
+            <input type="hidden" name="plan_edit_id" id="planEditId" value="">
+
+            @if ($errors->any() && old('plan_form'))
+                <div class="flash-alert error" role="alert" style="display: block; margin-bottom: 18px;">
+                    <strong>The plan could not be saved. Please correct the following:</strong>
+                    <ul style="margin: 8px 0 0; padding-left: 20px;">
+                        @foreach ($errors->all() as $message)
+                            <li>{{ $message }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
 
             <div style="display: flex; flex-direction: column; gap: 18px; margin-bottom: 24px;">
                 <!-- PLAN NAME -->
                 <div>
                     <label style="font-size: 11.5px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 6px;">PLAN NAME</label>
                     <div class="modal-input-wrap">
-                        <input type="text" name="name" id="modalPlanNameInput" required placeholder="GOLD" class="modal-input-field" />
+                        <select name="name" id="modalPlanNameInput" required class="modal-input-field">
+                            <option value="">Select a supported tier</option>
+                            @foreach (\App\Support\SupportedPlans::SLUGS as $slug)
+                                <option value="{{ strtoupper($slug) }}" data-missing="{{ in_array($slug, $missingPlanSlugs, true) ? '1' : '0' }}">{{ strtoupper($slug) }}</option>
+                            @endforeach
+                        </select>
                         <i class="bx bx-tag"></i>
                     </div>
+                    <small class="text-muted">Supported tiers: FREE, GOLD, PLATINUM, and DIAMOND. Each tier can exist once.</small>
                 </div>
 
                 <!-- MONTHLY PRICE & MAX USERS -->
@@ -1604,59 +1630,10 @@
 @endsection
 
 @push('scripts')
+<script src="{{ asset('admin/assets/js/pms-catalog-distribution.js') }}?v={{ @filemtime(public_path('admin/assets/js/pms-catalog-distribution.js')) }}" defer></script>
+<script src="{{ asset('admin/assets/js/pms-plan-revenue.js') }}?v={{ @filemtime(public_path('admin/assets/js/pms-plan-revenue.js')) }}" defer></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // 1. Subscription Donut Chart
-    const planDonutCtx = document.getElementById('planDonutCanvas')?.getContext('2d');
-    if (planDonutCtx) {
-        new Chart(planDonutCtx, {
-            type: 'doughnut',
-            data: {
-                labels: ['FREE', 'GOLD', 'PLATINUM', 'DIAMOND'],
-                datasets: [{
-                    data: [42, 31, 18, 9],
-                    backgroundColor: ['#64748b', '#d97706', '#0284c7', '#7c3aed'],
-                    borderWidth: 3,
-                    borderColor: '#ffffff'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                cutout: '70%',
-                plugins: {
-                    legend: { position: 'right', labels: { font: { family: 'Inter', size: 12 } } }
-                }
-            }
-        });
-    }
-
-    // 2. Plan Revenue Bar Chart
-    const planPerfCtx = document.getElementById('planPerformanceCanvas')?.getContext('2d');
-    if (planPerfCtx) {
-        new Chart(planPerfCtx, {
-            type: 'bar',
-            data: {
-                labels: ['FREE', 'GOLD', 'PLATINUM', 'DIAMOND'],
-                datasets: [{
-                    label: 'MRR Contribution (₹)',
-                    data: [0, 189962, 309969, 339983],
-                    backgroundColor: ['#64748b', '#d97706', '#0284c7', '#7c3aed'],
-                    borderRadius: 6
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
-                    x: { grid: { display: false } }
-                }
-            }
-        });
-    }
-
     // 3. Modal Dialog Triggers & Dynamic Live Preview Binding
     const planModal = document.getElementById('planModalDialog');
     const planForm = document.getElementById('planModalForm');
@@ -1716,7 +1693,13 @@ document.addEventListener('DOMContentLoaded', function() {
             if (titleEl) titleEl.innerText = 'Create New Subscription Plan';
             if (planForm) planForm.action = "{{ route('super-admin.plans.store') }}";
             if (methodInput) methodInput.value = 'POST';
-            if (nameInput) nameInput.value = '';
+            document.getElementById('planEditId').value = '';
+            if (nameInput) {
+                Array.from(nameInput.options).forEach(option => {
+                    option.disabled = option.value !== '' && option.dataset.missing !== '1';
+                });
+                nameInput.value = '';
+            }
             if (priceInput) priceInput.value = '';
             if (usersInput) usersInput.value = '';
             if (storageInput) storageInput.value = '';
@@ -1732,7 +1715,13 @@ document.addEventListener('DOMContentLoaded', function() {
         if (titleEl) titleEl.innerText = 'Edit ' + data.name + ' Subscription Plan';
         if (planForm) planForm.action = data.id ? ("/super-admin/plans/" + data.id) : "{{ route('super-admin.plans.store') }}";
         if (methodInput) methodInput.value = data.id ? 'PUT' : 'POST';
-        if (nameInput) nameInput.value = data.name;
+        document.getElementById('planEditId').value = data.id || '';
+        if (nameInput) {
+            Array.from(nameInput.options).forEach(option => {
+                option.disabled = option.value !== data.name;
+            });
+            nameInput.value = data.name;
+        }
         if (priceInput) priceInput.value = data.price;
         if (usersInput) usersInput.value = data.users;
         if (storageInput) storageInput.value = data.storage;
@@ -1741,6 +1730,31 @@ document.addEventListener('DOMContentLoaded', function() {
         updateLivePreview();
         if (planModal) planModal.classList.add('open');
     }
+
+    @if ($errors->any() && old('plan_form'))
+        @php
+            $failedEditPlan = $plans->firstWhere('id', old('plan_edit_id'));
+        @endphp
+        @if ($failedEditPlan)
+            openEditModalWithData({
+                id: @json($failedEditPlan->id),
+                name: @json($failedEditPlan->name),
+                price: @json(old('monthly_price')),
+                users: @json(old('max_users')),
+                storage: @json(old('max_storage_gb')),
+                status: @json(old('is_active', '1'))
+            });
+        @else
+            if (openCreateBtn) openCreateBtn.click();
+            if (nameInput) nameInput.value = @json(old('name', ''));
+            if (priceInput) priceInput.value = @json(old('monthly_price', ''));
+            if (usersInput) usersInput.value = @json(old('max_users', ''));
+            if (storageInput) storageInput.value = @json(old('max_storage_gb', ''));
+            if (statusSelect) statusSelect.value = @json(old('is_active', '1'));
+            updateLivePreview();
+            if (planModal) planModal.classList.add('open');
+        @endif
+    @endif
 
     document.querySelectorAll('.open-plan-edit').forEach(btn => {
         btn.addEventListener('click', function() {
@@ -1958,15 +1972,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 </table>
             `;
 
-            if (typeof html2pdf !== 'undefined') {
-                const opt = {
-                    margin:       [10, 10, 10, 10],
-                    filename:     'plans_catalog_report.pdf',
-                    image:        { type: 'jpeg', quality: 0.98 },
-                    html2canvas:  { scale: 2, useCORS: true, logging: false },
-                    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-                };
-                html2pdf().set(opt).from(reportEl).save();
+            if (window.pdfMake && window.PmsPdfExports) {
+                const pdfDocument = window.PmsPdfExports.fromTable(reportEl.querySelector('table'), 'Subscription Plans Catalog Report', 'Super Admin Executive SaaS Tier Breakdown', 'Export Date: ' + formattedDate, 'portrait');
+                window.pdfMake.createPdf(pdfDocument).download('plans_catalog_report.pdf');
             } else {
                 const printWin = window.open('', '_blank');
                 printWin.document.write(`<!DOCTYPE html><html><head><title>Plans Catalog Report</title></head><body>${reportEl.innerHTML}<script>window.onload=function(){window.print();};<\\/script></body></html>`);
@@ -1975,5 +1983,5 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+@include('partials.pdf-export-scripts')
 @endpush

@@ -223,6 +223,34 @@
         color: #0F172A;
     }
 
+    /* Light theme: the first summary card (Document Title) matches the other three white cards and is
+       never painted with the theme's blue "featured first card" gradient. */
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark) .terms-policy-page .stats-grid > .stat-card:first-child {
+        background: #ffffff !important;
+        border: 1px solid rgba(47, 107, 255, 0.14) !important;
+        box-shadow: 0 10px 30px -10px rgba(47, 107, 255, 0.08) !important;
+        color: #0F172A !important;
+    }
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark) .terms-policy-page .stats-grid > .stat-card:first-child h3 {
+        color: #0F172A !important;
+        -webkit-text-fill-color: #0F172A !important;
+    }
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark) .terms-policy-page .stats-grid > .stat-card:first-child :is(h6, span) {
+        color: #64748b !important;
+        -webkit-text-fill-color: #64748b !important;
+    }
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark) .terms-policy-page .stats-grid > .stat-card:first-child .stat-icon.doc {
+        background: linear-gradient(145deg, #EEF2FF, #E0E7FF) !important;
+        border: 0 !important;
+        box-shadow: none !important;
+    }
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark) .terms-policy-page .stats-grid > .stat-card:first-child .stat-icon.doc :is(i, svg) {
+        color: #2F6BFF !important;
+        -webkit-text-fill-color: #2F6BFF !important;
+        fill: #2F6BFF !important;
+        background: transparent !important;
+    }
+
     .terms-policy-page .stat-card * {
         -webkit-text-fill-color: initial;
     }
@@ -273,9 +301,11 @@
 
     .stat-icon.doc,
     .terms-policy-page .stat-card .stat-icon.doc {
-        background: linear-gradient(145deg, #EEF2FF, #E0E7FF);
-        color: #2F6BFF;
-        -webkit-text-fill-color: #2F6BFF;
+        background: linear-gradient(145deg, #EEF2FF, #E0E7FF) !important;
+        color: #2F6BFF !important;
+        -webkit-text-fill-color: #2F6BFF !important;
+        border: 0 !important;
+        box-shadow: none !important;
     }
 
     .stat-icon.doc i, .stat-icon.doc svg, .stat-icon.doc [class*="fa"],
@@ -1007,7 +1037,7 @@
 @endpush
 
 @section('content')
-<div class="terms-policy-page">
+<div class="pms-settings-page terms-policy-page">
     <div class="terms-policy-shell">
         <div class="ambient-orb orb-1"></div>
         <div class="ambient-orb orb-2"></div>
@@ -1122,7 +1152,7 @@
 
                 <div class="p-4 p-md-5">
                     @if($isSettingsReadOnly)
-                        <div class="alert d-flex align-items-center mb-4 rounded-3 border-0 shadow-sm" style="background: linear-gradient(135deg, #eff6ff, #dbeafe); color: #1e40af; border-left: 4px solid #3b82f6 !important; padding: 14px 18px;">
+                        <div class="alert pms-readonly-notice d-flex align-items-center mb-4 rounded-3 border-0 shadow-sm" style="background: linear-gradient(135deg, #eff6ff, #dbeafe); color: #1e40af; border-left: 4px solid #3b82f6 !important; padding: 14px 18px;">
                             <i class="fas fa-eye me-3 fs-3 text-primary"></i>
                             <div>
                                 <strong class="d-block text-primary fw-bold" style="font-size: 14px;">View-Only Mode</strong>
