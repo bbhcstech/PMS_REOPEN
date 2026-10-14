@@ -26,7 +26,7 @@ class CheckServerDeployment extends Command
         'client_categories' => ['name'],
         'holidays' => ['date', 'occassion', 'group_id'],
         'awards' => ['appreciation_id'],
-        'attendances' => ['user_id', 'date', 'clock_in', 'clock_out', 'location', 'clock_in_photo', 'clock_out_photo', 'clock_in_timezone', 'system_status_reason'],
+        'attendances' => ['user_id', 'date', 'clock_in', 'clock_out', 'location', 'clock_in_latitude', 'clock_in_longitude', 'clock_in_address', 'work_from_type', 'clock_in_photo', 'clock_out_photo', 'clock_in_timezone', 'system_status_reason'],
         'attendance_settings' => ['clock_window_enabled', 'clock_in_opens_at', 'clock_out_closes_at'],
         'employee_salary_assignments' => ['user_id', 'effective_from', 'effective_to', 'deleted_at'],
         'payroll_formulas' => ['effective_from', 'effective_to', 'deleted_at', 'is_active'],

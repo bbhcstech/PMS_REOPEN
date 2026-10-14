@@ -967,6 +967,8 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
             'clock_in_address'   => $currentLocationLabel,
             'clock_in_photo'     => $photoPath,
             'work_from_type'     => $workFromType,
+            // Older company databases require this field even when work_from_type exists.
+            'working_from'       => $workFromType,
         ];
 
         if (Schema::hasColumn('attendances', 'location')) {

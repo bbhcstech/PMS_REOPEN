@@ -11,6 +11,7 @@ class WorkforceRecordSchema
     {
         CompanyStaffSchema::ensure();
         $schema = Schema::connection('tenant');
+        (require database_path('migrations/tenant/2026_10_14_000001_repair_attendance_clock_columns.php'))->up();
         (require database_path('migrations/tenant/2026_10_11_000001_add_attendance_session_timezone.php'))->up();
         (require database_path('migrations/tenant/2026_10_11_000002_add_clock_out_photo_to_attendances.php'))->up();
         foreach (['attendances', 'leaves'] as $name) {

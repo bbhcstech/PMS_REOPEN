@@ -5,6 +5,23 @@ const root = path.resolve(__dirname, '../..');
 const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'pms-loading-test-'));
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 let server, browser, socket, origin, posts = 0, submitted = '', checks = 0, clockPosts = 0, clockBody = '';
+let employeeClockScript = fs.readFileSync(path.join(root, 'resources/views/employee-dashboard.blade.php'), 'utf8');
+employeeClockScript = employeeClockScript.slice(employeeClockScript.indexOf('const officeLocation ='), employeeClockScript.indexOf('const istClock ='))
+    .replace(/@json\(\$officeLatitude\)/g, '22.49682').replace(/@json\(\$officeLongitude\)/g, '88.39462')
+    .replace(/@json\(\$officeRadiusMeters\)/g, '10').replace(/@json\(\$officeAddress\)/g, '"Office"');
+const employeeFixture = `<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1">
+<script src="/admin/assets/js/pms-operation-loading.js"></script><script src="/admin/assets/js/pms-clock-capture.js"></script>
+<form id="employeeClockInForm" method="post" action="/clock-save">
+<input name="_token" value="fixture-token"><input id="clockInLatitude" name="clock_in_latitude"><input id="clockInLongitude" name="clock_in_longitude">
+<input id="clockInAccuracy" name="clock_in_accuracy"><input id="clockInAddress" name="clock_in_address">
+<input id="clockInSelfie" name="clock_in_selfie"><input id="clockInTimezone" name="clock_in_timezone">
+<button type="submit" id="employeeClockInButton">Clock In</button></form><div id="clockRequirementStatus"></div>
+<div id="clockCameraModal"><div id="clockCameraPreview"><video id="clockCameraVideo" autoplay playsinline muted></video><canvas id="clockCameraCanvas"></canvas><img id="clockCameraPhoto"></div>
+<button type="button" id="clockCameraCapture">Capture</button><button type="button" id="clockCameraClose">Close</button><button type="button" id="clockCameraFlip">Flip</button>
+<button type="button" id="clockCameraRetake">Retake</button><button type="button" id="clockCameraUse">Confirm</button></div>
+<script>window.PMSTime={timeZone:'Asia/Kolkata'};
+PMSClockCapture.location=async()=>({coords:{latitude:22.49682,longitude:88.39462,accuracy:3}});PMSClockCapture.json=async()=>({address:{city:'Kolkata'}});
+document.addEventListener('DOMContentLoaded',()=>{${employeeClockScript}});</script>`;
 const fixture = `<!doctype html><html><head><meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="/admin/assets/css/pms-operation-loading.css"><script src="/admin/assets/js/pms-operation-loading.js"></script>
 <script src="/admin/assets/js/pms-clock-capture.js"></script>
@@ -64,6 +81,7 @@ async function run() {
                 }, 300);
             }); return;
         }
+        if (url.pathname === '/employee-clock-fixture') { res.setHeader('Content-Type', 'text/html'); res.end(employeeFixture); return; }
         if (url.pathname === '/api') {
             if (req.method === 'POST') posts++;
             res.setHeader('Content-Type', 'application/json'); res.writeHead(200); res.flushHeaders();
@@ -81,7 +99,7 @@ async function run() {
     });
     await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
     origin = 'http://127.0.0.1:' + server.address().port;
-    browser = spawn('C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', ['--headless', '--disable-gpu', '--no-first-run', '--disable-background-networking', '--remote-debugging-port=0', '--user-data-dir=' + temp, 'about:blank'], { stdio: 'ignore', windowsHide: true });
+    browser = spawn('C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', ['--headless', '--disable-gpu', '--no-first-run', '--disable-background-networking', '--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream', '--remote-debugging-port=0', '--user-data-dir=' + temp, 'about:blank'], { stdio: 'ignore', windowsHide: true });
     const portFile = path.join(temp, 'DevToolsActivePort');
     for (let i = 0; i < 100 && !fs.existsSync(portFile); i++) await delay(100);
     const port = fs.readFileSync(portFile, 'utf8').split('\n')[0];
@@ -150,6 +168,14 @@ async function run() {
         await load(); await click('fetch'); await evaluate(`window.dispatchEvent(new PageTransitionEvent('pageshow',{persisted:true}))`);
         check(!await busy('fetch'), width + ': bfcache restores controls'); await delay(350);
         console.log('PASS: ' + width + 'px ' + (mobile ? 'touch' : 'desktop') + ' viewport');
+        await send('Page.navigate', { url: origin + '/employee-clock-fixture' });
+        await waitFor(`document.getElementById('employeeClockInButton') && document.readyState==='complete'`);
+        const autoClockStart = clockPosts;
+        await click('employeeClockInButton');
+        await waitFor(`document.getElementById('clockCameraVideo').videoWidth>0 && !document.getElementById('clockCameraUse').disabled`);
+        await click('clockCameraCapture');
+        await waitFor(`!!document.getElementById('destination')`);
+        check(clockPosts === autoClockStart + 1 && clockBody.includes('data:image/jpeg;base64,'), width + ': actual employee camera script captures and automatically saves exactly once without confirmation click');
         await load();
         const clockStart = clockPosts;
         await click('clockSave');

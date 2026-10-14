@@ -25,12 +25,13 @@ function element() {
     return { value: '', style: {}, disabled: false, listeners: {}, textContent: '',
         classList: { add: name => classes.add(name), remove: name => classes.delete(name), contains: name => classes.has(name) },
         addEventListener(name, fn) { this.listeners[name] = fn; },
+        click() { if (!this.disabled) this.listeners.click?.(); },
         setAttribute() {}, removeAttribute() {}, append() {}, replaceChildren(...children) { this.children = children; },
         play: async () => {}, getContext: () => ({ clearRect() {}, translate() {}, scale() {}, drawImage() {} }),
         toDataURL: () => 'data:image/jpeg;base64,photo', videoWidth: 640, videoHeight: 480,
     };
 }
-async function flowChecks(file, denyCamera = false) {
+async function flowChecks(file, denyCamera = false, captureEarly = false) {
     let source = fs.readFileSync(file, 'utf8');
     if (file.endsWith('.blade.php')) {
         source = source.slice(source.indexOf('const officeLocation ='), source.indexOf('const istClock ='));
@@ -54,9 +55,13 @@ async function flowChecks(file, denyCamera = false) {
     assert.equal(mediaRequests, 1, file + ': camera waited for geolocation');
     assert.equal(get('clockCameraModal').classList.contains('is-open'), true, file + ': camera modal did not open immediately');
     assert.equal(get('clockCameraUse').disabled, true, 'Confirmation enabled before location preparation');
+    if (captureEarly) {
+        get('clockCameraCapture').listeners.click();
+        assert.equal(submitted, 0, 'Early photo submitted before location preparation finished');
+    }
     locationResolve({ coords: { latitude: 22.5, longitude: 88.4, accuracy: 3 } });
     await preparation;
-    assert.equal(get('employeeClockInButton').disabled, false, 'Clock-in button stuck disabled');
+    if (!captureEarly) assert.equal(get('employeeClockInButton').disabled, false, 'Clock-in button stuck disabled');
     if (denyCamera) {
         assert.equal(get('clockCameraModal').classList.contains('is-open'), false, 'Denied camera left an empty modal open');
         assert.equal(get('clockCameraUse').disabled, true, 'Camera denial allowed photo confirmation');
@@ -65,8 +70,10 @@ async function flowChecks(file, denyCamera = false) {
     }
     assert.equal(get('clockCameraUse').disabled, false, 'Lookup timeout blocked confirmation');
     assert.match(get('clockInAddress').value, /Current location:/, 'Lookup failure lost recorded coordinates');
-    assert.equal(submitted, 0, 'Attendance submitted before photo capture');
-    get('clockCameraCapture').listeners.click(); get('clockCameraUse').listeners.click();
+    assert.equal(submitted, captureEarly ? 1 : 0, 'Attendance submitted at the wrong preparation stage');
+    if (!captureEarly) get('clockCameraCapture').listeners.click();
+    if (file.endsWith('employee-dashboard.blade.php')) assert.equal(submitted, 1, 'Employee photo capture did not automatically submit clock-in');
+    else get('clockCameraUse').listeners.click();
     assert.equal(submitted, 1, 'Captured photo did not submit clock-in');
     assert.equal(get('clockInSelfie').value, 'data:image/jpeg;base64,photo');
 }
@@ -75,5 +82,6 @@ async function flowChecks(file, denyCamera = false) {
     for (const file of ['public/admin/assets/js/pms-staff-clock.js', 'resources/views/employee-dashboard.blade.php', 'resources/views/dashboard-hr.blade.php']) {
         await flowChecks(file); await flowChecks(file, true);
     }
+    await flowChecks('resources/views/employee-dashboard.blade.php', false, true);
     console.log('PASS: immediate camera on employee/HR/custom-role clocks, stalled location/address/camera deadlines, late stream cleanup, HTTPS/permission errors, coordinate fallback, restored buttons and photo-confirmed submission.');
 })().catch(error => { console.error(error); process.exitCode = 1; });

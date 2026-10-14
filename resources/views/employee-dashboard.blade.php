@@ -1541,7 +1541,7 @@
                             <canvas id="clockCameraCanvas" style="display: none !important; position: absolute; width: 0; height: 0; pointer-events: none;"></canvas>
                             <img id="clockCameraPhoto" alt="Captured attendance photo">
                         </div>
-                        <p class="employee-muted mt-3 mb-0">Take a clear face photo. You can flip camera on mobile, retake, then use your photo to complete attendance.</p>
+                        <p class="employee-muted mt-3 mb-0">Take a clear face photo. Capture starts your shift automatically. Clock-out completes your attendance and saves your worked time.</p>
                     </div>
                     <div class="clock-camera-footer">
                         <button type="button" class="clock-modal-btn secondary" id="clockCameraFlip"><i class="bx bx-refresh"></i> Flip</button>
@@ -2688,6 +2688,7 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
                     try {
                         setClockStatus('Opening camera for selfie photo...', 'info');
                         await cameraReady; if (useCamera) useCamera.disabled = false;
+                        if (capturedSelfie && modal?.classList.contains('is-open')) useCamera?.click();
                     } catch (camErr) {
                         console.warn('Camera permission error or unavailable:', camErr);
                         closeCameraModal();
@@ -2701,7 +2702,7 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
                     canSubmitClockIn = false;
                     setClockStatus('Camera access and a captured photo are required to clock in.', 'error');
                 } finally {
-                    clockInButton.disabled = false;
+                    if (!canSubmitClockIn) clockInButton.disabled = false;
                 }
             });
         }
@@ -2749,6 +2750,8 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
             if (canvas) {
                 canvas.style.display = 'none';
             }
+            // Location preparation submits an early photo once its fields are ready.
+            if (clockAction === 'in' && useCamera && !useCamera.disabled) useCamera.click();
         });
 
         retakeCamera?.addEventListener('click', () => {
@@ -2817,7 +2820,9 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
             canSubmitClockIn = true;
             setClockStatus('Photo ready. Completing clock in...', 'success');
             closeCameraModal();
-            window.PMSClockCapture.submit(clockInForm).then(saved => { if (!saved) canSubmitClockIn = false; });
+            window.PMSClockCapture.submit(clockInForm).then(saved => {
+                if (!saved) { canSubmitClockIn = false; clockInButton.disabled = false; }
+            });
         });
 
 

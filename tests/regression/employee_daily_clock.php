@@ -11,9 +11,9 @@ use Illuminate\Support\Facades\{Auth, Blade};
     $table->id(); $table->unsignedBigInteger('user_id');
 });
 \Illuminate\Support\Facades\Schema::table('attendances', function ($table) {
-    $table->decimal('clock_in_latitude', 10, 7)->nullable();
-    $table->decimal('clock_in_longitude', 10, 7)->nullable();
-    $table->string('clock_in_photo')->nullable();
+    if (!\Illuminate\Support\Facades\Schema::hasColumn('attendances', 'clock_in_latitude')) $table->decimal('clock_in_latitude', 10, 7)->nullable();
+    if (!\Illuminate\Support\Facades\Schema::hasColumn('attendances', 'clock_in_longitude')) $table->decimal('clock_in_longitude', 10, 7)->nullable();
+    if (!\Illuminate\Support\Facades\Schema::hasColumn('attendances', 'clock_in_photo')) $table->string('clock_in_photo')->nullable();
 });
 Auth::guard('web')->setUser(User::findOrFail(2));
 Carbon::setTestNow(Carbon::parse('2026-10-14 09:00:00', 'Asia/Kolkata'));
