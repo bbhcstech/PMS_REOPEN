@@ -37,7 +37,11 @@
                     if (response.status === 413) throw new Error('The photo is too large for the server. Please retake it and try again.');
                     if (!response.ok || !data || data.success !== true) {
                         var validation = data && data.errors && Object.values(data.errors).flat().join(' ');
-                        throw new Error(validation || (response.status < 500 && data && data.message) || 'Attendance could not be saved. Please refresh to check your attendance before trying again.');
+                        var reason = data && (typeof data.message === 'string' ? data.message : typeof data.error === 'string' ? data.error : null);
+                        if (response.redirected && /\/login(?:\/|$)/.test(new URL(response.url, window.location.href).pathname)) throw new Error('Your session expired. Refresh this page and sign in again.');
+                        throw new Error(validation || (response.status < 500 && reason)
+                            || (response.status === 403 ? 'The server blocked this attendance request (HTTP 403). Please contact your company admin.' : null)
+                            || 'Attendance could not be saved. Please refresh to check your attendance before trying again.');
                     }
                     return data;
                 }), 45000, 'The server did not confirm your attendance. Refresh to check whether it was saved before trying again.', function () { controller.abort(); });

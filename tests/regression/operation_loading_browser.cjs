@@ -74,9 +74,10 @@ async function run() {
                 setTimeout(() => {
                     const mode = url.searchParams.get('mode');
                     res.setHeader('Content-Type', mode === 'html' ? 'text/html' : 'application/json');
-                    res.statusCode = mode === 'validation' ? 422 : mode === 'expired' ? 419 : mode === 'html' ? 500 : 200;
+                    res.statusCode = mode === 'validation' ? 422 : mode === 'permission' ? 403 : mode === 'expired' ? 419 : mode === 'html' ? 500 : 200;
                     res.end(mode === 'html' ? '<h1>Internal server error</h1>' : JSON.stringify(mode === 'validation'
                         ? { success: false, errors: { clock_in_selfie: ['Photo could not be saved.'] } }
+                        : mode === 'permission' ? { error: 'You do not have permission to access this module.' }
                         : { success: true, redirect_url: '/destination' }));
                 }, 300);
             }); return;
@@ -171,11 +172,19 @@ async function run() {
         await send('Page.navigate', { url: origin + '/employee-clock-fixture' });
         await waitFor(`document.getElementById('employeeClockInButton') && document.readyState==='complete'`);
         const autoClockStart = clockPosts;
+        await evaluate(`document.getElementById('employeeClockInForm').action='/clock-save?mode=permission'`);
+        await click('employeeClockInButton');
+        await waitFor(`document.getElementById('clockCameraVideo').videoWidth>0 && !document.getElementById('clockCameraUse').disabled`);
+        await click('clockCameraCapture');
+        await waitFor(`!!document.querySelector('[data-clock-submit-error]') && !document.getElementById('employeeClockInButton').disabled`);
+        check(await evaluate(`document.querySelector('[data-clock-submit-error]').textContent==='You do not have permission to access this module.'`), width + ': actual middleware error field is shown instead of generic save failure');
+        check(!await busy('employeeClockInButton') && await evaluate(`!document.getElementById('employeeClockInButton').classList.contains('pms-operation-inline')`), width + ': actual automatic camera submission releases spinner after rejection');
+        await evaluate(`document.getElementById('employeeClockInForm').action='/clock-save'`);
         await click('employeeClockInButton');
         await waitFor(`document.getElementById('clockCameraVideo').videoWidth>0 && !document.getElementById('clockCameraUse').disabled`);
         await click('clockCameraCapture');
         await waitFor(`!!document.getElementById('destination')`);
-        check(clockPosts === autoClockStart + 1 && clockBody.includes('data:image/jpeg;base64,'), width + ': actual employee camera script captures and automatically saves exactly once without confirmation click');
+        check(clockPosts === autoClockStart + 2 && clockBody.includes('data:image/jpeg;base64,'), width + ': actual employee camera script retries successfully after permission failure and posts each attempt once');
         await load();
         const clockStart = clockPosts;
         await click('clockSave');
@@ -183,7 +192,7 @@ async function run() {
         check(await busy('clockSave'), width + ': attendance save spinner');
         await waitFor(`!!document.getElementById('destination')`);
         check(clockPosts === clockStart + 1 && clockBody.includes('fixture-token') && clockBody.includes('data:image/png;base64,captured'), width + ': photo and CSRF posted once before dashboard navigation');
-        for (const mode of ['validation', 'expired', 'html', 'slow']) {
+        for (const mode of ['validation', 'permission', 'expired', 'html', 'slow']) {
             await load();
             await evaluate(`document.getElementById('clock').action='/clock-save?mode=${mode}';window.clockFastTimeout=${mode === 'slow'};`);
             await click('clockSave');

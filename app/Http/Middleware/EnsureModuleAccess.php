@@ -33,8 +33,10 @@ class EnsureModuleAccess
             return $next($request);
         }
 
-        // Core authentication & profile routes are always accessible to avoid redirect loops
-        if (in_array($routeName, ['home', 'login', 'logout', 'profile.edit', 'profile.update', 'dashboard'], true)) {
+        // Clock actions update only the authenticated user's shift, guarded by
+        // ProtectWorkforceRecords and WorkforceAccess. They are not Dashboard CRUD:
+        // a view-only Dashboard must not require can_create to start/finish work.
+        if (in_array($routeName, ['home', 'login', 'logout', 'profile.edit', 'profile.update', 'dashboard', 'dashboard.clockin', 'dashboard.clockout'], true)) {
             return $next($request);
         }
 
